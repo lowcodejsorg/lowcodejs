@@ -1,0 +1,53 @@
+networks:
+  traefik-network:
+    external: true
+
+services:
+  develop-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.develop # ← Correto: dentro da seção build
+    container_name: develop-api
+    restart: unless-stopped
+    # REMOVER ports para usar apenas o Traefik
+    ports:
+      - '4000:4000'
+    environment:
+      - NODE_ENV=production
+      - PORT=4000
+      - DATABASE_URL=mongodb://develop:develop@develop-mongo:27017
+      - APP_SERVER_URL=https://api.develop.lowcodejs.org
+      - APP_CLIENT_URL=https://develop.lowcodejs.org
+    networks:
+      - traefik-network
+    labels:
+      - 'traefik.enable=true'
+
+      # HTTPS (principal)
+      - 'traefik.http.routers.develop-api.rule=Host(`api.develop.lowcodejs.org`)'
+      - 'traefik.http.routers.develop-api.entrypoints=websecure'
+      - 'traefik.http.routers.develop-api.tls.certresolver=myresolver'
+      - 'traefik.http.services.develop-api.loadbalancer.server.port=4000'
+
+      # HTTP para HTTPS redirect
+      - 'traefik.http.routers.develop-api-http.rule=Host(`api.develop.lowcodejs.org`)'
+      - 'traefik.http.routers.develop-api-http.entrypoints=web'
+      - 'traefik.http.routers.develop-api-http.middlewares=https-only@file'
+
+      # Health check
+      - 'traefik.http.services.develop-api.loadbalancer.healthcheck.path=/health-check'
+      - 'traefik.http.services.develop-api.loadbalancer.healthcheck.port=4000'
+      - 'traefik.http.services.develop-api.loadbalancer.healthcheck.interval=10s'
+      - 'traefik.http.services.develop-api.loadbalancer.healthcheck.timeout=3s'
+
+      # Retry middleware
+      - 'traefik.http.routers.develop-api.middlewares=develop-api-retry'
+      - 'traefik.http.middlewares.develop-api-retry.retry.attempts=3'
+      - 'traefik.http.middlewares.develop-api-retry.retry.initialinterval=500ms'
+
+      # Sticky sessions
+      - 'traefik.http.services.develop-api.loadbalancer.sticky.cookie=true'
+
+volumes:
+  mongodb_data:
+    driver: local

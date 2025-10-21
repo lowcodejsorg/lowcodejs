@@ -1,0 +1,40 @@
+{
+	"compilerOptions": {
+		"baseUrl": "./",
+		"paths": {
+			"@bin/*": ["./bin/*"],
+			"@config/*": ["./config/*"],
+			"@start/*": ["./start/*"],
+			"@database/*": ["./database/*"],
+
+			"@controllers/*": ["./app/controllers/*"],
+			"@core/*": ["app/core/*"],
+			"@model/*": ["./app/model/*"],
+			"@exceptions/*": ["./app/exceptions/*"],
+			"@middlewares/*": ["./app/middlewares/*"],
+			"@use-case/*": ["./app/use-case/*"],
+			"@services/*": ["./app/services/*"],
+			"@validators/*": ["./app/validators/*"],
+		},
+		"rootDirs": ["./app", "./bin", "./config", "./start", "./database"],
+		"typeRoots": ["./app/@types", "./node_modules/@types"],
+		"target": "ES2024",
+		"module": "CommonJS",
+		"lib": ["ES2024"],
+		"rootDir": "./",
+		"outDir": "./build",
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"forceConsistentCasingInFileNames": true,
+		"strict": true,
+		"skipLibCheck": true,
+		"moduleResolution": "node",
+		"experimentalDecorators": true,
+		"emitDecoratorMetadata": true,
+		"strictPropertyInitialization": false,
+		"useDefineForClassFields": false,
+		"resolveJsonModule": true
+	},
+	"include": ["app", "bin", "config", "start", "database"],
+	"exclude": ["node_modules", "build"]
+}
