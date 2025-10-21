@@ -46,6 +46,12 @@ services:
       - "traefik.http.routers.develop-api-http.entrypoints=web"
       - "traefik.http.routers.develop-api-http.middlewares=https-only@file"
 
+      # # Health check
+      # - "traefik.http.services.develop-api.loadbalancer.healthcheck.path=/health-check"
+      # - "traefik.http.services.develop-api.loadbalancer.healthcheck.port=4000"
+      # - "traefik.http.services.develop-api.loadbalancer.healthcheck.interval=10s"
+      # - "traefik.http.services.develop-api.loadbalancer.healthcheck.timeout=3s"
+
       # Retry middleware
       - "traefik.http.routers.develop-api.middlewares=develop-api-retry"
       - "traefik.http.middlewares.develop-api-retry.retry.attempts=3"
