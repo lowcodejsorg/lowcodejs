@@ -23,7 +23,7 @@ kernel.register(cors, {
   origin: (origin, callback) => {
     const allowedOrigins = [
       'https://demo.lowcodejs.org',
-      'https://dev.lowcodejs.org',
+      'https://develop.lowcodejs.org',
       'http://localhost:5173',
       'http://localhost:3000',
     ];
@@ -129,7 +129,7 @@ kernel.register(swagger, {
         description: 'Demo server',
       },
       {
-        url: 'https://api.dev.lowcodejs.org',
+        url: 'https://api.develop.lowcodejs.org',
         description: 'Develop server',
       },
     ],

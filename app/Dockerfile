@@ -4,7 +4,7 @@ FROM node:22-alpine AS builder
 WORKDIR /app
 
 ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL="https://api.dev.lowcodejs.org"
+ENV VITE_API_BASE_URL="https://api.develop.lowcodejs.org"
 
 # Copiar arquivos de dependência
 COPY package*.json ./
