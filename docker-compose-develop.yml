@@ -11,7 +11,7 @@ services:
     volumes:
       - develop-mongo-volume:/data/db
     ports:
-      - "27018:27017"
+      - "27012:27017"
     networks:
       - develop-lowcodejs-network
 
@@ -24,7 +24,7 @@ services:
       - ./api/.env
     restart: unless-stopped
     ports:
-      - "4000:3000"
+      - "3002:3000"
     volumes:
       - develop-storage-api-volume:/app/_storage
     depends_on:
@@ -68,7 +68,7 @@ services:
     env_file:
       - ./app/.env
     ports:
-      - "5173:80"
+      - "5172:80"
     depends_on:
       - develop-api
     networks:

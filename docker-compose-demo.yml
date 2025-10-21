@@ -11,7 +11,7 @@ services:
     volumes:
       - demo-mongo-volume:/data/db
     ports:
-      - "27019:27017"
+      - "27011:27017"
     networks:
       - demo-lowcodejs-network
 
@@ -24,7 +24,7 @@ services:
       - ./api/.env
     restart: unless-stopped
     ports:
-      - "5000:3000"
+      - "3001:3000"
     volumes:
       - demo-storage-api-volume:/app/_storage
     depends_on:
@@ -68,7 +68,7 @@ services:
     env_file:
       - ./app/.env
     ports:
-      - "5174:80"
+      - "5171:80"
     depends_on:
       - demo-api
     networks:
