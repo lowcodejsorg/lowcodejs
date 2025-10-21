@@ -11,7 +11,7 @@ services:
     volumes:
       - demo-mongo-volume:/data/db
     ports:
-      - "27011:27017"
+      - "27012:27017"
     networks:
       - demo-lowcodejs-network
 
@@ -24,7 +24,7 @@ services:
       - ./api/.env.demo
     restart: unless-stopped
     ports:
-      - "3001:3000"
+      - "3002:3000"
     volumes:
       - demo-storage-api-volume:/app/_storage
     depends_on:
@@ -46,12 +46,6 @@ services:
       - "traefik.http.routers.demo-api-http.entrypoints=web"
       - "traefik.http.routers.demo-api-http.middlewares=https-only@file"
 
-      # Health check
-      - "traefik.http.services.demo-api.loadbalancer.healthcheck.path=/health-check"
-      - "traefik.http.services.demo-api.loadbalancer.healthcheck.port=3000"
-      - "traefik.http.services.demo-api.loadbalancer.healthcheck.interval=10s"
-      - "traefik.http.services.demo-api.loadbalancer.healthcheck.timeout=3s"
-
       # Retry middleware
       - "traefik.http.routers.demo-api.middlewares=demo-api-retry"
       - "traefik.http.middlewares.demo-api-retry.retry.attempts=3"
@@ -65,10 +59,12 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://api.demo.lowcodejs.org
     env_file:
       - ./app/.env.demo
     ports:
-      - "5171:80"
+      - "5172:80"
     depends_on:
       - demo-api
     networks:

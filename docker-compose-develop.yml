@@ -21,7 +21,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     env_file:
-      - ./api/.env.demo
+      - ./api/.env.develop
     restart: unless-stopped
     ports:
       - "3002:3000"
@@ -36,21 +36,15 @@ services:
       - "traefik.enable=true"
 
       # HTTPS (principal)
-      - "traefik.http.routers.develop-api.rule=Host(`api.develop.lowcodejs.org`)"
+      - "traefik.http.routers.develop-api.rule=Host(`api.dev.lowcodejs.org`)"
       - "traefik.http.routers.develop-api.entrypoints=websecure"
       - "traefik.http.routers.develop-api.tls.certresolver=myresolver"
       - "traefik.http.services.develop-api.loadbalancer.server.port=3000"
 
       # HTTP para HTTPS redirect
-      - "traefik.http.routers.develop-api-http.rule=Host(`api.develop.lowcodejs.org`)"
+      - "traefik.http.routers.develop-api-http.rule=Host(`api.dev.lowcodejs.org`)"
       - "traefik.http.routers.develop-api-http.entrypoints=web"
       - "traefik.http.routers.develop-api-http.middlewares=https-only@file"
-
-      # Health check
-      - "traefik.http.services.develop-api.loadbalancer.healthcheck.path=/health-check"
-      - "traefik.http.services.develop-api.loadbalancer.healthcheck.port=3000"
-      - "traefik.http.services.develop-api.loadbalancer.healthcheck.interval=10s"
-      - "traefik.http.services.develop-api.loadbalancer.healthcheck.timeout=3s"
 
       # Retry middleware
       - "traefik.http.routers.develop-api.middlewares=develop-api-retry"
@@ -65,6 +59,8 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+      args:
+        - VITE_API_BASE_URL=https://api.dev.lowcodejs.org
     env_file:
       - ./app/.env.develop
     ports:
@@ -77,12 +73,12 @@ services:
     labels:
       - "traefik.enable=true"
       # HTTPS (principal)
-      - "traefik.http.routers.develop-app.rule=Host(`develop.lowcodejs.org`)"
+      - "traefik.http.routers.develop-app.rule=Host(`dev.lowcodejs.org`)"
       - "traefik.http.routers.develop-app.entrypoints=websecure"
       - "traefik.http.routers.develop-app.tls.certresolver=myresolver"
       - "traefik.http.services.develop-app.loadbalancer.server.port=80"
       # HTTP para HTTPS redirect
-      - "traefik.http.routers.develop-app-http.rule=Host(`develop.lowcodejs.org`)"
+      - "traefik.http.routers.develop-app-http.rule=Host(`dev.lowcodejs.org`)"
       - "traefik.http.routers.develop-app-http.entrypoints=web"
       - "traefik.http.routers.develop-app-http.middlewares=https-only@file"
 
