@@ -21,7 +21,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     env_file:
-      - ./api/.env.develop
+      - ./api/.env.demo
     restart: unless-stopped
     ports:
       - "3002:3000"
@@ -48,7 +48,7 @@ services:
 
       # Health check
       - "traefik.http.services.develop-api.loadbalancer.healthcheck.path=/health-check"
-      - "traefik.http.services.develop-api.loadbalancer.healthcheck.port=3002"
+      - "traefik.http.services.develop-api.loadbalancer.healthcheck.port=3000"
       - "traefik.http.services.develop-api.loadbalancer.healthcheck.interval=10s"
       - "traefik.http.services.develop-api.loadbalancer.healthcheck.timeout=3s"
 

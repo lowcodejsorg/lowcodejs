@@ -48,7 +48,7 @@ services:
 
       # Health check
       - "traefik.http.services.demo-api.loadbalancer.healthcheck.path=/health-check"
-      - "traefik.http.services.demo-api.loadbalancer.healthcheck.port=3001"
+      - "traefik.http.services.demo-api.loadbalancer.healthcheck.port=3000"
       - "traefik.http.services.demo-api.loadbalancer.healthcheck.interval=10s"
       - "traefik.http.services.demo-api.loadbalancer.healthcheck.timeout=3s"
 
