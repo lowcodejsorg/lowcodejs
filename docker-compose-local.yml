@@ -21,7 +21,7 @@ services:
       context: ./api
       dockerfile: Dockerfile
     env_file:
-      - ./api/.env
+      - ./api/.env.local
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -38,7 +38,7 @@ services:
       context: ./app
       dockerfile: Dockerfile
     env_file:
-      - ./app/.env
+      - ./app/.env.local
     ports:
       - "5170:80"
     depends_on:
