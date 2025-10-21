@@ -1,35 +1,52 @@
-# Build stage
-FROM node:22-alpine AS builder
-
+FROM node:22-alpine AS build
 WORKDIR /app
 
-ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL="https://api.dev.lowcodejs.org"
-
-# Copiar arquivos de dependência
+# Copiar apenas package files primeiro (melhor cache)
 COPY package*.json ./
-
-# Instalar dependências
 RUN npm install
-RUN npm ci
+RUN npm cache clean --force
 
 # Copiar código fonte
 COPY . .
 
-# Build da aplicação
-RUN npm run build
+# Build
+RUN npm run build 
+RUN mkdir -p build/dist/js 
+RUN cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js build/dist/js/
 
-# Production stage
-FROM nginx:alpine
+# ============================================
+FROM node:22-alpine AS production
+WORKDIR /app
 
-# Copiar configuração customizada do nginx
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Copiar package files
+COPY package*.json ./
 
-# Copiar build da aplicação
-COPY --from=builder /app/dist /usr/share/nginx/html
+# Instalar apenas dependências de produção
+RUN npm install
+RUN npm cache clean --force
+RUN mkdir -p dist/js
+RUN cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js dist/js/
 
-# Expor porta 80
-EXPOSE 80
+# Copiar arquivos buildados
+COPY --from=build /app/build/app ./app
+COPY --from=build /app/build/bin ./bin
+COPY --from=build /app/build/config ./config
+COPY --from=build /app/build/database ./database
+COPY --from=build /app/build/start ./start
 
-# Iniciar nginx
-CMD ["nginx", "-g", "daemon off;"]
+# Copiar _system se necessário (avalie se realmente precisa)
+COPY --from=build /app/_system ./_system
+
+# Criar diretório para volumes
+RUN mkdir -p _storage
+
+# Criar usuário não-root
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S nodejs -u 1001 -G nodejs 
+RUN chown -R nodejs:nodejs /app
+
+USER nodejs
+
+EXPOSE 3000
+
+CMD ["node", "bin/server.js"]

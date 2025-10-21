@@ -1,7 +1,10 @@
 # Build stage
-FROM node:22-alpine AS build-app
+FROM node:22-alpine AS builder
 
 WORKDIR /app
+
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL="https://api.dev.lowcodejs.org"
 
 # Copiar arquivos de dependência
 COPY package*.json ./
@@ -23,7 +26,7 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copiar build da aplicação
-COPY --from=build-app /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Expor porta 80
 EXPOSE 80
