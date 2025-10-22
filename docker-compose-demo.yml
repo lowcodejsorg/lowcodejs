@@ -11,9 +11,9 @@ services:
     volumes:
       - demo-mongo-volume:/data/db
     ports:
-      - "27012:27017"
+      - "27011:27017"
     networks:
-      - demo-lowcodejs-network
+      - traefik-network
 
   demo-api:
     container_name: demo-api
@@ -24,13 +24,12 @@ services:
       - ./api/.env.demo
     restart: unless-stopped
     ports:
-      - "3002:3000"
+      - "3001:3000"
     volumes:
       - demo-storage-api-volume:/app/_storage
     depends_on:
       - demo-mongo
     networks:
-      - demo-lowcodejs-network
       - traefik-network
     labels:
       - "traefik.enable=true"
@@ -60,15 +59,12 @@ services:
       context: ./app
       dockerfile: Dockerfile
       args:
-        - VITE_API_BASE_URL=https://api.demo.lowcodejs.org
+        VITE_API_BASE_URL: "https://api.demo.lowcodejs.org"
     env_file:
       - ./app/.env.demo
-    ports:
-      - "5172:80"
     depends_on:
       - demo-api
     networks:
-      - demo-lowcodejs-network
       - traefik-network
     labels:
       - "traefik.enable=true"
@@ -89,7 +85,5 @@ volumes:
     driver: local
 
 networks:
-  demo-lowcodejs-network:
-    driver: bridge
   traefik-network:
     external: true

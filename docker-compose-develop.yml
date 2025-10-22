@@ -58,6 +58,8 @@ services:
     build:
       context: ./app
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: "https://api.develop.lowcodejs.org"
     env_file:
       - ./app/.env.develop
     depends_on:
