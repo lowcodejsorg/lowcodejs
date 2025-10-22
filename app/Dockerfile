@@ -3,8 +3,10 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
-# ARG VITE_API_BASE_URL
-# ENV VITE_API_BASE_URL="https://api.develop.lowcodejs.org"
+# Recebe a variável como ARG
+ARG VITE_API_BASE_URL
+# Define como ENV pra poder usar no build
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # Copiar arquivos de dependência
 COPY package*.json ./
