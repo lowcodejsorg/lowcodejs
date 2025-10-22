@@ -1,16 +1,14 @@
 # Build stage
 FROM node:22-alpine AS builder
-
 WORKDIR /app
 
 ARG VITE_API_BASE_URL
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL 
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 
 # Copiar arquivos de dependência
 COPY package*.json ./
 
 # Instalar dependências
-
 RUN npm ci
 
 # Copiar código fonte
