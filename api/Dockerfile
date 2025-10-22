@@ -10,7 +10,7 @@ ENV APP_SERVER_URL=${APP_SERVER_URL}
 ENV APP_CLIENT_URL=${APP_CLIENT_URL}
 
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 COPY .env* ./
 COPY . .
@@ -28,7 +28,7 @@ WORKDIR /app
 
 # Instalar apenas dependências de produção
 COPY package*.json ./
-RUN npm install
+RUN npm ci
 
 RUN mkdir -p dist/js && \
     cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js dist/js/
