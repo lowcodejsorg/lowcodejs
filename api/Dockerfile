@@ -2,12 +2,12 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
-ARG APP_SERVER_URL=https://api.develop.lowcodejs.org
-ARG APP_CLIENT_URL=https://develop.lowcodejs.org
+ARG APP_SERVER_URL
+ARG APP_CLIENT_URL
 
 # Definir ENVs para build time (se necessário para o build)
-ENV APP_SERVER_URL=${APP_SERVER_URL}
-ENV APP_CLIENT_URL=${APP_CLIENT_URL}
+ENV APP_SERVER_URL=$APP_SERVER_URL
+ENV APP_CLIENT_URL=$APP_CLIENT_URL
 
 COPY package*.json ./
 RUN npm ci

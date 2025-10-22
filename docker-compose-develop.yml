@@ -11,7 +11,7 @@ services:
     volumes:
       - develop-mongo-volume:/data/db
     ports:
-      - "27012:27017"
+      - "27018:27017"
     networks:
       - traefik-network
 
@@ -20,11 +20,14 @@ services:
     build:
       context: ./api
       dockerfile: Dockerfile
+      args:
+        - APP_SERVER_URL=https://api.develop.lowcodejs.org
+        - APP_CLIENT_URL=https://develop.lowcodejs.org
     env_file:
       - ./api/.env.develop
     restart: unless-stopped
     ports:
-      - "3002:3000"
+      - "3001:3000"
     volumes:
       - develop-storage-api-volume:/app/_storage
     depends_on:
