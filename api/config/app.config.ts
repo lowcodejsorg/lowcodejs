@@ -4,6 +4,6 @@ export async function isPasswordMatch(payload: {
   plain: string;
   hashed: string;
 }): Promise<boolean> {
-  const doesPasswordMatch = await bcrypt.compare(payload.hashed, payload.plain);
+  const doesPasswordMatch = await bcrypt.compare(payload.plain, payload.hashed);
   return doesPasswordMatch;
 }

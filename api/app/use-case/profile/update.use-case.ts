@@ -1,12 +1,17 @@
-import { isPasswordMatch } from '@config/app.config';
-import { Either, left, right } from '@core/either.core';
-import { User as Entity } from '@core/entity.core';
-import ApplicationException from '@exceptions/application.exception';
-import { User as Model } from '@model/user.model';
-import { GetUserByIdSchema, UpdateUserProfileSchema } from '@validators/users';
 import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
-import z from 'zod';
+import type z from 'zod';
+
+import { isPasswordMatch } from '@config/app.config';
+import type { Either } from '@core/either.core';
+import { left, right } from '@core/either.core';
+import type { User as Entity } from '@core/entity.core';
+import ApplicationException from '@exceptions/application.exception';
+import { User as Model } from '@model/user.model';
+import type {
+  GetUserByIdSchema,
+  UpdateUserProfileSchema,
+} from '@validators/users';
 
 type Response = Either<ApplicationException, Entity>;
 
@@ -17,6 +22,7 @@ export default class AtualizarPerfilUseCase {
       z.infer<typeof GetUserByIdSchema>,
   ): Promise<Response> {
     try {
+      console.log(JSON.stringify(payload, null, 2));
       if (!payload?.group)
         return left(
           ApplicationException.BadRequest(
@@ -33,6 +39,7 @@ export default class AtualizarPerfilUseCase {
           },
         },
       ]);
+
       if (!user)
         return left(
           ApplicationException.NotFound('User not found', 'USER_NOT_FOUND'),
@@ -57,11 +64,18 @@ export default class AtualizarPerfilUseCase {
         });
       }
 
-      const isMatch = await isPasswordMatch({
+      console.log({
         hashed: user.toJSON({
           flattenObjectIds: true,
         }).password,
         plain: payload.newPassword as string,
+      });
+
+      const isMatch = await isPasswordMatch({
+        hashed: user.toJSON({
+          flattenObjectIds: true,
+        }).password,
+        plain: payload.currentPassword as string,
       });
 
       if (!isMatch)

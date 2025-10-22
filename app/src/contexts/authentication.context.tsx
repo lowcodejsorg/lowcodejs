@@ -1,6 +1,7 @@
 /* eslint-disable react-refresh/only-export-components */
 import { API } from "@/lib/api";
 import { APP_ID, type User } from "@/lib/entity";
+import { QueryClient } from "@/lib/query-client";
 import { AxiosError } from "axios";
 import React from "react";
 
@@ -43,6 +44,8 @@ export const AuthenticationProvider = ({
     setUser(null);
     localStorage.clear();
     sessionStorage.clear();
+    // Clear all queries to prevent data leakage between users
+    QueryClient.clear();
   }, []);
 
   const verify = React.useCallback(
@@ -93,6 +96,8 @@ export const AuthenticationProvider = ({
         if (error.response?.status === 401) {
           localStorage.removeItem(APP_ID);
           sessionStorage.clear();
+          // Clear queries on authentication error
+          QueryClient.clear();
         }
       }
     }

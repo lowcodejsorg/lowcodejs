@@ -11,46 +11,46 @@ services:
     volumes:
       - local-mongo-volume:/data/db
     ports:
-      - "27010:27017"
+      - "27017:27017"
     networks:
       - local-lowcodejs-network
 
-  local-api:
-    container_name: local-api
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    env_file:
-      - ./api/.env.local
-    restart: unless-stopped
-    ports:
-      - "3000:3000"
-    volumes:
-      - local-storage-api-volume:/app/_storage
-    depends_on:
-      - local-mongo
-    networks:
-      - local-lowcodejs-network
+  # local-api:
+  #   container_name: local-api
+  #   build:
+  #     context: ./api
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ./api/.env.local
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - local-storage-api-volume:/app/_storage
+  #   depends_on:
+  #     - local-mongo
+  #   networks:
+  #     - local-lowcodejs-network
 
-  local-app:
-    container_name: local-app
-    build:
-      context: ./app
-      dockerfile: Dockerfile
-    env_file:
-      - ./app/.env.local
-    ports:
-      - "5170:80"
-    depends_on:
-      - local-api
-    networks:
-      - local-lowcodejs-network
+  # local-app:
+  #   container_name: local-app
+  #   build:
+  #     context: ./app
+  #     dockerfile: Dockerfile
+  #   env_file:
+  #     - ./app/.env.local
+  #   ports:
+  #     - "5170:80"
+  #   depends_on:
+  #     - local-api
+  #   networks:
+  #     - local-lowcodejs-network
 
 volumes:
   local-mongo-volume:
     driver: local
-  local-storage-api-volume:
-    driver: local
+  # local-storage-api-volume:
+  #   driver: local
 
 networks:
   local-lowcodejs-network:

@@ -1,11 +1,13 @@
-import { Either, left, right } from '@core/either.core';
-import { User as Entity } from '@core/entity.core';
-import ApplicationException from '@exceptions/application.exception';
-import { User as Model } from '@model/user.model';
-import { AuthenticationSignInSchema } from '@validators/authentication.validator';
 import bcrypt from 'bcryptjs';
 import { Service } from 'fastify-decorators';
-import z from 'zod';
+import type z from 'zod';
+
+import type { Either } from '@core/either.core';
+import { left, right } from '@core/either.core';
+import type { User as Entity } from '@core/entity.core';
+import ApplicationException from '@exceptions/application.exception';
+import { User as Model } from '@model/user.model';
+import type { AuthenticationSignInSchema } from '@validators/authentication.validator';
 
 type Response = Either<ApplicationException, Entity>;
 

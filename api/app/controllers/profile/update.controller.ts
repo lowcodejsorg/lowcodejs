@@ -190,8 +190,10 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const body = UpdateUserProfileSchema.parse(request.body);
 
-    // @ts-ignore
-    const result = await this.useCase.execute(body);
+    const result = await this.useCase.execute({
+      ...body,
+      _id: request.user.sub,
+    });
 
     if (result.isLeft()) {
       const error = result.value;

@@ -176,13 +176,13 @@ function RouteComponent() {
           />
 
           <div className="inline-flex w-full justify-between">
-            <Link
+            {/* <Link
               // to="/recuperacao-de-conta"
               to="/request-code"
               className="text-sm hover:underline"
             >
               {t("AUTH_SIGNIN_FORGOT_PASSWORD_LINK", "Esqueci a senha")}
-            </Link>
+            </Link> */}
             <Link to="/sign-up" replace className="text-sm hover:underline">
               {t("AUTH_SIGNIN_REGISTER_LINK", "Registrar-se")}
             </Link>

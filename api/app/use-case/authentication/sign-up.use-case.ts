@@ -1,13 +1,14 @@
-import { Either, left, right } from '@core/either.core';
-import { User as Entity, TOKEN_STATUS } from '@core/entity.core';
+import { hash } from 'bcryptjs';
+import { Service } from 'fastify-decorators';
+import type z from 'zod';
+
+import type { Either } from '@core/either.core';
+import { left, right } from '@core/either.core';
+import type { User as Entity } from '@core/entity.core';
 import ApplicationException from '@exceptions/application.exception';
 import { UserGroup } from '@model/user-group.model';
 import { User as Model } from '@model/user.model';
-import { ValidationToken } from '@model/validation-token.model';
-import { AuthenticationSignUpSchema } from '@validators/authentication.validator';
-import { hash } from 'bcryptjs';
-import { Service } from 'fastify-decorators';
-import z from 'zod';
+import type { AuthenticationSignUpSchema } from '@validators/authentication.validator';
 
 type Response = Either<ApplicationException, Entity>;
 
@@ -40,17 +41,19 @@ export default class SignUpUseCase {
         ...payload,
         password: passwordHash,
         group: group._id.toString(),
+        // remover depois
+        status: 'active',
       });
 
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      // const code = Math.floor(100000 + Math.random() * 900000).toString();
 
-      await ValidationToken.create({
-        code,
-        status: TOKEN_STATUS.REQUESTED,
-        user: created._id.toString(),
-      });
+      // await ValidationToken.create({
+      //   code,
+      //   status: TOKEN_STATUS.REQUESTED,
+      //   user: created._id.toString(),
+      // });
 
-      console.info({ code });
+      // console.info({ code });
 
       // enviar email de boas vindas/confirmação de cadastro
 
