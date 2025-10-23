@@ -207,10 +207,15 @@ function RouteComponent() {
             defaultValue={profileQuery.data?.name}
             name="name"
             rules={{
-              validate: (value) => {
-                if (!value) {
-                  return "Name is required";
+              validate: function (value) {
+                value = value?.trim();
+
+                if (!value) return "Nome é obrigatório";
+
+                if (value.length < 3) {
+                  return "Nome deve ter pelo menos 3 caracteres";
                 }
+
                 return true;
               },
             }}
@@ -232,10 +237,16 @@ function RouteComponent() {
             name="email"
             defaultValue={profileQuery.data?.email}
             rules={{
-              validate: (value) => {
-                if (!value) {
-                  return "Email is required";
+              validate: function (value) {
+                value = value?.trim();
+
+                if (!value) return "E-mail é obrigatório";
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                  return "E-mail inválido";
                 }
+
                 return true;
               },
             }}
@@ -349,11 +360,33 @@ function RouteComponent() {
                   name="newPassword"
                   rules={{
                     validate: (value) => {
+                      value = value?.trim();
+
                       if (allowPasswordChange && !value) {
-                        return "New password is required";
+                        return "Senha é obrigatória";
                       }
-                      if (allowPasswordChange && value && value.length < 6) {
-                        return "Password must be at least 6 characters";
+
+                      if (allowPasswordChange && value && value.length < 8) {
+                        return "Senha deve ter pelo menos 8 caracteres";
+                      }
+
+                      if (allowPasswordChange && !/[A-Z]/.test(value)) {
+                        return "Senha deve conter pelo menos uma letra maiúscula";
+                      }
+
+                      if (allowPasswordChange && !/[a-z]/.test(value)) {
+                        return "Senha deve conter pelo menos uma letra minúscula";
+                      }
+
+                      if (allowPasswordChange && !/[0-9]/.test(value)) {
+                        return "Senha deve conter pelo menos um número";
+                      }
+
+                      if (
+                        allowPasswordChange &&
+                        !/[!@#$%^&*(),.?":{}|<>]/.test(value)
+                      ) {
+                        return "Senha deve conter pelo menos um caractere especial";
                       }
                       return true;
                     },
@@ -401,8 +434,13 @@ function RouteComponent() {
                   rules={{
                     validate: (value) => {
                       if (allowPasswordChange && !value) {
-                        return "Confirm password is required";
+                        return "Confirmação de senha é obrigatória";
                       }
+                      const password = form.getValues("newPassword");
+                      if (allowPasswordChange && value !== password) {
+                        return "As senhas não coincidem";
+                      }
+
                       return true;
                     },
                   }}

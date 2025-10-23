@@ -101,14 +101,11 @@ function RouteComponent() {
     },
   });
 
-  console.log(form.formState.errors);
-
   const onSignUp = form.handleSubmit(async (data) => {
     if (signUpMutation.status === "pending") return;
 
     if (data.password !== data.confirmPassword) {
       form.setError("confirmPassword", {
-        // message: t("ERROR_PASSWORD_MISMATCH_MESSAGE", "Passwords do not match"),
         message: "Passwords do not match",
       });
       return;
