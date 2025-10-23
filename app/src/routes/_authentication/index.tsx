@@ -120,6 +120,18 @@ function RouteComponent() {
           <FormField
             control={form.control}
             name="email"
+            rules={{
+              validate: function (value) {
+                if (!value) return "E-mail é obrigatório";
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                  return "E-mail inválido";
+                }
+
+                return true;
+              },
+            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("AUTH_SIGNIN_EMAIL_LABEL", "E-mail")}</FormLabel>
@@ -134,7 +146,7 @@ function RouteComponent() {
                     {...field}
                   />
                 </FormControl>
-                <FormMessage className="text-right" />
+                <FormMessage className="text-right text-destructive" />
               </FormItem>
             )}
           />
@@ -142,6 +154,12 @@ function RouteComponent() {
           <FormField
             control={form.control}
             name="senha"
+            rules={{
+              validate: function (value) {
+                if (!value) return "Senha é obrigatória";
+                return true;
+              },
+            }}
             render={({ field }) => (
               <FormItem className="flex flex-col w-full">
                 <FormLabel>
@@ -175,7 +193,7 @@ function RouteComponent() {
             )}
           />
 
-          <div className="inline-flex w-full justify-between">
+          <div className="inline-flex w-full justify-end">
             {/* <Link
               // to="/recuperacao-de-conta"
               to="/request-code"
@@ -183,7 +201,11 @@ function RouteComponent() {
             >
               {t("AUTH_SIGNIN_FORGOT_PASSWORD_LINK", "Esqueci a senha")}
             </Link> */}
-            <Link to="/sign-up" replace className="text-sm hover:underline">
+            <Link
+              to="/sign-up"
+              replace
+              className="text-sm hover:underline text-right"
+            >
               {t("AUTH_SIGNIN_REGISTER_LINK", "Registrar-se")}
             </Link>
           </div>

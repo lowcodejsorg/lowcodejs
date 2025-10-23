@@ -101,6 +101,8 @@ function RouteComponent() {
     },
   });
 
+  console.log(form.formState.errors);
+
   const onSignUp = form.handleSubmit(async (data) => {
     if (signUpMutation.status === "pending") return;
 
@@ -135,6 +137,19 @@ function RouteComponent() {
           <FormField
             control={form.control}
             name="name"
+            rules={{
+              validate: function (value) {
+                value = value?.trim();
+
+                if (!value) return "Nome é obrigatório";
+
+                if (value.trim().length < 3) {
+                  return "Nome deve ter pelo menos 3 caracteres";
+                }
+
+                return true;
+              },
+            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("AUTH_SIGNUP_NAME_LABEL", "Nome")}</FormLabel>
@@ -157,6 +172,20 @@ function RouteComponent() {
           <FormField
             control={form.control}
             name="email"
+            rules={{
+              validate: function (value) {
+                value = value?.trim();
+
+                if (!value) return "E-mail é obrigatório";
+
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (!emailRegex.test(value)) {
+                  return "E-mail inválido";
+                }
+
+                return true;
+              },
+            }}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t("AUTH_SIGNUP_EMAIL_LABEL", "E-mail")}</FormLabel>
@@ -179,6 +208,33 @@ function RouteComponent() {
           <FormField
             control={form.control}
             name="password"
+            rules={{
+              validate: function (value) {
+                if (!value) return "Senha é obrigatória";
+
+                if (value.length < 8) {
+                  return "Senha deve ter pelo menos 8 caracteres";
+                }
+
+                if (!/[A-Z]/.test(value)) {
+                  return "Senha deve conter pelo menos uma letra maiúscula";
+                }
+
+                if (!/[a-z]/.test(value)) {
+                  return "Senha deve conter pelo menos uma letra minúscula";
+                }
+
+                if (!/[0-9]/.test(value)) {
+                  return "Senha deve conter pelo menos um número";
+                }
+
+                if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+                  return "Senha deve conter pelo menos um caractere especial";
+                }
+
+                return true;
+              },
+            }}
             render={({ field }) => (
               <FormItem className="flex flex-col w-full">
                 <FormLabel>
@@ -215,6 +271,18 @@ function RouteComponent() {
           <FormField
             control={form.control}
             name="confirmPassword"
+            rules={{
+              validate: function (value) {
+                if (!value) return "Confirmação de senha é obrigatória";
+
+                const password = form.getValues("password");
+                if (value !== password) {
+                  return "As senhas não coincidem";
+                }
+
+                return true;
+              },
+            }}
             render={({ field }) => (
               <FormItem className="flex flex-col w-full">
                 <FormLabel>
@@ -250,7 +318,7 @@ function RouteComponent() {
             )}
           />
 
-          <div className="inline-flex w-full justify-center">
+          <div className="inline-flex w-full justify-end">
             <Link to="/" replace className="text-sm hover:underline">
               Já tenho uma conta
               {/* {t("AUTH_SIGNUP_SIGNIN_LINK", "Já tenho uma conta")} */}
