@@ -1,7 +1,9 @@
-import { Optional } from '@core/entity.core';
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+import bcrypt from 'bcryptjs';
+
+import type { Optional } from '@core/entity.core';
 import { UserGroup } from '@model/user-group.model';
 import { User } from '@model/user.model';
-import bcrypt from 'bcryptjs';
 
 type Payload = Optional<
   import('@core/entity.core').User,

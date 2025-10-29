@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 import type { Field, Optional } from '@core/entity.core';
 import { FIELD_FORMAT, FIELD_TYPE } from '@core/entity.core';
 import { buildCollection, buildSchema } from '@core/util.core';
