@@ -18,8 +18,19 @@ services:
   ${BRANCH}-api:
     container_name: ${BRANCH}-api
     image: ${DOCKERHUB_USERNAME}/lowcodejs-api:${BRANCH}
-    env_file:
-      - ./api/.env.${BRANCH}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mongodb://${BRANCH}:${BRANCH}@${BRANCH}-mongo:27017
+      APP_SERVER_URL: https://api.${BRANCH}.lowcodejs.org
+      APP_CLIENT_URL: https://${BRANCH}.lowcodejs.org
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      EMAIL_PROVIDER_PASSWORD: ${EMAIL_PROVIDER_PASSWORD}
+      EMAIL_PROVIDER_USER: ${EMAIL_PROVIDER_USER}
+      EMAIL_PROVIDER_HOST: ${EMAIL_PROVIDER_HOST}
+      EMAIL_PROVIDER_PORT: ${EMAIL_PROVIDER_PORT}
     restart: unless-stopped
     ports:
       - "${API_PORT}:3000"

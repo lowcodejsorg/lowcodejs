@@ -12,16 +12,6 @@ ENV APP_CLIENT_URL=$APP_CLIENT_URL
 COPY package*.json ./
 RUN npm ci
 
-# Copiar o script de geração de credenciais
-COPY credential-generator.sh ./
-
-# Instalar bash (Alpine usa sh por padrão)
-RUN apk add --no-cache bash
-
-# Tornar o script executável e executá-lo
-RUN chmod +x credential-generator.sh && \
-    ./credential-generator.sh
-
 COPY .env* ./
 COPY . .
 
@@ -42,7 +32,6 @@ RUN npm ci
 
 RUN mkdir -p dist/js && \
     cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js dist/js/
-
 
 # Copiar .env
 COPY --from=build /app/.env* ./

@@ -73,6 +73,22 @@ jobs:
         id: branch
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
+      - name: Generate JWT keys and secrets
+        run: |
+          cd api
+          chmod +x credential-generator.sh
+          ./credential-generator.sh
+
+          # Extrair as variáveis do .env gerado
+          JWT_PRIVATE_KEY=$(grep "^JWT_PRIVATE_KEY=" .env | cut -d'=' -f2)
+          JWT_PUBLIC_KEY=$(grep "^JWT_PUBLIC_KEY=" .env | cut -d'=' -f2)
+          COOKIE_SECRET=$(grep "^COOKIE_SECRET=" .env | cut -d'=' -f2)
+
+          # Salvar nas variáveis de ambiente do job
+          echo "JWT_PRIVATE_KEY=$JWT_PRIVATE_KEY" >> $GITHUB_ENV
+          echo "JWT_PUBLIC_KEY=$JWT_PUBLIC_KEY" >> $GITHUB_ENV
+          echo "COOKIE_SECRET=$COOKIE_SECRET" >> $GITHUB_ENV
+
       - name: Generate docker-compose file
         run: |
           envsubst < templates/docker-compose.template.yml > docker-compose-generated.yml
@@ -81,6 +97,10 @@ jobs:
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
           MONGO_PORT: ${{ steps.branch.outputs.branch == 'develop' && '27018' || steps.branch.outputs.branch == 'demo' && '27017' || '27019' }}
           API_PORT: ${{ steps.branch.outputs.branch == 'develop' && '3001' || steps.branch.outputs.branch == 'demo' && '3000' || '3002' }}
+          EMAIL_PROVIDER_PASSWORD: ${{ secrets.EMAIL_PROVIDER_PASSWORD }}
+          EMAIL_PROVIDER_USER: ${{ secrets.EMAIL_PROVIDER_USER }}
+          EMAIL_PROVIDER_HOST: ${{ secrets.EMAIL_PROVIDER_HOST }}
+          EMAIL_PROVIDER_PORT: ${{ secrets.EMAIL_PROVIDER_PORT }}
 
       - name: Upload docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
