@@ -69,6 +69,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
       - name: Generate docker-compose file
         run: |
           envsubst < templates/docker-compose.template.yml > docker-compose-generated.yml
