@@ -56,8 +56,8 @@ jobs:
         env:
           BRANCH: ${{ steps.branch.outputs.branch }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-          MONGO_PORT: ${{ secrets[format('{0}_MONGO_PORT', upper(steps.branch.outputs.branch))] || '27017' }}
-          API_PORT: ${{ secrets[format('{0}_API_PORT', upper(steps.branch.outputs.branch))] || '3000' }}
+          MONGO_PORT: ${{ steps.branch.outputs.branch == 'develop' && '27018' || steps.branch.outputs.branch == 'demo' && '27017' || '27019' }}
+          API_PORT: ${{ steps.branch.outputs.branch == 'develop' && '3001' || steps.branch.outputs.branch == 'demo' && '3000' || '3002' }}
 
       - name: Upload docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
