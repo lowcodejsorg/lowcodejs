@@ -36,24 +36,16 @@ services:
       - traefik-network
     labels:
       - "traefik.enable=true"
-
-      # HTTPS (principal)
       - "traefik.http.routers.develop-api.rule=Host(`api.develop.lowcodejs.org`)"
       - "traefik.http.routers.develop-api.entrypoints=websecure"
       - "traefik.http.routers.develop-api.tls.certresolver=myresolver"
       - "traefik.http.services.develop-api.loadbalancer.server.port=3000"
-
-      # HTTP para HTTPS redirect
       - "traefik.http.routers.develop-api-http.rule=Host(`api.develop.lowcodejs.org`)"
       - "traefik.http.routers.develop-api-http.entrypoints=web"
       - "traefik.http.routers.develop-api-http.middlewares=https-only@file"
-
-      # Retry middleware
       - "traefik.http.routers.develop-api.middlewares=develop-api-retry"
       - "traefik.http.middlewares.develop-api-retry.retry.attempts=3"
       - "traefik.http.middlewares.develop-api-retry.retry.initialinterval=500ms"
-
-      # Sticky sessions
       - "traefik.http.services.develop-api.loadbalancer.sticky.cookie=true"
 
   develop-app:
@@ -69,12 +61,10 @@ services:
       - traefik-network
     labels:
       - "traefik.enable=true"
-      # HTTPS (principal)
       - "traefik.http.routers.develop-app.rule=Host(`develop.lowcodejs.org`)"
       - "traefik.http.routers.develop-app.entrypoints=websecure"
       - "traefik.http.routers.develop-app.tls.certresolver=myresolver"
       - "traefik.http.services.develop-app.loadbalancer.server.port=80"
-      # HTTP para HTTPS redirect
       - "traefik.http.routers.develop-app-http.rule=Host(`develop.lowcodejs.org`)"
       - "traefik.http.routers.develop-app-http.entrypoints=web"
       - "traefik.http.routers.develop-app-http.middlewares=https-only@file"

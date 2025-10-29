@@ -1,0 +1,82 @@
+name: intranet-lowcodejs
+
+services:
+  intranet-mongo:
+    image: mongo:latest
+    container_name: intranet-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: intranet
+      MONGO_INITDB_ROOT_PASSWORD: intranet
+    volumes:
+      - intranet-mongo-volume:/data/db
+    ports:
+      - "27019:27017"
+    networks:
+      - traefik-network
+
+  intranet-api:
+    container_name: intranet-api
+    image: marcosjhollyfer/lowcodejs-api:intranet
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mongodb://intranet:intranet@intranet-mongo:27017
+      APP_SERVER_URL: https://api.intranet.lowcodejs.org
+      APP_CLIENT_URL: https://intranet.lowcodejs.org
+      JWT_PRIVATE_KEY: LS0tLS1CRUdJTiBQUklWQVRFIEtFWS0tLS0tCk1JSUV2UUlCQURBTkJna3Foa2lHOXcwQkFRRUZBQVNDQktjd2dnU2pBZ0VBQW9JQkFRQ1JhejVzU1pzQVJPeWIKSE5PcWpHOVVIcjFraVZpSWRJL1RxU3cvaXBxTVdQdHM5bHEvMG0xVDBpM3VUNXdLRklBaXMzV2x1SnZrcEZYZAppY2NRTkNNM29ydG9waXpuYThoU0ZPR3BKUXNtTENrTS8wSnJzb1hiaUVqUGNpRWE2SGQrZFlhYU5Vb2tNVmw4CnNucjk1VUpHdzB1UktWVEpWYTdJdVUrOXQ4eEdBUzVjQ2tWdEhnbXoyaTVXckhQMEFvNUsvZkpyRUZ1cWhFZ1gKcVNadVA2L04xdkxhZk0zSW1PNmpjbjFVNXoxcy9POFBlM2grbDF3RFBDRDV6eGlCemxuRzdLS1k5RHRGK2dseApiUkRtMC8vNmtENjlWd1I3ZFNCNVZKZHZCb2VQbmw1WHlOS1VycDYvcWd4QldHYldQTVpoUUV2UVRzRzRrd1F6CnhnVGhhN045QWdNQkFBRUNnZ0VBQWU5bk1hcm1YTzJDUHV0MlBkSVpQeXgzNmU3cEVLZ3NGSXF2SEk5Y09UNHUKenhqUG9rTGNxZDJVQ0tBb2Z1OGVGcTluSmlzekVuQ2lVdnRGbjhIT09scWcva2xqSEF1bnZLaEN3US9Ob3ptTApUNVJnWmNTWVNNclhpMk9LdmoxdFJPK1lSR0FXSzdsbklGTHF6Nkp0dUFybWQ2MHp6OGgwbnBZMEFJQzhLQ0orCjEwdGdIOWpjUDdlSmdjVnlQNjVUbGpySGNEa01WMUNQVnVwY0o0WDE2N21iWDA5UXRpOHpRZm9aYVlla0ZGUzAKNFIxdjBHN2xCOFp2Q1kzS2xrQjQ0QjNEclowVVNUd04zdXZISS9IUlBWU3lVYWNrUTJBQWtqZjJPWU5ZK2tHaQpmbGVkTEtzdlZrV1ZSdU9lR08xdXZZYWtvQ2pSYXBaQ2E1MWVuSVFOWHdLQmdRRElUbkp6RU55NUpmaCtHQndTCk05WnRSQkxKZDdkWW1WRFpXSjZHUkZnbmFWUjhia0ZhUmNCdnVMOEVjWUI4dVBVaVR4eXpLN1pSRFJEZ0Q3NmYKd0tzdFVFa2hzczh5YzI0MUJnbXZtVXorWHUxdEx0WXlZbWVsQzBrdVorN2w2alVZNExxUmQxcDI1SmZpd085dwphNlY2VEZQTXY3ZFJYYkh5QWVFbkdBeFA1d0tCZ1FDNTJmbC9rb1hrbDM5ZW12WFUwV044NmF2ay8xSGE1TDhiCnpkSFZWekhXNlV4TjFVTDd2SjRJZmNhalFKOUsxT3BmSGNFSURBekRXMDBocTQxaHN4SU8zdXZ1enlrR3p4eFoKbkRzaWc5dEdwcmN3UFA0dSs0YzAvMVZSSTQ2YnFqaTJPbWpsd2FlU0RBakJPYzUyUCswNTVSbFY2SUE5cnBCMApUOE0wTXVCRSt3S0JnUUNuMmNUaVUzRUMzYVM3MVd4QWZKdmsrRFJlQ3luaTNxYjNXdUdNVmQwaE9ZeUlzTU9tCjUraDRObklyUVFtUWVsVkFxTmE5OVpWVG1nVllIUmw2T1RPNFJ4emhWanQyWlhBbWtxYXZOV0ZsanhxYWNiTWcKaVlHY3RqWmU0czA0Y09pSnJsZm82Z0V1dkNQaTZoWTdPSmwwUUYzQXA2N3dTZm1CZUwyNXl0Y1daUUtCZ0NvMwppSVJoSFVjUzN0ejNxRllDaG0zdWlweUhIdW54UWpRbnFiMmpnKy9FcVErWkhSRWdCR243WUM3ZlZBL2trNlN0CmxwYWtYaFhXWEl3RWN5WTVUaVhRbjVsc3QyNFRoK1lYSmh1dUJoWmpjb05qcDMyMnB6enpyMGF5SkFmYVArMnQKRVB6MzQzKzZlaGFpY2ZMTWpLKzFDZTlJMURDdXdhT2FKc1pwdENZWEFvR0FSaDB6MWY1alpSemkxN0s0MDFKcwpnQjEzVy95emc5TEpXNEtZR3BjQUVUWDY3MGlMYVpGWXI4K2dqcVptQnZhTVdwblJRS2JUdFBleGt5NGZjLzMwCnlRc0l2SmNHa0ZpWkFZcG44c29VKys1R3d4SEdKMlpOcW8yelpRVFhJOXoxbFpNYWlUWmpwakRlWjlsN1U2K0sKYSthUnBFWjEzR0dvMzN5RUVtaThLS0U9Ci0tLS0tRU5EIFBSSVZBVEUgS0VZLS0tLS0K
+      JWT_PUBLIC_KEY: LS0tLS1CRUdJTiBQVUJMSUMgS0VZLS0tLS0KTUlJQklqQU5CZ2txaGtpRzl3MEJBUUVGQUFPQ0FROEFNSUlCQ2dLQ0FRRUFrV3MrYkVtYkFFVHNteHpUcW94dgpWQjY5WklsWWlIU1AwNmtzUDRxYWpGajdiUFphdjlKdFU5SXQ3aytjQ2hTQUlyTjFwYmliNUtSVjNZbkhFRFFqCk42SzdhS1lzNTJ2SVVoVGhxU1VMSml3cERQOUNhN0tGMjRoSXozSWhHdWgzZm5XR21qVktKREZaZkxKNi9lVkMKUnNOTGtTbFV5Vld1eUxsUHZiZk1SZ0V1WEFwRmJSNEpzOW91VnF4ejlBS09TdjN5YXhCYnFvUklGNmttYmordgp6ZGJ5Mm56TnlKanVvM0o5Vk9jOWJQenZEM3Q0ZnBkY0F6d2crYzhZZ2M1Wnh1eWltUFE3UmZvSmNXMFE1dFAvCitwQSt2VmNFZTNVZ2VWU1hid2FIajU1ZVY4alNsSzZldjZvTVFWaG0xanpHWVVCTDBFN0J1Sk1FTThZRTRXdXoKZlFJREFRQUIKLS0tLS1FTkQgUFVCTElDIEtFWS0tLS0tCg
+      COOKIE_SECRET: 804fb7e26c09b568d43c5b3354a129c9ff1417e055173a3f499facca1c65f130
+      EMAIL_PROVIDER_PASSWORD: kdjworchnjdbwlwy
+      EMAIL_PROVIDER_USER: jhollyfer.fr@gmail.com
+      EMAIL_PROVIDER_HOST: smtp.gmail.com
+      EMAIL_PROVIDER_PORT: 587
+    restart: unless-stopped
+    ports:
+      - "3002:3000"
+    volumes:
+      - intranet-storage-api-volume:/app/_storage
+    depends_on:
+      - intranet-mongo
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.intranet-api.rule=Host(api.intranet.lowcodejs.org)"
+      - "traefik.http.routers.intranet-api.entrypoints=websecure"
+      - "traefik.http.routers.intranet-api.tls.certresolver=myresolver"
+      - "traefik.http.services.intranet-api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.intranet-api-http.rule=Host(api.intranet.lowcodejs.org)"
+      - "traefik.http.routers.intranet-api-http.entrypoints=web"
+      - "traefik.http.routers.intranet-api-http.middlewares=https-only@file"
+      - "traefik.http.routers.intranet-api.middlewares=intranet-api-retry"
+      - "traefik.http.middlewares.intranet-api-retry.retry.attempts=3"
+      - "traefik.http.middlewares.intranet-api-retry.retry.initialinterval=500ms"
+      - "traefik.http.services.intranet-api.loadbalancer.sticky.cookie=true"
+
+  intranet-app:
+    container_name: intranet-app
+    image: marcosjhollyfer/lowcodejs-app:intranet
+    depends_on:
+      - intranet-api
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.intranet-app.rule=Host(intranet.lowcodejs.org)"
+      - "traefik.http.routers.intranet-app.entrypoints=websecure"
+      - "traefik.http.routers.intranet-app.tls.certresolver=myresolver"
+      - "traefik.http.services.intranet-app.loadbalancer.server.port=80"
+      - "traefik.http.routers.intranet-app-http.rule=Host(intranet.lowcodejs.org)"
+      - "traefik.http.routers.intranet-app-http.entrypoints=web"
+      - "traefik.http.routers.intranet-app-http.middlewares=https-only@file"
+
+volumes:
+  intranet-mongo-volume:
+    driver: local
+  intranet-storage-api-volume:
+    driver: local
+
+networks:
+  traefik-network:
+    external: true#                                            
