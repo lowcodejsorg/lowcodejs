@@ -12,6 +12,16 @@ ENV APP_CLIENT_URL=$APP_CLIENT_URL
 COPY package*.json ./
 RUN npm ci
 
+# Copiar o script de geração de credenciais
+COPY credential-generator.sh ./
+
+# Instalar bash (Alpine usa sh por padrão)
+RUN apk add --no-cache bash
+
+# Tornar o script executável e executá-lo
+RUN chmod +x credential-generator.sh && \
+    ./credential-generator.sh
+
 COPY .env* ./
 COPY . .
 

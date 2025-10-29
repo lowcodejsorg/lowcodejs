@@ -42,3 +42,40 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ steps.branch.outputs.branch }}
           build-args: |
             VITE_API_BASE_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate docker-compose file
+        run: |
+          envsubst < templates/docker-compose.template.yml > docker-compose-generated.yml
+        env:
+          BRANCH: ${{ steps.branch.outputs.branch }}
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          MONGO_PORT: ${{ secrets[format('{0}_MONGO_PORT', upper(steps.branch.outputs.branch))] || '27017' }}
+          API_PORT: ${{ secrets[format('{0}_API_PORT', upper(steps.branch.outputs.branch))] || '3000' }}
+
+      - name: Upload docker-compose to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose-generated.yml"
+          target: "/home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}/"
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}
+            mv docker-compose-generated.yml docker-compose.yml
+            docker-compose pull
+            docker-compose up -d

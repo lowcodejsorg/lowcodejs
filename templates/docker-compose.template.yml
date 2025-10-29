@@ -1,0 +1,71 @@
+name: ${BRANCH}-lowcodejs
+
+services:
+  ${BRANCH}-mongo:
+    image: mongo:latest
+    container_name: ${BRANCH}-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${BRANCH}
+      MONGO_INITDB_ROOT_PASSWORD: ${BRANCH}
+    volumes:
+      - ${BRANCH}-mongo-volume:/data/db
+    ports:
+      - "${MONGO_PORT}:27017"
+    networks:
+      - traefik-network
+
+  ${BRANCH}-api:
+    container_name: ${BRANCH}-api
+    image: ${DOCKERHUB_USERNAME}/lowcodejs-api:${BRANCH}
+    env_file:
+      - ./api/.env.${BRANCH}
+    restart: unless-stopped
+    ports:
+      - "${API_PORT}:3000"
+    volumes:
+      - ${BRANCH}-storage-api-volume:/app/_storage
+    depends_on:
+      - ${BRANCH}-mongo
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${BRANCH}-api.rule=Host(api.${BRANCH}.lowcodejs.org)"
+      - "traefik.http.routers.${BRANCH}-api.entrypoints=websecure"
+      - "traefik.http.routers.${BRANCH}-api.tls.certresolver=myresolver"
+      - "traefik.http.services.${BRANCH}-api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${BRANCH}-api-http.rule=Host(api.${BRANCH}.lowcodejs.org)"
+      - "traefik.http.routers.${BRANCH}-api-http.entrypoints=web"
+      - "traefik.http.routers.${BRANCH}-api-http.middlewares=https-only@file"
+      - "traefik.http.routers.${BRANCH}-api.middlewares=${BRANCH}-api-retry"
+      - "traefik.http.middlewares.${BRANCH}-api-retry.retry.attempts=3"
+      - "traefik.http.middlewares.${BRANCH}-api-retry.retry.initialinterval=500ms"
+      - "traefik.http.services.${BRANCH}-api.loadbalancer.sticky.cookie=true"
+
+  ${BRANCH}-app:
+    container_name: ${BRANCH}-app
+    image: ${DOCKERHUB_USERNAME}/lowcodejs-app:${BRANCH}
+    depends_on:
+      - ${BRANCH}-api
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${BRANCH}-app.rule=Host(${BRANCH}.lowcodejs.org)"
+      - "traefik.http.routers.${BRANCH}-app.entrypoints=websecure"
+      - "traefik.http.routers.${BRANCH}-app.tls.certresolver=myresolver"
+      - "traefik.http.services.${BRANCH}-app.loadbalancer.server.port=80"
+      - "traefik.http.routers.${BRANCH}-app-http.rule=Host(${BRANCH}.lowcodejs.org)"
+      - "traefik.http.routers.${BRANCH}-app-http.entrypoints=web"
+      - "traefik.http.routers.${BRANCH}-app-http.middlewares=https-only@file"
+
+volumes:
+  ${BRANCH}-mongo-volume:
+    driver: local
+  ${BRANCH}-storage-api-volume:
+    driver: local
+
+networks:
+  traefik-network:
+    external: true
