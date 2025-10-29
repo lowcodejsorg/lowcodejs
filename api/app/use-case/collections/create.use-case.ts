@@ -1,11 +1,14 @@
-import { Either, left, right } from '@core/either.core';
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+import { Service } from 'fastify-decorators';
+import slugify from 'slugify';
+import type z from 'zod';
+
+import type { Either } from '@core/either.core';
+import { left, right } from '@core/either.core';
 import { buildSchema } from '@core/util.core';
 import ApplicationException from '@exceptions/application.exception';
 import { Collection as Model } from '@model/collection.model';
-import { CreateCollectionSchema } from '@validators/collections.validator';
-import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
-import z from 'zod';
+import type { CreateCollectionSchema } from '@validators/collections.validator';
 
 type Response = Either<
   ApplicationException,

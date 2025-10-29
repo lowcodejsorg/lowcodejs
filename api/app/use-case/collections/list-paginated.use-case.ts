@@ -1,14 +1,17 @@
-import { Either, left, right } from '@core/either.core';
-import { Meta, Paginated } from '@core/entity.core';
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+import { Service } from 'fastify-decorators';
+import type z from 'zod';
+
+import type { Either } from '@core/either.core';
+import { left, right } from '@core/either.core';
+import type { Meta, Paginated } from '@core/entity.core';
 import { normalize } from '@core/util.core';
 import ApplicationException from '@exceptions/application.exception';
 import { Collection as Model } from '@model/collection.model';
-import {
+import type {
   GetCollectionQuerySchema,
   ListCollectionPaginatedSchema,
 } from '@validators/collections.validator';
-import { Service } from 'fastify-decorators';
-import z from 'zod';
 
 type Response = Either<
   ApplicationException,

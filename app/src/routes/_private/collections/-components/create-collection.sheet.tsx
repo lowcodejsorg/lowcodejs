@@ -174,6 +174,13 @@ function CreateForm({ onClose }: CreateFormProps) {
                   "COLLECTION_VALIDATION_NAME_REQUIRED",
                   "Name is required"
                 );
+              if (value.length > 50)
+                return "Name must be at most 50 characters";
+              if (
+                !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
+              )
+                return "O nome não pode conter caracteres especiais";
+
               return true;
             },
           }}

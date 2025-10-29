@@ -190,6 +190,23 @@ function UpdateForm({ collection, onClose }: UpdateFormProps) {
           control={form.control}
           name="name"
           defaultValue={collection?.name ?? ""}
+          rules={{
+            validate: (value) => {
+              if (!value)
+                return t(
+                  "COLLECTION_VALIDATION_NAME_REQUIRED",
+                  "Name is required"
+                );
+              if (value.length > 50)
+                return "Name must be at most 50 characters";
+              if (
+                !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
+              )
+                return "O nome não pode conter caracteres especiais";
+
+              return true;
+            },
+          }}
           render={({ field }) => {
             const hasError = !!form.formState.errors.name;
             return (

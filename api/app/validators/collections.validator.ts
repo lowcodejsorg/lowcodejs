@@ -28,12 +28,12 @@ export const ListCollectionPaginatedSchema = z.object({
 });
 
 export const CreateCollectionSchema = z.object({
-  name: z.string().trim(),
+  name: z.string().trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters').regex(/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/, 'Name can only contain letters, numbers, spaces, hyphen, underscore and ç'),
   owner: z.string().trim().optional(),
 });
 
 export const UpdateCollectionSchema = z.object({
-  name: z.string().trim(),
+  name: z.string().trim().min(1, 'Name is required').max(50, 'Name must be at most 50 characters').regex(/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/, 'Name can only contain letters, numbers, spaces, hyphen, underscore and ç'),
   description: z.string().trim().nullable(),
   logo: z.string().trim().nullable(),
   configuration: Configuration,
