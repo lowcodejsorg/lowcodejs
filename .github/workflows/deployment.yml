@@ -35,7 +35,6 @@ jobs:
             APP_CLIENT_URL=https://${{ steps.branch.outputs.branch }}.lowcodejs.org
 
   build-app:
-    needs: build-app
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
