@@ -1,5 +1,6 @@
-import { Env } from '@start/env';
 import mongoose from 'mongoose';
+
+import { Env } from '@start/env';
 
 import '@model/collection.model';
 import '@model/evaluation.model';

@@ -1,5 +1,6 @@
-import { MongooseConnect } from '@config/database.config';
 import { glob } from 'glob';
+
+import { MongooseConnect } from '@config/database.config';
 
 async function seed(): Promise<void> {
   await MongooseConnect();
