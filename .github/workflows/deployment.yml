@@ -91,7 +91,7 @@ jobs:
 
       - name: Generate docker-compose file
         run: |
-          envsubst < .github/workflows/docker-compose.template.yml > docker-compose-generated.yml
+          envsubst < templates/docker-compose.template.yml > docker-compose-generated.yml
         env:
           BRANCH: ${{ steps.branch.outputs.branch }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
