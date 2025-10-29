@@ -57,6 +57,8 @@ services:
   ${BRANCH}-app:
     container_name: ${BRANCH}-app
     image: ${DOCKERHUB_USERNAME}/lowcodejs-app:${BRANCH}
+    environment:
+      VITE_API_BASE_URL: https://api.${BRANCH}.lowcodejs.org
     depends_on:
       - ${BRANCH}-api
     networks:
