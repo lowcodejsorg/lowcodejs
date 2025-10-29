@@ -8,6 +8,7 @@
     "start": "node build/bin/server.js",
     "build": "tsc -b && tsup",
     "seed": "npx tsx database/seeders/main.ts",
+    "build:seed": "npx tsx database/seeders/main.js",
     "prepare": "husky"
   },
   "keywords": [],
