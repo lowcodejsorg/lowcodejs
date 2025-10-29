@@ -1,5 +1,3 @@
-import ApplicationException from '@exceptions/application.exception';
-
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
@@ -13,6 +11,8 @@ import { join, resolve } from 'node:path';
 import 'reflect-metadata';
 import { ZodError } from 'zod';
 
+import ApplicationException from '@exceptions/application.exception';
+
 import { Env } from './env';
 
 const kernel = fastify({
@@ -24,6 +24,7 @@ kernel.register(cors, {
     const allowedOrigins = [
       'https://demo.lowcodejs.org',
       'https://develop.lowcodejs.org',
+      'https://intranet.lowcodejs.org',
       'http://localhost:5173',
       'http://localhost:3000',
     ];
