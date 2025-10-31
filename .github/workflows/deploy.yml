@@ -5,18 +5,35 @@ on:
     workflows: ["Docker Build and Push"]
     types: [completed]
     branches: [develop, demo, intranet]
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'develop'
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Get branch name
         id: branch
-        run: echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_run" ]; then
+            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            echo "Triggered by workflow_run from branch: $BRANCH"
+            echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
+          else
+            BRANCH="${{ github.event.inputs.branch }}"
+            echo "Triggered by workflow_dispatch for branch: $BRANCH"
+          fi
+          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.branch.outputs.branch }}
 
       - name: Generate JWT keys and secrets
         run: |
@@ -36,7 +53,13 @@ jobs:
 
       - name: Generate docker-compose file
         run: |
-          envsubst < deployments/docker-compose-template.yml > docker-compose-generated.yml
+          echo "Branch: ${{ steps.branch.outputs.branch }}"
+          echo "Mongo Port: $MONGO_PORT"
+          echo "API Port: $API_PORT"
+          ls -la templates/
+          envsubst < templates/docker-compose-template.yml > docker-compose-generated.yml
+          echo "Generated docker-compose file:"
+          cat docker-compose-generated.yml
         env:
           BRANCH: ${{ steps.branch.outputs.branch }}
           DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
