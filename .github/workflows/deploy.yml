@@ -15,20 +15,14 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Get branch name
         id: branch
         run: |
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            BRANCH="${{ github.event.workflow_run.head_branch }}"
-            echo "Triggered by workflow_run from branch: $BRANCH"
-            echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
-          else
-            BRANCH="${{ github.event.inputs.branch }}"
-            echo "Triggered by workflow_dispatch for branch: $BRANCH"
-          fi
-          echo "branch=$BRANCH" >> $GITHUB_OUTPUT
+          echo "Workflow run head branch: ${{ github.event.workflow_run.head_branch }}"
+          echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
+          echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
 
       - name: Checkout repository
         uses: actions/checkout@v4
