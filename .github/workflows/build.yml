@@ -16,6 +16,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: 'api/package-lock.json'
 
       - name: Install API dependencies
         run: |
@@ -38,6 +39,7 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
+          cache-dependency-path: 'app/package-lock.json'
 
       - name: Install APP dependencies
         run: |
