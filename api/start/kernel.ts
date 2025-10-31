@@ -21,13 +21,7 @@ const kernel = fastify({
 
 kernel.register(cors, {
   origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://demo.lowcodejs.org',
-      'https://develop.lowcodejs.org',
-      'https://intranet.lowcodejs.org',
-      'http://localhost:5173',
-      'http://localhost:3000',
-    ];
+    const allowedOrigins = [Env.APP_CLIENT_URL, Env.APP_SERVER_URL];
 
     // Permitir requisições sem origin (ex: Postman, mobile apps)
     if (!origin) return callback(null, true);
