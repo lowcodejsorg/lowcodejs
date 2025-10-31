@@ -1,4 +1,4 @@
-name: Build, Docker and Deploy
+name: Build, Docker and Deploy to VPS (intranet, develop and demo)
 
 on:
   push:
