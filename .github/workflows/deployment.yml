@@ -5,22 +5,19 @@ on:
     branches: [develop, demo, intranet]
 
 jobs:
-  deployment:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Get branch name
-        id: branch
-        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'api/package-lock.json'
 
-      # Build API
       - name: Install API dependencies
         run: |
           cd api
@@ -31,7 +28,13 @@ jobs:
           cd api
           npm run build
 
-      # Build APP
+      - name: Setup Node.js for APP
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: 'app/package-lock.json'
+
       - name: Install APP dependencies
         run: |
           cd app
@@ -42,7 +45,17 @@ jobs:
           cd app
           npm run build
 
-      # Docker Setup
+  docker:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -52,7 +65,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Build and Push API Docker Image
       - name: Build and push API image
         uses: docker/build-push-action@v5
         with:
@@ -63,7 +75,6 @@ jobs:
             APP_SERVER_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
             APP_CLIENT_URL=https://${{ steps.branch.outputs.branch }}.lowcodejs.org
 
-      # Build and Push APP Docker Image
       - name: Build and push APP image
         uses: docker/build-push-action@v5
         with:
@@ -73,7 +84,17 @@ jobs:
           build-args: |
             VITE_API_BASE_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
 
-      # Generate JWT keys and secrets
+  deploy-to-vps:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
       - name: Generate JWT keys and secrets
         run: |
           cd api
@@ -90,7 +111,6 @@ jobs:
           echo "JWT_PUBLIC_KEY=$JWT_PUBLIC_KEY" >> $GITHUB_ENV
           echo "COOKIE_SECRET=$COOKIE_SECRET" >> $GITHUB_ENV
 
-      # Generate docker-compose file
       - name: Generate docker-compose file
         run: |
           echo "Branch: ${{ steps.branch.outputs.branch }}"
@@ -109,7 +129,6 @@ jobs:
           EMAIL_PROVIDER_HOST: ${{ secrets.EMAIL_PROVIDER_HOST }}
           EMAIL_PROVIDER_PORT: ${{ secrets.EMAIL_PROVIDER_PORT }}
 
-      # Deploy to VPS
       - name: Upload docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
