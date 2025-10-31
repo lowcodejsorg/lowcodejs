@@ -1,42 +1,79 @@
-name: Deploy to VPS
+name: Build, Docker and Deploy
 
 on:
-  workflow_run:
-    workflows: ["Docker Build and Push"]
-    types: [completed]
+  push:
     branches: [develop, demo, intranet]
-  workflow_dispatch:
-    inputs:
-      branch:
-        description: 'Branch to deploy'
-        required: true
-        default: 'develop'
 
 jobs:
-  deploy:
+  deployment:
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     steps:
-      - name: Get branch name
-        id: branch
-        run: |
-          echo "Event name: ${{ github.event_name }}"
-          if [ "${{ github.event_name }}" = "workflow_run" ]; then
-            echo "Workflow run name: ${{ github.event.workflow_run.name }}"
-            echo "Workflow run head branch: ${{ github.event.workflow_run.head_branch }}"
-            echo "Workflow run conclusion: ${{ github.event.workflow_run.conclusion }}"
-            echo "Workflow run status: ${{ github.event.workflow_run.status }}"
-            echo "branch=${{ github.event.workflow_run.head_branch }}" >> $GITHUB_OUTPUT
-          else
-            echo "Manual dispatch for branch: ${{ github.event.inputs.branch }}"
-            echo "branch=${{ github.event.inputs.branch }}" >> $GITHUB_OUTPUT
-          fi
-
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ steps.branch.outputs.branch }}
 
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # Build API
+      - name: Install API dependencies
+        run: |
+          cd api
+          npm install
+
+      - name: Build API
+        run: |
+          cd api
+          npm run build
+
+      # Build APP
+      - name: Install APP dependencies
+        run: |
+          cd app
+          npm install
+
+      - name: Build APP
+        run: |
+          cd app
+          npm run build
+
+      # Docker Setup
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # Build and Push API Docker Image
+      - name: Build and push API image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./api
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:${{ steps.branch.outputs.branch }}
+          build-args: |
+            APP_SERVER_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
+            APP_CLIENT_URL=https://${{ steps.branch.outputs.branch }}.lowcodejs.org
+
+      # Build and Push APP Docker Image
+      - name: Build and push APP image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ steps.branch.outputs.branch }}
+          build-args: |
+            VITE_API_BASE_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
+
+      # Generate JWT keys and secrets
       - name: Generate JWT keys and secrets
         run: |
           cd api
@@ -53,12 +90,12 @@ jobs:
           echo "JWT_PUBLIC_KEY=$JWT_PUBLIC_KEY" >> $GITHUB_ENV
           echo "COOKIE_SECRET=$COOKIE_SECRET" >> $GITHUB_ENV
 
+      # Generate docker-compose file
       - name: Generate docker-compose file
         run: |
           echo "Branch: ${{ steps.branch.outputs.branch }}"
           echo "Mongo Port: $MONGO_PORT"
           echo "API Port: $API_PORT"
-          ls -la templates/
           envsubst < templates/docker-compose-template.yml > docker-compose-generated.yml
           echo "Generated docker-compose file:"
           cat docker-compose-generated.yml
@@ -72,6 +109,7 @@ jobs:
           EMAIL_PROVIDER_HOST: ${{ secrets.EMAIL_PROVIDER_HOST }}
           EMAIL_PROVIDER_PORT: ${{ secrets.EMAIL_PROVIDER_PORT }}
 
+      # Deploy to VPS
       - name: Upload docker-compose to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
