@@ -94,7 +94,7 @@ kernel.setErrorHandler((error, _, response) => {
     });
   }
   if (error instanceof ZodError) {
-    console.error('zod error', error);
+    console.error('ZOD ERROR', error);
     // const errors = error.errors.map((issue) => ({
     // message: issue.message,
     // }));
@@ -155,7 +155,7 @@ kernel.register(bootstrap, {
   mask: /\.controller\.(t|j)s$/,
 });
 
-kernel.get('/openapi.json', async (request, reply) => {
+kernel.get('/openapi.json', async function () {
   return kernel.swagger();
 });
 

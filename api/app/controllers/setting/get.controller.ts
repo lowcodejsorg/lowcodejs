@@ -3,6 +3,8 @@ import { Controller, GET } from 'fastify-decorators';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
+import { Env } from '@start/env';
+
 @Controller({
   route: '/setting',
 })
@@ -56,15 +58,45 @@ export default class {
                 description: 'Maximum files per upload',
                 examples: ['5'],
               },
-              FILE_UPLOAD_PATH: {
-                type: 'string',
-                description: 'File storage path',
-                examples: ['./_storage'],
-              },
               PAGINATION_PER_PAGE: {
                 type: 'string',
                 description: 'Default items per page',
                 examples: ['20'],
+              },
+              BASE_URL: {
+                type: 'string',
+                description: 'Application base URL',
+                examples: ['http://localhost:3000'],
+              },
+              DATABASE_URL: {
+                type: 'string',
+                description: 'MongoDB connection URL',
+                examples: ['mongodb://localhost:27017/lowcodejs'],
+              },
+              DATABASE_NAME: {
+                type: 'string',
+                description: 'Database name',
+                examples: ['lowcodejs'],
+              },
+              EMAIL_HOST: {
+                type: 'string',
+                description: 'Email server host',
+                examples: ['smtp.gmail.com'],
+              },
+              EMAIL_PORT: {
+                type: 'string',
+                description: 'Email server port',
+                examples: ['587'],
+              },
+              EMAIL_USER: {
+                type: 'string',
+                description: 'Email server username',
+                examples: ['user@example.com'],
+              },
+              EMAIL_PASSWORD: {
+                type: 'string',
+                description: 'Email server password',
+                examples: ['password123'],
               },
             },
             examples: [
@@ -74,8 +106,12 @@ export default class {
                 FILE_UPLOAD_ACCEPTED:
                   'jpg,jpeg,png,pdf,doc,docx,xls,xlsx,txt,zip,rar',
                 FILE_UPLOAD_MAX_FILES_PER_UPLOAD: '5',
-                FILE_UPLOAD_PATH: './_storage',
                 PAGINATION_PER_PAGE: '20',
+                DATABASE_URL: 'mongodb://localhost:27017/lowcodejs',
+                EMAIL_HOST: 'smtp.gmail.com',
+                EMAIL_PORT: '587',
+                EMAIL_USER: 'user@example.com',
+                EMAIL_PASSWORD: 'password123',
               },
             ],
           },
@@ -152,6 +188,13 @@ export default class {
       }
     }
 
-    return response.send(settings);
+    return response.send({
+      ...settings,
+      DATABASE_URL: Env.DATABASE_URL,
+      EMAIL_HOST: Env.EMAIL_PROVIDER_HOST,
+      EMAIL_PORT: Env.EMAIL_PROVIDER_PORT,
+      EMAIL_USER: Env.EMAIL_PROVIDER_USER,
+      EMAIL_PASSWORD: Env.EMAIL_PROVIDER_PASSWORD,
+    });
   }
 }

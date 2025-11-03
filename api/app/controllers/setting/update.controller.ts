@@ -30,6 +30,14 @@ export default class {
             'fileUploadAccepted',
             'fileUploadPath',
             'paginationPerPage',
+            'baseUrl',
+            'databaseUrl',
+            'databaseName',
+            'emailHost',
+            'emailPort',
+            'emailUser',
+            'emailPassword',
+            'emailFrom',
           ],
           properties: {
             locale: {
@@ -71,6 +79,57 @@ export default class {
               pattern: '^[0-9]+$',
               description: 'Default number of items per page (numeric string)',
               examples: ['20', '50', '100'],
+            },
+            baseUrl: {
+              type: 'string',
+              minLength: 1,
+              description: 'Application base URL',
+              examples: ['http://localhost:3000', 'https://app.example.com'],
+            },
+            databaseUrl: {
+              type: 'string',
+              minLength: 1,
+              description: 'MongoDB connection URL',
+              examples: [
+                'mongodb://localhost:27017/lowcodejs',
+                'mongodb://user:pass@host:port/db',
+              ],
+            },
+            databaseName: {
+              type: 'string',
+              minLength: 1,
+              description: 'Database name',
+              examples: ['lowcodejs', 'production_db'],
+            },
+            emailHost: {
+              type: 'string',
+              minLength: 1,
+              description: 'Email server host',
+              examples: ['smtp.gmail.com', 'smtp.sendgrid.net'],
+            },
+            emailPort: {
+              type: 'string',
+              pattern: '^[0-9]+$',
+              description: 'Email server port (numeric string)',
+              examples: ['587', '465', '25'],
+            },
+            emailUser: {
+              type: 'string',
+              minLength: 1,
+              description: 'Email server username',
+              examples: ['user@example.com', 'apikey'],
+            },
+            emailPassword: {
+              type: 'string',
+              minLength: 1,
+              description: 'Email server password or API key',
+              examples: ['password123', 'SG.xxxxx'],
+            },
+            emailFrom: {
+              type: 'string',
+              minLength: 1,
+              description: 'Default sender email address',
+              examples: ['noreply@example.com', 'support@app.com'],
             },
           },
         },
@@ -181,6 +240,12 @@ export default class {
       fileUploadAccepted: z.string().min(1),
       fileUploadPath: z.string().min(1),
       paginationPerPage: z.string().min(1),
+      databaseUrl: z.string().min(1),
+      databaseName: z.string().min(1),
+      emailHost: z.string().min(1),
+      emailPort: z.string().min(1),
+      emailUser: z.string().min(1),
+      emailPassword: z.string().min(1),
     });
 
     try {
@@ -190,8 +255,13 @@ export default class {
         fileUploadMaxSize,
         fileUploadAccepted,
         fileUploadMaxFilesPerUpload,
-        fileUploadPath,
         paginationPerPage,
+        databaseUrl,
+        databaseName,
+        emailHost,
+        emailPort,
+        emailUser,
+        emailPassword,
       } = bodySchema.parse(request.body);
 
       // const pathname = join(process.cwd(), '_system', `${filename}.properties`);
@@ -237,17 +307,52 @@ export default class {
         );
       }
 
-      if (fileUploadPath) {
-        fileContent = fileContent.replace(
-          /FILE_UPLOAD_PATH=.*/,
-          `FILE_UPLOAD_PATH=${fileUploadPath}`,
-        );
-      }
-
       if (paginationPerPage) {
         fileContent = fileContent.replace(
           /PAGINATION_PER_PAGE=.*/,
           `PAGINATION_PER_PAGE=${paginationPerPage}`,
+        );
+      }
+
+      if (databaseUrl) {
+        fileContent = fileContent.replace(
+          /DATABASE_URL=.*/,
+          `DATABASE_URL=${databaseUrl}`,
+        );
+      }
+
+      if (databaseName) {
+        fileContent = fileContent.replace(
+          /DATABASE_NAME=.*/,
+          `DATABASE_NAME=${databaseName}`,
+        );
+      }
+
+      if (emailHost) {
+        fileContent = fileContent.replace(
+          /EMAIL_HOST=.*/,
+          `EMAIL_HOST=${emailHost}`,
+        );
+      }
+
+      if (emailPort) {
+        fileContent = fileContent.replace(
+          /EMAIL_PORT=.*/,
+          `EMAIL_PORT=${emailPort}`,
+        );
+      }
+
+      if (emailUser) {
+        fileContent = fileContent.replace(
+          /EMAIL_USER=.*/,
+          `EMAIL_USER=${emailUser}`,
+        );
+      }
+
+      if (emailPassword) {
+        fileContent = fileContent.replace(
+          /EMAIL_PASSWORD=.*/,
+          `EMAIL_PASSWORD=${emailPassword}`,
         );
       }
 
