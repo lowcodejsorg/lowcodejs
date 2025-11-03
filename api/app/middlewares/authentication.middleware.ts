@@ -1,5 +1,6 @@
-import { JWTPayload } from '@core/entity.core';
 import { type FastifyReply, type FastifyRequest } from 'fastify';
+
+import type { JWTPayload } from '@core/entity.core';
 
 export async function AuthenticationMiddleware(
   request: FastifyRequest,

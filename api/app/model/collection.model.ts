@@ -1,5 +1,6 @@
-import type { Collection as Core } from '@core/entity.core';
 import mongoose from 'mongoose';
+
+import type { Collection as Core } from '@core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;

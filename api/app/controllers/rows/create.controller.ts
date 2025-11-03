@@ -3,7 +3,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
-import { AuthenticationMiddleware } from '@middlewares/authentication.middleware';
+import { CollaborationMiddleware } from '@middlewares/collaboration.middleware';
 import CreateRowUseCase from '@use-case/rows/create.use-case';
 import {
   CreateRowCollectionSchema,
@@ -23,12 +23,12 @@ export default class {
   @POST({
     url: '/:slug/rows',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [CollaborationMiddleware],
       schema: {
         tags: ['Rows'],
         summary: 'Create row',
         description:
-          'Creates a new row in a collection with dynamic schema based on collection fields. Handles FIELD_GROUP types by creating/updating nested collection entries.',
+          'Creates a new row in a collection with dynamic schema based on collection fields. Handles FIELD_GROUP types by creating/updating nested collection entries. Authentication is required only if collection collaboration is set to "restricted". Collections with "open" collaboration allow public access.',
         security: [{ cookieAuth: [] }],
         params: {
           type: 'object',

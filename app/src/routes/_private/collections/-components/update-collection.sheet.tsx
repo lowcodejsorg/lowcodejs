@@ -197,8 +197,8 @@ function UpdateForm({ collection, onClose }: UpdateFormProps) {
                   "COLLECTION_VALIDATION_NAME_REQUIRED",
                   "Name is required"
                 );
-              if (value.length > 50)
-                return "Name must be at most 50 characters";
+              if (value.length > 40)
+                return "Name must be at most 40 characters";
               if (
                 !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
               )
