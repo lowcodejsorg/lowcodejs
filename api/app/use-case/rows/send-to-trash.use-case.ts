@@ -1,13 +1,16 @@
-import { Either, left, right } from '@core/either.core';
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+import { Service } from 'fastify-decorators';
+import type z from 'zod';
+
+import type { Either } from '@core/either.core';
+import { left, right } from '@core/either.core';
 import { buildCollection, buildPopulate } from '@core/util.core';
 import ApplicationException from '@exceptions/application.exception';
 import { Collection } from '@model/collection.model';
-import {
+import type {
   GetRowCollectionByIdSchema,
   GetRowCollectionSlugSchema,
 } from '@validators/row-collection.validator';
-import { Service } from 'fastify-decorators';
-import z from 'zod';
 
 type Response = Either<ApplicationException, import('@core/entity.core').Row>;
 
@@ -31,38 +34,16 @@ export default class SendRowCollectionToTrashUseCase {
           ),
         );
 
-      let c;
-      try {
-        c = await buildCollection({
-          ...collection?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: collection?._id.toString(),
-        });
-      } catch (error) {
-        console.error('Model build error:', error);
-        return left(
-          ApplicationException.InternalServerError(
-            'Failed to build collection model',
-            'MODEL_BUILD_FAILED',
-          ),
-        );
-      }
+      const c = await buildCollection({
+        ...collection?.toJSON({
+          flattenObjectIds: true,
+        }),
+        _id: collection?._id.toString(),
+      });
 
-      let populate;
-      try {
-        populate = await buildPopulate(
-          collection?.fields as import('@core/entity.core').Field[],
-        );
-      } catch (error) {
-        console.error('Populate build error:', error);
-        return left(
-          ApplicationException.InternalServerError(
-            'Failed to build populate strategy',
-            'POPULATE_BUILD_FAILED',
-          ),
-        );
-      }
+      const populate = await buildPopulate(
+        collection?.fields as import('@core/entity.core').Field[],
+      );
 
       const row = await c.findOne({
         _id: payload._id,
@@ -81,15 +62,10 @@ export default class SendRowCollectionToTrashUseCase {
           ),
         );
 
-      await row
-        .set({
-          ...row.toJSON({
-            flattenObjectIds: true,
-          }),
-          trashed: true,
-          trashedAt: new Date(),
-        })
-        .save();
+      await row.updateOne({
+        trashed: true,
+        trashedAt: new Date(),
+      });
 
       const populated = await row.populate(populate);
 

@@ -6,6 +6,8 @@ import { CopyIcon } from "lucide-react";
 import React from "react";
 import { toast } from "sonner";
 import { ActionMenu } from "./action.menu";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 interface Props {
   data: Collection[];
@@ -72,6 +74,15 @@ export function GalleryList({ data, headers }: Props): React.ReactElement {
                   >
                     <CopyIcon className="w-4 h-4" />
                   </Button>
+                </div>
+                <div className="mt-2 pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    <span className="font-medium">Criado em:</span>{" "}
+                    {collection.createdAt
+                      ? format(new Date(collection.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })
+                      : "N/A"
+                    }
+                  </p>
                 </div>
               </div>
             </div>

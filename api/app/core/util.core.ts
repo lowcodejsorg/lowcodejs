@@ -174,6 +174,10 @@ export async function buildCollection(
     {
       ...collection?._schema,
       _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+      creator: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
     },
     {
       timestamps: true,
@@ -208,7 +212,7 @@ export function getRelationship(fields: Field[] = []): Field[] {
 
 export async function buildPopulate(
   fields?: Field[],
-): Promise<{ path: string }[]> {
+): Promise<{ path: string; model?: string; select?: string }[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
 
@@ -309,7 +313,14 @@ export async function buildPopulate(
     }
   }
 
-  return populate;
+  return [
+    ...populate,
+    {
+      path: 'creator',
+      model: 'User',
+      select: 'name email _id',
+    },
+  ];
 }
 
 type Query = Record<string, any>;

@@ -21,7 +21,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import React from "react";
-import { RowCollectionShowSheet } from "./row-collection-show-sheet";
+import { RowCollectionShowDialog } from "./row-collection-show-dialog";
 import { RowCollectionUpdateSheet } from "./row-collection-update-sheet";
 import { RowDeleteDialog } from "./row-delete-dialog";
 import { RowRemoveFromTrashDialog } from "./row-remove-from-trash-dialog";
@@ -175,7 +175,7 @@ export function ActionMenu({ row }: { row: Row }) {
           }
         </DropdownMenuContent>
 
-        <RowCollectionShowSheet
+        <RowCollectionShowDialog
           _id={row._id}
           ref={showRowCollectionButtonRef}
         />

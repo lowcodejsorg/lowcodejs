@@ -126,6 +126,6 @@ export default class {
       });
     }
 
-    return response.status(201).send({ message: 'User created successfully' });
+    return response.status(201).send();
   }
 }

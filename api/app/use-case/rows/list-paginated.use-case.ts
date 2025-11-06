@@ -71,19 +71,9 @@ export default class ListRowCollectionPaginatedUseCase {
         _id: collection?._id.toString(),
       });
 
-      console.info(
-        'initial query on list-paginated.use-case.ts',
-        JSON.stringify(payload, null, 2),
-      );
-
       const query = await buildQuery(
         payload,
         collection?.fields as import('@core/entity.core').Field[],
-      );
-
-      console.info(
-        'final query on list-paginated.use-case.ts',
-        JSON.stringify(query, null, 2),
       );
 
       const order = buildOrder(

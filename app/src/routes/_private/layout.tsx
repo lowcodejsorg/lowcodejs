@@ -1,18 +1,23 @@
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { APP_ID } from "@/lib/entity";
 import { createFileRoute, Outlet } from "@tanstack/react-router";
 import { Header } from "./-layout/header";
 import { Sidebar } from "./-layout/sidebar";
 
 export const Route = createFileRoute("/_private")({
   component: RouteComponent,
-  // loader: () => {
-  //   const id = localStorage.getItem(APP_ID);
-  //   if (!id)
-  //     return redirect({
-  //       to: "/",
-  //     });
-  // },
+  beforeLoad: ({ params, location }) => {
+    console.log(location);
+    const token = localStorage.getItem(APP_ID);
+
+    const slug = (params as { slug: string }).slug;
+
+    if (!token) {
+      window.location.href = "/public/collections/".concat(slug);
+      return;
+    }
+  },
 });
 
 function RouteComponent() {

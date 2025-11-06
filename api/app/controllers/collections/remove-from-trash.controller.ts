@@ -200,7 +200,7 @@ export default class {
                   },
                   visibility: {
                     type: 'string',
-                    enum: ['public', 'restricted'],
+                    enum: ['public', 'restricted', 'open', 'form'],
                     description: 'Visibility setting',
                   },
                   collaboration: {

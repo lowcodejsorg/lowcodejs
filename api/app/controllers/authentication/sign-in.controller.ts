@@ -169,6 +169,6 @@ export default class {
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias em ms
       });
 
-    return response.status(200).send({ message: 'Authentication successful' });
+    return response.status(200).send();
   }
 }

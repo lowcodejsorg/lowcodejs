@@ -104,7 +104,7 @@ export default class {
                   style: { type: 'string', enum: ['gallery', 'list'] },
                   visibility: {
                     type: 'string',
-                    enum: ['public', 'restricted'],
+                    enum: ['public', 'restricted', 'open', 'form'],
                   },
                   collaboration: {
                     type: 'string',

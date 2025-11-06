@@ -127,7 +127,7 @@ export interface Collection extends Base {
   type: 'collection' | 'field-group';
   configuration: {
     style: 'gallery' | 'list';
-    visibility: 'public' | 'restricted';
+    visibility: 'public' | 'restricted' | 'open' | 'form';
     collaboration: 'open' | 'restricted';
     administrators: string[] | User[];
     owner: string | User;

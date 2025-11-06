@@ -76,6 +76,14 @@ kernel.register(jwt, {
 
 kernel.register(multipart, {});
 
+// Hook para configurar headers de segurança permitindo iframe embedding
+kernel.addHook('onSend', async (request, reply, payload) => {
+  // Permitir iframe embedding para todas as origens (ou especifique domínios específicos)
+  reply.header('X-Frame-Options', 'ALLOWALL');
+  reply.header('Content-Security-Policy', 'frame-ancestors *');
+  return payload;
+});
+
 kernel.register(_static, {
   root: join(process.cwd(), '_storage'),
   prefix: '/storage/',

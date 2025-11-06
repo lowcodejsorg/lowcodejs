@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useParams } from "@tanstack/react-router";
+import { useLocation, useParams } from "@tanstack/react-router";
 import React from "react";
 
 type CollectionManagementProviderProps = {
@@ -24,6 +24,8 @@ export const CollectionManagementContext =
 export function CollectionManagementProvider({
   children,
 }: CollectionManagementProviderProps) {
+  const location = useLocation();
+  console.log(location);
   const params = useParams({ from: "/_private/collections/$slug/" });
   const [slug, setSlug] = React.useState<string>(params.slug);
 

@@ -134,14 +134,12 @@ export default class UpdateRowCollectionUseCase {
         payload[groupSlug] = processedGroupIds[groupSlug];
       }
 
-      await row
-        .set({
-          ...row.toJSON({
-            flattenObjectIds: true,
-          }),
-          ...payload,
-        })
-        .save();
+      await row.updateOne({
+        ...row.toJSON({
+          flattenObjectIds: true,
+        }),
+        ...payload,
+      });
 
       await row.populate(populate);
 

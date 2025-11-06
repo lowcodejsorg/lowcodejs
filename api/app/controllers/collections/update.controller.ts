@@ -72,7 +72,7 @@ export default class {
                 },
                 visibility: {
                   type: 'string',
-                  enum: ['public', 'restricted'],
+                  enum: ['public', 'restricted', 'open', 'form'],
                   default: 'public',
                   description:
                     'Visibility setting (note: restricted not restricted)',
@@ -195,7 +195,7 @@ export default class {
                   },
                   visibility: {
                     type: 'string',
-                    enum: ['public', 'restricted'],
+                    enum: ['public', 'restricted', 'open', 'form'],
                     description: 'Visibility setting',
                   },
                   collaboration: {

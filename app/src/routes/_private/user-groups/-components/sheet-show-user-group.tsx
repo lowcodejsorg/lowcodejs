@@ -55,7 +55,10 @@ export function UserGroupDetail({ data }: Props) {
         </CardHeader>
         <CardContent className="p-0">
           {data?.permissions?.map((permission) => (
-            <div className="flex flex-row items-center justify-between p-3 border-b">
+            <div
+              className="flex flex-row items-center justify-between p-3 border-b"
+              key={permission._id}
+            >
               <div className="flex flex-col gap-1">
                 <Label className="font-medium">{permission.name}</Label>
                 <span className="text-sm opacity-50">

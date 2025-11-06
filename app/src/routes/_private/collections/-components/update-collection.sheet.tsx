@@ -1,5 +1,8 @@
 import type { SearchableOption } from "@/components/custom/searchable-select";
-import { SimpleSelect } from "@/components/custom/simple-select";
+import {
+  SimpleSelect,
+  type SelectOption,
+} from "@/components/custom/simple-select";
 import { Uploader } from "@/components/custom/uploader";
 import { Button } from "@/components/ui/button";
 import {
@@ -141,6 +144,16 @@ function UpdateForm({ collection, onClose }: UpdateFormProps) {
 
   const onSubmit = form.handleSubmit(async (payload) => {
     if (update.status === "pending") return;
+
+    const visibility =
+      Array.from<SelectOption>(payload?.configuration?.visibility) ?? [];
+
+    const collaboration =
+      Array.from<SelectOption>(payload?.configuration?.collaboration) ?? [];
+
+    const administrators =
+      Array.from<SearchableOption>(payload.configuration?.administrators) ?? [];
+
     await update.mutateAsync({
       name: payload.name ?? collection.name,
       description: payload.description ?? null,
@@ -148,10 +161,9 @@ function UpdateForm({ collection, onClose }: UpdateFormProps) {
       configuration: {
         ...collection.configuration,
         ...payload.configuration,
-        administrators:
-          payload.configuration?.administrators?.map(
-            (a: SearchableOption) => a.value
-          ) ?? [],
+        administrators: administrators.map((a) => a.value),
+        visibility: visibility.flatMap((v) => v.value).join(),
+        collaboration: collaboration.flatMap((c) => c.value).join(),
       },
     });
   });
@@ -162,6 +174,48 @@ function UpdateForm({ collection, onClose }: UpdateFormProps) {
       label: a?.name,
       value: a?._id,
     }));
+
+  const VISIBILITY_MAPPER = {
+    public: "Pública",
+    restricted: "Restrita",
+    open: "Aberta",
+    form: "Formulário online",
+  };
+
+  const VISIBILITY_OPTION_LIST = [
+    {
+      value: "public",
+      label: VISIBILITY_MAPPER["public"],
+    },
+    {
+      value: "restricted",
+      label: VISIBILITY_MAPPER["restricted"],
+    },
+    {
+      value: "open",
+      label: VISIBILITY_MAPPER["open"],
+    },
+    {
+      value: "form",
+      label: VISIBILITY_MAPPER["form"],
+    },
+  ];
+
+  const COLLABORATION_MAPPER = {
+    restricted: "Restrita",
+    open: "Aberta",
+  };
+
+  const COLLABORATION_OPTION_LIST = [
+    {
+      value: "restricted",
+      label: COLLABORATION_MAPPER["restricted"],
+    },
+    {
+      value: "open",
+      label: COLLABORATION_MAPPER["open"],
+    },
+  ];
 
   return (
     <Form {...form}>
@@ -310,49 +364,25 @@ function UpdateForm({ collection, onClose }: UpdateFormProps) {
         <FormField
           control={form.control}
           name="configuration.visibility"
-          defaultValue={collection?.configuration?.visibility ?? "public"}
+          defaultValue={[
+            {
+              label:
+                VISIBILITY_MAPPER[
+                  collection?.configuration
+                    ?.visibility as keyof typeof VISIBILITY_MAPPER
+                ],
+              value: collection?.configuration?.visibility,
+            },
+          ]}
           render={({ field }) => (
             <FormItem>
               <FormLabel>
                 {t("COLLECTION_SHEET_FIELD_VISIBILITY_LABEL", "Visibilidade")}
               </FormLabel>
               <SimpleSelect
-                options={[
-                  {
-                    value: "public",
-                    label: t(
-                      "COLLECTION_SHEET_FIELD_VISIBILITY_PUBLIC_OPTION",
-                      "Publica"
-                    ) as string,
-                  },
-                  {
-                    value: "restricted",
-                    label: t(
-                      "COLLECTION_SHEET_FIELD_VISIBILITY_RESTRICTED_OPTION",
-                      "Restrita"
-                    ) as string,
-                  },
-                ]}
-                selectedValues={
-                  field.value
-                    ? [
-                        {
-                          value: field.value,
-                          label:
-                            field.value === "public"
-                              ? (t(
-                                  "COLLECTION_SHEET_FIELD_VISIBILITY_PUBLIC_OPTION",
-                                  "Publica"
-                                ) as string)
-                              : (t(
-                                  "COLLECTION_SHEET_FIELD_VISIBILITY_RESTRICTED_OPTION",
-                                  "Restrita"
-                                ) as string),
-                        },
-                      ]
-                    : []
-                }
-                onChange={(selected) => field.onChange(selected[0]?.value)}
+                options={VISIBILITY_OPTION_LIST}
+                selectedValues={field.value}
+                onChange={field.onChange}
                 placeholder={
                   t(
                     "COLLECTION_SELECT_PLACEHOLDER",
@@ -373,49 +403,25 @@ function UpdateForm({ collection, onClose }: UpdateFormProps) {
         <FormField
           control={form.control}
           name="configuration.collaboration"
-          defaultValue={collection?.configuration?.collaboration ?? "open"}
+          defaultValue={[
+            {
+              label:
+                COLLABORATION_MAPPER[
+                  collection?.configuration
+                    ?.collaboration as keyof typeof COLLABORATION_MAPPER
+                ],
+              value: collection?.configuration?.collaboration,
+            },
+          ]}
           render={({ field }) => (
             <FormItem>
               <FormLabel>
                 {t("COLLECTION_SHEET_FIELD_COLLABORATOR_LABEL", "Colaboração")}
               </FormLabel>
               <SimpleSelect
-                options={[
-                  {
-                    value: "restricted",
-                    label: t(
-                      "COLLECTION_SHEET_FIELD_COLLABORATOR_RESTRICTED_OPTION",
-                      "Restrita, todas as contribuições devem ser revisadas e precisam de aprovação"
-                    ) as string,
-                  },
-                  {
-                    value: "open",
-                    label: t(
-                      "COLLECTION_SHEET_FIELD_COLLABORATOR_OPEN_OPTION",
-                      "Aberta, apenas as contribuições de edição e exclusão precisam de aprovação"
-                    ) as string,
-                  },
-                ]}
-                selectedValues={
-                  field.value
-                    ? [
-                        {
-                          value: field.value,
-                          label:
-                            field.value === "restricted"
-                              ? (t(
-                                  "COLLECTION_SHEET_FIELD_COLLABORATOR_RESTRICTED_OPTION",
-                                  "Restrita, todas as contribuições devem ser revisadas e precisam de aprovação"
-                                ) as string)
-                              : (t(
-                                  "COLLECTION_SHEET_FIELD_COLLABORATOR_OPEN_OPTION",
-                                  "Aberta, apenas as contribuições de edição e exclusão precisam de aprovação"
-                                ) as string),
-                        },
-                      ]
-                    : []
-                }
-                onChange={(selected) => field.onChange(selected[0]?.value)}
+                options={COLLABORATION_OPTION_LIST}
+                selectedValues={field.value}
+                onChange={field.onChange}
                 placeholder={
                   t(
                     "COLLECTION_SELECT_PLACEHOLDER",

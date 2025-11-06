@@ -2,7 +2,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
-import { AuthenticationMiddleware } from '@middlewares/authentication.middleware';
+import { ListVisibilityMiddleware } from '@middlewares/list-visibility.middleware';
 import ListRowPaginatedUseCase from '@use-case/rows/list-paginated.use-case';
 import {
   GetRowCollectionQuerySchema,
@@ -23,7 +23,7 @@ export default class {
   @GET({
     url: '/:slug/rows/paginated',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [ListVisibilityMiddleware],
       schema: {
         tags: ['Rows'],
         summary: 'List rows paginated',

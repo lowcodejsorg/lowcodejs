@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import {
@@ -34,7 +35,8 @@ interface Props {
 
 function FieldGroupFilters({ field }: { field: Field }) {
   const search = useSearch({
-    from: "/_private/collections/$slug/",
+    // from: "/_private/collections/$slug/",
+    strict: false,
   });
 
   const collection = useQuery({
@@ -192,12 +194,14 @@ function CollectionFiltersForm({ onClose }: Props) {
   const { t } = useI18n();
   const navigate = useNavigate();
   const search = useSearch({
-    from: "/_private/collections/$slug/",
+    strict: false,
   });
 
-  const { slug } = useParams({
-    from: "/_private/collections/$slug/",
+  const params = useParams({
+    strict: false,
   });
+
+  const slug = (params as { slug: string }).slug;
 
   const collection = useQuery({
     queryKey: ["/collections/".concat(slug), slug],
@@ -480,13 +484,65 @@ export function CollectionFiltersSheet() {
   const { t } = useI18n();
   const [open, setOpen] = React.useState(false);
 
+  const params = useParams({
+    strict: false,
+  });
+
+  const search = useSearch({
+    strict: false,
+  });
+
+  const slug = (params as { slug: string }).slug;
+
+  const collection = useQuery({
+    queryKey: ["/collections/".concat(slug), slug],
+    queryFn: async () => {
+      const route = "/collections/".concat(slug);
+      const response = await API.get<Collection>(route);
+      return response.data;
+    },
+    enabled: Boolean(slug),
+  });
+
+  const getActiveFiltersCount = (): number => {
+    let count = 0;
+    if (!collection.data?.fields) return 0;
+
+    const processed = new Set<string>();
+
+    for (let [key] of Object.entries(search)) {
+      key = key.replace(/-(?:initial|final)$/, "");
+
+      const field = collection.data.fields?.find((field) => field.slug === key);
+
+      if (!field || field.slug !== key || processed.has(field.slug)) continue;
+
+      processed.add(field.slug);
+      count++;
+    }
+
+    return count;
+  };
+
+  const activeFiltersCount = getActiveFiltersCount();
+
   return (
     <Root open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <Button className={cn("shadow-none p-1 h-auto")} variant="outline">
-          <FilterIcon className="size-4" />
-          <span>{t("COLLECTION_BUTTON_FILTER_LABEL", "Filtro")}</span>
-        </Button>
+        <div className="relative">
+          <Button className={cn("shadow-none p-1 h-auto")} variant="outline">
+            <FilterIcon className="size-4" />
+            <span>{t("COLLECTION_BUTTON_FILTER_LABEL", "Filtro")}</span>
+          </Button>
+          {activeFiltersCount > 0 && (
+            <Badge
+              variant="destructive"
+              className="absolute -top-1 -right-1 h-4 w-4 p-0 text-[10px] flex items-center justify-center rounded-full"
+            >
+              {activeFiltersCount}
+            </Badge>
+          )}
+        </div>
       </SheetTrigger>
       <SheetContent className="flex flex-col py-4 px-6 gap-5 sm:max-w-2xl overflow-y-auto">
         <SheetHeader className="px-0">

@@ -31,7 +31,7 @@ const Configuration = new mongoose.Schema(
     },
     visibility: {
       type: String,
-      enum: ['public', 'restricted'],
+      enum: ['public', 'restricted', 'open', 'form'],
       default: 'restricted',
     },
     collaboration: {

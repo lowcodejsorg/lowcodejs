@@ -1316,8 +1316,8 @@ export interface Collection extends Base {
   type: "collection" | "field-group";
   configuration: {
     style: "gallery" | "list";
-    visibility: "public" | "restrict";
-    collaboration: "open" | "restrict";
+    visibility: "public" | "restricted" | "open" | "form";
+    collaboration: "open" | "restricted";
     administrators: User[];
     owner: User;
     fields: {
@@ -1337,8 +1337,8 @@ export interface CollectionPayload {
   fields: string[];
   configuration: {
     style: "gallery" | "list";
-    visibility: "public" | "restrict";
-    collaboration: "open" | "restrict";
+    visibility: "public" | "restricted" | "open" | "form";
+    collaboration: "open" | "restricted";
     administrators: string[];
     owner: string;
     fields: {
@@ -1380,7 +1380,9 @@ export interface Field extends Base {
   };
 }
 
-export interface Row extends Base, Record<string, any> {}
+export interface Row extends Base, Record<string, any> {
+  creator: User;
+}
 
 export interface Meta {
   total: number;

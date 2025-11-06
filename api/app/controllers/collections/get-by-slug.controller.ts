@@ -3,7 +3,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
-import { AuthenticationMiddleware } from '@middlewares/authentication.middleware';
+import { ListVisibilityMiddleware } from '@middlewares/list-visibility.middleware';
 import GetCollectionBySlugUseCase from '@use-case/collections/get-by-slug.use-case';
 import {
   GetCollectionBySlugSchema,
@@ -23,7 +23,7 @@ export default class {
   @GET({
     url: '/:slug',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [ListVisibilityMiddleware],
       schema: {
         tags: ['Collections'],
         summary: 'Get collection by slug',
@@ -234,7 +234,7 @@ export default class {
                   },
                   visibility: {
                     type: 'string',
-                    enum: ['public', 'restricted'],
+                    enum: ['public', 'restricted', 'open', 'form'],
                     description: 'Visibility setting',
                   },
                   collaboration: {

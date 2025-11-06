@@ -57,19 +57,12 @@ const SystemSettingSchema = z.object({
   fileUploadAccepted: z
     .string()
     .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_FILE_ACCEPTED"),
-  fileUploadPath: z
-    .string()
-    .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_FILE_PATH"),
   paginationPerPage: z
     .string()
     .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_PAGINATION"),
-  baseUrl: z.string().min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_BASE_URL"),
   databaseUrl: z
     .string()
     .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_DATABASE_URL"),
-  databaseName: z
-    .string()
-    .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_DATABASE_NAME"),
   emailHost: z
     .string()
     .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_EMAIL_HOST"),
@@ -82,9 +75,6 @@ const SystemSettingSchema = z.object({
   emailPassword: z
     .string()
     .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_EMAIL_PASSWORD"),
-  emailFrom: z
-    .string()
-    .min(1, "SYSTEM_ROUTE_FORM_VALIDATION_REQUIRED_EMAIL_FROM"),
 });
 
 function SystemSettingForm({ setting }: { setting: SystemSetting }) {
@@ -98,6 +88,8 @@ function SystemSettingForm({ setting }: { setting: SystemSetting }) {
   const form = useForm<z.infer<typeof SystemSettingSchema>>({
     resolver: zodResolver(SystemSettingSchema),
   });
+
+  console.log(form.formState.errors);
 
   const update = useMutation({
     mutationFn: async function (payload: z.infer<typeof SystemSettingSchema>) {
@@ -263,69 +255,6 @@ function SystemSettingForm({ setting }: { setting: SystemSetting }) {
                     }
                     className="w-full max-w-xs"
                   />
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        {/* Configurações Gerais */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <SettingsIcon className="w-5 h-5" />
-              {t("SYSTEM_ROUTE_GENERAL_SETTINGS_TITLE", "General Settings")}
-            </CardTitle>
-            <CardDescription>
-              {t(
-                "SYSTEM_ROUTE_GENERAL_SETTINGS_DESCRIPTION",
-                "Configure general application settings"
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              defaultValue={setting.BASE_URL}
-              control={form.control}
-              name="baseUrl"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t("SYSTEM_ROUTE_BASE_URL_LABEL", "Base URL")}
-                  </FormLabel>
-                  <FormDescription>
-                    {t(
-                      "SYSTEM_ROUTE_BASE_URL_DESCRIPTION",
-                      "Base URL for the application"
-                    )}
-                  </FormDescription>
-                  <FormControl>
-                    <Input placeholder="https://localhost:3000" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              defaultValue={setting.FILE_UPLOAD_PATH}
-              control={form.control}
-              name="fileUploadPath"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>
-                    {t("SYSTEM_ROUTE_FILE_UPLOAD_PATH_LABEL", "Upload Path")}
-                  </FormLabel>
-                  <FormDescription>
-                    {t(
-                      "SYSTEM_ROUTE_FILE_UPLOAD_PATH_DESCRIPTION",
-                      "Directory path for file uploads"
-                    )}
-                  </FormDescription>
-                  <FormControl>
-                    <Input placeholder="/uploads" {...field} />
-                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}

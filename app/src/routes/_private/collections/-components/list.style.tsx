@@ -17,6 +17,8 @@ import {
 import { useI18n } from "@/hooks/i18.hook";
 import type { Collection } from "@/lib/entity";
 import { Link, useRouter, useSearch } from "@tanstack/react-router";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -104,7 +106,8 @@ export function ListStyle({ data, headers }: Props): React.ReactElement {
                         });
                       }}
                     >
-                      <ArrowDownIcon /> {t("COLLECTION_SORT_DESCENDING", "Descending")}
+                      <ArrowDownIcon />{" "}
+                      {t("COLLECTION_SORT_DESCENDING", "Descending")}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -149,7 +152,10 @@ export function ListStyle({ data, headers }: Props): React.ReactElement {
                     toast(t("COLLECTION_TOAST_LINK_COPIED", "Link copied"), {
                       className:
                         "!bg-primary !text-primary-foreground !border-primary",
-                      description: t("COLLECTION_TOAST_LINK_COPIED_DESCRIPTION", "The link was copied successfully"),
+                      description: t(
+                        "COLLECTION_TOAST_LINK_COPIED_DESCRIPTION",
+                        "The link was copied successfully"
+                      ),
                       descriptionClassName: "!text-primary-foreground",
                       closeButton: true,
                     });
@@ -158,6 +164,13 @@ export function ListStyle({ data, headers }: Props): React.ReactElement {
                   <CopyIcon className="size-4" />
                 </Button>
               </div>
+            </TableCell>
+            <TableCell className="text-sm text-muted-foreground">
+              {collection.createdAt
+                ? format(new Date(collection.createdAt), "dd/MM/yyyy HH:mm", {
+                    locale: ptBR,
+                  })
+                : "N/A"}
             </TableCell>
 
             <TableCell className="w-[80px]">

@@ -1,14 +1,15 @@
 import { Service } from 'fastify-decorators';
+import type z from 'zod';
 
-import { Either, left, right } from '@core/either.core';
+import type { Either } from '@core/either.core';
+import { left, right } from '@core/either.core';
 import { buildCollection } from '@core/util.core';
 import ApplicationException from '@exceptions/application.exception';
 import { Collection } from '@model/collection.model';
-import {
+import type {
   GetRowCollectionByIdSchema,
   GetRowCollectionSlugSchema,
 } from '@validators/row-collection.validator';
-import z from 'zod';
 
 type Response = Either<ApplicationException, null>;
 
@@ -31,23 +32,12 @@ export default class DeleteRowCollectionUseCase {
           ),
         );
 
-      let c;
-      try {
-        c = await buildCollection({
-          ...collection?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: collection?._id.toString(),
-        });
-      } catch (error) {
-        console.error('Model build error:', error);
-        return left(
-          ApplicationException.InternalServerError(
-            'Failed to build collection model',
-            'MODEL_BUILD_FAILED',
-          ),
-        );
-      }
+      const c = await buildCollection({
+        ...collection?.toJSON({
+          flattenObjectIds: true,
+        }),
+        _id: collection?._id.toString(),
+      });
 
       const row = await c.findOneAndDelete({
         _id: payload._id,

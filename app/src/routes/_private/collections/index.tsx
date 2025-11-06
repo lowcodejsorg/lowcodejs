@@ -52,7 +52,12 @@ function RouteComponent() {
     },
   });
 
-  const headers = t("COLLECTION_ROUTE_TABLE_HEADERS", ["Name", "Type", "Link"]);
+  const headers = t("COLLECTION_ROUTE_TABLE_HEADERS", [
+    "Name",
+    "Type",
+    "Link",
+    "Created At",
+  ]);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

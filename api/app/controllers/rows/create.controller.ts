@@ -3,7 +3,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
-import { CollaborationMiddleware } from '@middlewares/collaboration.middleware';
+import { ListVisibilityMiddleware } from '@middlewares/list-visibility.middleware';
 import CreateRowUseCase from '@use-case/rows/create.use-case';
 import {
   CreateRowCollectionSchema,
@@ -23,7 +23,7 @@ export default class {
   @POST({
     url: '/:slug/rows',
     options: {
-      onRequest: [CollaborationMiddleware],
+      onRequest: [ListVisibilityMiddleware],
       schema: {
         tags: ['Rows'],
         summary: 'Create row',
@@ -191,7 +191,11 @@ export default class {
       ...GetRowCollectionSlugSchema.parse(request.params),
     };
 
-    const result = await this.useCase.execute({ ...payload, ...params });
+    const result = await this.useCase.execute({
+      ...payload,
+      ...params,
+      creator: request.user.sub,
+    });
 
     if (result.isLeft()) {
       const error = result.value;

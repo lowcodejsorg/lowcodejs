@@ -75,6 +75,14 @@ export function CreateFieldCollectionForm({
           return {
             ...old,
             fields: [...old.fields, data],
+            configuration: {
+              ...old.configuration,
+              fields: {
+                ...old.configuration.fields,
+                orderForm: [...old.configuration.fields.orderForm, data.slug],
+                orderList: [...old.configuration.fields.orderList, data.slug],
+              },
+            },
           };
         }
       );
@@ -90,7 +98,22 @@ export function CreateFieldCollectionForm({
               if (collection.slug === management.slug) {
                 return {
                   ...collection,
+                  // fields: [...collection.fields, data],
                   fields: [...collection.fields, data],
+                  configuration: {
+                    ...collection.configuration,
+                    fields: {
+                      ...collection.configuration.fields,
+                      orderForm: [
+                        ...collection.configuration.fields.orderForm,
+                        data.slug,
+                      ],
+                      orderList: [
+                        ...collection.configuration.fields.orderList,
+                        data.slug,
+                      ],
+                    },
+                  },
                 };
               }
               return collection;

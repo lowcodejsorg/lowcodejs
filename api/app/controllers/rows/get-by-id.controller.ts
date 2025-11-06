@@ -3,7 +3,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
-import { AuthenticationMiddleware } from '@middlewares/authentication.middleware';
+import { ListVisibilityMiddleware } from '@middlewares/list-visibility.middleware';
 import GetRowByIdUseCase from '@use-case/rows/get-by-id.use-case';
 import {
   GetRowCollectionByIdSchema,
@@ -24,7 +24,7 @@ export default class {
   @GET({
     url: '/:slug/rows/:_id',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [ListVisibilityMiddleware],
       schema: {
         tags: ['Rows'],
         summary: 'Get row by ID',

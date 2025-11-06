@@ -28,16 +28,12 @@ export default class {
             'fileUploadMaxSize',
             'fileUploadMaxFilesPerUpload',
             'fileUploadAccepted',
-            'fileUploadPath',
             'paginationPerPage',
-            'baseUrl',
             'databaseUrl',
-            'databaseName',
             'emailHost',
             'emailPort',
             'emailUser',
             'emailPassword',
-            'emailFrom',
           ],
           properties: {
             locale: {
@@ -68,23 +64,11 @@ export default class {
                 'jpg,jpeg,png,pdf,doc,docx,xls,xlsx,txt,zip,rar',
               ],
             },
-            fileUploadPath: {
-              type: 'string',
-              minLength: 1,
-              description: 'File storage directory path',
-              examples: ['./_storage', './uploads', '/var/uploads'],
-            },
             paginationPerPage: {
               type: 'string',
               pattern: '^[0-9]+$',
               description: 'Default number of items per page (numeric string)',
               examples: ['20', '50', '100'],
-            },
-            baseUrl: {
-              type: 'string',
-              minLength: 1,
-              description: 'Application base URL',
-              examples: ['http://localhost:3000', 'https://app.example.com'],
             },
             databaseUrl: {
               type: 'string',
@@ -94,12 +78,6 @@ export default class {
                 'mongodb://localhost:27017/lowcodejs',
                 'mongodb://user:pass@host:port/db',
               ],
-            },
-            databaseName: {
-              type: 'string',
-              minLength: 1,
-              description: 'Database name',
-              examples: ['lowcodejs', 'production_db'],
             },
             emailHost: {
               type: 'string',
@@ -124,12 +102,6 @@ export default class {
               minLength: 1,
               description: 'Email server password or API key',
               examples: ['password123', 'SG.xxxxx'],
-            },
-            emailFrom: {
-              type: 'string',
-              minLength: 1,
-              description: 'Default sender email address',
-              examples: ['noreply@example.com', 'support@app.com'],
             },
           },
         },
@@ -238,10 +210,8 @@ export default class {
       fileUploadMaxSize: z.string().min(1),
       fileUploadMaxFilesPerUpload: z.string().min(1),
       fileUploadAccepted: z.string().min(1),
-      fileUploadPath: z.string().min(1),
       paginationPerPage: z.string().min(1),
       databaseUrl: z.string().min(1),
-      databaseName: z.string().min(1),
       emailHost: z.string().min(1),
       emailPort: z.string().min(1),
       emailUser: z.string().min(1),
@@ -257,7 +227,6 @@ export default class {
         fileUploadMaxFilesPerUpload,
         paginationPerPage,
         databaseUrl,
-        databaseName,
         emailHost,
         emailPort,
         emailUser,
@@ -318,13 +287,6 @@ export default class {
         fileContent = fileContent.replace(
           /DATABASE_URL=.*/,
           `DATABASE_URL=${databaseUrl}`,
-        );
-      }
-
-      if (databaseName) {
-        fileContent = fileContent.replace(
-          /DATABASE_NAME=.*/,
-          `DATABASE_NAME=${databaseName}`,
         );
       }
 

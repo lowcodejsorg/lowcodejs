@@ -40,6 +40,38 @@ export function FilterCollectionForm({ onClose }: Props) {
 
   const form = useForm();
 
+  const [debounceTimer, setDebounceTimer] = React.useState<NodeJS.Timeout | null>(null);
+
+  const handleFieldChange = React.useCallback((value: string) => {
+    if (debounceTimer) {
+      clearTimeout(debounceTimer);
+    }
+
+    const timer = setTimeout(() => {
+      if (value.trim() === "") {
+        router.navigate({
+          // @ts-ignore
+          search: (state) => ({
+            ...state,
+            name: undefined,
+            page: 1,
+            perPage: 50,
+          }),
+        });
+      }
+    }, 300);
+
+    setDebounceTimer(timer);
+  }, [router, debounceTimer]);
+
+  React.useEffect(() => {
+    return () => {
+      if (debounceTimer) {
+        clearTimeout(debounceTimer);
+      }
+    };
+  }, [debounceTimer]);
+
   const onSubmit = form.handleSubmit((data) => {
     if (data["name"]) {
       router.navigate({
@@ -91,7 +123,9 @@ export function FilterCollectionForm({ onClose }: Props) {
                       ) as string
                     }
                     onChange={(event) => {
-                      onChange(event.target.value);
+                      const value = event.target.value;
+                      onChange(value);
+                      handleFieldChange(value);
                     }}
                     {...field}
                   />

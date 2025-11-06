@@ -17,10 +17,12 @@ import { Route as PrivateSettingsRouteImport } from './../routes/_private/settin
 import { Route as PrivateProfileRouteImport } from './../routes/_private/profile'
 import { Route as PrivateDashboardRouteImport } from './../routes/_private/dashboard'
 import { Route as AuthenticationSignUpRouteImport } from './../routes/_authentication/sign-up'
+import { Route as PublicCollectionsLayoutRouteImport } from './../routes/public/collections/layout'
 import { Route as PrivateUsersIndexRouteImport } from './../routes/_private/users/index'
 import { Route as PrivateUserGroupsIndexRouteImport } from './../routes/_private/user-groups/index'
 import { Route as PrivateCollectionsIndexRouteImport } from './../routes/_private/collections/index'
 import { Route as PrivateCollectionsSlugLayoutRouteImport } from './../routes/_private/collections/$slug/layout'
+import { Route as PublicCollectionsSlugIndexRouteImport } from './../routes/public/collections/$slug/index'
 import { Route as PrivateCollectionsSlugIndexRouteImport } from './../routes/_private/collections/$slug/index'
 
 const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
@@ -61,6 +63,11 @@ const AuthenticationSignUpRoute = AuthenticationSignUpRouteImport.update({
   path: '/sign-up',
   getParentRoute: () => AuthenticationLayoutRoute,
 } as any)
+const PublicCollectionsLayoutRoute = PublicCollectionsLayoutRouteImport.update({
+  id: '/public/collections',
+  path: '/public/collections',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivateUsersIndexRoute = PrivateUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -82,6 +89,12 @@ const PrivateCollectionsSlugLayoutRoute =
     path: '/collections/$slug',
     getParentRoute: () => PrivateLayoutRoute,
   } as any)
+const PublicCollectionsSlugIndexRoute =
+  PublicCollectionsSlugIndexRouteImport.update({
+    id: '/$slug/',
+    path: '/$slug/',
+    getParentRoute: () => PublicCollectionsLayoutRoute,
+  } as any)
 const PrivateCollectionsSlugIndexRoute =
   PrivateCollectionsSlugIndexRouteImport.update({
     id: '/',
@@ -90,6 +103,7 @@ const PrivateCollectionsSlugIndexRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/public/collections': typeof PublicCollectionsLayoutRouteWithChildren
   '/sign-up': typeof AuthenticationSignUpRoute
   '/dashboard': typeof PrivateDashboardRoute
   '/profile': typeof PrivateProfileRoute
@@ -101,8 +115,10 @@ export interface FileRoutesByFullPath {
   '/user-groups': typeof PrivateUserGroupsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/collections/$slug/': typeof PrivateCollectionsSlugIndexRoute
+  '/public/collections/$slug': typeof PublicCollectionsSlugIndexRoute
 }
 export interface FileRoutesByTo {
+  '/public/collections': typeof PublicCollectionsLayoutRouteWithChildren
   '/sign-up': typeof AuthenticationSignUpRoute
   '/dashboard': typeof PrivateDashboardRoute
   '/profile': typeof PrivateProfileRoute
@@ -113,11 +129,13 @@ export interface FileRoutesByTo {
   '/user-groups': typeof PrivateUserGroupsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/collections/$slug': typeof PrivateCollectionsSlugIndexRoute
+  '/public/collections/$slug': typeof PublicCollectionsSlugIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authentication': typeof AuthenticationLayoutRouteWithChildren
   '/_private': typeof PrivateLayoutRouteWithChildren
+  '/public/collections': typeof PublicCollectionsLayoutRouteWithChildren
   '/_authentication/sign-up': typeof AuthenticationSignUpRoute
   '/_private/dashboard': typeof PrivateDashboardRoute
   '/_private/profile': typeof PrivateProfileRoute
@@ -129,10 +147,12 @@ export interface FileRoutesById {
   '/_private/user-groups/': typeof PrivateUserGroupsIndexRoute
   '/_private/users/': typeof PrivateUsersIndexRoute
   '/_private/collections/$slug/': typeof PrivateCollectionsSlugIndexRoute
+  '/public/collections/$slug/': typeof PublicCollectionsSlugIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/public/collections'
     | '/sign-up'
     | '/dashboard'
     | '/profile'
@@ -144,8 +164,10 @@ export interface FileRouteTypes {
     | '/user-groups'
     | '/users'
     | '/collections/$slug/'
+    | '/public/collections/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/public/collections'
     | '/sign-up'
     | '/dashboard'
     | '/profile'
@@ -156,10 +178,12 @@ export interface FileRouteTypes {
     | '/user-groups'
     | '/users'
     | '/collections/$slug'
+    | '/public/collections/$slug'
   id:
     | '__root__'
     | '/_authentication'
     | '/_private'
+    | '/public/collections'
     | '/_authentication/sign-up'
     | '/_private/dashboard'
     | '/_private/profile'
@@ -171,11 +195,13 @@ export interface FileRouteTypes {
     | '/_private/user-groups/'
     | '/_private/users/'
     | '/_private/collections/$slug/'
+    | '/public/collections/$slug/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   AuthenticationLayoutRoute: typeof AuthenticationLayoutRouteWithChildren
   PrivateLayoutRoute: typeof PrivateLayoutRouteWithChildren
+  PublicCollectionsLayoutRoute: typeof PublicCollectionsLayoutRouteWithChildren
   RecoveryRequestCodeRoute: typeof RecoveryRequestCodeRoute
 }
 
@@ -237,6 +263,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticationSignUpRouteImport
       parentRoute: typeof AuthenticationLayoutRoute
     }
+    '/public/collections': {
+      id: '/public/collections'
+      path: '/public/collections'
+      fullPath: '/public/collections'
+      preLoaderRoute: typeof PublicCollectionsLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_private/users/': {
       id: '/_private/users/'
       path: '/users'
@@ -264,6 +297,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/collections/$slug'
       preLoaderRoute: typeof PrivateCollectionsSlugLayoutRouteImport
       parentRoute: typeof PrivateLayoutRoute
+    }
+    '/public/collections/$slug/': {
+      id: '/public/collections/$slug/'
+      path: '/$slug'
+      fullPath: '/public/collections/$slug'
+      preLoaderRoute: typeof PublicCollectionsSlugIndexRouteImport
+      parentRoute: typeof PublicCollectionsLayoutRoute
     }
     '/_private/collections/$slug/': {
       id: '/_private/collections/$slug/'
@@ -327,9 +367,24 @@ const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(
   PrivateLayoutRouteChildren,
 )
 
+interface PublicCollectionsLayoutRouteChildren {
+  PublicCollectionsSlugIndexRoute: typeof PublicCollectionsSlugIndexRoute
+}
+
+const PublicCollectionsLayoutRouteChildren: PublicCollectionsLayoutRouteChildren =
+  {
+    PublicCollectionsSlugIndexRoute: PublicCollectionsSlugIndexRoute,
+  }
+
+const PublicCollectionsLayoutRouteWithChildren =
+  PublicCollectionsLayoutRoute._addFileChildren(
+    PublicCollectionsLayoutRouteChildren,
+  )
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticationLayoutRoute: AuthenticationLayoutRouteWithChildren,
   PrivateLayoutRoute: PrivateLayoutRouteWithChildren,
+  PublicCollectionsLayoutRoute: PublicCollectionsLayoutRouteWithChildren,
   RecoveryRequestCodeRoute: RecoveryRequestCodeRoute,
 }
 export const routeTree = rootRouteImport

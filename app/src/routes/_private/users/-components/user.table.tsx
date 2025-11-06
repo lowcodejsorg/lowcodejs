@@ -106,7 +106,7 @@ export function TableUsers({ data, headers }: Props): React.ReactElement {
       </TableHeader>
       <TableBody>
         {data.map((user) => (
-          <UserTableRow user={user} />
+          <UserTableRow user={user} key={user?._id} />
         ))}
       </TableBody>
     </Table>
