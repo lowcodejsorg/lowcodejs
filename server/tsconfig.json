@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "@application/*": ["./application/*"],
+      "@bin/*": ["./bin/*"],
+      "@config/*": ["./config/*"],
+      "@database/*": ["./database/*"],
+      "@start/*": ["./start/*"]
+    },
+    "rootDirs": ["./application", "./bin", "./config", "./start", "./database"],
+    "typeRoots": ["_types", "./node_modules/@types"],
+    "target": "ES2024",
+    "module": "CommonJS",
+    "lib": ["ES2024"],
+    "rootDir": "./",
+    "outDir": "./build",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false,
+    "useDefineForClassFields": false,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "application",
+    "bin",
+    "config",
+    "start",
+    "database",
+    "_types",
+    "application/core"
+  ],
+  "exclude": ["node_modules", "build"]
+}

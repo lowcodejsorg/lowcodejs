@@ -1,0 +1,14 @@
+import z from 'zod';
+
+export const TableConfigurationSchema = z.object({
+  style: z.enum(['gallery', 'list']).default('list'),
+  visibility: z
+    .enum(['public', 'restricted', 'open', 'form'])
+    .default('public'),
+  collaboration: z.enum(['open', 'restricted']).default('open'),
+  administrators: z.array(z.string()).default([]),
+  fields: z.object({
+    orderList: z.array(z.string().trim()).default([]),
+    orderForm: z.array(z.string().trim()).default([]),
+  }),
+});

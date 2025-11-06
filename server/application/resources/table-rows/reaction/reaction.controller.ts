@@ -1,0 +1,52 @@
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
+
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+
+import { TableRowReactionSchema } from './reaction.schema';
+import TableRowReactionUseCase from './reaction.use-case';
+import {
+  TableRowReactionBodyValidator,
+  TableRowReactionParamValidator,
+} from './reaction.validator';
+
+@Controller({
+  route: 'tables',
+})
+export default class {
+  constructor(
+    // eslint-disable-next-line no-unused-vars
+    private readonly useCase: TableRowReactionUseCase = getInstanceByToken(
+      TableRowReactionUseCase,
+    ),
+  ) {}
+
+  @POST({
+    url: '/:slug/rows/:_id/reaction',
+    options: {
+      onRequest: [AuthenticationMiddleware],
+      schema: TableRowReactionSchema,
+    },
+  })
+  async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
+    const payload = TableRowReactionBodyValidator.parse(request.body);
+    const params = TableRowReactionParamValidator.parse(request.params);
+    const result = await this.useCase.execute({
+      ...payload,
+      ...params,
+      user: request.user.sub,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+
+      return response.status(error.code).send({
+        message: error.message,
+        code: error.code,
+        cause: error.cause,
+      });
+    }
+
+    return response.status(200).send(result.value);
+  }
+}

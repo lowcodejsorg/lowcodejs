@@ -17,6 +17,11 @@
 **/.env.develop
 **/.env
 
-**/generated/prisma
-
 **/coverage
+
+# Turborepo
+.turbo
+**/out/
+**/.next/cache
+
+./server/_system/setting.properties
