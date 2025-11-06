@@ -1,5 +1,6 @@
 import { Pagination } from "@/components/custom/pagination";
 import { Button } from "@/components/ui/button";
+import { useI18n } from "@/hooks/i18.hook";
 import { API } from "@/lib/api";
 import { type Collection, type Paginated, type Row } from "@/lib/entity";
 import { MetaDefault } from "@/lib/utils";
@@ -10,7 +11,8 @@ import {
   useRouter,
   useSearch,
 } from "@tanstack/react-router";
-import { ArrowLeftIcon } from "lucide-react";
+import { ArrowLeftIcon, Share2Icon } from "lucide-react";
+import { toast } from "sonner";
 import z from "zod";
 import { TrashButton } from "../-components/trash.button";
 import { CollectionConfigurationDropdown } from "./-components/collection-configuration-dropdown";
@@ -34,6 +36,7 @@ export const Route = createFileRoute("/_private/collections/$slug/")({
 });
 
 function RouteComponent() {
+  const { t } = useI18n();
   const router = useRouter();
 
   const search = useSearch({
@@ -97,7 +100,33 @@ function RouteComponent() {
             </Button>
 
             <div className="flex flex-col">
-              <h2 className="text-2xl font-medium">{collection?.data?.name}</h2>
+              <div className="inline-flex items-center gap-2">
+                <h2 className="text-2xl font-medium">
+                  {collection?.data?.name}
+                </h2>
+                <Button
+                  className="cursor-copy h-auto p-1"
+                  variant="outline"
+                  onClick={() => {
+                    const link = window.location.href;
+
+                    navigator.clipboard.writeText(link);
+
+                    toast(t("COLLECTION_TOAST_LINK_COPIED", "Link copied"), {
+                      className:
+                        "!bg-primary !text-primary-foreground !border-primary",
+                      description: t(
+                        "COLLECTION_TOAST_LINK_COPIED_DESCRIPTION",
+                        "The link was copied successfully"
+                      ),
+                      descriptionClassName: "!text-primary-foreground",
+                      closeButton: true,
+                    });
+                  }}
+                >
+                  <Share2Icon className="size-4" />
+                </Button>
+              </div>
             </div>
           </div>
 

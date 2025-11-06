@@ -22,15 +22,19 @@ import { DropdownMenuTrigger } from "@radix-ui/react-dropdown-menu";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
 import {
+  CodeIcon,
+  InfoIcon,
   PencilIcon,
   PlusIcon,
   SendToBackIcon,
   Settings2Icon,
 } from "lucide-react";
 import React from "react";
+import { toast } from "sonner";
 import { UpdateCollectionSheet } from "../../-components/update-collection.sheet";
 import { FieldCollectionCreateSheet } from "./field-collection-create-sheet";
 import { FieldManagerSheet } from "./field-manager-sheet";
+import { ApiEndpointsModal } from "./api-endpoints-modal";
 
 export function CollectionConfigurationDropdown() {
   const management = useCollectionManagement();
@@ -62,6 +66,10 @@ export function CollectionConfigurationDropdown() {
     React.useRef<HTMLButtonElement | null>(null);
 
   const createCollectionFieldButtonRef = React.useRef<HTMLButtonElement | null>(
+    null
+  );
+
+  const apiEndpointsModalButtonRef = React.useRef<HTMLButtonElement | null>(
     null
   );
 
@@ -202,6 +210,42 @@ export function CollectionConfigurationDropdown() {
               <span>Editar grupo de campos</span>
             )}
           </DropdownMenuItem>
+
+          {collection?.data?.type === "collection" && (
+            <DropdownMenuItem
+              className="inline-flex space-x-1 w-full"
+              onClick={() => {
+                apiEndpointsModalButtonRef?.current?.click();
+              }}
+            >
+              <InfoIcon className="size-4" />
+              <span>Informações da API</span>
+            </DropdownMenuItem>
+          )}
+
+          {collection?.data?.type === "collection" && (
+            <DropdownMenuItem
+              className="inline-flex space-x-1 w-full"
+              onClick={() => {
+                const embedUrl = window.location.href;
+                const iframeCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
+
+                navigator.clipboard.writeText(iframeCode);
+
+                toast("Código embed copiado", {
+                  className:
+                    "!bg-primary !text-primary-foreground !border-primary",
+                  description:
+                    "O código iframe foi copiado para a área de transferência",
+                  descriptionClassName: "!text-primary-foreground",
+                  closeButton: true,
+                });
+              }}
+            >
+              <CodeIcon className="size-4" />
+              <span>Gerar código embed</span>
+            </DropdownMenuItem>
+          )}
         </DropdownMenuGroup>
       </DropdownMenuContent>
 
@@ -210,6 +254,8 @@ export function CollectionConfigurationDropdown() {
       <FieldManagerSheet ref={managerCollectionFieldButtonRef} />
 
       <UpdateCollectionSheet slug={slug} ref={updateCollectionButtonRef} />
+
+      <ApiEndpointsModal ref={apiEndpointsModalButtonRef} />
     </DropdownMenu>
   );
 }

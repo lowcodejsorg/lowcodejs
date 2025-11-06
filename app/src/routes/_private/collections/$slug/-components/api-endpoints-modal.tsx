@@ -1,0 +1,208 @@
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { useParams } from "@tanstack/react-router";
+import { CopyIcon, InfoIcon } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+interface ApiEndpoint {
+  method: string;
+  path: string;
+  description: string;
+  params?: string;
+}
+
+export function ApiEndpointsModal({
+  ...props
+}: React.ComponentProps<typeof DialogTrigger>) {
+  const [open, setOpen] = useState(false);
+
+  const { slug: collectionSlug } = useParams({
+    from: "/_private/collections/$slug/",
+  });
+
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || window.location.origin;
+
+  const endpoints: ApiEndpoint[] = [
+    {
+      method: "GET",
+      path: `/collections/${collectionSlug}`,
+      description: "Obter informações da collection",
+    },
+    {
+      method: "GET",
+      path: `/collections/${collectionSlug}/rows/paginated`,
+      description: "Listar rows com paginação",
+      params: "?page=1&perPage=50&search=termo",
+    },
+    {
+      method: "GET",
+      path: `/collections/${collectionSlug}/rows/:id`,
+      description: "Obter row específico por ID",
+    },
+    {
+      method: "POST",
+      path: `/collections/${collectionSlug}/rows`,
+      description: "Criar novo row",
+    },
+    {
+      method: "PUT",
+      path: `/collections/${collectionSlug}/rows/:id`,
+      description: "Atualizar row existente",
+    },
+    {
+      method: "DELETE",
+      path: `/collections/${collectionSlug}/rows/:id`,
+      description: "Deletar row permanentemente",
+    },
+    {
+      method: "PATCH",
+      path: `/collections/${collectionSlug}/rows/:id/trash`,
+      description: "Enviar row para lixeira",
+    },
+    {
+      method: "PATCH",
+      path: `/collections/${collectionSlug}/rows/:id/restore`,
+      description: "Restaurar row da lixeira",
+    },
+    {
+      method: "PATCH",
+      path: `/collections/${collectionSlug}/rows/:id/reaction`,
+      description: "Adicionar reação (like/unlike)",
+    },
+    {
+      method: "PATCH",
+      path: `/collections/${collectionSlug}/rows/:id/evaluation`,
+      description: "Adicionar avaliação numérica",
+    },
+  ];
+
+  const getMethodColor = (method: string) => {
+    switch (method) {
+      case "GET":
+        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200";
+      case "POST":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200";
+      case "PUT":
+        return "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200";
+      case "PATCH":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200";
+      case "DELETE":
+        return "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200";
+    }
+  };
+
+  const copyEndpoint = (endpoint: ApiEndpoint) => {
+    const fullUrl = `${baseUrl}${endpoint.path}${endpoint.params || ""}`;
+    navigator.clipboard.writeText(fullUrl);
+
+    toast("Endpoint copiado", {
+      className: "!bg-primary !text-primary-foreground !border-primary",
+      description: "URL do endpoint foi copiada para a área de transferência",
+      descriptionClassName: "!text-primary-foreground",
+      closeButton: true,
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger className="hidden" {...props} />
+      <DialogContent className="w-full sm:max-w-2xl  max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <InfoIcon className="size-5" />
+            API Endpoints - {collectionSlug}
+          </DialogTitle>
+          <DialogDescription>
+            Endpoints disponíveis para integração com a collection "
+            {collectionSlug}". Todos os endpoints requerem autenticação via
+            cookie ou JWT.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          <div className="text-sm text-muted-foreground">
+            <strong>Base URL:</strong> {baseUrl}
+          </div>
+
+          <div className="space-y-3">
+            {endpoints.map((endpoint, index) => (
+              <div
+                key={index}
+                className="border rounded-lg p-4 hover:bg-muted/50 transition-colors"
+              >
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-3">
+                    <Badge className={getMethodColor(endpoint.method)}>
+                      {endpoint.method}
+                    </Badge>
+                    <code className="text-sm font-mono bg-muted px-2 py-1 rounded">
+                      {endpoint.path}
+                    </code>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-4"
+                    onClick={() => copyEndpoint(endpoint)}
+                    title="Copiar URL completa"
+                  >
+                    <CopyIcon className="size-4" />
+                  </Button>
+                </div>
+
+                <p className="text-sm text-muted-foreground">
+                  {endpoint.description}
+                </p>
+
+                {endpoint.params && (
+                  <div className="mt-2">
+                    <span className="text-xs text-muted-foreground">
+                      Parâmetros de exemplo:
+                    </span>
+                    <code className="block text-xs font-mono bg-muted px-2 py-1 rounded mt-1">
+                      {endpoint.params}
+                    </code>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 p-4 bg-muted rounded-lg">
+            <h4 className="font-medium mb-2">Autenticação</h4>
+            <p className="text-sm text-muted-foreground">
+              Todos os endpoints requerem autenticação. Inclua o cookie{" "}
+              <code>accessToken</code> nas requisições.
+            </p>
+          </div>
+
+          <div className="p-4 bg-muted rounded-lg">
+            <h4 className="font-medium mb-2">Documentação Completa</h4>
+            <p className="text-sm text-muted-foreground">
+              Para documentação interativa completa, acesse:
+              <a
+                href={`${baseUrl}/documentation`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline ml-1"
+              >
+                {baseUrl}/documentation
+              </a>
+            </p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
