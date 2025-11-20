@@ -4,4 +4,4 @@ build
 
 database-data
 
-./_system/setting.properties
+_system/setting.properties

@@ -24,4 +24,4 @@
 **/out/
 **/.next/cache
 
-./server/_system/setting.properties
+server/_system/setting.properties
