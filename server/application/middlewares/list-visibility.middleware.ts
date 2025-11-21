@@ -1,7 +1,8 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
-import { Table } from '@application/model/table.model';
+import { Table as Model } from '@application/model/table.model';
 
+import { Table } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from './authentication.middleware';
 
 export async function ListVisibilityMiddleware(
@@ -20,7 +21,7 @@ export async function ListVisibilityMiddleware(
     }
 
     // Find table with slug
-    const table = await Table.findOne({
+    const table = await Model.findOne({
       slug: params.slug,
       trashed: false,
     });
@@ -33,7 +34,7 @@ export async function ListVisibilityMiddleware(
       });
     }
 
-    request.table = table as any;
+    request.table = table as unknown as Table;
 
     await request.jwtVerify();
 

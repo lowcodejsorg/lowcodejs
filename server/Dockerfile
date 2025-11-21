@@ -7,6 +7,11 @@ RUN npm install
 
 COPY . .
 
+# Criar setting.properties se não existir (necessário para o build)
+RUN if [ ! -f "_system/setting.properties" ]; then \
+    cp _system/setting.properties.example _system/setting.properties; \
+    fi
+
 # Usar build existente se disponível, senão fazer build
 RUN if [ ! -d "build" ] || [ -z "$(ls -A build 2>/dev/null)" ]; then npm run build; fi
 
