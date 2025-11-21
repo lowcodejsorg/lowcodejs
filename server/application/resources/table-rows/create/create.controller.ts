@@ -29,13 +29,17 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
+    console.log('request.body', request.body);
     const payload = TableRowCreateBodyValidator.parse(request.body);
     const params = TableRowCreateParamValidator.parse(request.params);
+
+    console.log('payload', payload);
+    console.log('params', request?.user?.sub);
 
     const result = await this.useCase.execute({
       ...payload,
       ...params,
-      creator: request.user.sub,
+      ...(request?.user?.sub && { creator: request.user.sub }),
     });
 
     if (result.isLeft()) {

@@ -1,8 +1,8 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 
+import type { Table } from '@application/core/entity.core';
 import { Table as Model } from '@application/model/table.model';
 
-import { Table } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from './authentication.middleware';
 
 export async function ListVisibilityMiddleware(
@@ -36,29 +36,15 @@ export async function ListVisibilityMiddleware(
 
     request.table = table as unknown as Table;
 
-    await request.jwtVerify();
+    const visibility = table.configuration?.visibility;
 
-    if (
-      !request.user &&
-      table.configuration?.visibility === 'form' &&
-      request.method === 'POST'
-    ) {
-      return;
-    }
+    if (visibility === 'public' && request.method === 'GET') return;
 
-    if (
-      !request.user &&
-      table.configuration?.visibility === 'public' &&
-      request.method === 'GET'
-    ) {
-      return;
-    }
-
-    // If collaboration is restricted, use authentication middleware
+    if (visibility === 'form' && request.method === 'POST') return;
 
     await AuthenticationMiddleware(request, response);
   } catch (error) {
-    console.error(error);
+    console.error('ERROR ON LIST VISIBILITY MIDDLEWARE', error);
     return response.status(500).send({
       message: 'Internal server error',
       code: 500,

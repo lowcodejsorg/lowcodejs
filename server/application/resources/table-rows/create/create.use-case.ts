@@ -125,7 +125,10 @@ export default class TableRowCreateUseCase {
         table?.fields as import('@application/core/entity.core').Field[],
       );
 
-      const created = await build.create(payload);
+      const created = await build.create({
+        ...payload,
+        creator: payload.creator ?? null,
+      });
 
       const row = await created.populate(populate);
 

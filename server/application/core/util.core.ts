@@ -169,6 +169,7 @@ export async function buildTable(
       creator: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
+        required: false,
       },
     },
     {
