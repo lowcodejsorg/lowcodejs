@@ -1,4 +1,4 @@
-import type { TreeNode } from "@/components/custom/tree-list";
+import type { TreeNode } from "@/components/common/tree-list";
 import { useCallback, useState } from "react";
 
 interface NodeFormData {

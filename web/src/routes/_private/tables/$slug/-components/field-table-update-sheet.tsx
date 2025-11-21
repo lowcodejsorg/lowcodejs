@@ -22,7 +22,7 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Form as Root } from "@/components/ui/form";
 
-import type { Option } from "@/components/custom/multi-selector";
+import type { Option } from "@/components/common/multi-selector";
 import { useTableManagement } from "@/hooks/table-management.hook";
 import { QueryClient } from "@/lib/query-client";
 import { AxiosError } from "axios";

@@ -1,4 +1,4 @@
-import { Pagination } from "@/components/custom/pagination";
+import { Pagination } from "@/components/common/pagination";
 import { Button } from "@/components/ui/button";
 import {
   Card,

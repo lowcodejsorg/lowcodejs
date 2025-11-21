@@ -42,7 +42,7 @@ permissões e muito mais.
 │   │   ├── users/               # Gerenciamento de usuários
 │   │   └── user-group/          # Grupos de usuários
 │   ├── core/                    # Tipos e entidades centrais
-│   ├── exceptions/              # Exceções customizadas
+│   ├── exceptions/              # Exceções commonizadas
 │   ├── middlewares/             # Middlewares (autenticação, recursos)
 │   ├── model/                   # Modelos Mongoose
 │   ├── services/                # Serviços de negócio

@@ -1,4 +1,4 @@
-import { Pagination } from "@/components/custom/pagination";
+import { Pagination } from "@/components/common/pagination";
 import { useI18n } from "@/hooks/i18.hook";
 import { API } from "@/lib/api";
 import type { Paginated, User } from "@/lib/entity";

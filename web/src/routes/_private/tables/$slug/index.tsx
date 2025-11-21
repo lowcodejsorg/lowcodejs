@@ -1,4 +1,4 @@
-import { Pagination } from "@/components/custom/pagination";
+import { Pagination } from "@/components/common/pagination";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/hooks/i18.hook";
 import { API } from "@/lib/api";
@@ -16,11 +16,11 @@ import { toast } from "sonner";
 import z from "zod";
 import { TrashButton } from "../-components/trash.button";
 
+import { SheetFilter } from "@/components/common/sheet-filter";
 import { Gallery } from "./-components/gallery.style";
 import { List } from "./-components/list.style";
 import { RowTableCreateSheet } from "./-components/row-table-create-sheet";
 import { TableConfigurationDropdown } from "./-components/table-configuration-dropdown";
-import { TableFiltersSheet } from "./-components/table-filters-sheet";
 import { TableStyleButton } from "./-components/table-style-button";
 
 export const Route = createFileRoute("/_private/tables/$slug/")({
@@ -73,7 +73,7 @@ function RouteComponent() {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 p-2 flex flex-col gap-1 border-b">
+      <div className="shrink-0 p-2 flex flex-col gap-1 border-b">
         <div className="flex-1 flex flex-col gap-6 lg:flex-row lg:justify-between">
           <div className="inline-flex items-start gap-2">
             <Button
@@ -125,7 +125,8 @@ function RouteComponent() {
           </div>
 
           <div className="inline-flex items-start gap-2">
-            <TableFiltersSheet />
+            <SheetFilter fields={table?.data?.fields ?? []} />
+
             <TableStyleButton />
             <TableConfigurationDropdown />
             <TrashButton />
@@ -158,7 +159,7 @@ function RouteComponent() {
           )}
       </div>
 
-      <div className="flex-shrink-0 border-t p-2">
+      <div className="shrink-0 border-t p-2">
         <Pagination meta={pagination?.data?.meta ?? MetaDefault} />
       </div>
     </div>

@@ -8,7 +8,7 @@ COPY dist ./dist
 # Production stage
 FROM nginx:alpine
 
-# Copiar configuração customizada do nginx
+# Copiar configuração commonizada do nginx
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Copiar build da aplicação

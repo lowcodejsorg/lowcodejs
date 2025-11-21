@@ -1,5 +1,5 @@
-import { TreeEditor } from "@/components/custom/tree-editor";
-import type { TreeNode } from "@/components/custom/tree-list";
+import { TreeEditor } from "@/components/common/tree-editor";
+import type { TreeNode } from "@/components/common/tree-list";
 import {
   FormControl,
   FormField,

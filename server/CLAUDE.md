@@ -62,8 +62,8 @@ completo do projeto, consulte:
 │   ├── use-case/                # Business logic/use cases
 │   ├── services/                # Application services
 │   ├── validators/              # Zod validation schemas
-│   ├── middlewares/             # Custom middlewares
-│   └── exceptions/              # Custom exceptions
+│   ├── middlewares/             # common middlewares
+│   └── exceptions/              # common exceptions
 ├── bin/server.ts                # Application entry point
 ├── config/                      # Configuration files
 │   ├── app.config.ts           # App settings

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import type { Option } from "@/components/custom/multi-selector";
+import type { Option } from "@/components/common/multi-selector";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import {

@@ -1,4 +1,4 @@
-import { ToggleTheme } from "@/components/custom/toggle-theme";
+import { ToggleTheme } from "@/components/common/toggle-theme";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useLocation } from "@tanstack/react-router";
 import { InputSearch } from "../input-search";

@@ -1,7 +1,7 @@
 import {
   MultipleSelector,
   type Option,
-} from "@/components/custom/multi-selector";
+} from "@/components/common/multi-selector";
 import {
   FormControl,
   FormField,

@@ -1,4 +1,4 @@
-import { TreeList } from "@/components/custom/tree-list";
+import { TreeList } from "@/components/common/tree-list";
 import {
   FormControl,
   FormField,

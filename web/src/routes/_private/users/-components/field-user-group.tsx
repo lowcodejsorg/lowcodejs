@@ -1,4 +1,4 @@
-import { SimpleSelect } from "@/components/custom/simple-select";
+import { SimpleSelect } from "@/components/common/simple-select";
 import {
   FormControl,
   FormItem,

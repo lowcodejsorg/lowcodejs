@@ -1,14 +1,20 @@
-import { Pagination } from "@/components/custom/pagination";
 import { useI18n } from "@/hooks/i18.hook";
 import { API } from "@/lib/api";
-import type { Paginated, Table } from "@/lib/entity";
+import {
+  FIELD_FORMAT,
+  FIELD_TYPE,
+  type Field,
+  type Paginated,
+  type Table,
+} from "@/lib/entity";
 import { MetaDefault } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { createFileRoute, useSearch } from "@tanstack/react-router";
 import z from "zod";
 
+import { Pagination } from "@/components/common/pagination";
+import { SheetFilter } from "@/components/common/sheet-filter";
 import { CreateTableSheet } from "./-components/create-table.sheet";
-import { FilterTableSheet } from "./-components/filter.sheet";
 import { GalleryList } from "./-components/gallery.style";
 import { ListStyle } from "./-components/list.style";
 import { StyleButton } from "./-components/style.button";
@@ -58,9 +64,34 @@ function RouteComponent() {
     "Created At",
   ]);
 
+  const fieldFilters: Field[] = [
+    {
+      _id: "name",
+      slug: "name",
+      name: "Nome",
+      type: FIELD_TYPE.TEXT_SHORT,
+      configuration: {
+        format: FIELD_FORMAT.ALPHA_NUMERIC,
+        category: null,
+        defaultValue: null,
+        dropdown: null,
+        filtering: true,
+        group: null,
+        listing: true,
+        multiple: false,
+        relationship: null,
+        required: false,
+      },
+      trashed: false,
+      trashedAt: null,
+      createdAt: new Date().toDateString(),
+      updatedAt: new Date().toDateString(),
+    },
+  ];
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      <div className="flex-shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
+      <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">
           {t("TABLE_ROUTE_TITLE", "Tables")}
         </h1>
@@ -68,7 +99,7 @@ function RouteComponent() {
         <div className="inline-flex gap-2">
           <TrashButton />
           <StyleButton />
-          <FilterTableSheet />
+          <SheetFilter fields={fieldFilters} />
           <CreateTableSheet />
         </div>
       </div>
@@ -91,7 +122,7 @@ function RouteComponent() {
         </div>
       )}
 
-      <div className="flex-shrink-0 border-t p-2">
+      <div className="shrink-0 border-t p-2">
         <Pagination meta={pagination?.data?.meta ?? MetaDefault} />
       </div>
     </div>

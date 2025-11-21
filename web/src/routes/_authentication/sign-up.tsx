@@ -1,4 +1,4 @@
-import { Logo } from "@/components/custom/logo";
+import { Logo } from "@/components/common/logo";
 import { Button } from "@/components/ui/button";
 import {
   Form,

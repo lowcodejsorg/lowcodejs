@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/hooks/i18.hook";
-import type { Field, FIELD_FORMAT } from "@/lib/entity";
+import { FIELD_FORMAT, type Field } from "@/lib/entity";
 import { cn } from "@/lib/utils";
 import React from "react";
 import { useFormContext } from "react-hook-form";
@@ -19,29 +19,29 @@ const validateFormat = (
   if (!value || !format) return true;
 
   switch (format) {
-    case "ALPHA_NUMERIC":
+    case FIELD_FORMAT.ALPHA_NUMERIC:
       if (!/^[a-zA-Z0-9\s]*$/.test(value)) {
         return "Campo deve conter apenas letras, números e espaços";
       }
       break;
-    case "INTEGER":
+    case FIELD_FORMAT.INTEGER:
       if (!/^-?\d+$/.test(value)) {
         return "Campo deve conter apenas números inteiros";
       }
       break;
-    case "DECIMAL":
+    case FIELD_FORMAT.DECIMAL:
       if (!/^-?\d*\.?\d+$/.test(value)) {
         return "Campo deve conter apenas números decimais";
       }
       break;
-    case "URL":
+    case FIELD_FORMAT.URL:
       try {
         new URL(value);
       } catch {
         return "Campo deve conter uma URL válida";
       }
       break;
-    case "EMAIL":
+    case FIELD_FORMAT.EMAIL:
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
         return "Campo deve conter um email válido";
       }
@@ -68,7 +68,7 @@ export function RowTableTextShort({
     <FormField
       key={fieldProp._id}
       control={form.control}
-      name={(name ?? fieldProp.slug) || ""}
+      name={(fieldProp.slug ?? name) || ""}
       defaultValue={defaultValue}
       rules={{
         validate: (value) => {
@@ -96,7 +96,7 @@ export function RowTableTextShort({
       render={({ field: { onChange, ...field } }) => {
         const hasError = !!form.formState.errors[field.name];
         return (
-          <FormItem className="space-y-1">
+          <FormItem className="space-y-1 w-full">
             <FormLabel className="data-[error=true]:text-destructive">
               {fieldProp.name}{" "}
               {required && <span className="text-destructive">*</span>}

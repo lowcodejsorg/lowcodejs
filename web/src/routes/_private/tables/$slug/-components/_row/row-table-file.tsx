@@ -2,7 +2,7 @@ import {
   FileInput,
   FileUploader,
   FileUploaderContent,
-} from "@/components/custom/uploader/file-uploader";
+} from "@/components/common/uploader/file-uploader";
 import { Button } from "@/components/ui/button";
 import {
   FormField,

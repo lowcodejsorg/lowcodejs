@@ -1,9 +1,9 @@
-import type { SearchableOption } from "@/components/custom/searchable-select";
+import type { SearchableOption } from "@/components/common/searchable-select";
 import {
   SimpleSelect,
   type SelectOption,
-} from "@/components/custom/simple-select";
-import { Uploader } from "@/components/custom/uploader";
+} from "@/components/common/simple-select";
+import { Uploader } from "@/components/common/uploader";
 import { Button } from "@/components/ui/button";
 import {
   Form,

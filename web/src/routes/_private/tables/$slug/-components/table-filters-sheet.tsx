@@ -547,8 +547,12 @@ export function TableFiltersSheet() {
       if (processed.has(field.slug)) continue;
 
       if (field.type === FIELD_TYPE.DATE) {
-        const initialValue = search[`${field.slug}-initial` as keyof typeof search] as string;
-        const finalValue = search[`${field.slug}-final` as keyof typeof search] as string;
+        const initialValue = search[
+          `${field.slug}-initial` as keyof typeof search
+        ] as string;
+        const finalValue = search[
+          `${field.slug}-final` as keyof typeof search
+        ] as string;
 
         if (initialValue || finalValue) {
           const dateRange = [];
@@ -560,7 +564,7 @@ export function TableFiltersSheet() {
             fieldName: field.name,
             value: dateRange.join(", "),
             type: "date",
-            removeKeys: [`${field.slug}-initial`, `${field.slug}-final`]
+            removeKeys: [`${field.slug}-initial`, `${field.slug}-final`],
           });
           processed.add(field.slug);
         }
@@ -571,7 +575,9 @@ export function TableFiltersSheet() {
 
         for (const [key, value] of Object.entries(search)) {
           if (key.startsWith(`${field.slug}-`) && value && value !== "") {
-            const subFieldSlug = key.replace(`${field.slug}-`, "").replace(/-(?:initial|final)$/, "");
+            const subFieldSlug = key
+              .replace(`${field.slug}-`, "")
+              .replace(/-(?:initial|final)$/, "");
             groupFilters.push(`${subFieldSlug}: ${value}`);
             groupRemoveKeys.push(key);
           }
@@ -583,7 +589,7 @@ export function TableFiltersSheet() {
             fieldName: field.name,
             value: groupFilters.join(", "),
             type: "group",
-            removeKeys: groupRemoveKeys
+            removeKeys: groupRemoveKeys,
           });
           processed.add(field.slug);
         }
@@ -593,7 +599,10 @@ export function TableFiltersSheet() {
 
         if (Array.isArray(searchValue)) {
           displayValue = searchValue.join(", ");
-        } else if (typeof searchValue === "string" && searchValue.includes(",")) {
+        } else if (
+          typeof searchValue === "string" &&
+          searchValue.includes(",")
+        ) {
           displayValue = searchValue.split(",").join(", ");
         }
 
@@ -602,7 +611,7 @@ export function TableFiltersSheet() {
           fieldName: field.name,
           value: String(displayValue),
           type: "normal",
-          removeKeys: [field.slug]
+          removeKeys: [field.slug],
         });
         processed.add(field.slug);
       }
@@ -615,7 +624,7 @@ export function TableFiltersSheet() {
     const newSearch = { ...search };
 
     // Remove as chaves específicas do filtro
-    filterKeys.forEach(key => {
+    filterKeys.forEach((key) => {
       delete newSearch[key as keyof typeof newSearch];
     });
 

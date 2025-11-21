@@ -2,7 +2,7 @@ import {
   SearchableSelect,
   type SearchableOption,
   type SearchableResponse,
-} from "@/components/custom/searchable-select";
+} from "@/components/common/searchable-select";
 import {
   FormControl,
   FormField,

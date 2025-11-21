@@ -1,7 +1,7 @@
 import {
   SimpleSelect,
   type SelectOption,
-} from "@/components/custom/simple-select";
+} from "@/components/common/simple-select";
 import { Button } from "@/components/ui/button";
 import {
   Form,

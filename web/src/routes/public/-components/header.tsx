@@ -1,5 +1,5 @@
-import { Logo } from "@/components/custom/logo";
-import { ToggleTheme } from "@/components/custom/toggle-theme";
+import { Logo } from "@/components/common/logo";
+import { ToggleTheme } from "@/components/common/toggle-theme";
 import { Button } from "@/components/ui/button";
 import { Link } from "@tanstack/react-router";
 import { LogInIcon, UserPlusIcon } from "lucide-react";

@@ -1,7 +1,7 @@
 import {
   SearchableSelect,
   type SearchableResponse,
-} from "@/components/custom/searchable-select";
+} from "@/components/common/searchable-select";
 import {
   FormControl,
   FormItem,

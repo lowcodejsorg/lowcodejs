@@ -24,8 +24,8 @@ import {
 } from "lucide-react";
 
 // import Logo from "@/assets/laca-logo.webp";
-import { Logo } from "@/components/custom/logo";
-import { Logotipo } from "@/components/custom/logotipo";
+import { Logo } from "@/components/common/logo";
+import { Logotipo } from "@/components/common/logotipo";
 import { Badge } from "@/components/ui/badge";
 import { useAuthentication } from "@/hooks/authentication.hook";
 import { useI18n } from "@/hooks/i18.hook";

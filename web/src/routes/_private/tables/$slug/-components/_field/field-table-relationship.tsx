@@ -1,8 +1,8 @@
 import {
   SearchableSelect,
   type SearchableResponse,
-} from "@/components/custom/searchable-select";
-import type { SelectOption } from "@/components/custom/simple-select";
+} from "@/components/common/searchable-select";
+import type { SelectOption } from "@/components/common/simple-select";
 import {
   FormControl,
   FormField,

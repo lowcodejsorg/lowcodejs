@@ -9,8 +9,6 @@ export async function ListVisibilityMiddleware(
   response: FastifyReply,
 ): Promise<void> {
   try {
-    await request.jwtVerify();
-
     const params = request.params as { slug?: string };
 
     if (!params.slug) {
@@ -36,6 +34,8 @@ export async function ListVisibilityMiddleware(
     }
 
     request.table = table as any;
+
+    await request.jwtVerify();
 
     if (
       !request.user &&

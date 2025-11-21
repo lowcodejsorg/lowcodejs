@@ -23,6 +23,7 @@ sed -i '/^JWT_PUBLIC_KEY=/d' "$ENV_FILE"
 sed -i '/^COOKIE_SECRET=/d' "$ENV_FILE"
 
 # Adiciona as novas chaves
+echo "\n" >> "$ENV_FILE"
 echo "JWT_PRIVATE_KEY=$JWT_PRIVATE_KEY" >> "$ENV_FILE"
 echo "JWT_PUBLIC_KEY=$JWT_PUBLIC_KEY" >> "$ENV_FILE"
 echo "COOKIE_SECRET=$COOKIE_SECRET" >> "$ENV_FILE"
