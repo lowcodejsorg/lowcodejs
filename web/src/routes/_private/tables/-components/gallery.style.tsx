@@ -79,7 +79,7 @@ export function GalleryList({ data, headers }: Props): React.ReactElement {
                 </div>
                 <div className="mt-2 pt-2 border-t">
                   <p className="text-xs text-muted-foreground">
-                    <span className="font-medium">Criado em:</span>{" "}
+                    <span className="font-medium">{t("TIME_CREATED_AT_LABEL", "Criado em")}:</span>{" "}
                     {table.createdAt
                       ? format(
                           new Date(table.createdAt),

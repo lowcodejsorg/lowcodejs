@@ -100,7 +100,7 @@ export function RowTableFile({
 
         // 403 - ACCESS_DENIED
         if (data?.code === 403 && data?.cause === "ACCESS_DENIED") {
-          toast.error(data?.message ?? "Acesso negado para upload de arquivos");
+          toast.error(data?.message ?? t("ERROR_ACCESS_DENIED_FILE_UPLOAD", "Acesso negado para upload de arquivos"));
         }
 
         // 413 - FILE_TOO_LARGE
@@ -131,7 +131,7 @@ export function RowTableFile({
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(data?.message ?? t("ERROR_SERVER_ERROR", "Erro interno do servidor"));
         }
       }
 
@@ -180,7 +180,7 @@ export function RowTableFile({
         // 403 - ACCESS_DENIED
         if (data?.code === 403 && data?.cause === "ACCESS_DENIED") {
           toast.error(
-            data?.message ?? "Acesso negado para deletar este arquivo"
+            data?.message ?? t("ERROR_ACCESS_DENIED_FILE_DELETE", "Acesso negado para deletar este arquivo")
           );
         }
 
@@ -204,7 +204,7 @@ export function RowTableFile({
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(data?.message ?? t("ERROR_SERVER_ERROR", "Erro interno do servidor"));
         }
       }
 

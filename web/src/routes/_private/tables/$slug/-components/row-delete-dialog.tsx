@@ -63,9 +63,9 @@ export function RowDeleteDialog({ rowId, ...props }: RowDeleteDialogProps) {
         }
       );
 
-      toast("Linha deletada permanentemente!", {
+      toast(t("ROW_TOAST_DELETED_PERMANENTLY", "Linha deletada permanentemente!"), {
         className: "!bg-green-600 !text-white !border-green-600",
-        description: `A linha foi deletada permanentemente`,
+        description: t("ROW_TOAST_DELETED_PERMANENTLY_DESCRIPTION", "A linha foi deletada permanentemente"),
         descriptionClassName: "!text-white",
         closeButton: true,
       });
@@ -95,7 +95,7 @@ export function RowDeleteDialog({ rowId, ...props }: RowDeleteDialogProps) {
 
         // 403 - ACCESS_DENIED
         if (data?.code === 403 && data?.cause === "ACCESS_DENIED") {
-          toast.error(data?.message ?? "Acesso negado");
+          toast.error(data?.message ?? t("ROW_ERROR_ACCESS_DENIED", "Acesso negado"));
         }
 
         // 404 - ROW_NOT_FOUND
@@ -118,7 +118,7 @@ export function RowDeleteDialog({ rowId, ...props }: RowDeleteDialogProps) {
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(data?.message ?? t("ROW_ERROR_INTERNAL_SERVER", "Erro interno do servidor"));
         }
       }
 

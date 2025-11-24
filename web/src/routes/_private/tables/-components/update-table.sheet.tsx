@@ -65,9 +65,12 @@ function UpdateForm({ table, onClose }: UpdateFormProps) {
       form.reset({});
       onClose();
 
-      toast("Coleção atualizada!", {
+      toast(t("TABLE_TOAST_COLLECTION_UPDATED", "Coleção atualizada!"), {
         className: "!bg-green-600 !text-white !border-green-600",
-        description: `A coleção "${data.name}" foi atualizada com sucesso`,
+        description: t(
+          "TABLE_TOAST_COLLECTION_UPDATED_DESCRIPTION",
+          `A coleção "${data.name}" foi atualizada com sucesso`
+        ),
         descriptionClassName: "!text-white",
         closeButton: true,
       });
@@ -100,39 +103,63 @@ function UpdateForm({ table, onClose }: UpdateFormProps) {
 
         // 400 - INVALID_PARAMETERS
         if (data?.code === 400 && data?.cause === "INVALID_PARAMETERS") {
-          toast.error(data?.message ?? "Dados inválidos");
+          toast.error(
+            data?.message ??
+              t("GLOBAL_ERROR_INVALID_PARAMETERS", "Dados inválidos")
+          );
         }
 
         // 401 - AUTHENTICATION_REQUIRED
         if (data?.code === 401 && data?.cause === "AUTHENTICATION_REQUIRED") {
-          toast.error(data?.message ?? "Autenticação necessária");
+          toast.error(
+            data?.message ??
+              t(
+                "GLOBAL_ERROR_AUTHENTICATION_REQUIRED",
+                "Autenticação necessária"
+              )
+          );
         }
 
         // 403 - ACCESS_DENIED
         if (data?.code === 403 && data?.cause === "ACCESS_DENIED") {
-          toast.error(data?.message ?? "Acesso negado");
+          toast.error(
+            data?.message ?? t("GLOBAL_ERROR_ACCESS_DENIED", "Acesso negado")
+          );
         }
 
         // 404 - TABLE_NOT_FOUND
         if (data?.code === 404 && data?.cause === "TABLE_NOT_FOUND") {
-          toast.error(data?.message ?? "Coleção não encontrada");
+          toast.error(
+            data?.message ??
+              t("TABLE_ERROR_NOT_FOUND", "Coleção não encontrada")
+          );
         }
 
         // 409 - TABLE_ALREADY_EXISTS
         if (data?.code === 409 && data?.cause === "TABLE_ALREADY_EXISTS") {
           form.setError("name", {
-            message: data?.message ?? "Já existe uma coleção com este nome",
+            message:
+              data?.message ??
+              t(
+                "TABLE_ERROR_ALREADY_EXISTS",
+                "Já existe uma coleção com este nome"
+              ),
           });
         }
 
         // 422 - UNPROCESSABLE_ENTITY
         if (data?.code === 422 && data?.cause === "UNPROCESSABLE_ENTITY") {
-          toast.error(data?.message ?? "Erro de validação");
+          toast.error(
+            data?.message ?? t("TABLE_ERROR_VALIDATION", "Erro de validação")
+          );
         }
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(
+            data?.message ??
+              t("GLOBAL_ERROR_SERVER_ERROR", "Erro interno do servidor")
+          );
         }
       }
 
@@ -176,44 +203,44 @@ function UpdateForm({ table, onClose }: UpdateFormProps) {
     }));
 
   const VISIBILITY_MAPPER = {
-    public: "Pública",
-    restricted: "Restrita",
-    open: "Aberta",
-    form: "Formulário online",
+    public: t("TABLE_FORM_FIELD_VISIBILITY_PUBLIC_OPTION", "Pública"),
+    restricted: t("TABLE_FORM_FIELD_VISIBILITY_RESTRICTED_OPTION", "Restrita"),
+    open: t("TABLE_VISIBILITY_OPEN_OPTION", "Aberta"),
+    form: t("TABLE_VISIBILITY_FORM_OPTION", "Formulário online"),
   };
 
   const VISIBILITY_OPTION_LIST = [
     {
       value: "public",
-      label: VISIBILITY_MAPPER["public"],
+      label: VISIBILITY_MAPPER["public"] as string,
     },
     {
       value: "restricted",
-      label: VISIBILITY_MAPPER["restricted"],
+      label: VISIBILITY_MAPPER["restricted"] as string,
     },
     {
       value: "open",
-      label: VISIBILITY_MAPPER["open"],
+      label: VISIBILITY_MAPPER["open"] as string,
     },
     {
       value: "form",
-      label: VISIBILITY_MAPPER["form"],
+      label: VISIBILITY_MAPPER["form"] as string,
     },
   ];
 
   const COLLABORATION_MAPPER = {
-    restricted: "Restrita",
-    open: "Aberta",
+    restricted: t("TABLE_COLLABORATION_RESTRICTED_OPTION", "Restrita"),
+    open: t("TABLE_COLLABORATION_OPEN_OPTION", "Aberta"),
   };
 
   const COLLABORATION_OPTION_LIST = [
     {
       value: "restricted",
-      label: COLLABORATION_MAPPER["restricted"],
+      label: COLLABORATION_MAPPER["restricted"] as string,
     },
     {
       value: "open",
-      label: COLLABORATION_MAPPER["open"],
+      label: COLLABORATION_MAPPER["open"] as string,
     },
   ];
 
@@ -250,7 +277,10 @@ function UpdateForm({ table, onClose }: UpdateFormProps) {
               if (
                 !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
               )
-                return "O nome não pode conter caracteres especiais";
+                return t(
+                  "TABLE_VALIDATION_NAME_SPECIAL_CHARS",
+                  "O nome não pode conter caracteres especiais"
+                );
 
               return true;
             },

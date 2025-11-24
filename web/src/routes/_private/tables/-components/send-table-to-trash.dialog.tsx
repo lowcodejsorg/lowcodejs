@@ -44,7 +44,10 @@ export function SendTableToTrash({ slug, ...props }: SendToTrashProps) {
 
       toast(t("TABLE_TOAST_SENT_TO_TRASH", "Table sent to trash!"), {
         className: "!bg-green-600 !text-white !border-green-600",
-        description: `A coleção "${data.name}" foi movida para a lixeira`,
+        description: t(
+          "TABLE_TOAST_TABLE_SENT_TO_TRASH_DESCRIPTION",
+          `A coleção "${data.name}" foi movida para a lixeira`
+        ),
         descriptionClassName: "!text-white",
         closeButton: true,
       });
@@ -97,7 +100,9 @@ export function SendTableToTrash({ slug, ...props }: SendToTrashProps) {
 
         // 403 - ACCESS_DENIED
         if (data?.code === 403 && data?.cause === "ACCESS_DENIED") {
-          toast.error(data?.message ?? "Acesso negado");
+          toast.error(
+            data?.message ?? t("GLOBAL_ERROR_ACCESS_DENIED", "Acesso negado")
+          );
         }
 
         // 404 - TABLE_NOT_FOUND
@@ -120,7 +125,9 @@ export function SendTableToTrash({ slug, ...props }: SendToTrashProps) {
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(
+            data?.message ?? t("GLOBAL_ERROR_SERVER_ERROR", "Erro interno do servidor")
+          );
         }
       }
 

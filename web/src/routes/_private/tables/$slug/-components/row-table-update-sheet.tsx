@@ -153,12 +153,12 @@ function TableRowUpdateForm({ fields, order, onClose, row }: Props) {
 
         // 422 - UNPROCESSABLE_ENTITY
         if (data?.code === 422 && data?.cause === "UNPROCESSABLE_ENTITY") {
-          toast.error(data?.message ?? "Erro de validação");
+          toast.error(data?.message ?? t("VALIDATION_ERROR_DATA", "Erro de validação"));
         }
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(data?.message ?? t("VALIDATION_ERROR_SERVER", "Erro interno do servidor"));
         }
       }
 
@@ -372,7 +372,7 @@ export function RowTableUpdateSheet({
           <SheetTitle className="text-lg font-medium">
             {t(
               "TABLE_ROUTE_SHEET_INTERNAL_REGISTER_UPDATE_TITLE",
-              "Novo Registro"
+              t("SHEET_TITLE_NEW_RECORD", "Novo Registro")
             )}
           </SheetTitle>
           <SheetDescription>

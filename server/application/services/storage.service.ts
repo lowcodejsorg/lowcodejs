@@ -29,7 +29,7 @@ export default class StorageService {
     return {
       filename,
       type: part.mimetype,
-      url: this.baseUrl.concat('/storage/').concat(filename),
+      url: this.baseUrl.concat('/system/storage/').concat(filename),
       originalName: part.filename,
       size: buffer.length ?? part.file.bytesRead,
     };

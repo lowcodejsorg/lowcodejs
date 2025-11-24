@@ -118,7 +118,7 @@ export function RowSendToTrashDialog({
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(data?.message ?? t("VALIDATION_ERROR_SERVER", "Erro interno do servidor"));
         }
       }
 
@@ -151,7 +151,7 @@ export function RowSendToTrashDialog({
                 <Button className="bg-destructive hover:bg-destructive">
                   {t(
                     "TABLE_ROUTE_SHEET_INTERNAL_REGISTER_MODAL_CANCEL_BUTTON",
-                    "Cancelar"
+                    t("BUTTON_CANCEL_MODAL", "Cancelar")
                   )}
                 </Button>
               </DialogClose>
@@ -169,7 +169,7 @@ export function RowSendToTrashDialog({
                   <span>
                     {t(
                       "TABLE_ROUTE_SHEET_INTERNAL_REGISTER_MODAL_CONFIRM_BUTTON",
-                      "Confirmar"
+                      t("BUTTON_CONFIRM_MODAL", "Confirmar")
                     )}
                   </span>
                 )}

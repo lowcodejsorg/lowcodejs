@@ -36,6 +36,12 @@ export default class {
     console.log('payload', payload);
     console.log('params', request?.user?.sub);
 
+    console.log({
+      ...payload,
+      ...params,
+      ...(request?.user?.sub && { creator: request.user.sub }),
+    });
+
     const result = await this.useCase.execute({
       ...payload,
       ...params,

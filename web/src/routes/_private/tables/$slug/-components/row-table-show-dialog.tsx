@@ -40,10 +40,12 @@ export function RowTableShowDialog({ _id, ...props }: Props) {
     try {
       const link = generateRecordLink();
       await navigator.clipboard.writeText(link);
-      toast.success("Link copiado para a área de transferência!");
+      toast.success(
+        t("TOAST_LINK_COPIED", "Link copiado para a área de transferência!")
+      );
     } catch (error) {
       console.error(error);
-      toast.error("Erro ao copiar link");
+      toast.error(t("ERROR_COPY_LINK", "Erro ao copiar link"));
     }
   }, [generateRecordLink]);
 
@@ -54,14 +56,14 @@ export function RowTableShowDialog({ _id, ...props }: Props) {
 
   const handleShare = React.useCallback(async () => {
     const link = generateRecordLink();
-    const shareTitle = "Registro da tabela";
-    const shareText = "Confira este registro";
+    const shareTitle = t("SHARE_RECORD_TITLE", "Registro da tabela");
+    const shareText = t("SHARE_RECORD_TEXT", "Confira este registro");
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: shareTitle,
-          text: shareText,
+          title: shareTitle as string,
+          text: shareText as string,
           url: link,
         });
       } catch (error) {
@@ -124,8 +126,10 @@ export function RowTableShowDialog({ _id, ...props }: Props) {
                 className="gap-2 flex-1 sm:flex-none"
               >
                 <Copy className="h-4 w-4" />
-                <span className="hidden sm:inline">Copiar link</span>
-                <span className="sm:hidden">Copiar</span>
+                <span className="hidden sm:inline">
+                  {t("BUTTON_COPY_LINK", "Copiar link")}
+                </span>
+                <span className="sm:hidden">{t("BUTTON_COPY", "Copiar")}</span>
               </Button>
               <Button
                 variant="outline"
@@ -134,8 +138,10 @@ export function RowTableShowDialog({ _id, ...props }: Props) {
                 className="gap-2 flex-1 sm:flex-none"
               >
                 <ExternalLink className="h-4 w-4" />
-                <span className="hidden sm:inline">Abrir</span>
-                <span className="sm:hidden">Abrir</span>
+                <span className="hidden sm:inline">
+                  {t("BUTTON_OPEN", "Abrir")}
+                </span>
+                <span className="sm:hidden">{t("BUTTON_OPEN", "Abrir")}</span>
               </Button>
               <Button
                 variant="default"
@@ -144,7 +150,7 @@ export function RowTableShowDialog({ _id, ...props }: Props) {
                 className="gap-2 flex-1 sm:flex-none"
               >
                 <Share2 className="h-4 w-4" />
-                Compartilhar
+                {t("BUTTON_SHARE", "Compartilhar")}
               </Button>
             </div>
           </div>
@@ -162,10 +168,13 @@ export function RowTableShowDialog({ _id, ...props }: Props) {
             ))}
             <div className="flex flex-col">
               <span className="font-normal text-sm opacity-50">
-                Criado em{" "}
+                {t("RECORD_CREATED_AT", "Criado em")}{" "}
                 {format(row.data?.createdAt, "dd 'de' MMMM 'às' HH:mm")}
                 {row?.data?.creator && (
-                  <span> por {row?.data?.creator?.name}</span>
+                  <span>
+                    {" "}
+                    {t("RECORD_CREATED_BY", "por")} {row?.data?.creator?.name}
+                  </span>
                 )}
               </span>
             </div>

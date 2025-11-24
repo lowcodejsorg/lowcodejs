@@ -130,14 +130,25 @@ export default class TableRowUpdateUseCase {
         payload[groupSlug] = processedGroupIds[groupSlug];
       }
 
-      await row.updateOne({
-        ...row.toJSON({
-          flattenObjectIds: true,
-        }),
-        ...payload,
-      });
+      // await row.updateOne({
+      //   ...row.toJSON({
+      //     flattenObjectIds: true,
+      //   }),
+      //   ...payload,
+      // });
+
+      await row
+        .set({
+          ...row.toJSON({
+            flattenObjectIds: true,
+          }),
+          ...payload,
+        })
+        .save();
 
       await row.populate(populate);
+
+      console.log('row', JSON.stringify(row, null, 2));
 
       // @ts-ignore
       return right({

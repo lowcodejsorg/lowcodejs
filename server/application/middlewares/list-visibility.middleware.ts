@@ -38,9 +38,21 @@ export async function ListVisibilityMiddleware(
 
     const visibility = table.configuration?.visibility;
 
-    if (visibility === 'public' && request.method === 'GET') return;
+    // await request.jwtVerify();
 
-    if (visibility === 'form' && request.method === 'POST') return;
+    if (
+      !request?.user?.sub &&
+      visibility === 'public' &&
+      request.method === 'GET'
+    )
+      return;
+
+    if (
+      !request?.user?.sub &&
+      visibility === 'form' &&
+      request.method === 'POST'
+    )
+      return;
 
     await AuthenticationMiddleware(request, response);
   } catch (error) {

@@ -145,7 +145,7 @@ export function CreateFieldTableForm({ onClose }: { onClose: () => void }) {
 
         // 400 - INVALID_PARAMETERS
         if (data?.code === 400 && data?.cause === "INVALID_PARAMETERS") {
-          toast.error(data?.message ?? "Nome e tipo do campo são obrigatórios");
+          toast.error(data?.message ?? t("ERROR_FIELD_NAME_TYPE_REQUIRED", "Nome e tipo do campo são obrigatórios"));
         }
 
         // 401 - AUTHENTICATION_REQUIRED
@@ -181,7 +181,7 @@ export function CreateFieldTableForm({ onClose }: { onClose: () => void }) {
 
         // 500 - SERVER_ERROR
         if (data?.code === 500 && data?.cause === "SERVER_ERROR") {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(data?.message ?? t("ERROR_SERVER_ERROR", "Erro interno do servidor"));
         }
       }
 

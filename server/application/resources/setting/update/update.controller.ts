@@ -121,6 +121,7 @@ export default class {
 
       return response.status(200).send({
         ...Env,
+        ...payload,
         FILE_UPLOAD_ACCEPTED: Env.FILE_UPLOAD_ACCEPTED.split(';'),
       });
     } catch (error) {

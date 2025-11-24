@@ -169,7 +169,7 @@ export function RowRemoveFromTrashDialog({
                 <Button className="bg-destructive hover:bg-destructive">
                   {t(
                     "TABLE_ROUTE_SHEET_INTERNAL_REGISTER_MODAL_CANCEL_BUTTON",
-                    "Cancelar"
+                    t("BUTTON_CANCEL_MODAL", "Cancelar")
                   )}
                 </Button>
               </DialogClose>
@@ -187,7 +187,7 @@ export function RowRemoveFromTrashDialog({
                   <span>
                     {t(
                       "TABLE_ROUTE_SHEET_INTERNAL_REGISTER_MODAL_CONFIRM_BUTTON",
-                      "Confirmar"
+                      t("BUTTON_CONFIRM_MODAL", "Confirmar")
                     )}
                   </span>
                 )}

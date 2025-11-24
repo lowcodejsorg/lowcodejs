@@ -260,7 +260,10 @@ function FieldManagerForm({
 
         // 500 - SERVER_ERROR
         if (data?.code === 500 && data?.cause === "SERVER_ERROR") {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(
+            data?.message ??
+              t("FIELD_ERROR_INTERNAL_SERVER", "Erro interno do servidor")
+          );
         }
       }
 

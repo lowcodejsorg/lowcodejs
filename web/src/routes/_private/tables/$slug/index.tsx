@@ -125,7 +125,13 @@ function RouteComponent() {
           </div>
 
           <div className="inline-flex items-start gap-2">
-            <SheetFilter fields={table?.data?.fields ?? []} />
+            <SheetFilter
+              fields={
+                table?.data?.fields?.filter(
+                  (f) => f.configuration?.filtering
+                ) ?? []
+              }
+            />
 
             <TableStyleButton />
             <TableConfigurationDropdown />

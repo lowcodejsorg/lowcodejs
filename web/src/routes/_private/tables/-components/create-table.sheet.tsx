@@ -170,7 +170,10 @@ function CreateForm({ onClose }: CreateFormProps) {
               if (
                 !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
               )
-                return "O nome não pode conter caracteres especiais";
+                return t(
+                  "TABLE_VALIDATION_NAME_SPECIAL_CHARS",
+                  "O nome não pode conter caracteres especiais"
+                );
 
               return true;
             },

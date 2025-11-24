@@ -123,12 +123,12 @@ function RowTableCreateForm({ fields, order, onClose }: Props) {
 
         // 422 - UNPROCESSABLE_ENTITY
         if (data?.code === 422 && data?.cause === "UNPROCESSABLE_ENTITY") {
-          toast.error(data?.message ?? "Erro de validação nos dados");
+          toast.error(data?.message ?? t("ROW_ERROR_VALIDATION_DATA", "Erro de validação nos dados"));
         }
 
         // 500 - SERVER_ERROR
         if (data?.code === 500 && data?.cause === "SERVER_ERROR") {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(data?.message ?? t("VALIDATION_ERROR_SERVER", "Erro interno do servidor"));
         }
       }
 
@@ -326,7 +326,7 @@ export function RowTableCreateSheet() {
           <SheetTitle className="text-lg font-medium">
             {t(
               "TABLE_ROUTE_SHEET_INTERNAL_REGISTER_CREATE_TITLE",
-              "Novo Registro"
+              t("SHEET_TITLE_NEW_RECORD", "Novo Registro")
             )}
           </SheetTitle>
           <SheetDescription>

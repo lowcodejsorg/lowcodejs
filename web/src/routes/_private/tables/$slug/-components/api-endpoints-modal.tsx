@@ -8,6 +8,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { useI18n } from "@/hooks/i18.hook";
 import { useParams } from "@tanstack/react-router";
 import { CopyIcon, InfoIcon } from "lucide-react";
 import { useState } from "react";
@@ -23,6 +24,7 @@ interface ApiEndpoint {
 export function ApiEndpointsModal({
   ...props
 }: React.ComponentProps<typeof DialogTrigger>) {
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
 
   const { slug: tableSlug } = useParams({
@@ -35,53 +37,80 @@ export function ApiEndpointsModal({
     {
       method: "GET",
       path: `/tables/${tableSlug}`,
-      description: "Obter informações da table",
+      description: t(
+        "API_ENDPOINT_GET_TABLE_INFO",
+        "Obter informações da table"
+      ) as string,
     },
     {
       method: "GET",
       path: `/tables/${tableSlug}/rows/paginated`,
-      description: "Listar rows com paginação",
+      description: t(
+        "API_ENDPOINT_LIST_ROWS_PAGINATED",
+        "Listar rows com paginação"
+      ) as string,
       params: "?page=1&perPage=50&search=termo",
     },
     {
       method: "GET",
       path: `/tables/${tableSlug}/rows/:id`,
-      description: "Obter row específico por ID",
+      description: t(
+        "API_ENDPOINT_GET_ROW_BY_ID",
+        "Obter row específico por ID"
+      ) as string,
     },
     {
       method: "POST",
       path: `/tables/${tableSlug}/rows`,
-      description: "Criar novo row",
+      description: t("API_ENDPOINT_CREATE_ROW", "Criar novo row") as string,
     },
     {
       method: "PUT",
       path: `/tables/${tableSlug}/rows/:id`,
-      description: "Atualizar row existente",
+      description: t(
+        "API_ENDPOINT_UPDATE_ROW",
+        "Atualizar row existente"
+      ) as string,
     },
     {
       method: "DELETE",
       path: `/tables/${tableSlug}/rows/:id`,
-      description: "Deletar row permanentemente",
+      description: t(
+        "API_ENDPOINT_DELETE_ROW",
+        "Deletar row permanentemente"
+      ) as string,
     },
     {
       method: "PATCH",
       path: `/tables/${tableSlug}/rows/:id/trash`,
-      description: "Enviar row para lixeira",
+      description: t(
+        "API_ENDPOINT_SEND_ROW_TO_TRASH",
+        "Enviar row para lixeira"
+      ) as string,
     },
     {
       method: "PATCH",
       path: `/tables/${tableSlug}/rows/:id/restore`,
-      description: "Restaurar row da lixeira",
+      description: t(
+        "API_ENDPOINT_RESTORE_ROW_FROM_TRASH",
+        "Restaurar row da lixeira"
+      ) as string,
     },
     {
       method: "PATCH",
       path: `/tables/${tableSlug}/rows/:id/reaction`,
-      description: "Adicionar reação (like/unlike)",
+      description: t(
+        "API_ENDPOINT_ADD_REACTION",
+        "Adicionar reação (like/unlike)"
+      ) as string,
     },
     {
       method: "PATCH",
       path: `/tables/${tableSlug}/rows/:id/evaluation`,
-      description: "Adicionar avaliação numérica",
+      description: t(
+        "API_ENDPOINT_ADD_EVALUATION",
+        "Adicionar avaliação numérica"
+      ) as string,
     },
   ];
 
@@ -106,9 +135,12 @@ export function ApiEndpointsModal({
     const fullUrl = `${baseUrl}${endpoint.path}${endpoint.params || ""}`;
     navigator.clipboard.writeText(fullUrl);
 
-    toast("Endpoint copiado", {
+    toast(t("TOAST_ENDPOINT_COPIED", "Endpoint copiado"), {
       className: "!bg-primary !text-primary-foreground !border-primary",
-      description: "URL do endpoint foi copiada para a área de transferência",
+      description: t(
+        "TOAST_ENDPOINT_COPIED_DESCRIPTION",
+        "URL do endpoint foi copiada para a área de transferência"
+      ),
       descriptionClassName: "!text-primary-foreground",
       closeButton: true,
     });
@@ -121,17 +153,19 @@ export function ApiEndpointsModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <InfoIcon className="size-5" />
-            API Endpoints - {tableSlug}
+            {t("API_ENDPOINTS_MODAL_TITLE", "API Endpoints")} - {tableSlug}
           </DialogTitle>
           <DialogDescription>
-            Endpoints disponíveis para integração com a table "{tableSlug}".
-            Todos os endpoints requerem autenticação via cookie ou JWT.
+            {t(
+              "API_ENDPOINTS_MODAL_DESCRIPTION",
+              `Endpoints disponíveis para integração com a table "${tableSlug}". Todos os endpoints requerem autenticação via cookie ou JWT.`
+            )}
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="text-sm text-muted-foreground">
-            <strong>Base URL:</strong> {baseUrl}
+            <strong>{t("API_BASE_URL_LABEL", "Base URL")}:</strong> {baseUrl}
           </div>
 
           <div className="space-y-3">
@@ -154,7 +188,12 @@ export function ApiEndpointsModal({
                     size="icon"
                     className="size-4"
                     onClick={() => copyEndpoint(endpoint)}
-                    title="Copiar URL completa"
+                    title={
+                      t(
+                        "BUTTON_COPY_FULL_URL_TITLE",
+                        "Copiar URL completa"
+                      ) as string
+                    }
                   >
                     <CopyIcon className="size-4" />
                   </Button>
@@ -167,7 +206,11 @@ export function ApiEndpointsModal({
                 {endpoint.params && (
                   <div className="mt-2">
                     <span className="text-xs text-muted-foreground">
-                      Parâmetros de exemplo:
+                      {t(
+                        "API_EXAMPLE_PARAMETERS_LABEL",
+                        "Parâmetros de exemplo"
+                      )}
+                      :
                     </span>
                     <code className="block text-xs font-mono bg-muted px-2 py-1 rounded mt-1">
                       {endpoint.params}
@@ -179,17 +222,26 @@ export function ApiEndpointsModal({
           </div>
 
           <div className="mt-6 p-4 bg-muted rounded-lg">
-            <h4 className="font-medium mb-2">Autenticação</h4>
+            <h4 className="font-medium mb-2">
+              {t("API_AUTHENTICATION_SECTION_TITLE", "Autenticação")}
+            </h4>
             <p className="text-sm text-muted-foreground">
-              Todos os endpoints requerem autenticação. Inclua o cookie{" "}
-              <code>accessToken</code> nas requisições.
+              {t(
+                "API_AUTHENTICATION_DESCRIPTION",
+                "Todos os endpoints requerem autenticação. Inclua o cookie accessToken nas requisições."
+              )}
             </p>
           </div>
 
           <div className="p-4 bg-muted rounded-lg">
-            <h4 className="font-medium mb-2">Documentação Completa</h4>
+            <h4 className="font-medium mb-2">
+              {t("API_COMPLETE_DOCUMENTATION_TITLE", "Documentação Completa")}
+            </h4>
             <p className="text-sm text-muted-foreground">
-              Para documentação interativa completa, acesse:
+              {t(
+                "API_COMPLETE_DOCUMENTATION_DESCRIPTION",
+                "Para documentação interativa completa, acesse:"
+              )}
               <a
                 href={`${baseUrl}/documentation`}
                 target="_blank"

@@ -88,7 +88,9 @@ export function DeleteTable({ slug, ...props }: DeleteProps) {
 
         // 403 - ACCESS_DENIED
         if (data?.code === 403 && data?.cause === "ACCESS_DENIED") {
-          toast.error(data?.message ?? "Acesso negado");
+          toast.error(
+            data?.message ?? t("GLOBAL_ERROR_ACCESS_DENIED", "Acesso negado")
+          );
         }
 
         // 404 - TABLE_NOT_FOUND
@@ -111,7 +113,9 @@ export function DeleteTable({ slug, ...props }: DeleteProps) {
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? "Erro interno do servidor");
+          toast.error(
+            data?.message ?? t("GLOBAL_ERROR_SERVER_ERROR", "Erro interno do servidor")
+          );
         }
       }
 

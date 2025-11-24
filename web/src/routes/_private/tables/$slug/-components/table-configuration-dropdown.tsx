@@ -97,7 +97,9 @@ export function TableConfigurationDropdown() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="mr-12 max-w-xs w-full">
-        <DropdownMenuLabel>Campos</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {t("DROPDOWN_LABEL_FIELDS", "Campos")}
+        </DropdownMenuLabel>
 
         <DropdownMenuGroup>
           <DropdownMenuItem
@@ -107,7 +109,7 @@ export function TableConfigurationDropdown() {
             }}
           >
             <PlusIcon className="size-4" />
-            <span>Novo campo</span>
+            <span>{t("SHEET_TITLE_NEW_FIELD", "Novo campo")}</span>
           </DropdownMenuItem>
 
           {table?.status === "success" && table?.data?.fields?.length > 0 && (
@@ -118,7 +120,7 @@ export function TableConfigurationDropdown() {
               }}
             >
               <SendToBackIcon className="size-4" />
-              <span>Gerenciar campos</span>
+              <span>{t("FIELD_MANAGER_TITLE", "Gerenciar campos")}</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -127,7 +129,9 @@ export function TableConfigurationDropdown() {
           <React.Fragment>
             <DropdownMenuSeparator />
 
-            <DropdownMenuLabel>Grupo de campos</DropdownMenuLabel>
+            <DropdownMenuLabel>
+              {t("DROPDOWN_LABEL_FIELD_GROUP", "Grupo de campos")}
+            </DropdownMenuLabel>
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className="inline-flex space-x-1 w-full"
@@ -145,7 +149,7 @@ export function TableConfigurationDropdown() {
                 }}
               >
                 <PlusIcon className="size-4" />
-                <span>Novo grupo</span>
+                <span>{t("SHEET_TITLE_NEW_GROUP", "Novo grupo")}</span>
               </DropdownMenuItem>
 
               {table?.data?.fields
@@ -153,7 +157,10 @@ export function TableConfigurationDropdown() {
                 ?.map((field) => (
                   <DropdownMenuSub>
                     <DropdownMenuSubTrigger>
-                      <span> Gerenciar {field.name}</span>
+                      <span>
+                        {" "}
+                        {t("MANAGE_FIELD", "Gerenciar")} {field.name}
+                      </span>
                     </DropdownMenuSubTrigger>
                     <DropdownMenuPortal>
                       <DropdownMenuSubContent>
@@ -165,7 +172,9 @@ export function TableConfigurationDropdown() {
                           }}
                         >
                           <PlusIcon className="size-4" />
-                          <span>Novo campo</span>
+                          <span>
+                            {t("SHEET_TITLE_NEW_FIELD", "Novo campo")}
+                          </span>
                         </DropdownMenuItem>
                         <DropdownMenuItem
                           className="inline-flex space-x-1 w-full"
@@ -175,7 +184,9 @@ export function TableConfigurationDropdown() {
                           }}
                         >
                           <SendToBackIcon className="size-4" />
-                          <span>Gerenciar campos</span>
+                          <span>
+                            {t("FIELD_MANAGER_TITLE", "Gerenciar campos")}
+                          </span>
                         </DropdownMenuItem>
                       </DropdownMenuSubContent>
                     </DropdownMenuPortal>
@@ -187,7 +198,9 @@ export function TableConfigurationDropdown() {
 
         <DropdownMenuSeparator />
 
-        <DropdownMenuLabel>Geral</DropdownMenuLabel>
+        <DropdownMenuLabel>
+          {t("DROPDOWN_LABEL_GENERAL", "Geral")}
+        </DropdownMenuLabel>
 
         <DropdownMenuGroup>
           <DropdownMenuItem
@@ -197,10 +210,14 @@ export function TableConfigurationDropdown() {
             }}
           >
             <PencilIcon className="size-4" />
-            {table?.data?.type === "table" && <span>Editar lista</span>}
+            {table?.data?.type === "table" && (
+              <span>{t("SHEET_TITLE_EDIT_TABLE", "Editar lista")}</span>
+            )}
 
             {table?.data?.type === "field-group" && (
-              <span>Editar grupo de campos</span>
+              <span>
+                {t("SHEET_TITLE_EDIT_FIELD_GROUP", "Editar grupo de campos")}
+              </span>
             )}
           </DropdownMenuItem>
 
@@ -212,7 +229,7 @@ export function TableConfigurationDropdown() {
               }}
             >
               <InfoIcon className="size-4" />
-              <span>Informações da API</span>
+              <span>{t("API_INFORMATION", "Informações da API")}</span>
             </DropdownMenuItem>
           )}
 
@@ -225,18 +242,20 @@ export function TableConfigurationDropdown() {
 
                 navigator.clipboard.writeText(iframeCode);
 
-                toast("Código embed copiado", {
+                toast(t("TOAST_EMBED_CODE_COPIED", "Código embed copiado"), {
                   className:
                     "!bg-primary !text-primary-foreground !border-primary",
-                  description:
-                    "O código iframe foi copiado para a área de transferência",
+                  description: t(
+                    "TOAST_EMBED_CODE_COPIED_DESCRIPTION",
+                    "O código iframe foi copiado para a área de transferência"
+                  ),
                   descriptionClassName: "!text-primary-foreground",
                   closeButton: true,
                 });
               }}
             >
               <CodeIcon className="size-4" />
-              <span>Gerar código embed</span>
+              <span>{t("GENERATE_EMBED_CODE", "Gerar código embed")}</span>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
