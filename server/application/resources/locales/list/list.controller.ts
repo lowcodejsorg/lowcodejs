@@ -14,7 +14,11 @@ export default class {
   @GET({
     url: '/',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: LocaleListSchema,
     },
   })

@@ -52,22 +52,27 @@ export function useTreeSelect({
 
     // Include parent nodes of matching nodes
     const relevantNodeIds = new Set<string>();
-    matchingNodes.forEach((node) => relevantNodeIds.add(node.id));
+
+    for (const node of matchingNodes) {
+      relevantNodeIds.add(node.id);
+    }
 
     // Add parent nodes
     const addParentNodes = (nodes: TreeNode[], _parentId?: string) => {
-      nodes.forEach((node) => {
+      for (const node of nodes) {
         if (node.children) {
           const hasMatchingChild = node.children.some(
             (child) =>
               relevantNodeIds.has(child.id) || hasMatchingDescendant(child)
           );
+
           if (hasMatchingChild || relevantNodeIds.has(node.id)) {
             relevantNodeIds.add(node.id);
           }
+
           addParentNodes(node.children, node.id);
         }
-      });
+      }
     };
 
     const hasMatchingDescendant = (node: TreeNode): boolean => {

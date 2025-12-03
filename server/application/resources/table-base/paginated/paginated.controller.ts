@@ -21,7 +21,17 @@ export default class {
   @GET({
     url: '/paginated',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+        // Sem TableAccessMiddleware - não tem slug específico
+        // Implementar lógica de filtro no handler (usuário vê apenas suas tabelas ou públicas)
+
+        // TableAccessMiddleware({
+        //   requiredPermission: 'VIEW_TABLE',
+        // }),
+      ],
       schema: TablePaginatedSchema,
     },
   })

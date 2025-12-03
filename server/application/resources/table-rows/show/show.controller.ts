@@ -1,7 +1,8 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
-import { ListVisibilityMiddleware } from '@application/middlewares/list-visibility.middleware';
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
 import { TableRowShowSchema } from './show.schema';
 import TableRowShowUseCase from './show.use-case';
@@ -21,7 +22,15 @@ export default class {
   @GET({
     url: '/:slug/rows/:_id',
     options: {
-      onRequest: [ListVisibilityMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: true,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'VIEW_ROW',
+          // Sem allowedGroups - depende da visibilidade
+        }),
+      ],
       schema: TableRowShowSchema,
     },
   })

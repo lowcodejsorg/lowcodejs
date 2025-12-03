@@ -76,40 +76,9 @@ kernel.register(jwt, {
 
 kernel.register(multipart, {});
 
-// Hook para configurar headers de segurança permitindo iframe embedding
-kernel.addHook('onRequest', async (request, reply) => {
-  reply.header('X-Frame-Options', 'ALLOWALL');
-  reply.header('Content-Security-Policy', 'frame-ancestors *');
-});
-
 kernel.register(_static, {
   root: join(process.cwd(), '_system'),
   prefix: '/system/',
-  // decorateReply: false,
-});
-
-kernel.setErrorHandler((error, _, response) => {
-  console.error('ERROR', error);
-  console.error('ERROR', JSON.stringify(error, null, 2));
-  if (error instanceof HTTPException) {
-    return response.status(Number(error.code || 500)).send({
-      message: error.message || 'Internal Server Error',
-      cause: error.cause || 'SERVER_ERROR',
-      code: Number(error.code || 500),
-    });
-  }
-  if (error instanceof ZodError) {
-    console.error('ZOD ERROR', error);
-    // const errors = error.errors.map((issue) => ({
-    // message: issue.message,
-    // }));
-    // return response.status(400).send({ errors });
-  }
-  return response.status(500).send({
-    message: 'Internal server error',
-    cause: 'SERVER_ERROR',
-    code: 500,
-  });
 });
 
 kernel.register(swagger, {
@@ -162,6 +131,26 @@ kernel.register(bootstrap, {
 
 kernel.get('/openapi.json', async function () {
   return kernel.swagger();
+});
+
+kernel.setErrorHandler((error, _, response) => {
+  if (error instanceof HTTPException) {
+    return response.status(Number(error.code || 500)).send({
+      message: error.message || 'Internal Server Error',
+      cause: error.cause || 'SERVER_ERROR',
+      code: Number(error.code || 500),
+    });
+  }
+
+  if (error instanceof ZodError) {
+    console.error('ZOD ERROR', error);
+  }
+
+  return response.status(500).send({
+    message: 'Internal server error',
+    cause: 'SERVER_ERROR',
+    code: 500,
+  });
 });
 
 export { kernel };

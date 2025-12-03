@@ -23,6 +23,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter } from "@tanstack/react-router";
 import {
   CodeIcon,
+  CodepenIcon,
   InfoIcon,
   PencilIcon,
   PlusIcon,
@@ -33,6 +34,7 @@ import React from "react";
 import { toast } from "sonner";
 import { UpdateTableSheet } from "../../-components/update-table.sheet";
 import { ApiEndpointsModal } from "./api-endpoints-modal";
+import { DialogTableMethod } from "./dialog-table-method";
 import { FieldManagerSheet } from "./field-manager-sheet";
 import { FieldTableCreateSheet } from "./field-table-create-sheet";
 
@@ -69,6 +71,10 @@ export function TableConfigurationDropdown() {
   );
 
   const apiEndpointsModalButtonRef = React.useRef<HTMLButtonElement | null>(
+    null
+  );
+
+  const dialogTableMethodButtonRef = React.useRef<HTMLButtonElement | null>(
     null
   );
 
@@ -221,6 +227,16 @@ export function TableConfigurationDropdown() {
             )}
           </DropdownMenuItem>
 
+          <DropdownMenuItem
+            className="inline-flex space-x-1 w-full"
+            onClick={() => {
+              dialogTableMethodButtonRef?.current?.click();
+            }}
+          >
+            <CodepenIcon className="size-4" />
+            <span>Métodos</span>
+          </DropdownMenuItem>
+
           {table?.data?.type === "table" && (
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
@@ -266,6 +282,8 @@ export function TableConfigurationDropdown() {
       <FieldManagerSheet ref={managerTableFieldButtonRef} />
 
       <UpdateTableSheet slug={slug} ref={updateTableButtonRef} />
+
+      <DialogTableMethod ref={dialogTableMethodButtonRef} />
 
       <ApiEndpointsModal ref={apiEndpointsModalButtonRef} />
     </DropdownMenu>

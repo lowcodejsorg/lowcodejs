@@ -1,5 +1,6 @@
 import type { Optional } from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
+import { PermissionSlugMapper } from '@config/util.config';
 
 type Payload = Optional<
   import('@application/core/entity.core').Permission,
@@ -12,63 +13,63 @@ export default async function Seed(): Promise<void> {
   const payload: Payload[] = [
     {
       name: 'Create table',
-      slug: 'create-table',
+      slug: PermissionSlugMapper['CREATE_TABLE'],
       description: 'Allows creating a new table',
     },
     {
-      name: 'Remove table',
-      slug: 'remove-table',
-      description: 'Allows removing or deleting existing tables.',
-    },
-    {
       name: 'Update table',
-      slug: 'update-table',
+      slug: PermissionSlugMapper['UPDATE_TABLE'],
       description: 'Allows updating data of an existing table.',
     },
     {
+      name: 'Remove table',
+      slug: PermissionSlugMapper['REMOVE_TABLE'],
+      description: 'Allows removing or deleting existing tables.',
+    },
+    {
       name: 'View table',
-      slug: 'view-table',
+      slug: PermissionSlugMapper['VIEW_TABLE'],
       description: 'Allows viewing and listening existing tables',
     },
     {
       name: 'Create field',
-      slug: 'create-field',
+      slug: PermissionSlugMapper['CREATE_FIELD'],
       description: 'Allows creating a field in an existing table',
     },
     {
       name: 'Update field',
-      slug: 'update-field',
+      slug: PermissionSlugMapper['UPDATE_FIELD'],
       description: 'Allows updating field data in an existing table',
     },
     {
       name: 'Remove field',
-      slug: 'remove-field',
+      slug: PermissionSlugMapper['REMOVE_FIELD'],
       description: 'Allows removing or deleting fields from an existing table.',
     },
     {
       name: 'View field',
-      slug: 'view-field',
+      slug: PermissionSlugMapper['VIEW_FIELD'],
       description:
         'Allows viewing and listening fields from an existing table.',
     },
     {
       name: 'Create row',
-      slug: 'create-row',
+      slug: PermissionSlugMapper['CREATE_ROW'],
       description: 'Allows creating new rows in an existing table',
     },
     {
       name: 'Update row',
-      slug: 'update-row',
+      slug: PermissionSlugMapper['UPDATE_ROW'],
       description: 'Allows updating row data in an existing table.',
     },
     {
       name: 'Remove row',
-      slug: 'remove-row',
+      slug: PermissionSlugMapper['REMOVE_ROW'],
       description: 'Allows removing rows from an existing table.',
     },
     {
       name: 'View row',
-      slug: 'view-row',
+      slug: PermissionSlugMapper['VIEW_ROW'],
       description: 'Allows viewing and listening rows from an existing table.',
     },
   ];

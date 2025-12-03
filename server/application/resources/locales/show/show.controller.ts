@@ -4,6 +4,8 @@ import { readFile } from 'fs/promises';
 import { join } from 'path';
 import z from 'zod';
 
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+
 import { LocaleShowSchema } from './show.schema';
 
 @Controller({
@@ -13,7 +15,11 @@ export default class {
   @GET({
     url: '/:locale',
     options: {
-      // onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: true,
+        }),
+      ],
       schema: LocaleShowSchema,
     },
   })

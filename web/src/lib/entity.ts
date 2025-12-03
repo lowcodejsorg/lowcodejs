@@ -1437,6 +1437,17 @@ export interface Table extends Base {
       orderForm: string[];
     };
   };
+  methods: {
+    onLoad: {
+      code: string | null;
+    };
+    beforeSave: {
+      code: string | null;
+    };
+    afterSave: {
+      code: string | null;
+    };
+  };
 }
 
 export interface TablePayload {
@@ -1456,6 +1467,17 @@ export interface TablePayload {
     fields: {
       orderList: string[];
       orderForm: string[];
+    };
+  };
+  methods: {
+    onLoad: {
+      code: string | null;
+    };
+    beforeSave: {
+      code: string | null;
+    };
+    afterSave: {
+      code: string | null;
     };
   };
 }

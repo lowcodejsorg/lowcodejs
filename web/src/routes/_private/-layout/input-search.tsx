@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Input } from "@/components/ui/input";
 import { useI18n } from "@/hooks/i18.hook";
 import { useLocation, useNavigate } from "@tanstack/react-router";
@@ -41,46 +42,33 @@ export function InputSearch() {
 
   return (
     <div className="flex-1 inline-flex items-center relative h-8 w-full gap-4">
-      <Input
-        value={inputValue}
-        onChange={(e) => {
-          setInputValue(e.target.value);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Enter") {
-            e.preventDefault();
-            performSearch();
-          }
-        }}
-        placeholder={t("INPUT_SEARCH_PLACEHOLDER", "Pesquisar...") as string}
-        className="h-full shadow-none rounded-sm w-full"
-      />
+      <ButtonGroup className="w-full">
+        <Input
+          value={inputValue}
+          onChange={(e) => {
+            setInputValue(e.target.value);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              performSearch();
+            }
+          }}
+          placeholder={t("INPUT_SEARCH_PLACEHOLDER", "Pesquisar...") as string}
+        />
 
-      {hasSearchValue && (
-        <Button
-          onClick={clearSearch}
-          variant="outline"
-          className="absolute right-0 h-8 rounded-l-none max-w-[100px] w-full cursor-pointer"
-        >
-          <XIcon
-            className="size-4 cursor-pointer hover:text-foreground"
-            strokeWidth={1.5}
-          />
-        </Button>
-      )}
+        {hasSearchValue && (
+          <Button onClick={clearSearch} variant="outline" aria-label="Search">
+            <XIcon strokeWidth={1.5} />
+          </Button>
+        )}
 
-      {!hasSearchValue && (
-        <Button
-          variant="outline"
-          onClick={performSearch}
-          className="absolute right-0 h-8 rounded-l-none max-w-[100px] w-full cursor-pointer"
-        >
-          <SearchIcon
-            className="size-4 cursor-pointer hover:text-foreground"
-            strokeWidth={1.5}
-          />
-        </Button>
-      )}
+        {!hasSearchValue && (
+          <Button variant="outline" onClick={performSearch} aria-label="Search">
+            <SearchIcon strokeWidth={1.5} />
+          </Button>
+        )}
+      </ButtonGroup>
     </div>
   );
 }

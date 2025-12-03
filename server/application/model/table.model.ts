@@ -31,7 +31,7 @@ const Configuration = new mongoose.Schema(
     },
     visibility: {
       type: String,
-      enum: ['public', 'restricted', 'open', 'form'],
+      enum: ['public', 'restricted', 'open', 'form', 'private'],
       default: 'restricted',
     },
     collaboration: {
@@ -53,6 +53,32 @@ const Configuration = new mongoose.Schema(
     fields: {
       type: FieldConfiguration,
       default: { orderList: [], orderForm: [] },
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+const Methods = new mongoose.Schema(
+  {
+    onLoad: {
+      code: {
+        type: String,
+        default: null,
+      },
+    },
+    beforeSave: {
+      code: {
+        type: String,
+        default: null,
+      },
+    },
+    afterSave: {
+      code: {
+        type: String,
+        default: null,
+      },
     },
   },
   {
@@ -86,6 +112,14 @@ export const Schema = new mongoose.Schema(
     configuration: {
       type: Configuration,
       default: {},
+    },
+    methods: {
+      type: Methods,
+      default: {
+        onLoad: { code: null },
+        beforeSave: { code: null },
+        afterSave: { code: null },
+      },
     },
 
     trashed: { type: Boolean, default: false },

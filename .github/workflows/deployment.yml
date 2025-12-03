@@ -65,7 +65,7 @@ jobs:
       - name: Build web
         working-directory: ./web
         env:
-          VITE_API_BASE_URL: __VITE_API_BASE_URL__  # ← Adicione isso!
+          VITE_API_BASE_URL: __VITE_API_BASE_URL__  
         run: npm run build
 
       - name: Upload web build artifacts

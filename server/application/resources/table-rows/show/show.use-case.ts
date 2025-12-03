@@ -54,6 +54,41 @@ export default class TableRowShowUseCase {
 
       const populated = await row.populate(populate);
 
+      // Executar script onLoad se existir
+      if (table?.methods?.onLoad?.code) {
+        try {
+          const { HandlerFunction } = await import('@application/core/util.core');
+          const rowData = populated?.toJSON({
+            flattenObjectIds: true,
+          });
+
+          const result = HandlerFunction(
+            table.methods.onLoad.code,
+            rowData,
+            table.slug.toLowerCase(),
+            table.fields.map((f: any) => f.slug),
+            {
+              userAction: 'editar_registro',
+              executionMoment: 'carregamento_formulario',
+              tableId: table._id?.toString(),
+              userId: '', // TODO: Pegar userId do contexto da requisição
+            },
+          );
+
+          if (!result.success) {
+            console.error('Erro no onLoad (não bloqueante):', result.error);
+          }
+
+          // Retornar dados possivelmente modificados pelo script
+          return right({
+            ...rowData,
+            _id: populated?._id?.toString(),
+          });
+        } catch (error) {
+          console.error('Erro ao executar onLoad:', error);
+        }
+      }
+
       return right({
         ...populated?.toJSON({
           flattenObjectIds: true,

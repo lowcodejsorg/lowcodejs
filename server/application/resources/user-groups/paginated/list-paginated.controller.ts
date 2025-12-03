@@ -21,7 +21,11 @@ export default class {
   @GET({
     url: '/paginated',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: UserGroupPaginatedSchema,
     },
   })

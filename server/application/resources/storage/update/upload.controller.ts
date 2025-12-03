@@ -21,7 +21,11 @@ export default class {
   @POST({
     url: '',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: StorageUploadSchema,
     },
   })

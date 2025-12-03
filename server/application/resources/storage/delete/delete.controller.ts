@@ -25,7 +25,11 @@ export default class {
   @DELETE({
     url: '/:_id',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: StorageDeleteSchema,
     },
   })

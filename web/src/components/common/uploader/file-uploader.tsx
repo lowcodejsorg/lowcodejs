@@ -170,11 +170,11 @@ export const FileUploader = forwardRef<
           newValues.splice(0, newValues.length);
         }
 
-        files.forEach((file) => {
+        for (const file of files) {
           if (newValues.length < maxFiles) {
             newValues.push(file);
           }
-        });
+        }
 
         onValueChange(newValues);
 

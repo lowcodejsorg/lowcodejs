@@ -19,7 +19,11 @@ export default class {
   @POST({
     url: '/user-group',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: UserGroupCreateSchema,
     },
   })

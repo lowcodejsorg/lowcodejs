@@ -19,7 +19,11 @@ export default class {
   @POST({
     url: '/users',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: UserCreateSchema,
     },
   })

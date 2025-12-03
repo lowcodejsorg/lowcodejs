@@ -1,57 +1,74 @@
-name: local-lowcodejs
+name: low-code-js
 
 services:
-  local-mongo:
+  database:
     image: mongo:latest
-    container_name: local-mongo
+    container_name: low-code-js-database
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: local
       MONGO_INITDB_ROOT_PASSWORD: local
     volumes:
-      - local-mongo-volume:/data/db
+      - low-code-js-database-volume:/data/db
     ports:
       - "27017:27017"
     networks:
-      - local-lowcodejs-network
+      - low-code-js-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-  # local-api:
-  #   container_name: local-api
-  #   build:
-  #     context: ./api
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - ./api/.env.local
-  #   restart: unless-stopped
-  #   ports:
-  #     - "3000:3000"
-  #   volumes:
-  #     - local-storage-api-volume:/app/_storage
-  #   depends_on:
-  #     - local-mongo
-  #   networks:
-  #     - local-lowcodejs-network
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile-local
+    container_name: low-code-js-server
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
+    networks:
+      - low-code-js-network
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - ./server:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health-check"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
 
-  # local-app:
-  #   container_name: local-app
-  #   build:
-  #     context: ./app
-  #     dockerfile: Dockerfile
-  #   env_file:
-  #     - ./app/.env.local
-  #   ports:
-  #     - "5170:80"
-  #   depends_on:
-  #     - local-api
-  #   networks:
-  #     - local-lowcodejs-network
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile-local
+    container_name: low-code-js-web
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    env_file: .env
+    environment:
+      - VITE_API_URL=http://localhost:3000
+    networks:
+      - low-code-js-network
+    depends_on:
+      server:
+        condition: service_healthy
+    volumes:
+      - ./web:/app
+      - /app/node_modules
 
 volumes:
-  local-mongo-volume:
+  low-code-js-database-volume:
     driver: local
-  # local-storage-api-volume:
-  #   driver: local
 
 networks:
-  local-lowcodejs-network:
+  low-code-js-network:
     driver: bridge

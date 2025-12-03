@@ -178,7 +178,7 @@ export const TableSendToTrashSchema: FastifySchema = {
             },
             visibility: {
               type: 'string',
-              enum: ['public', 'restricted', 'open', 'form'],
+              enum: ['public', 'restricted', 'open', 'form', 'private'],
               description: 'Visibility setting',
             },
             collaboration: {

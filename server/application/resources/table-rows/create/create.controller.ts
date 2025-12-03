@@ -1,7 +1,8 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
-import { ListVisibilityMiddleware } from '@application/middlewares/list-visibility.middleware';
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
 import { TableRowCreateSchema } from './create.schema';
 import TableRowCreateUseCase from './create.use-case';
@@ -24,7 +25,15 @@ export default class {
   @POST({
     url: '/:slug/rows',
     options: {
-      onRequest: [ListVisibilityMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: true,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'CREATE_ROW',
+          // Sem allowedGroups - Registered pode criar em tabelas abertas/públicas
+        }),
+      ],
       schema: TableRowCreateSchema,
     },
   })
@@ -32,15 +41,6 @@ export default class {
     console.log('request.body', request.body);
     const payload = TableRowCreateBodyValidator.parse(request.body);
     const params = TableRowCreateParamValidator.parse(request.params);
-
-    console.log('payload', payload);
-    console.log('params', request?.user?.sub);
-
-    console.log({
-      ...payload,
-      ...params,
-      ...(request?.user?.sub && { creator: request.user.sub }),
-    });
 
     const result = await this.useCase.execute({
       ...payload,

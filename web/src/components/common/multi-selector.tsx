@@ -117,13 +117,15 @@ function transToGroupOption(options: Option[], groupBy?: string) {
   }
 
   const groupOption: GroupOption = {};
-  options.forEach((option) => {
+
+  for (const option of options) {
     const key = (option[groupBy] as string) || "";
     if (!groupOption[key]) {
       groupOption[key] = [];
     }
     groupOption[key].push(option);
-  });
+  }
+
   return groupOption;
 }
 
@@ -216,7 +218,9 @@ const MultipleSelector = React.forwardRef<
     const dropdownRef = React.useRef<HTMLDivElement>(null);
 
     const [draggedIndex, setDraggedIndex] = React.useState<number | null>(null);
-    const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(null);
+    const [dragOverIndex, setDragOverIndex] = React.useState<number | null>(
+      null
+    );
 
     const [selected, setSelected] = React.useState<Option[]>(value || []);
     const [options, setOptions] = React.useState<GroupOption>(
@@ -308,7 +312,12 @@ const MultipleSelector = React.forwardRef<
       (e: React.DragEvent<HTMLDivElement>, dropIndex: number) => {
         e.preventDefault();
 
-        if (!allowReorder || disabled || draggedIndex === null || draggedIndex === dropIndex) {
+        if (
+          !allowReorder ||
+          disabled ||
+          draggedIndex === null ||
+          draggedIndex === dropIndex
+        ) {
           setDraggedIndex(null);
           setDragOverIndex(null);
           return;

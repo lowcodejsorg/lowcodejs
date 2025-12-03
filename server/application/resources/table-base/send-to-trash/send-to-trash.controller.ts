@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
 import { TableSendToTrashSchema } from './send-to-trash.schema';
 import TableSendToTrashUseCase from './send-to-trash.use-case';
@@ -21,7 +22,15 @@ export default class {
   @PATCH({
     url: '/:slug/trash',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'UPDATE_TABLE',
+          // Sem allowedGroups - valida apenas ownership
+        }),
+      ],
       schema: TableSendToTrashSchema,
     },
   })

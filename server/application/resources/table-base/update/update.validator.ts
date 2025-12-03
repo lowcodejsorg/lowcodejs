@@ -1,6 +1,9 @@
 import z from 'zod';
 
-import { TableConfigurationSchema } from '../table-base.schema';
+import {
+  TableConfigurationSchema,
+  TableMethodSchema,
+} from '../table-base.schema';
 
 export const TableUpdateBodyValidator = z.object({
   name: z
@@ -15,6 +18,7 @@ export const TableUpdateBodyValidator = z.object({
   description: z.string().trim().nullable(),
   logo: z.string().trim().nullable(),
   configuration: TableConfigurationSchema,
+  methods: TableMethodSchema,
 });
 
 export const TableUpdateParamValidator = z.object({

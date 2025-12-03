@@ -171,7 +171,7 @@ export const TablePaginatedSchema: FastifySchema = {
                   },
                   visibility: {
                     type: 'string',
-                    enum: ['public', 'restricted', 'open', 'form'],
+                    enum: ['public', 'restricted', 'open', 'form', 'private'],
                     description: 'Visibility setting',
                   },
                   collaboration: {
@@ -222,6 +222,42 @@ export const TablePaginatedSchema: FastifySchema = {
                 type: 'string',
                 enum: ['table', 'field-group'],
                 description: 'Table type',
+              },
+              methods: {
+                type: 'object',
+                properties: {
+                  beforeSave: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Code to execute before saving',
+                      },
+                    },
+                  },
+                  afterSave: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Code to execute after saving',
+                      },
+                    },
+                  },
+                  onLoad: {
+                    type: 'object',
+                    properties: {
+                      code: {
+                        type: 'string',
+                        nullable: true,
+                        description: 'Code to execute before saving',
+                      },
+                    },
+                  },
+                },
+                description: 'Table methods configuration',
               },
               _schema: {
                 type: 'object',

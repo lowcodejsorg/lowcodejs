@@ -24,7 +24,11 @@ export default class {
   @PATCH({
     url: '/:_id',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: UserUpdateSchema,
     },
   })

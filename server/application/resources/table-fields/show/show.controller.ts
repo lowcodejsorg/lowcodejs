@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
 import { TableFieldShowSchema } from './show.schema';
 import TableFieldShowUseCase from './show.use-case';
@@ -21,7 +22,15 @@ export default class {
   @GET({
     url: '/:slug/fields/:_id',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'VIEW_FIELD',
+          // Sem allowedGroups - depende da visibilidade da tabela
+        }),
+      ],
       schema: TableFieldShowSchema,
     },
   })

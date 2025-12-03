@@ -51,11 +51,7 @@ export default class {
       email: result?.value?.email,
       name: result?.value?.name,
       permissions: permissions?.flatMap((permission) => permission.slug),
-      group: {
-        name: group?.name,
-        description: group?.description,
-        slug: group?.slug,
-      },
+      group: group.slug,
       sub: result?.value?._id?.toString(),
     };
 

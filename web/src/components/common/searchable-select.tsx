@@ -210,18 +210,22 @@ export function SearchableSelect({
     const unselectedOptions: SearchableOption[] = [];
 
     // Extract and classify options from all pages
-    data?.pages.forEach((page) => {
-      page.items.forEach((option) => {
+
+    for (const page of data?.pages || []) {
+      for (const option of page.items) {
         const isSelected = selectedValues.some(
           (selected) => selected.value === option.value
         );
+
         if (isSelected) {
           selectedOptions.push(option);
-        } else {
+        }
+
+        if (!isSelected) {
           unselectedOptions.push(option);
         }
-      });
-    });
+      }
+    }
 
     // Render selected options first
     return (

@@ -1,27 +1,25 @@
-import { type FastifyReply, type FastifyRequest } from 'fastify';
+import { type FastifyRequest } from 'fastify';
 
-import type { JWTPayload } from '@application/core/entity.core';
+import HTTPException from '@application/core/exception.core';
 
-export async function AuthenticationMiddleware(
-  request: FastifyRequest,
-  response: FastifyReply,
-): Promise<void> {
-  try {
-    const decoded: JWTPayload = await request.jwtVerify();
+interface AuthOptions {
+  optional?: boolean;
+}
 
-    request.user = {
-      sub: decoded.sub ?? undefined,
-      email: decoded?.email ?? undefined,
-      name: decoded?.name ?? undefined,
-      group: decoded?.group ?? undefined,
-      permissions: decoded?.permissions ?? undefined,
-    };
-  } catch (error) {
-    console.error(error);
-    return response.status(401).send({
-      code: 401,
-      message: 'Unauthorized',
-      cause: 'AUTHENTICATION_REQUIRED',
-    });
-  }
+export function AuthenticationMiddleware(options: AuthOptions = {}) {
+  const { optional = false } = options;
+
+  return async function (request: FastifyRequest): Promise<void> {
+    try {
+      await request.jwtVerify();
+    } catch (error) {
+      if (optional) return;
+
+      console.error('Authentication error:', error);
+      throw HTTPException.Unauthorized(
+        'Authentication required',
+        'AUTHENTICATION_REQUIRED',
+      );
+    }
+  };
 }

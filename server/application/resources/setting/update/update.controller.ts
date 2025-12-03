@@ -32,7 +32,11 @@ export default class {
     url: '',
     // url: '/:filename',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: SettingUpdateSchema,
     },
   })

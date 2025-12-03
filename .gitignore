@@ -12,9 +12,6 @@
 **/coverage/
 **/.DS_Store
 **/logs
-**/.env.local
-**/.env.demo
-**/.env.develop
 **/.env
 
 **/coverage
@@ -25,3 +22,6 @@
 **/.next/cache
 
 server/_system/setting.properties
+
+**/claude
+**/.claude

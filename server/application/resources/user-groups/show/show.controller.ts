@@ -21,7 +21,11 @@ export default class {
   @GET({
     url: '/:_id',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: UserGroupShowSchema,
     },
   })

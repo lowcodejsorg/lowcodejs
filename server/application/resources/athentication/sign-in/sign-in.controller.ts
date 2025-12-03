@@ -47,13 +47,9 @@ export default class {
     const jwt: JWTPayload = {
       email: result?.value?.email,
       name: result?.value?.name,
+      sub: result?.value?._id?.toString(),
       permissions: permissions?.flatMap((permission) => permission.slug),
-      group: {
-        name: group?.name,
-        description: group?.description,
-        slug: group?.slug,
-      },
-      sub: result?.value?._id?.toString() as string,
+      group: group.slug,
     };
 
     const accessToken = await response.jwtSign(jwt, {

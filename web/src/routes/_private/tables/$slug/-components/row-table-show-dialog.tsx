@@ -76,7 +76,7 @@ export function RowTableShowDialog({ _id, ...props }: Props) {
       // Fallback: copy to clipboard
       handleCopyLink();
     }
-  }, [generateRecordLink, handleCopyLink]);
+  }, [generateRecordLink, handleCopyLink, t]);
 
   const table = useQuery({
     queryKey: ["/tables/".concat(slug), slug],

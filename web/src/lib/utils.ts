@@ -107,3 +107,104 @@ export function getFileType({ type, filename }: Storage) {
 
   return "text";
 }
+
+// Função para gerar código exemplo dinâmico para beforeSave
+export const generateBeforeSaveCode = (
+  fieldPlaceholders: Record<string, unknown>
+) => {
+  const placeholderKeys = Object.keys(fieldPlaceholders);
+  const firstField = placeholderKeys[0] || "$tabela_campo";
+  const secondField = placeholderKeys[1] || "$tabela_outro_campo";
+
+  return `// BEFORE SAVE: Executa ANTES de salvar o registro
+// Placeholders disponíveis: ${placeholderKeys.join(", ")}
+
+// Exemplo 1: Validação customizada
+if (userAction === 'novo_registro' || userAction === 'editar_registro') {
+  // Validar campos obrigatórios
+  if (!${firstField}) {
+    throw new Error('Campo obrigatório não preenchido');
+  }
+
+  // Cálculos antes de salvar
+  ${
+    placeholderKeys.length > 1
+      ? `if (typeof ${firstField} === 'number' && typeof ${secondField} === 'number') {
+    const total = ${firstField} + ${secondField};
+    console.log('Total calculado:', total);
+  }`
+      : `console.log('Processando:', ${firstField});`
+  }
+}
+
+// Exemplo 2: Modificar dados antes de salvar
+if (userAction === 'editar_registro' && executionMoment === 'antes_salvar') {
+  // setFieldValue('campo_id', 'novo_valor');
+  console.log('Dados processados antes de salvar');
+}`;
+};
+
+// Função para gerar código exemplo dinâmico para afterSave
+export const generateAfterSaveCode = (
+  fieldPlaceholders: Record<string, unknown>
+) => {
+  const placeholderKeys = Object.keys(fieldPlaceholders);
+  const firstField = placeholderKeys[0] || "$tabela_campo";
+
+  return `// AFTER SAVE: Executa DEPOIS de salvar o registro
+// Placeholders disponíveis: ${placeholderKeys.join(", ")}
+
+// Exemplo 1: Envio de notificações
+if (userAction === 'novo_registro' && executionMoment === 'depois_salvar') {
+  sendEmail(
+    ['admin@empresa.com'],
+    'Novo registro criado',
+    \`Registro criado com valor: \${${firstField}}\`
+  );
+}
+
+// Exemplo 2: Integração com outros sistemas
+if (userAction === 'editar_registro' && executionMoment === 'depois_salvar') {
+  // Chamar API externa, webhook, etc.
+  console.log('Registro atualizado:', ${firstField});
+
+  // fetch('https://api.externa.com/webhook', {
+  //   method: 'POST',
+  //   body: JSON.stringify({ data: ${firstField} })
+  // });
+}
+
+// Exemplo 3: Log de auditoria
+console.log('Ação completada:', userAction, 'em', new Date().toISOString());`;
+};
+
+export const generateOnLoadCode = (
+  fieldPlaceholders: Record<string, unknown>
+) => {
+  const placeholderKeys = Object.keys(fieldPlaceholders);
+  const firstField = placeholderKeys[0] || "$tabela_campo";
+  const secondField = placeholderKeys[1] || "$tabela_outro_campo";
+  return `// ON LOAD: Executa quando o formulário carrega
+// Placeholders disponíveis: ${placeholderKeys.join(", ")}
+// Variáveis globais: userAction, executionMoment, userId, tableId
+
+// Exemplo 1: Configuração inicial do formulário
+if (executionMoment === 'carregamento_formulario') {
+  // Pré-preencher campos baseado em regras de negócio
+  if (!${firstField}) {
+    setFieldValue('${firstField.replace('$', '')}', 'Valor padrão');
+  }
+
+  // Configurar visibilidade de campos
+  console.log('Formulário carregado para usuário:', userId);
+}
+
+// Exemplo 2: Cálculos automáticos no carregamento
+if (${firstField} && ${secondField}) {
+  const resultado = parseFloat(${firstField}) + parseFloat(${secondField});
+  console.log('Cálculo inicial:', resultado);
+}
+
+// Exemplo 3: Validações customizadas
+console.log('Carregamento concluído em:', new Date().toISOString());`;
+};

@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
 import { TableCreateSchema } from './create.schema';
 import TableCreateUseCase from './create.use-case';
@@ -21,7 +22,15 @@ export default class {
   @POST({
     url: '',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'CREATE_TABLE',
+          allowedGroups: ['MASTER', 'ADMINISTRATOR', 'MANAGER'],
+        }),
+      ],
       schema: TableCreateSchema,
     },
   })

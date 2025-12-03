@@ -7,7 +7,7 @@ import { left, right } from '@application/core/either.core';
 import type { User as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { User as Model } from '@application/model/user.model';
-import { isPasswordMatch } from '@config/app.config';
+import { isPasswordMatch } from '@config/util.config';
 
 import type {
   ProfileUpdateBodyValidator,

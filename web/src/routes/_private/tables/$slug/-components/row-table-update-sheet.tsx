@@ -46,34 +46,6 @@ interface Props {
 function TableRowUpdateForm({ fields, order, onClose, row }: Props) {
   const { t } = useI18n();
 
-  // const form = useForm({
-  //   defaultValues: React.useMemo(() => {
-  //     const defaultValues: Record<string, any> = {};
-
-  //     fields?.forEach((field) => {
-  //       const value = row[field.slug];
-
-  //       if (field.type === FIELD_TYPE.DATE && value) {
-  //         defaultValues[field.slug] = new Date(value);
-  //       } else if (field.type === FIELD_TYPE.FILE && value) {
-  //         defaultValues[field.slug] = Array.isArray(value)
-  //           ? value.map((file: any) => file._id)
-  //           : [];
-  //       } else if (field.type === FIELD_TYPE.DROPDOWN && value) {
-  //         defaultValues[field.slug] = Array.from<string>(value);
-  //       } else if (field.type === FIELD_TYPE.RELATIONSHIP && value) {
-  //         defaultValues[field.slug] = Array.from<any>(value).map(
-  //           (r: any) => r._id
-  //         );
-  //       } else if (value !== undefined && value !== null) {
-  //         defaultValues[field.slug] = value;
-  //       }
-  //     });
-
-  //     return defaultValues;
-  //   }, [fields, row]),
-  // });
-
   const form = useForm();
 
   const { slug } = useParams({
@@ -153,12 +125,17 @@ function TableRowUpdateForm({ fields, order, onClose, row }: Props) {
 
         // 422 - UNPROCESSABLE_ENTITY
         if (data?.code === 422 && data?.cause === "UNPROCESSABLE_ENTITY") {
-          toast.error(data?.message ?? t("VALIDATION_ERROR_DATA", "Erro de validação"));
+          toast.error(
+            data?.message ?? t("VALIDATION_ERROR_DATA", "Erro de validação")
+          );
         }
 
         // 500 - SERVER_ERROR
         if (data?.code === 500) {
-          toast.error(data?.message ?? t("VALIDATION_ERROR_SERVER", "Erro interno do servidor"));
+          toast.error(
+            data?.message ??
+              t("VALIDATION_ERROR_SERVER", "Erro interno do servidor")
+          );
         }
       }
 

@@ -13,7 +13,11 @@ export default class {
   @POST({
     url: '/sign-out',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: SignOutSchema,
     },
   })

@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+
 /**
  * Make some property optional an type
  *
@@ -59,10 +60,10 @@ export enum FIELD_FORMAT {
 
 export interface JWTPayload {
   sub: string;
-  group: Pick<UserGroup, 'name' | 'description' | 'slug'>;
-  permissions: string[];
   email: string;
   name: string;
+  permissions: string[];
+  group: string;
 }
 
 export interface Base {
@@ -127,13 +128,24 @@ export interface Table extends Base {
   type: 'table' | 'field-group';
   configuration: {
     style: 'gallery' | 'list';
-    visibility: 'public' | 'restricted' | 'open' | 'form';
+    visibility: 'public' | 'restricted' | 'open' | 'form' | 'private';
     collaboration: 'open' | 'restricted';
     administrators: string[] | User[];
     owner: string | User;
     fields: {
       orderList: string[];
       orderForm: string[];
+    };
+  };
+  methods: {
+    onLoad: {
+      code: string | null;
+    };
+    beforeSave: {
+      code: string | null;
+    };
+    afterSave: {
+      code: string | null;
     };
   };
 }

@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
 import TableRowUpdateUseCase from './update.use-case';
 import {
@@ -23,7 +24,15 @@ export default class {
   @PUT({
     url: '/:slug/rows/:_id',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'UPDATE_ROW',
+          // Sem allowedGroups - valida apenas ownership
+        }),
+      ],
       schema: {
         tags: ['Rows'],
         summary: 'Update row',

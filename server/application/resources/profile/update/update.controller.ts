@@ -21,7 +21,11 @@ export default class {
   @PUT({
     url: '',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: ProfileUpdateSchema,
     },
   })

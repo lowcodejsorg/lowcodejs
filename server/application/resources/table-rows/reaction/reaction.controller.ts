@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
 import { TableRowReactionSchema } from './reaction.schema';
 import TableRowReactionUseCase from './reaction.use-case';
@@ -24,7 +25,15 @@ export default class {
   @POST({
     url: '/:slug/rows/:_id/reaction',
     options: {
-      onRequest: [AuthenticationMiddleware],
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'UPDATE_ROW',
+          // Sem allowedGroups - usuário logado pode reagir se puder ver
+        }),
+      ],
       schema: TableRowReactionSchema,
     },
   })

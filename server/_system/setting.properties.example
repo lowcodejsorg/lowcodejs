@@ -17,7 +17,7 @@ COOKIE_SECRET=
 NODE_ENV=development
 PORT=3000
 
-DATABASE_URL=mongodb://local:local@127.0.0.1:27017
+DATABASE_URL=mongodb://local:local@database:27017
 
 EMAIL_PROVIDER_PASSWORD=
 EMAIL_PROVIDER_USER=

@@ -3,6 +3,7 @@ import { Controller, GET } from 'fastify-decorators';
 import { readFile } from 'fs/promises';
 import { join } from 'path';
 
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { Env } from '@start/env';
 
 import { SettingShowSchema } from './show.schema';
@@ -14,6 +15,11 @@ export default class {
   @GET({
     url: '',
     options: {
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: true,
+        }),
+      ],
       schema: SettingShowSchema,
     },
   })

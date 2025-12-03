@@ -2,6 +2,8 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
 
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+
 import { ResetPasswordSchema } from './reset-password.schema';
 import UpdatePasswordRecoveryUseCase from './reset-password.use-case';
 import { UpdatePasswordBodyValidator } from './reset-password.validator';
@@ -19,6 +21,11 @@ export default class {
   @PUT({
     url: 'recovery/update-password',
     options: {
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
       schema: ResetPasswordSchema,
     },
   })

@@ -16,7 +16,14 @@ type Payload = z.infer<typeof SignInBodyValidator>;
 export default class SignInUseCase {
   async execute(payload: Payload): Promise<Response> {
     try {
-      const user = await Model.findOne({ email: payload.email });
+      const user = await Model.findOne({ email: payload.email }).populate([
+        {
+          path: 'group',
+          populate: {
+            path: 'permissions',
+          },
+        },
+      ]);
 
       if (!user) return left(HTTPException.Unauthorized());
 
