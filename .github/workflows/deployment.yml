@@ -105,6 +105,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./server
+          file: ./server/Dockerfile-production
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:${{ steps.branch.outputs.branch }}
 
@@ -138,6 +139,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./web
+          file: ./web/Dockerfile-production
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ steps.branch.outputs.branch }}
 
