@@ -85,23 +85,6 @@ export default class EmailService {
         return { success: false, message: 'Nenhum email válido fornecido' };
       }
 
-      console.log('PREPARANDO PARA ENVIAR EMAIL: ', {
-        from: options.from,
-        to: validEmails.join(', '),
-        subject: options.subject,
-        html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h2 style="color: #333;">${options.subject}</h2>
-            <div style="background: #f9f9f9; padding: 20px; border-radius: 5px;">
-              ${options.body.replace(/\n/g, '<br>')}
-            </div>
-            <p style="color: #666; font-size: 12px; margin-top: 20px;">
-              Este email foi enviado automaticamente pelo sistema Low-Code.
-            </p>
-          </div>
-        `,
-        text: options.body,
-      });
       const result = await this.transporter.sendMail({
         from: options.from,
         to: validEmails.join(', '),
