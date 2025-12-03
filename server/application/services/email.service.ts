@@ -60,6 +60,7 @@ export default class EmailService {
       });
     } catch (error) {
       console.error('Erro ao configurar transportador de email:', error);
+      //
     }
   }
 
