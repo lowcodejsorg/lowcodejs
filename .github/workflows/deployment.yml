@@ -1,0 +1,206 @@
+name: Build, Docker and Deploy to VPS (intranet, develop and demo)
+# 
+on:
+  push:
+    branches: [develop, demo, intranet]
+
+jobs:
+  build-server:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache server dependencies
+        uses: actions/cache@v4
+        with:
+          path: server/node_modules
+          key: server-deps-${{ hashFiles('server/package-lock.json') }}
+          restore-keys: |
+            server-deps-
+
+      - name: Install server dependencies
+        working-directory: ./server
+        run: npm install
+
+      - name: Build server
+        working-directory: ./server
+        run: npm run build
+
+      - name: Upload server build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: server-build-${{ github.sha }}
+          path: server/build
+          retention-days: 1
+
+  build-web:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache web dependencies
+        uses: actions/cache@v4
+        with:
+          path: web/node_modules
+          key: web-deps-${{ hashFiles('web/package-lock.json') }}
+          restore-keys: |
+            web-deps-
+
+      - name: Install web dependencies
+        working-directory: ./web
+        run: npm install
+
+      - name: Build web
+        working-directory: ./web
+        env:
+          VITE_API_BASE_URL: __VITE_API_BASE_URL__  
+        run: npm run build
+
+      - name: Upload web build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-build-${{ github.sha }}
+          path: web/dist
+          retention-days: 1
+
+  docker-server:
+    needs: build-server
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download server build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: server-build-${{ github.sha }}
+          path: server/build
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push server image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          file: ./server/Dockerfile-production
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:${{ steps.branch.outputs.branch }}
+
+  docker-web:
+    needs: build-web
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download web build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-build-${{ github.sha }}
+          path: web/dist
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./web
+          file: ./web/Dockerfile-production
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ steps.branch.outputs.branch }}
+
+  deploy-to-vps:
+    needs: [docker-server, docker-web]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Generate JWT keys and secrets
+        run: |
+          cd server
+          chmod +x credential-generator.sh
+          ./credential-generator.sh
+
+          # Extrair as variáveis do _system/setting.properties gerado
+          JWT_PRIVATE_KEY=$(grep "^JWT_PRIVATE_KEY=" _system/setting.properties | cut -d'=' -f2 | tr -d '"')
+          JWT_PUBLIC_KEY=$(grep "^JWT_PUBLIC_KEY=" _system/setting.properties | cut -d'=' -f2 | tr -d '"')
+          COOKIE_SECRET=$(grep "^COOKIE_SECRET=" _system/setting.properties | cut -d'=' -f2 | tr -d '"')
+
+          # Salvar nas variáveis de ambiente do job
+          echo "JWT_PRIVATE_KEY=$JWT_PRIVATE_KEY" >> $GITHUB_ENV
+          echo "JWT_PUBLIC_KEY=$JWT_PUBLIC_KEY" >> $GITHUB_ENV
+          echo "COOKIE_SECRET=$COOKIE_SECRET" >> $GITHUB_ENV
+
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        env:
+          JWT_PRIVATE_KEY: ${{ env.JWT_PRIVATE_KEY }}
+          JWT_PUBLIC_KEY: ${{ env.JWT_PUBLIC_KEY }}
+          COOKIE_SECRET: ${{ env.COOKIE_SECRET }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: JWT_PRIVATE_KEY,JWT_PUBLIC_KEY,COOKIE_SECRET
+          script: |
+            cd /home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}
+
+            echo "Updating docker-compose.yml with environment variables..."
+
+            # Backup do arquivo original
+            cp docker-compose.yml docker-compose.yml.backup
+
+            # Substituir apenas as variáveis vazias no docker-compose.yml existente
+            sed -i "s|JWT_PRIVATE_KEY:[ ]*$|JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}|g" docker-compose.yml
+            sed -i "s|JWT_PUBLIC_KEY:[ ]*$|JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}|g" docker-compose.yml
+            sed -i "s|COOKIE_SECRET:[ ]*$|COOKIE_SECRET: ${COOKIE_SECRET}|g" docker-compose.yml
+            sed -i "s|EMAIL_PROVIDER_PASSWORD:[ ]*$|EMAIL_PROVIDER_PASSWORD: ${{ secrets.EMAIL_PROVIDER_PASSWORD }}|g" docker-compose.yml
+            sed -i "s|EMAIL_PROVIDER_USER:[ ]*$|EMAIL_PROVIDER_USER: ${{ secrets.EMAIL_PROVIDER_USER }}|g" docker-compose.yml
+            sed -i "s|EMAIL_PROVIDER_HOST:[ ]*$|EMAIL_PROVIDER_HOST: ${{ secrets.EMAIL_PROVIDER_HOST }}|g" docker-compose.yml
+            sed -i "s|EMAIL_PROVIDER_PORT:[ ]*$|EMAIL_PROVIDER_PORT: ${{ secrets.EMAIL_PROVIDER_PORT }}|g" docker-compose.yml
+
+            echo "Variables updated successfully. Deploying..."
+
+            # Deploy
+            docker compose pull
+            docker compose up -d --build

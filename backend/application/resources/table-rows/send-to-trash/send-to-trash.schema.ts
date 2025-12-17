@@ -1,0 +1,96 @@
+import type { FastifySchema } from 'fastify';
+
+export const TableRowSendToTrashSchema: FastifySchema = {
+  tags: ['Rows'],
+  summary: 'Send row to trash',
+  description:
+    'Moves a row to trash by setting trashed=true and trashedAt timestamp. The row can be restored later or permanently deleted.',
+  security: [{ cookieAuth: [] }],
+  params: {
+    type: 'object',
+    required: ['slug', '_id'],
+    properties: {
+      slug: {
+        type: 'string',
+        description: 'Table slug containing the row',
+        examples: ['users', 'products', 'blog-posts'],
+      },
+      _id: {
+        type: 'string',
+        description: 'Row ID to move to trash',
+        examples: ['507f1f77bcf86cd799439011'],
+      },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: {
+      description: 'Row moved to trash successfully',
+      type: 'object',
+      properties: {
+        _id: { type: 'string', description: 'Row ID' },
+        trashed: {
+          type: 'boolean',
+          enum: [true],
+          description: 'Row is now in trash',
+        },
+        trashedAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Timestamp when moved to trash',
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Creation timestamp',
+        },
+        updatedAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Last update timestamp',
+        },
+      },
+      additionalProperties: true,
+    },
+    401: {
+      description: 'Unauthorized - Authentication required',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Unauthorized'] },
+        code: { type: 'number', enum: [401] },
+        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+      },
+    },
+    404: {
+      description: 'Not found - Table or row does not exist',
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          enum: ['Table not found', 'Row not found'],
+        },
+        code: { type: 'number', enum: [404] },
+        cause: {
+          type: 'string',
+          enum: ['TABLE_NOT_FOUND', 'ROW_NOT_FOUND'],
+        },
+      },
+      examples: [
+        {
+          message: 'Row not found',
+          code: 404,
+          cause: 'ROW_NOT_FOUND',
+        },
+      ],
+    },
+    500: {
+      description: 'Internal server error - Database or server issues',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Internal server error'] },
+        code: { type: 'number', enum: [500] },
+        cause: { type: 'string', enum: ['SEND_ROW_TO_TRASH_ERROR'] },
+      },
+    },
+  },
+};

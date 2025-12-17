@@ -1,0 +1,27 @@
+# Ignora node_modules em qualquer nível
+**/node_modules/
+
+# Ignora arquivos de build em qualquer pasta
+**/dist/
+**/build/
+
+# Ignora arquivos de log em qualquer lugar
+**/*.log
+
+# Ignora arquivos específicos em subpastas
+**/coverage/
+**/.DS_Store
+**/logs
+**/.env
+
+**/coverage
+
+# Turborepo
+.turbo
+**/out/
+**/.next/cache
+
+server/_system/setting.properties
+
+**/claude
+**/.claude
