@@ -1,0 +1,73 @@
+name: lowcodejs
+
+services:
+  # Banco de dados MongoDB
+  mongo:
+    image: mongo:latest
+    container_name: lowcodejs-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME:-lowcodejs}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - lowcodejs-mongo-data:/data/db
+    networks:
+      - lowcodejs-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Backend API - Imagem oficial do Docker Hub
+  api:
+    image: marcosjhollyfer/lowcodejs-api:latest
+    container_name: lowcodejs-api
+    restart: unless-stopped
+    env_file: .env
+    ports:
+      - "${APP_SERVER_PORT:-3000}:3000"
+    volumes:
+      - lowcodejs-storage:/app/_storage
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - lowcodejs-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health-check"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Frontend App - Imagem oficial do Docker Hub
+  app:
+    image: marcosjhollyfer/lowcodejs-app:latest
+    container_name: lowcodejs-app
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      - VITE_API_BASE_URL=${APP_SERVER_URL:-http://localhost:3000}
+      - NITRO_HOST=0.0.0.0
+      - NITRO_PORT=3000
+    ports:
+      - "${APP_CLIENT_PORT:-8080}:3000"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks:
+      - lowcodejs-network
+
+# Volumes para persistência de dados
+volumes:
+  lowcodejs-mongo-data:
+    driver: local
+  lowcodejs-storage:
+    driver: local
+
+# Rede interna para comunicação entre containers
+networks:
+  lowcodejs-network:
+    driver: bridge

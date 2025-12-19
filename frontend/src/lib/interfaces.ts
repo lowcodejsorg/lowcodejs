@@ -1,0 +1,191 @@
+/**
+ * Make some property optional an type
+ *
+ * @example
+ * ```typescript
+ * type Post {
+ *  id: string;
+ *  name: string;
+ *  email: string;
+ * }
+ *
+ * Optional<Post, 'name' | 'email>
+ * ```
+ */
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+
+export interface Meta {
+  total: number;
+  page: number;
+  perPage: number;
+  lastPage: number;
+  firstPage: number;
+}
+export interface Paginated<Entity> {
+  data: Entity[];
+  meta: Meta;
+}
+
+export interface Base {
+  _id: string;
+  createdAt: string;
+  updatedAt: string | null;
+  trashedAt: string | null;
+  trashed: boolean;
+}
+
+export interface IStorage extends Base {
+  url: string;
+  filename: string;
+  type: string;
+  size: number;
+  originalName: string;
+}
+
+export interface IPermission extends Base {
+  name: string;
+  slug: string;
+  description: string | null;
+}
+
+export interface IGroup extends Base {
+  name: string;
+  slug: string;
+  description: string | null;
+  permissions: IPermission[];
+}
+
+export interface IUser extends Base {
+  name: string;
+  email: string;
+  password: string;
+  status: 'active' | 'inactive';
+  group: IGroup;
+}
+
+export const MENU_ITEM_TYPE = {
+  TABLE: 'table',
+  PAGE: 'page',
+  FORM: 'form',
+  EXTERNAL: 'external',
+  SEPARATOR: 'separator',
+};
+
+export interface IMenu extends Base {
+  name: string;
+  slug: string;
+  type: keyof typeof MENU_ITEM_TYPE;
+  table: ITable | null;
+  parent: IMenu | null;
+  url: string | null;
+  html: string | null;
+}
+
+export interface ICategory {
+  id: string;
+  label: string;
+  children: ICategory[];
+}
+
+export interface IFieldConfigurationRelationship {
+  table: Pick<ITable, '_id' | 'slug'>;
+  field: Pick<IField, '_id' | 'slug'>;
+  order: 'asc' | 'desc';
+}
+
+export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
+
+export const FIELD_TYPE = {
+  TEXT_SHORT: 'TEXT_SHORT',
+  TEXT_LONG: 'TEXT_LONG',
+  DROPDOWN: 'DROPDOWN',
+  DATE: 'DATE',
+  RELATIONSHIP: 'RELATIONSHIP',
+  FILE: 'FILE',
+  FIELD_GROUP: 'FIELD_GROUP',
+  REACTION: 'REACTION',
+  EVALUATION: 'EVALUATION',
+  CATEGORY: 'CATEGORY',
+} as const;
+
+export const FIELD_FORMAT = {
+  // TEXT_SHORT
+  ALPHA_NUMERIC: 'ALPHA_NUMERIC',
+  INTEGER: 'INTEGER',
+  DECIMAL: 'DECIMAL',
+  URL: 'URL',
+  EMAIL: 'EMAIL',
+  // DATE
+  DD_MM_YYYY: 'dd/MM/yyyy',
+  MM_DD_YYYY: 'MM/dd/yyyy',
+  YYYY_MM_DD: 'yyyy/MM/dd',
+  DD_MM_YYYY_HH_MM_SS: 'dd/MM/yyyy HH:mm:ss',
+  MM_DD_YYYY_HH_MM_SS: 'MM/dd/yyyy HH:mm:ss',
+  YYYY_MM_DD_HH_MM_SS: 'yyyy/MM/dd HH:mm:ss',
+  DD_MM_YYYY_DASH: 'dd-MM-yyyy',
+  MM_DD_YYYY_DASH: 'MM-dd-yyyy',
+  YYYY_MM_DD_DASH: 'yyyy-MM-dd',
+  DD_MM_YYYY_HH_MM_SS_DASH: 'dd-MM-yyyy HH:mm:ss',
+  MM_DD_YYYY_HH_MM_SS_DASH: 'MM-dd-yyyy HH:mm:ss',
+  YYYY_MM_DD_HH_MM_SS_DASH: 'yyyy-MM-dd HH:mm:ss',
+} as const;
+
+export interface IField extends Base {
+  name: string;
+  slug: string;
+  type: keyof typeof FIELD_TYPE;
+  configuration: {
+    required: boolean;
+    multiple: boolean;
+    format: keyof typeof FIELD_FORMAT | null;
+    listing: boolean;
+    filtering: boolean;
+    defaultValue: string | null;
+    relationship: IFieldConfigurationRelationship | null;
+    dropdown: string[] | null;
+    category: ICategory[] | null;
+    group: IFieldConfigurationGroup | null;
+  };
+}
+
+export interface ISchema {
+  type: 'Number' | 'String' | 'Date' | 'Boolean' | 'ObjectId';
+  required?: boolean;
+  ref?: string;
+  default?: string | number | boolean | null;
+}
+
+export type ITableSchema = Record<string, ISchema | ISchema[]>;
+
+export interface ITable extends Base {
+  _schema: ITableSchema;
+  name: string;
+  description: string | null;
+  logo: IStorage | null;
+  slug: string;
+  fields: IField[];
+  type: 'table' | 'field-group';
+  configuration: {
+    style: 'gallery' | 'list';
+    visibility: 'public' | 'restricted' | 'open' | 'form';
+    collaboration: 'open' | 'restricted';
+    administrators: IUser[];
+    owner: IUser;
+    fields: {
+      orderList: string[];
+      orderForm: string[];
+    };
+  };
+  methods: {
+    onLoad: {
+      code: string | null;
+    };
+    beforeSave: {
+      code: string | null;
+    };
+    afterSave: {
+      code: string | null;
+    };
+  };
+}

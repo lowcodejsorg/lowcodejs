@@ -1,0 +1,92 @@
+name: ${ENVIRONMENT}-lowcodejs
+
+services:
+  mongo:
+    image: mongo:latest
+    # container_name: ${ENVIRONMENT}-mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    volumes:
+      - mongo-volume:/data/db
+    networks:
+      - traefik-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  api:
+    # container_name: ${ENVIRONMENT}-api
+    image: ${DOCKER_USERNAME}/lowcodejs-api:${ENVIRONMENT}
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017
+      APP_SERVER_URL: https://api.${ENVIRONMENT}.lowcodejs.org
+      APP_CLIENT_URL: https://${ENVIRONMENT}.lowcodejs.org
+      JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
+      JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
+      COOKIE_SECRET: ${COOKIE_SECRET}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN}
+      EMAIL_PROVIDER_PASSWORD: ${EMAIL_PROVIDER_PASSWORD}
+      EMAIL_PROVIDER_USER: ${EMAIL_PROVIDER_USER}
+      EMAIL_PROVIDER_HOST: ${EMAIL_PROVIDER_HOST}
+      EMAIL_PROVIDER_PORT: ${EMAIL_PROVIDER_PORT}
+      FILE_UPLOAD_MAX_SIZE: 10485760
+      FILE_UPLOAD_ACCEPTED: "jpg;  jpeg;  png;  pdf;  doc;  docx;  xls;  xlsx;  txt;  zip;  rar"
+      FILE_UPLOAD_MAX_FILES_PER_UPLOAD: 10
+      LOCALE: 'pt-br'
+      PAGINATION_PER_PAGE: 20
+    restart: unless-stopped
+    volumes:
+      - storage-api-volume:/app/_storage
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${ENVIRONMENT}-api.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-api.entrypoints=websecure"
+      - "traefik.http.routers.${ENVIRONMENT}-api.tls.certresolver=myresolver"
+      - "traefik.http.services.${ENVIRONMENT}-api.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${ENVIRONMENT}-api-http.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-api-http.entrypoints=web"
+      - "traefik.http.routers.${ENVIRONMENT}-api-http.middlewares=https-only@file"
+
+  app:
+    # container_name: ${ENVIRONMENT}-app
+    image: ${DOCKER_USERNAME}/lowcodejs-app:${ENVIRONMENT}
+    environment:
+      VITE_API_BASE_URL: https://api.${ENVIRONMENT}.lowcodejs.org
+      NITRO_PORT: 3000
+      NITRO_HOST: 0.0.0.0
+    depends_on:
+      - api
+    networks:
+      - traefik-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-app.entrypoints=websecure"
+      - "traefik.http.routers.${ENVIRONMENT}-app.tls.certresolver=myresolver"
+      - "traefik.http.services.${ENVIRONMENT}-app.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-app-http.entrypoints=web"
+      - "traefik.http.routers.${ENVIRONMENT}-app-http.middlewares=https-only@file"
+
+volumes:
+  mongo-volume:
+    driver: local
+  storage-api-volume:
+    driver: local
+
+networks:
+  traefik-network:
+    external: true
+# 

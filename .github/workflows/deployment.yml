@@ -1,0 +1,156 @@
+name: Build, Docker and Deploy to VPS (intranet, develop and demo)
+# 
+on:
+  push:
+    branches: [develop, demo, intranet]
+
+jobs:
+  build-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cache backend dependencies
+        uses: actions/cache@v4
+        with:
+          path: backend/node_modules
+          key: backend-deps-${{ hashFiles('backend/package-lock.json') }}
+          restore-keys: |
+            backend-deps-
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm install
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Upload backend build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build-${{ github.sha }}
+          path: backend/build
+          retention-days: 1
+
+  docker-backend:
+    needs: build-backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download backend build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build-${{ github.sha }}
+          path: backend/build
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile-production
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:${{ steps.branch.outputs.branch }}
+
+  docker-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile-production
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ steps.branch.outputs.branch }}
+          build-args: |
+            VITE_API_BASE_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
+
+  deploy-to-vps:
+    needs: [docker-backend, docker-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get branch name
+        id: branch
+        run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}
+
+            # Criar arquivo .env com as variáveis
+            cat > .env << EOF
+            ENVIRONMENT=${{ steps.branch.outputs.branch }}
+            NODE_ENV=production
+            PORT=3000
+            DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+            MONGO_USERNAME=${{ steps.branch.outputs.branch }}
+            MONGO_PASSWORD=${{ secrets.MONGO_PASSWORD }}
+            DATABASE_URL=mongodb://${{ steps.branch.outputs.branch }}:${{ secrets.MONGO_PASSWORD }}@mongo:27017
+            APP_SERVER_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
+            APP_CLIENT_URL=https://${{ steps.branch.outputs.branch }}.lowcodejs.org
+            JWT_PRIVATE_KEY=${{ secrets.JWT_PRIVATE_KEY }}
+            JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }}
+            COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}
+            COOKIE_DOMAIN=${{ secrets.COOKIE_DOMAIN }}
+            EMAIL_PROVIDER_PASSWORD=${{ secrets.EMAIL_PROVIDER_PASSWORD }}
+            EMAIL_PROVIDER_USER=${{ secrets.EMAIL_PROVIDER_USER }}
+            EMAIL_PROVIDER_HOST=${{ secrets.EMAIL_PROVIDER_HOST }}
+            EMAIL_PROVIDER_PORT=${{ secrets.EMAIL_PROVIDER_PORT }}
+            VITE_API_BASE_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
+            FILE_UPLOAD_MAX_SIZE=10485760
+            FILE_UPLOAD_ACCEPTED=jpg;  jpeg;  png;  pdf;  doc;  docx;  xls;  xlsx;  txt;  zip;  rar
+            FILE_UPLOAD_MAX_FILES_PER_UPLOAD=10
+            LOCALE=pt-br
+            PAGINATION_PER_PAGE=20
+            EOF
+
+            echo "Environment variables configured successfully. Deploying..."
+
+            # Deploy
+            docker compose -f docker-compose.production.yml pull
+            docker compose -f docker-compose.production.yml up -d

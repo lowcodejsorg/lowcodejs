@@ -1,0 +1,76 @@
+name: low-code-js
+
+services:
+  database:
+    image: mongo:latest
+    container_name: low-code-js-database
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: local
+      MONGO_INITDB_ROOT_PASSWORD: local
+    volumes:
+      - low-code-js-database-volume:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - low-code-js-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile-local
+    container_name: low-code-js-backend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    env_file: .env
+    networks:
+      - low-code-js-network
+    depends_on:
+      database:
+        condition: service_healthy
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health-check"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile-local
+    container_name: low-code-js-frontend
+    restart: unless-stopped
+    ports:
+      - "5173:5173"
+    env_file: .env
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3000
+    networks:
+      - low-code-js-network
+    depends_on:
+      backend:
+        condition: service_healthy
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  low-code-js-database-volume:
+    driver: local
+
+networks:
+  low-code-js-network:
+    driver: bridge
+
+
