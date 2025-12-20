@@ -1,11 +1,11 @@
-import { createFileRoute, Link, useParams } from '@tanstack/react-router';
+import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 
 import { ArrowLeftIcon } from 'lucide-react';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useReadMenu } from '../../../../tanstack-query/use-menu-read';
+import { useReadMenu } from '@/tanstack-query/use-menu-read';
 import { UpdateMenuForm } from './-update-form';
 import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
 
@@ -19,6 +19,7 @@ function RouteComponent() {
   });
 
   const sidebar = useSidebar();
+  const router = useRouter();
 
   const _read = useReadMenu({ menuId });
 
@@ -30,18 +31,16 @@ function RouteComponent() {
           <Button
             variant="ghost"
             size="icon-sm"
-            asChild
             onClick={() => {
               sidebar.setOpen(true);
+              router.navigate({
+                to: '/menus',
+                replace: true,
+                search: { page: 1, perPage: 50 },
+              });
             }}
           >
-            <Link
-              to="/menus"
-              replace
-              search={{ page: 1, perPage: 50 }}
-            >
-              <ArrowLeftIcon />
-            </Link>
+            <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">Detalhes do menu</h1>
         </div>

@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from '@tanstack/react-router';
+import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 
 import { LoadError } from '@/components/common/load-error';
@@ -15,6 +15,7 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
 function RouteComponent() {
   const { slug } = useParams({ from: '/_private/tables/$slug/' });
   const sidebar = useSidebar();
+  const router = useRouter();
   const _read = useReadTable({ slug });
 
   return (
@@ -25,18 +26,16 @@ function RouteComponent() {
           <Button
             variant="ghost"
             size="icon-sm"
-            asChild
             onClick={() => {
               sidebar.setOpen(true);
+              router.navigate({
+                to: '/tables',
+                replace: true,
+                search: { page: 1, perPage: 50 },
+              });
             }}
           >
-            <Link
-              to="/tables"
-              replace
-              search={{ page: 1, perPage: 50 }}
-            >
-              <ArrowLeftIcon />
-            </Link>
+            <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">Detalhes da tabela</h1>
         </div>

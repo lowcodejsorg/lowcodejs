@@ -41,10 +41,15 @@ function TableGroupRow({ group }: { group: IGroup }) {
       <TableCell>
         <Badge variant="outline">{group.slug}</Badge>
       </TableCell>
-      <TableCell>{group.description || 'N/A'}</TableCell>
+      <TableCell className="truncate max-w-xs">
+        {group.description || 'N/A'}
+      </TableCell>
 
       <TableCell>
-        <Button variant="ghost" size="icon-sm">
+        <Button
+          variant="ghost"
+          size="icon-sm"
+        >
           <ArrowRightIcon />
         </Button>
       </TableCell>
@@ -67,7 +72,10 @@ export function TableGroups({ data, headers }: Props): React.ReactElement {
       </TableHeader>
       <TableBody>
         {data.map((group) => (
-          <TableGroupRow group={group} key={group._id} />
+          <TableGroupRow
+            group={group}
+            key={group._id}
+          />
         ))}
       </TableBody>
     </Table>

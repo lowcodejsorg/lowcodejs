@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 import { CreateTableForm } from './-create-form';
 
@@ -10,6 +10,7 @@ export const Route = createFileRoute('/_private/tables/create/')({
 
 function RouteComponent() {
   const sidebar = useSidebar();
+  const router = useRouter();
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -19,18 +20,16 @@ function RouteComponent() {
           <Button
             variant="ghost"
             size="icon-sm"
-            asChild
             onClick={() => {
               sidebar.setOpen(true);
+              router.navigate({
+                to: '/tables',
+                replace: true,
+                search: { page: 1, perPage: 50 },
+              });
             }}
           >
-            <Link
-              to="/tables"
-              replace
-              search={{ page: 1, perPage: 50 }}
-            >
-              <ArrowLeftIcon />
-            </Link>
+            <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">Nova tabela</h1>
         </div>

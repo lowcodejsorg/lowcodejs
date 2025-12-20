@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useParams } from '@tanstack/react-router';
+import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 
 import { ArrowLeftIcon } from 'lucide-react';
 
@@ -19,6 +19,7 @@ function RouteComponent() {
   });
 
   const sidebar = useSidebar();
+  const router = useRouter();
 
   const _read = useReadUser({ userId });
 
@@ -30,18 +31,16 @@ function RouteComponent() {
           <Button
             variant="ghost"
             size="icon-sm"
-            asChild
             onClick={() => {
               sidebar.setOpen(true);
+              router.navigate({
+                to: '/users',
+                replace: true,
+                search: { page: 1, perPage: 50 },
+              });
             }}
           >
-            <Link
-              to="/users"
-              replace
-              search={{ page: 1, perPage: 50 }}
-            >
-              <ArrowLeftIcon />
-            </Link>
+            <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">Detalhes do usuário</h1>
         </div>

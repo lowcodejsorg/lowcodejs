@@ -4,15 +4,15 @@ import { API } from '@/lib/api';
 import { IUser, Paginated } from '@/lib/interfaces';
 // import type { Paginated, User } from '@/lib/entity';
 // import { MetaDefault } from '@/lib/utils';
+import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { MetaDefault } from '@/lib/constant';
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, Link, useSearch } from '@tanstack/react-router';
+import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
 import z from 'zod';
 import { TableUsers } from './-table-users';
-// import { SheetUserCreate } from './-components/sheet-user-create';
-// import { TableUsers } from './-components/table-user';
+import { TableUsersSkeleton } from './-table-users-skeleton';
 
 export const Route = createFileRoute('/_private/users/')({
   component: RouteComponent,
@@ -27,6 +27,8 @@ function RouteComponent() {
   const search = useSearch({
     from: '/_private/users/',
   });
+
+  const router = useRouter();
 
   const sidebar = useSidebar();
 
@@ -51,19 +53,32 @@ function RouteComponent() {
         <Button
           onClick={() => {
             sidebar.setOpen(false);
+            router.navigate({
+              to: '/users/create',
+              replace: true,
+            });
           }}
-          asChild
+          className="disabled:cursor-not-allowed"
+          disabled={
+            pagination.status === 'pending' || pagination.status === 'error'
+          }
         >
-          <Link
-            to="/users/create"
-            replace
-          >
-            Novo Usuário
-          </Link>
+          <span>Novo Usuário</span>
         </Button>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+        {pagination.status === 'pending' && (
+          <TableUsersSkeleton headers={headers} />
+        )}
+
+        {pagination.status === 'error' && (
+          <LoadError
+            message="Houve um erro ao buscar dados dos usuários"
+            refetch={pagination.refetch}
+          />
+        )}
+
         {pagination.status === 'success' && (
           <TableUsers
             headers={headers as string[]}
