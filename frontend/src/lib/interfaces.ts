@@ -189,3 +189,18 @@ export interface ITable extends Base {
     };
   };
 }
+
+export interface ISetting {
+  LOCALE: string;
+  LOGO_SMALL_URL: string | null;
+  LOGO_LARGE_URL: string | null;
+  FILE_UPLOAD_MAX_SIZE: number;
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
+  FILE_UPLOAD_ACCEPTED: string[];
+  PAGINATION_PER_PAGE: number;
+  DATABASE_URL: string;
+  EMAIL_PROVIDER_HOST: string;
+  EMAIL_PROVIDER_PORT: number;
+  EMAIL_PROVIDER_USER: string;
+  EMAIL_PROVIDER_PASSWORD: string;
+}

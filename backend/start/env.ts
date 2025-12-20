@@ -28,6 +28,9 @@ const EnvSchema = z.object({
 
   APP_SERVER_URL: z.string().trim(),
   APP_CLIENT_URL: z.string().trim(),
+
+  LOGO_SMALL_URL: z.string().trim(),
+  LOGO_LARGE_URL: z.string().trim(),
 });
 
 const validation = EnvSchema.safeParse(process.env);

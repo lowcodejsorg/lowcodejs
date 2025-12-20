@@ -11,8 +11,8 @@ const EnvSchema = z.object({
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.coerce.number().default(10),
   PAGINATION_PER_PAGE: z.coerce.number().default(50),
 
-  LOGO_SMALL_URL: z.string().trim(),
-  LOGO_LARGE_URL: z.string().trim(),
+  LOGO_SMALL_URL: z.string().trim().optional().nullable(),
+  LOGO_LARGE_URL: z.string().trim().optional().nullable(),
 
   DATABASE_URL: z.string().trim(),
 
@@ -47,7 +47,7 @@ export default class {
     try {
       const payload = EnvSchema.parse(request.body);
 
-      const pathname = join(process.cwd(), '_system', `setting.properties`);
+      const pathname = join(process.cwd(), '.env');
 
       let fileContent = await readFile(pathname, 'utf-8');
 

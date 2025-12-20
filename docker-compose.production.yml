@@ -40,6 +40,8 @@ services:
       FILE_UPLOAD_ACCEPTED: "jpg;  jpeg;  png;  pdf;  doc;  docx;  xls;  xlsx;  txt;  zip;  rar"
       FILE_UPLOAD_MAX_FILES_PER_UPLOAD: 10
       LOCALE: 'pt-br'
+      LOGO_SMALL_URL: https://${ENVIRONMENT}.lowcodejs.org/logo-small.png
+      LOGO_LARGE_URL: https://${ENVIRONMENT}.lowcodejs.org/logo-large.png
       PAGINATION_PER_PAGE: 20
     restart: unless-stopped
     volumes:

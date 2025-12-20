@@ -147,6 +147,8 @@ jobs:
             FILE_UPLOAD_MAX_FILES_PER_UPLOAD=10
             LOCALE=pt-br
             PAGINATION_PER_PAGE=20
+            LOGO_SMALL_URL=https://${{ steps.branch.outputs.branch }}.lowcodejs.org/logo-small.png
+            LOGO_LARGE_URL=https://${{ steps.branch.outputs.branch }}.lowcodejs.org/logo-large.png
             EOF
 
             echo "Environment variables configured successfully. Deploying..."
