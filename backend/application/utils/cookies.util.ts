@@ -11,7 +11,8 @@ export const setCookieTokens = (
   const cookieOptions = {
     path: '/',
     secure: Env.NODE_ENV === 'production',
-    sameSite: 'lax' as const,
+    sameSite:
+      Env.NODE_ENV === 'production' ? ('none' as const) : ('lax' as const),
     httpOnly: true,
     ...(Env.COOKIE_DOMAIN && { domain: Env.COOKIE_DOMAIN }),
   };

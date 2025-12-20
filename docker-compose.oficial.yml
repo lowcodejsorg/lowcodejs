@@ -53,7 +53,7 @@ services:
       - NITRO_HOST=0.0.0.0
       - NITRO_PORT=3000
     ports:
-      - "${APP_CLIENT_PORT:-8080}:3000"
+      - "${APP_CLIENT_PORT:-5173}:3000"
     depends_on:
       api:
         condition: service_healthy
