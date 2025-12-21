@@ -21,9 +21,13 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
-import { getCurrentAuthenticatedServerFn } from '@/functions/authentication';
+import { TANSTACK_QUERY_KEY_PREFIXES } from '@/integrations/tanstack-query/implementations/_query-keys';
+import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
+import type { IUser } from '@/lib/interfaces';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
+import type { Authenticated } from '@/stores/authentication';
+import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_authentication/_sign-in/')({
   component: RouteComponent,
@@ -31,33 +35,40 @@ export const Route = createFileRoute('/_authentication/_sign-in/')({
 
 const FormSignInSchema = z.object({
   email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
-  password: z
-    .string()
-    // .min(6, 'A senha deve ter pelo menos 6 caracteres')
-    .min(1, 'Senha é obrigatória'),
+  password: z.string().min(1, 'Senha é obrigatória'),
 });
 
 function RouteComponent(): React.JSX.Element {
+  const { queryClient } = getContext();
   const router = useRouter();
+  const authentication = useAuthenticationStore();
   const [showPassword, setShowPassword] = useState(false);
 
   const signInMutation = useMutation({
     mutationFn: async function (payload: z.infer<typeof FormSignInSchema>) {
-      const response = await API.post('/authentication/sign-in', payload);
+      await API.post('/authentication/sign-in', payload);
+      const response = await API.get<IUser>('/profile');
       return response.data;
     },
-    async onSuccess() {
-      const response = await getCurrentAuthenticatedServerFn();
-      console.log({
-        response,
-      });
-      const route =
-        ROLE_DEFAULT_ROUTE[response.role as keyof typeof ROLE_DEFAULT_ROUTE];
+    onSuccess(response) {
+      const role = response.group.slug.toUpperCase() as Authenticated['role'];
+      const sub = response._id.toString();
 
-      console.log({
-        route,
+      authentication.setAuthenticated({
+        name: response.name,
+        email: response.email,
+        role,
+        sub: response._id.toString(),
       });
-      router.navigate({ to: route ?? '/tables', replace: true });
+
+      queryClient.setQueryData(
+        [TANSTACK_QUERY_KEY_PREFIXES.PROFILE, sub],
+        response,
+      );
+
+      const route = ROLE_DEFAULT_ROUTE[role];
+
+      router.navigate({ to: route, replace: true });
     },
     onError(error) {
       console.error(error);

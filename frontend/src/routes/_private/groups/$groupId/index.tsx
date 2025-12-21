@@ -5,7 +5,7 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useReadGroup } from '@/tanstack-query/use-group-read';
+import { useReadGroup } from '@/integrations/tanstack-query/implementations/use-group-read';
 import { UpdateGroupForm } from './-update-form';
 import { UpdateGroupFormSkeleton } from './-update-form-skeleton';
 
@@ -35,7 +35,11 @@ function RouteComponent() {
               sidebar.setOpen(true);
             }}
           >
-            <Link to="/groups" replace search={{ page: 1, perPage: 50 }}>
+            <Link
+              to="/groups"
+              replace
+              search={{ page: 1, perPage: 50 }}
+            >
               <ArrowLeftIcon />
             </Link>
           </Button>
@@ -53,7 +57,10 @@ function RouteComponent() {
         )}
         {_read.status === 'pending' && <UpdateGroupFormSkeleton />}
         {_read.status === 'success' && (
-          <UpdateGroupForm data={_read.data} key={_read.data._id} />
+          <UpdateGroupForm
+            data={_read.data}
+            key={_read.data._id}
+          />
         )}
       </div>
 

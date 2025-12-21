@@ -16,11 +16,11 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useUpdateMenu } from '@/integrations/tanstack-query/implementations/use-menu-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { IMenu, MENU_ITEM_TYPE, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useUpdateMenu } from '@/tanstack-query/use-menu-update';
 import { useForm, useStore } from '@tanstack/react-form';
 import { AxiosError } from 'axios';
 import { FileTextIcon, FolderTreeIcon, LinkIcon } from 'lucide-react';

@@ -4,6 +4,7 @@ import { kernel } from '@start/kernel';
 
 async function start(): Promise<void> {
   try {
+    console.log('Fastify ready');
     // Wait for Fastify to be ready
     await kernel.ready();
 

@@ -9,11 +9,11 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
+import { useUpdateUser } from '@/integrations/tanstack-query/implementations/use-user-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { IUser, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useUpdateUser } from '@/tanstack-query/use-user-update';
 import { useForm } from '@tanstack/react-form';
 import { AxiosError } from 'axios';
 import { EyeClosedIcon, EyeIcon, MailIcon, UserIcon } from 'lucide-react';

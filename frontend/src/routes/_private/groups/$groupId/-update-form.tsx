@@ -8,11 +8,11 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useUpdateGroup } from '@/integrations/tanstack-query/implementations/use-group-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { IGroup, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useUpdateGroup } from '@/tanstack-query/use-group-update';
 import { useForm } from '@tanstack/react-form';
 import { AxiosError } from 'axios';
 import { HashIcon, UsersIcon } from 'lucide-react';
@@ -155,7 +155,8 @@ export function UpdateGroupForm({ data }: UpdateGroupFormProps) {
             },
           }}
           children={(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
 
             return (
               <Field data-invalid={isInvalid}>
@@ -186,11 +187,14 @@ export function UpdateGroupForm({ data }: UpdateGroupFormProps) {
         <form.Field
           name="description"
           children={(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
 
             return (
               <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>Descrição (opcional)</FieldLabel>
+                <FieldLabel htmlFor={field.name}>
+                  Descrição (opcional)
+                </FieldLabel>
                 <Textarea
                   disabled={mode === 'show' || _update.status === 'pending'}
                   id={field.name}
@@ -221,7 +225,8 @@ export function UpdateGroupForm({ data }: UpdateGroupFormProps) {
           }}
         >
           {(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
 
             return (
               <Field data-invalid={isInvalid}>

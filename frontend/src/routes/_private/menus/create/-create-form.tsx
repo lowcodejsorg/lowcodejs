@@ -17,11 +17,11 @@ import {
 } from '@/components/ui/select';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
+import { useCreateMenu } from '@/integrations/tanstack-query/implementations/use-menu-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { IMenu, MENU_ITEM_TYPE, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useCreateMenu } from '@/tanstack-query/use-menu-create';
 import { useForm, useStore } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';

@@ -5,7 +5,7 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useReadUser } from '@/tanstack-query/use-user-read';
+import { useReadUser } from '@/integrations/tanstack-query/implementations/use-user-read';
 import { UpdateUserForm } from './-update-form';
 import { UpdateUserFormSkeleton } from './-update-form-skeleton';
 

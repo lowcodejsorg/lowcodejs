@@ -8,10 +8,10 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
+import { useUpdateProfile } from '@/integrations/tanstack-query/implementations/use-profile-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { IUser } from '@/lib/interfaces';
 import { Route as LayoutRoute } from '@/routes/_private/layout';
-import { useUpdateProfile } from '@/tanstack-query/use-profile-update';
 import { useForm } from '@tanstack/react-form';
 import { AxiosError } from 'axios';
 import { EyeClosedIcon, EyeIcon, MailIcon, UserIcon } from 'lucide-react';

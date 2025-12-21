@@ -7,10 +7,10 @@ import {
 } from '@/components/ui/input-group';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
+import { useCreateTable } from '@/integrations/tanstack-query/implementations/use-table-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { ITable, Paginated } from '@/lib/interfaces';
-import { useCreateTable } from '@/tanstack-query/use-table-create';
 import { useForm } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';

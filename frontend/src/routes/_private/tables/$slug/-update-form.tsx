@@ -16,11 +16,11 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
+import { useUpdateTable } from '@/integrations/tanstack-query/implementations/use-table-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { ITable, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useUpdateTable } from '@/tanstack-query/use-table-update';
 import { useForm } from '@tanstack/react-form';
 import { AxiosError } from 'axios';
 import { AlignLeftIcon, FileTextIcon } from 'lucide-react';

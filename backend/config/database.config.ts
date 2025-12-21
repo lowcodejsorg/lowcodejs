@@ -14,6 +14,7 @@ import '@application/model/validation-token.model';
 
 export async function MongooseConnect(): Promise<void> {
   try {
+    console.log(Env.DATABASE_URL);
     await mongoose.connect(Env.DATABASE_URL, {
       autoCreate: true,
       dbName: 'lowcodejs',

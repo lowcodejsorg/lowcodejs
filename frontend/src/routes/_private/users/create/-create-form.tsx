@@ -9,11 +9,11 @@ import {
 } from '@/components/ui/input-group';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
+import { useCreateUser } from '@/integrations/tanstack-query/implementations/use-user-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { IUser, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useCreateUser } from '@/tanstack-query/use-user-create';
 import { useForm } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';

@@ -5,7 +5,7 @@ import { ArrowLeftIcon } from 'lucide-react';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useReadMenu } from '@/tanstack-query/use-menu-read';
+import { useReadMenu } from '@/integrations/tanstack-query/implementations/use-menu-read';
 import { UpdateMenuForm } from './-update-form';
 import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
 

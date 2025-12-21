@@ -9,11 +9,11 @@ import {
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useCreateGroup } from '@/integrations/tanstack-query/implementations/use-group-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import { IGroup, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useCreateGroup } from '@/tanstack-query/use-group-create';
 import { useForm } from '@tanstack/react-form';
 import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
@@ -121,7 +121,8 @@ export function CreateGroupForm() {
             },
           }}
           children={(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
 
             return (
               <Field data-invalid={isInvalid}>
@@ -152,11 +153,14 @@ export function CreateGroupForm() {
         <form.Field
           name="description"
           children={(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
 
             return (
               <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>Descrição (opcional)</FieldLabel>
+                <FieldLabel htmlFor={field.name}>
+                  Descrição (opcional)
+                </FieldLabel>
                 <Textarea
                   disabled={_create.status === 'pending'}
                   id={field.name}
@@ -187,7 +191,8 @@ export function CreateGroupForm() {
           }}
         >
           {(field) => {
-            const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+            const isInvalid =
+              field.state.meta.isTouched && !field.state.meta.isValid;
 
             return (
               <Field data-invalid={isInvalid}>

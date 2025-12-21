@@ -22,9 +22,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
+import { useUpdateSetting } from '@/integrations/tanstack-query/implementations/use-setting-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { ISetting, IStorage } from '@/lib/interfaces';
-import { useUpdateSetting } from '@/tanstack-query/use-setting-update';
 import { useForm } from '@tanstack/react-form';
 import { AxiosError } from 'axios';
 import {
