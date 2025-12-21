@@ -22,7 +22,6 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    console.log(process.env);
     const setting = await Setting.findOne().lean();
 
     if (!setting)
