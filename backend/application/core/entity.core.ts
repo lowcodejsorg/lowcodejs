@@ -260,3 +260,17 @@ export interface Menu extends Base {
   url: string | null;
   html: string | null;
 }
+
+export interface Setting {
+  LOCALE: string;
+  FILE_UPLOAD_MAX_SIZE: number;
+  FILE_UPLOAD_ACCEPTED: string;
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
+  PAGINATION_PER_PAGE: number;
+  LOGO_SMALL_URL?: string;
+  LOGO_LARGE_URL?: string;
+  EMAIL_PROVIDER_HOST: string;
+  EMAIL_PROVIDER_PORT: number;
+  EMAIL_PROVIDER_USER: string;
+  EMAIL_PROVIDER_PASSWORD?: string;
+}

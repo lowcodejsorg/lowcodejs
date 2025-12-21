@@ -1,7 +1,5 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, PUT } from 'fastify-decorators';
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'path';
 import z from 'zod';
 
 const EnvSchema = z.object({
@@ -14,7 +12,7 @@ const EnvSchema = z.object({
   LOGO_SMALL_URL: z.string().trim().optional().nullable(),
   LOGO_LARGE_URL: z.string().trim().optional().nullable(),
 
-  DATABASE_URL: z.string().trim(),
+  // DATABASE_URL: z.string().trim(),
 
   EMAIL_PROVIDER_PASSWORD: z.string().trim(),
   EMAIL_PROVIDER_HOST: z.string().trim(),
@@ -23,7 +21,7 @@ const EnvSchema = z.object({
 });
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
-import { Env } from '@start/env';
+import { Setting } from '@application/model/setting.model';
 
 import { SettingUpdateSchema } from './update.schema';
 
@@ -47,103 +45,25 @@ export default class {
     try {
       const payload = EnvSchema.parse(request.body);
 
-      const pathname = join(process.cwd(), '.env');
+      const updated = await Setting.findOneAndUpdate({}, payload, {
+        upsert: true,
+        new: true,
+      });
 
-      let fileContent = await readFile(pathname, 'utf-8');
-
-      console.log(payload);
-
-      // Update the LOCALE if provided
-      if (payload.LOCALE) {
-        fileContent = fileContent.replace(
-          /LOCALE=.*/,
-          `LOCALE=${payload.LOCALE}`,
-        );
+      for (const [key, value] of Object.entries(payload)) {
+        process.env[key] = String(value);
       }
-
-      if (payload.FILE_UPLOAD_MAX_SIZE) {
-        fileContent = fileContent.replace(
-          /FILE_UPLOAD_MAX_SIZE=.*/,
-          `FILE_UPLOAD_MAX_SIZE=${payload.FILE_UPLOAD_MAX_SIZE}`,
-        );
-      }
-
-      if (payload.FILE_UPLOAD_ACCEPTED) {
-        fileContent = fileContent.replace(
-          /FILE_UPLOAD_ACCEPTED=.*/,
-          `FILE_UPLOAD_ACCEPTED=${payload.FILE_UPLOAD_ACCEPTED}`,
-        );
-      }
-
-      if (payload.FILE_UPLOAD_MAX_FILES_PER_UPLOAD) {
-        fileContent = fileContent.replace(
-          /FILE_UPLOAD_MAX_FILES_PER_UPLOAD=.*/,
-          `FILE_UPLOAD_MAX_FILES_PER_UPLOAD=${payload.FILE_UPLOAD_MAX_FILES_PER_UPLOAD}`,
-        );
-      }
-
-      if (payload.PAGINATION_PER_PAGE) {
-        fileContent = fileContent.replace(
-          /PAGINATION_PER_PAGE=.*/,
-          `PAGINATION_PER_PAGE=${payload.PAGINATION_PER_PAGE}`,
-        );
-      }
-
-      if (payload.DATABASE_URL) {
-        fileContent = fileContent.replace(
-          /DATABASE_URL=.*/,
-          `DATABASE_URL=${payload.DATABASE_URL}`,
-        );
-      }
-
-      if (payload.EMAIL_PROVIDER_HOST) {
-        fileContent = fileContent.replace(
-          /EMAIL_PROVIDER_HOST=.*/,
-          `EMAIL_PROVIDER_HOST=${payload.EMAIL_PROVIDER_HOST}`,
-        );
-      }
-
-      if (payload.EMAIL_PROVIDER_PORT) {
-        fileContent = fileContent.replace(
-          /EMAIL_PROVIDER_PORT=.*/,
-          `EMAIL_PROVIDER_PORT=${payload.EMAIL_PROVIDER_PORT}`,
-        );
-      }
-
-      if (payload.EMAIL_PROVIDER_USER) {
-        fileContent = fileContent.replace(
-          /EMAIL_PROVIDER_USER=.*/,
-          `EMAIL_PROVIDER_USER=${payload.EMAIL_PROVIDER_USER}`,
-        );
-      }
-
-      if (payload.EMAIL_PROVIDER_PASSWORD) {
-        fileContent = fileContent.replace(
-          /EMAIL_PROVIDER_PASSWORD=.*/,
-          `EMAIL_PROVIDER_PASSWORD=${payload.EMAIL_PROVIDER_PASSWORD}`,
-        );
-      }
-
-      if (payload.LOGO_SMALL_URL) {
-        fileContent = fileContent.replace(
-          /LOGO_SMALL_URL=.*/,
-          `LOGO_SMALL_URL=${payload.LOGO_SMALL_URL}`,
-        );
-      }
-
-      if (payload.LOGO_LARGE_URL) {
-        fileContent = fileContent.replace(
-          /LOGO_LARGE_URL=.*/,
-          `LOGO_LARGE_URL=${payload.LOGO_LARGE_URL}`,
-        );
-      }
-
-      await writeFile(pathname, fileContent);
 
       return response.status(200).send({
-        ...Env,
-        ...payload,
-        FILE_UPLOAD_ACCEPTED: Env.FILE_UPLOAD_ACCEPTED.split(';'),
+        ...updated.toJSON({
+          flattenObjectIds: true,
+        }),
+        FILE_UPLOAD_ACCEPTED:
+          updated
+            .toJSON({
+              flattenObjectIds: true,
+            })
+            .FILE_UPLOAD_ACCEPTED.split(';') ?? [],
       });
     } catch (error) {
       if (error instanceof z.ZodError) {

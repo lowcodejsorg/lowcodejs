@@ -14,7 +14,7 @@ export const SettingUpdateSchema: FastifySchema = {
       'FILE_UPLOAD_ACCEPTED',
       'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
       'PAGINATION_PER_PAGE',
-      'DATABASE_URL',
+      // 'DATABASE_URL',
       'EMAIL_PROVIDER_HOST',
       'EMAIL_PROVIDER_PORT',
       'EMAIL_PROVIDER_USER',

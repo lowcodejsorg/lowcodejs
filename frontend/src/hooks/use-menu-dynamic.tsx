@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query';
+import type { LucideIcon } from 'lucide-react';
 import {
   ExternalLinkIcon,
   FileTextIcon,
@@ -10,9 +12,7 @@ import { useMemo } from 'react';
 import { API } from '@/lib/api';
 import type { IMenu } from '@/lib/interfaces';
 import { getStaticMenusByRole } from '@/lib/menu/menu';
-import type { MenuRoute } from '@/lib/menu/menu-route';
-import { useQuery } from '@tanstack/react-query';
-import type { LucideIcon } from 'lucide-react';
+import type { MenuGroupItem, MenuRoute } from '@/lib/menu/menu-route';
 
 // Mapeamento de ícones por tipo de menu
 const TYPE_ICONS: Record<string, LucideIcon> = {
@@ -24,16 +24,16 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
 };
 
 // Tipo para menu com children
-type MenuWithChildren = IMenu & { children?: MenuWithChildren[] };
+type MenuWithChildren = IMenu & { children?: Array<MenuWithChildren> };
 
 /**
  * Função para construir a árvore hierárquica de menus
  */
-function buildMenuTree(menus: IMenu[]): MenuWithChildren[] {
+function buildMenuTree(menus: Array<IMenu>): Array<MenuWithChildren> {
   if (!menus || !Array.isArray(menus)) return [];
 
   const menuMap = new Map<string, MenuWithChildren>();
-  const rootMenus: MenuWithChildren[] = [];
+  const rootMenus: Array<MenuWithChildren> = [];
 
   // Primeiro, criar um mapa de todos os menus
   for (const menu of menus) {
@@ -123,10 +123,10 @@ function convertMenuToItem(menu: MenuWithChildren) {
 /**
  * Converte árvore de menus dinâmicos para formato MenuRoute
  */
-function convertToMenuRoute(menuTree: MenuWithChildren[]): MenuRoute {
+function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
   if (!menuTree || menuTree.length === 0) return [];
 
-  const items: any[] = [];
+  const items: Array<any> = [];
 
   for (const menu of menuTree) {
     // Se é SEPARATOR, cria CollapsibleItem com seus filhos
@@ -167,12 +167,15 @@ function convertToMenuRoute(menuTree: MenuWithChildren[]): MenuRoute {
 /**
  * Hook para obter menus dinâmicos combinados com menus estáticos
  */
-export function useMenuDynamic(role: string) {
+export function useMenuDynamic(role: string): {
+  menu: Array<MenuGroupItem>;
+  isLoading: boolean;
+} {
   // 1. Buscar menus dinâmicos da API
   const { data: dynamicMenusData, isLoading } = useQuery({
     queryKey: ['/menu'],
     queryFn: async () => {
-      const response = await API.get<IMenu[]>('/menu');
+      const response = await API.get<Array<IMenu>>('/menu');
       return response.data;
     },
   });

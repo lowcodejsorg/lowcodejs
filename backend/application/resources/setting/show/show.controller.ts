@@ -1,10 +1,8 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET } from 'fastify-decorators';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
-import { Env } from '@start/env';
+import { Setting } from '@application/model/setting.model';
 
 import { SettingShowSchema } from './show.schema';
 
@@ -24,21 +22,19 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const pathname = join(process.cwd(), '.env');
+    console.log(process.env);
+    const setting = await Setting.findOne().lean();
 
-    const file = await readFile(pathname, 'utf-8');
-
-    if (!file) {
-      return response.status(404).send({
-        message: 'File not found',
-        code: 404,
-        cause: 'SETTINGS_FILE_NOT_FOUND',
+    if (!setting)
+      return response.send({
+        ...process.env,
+        FILE_UPLOAD_ACCEPTED:
+          process.env.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
       });
-    }
 
     return response.send({
-      ...Env,
-      FILE_UPLOAD_ACCEPTED: Env.FILE_UPLOAD_ACCEPTED.split(';'),
+      ...setting,
+      FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED.split(';') ?? [],
     });
   }
 }

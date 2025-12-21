@@ -15,17 +15,16 @@ export const Route = createFileRoute('/_private')({
 function RouteComponent(): React.JSX.Element {
   const authentication = useAuthenticationStore().authenticated;
 
-  console.log('authentication', authentication);
-
-  // if (!authentication) return <Navigate to="/" />;
-
-  const { menu } = useMenuDynamic(authentication!.role);
-
   const routesWithoutSearchInput: Array<LinkProps['to']> = ['/'];
 
   return (
     <SidebarProvider>
-      <Sidebar menu={menu} />
+      {authentication?.role && (
+        <Sidebar menu={useMenuDynamic(authentication.role).menu} />
+      )}
+      {!authentication?.role && (
+        <Sidebar menu={useMenuDynamic('REGISTERED').menu} />
+      )}
       <SidebarInset className="relative flex flex-col h-screen w-screen overflow-hidden flex-1 px-4 sm:px-2">
         <Header routesWithoutSearchInput={routesWithoutSearchInput} />
         <Outlet />

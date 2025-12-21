@@ -1,3 +1,18 @@
+import { useForm } from '@tanstack/react-form';
+import { AxiosError } from 'axios';
+import {
+  DatabaseIcon,
+  EyeClosedIcon,
+  EyeIcon,
+  FileTextIcon,
+  ImageIcon,
+  Languages,
+  MailIcon,
+  UploadIcon,
+} from 'lucide-react';
+import React from 'react';
+import { toast } from 'sonner';
+
 import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
 import { Button } from '@/components/ui/button';
 import {
@@ -24,21 +39,7 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useUpdateSetting } from '@/integrations/tanstack-query/implementations/use-setting-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { ISetting, IStorage } from '@/lib/interfaces';
-import { useForm } from '@tanstack/react-form';
-import { AxiosError } from 'axios';
-import {
-  DatabaseIcon,
-  EyeClosedIcon,
-  EyeIcon,
-  FileTextIcon,
-  ImageIcon,
-  Languages,
-  MailIcon,
-  UploadIcon,
-} from 'lucide-react';
-import React from 'react';
-import { toast } from 'sonner';
+import type { ISetting, IStorage } from '@/lib/interfaces';
 
 type UpdateSettingFormProps = {
   data: ISetting;
@@ -96,13 +97,13 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
       ),
       FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
       PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
-      DATABASE_URL: data.DATABASE_URL,
+      // DATABASE_URL: data.DATABASE_URL,
       EMAIL_PROVIDER_HOST: data.EMAIL_PROVIDER_HOST,
       EMAIL_PROVIDER_PORT: String(data.EMAIL_PROVIDER_PORT),
       EMAIL_PROVIDER_USER: data.EMAIL_PROVIDER_USER,
       EMAIL_PROVIDER_PASSWORD: data.EMAIL_PROVIDER_PASSWORD,
-      logoSmallFile: [] as File[],
-      logoLargeFile: [] as File[],
+      logoSmallFile: [] as Array<File>,
+      logoLargeFile: [] as Array<File>,
     },
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending') return;
@@ -120,7 +121,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
           .filter(Boolean)
           .join(';'),
         PAGINATION_PER_PAGE: Number(value.PAGINATION_PER_PAGE),
-        DATABASE_URL: value.DATABASE_URL.trim(),
+        // DATABASE_URL: value.DATABASE_URL.trim(),
         EMAIL_PROVIDER_HOST: value.EMAIL_PROVIDER_HOST.trim(),
         EMAIL_PROVIDER_PORT: Number(value.EMAIL_PROVIDER_PORT),
         EMAIL_PROVIDER_USER: value.EMAIL_PROVIDER_USER.trim(),
@@ -229,7 +230,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                         <FileUploadWithStorage
                           value={field.state.value}
                           onValueChange={field.handleChange}
-                          onStorageChange={(storages: IStorage[]) => {
+                          onStorageChange={(storages: Array<IStorage>) => {
                             if (storages[0]?.url) {
                               form.setFieldValue(
                                 'LOGO_SMALL_URL',
@@ -269,7 +270,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                         <FileUploadWithStorage
                           value={field.state.value}
                           onValueChange={field.handleChange}
-                          onStorageChange={(storages: IStorage[]) => {
+                          onStorageChange={(storages: Array<IStorage>) => {
                             if (storages[0]?.url) {
                               form.setFieldValue(
                                 'LOGO_LARGE_URL',
@@ -549,76 +550,38 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form.Field
-              name="DATABASE_URL"
-              validators={{
-                onBlur: ({ value }) => {
-                  if (!value) {
-                    return { message: 'A URL do banco de dados é obrigatória' };
-                  }
-                  if (
-                    !value.startsWith('mongodb://') &&
-                    !value.startsWith('mongodb+srv://')
-                  ) {
-                    return {
-                      message:
-                        'A URL deve começar com mongodb:// ou mongodb+srv://',
-                    };
-                  }
-                  return undefined;
-                },
-              }}
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
-
-                return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Database URL</FieldLabel>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      String de conexão do MongoDB
-                    </div>
-                    <InputGroup>
-                      <InputGroupInput
-                        disabled={
-                          mode === 'show' || _update.status === 'pending'
-                        }
-                        id={field.name}
-                        name={field.name}
-                        type={show.databaseUrl ? 'text' : 'password'}
-                        placeholder="mongodb://localhost:27017/lowcodejs"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        aria-invalid={isInvalid}
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <InputGroupButton
-                          disabled={
-                            mode === 'show' || _update.status === 'pending'
-                          }
-                          type="button"
-                          aria-label="toggle password visibility"
-                          title="toggle password visibility"
-                          onClick={() =>
-                            setShow((state) => ({
-                              ...state,
-                              databaseUrl: !state.databaseUrl,
-                            }))
-                          }
-                        >
-                          {show.databaseUrl && <EyeClosedIcon />}
-                          {!show.databaseUrl && <EyeIcon />}
-                        </InputGroupButton>
-                      </InputGroupAddon>
-                    </InputGroup>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
-                );
-              }}
-            />
+            <Field>
+              <FieldLabel>Database URL</FieldLabel>
+              <div className="text-sm text-muted-foreground mb-2">
+                String de conexão do MongoDB
+              </div>
+              <InputGroup>
+                <InputGroupInput
+                  disabled
+                  defaultValue={data.DATABASE_URL}
+                  value={data.DATABASE_URL}
+                  type={show.databaseUrl ? 'text' : 'password'}
+                  placeholder="mongodb://localhost:27017/lowcodejs"
+                />
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    // disabled
+                    type="button"
+                    aria-label="toggle password visibility"
+                    title="toggle password visibility"
+                    onClick={() =>
+                      setShow((state) => ({
+                        ...state,
+                        databaseUrl: !state.databaseUrl,
+                      }))
+                    }
+                  >
+                    {show.databaseUrl && <EyeClosedIcon />}
+                    {!show.databaseUrl && <EyeIcon />}
+                  </InputGroupButton>
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
           </CardContent>
         </Card>
 

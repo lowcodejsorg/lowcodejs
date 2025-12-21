@@ -1,15 +1,17 @@
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
+import z from 'zod';
+
+import { TableTables } from './-table-tables';
+import { TableTablesSkeleton } from './-table-tables-skeleton';
+
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { API } from '@/lib/api';
 import { MetaDefault } from '@/lib/constant';
-import { ITable, Paginated } from '@/lib/interfaces';
-import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
-import z from 'zod';
-import { TableTables } from './-table-tables';
-import { TableTablesSkeleton } from './-table-tables-skeleton';
+import type { ITable, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/')({
   component: RouteComponent,
@@ -20,7 +22,7 @@ export const Route = createFileRoute('/_private/tables/')({
   }),
 });
 
-function RouteComponent() {
+function RouteComponent(): React.JSX.Element {
   const search = useSearch({
     from: '/_private/tables/',
   });
@@ -77,14 +79,14 @@ function RouteComponent() {
 
         {pagination.status === 'success' && (
           <TableTables
-            headers={headers as string[]}
-            data={pagination.data?.data || []}
+            headers={headers}
+            data={pagination.data.data}
           />
         )}
       </div>
 
       <div className="shrink-0 border-t p-2">
-        <Pagination meta={pagination?.data?.meta ?? MetaDefault} />
+        <Pagination meta={pagination.data?.meta ?? MetaDefault} />
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { QueryClient as Base } from '@tanstack/react-query'
+import { QueryClient as Base } from '@tanstack/react-query';
 
 export const QueryClient = new Base({
   defaultOptions: {
@@ -8,4 +8,4 @@ export const QueryClient = new Base({
       staleTime: 60 * 60 * 1000, // 1 hour
     },
   },
-})
+});

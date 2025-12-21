@@ -1,3 +1,9 @@
+import { useRouter } from '@tanstack/react-router';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import { ArrowRightIcon, ImageOffIcon } from 'lucide-react';
+import React from 'react';
+
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -9,16 +15,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { ITable } from '@/lib/interfaces';
-import { useRouter } from '@tanstack/react-router';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { ArrowRightIcon, ImageOffIcon } from 'lucide-react';
-import React from 'react';
+import type { ITable } from '@/lib/interfaces';
 
 interface Props {
-  data: ITable[];
-  headers: string[];
+  data: Array<ITable>;
+  headers: Array<string>;
 }
 
 function TableTableRow({ table }: { table: ITable }) {

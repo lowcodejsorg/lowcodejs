@@ -17,72 +17,20 @@ API.interceptors.request.use(
   },
 );
 
-// let isRefreshing = false;
-// let failedQueue: Array<{
-//   resolve: (value?: unknown) => void;
-//   reject: (reason?: any) => void;
-// }> = [];
-
-// const processQueue = (error: any): void => {
-//   for (const { resolve, reject } of failedQueue) {
-//     if (error) {
-//       reject(error);
-//     } else {
-//       resolve();
-//     }
-//   }
-
-//   failedQueue = [];
-// };
-
 API.interceptors.response.use(
-  (response) => {
-    return response;
-  },
+  (response) => response,
   async (error) => {
-    // const originalRequest = error.config;
+    if (error.response?.status === 401) {
+      localStorage.clear();
 
-    // if (error.response?.status === 401 && !originalRequest._retry) {
-    //   if (isRefreshing) {
-    //     return new Promise((resolve, reject) => {
-    //       failedQueue.push({ resolve, reject })
-    //     })
-    //       .then(() => {
-    //         return API(originalRequest)
-    //       })
-    //       .catch((err) => {
-    //         return Promise.reject(err)
-    //       })
-    //   }
+      try {
+        await API.post('/authentication/sign-out');
+      } catch (e) {
+        console.error(e);
+      }
 
-    //   originalRequest._retry = true
-    //   isRefreshing = true
-
-    //   try {
-    //     console.info('[API] Recebeu 401, tentando refresh...')
-    //     await refreshTokenServerFn()
-    //     console.info('[API] Refresh bem-sucedido, processando fila')
-
-    //     processQueue(null)
-
-    //     return API(originalRequest)
-    //   } catch (refreshError: any) {
-    //     console.error('[API] Refresh falhou:', refreshError)
-    //     processQueue(refreshError)
-
-    //     if (
-    //       refreshError?.response?.status === 401 ||
-    //       refreshError?.message?.includes('No refresh token')
-    //     ) {
-    //       window.location.href = '/'
-    //     }
-
-    //     return Promise.reject(refreshError)
-    //   } finally {
-    //     isRefreshing = false
-    //   }
-    // }
-
+      window.location.href = '/';
+    }
     return Promise.reject(error);
   },
 );

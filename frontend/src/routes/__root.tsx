@@ -1,17 +1,16 @@
 import { TanStackDevtools } from '@tanstack/react-devtools';
+import type { QueryClient } from '@tanstack/react-query';
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
+import React from 'react';
+import { Toaster } from 'sonner';
 
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
-
 import appCss from '../styles.css?url';
-
-import type { QueryClient } from '@tanstack/react-query';
-import { Toaster } from 'sonner';
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -42,9 +41,13 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   shellComponent: RootDocument,
 });
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({
+  children,
+}: {
+  children: React.ReactNode;
+}): React.JSX.Element {
   return (
-    <html lang="en">
+    <html lang="pt-br">
       <head>
         <HeadContent />
       </head>

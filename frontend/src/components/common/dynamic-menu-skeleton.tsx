@@ -1,19 +1,20 @@
 import React from 'react';
 
-import { Skeleton } from '@/components/ui/skeleton';
 import {
   SidebarGroup,
   SidebarGroupLabel,
   SidebarMenu,
-  SidebarMenuItem,
   SidebarMenuButton,
+  SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function DynamicMenuSkeleton(): React.JSX.Element {
   return (
     <SidebarGroup>
       <SidebarGroupLabel>
-        <Skeleton className="h-4 w-16" />
+        {/* <Skeleton className="h-4 w-16" /> */}
+        <span>Menu</span>
       </SidebarGroupLabel>
       <SidebarMenu>
         {[1, 2, 3].map((index) => (
