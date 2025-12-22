@@ -1,3 +1,11 @@
+import { useForm, useStore } from '@tanstack/react-form';
+import { useNavigate } from '@tanstack/react-router';
+import { AxiosError } from 'axios';
+import { FileTextIcon, FolderTreeIcon, LinkIcon } from 'lucide-react';
+import { toast } from 'sonner';
+
+import { SeparatorInfo } from '../-separator-info';
+
 import { EditorExample } from '@/components/common/editor';
 import { MenuCombobox } from '@/components/common/menu-combobox';
 import { TableCombobox } from '@/components/common/table-combobox';
@@ -19,15 +27,9 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useCreateMenu } from '@/integrations/tanstack-query/implementations/use-menu-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import { IMenu, MENU_ITEM_TYPE, Paginated } from '@/lib/interfaces';
+import { MENU_ITEM_TYPE, MetaDefault } from '@/lib/constant';
+import type { IMenu, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useForm, useStore } from '@tanstack/react-form';
-import { useNavigate } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
-import { FileTextIcon, FolderTreeIcon, LinkIcon } from 'lucide-react';
-import { toast } from 'sonner';
-import { SeparatorInfo } from '../-separator-info';
 
 const MenuTypeOptions = [
   { value: MENU_ITEM_TYPE.TABLE, label: 'Tabela' },
@@ -37,7 +39,7 @@ const MenuTypeOptions = [
   { value: MENU_ITEM_TYPE.SEPARATOR, label: 'Separador' },
 ];
 
-export function CreateMenuForm() {
+export function CreateMenuForm(): React.JSX.Element {
   const { queryClient } = getContext();
   const sidebar = useSidebar();
   const navigate = useNavigate();
@@ -174,7 +176,7 @@ export function CreateMenuForm() {
           name="type"
           validators={{
             onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
+              if (value.trim() === '') {
                 return { message: 'Tipo é obrigatório' };
               }
               return undefined;

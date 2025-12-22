@@ -1,7 +1,8 @@
+import { FileTextIcon, FolderTreeIcon } from 'lucide-react';
+
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
-import { FileTextIcon, FolderTreeIcon } from 'lucide-react';
 
 export function UpdateMenuFormSkeleton() {
   return (

@@ -1,3 +1,11 @@
+import { useForm, useStore } from '@tanstack/react-form';
+import { AxiosError } from 'axios';
+import { FileTextIcon, FolderTreeIcon, LinkIcon } from 'lucide-react';
+import React from 'react';
+import { toast } from 'sonner';
+
+import { SeparatorInfo } from '../-separator-info';
+
 import { EditorExample } from '@/components/common/editor';
 import { MenuCombobox } from '@/components/common/menu-combobox';
 import { TableCombobox } from '@/components/common/table-combobox';
@@ -18,15 +26,9 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useUpdateMenu } from '@/integrations/tanstack-query/implementations/use-menu-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import { IMenu, MENU_ITEM_TYPE, Paginated } from '@/lib/interfaces';
+import { MENU_ITEM_TYPE, MetaDefault } from '@/lib/constant';
+import type { IMenu, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useForm, useStore } from '@tanstack/react-form';
-import { AxiosError } from 'axios';
-import { FileTextIcon, FolderTreeIcon, LinkIcon } from 'lucide-react';
-import React from 'react';
-import { toast } from 'sonner';
-import { SeparatorInfo } from '../-separator-info';
 
 type UpdateMenuFormProps = {
   data: IMenu;
@@ -40,7 +42,9 @@ const MenuTypeOptions = [
   { value: MENU_ITEM_TYPE.SEPARATOR, label: 'Separador' },
 ];
 
-export function UpdateMenuForm({ data }: UpdateMenuFormProps) {
+export function UpdateMenuForm({
+  data,
+}: UpdateMenuFormProps): React.JSX.Element {
   const { queryClient } = getContext();
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
