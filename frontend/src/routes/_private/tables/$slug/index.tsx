@@ -9,13 +9,17 @@ import z from 'zod';
 
 import { TableConfigurationDropdown } from './-table-configuration';
 import { TableGridView } from './-table-grid-view';
+import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableListView } from './-table-list-view';
+import { TableListViewSkeleton } from './-table-list-view-skeleton';
+import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { TableStyleViewDropdown } from '@/components/common/table-style-view';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
 import { useReadTableRowPaginated } from '@/integrations/tanstack-query/implementations/use-table-row-read-paginated';
 import { MetaDefault } from '@/lib/constant';
@@ -62,7 +66,11 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-2xl font-medium">{table.data?.name ?? ''}</h1>
+          {table.status === 'pending' ? (
+            <Skeleton className="h-8 w-40" />
+          ) : (
+            <h1 className="text-2xl font-medium">{table.data?.name ?? ''}</h1>
+          )}
         </div>
 
         <div className="inline-flex items-center space-x-2">
@@ -88,9 +96,17 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {/* {pagination.status === 'pending' && (
-          <TableTablesSkeleton headers={headers} />
-        )} */}
+        {table.status === 'pending' && <TableSkeleton />}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === 'list' && (
+            <TableListViewSkeleton />
+          )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === 'gallery' && (
+            <TableGridViewSkeleton />
+          )}
 
         {rows.status === 'error' && (
           <LoadError

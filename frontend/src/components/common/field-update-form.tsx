@@ -1,8 +1,8 @@
 import { useForm, useStore } from '@tanstack/react-form';
-import { useMutation } from '@tanstack/react-query';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { AlignLeftIcon, CheckIcon, TextIcon } from 'lucide-react';
+import React from 'react';
 import { toast } from 'sonner';
 
 import type { Option } from '@/components/common/-multi-selector';
@@ -31,33 +31,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { Textarea } from '@/components/ui/textarea';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import { FIELD_FORMAT, FIELD_TYPE } from '@/lib/constant';
-import type {
-  ICategory,
-  IField,
-  IRow,
-  ITable,
-  Paginated,
-} from '@/lib/interfaces';
+import type { IField, ITable, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
+
+type FieldUpdateFormProps = {
+  data: IField;
+  tableSlug: string;
+  originSlug?: string;
+};
 
 type RelationshipTableOption = SearchableOption & { slug: string };
 type RelationshipFieldOption = SelectOption & { slug: string };
-
-function convertTreeNodeToCategory(nodes: Array<TreeNode>): Array<ICategory> {
-  return nodes.map((node) => ({
-    id: node.id,
-    label: node.label,
-    children: node.children ? convertTreeNodeToCategory(node.children) : [],
-  }));
-}
 
 const COLUMN_TYPE_LIST = [
   { label: 'Texto', value: FIELD_TYPE.TEXT_SHORT },
@@ -70,12 +60,6 @@ const COLUMN_TYPE_LIST = [
   { label: 'Árvore', value: FIELD_TYPE.CATEGORY },
   { label: 'Reação', value: FIELD_TYPE.REACTION },
   { label: 'Avaliação', value: FIELD_TYPE.EVALUATION },
-];
-
-const BLOCKED_FIELD_TYPES = [
-  FIELD_TYPE.FIELD_GROUP,
-  FIELD_TYPE.REACTION,
-  FIELD_TYPE.EVALUATION,
 ];
 
 const TEXT_SHORT_FORMAT_LIST = [
@@ -143,45 +127,46 @@ async function fetchRelationshipTables(
   };
 }
 
-export function CreateTableFieldForm(): React.JSX.Element {
+export function FieldUpdateForm({
+  data,
+  tableSlug,
+}: FieldUpdateFormProps): React.JSX.Element {
   const { queryClient } = getContext();
-  const sidebar = useSidebar();
-  const navigate = useNavigate();
 
-  const { slug } = useParams({
-    from: '/_private/tables/$slug/field/create/',
-  });
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
-  const table = useReadTable({ slug });
-
-  const _create = useMutation({
-    mutationFn: async (payload: Partial<IField>) => {
-      const route = '/tables/'.concat(slug).concat('/fields');
-      const response = await API.post<IField>(route, payload);
+  const _update = useMutation({
+    mutationFn: async (
+      payload: Partial<IField> & { trashed?: boolean; trashedAt?: string | null },
+    ) => {
+      const route = '/tables/'
+        .concat(tableSlug)
+        .concat('/fields/')
+        .concat(data._id);
+      const response = await API.put<IField>(route, payload);
       return response.data;
     },
     onSuccess(response) {
+      queryClient.setQueryData<IField>(
+        [
+          '/tables/'.concat(tableSlug).concat('/fields/').concat(response._id),
+          response._id,
+        ],
+        response,
+      );
+
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(slug), slug],
+        ['/tables/'.concat(tableSlug), tableSlug],
         (old) => {
           if (!old) return old;
           return {
             ...old,
-            fields: [...old.fields, response],
-            configuration: {
-              ...old.configuration,
-              fields: {
-                ...old.configuration.fields,
-                orderForm: [
-                  ...old.configuration.fields.orderForm,
-                  response.slug,
-                ],
-                orderList: [
-                  ...old.configuration.fields.orderList,
-                  response.slug,
-                ],
-              },
-            },
+            fields: old.fields.map((f) => {
+              if (f._id === response._id) {
+                return response;
+              }
+              return f;
+            }),
           };
         },
       );
@@ -192,79 +177,68 @@ export function CreateTableFieldForm(): React.JSX.Element {
           if (!old) return old;
           return {
             meta: old.meta,
-            data: old.data.map((t) => {
-              if (t.slug === slug) {
+            data: old.data.map((table) => {
+              if (table.slug === tableSlug) {
                 return {
-                  ...t,
-                  fields: [...t.fields, response],
-                  configuration: {
-                    ...t.configuration,
-                    fields: {
-                      ...t.configuration.fields,
-                      orderForm: [
-                        ...t.configuration.fields.orderForm,
-                        response.slug,
-                      ],
-                      orderList: [
-                        ...t.configuration.fields.orderList,
-                        response.slug,
-                      ],
-                    },
-                  },
+                  ...table,
+                  fields: table.fields.map((f) => {
+                    if (f._id === response._id) {
+                      return response;
+                    }
+                    return f;
+                  }),
                 };
               }
-              return t;
+              return table;
             }),
           };
         },
       );
 
-      queryClient.setQueryData<Paginated<IRow>>(
-        [
-          '/tables/'.concat(slug).concat('/rows/paginated'),
-          slug,
-          { page: 1, perPage: 50 },
-        ],
-        (old) => {
-          if (!old) return old;
-          return {
-            meta: old.meta,
-            data: old.data.map((row) => ({
-              ...row,
-              [response.slug]: null,
-            })),
-          };
-        },
-      );
+      // Check if the trashed status changed
+      const wasTrashed = Boolean((data as IField & { trashed?: boolean }).trashed);
+      const isTrashed = Boolean(response.trashed);
 
-      toast('Campo criado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O campo foi criado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      if (!wasTrashed && isTrashed) {
+        // Field was sent to trash
+        toast('Campo enviado para lixeira', {
+          className: '!bg-amber-600 !text-white !border-amber-600',
+          description:
+            'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      } else if (wasTrashed && !isTrashed) {
+        // Field was restored from trash
+        toast('Campo restaurado', {
+          className: '!bg-green-600 !text-white !border-green-600',
+          description:
+            'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      } else {
+        // Normal update
+        toast('Campo atualizado', {
+          className: '!bg-green-600 !text-white !border-green-600',
+          description: 'Os dados do campo foram atualizados com sucesso',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      }
 
       form.reset();
-      sidebar.setOpen(false);
-      navigate({
-        to: '/tables/$slug',
-        replace: true,
-        params: { slug },
-      });
+      setMode('show');
     },
     onError(error) {
       if (error instanceof AxiosError) {
         const errorData = error.response?.data;
 
         // 400 - INVALID_PARAMETERS
-        if (
-          errorData?.code === 400 &&
-          errorData?.cause === 'INVALID_PARAMETERS'
-        ) {
-          toast('Erro ao criar o campo', {
+        if (errorData?.code === 400 && errorData?.cause === 'INVALID_PARAMETERS') {
+          toast('Erro ao atualizar o campo', {
             className: '!bg-destructive !text-white !border-destructive',
-            description:
-              errorData?.message ?? 'Nome e tipo do campo são obrigatórios',
+            description: errorData?.message ?? 'Dados inválidos',
             descriptionClassName: '!text-white',
             closeButton: true,
           });
@@ -272,11 +246,8 @@ export function CreateTableFieldForm(): React.JSX.Element {
         }
 
         // 401 - AUTHENTICATION_REQUIRED
-        if (
-          errorData?.code === 401 &&
-          errorData?.cause === 'AUTHENTICATION_REQUIRED'
-        ) {
-          toast('Erro ao criar o campo', {
+        if (errorData?.code === 401 && errorData?.cause === 'AUTHENTICATION_REQUIRED') {
+          toast('Erro ao atualizar o campo', {
             className: '!bg-destructive !text-white !border-destructive',
             description: errorData?.message ?? 'Autenticação necessária',
             descriptionClassName: '!text-white',
@@ -287,22 +258,32 @@ export function CreateTableFieldForm(): React.JSX.Element {
 
         // 403 - ACCESS_DENIED
         if (errorData?.code === 403 && errorData?.cause === 'ACCESS_DENIED') {
-          toast('Erro ao criar o campo', {
+          toast('Erro ao atualizar o campo', {
             className: '!bg-destructive !text-white !border-destructive',
             description:
-              errorData?.message ??
-              'Permissões insuficientes para criar campos nesta coleção',
+              errorData?.message ?? 'Permissões insuficientes para atualizar este campo',
             descriptionClassName: '!text-white',
             closeButton: true,
           });
           return;
         }
 
-        // 404 - TABLE_NOT_FOUND
-        if (errorData?.code === 404 && errorData?.cause === 'TABLE_NOT_FOUND') {
-          toast('Erro ao criar o campo', {
+        // 404 - FIELD_NOT_FOUND
+        if (errorData?.code === 404 && errorData?.cause === 'FIELD_NOT_FOUND') {
+          toast('Erro ao atualizar o campo', {
             className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Coleção não encontrada',
+            description: errorData?.message ?? 'Campo não encontrado',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        // 409 - LAST_ACTIVE_FIELD
+        if (errorData?.code === 409 && errorData?.cause === 'LAST_ACTIVE_FIELD') {
+          toast('Erro ao atualizar o campo', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: 'Último campo ativo, não pode ser enviado para a lixeira',
             descriptionClassName: '!text-white',
             closeButton: true,
           });
@@ -310,14 +291,23 @@ export function CreateTableFieldForm(): React.JSX.Element {
         }
 
         // 409 - FIELD_ALREADY_EXISTS
-        if (
-          errorData?.code === 409 &&
-          errorData?.cause === 'FIELD_ALREADY_EXISTS'
-        ) {
-          toast('Erro ao criar o campo', {
+        if (errorData?.code === 409 && errorData?.cause === 'FIELD_ALREADY_EXISTS') {
+          toast('Erro ao atualizar o campo', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: errorData?.message ?? 'Já existe um campo com este nome',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        // 409 - FIELD_IN_USE
+        if (errorData?.code === 409 && errorData?.cause === 'FIELD_IN_USE') {
+          toast('Erro ao atualizar o campo', {
             className: '!bg-destructive !text-white !border-destructive',
             description:
-              errorData?.message ?? 'Campo com este nome já existe na coleção',
+              errorData?.message ??
+              'Não é possível alterar o tipo do campo: o campo contém dados',
             descriptionClassName: '!text-white',
             closeButton: true,
           });
@@ -325,11 +315,8 @@ export function CreateTableFieldForm(): React.JSX.Element {
         }
 
         // 422 - UNPROCESSABLE_ENTITY
-        if (
-          errorData?.code === 422 &&
-          errorData?.cause === 'UNPROCESSABLE_ENTITY'
-        ) {
-          toast('Erro ao criar o campo', {
+        if (errorData?.code === 422 && errorData?.cause === 'UNPROCESSABLE_ENTITY') {
+          toast('Erro ao atualizar o campo', {
             className: '!bg-destructive !text-white !border-destructive',
             description: errorData?.message ?? 'Configuração de campo inválida',
             descriptionClassName: '!text-white',
@@ -340,7 +327,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
 
         // 500 - SERVER_ERROR
         if (errorData?.code === 500 && errorData?.cause === 'SERVER_ERROR') {
-          toast('Erro ao criar o campo', {
+          toast('Erro ao atualizar o campo', {
             className: '!bg-destructive !text-white !border-destructive',
             description: errorData?.message ?? 'Erro interno do servidor',
             descriptionClassName: '!text-white',
@@ -350,81 +337,112 @@ export function CreateTableFieldForm(): React.JSX.Element {
         }
 
         // Fallback for unknown errors
-        toast('Erro ao criar o campo', {
+        toast('Erro ao atualizar o campo', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao criar o campo',
+          description: errorData?.message ?? 'Erro ao atualizar o campo',
           descriptionClassName: '!text-white',
           closeButton: true,
         });
       }
+
       console.error(error);
     },
   });
 
   const form = useForm({
     defaultValues: {
-      name: '',
-      type: '' as keyof typeof FIELD_TYPE,
+      name: data.name,
+      type: data.type,
       configuration: {
-        required: false,
-        multiple: false,
-        listing: false,
-        filtering: false,
-        format: '',
-        defaultValue: '',
-        dropdown: [] as Array<Option>,
+        required: data.configuration.required,
+        multiple: data.configuration.multiple,
+        listing: data.configuration.listing,
+        filtering: data.configuration.filtering,
+        format: data.configuration.format ?? '',
+        defaultValue: data.configuration.defaultValue ?? '',
+        dropdown:
+          data.configuration.dropdown?.map((d) => ({ value: d, label: d })) ??
+          ([] as Array<Option>),
         relationship: {
-          table: { _id: [] as Array<RelationshipTableOption>, slug: '' },
-          field: { _id: [] as Array<RelationshipFieldOption>, slug: '' },
-          order: [] as Array<SelectOption>,
+          table: {
+            _id: data.configuration.relationship?.table._id
+              ? ([
+                  {
+                    value: data.configuration.relationship.table._id,
+                    label: '',
+                    slug: data.configuration.relationship.table.slug,
+                  },
+                ] as Array<RelationshipTableOption>)
+              : ([] as Array<RelationshipTableOption>),
+            slug: data.configuration.relationship?.table.slug ?? '',
+          },
+          field: {
+            _id: data.configuration.relationship?.field._id
+              ? ([
+                  {
+                    value: data.configuration.relationship.field._id,
+                    label: '',
+                    slug: data.configuration.relationship.field.slug,
+                  },
+                ] as Array<RelationshipFieldOption>)
+              : ([] as Array<RelationshipFieldOption>),
+            slug: data.configuration.relationship?.field.slug ?? '',
+          },
+          order: data.configuration.relationship?.order
+            ? ([
+                ORDER_LIST.find(
+                  (o) => o.value === data.configuration.relationship?.order,
+                ),
+              ].filter(Boolean) as Array<SelectOption>)
+            : ([] as Array<SelectOption>),
         },
-        category: [] as Array<TreeNode>,
+        category: (data.configuration.category ?? []) as Array<TreeNode>,
         group: null as string | null,
       },
+      trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
     },
     onSubmit: async ({ value }) => {
-      if (_create.status === 'pending') return;
+      if (_update.status === 'pending') return;
 
-      const config = value.configuration;
-      const hasRelationship = config.relationship.table._id.length > 0;
-      const hasDropdown = config.dropdown.length > 0;
-      const hasCategory = config.category.length > 0;
-
-      await _create.mutateAsync({
+      await _update.mutateAsync({
         name: value.name,
         type: value.type,
         configuration: {
-          required: config.required,
-          multiple: config.multiple,
-          listing: config.listing,
-          filtering: config.filtering,
-          format: config.format
-            ? (config.format as keyof typeof FIELD_FORMAT)
-            : null,
-          defaultValue: config.defaultValue || null,
-          dropdown: hasDropdown
-            ? config.dropdown.map((item) => item.value)
-            : null,
-          relationship: hasRelationship
-            ? {
-                table: {
-                  _id: config.relationship.table._id[0]?.value ?? '',
-                  slug: config.relationship.table.slug,
-                },
-                field: {
-                  _id: config.relationship.field._id[0]?.value ?? '',
-                  slug: config.relationship.field.slug,
-                },
-                order: (config.relationship.order[0]?.value ?? 'asc') as
-                  | 'asc'
-                  | 'desc',
-              }
-            : null,
-          group: null,
-          category: hasCategory
-            ? convertTreeNodeToCategory(config.category)
+          required: value.configuration.required,
+          multiple: value.configuration.multiple,
+          listing: value.configuration.listing,
+          filtering: value.configuration.filtering,
+          format: value.configuration.format || null,
+          defaultValue: value.configuration.defaultValue || null,
+          dropdown:
+            value.configuration.dropdown.length > 0
+              ? value.configuration.dropdown.map((item) => item.value)
+              : null,
+          relationship:
+            value.configuration.relationship.table._id.length > 0
+              ? {
+                  table: {
+                    _id: value.configuration.relationship.table._id[0]?.value,
+                    slug: value.configuration.relationship.table.slug,
+                  },
+                  field: {
+                    _id: value.configuration.relationship.field._id[0]?.value,
+                    slug: value.configuration.relationship.field.slug,
+                  },
+                  order: value.configuration.relationship.order[0]
+                    ?.value as 'asc' | 'desc',
+                }
+              : null,
+          category:
+            value.configuration.category.length > 0
+              ? (value.configuration.category as unknown as IField['configuration']['category'])
+              : null,
+          group: value.configuration.group
+            ? ({ _id: value.configuration.group, slug: '' } as IField['configuration']['group'])
             : null,
         },
+        trashed: value.trashed,
+        trashedAt: value.trashed ? new Date().toISOString() : null,
       });
     },
   });
@@ -435,24 +453,22 @@ export function CreateTableFieldForm(): React.JSX.Element {
     (state) => state.values.configuration.relationship.table.slug,
   );
 
-  const relationshipTable = useReadTable({
-    slug: relationshipTableSlug,
+  const relationshipTable = useQuery({
+    queryKey: ['/tables/'.concat(relationshipTableSlug), relationshipTableSlug],
+    queryFn: async () => {
+      const route = '/tables/'.concat(relationshipTableSlug);
+      const response = await API.get<ITable>(route);
+      return response.data;
+    },
+    enabled: Boolean(relationshipTableSlug),
   });
 
   const relationshipFieldOptions: Array<RelationshipFieldOption> =
-    relationshipTable.data?.fields.map((f) => ({
+    relationshipTable?.data?.fields?.map((f) => ({
       label: f.name,
       value: f._id,
       slug: f.slug,
     })) ?? [];
-
-  let typeOptions = COLUMN_TYPE_LIST;
-
-  if (table.status === 'success' && table.data.type === 'field-group') {
-    typeOptions = typeOptions.filter(
-      (item) => !BLOCKED_FIELD_TYPES.includes(item.value),
-    );
-  }
 
   return (
     <form
@@ -463,7 +479,6 @@ export function CreateTableFieldForm(): React.JSX.Element {
     >
       <section className="space-y-4 p-2">
         {/* Campo Nome */}
-        {/* @ts-expect-error TanStack Form type instantiation depth issue with nested defaultValues */}
         <form.Field
           name="name"
           validators={{
@@ -483,15 +498,16 @@ export function CreateTableFieldForm(): React.JSX.Element {
             const charCount = field.state.value?.length ?? 0;
             const isValid =
               field.state.meta.isTouched && field.state.meta.isValid;
+            const isDisabled = mode === 'show' || _update.status === 'pending';
 
             return (
               <Field data-invalid={isInvalid}>
                 <FieldLabel htmlFor={field.name}>
                   Nome <span className="text-destructive">*</span>
                 </FieldLabel>
-                <InputGroup data-disabled={_create.status === 'pending'}>
+                <InputGroup data-disabled={isDisabled}>
                   <InputGroupInput
-                    disabled={_create.status === 'pending'}
+                    disabled={isDisabled}
                     id={field.name}
                     name={field.name}
                     type="text"
@@ -505,7 +521,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     <TextIcon className="size-4" />
                   </InputGroupAddon>
                   <InputGroupAddon align="inline-end">
-                    {_create.status === 'pending' ? (
+                    {_update.status === 'pending' ? (
                       <Spinner />
                     ) : isValid ? (
                       <CheckIcon className="size-4 text-green-600" />
@@ -527,54 +543,31 @@ export function CreateTableFieldForm(): React.JSX.Element {
           }}
         />
 
-        {/* Campo Tipo */}
-        <form.Field
-          name="type"
-          validators={{
-            onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
-                return { message: 'Tipo é obrigatório' };
-              }
-              return undefined;
-            },
-          }}
-        >
-          {(field) => {
-            const isInvalid =
-              field.state.meta.isTouched && !field.state.meta.isValid;
-
-            return (
-              <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>
-                  Tipo <span className="text-destructive">*</span>
-                </FieldLabel>
-                <Select
-                  disabled={_create.status === 'pending'}
-                  value={field.state.value}
-                  onValueChange={(value) => {
-                    field.handleChange(value as keyof typeof FIELD_TYPE);
-                  }}
-                >
-                  <SelectTrigger
-                    className={cn(isInvalid && 'border-destructive')}
-                  >
-                    <SelectValue placeholder="Selecione o tipo do campo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {typeOptions.map((item) => (
-                      <SelectItem
-                        key={item.value}
-                        value={item.value}
-                      >
-                        {item.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-              </Field>
-            );
-          }}
+        {/* Campo Tipo (disabled) */}
+        <form.Field name="type">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor={field.name}>Tipo</FieldLabel>
+              <Select
+                disabled
+                value={field.state.value}
+              >
+                <SelectTrigger className="bg-muted">
+                  <SelectValue placeholder="Tipo do campo" />
+                </SelectTrigger>
+                <SelectContent>
+                  {COLUMN_TYPE_LIST.map((item) => (
+                    <SelectItem
+                      key={item.value}
+                      value={item.value}
+                    >
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
+          )}
         </form.Field>
 
         {/* Campo Formato (TEXT_SHORT) */}
@@ -600,7 +593,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     Formato <span className="text-destructive">*</span>
                   </FieldLabel>
                   <Select
-                    disabled={_create.status === 'pending'}
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     value={field.state.value}
                     onValueChange={(value) => field.handleChange(value)}
                   >
@@ -633,13 +626,15 @@ export function CreateTableFieldForm(): React.JSX.Element {
             {(field) => {
               const isInvalid =
                 field.state.meta.isTouched && !field.state.meta.isValid;
+              const isDisabled =
+                mode === 'show' || _update.status === 'pending';
 
               return (
                 <Field data-invalid={isInvalid}>
                   <FieldLabel htmlFor={field.name}>Valor padrão</FieldLabel>
-                  <InputGroup data-disabled={_create.status === 'pending'}>
+                  <InputGroup data-disabled={isDisabled}>
                     <InputGroupInput
-                      disabled={_create.status === 'pending'}
+                      disabled={isDisabled}
                       id={field.name}
                       name={field.name}
                       type="text"
@@ -652,7 +647,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     <InputGroupAddon>
                       <AlignLeftIcon className="size-4" />
                     </InputGroupAddon>
-                    {_create.status === 'pending' && (
+                    {_update.status === 'pending' && (
                       <InputGroupAddon align="inline-end">
                         <Spinner />
                       </InputGroupAddon>
@@ -676,10 +671,10 @@ export function CreateTableFieldForm(): React.JSX.Element {
                 <Field data-invalid={isInvalid}>
                   <FieldLabel htmlFor={field.name}>Valor Padrão</FieldLabel>
                   <Textarea
-                    disabled={_create.status === 'pending'}
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     id={field.name}
                     name={field.name}
-                    placeholder="Valor padrão (Se deixar em branco, o campo ficara vazio)"
+                    placeholder="Valor padrão (Se deixar em branco, o campo ficará vazio)"
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
@@ -716,6 +711,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     Opções <span className="text-destructive">*</span>
                   </FieldLabel>
                   <MultipleSelector
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     onChange={(options) => field.handleChange(options)}
                     value={field.state.value ?? []}
                     creatable
@@ -752,13 +748,9 @@ export function CreateTableFieldForm(): React.JSX.Element {
               const fetchWrapper = async (
                 query: string,
                 page: number,
-              ): Promise<
-                Omit<SearchableResponse, 'items'> & {
-                  items: Array<RelationshipTableOption>;
-                }
-              > => {
+              ): Promise<SearchableResponse> => {
                 try {
-                  return await fetchRelationshipTables(query, page, slug);
+                  return await fetchRelationshipTables(query, page, tableSlug);
                 } catch (error) {
                   console.error('Error fetching options:', error);
                   return { items: [], nextPage: null, totalItems: 0 };
@@ -772,6 +764,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     <span className="text-destructive">*</span>
                   </FieldLabel>
                   <SearchableSelect
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     identifier="configuration.relationship.table.paginate"
                     fetchOptions={fetchWrapper}
                     selectedValues={field.state.value ?? []}
@@ -781,7 +774,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                       );
                       const [option] =
                         options as Array<RelationshipTableOption>;
-                      if (option.slug) {
+                      if (option?.slug) {
                         form.setFieldValue(
                           'configuration.relationship.table.slug',
                           option.slug,
@@ -833,7 +826,11 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     <span className="text-destructive">*</span>
                   </FieldLabel>
                   <SimpleSelect
-                    disabled={relationshipTable.status === 'pending'}
+                    disabled={
+                      mode === 'show' ||
+                      _update.status === 'pending' ||
+                      relationshipTable.status === 'pending'
+                    }
                     placeholder="Selecione um campo"
                     selectedValues={field.state.value ?? []}
                     onChange={(options) => {
@@ -842,7 +839,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                       );
                       const [option] =
                         options as Array<RelationshipFieldOption>;
-                      if (option.slug) {
+                      if (option?.slug) {
                         form.setFieldValue(
                           'configuration.relationship.field.slug',
                           option.slug,
@@ -882,6 +879,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     Ordem <span className="text-destructive">*</span>
                   </FieldLabel>
                   <SimpleSelect
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     placeholder="Selecione uma ordem"
                     selectedValues={field.state.value ?? []}
                     onChange={(options) => field.handleChange(options)}
@@ -918,6 +916,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     Formato da data <span className="text-destructive">*</span>
                   </FieldLabel>
                   <SimpleSelect
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     placeholder="Formato da data"
                     selectedValues={
                       field.state.value
@@ -933,7 +932,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     }
                     onChange={(options) => {
                       const [option] = options;
-                      field.handleChange(option.value);
+                      field.handleChange(option?.value ?? '');
                     }}
                     options={DATE_FORMAT_LIST}
                     className={cn('w-full', isInvalid && 'border-destructive')}
@@ -969,8 +968,9 @@ export function CreateTableFieldForm(): React.JSX.Element {
                     <span className="text-destructive">*</span>
                   </FieldLabel>
                   <TreeEditor
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     initialData={field.state.value ?? []}
-                    onChange={(data) => field.handleChange(data)}
+                    onChange={(newData) => field.handleChange(newData)}
                     className={cn(isInvalid && 'border-destructive')}
                   />
                   {isInvalid && <FieldError errors={field.state.meta.errors} />}
@@ -1002,6 +1002,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                 <div className="inline-flex space-x-2">
                   <span className="text-sm">Não</span>
                   <Switch
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     checked={field.state.value}
                     onCheckedChange={(checked) => field.handleChange(checked)}
                   />
@@ -1026,6 +1027,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                 <div className="inline-flex space-x-2">
                   <span className="text-sm">Não</span>
                   <Switch
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     checked={field.state.value}
                     onCheckedChange={(checked) => field.handleChange(checked)}
                   />
@@ -1041,9 +1043,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
           {(field) => (
             <Field className="flex flex-row items-center justify-between rounded-lg border p-3">
               <div className="space-y-0.5">
-                <FieldLabel className="text-base">
-                  Exibir na listagem
-                </FieldLabel>
+                <FieldLabel className="text-base">Exibir na listagem</FieldLabel>
                 <p className="text-sm text-muted-foreground">
                   Exibir este campo na listagem?
                 </p>
@@ -1051,6 +1051,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
               <div className="inline-flex space-x-2">
                 <span className="text-sm">Não</span>
                 <Switch
+                  disabled={mode === 'show' || _update.status === 'pending'}
                   checked={field.state.value}
                   onCheckedChange={(checked) => field.handleChange(checked)}
                 />
@@ -1059,6 +1060,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
             </Field>
           )}
         </form.Field>
+
         {/* Campo Obrigatoriedade */}
         {![FIELD_TYPE.REACTION, FIELD_TYPE.EVALUATION].includes(fieldType) && (
           <form.Field name="configuration.required">
@@ -1073,6 +1075,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                 <div className="inline-flex space-x-2">
                   <span className="text-sm">Não</span>
                   <Switch
+                    disabled={mode === 'show' || _update.status === 'pending'}
                     checked={field.state.value}
                     onCheckedChange={(checked) => field.handleChange(checked)}
                   />
@@ -1083,34 +1086,67 @@ export function CreateTableFieldForm(): React.JSX.Element {
           </form.Field>
         )}
 
+        {/* Campo Lixeira */}
+        <form.Field name="trashed">
+          {(field) => (
+            <Field className="flex flex-row items-center justify-between rounded-lg border p-3 border-destructive/50">
+              <div className="space-y-0.5">
+                <FieldLabel className="text-base">Enviar para lixeira</FieldLabel>
+                <p className="text-sm text-muted-foreground">
+                  Enviar este campo para a lixeira?
+                </p>
+              </div>
+              <div className="inline-flex space-x-2">
+                <span className="text-sm">Não</span>
+                <Switch
+                  disabled={mode === 'show' || _update.status === 'pending'}
+                  checked={field.state.value}
+                  onCheckedChange={(checked) => field.handleChange(checked)}
+                />
+                <span className="text-sm">Sim</span>
+              </div>
+            </Field>
+          )}
+        </form.Field>
+
         {/* Botões */}
         <Field className="inline-flex justify-end flex-1 items-end">
-          <div className="inline-flex space-x-2 items-end justify-end">
+          {mode === 'show' && (
             <Button
               type="button"
-              variant="outline"
               className="w-full max-w-3xs"
-              disabled={_create.status === 'pending'}
               onClick={() => {
-                sidebar.setOpen(false);
-                navigate({
-                  to: '/tables/$slug',
-                  replace: true,
-                  params: { slug },
-                });
+                setMode('edit');
               }}
             >
-              <span>Cancelar</span>
+              <span>Editar</span>
             </Button>
-            <Button
-              type="submit"
-              className="w-full max-w-3xs"
-              disabled={_create.status === 'pending'}
-            >
-              {_create.status === 'pending' && <Spinner />}
-              <span>Criar</span>
-            </Button>
-          </div>
+          )}
+
+          {mode === 'edit' && (
+            <div className="inline-flex space-x-2 items-end justify-end">
+              <Button
+                type="reset"
+                variant="outline"
+                className="w-full max-w-3xs"
+                disabled={_update.status === 'pending'}
+                onClick={() => {
+                  form.reset();
+                  setMode('show');
+                }}
+              >
+                <span>Cancelar</span>
+              </Button>
+              <Button
+                type="submit"
+                className="w-full max-w-3xs"
+                disabled={_update.status === 'pending'}
+              >
+                {_update.status === 'pending' && <Spinner />}
+                <span>Salvar</span>
+              </Button>
+            </div>
+          )}
         </Field>
       </section>
     </form>

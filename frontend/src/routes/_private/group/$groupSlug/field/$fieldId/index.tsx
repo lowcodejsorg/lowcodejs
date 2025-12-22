@@ -1,42 +1,50 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import { createFileRoute, useParams, useRouter, useSearch } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
+import z from 'zod';
 
-import { UpdateFieldForm } from './-update-form';
-import { UpdateFieldFormSkeleton } from './-update-form-skeleton';
-
+import { FieldUpdateForm } from '@/components/common/field-update-form';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSidebar } from '@/components/ui/sidebar';
 import { API } from '@/lib/api';
 import type { IField } from '@/lib/interfaces';
 
-export const Route = createFileRoute('/_private/tables/$slug/group/$fieldId/')({
+export const Route = createFileRoute('/_private/group/$groupSlug/field/$fieldId/')({
   component: RouteComponent,
+  validateSearch: z.object({
+    from: z.string().optional(),
+  }),
 });
 
 function RouteComponent(): React.JSX.Element {
-  const { slug, fieldId } = useParams({
-    from: '/_private/tables/$slug/field/$fieldId/',
+  const { groupSlug, fieldId } = useParams({
+    from: '/_private/group/$groupSlug/field/$fieldId/',
   });
+
+  const { from } = useSearch({
+    from: '/_private/group/$groupSlug/field/$fieldId/',
+  });
+
+  const originSlug = from ?? groupSlug;
 
   const sidebar = useSidebar();
   const router = useRouter();
 
   const _read = useQuery({
-    queryKey: [`/tables/${slug}/fields/${fieldId}`, fieldId],
+    queryKey: [`/tables/${groupSlug}/fields/${fieldId}`, fieldId],
     queryFn: async () => {
       const response = await API.get<IField>(
-        `/tables/${slug}/fields/${fieldId}`,
+        `/tables/${groupSlug}/fields/${fieldId}`,
       );
       return response.data;
     },
-    enabled: Boolean(slug) && Boolean(fieldId),
+    enabled: Boolean(groupSlug) && Boolean(fieldId),
   });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
           <Button
@@ -47,7 +55,7 @@ function RouteComponent(): React.JSX.Element {
               router.navigate({
                 to: '/tables/$slug',
                 replace: true,
-                params: { slug },
+                params: { slug: originSlug },
               });
             }}
           >
@@ -57,7 +65,6 @@ function RouteComponent(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
         {_read.status === 'error' && (
           <LoadError
@@ -65,11 +72,18 @@ function RouteComponent(): React.JSX.Element {
             refetch={_read.refetch}
           />
         )}
-        {_read.status === 'pending' && <UpdateFieldFormSkeleton />}
+        {_read.status === 'pending' && (
+          <div className="p-2 space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        )}
         {_read.status === 'success' && (
-          <UpdateFieldForm
+          <FieldUpdateForm
             data={_read.data}
-            tableSlug={slug}
+            tableSlug={groupSlug}
+            originSlug={originSlug}
             key={_read.data._id}
           />
         )}

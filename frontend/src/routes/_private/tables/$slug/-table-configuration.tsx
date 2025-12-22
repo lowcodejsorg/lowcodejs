@@ -160,10 +160,13 @@ export function TableConfigurationDropdown({
                       <DropdownMenuSubContent>
                         <DropdownMenuItem
                           className="inline-flex space-x-1 w-full"
-                          // onClick={() => {
-                          //   management.handleSlug(field.slug);
-                          //   createTableFieldButtonRef?.current?.click();
-                          // }}
+                          onClick={() => {
+                            router.navigate({
+                              to: '/group/$groupSlug/field/create',
+                              params: { groupSlug: field.slug },
+                              search: { from: slug },
+                            });
+                          }}
                         >
                           <PlusIcon className="size-4" />
                           <span>Novo campo</span>

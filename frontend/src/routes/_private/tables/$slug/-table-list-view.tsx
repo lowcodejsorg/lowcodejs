@@ -72,7 +72,10 @@ export function TableListViewHeader({
   });
 
   return (
-    <TableHead key={field._id} className="w-auto">
+    <TableHead
+      key={field._id}
+      className="w-auto"
+    >
       <div className="inline-flex items-center">
         <Button
           className="cursor-pointer h-auto px-2 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent"
@@ -147,32 +150,90 @@ interface RenderCellProps {
   tableSlug: string;
 }
 
-function RenderCell({ field, row, tableSlug }: RenderCellProps): React.JSX.Element {
+function RenderCell({
+  field,
+  row,
+  tableSlug,
+}: RenderCellProps): React.JSX.Element {
   if (!(field.slug in row)) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
   switch (field.type) {
     case FIELD_TYPE.TEXT_SHORT:
-      return <TableRowTextShortCell field={field} row={row} />;
+      return (
+        <TableRowTextShortCell
+          field={field}
+          row={row}
+        />
+      );
     case FIELD_TYPE.TEXT_LONG:
-      return <TableRowTextLongCell field={field} row={row} className="max-w-sm truncate" />;
+      return (
+        <TableRowTextLongCell
+          field={field}
+          row={row}
+          className="max-w-sm truncate"
+        />
+      );
     case FIELD_TYPE.DATE:
-      return <TableRowDateCell field={field} row={row} />;
+      return (
+        <TableRowDateCell
+          field={field}
+          row={row}
+        />
+      );
     case FIELD_TYPE.DROPDOWN:
-      return <TableRowDropdownCell field={field} row={row} />;
+      return (
+        <TableRowDropdownCell
+          field={field}
+          row={row}
+        />
+      );
     case FIELD_TYPE.CATEGORY:
-      return <TableRowCategoryCell field={field} row={row} />;
+      return (
+        <TableRowCategoryCell
+          field={field}
+          row={row}
+        />
+      );
     case FIELD_TYPE.RELATIONSHIP:
-      return <TableRowRelationshipCell field={field} row={row} />;
+      return (
+        <TableRowRelationshipCell
+          field={field}
+          row={row}
+        />
+      );
     case FIELD_TYPE.FILE:
-      return <TableRowFileCell field={field} row={row} />;
+      return (
+        <TableRowFileCell
+          field={field}
+          row={row}
+        />
+      );
     case FIELD_TYPE.FIELD_GROUP:
-      return <TableRowFieldGroupCell field={field} row={row} tableSlug={tableSlug} />;
+      return (
+        <TableRowFieldGroupCell
+          field={field}
+          row={row}
+          tableSlug={tableSlug}
+        />
+      );
     case FIELD_TYPE.REACTION:
-      return <TableRowReactionCell field={field} row={row} tableSlug={tableSlug} />;
+      return (
+        <TableRowReactionCell
+          field={field}
+          row={row}
+          tableSlug={tableSlug}
+        />
+      );
     case FIELD_TYPE.EVALUATION:
-      return <TableRowEvaluationCell field={field} row={row} tableSlug={tableSlug} />;
+      return (
+        <TableRowEvaluationCell
+          field={field}
+          row={row}
+          tableSlug={tableSlug}
+        />
+      );
     default:
       return <span className="text-muted-foreground text-sm">-</span>;
   }
@@ -198,7 +259,10 @@ export function TableListView({
               .filter(HeaderFilter)
               .sort(HeaderSorter(order))
               .map((field) => (
-                <TableListViewHeader field={field} key={field._id} />
+                <TableListViewHeader
+                  field={field}
+                  key={field._id}
+                />
               ))}
 
             <TableHead className="w-30">
@@ -238,11 +302,18 @@ export function TableListView({
               .sort(HeaderSorter(order))
               .map((field) => (
                 <TableCell key={field._id.concat('-').concat(row._id)}>
-                  <RenderCell field={field} row={row} tableSlug={slug} />
+                  <RenderCell
+                    field={field}
+                    row={row}
+                    tableSlug={slug}
+                  />
                 </TableCell>
               ))}
             <TableCell>
-              <Button variant="ghost" size="icon-sm">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+              >
                 <ArrowRightIcon />
               </Button>
             </TableCell>

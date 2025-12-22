@@ -1,8 +1,7 @@
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 
-import { CreateTableFieldForm } from './-create-form';
-
+import { FieldCreateForm } from '@/components/common/field-create-form';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 
@@ -43,7 +42,7 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        <CreateTableFieldForm />
+        <FieldCreateForm tableSlug={slug} originSlug={slug} />
       </div>
 
       <div className="shrink-0 border-t p-2"></div>

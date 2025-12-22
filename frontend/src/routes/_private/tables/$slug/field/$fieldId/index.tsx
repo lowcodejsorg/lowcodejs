@@ -2,11 +2,10 @@ import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 
-import { UpdateFieldForm } from './-update-form';
-import { UpdateFieldFormSkeleton } from './-update-form-skeleton';
-
+import { FieldUpdateForm } from '@/components/common/field-update-form';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useSidebar } from '@/components/ui/sidebar';
 import { API } from '@/lib/api';
 import type { IField } from '@/lib/interfaces';
@@ -65,11 +64,18 @@ function RouteComponent(): React.JSX.Element {
             refetch={_read.refetch}
           />
         )}
-        {_read.status === 'pending' && <UpdateFieldFormSkeleton />}
+        {_read.status === 'pending' && (
+          <div className="p-2 space-y-4">
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+            <Skeleton className="h-10 w-full" />
+          </div>
+        )}
         {_read.status === 'success' && (
-          <UpdateFieldForm
+          <FieldUpdateForm
             data={_read.data}
             tableSlug={slug}
+            originSlug={slug}
             key={_read.data._id}
           />
         )}

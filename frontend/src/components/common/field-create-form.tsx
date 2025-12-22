@@ -1,6 +1,6 @@
 import { useForm, useStore } from '@tanstack/react-form';
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate, useParams } from '@tanstack/react-router';
+import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { AlignLeftIcon, CheckIcon, TextIcon } from 'lucide-react';
 import { toast } from 'sonner';
@@ -143,14 +143,21 @@ async function fetchRelationshipTables(
   };
 }
 
-export function CreateTableFieldForm(): React.JSX.Element {
+interface FieldCreateFormProps {
+  tableSlug: string;
+  originSlug: string;
+}
+
+export function FieldCreateForm({
+  tableSlug,
+  originSlug,
+}: FieldCreateFormProps): React.JSX.Element {
   const { queryClient } = getContext();
   const sidebar = useSidebar();
   const navigate = useNavigate();
 
-  const { slug } = useParams({
-    from: '/_private/tables/$slug/field/create/',
-  });
+  const slug = tableSlug;
+  const returnSlug = originSlug;
 
   const table = useReadTable({ slug });
 
@@ -249,7 +256,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
       navigate({
         to: '/tables/$slug',
         replace: true,
-        params: { slug },
+        params: { slug: returnSlug },
       });
     },
     onError(error) {
@@ -1096,7 +1103,7 @@ export function CreateTableFieldForm(): React.JSX.Element {
                 navigate({
                   to: '/tables/$slug',
                   replace: true,
-                  params: { slug },
+                  params: { slug: returnSlug },
                 });
               }}
             >
