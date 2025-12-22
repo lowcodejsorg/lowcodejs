@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -33,7 +34,7 @@ import {
 } from '@/components/ui/popover';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
+import { useUpdateTableRow } from '@/integrations/tanstack-query/implementations/use-table-row-update';
 import { API } from '@/lib/api';
 import { FIELD_TYPE } from '@/lib/constant';
 import type {
@@ -151,10 +152,12 @@ function buildDefaultValues(
         }
         break;
       case FIELD_TYPE.CATEGORY:
-        defaults[field.slug] = existingValue ?? (field.configuration.multiple ? [] : '');
+        defaults[field.slug] =
+          existingValue ?? (field.configuration.multiple ? [] : '');
         break;
       case FIELD_TYPE.FIELD_GROUP:
-        defaults[field.slug] = existingValue ?? (field.configuration.multiple ? [] : {});
+        defaults[field.slug] =
+          existingValue ?? (field.configuration.multiple ? [] : {});
         break;
       default:
         defaults[field.slug] = existingValue ?? '';
@@ -236,51 +239,14 @@ export function UpdateRowForm({
   data,
   table,
 }: UpdateRowFormProps): React.JSX.Element {
-  const { queryClient } = getContext();
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   const activeFields = React.useMemo(() => {
     return table.fields.filter((f) => !f.trashed);
   }, [table.fields]);
 
-  const _update = useMutation({
-    mutationFn: async (payload: Record<string, any>) => {
-      const route = '/tables/'
-        .concat(table.slug)
-        .concat('/rows/')
-        .concat(data._id);
-      const response = await API.put<IRow>(route, payload);
-      return response.data;
-    },
-    onSuccess(response) {
-      queryClient.setQueryData<IRow>(
-        [
-          '/tables/'.concat(table.slug).concat('/rows/').concat(response._id),
-          response._id,
-        ],
-        response,
-      );
-
-      queryClient.setQueryData<Paginated<IRow>>(
-        [
-          '/tables/'.concat(table.slug).concat('/rows/paginated'),
-          table.slug,
-          { page: 1, perPage: 50 },
-        ],
-        (old) => {
-          if (!old) return old;
-          return {
-            meta: old.meta,
-            data: old.data.map((row) => {
-              if (row._id === response._id) {
-                return response;
-              }
-              return row;
-            }),
-          };
-        },
-      );
-
+  const _update = useUpdateTableRow({
+    onSuccess() {
       toast('Registro atualizado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'O registro foi atualizado com sucesso',
@@ -381,7 +347,11 @@ export function UpdateRowForm({
       if (_update.status === 'pending') return;
 
       const payload = buildPayload(value, activeFields);
-      await _update.mutateAsync(payload);
+      await _update.mutateAsync({
+        slug: table.slug,
+        rowId: data._id,
+        data: payload,
+      });
     },
   });
 

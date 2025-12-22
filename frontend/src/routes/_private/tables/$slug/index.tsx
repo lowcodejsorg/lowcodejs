@@ -1,12 +1,19 @@
-import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
-import { PlusIcon } from 'lucide-react';
+import {
+  createFileRoute,
+  useParams,
+  useRouter,
+  useSearch,
+} from '@tanstack/react-router';
+import { ArrowLeftIcon, PlusIcon } from 'lucide-react';
 import z from 'zod';
 
 import { TableConfigurationDropdown } from './-table-configuration';
+import { TableGridView } from './-table-grid-view';
 import { TableListView } from './-table-list-view';
 
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
+import { TableStyleViewDropdown } from '@/components/common/table-style-view';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
@@ -28,8 +35,12 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/tables/$slug/',
   });
 
+  const search = useSearch({
+    from: '/_private/tables/$slug/',
+  });
+
   const table = useReadTable({ slug });
-  const rows = useReadTableRowPaginated({ slug });
+  const rows = useReadTableRowPaginated({ slug, search });
 
   const router = useRouter();
   const sidebar = useSidebar();
@@ -37,9 +48,25 @@ function RouteComponent(): React.JSX.Element {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
-        <h1 className="text-2xl font-medium ">{table.data?.name ?? ''}</h1>
+        <div className="inline-flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => {
+              sidebar.setOpen(true);
+              router.navigate({
+                to: '/tables',
+                replace: true,
+              });
+            }}
+          >
+            <ArrowLeftIcon />
+          </Button>
+          <h1 className="text-2xl font-medium">{table.data?.name ?? ''}</h1>
+        </div>
 
         <div className="inline-flex items-center space-x-2">
+          <TableStyleViewDropdown slug={slug} />
           <TableConfigurationDropdown tableSlug={slug} />
 
           <Button
@@ -72,13 +99,24 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
 
-        {table.status === 'success' && rows.status === 'success' && (
-          <TableListView
-            headers={table.data.fields}
-            order={table.data.configuration.fields.orderList}
-            data={rows.data.data}
-          />
-        )}
+        {table.status === 'success' &&
+          table.data.configuration.style === 'list' &&
+          rows.status === 'success' && (
+            <TableListView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.configuration.style === 'gallery' &&
+          rows.status === 'success' && (
+            <TableGridView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
+            />
+          )}
       </div>
 
       <div className="shrink-0 border-t p-2">

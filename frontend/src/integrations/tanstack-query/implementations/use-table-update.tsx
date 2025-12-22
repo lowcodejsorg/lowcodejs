@@ -1,11 +1,14 @@
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+
 import { API } from '@/lib/api';
-import { ITable } from '@/lib/interfaces';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type { ITable } from '@/lib/interfaces';
 
 type Payload = Partial<
-  Pick<ITable, 'name' | 'description' | 'configuration'> & {
+  Pick<ITable, 'name' | 'description' | 'configuration' | 'methods'> & {
     logo: string | null;
+    fields: string[];
   }
 > & {
   slug: string;

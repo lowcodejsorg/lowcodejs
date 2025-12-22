@@ -1,5 +1,5 @@
 import { useForm } from '@tanstack/react-form';
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { format } from 'date-fns';
@@ -35,8 +35,8 @@ import {
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { useCreateTableRow } from '@/integrations/tanstack-query/implementations/use-table-row-create';
 import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import { FIELD_TYPE } from '@/lib/constant';
 import type {
@@ -210,7 +210,6 @@ function buildPayload(
 }
 
 export function CreateRowForm(): React.JSX.Element {
-  const { queryClient } = getContext();
   const sidebar = useSidebar();
   const navigate = useNavigate();
 
@@ -220,31 +219,8 @@ export function CreateRowForm(): React.JSX.Element {
 
   const table = useReadTable({ slug });
 
-  const _create = useMutation({
-    mutationFn: async (payload: Record<string, any>) => {
-      const route = '/tables/'.concat(slug).concat('/rows');
-      const response = await API.post<IRow>(route, payload);
-      return response.data;
-    },
-    onSuccess(response) {
-      queryClient.setQueryData<Paginated<IRow>>(
-        [
-          '/tables/'.concat(slug).concat('/rows/paginated'),
-          slug,
-          { page: 1, perPage: 50 },
-        ],
-        (old) => {
-          if (!old) return old;
-          return {
-            meta: {
-              ...old.meta,
-              total: old.meta.total + 1,
-            },
-            data: [response, ...old.data],
-          };
-        },
-      );
-
+  const _create = useCreateTableRow({
+    onSuccess() {
       toast('Registro criado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'O registro foi criado com sucesso',
@@ -356,8 +332,8 @@ export function CreateRowForm(): React.JSX.Element {
       if (_create.status === 'pending') return;
       if (table.status !== 'success') return;
 
-      const payload = buildPayload(value, activeFields);
-      await _create.mutateAsync(payload);
+      const data = buildPayload(value, activeFields);
+      await _create.mutateAsync({ slug, data });
     },
   });
 

@@ -12,7 +12,10 @@ export function UpdateRowFormSkeleton(): React.JSX.Element {
             <Skeleton className="h-4 w-20" />
           </FieldLabel>
           <InputGroup>
-            <InputGroupInput disabled className="opacity-50" />
+            <InputGroupInput
+              disabled
+              className="opacity-50"
+            />
           </InputGroup>
         </Field>
       ))}

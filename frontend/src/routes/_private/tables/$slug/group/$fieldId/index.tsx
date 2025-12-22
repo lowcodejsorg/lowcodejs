@@ -1,33 +1,38 @@
+import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 
-import { UpdateRowForm } from './-update-form';
-import { UpdateRowFormSkeleton } from './-update-form-skeleton';
+import { UpdateFieldForm } from './-update-form';
+import { UpdateFieldFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { useReadTableRow } from '@/integrations/tanstack-query/implementations/use-table-row-read';
+import { API } from '@/lib/api';
+import type { IField } from '@/lib/interfaces';
 
-export const Route = createFileRoute('/_private/tables/$slug/row/$rowId/')({
+export const Route = createFileRoute('/_private/tables/$slug/group/$fieldId/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
-  const { slug, rowId } = useParams({
-    from: '/_private/tables/$slug/row/$rowId/',
+  const { slug, fieldId } = useParams({
+    from: '/_private/tables/$slug/field/$fieldId/',
   });
 
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const table = useReadTable({ slug });
-  const row = useReadTableRow({ slug, rowId });
-
-  const isLoading = table.status === 'pending' || row.status === 'pending';
-  const isError = table.status === 'error' || row.status === 'error';
-  const isSuccess = table.status === 'success' && row.status === 'success';
+  const _read = useQuery({
+    queryKey: [`/tables/${slug}/fields/${fieldId}`, fieldId],
+    queryFn: async () => {
+      const response = await API.get<IField>(
+        `/tables/${slug}/fields/${fieldId}`,
+      );
+      return response.data;
+    },
+    enabled: Boolean(slug) && Boolean(fieldId),
+  });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -48,27 +53,24 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-xl font-medium">Detalhes do registro</h1>
+          <h1 className="text-xl font-medium">Detalhes do campo</h1>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {isError && (
+        {_read.status === 'error' && (
           <LoadError
-            message="Houve um erro ao buscar dados do registro"
-            refetch={() => {
-              table.refetch();
-              row.refetch();
-            }}
+            message="Houve um erro ao buscar dados do campo"
+            refetch={_read.refetch}
           />
         )}
-        {isLoading && <UpdateRowFormSkeleton />}
-        {isSuccess && (
-          <UpdateRowForm
-            data={row.data}
-            table={table.data}
-            key={row.data._id}
+        {_read.status === 'pending' && <UpdateFieldFormSkeleton />}
+        {_read.status === 'success' && (
+          <UpdateFieldForm
+            data={_read.data}
+            tableSlug={slug}
+            key={_read.data._id}
           />
         )}
       </div>
