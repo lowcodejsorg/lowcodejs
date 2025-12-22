@@ -1,4 +1,4 @@
-import { createFileRoute, useParams } from '@tanstack/react-router';
+import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import z from 'zod';
 
@@ -8,6 +8,7 @@ import { TableListView } from './-table-list-view';
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
 import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
 import { useReadTableRowPaginated } from '@/integrations/tanstack-query/implementations/use-table-row-read-paginated';
 import { MetaDefault } from '@/lib/constant';
@@ -30,6 +31,9 @@ function RouteComponent(): React.JSX.Element {
   const table = useReadTable({ slug });
   const rows = useReadTableRowPaginated({ slug });
 
+  const router = useRouter();
+  const sidebar = useSidebar();
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
@@ -42,11 +46,12 @@ function RouteComponent(): React.JSX.Element {
             disabled={rows.status === 'pending' || rows.status === 'error'}
             className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
             onClick={() => {
-              // sidebar.setOpen(false);
-              // router.navigate({
-              //   to: '/tables/create',
-              //   replace: true,
-              // });
+              sidebar.setOpen(false);
+              router.navigate({
+                to: '/tables/$slug/row/create',
+                replace: true,
+                params: { slug },
+              });
             }}
           >
             <PlusIcon />
