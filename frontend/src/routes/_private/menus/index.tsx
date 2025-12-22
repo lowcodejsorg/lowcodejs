@@ -1,15 +1,17 @@
+import { useQuery } from '@tanstack/react-query';
+import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
+import z from 'zod';
+
+import { TableMenus } from './-table-menus';
+import { TableMenusSkeleton } from './-table-menus-skeleton';
+
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { API } from '@/lib/api';
 import { MetaDefault } from '@/lib/constant';
-import { IMenu, Paginated } from '@/lib/interfaces';
-import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
-import z from 'zod';
-import { TableMenus } from './-table-menus';
-import { TableMenusSkeleton } from './-table-menus-skeleton';
+import type { IMenu, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/')({
   component: RouteComponent,
@@ -19,7 +21,7 @@ export const Route = createFileRoute('/_private/menus/')({
   }),
 });
 
-function RouteComponent() {
+function RouteComponent(): React.JSX.Element {
   const search = useSearch({ from: '/_private/menus/' });
   const sidebar = useSidebar();
   const router = useRouter();
@@ -72,7 +74,7 @@ function RouteComponent() {
         )}
 
         {pagination.status === 'success' && (
-          <TableMenus data={pagination.data?.data || []} />
+          <TableMenus data={pagination.data.data} />
         )}
       </div>
 

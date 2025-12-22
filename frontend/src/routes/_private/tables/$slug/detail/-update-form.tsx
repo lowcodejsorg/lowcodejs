@@ -1,3 +1,10 @@
+import { useForm } from '@tanstack/react-form';
+import { AxiosError } from 'axios';
+import { AlignLeftIcon, FileTextIcon } from 'lucide-react';
+import React from 'react';
+import { toast } from 'sonner';
+import z from 'zod';
+
 import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
@@ -19,14 +26,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useUpdateTable } from '@/integrations/tanstack-query/implementations/use-table-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import { ITable, Paginated } from '@/lib/interfaces';
+import type { ITable, Paginated } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useForm } from '@tanstack/react-form';
-import { AxiosError } from 'axios';
-import { AlignLeftIcon, FileTextIcon } from 'lucide-react';
-import React from 'react';
-import { toast } from 'sonner';
-import z from 'zod';
 
 type UpdateTableFormProps = {
   data: ITable;
@@ -49,7 +50,9 @@ const TableUpdateSchema = z.object({
   logo: z.string().nullable().optional(),
 });
 
-export function UpdateTableForm({ data }: UpdateTableFormProps) {
+export function UpdateTableForm({
+  data,
+}: UpdateTableFormProps): React.JSX.Element {
   const { queryClient } = getContext();
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
@@ -120,7 +123,7 @@ export function UpdateTableForm({ data }: UpdateTableFormProps) {
       visibility: data.configuration.visibility,
       collaboration: data.configuration.collaboration,
       logo: data.logo?._id ?? null,
-      logoFile: [] as File[],
+      logoFile: [] as Array<File>,
     },
     onSubmit: async ({ value }) => {
       const validation = TableUpdateSchema.safeParse({
@@ -148,9 +151,9 @@ export function UpdateTableForm({ data }: UpdateTableFormProps) {
 
       await _update.mutateAsync({
         ...data,
-        name: value.name ?? data.name,
-        description: value.description ?? null,
-        logo: (value.logo || data.logo?._id) ?? null,
+        name: value.name || data.name,
+        description: value.description || null,
+        logo: value.logo || data.logo?._id || null,
         configuration: {
           ...data.configuration,
           visibility: value.visibility,
@@ -186,10 +189,7 @@ export function UpdateTableForm({ data }: UpdateTableFormProps) {
                     value={field.state.value}
                     onValueChange={field.handleChange}
                     onStorageChange={([storage]) => {
-                      console.log({
-                        storage,
-                      });
-                      if (storage) {
+                      if (storage._id) {
                         form.setFieldValue('logo', storage._id);
                       }
                     }}
@@ -201,11 +201,11 @@ export function UpdateTableForm({ data }: UpdateTableFormProps) {
                   />
                 )}
 
-                {data?.logo?.url && mode === 'show' && (
+                {data.logo?.url && mode === 'show' && (
                   <div className="mt-2 p-2 border rounded-md">
                     <img
-                      src={data?.logo?.url}
-                      alt={data?.logo?.filename}
+                      src={data.logo.url}
+                      alt={data.logo.filename}
                       className="w-full h-32 object-contain"
                     />
                   </div>
@@ -327,7 +327,7 @@ export function UpdateTableForm({ data }: UpdateTableFormProps) {
           name="visibility"
           validators={{
             onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
+              if (value.trim() === '') {
                 return { message: 'Visibilidade é obrigatória' };
               }
               return undefined;
@@ -375,7 +375,7 @@ export function UpdateTableForm({ data }: UpdateTableFormProps) {
           name="collaboration"
           validators={{
             onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
+              if (value.trim() === '') {
                 return { message: 'Colaboração é obrigatória' };
               }
               return undefined;

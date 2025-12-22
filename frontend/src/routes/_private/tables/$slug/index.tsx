@@ -1,64 +1,84 @@
-import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
+import { createFileRoute, useParams } from '@tanstack/react-router';
+import { PlusIcon } from 'lucide-react';
+import z from 'zod';
+
+import { TableConfigurationDropdown } from './-table-configuration';
+import { TableListView } from './-table-list-view';
 
 import { LoadError } from '@/components/common/load-error';
+import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
-import { useSidebar } from '@/components/ui/sidebar';
 import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { UpdateTableForm } from './-update-form';
-import { UpdateTableFormSkeleton } from './-update-form-skeleton';
+import { useReadTableRowPaginated } from '@/integrations/tanstack-query/implementations/use-table-row-read-paginated';
+import { MetaDefault } from '@/lib/constant';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
+  validateSearch: z
+    .object({
+      page: z.coerce.number().default(1),
+      perPage: z.coerce.number().default(50),
+    })
+    .catchall(z.enum(['asc', 'desc']).optional()),
 });
 
-function RouteComponent() {
-  const { slug } = useParams({ from: '/_private/tables/$slug/' });
-  const sidebar = useSidebar();
-  const router = useRouter();
-  const _read = useReadTable({ slug });
+function RouteComponent(): React.JSX.Element {
+  const { slug } = useParams({
+    from: '/_private/tables/$slug/',
+  });
+
+  const table = useReadTable({ slug });
+  const rows = useReadTableRowPaginated({ slug });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
-      {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
+      <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
+        <h1 className="text-2xl font-medium ">{table.data?.name ?? ''}</h1>
+
         <div className="inline-flex items-center space-x-2">
+          <TableConfigurationDropdown tableSlug={slug} />
+
           <Button
-            variant="ghost"
-            size="icon-sm"
+            disabled={rows.status === 'pending' || rows.status === 'error'}
+            className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
             onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/tables',
-                replace: true,
-                search: { page: 1, perPage: 50 },
-              });
+              // sidebar.setOpen(false);
+              // router.navigate({
+              //   to: '/tables/create',
+              //   replace: true,
+              // });
             }}
           >
-            <ArrowLeftIcon />
+            <PlusIcon />
+            <span>Registro</span>
           </Button>
-          <h1 className="text-xl font-medium">Detalhes da tabela</h1>
         </div>
       </div>
 
-      {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {_read.status === 'error' && (
+        {/* {pagination.status === 'pending' && (
+          <TableTablesSkeleton headers={headers} />
+        )} */}
+
+        {rows.status === 'error' && (
           <LoadError
-            message="Erro ao buscar dados da tabela"
-            refetch={_read.refetch}
+            message="Houve um erro ao buscar dados de registros da tabela"
+            refetch={rows.refetch}
           />
         )}
-        {_read.status === 'pending' && <UpdateTableFormSkeleton />}
-        {_read.status === 'success' && (
-          <UpdateTableForm
-            data={_read.data}
-            key={_read.data._id}
+
+        {table.status === 'success' && rows.status === 'success' && (
+          <TableListView
+            headers={table.data.fields}
+            order={table.data.configuration.fields.orderList}
+            data={rows.data.data}
           />
         )}
       </div>
 
-      <div className="shrink-0 border-t p-2"></div>
+      <div className="shrink-0 border-t p-2">
+        <Pagination meta={rows.data?.meta ?? MetaDefault} />
+      </div>
     </div>
   );
 }

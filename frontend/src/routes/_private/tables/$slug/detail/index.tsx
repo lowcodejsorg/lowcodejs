@@ -1,18 +1,23 @@
-import { createFileRoute, useRouter } from '@tanstack/react-router';
+import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 
-import { CreateTableForm } from './-create-form';
+import { UpdateTableForm } from './-update-form';
+import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 
+import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
 
-export const Route = createFileRoute('/_private/tables/create/')({
+export const Route = createFileRoute('/_private/tables/$slug/detail/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
+  const { slug } = useParams({ from: '/_private/tables/$slug/detail/' });
   const sidebar = useSidebar();
   const router = useRouter();
+  const _read = useReadTable({ slug });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -33,13 +38,25 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-xl font-medium">Nova tabela</h1>
+          <h1 className="text-xl font-medium">Detalhes da tabela</h1>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        <CreateTableForm />
+        {_read.status === 'error' && (
+          <LoadError
+            message="Erro ao buscar dados da tabela"
+            refetch={_read.refetch}
+          />
+        )}
+        {_read.status === 'pending' && <UpdateTableFormSkeleton />}
+        {_read.status === 'success' && (
+          <UpdateTableForm
+            data={_read.data}
+            key={_read.data._id}
+          />
+        )}
       </div>
 
       <div className="shrink-0 border-t p-2"></div>

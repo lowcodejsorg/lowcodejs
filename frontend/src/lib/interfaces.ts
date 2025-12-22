@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * Make some property optional an type
  *
@@ -12,7 +13,9 @@
  * Optional<Post, 'name' | 'email>
  * ```
  */
-// eslint-disable-next-line @typescript-eslint/naming-convention
+
+import type { FIELD_FORMAT, FIELD_TYPE, MENU_ITEM_TYPE } from './constant';
+
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
 export interface Meta {
@@ -23,7 +26,7 @@ export interface Meta {
   firstPage: number;
 }
 export interface Paginated<Entity> {
-  data: Entity[];
+  data: Array<Entity>;
   meta: Meta;
 }
 
@@ -53,7 +56,7 @@ export interface IGroup extends Base {
   name: string;
   slug: string;
   description: string | null;
-  permissions: IPermission[];
+  permissions: Array<IPermission>;
 }
 
 export interface IUser extends Base {
@@ -63,14 +66,6 @@ export interface IUser extends Base {
   status: 'active' | 'inactive';
   group: IGroup;
 }
-
-export const MENU_ITEM_TYPE = {
-  TABLE: 'table',
-  PAGE: 'page',
-  FORM: 'form',
-  EXTERNAL: 'external',
-  SEPARATOR: 'separator',
-};
 
 export interface IMenu extends Base {
   name: string;
@@ -85,7 +80,7 @@ export interface IMenu extends Base {
 export interface ICategory {
   id: string;
   label: string;
-  children: ICategory[];
+  children: Array<ICategory>;
 }
 
 export interface IFieldConfigurationRelationship {
@@ -95,41 +90,6 @@ export interface IFieldConfigurationRelationship {
 }
 
 export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
-
-export const FIELD_TYPE = {
-  TEXT_SHORT: 'TEXT_SHORT',
-  TEXT_LONG: 'TEXT_LONG',
-  DROPDOWN: 'DROPDOWN',
-  DATE: 'DATE',
-  RELATIONSHIP: 'RELATIONSHIP',
-  FILE: 'FILE',
-  FIELD_GROUP: 'FIELD_GROUP',
-  REACTION: 'REACTION',
-  EVALUATION: 'EVALUATION',
-  CATEGORY: 'CATEGORY',
-} as const;
-
-export const FIELD_FORMAT = {
-  // TEXT_SHORT
-  ALPHA_NUMERIC: 'ALPHA_NUMERIC',
-  INTEGER: 'INTEGER',
-  DECIMAL: 'DECIMAL',
-  URL: 'URL',
-  EMAIL: 'EMAIL',
-  // DATE
-  DD_MM_YYYY: 'dd/MM/yyyy',
-  MM_DD_YYYY: 'MM/dd/yyyy',
-  YYYY_MM_DD: 'yyyy/MM/dd',
-  DD_MM_YYYY_HH_MM_SS: 'dd/MM/yyyy HH:mm:ss',
-  MM_DD_YYYY_HH_MM_SS: 'MM/dd/yyyy HH:mm:ss',
-  YYYY_MM_DD_HH_MM_SS: 'yyyy/MM/dd HH:mm:ss',
-  DD_MM_YYYY_DASH: 'dd-MM-yyyy',
-  MM_DD_YYYY_DASH: 'MM-dd-yyyy',
-  YYYY_MM_DD_DASH: 'yyyy-MM-dd',
-  DD_MM_YYYY_HH_MM_SS_DASH: 'dd-MM-yyyy HH:mm:ss',
-  MM_DD_YYYY_HH_MM_SS_DASH: 'MM-dd-yyyy HH:mm:ss',
-  YYYY_MM_DD_HH_MM_SS_DASH: 'yyyy-MM-dd HH:mm:ss',
-} as const;
 
 export interface IField extends Base {
   name: string;
@@ -143,8 +103,8 @@ export interface IField extends Base {
     filtering: boolean;
     defaultValue: string | null;
     relationship: IFieldConfigurationRelationship | null;
-    dropdown: string[] | null;
-    category: ICategory[] | null;
+    dropdown: Array<string> | null;
+    category: Array<ICategory> | null;
     group: IFieldConfigurationGroup | null;
   };
 }
@@ -156,7 +116,7 @@ export interface ISchema {
   default?: string | number | boolean | null;
 }
 
-export type ITableSchema = Record<string, ISchema | ISchema[]>;
+export type ITableSchema = Record<string, ISchema | Array<ISchema>>;
 
 export interface ITable extends Base {
   _schema: ITableSchema;
@@ -164,17 +124,17 @@ export interface ITable extends Base {
   description: string | null;
   logo: IStorage | null;
   slug: string;
-  fields: IField[];
+  fields: Array<IField>;
   type: 'table' | 'field-group';
   configuration: {
     style: 'gallery' | 'list';
     visibility: 'public' | 'restricted' | 'open' | 'form';
     collaboration: 'open' | 'restricted';
-    administrators: IUser[];
+    administrators: Array<IUser>;
     owner: IUser;
     fields: {
-      orderList: string[];
-      orderForm: string[];
+      orderList: Array<string>;
+      orderForm: Array<string>;
     };
   };
   methods: {
@@ -196,11 +156,15 @@ export interface ISetting {
   LOGO_LARGE_URL: string | null;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
-  FILE_UPLOAD_ACCEPTED: string[];
+  FILE_UPLOAD_ACCEPTED: Array<string>;
   PAGINATION_PER_PAGE: number;
   DATABASE_URL: string;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;
   EMAIL_PROVIDER_PASSWORD: string;
+}
+
+export interface IRow extends Base, Record<string, any> {
+  creator: IUser;
 }

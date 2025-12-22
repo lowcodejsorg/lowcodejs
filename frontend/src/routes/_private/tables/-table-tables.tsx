@@ -22,7 +22,7 @@ interface Props {
   headers: Array<string>;
 }
 
-function TableTableRow({ table }: { table: ITable }) {
+function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -83,7 +83,7 @@ export function TableTables({ data, headers }: Props): React.ReactElement {
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow className="">
-          {headers?.map((head) => (
+          {headers.map((head) => (
             <TableHead key={head}>
               <span>{head}</span>
             </TableHead>

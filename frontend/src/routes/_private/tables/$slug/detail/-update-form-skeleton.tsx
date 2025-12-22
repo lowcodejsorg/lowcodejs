@@ -1,6 +1,8 @@
+import React from 'react';
+
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function UpdateTableFormSkeleton() {
+export function UpdateTableFormSkeleton(): React.JSX.Element {
   return (
     <section className="space-y-4 p-2">
       <Skeleton className="h-32 w-full" /> {/* Logo */}

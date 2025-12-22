@@ -1,3 +1,6 @@
+import { useRouter } from '@tanstack/react-router';
+import { ArrowRightIcon } from 'lucide-react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -9,13 +12,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { IMenu, MENU_ITEM_TYPE } from '@/lib/interfaces';
+import { MENU_ITEM_TYPE } from '@/lib/constant';
+import type { IMenu } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useRouter } from '@tanstack/react-router';
-import { ArrowRightIcon } from 'lucide-react';
 
 interface TableMenusProps {
-  data: IMenu[];
+  data: Array<IMenu>;
 }
 
 const TypeMapper = {

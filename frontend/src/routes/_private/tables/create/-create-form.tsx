@@ -1,3 +1,10 @@
+import { useForm } from '@tanstack/react-form';
+import { useNavigate } from '@tanstack/react-router';
+import { AxiosError } from 'axios';
+import { FileTextIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import z from 'zod';
+
 import { Button } from '@/components/ui/button';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
@@ -10,26 +17,16 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCreateTable } from '@/integrations/tanstack-query/implementations/use-table-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import { ITable, Paginated } from '@/lib/interfaces';
-import { useForm } from '@tanstack/react-form';
-import { useNavigate } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
-import { FileTextIcon } from 'lucide-react';
-import { toast } from 'sonner';
-import z from 'zod';
+import type { ITable, Paginated } from '@/lib/interfaces';
 
 const TableCreateSchema = z.object({
   name: z
     .string()
     .min(1, 'Nome é obrigatório')
-    .max(40, 'Nome deve ter no máximo 40 caracteres')
-    .regex(
-      /^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/,
-      'O nome não pode conter caracteres especiais',
-    ),
+    .max(40, 'Nome deve ter no máximo 40 caracteres'),
 });
 
-export function CreateTableForm() {
+export function CreateTableForm(): React.JSX.Element {
   const { queryClient } = getContext();
   const sidebar = useSidebar();
   const navigate = useNavigate();

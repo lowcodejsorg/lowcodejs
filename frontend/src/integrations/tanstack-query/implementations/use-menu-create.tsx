@@ -1,7 +1,10 @@
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+
 import { API } from '@/lib/api';
-import { IMenu, MENU_ITEM_TYPE } from '@/lib/interfaces';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type { MENU_ITEM_TYPE } from '@/lib/constant';
+import type { IMenu } from '@/lib/interfaces';
 
 type Payload = {
   name: string;

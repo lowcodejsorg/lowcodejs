@@ -1,8 +1,12 @@
-import { API } from '@/lib/api';
-import { ITable } from '@/lib/interfaces';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
-export function useReadTable(payload: { slug: string }) {
+import { API } from '@/lib/api';
+import type { ITable } from '@/lib/interfaces';
+
+export function useReadTable(payload: {
+  slug: string;
+}): UseQueryResult<ITable, Error> {
   return useQuery({
     queryKey: ['/tables/'.concat(payload.slug), payload.slug],
     queryFn: async function () {

@@ -11,13 +11,13 @@ import {
 export function TableTablesSkeleton({
   headers,
 }: {
-  headers: string[];
+  headers: Array<string>;
 }): React.JSX.Element {
   return (
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow>
-          {headers?.map((head) => (
+          {headers.map((head) => (
             <TableHead key={head}>
               <span>{head}</span>
             </TableHead>
