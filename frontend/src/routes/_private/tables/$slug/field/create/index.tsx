@@ -1,12 +1,25 @@
-import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  useParams,
+  useRouter,
+  useSearch,
+} from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
+import z from 'zod';
 
 import { FieldCreateForm } from '@/components/common/field-create-form';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { FIELD_TYPE } from '@/lib/constant';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/create/')({
   component: RouteComponent,
+  validateSearch: z.object({
+    'field-type': z
+      .enum(Object.keys(FIELD_TYPE) as [string, ...Array<string>])
+      .optional(),
+    from: z.string().optional(),
+  }),
 });
 
 function RouteComponent(): React.JSX.Element {
@@ -16,6 +29,12 @@ function RouteComponent(): React.JSX.Element {
   const { slug } = useParams({
     from: '/_private/tables/$slug/field/create/',
   });
+
+  const { 'field-type': fieldType, from } = useSearch({
+    from: '/_private/tables/$slug/field/create/',
+  });
+
+  const originSlug = from ?? slug;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -30,7 +49,7 @@ function RouteComponent(): React.JSX.Element {
               router.navigate({
                 to: '/tables/$slug',
                 replace: true,
-                params: { slug },
+                params: { slug: originSlug },
               });
             }}
           >
@@ -42,7 +61,11 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        <FieldCreateForm tableSlug={slug} originSlug={slug} />
+        <FieldCreateForm
+          tableSlug={slug}
+          originSlug={originSlug}
+          defaultFieldType={fieldType as keyof typeof FIELD_TYPE | undefined}
+        />
       </div>
 
       <div className="shrink-0 border-t p-2"></div>

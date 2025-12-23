@@ -27,6 +27,7 @@ import { Route as PrivateMenusCreateIndexRouteImport } from './routes/_private/m
 import { Route as PrivateMenusMenuIdIndexRouteImport } from './routes/_private/menus/$menuId/index'
 import { Route as PrivateGroupsCreateIndexRouteImport } from './routes/_private/groups/create/index'
 import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private/groups/$groupId/index'
+import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods'
 import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index'
 import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index'
 import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index'
@@ -129,6 +130,12 @@ const PrivateGroupsGroupIdIndexRoute =
     path: '/groups/$groupId/',
     getParentRoute: () => PrivateLayoutRoute,
   } as any)
+const PrivateTablesSlugMethodsRoute =
+  PrivateTablesSlugMethodsRouteImport.update({
+    id: '/tables/$slug/methods',
+    path: '/tables/$slug/methods',
+    getParentRoute: () => PrivateLayoutRoute,
+  } as any)
 const PrivateTablesSlugDetailIndexRoute =
   PrivateTablesSlugDetailIndexRouteImport.update({
     id: '/tables/$slug/detail/',
@@ -182,6 +189,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof PrivateSettingsIndexRoute
   '/tables': typeof PrivateTablesIndexRoute
   '/users': typeof PrivateUsersIndexRoute
+  '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
   '/groups/create': typeof PrivateGroupsCreateIndexRoute
   '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
@@ -208,6 +216,7 @@ export interface FileRoutesByTo {
   '/settings': typeof PrivateSettingsIndexRoute
   '/tables': typeof PrivateTablesIndexRoute
   '/users': typeof PrivateUsersIndexRoute
+  '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
   '/groups/create': typeof PrivateGroupsCreateIndexRoute
   '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
@@ -236,6 +245,7 @@ export interface FileRoutesById {
   '/_private/settings/': typeof PrivateSettingsIndexRoute
   '/_private/tables/': typeof PrivateTablesIndexRoute
   '/_private/users/': typeof PrivateUsersIndexRoute
+  '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/_private/groups/$groupId/': typeof PrivateGroupsGroupIdIndexRoute
   '/_private/groups/create/': typeof PrivateGroupsCreateIndexRoute
   '/_private/menus/$menuId/': typeof PrivateMenusMenuIdIndexRoute
@@ -264,6 +274,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tables'
     | '/users'
+    | '/tables/$slug/methods'
     | '/groups/$groupId'
     | '/groups/create'
     | '/menus/$menuId'
@@ -290,6 +301,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/tables'
     | '/users'
+    | '/tables/$slug/methods'
     | '/groups/$groupId'
     | '/groups/create'
     | '/menus/$menuId'
@@ -317,6 +329,7 @@ export interface FileRouteTypes {
     | '/_private/settings/'
     | '/_private/tables/'
     | '/_private/users/'
+    | '/_private/tables/$slug/methods'
     | '/_private/groups/$groupId/'
     | '/_private/groups/create/'
     | '/_private/menus/$menuId/'
@@ -468,6 +481,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateGroupsGroupIdIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_private/tables/$slug/methods': {
+      id: '/_private/tables/$slug/methods'
+      path: '/tables/$slug/methods'
+      fullPath: '/tables/$slug/methods'
+      preLoaderRoute: typeof PrivateTablesSlugMethodsRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/detail/': {
       id: '/_private/tables/$slug/detail/'
       path: '/tables/$slug/detail'
@@ -528,6 +548,7 @@ interface PrivateLayoutRouteChildren {
   PrivateSettingsIndexRoute: typeof PrivateSettingsIndexRoute
   PrivateTablesIndexRoute: typeof PrivateTablesIndexRoute
   PrivateUsersIndexRoute: typeof PrivateUsersIndexRoute
+  PrivateTablesSlugMethodsRoute: typeof PrivateTablesSlugMethodsRoute
   PrivateGroupsGroupIdIndexRoute: typeof PrivateGroupsGroupIdIndexRoute
   PrivateGroupsCreateIndexRoute: typeof PrivateGroupsCreateIndexRoute
   PrivateMenusMenuIdIndexRoute: typeof PrivateMenusMenuIdIndexRoute
@@ -553,6 +574,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateSettingsIndexRoute: PrivateSettingsIndexRoute,
   PrivateTablesIndexRoute: PrivateTablesIndexRoute,
   PrivateUsersIndexRoute: PrivateUsersIndexRoute,
+  PrivateTablesSlugMethodsRoute: PrivateTablesSlugMethodsRoute,
   PrivateGroupsGroupIdIndexRoute: PrivateGroupsGroupIdIndexRoute,
   PrivateGroupsCreateIndexRoute: PrivateGroupsCreateIndexRoute,
   PrivateMenusMenuIdIndexRoute: PrivateMenusMenuIdIndexRoute,

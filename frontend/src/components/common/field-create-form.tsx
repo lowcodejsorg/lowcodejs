@@ -146,11 +146,13 @@ async function fetchRelationshipTables(
 interface FieldCreateFormProps {
   tableSlug: string;
   originSlug: string;
+  defaultFieldType?: keyof typeof FIELD_TYPE;
 }
 
 export function FieldCreateForm({
   tableSlug,
   originSlug,
+  defaultFieldType,
 }: FieldCreateFormProps): React.JSX.Element {
   const { queryClient } = getContext();
   const sidebar = useSidebar();
@@ -371,7 +373,7 @@ export function FieldCreateForm({
   const form = useForm({
     defaultValues: {
       name: '',
-      type: '' as keyof typeof FIELD_TYPE,
+      type: defaultFieldType ?? ('' as keyof typeof FIELD_TYPE),
       configuration: {
         required: false,
         multiple: false,
@@ -556,7 +558,9 @@ export function FieldCreateForm({
                   Tipo <span className="text-destructive">*</span>
                 </FieldLabel>
                 <Select
-                  disabled={_create.status === 'pending'}
+                  disabled={
+                    _create.status === 'pending' || Boolean(defaultFieldType)
+                  }
                   value={field.state.value}
                   onValueChange={(value) => {
                     field.handleChange(value as keyof typeof FIELD_TYPE);

@@ -9,15 +9,10 @@ import {
   SendToBackIcon,
   Settings2Icon,
 } from 'lucide-react';
-import React from 'react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
 
-// import { UpdateTableSheet } from '../../-components/update-table.sheet';
-
-// import { ApiEndpointsModal } from './api-endpoints-modal';
-// import { DialogTableMethod } from './dialog-table-method';
-// import { FieldManagerSheet } from './field-manager-sheet';
-// import { FieldTableCreateSheet } from './field-table-create-sheet';
+import { ApiEndpointsModal } from './-api-endpoints-modal';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -34,7 +29,71 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
 import { FIELD_TYPE } from '@/lib/constant';
+import type { IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
+
+interface FieldGroupSubMenuProps {
+  field: IField;
+  originSlug: string;
+}
+
+function FieldGroupSubMenu({
+  field,
+  originSlug,
+}: FieldGroupSubMenuProps): React.JSX.Element {
+  const router = useRouter();
+  const groupTable = useReadTable({ slug: field.slug });
+
+  return (
+    <DropdownMenuSub>
+      <DropdownMenuSubTrigger>
+        <span>Gerenciar {field.name}</span>
+      </DropdownMenuSubTrigger>
+      <DropdownMenuPortal>
+        <DropdownMenuSubContent>
+          <DropdownMenuItem
+            className="inline-flex space-x-1 w-full"
+            onClick={() => {
+              router.navigate({
+                to: '/tables/$slug/field/create',
+                params: { slug: field.slug },
+                search: { from: originSlug },
+              });
+            }}
+          >
+            <PlusIcon className="size-4" />
+            <span>Novo campo</span>
+          </DropdownMenuItem>
+
+          {groupTable.status === 'success' &&
+            groupTable.data.fields.filter((f) => !f.trashed).length > 0 && (
+              <DropdownMenuSeparator />
+            )}
+
+          {groupTable.status === 'success' &&
+            groupTable.data.fields
+              .filter((f) => !f.trashed)
+              .map((groupField) => (
+                <DropdownMenuItem
+                  key={groupField._id}
+                  className="inline-flex space-x-1 w-full"
+                  onClick={() => {
+                    router.navigate({
+                      to: '/tables/$slug/field/$fieldId',
+                      params: { slug: field.slug, fieldId: groupField._id },
+                      search: { from: originSlug },
+                    });
+                  }}
+                >
+                  <PencilIcon className="size-4" />
+                  <span>Editar {groupField.name}</span>
+                </DropdownMenuItem>
+              ))}
+        </DropdownMenuSubContent>
+      </DropdownMenuPortal>
+    </DropdownMenuSub>
+  );
+}
 
 interface TableConfigurationProps {
   tableSlug: string;
@@ -51,23 +110,7 @@ export function TableConfigurationDropdown({
 
   const table = useReadTable({ slug: tableSlug });
 
-  // const updateTableButtonRef = React.useRef<HTMLButtonElement | null>(null);
-
-  // const managerTableFieldButtonRef = React.useRef<HTMLButtonElement | null>(
-  //   null,
-  // );
-
-  // const createTableFieldButtonRef = React.useRef<HTMLButtonElement | null>(
-  //   null,
-  // );
-
-  // const apiEndpointsModalButtonRef = React.useRef<HTMLButtonElement | null>(
-  //   null,
-  // );
-
-  // const dialogTableMethodButtonRef = React.useRef<HTMLButtonElement | null>(
-  //   null,
-  // );
+  const [apiModalOpen, setApiModalOpen] = useState(false);
 
   return (
     <DropdownMenu
@@ -111,17 +154,36 @@ export function TableConfigurationDropdown({
             <span>Novo campo</span>
           </DropdownMenuItem>
 
-          {table.status === 'success' && table.data.fields.length > 0 && (
-            <DropdownMenuItem
-              className="inline-flex space-x-1 w-full"
-              // onClick={() => {
-              //   managerTableFieldButtonRef?.current?.click();
-              // }}
-            >
-              <SendToBackIcon className="size-4" />
-              <span>Gerenciar campos</span>
-            </DropdownMenuItem>
-          )}
+          {table.status === 'success' &&
+            table.data.fields.filter((f) => !f.trashed).length > 0 && (
+              <DropdownMenuSub>
+                <DropdownMenuSubTrigger className="inline-flex space-x-1 w-full">
+                  <SendToBackIcon className="size-4" />
+                  <span>Gerenciar campos</span>
+                </DropdownMenuSubTrigger>
+                <DropdownMenuPortal>
+                  <DropdownMenuSubContent>
+                    {table.data.fields
+                      .filter((f) => !f.trashed)
+                      .map((field) => (
+                        <DropdownMenuItem
+                          key={field._id}
+                          // className="inline-flex space-x-1 w-full"
+                          onClick={() => {
+                            router.navigate({
+                              to: '/tables/$slug/field/$fieldId',
+                              params: { slug, fieldId: field._id },
+                            });
+                          }}
+                        >
+                          <PencilIcon className="size-4" />
+                          <span>Editar {field.name}</span>
+                        </DropdownMenuItem>
+                      ))}
+                  </DropdownMenuSubContent>
+                </DropdownMenuPortal>
+              </DropdownMenuSub>
+            )}
         </DropdownMenuGroup>
 
         {table.data?.type === 'table' && (
@@ -132,18 +194,13 @@ export function TableConfigurationDropdown({
             <DropdownMenuGroup>
               <DropdownMenuItem
                 className="inline-flex space-x-1 w-full"
-                // onClick={() => {
-                //   createTableFieldButtonRef?.current?.click();
-
-                //   router.navigate({
-                //     search: {
-                //       // @ts-ignore
-                //       'field-type': 'group',
-                //       action: 'create',
-                //     },
-                //     replace: true,
-                //   });
-                // }}
+                onClick={() => {
+                  router.navigate({
+                    to: '/tables/$slug/field/create',
+                    params: { slug },
+                    search: { 'field-type': FIELD_TYPE.FIELD_GROUP },
+                  });
+                }}
               >
                 <PlusIcon className="size-4" />
                 <span>Novo grupo</span>
@@ -152,38 +209,11 @@ export function TableConfigurationDropdown({
               {table.data.fields
                 .filter((f) => f.type === FIELD_TYPE.FIELD_GROUP && !f.trashed)
                 .map((field) => (
-                  <DropdownMenuSub>
-                    <DropdownMenuSubTrigger>
-                      <span>Gerenciar {field.name}</span>
-                    </DropdownMenuSubTrigger>
-                    <DropdownMenuPortal>
-                      <DropdownMenuSubContent>
-                        <DropdownMenuItem
-                          className="inline-flex space-x-1 w-full"
-                          onClick={() => {
-                            router.navigate({
-                              to: '/group/$groupSlug/field/create',
-                              params: { groupSlug: field.slug },
-                              search: { from: slug },
-                            });
-                          }}
-                        >
-                          <PlusIcon className="size-4" />
-                          <span>Novo campo</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="inline-flex space-x-1 w-full"
-                          // onClick={() => {
-                          //   management.handleSlug(field.slug);
-                          //   managerTableFieldButtonRef?.current?.click();
-                          // }}
-                        >
-                          <SendToBackIcon className="size-4" />
-                          <span>Gerenciar campos</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuSubContent>
-                    </DropdownMenuPortal>
-                  </DropdownMenuSub>
+                  <FieldGroupSubMenu
+                    key={field._id}
+                    field={field}
+                    originSlug={slug}
+                  />
                 ))}
             </DropdownMenuGroup>
           </React.Fragment>
@@ -211,9 +241,12 @@ export function TableConfigurationDropdown({
 
           <DropdownMenuItem
             className="inline-flex space-x-1 w-full"
-            // onClick={() => {
-            //   dialogTableMethodButtonRef?.current?.click();
-            // }}
+            onClick={() => {
+              router.navigate({
+                to: '/tables/$slug/methods',
+                params: { slug },
+              });
+            }}
           >
             <CodepenIcon className="size-4" />
             <span>Métodos</span>
@@ -222,9 +255,7 @@ export function TableConfigurationDropdown({
           {table.data?.type === 'table' && (
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
-              // onClick={() => {
-              //   apiEndpointsModalButtonRef?.current?.click();
-              // }}
+              onClick={() => setApiModalOpen(true)}
             >
               <InfoIcon className="size-4" />
               <span>Informações da API</span>
@@ -257,18 +288,11 @@ export function TableConfigurationDropdown({
         </DropdownMenuGroup>
       </DropdownMenuContent>
 
-      {/* <FieldTableCreateSheet ref={createTableFieldButtonRef} /> */}
-
-      {/* <FieldManagerSheet ref={managerTableFieldButtonRef} /> */}
-
-      {/* <UpdateTableSheet
-        slug={slug}
-        ref={updateTableButtonRef}
-      /> */}
-
-      {/* <DialogTableMethod ref={dialogTableMethodButtonRef} /> */}
-
-      {/* <ApiEndpointsModal ref={apiEndpointsModalButtonRef} /> */}
+      <ApiEndpointsModal
+        tableSlug={tableSlug}
+        open={apiModalOpen}
+        onOpenChange={setApiModalOpen}
+      />
     </DropdownMenu>
   );
 }

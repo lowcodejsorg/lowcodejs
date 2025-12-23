@@ -1,6 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import {
+  createFileRoute,
+  useParams,
+  useRouter,
+  useSearch,
+} from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
+import z from 'zod';
 
 import { FieldUpdateForm } from '@/components/common/field-update-form';
 import { LoadError } from '@/components/common/load-error';
@@ -12,12 +18,21 @@ import type { IField } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
   component: RouteComponent,
+  validateSearch: z.object({
+    from: z.string().optional(),
+  }),
 });
 
 function RouteComponent(): React.JSX.Element {
   const { slug, fieldId } = useParams({
     from: '/_private/tables/$slug/field/$fieldId/',
   });
+
+  const { from } = useSearch({
+    from: '/_private/tables/$slug/field/$fieldId/',
+  });
+
+  const originSlug = from ?? slug;
 
   const sidebar = useSidebar();
   const router = useRouter();
@@ -46,7 +61,7 @@ function RouteComponent(): React.JSX.Element {
               router.navigate({
                 to: '/tables/$slug',
                 replace: true,
-                params: { slug },
+                params: { slug: originSlug },
               });
             }}
           >
@@ -75,7 +90,7 @@ function RouteComponent(): React.JSX.Element {
           <FieldUpdateForm
             data={_read.data}
             tableSlug={slug}
-            originSlug={slug}
+            originSlug={originSlug}
             key={_read.data._id}
           />
         )}
