@@ -14,74 +14,65 @@ if [ ! -f "docker-compose.yml" ]; then
     exit 1
 fi
 
-echo "1. Configurando Backend..."
+echo "1. Verificando .env.example na raiz..."
 
-# Configurar backend
-if [ ! -f "./backend/.env.example" ]; then
-    echo "Arquivo ./backend/.env.example não encontrado"
+# Verificar se .env.example existe na raiz
+if [ ! -f "./.env.example" ]; then
+    echo "Arquivo ./.env.example não encontrado na raiz do projeto"
     exit 1
-fi
-
-cp ./backend/.env.example ./backend/.env
-echo "Arquivo ./backend/.env criado"
-
-# Configurar arquivo de ambiente de teste
-if [ -f "./backend/.env.test.example" ]; then
-    cp ./backend/.env.test.example ./backend/.env.test
-    echo "Arquivo ./backend/.env.test criado"
 fi
 
 # Verificar se credential-generator.sh existe
-if [ ! -f "./backend/credential-generator.sh" ]; then
-    echo "Arquivo ./backend/credential-generator.sh não encontrado"
+if [ ! -f "./credential-generator.sh" ]; then
+    echo "Arquivo ./credential-generator.sh não encontrado"
     exit 1
 fi
 
-# Dar permissão e executar gerador
-chmod +x ./backend/credential-generator.sh
+echo ""
+echo "2. Gerando credenciais e criando .env..."
+
+# Copiar .env.example para .env na raiz
+cp ./.env.example ./.env
+echo "Arquivo ./.env criado na raiz"
+
+# Dar permissão e executar gerador de credenciais
+chmod +x ./credential-generator.sh
 echo "Gerando credenciais JWT..."
-./backend/credential-generator.sh
+./credential-generator.sh
 
 echo ""
-echo "2. Configurando Frontend..."
+echo "3. Interpolando variáveis de ambiente..."
 
-# Configurar frontend
-if [ ! -f "./frontend/.env.example" ]; then
-    echo "  Arquivo ./frontend/.env.example não encontrado"
-    exit 1
-fi
+# Carregar variáveis do .env para o ambiente
+set -a
+source ./.env
+set +a
 
-cp ./frontend/.env.example ./frontend/.env
-echo "  Arquivo ./frontend/.env criado"
+# Substituir ${VAR} pelos valores reais
+envsubst < ./.env > ./.env.tmp
+mv ./.env.tmp ./.env
+echo "Variáveis interpoladas com sucesso"
 
 echo ""
-echo "3. Configurando .env na raiz para Docker Compose..."
+echo "4. Separando variáveis de ambiente..."
 
-# Remover .env da raiz se já existir
-if [ -f ".env" ]; then
-    rm .env
-    echo "  Arquivo .env antigo removido"
-fi
+# Backend: todas as variáveis exceto VITE_*
+grep -v "^VITE_" ./.env > ./backend/.env
+echo "Arquivo ./backend/.env criado (sem VITE_*)"
 
-# Criar .env na raiz
-echo "# Backend Configuration" >> .env
-cat ./backend/.env >> .env
-
-echo "" >> .env
-echo "# Frontend Configuration" >> .env
-cat ./frontend/.env >> .env
-
-echo "  Arquivo .env da raiz configurado"
+# Frontend: apenas variáveis VITE_*
+grep "^VITE_" ./.env > ./frontend/.env
+echo "Arquivo ./frontend/.env criado (apenas VITE_*)"
 
 echo ""
 echo "Configuração concluída com sucesso!"
 echo ""
 echo "Próximos passos:"
 echo "   1. Execute: docker compose up --build"
-echo "   2. Em outro terminal: docker exec matis-backend npx prisma db seed"
+echo "   2. Em outro terminal: docker exec low-code-js-api npm run seed"
 echo ""
 echo "Acessos:"
-echo "   Frontend: http://localhost:3000"
-echo "   Backend:  http://localhost:4000"
-echo "   Docs:     http://localhost:4000/documentation"
+echo "   Frontend: http://localhost:5173"
+echo "   Backend:  http://localhost:3000"
+echo "   Docs:     http://localhost:3000/documentation"
 echo ""

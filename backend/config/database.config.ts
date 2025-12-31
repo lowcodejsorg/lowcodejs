@@ -17,7 +17,7 @@ export async function MongooseConnect(): Promise<void> {
     console.log(Env.DATABASE_URL);
     await mongoose.connect(Env.DATABASE_URL, {
       autoCreate: true,
-      dbName: 'lowcodejs',
+      dbName: Env.DB_NAME,
     });
   } catch (error) {
     console.error(error);

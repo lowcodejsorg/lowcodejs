@@ -3,11 +3,10 @@ name: ${ENVIRONMENT}-lowcodejs
 services:
   mongo:
     image: mongo:latest
-    # container_name: ${ENVIRONMENT}-mongo
     restart: unless-stopped
-    # environment:
-    #   MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-    #   MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
     volumes:
       - mongo-volume:/data/db
     networks:
@@ -20,12 +19,12 @@ services:
       start_period: 30s
 
   api:
-    # container_name: ${ENVIRONMENT}-api
     image: ${DOCKER_USERNAME}/lowcodejs-api:${ENVIRONMENT}
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: mongodb://${MONGO_USERNAME}:${MONGO_PASSWORD}@mongo:27017
+      DATABASE_URL: mongodb://${DB_USERNAME}:${DB_PASSWORD}@mongo:27017/${DB_NAME}?authSource=admin
+      DB_NAME: ${DB_NAME}
       APP_SERVER_URL: https://api.${ENVIRONMENT}.lowcodejs.org
       APP_CLIENT_URL: https://${ENVIRONMENT}.lowcodejs.org
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
@@ -36,13 +35,13 @@ services:
       EMAIL_PROVIDER_USER: ${EMAIL_PROVIDER_USER}
       EMAIL_PROVIDER_HOST: ${EMAIL_PROVIDER_HOST}
       EMAIL_PROVIDER_PORT: ${EMAIL_PROVIDER_PORT}
-      FILE_UPLOAD_MAX_SIZE: 10485760
-      FILE_UPLOAD_ACCEPTED: "jpg;  jpeg;  png;  pdf;  doc;  docx;  xls;  xlsx;  txt;  zip;  rar"
-      FILE_UPLOAD_MAX_FILES_PER_UPLOAD: 10
-      LOCALE: 'pt-br'
-      LOGO_SMALL_URL: https://${ENVIRONMENT}.lowcodejs.org/logo-small.png
-      LOGO_LARGE_URL: https://${ENVIRONMENT}.lowcodejs.org/logo-large.png
-      PAGINATION_PER_PAGE: 20
+      FILE_UPLOAD_MAX_SIZE: ${FILE_UPLOAD_MAX_SIZE:-10485760}
+      FILE_UPLOAD_ACCEPTED: ${FILE_UPLOAD_ACCEPTED:-jpg;jpeg;png;pdf;doc;docx;xls;xlsx;txt;zip;rar}
+      FILE_UPLOAD_MAX_FILES_PER_UPLOAD: ${FILE_UPLOAD_MAX_FILES_PER_UPLOAD:-10}
+      LOCALE: ${LOCALE:-pt-br}
+      LOGO_SMALL_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/small.png
+      LOGO_LARGE_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/large.png
+      PAGINATION_PER_PAGE: ${PAGINATION_PER_PAGE:-20}
     restart: unless-stopped
     volumes:
       - storage-api-volume:/app/_storage
@@ -62,7 +61,6 @@ services:
       - "traefik.http.routers.${ENVIRONMENT}-api-http.middlewares=https-only@file"
 
   app:
-    # container_name: ${ENVIRONMENT}-app
     image: ${DOCKER_USERNAME}/lowcodejs-app:${ENVIRONMENT}
     environment:
       VITE_API_BASE_URL: https://api.${ENVIRONMENT}.lowcodejs.org

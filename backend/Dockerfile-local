@@ -12,6 +12,9 @@ COPY . .
 
 # RUN npx prisma generate
 
+# Seed deve rodar após os containers subirem:
+# docker exec low-code-js-backend npm run seed
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
