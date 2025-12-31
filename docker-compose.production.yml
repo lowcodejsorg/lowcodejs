@@ -5,9 +5,9 @@ services:
     image: mongo:latest
     # container_name: ${ENVIRONMENT}-mongo
     restart: unless-stopped
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    # environment:
+    #   MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+    #   MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
     volumes:
       - mongo-volume:/data/db
     networks:
