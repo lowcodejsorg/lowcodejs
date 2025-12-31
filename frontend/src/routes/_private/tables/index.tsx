@@ -7,11 +7,12 @@ import { TableTablesSkeleton } from './-table-tables-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
+import { SheetFilter } from '@/components/common/sheet-filter';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { API } from '@/lib/api';
-import { MetaDefault } from '@/lib/constant';
-import type { ITable, Paginated } from '@/lib/interfaces';
+import { FIELD_TYPE, MetaDefault } from '@/lib/constant';
+import type { IField, ITable, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/')({
   component: RouteComponent,
@@ -19,6 +20,7 @@ export const Route = createFileRoute('/_private/tables/')({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
+    name: z.string().optional(),
   }),
 });
 
@@ -44,25 +46,53 @@ function RouteComponent(): React.JSX.Element {
 
   const headers = ['Tabela', 'Link (slug)', 'Criado em'];
 
+  const fieldFilters: Array<IField> = [
+    {
+      _id: 'name',
+      slug: 'name',
+      name: 'Nome',
+      type: FIELD_TYPE.TEXT_SHORT,
+      trashed: false,
+      trashedAt: null,
+      createdAt: '',
+      updatedAt: null,
+      configuration: {
+        format: null,
+        category: null,
+        defaultValue: null,
+        dropdown: null,
+        filtering: true,
+        group: null,
+        listing: true,
+        multiple: false,
+        relationship: null,
+        required: false,
+      },
+    },
+  ];
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Tabelas</h1>
-        <Button
-          disabled={
-            pagination.status === 'pending' || pagination.status === 'error'
-          }
-          className="disabled:cursor-not-allowed"
-          onClick={() => {
-            sidebar.setOpen(false);
-            router.navigate({
-              to: '/tables/create',
-              replace: true,
-            });
-          }}
-        >
-          <span>Nova Tabela</span>
-        </Button>
+        <div className="inline-flex items-center gap-2">
+          <SheetFilter fields={fieldFilters} />
+          <Button
+            disabled={
+              pagination.status === 'pending' || pagination.status === 'error'
+            }
+            className="disabled:cursor-not-allowed"
+            onClick={() => {
+              sidebar.setOpen(false);
+              router.navigate({
+                to: '/tables/create',
+                replace: true,
+              });
+            }}
+          >
+            <span>Nova Tabela</span>
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">

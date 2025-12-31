@@ -16,7 +16,9 @@ import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
+import { SheetFilter } from '@/components/common/sheet-filter';
 import { TableStyleViewDropdown } from '@/components/common/table-style-view';
+import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,8 +32,11 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
     .object({
       page: z.coerce.number().default(1),
       perPage: z.coerce.number().default(50),
+      trashed: z.coerce.boolean().optional(),
     })
-    .catchall(z.enum(['asc', 'desc']).optional()),
+    .catchall(
+      z.union([z.enum(['asc', 'desc']).optional(), z.string().optional()]),
+    ),
 });
 
 function RouteComponent(): React.JSX.Element {
@@ -74,6 +79,14 @@ function RouteComponent(): React.JSX.Element {
         </div>
 
         <div className="inline-flex items-center space-x-2">
+          {table.status === 'success' && (
+            <SheetFilter
+              fields={table.data.fields.filter(
+                (f) => f.configuration.filtering,
+              )}
+            />
+          )}
+          <TrashButton />
           <TableStyleViewDropdown slug={slug} />
           <TableConfigurationDropdown tableSlug={slug} />
 

@@ -1,6 +1,8 @@
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 
+import { RowRemoveFromTrashDialog } from './-remove-from-trash-dialog';
+import { RowSendToTrashDialog } from './-send-to-trash-dialog';
 import { UpdateRowForm } from './-update-form';
 import { UpdateRowFormSkeleton } from './-update-form-skeleton';
 
@@ -49,6 +51,14 @@ function RouteComponent(): React.JSX.Element {
             <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">Detalhes do registro</h1>
+        </div>
+        <div className="inline-flex items-center space-x-2">
+          {isSuccess && !row.data.trashed && (
+            <RowSendToTrashDialog rowId={rowId} slug={slug} />
+          )}
+          {isSuccess && row.data.trashed && (
+            <RowRemoveFromTrashDialog rowId={rowId} slug={slug} />
+          )}
         </div>
       </div>
 

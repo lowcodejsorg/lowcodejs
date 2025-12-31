@@ -4,7 +4,7 @@ import { useNavigate, useParams } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, TextIcon } from 'lucide-react';
+import { CalendarIcon, PlusIcon, TextIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -131,7 +131,7 @@ function buildDefaultValues(fields: Array<IField>): Record<string, any> {
         defaults[field.slug] = field.configuration.multiple ? [] : '';
         break;
       case FIELD_TYPE.FIELD_GROUP:
-        defaults[field.slug] = field.configuration.multiple ? [] : {};
+        defaults[field.slug] = [{}];
         break;
       default:
         defaults[field.slug] = '';
@@ -898,6 +898,27 @@ function RowFieldGroup({
     enabled: Boolean(groupConfig?.slug),
   });
 
+  // Valor é sempre um array
+  const items = (formField.state.value as Array<Record<string, any>>) ?? [{}];
+
+  const addItem = (): void => {
+    formField.handleChange([...items, {}]);
+  };
+
+  const removeItem = (index: number): void => {
+    formField.handleChange(items.filter((_, i) => i !== index));
+  };
+
+  const updateItem = (
+    index: number,
+    fieldSlug: string,
+    value: any,
+  ): void => {
+    const newItems = [...items];
+    newItems[index] = { ...newItems[index], [fieldSlug]: value };
+    formField.handleChange(newItems);
+  };
+
   if (!groupConfig) {
     return (
       <p className="text-muted-foreground text-sm">
@@ -925,32 +946,62 @@ function RowFieldGroup({
   const groupFields = groupTable.data.fields.filter((f) => !f.trashed);
 
   return (
-    <div className="border rounded-lg p-4 space-y-4 bg-muted/30">
-      {groupFields.map((groupField) => (
-        <RowFieldGroupItem
-          key={groupField._id}
-          parentField={field}
-          groupField={groupField}
-          formField={formField}
-          disabled={disabled}
-          tableSlug={tableSlug}
-        />
+    <div className="space-y-4">
+      {items.map((item, index) => (
+        <div
+          key={index}
+          className="border rounded-lg p-4 space-y-4 bg-muted/30"
+        >
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">Item {index + 1}</span>
+            {items.length > 1 && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                disabled={disabled}
+                onClick={() => removeItem(index)}
+              >
+                <TrashIcon className="size-4" />
+              </Button>
+            )}
+          </div>
+          {groupFields.map((groupField) => (
+            <RowFieldGroupItem
+              key={groupField._id}
+              groupField={groupField}
+              value={item[groupField.slug]}
+              onChange={(value) => updateItem(index, groupField.slug, value)}
+              disabled={disabled}
+              tableSlug={tableSlug}
+            />
+          ))}
+        </div>
       ))}
+      <Button
+        type="button"
+        variant="outline"
+        disabled={disabled}
+        onClick={addItem}
+      >
+        <PlusIcon className="size-4" />
+        <span>Adicionar item</span>
+      </Button>
     </div>
   );
 }
 
 // Single field within a FIELD_GROUP
 function RowFieldGroupItem({
-  parentField,
   groupField,
-  formField,
+  value,
+  onChange,
   disabled,
   tableSlug,
 }: {
-  parentField: IField;
   groupField: IField;
-  formField: any;
+  value: any;
+  onChange: (value: any) => void;
   disabled: boolean;
   tableSlug: string;
 }): React.JSX.Element | null {
@@ -961,23 +1012,13 @@ function RowFieldGroupItem({
     return null;
   }
 
-  const currentValue = formField.state.value ?? {};
-  const fieldValue = currentValue[groupField.slug];
-
-  const handleChange = (newValue: any): void => {
-    formField.handleChange({
-      ...currentValue,
-      [groupField.slug]: newValue,
-    });
-  };
-
   const mockFormField = {
-    name: `${parentField.slug}.${groupField.slug}`,
+    name: groupField.slug,
     state: {
-      value: fieldValue,
+      value: value,
       meta: { isTouched: false, isValid: true, errors: [] },
     },
-    handleChange,
+    handleChange: onChange,
     handleBlur: (): void => {},
   };
 
