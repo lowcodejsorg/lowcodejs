@@ -113,6 +113,16 @@ jobs:
         id: branch
         run: echo "branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
+      - name: Copy storage files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "backend/_storage/large.png,backend/_storage/small.png"
+          target: "/home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}/storage-temp"
+          strip_components: 2
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -157,3 +167,16 @@ jobs:
             # Deploy
             docker compose -f docker-compose.production.yml pull
             docker compose -f docker-compose.production.yml up -d
+
+            # Aguardar container da API estar pronto
+            sleep 5
+
+            # Copiar logos para o container
+            CONTAINER_NAME="${{ steps.branch.outputs.branch }}-lowcodejs-api-1"
+            docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}/storage-temp/large.png $CONTAINER_NAME:/app/_storage/
+            docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}/storage-temp/small.png $CONTAINER_NAME:/app/_storage/
+
+            # Limpar arquivos temporários
+            rm -rf /home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}/storage-temp
+
+            echo "Deploy completed successfully!"

@@ -20,5 +20,6 @@
 
 # Ignora todos os arquivos em backend/_storage/
 backend/_storage/*
-# Mas mantém o default.txt
-!backend/_storage/default.txt
+# Mas mantém os logos
+!backend/_storage/large.png
+!backend/_storage/small.png

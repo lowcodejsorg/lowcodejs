@@ -33,6 +33,10 @@ COPY --from=build /app/build/ ./
 
 RUN mkdir -p ./_storage
 
+# Copiar logos padrão
+COPY --from=build /app/_storage/large.png ./_storage/
+COPY --from=build /app/_storage/small.png ./_storage/
+
 # Copiar script de entrypoint
 COPY entrypoint.sh /app/entrypoint.sh
 RUN chmod +x /app/entrypoint.sh
