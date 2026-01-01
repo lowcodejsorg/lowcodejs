@@ -6,11 +6,11 @@ on:
 
 jobs:
   build-backend:
-    uses: ./.github/workflows/deployment/build/backend.yml
+    uses: ./.github/workflows/deployment-build-backend.yml
 
   docker-backend:
     needs: build-backend
-    uses: ./.github/workflows/deployment/docker/backend.yml
+    uses: ./.github/workflows/deployment-docker-backend.yml
     with:
       branch: ${{ github.ref_name }}
     secrets:
@@ -18,7 +18,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   docker-frontend:
-    uses: ./.github/workflows/deployment/docker/frontend.yml
+    uses: ./.github/workflows/deployment-docker-frontend.yml
     with:
       branch: ${{ github.ref_name }}
     secrets:
@@ -27,7 +27,7 @@ jobs:
 
   deploy-to-vps:
     needs: [docker-backend, docker-frontend]
-    uses: ./.github/workflows/deployment/deploy/vps.yml
+    uses: ./.github/workflows/deployment-deploy-vps.yml
     with:
       branch: ${{ github.ref_name }}
     secrets:
