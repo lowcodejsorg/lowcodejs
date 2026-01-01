@@ -37,10 +37,6 @@ RUN mkdir -p ./_storage
 COPY --from=build /app/_storage/large.png ./_storage/
 COPY --from=build /app/_storage/small.png ./_storage/
 
-# Copiar script de entrypoint
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
-
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs && \
     chown -R nodejs:nodejs /app
@@ -49,5 +45,4 @@ USER nodejs
 
 EXPOSE 3000
 
-ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["node", "bin/server.js"]

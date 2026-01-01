@@ -16,7 +16,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   api:
     image: ${DOCKER_USERNAME}/lowcodejs-api:${ENVIRONMENT}
@@ -62,6 +62,7 @@ services:
 
   app:
     image: ${DOCKER_USERNAME}/lowcodejs-app:${ENVIRONMENT}
+    restart: unless-stopped
     environment:
       VITE_API_BASE_URL: https://api.${ENVIRONMENT}.lowcodejs.org
       NITRO_PORT: 3000
@@ -70,6 +71,12 @@ services:
       - api
     networks:
       - traefik-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"

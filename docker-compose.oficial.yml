@@ -18,7 +18,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
   # Backend API - Imagem oficial do Docker Hub
   api:
@@ -59,6 +59,12 @@ services:
         condition: service_healthy
     networks:
       - lowcodejs-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
 
 # Volumes para persistência de dados
 volumes:

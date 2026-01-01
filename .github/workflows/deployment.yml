@@ -72,6 +72,8 @@ jobs:
           file: ./backend/Dockerfile-production
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:${{ steps.branch.outputs.branch }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   docker-frontend:
     runs-on: ubuntu-latest
@@ -101,6 +103,8 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ steps.branch.outputs.branch }}
           build-args: |
             VITE_API_BASE_URL=https://api.${{ steps.branch.outputs.branch }}.lowcodejs.org
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
   deploy-to-vps:
     needs: [docker-backend, docker-frontend]
@@ -180,3 +184,34 @@ jobs:
             rm -rf /home/${{ secrets.VPS_USER }}/deployments/${{ steps.branch.outputs.branch }}/storage-temp
 
             echo "Deploy completed successfully!"
+
+      - name: Run seeders (first deploy only)
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            CONTAINER="${{ steps.branch.outputs.branch }}-lowcodejs-api-1"
+
+            # Aguardar container estar pronto
+            echo "Aguardando API ficar pronta..."
+            for i in 1 2 3 4 5; do
+              docker exec $CONTAINER curl -sf http://localhost:3000/health-check && break
+              sleep 5
+            done
+
+            # Verificar se já foi seedado
+            if docker exec $CONTAINER test -f /app/_storage/.seeded 2>/dev/null; then
+              echo "⏭️ Seeders já executados anteriormente"
+            else
+              echo "🌱 Executando seeders..."
+              docker exec $CONTAINER node database/seeders/main.js
+              if [ $? -eq 0 ]; then
+                docker exec $CONTAINER touch /app/_storage/.seeded
+                echo "✅ Seeders executados com sucesso!"
+              else
+                echo "❌ Erro ao executar seeders"
+                exit 1
+              fi
+            fi

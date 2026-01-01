@@ -27,6 +27,8 @@ jobs:
           file: ./backend/Dockerfile-production
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v5
@@ -37,5 +39,7 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:latest
           build-args: |
             VITE_API_BASE_URL=http://localhost:3000
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
 
