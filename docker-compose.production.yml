@@ -23,7 +23,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: mongodb://${DB_USERNAME}:${DB_PASSWORD}@mongo:27017/${DB_NAME}?authSource=admin
+      DATABASE_URL: mongodb://${DB_USERNAME}:${DB_PASSWORD}@${ENVIRONMENT}-lowcodejs-mongo-1:27017/${DB_NAME}?authSource=admin
       DB_NAME: ${DB_NAME}
       APP_SERVER_URL: https://api.${ENVIRONMENT}.lowcodejs.org
       APP_CLIENT_URL: https://${ENVIRONMENT}.lowcodejs.org
