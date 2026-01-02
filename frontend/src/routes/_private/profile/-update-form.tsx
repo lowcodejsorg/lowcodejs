@@ -9,9 +9,9 @@ import type { IGroup } from '@/lib/interfaces';
 export const ProfileUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
-  currentPassword: z.string().optional(),
-  newPassword: z.string().optional(),
-  confirmPassword: z.string().optional(),
+  currentPassword: z.string().default(''),
+  newPassword: z.string().default(''),
+  confirmPassword: z.string().default(''),
 });
 
 export type ProfileUpdateFormValues = z.infer<typeof ProfileUpdateSchema>;

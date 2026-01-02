@@ -1,15 +1,11 @@
-import { useStore } from '@tanstack/react-store';
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import { useStore } from '@tanstack/react-store';
 import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import {
-  MenuUpdateSchema,
-  menuUpdateFormDefaultValues,
-  UpdateMenuFormFields,
-} from './-update-form';
+import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -32,108 +28,10 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/menus/$menuId/',
   });
 
-  const { queryClient } = getContext();
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
-
   const _read = useReadMenu({ menuId });
-
-  const _update = useUpdateMenu({
-    onSuccess(data) {
-      queryClient.setQueryData<IMenu>(
-        ['/menu/'.concat(data._id), data._id],
-        data,
-      );
-      queryClient.setQueryData<Paginated<IMenu>>(
-        ['/menu/paginated', { page: 1, perPage: 50 }],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [data],
-            };
-          }
-
-          return {
-            meta: cached.meta,
-            data: cached.data.map((item) => {
-              if (item._id === data._id)
-                return {
-                  ...item,
-                  ...data,
-                };
-
-              return item;
-            }),
-          };
-        },
-      );
-
-      queryClient.invalidateQueries({
-        queryKey: ['/menu'],
-      });
-
-      toast('Menu atualizado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'Os dados do menu foram atualizados com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
-
-      form.reset();
-      setMode('show');
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data;
-
-        toast('Erro ao atualizar o menu', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: data?.message ?? 'Erro ao atualizar o menu',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      console.error(error);
-    },
-  });
-
-  const form = useAppForm({
-    defaultValues: _read.data
-      ? {
-          name: _read.data.name,
-          type: _read.data.type,
-          table: _read.data.table?._id || '',
-          html: _read.data.html || '',
-          url: _read.data.url || '',
-          parent: _read.data.parent?._id || '',
-        }
-      : menuUpdateFormDefaultValues,
-    onSubmit: async ({ value }) => {
-      if (!_read.data) return;
-
-      const validation = MenuUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
-      if (_update.status === 'pending') return;
-
-      await _update.mutateAsync({
-        _id: _read.data._id,
-        name: value.name,
-        type: value.type,
-        parent: value.parent !== '' ? value.parent : null,
-        table: value.table !== '' ? value.table : null,
-        html: value.html !== '' ? value.html : null,
-        url: value.url !== '' ? value.url : null,
-      });
-    },
-  });
-
-  const isPending = _update.status === 'pending';
-  const menuType = useStore(form.store, (state) => state.values.type);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -159,13 +57,7 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {/* Content */}
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto relative"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
+      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
         {_read.status === 'error' && (
           <LoadError
             message="Houve um erro ao buscar dados do menu"
@@ -173,63 +65,170 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
         {_read.status === 'pending' && <UpdateMenuFormSkeleton />}
-        {_read.status === 'success' && (
-          <UpdateMenuFormFields
-            form={form}
-            isPending={isPending}
-            mode={mode}
-            menuType={menuType}
-          />
-        )}
+        {_read.status === 'success' && <MenuUpdateContent data={_read.data} />}
+      </div>
+    </div>
+  );
+}
+
+function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
+  const { queryClient } = getContext();
+
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+
+  const _update = useUpdateMenu({
+    onSuccess(updatedData) {
+      queryClient.setQueryData<IMenu>(
+        ['/menu/'.concat(updatedData._id), updatedData._id],
+        updatedData,
+      );
+      queryClient.setQueryData<Paginated<IMenu>>(
+        ['/menu/paginated', { page: 1, perPage: 50 }],
+        (cached) => {
+          if (!cached) {
+            return {
+              meta: MetaDefault,
+              data: [updatedData],
+            };
+          }
+
+          return {
+            meta: cached.meta,
+            data: cached.data.map((item) => {
+              if (item._id === updatedData._id)
+                return {
+                  ...item,
+                  ...updatedData,
+                };
+
+              return item;
+            }),
+          };
+        },
+      );
+
+      queryClient.invalidateQueries({
+        queryKey: ['/menu'],
+      });
+
+      toast('Menu atualizado', {
+        className: '!bg-green-600 !text-white !border-green-600',
+        description: 'Os dados do menu foram atualizados com sucesso',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
+
+      form.reset();
+      setMode('show');
+    },
+    onError(error) {
+      if (error instanceof AxiosError) {
+        const errorData = error.response?.data;
+
+        toast('Erro ao atualizar o menu', {
+          className: '!bg-destructive !text-white !border-destructive',
+          description: errorData?.message ?? 'Erro ao atualizar o menu',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      }
+
+      console.error(error);
+    },
+  });
+
+  const form = useAppForm({
+    defaultValues: {
+      name: data.name,
+      type: data.type as string,
+      table: data.table?._id || '',
+      html: data.html || '',
+      url: data.url || '',
+      parent: data.parent?._id || '',
+    },
+    onSubmit: async ({ value }) => {
+      const validation = MenuUpdateSchema.safeParse(value);
+      if (!validation.success) return;
+
+      if (_update.status === 'pending') return;
+
+      await _update.mutateAsync({
+        _id: data._id,
+        name: value.name,
+        type: value.type,
+        parent: value.parent !== '' ? value.parent : null,
+        table: value.table !== '' ? value.table : null,
+        html: value.html !== '' ? value.html : null,
+        url: value.url !== '' ? value.url : null,
+      });
+    },
+  });
+
+  const isPending = _update.status === 'pending';
+  const menuType = useStore(form.store, (state) => state.values.type);
+
+  return (
+    <>
+      <form
+        className="flex-1 flex flex-col min-h-0 overflow-auto"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+      >
+        <UpdateMenuFormFields
+          form={form}
+          isPending={isPending}
+          mode={mode}
+          menuType={menuType}
+        />
       </form>
 
       {/* Footer com botões */}
-      {_read.status === 'success' && (
-        <div className="shrink-0 border-t p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end space-x-2">
-                {mode === 'show' && (
+      <div className="shrink-0 border-t p-2">
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
+          children={([canSubmit, isSubmitting]) => (
+            <div className="flex justify-end space-x-2">
+              {mode === 'show' && (
+                <Button
+                  type="button"
+                  className="w-full max-w-3xs"
+                  onClick={() => setMode('edit')}
+                >
+                  <span>Editar</span>
+                </Button>
+              )}
+
+              {mode === 'edit' && (
+                <>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full max-w-3xs"
+                    disabled={isSubmitting}
+                    onClick={() => {
+                      form.reset();
+                      setMode('show');
+                    }}
+                  >
+                    <span>Cancelar</span>
+                  </Button>
                   <Button
                     type="button"
                     className="w-full max-w-3xs"
-                    onClick={() => setMode('edit')}
+                    disabled={!canSubmit}
+                    onClick={() => form.handleSubmit()}
                   >
-                    <span>Editar</span>
+                    {isSubmitting && <Spinner />}
+                    <span>Salvar</span>
                   </Button>
-                )}
-
-                {mode === 'edit' && (
-                  <>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      className="w-full max-w-3xs"
-                      disabled={isSubmitting}
-                      onClick={() => {
-                        form.reset();
-                        setMode('show');
-                      }}
-                    >
-                      <span>Cancelar</span>
-                    </Button>
-                    <Button
-                      type="button"
-                      className="w-full max-w-3xs"
-                      disabled={!canSubmit}
-                      onClick={() => form.handleSubmit()}
-                    >
-                      {isSubmitting && <Spinner />}
-                      <span>Salvar</span>
-                    </Button>
-                  </>
-                )}
-              </div>
-            )}
-          />
-        </div>
-      )}
-    </div>
+                </>
+              )}
+            </div>
+          )}
+        />
+      </div>
+    </>
   );
 }

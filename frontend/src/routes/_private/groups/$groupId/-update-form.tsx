@@ -11,7 +11,7 @@ import { withForm } from '@/integrations/tanstack-form/form-hook';
 
 export const GroupUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
-  description: z.string().optional(),
+  description: z.string().default(''),
   permissions: z.array(z.string()).min(1, 'Selecione ao menos uma permissão'),
 });
 

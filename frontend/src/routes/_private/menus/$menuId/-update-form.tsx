@@ -9,10 +9,10 @@ import { MENU_ITEM_TYPE } from '@/lib/constant';
 export const MenuUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   type: z.string().min(1, 'Tipo é obrigatório'),
-  table: z.string().optional(),
-  html: z.string().optional(),
-  url: z.string().optional(),
-  parent: z.string().optional(),
+  table: z.string().default(''),
+  html: z.string().default(''),
+  url: z.string().default(''),
+  parent: z.string().default(''),
 });
 
 export type MenuUpdateFormValues = z.infer<typeof MenuUpdateSchema>;

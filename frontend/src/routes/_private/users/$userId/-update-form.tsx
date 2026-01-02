@@ -6,7 +6,7 @@ import { withForm } from '@/integrations/tanstack-form/form-hook';
 export const UserUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
-  password: z.string().optional(),
+  password: z.string().default(''),
   status: z.enum(['active', 'inactive']),
   group: z.string().min(1, 'Grupo é obrigatório'),
 });
