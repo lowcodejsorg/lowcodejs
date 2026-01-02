@@ -1,14 +1,22 @@
 import { createFormHook } from '@tanstack/react-form';
 
+import { BooleanSwitchField } from './components/boolean-switch-field';
+import { CategoryTreeField } from './components/category-tree-field';
 import { CodeEditorField } from './components/code-editor-field';
+import { DropdownOptionsField } from './components/dropdown-options-field';
 import { EditorField } from './components/editor-field';
 import { EmailField } from './components/email-field';
+import { FieldFormatSelectField } from './components/field-format-select-field';
+import { FieldTypeSelectField } from './components/field-type-select-field';
 import { FileUploadField } from './components/file-upload-field';
 import { GroupComboboxField } from './components/group-combobox-field';
 import { MenuComboboxField } from './components/menu-combobox-field';
 import { MenuTypeSelectField } from './components/menu-type-select-field';
 import { PasswordField } from './components/password-field';
 import { PermissionMultiSelectField } from './components/permission-multi-select-field';
+import { RelationshipFieldSelectField } from './components/relationship-field-select-field';
+import { RelationshipOrderSelectField } from './components/relationship-order-select-field';
+import { RelationshipTableSelectField } from './components/relationship-table-select-field';
 import { SwitchField } from './components/switch-field';
 import { TableCollaborationSelectField } from './components/table-collaboration-select-field';
 import { TableComboboxField } from './components/table-combobox-field';
@@ -29,6 +37,7 @@ export const { useAppForm, withForm } = createFormHook({
     PasswordField,
     UrlField,
     SwitchField,
+    BooleanSwitchField,
     EditorField,
     CodeEditorField,
     FileUploadField,
@@ -40,6 +49,13 @@ export const { useAppForm, withForm } = createFormHook({
     TableVisibilitySelectField,
     TableCollaborationSelectField,
     TableStyleSwitchField,
+    FieldTypeSelectField,
+    FieldFormatSelectField,
+    DropdownOptionsField,
+    RelationshipTableSelectField,
+    RelationshipFieldSelectField,
+    RelationshipOrderSelectField,
+    CategoryTreeField,
   },
   formComponents: {},
 });

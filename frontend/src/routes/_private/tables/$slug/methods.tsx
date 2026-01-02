@@ -67,7 +67,10 @@ function RouteComponent(): React.JSX.Element {
           </div>
         )}
         {table.status === 'success' && (
-          <MethodsFormContent data={table.data} tableSlug={slug} />
+          <MethodsFormContent
+            data={table.data}
+            tableSlug={slug}
+          />
         )}
       </div>
     </div>
@@ -148,7 +151,11 @@ function MethodsFormContent({
           form.handleSubmit();
         }}
       >
-        <MethodsFormFields form={form} isPending={isPending} table={data} />
+        <MethodsFormFields
+          form={form}
+          isPending={isPending}
+          table={data}
+        />
       </form>
 
       {/* Footer com botões */}
