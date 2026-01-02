@@ -1,8 +1,12 @@
 import { Field, FieldLabel } from '@/components/ui/field';
-import { InputGroup, InputGroupAddon, InputGroupInput } from '@/components/ui/input-group';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function UpdateGroupFormSkeleton() {
+export function UpdateGroupFormSkeleton(): React.JSX.Element {
   return (
     <section className="space-y-4 p-2">
       {/* Campo Slug */}
@@ -11,7 +15,10 @@ export function UpdateGroupFormSkeleton() {
           <Skeleton className="h-4 w-32" />
         </FieldLabel>
         <InputGroup>
-          <InputGroupInput disabled className="opacity-50" />
+          <InputGroupInput
+            disabled
+            className="opacity-50"
+          />
           <InputGroupAddon>
             <Skeleton className="size-5 rounded" />
           </InputGroupAddon>
@@ -24,7 +31,10 @@ export function UpdateGroupFormSkeleton() {
           <Skeleton className="h-4 w-12" />
         </FieldLabel>
         <InputGroup>
-          <InputGroupInput disabled className="opacity-50" />
+          <InputGroupInput
+            disabled
+            className="opacity-50"
+          />
           <InputGroupAddon>
             <Skeleton className="size-5 rounded" />
           </InputGroupAddon>

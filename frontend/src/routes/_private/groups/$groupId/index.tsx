@@ -1,26 +1,126 @@
-import { createFileRoute, Link, useParams } from '@tanstack/react-router';
-
+import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
+import React from 'react';
+import { toast } from 'sonner';
+
+import {
+  GroupUpdateSchema,
+  UpdateGroupFormFields,
+  groupUpdateFormDefaultValues,
+} from './-update-form';
+import { UpdateGroupFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { Spinner } from '@/components/ui/spinner';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadGroup } from '@/integrations/tanstack-query/implementations/use-group-read';
-import { UpdateGroupForm } from './-update-form';
-import { UpdateGroupFormSkeleton } from './-update-form-skeleton';
+import { useUpdateGroup } from '@/integrations/tanstack-query/implementations/use-group-update';
+import { getContext } from '@/integrations/tanstack-query/root-provider';
+import { MetaDefault } from '@/lib/constant';
+import type { IGroup, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/groups/$groupId/')({
   component: RouteComponent,
 });
 
-function RouteComponent() {
+function RouteComponent(): React.JSX.Element {
   const { groupId } = useParams({
     from: '/_private/groups/$groupId/',
   });
 
+  const { queryClient } = getContext();
   const sidebar = useSidebar();
+  const router = useRouter();
+
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   const _read = useReadGroup({ groupId });
+
+  const _update = useUpdateGroup({
+    onSuccess(data) {
+      queryClient.setQueryData<IGroup>(
+        ['/user-group/'.concat(data._id), data._id],
+        data,
+      );
+      queryClient.setQueryData<Paginated<IGroup>>(
+        ['/user-group/paginated', { page: 1, perPage: 50 }],
+        (cached) => {
+          if (!cached) {
+            return {
+              meta: MetaDefault,
+              data: [data],
+            };
+          }
+
+          return {
+            meta: cached.meta,
+            data: cached.data.map((item) => {
+              if (item._id === data._id)
+                return {
+                  ...item,
+                  ...data,
+                };
+
+              return item;
+            }),
+          };
+        },
+      );
+
+      toast('Grupo atualizado', {
+        className: '!bg-green-600 !text-white !border-green-600',
+        description: 'Os dados do grupo foram atualizados com sucesso',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
+
+      form.reset();
+      setMode('show');
+    },
+    onError(error) {
+      if (error instanceof AxiosError) {
+        const data = error.response?.data;
+
+        toast('Erro ao atualizar o grupo', {
+          className: '!bg-destructive !text-white !border-destructive',
+          description: data?.message ?? 'Erro ao atualizar o grupo',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      }
+
+      console.error(error);
+    },
+  });
+
+  const form = useAppForm({
+    defaultValues: _read.data
+      ? {
+          name: _read.data.name,
+          description: _read.data.description ?? '',
+          permissions: _read.data.permissions.map((p) => p._id),
+        }
+      : groupUpdateFormDefaultValues,
+    onSubmit: async ({ value }) => {
+      if (!_read.data) return;
+
+      const validation = GroupUpdateSchema.safeParse(value);
+      if (!validation.success) return;
+
+      if (_update.status === 'pending') return;
+
+      await _update.mutateAsync({
+        ...value,
+        _id: _read.data._id,
+        description: value.description || null,
+      });
+    },
+  });
+
+  const isPending = _update.status === 'pending';
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -30,25 +130,29 @@ function RouteComponent() {
           <Button
             variant="ghost"
             size="icon-sm"
-            asChild
             onClick={() => {
               sidebar.setOpen(true);
+              router.navigate({
+                to: '/groups',
+                replace: true,
+                search: { page: 1, perPage: 50 },
+              });
             }}
           >
-            <Link
-              to="/groups"
-              replace
-              search={{ page: 1, perPage: 50 }}
-            >
-              <ArrowLeftIcon />
-            </Link>
+            <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">Detalhes do grupo</h1>
         </div>
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <form
+        className="flex-1 flex flex-col min-h-0 overflow-auto relative"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
+      >
         {_read.status === 'error' && (
           <LoadError
             message="Houve um erro ao buscar dados do grupo"
@@ -57,14 +161,62 @@ function RouteComponent() {
         )}
         {_read.status === 'pending' && <UpdateGroupFormSkeleton />}
         {_read.status === 'success' && (
-          <UpdateGroupForm
-            data={_read.data}
-            key={_read.data._id}
+          <UpdateGroupFormFields
+            form={form}
+            isPending={isPending}
+            mode={mode}
+            slug={_read.data.slug}
           />
         )}
-      </div>
+      </form>
 
-      <div className="shrink-0 border-t p-2"></div>
+      {/* Footer com botões */}
+      {_read.status === 'success' && (
+        <div className="shrink-0 border-t p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end space-x-2">
+                {mode === 'show' && (
+                  <Button
+                    type="button"
+                    className="w-full max-w-3xs"
+                    onClick={() => setMode('edit')}
+                  >
+                    <span>Editar</span>
+                  </Button>
+                )}
+
+                {mode === 'edit' && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full max-w-3xs"
+                      disabled={isSubmitting}
+                      onClick={() => {
+                        form.reset();
+                        setMode('show');
+                      }}
+                    >
+                      <span>Cancelar</span>
+                    </Button>
+                    <Button
+                      type="button"
+                      className="w-full max-w-3xs"
+                      disabled={!canSubmit}
+                      onClick={() => form.handleSubmit()}
+                    >
+                      {isSubmitting && <Spinner />}
+                      <span>Salvar</span>
+                    </Button>
+                  </>
+                )}
+              </div>
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }

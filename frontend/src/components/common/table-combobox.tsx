@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
@@ -16,15 +15,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { API } from '@/lib/api';
-import { Paginated } from '@/lib/interfaces';
+import { useTablesPaginated } from '@/integrations/tanstack-query/implementations/use-tables-paginated';
 import { cn } from '@/lib/utils';
-
-interface ITable {
-  _id: string;
-  name: string;
-  slug: string;
-}
 
 interface TableComboboxProps {
   value?: string;
@@ -43,19 +35,8 @@ export function TableCombobox({
 }: TableComboboxProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
 
-  const { data: tables, status } = useQuery({
-    queryKey: ['/tables/paginated'],
-    queryFn: async function () {
-      const route = '/tables/paginated';
-      const response = await API.get<Paginated<ITable>>(route, {
-        params: {
-          page: 1,
-          perPage: 50,
-        },
-      });
-      return response.data.data;
-    },
-  });
+  const { data, status } = useTablesPaginated();
+  const tables = data?.data;
 
   const selectedTable = tables?.find((table) => table._id === value);
 

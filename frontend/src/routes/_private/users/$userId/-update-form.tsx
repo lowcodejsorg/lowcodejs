@@ -1,30 +1,9 @@
-import { GroupCombobox } from '@/components/common/group-combobox';
-import { Button } from '@/components/ui/button';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group';
-import { Spinner } from '@/components/ui/spinner';
-import { Switch } from '@/components/ui/switch';
-import { useUpdateUser } from '@/integrations/tanstack-query/implementations/use-user-update';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import { IUser, Paginated } from '@/lib/interfaces';
-import { cn } from '@/lib/utils';
-import { useForm } from '@tanstack/react-form';
-import { AxiosError } from 'axios';
-import { EyeClosedIcon, EyeIcon, MailIcon, UserIcon } from 'lucide-react';
-import React from 'react';
-import { toast } from 'sonner';
+import { UserIcon } from 'lucide-react';
 import z from 'zod';
-type UpdateUserFormProps = {
-  data: IUser;
-};
 
-const UserUpdateSchema = z.object({
+import { withForm } from '@/integrations/tanstack-form/form-hook';
+
+export const UserUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
   password: z.string().optional(),
@@ -32,110 +11,29 @@ const UserUpdateSchema = z.object({
   group: z.string().min(1, 'Grupo é obrigatório'),
 });
 
-export function UpdateUserForm({ data }: UpdateUserFormProps) {
-  const { queryClient } = getContext();
+export type UserUpdateFormValues = z.infer<typeof UserUpdateSchema>;
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+export const userUpdateFormDefaultValues: UserUpdateFormValues = {
+  name: '',
+  email: '',
+  password: '',
+  status: 'active',
+  group: '',
+};
 
-  const [show, setShow] = React.useState({
-    password: false,
-  });
+export const UpdateUserFormFields = withForm({
+  defaultValues: userUpdateFormDefaultValues,
+  props: {
+    isPending: false,
+    mode: 'show' as 'show' | 'edit',
+  },
+  render: function Render({ form, isPending, mode }) {
+    const isDisabled = mode === 'show' || isPending;
 
-  const _update = useUpdateUser({
-    onSuccess(data) {
-      queryClient.setQueryData<IUser>(
-        ['/users/'.concat(data._id), data._id],
-        data,
-      );
-      queryClient.setQueryData<Paginated<IUser>>(
-        [
-          '/users/paginated',
-          {
-            page: 1,
-            perPage: 50,
-          },
-        ],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [data],
-            };
-          }
-
-          return {
-            meta: cached.meta,
-            data: cached.data.map((item) => {
-              if (item._id === data._id)
-                return {
-                  ...item,
-                  ...data,
-                };
-
-              return item;
-            }),
-          };
-        },
-      );
-
-      toast('Usuário atualizado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'Os dados do usuário foram atualizados com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
-
-      form.reset();
-      setMode('show');
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data;
-
-        toast('Erro ao atualizar o usuário', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: data?.message ?? 'Erro ao atualizar o usuário',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      console.error(error);
-    },
-  });
-
-  const form = useForm({
-    defaultValues: {
-      name: data.name,
-      email: data.email,
-      password: '',
-      status: data.status,
-      group: data.group._id,
-    },
-    onSubmit: async ({ value }) => {
-      const validation = UserUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
-      if (_update.status === 'pending') return;
-
-      await _update.mutateAsync({
-        ...value,
-        _id: data._id,
-        password: value.password !== '' ? value.password : undefined,
-      });
-    },
-  });
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        form.handleSubmit();
-      }}
-    >
+    return (
       <section className="space-y-4 p-2">
         {/* Campo Nome */}
-        <form.Field
+        <form.AppField
           name="name"
           validators={{
             onBlur: ({ value }) => {
@@ -145,37 +43,19 @@ export function UpdateUserForm({ data }: UpdateUserFormProps) {
               return undefined;
             },
           }}
-          children={(field) => {
-            const isInvalid =
-              field.state.meta.isTouched && !field.state.meta.isValid;
-
-            return (
-              <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    disabled={mode === 'show' || _update.status === 'pending'}
-                    id={field.name}
-                    name={field.name}
-                    type="text"
-                    placeholder="Digite o nome completo"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                  <InputGroupAddon>
-                    <UserIcon />
-                  </InputGroupAddon>
-                </InputGroup>
-                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-              </Field>
-            );
-          }}
-        />
+        >
+          {(field) => (
+            <field.TextField
+              label="Nome"
+              placeholder="Digite o nome completo"
+              disabled={isDisabled}
+              icon={<UserIcon />}
+            />
+          )}
+        </form.AppField>
 
         {/* Campo Email */}
-        <form.Field
+        <form.AppField
           name="email"
           validators={{
             onBlur: ({ value }) => {
@@ -189,109 +69,40 @@ export function UpdateUserForm({ data }: UpdateUserFormProps) {
               return undefined;
             },
           }}
-          children={(field) => {
-            const isInvalid =
-              field.state.meta.isTouched && !field.state.meta.isValid;
+        >
+          {(field) => (
+            <field.EmailField
+              label="E-mail"
+              placeholder="exemplo@email.com"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
 
-            return (
-              <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    disabled={mode === 'show' || _update.status === 'pending'}
-                    id={field.name}
-                    name={field.name}
-                    type="email"
-                    placeholder="exemplo@email.com"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                  <InputGroupAddon>
-                    <MailIcon />
-                  </InputGroupAddon>
-                </InputGroup>
-                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-              </Field>
-            );
-          }}
-        />
-
-        {/* Campo Senha (opcional, só em modo edição) */}
-        <form.Field
-          name="password"
-          children={(field) => {
-            const isInvalid =
-              field.state.meta.isTouched && !field.state.meta.isValid;
-
-            return (
-              <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>Senha (opcional)</FieldLabel>
-                <InputGroup>
-                  <InputGroupInput
-                    disabled={mode === 'show' || _update.status === 'pending'}
-                    id={field.name}
-                    name={field.name}
-                    type={show[field.name] ? 'text' : 'password'}
-                    placeholder="Digite nova senha se quiser alterá-la"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={isInvalid}
-                  />
-                  <InputGroupAddon align="inline-end">
-                    <InputGroupButton
-                      disabled={mode === 'show' || _update.status === 'pending'}
-                      type="button"
-                      aria-label="toggle password visibility"
-                      title="toggle password visibility"
-                      onClick={() =>
-                        setShow((state) => ({
-                          ...state,
-                          [field.name]: !state[field.name],
-                        }))
-                      }
-                    >
-                      {show[field.name] && <EyeClosedIcon />}
-                      {!show[field.name] && <EyeIcon />}
-                    </InputGroupButton>
-                  </InputGroupAddon>
-                </InputGroup>
-                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-              </Field>
-            );
-          }}
-        />
+        {/* Campo Senha (opcional) */}
+        <form.AppField name="password">
+          {(field) => (
+            <field.PasswordField
+              label="Senha (opcional)"
+              placeholder="Digite nova senha se quiser alterá-la"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
 
         {/* Campo Status como Switch */}
-        <form.Field
-          name="status"
-          children={(field) => (
-            <div className="flex flex-row items-center justify-between rounded-lg border p-3">
-              <div className="space-y-0.5">
-                <FieldLabel>Status do usuário</FieldLabel>
-                <p className="text-sm text-muted-foreground">
-                  Defina se o usuário está ativo ou inativo no sistema
-                </p>
-              </div>
-              <div className="inline-flex space-x-2 items-center">
-                <span className="text-sm text-muted-foreground">Inativo</span>
-                <Switch
-                  disabled={mode === 'show' || _update.status === 'pending'}
-                  checked={field.state.value === 'active'}
-                  onCheckedChange={(checked) => {
-                    field.handleChange(checked ? 'active' : 'inactive');
-                  }}
-                />
-                <span className="text-sm text-muted-foreground">Ativo</span>
-              </div>
-            </div>
+        <form.AppField name="status">
+          {(field) => (
+            <field.SwitchField
+              label="Status do usuário"
+              description="Defina se o usuário está ativo ou inativo no sistema"
+              disabled={isDisabled}
+            />
           )}
-        />
+        </form.AppField>
 
         {/* Campo Grupo */}
-        <form.Field
+        <form.AppField
           name="group"
           validators={{
             onBlur: ({ value }) => {
@@ -302,69 +113,16 @@ export function UpdateUserForm({ data }: UpdateUserFormProps) {
             },
           }}
         >
-          {(field) => {
-            const isInvalid =
-              field.state.meta.isTouched && !field.state.meta.isValid;
-
-            return (
-              <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>
-                  Grupo <span className="text-destructive">*</span>
-                </FieldLabel>
-                <GroupCombobox
-                  disabled={mode === 'show' || _update.status === 'pending'}
-                  value={field.state.value}
-                  onValueChange={(value) => {
-                    field.handleChange(value);
-                  }}
-                  placeholder="Selecione um grupo..."
-                  className={cn(isInvalid && 'border-destructive')}
-                />
-                {isInvalid && <FieldError errors={field.state.meta.errors} />}
-              </Field>
-            );
-          }}
-        </form.Field>
-
-        <Field className="inline-flex justify-end flex-1 items-end">
-          {mode === 'show' && (
-            <Button
-              type="button"
-              className="w-full max-w-3xs"
-              onClick={() => {
-                setMode('edit');
-              }}
-            >
-              <span>Editar</span>
-            </Button>
+          {(field) => (
+            <field.GroupComboboxField
+              label="Grupo"
+              placeholder="Selecione um grupo..."
+              disabled={isDisabled}
+              required
+            />
           )}
-
-          {mode === 'edit' && (
-            <div className="inline-flex space-x-2 items-end justify-end">
-              <Button
-                type="reset"
-                variant="outline"
-                className="w-full max-w-3xs"
-                disabled={_update.status === 'pending'}
-                onClick={() => {
-                  form.reset();
-                  setMode('show');
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                type="submit"
-                className="w-full max-w-3xs"
-                disabled={_update.status === 'pending'}
-              >
-                {_update.status === 'pending' && <Spinner />}
-                <span>Salvar</span>
-              </Button>
-            </div>
-          )}
-        </Field>
+        </form.AppField>
       </section>
-    </form>
-  );
-}
+    );
+  },
+});

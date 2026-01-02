@@ -1,18 +1,17 @@
-import { Pagination } from '@/components/common/pagination';
-// import { useI18n } from '@/hooks/i18.hook';
-import { API } from '@/lib/api';
-import { IUser, Paginated } from '@/lib/interfaces';
-// import type { Paginated, User } from '@/lib/entity';
-// import { MetaDefault } from '@/lib/utils';
-import { LoadError } from '@/components/common/load-error';
-import { Button } from '@/components/ui/button';
-import { useSidebar } from '@/components/ui/sidebar';
-import { MetaDefault } from '@/lib/constant';
 import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
 import z from 'zod';
+
 import { TableUsers } from './-table-users';
 import { TableUsersSkeleton } from './-table-users-skeleton';
+
+import { LoadError } from '@/components/common/load-error';
+import { Pagination } from '@/components/common/pagination';
+import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
+import { API } from '@/lib/api';
+import { MetaDefault } from '@/lib/constant';
+import type { IUser, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/users/')({
   component: RouteComponent,
@@ -23,7 +22,7 @@ export const Route = createFileRoute('/_private/users/')({
   }),
 });
 
-function RouteComponent() {
+function RouteComponent(): React.JSX.Element {
   const search = useSearch({
     from: '/_private/users/',
   });
@@ -81,14 +80,14 @@ function RouteComponent() {
 
         {pagination.status === 'success' && (
           <TableUsers
-            headers={headers as string[]}
-            data={pagination.data?.data || []}
+            headers={headers}
+            data={pagination.data.data}
           />
         )}
       </div>
 
       <div className="shrink-0 border-t p-2">
-        <Pagination meta={pagination?.data?.meta ?? MetaDefault} />
+        <Pagination meta={pagination.data?.meta ?? MetaDefault} />
       </div>
     </div>
   );

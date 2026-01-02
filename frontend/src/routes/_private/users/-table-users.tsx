@@ -1,3 +1,7 @@
+import { useRouter } from '@tanstack/react-router';
+import { ArrowRightIcon } from 'lucide-react';
+import React from 'react';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -9,15 +13,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { IUser } from '@/lib/interfaces';
+import type { IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-import { useRouter } from '@tanstack/react-router';
-import { ArrowRightIcon } from 'lucide-react';
-import React from 'react';
 
 interface Props {
-  data: IUser[];
-  headers: string[];
+  data: Array<IUser>;
+  headers: Array<string>;
 }
 
 const RoleMapper = {
@@ -32,7 +33,7 @@ const StatusMapper = {
   inactive: 'Inativo',
 };
 
-function TableUserRow({ user }: { user: IUser }) {
+function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -53,7 +54,7 @@ function TableUserRow({ user }: { user: IUser }) {
       <TableCell>{user.name}</TableCell>
       <TableCell>{user.email}</TableCell>
       <TableCell>
-        {RoleMapper[user?.group?.slug as keyof typeof RoleMapper] || 'N/A'}
+        {RoleMapper[user.group.slug as keyof typeof RoleMapper] || 'N/A'}
       </TableCell>
       <TableCell>
         <Badge
@@ -64,7 +65,7 @@ function TableUserRow({ user }: { user: IUser }) {
             user.status === 'inactive' && 'bg-destructive/10 text-destructive',
           )}
         >
-          {StatusMapper[user?.status] || 'N/A'}
+          {StatusMapper[user.status] || 'N/A'}
         </Badge>
       </TableCell>
 
@@ -85,7 +86,7 @@ export function TableUsers({ data, headers }: Props): React.ReactElement {
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow className="">
-          {headers?.map((head) => (
+          {headers.map((head) => (
             <TableHead key={head}>
               <span>{head}</span>
             </TableHead>
@@ -99,7 +100,7 @@ export function TableUsers({ data, headers }: Props): React.ReactElement {
           .map((user) => (
             <TableUserRow
               user={user}
-              key={user?._id}
+              key={user._id}
             />
           ))}
       </TableBody>

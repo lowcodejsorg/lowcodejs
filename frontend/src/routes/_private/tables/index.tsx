@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
 import z from 'zod';
 
@@ -10,9 +9,9 @@ import { Pagination } from '@/components/common/pagination';
 import { SheetFilter } from '@/components/common/sheet-filter';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { API } from '@/lib/api';
+import { useTablesPaginated } from '@/integrations/tanstack-query/implementations/use-tables-paginated';
 import { FIELD_TYPE, MetaDefault } from '@/lib/constant';
-import type { IField, ITable, Paginated } from '@/lib/interfaces';
+import type { IField } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/')({
   component: RouteComponent,
@@ -32,17 +31,7 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const pagination = useQuery({
-    queryKey: ['/tables/paginated', search],
-    queryFn: async () => {
-      const response = await API.get<Paginated<ITable>>('/tables/paginated', {
-        params: {
-          ...search,
-        },
-      });
-      return response.data;
-    },
-  });
+  const pagination = useTablesPaginated(search);
 
   const headers = ['Tabela', 'Link (slug)', 'Criado em'];
 

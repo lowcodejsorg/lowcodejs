@@ -107,7 +107,11 @@ export default class MenuUpdateUseCase {
             HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
           );
 
-        payload.url = '/tables/'.concat(table.slug);
+        if (payload.type === MENU_ITEM_TYPE.TABLE)
+          payload.url = '/tables/'.concat(table.slug);
+
+        if (payload.type === MENU_ITEM_TYPE.FORM)
+          payload.url = '/tables/'.concat(table.slug).concat('/row/create');
       }
 
       if (payload.type && [MENU_ITEM_TYPE.PAGE].includes(payload.type)) {

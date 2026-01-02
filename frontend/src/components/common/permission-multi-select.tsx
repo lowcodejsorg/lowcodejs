@@ -12,14 +12,18 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import { API } from '@/lib/api';
-import { IPermission } from '@/lib/interfaces';
+import type { IPermission } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface PermissionMultiSelectProps {
-  value?: string[];
-  onValueChange?: (value: string[]) => void;
+  value?: Array<string>;
+  onValueChange?: (value: Array<string>) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -56,7 +60,10 @@ export function PermissionMultiSelect({
   };
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover
+      open={open}
+      onOpenChange={setOpen}
+    >
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -68,7 +75,10 @@ export function PermissionMultiSelect({
           <div className="flex flex-wrap gap-1 flex-1">
             {selectedPermissions && selectedPermissions.length > 0 ? (
               selectedPermissions.map((permission) => (
-                <Badge key={permission._id} variant="secondary">
+                <Badge
+                  key={permission._id}
+                  variant="secondary"
+                >
                   {permission.name}
                 </Badge>
               ))
@@ -81,7 +91,10 @@ export function PermissionMultiSelect({
       </PopoverTrigger>
       <PopoverContent className="w-full p-0">
         <Command>
-          <CommandInput placeholder="Buscar permissão..." className="h-9" />
+          <CommandInput
+            placeholder="Buscar permissão..."
+            className="h-9"
+          />
           <CommandList>
             <CommandEmpty>Nenhuma permissão encontrada.</CommandEmpty>
             <CommandGroup>

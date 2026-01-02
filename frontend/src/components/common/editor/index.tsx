@@ -1,22 +1,20 @@
-import React, { useCallback } from 'react';
-
-import { RichTextProvider } from 'reactjs-tiptap-editor';
-
-import { localeActions } from 'reactjs-tiptap-editor/locale-bundle';
-
-// Base Kit
 import { Document } from '@tiptap/extension-document';
 import { HardBreak } from '@tiptap/extension-hard-break';
 import { ListItem } from '@tiptap/extension-list';
 import { Paragraph } from '@tiptap/extension-paragraph';
 import { Text } from '@tiptap/extension-text';
-// import { TextStyle } from '@tiptap/extension-text-style';
 import {
   Dropcursor,
   Gapcursor,
   Placeholder,
   TrailingNode,
 } from '@tiptap/extensions';
+import { EditorContent, useEditor } from '@tiptap/react';
+import React, { useCallback } from 'react';
+import { RichTextProvider } from 'reactjs-tiptap-editor';
+
+// Base Kit
+// import { TextStyle } from '@tiptap/extension-text-style';
 
 // build extensions
 import { Attachment } from 'reactjs-tiptap-editor/attachment';
@@ -31,7 +29,6 @@ import {
   MultipleColumnNode,
 } from 'reactjs-tiptap-editor/column';
 import { Emoji } from 'reactjs-tiptap-editor/emoji';
-
 import { FontFamily } from 'reactjs-tiptap-editor/fontfamily';
 import { FontSize } from 'reactjs-tiptap-editor/fontsize';
 import { Heading } from 'reactjs-tiptap-editor/heading';
@@ -45,11 +42,16 @@ import { Italic } from 'reactjs-tiptap-editor/italic';
 import { Katex } from 'reactjs-tiptap-editor/katex';
 import { LineHeight } from 'reactjs-tiptap-editor/lineheight';
 import { Link } from 'reactjs-tiptap-editor/link';
+import { localeActions } from 'reactjs-tiptap-editor/locale-bundle';
 import { Mention } from 'reactjs-tiptap-editor/mention';
 import { Mermaid } from 'reactjs-tiptap-editor/mermaid';
 import { MoreMark } from 'reactjs-tiptap-editor/moremark';
 import { OrderedList } from 'reactjs-tiptap-editor/orderedlist';
 import { SearchAndReplace } from 'reactjs-tiptap-editor/searchandreplace';
+import {
+  SlashCommand,
+  SlashCommandList,
+} from 'reactjs-tiptap-editor/slashcommand';
 import { Strike } from 'reactjs-tiptap-editor/strike';
 import { Table } from 'reactjs-tiptap-editor/table';
 import { TaskList } from 'reactjs-tiptap-editor/tasklist';
@@ -59,17 +61,12 @@ import { TextUnderline } from 'reactjs-tiptap-editor/textunderline';
 import { Video } from 'reactjs-tiptap-editor/video';
 
 // Slash Command
-import {
-  SlashCommand,
-  SlashCommandList,
-} from 'reactjs-tiptap-editor/slashcommand';
 
 // Bubble
 
 import 'katex/dist/katex.min.css';
 import 'reactjs-tiptap-editor/style.css';
 
-import { EditorContent, useEditor } from '@tiptap/react';
 import { Bubble } from './buble';
 import { Toolbar } from './toolbar';
 
@@ -195,7 +192,7 @@ localeActions.setLang('pt_BR');
 
 function debounce(func: any, wait: number) {
   let timeout: NodeJS.Timeout;
-  return function (...args: any[]) {
+  return function (...args: Array<any>) {
     clearTimeout(timeout);
     // @ts-ignore
     timeout = setTimeout(() => func.apply(this, args), wait);
@@ -232,7 +229,7 @@ export function EditorExample({ value, onChange }: EditorExampleProps = {}) {
   });
 
   React.useEffect(() => {
-    // @ts-ignore
+    // @ts-ignore E
     window['editor'] = editor;
   }, [editor]);
 

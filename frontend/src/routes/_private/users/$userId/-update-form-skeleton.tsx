@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function UpdateUserFormSkeleton() {
+export function UpdateUserFormSkeleton(): React.JSX.Element {
   return (
     <section className="space-y-4 p-2">
       {/* Campo Nome */}

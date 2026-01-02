@@ -1,5 +1,3 @@
-import { useForm } from '@tanstack/react-form';
-import { AxiosError } from 'axios';
 import {
   DatabaseIcon,
   EyeClosedIcon,
@@ -11,10 +9,9 @@ import {
   UploadIcon,
 } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
+import z from 'zod';
 
 import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
-import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -36,119 +33,69 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Spinner } from '@/components/ui/spinner';
-import { useUpdateSetting } from '@/integrations/tanstack-query/implementations/use-setting-update';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
+import { withForm } from '@/integrations/tanstack-form/form-hook';
 import type { ISetting, IStorage } from '@/lib/interfaces';
 
-type UpdateSettingFormProps = {
-  data: ISetting;
+export const SettingUpdateSchema = z.object({
+  LOCALE: z.string().min(1, 'O idioma é obrigatório'),
+  LOGO_SMALL_URL: z.string().nullable(),
+  LOGO_LARGE_URL: z.string().nullable(),
+  FILE_UPLOAD_MAX_SIZE: z.string(),
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.string(),
+  FILE_UPLOAD_ACCEPTED: z.string(),
+  PAGINATION_PER_PAGE: z.string(),
+  EMAIL_PROVIDER_HOST: z.string(),
+  EMAIL_PROVIDER_PORT: z.string(),
+  EMAIL_PROVIDER_USER: z.string(),
+  EMAIL_PROVIDER_PASSWORD: z.string(),
+  logoSmallFile: z.array(z.instanceof(File)),
+  logoLargeFile: z.array(z.instanceof(File)),
+});
+
+export type SettingUpdateFormValues = z.infer<typeof SettingUpdateSchema>;
+
+export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
+  LOCALE: 'pt-br',
+  LOGO_SMALL_URL: null,
+  LOGO_LARGE_URL: null,
+  FILE_UPLOAD_MAX_SIZE: '10485760',
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: '5',
+  FILE_UPLOAD_ACCEPTED: 'pdf;csv;png;jpeg;jpg;webp',
+  PAGINATION_PER_PAGE: '50',
+  EMAIL_PROVIDER_HOST: '',
+  EMAIL_PROVIDER_PORT: '587',
+  EMAIL_PROVIDER_USER: '',
+  EMAIL_PROVIDER_PASSWORD: '',
+  logoSmallFile: [],
+  logoLargeFile: [],
 };
 
-export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
-  const { queryClient } = getContext();
+export const UpdateSettingFormFields = withForm({
+  defaultValues: settingUpdateFormDefaultValues,
+  props: {
+    isPending: false,
+    mode: 'show' as 'show' | 'edit',
+    settingData: null as ISetting | null,
+  },
+  render: function Render({ form, isPending, mode, settingData }) {
+    const isDisabled = mode === 'show' || isPending;
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
-  const [show, setShow] = React.useState({
-    databaseUrl: false,
-    emailPassword: false,
-  });
+    const [show, setShow] = React.useState({
+      databaseUrl: false,
+      emailPassword: false,
+    });
 
-  const _update = useUpdateSetting({
-    onSuccess(updatedData) {
-      queryClient.setQueryData<ISetting>(['/setting'], updatedData);
-
-      toast('Configurações atualizadas', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description:
-          'As configurações do sistema foram atualizadas com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
-
-      form.reset();
-      setMode('show');
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-
-        toast('Erro ao atualizar configurações', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description:
-            errorData?.message ?? 'Erro ao atualizar as configurações',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+    const formatFileSize = (bytes: number): string => {
+      if (bytes >= 1048576) {
+        return `${(bytes / 1048576).toFixed(1)} MB`;
       }
+      if (bytes >= 1024) {
+        return `${(bytes / 1024).toFixed(1)} KB`;
+      }
+      return `${bytes} bytes`;
+    };
 
-      console.error(error);
-    },
-  });
-
-  const form = useForm({
-    defaultValues: {
-      LOCALE: data.LOCALE,
-      LOGO_SMALL_URL: data.LOGO_SMALL_URL,
-      LOGO_LARGE_URL: data.LOGO_LARGE_URL,
-      FILE_UPLOAD_MAX_SIZE: String(data.FILE_UPLOAD_MAX_SIZE),
-      FILE_UPLOAD_MAX_FILES_PER_UPLOAD: String(
-        data.FILE_UPLOAD_MAX_FILES_PER_UPLOAD,
-      ),
-      FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
-      PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
-      // DATABASE_URL: data.DATABASE_URL,
-      EMAIL_PROVIDER_HOST: data.EMAIL_PROVIDER_HOST,
-      EMAIL_PROVIDER_PORT: String(data.EMAIL_PROVIDER_PORT),
-      EMAIL_PROVIDER_USER: data.EMAIL_PROVIDER_USER,
-      EMAIL_PROVIDER_PASSWORD: data.EMAIL_PROVIDER_PASSWORD,
-      logoSmallFile: [] as Array<File>,
-      logoLargeFile: [] as Array<File>,
-    },
-    onSubmit: async ({ value }) => {
-      if (_update.status === 'pending') return;
-
-      const payload = {
-        LOCALE: value.LOCALE.trim(),
-        LOGO_SMALL_URL: value.LOGO_SMALL_URL,
-        LOGO_LARGE_URL: value.LOGO_LARGE_URL,
-        FILE_UPLOAD_MAX_SIZE: Number(value.FILE_UPLOAD_MAX_SIZE),
-        FILE_UPLOAD_MAX_FILES_PER_UPLOAD: Number(
-          value.FILE_UPLOAD_MAX_FILES_PER_UPLOAD,
-        ),
-        FILE_UPLOAD_ACCEPTED: value.FILE_UPLOAD_ACCEPTED.split(';')
-          .map((s) => s.trim())
-          .filter(Boolean)
-          .join(';'),
-        PAGINATION_PER_PAGE: Number(value.PAGINATION_PER_PAGE),
-        // DATABASE_URL: value.DATABASE_URL.trim(),
-        EMAIL_PROVIDER_HOST: value.EMAIL_PROVIDER_HOST.trim(),
-        EMAIL_PROVIDER_PORT: Number(value.EMAIL_PROVIDER_PORT),
-        EMAIL_PROVIDER_USER: value.EMAIL_PROVIDER_USER.trim(),
-        EMAIL_PROVIDER_PASSWORD: value.EMAIL_PROVIDER_PASSWORD.trim(),
-      };
-
-      await _update.mutateAsync(payload);
-    },
-  });
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes >= 1048576) {
-      return `${(bytes / 1048576).toFixed(1)} MB`;
-    }
-    if (bytes >= 1024) {
-      return `${(bytes / 1024).toFixed(1)} KB`;
-    }
-    return `${bytes} bytes`;
-  };
-
-  return (
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        form.handleSubmit();
-      }}
-    >
+    return (
       <section className="space-y-4 p-2">
         {/* Idioma do Sistema */}
         <Card>
@@ -180,7 +127,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Idioma padrão</FieldLabel>
                     <Select
-                      disabled={mode === 'show' || _update.status === 'pending'}
+                      disabled={isDisabled}
                       value={field.state.value}
                       onValueChange={(value) => field.handleChange(value)}
                     >
@@ -245,10 +192,10 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                           shouldDeleteFromStorage={false}
                         />
                       )}
-                      {mode === 'show' && data.LOGO_SMALL_URL && (
+                      {mode === 'show' && settingData?.LOGO_SMALL_URL && (
                         <div className="mt-2">
                           <img
-                            src={data.LOGO_SMALL_URL}
+                            src={settingData.LOGO_SMALL_URL}
                             alt="Logo pequeno atual"
                             className="h-12 w-auto border rounded"
                           />
@@ -285,10 +232,10 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                           shouldDeleteFromStorage={false}
                         />
                       )}
-                      {mode === 'show' && data.LOGO_LARGE_URL && (
+                      {mode === 'show' && settingData?.LOGO_LARGE_URL && (
                         <div className="mt-2">
                           <img
-                            src={data.LOGO_LARGE_URL}
+                            src={settingData.LOGO_LARGE_URL}
                             alt="Logo grande atual"
                             className="h-16 w-auto border rounded"
                           />
@@ -345,9 +292,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                       </div>
                       <InputGroup>
                         <InputGroupInput
-                          disabled={
-                            mode === 'show' || _update.status === 'pending'
-                          }
+                          disabled={isDisabled}
                           id={field.name}
                           name={field.name}
                           type="number"
@@ -394,9 +339,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                       </FieldLabel>
                       <InputGroup>
                         <InputGroupInput
-                          disabled={
-                            mode === 'show' || _update.status === 'pending'
-                          }
+                          disabled={isDisabled}
                           id={field.name}
                           name={field.name}
                           type="number"
@@ -444,9 +387,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                     </div>
                     <InputGroup>
                       <InputGroupInput
-                        disabled={
-                          mode === 'show' || _update.status === 'pending'
-                        }
+                        disabled={isDisabled}
                         id={field.name}
                         name={field.name}
                         type="text"
@@ -513,7 +454,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                       Número padrão de itens exibidos por página nas listagens
                     </div>
                     <Select
-                      disabled={mode === 'show' || _update.status === 'pending'}
+                      disabled={isDisabled}
                       value={field.state.value}
                       onValueChange={(value) => field.handleChange(value)}
                     >
@@ -539,51 +480,52 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
         </Card>
 
         {/* Banco de Dados */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <DatabaseIcon className="w-5 h-5" />
-              Banco de Dados
-            </CardTitle>
-            <CardDescription>
-              Configure a conexão com o banco de dados
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Field>
-              <FieldLabel>Database URL</FieldLabel>
-              <div className="text-sm text-muted-foreground mb-2">
-                String de conexão do MongoDB
-              </div>
-              <InputGroup>
-                <InputGroupInput
-                  disabled
-                  defaultValue={data.DATABASE_URL}
-                  value={data.DATABASE_URL}
-                  type={show.databaseUrl ? 'text' : 'password'}
-                  placeholder="mongodb://localhost:27017/lowcodejs"
-                />
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    // disabled
-                    type="button"
-                    aria-label="toggle password visibility"
-                    title="toggle password visibility"
-                    onClick={() =>
-                      setShow((state) => ({
-                        ...state,
-                        databaseUrl: !state.databaseUrl,
-                      }))
-                    }
-                  >
-                    {show.databaseUrl && <EyeClosedIcon />}
-                    {!show.databaseUrl && <EyeIcon />}
-                  </InputGroupButton>
-                </InputGroupAddon>
-              </InputGroup>
-            </Field>
-          </CardContent>
-        </Card>
+        {settingData && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DatabaseIcon className="w-5 h-5" />
+                Banco de Dados
+              </CardTitle>
+              <CardDescription>
+                Configure a conexão com o banco de dados
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Field>
+                <FieldLabel>Database URL</FieldLabel>
+                <div className="text-sm text-muted-foreground mb-2">
+                  String de conexão do MongoDB
+                </div>
+                <InputGroup>
+                  <InputGroupInput
+                    disabled
+                    defaultValue={settingData.DATABASE_URL}
+                    value={settingData.DATABASE_URL}
+                    type={show.databaseUrl ? 'text' : 'password'}
+                    placeholder="mongodb://localhost:27017/lowcodejs"
+                  />
+                  <InputGroupAddon align="inline-end">
+                    <InputGroupButton
+                      type="button"
+                      aria-label="toggle password visibility"
+                      title="toggle password visibility"
+                      onClick={() =>
+                        setShow((state) => ({
+                          ...state,
+                          databaseUrl: !state.databaseUrl,
+                        }))
+                      }
+                    >
+                      {show.databaseUrl && <EyeClosedIcon />}
+                      {!show.databaseUrl && <EyeIcon />}
+                    </InputGroupButton>
+                  </InputGroupAddon>
+                </InputGroup>
+              </Field>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Servidor de Email */}
         <Card>
@@ -618,9 +560,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                       <FieldLabel htmlFor={field.name}>SMTP Host</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
-                          disabled={
-                            mode === 'show' || _update.status === 'pending'
-                          }
+                          disabled={isDisabled}
                           id={field.name}
                           name={field.name}
                           type="text"
@@ -665,9 +605,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                       <FieldLabel htmlFor={field.name}>SMTP Port</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
-                          disabled={
-                            mode === 'show' || _update.status === 'pending'
-                          }
+                          disabled={isDisabled}
                           id={field.name}
                           name={field.name}
                           type="number"
@@ -690,18 +628,6 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
             {/* User */}
             <form.Field
               name="EMAIL_PROVIDER_USER"
-              // validators={{
-              //   onBlur: ({ value }) => {
-              //     if (!value) {
-              //       return { message: 'O usuário de email é obrigatório' };
-              //     }
-              //     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              //     if (!emailRegex.test(value)) {
-              //       return { message: 'Digite um email válido' };
-              //     }
-              //     return undefined;
-              //   },
-              // }}
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -711,12 +637,9 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                     <FieldLabel htmlFor={field.name}>Email Username</FieldLabel>
                     <InputGroup>
                       <InputGroupInput
-                        disabled={
-                          mode === 'show' || _update.status === 'pending'
-                        }
+                        disabled={isDisabled}
                         id={field.name}
                         name={field.name}
-                        // type="email"
                         placeholder="user@example.com"
                         value={field.state.value}
                         onBlur={field.handleBlur}
@@ -760,9 +683,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                     </div>
                     <InputGroup>
                       <InputGroupInput
-                        disabled={
-                          mode === 'show' || _update.status === 'pending'
-                        }
+                        disabled={isDisabled}
                         id={field.name}
                         name={field.name}
                         type={show.emailPassword ? 'text' : 'password'}
@@ -774,9 +695,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
                       />
                       <InputGroupAddon align="inline-end">
                         <InputGroupButton
-                          disabled={
-                            mode === 'show' || _update.status === 'pending'
-                          }
+                          disabled={isDisabled}
                           type="button"
                           aria-label="toggle password visibility"
                           title="toggle password visibility"
@@ -801,47 +720,7 @@ export function UpdateSettingForm({ data }: UpdateSettingFormProps) {
             />
           </CardContent>
         </Card>
-
-        {/* Botões */}
-        <Field className="inline-flex justify-end flex-1 items-end">
-          {mode === 'show' && (
-            <Button
-              type="button"
-              className="w-full max-w-3xs"
-              onClick={() => {
-                setMode('edit');
-              }}
-            >
-              <span>Editar</span>
-            </Button>
-          )}
-
-          {mode === 'edit' && (
-            <div className="inline-flex space-x-2 items-end justify-end">
-              <Button
-                type="reset"
-                variant="outline"
-                className="w-full max-w-3xs"
-                disabled={_update.status === 'pending'}
-                onClick={() => {
-                  form.reset();
-                  setMode('show');
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                type="submit"
-                className="w-full max-w-3xs"
-                disabled={_update.status === 'pending'}
-              >
-                {_update.status === 'pending' && <Spinner />}
-                <span>Salvar</span>
-              </Button>
-            </div>
-          )}
-        </Field>
       </section>
-    </form>
-  );
-}
+    );
+  },
+});
