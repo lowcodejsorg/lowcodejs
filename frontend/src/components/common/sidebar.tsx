@@ -5,8 +5,6 @@ import { ChevronRightIcon, LogOutIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { DynamicMenuSkeleton } from './dynamic-menu-skeleton';
-
 import { Badge } from '@/components/ui/badge';
 import {
   Collapsible,
@@ -26,6 +24,7 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import {
   Tooltip,
@@ -94,7 +93,23 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
         {menu.map((props) => {
           // Se o grupo tem a flag isLoading, renderiza skeleton
           if (props.isLoading) {
-            return <DynamicMenuSkeleton key="dynamic-loading" />;
+            return (
+              <SidebarGroup key="dynamic-loading">
+                <SidebarGroupLabel>
+                  <Skeleton className="h-4 w-24" />
+                </SidebarGroupLabel>
+                <SidebarMenu>
+                  {[1, 2, 3].map((i) => (
+                    <SidebarMenuItem key={i}>
+                      <SidebarMenuButton>
+                        <Skeleton className="size-4 rounded" />
+                        <Skeleton className="h-4 w-32" />
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </SidebarGroup>
+            );
           }
 
           return (

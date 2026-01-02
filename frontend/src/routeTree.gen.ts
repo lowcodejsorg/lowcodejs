@@ -33,8 +33,6 @@ import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_p
 import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index'
 import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index'
 import { Route as PrivateTablesSlugFieldFieldIdIndexRouteImport } from './routes/_private/tables/$slug/field/$fieldId/index'
-import { Route as PrivateGroupGroupSlugFieldCreateIndexRouteImport } from './routes/_private/group/$groupSlug/field/create/index'
-import { Route as PrivateGroupGroupSlugFieldFieldIdIndexRouteImport } from './routes/_private/group/$groupSlug/field/$fieldId/index'
 
 const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
   id: '/_private',
@@ -166,18 +164,6 @@ const PrivateTablesSlugFieldFieldIdIndexRoute =
     path: '/tables/$slug/field/$fieldId/',
     getParentRoute: () => PrivateLayoutRoute,
   } as any)
-const PrivateGroupGroupSlugFieldCreateIndexRoute =
-  PrivateGroupGroupSlugFieldCreateIndexRouteImport.update({
-    id: '/group/$groupSlug/field/create/',
-    path: '/group/$groupSlug/field/create/',
-    getParentRoute: () => PrivateLayoutRoute,
-  } as any)
-const PrivateGroupGroupSlugFieldFieldIdIndexRoute =
-  PrivateGroupGroupSlugFieldFieldIdIndexRouteImport.update({
-    id: '/group/$groupSlug/field/$fieldId/',
-    path: '/group/$groupSlug/field/$fieldId/',
-    getParentRoute: () => PrivateLayoutRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/pages/$slug': typeof PrivatePagesSlugRoute
@@ -199,8 +185,6 @@ export interface FileRoutesByFullPath {
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
-  '/group/$groupSlug/field/$fieldId': typeof PrivateGroupGroupSlugFieldFieldIdIndexRoute
-  '/group/$groupSlug/field/create': typeof PrivateGroupGroupSlugFieldCreateIndexRoute
   '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -226,8 +210,6 @@ export interface FileRoutesByTo {
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
-  '/group/$groupSlug/field/$fieldId': typeof PrivateGroupGroupSlugFieldFieldIdIndexRoute
-  '/group/$groupSlug/field/create': typeof PrivateGroupGroupSlugFieldCreateIndexRoute
   '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -255,8 +237,6 @@ export interface FileRoutesById {
   '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute
   '/_private/users/create/': typeof PrivateUsersCreateIndexRoute
   '/_private/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute
-  '/_private/group/$groupSlug/field/$fieldId/': typeof PrivateGroupGroupSlugFieldFieldIdIndexRoute
-  '/_private/group/$groupSlug/field/create/': typeof PrivateGroupGroupSlugFieldCreateIndexRoute
   '/_private/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/_private/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/_private/tables/$slug/row/$rowId/': typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -284,8 +264,6 @@ export interface FileRouteTypes {
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/detail'
-    | '/group/$groupSlug/field/$fieldId'
-    | '/group/$groupSlug/field/create'
     | '/tables/$slug/field/$fieldId'
     | '/tables/$slug/field/create'
     | '/tables/$slug/row/$rowId'
@@ -311,8 +289,6 @@ export interface FileRouteTypes {
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/detail'
-    | '/group/$groupSlug/field/$fieldId'
-    | '/group/$groupSlug/field/create'
     | '/tables/$slug/field/$fieldId'
     | '/tables/$slug/field/create'
     | '/tables/$slug/row/$rowId'
@@ -339,8 +315,6 @@ export interface FileRouteTypes {
     | '/_private/users/$userId/'
     | '/_private/users/create/'
     | '/_private/tables/$slug/detail/'
-    | '/_private/group/$groupSlug/field/$fieldId/'
-    | '/_private/group/$groupSlug/field/create/'
     | '/_private/tables/$slug/field/$fieldId/'
     | '/_private/tables/$slug/field/create/'
     | '/_private/tables/$slug/row/$rowId/'
@@ -523,20 +497,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateTablesSlugFieldFieldIdIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
-    '/_private/group/$groupSlug/field/create/': {
-      id: '/_private/group/$groupSlug/field/create/'
-      path: '/group/$groupSlug/field/create'
-      fullPath: '/group/$groupSlug/field/create'
-      preLoaderRoute: typeof PrivateGroupGroupSlugFieldCreateIndexRouteImport
-      parentRoute: typeof PrivateLayoutRoute
-    }
-    '/_private/group/$groupSlug/field/$fieldId/': {
-      id: '/_private/group/$groupSlug/field/$fieldId/'
-      path: '/group/$groupSlug/field/$fieldId'
-      fullPath: '/group/$groupSlug/field/$fieldId'
-      preLoaderRoute: typeof PrivateGroupGroupSlugFieldFieldIdIndexRouteImport
-      parentRoute: typeof PrivateLayoutRoute
-    }
   }
 }
 
@@ -558,8 +518,6 @@ interface PrivateLayoutRouteChildren {
   PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute
   PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute
   PrivateTablesSlugDetailIndexRoute: typeof PrivateTablesSlugDetailIndexRoute
-  PrivateGroupGroupSlugFieldFieldIdIndexRoute: typeof PrivateGroupGroupSlugFieldFieldIdIndexRoute
-  PrivateGroupGroupSlugFieldCreateIndexRoute: typeof PrivateGroupGroupSlugFieldCreateIndexRoute
   PrivateTablesSlugFieldFieldIdIndexRoute: typeof PrivateTablesSlugFieldFieldIdIndexRoute
   PrivateTablesSlugFieldCreateIndexRoute: typeof PrivateTablesSlugFieldCreateIndexRoute
   PrivateTablesSlugRowRowIdIndexRoute: typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -584,10 +542,6 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateUsersUserIdIndexRoute: PrivateUsersUserIdIndexRoute,
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
   PrivateTablesSlugDetailIndexRoute: PrivateTablesSlugDetailIndexRoute,
-  PrivateGroupGroupSlugFieldFieldIdIndexRoute:
-    PrivateGroupGroupSlugFieldFieldIdIndexRoute,
-  PrivateGroupGroupSlugFieldCreateIndexRoute:
-    PrivateGroupGroupSlugFieldCreateIndexRoute,
   PrivateTablesSlugFieldFieldIdIndexRoute:
     PrivateTablesSlugFieldFieldIdIndexRoute,
   PrivateTablesSlugFieldCreateIndexRoute:

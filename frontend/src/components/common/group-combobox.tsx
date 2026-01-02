@@ -17,7 +17,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { API } from '@/lib/api';
-import { IGroup } from '@/lib/interfaces';
+import type { IGroup } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface GroupComboboxProps {

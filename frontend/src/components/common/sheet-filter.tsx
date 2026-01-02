@@ -7,7 +7,13 @@ import React from 'react';
 
 import type { Option } from '@/components/common/-multi-selector';
 import { MultipleSelector } from '@/components/common/-multi-selector';
-import { SimpleSelect } from '@/components/common/-simple-select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import type { TreeNode } from '@/components/common/-tree-list';
 import { TreeList } from '@/components/common/-tree-list';
 import { Badge } from '@/components/ui/badge';
@@ -384,6 +390,9 @@ function FilterDropdown({
       label: d,
     })) ?? [];
 
+  // Para single select, extrair o valor da primeira opção
+  const singleValue = value.length > 0 ? value[0].value : '';
+
   return (
     <Field>
       <FieldLabel>{field.name}</FieldLabel>
@@ -396,13 +405,21 @@ function FilterDropdown({
           className="w-full"
         />
       ) : (
-        <SimpleSelect
-          selectedValues={value}
-          onChange={onChange}
-          options={options}
-          placeholder={`Filtrar por ${field.name.toLowerCase()}`}
-          className="w-full"
-        />
+        <Select
+          value={singleValue}
+          onValueChange={(v) => onChange(v ? [{ value: v, label: v }] : [])}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={`Filtrar por ${field.name.toLowerCase()}`} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                {option.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       )}
     </Field>
   );

@@ -17,6 +17,14 @@ import { PermissionMultiSelectField } from './components/permission-multi-select
 import { RelationshipFieldSelectField } from './components/relationship-field-select-field';
 import { RelationshipOrderSelectField } from './components/relationship-order-select-field';
 import { RelationshipTableSelectField } from './components/relationship-table-select-field';
+import { RowCategoryField } from './components/row-category-field';
+import { RowDateField } from './components/row-date-field';
+import { RowDropdownField } from './components/row-dropdown-field';
+import { RowFieldGroupField } from './components/row-field-group-field';
+import { RowFileField } from './components/row-file-field';
+import { RowRelationshipField } from './components/row-relationship-field';
+import { RowTextareaField } from './components/row-textarea-field';
+import { RowTextField } from './components/row-text-field';
 import { SwitchField } from './components/switch-field';
 import { TableCollaborationSelectField } from './components/table-collaboration-select-field';
 import { TableComboboxField } from './components/table-combobox-field';
@@ -56,6 +64,15 @@ export const { useAppForm, withForm } = createFormHook({
     RelationshipFieldSelectField,
     RelationshipOrderSelectField,
     CategoryTreeField,
+    // Row field components
+    RowTextField,
+    RowTextareaField,
+    RowDropdownField,
+    RowDateField,
+    RowFileField,
+    RowRelationshipField,
+    RowCategoryField,
+    RowFieldGroupField,
   },
   formComponents: {},
 });
