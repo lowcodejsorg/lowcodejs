@@ -1,4 +1,3 @@
-import type { LinkProps } from '@tanstack/react-router';
 import { Outlet, createFileRoute } from '@tanstack/react-router';
 import React from 'react';
 
@@ -15,10 +14,23 @@ export const Route = createFileRoute('/_private')({
 function RouteComponent(): React.JSX.Element {
   const authentication = useAuthenticationStore().authenticated;
 
-  const routesWithoutSearchInput: Array<LinkProps['to']> = [
+  const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',
-    '/settings',
+    /^\/groups\/.+$/,
+    '/groups/create',
+    /^\/menus\/.+$/,
+    '/menus/create',
+    /^\/pages\/.+$/,
     '/profile',
+    '/settings',
+    /^\/tables\/[^/]+\/field\/.+$/,
+    /^\/tables\/[^/]+\/field\/create$/,
+    /^\/tables\/[^/]+\/row\/.+$/,
+    /^\/tables\/[^/]+\/row\/create$/,
+    /^\/tables\/[^/]+\/detail$/,
+    /^\/tables\/[^/]+\/methods$/,
+    /^\/users\/.+$/,
+    '/users/create',
   ];
 
   return (

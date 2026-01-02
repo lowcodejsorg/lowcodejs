@@ -6,12 +6,10 @@ export const Route = createFileRoute('/_private/pages/$slug')({
   component: RouteComponent,
 });
 
-function RouteComponent() {
+function RouteComponent(): React.JSX.Element {
   const { slug } = useParams({
     from: '/_private/pages/$slug',
   });
-
-  // const sidebar = useSidebar();
 
   const page = usePageRead({ slug });
 

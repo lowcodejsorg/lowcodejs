@@ -4,8 +4,15 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { IUser } from '@/lib/interfaces';
 
+export const ERole = {
+  ADMINISTRATOR: 'ADMINISTRATOR',
+  REGISTERED: 'REGISTERED',
+  MANAGER: 'MANAGER',
+  MASTER: 'MASTER',
+} as const;
+
 export type Authenticated = Pick<IUser, 'name' | 'email'> & {
-  role: 'ADMINISTRATOR' | 'REGISTERED' | 'MANAGER' | 'MASTER';
+  role: keyof typeof ERole;
   sub: string;
 };
 

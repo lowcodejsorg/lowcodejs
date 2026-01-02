@@ -1,4 +1,3 @@
-import type { LinkProps } from '@tanstack/react-router';
 import { useLocation } from '@tanstack/react-router';
 import React from 'react';
 
@@ -8,7 +7,7 @@ import { Profile } from '@/components/common/profile';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
 interface HeaderProps {
-  routesWithoutSearchInput: Array<LinkProps['to']>;
+  routesWithoutSearchInput: Array<string | RegExp>;
 }
 
 export function Header({
@@ -16,11 +15,12 @@ export function Header({
 }: HeaderProps): React.JSX.Element {
   const location = useLocation();
 
-  const showSearchInput = !routesWithoutSearchInput.some(
-    (route) =>
-      location.pathname === route ||
-      location.pathname.endsWith(route?.toString() || ''),
-  );
+  const showSearchInput = !routesWithoutSearchInput.some((route) => {
+    if (route instanceof RegExp) {
+      return route.test(location.pathname);
+    }
+    return location.pathname === route;
+  });
 
   return (
     <header className="w-full py-4 inline-flex gap-2 px-4 justify-center border-b ">
