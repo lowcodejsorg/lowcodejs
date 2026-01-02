@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
 import z from 'zod';
 
@@ -9,9 +8,8 @@ import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { API } from '@/lib/api';
+import { useUserReadPaginated } from '@/hooks/tanstack-query/use-user-read-paginated';
 import { MetaDefault } from '@/lib/constant';
-import type { IUser, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/users/')({
   component: RouteComponent,
@@ -31,17 +29,7 @@ function RouteComponent(): React.JSX.Element {
 
   const sidebar = useSidebar();
 
-  const pagination = useQuery({
-    queryKey: ['/users/paginated', search],
-    queryFn: async () => {
-      const response = await API.get<Paginated<IUser>>('/users/paginated', {
-        params: {
-          ...search,
-        },
-      });
-      return response.data;
-    },
-  });
+  const pagination = useUserReadPaginated(search);
 
   const headers = ['Nome', 'E-mail', 'Papel', 'Status'];
 

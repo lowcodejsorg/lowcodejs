@@ -47,7 +47,7 @@ export const CreateTableFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome da tabela"
               disabled={isPending}

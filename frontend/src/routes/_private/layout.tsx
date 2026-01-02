@@ -5,7 +5,7 @@ import React from 'react';
 import { Header } from '@/components/common/header';
 import { Sidebar } from '@/components/common/sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { useMenuDynamic } from '@/hooks/use-menu-dynamic';
+import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private')({
@@ -15,7 +15,11 @@ export const Route = createFileRoute('/_private')({
 function RouteComponent(): React.JSX.Element {
   const authentication = useAuthenticationStore().authenticated;
 
-  const routesWithoutSearchInput: Array<LinkProps['to']> = ['/'];
+  const routesWithoutSearchInput: Array<LinkProps['to']> = [
+    '/',
+    '/settings',
+    '/profile',
+  ];
 
   return (
     <SidebarProvider>

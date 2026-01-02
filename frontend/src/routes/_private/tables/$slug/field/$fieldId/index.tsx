@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import {
   createFileRoute,
   useNavigate,
@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
+import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
@@ -45,16 +46,7 @@ function RouteComponent(): React.JSX.Element {
 
   const originSlug = from ?? slug;
 
-  const _read = useQuery({
-    queryKey: [`/tables/${slug}/fields/${fieldId}`, fieldId],
-    queryFn: async () => {
-      const response = await API.get<IField>(
-        `/tables/${slug}/fields/${fieldId}`,
-      );
-      return response.data;
-    },
-    enabled: Boolean(slug) && Boolean(fieldId),
-  });
+  const _read = useFieldRead({ tableSlug: slug, fieldId });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -424,7 +416,7 @@ function FieldUpdateContent({
           form.handleSubmit();
         }}
       >
-        {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
+        {/* @ts-ignore TanStack Form type depth issue with nested configuration */}
         <UpdateFieldFormFields
           form={form}
           isPending={isPending}

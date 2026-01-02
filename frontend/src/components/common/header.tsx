@@ -2,6 +2,8 @@ import type { LinkProps } from '@tanstack/react-router';
 import { useLocation } from '@tanstack/react-router';
 import React from 'react';
 
+import { InputSearch } from './input-search';
+
 import { Profile } from '@/components/common/profile';
 import { SidebarTrigger } from '@/components/ui/sidebar';
 
@@ -29,7 +31,7 @@ export function Header({
           size="icon"
         />
         <div className="inline-flex gap-2 w-full items-center">
-          {/* {showSearchInput && <InputSearch />} */}
+          {showSearchInput && <InputSearch />}
         </div>
         <div className="inline-flex gap-2">
           {/* <ToggleTheme /> */}

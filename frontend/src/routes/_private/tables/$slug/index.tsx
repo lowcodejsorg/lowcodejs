@@ -22,8 +22,8 @@ import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { useReadTableRowPaginated } from '@/integrations/tanstack-query/implementations/use-table-row-read-paginated';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { MetaDefault } from '@/lib/constant';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({

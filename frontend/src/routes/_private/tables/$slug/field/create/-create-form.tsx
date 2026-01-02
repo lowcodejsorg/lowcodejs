@@ -109,7 +109,7 @@ export const CreateFieldFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Nome do campo"
               disabled={isPending}
@@ -171,7 +171,7 @@ export const CreateFieldFormFields = withForm({
         {isTextShort && (
           <form.AppField name="configuration.defaultValue">
             {(field) => (
-              <field.TextField
+              <field.FieldText
                 label="Valor padrão"
                 placeholder="Valor padrão (deixe em branco se não houver)"
                 disabled={isPending}
@@ -184,7 +184,7 @@ export const CreateFieldFormFields = withForm({
         {isTextLong && (
           <form.AppField name="configuration.defaultValue">
             {(field) => (
-              <field.TextareaField
+              <field.FieldTextarea
                 label="Valor padrão"
                 placeholder="Valor padrão (Se deixar em branco, o campo ficará vazio)"
                 disabled={isPending}
@@ -360,7 +360,7 @@ export const CreateFieldFormFields = withForm({
         {showMultiple && (
           <form.AppField name="configuration.multiple">
             {(field) => (
-              <field.BooleanSwitchField
+              <field.FieldBooleanSwitch
                 label="Permitir múltiplos"
                 description="Este campo deve permitir múltiplos valores?"
                 disabled={isPending}
@@ -373,7 +373,7 @@ export const CreateFieldFormFields = withForm({
         {showFiltering && (
           <form.AppField name="configuration.filtering">
             {(field) => (
-              <field.BooleanSwitchField
+              <field.FieldBooleanSwitch
                 label="Usar no filtro"
                 description="Usar este campo para filtrar os dados?"
                 disabled={isPending}
@@ -385,7 +385,7 @@ export const CreateFieldFormFields = withForm({
         {/* Campo Listagem */}
         <form.AppField name="configuration.listing">
           {(field) => (
-            <field.BooleanSwitchField
+            <field.FieldBooleanSwitch
               label="Exibir na listagem"
               description="Exibir este campo na listagem?"
               disabled={isPending}
@@ -397,7 +397,7 @@ export const CreateFieldFormFields = withForm({
         {showRequired && (
           <form.AppField name="configuration.required">
             {(field) => (
-              <field.BooleanSwitchField
+              <field.FieldBooleanSwitch
                 label="Obrigatoriedade"
                 description="Este campo é obrigatório?"
                 disabled={isPending}

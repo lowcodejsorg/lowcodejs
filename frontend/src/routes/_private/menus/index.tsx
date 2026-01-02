@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
 import z from 'zod';
 
@@ -9,9 +8,8 @@ import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { API } from '@/lib/api';
+import { useMenuReadPaginated } from '@/hooks/tanstack-query/use-menu-read-paginated';
 import { MetaDefault } from '@/lib/constant';
-import type { IMenu, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/')({
   component: RouteComponent,
@@ -26,15 +24,7 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const pagination = useQuery({
-    queryKey: ['/menu/paginated', search],
-    queryFn: async function () {
-      const response = await API.get<Paginated<IMenu>>('/menu/paginated', {
-        params: search,
-      });
-      return response.data;
-    },
-  });
+  const pagination = useMenuReadPaginated(search);
 
   const headers = ['Nome', 'Slug', 'Tipo'];
 

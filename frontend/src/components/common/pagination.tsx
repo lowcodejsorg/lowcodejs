@@ -17,7 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Meta } from '@/lib/interfaces';
+import type { Meta } from '@/lib/interfaces';
 
 interface Props {
   meta: Meta;
@@ -25,7 +25,8 @@ interface Props {
 
 export function Pagination({ meta }: Props): React.JSX.Element {
   const search = useSearch({
-    from: '/_private',
+    // from: '/_private',
+    strict: false,
     select(state) {
       return {
         page: state.page,

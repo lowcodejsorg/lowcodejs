@@ -1,15 +1,15 @@
+import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
+import z from 'zod';
+
+import { TableGroups } from './-table-groups';
+import { TableGroupsSkeleton } from './-table-groups-skeleton';
+
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { API } from '@/lib/api';
+import { useGroupReadPaginated } from '@/hooks/tanstack-query/use-group-read-paginated';
 import { MetaDefault } from '@/lib/constant';
-import { IGroup, Paginated } from '@/lib/interfaces';
-import { useQuery } from '@tanstack/react-query';
-import { createFileRoute, useRouter, useSearch } from '@tanstack/react-router';
-import z from 'zod';
-import { TableGroups } from './-table-groups';
-import { TableGroupsSkeleton } from './-table-groups-skeleton';
 
 export const Route = createFileRoute('/_private/groups/')({
   component: RouteComponent,
@@ -28,20 +28,7 @@ function RouteComponent() {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const pagination = useQuery({
-    queryKey: ['/user-group/paginated', search],
-    queryFn: async () => {
-      const response = await API.get<Paginated<IGroup>>(
-        '/user-group/paginated',
-        {
-          params: {
-            ...search,
-          },
-        },
-      );
-      return response.data;
-    },
-  });
+  const pagination = useGroupReadPaginated(search);
 
   const headers = ['Nome', 'Slug', 'Descrição'];
 

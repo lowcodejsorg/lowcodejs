@@ -13,8 +13,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { useUpdateTable } from '@/integrations/tanstack-query/implementations/use-table-update';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { ITable } from '@/lib/interfaces';
 

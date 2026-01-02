@@ -1,14 +1,15 @@
-import { Button } from '@/components/ui/button';
-import { useProfile } from '@/hooks/use-profile';
-import { API } from '@/lib/api';
-import type { IField, IRow, Paginated } from '@/lib/interfaces';
-import { QueryClient } from '@/lib/query-client';
-import { cn } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useSearch } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
 import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
+import { API } from '@/lib/api';
+import type { IField, IRow, Paginated } from '@/lib/interfaces';
+import { QueryClient } from '@/lib/query-client';
+import { cn } from '@/lib/utils';
 
 interface Reaction {
   type: 'like' | 'unlike';
@@ -26,7 +27,7 @@ export function TableRowReactionCell({
   row,
   tableSlug,
 }: TableRowReactionCellProps): React.JSX.Element {
-  const { data: user } = useProfile();
+  const { data: user } = useProfileRead();
 
   const data = Array.from<Reaction>(row[field.slug] ?? []);
 
@@ -34,11 +35,12 @@ export function TableRowReactionCell({
   const totalUnlike = data.filter((d) => d.type === 'unlike').length;
 
   const userLike = data.some(
-    (d) => d.type === 'like' && d.user?._id?.toString() === user?._id?.toString(),
+    (d) => d.type === 'like' && d.user._id.toString() === user?._id.toString(),
   );
 
   const userUnlike = data.some(
-    (d) => d.type === 'unlike' && d.user?._id?.toString() === user?._id?.toString(),
+    (d) =>
+      d.type === 'unlike' && d.user._id.toString() === user?._id.toString(),
   );
 
   const search = useSearch({
@@ -60,8 +62,12 @@ export function TableRowReactionCell({
       return response.data;
     },
     onSuccess(data) {
-      QueryClient.setQueryData<Paginated<IRow[]>>(
-        ['/tables/'.concat(tableSlug).concat('/rows/paginated'), tableSlug, search],
+      QueryClient.setQueryData<Paginated<IRow>>(
+        [
+          '/tables/'.concat(tableSlug).concat('/rows/paginated'),
+          tableSlug,
+          search,
+        ],
         (old) => {
           if (!old) return old;
           return {
@@ -119,7 +125,10 @@ export function TableRowReactionCell({
         }}
       >
         <ThumbsDownIcon
-          className={cn('size-4', userUnlike && 'fill-destructive text-destructive')}
+          className={cn(
+            'size-4',
+            userUnlike && 'fill-destructive text-destructive',
+          )}
         />
         <span className="font-medium">{totalUnlike}</span>
       </Button>

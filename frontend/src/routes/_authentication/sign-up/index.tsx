@@ -1,5 +1,4 @@
 import { useForm } from '@tanstack/react-form';
-import { useMutation } from '@tanstack/react-query';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import {
   EyeClosedIcon,
@@ -27,7 +26,7 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
-import { API } from '@/lib/api';
+import { useAuthenticationSignUp } from '@/hooks/tanstack-query/use-authentication-sign-up';
 
 export const Route = createFileRoute('/_authentication/sign-up/')({
   component: RouteComponent,
@@ -53,12 +52,7 @@ function RouteComponent(): React.JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const signUpMutation = useMutation({
-    mutationFn: async function (payload: z.infer<typeof FormSignUpSchema>) {
-      const { confirmPassword, ...data } = payload;
-      const response = await API.post('/authentication/sign-up', data);
-      return response.data;
-    },
+  const signUpMutation = useAuthenticationSignUp({
     async onSuccess() {
       router.navigate({ to: '/', replace: true });
     },
@@ -78,7 +72,8 @@ function RouteComponent(): React.JSX.Element {
       onSubmit: FormSignUpSchema,
     },
     onSubmit: async function ({ value: payload }) {
-      await signUpMutation.mutateAsync(payload);
+      const { confirmPassword, ...data } = payload;
+      await signUpMutation.mutateAsync(data);
     },
   });
 

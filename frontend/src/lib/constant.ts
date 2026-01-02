@@ -27,7 +27,7 @@ export const FIELD_TYPE = {
   REACTION: 'REACTION',
   EVALUATION: 'EVALUATION',
   CATEGORY: 'CATEGORY',
-};
+} as const;
 
 export const FIELD_FORMAT = {
   // TEXT_SHORT

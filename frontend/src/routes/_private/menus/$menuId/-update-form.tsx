@@ -51,7 +51,7 @@ export const UpdateMenuFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome do menu"
               disabled={isDisabled}
@@ -73,7 +73,7 @@ export const UpdateMenuFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.MenuTypeSelectField
+            <field.FieldMenuTypeSelect
               label="Tipo"
               placeholder="Selecione o tipo de menu"
               disabled={isDisabled}
@@ -86,7 +86,7 @@ export const UpdateMenuFormFields = withForm({
         {menuType !== MENU_ITEM_TYPE.SEPARATOR && (
           <form.AppField name="parent">
             {(field) => (
-              <field.MenuComboboxField
+              <field.FieldMenuCombobox
                 label="Menu Pai"
                 placeholder="Nenhum (raiz)"
                 disabled={isDisabled}
@@ -138,7 +138,7 @@ export const UpdateMenuFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.EditorField
+              <field.FieldEditor
                 label="Conteúdo da Página"
                 showPreview={mode === 'show'}
               />
@@ -170,7 +170,7 @@ export const UpdateMenuFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.UrlField
+              <field.FieldUrl
                 label="URL"
                 placeholder="https://exemplo.com"
                 disabled={isDisabled}

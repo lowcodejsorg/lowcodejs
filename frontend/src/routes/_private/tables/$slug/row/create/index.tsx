@@ -19,8 +19,8 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { useCreateTableRow } from '@/integrations/tanstack-query/implementations/use-table-row-create';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 
 export const Route = createFileRoute('/_private/tables/$slug/row/create/')({
   component: RouteComponent,

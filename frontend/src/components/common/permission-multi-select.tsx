@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
@@ -17,8 +16,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { API } from '@/lib/api';
-import type { IPermission } from '@/lib/interfaces';
+import { usePermissionRead } from '@/hooks/tanstack-query/use-permission-read';
 import { cn } from '@/lib/utils';
 
 interface PermissionMultiSelectProps {
@@ -38,14 +36,7 @@ export function PermissionMultiSelect({
 }: PermissionMultiSelectProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
 
-  const { data: permissions, status } = useQuery({
-    queryKey: ['/permissions'],
-    queryFn: async function () {
-      const route = '/permissions';
-      const response = await API.get<Array<IPermission>>(route);
-      return response.data;
-    },
-  });
+  const { data: permissions, status } = usePermissionRead();
 
   const selectedPermissions = permissions?.filter((permission) =>
     value.includes(permission._id),

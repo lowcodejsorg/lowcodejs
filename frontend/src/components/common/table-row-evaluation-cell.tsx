@@ -1,15 +1,16 @@
-import { Button } from '@/components/ui/button';
-import { useProfile } from '@/hooks/use-profile';
-import { API } from '@/lib/api';
-import type { IField, IRow, Paginated } from '@/lib/interfaces';
-import { QueryClient } from '@/lib/query-client';
-import { cn } from '@/lib/utils';
 import { useMutation } from '@tanstack/react-query';
 import { useSearch } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { Star } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
+
+import { Button } from '@/components/ui/button';
+import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
+import { API } from '@/lib/api';
+import type { IField, IRow, Paginated } from '@/lib/interfaces';
+import { QueryClient } from '@/lib/query-client';
+import { cn } from '@/lib/utils';
 
 interface Evaluation {
   value: number;
@@ -35,7 +36,7 @@ export function TableRowEvaluationCell({
   field,
   tableSlug,
 }: TableRowEvaluationCellProps): React.JSX.Element {
-  const { data: user } = useProfile();
+  const { data: user } = useProfileRead();
 
   const data = Array.from<Evaluation>(row[field.slug] ?? []);
 
@@ -72,10 +73,15 @@ export function TableRowEvaluationCell({
       return response.data;
     },
     onSuccess(data) {
-      QueryClient.setQueryData<Paginated<IRow[]>>(
-        ['/tables/'.concat(tableSlug).concat('/rows/paginated'), tableSlug, search],
+      QueryClient.setQueryData<Paginated<IRow>>(
+        [
+          '/tables/'.concat(tableSlug).concat('/rows/paginated'),
+          tableSlug,
+          search,
+        ],
         (old) => {
           if (!old) return old;
+
           return {
             meta: old.meta,
             data: old.data.map((item) => (item._id === data._id ? data : item)),

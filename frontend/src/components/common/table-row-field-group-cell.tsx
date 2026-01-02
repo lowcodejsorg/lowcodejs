@@ -1,7 +1,6 @@
-import { API } from '@/lib/api';
 import { FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow, ITable } from '@/lib/interfaces';
-import { useQuery } from '@tanstack/react-query';
+import type { IField, IRow } from '@/lib/interfaces';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 
 import { TableRowCategoryCell } from './table-row-category-cell';
 import { TableRowDateCell } from './table-row-date-cell';
@@ -26,15 +25,7 @@ export function TableRowFieldGroupCell({
 }: TableRowFieldGroupCellProps): React.JSX.Element {
   const groupSlug = field.configuration.group?.slug;
 
-  const table = useQuery({
-    queryKey: ['/tables/'.concat(groupSlug ?? ''), groupSlug],
-    queryFn: async () => {
-      const route = '/tables/'.concat(groupSlug!);
-      const response = await API.get<ITable>(route);
-      return response.data;
-    },
-    enabled: Boolean(groupSlug),
-  });
+  const table = useReadTable({ slug: groupSlug ?? '' });
 
   if (!groupSlug || table.status !== 'success') {
     return <span className="text-muted-foreground text-sm">-</span>;

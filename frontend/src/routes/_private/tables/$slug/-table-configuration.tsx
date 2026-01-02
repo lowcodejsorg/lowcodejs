@@ -27,7 +27,7 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { FIELD_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';

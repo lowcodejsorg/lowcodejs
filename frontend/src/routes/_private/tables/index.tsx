@@ -9,7 +9,7 @@ import { Pagination } from '@/components/common/pagination';
 import { SheetFilter } from '@/components/common/sheet-filter';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useTablesPaginated } from '@/integrations/tanstack-query/implementations/use-tables-paginated';
+import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
 import { FIELD_TYPE, MetaDefault } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 
@@ -31,7 +31,7 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const pagination = useTablesPaginated(search);
+  const pagination = useTablesReadPaginated(search);
 
   const headers = ['Tabela', 'Link (slug)', 'Criado em'];
 

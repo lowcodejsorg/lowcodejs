@@ -8,8 +8,8 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { useUpdateTable } from '@/integrations/tanstack-query/implementations/use-table-update';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 import {

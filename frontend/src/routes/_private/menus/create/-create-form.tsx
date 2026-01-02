@@ -48,7 +48,7 @@ export const CreateMenuFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome do menu"
               disabled={isPending}
@@ -70,7 +70,7 @@ export const CreateMenuFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.MenuTypeSelectField
+            <field.FieldMenuTypeSelect
               label="Tipo"
               placeholder="Selecione o tipo de menu"
               disabled={isPending}
@@ -83,7 +83,7 @@ export const CreateMenuFormFields = withForm({
         {menuType !== MENU_ITEM_TYPE.SEPARATOR && (
           <form.AppField name="parent">
             {(field) => (
-              <field.MenuComboboxField
+              <field.FieldMenuCombobox
                 label="Menu Pai"
                 placeholder="Nenhum (raiz)"
                 disabled={isPending}
@@ -134,7 +134,7 @@ export const CreateMenuFormFields = withForm({
               },
             }}
           >
-            {(field) => <field.EditorField label="Conteúdo da Página" />}
+            {(field) => <field.FieldEditor label="Conteúdo da Página" />}
           </form.AppField>
         )}
 
@@ -162,7 +162,7 @@ export const CreateMenuFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.UrlField
+              <field.FieldUrl
                 label="URL"
                 placeholder="https://exemplo.com"
                 disabled={isPending}

@@ -44,7 +44,7 @@ export const UpdateTableFormFields = withForm({
         {/* Campo Logo */}
         <form.AppField name="logoFile">
           {(field) => (
-            <field.FileUploadField
+            <field.FieldFileUpload
               label="Logo"
               accept="image/*"
               maxFiles={1}
@@ -86,7 +86,7 @@ export const UpdateTableFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome da tabela"
               disabled={isDisabled}
@@ -99,7 +99,7 @@ export const UpdateTableFormFields = withForm({
         {/* Campo Descrição */}
         <form.AppField name="description">
           {(field) => (
-            <field.TextareaField
+            <field.FieldTextarea
               label="Descrição"
               placeholder="Digite uma descrição para a tabela"
               disabled={isDisabled}

@@ -1,7 +1,8 @@
-import type { IField, IRow, IStorage } from '@/lib/interfaces';
-import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
 import { FileIcon } from 'lucide-react';
+
+import type { IField, IRow, IStorage } from '@/lib/interfaces';
+import { cn } from '@/lib/utils';
 
 interface TableRowFileCellProps {
   row: IRow;
@@ -14,7 +15,7 @@ export function TableRowFileCell({
   row,
   isGallery = false,
 }: TableRowFileCellProps): React.JSX.Element {
-  const values = Array.from<IStorage>(row?.[field.slug] ?? []);
+  const values = Array.from<IStorage>(row[field.slug] ?? []);
 
   if (values.length === 0) {
     return <span className="text-muted-foreground text-sm">-</span>;
@@ -39,7 +40,9 @@ export function TableRowFileCell({
                   alt={value.originalName}
                   className="size-16 object-cover"
                 />
-                <span className="text-xs text-center">{value.originalName}</span>
+                <span className="text-xs text-center">
+                  {value.originalName}
+                </span>
               </Link>
             </li>
           );
@@ -54,8 +57,13 @@ export function TableRowFileCell({
                 className="flex flex-col items-center gap-1 text-center underline underline-offset-2"
                 onClick={(e) => e.stopPropagation()}
               >
-                <FileIcon className="size-16 text-muted-foreground" strokeWidth={1} />
-                <span className="text-xs text-center">{value.originalName}</span>
+                <FileIcon
+                  className="size-16 text-muted-foreground"
+                  strokeWidth={1}
+                />
+                <span className="text-xs text-center">
+                  {value.originalName}
+                </span>
               </Link>
             </li>
           );

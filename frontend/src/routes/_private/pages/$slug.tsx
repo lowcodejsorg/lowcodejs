@@ -1,7 +1,6 @@
-import { API } from '@/lib/api';
-import { IMenu } from '@/lib/interfaces';
-import { useQuery } from '@tanstack/react-query';
 import { createFileRoute, useParams } from '@tanstack/react-router';
+
+import { usePageRead } from '@/hooks/tanstack-query/use-page-read';
 
 export const Route = createFileRoute('/_private/pages/$slug')({
   component: RouteComponent,
@@ -14,14 +13,7 @@ function RouteComponent() {
 
   // const sidebar = useSidebar();
 
-  const page = useQuery({
-    queryKey: ['/pages/'.concat(slug), slug],
-    queryFn: async function () {
-      const route = '/pages/'.concat(slug);
-      const response = await API.get<IMenu>(route);
-      return response.data;
-    },
-  });
+  const page = usePageRead({ slug });
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

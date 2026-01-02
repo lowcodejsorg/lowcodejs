@@ -15,15 +15,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useTablesPaginated } from '@/integrations/tanstack-query/implementations/use-tables-paginated';
+import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
 import { cn } from '@/lib/utils';
 
 interface TableComboboxProps {
   value?: string;
-  onValueChange?: (value: string) => void;
+  onValueChange?: (value: string, slug?: string) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  excludeSlug?: string;
 }
 
 export function TableCombobox({
@@ -32,11 +33,16 @@ export function TableCombobox({
   placeholder = 'Selecione uma tabela...',
   className,
   disabled = false,
+  excludeSlug,
 }: TableComboboxProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
 
-  const { data, status } = useTablesPaginated();
-  const tables = data?.data;
+  const { data, status } = useTablesReadPaginated();
+  const tables = React.useMemo(() => {
+    const allTables = data?.data ?? [];
+    if (!excludeSlug) return allTables;
+    return allTables.filter((t) => t.slug !== excludeSlug);
+  }, [data?.data, excludeSlug]);
 
   const selectedTable = tables?.find((table) => table._id === value);
 
@@ -73,11 +79,11 @@ export function TableCombobox({
                   value={`${table.name}`}
                   onSelect={() => {
                     if (!(table._id === value)) {
-                      onValueChange?.(table._id);
+                      onValueChange?.(table._id, table.slug);
                     }
 
                     if (table._id === value) {
-                      onValueChange?.('');
+                      onValueChange?.('', undefined);
                     }
 
                     setOpen(false);

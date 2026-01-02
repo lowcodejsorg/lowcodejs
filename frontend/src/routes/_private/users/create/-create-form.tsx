@@ -40,7 +40,7 @@ export const CreateUserFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome completo"
               disabled={isPending}
@@ -66,7 +66,7 @@ export const CreateUserFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.EmailField
+            <field.FieldEmail
               label="E-mail"
               placeholder="exemplo@email.com"
               disabled={isPending}
@@ -90,7 +90,7 @@ export const CreateUserFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.PasswordField
+            <field.FieldPassword
               label="Senha"
               placeholder="Digite a senha"
               disabled={isPending}
@@ -111,7 +111,7 @@ export const CreateUserFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.GroupComboboxField
+            <field.FieldGroupCombobox
               label="Grupo"
               placeholder="Selecione um grupo..."
               disabled={isPending}

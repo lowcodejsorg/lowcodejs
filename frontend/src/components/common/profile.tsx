@@ -1,4 +1,3 @@
-import { useMutation } from '@tanstack/react-query';
 import { Link, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { LogOut, User } from 'lucide-react';
@@ -17,11 +16,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useProfile } from '@/hooks/use-profile';
-import { API } from '@/lib/api';
+import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
+import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 
 export function Profile(): React.JSX.Element {
-  const user = useProfile();
+  const user = useProfileRead();
 
   const router = useRouter();
 
@@ -34,11 +33,7 @@ export function Profile(): React.JSX.Element {
       .toUpperCase();
   };
 
-  const signOut = useMutation({
-    mutationFn: async function () {
-      const route = '/authentication/sign-out';
-      await API.post(route);
-    },
+  const signOut = useAuthenticationSignOut({
     onSuccess() {
       toast('Logout realizado com sucesso!', {
         className: '!bg-green-500 !text-primary-foreground !border-green-500',

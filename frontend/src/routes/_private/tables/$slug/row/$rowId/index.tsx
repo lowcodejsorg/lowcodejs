@@ -18,9 +18,9 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
-import { useReadTableRow } from '@/integrations/tanstack-query/implementations/use-table-row-read';
-import { useUpdateTableRow } from '@/integrations/tanstack-query/implementations/use-table-row-update';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
+import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import type { IRow, ITable } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/row/$rowId/')({

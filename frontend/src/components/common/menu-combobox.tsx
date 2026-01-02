@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
@@ -16,8 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { API } from '@/lib/api';
-import { IMenu } from '@/lib/interfaces';
+import { useMenuReadList } from '@/hooks/tanstack-query/use-menu-read-list';
 import { cn } from '@/lib/utils';
 
 interface MenuComboboxProps {
@@ -39,14 +37,7 @@ export function MenuCombobox({
 }: MenuComboboxProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
 
-  const { data: menus, status } = useQuery({
-    queryKey: ['/menu'],
-    queryFn: async function () {
-      const route = '/menu';
-      const response = await API.get<Array<IMenu>>(route);
-      return response.data;
-    },
-  });
+  const { data: menus, status } = useMenuReadList();
 
   // Filter menus: only separators and root items (excluding self)
   const availableMenus = React.useMemo(() => {
@@ -57,7 +48,7 @@ export function MenuCombobox({
       if (excludeId && menu._id === excludeId) return false;
 
       // Include separators
-      if (menu.type === 'separator') return true;
+      if (menu.type.toLowerCase() === 'separator') return true;
 
       // Include root items (no parent)
       if (!menu.parent) return true;
@@ -66,7 +57,7 @@ export function MenuCombobox({
     });
   }, [menus, excludeId]);
 
-  const selectedMenu = availableMenus?.find((menu) => menu._id === value);
+  const selectedMenu = availableMenus.find((menu) => menu._id === value);
 
   return (
     <Popover
@@ -95,7 +86,7 @@ export function MenuCombobox({
           <CommandList>
             <CommandEmpty>Nenhum menu encontrado.</CommandEmpty>
             <CommandGroup>
-              {availableMenus?.map((menu) => (
+              {availableMenus.map((menu) => (
                 <CommandItem
                   key={menu._id}
                   value={`${menu.name}`}

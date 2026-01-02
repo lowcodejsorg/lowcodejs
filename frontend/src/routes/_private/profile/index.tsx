@@ -9,9 +9,9 @@ import { UpdateProfileFormSkeleton } from './-update-form-skeleton';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { useProfile } from '@/hooks/use-profile';
+import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useUpdateProfile } from '@/integrations/tanstack-query/implementations/use-profile-update';
+import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IUser } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
@@ -21,7 +21,7 @@ export const Route = createFileRoute('/_private/profile/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const _read = useProfile();
+  const _read = useProfileRead();
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

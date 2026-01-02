@@ -58,7 +58,7 @@ export const UpdateProfileFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome completo"
               disabled={isDisabled}
@@ -84,7 +84,7 @@ export const UpdateProfileFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.EmailField
+            <field.FieldEmail
               label="E-mail"
               placeholder="exemplo@email.com"
               disabled={isDisabled}
@@ -148,7 +148,7 @@ export const UpdateProfileFormFields = withForm({
               }}
             >
               {(field) => (
-                <field.PasswordField
+                <field.FieldPassword
                   label="Senha atual"
                   placeholder="Digite sua senha atual"
                   disabled={isDisabled}
@@ -204,7 +204,7 @@ export const UpdateProfileFormFields = withForm({
               }}
             >
               {(field) => (
-                <field.PasswordField
+                <field.FieldPassword
                   label="Nova senha"
                   placeholder="Digite sua nova senha"
                   disabled={isDisabled}
@@ -233,7 +233,7 @@ export const UpdateProfileFormFields = withForm({
               }}
             >
               {(field) => (
-                <field.PasswordField
+                <field.FieldPassword
                   label="Confirmar nova senha"
                   placeholder="Confirme sua nova senha"
                   disabled={isDisabled}

@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useCreateTable } from '@/integrations/tanstack-query/implementations/use-table-create';
+import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { ITable, Paginated } from '@/lib/interfaces';

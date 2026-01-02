@@ -1,61 +1,64 @@
 import { createFormHook } from '@tanstack/react-form';
 
-import { BooleanSwitchField } from './components/boolean-switch-field';
-import { CodeEditorField } from './components/code-editor-field';
-import { EditorField } from './components/editor-field';
-import { EmailField } from './components/email-field';
-import { FileUploadField } from './components/file-upload-field';
-import { GroupComboboxField } from './components/group-combobox-field';
-import { MenuComboboxField } from './components/menu-combobox-field';
-import { MenuTypeSelectField } from './components/menu-type-select-field';
-import { PasswordField } from './components/password-field';
-import { PermissionMultiSelectField } from './components/permission-multi-select-field';
-import { SwitchField } from './components/switch-field';
-import { TableCollaborationSelectField } from './components/table-collaboration-select-field';
-import { TableComboboxField } from './components/table-combobox-field';
-import { TableStyleSwitchField } from './components/table-style-switch-field';
-import { TableVisibilitySelectField } from './components/table-visibility-select-field';
-import { TextField } from './components/text-field';
-import { TextareaField } from './components/textarea-field';
-import { UrlField } from './components/url-field';
+// General fields
 import { fieldContext, formContext } from './form-context';
-// Table field components (field configuration)
-import { CategoryTreeField as TableFieldCategoryTree } from './components/table-field-category-tree';
-import { DropdownOptionsField as TableFieldDropdownOptions } from './components/table-field-dropdown-options';
-import { FieldFormatSelectField as TableFieldFormatSelect } from './components/table-field-format-select';
-import { FieldTypeSelectField as TableFieldTypeSelect } from './components/table-field-type-select';
-import { RelationshipFieldSelectField as TableFieldRelationshipFieldSelect } from './components/table-field-relationship-field-select';
-import { RelationshipOrderSelectField as TableFieldRelationshipOrderSelect } from './components/table-field-relationship-order-select';
-import { RelationshipTableSelectField as TableFieldRelationshipTableSelect } from './components/table-field-relationship-table-select';
-// Table row components (row data input)
-import { RowCategoryField as TableRowCategoryField } from './components/table-row-category-field';
-import { RowDateField as TableRowDateField } from './components/table-row-date-field';
-import { RowDropdownField as TableRowDropdownField } from './components/table-row-dropdown-field';
-import { RowFieldGroupField as TableRowFieldGroupField } from './components/table-row-field-group-field';
-import { RowFileField as TableRowFileField } from './components/table-row-file-field';
-import { RowRelationshipField as TableRowRelationshipField } from './components/table-row-relationship-field';
-import { RowTextareaField as TableRowTextareaField } from './components/table-row-textarea-field';
-import { RowTextField as TableRowTextField } from './components/table-row-text-field';
+
+import { FieldBooleanSwitch } from '@/components/common/tanstack-form/field-boolean-switch';
+import { FieldCodeEditor } from '@/components/common/tanstack-form/field-code-editor';
+import { FieldEditor } from '@/components/common/tanstack-form/field-editor';
+import { FieldEmail } from '@/components/common/tanstack-form/field-email';
+import { FieldFileUpload } from '@/components/common/tanstack-form/field-file-upload';
+import { FieldGroupCombobox } from '@/components/common/tanstack-form/field-group-combobox';
+import { FieldMenuCombobox } from '@/components/common/tanstack-form/field-menu-combobox';
+import { FieldMenuTypeSelect } from '@/components/common/tanstack-form/field-menu-type-select';
+import { FieldPassword } from '@/components/common/tanstack-form/field-password';
+import { FieldPermissionMultiSelect } from '@/components/common/tanstack-form/field-permission-multi-select';
+import { FieldSwitch } from '@/components/common/tanstack-form/field-switch';
+import { FieldText } from '@/components/common/tanstack-form/field-text';
+import { FieldTextarea } from '@/components/common/tanstack-form/field-textarea';
+import { FieldUrl } from '@/components/common/tanstack-form/field-url';
+// Table configuration
+import { TableCollaborationSelectField } from '@/components/common/tanstack-form/table-collaboration-select-field';
+import { TableComboboxField } from '@/components/common/tanstack-form/table-combobox-field';
+// Table field configuration
+import { TableFieldCategoryTree } from '@/components/common/tanstack-form/table-field-category-tree';
+import { TableFieldDropdownOptions } from '@/components/common/tanstack-form/table-field-dropdown-options';
+import { TableFieldFormatSelect } from '@/components/common/tanstack-form/table-field-format-select';
+import { TableFieldRelationshipFieldSelect } from '@/components/common/tanstack-form/table-field-relationship-field-select';
+import { TableFieldRelationshipOrderSelect } from '@/components/common/tanstack-form/table-field-relationship-order-select';
+import { TableFieldRelationshipTableSelect } from '@/components/common/tanstack-form/table-field-relationship-table-select';
+import { TableFieldTypeSelect } from '@/components/common/tanstack-form/table-field-type-select';
+// Table row data input
+import { TableRowCategoryField } from '@/components/common/tanstack-form/table-row-category-field';
+import { TableRowDateField } from '@/components/common/tanstack-form/table-row-date-field';
+import { TableRowDropdownField } from '@/components/common/tanstack-form/table-row-dropdown-field';
+import { TableRowFieldGroupField } from '@/components/common/tanstack-form/table-row-field-group-field';
+import { TableRowFileField } from '@/components/common/tanstack-form/table-row-file-field';
+import { TableRowRelationshipField } from '@/components/common/tanstack-form/table-row-relationship-field';
+import { TableRowTextField } from '@/components/common/tanstack-form/table-row-text-field';
+import { TableRowTextareaField } from '@/components/common/tanstack-form/table-row-textarea-field';
+import { TableStyleSwitchField } from '@/components/common/tanstack-form/table-style-switch-field';
+import { TableVisibilitySelectField } from '@/components/common/tanstack-form/table-visibility-select-field';
 
 export const { useAppForm, withForm } = createFormHook({
   fieldContext,
   formContext,
   fieldComponents: {
     // General fields
-    TextField,
-    TextareaField,
-    EmailField,
-    PasswordField,
-    UrlField,
-    SwitchField,
-    BooleanSwitchField,
-    EditorField,
-    CodeEditorField,
-    FileUploadField,
-    GroupComboboxField,
-    MenuComboboxField,
-    MenuTypeSelectField,
-    PermissionMultiSelectField,
+    FieldText,
+    FieldTextarea,
+    FieldEmail,
+    FieldPassword,
+    FieldUrl,
+    FieldSwitch,
+    FieldBooleanSwitch,
+    FieldEditor,
+    FieldCodeEditor,
+    FieldFileUpload,
+    FieldGroupCombobox,
+    FieldMenuCombobox,
+    FieldMenuTypeSelect,
+    FieldPermissionMultiSelect,
     // Table configuration
     TableComboboxField,
     TableVisibilitySelectField,

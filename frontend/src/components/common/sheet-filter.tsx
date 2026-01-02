@@ -7,13 +7,6 @@ import React from 'react';
 
 import type { Option } from '@/components/common/-multi-selector';
 import { MultipleSelector } from '@/components/common/-multi-selector';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import type { TreeNode } from '@/components/common/-tree-list';
 import { TreeList } from '@/components/common/-tree-list';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +23,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import {
   Sheet,
   SheetContent,
@@ -78,35 +78,34 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
 
   const search = useSearch({
     strict: false,
-  }) as Record<string, string>;
+  });
 
   const [filterValues, setFilterValues] = React.useState<Record<string, any>>(
     {},
   );
 
   React.useEffect(() => {
-    const initialValues: Record<string, any> = {};
+    const initialValues: Record<string, unknown> = {};
     for (const field of fields) {
-      if (search[field.slug]) {
+      const fieldValue = search[field.slug];
+      if (typeof fieldValue === 'string') {
         if (field.type === FIELD_TYPE.DROPDOWN) {
-          initialValues[field.slug] = search[field.slug]
+          initialValues[field.slug] = fieldValue
             .split(',')
             .map((v) => ({ value: v, label: v }));
         } else if (field.type === FIELD_TYPE.CATEGORY) {
-          initialValues[field.slug] = search[field.slug].split(',');
+          initialValues[field.slug] = fieldValue.split(',');
         } else {
-          initialValues[field.slug] = search[field.slug];
+          initialValues[field.slug] = fieldValue;
         }
       }
-      if (search[`${field.slug}-initial`]) {
-        initialValues[`${field.slug}-initial`] = parseISO(
-          search[`${field.slug}-initial`],
-        );
+      const initialDateValue = search[`${field.slug}-initial`];
+      if (typeof initialDateValue === 'string') {
+        initialValues[`${field.slug}-initial`] = parseISO(initialDateValue);
       }
-      if (search[`${field.slug}-final`]) {
-        initialValues[`${field.slug}-final`] = parseISO(
-          search[`${field.slug}-final`],
-        );
+      const finalDateValue = search[`${field.slug}-final`];
+      if (typeof finalDateValue === 'string') {
+        initialValues[`${field.slug}-final`] = parseISO(finalDateValue);
       }
     }
     setFilterValues(initialValues);
@@ -119,7 +118,10 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
       const value = filterValues[field.slug];
 
       if (
-        [FIELD_TYPE.TEXT_SHORT, FIELD_TYPE.TEXT_LONG].includes(field.type) &&
+        [
+          FIELD_TYPE.TEXT_SHORT.toString(),
+          FIELD_TYPE.TEXT_LONG.toString(),
+        ].includes(field.type) &&
         value
       ) {
         filters[field.slug] = String(value);
@@ -190,9 +192,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
 
   const activeFiltersCount = fields.filter((f) => {
     return (
-      search[f.slug] ||
-      search[`${f.slug}-initial`] ||
-      search[`${f.slug}-final`]
+      search[f.slug] || search[`${f.slug}-initial`] || search[`${f.slug}-final`]
     );
   }).length;
 
@@ -230,7 +230,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
 
         <div className="flex flex-col gap-4 w-full">
           <section className="flex flex-col gap-4 w-full">
-            {fields?.map((field) => (
+            {fields.map((field) => (
               <div
                 key={field.slug}
                 className="flex w-full flex-col relative"
@@ -410,11 +410,16 @@ function FilterDropdown({
           onValueChange={(v) => onChange(v ? [{ value: v, label: v }] : [])}
         >
           <SelectTrigger className="w-full">
-            <SelectValue placeholder={`Filtrar por ${field.name.toLowerCase()}`} />
+            <SelectValue
+              placeholder={`Filtrar por ${field.name.toLowerCase()}`}
+            />
           </SelectTrigger>
           <SelectContent>
             {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
+              <SelectItem
+                key={option.value}
+                value={option.value}
+              >
                 {option.label}
               </SelectItem>
             ))}

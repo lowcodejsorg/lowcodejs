@@ -65,7 +65,7 @@ export const UpdateGroupFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome do grupo"
               disabled={isDisabled}
@@ -77,7 +77,7 @@ export const UpdateGroupFormFields = withForm({
         {/* Campo Descrição */}
         <form.AppField name="description">
           {(field) => (
-            <field.TextareaField
+            <field.FieldTextarea
               label="Descrição (opcional)"
               placeholder="Descrição do grupo (opcional)"
               disabled={isDisabled}
@@ -99,7 +99,7 @@ export const UpdateGroupFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.PermissionMultiSelectField
+            <field.FieldPermissionMultiSelect
               label="Permissões"
               placeholder="Selecione as permissões..."
               disabled={isDisabled}

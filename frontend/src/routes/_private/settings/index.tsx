@@ -9,9 +9,9 @@ import { UpdateSettingFormSkeleton } from './-update-form-skeleton';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { useSetting } from '@/hooks/use-setting';
+import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useUpdateSetting } from '@/integrations/tanstack-query/implementations/use-setting-update';
+import { useUpdateSetting } from '@/hooks/tanstack-query/use-setting-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { ISetting } from '@/lib/interfaces';
 
@@ -20,7 +20,7 @@ export const Route = createFileRoute('/_private/settings/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const _read = useSetting();
+  const _read = useSettingRead();
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

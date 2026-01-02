@@ -48,7 +48,7 @@ export const MethodsFormFields = withForm({
           <TabsContent value="onLoad" className="mt-4">
             <form.AppField name="onLoad">
               {(field) => (
-                <field.CodeEditorField
+                <field.FieldCodeEditor
                   label="Ao Carregar (OnLoad)"
                   table={table ?? undefined}
                 />
@@ -63,7 +63,7 @@ export const MethodsFormFields = withForm({
           <TabsContent value="beforeSave" className="mt-4">
             <form.AppField name="beforeSave">
               {(field) => (
-                <field.CodeEditorField
+                <field.FieldCodeEditor
                   label="Antes de Salvar (BeforeSave)"
                   table={table ?? undefined}
                 />
@@ -78,7 +78,7 @@ export const MethodsFormFields = withForm({
           <TabsContent value="afterSave" className="mt-4">
             <form.AppField name="afterSave">
               {(field) => (
-                <field.CodeEditorField
+                <field.FieldCodeEditor
                   label="Após Salvar (AfterSave)"
                   table={table ?? undefined}
                 />

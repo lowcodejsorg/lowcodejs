@@ -1,4 +1,3 @@
-import { useMutation } from '@tanstack/react-query';
 import { Link, useLocation, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { ChevronRightIcon, LogOutIcon } from 'lucide-react';
@@ -31,7 +30,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { API } from '@/lib/api';
+import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
 import type { MenuRoute } from '@/lib/menu/menu-route';
 
 interface SidebarProps {
@@ -46,12 +45,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
 
   const { state } = useSidebar();
 
-  const signOut = useMutation({
-    mutationFn: async function () {
-      const route = '/authentication/sign-out';
-      await API.post(route);
-    },
-
+  const signOut = useAuthenticationSignOut({
     onSuccess() {
       toast('Logout realizado com sucesso!', {
         className: '!bg-green-500 !text-primary-foreground !border-green-500',

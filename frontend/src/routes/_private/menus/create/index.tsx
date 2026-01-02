@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useCreateMenu } from '@/integrations/tanstack-query/implementations/use-menu-create';
+import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { MENU_ITEM_TYPE } from '@/lib/constant';
 import { MetaDefault } from '@/lib/constant';

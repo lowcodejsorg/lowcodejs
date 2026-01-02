@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useCreateUser } from '@/integrations/tanstack-query/implementations/use-user-create';
+import { useCreateUser } from '@/hooks/tanstack-query/use-user-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { IUser, Paginated } from '@/lib/interfaces';

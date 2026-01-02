@@ -1,4 +1,3 @@
-import { useQuery } from '@tanstack/react-query';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
@@ -16,8 +15,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { API } from '@/lib/api';
-import type { IGroup } from '@/lib/interfaces';
+import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
 import { cn } from '@/lib/utils';
 
 interface GroupComboboxProps {
@@ -37,14 +35,7 @@ export function GroupCombobox({
 }: GroupComboboxProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
 
-  const { data: groups, status } = useQuery({
-    queryKey: ['/user-group'],
-    queryFn: async function () {
-      const route = '/user-group';
-      const response = await API.get<Array<IGroup>>(route);
-      return response.data;
-    },
-  });
+  const { data: groups, status } = useGroupReadList();
 
   const selectedGroup = groups?.find((group) => group._id === value);
 

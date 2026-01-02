@@ -17,7 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useCreateGroup } from '@/integrations/tanstack-query/implementations/use-group-create';
+import { useCreateGroup } from '@/hooks/tanstack-query/use-group-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { IGroup, Paginated } from '@/lib/interfaces';

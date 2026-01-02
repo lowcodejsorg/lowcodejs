@@ -1,5 +1,4 @@
 import { useForm } from '@tanstack/react-form';
-import { useMutation } from '@tanstack/react-query';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import React, { useState } from 'react';
@@ -21,10 +20,9 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
-import { TANSTACK_QUERY_KEY_PREFIXES } from '@/integrations/tanstack-query/implementations/_query-keys';
+import { TANSTACK_QUERY_KEY_PREFIXES } from '@/hooks/tanstack-query/_query-keys';
+import { useAuthenticationSignIn } from '@/hooks/tanstack-query/use-authentication-sign-in';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { API } from '@/lib/api';
-import type { IUser } from '@/lib/interfaces';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
 import type { Authenticated } from '@/stores/authentication';
 import { useAuthenticationStore } from '@/stores/authentication';
@@ -44,12 +42,7 @@ function RouteComponent(): React.JSX.Element {
   const authentication = useAuthenticationStore();
   const [showPassword, setShowPassword] = useState(false);
 
-  const signInMutation = useMutation({
-    mutationFn: async function (payload: z.infer<typeof FormSignInSchema>) {
-      await API.post('/authentication/sign-in', payload);
-      const response = await API.get<IUser>('/profile');
-      return response.data;
-    },
+  const signInMutation = useAuthenticationSignIn({
     onSuccess(response) {
       const role = response.group.slug.toUpperCase() as Authenticated['role'];
       const sub = response._id.toString();

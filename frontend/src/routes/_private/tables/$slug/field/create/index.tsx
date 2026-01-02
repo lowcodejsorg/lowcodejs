@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import type { FIELD_FORMAT } from '@/lib/constant';

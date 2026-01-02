@@ -45,7 +45,7 @@ export const UpdateUserFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.TextField
+            <field.FieldText
               label="Nome"
               placeholder="Digite o nome completo"
               disabled={isDisabled}
@@ -71,7 +71,7 @@ export const UpdateUserFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.EmailField
+            <field.FieldEmail
               label="E-mail"
               placeholder="exemplo@email.com"
               disabled={isDisabled}
@@ -82,7 +82,7 @@ export const UpdateUserFormFields = withForm({
         {/* Campo Senha (opcional) */}
         <form.AppField name="password">
           {(field) => (
-            <field.PasswordField
+            <field.FieldPassword
               label="Senha (opcional)"
               placeholder="Digite nova senha se quiser alterá-la"
               disabled={isDisabled}
@@ -93,7 +93,7 @@ export const UpdateUserFormFields = withForm({
         {/* Campo Status como Switch */}
         <form.AppField name="status">
           {(field) => (
-            <field.SwitchField
+            <field.FieldSwitch
               label="Status do usuário"
               description="Defina se o usuário está ativo ou inativo no sistema"
               disabled={isDisabled}
@@ -114,7 +114,7 @@ export const UpdateUserFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.GroupComboboxField
+            <field.FieldGroupCombobox
               label="Grupo"
               placeholder="Selecione um grupo..."
               disabled={isDisabled}
