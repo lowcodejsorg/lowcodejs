@@ -1,15 +1,18 @@
-import { useForm } from '@tanstack/react-form';
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { CodeEditor } from '@/components/common/code-editor';
+import {
+  MethodsFormFields,
+  tableMethodsFormDefaultValues,
+} from './-methods-form';
+
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadTable } from '@/integrations/tanstack-query/implementations/use-table-read';
 import { useUpdateTable } from '@/integrations/tanstack-query/implementations/use-table-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
@@ -64,24 +67,22 @@ function RouteComponent(): React.JSX.Element {
           </div>
         )}
         {table.status === 'success' && (
-          <MethodsForm
-            data={table.data}
-            tableSlug={slug}
-          />
+          <MethodsFormContent data={table.data} tableSlug={slug} />
         )}
       </div>
-
-      <div className="shrink-0 border-t p-2"></div>
     </div>
   );
 }
 
-interface MethodsFormProps {
+interface MethodsFormContentProps {
   data: ITable;
   tableSlug: string;
 }
 
-function MethodsForm({ data, tableSlug }: MethodsFormProps): React.JSX.Element {
+function MethodsFormContent({
+  data,
+  tableSlug,
+}: MethodsFormContentProps): React.JSX.Element {
   const { queryClient } = getContext();
 
   const _update = useUpdateTable({
@@ -109,8 +110,9 @@ function MethodsForm({ data, tableSlug }: MethodsFormProps): React.JSX.Element {
     },
   });
 
-  const form = useForm({
+  const form = useAppForm({
     defaultValues: {
+      ...tableMethodsFormDefaultValues,
       onLoad: data.methods.onLoad.code ?? '',
       beforeSave: data.methods.beforeSave.code ?? '',
       afterSave: data.methods.afterSave.code ?? '',
@@ -135,114 +137,39 @@ function MethodsForm({ data, tableSlug }: MethodsFormProps): React.JSX.Element {
     },
   });
 
+  const isPending = _update.status === 'pending';
+
   return (
-    <form
-      className="p-2"
-      onSubmit={(e) => {
-        e.preventDefault();
-        form.handleSubmit();
-      }}
-    >
-      <p className="text-sm text-muted-foreground mb-4">
-        Configure scripts JavaScript que serão executados em diferentes momentos
-        do ciclo de vida do registro.
-      </p>
-
-      <Tabs
-        defaultValue="onLoad"
-        className="w-full"
+    <>
+      <form
+        className="flex-1 flex flex-col min-h-0 overflow-auto"
+        onSubmit={(e) => {
+          e.preventDefault();
+          form.handleSubmit();
+        }}
       >
-        <TabsList className="w-full">
-          <TabsTrigger
-            value="onLoad"
-            className="flex-1"
-          >
-            Ao Carregar
-          </TabsTrigger>
-          <TabsTrigger
-            value="beforeSave"
-            className="flex-1"
-          >
-            Antes de Salvar
-          </TabsTrigger>
-          <TabsTrigger
-            value="afterSave"
-            className="flex-1"
-          >
-            Após Salvar
-          </TabsTrigger>
-        </TabsList>
+        <MethodsFormFields form={form} isPending={isPending} table={data} />
+      </form>
 
-        <TabsContent
-          value="onLoad"
-          className="mt-4"
-        >
-          <form.Field name="onLoad">
-            {(field) => (
-              <CodeEditor
-                value={field.state.value}
-                onChange={(value) => field.handleChange(value)}
-                label="Ao Carregar (OnLoad)"
-                table={data}
-              />
-            )}
-          </form.Field>
-          <p className="text-sm text-muted-foreground mt-2">
-            Executado quando o formulário é carregado. Use para pré-preencher
-            campos ou aplicar regras de negócio iniciais.
-          </p>
-        </TabsContent>
-
-        <TabsContent
-          value="beforeSave"
-          className="mt-4"
-        >
-          <form.Field name="beforeSave">
-            {(field) => (
-              <CodeEditor
-                value={field.state.value}
-                onChange={(value) => field.handleChange(value)}
-                label="Antes de Salvar (BeforeSave)"
-                table={data}
-              />
-            )}
-          </form.Field>
-          <p className="text-sm text-muted-foreground mt-2">
-            Executado antes de salvar o registro. Use para validações
-            customizadas ou transformações de dados.
-          </p>
-        </TabsContent>
-
-        <TabsContent
-          value="afterSave"
-          className="mt-4"
-        >
-          <form.Field name="afterSave">
-            {(field) => (
-              <CodeEditor
-                value={field.state.value}
-                onChange={(value) => field.handleChange(value)}
-                label="Após Salvar (AfterSave)"
-                table={data}
-              />
-            )}
-          </form.Field>
-          <p className="text-sm text-muted-foreground mt-2">
-            Executado após salvar o registro. Use para enviar notificações,
-            atualizar registros relacionados ou executar ações pós-salvamento.
-          </p>
-        </TabsContent>
-      </Tabs>
-
-      <div className="flex justify-end mt-6">
-        <Button
-          type="submit"
-          disabled={_update.status === 'pending'}
-        >
-          {_update.status === 'pending' && <Spinner />}
-          Salvar Métodos
-        </Button>
+      {/* Footer com botões */}
+      <div className="shrink-0 border-t p-2">
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
+          children={([canSubmit, isSubmitting]) => (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                className="w-full max-w-3xs"
+                disabled={!canSubmit}
+                onClick={() => form.handleSubmit()}
+              >
+                {isSubmitting && <Spinner />}
+                <span>Salvar Métodos</span>
+              </Button>
+            </div>
+          )}
+        />
       </div>
-    </form>
+    </>
   );
 }

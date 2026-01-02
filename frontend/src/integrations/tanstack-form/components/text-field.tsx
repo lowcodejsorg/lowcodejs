@@ -12,6 +12,7 @@ interface TextFieldProps {
   placeholder?: string;
   disabled?: boolean;
   icon?: React.ReactNode;
+  required?: boolean;
 }
 
 export function TextField({
@@ -19,13 +20,17 @@ export function TextField({
   placeholder,
   disabled,
   icon,
+  required,
 }: TextFieldProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
   return (
     <Field data-invalid={isInvalid}>
-      <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
+      <FieldLabel htmlFor={field.name}>
+        {label}
+        {required && <span className="text-destructive"> *</span>}
+      </FieldLabel>
       <InputGroup>
         <InputGroupInput
           disabled={disabled}
