@@ -10,13 +10,13 @@ import { API } from '@/lib/api';
 import { FIELD_TYPE } from '@/lib/constant';
 import type { IField, ITable } from '@/lib/interfaces';
 
-import { RowCategoryField } from './row-category-field';
-import { RowDateField } from './row-date-field';
-import { RowDropdownField } from './row-dropdown-field';
-import { RowFileField } from './row-file-field';
-import { RowRelationshipField } from './row-relationship-field';
-import { RowTextareaField } from './row-textarea-field';
-import { RowTextField } from './row-text-field';
+import { RowCategoryField } from './table-row-category-field';
+import { RowDateField } from './table-row-date-field';
+import { RowDropdownField } from './table-row-dropdown-field';
+import { RowFileField } from './table-row-file-field';
+import { RowRelationshipField } from './table-row-relationship-field';
+import { RowTextareaField } from './table-row-textarea-field';
+import { RowTextField } from './table-row-text-field';
 
 interface RowFieldGroupFieldProps {
   field: IField;

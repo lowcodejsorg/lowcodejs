@@ -1,7 +1,7 @@
+import { useFieldContext } from '../form-context';
+
 import { FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
-
-import { useFieldContext } from '../form-context';
 
 interface TableStyleSwitchFieldProps {
   label: string;

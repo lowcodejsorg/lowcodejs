@@ -127,7 +127,7 @@ export function FileUploadWithStorage({
       if (fileToRemove) {
         setStorageFiles((prev) => {
           const newMap = new Map(prev);
-          newMap.delete(fileToRemove as File);
+          newMap.delete(fileToRemove);
           return newMap;
         });
 

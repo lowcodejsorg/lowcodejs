@@ -176,56 +176,56 @@ export function CreateRowFormFields({
               switch (field.type) {
                 case FIELD_TYPE.TEXT_SHORT:
                   return (
-                    <formField.RowTextField
+                    <formField.TableRowTextField
                       field={field}
                       disabled={disabled}
                     />
                   );
                 case FIELD_TYPE.TEXT_LONG:
                   return (
-                    <formField.RowTextareaField
+                    <formField.TableRowTextareaField
                       field={field}
                       disabled={disabled}
                     />
                   );
                 case FIELD_TYPE.DROPDOWN:
                   return (
-                    <formField.RowDropdownField
+                    <formField.TableRowDropdownField
                       field={field}
                       disabled={disabled}
                     />
                   );
                 case FIELD_TYPE.DATE:
                   return (
-                    <formField.RowDateField
+                    <formField.TableRowDateField
                       field={field}
                       disabled={disabled}
                     />
                   );
                 case FIELD_TYPE.FILE:
                   return (
-                    <formField.RowFileField
+                    <formField.TableRowFileField
                       field={field}
                       disabled={disabled}
                     />
                   );
                 case FIELD_TYPE.RELATIONSHIP:
                   return (
-                    <formField.RowRelationshipField
+                    <formField.TableRowRelationshipField
                       field={field}
                       disabled={disabled}
                     />
                   );
                 case FIELD_TYPE.CATEGORY:
                   return (
-                    <formField.RowCategoryField
+                    <formField.TableRowCategoryField
                       field={field}
                       disabled={disabled}
                     />
                   );
                 case FIELD_TYPE.FIELD_GROUP:
                   return (
-                    <formField.RowFieldGroupField
+                    <formField.TableRowFieldGroupField
                       field={field}
                       disabled={disabled}
                       tableSlug={tableSlug}

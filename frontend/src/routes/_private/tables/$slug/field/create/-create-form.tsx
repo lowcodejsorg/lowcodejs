@@ -132,7 +132,7 @@ export const CreateFieldFormFields = withForm({
           }}
         >
           {(field) => (
-            <field.FieldTypeSelectField
+            <field.TableFieldTypeSelect
               label="Tipo"
               placeholder="Selecione o tipo do campo"
               disabled={isPending || Boolean(defaultFieldType)}
@@ -156,7 +156,7 @@ export const CreateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.FieldFormatSelectField
+              <field.TableFieldFormatSelect
                 label="Formato"
                 placeholder="Selecione um formato para o campo"
                 disabled={isPending}
@@ -208,7 +208,7 @@ export const CreateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.DropdownOptionsField
+              <field.TableFieldDropdownOptions
                 label="Opções"
                 placeholder="Escreva e adicione"
                 disabled={isPending}
@@ -232,7 +232,7 @@ export const CreateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.FieldFormatSelectField
+              <field.TableFieldFormatSelect
                 label="Formato da data"
                 placeholder="Selecione o formato da data"
                 disabled={isPending}
@@ -257,7 +257,7 @@ export const CreateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.RelationshipTableSelectField
+              <field.TableFieldRelationshipTableSelect
                 label="Tabela de relacionamento"
                 placeholder="Selecione uma tabela"
                 disabled={isPending}
@@ -293,7 +293,7 @@ export const CreateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.RelationshipFieldSelectField
+              <field.TableFieldRelationshipFieldSelect
                 label="Campo de relacionamento"
                 placeholder="Selecione um campo"
                 disabled={isPending}
@@ -324,7 +324,7 @@ export const CreateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.RelationshipOrderSelectField
+              <field.TableFieldRelationshipOrderSelect
                 label="Ordem"
                 placeholder="Selecione uma ordem"
                 disabled={isPending}
@@ -348,7 +348,7 @@ export const CreateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.CategoryTreeField
+              <field.TableFieldCategoryTree
                 label="Estrutura da categoria"
                 required
               />

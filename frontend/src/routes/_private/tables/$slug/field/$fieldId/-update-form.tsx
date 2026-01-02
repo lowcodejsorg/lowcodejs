@@ -120,7 +120,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Tipo (sempre disabled no update) */}
         <form.AppField name="type">
           {(field) => (
-            <field.FieldTypeSelectField
+            <field.TableFieldTypeSelect
               label="Tipo"
               placeholder="Tipo do campo"
               disabled={true}
@@ -143,7 +143,7 @@ export const UpdateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.FieldFormatSelectField
+              <field.TableFieldFormatSelect
                 label="Formato"
                 placeholder="Selecione um formato para o campo"
                 disabled={isDisabled}
@@ -195,7 +195,7 @@ export const UpdateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.DropdownOptionsField
+              <field.TableFieldDropdownOptions
                 label="Opções"
                 placeholder="Escreva e adicione"
                 disabled={isDisabled}
@@ -219,7 +219,7 @@ export const UpdateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.FieldFormatSelectField
+              <field.TableFieldFormatSelect
                 label="Formato da data"
                 placeholder="Selecione o formato da data"
                 disabled={isDisabled}
@@ -244,7 +244,7 @@ export const UpdateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.RelationshipTableSelectField
+              <field.TableFieldRelationshipTableSelect
                 label="Tabela de relacionamento"
                 placeholder="Selecione uma tabela"
                 disabled={isDisabled}
@@ -280,7 +280,7 @@ export const UpdateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.RelationshipFieldSelectField
+              <field.TableFieldRelationshipFieldSelect
                 label="Campo de relacionamento"
                 placeholder="Selecione um campo"
                 disabled={isDisabled}
@@ -311,7 +311,7 @@ export const UpdateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.RelationshipOrderSelectField
+              <field.TableFieldRelationshipOrderSelect
                 label="Ordem"
                 placeholder="Selecione uma ordem"
                 disabled={isDisabled}
@@ -335,7 +335,7 @@ export const UpdateFieldFormFields = withForm({
             }}
           >
             {(field) => (
-              <field.CategoryTreeField
+              <field.TableFieldCategoryTree
                 label="Estrutura da categoria"
                 required
               />
