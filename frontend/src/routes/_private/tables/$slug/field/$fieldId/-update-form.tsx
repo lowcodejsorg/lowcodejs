@@ -3,7 +3,7 @@ import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
 import type { Option } from '@/components/common/-multi-selector';
-import type { TreeNode } from '@/components/common/-tree-list';
+import type { ICategory } from '@/lib/interfaces';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { FIELD_TYPE } from '@/lib/constant';
 
@@ -21,7 +21,7 @@ export const FieldUpdateSchema = z.object({
       fieldSlug: z.string().default(''),
       order: z.string().default(''),
     }),
-    category: z.array(z.custom<TreeNode>()).default([]),
+    category: z.array(z.custom<ICategory>()).default([]),
     multiple: z.boolean().default(false),
     filtering: z.boolean().default(false),
     listing: z.boolean().default(false),
