@@ -17,7 +17,7 @@ export const TreeEditorHeader: React.FC<TreeEditorHeaderProps> = ({
         <div className="flex items-center gap-2">
           <TreePine className="w-5 h-5 text-primary" />
           <span className="bg-linear-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Editor de Estrutura de Árvore
+            Editor de Estrutura da Categoria
           </span>
         </div>
         <Button

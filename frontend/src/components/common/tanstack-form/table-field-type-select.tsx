@@ -1,5 +1,3 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -8,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { FIELD_TYPE } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
@@ -19,7 +18,7 @@ const COLUMN_TYPE_LIST = [
   { label: 'Data', value: FIELD_TYPE.DATE },
   { label: 'Relacionamento', value: FIELD_TYPE.RELATIONSHIP },
   { label: 'Grupo de campos', value: FIELD_TYPE.FIELD_GROUP },
-  { label: 'Árvore', value: FIELD_TYPE.CATEGORY },
+  { label: 'Categoria', value: FIELD_TYPE.CATEGORY },
   { label: 'Reação', value: FIELD_TYPE.REACTION },
   { label: 'Avaliação', value: FIELD_TYPE.EVALUATION },
 ];
@@ -28,7 +27,7 @@ interface TableFieldTypeSelectProps {
   label: string;
   placeholder?: string;
   disabled?: boolean;
-  blockedTypes?: string[];
+  blockedTypes?: Array<string>;
   required?: boolean;
 }
 
@@ -64,7 +63,10 @@ export function TableFieldTypeSelect({
         </SelectTrigger>
         <SelectContent>
           {typeOptions.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
+            <SelectItem
+              key={item.value}
+              value={item.value}
+            >
               {item.label}
             </SelectItem>
           ))}

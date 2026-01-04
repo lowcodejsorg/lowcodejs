@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { Option } from '@/components/common/-multi-selector';
+import type { ComboboxOption } from '@/components/ui/combobox';
 import { FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
 
@@ -21,7 +21,7 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
         defaults[field.slug] = field.configuration.defaultValue ?? '';
         break;
       case FIELD_TYPE.DROPDOWN:
-        defaults[field.slug] = field.configuration.multiple ? [] : '';
+        defaults[field.slug] = []; // Always array
         break;
       case FIELD_TYPE.DATE:
         defaults[field.slug] = '';
@@ -36,7 +36,7 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
         defaults[field.slug] = [];
         break;
       case FIELD_TYPE.CATEGORY:
-        defaults[field.slug] = field.configuration.multiple ? [] : '';
+        defaults[field.slug] = []; // Always array
         break;
       case FIELD_TYPE.FIELD_GROUP:
         defaults[field.slug] = [{}];
@@ -66,15 +66,16 @@ export function buildPayload(
       case FIELD_TYPE.TEXT_LONG:
         payload[field.slug] = value || null;
         break;
-      case FIELD_TYPE.DROPDOWN:
+      case FIELD_TYPE.DROPDOWN: {
+        const dropdownValue = (value as Array<ComboboxOption>) || [];
         if (field.configuration.multiple) {
-          payload[field.slug] = (value as Array<Option>).map(
-            (opt) => opt.value,
-          );
+          payload[field.slug] = dropdownValue.map((opt) => opt.value);
         } else {
-          payload[field.slug] = value || null;
+          // Always array, but limit to 1 item
+          payload[field.slug] = dropdownValue.slice(0, 1).map((opt) => opt.value);
         }
         break;
+      }
       case FIELD_TYPE.DATE:
         payload[field.slug] = value || null;
         break;
@@ -86,29 +87,41 @@ export function buildPayload(
         if (field.configuration.multiple) {
           payload[field.slug] = fileValue.storages.map((s) => s._id);
         } else {
-          payload[field.slug] = fileValue.storages[0]?._id ?? null;
+          // Always array, but limit to 1 item
+          payload[field.slug] = fileValue.storages.slice(0, 1).map((s) => s._id);
         }
         break;
       }
       case FIELD_TYPE.RELATIONSHIP: {
-        const relValue = value as Array<SearchableOption>;
+        const relValue = (value as Array<SearchableOption>) || [];
         if (field.configuration.multiple) {
           payload[field.slug] = relValue.map((opt) => opt.value);
         } else {
-          payload[field.slug] = relValue[0]?.value ?? null;
+          // Always array, but limit to 1 item
+          payload[field.slug] = relValue.slice(0, 1).map((opt) => opt.value);
         }
         break;
       }
-      case FIELD_TYPE.CATEGORY:
+      case FIELD_TYPE.CATEGORY: {
+        const categoryValue = Array.isArray(value) ? value : value ? [value] : [];
         if (field.configuration.multiple) {
-          payload[field.slug] = value;
+          payload[field.slug] = categoryValue;
         } else {
-          payload[field.slug] = value || null;
+          // Always array, but limit to 1 item
+          payload[field.slug] = categoryValue.slice(0, 1);
         }
         break;
-      case FIELD_TYPE.FIELD_GROUP:
-        payload[field.slug] = value || null;
+      }
+      case FIELD_TYPE.FIELD_GROUP: {
+        const groupValue = value as Array<Record<string, any>>;
+        // Always send as array, but limit to 1 item if multiple=false
+        if (field.configuration.multiple) {
+          payload[field.slug] = groupValue || [];
+        } else {
+          payload[field.slug] = groupValue?.slice(0, 1) || [];
+        }
         break;
+      }
       default:
         payload[field.slug] = value || null;
     }
@@ -229,6 +242,7 @@ export function CreateRowFormFields({
                       field={field}
                       disabled={disabled}
                       tableSlug={tableSlug}
+                      form={form}
                     />
                   );
                 default:

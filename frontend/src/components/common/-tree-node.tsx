@@ -72,9 +72,6 @@ export const TreeEditor: React.FC<TreeEditorProps> = ({
     <div className={cn('w-full', className)}>
       <div className="space-y-3">
         <div className="flex items-center justify-end">
-          {/* <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-            Estrutura de Árvore
-          </label> */}
           <Button
             type="button"
             onClick={handleAddRootNode}

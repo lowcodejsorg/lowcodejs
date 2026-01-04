@@ -2,7 +2,7 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
-import type { Option } from '@/components/common/-multi-selector';
+import type { ComboboxOption } from '@/components/ui/combobox';
 import type { TreeNode } from '@/components/common/-tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { FIELD_TYPE } from '@/lib/constant';
@@ -13,7 +13,7 @@ export const FieldCreateSchema = z.object({
   configuration: z.object({
     format: z.string().default(''),
     defaultValue: z.string().default(''),
-    dropdown: z.array(z.custom<Option>()).default([]),
+    dropdown: z.array(z.custom<ComboboxOption>()).default([]),
     relationship: z.object({
       tableId: z.string().default(''),
       tableSlug: z.string().default(''),

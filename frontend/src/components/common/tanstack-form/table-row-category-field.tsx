@@ -1,7 +1,5 @@
 import React from 'react';
 
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import type { TreeNode } from '@/components/common/-tree-list';
 import { TreeList } from '@/components/common/-tree-list';
 import { Button } from '@/components/ui/button';
@@ -11,6 +9,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { ICategory, IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -26,9 +25,7 @@ function convertCategoriesToTreeNodes(
     id: cat.id,
     label: cat.label,
     children:
-      cat.children.length > 0
-        ? convertCategoriesToTreeNodes(cat.children)
-        : [],
+      cat.children.length > 0 ? convertCategoriesToTreeNodes(cat.children) : [],
   }));
 }
 
@@ -98,7 +95,10 @@ export function TableRowCategoryField({
             {selectedLabel || `Selecione ${field.name.toLowerCase()}`}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-80 p-2" align="start">
+        <PopoverContent
+          className="w-80 p-2"
+          align="start"
+        >
           <TreeList
             data={treeData}
             selectedIds={selectedIds}

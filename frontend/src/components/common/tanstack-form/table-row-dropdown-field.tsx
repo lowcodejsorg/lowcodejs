@@ -1,15 +1,7 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
-import type { Option } from '@/components/common/-multi-selector';
-import { MultipleSelector } from '@/components/common/-multi-selector';
+import type { ComboboxOption } from '@/components/ui/combobox';
+import { Combobox } from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IField } from '@/lib/interfaces';
 
 interface TableRowDropdownFieldProps {
@@ -21,12 +13,12 @@ export function TableRowDropdownField({
   field,
   disabled,
 }: TableRowDropdownFieldProps): React.JSX.Element {
-  const formField = useFieldContext<string | Array<Option>>();
+  const formField = useFieldContext<Array<ComboboxOption>>();
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
 
-  const options =
+  const options: Array<ComboboxOption> =
     field.configuration.dropdown?.map((d) => ({
       value: d,
       label: d,
@@ -38,35 +30,14 @@ export function TableRowDropdownField({
         {field.name}
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
-      {field.configuration.multiple ? (
-        <MultipleSelector
-          disabled={disabled}
-          value={(formField.state.value as Array<Option>) ?? []}
-          onChange={(opts) => formField.handleChange(opts)}
-          options={options}
-          placeholder={`Selecione ${field.name.toLowerCase()}`}
-          className="w-full"
-        />
-      ) : (
-        <Select
-          disabled={disabled}
-          value={(formField.state.value as string) ?? ''}
-          onValueChange={(value) => formField.handleChange(value)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue
-              placeholder={`Selecione ${field.name.toLowerCase()}`}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem key={option.value} value={option.value}>
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+      <Combobox
+        disabled={disabled}
+        value={formField.state.value}
+        onChange={(opts) => formField.handleChange(opts)}
+        options={options}
+        placeholder={`Selecione ${field.name.toLowerCase()}`}
+        multiple={field.configuration.multiple}
+      />
       {isInvalid && <FieldError errors={formField.state.meta.errors} />}
     </Field>
   );
