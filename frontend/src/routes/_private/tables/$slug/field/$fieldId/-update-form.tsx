@@ -117,17 +117,19 @@ export const UpdateFieldFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo Tipo (sempre disabled no update) */}
-        <form.AppField name="type">
-          {(field) => (
-            <field.TableFieldTypeSelect
-              label="Tipo"
-              placeholder="Tipo do campo"
-              disabled={true}
-              blockedTypes={[]}
-            />
-          )}
-        </form.AppField>
+        {/* Campo Tipo (oculto para grupo de campos) */}
+        {!isFieldGroup && (
+          <form.AppField name="type">
+            {(field) => (
+              <field.TableFieldTypeSelect
+                label="Tipo"
+                placeholder="Tipo do campo"
+                disabled={true}
+                blockedTypes={[]}
+              />
+            )}
+          </form.AppField>
+        )}
 
         {/* Campo Formato (TEXT_SHORT) */}
         {isTextShort && (

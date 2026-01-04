@@ -1,0 +1,147 @@
+import {
+  createFileRoute,
+  useParams,
+  useRouter,
+  useSearch,
+} from '@tanstack/react-router';
+import { ArrowLeftIcon } from 'lucide-react';
+import React from 'react';
+import z from 'zod';
+
+import { FieldOrderForm, TrashedFieldsList } from './-field-order-form';
+
+import { LoadError } from '@/components/common/load-error';
+import { Button } from '@/components/ui/button';
+import { useSidebar } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+
+export const Route = createFileRoute('/_private/tables/$slug/field/order')({
+  component: RouteComponent,
+  validateSearch: z.object({
+    from: z.string().optional(),
+  }),
+});
+
+function RouteComponent(): React.JSX.Element {
+  const { slug } = useParams({ from: '/_private/tables/$slug/field/order' });
+  const { from } = useSearch({ from: '/_private/tables/$slug/field/order' });
+  const sidebar = useSidebar();
+  const router = useRouter();
+  const table = useReadTable({ slug });
+
+  const title =
+    table.data?.type === 'field-group'
+      ? 'Gerenciar campos do grupo'
+      : 'Gerenciar campos';
+
+  const trashedCount = table.data?.fields.filter((f) => f.trashed).length ?? 0;
+
+  const targetSlug = from ?? slug;
+
+  const handleBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/tables/$slug',
+      params: { slug: targetSlug },
+      replace: true,
+    });
+  };
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      {/* Header */}
+      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
+        <div className="inline-flex items-center space-x-2">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={handleBack}
+          >
+            <ArrowLeftIcon />
+          </Button>
+          <h1 className="text-xl font-medium">{title}</h1>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative p-4">
+        {table.status === 'error' && (
+          <LoadError
+            message="Erro ao buscar dados da tabela"
+            refetch={table.refetch}
+          />
+        )}
+
+        {table.status === 'pending' && (
+          <div className="w-full max-w-6xl mx-auto space-y-4">
+            {/* Tabs skeleton */}
+            <div className="grid w-full grid-cols-3 gap-1 p-1 bg-muted rounded-lg">
+              <Skeleton className="h-9 rounded-md" />
+              <Skeleton className="h-9 rounded-md" />
+              <Skeleton className="h-9 rounded-md" />
+            </div>
+
+            {/* Fields list skeleton */}
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between gap-2 rounded-lg border bg-card p-3"
+                >
+                  <Skeleton className="h-5 w-32" />
+                  <div className="flex items-center gap-1">
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                    <Skeleton className="h-8 w-8 rounded-md" />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Button skeleton */}
+            <Skeleton className="h-10 w-full rounded-md" />
+          </div>
+        )}
+
+        {table.status === 'success' && (
+          <Tabs
+            defaultValue="orderList"
+            className="w-full max-w-6xl mx-auto"
+          >
+            <TabsList className="grid w-full grid-cols-3 mb-4">
+              <TabsTrigger value="orderList">Lista / Grid</TabsTrigger>
+              <TabsTrigger value="orderForm">Formulário</TabsTrigger>
+              <TabsTrigger
+                value="trashed"
+                disabled={trashedCount === 0}
+              >
+                Lixeira{trashedCount > 0 && ` (${trashedCount})`}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="orderList">
+              <FieldOrderForm
+                table={table.data}
+                reference="orderList"
+                onSuccess={handleBack}
+              />
+            </TabsContent>
+
+            <TabsContent value="orderForm">
+              <FieldOrderForm
+                table={table.data}
+                reference="orderForm"
+                onSuccess={handleBack}
+              />
+            </TabsContent>
+
+            <TabsContent value="trashed">
+              <TrashedFieldsList table={table.data} />
+            </TabsContent>
+          </Tabs>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -16,6 +16,7 @@ function RouteComponent(): React.JSX.Element {
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',
+    '/dashboard',
     /^\/groups\/.+$/,
     '/groups/create',
     /^\/menus\/.+$/,

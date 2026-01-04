@@ -67,9 +67,22 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-xl font-medium">Detalhes do campo</h1>
+          <h1 className="text-xl font-medium">
+            {_read.status === 'success' && _read.data.type === 'FIELD_GROUP'
+              ? 'Detalhes do grupo de campos'
+              : 'Detalhes do campo'}
+          </h1>
         </div>
       </div>
+
+      {/* Info text for field group */}
+      {_read.status === 'success' && _read.data.type === 'FIELD_GROUP' && (
+        <p className="text-sm text-muted-foreground px-2 pb-2">
+          O grupo de campos é composto por outros campos que devem ser
+          configurados nas configurações da tabela em "Gerenciar grupo de
+          campos".
+        </p>
+      )}
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">

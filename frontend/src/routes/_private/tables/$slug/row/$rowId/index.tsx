@@ -17,10 +17,10 @@ import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { IRow, ITable } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/row/$rowId/')({
@@ -120,7 +120,12 @@ function RowUpdateContent({
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   const activeFields = React.useMemo(() => {
-    return table.fields.filter((f) => !f.trashed);
+    const order = table.configuration.fields.orderList;
+    const orderedFields = table.fields
+      .filter((f) => !f.trashed)
+      .sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+
+    return orderedFields;
   }, [table.fields]);
 
   const _update = useUpdateTableRow({

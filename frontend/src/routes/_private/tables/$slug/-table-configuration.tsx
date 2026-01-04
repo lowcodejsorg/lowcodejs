@@ -1,6 +1,7 @@
 import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu';
 import { useParams, useRouter } from '@tanstack/react-router';
 import {
+  ArrowUpDownIcon,
   CodeIcon,
   CodepenIcon,
   InfoIcon,
@@ -44,6 +45,8 @@ function FieldGroupSubMenu({
   const router = useRouter();
   const groupTable = useReadTable({ slug: field.slug });
 
+  const activeFields = groupTable.data?.fields.filter((f) => !f.trashed) ?? [];
+
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
@@ -65,30 +68,40 @@ function FieldGroupSubMenu({
             <span>Novo campo</span>
           </DropdownMenuItem>
 
-          {groupTable.status === 'success' &&
-            groupTable.data.fields.filter((f) => !f.trashed).length > 0 && (
-              <DropdownMenuSeparator />
-            )}
+          {activeFields.length > 1 && (
+            <DropdownMenuItem
+              className="inline-flex space-x-1 w-full"
+              onClick={() => {
+                router.navigate({
+                  to: '/tables/$slug/field/order',
+                  params: { slug: field.slug },
+                  search: { from: originSlug },
+                });
+              }}
+            >
+              <ArrowUpDownIcon className="size-4" />
+              <span>Gerenciar ordem</span>
+            </DropdownMenuItem>
+          )}
 
-          {groupTable.status === 'success' &&
-            groupTable.data.fields
-              .filter((f) => !f.trashed)
-              .map((groupField) => (
-                <DropdownMenuItem
-                  key={groupField._id}
-                  className="inline-flex space-x-1 w-full"
-                  onClick={() => {
-                    router.navigate({
-                      to: '/tables/$slug/field/$fieldId',
-                      params: { slug: field.slug, fieldId: groupField._id },
-                      search: { from: originSlug },
-                    });
-                  }}
-                >
-                  <PencilIcon className="size-4" />
-                  <span>Editar {groupField.name}</span>
-                </DropdownMenuItem>
-              ))}
+          {activeFields.length > 0 && <DropdownMenuSeparator />}
+
+          {activeFields.map((groupField) => (
+            <DropdownMenuItem
+              key={groupField._id}
+              className="inline-flex space-x-1 w-full"
+              onClick={() => {
+                router.navigate({
+                  to: '/tables/$slug/field/$fieldId',
+                  params: { slug: field.slug, fieldId: groupField._id },
+                  search: { from: originSlug },
+                });
+              }}
+            >
+              <PencilIcon className="size-4" />
+              <span>Editar {groupField.name}</span>
+            </DropdownMenuItem>
+          ))}
         </DropdownMenuSubContent>
       </DropdownMenuPortal>
     </DropdownMenuSub>
@@ -112,6 +125,16 @@ export function TableConfigurationDropdown({
 
   const [apiModalOpen, setApiModalOpen] = useState(false);
 
+  const activeFields =
+    table.data?.fields.filter(
+      (f) => f.type !== FIELD_TYPE.FIELD_GROUP && !f.trashed,
+    ) ?? [];
+
+  const fieldGroups =
+    table.data?.fields.filter(
+      (f) => f.type === FIELD_TYPE.FIELD_GROUP && !f.trashed,
+    ) ?? [];
+
   return (
     <DropdownMenu
       dir="ltr"
@@ -120,17 +143,7 @@ export function TableConfigurationDropdown({
       <DropdownMenuTrigger asChild>
         <Button
           disabled={table.status === 'pending'}
-          className={cn(
-            'shadow-none p-1 h-auto',
-            // !verify({
-            //   resource: 'update-table',
-            //   owner: table?.data?.configuration?.owner?._id,
-            //   administrators:
-            //     table?.data?.configuration?.administrators?.flatMap((a) =>
-            //       a._id?.toString(),
-            //     ) || [],
-            // }) && 'hidden',
-          )}
+          className={cn('shadow-none p-1 h-auto')}
           variant="outline"
         >
           <Settings2Icon className="size-4" />
@@ -154,36 +167,51 @@ export function TableConfigurationDropdown({
             <span>Novo campo</span>
           </DropdownMenuItem>
 
-          {table.status === 'success' &&
-            table.data.fields.filter((f) => !f.trashed).length > 0 && (
-              <DropdownMenuSub>
-                <DropdownMenuSubTrigger className="inline-flex space-x-1 w-full">
-                  <SendToBackIcon className="size-4" />
-                  <span>Gerenciar campos</span>
-                </DropdownMenuSubTrigger>
-                <DropdownMenuPortal>
-                  <DropdownMenuSubContent>
-                    {table.data.fields
-                      .filter((f) => !f.trashed)
-                      .map((field) => (
-                        <DropdownMenuItem
-                          key={field._id}
-                          // className="inline-flex space-x-1 w-full"
-                          onClick={() => {
-                            router.navigate({
-                              to: '/tables/$slug/field/$fieldId',
-                              params: { slug, fieldId: field._id },
-                            });
-                          }}
-                        >
-                          <PencilIcon className="size-4" />
-                          <span>Editar {field.name}</span>
-                        </DropdownMenuItem>
-                      ))}
-                  </DropdownMenuSubContent>
-                </DropdownMenuPortal>
-              </DropdownMenuSub>
-            )}
+          {activeFields.length > 0 && (
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger className="inline-flex space-x-1 w-full">
+                <SendToBackIcon className="size-4" />
+                <span>Gerenciar campos</span>
+              </DropdownMenuSubTrigger>
+              <DropdownMenuPortal>
+                <DropdownMenuSubContent>
+                  {activeFields.length > 1 && (
+                    <>
+                      <DropdownMenuItem
+                        className="inline-flex space-x-1 w-full"
+                        onClick={() => {
+                          router.navigate({
+                            to: '/tables/$slug/field/order',
+                            params: { slug },
+                            search: { from: slug },
+                          });
+                        }}
+                      >
+                        <ArrowUpDownIcon className="size-4" />
+                        <span>Gerenciar ordem</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+
+                  {activeFields.map((field) => (
+                    <DropdownMenuItem
+                      key={field._id}
+                      onClick={() => {
+                        router.navigate({
+                          to: '/tables/$slug/field/$fieldId',
+                          params: { slug, fieldId: field._id },
+                        });
+                      }}
+                    >
+                      <PencilIcon className="size-4" />
+                      <span>Editar {field.name}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuSubContent>
+              </DropdownMenuPortal>
+            </DropdownMenuSub>
+          )}
         </DropdownMenuGroup>
 
         {table.data?.type === 'table' && (
@@ -206,15 +234,13 @@ export function TableConfigurationDropdown({
                 <span>Novo grupo</span>
               </DropdownMenuItem>
 
-              {table.data.fields
-                .filter((f) => f.type === FIELD_TYPE.FIELD_GROUP && !f.trashed)
-                .map((field) => (
-                  <FieldGroupSubMenu
-                    key={field._id}
-                    field={field}
-                    originSlug={slug}
-                  />
-                ))}
+              {fieldGroups.map((field) => (
+                <FieldGroupSubMenu
+                  key={field._id}
+                  field={field}
+                  originSlug={slug}
+                />
+              ))}
             </DropdownMenuGroup>
           </React.Fragment>
         )}

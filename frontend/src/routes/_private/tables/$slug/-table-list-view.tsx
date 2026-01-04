@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/table';
 import { FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
+import { cn } from '@/lib/utils';
 
 interface TableListViewProps {
   data: Array<IRow>;
@@ -65,7 +66,7 @@ export function TableListViewHeader({
 
   const router = useRouter();
 
-  const orderKey = 'order-'.concat(field._id);
+  const orderKey = 'order-'.concat(field.slug);
 
   const { slug } = useParams({
     from: '/_private/tables/$slug/',
@@ -96,7 +97,10 @@ export function TableListViewHeader({
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button
-              className="h-auto px-1 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent"
+              className={cn(
+                'h-auto px-1 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent',
+                field.type === FIELD_TYPE.FIELD_GROUP && 'invisible',
+              )}
               variant="outline"
             >
               {search[orderKey] === 'asc' && <ArrowUpIcon className="size-4" />}

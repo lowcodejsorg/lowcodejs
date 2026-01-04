@@ -261,9 +261,22 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-xl font-medium">Novo campo</h1>
+          <h1 className="text-xl font-medium">
+            {defaultFieldType === FIELD_TYPE.FIELD_GROUP
+              ? 'Novo grupo de campos'
+              : 'Novo campo'}
+          </h1>
         </div>
       </div>
+
+      {/* Info text for field group */}
+      {defaultFieldType === FIELD_TYPE.FIELD_GROUP && (
+        <p className="text-sm text-muted-foreground px-2 pb-2">
+          O grupo de campos é composto por outros campos que devem ser
+          configurados nas configurações da tabela em "Gerenciar grupo de
+          campos".
+        </p>
+      )}
 
       {/* Content */}
       <form

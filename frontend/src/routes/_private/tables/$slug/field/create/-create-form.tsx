@@ -119,28 +119,39 @@ export const CreateFieldFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo Tipo */}
-        <form.AppField
-          name="type"
-          validators={{
-            onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
-                return { message: 'Tipo é obrigatório' };
-              }
-              return undefined;
-            },
-          }}
-        >
-          {(field) => (
-            <field.TableFieldTypeSelect
-              label="Tipo"
-              placeholder="Selecione o tipo do campo"
-              disabled={isPending || Boolean(defaultFieldType)}
-              blockedTypes={blockedTypes}
-              required
-            />
-          )}
-        </form.AppField>
+        {/* Campo Tipo (oculto quando field-type=FIELD_GROUP na query) */}
+        {defaultFieldType !== FIELD_TYPE.FIELD_GROUP && (
+          <form.AppField
+            name="type"
+            validators={{
+              onBlur: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return { message: 'Tipo é obrigatório' };
+                }
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <field.TableFieldTypeSelect
+                label="Tipo"
+                placeholder="Selecione o tipo do campo"
+                disabled={isPending || Boolean(defaultFieldType)}
+                blockedTypes={blockedTypes}
+                required
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Texto informativo para grupo de campos (seleção manual) */}
+        {isFieldGroup && defaultFieldType !== FIELD_TYPE.FIELD_GROUP && (
+          <p className="text-sm text-muted-foreground">
+            O grupo de campos é composto por outros campos que devem ser
+            configurados nas configurações da tabela em "Gerenciar grupo de
+            campos".
+          </p>
+        )}
 
         {/* Campo Formato (TEXT_SHORT) */}
         {isTextShort && (

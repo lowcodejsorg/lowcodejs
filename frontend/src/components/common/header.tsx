@@ -34,7 +34,6 @@ export function Header({
           {showSearchInput && <InputSearch />}
         </div>
         <div className="inline-flex gap-2">
-          {/* <ToggleTheme /> */}
           <Profile />
         </div>
       </nav>
