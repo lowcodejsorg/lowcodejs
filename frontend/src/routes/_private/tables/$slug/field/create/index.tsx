@@ -16,12 +16,15 @@ import {
   fieldCreateFormDefaultValues,
 } from './-create-form';
 
+import { AccessDenied } from '@/components/common/access-denied';
 import type { TreeNode } from '@/components/common/-tree-list';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import type { FIELD_FORMAT } from '@/lib/constant';
@@ -68,6 +71,23 @@ function RouteComponent(): React.JSX.Element {
   const originSlug = from ?? slug;
 
   const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+
+  // Loading enquanto verifica permissão
+  if (table.status === 'pending' || permission.isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  // Mostrar erro se não tem permissão
+  if (!permission.can('CREATE_FIELD')) {
+    return <AccessDenied />;
+  }
 
   const _create = useMutation({
     mutationFn: async (payload: Partial<IField>) => {

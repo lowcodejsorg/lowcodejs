@@ -28,7 +28,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'REMOVE_ROW',
-          // Sem allowedGroups - valida apenas ownership
         }),
       ],
       schema: TableRowDeleteSchema,

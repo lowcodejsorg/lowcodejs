@@ -1,29 +1,79 @@
-// src/middleware/table-access.middleware.ts
 import type { FastifyRequest } from 'fastify';
 import z from 'zod';
 
-import type { Table } from '@application/core/entity.core';
+import type { Permission, Table } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Table as Model } from '@application/model/table.model';
-import { GroupSlugMapper, PermissionSlugMapper } from '@config/util.config';
+import { Table as TableModel } from '@application/model/table.model';
+import { User as UserModel } from '@application/model/user.model';
+import { PermissionSlugMapper } from '@config/util.config';
 
 const ParamsSchema = z.object({
-  slug: z.string().trim().min(1).optional(), // ✅ OPCIONAL AGORA
+  slug: z.string().trim().min(1).optional(),
 });
 
 interface AccessOptions {
-  /** Permissão necessária da sua lista de permissões */
   requiredPermission: keyof typeof PermissionSlugMapper;
-
-  /** Grupos permitidos (opcional - validação adicional) */
-  allowedGroups?: (keyof typeof GroupSlugMapper)[];
 }
 
+/**
+ * Verifica se o usuário tem a permissão necessária no seu grupo
+ */
+async function checkUserHasPermission(
+  userId: string,
+  permission: keyof typeof PermissionSlugMapper,
+): Promise<void> {
+  const permissionSlug = PermissionSlugMapper[permission].toLowerCase();
+
+  const user = await UserModel.findOne({ _id: userId })
+    .populate({
+      path: 'group',
+      populate: { path: 'permissions' },
+    })
+    .lean();
+
+  if (!user) {
+    throw HTTPException.Forbidden('User not found', 'USER_NOT_FOUND');
+  }
+
+  if (user.status !== 'active') {
+    throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
+  }
+
+  const group = user.group as { permissions?: Permission[] } | undefined;
+
+  if (!group?.permissions || !Array.isArray(group.permissions)) {
+    throw HTTPException.Forbidden(
+      'User group or permissions not found',
+      'PERMISSIONS_NOT_FOUND',
+    );
+  }
+
+  const hasPermission = group.permissions.some(
+    (p) => p.slug?.toLowerCase() === permissionSlug,
+  );
+
+  if (!hasPermission) {
+    throw HTTPException.Forbidden(
+      `Permission denied. Required: ${permission}`,
+      'INSUFFICIENT_PERMISSIONS',
+    );
+  }
+}
+
+/**
+ * Middleware de acesso a tabelas simplificado
+ *
+ * Lógica:
+ * 1. Tabela pública + VIEW → visitante pode ver
+ * 2. Outras ações → login obrigatório + usuário ativo
+ * 3. Se é dono ou admin da tabela → acesso total
+ * 4. Se não → verifica permissão do grupo
+ */
 export function TableAccessMiddleware(options: AccessOptions) {
-  const { requiredPermission, allowedGroups } = options;
+  const { requiredPermission } = options;
 
   return async function (request: FastifyRequest): Promise<void> {
-    // 1. VALIDAR SLUG DA TABELA (se houver)
+    // 1. Validar parâmetro slug
     const params = ParamsSchema.safeParse(request.params);
     if (!params.success) {
       throw HTTPException.BadRequest(
@@ -34,12 +84,12 @@ export function TableAccessMiddleware(options: AccessOptions) {
 
     const { slug } = params.data;
 
-    // 2. BUSCAR TABELA (apenas se slug existir e não for CREATE_TABLE)
+    // 2. Buscar tabela (exceto para CREATE_TABLE)
     let table: Table | undefined = request.table;
 
     if (slug && requiredPermission !== 'CREATE_TABLE') {
       if (!table) {
-        table = (await Model.findOne({
+        table = (await TableModel.findOne({
           slug,
           trashed: false,
         }).lean()) as unknown as Table;
@@ -52,108 +102,17 @@ export function TableAccessMiddleware(options: AccessOptions) {
       }
     }
 
-    // ✅ SE FOR CREATE_TABLE, não precisa de tabela
-    if (requiredPermission === 'CREATE_TABLE') {
-      const user = request.user;
-      if (!user) {
-        throw HTTPException.Unauthorized(
-          'User not authenticated',
-          'USER_NOT_AUTHENTICATED',
-        );
-      }
-
-      const userGroup = user.role?.toLowerCase();
-      const isMaster = userGroup === GroupSlugMapper.MASTER?.toLowerCase();
-      const isAdminGroup =
-        userGroup === GroupSlugMapper.ADMINISTRATOR?.toLowerCase();
-      const isRegistered =
-        userGroup === GroupSlugMapper.REGISTERED?.toLowerCase();
-
-      // REGISTERED não pode criar tabelas
-      if (isRegistered && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Registered users cannot create new tables',
-          'INSUFFICIENT_ROLE',
-        );
-      }
-
-      // Validar permissão no array de permissões
-      // if (!user.permissions || !Array.isArray(user.permissions)) {
-      //   throw HTTPException.Forbidden(
-      //     'User permissions not found',
-      //     'USER_PERMISSIONS_NOT_FOUND',
-      //   );
-      // }
-
-      // const permissionSlug =
-      PermissionSlugMapper[requiredPermission].toLowerCase();
-      // const hasPermission = user.permissions.includes(permissionSlug);
-
-      // if (!hasPermission && !isMaster) {
-      //   throw HTTPException.Forbidden(
-      //     `You don't have permission to perform this action. Required: ${requiredPermission}`,
-      //     'INSUFFICIENT_PERMISSIONS',
-      //   );
-      // }
-
-      // Validar allowedGroups (se especificado)
-      if (allowedGroups && allowedGroups.length > 0) {
-        if (!user.role) {
-          throw HTTPException.Forbidden(
-            'User group not found',
-            'USER_GROUP_NOT_FOUND',
-          );
-        }
-
-        const allowedGroupSlugs = allowedGroups
-          .map((g) => GroupSlugMapper[g]?.toLowerCase())
-          .filter(Boolean);
-
-        const hasGroup = allowedGroupSlugs.includes(userGroup);
-
-        if (!hasGroup && !isMaster) {
-          throw HTTPException.Forbidden(
-            `This action requires one of these roles: ${allowedGroups.join(', ')}`,
-            'INSUFFICIENT_ROLE',
-          );
-        }
-      }
-
-      return; // ✅ Finaliza aqui para CREATE_TABLE
-    }
-
-    // ✅ DAQUI PRA FRENTE: precisa de tabela
-    if (!table) {
-      throw HTTPException.BadRequest(
-        'Table is required for this action',
-        'TABLE_REQUIRED',
-      );
-    }
-
-    const visibility = table.configuration?.visibility;
-    const method = request.method;
-
-    // 3. REGRAS PARA NÃO-LOGADOS (visitantes)
-
-    // Pública + GET (VIEW_TABLE, VIEW_FIELD, VIEW_ROW): visitante pode ver
+    // 3. EXCEÇÃO PÚBLICA: tabela pública + VIEW → visitante pode ver/filtrar
     if (
-      visibility === 'public' &&
-      method === 'GET' &&
+      table &&
+      table.configuration?.visibility === 'public' &&
+      request.method === 'GET' &&
       ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(requiredPermission)
     ) {
       return;
     }
 
-    // Formulário + POST (CREATE_ROW): visitante pode adicionar
-    if (
-      visibility === 'form' &&
-      method === 'POST' &&
-      requiredPermission === 'CREATE_ROW'
-    ) {
-      return;
-    }
-
-    // 4. DAQUI PRA FRENTE PRECISA ESTAR LOGADO
+    // 4. Exigir autenticação para todas as outras ações
     const user = request.user;
     if (!user) {
       throw HTTPException.Unauthorized(
@@ -162,226 +121,39 @@ export function TableAccessMiddleware(options: AccessOptions) {
       );
     }
 
-    // 5. VERIFICAR PROPRIEDADE DA TABELA E GRUPO
+    // 5. CREATE_TABLE: apenas verificar permissão do grupo
+    if (requiredPermission === 'CREATE_TABLE') {
+      await checkUserHasPermission(user.sub, requiredPermission);
+      return;
+    }
+
+    // 6. Verificar se tabela existe para outras ações
+    if (!table) {
+      throw HTTPException.BadRequest(
+        'Table is required for this action',
+        'TABLE_REQUIRED',
+      );
+    }
+
+    // 7. Verificar se é dono ou admin da tabela
     const isOwner = user.sub === table.configuration?.owner?.toString();
     const isTableAdmin = table.configuration?.administrators?.some(
       (a) => a?.toString() === user.sub,
     );
-    const isOwnerOrTableAdmin = isOwner || isTableAdmin;
-
-    const userGroup = user.role?.toLowerCase();
-    const isMaster = userGroup === GroupSlugMapper.MASTER?.toLowerCase();
-    const isAdminGroup =
-      userGroup === GroupSlugMapper.ADMINISTRATOR?.toLowerCase();
-    const isManager = userGroup === GroupSlugMapper.MANAGER?.toLowerCase();
-    const isRegistered =
-      userGroup === GroupSlugMapper.REGISTERED?.toLowerCase();
-
-    console.log({
-      userGroup,
-      isOwner,
-      isTableAdmin,
-      isOwnerOrTableAdmin,
-      isMaster,
-      isAdminGroup,
-      isManager,
-      isRegistered,
-    });
 
     request.ownership = { isOwner, isAdministrator: isTableAdmin };
 
-    // 6. APLICAR REGRAS DA MATRIZ DE PERMISSÕES
-
-    // PRIVADA: Apenas dono e convidados para TUDO
-    if (
-      visibility === 'private' &&
-      !isOwnerOrTableAdmin &&
-      !isMaster &&
-      !isAdminGroup
-    ) {
-      throw HTTPException.Forbidden(
-        'Only owner and guests can access this private table',
-        'TABLE_ACCESS_DENIED',
-      );
+    // Se é dono ou admin da tabela → acesso total (mas precisa estar ativo)
+    if (isOwner || isTableAdmin) {
+      // Verificar se usuário está ativo
+      const userDoc = await UserModel.findOne({ _id: user.sub }).lean();
+      if (!userDoc || userDoc.status !== 'active') {
+        throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
+      }
+      return;
     }
 
-    // VIEW_TABLE, VIEW_FIELD, VIEW_ROW (Visualizar)
-    if (['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(requiredPermission)) {
-      // ✅ TODOS OS USUÁRIOS LOGADOS PODEM VISUALIZAR (exceto privada e form que já foram validados)
-
-      // Formulário: apenas dono e convidados
-      if (
-        visibility === 'form' &&
-        !isOwnerOrTableAdmin &&
-        !isMaster &&
-        !isAdminGroup
-      ) {
-        throw HTTPException.Forbidden(
-          'Only owner and guests can view this form table',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-
-      // ✅ Para Restrita, Aberta e Pública: qualquer usuário logado pode ver
-      return; // ✅ Libera visualização
-    }
-
-    // CREATE_ROW (Adicionar registro)
-    if (requiredPermission === 'CREATE_ROW') {
-      // Privada: apenas dono e convidados
-      if (
-        visibility === 'private' &&
-        !isOwnerOrTableAdmin &&
-        !isMaster &&
-        !isAdminGroup
-      ) {
-        throw HTTPException.Forbidden(
-          'Only owner and guests can add records to this private table',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-
-      // Restrita: apenas dono e convidados
-      if (
-        visibility === 'restricted' &&
-        !isOwnerOrTableAdmin &&
-        !isMaster &&
-        !isAdminGroup
-      ) {
-        throw HTTPException.Forbidden(
-          'Only owner and guests can add records to this restricted table',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-
-      // ✅ Aberta, Pública, Formulário: qualquer usuário logado pode criar
-    }
-
-    // UPDATE_ROW ou REMOVE_ROW (Editar/apagar registros)
-    if (['UPDATE_ROW', 'REMOVE_ROW'].includes(requiredPermission)) {
-      // TODAS as visibilidades: apenas dono e convidados (MASTER e ADMINISTRATOR também)
-      if (!isOwnerOrTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Only owner and guests can modify records',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-
-      // REGISTERED só pode em tabelas onde é ADMIN (não dono)
-      if (isRegistered && !isTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Registered users can only modify records in tables where they are administrators',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-
-      // MANAGER só pode em tabelas próprias ou onde é admin
-      if (isManager && !isOwnerOrTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Managers can only modify records in tables they own or administer',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-    }
-
-    // CREATE_FIELD, UPDATE_FIELD, REMOVE_FIELD (Gerenciar campos)
-    if (
-      ['CREATE_FIELD', 'UPDATE_FIELD', 'REMOVE_FIELD'].includes(
-        requiredPermission,
-      )
-    ) {
-      // TODAS as visibilidades: apenas dono e convidados (MASTER e ADMINISTRATOR também)
-      if (!isOwnerOrTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Only owner and guests can manage fields',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-
-      // REGISTERED só pode gerenciar campos onde é ADMIN (não dono)
-      if (isRegistered && !isTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Registered users can only manage fields in tables where they are administrators',
-          'INSUFFICIENT_ROLE',
-        );
-      }
-
-      // MANAGER só pode gerenciar campos em tabelas próprias ou onde é admin
-      if (isManager && !isOwnerOrTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Managers can only manage fields in tables they own or administer',
-          'INSUFFICIENT_ROLE',
-        );
-      }
-    }
-
-    // UPDATE_TABLE, REMOVE_TABLE (Gerenciar tabela)
-    if (['UPDATE_TABLE', 'REMOVE_TABLE'].includes(requiredPermission)) {
-      // REGISTERED só pode onde é ADMIN (não dono)
-      if (isRegistered && !isTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Registered users can only manage tables where they are administrators',
-          'INSUFFICIENT_ROLE',
-        );
-      }
-
-      // MANAGER só pode em tabelas próprias ou onde é admin
-      if (isManager && !isOwnerOrTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Managers can only manage tables they own or administer',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-
-      // Outros: dono, admin da tabela, MASTER ou ADMINISTRATOR
-      if (!isOwnerOrTableAdmin && !isMaster && !isAdminGroup) {
-        throw HTTPException.Forbidden(
-          'Only owner and guests can manage this table',
-          'TABLE_ACCESS_DENIED',
-        );
-      }
-    }
-
-    // 7. VALIDAR PERMISSÃO NO GRUPO DO USUÁRIO
-    // if (!user.permissions || !Array.isArray(user.permissions)) {
-    //   throw HTTPException.Forbidden(
-    //     'User permissions not found',
-    //     'USER_PERMISSIONS_NOT_FOUND',
-    //   );
-    // }
-
-    // const permissionSlug =
-    //   PermissionSlugMapper[requiredPermission].toLowerCase();
-    // const hasPermission = user.permissions.includes(permissionSlug);
-
-    // if (!hasPermission && !isMaster) {
-    //   throw HTTPException.Forbidden(
-    //     `You don't have permission to perform this action. Required: ${requiredPermission}`,
-    //     'INSUFFICIENT_PERMISSIONS',
-    //   );
-    // }
-
-    // 8. VALIDAR GRUPO (se especificado)
-    if (allowedGroups && allowedGroups.length > 0) {
-      if (!user.role) {
-        throw HTTPException.Forbidden(
-          'User group not found',
-          'USER_GROUP_NOT_FOUND',
-        );
-      }
-
-      const allowedGroupSlugs = allowedGroups
-        .map((g) => GroupSlugMapper[g]?.toLowerCase())
-        .filter(Boolean);
-
-      const hasGroup = allowedGroupSlugs.includes(userGroup);
-
-      if (!hasGroup && !isMaster) {
-        throw HTTPException.Forbidden(
-          `This action requires one of these roles: ${allowedGroups.join(', ')}`,
-          'INSUFFICIENT_ROLE',
-        );
-      }
-    }
+    // 8. Não é dono/admin → verificar permissão do grupo
+    await checkUserHasPermission(user.sub, requiredPermission);
   };
 }

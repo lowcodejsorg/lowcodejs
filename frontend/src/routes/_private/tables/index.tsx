@@ -10,6 +10,7 @@ import { SheetFilter } from '@/components/common/sheet-filter';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
+import { usePermission } from '@/hooks/use-table-permission';
 import { FIELD_TYPE, MetaDefault } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 
@@ -32,6 +33,7 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
 
   const pagination = useTablesReadPaginated(search);
+  const permission = usePermission();
 
   const headers = ['Tabela', 'Link (slug)', 'Criado em'];
 
@@ -66,21 +68,24 @@ function RouteComponent(): React.JSX.Element {
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
           <SheetFilter fields={fieldFilters} />
-          <Button
-            disabled={
-              pagination.status === 'pending' || pagination.status === 'error'
-            }
-            className="disabled:cursor-not-allowed"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/tables/create',
-                replace: true,
-              });
-            }}
-          >
-            <span>Nova Tabela</span>
-          </Button>
+          {permission.can('CREATE_TABLE') && (
+            <Button
+              disabled={
+                pagination.status === 'pending' || pagination.status === 'error'
+              }
+              className="disabled:cursor-not-allowed"
+              size={'sm'}
+              onClick={() => {
+                sidebar.setOpen(false);
+                router.navigate({
+                  to: '/tables/create',
+                  replace: true,
+                });
+              }}
+            >
+              <span>Nova Tabela</span>
+            </Button>
+          )}
         </div>
       </div>
 

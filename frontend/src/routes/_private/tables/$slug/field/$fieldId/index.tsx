@@ -13,12 +13,15 @@ import z from 'zod';
 
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
 
+import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
@@ -46,7 +49,25 @@ function RouteComponent(): React.JSX.Element {
 
   const originSlug = from ?? slug;
 
+  const table = useReadTable({ slug });
   const _read = useFieldRead({ tableSlug: slug, fieldId });
+  const permission = useTablePermission(table.data);
+
+  // Loading enquanto verifica permissão
+  if (table.status === 'pending' || permission.isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  // Mostrar erro se não tem permissão
+  if (!permission.can('UPDATE_FIELD')) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -118,6 +139,9 @@ function FieldUpdateContent({
   slug: string;
 }): React.JSX.Element {
   const { queryClient } = getContext();
+  const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+  const canEdit = permission.can('UPDATE_FIELD');
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
@@ -444,7 +468,7 @@ function FieldUpdateContent({
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
             <div className="flex justify-end space-x-2">
-              {mode === 'show' && (
+              {mode === 'show' && canEdit && (
                 <Button
                   type="button"
                   className="w-full max-w-3xs"

@@ -31,7 +31,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'CREATE_FIELD',
-          // Sem allowedGroups - valida apenas ownership
         }),
       ],
       schema: TableFieldCreateSchema,

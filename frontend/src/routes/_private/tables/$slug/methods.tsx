@@ -7,6 +7,7 @@ import {
   tableMethodsFormDefaultValues,
 } from './-methods-form';
 
+import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -15,6 +16,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { ITable } from '@/lib/interfaces';
 
@@ -27,6 +29,23 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+
+  // Loading enquanto verifica permissão
+  if (table.status === 'pending' || permission.isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-75 w-full" />
+        <Skeleton className="h-10 w-32 ml-auto" />
+      </div>
+    );
+  }
+
+  // Mostrar erro se não tem permissão
+  if (!permission.can('UPDATE_TABLE')) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -87,6 +106,9 @@ function MethodsFormContent({
   tableSlug,
 }: MethodsFormContentProps): React.JSX.Element {
   const { queryClient } = getContext();
+  const table = useReadTable({ slug: tableSlug });
+  const permission = useTablePermission(table.data);
+  const canEdit = permission.can('UPDATE_TABLE');
 
   const _update = useUpdateTable({
     onSuccess(response) {
@@ -159,24 +181,26 @@ function MethodsFormContent({
       </form>
 
       {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end">
-              <Button
-                type="button"
-                className="w-full max-w-3xs"
-                disabled={!canSubmit}
-                onClick={() => form.handleSubmit()}
-              >
-                {isSubmitting && <Spinner />}
-                <span>Salvar Métodos</span>
-              </Button>
-            </div>
-          )}
-        />
-      </div>
+      {canEdit && (
+        <div className="shrink-0 border-t p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end">
+                <Button
+                  type="button"
+                  className="w-full max-w-3xs"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Salvar Métodos</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </>
   );
 }

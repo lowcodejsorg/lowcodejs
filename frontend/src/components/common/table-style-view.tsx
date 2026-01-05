@@ -1,3 +1,8 @@
+import {
+  LayoutDashboardIcon,
+  LayoutListIcon,
+  LoaderCircleIcon,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -10,15 +15,10 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
+import { useTablePermission } from '@/hooks/use-table-permission';
+import type { ITable, Paginated } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
-import {
-  LayoutDashboardIcon,
-  LayoutListIcon,
-  LoaderCircleIcon,
-} from 'lucide-react';
-
-import type { ITable, Paginated } from '@/lib/interfaces';
 
 interface TableStyleViewDropdownProps {
   slug: string;
@@ -26,8 +26,12 @@ interface TableStyleViewDropdownProps {
 
 export function TableStyleViewDropdown({
   slug,
-}: TableStyleViewDropdownProps): React.JSX.Element {
+}: TableStyleViewDropdownProps): React.JSX.Element | null {
   const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+
+  // Ocultar se não pode editar tabela
+  if (!permission.can('UPDATE_TABLE')) return null;
 
   const update = useUpdateTable({
     onSuccess(data) {

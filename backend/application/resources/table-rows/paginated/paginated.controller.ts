@@ -31,7 +31,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'VIEW_ROW',
-          // Sem allowedGroups - depende da visibilidade
         }),
       ],
       schema: TableRowPaginatedSchema,

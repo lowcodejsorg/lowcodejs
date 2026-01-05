@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 
+import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -14,6 +15,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { ITable, Paginated } from '@/lib/interfaces';
@@ -27,6 +29,17 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const _read = useReadTable({ slug });
+  const permission = useTablePermission(_read.data);
+
+  // Loading enquanto verifica permissão
+  if (_read.status === 'pending' || permission.isLoading) {
+    return <UpdateTableFormSkeleton />;
+  }
+
+  // Mostrar erro se não tem permissão
+  if (!permission.can('UPDATE_TABLE')) {
+    return <AccessDenied />;
+  }
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -60,14 +73,23 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
         {_read.status === 'pending' && <UpdateTableFormSkeleton />}
-        {_read.status === 'success' && <TableUpdateContent data={_read.data} />}
+        {_read.status === 'success' && (
+          <TableUpdateContent data={_read.data} />
+        )}
       </div>
     </div>
   );
 }
 
-function TableUpdateContent({ data }: { data: ITable }): React.JSX.Element {
+function TableUpdateContent({
+  data,
+}: {
+  data: ITable;
+}): React.JSX.Element {
   const { queryClient } = getContext();
+  const table = useReadTable({ slug: data.slug });
+  const permission = useTablePermission(table.data);
+  const canEdit = permission.can('UPDATE_TABLE');
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
@@ -189,7 +211,7 @@ function TableUpdateContent({ data }: { data: ITable }): React.JSX.Element {
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
             <div className="flex justify-end space-x-2">
-              {mode === 'show' && (
+              {mode === 'show' && canEdit && (
                 <Button
                   type="button"
                   className="w-full max-w-3xs"

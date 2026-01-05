@@ -13,11 +13,14 @@ import {
   tableCreateFormDefaultValues,
 } from './-create-form';
 
+import { AccessDenied } from '@/components/common/access-denied';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
+import { usePermission } from '@/hooks/use-table-permission';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { ITable, Paginated } from '@/lib/interfaces';
@@ -31,6 +34,22 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate();
+  const permission = usePermission();
+
+  // Loading enquanto verifica permissão
+  if (permission.isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  // Mostrar erro se não tem permissão
+  if (!permission.can('CREATE_TABLE')) {
+    return <AccessDenied />;
+  }
 
   const _create = useCreateTable({
     onSuccess(data) {

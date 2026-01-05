@@ -15,12 +15,14 @@ import {
   buildPayload,
 } from './-create-form';
 
+import { AccessDenied } from '@/components/common/access-denied';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
+import { useTablePermission } from '@/hooks/use-table-permission';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 
 export const Route = createFileRoute('/_private/tables/$slug/row/create/')({
   component: RouteComponent,
@@ -36,6 +38,7 @@ function RouteComponent(): React.JSX.Element {
   });
 
   const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
 
   const activeFields = React.useMemo(() => {
     if (table.status !== 'success') return [];
@@ -155,7 +158,7 @@ function RouteComponent(): React.JSX.Element {
     },
   });
 
-  if (table.status === 'pending') {
+  if (table.status === 'pending' || permission.isLoading) {
     return (
       <div className="flex flex-col h-full overflow-hidden">
         <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
@@ -182,6 +185,10 @@ function RouteComponent(): React.JSX.Element {
         </div>
       </div>
     );
+  }
+
+  if (!permission.can('CREATE_ROW')) {
+    return <AccessDenied />;
   }
 
   if (table.status === 'error') {

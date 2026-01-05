@@ -31,7 +31,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'CREATE_ROW',
-          // Sem allowedGroups - Registered pode criar em tabelas abertas/públicas
         }),
       ],
       schema: TableRowCreateSchema,

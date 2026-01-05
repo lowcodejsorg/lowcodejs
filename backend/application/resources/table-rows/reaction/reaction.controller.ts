@@ -31,7 +31,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'UPDATE_ROW',
-          // Sem allowedGroups - usuário logado pode reagir se puder ver
         }),
       ],
       schema: TableRowReactionSchema,

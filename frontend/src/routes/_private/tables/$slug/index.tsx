@@ -24,6 +24,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { MetaDefault } from '@/lib/constant';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
@@ -50,6 +51,7 @@ function RouteComponent(): React.JSX.Element {
 
   const table = useReadTable({ slug });
   const rows = useReadTableRowPaginated({ slug, search });
+  const permission = useTablePermission(table.data);
 
   const router = useRouter();
   const sidebar = useSidebar();
@@ -90,21 +92,23 @@ function RouteComponent(): React.JSX.Element {
           <TableStyleViewDropdown slug={slug} />
           <TableConfigurationDropdown tableSlug={slug} />
 
-          <Button
-            disabled={rows.status === 'pending' || rows.status === 'error'}
-            className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/tables/$slug/row/create',
-                replace: true,
-                params: { slug },
-              });
-            }}
-          >
-            <PlusIcon />
-            <span>Registro</span>
-          </Button>
+          {permission.can('CREATE_ROW') && (
+            <Button
+              disabled={rows.status === 'pending' || rows.status === 'error'}
+              className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
+              onClick={() => {
+                sidebar.setOpen(false);
+                router.navigate({
+                  to: '/tables/$slug/row/create',
+                  replace: true,
+                  params: { slug },
+                });
+              }}
+            >
+              <PlusIcon />
+              <span>Registro</span>
+            </Button>
+          )}
         </div>
       </div>
 

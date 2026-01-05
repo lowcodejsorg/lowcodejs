@@ -28,7 +28,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'UPDATE_ROW',
-          // Sem allowedGroups - valida apenas ownership
         }),
       ],
       schema: TableRowRemoveFromTrashSchema,

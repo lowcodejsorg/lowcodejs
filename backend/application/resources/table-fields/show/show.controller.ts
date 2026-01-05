@@ -28,7 +28,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'VIEW_FIELD',
-          // Sem allowedGroups - depende da visibilidade da tabela
         }),
       ],
       schema: TableFieldShowSchema,

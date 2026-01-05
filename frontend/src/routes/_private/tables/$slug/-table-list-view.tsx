@@ -8,6 +8,8 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
@@ -55,10 +57,12 @@ function HeaderSorter(order: Array<string>) {
 
 interface TableListViewHeaderProps {
   field: IField;
+  canEdit: boolean;
 }
 
 export function TableListViewHeader({
   field,
+  canEdit,
 }: TableListViewHeaderProps): React.JSX.Element {
   const search = useSearch({
     from: '/_private/tables/$slug/',
@@ -79,9 +83,13 @@ export function TableListViewHeader({
     >
       <div className="inline-flex items-center">
         <Button
-          className="cursor-pointer h-auto px-2 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent"
+          className={cn(
+            'h-auto px-2 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent',
+            canEdit ? 'cursor-pointer' : 'cursor-default',
+          )}
           variant="link"
           onClick={() => {
+            if (!canEdit) return;
             router.navigate({
               to: '/tables/$slug/field/$fieldId',
               params: {
@@ -254,6 +262,12 @@ export function TableListView({
     from: '/_private/tables/$slug/',
   });
 
+  const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+
+  const canCreateField = permission.can('CREATE_FIELD');
+  const canEditField = permission.can('UPDATE_FIELD');
+
   return (
     <BaseTabela>
       {headers.length > 0 && (
@@ -266,26 +280,29 @@ export function TableListView({
                 <TableListViewHeader
                   field={field}
                   key={field._id}
+                  canEdit={canEditField}
                 />
               ))}
 
-            <TableHead className="w-30">
-              <Button
-                variant="outline"
-                className="cursor-pointer size-6"
-                onClick={() => {
-                  router.navigate({
-                    to: '/tables/$slug/field/create',
-                    replace: true,
-                    params: {
-                      slug,
-                    },
-                  });
-                }}
-              >
-                <PlusIcon className="size-4" />
-              </Button>
-            </TableHead>
+            {canCreateField && (
+              <TableHead className="w-30">
+                <Button
+                  variant="outline"
+                  className="cursor-pointer size-6"
+                  onClick={() => {
+                    router.navigate({
+                      to: '/tables/$slug/field/create',
+                      replace: true,
+                      params: {
+                        slug,
+                      },
+                    });
+                  }}
+                >
+                  <PlusIcon className="size-4" />
+                </Button>
+              </TableHead>
+            )}
           </TableRow>
         </TableHeader>
       )}

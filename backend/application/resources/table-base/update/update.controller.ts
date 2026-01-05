@@ -32,7 +32,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'UPDATE_TABLE',
-          // Sem allowedGroups - valida apenas ownership
         }),
       ],
       schema: TableUpdateSchema,

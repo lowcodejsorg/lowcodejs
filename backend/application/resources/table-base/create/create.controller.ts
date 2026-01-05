@@ -28,7 +28,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'CREATE_TABLE',
-          allowedGroups: ['MASTER', 'ADMINISTRATOR', 'MANAGER'],
         }),
       ],
       schema: TableCreateSchema,

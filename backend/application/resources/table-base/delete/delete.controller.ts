@@ -29,7 +29,6 @@ export default class {
         }),
         TableAccessMiddleware({
           requiredPermission: 'REMOVE_TABLE',
-          // Sem allowedGroups - valida apenas ownership
         }),
       ],
       schema: TableDeleteSchema,

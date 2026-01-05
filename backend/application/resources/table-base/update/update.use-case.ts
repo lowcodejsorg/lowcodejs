@@ -6,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { buildTable } from '@application/core/util.core';
 import { Table } from '@application/model/table.model';
+import { User } from '@application/model/user.model';
 
 import type {
   TableUpdateBodyValidator,
@@ -31,6 +32,28 @@ export default class TableUpdateUseCase {
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
+
+      // Validar que apenas usuários ativos podem ser administradores
+      if (
+        payload.configuration?.administrators &&
+        payload.configuration.administrators.length > 0
+      ) {
+        const adminIds = payload.configuration.administrators;
+        const activeAdmins = await User.find({
+          _id: { $in: adminIds },
+          status: 'active',
+          trashed: false,
+        }).lean();
+
+        if (activeAdmins.length !== adminIds.length) {
+          return left(
+            HTTPException.BadRequest(
+              'All administrators must be active users',
+              'INACTIVE_ADMINISTRATORS',
+            ),
+          );
+        }
+      }
 
       await table
         .set({

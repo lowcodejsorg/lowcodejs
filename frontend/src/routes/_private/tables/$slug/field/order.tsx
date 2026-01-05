@@ -10,12 +10,14 @@ import z from 'zod';
 
 import { FieldOrderForm, TrashedFieldsList } from './-field-order-form';
 
+import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/order')({
   component: RouteComponent,
@@ -30,6 +32,23 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+
+  // Loading enquanto verifica permissão
+  if (table.status === 'pending' || permission.isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  // Mostrar erro se não tem permissão
+  if (!permission.can('UPDATE_FIELD')) {
+    return <AccessDenied />;
+  }
 
   const title =
     table.data?.type === 'field-group'

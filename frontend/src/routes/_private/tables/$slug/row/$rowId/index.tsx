@@ -20,6 +20,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { IRow, ITable } from '@/lib/interfaces';
 
@@ -37,6 +38,7 @@ function RouteComponent(): React.JSX.Element {
 
   const table = useReadTable({ slug });
   const row = useReadTableRow({ slug, rowId });
+  const permission = useTablePermission(table.data);
 
   const isLoading = table.status === 'pending' || row.status === 'pending';
   const isError = table.status === 'error' || row.status === 'error';
@@ -64,13 +66,13 @@ function RouteComponent(): React.JSX.Element {
           <h1 className="text-xl font-medium">Detalhes do registro</h1>
         </div>
         <div className="inline-flex items-center space-x-2">
-          {isSuccess && !row.data.trashed && (
+          {isSuccess && !row.data.trashed && permission.can('REMOVE_ROW') && (
             <RowSendToTrashDialog
               rowId={rowId}
               slug={slug}
             />
           )}
-          {isSuccess && row.data.trashed && (
+          {isSuccess && row.data.trashed && permission.can('REMOVE_ROW') && (
             <RowRemoveFromTrashDialog
               rowId={rowId}
               slug={slug}
@@ -117,6 +119,10 @@ function RowUpdateContent({
   slug,
   rowId,
 }: RowUpdateContentProps): React.JSX.Element {
+  const tableQuery = useReadTable({ slug });
+  const permission = useTablePermission(tableQuery.data);
+  const canEdit = permission.can('UPDATE_ROW');
+
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   const activeFields = React.useMemo(() => {
@@ -263,7 +269,7 @@ function RowUpdateContent({
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
             <div className="flex justify-end space-x-2">
-              {mode === 'show' && (
+              {mode === 'show' && canEdit && (
                 <Button
                   type="button"
                   className="w-full max-w-3xs"
