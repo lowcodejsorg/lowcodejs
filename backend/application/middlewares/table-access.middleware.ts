@@ -112,7 +112,17 @@ export function TableAccessMiddleware(options: AccessOptions) {
       return;
     }
 
-    // 4. Exigir autenticação para todas as outras ações
+    // 4. EXCEÇÃO FORMULÁRIO: tabela form + POST CREATE_ROW → visitante pode criar registro
+    if (
+      table &&
+      table.configuration?.visibility === 'form' &&
+      request.method === 'POST' &&
+      requiredPermission === 'CREATE_ROW'
+    ) {
+      return;
+    }
+
+    // 5. Exigir autenticação para todas as outras ações
     const user = request.user;
     if (!user) {
       throw HTTPException.Unauthorized(
@@ -121,13 +131,13 @@ export function TableAccessMiddleware(options: AccessOptions) {
       );
     }
 
-    // 5. CREATE_TABLE: apenas verificar permissão do grupo
+    // 6. CREATE_TABLE: apenas verificar permissão do grupo
     if (requiredPermission === 'CREATE_TABLE') {
       await checkUserHasPermission(user.sub, requiredPermission);
       return;
     }
 
-    // 6. Verificar se tabela existe para outras ações
+    // 7. Verificar se tabela existe para outras ações
     if (!table) {
       throw HTTPException.BadRequest(
         'Table is required for this action',
@@ -135,7 +145,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
       );
     }
 
-    // 7. Verificar se é dono ou admin da tabela
+    // 8. Verificar se é dono ou admin da tabela
     const isOwner = user.sub === table.configuration?.owner?.toString();
     const isTableAdmin = table.configuration?.administrators?.some(
       (a) => a?.toString() === user.sub,
@@ -153,7 +163,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
       return;
     }
 
-    // 8. Não é dono/admin → verificar permissão do grupo
+    // 9. Não é dono/admin → verificar permissão do grupo
     await checkUserHasPermission(user.sub, requiredPermission);
   };
 }

@@ -20,17 +20,17 @@ API.interceptors.request.use(
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    if (error.response?.status === 401) {
-      localStorage.clear();
+    // if (error.response?.status === 401) {
+    //   localStorage.clear();
 
-      try {
-        await API.post('/authentication/sign-out');
-      } catch (e) {
-        console.error(e);
-      }
+    //   try {
+    //     await API.post('/authentication/sign-out');
+    //   } catch (e) {
+    //     console.error(e);
+    //   }
 
-      window.location.href = '/';
-    }
+    //   window.location.href = '/';
+    // }
     return Promise.reject(error);
   },
 );

@@ -15,6 +15,7 @@ export const TableUpdateSchema = z.object({
   collaboration: z.enum(['open', 'restricted']),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
+  administrators: z.array(z.string()).default([]),
 });
 
 export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
@@ -27,6 +28,7 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   collaboration: 'restricted',
   logo: null,
   logoFile: [],
+  administrators: [],
 };
 
 export const UpdateTableFormFields = withForm({
@@ -159,6 +161,22 @@ export const UpdateTableFormFields = withForm({
               placeholder="Selecione o modo de colaboração"
               disabled={isDisabled}
               required
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo Administradores */}
+        <form.AppField name="administrators">
+          {(field) => (
+            <field.FieldUserMultiSelect
+              label="Administradores"
+              placeholder="Selecione administradores"
+              disabled={isDisabled}
+              excludeUserId={
+                typeof tableData?.configuration.owner === 'string'
+                  ? tableData.configuration.owner
+                  : tableData?.configuration.owner?._id
+              }
             />
           )}
         </form.AppField>

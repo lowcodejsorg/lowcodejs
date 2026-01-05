@@ -48,20 +48,35 @@ export function buildDefaultValuesFromRow(
           storages: (existingValue as Array<IStorage>) ?? [],
         };
         break;
-      case FIELD_TYPE.RELATIONSHIP:
+      case FIELD_TYPE.RELATIONSHIP: {
+        const relationshipFieldSlug =
+          field.configuration.relationship?.field?.slug;
+
         if (field.configuration.multiple) {
-          const values = (existingValue as Array<{ _id: string }>) ?? [];
+          const values = (existingValue as Array<Record<string, any>>) ?? [];
           defaults[field.slug] = values.map((v) => ({
             value: v._id,
-            label: v._id,
+            label:
+              relationshipFieldSlug && v[relationshipFieldSlug]
+                ? String(v[relationshipFieldSlug])
+                : v._id,
           }));
         } else {
-          const value = existingValue as { _id: string } | null;
+          const value = existingValue as Record<string, any> | null;
           defaults[field.slug] = value
-            ? [{ value: value._id, label: value._id }]
+            ? [
+                {
+                  value: value._id,
+                  label:
+                    relationshipFieldSlug && value[relationshipFieldSlug]
+                      ? String(value[relationshipFieldSlug])
+                      : value._id,
+                },
+              ]
             : [];
         }
         break;
+      }
       case FIELD_TYPE.CATEGORY: {
         // Always array - convert single value to array if needed
         const categoryValue = Array.isArray(existingValue)

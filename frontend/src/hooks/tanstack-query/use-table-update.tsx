@@ -6,9 +6,13 @@ import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 
 type Payload = Partial<
-  Pick<ITable, 'name' | 'description' | 'configuration' | 'methods'> & {
+  Pick<ITable, 'name' | 'description' | 'methods'> & {
     logo: string | null;
     fields: string[];
+    configuration: Omit<ITable['configuration'], 'administrators' | 'owner'> & {
+      administrators: string[];
+      owner?: string;
+    };
   }
 > & {
   slug: string;

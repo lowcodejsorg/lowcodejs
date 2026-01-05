@@ -7,15 +7,15 @@ import { useAuthenticationStore } from '@/stores/authentication';
 
 export function useProfileRead(): UseQueryResult<IUser> {
   const authentication = useAuthenticationStore();
+  const isAuthenticated = Boolean(authentication.authenticated?.sub);
 
-  const query = useQuery({
+  return useQuery({
     queryKey: ['/profile', authentication.authenticated?.sub],
     queryFn: async function () {
       const route = '/profile';
       const response = await API.get<IUser>(route);
       return response.data;
     },
+    enabled: isAuthenticated,
   });
-
-  return query;
 }

@@ -169,11 +169,16 @@ export function FieldOrderForm({
       description: table.description,
       logo: table.logo?._id ?? null,
       configuration: {
-        ...table.configuration,
+        visibility: table.configuration.visibility,
+        style: table.configuration.style,
+        collaboration: table.configuration.collaboration,
         fields: {
           ...table.configuration.fields,
           [reference]: fields.map((f) => f._id),
         },
+        administrators: table.configuration.administrators.map((admin) =>
+          typeof admin === 'string' ? admin : admin._id,
+        ),
       },
       fields: fields.map((f) => f._id),
       methods: {

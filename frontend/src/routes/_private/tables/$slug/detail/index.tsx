@@ -160,6 +160,9 @@ function TableUpdateContent({
       collaboration: data.configuration.collaboration,
       logo: data.logo?._id ?? null,
       logoFile: [] as Array<File>,
+      administrators: data.configuration.administrators.map((admin) =>
+        typeof admin === 'string' ? admin : admin._id,
+      ),
     },
     onSubmit: async ({ value }) => {
       const validation = TableUpdateSchema.safeParse(value);
@@ -173,11 +176,11 @@ function TableUpdateContent({
         description: value.description || null,
         logo: value.logo || data.logo?._id || null,
         configuration: {
-          ...data.configuration,
           visibility: value.visibility,
           style: value.style,
           collaboration: value.collaboration,
-          administrators: [],
+          fields: data.configuration.fields,
+          administrators: value.administrators,
         },
         methods: {
           ...data.methods,

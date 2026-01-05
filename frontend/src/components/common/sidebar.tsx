@@ -32,12 +32,15 @@ import {
 } from '@/components/ui/tooltip';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
 import type { MenuRoute } from '@/lib/menu/menu-route';
+import { useAuthenticationStore } from '@/stores/authentication';
 
 interface SidebarProps {
   menu: MenuRoute;
 }
 
 export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
+  const authentication = useAuthenticationStore();
+
   const { setOpenMobile } = useSidebar();
   const location = useLocation();
 
@@ -53,6 +56,8 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
         descriptionClassName: '!text-primary-foreground',
         closeButton: true,
       });
+
+      authentication.logout();
 
       router.navigate({
         to: '/',

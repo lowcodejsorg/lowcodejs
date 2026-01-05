@@ -13,6 +13,10 @@ export const Route = createFileRoute('/_private')({
 
 function RouteComponent(): React.JSX.Element {
   const authentication = useAuthenticationStore().authenticated;
+  const isAuthenticated = Boolean(authentication?.role);
+
+  // Hook chamado sempre, independente de autenticação (regras de hooks)
+  const { menu } = useMenuDynamic(authentication?.role ?? 'REGISTERED');
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',
@@ -36,12 +40,8 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <SidebarProvider>
-      {authentication?.role && (
-        <Sidebar menu={useMenuDynamic(authentication.role).menu} />
-      )}
-      {!authentication?.role && (
-        <Sidebar menu={useMenuDynamic('REGISTERED').menu} />
-      )}
+      {/* Sidebar só aparece se autenticado */}
+      {isAuthenticated && <Sidebar menu={menu} />}
       <SidebarInset className="relative flex flex-col h-screen w-screen overflow-hidden flex-1 px-4 sm:px-2">
         <Header routesWithoutSearchInput={routesWithoutSearchInput} />
         <Outlet />

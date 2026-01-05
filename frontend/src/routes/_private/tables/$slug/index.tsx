@@ -26,6 +26,7 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { MetaDefault } from '@/lib/constant';
+import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
@@ -41,6 +42,9 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
 });
 
 function RouteComponent(): React.JSX.Element {
+  const authentication = useAuthenticationStore().authenticated;
+  const isAuthenticated = Boolean(authentication?.role);
+
   const { slug } = useParams({
     from: '/_private/tables/$slug/',
   });
@@ -60,19 +64,21 @@ function RouteComponent(): React.JSX.Element {
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/tables',
-                replace: true,
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
+          {isAuthenticated && (
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => {
+                sidebar.setOpen(true);
+                router.navigate({
+                  to: '/tables',
+                  replace: true,
+                });
+              }}
+            >
+              <ArrowLeftIcon />
+            </Button>
+          )}
           {table.status === 'pending' ? (
             <Skeleton className="h-8 w-40" />
           ) : (

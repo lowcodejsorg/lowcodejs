@@ -30,9 +30,7 @@ export function TableStyleViewDropdown({
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);
 
-  // Ocultar se não pode editar tabela
-  if (!permission.can('UPDATE_TABLE')) return null;
-
+  // Hook deve ser chamado antes de qualquer return condicional
   const update = useUpdateTable({
     onSuccess(data) {
       QueryClient.setQueryData<ITable>(
@@ -62,6 +60,9 @@ export function TableStyleViewDropdown({
       toast.error('Erro ao atualizar estilo da tabela');
     },
   });
+
+  // Ocultar se não pode editar tabela
+  if (!permission.can('UPDATE_TABLE')) return null;
 
   const handleStyleChange = (style: 'list' | 'gallery') => {
     if (!table.data) return;

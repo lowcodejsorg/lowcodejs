@@ -4,7 +4,9 @@ import type z from 'zod';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
+import { FIELD_TYPE } from '@application/core/entity.core';
 import { buildTable } from '@application/core/util.core';
+import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
 import { User } from '@application/model/user.model';
 
@@ -66,6 +68,25 @@ export default class TableUpdateUseCase {
           },
         })
         .save();
+
+      // Propagar visibilidade para grupos de campos (FIELD_GROUP)
+      if (payload.configuration?.visibility) {
+        const fieldGroupFields = await Field.find({
+          _id: { $in: table.fields },
+          type: FIELD_TYPE.FIELD_GROUP,
+        });
+
+        const groupIds = fieldGroupFields
+          .map((f) => f.configuration?.group?._id)
+          .filter(Boolean);
+
+        if (groupIds.length > 0) {
+          await Table.updateMany(
+            { _id: { $in: groupIds }, type: 'field-group' },
+            { 'configuration.visibility': payload.configuration.visibility },
+          );
+        }
+      }
 
       const populated = await table?.populate([
         {
