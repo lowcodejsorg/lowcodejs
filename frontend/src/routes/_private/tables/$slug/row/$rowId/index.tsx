@@ -186,6 +186,30 @@ function RowUpdateContent({
           return;
         }
 
+        if (
+          errorData?.code === 403 &&
+          errorData?.cause === 'OWNER_OR_ADMIN_REQUIRED'
+        ) {
+          toast('Acesso negado', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Apenas o dono ou administradores da tabela podem editar registros',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        if (errorData?.code === 403 && errorData?.cause === 'TABLE_PRIVATE') {
+          toast('Tabela privada', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: 'Esta tabela é privada e você não tem acesso',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
         if (errorData?.code === 404 && errorData?.cause === 'ROW_NOT_FOUND') {
           toast('Erro ao atualizar o registro', {
             className: '!bg-destructive !text-white !border-destructive',

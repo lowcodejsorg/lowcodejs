@@ -35,7 +35,7 @@ function RouteComponent(): React.JSX.Element {
   const pagination = useTablesReadPaginated(search);
   const permission = usePermission();
 
-  const headers = ['Tabela', 'Link (slug)', 'Criado em'];
+  const headers = ['Tabela', 'Link (slug)', 'Visibilidade', 'Criado em'];
 
   const fieldFilters: Array<IField> = [
     {

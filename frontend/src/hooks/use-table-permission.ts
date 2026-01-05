@@ -86,11 +86,72 @@ export function useTablePermission(
       // Dono ou admin da tabela pode fazer tudo
       if (isOwnerOrAdmin) return true;
 
+      // Usuário não logado
+      if (!userId) {
+        const visibility = table?.configuration?.visibility || 'restricted';
+        // Visitante pode ver tabelas públicas
+        if (
+          visibility === 'public' &&
+          ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)
+        ) {
+          return true;
+        }
+        // Visitante pode criar registro em tabelas de formulário
+        if (visibility === 'form' && action === 'CREATE_ROW') {
+          return true;
+        }
+        return false;
+      }
+
+      // Ações que SEMPRE requerem dono/admin (independente da visibilidade)
+      const ownerOnlyActions: TableAction[] = [
+        'CREATE_FIELD',
+        'UPDATE_FIELD',
+        'REMOVE_FIELD',
+        'UPDATE_TABLE',
+        'REMOVE_TABLE',
+        'UPDATE_ROW',
+        'REMOVE_ROW',
+      ];
+
+      if (ownerOnlyActions.includes(action)) {
+        return false; // Só dono/admin pode fazer isso
+      }
+
+      // Aplicar regras de visibilidade
+      const visibility = table?.configuration?.visibility || 'restricted';
+
+      switch (visibility) {
+        case 'private':
+          // PRIVADA: Apenas dono/admin pode fazer tudo
+          return false;
+
+        case 'restricted':
+          // RESTRITA: Usuário logado pode ver, mas não criar
+          if (action === 'CREATE_ROW') return false;
+          break;
+
+        case 'open':
+          // ABERTA: Usuário logado pode ver e criar
+          break;
+
+        case 'public':
+          // PÚBLICA: Usuário logado pode ver e criar
+          break;
+
+        case 'form':
+          // FORMULÁRIO: Usuário logado NÃO pode ver (só criar via visitante)
+          if (['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)) {
+            return false;
+          }
+          break;
+      }
+
       // Verifica permissões do grupo do usuário
       const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
       return permissions.includes(requiredSlug);
     };
-  }, [isOwnerOrAdmin, permissions]);
+  }, [isOwnerOrAdmin, permissions, table, userId]);
 
   return {
     isOwner,

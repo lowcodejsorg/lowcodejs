@@ -5,6 +5,7 @@ import { ArrowRightIcon, ImageOffIcon } from 'lucide-react';
 import React from 'react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import {
@@ -21,6 +22,20 @@ interface Props {
   data: Array<ITable>;
   headers: Array<string>;
 }
+
+const VISIBILITY_CONFIG: Record<
+  string,
+  {
+    label: string;
+    variant: 'default' | 'secondary' | 'outline' | 'destructive';
+  }
+> = {
+  private: { label: 'Privada', variant: 'destructive' },
+  restricted: { label: 'Restrita', variant: 'secondary' },
+  open: { label: 'Aberta', variant: 'default' },
+  public: { label: 'Pública', variant: 'outline' },
+  form: { label: 'Formulário', variant: 'secondary' },
+};
 
 function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
   const sidebar = useSidebar();
@@ -56,6 +71,14 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
       </TableCell>
       <TableCell>
         <code className="text-sm text-muted-foreground">/{table.slug}</code>
+      </TableCell>
+
+      <TableCell>
+        <Badge
+          variant={VISIBILITY_CONFIG[table.configuration.visibility].variant}
+        >
+          {VISIBILITY_CONFIG[table.configuration.visibility].label}
+        </Badge>
       </TableCell>
 
       <TableCell className="text-sm text-muted-foreground">

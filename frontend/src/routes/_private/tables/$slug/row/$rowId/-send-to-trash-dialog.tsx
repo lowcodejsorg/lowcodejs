@@ -85,6 +85,16 @@ export function RowSendToTrashDialog({
           toast.error(data?.message ?? 'Acesso negado');
         }
 
+        if (data?.code === 403 && data?.cause === 'OWNER_OR_ADMIN_REQUIRED') {
+          toast.error(
+            'Apenas o dono ou administradores da tabela podem remover registros',
+          );
+        }
+
+        if (data?.code === 403 && data?.cause === 'TABLE_PRIVATE') {
+          toast.error('Esta tabela é privada e você não tem acesso');
+        }
+
         if (data?.code === 404 && data?.cause === 'ROW_NOT_FOUND') {
           toast.error(data?.message ?? 'Registro não encontrado');
         }

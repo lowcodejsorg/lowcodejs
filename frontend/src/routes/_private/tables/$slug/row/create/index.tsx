@@ -102,6 +102,44 @@ function RouteComponent(): React.JSX.Element {
           return;
         }
 
+        if (
+          errorData?.code === 403 &&
+          errorData?.cause === 'OWNER_OR_ADMIN_REQUIRED'
+        ) {
+          toast('Acesso negado', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Apenas o dono ou administradores da tabela podem realizar esta ação',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        if (errorData?.code === 403 && errorData?.cause === 'TABLE_PRIVATE') {
+          toast('Tabela privada', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: 'Esta tabela é privada e você não tem acesso',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        if (
+          errorData?.code === 403 &&
+          errorData?.cause === 'RESTRICTED_CREATE'
+        ) {
+          toast('Criação restrita', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Apenas o dono ou administradores podem criar registros nesta tabela',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
         if (errorData?.code === 404 && errorData?.cause === 'TABLE_NOT_FOUND') {
           toast('Erro ao criar o registro', {
             className: '!bg-destructive !text-white !border-destructive',

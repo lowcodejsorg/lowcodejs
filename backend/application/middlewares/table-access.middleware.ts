@@ -163,7 +163,65 @@ export function TableAccessMiddleware(options: AccessOptions) {
       return;
     }
 
-    // 9. Não é dono/admin → verificar permissão do grupo
+    // 9. Usuário logado NÃO é dono/admin → aplicar regras de visibilidade
+    const visibility = table.configuration?.visibility || 'restricted';
+
+    // Ações que SEMPRE requerem dono/admin (independente da visibilidade)
+    const ownerOnlyActions = [
+      'CREATE_FIELD',
+      'UPDATE_FIELD',
+      'REMOVE_FIELD', // Gerenciar campos
+      'UPDATE_TABLE',
+      'REMOVE_TABLE', // Gerenciar tabela
+      'UPDATE_ROW',
+      'REMOVE_ROW', // Editar/apagar registros
+    ];
+
+    if (ownerOnlyActions.includes(requiredPermission)) {
+      throw HTTPException.Forbidden(
+        'Only table owner or administrators can perform this action',
+        'OWNER_OR_ADMIN_REQUIRED',
+      );
+    }
+
+    // 10. Regras específicas por visibilidade
+    switch (visibility) {
+      case 'private':
+        // PRIVADA: Bloqueia TUDO para não-dono/admin
+        throw HTTPException.Forbidden('This table is private', 'TABLE_PRIVATE');
+
+      case 'restricted':
+        // RESTRITA: Só permite VIEW (CREATE_ROW bloqueado)
+        if (requiredPermission === 'CREATE_ROW') {
+          throw HTTPException.Forbidden(
+            'Only owner/administrators can create records in restricted tables',
+            'RESTRICTED_CREATE',
+          );
+        }
+        break;
+
+      case 'open':
+        // ABERTA: Permite VIEW e CREATE_ROW (UPDATE/REMOVE já bloqueado acima)
+        break;
+
+      case 'public':
+        // PÚBLICA: Permite VIEW e CREATE_ROW (UPDATE/REMOVE já bloqueado acima)
+        break;
+
+      case 'form':
+        // FORMULÁRIO: Bloqueia VIEW (CREATE_ROW já tratado para visitante acima)
+        if (
+          ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(requiredPermission)
+        ) {
+          throw HTTPException.Forbidden(
+            'Only owner/administrators can view form tables',
+            'FORM_VIEW_RESTRICTED',
+          );
+        }
+        break;
+    }
+
+    // 11. Se chegou aqui, verificar se tem permissão no grupo
     await checkUserHasPermission(user.sub, requiredPermission);
   };
 }
