@@ -11,7 +11,7 @@ export const TableUpdateSchema = z.object({
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
   description: z.string().default(''),
   style: z.enum(['list', 'gallery']),
-  visibility: z.enum(['public', 'restricted', 'open', 'form']),
+  visibility: z.enum(['public', 'restricted', 'open', 'form', 'private']),
   collaboration: z.enum(['open', 'restricted']),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),

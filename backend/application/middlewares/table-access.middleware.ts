@@ -221,7 +221,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
         break;
     }
 
-    // 11. Se chegou aqui, verificar se tem permissão no grupo
+    // 11.  verificar se tem permissão no grupo
     await checkUserHasPermission(user.sub, requiredPermission);
   };
 }

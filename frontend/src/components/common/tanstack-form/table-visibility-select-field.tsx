@@ -36,16 +36,17 @@ export function TableVisibilitySelectField({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(value as 'public' | 'restricted' | 'open' | 'form');
+          field.handleChange(value as 'public' | 'restricted' | 'open' | 'form' | 'private');
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="public">Pública</SelectItem>
+          <SelectItem value="private">Privada</SelectItem>
           <SelectItem value="restricted">Restrita</SelectItem>
           <SelectItem value="open">Aberta</SelectItem>
+          <SelectItem value="public">Pública</SelectItem>
           <SelectItem value="form">Formulário online</SelectItem>
         </SelectContent>
       </Select>

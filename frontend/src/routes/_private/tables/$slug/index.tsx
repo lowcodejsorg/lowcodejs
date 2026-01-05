@@ -4,7 +4,8 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon, PlusIcon } from 'lucide-react';
+import { AxiosError } from 'axios';
+import { ArrowLeftIcon, PlusIcon, ShieldXIcon } from 'lucide-react';
 import z from 'zod';
 
 import { TableConfigurationDropdown } from './-table-configuration';
@@ -15,6 +16,13 @@ import { TableListViewSkeleton } from './-table-list-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from '@/components/ui/empty';
 import { Pagination } from '@/components/common/pagination';
 import { SheetFilter } from '@/components/common/sheet-filter';
 import { TableStyleViewDropdown } from '@/components/common/table-style-view';
@@ -131,12 +139,48 @@ function RouteComponent(): React.JSX.Element {
             <TableGridViewSkeleton />
           )}
 
-        {rows.status === 'error' && (
-          <LoadError
-            message="Houve um erro ao buscar dados de registros da tabela"
-            refetch={rows.refetch}
-          />
-        )}
+        {rows.status === 'error' &&
+          (() => {
+            const error = rows.error as AxiosError<{
+              code: number;
+              cause: string;
+            }>;
+            const cause = error?.response?.data?.cause;
+
+            // Erros de permissão - sem botão de refetch
+            if (
+              cause === 'TABLE_PRIVATE' ||
+              cause === 'FORM_VIEW_RESTRICTED' ||
+              error?.response?.status === 403
+            ) {
+              const message =
+                cause === 'TABLE_PRIVATE'
+                  ? 'Esta tabela é privada'
+                  : cause === 'FORM_VIEW_RESTRICTED'
+                    ? 'Apenas o dono pode visualizar tabelas de formulário'
+                    : 'Você não tem permissão para acessar esta tabela';
+
+              return (
+                <Empty className="from-muted/50 to-background h-full bg-linear-to-b from-30%">
+                  <EmptyHeader>
+                    <EmptyMedia variant="icon">
+                      <ShieldXIcon />
+                    </EmptyMedia>
+                    <EmptyTitle>Acesso negado</EmptyTitle>
+                    <EmptyDescription>{message}</EmptyDescription>
+                  </EmptyHeader>
+                </Empty>
+              );
+            }
+
+            // Outros erros - com botão de refetch
+            return (
+              <LoadError
+                message="Houve um erro ao buscar dados de registros da tabela"
+                refetch={rows.refetch}
+              />
+            );
+          })()}
 
         {table.status === 'success' &&
           table.data.configuration.style === 'list' &&
