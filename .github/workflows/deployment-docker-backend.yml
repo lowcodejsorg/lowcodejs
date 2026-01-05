@@ -41,5 +41,4 @@ jobs:
           file: ./backend/Dockerfile-production
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:${{ inputs.branch }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true

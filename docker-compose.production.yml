@@ -86,6 +86,11 @@ services:
       - "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
       - "traefik.http.routers.${ENVIRONMENT}-app-http.entrypoints=web"
       - "traefik.http.routers.${ENVIRONMENT}-app-http.middlewares=https-only@file"
+      # Headers anti-cache para garantir que navegadores busquem sempre a versão mais recente
+      - "traefik.http.middlewares.${ENVIRONMENT}-app-headers.headers.customResponseHeaders.Cache-Control=no-cache, no-store, must-revalidate"
+      - "traefik.http.middlewares.${ENVIRONMENT}-app-headers.headers.customResponseHeaders.Pragma=no-cache"
+      - "traefik.http.middlewares.${ENVIRONMENT}-app-headers.headers.customResponseHeaders.Expires=0"
+      - "traefik.http.routers.${ENVIRONMENT}-app.middlewares=${ENVIRONMENT}-app-headers"
 
 volumes:
   mongo-volume:

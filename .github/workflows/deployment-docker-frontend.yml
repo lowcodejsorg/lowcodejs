@@ -37,5 +37,4 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ inputs.branch }}
           build-args: |
             VITE_API_BASE_URL=https://api.${{ inputs.branch }}.lowcodejs.org
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          no-cache: true
