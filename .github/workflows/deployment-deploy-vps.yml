@@ -94,7 +94,7 @@ jobs:
 
             # Deploy - Forçar pull fresh e recreate de containers
             docker compose -f docker-compose.production.yml pull
-            docker image prune -f
+            docker image prune -f || true
             docker compose -f docker-compose.production.yml up -d --force-recreate
 
             # Aguardar container da API estar pronto
