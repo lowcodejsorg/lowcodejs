@@ -15,6 +15,7 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -31,6 +32,7 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
+import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import type { MenuRoute } from '@/lib/menu/menu-route';
 import { useAuthenticationStore } from '@/stores/authentication';
 
@@ -47,6 +49,8 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
   const router = useRouter();
 
   const { state } = useSidebar();
+
+  const setting = useSettingRead();
 
   const signOut = useAuthenticationSignOut({
     onSuccess() {
@@ -88,6 +92,15 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
     // collapsible="icon"
     // variant="floating"
     >
+      <SidebarHeader className="inline-flex items-center justify-center py-6">
+        {setting.status === 'pending' && <Skeleton className="h-8 w-32" />}
+        {setting.status === 'success' && (
+          <img
+            src={setting.data.LOGO_LARGE_URL ?? ''}
+            className="w-32"
+          />
+        )}
+      </SidebarHeader>
       <SidebarContent>
         {menu.map((props) => {
           // Se o grupo tem a flag isLoading, renderiza skeleton

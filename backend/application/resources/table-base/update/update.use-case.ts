@@ -3,8 +3,8 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import HTTPException from '@application/core/exception.core';
 import { FIELD_TYPE } from '@application/core/entity.core';
+import HTTPException from '@application/core/exception.core';
 import { buildTable } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
