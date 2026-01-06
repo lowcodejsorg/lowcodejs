@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 import type { ValidationToken as Core } from '@application/core/entity.core';
-import { TOKEN_STATUS } from '@application/core/entity.core';
+import { E_TOKEN_STATUS } from '@application/core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;
@@ -18,8 +18,8 @@ export const Schema = new mongoose.Schema(
     code: { type: String, required: true },
     status: {
       type: String,
-      enum: Object.values(TOKEN_STATUS),
-      default: TOKEN_STATUS.REQUESTED,
+      enum: Object.values(E_TOKEN_STATUS),
+      default: E_TOKEN_STATUS.REQUESTED,
       required: true,
     },
 

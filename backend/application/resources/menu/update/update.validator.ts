@@ -1,7 +1,7 @@
 import slugify from 'slugify';
 import z from 'zod';
 
-import { MENU_ITEM_TYPE } from '@application/core/entity.core';
+import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 
 export const MenuUpdateParamsValidator = z.object({
   _id: z.string().min(1, 'ID é obrigatório'),
@@ -10,7 +10,7 @@ export const MenuUpdateParamsValidator = z.object({
 export const MenuUpdateBodyValidator = z
   .object({
     name: z.string().trim().min(1, 'Nome é obrigatório').optional(),
-    type: z.enum(MENU_ITEM_TYPE).optional(),
+    type: z.enum(E_MENU_ITEM_TYPE).optional(),
     table: z.string().nullable().optional(),
     parent: z.string().nullable().optional(),
     html: z.string().nullable().optional(),
@@ -27,7 +27,7 @@ export const MenuUpdateBodyValidator = z
   })
   .refine(
     (data) => {
-      if (data.type === 'external' && data.type !== undefined) {
+      if (data.type === E_MENU_ITEM_TYPE.EXTERNAL && data.type !== undefined) {
         return !!data.url;
       }
       return true;
@@ -39,7 +39,7 @@ export const MenuUpdateBodyValidator = z
   )
   .refine(
     (data) => {
-      if (data.type === MENU_ITEM_TYPE.PAGE && data.type !== undefined) {
+      if (data.type === E_MENU_ITEM_TYPE.PAGE && data.type !== undefined) {
         return !!data.html;
       }
       return true;

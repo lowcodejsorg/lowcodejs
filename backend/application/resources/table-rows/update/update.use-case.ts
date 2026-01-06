@@ -3,7 +3,7 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { Table } from '@application/model/table.model';
@@ -59,7 +59,7 @@ export default class TableRowUpdateUseCase {
 
       const groups = (
         table.fields as import('@application/core/entity.core').Field[]
-      )?.filter((field) => field.type === FIELD_TYPE.FIELD_GROUP);
+      )?.filter((field) => field.type === E_FIELD_TYPE.FIELD_GROUP);
 
       for await (const group of groups) {
         const groupTable = await Table.findOne({

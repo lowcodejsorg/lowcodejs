@@ -1,12 +1,12 @@
 import slugify from 'slugify';
 import z from 'zod';
 
-import { MENU_ITEM_TYPE } from '@application/core/entity.core';
+import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 
 export const MenuCreateBodyValidator = z
   .object({
     name: z.string().trim().min(1, 'Nome é obrigatório'),
-    type: z.enum(MENU_ITEM_TYPE),
+    type: z.enum(E_MENU_ITEM_TYPE),
     table: z.string().nullable().optional(),
     parent: z.string().nullable().optional(),
     html: z.string().nullable().optional(),
@@ -21,7 +21,7 @@ export const MenuCreateBodyValidator = z
   })
   .refine(
     (data) => {
-      if (data.type === 'external') {
+      if (data.type === E_MENU_ITEM_TYPE.EXTERNAL) {
         return !!data.url;
       }
       return true;
@@ -33,7 +33,7 @@ export const MenuCreateBodyValidator = z
   )
   .refine(
     (data) => {
-      if (data.type === MENU_ITEM_TYPE.PAGE) {
+      if (data.type === E_MENU_ITEM_TYPE.PAGE) {
         return !!data.html;
       }
       return true;

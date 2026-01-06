@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
 import { left, right, type Either } from '@application/core/either.core';
-import { TOKEN_STATUS } from '@application/core/entity.core';
+import { E_TOKEN_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { ValidationToken } from '@application/model/validation-token.model';
 
@@ -28,7 +28,7 @@ export default class ValidateCodeUseCase {
           ),
         );
 
-      if (token.status === TOKEN_STATUS.EXPIRED)
+      if (token.status === E_TOKEN_STATUS.EXPIRED)
         return left(HTTPException.Gone('Code expired', 'CODE_EXPIRED'));
 
       const TIME_EXPIRATION_IN_MINUTES = 10;
@@ -44,7 +44,7 @@ export default class ValidateCodeUseCase {
             ...token?.toJSON({
               flattenObjectIds: true,
             }),
-            status: TOKEN_STATUS.EXPIRED,
+            status: E_TOKEN_STATUS.EXPIRED,
           })
           .save();
         return left(
@@ -60,7 +60,7 @@ export default class ValidateCodeUseCase {
           ...token?.toJSON({
             flattenObjectIds: true,
           }),
-          status: TOKEN_STATUS.VALIDATED,
+          status: E_TOKEN_STATUS.VALIDATED,
         })
         .save();
 

@@ -3,7 +3,7 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildTable } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
@@ -73,7 +73,7 @@ export default class TableUpdateUseCase {
       if (payload.configuration?.visibility) {
         const fieldGroupFields = await Field.find({
           _id: { $in: table.fields },
-          type: FIELD_TYPE.FIELD_GROUP,
+          type: E_FIELD_TYPE.FIELD_GROUP,
         });
 
         const groupIds = fieldGroupFields

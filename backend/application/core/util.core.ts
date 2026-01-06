@@ -4,39 +4,39 @@ import mongoose from 'mongoose';
 import { Table } from '@application/model/table.model';
 
 import type { Field, Optional, Row, Schema, TableSchema } from './entity.core';
-import { FIELD_TYPE } from './entity.core';
+import { E_FIELD_TYPE } from './entity.core';
 import { HandlerFunction } from './table/method.core';
 
-const FieldTypeMapper: Record<FIELD_TYPE, Schema['type']> = {
-  [FIELD_TYPE.TEXT_SHORT]: 'String',
-  [FIELD_TYPE.TEXT_LONG]: 'String',
-  [FIELD_TYPE.DROPDOWN]: 'String',
-  [FIELD_TYPE.FILE]: 'ObjectId',
-  [FIELD_TYPE.DATE]: 'Date',
-  [FIELD_TYPE.RELATIONSHIP]: 'ObjectId',
-  [FIELD_TYPE.FIELD_GROUP]: 'ObjectId',
-  [FIELD_TYPE.EVALUATION]: 'ObjectId',
-  [FIELD_TYPE.REACTION]: 'ObjectId',
-  [FIELD_TYPE.CATEGORY]: 'String',
+const FieldTypeMapper: Record<keyof typeof E_FIELD_TYPE, Schema['type']> = {
+  [E_FIELD_TYPE.TEXT_SHORT]: 'String',
+  [E_FIELD_TYPE.TEXT_LONG]: 'String',
+  [E_FIELD_TYPE.DROPDOWN]: 'String',
+  [E_FIELD_TYPE.FILE]: 'ObjectId',
+  [E_FIELD_TYPE.DATE]: 'Date',
+  [E_FIELD_TYPE.RELATIONSHIP]: 'ObjectId',
+  [E_FIELD_TYPE.FIELD_GROUP]: 'ObjectId',
+  [E_FIELD_TYPE.EVALUATION]: 'ObjectId',
+  [E_FIELD_TYPE.REACTION]: 'ObjectId',
+  [E_FIELD_TYPE.CATEGORY]: 'String',
 };
 
 function mapperSchema(field: Field): TableSchema {
   const mapper = {
-    [FIELD_TYPE.TEXT_SHORT]: {
+    [E_FIELD_TYPE.TEXT_SHORT]: {
       [field.slug]: {
         type: FieldTypeMapper[field.type] || 'String',
         required: Boolean(field.configuration?.required || false),
       },
     },
 
-    [FIELD_TYPE.TEXT_LONG]: {
+    [E_FIELD_TYPE.TEXT_LONG]: {
       [field.slug]: {
         type: FieldTypeMapper[field.type] || 'String',
         required: Boolean(field.configuration?.required || false),
       },
     },
 
-    [FIELD_TYPE.DROPDOWN]: {
+    [E_FIELD_TYPE.DROPDOWN]: {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
@@ -45,7 +45,7 @@ function mapperSchema(field: Field): TableSchema {
       ],
     },
 
-    [FIELD_TYPE.FILE]: {
+    [E_FIELD_TYPE.FILE]: {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
@@ -55,7 +55,7 @@ function mapperSchema(field: Field): TableSchema {
       ],
     },
 
-    [FIELD_TYPE.RELATIONSHIP]: {
+    [E_FIELD_TYPE.RELATIONSHIP]: {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
@@ -65,7 +65,7 @@ function mapperSchema(field: Field): TableSchema {
       ],
     },
 
-    [FIELD_TYPE.FIELD_GROUP]: {
+    [E_FIELD_TYPE.FIELD_GROUP]: {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
@@ -75,7 +75,7 @@ function mapperSchema(field: Field): TableSchema {
       ],
     },
 
-    [FIELD_TYPE.CATEGORY]: {
+    [E_FIELD_TYPE.CATEGORY]: {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
@@ -84,7 +84,7 @@ function mapperSchema(field: Field): TableSchema {
       ],
     },
 
-    [FIELD_TYPE.EVALUATION]: {
+    [E_FIELD_TYPE.EVALUATION]: {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'Number',
@@ -94,7 +94,7 @@ function mapperSchema(field: Field): TableSchema {
       ],
     },
 
-    [FIELD_TYPE.REACTION]: {
+    [E_FIELD_TYPE.REACTION]: {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
@@ -301,11 +301,11 @@ export async function buildTable(
 
 export function getRelationship(fields: Field[] = []): Field[] {
   const types = [
-    FIELD_TYPE.RELATIONSHIP,
-    FIELD_TYPE.FILE,
-    FIELD_TYPE.FIELD_GROUP,
-    FIELD_TYPE.REACTION,
-    FIELD_TYPE.EVALUATION,
+    E_FIELD_TYPE.RELATIONSHIP,
+    E_FIELD_TYPE.FILE,
+    E_FIELD_TYPE.FIELD_GROUP,
+    E_FIELD_TYPE.REACTION,
+    E_FIELD_TYPE.EVALUATION,
   ];
 
   return fields?.filter((field) => field.type && types.includes(field.type));
@@ -320,10 +320,10 @@ export async function buildPopulate(
   for await (const field of relacionamentos) {
     if (
       ![
-        FIELD_TYPE.FIELD_GROUP,
-        FIELD_TYPE.REACTION,
-        FIELD_TYPE.EVALUATION,
-        FIELD_TYPE.RELATIONSHIP,
+        E_FIELD_TYPE.FIELD_GROUP,
+        E_FIELD_TYPE.REACTION,
+        E_FIELD_TYPE.EVALUATION,
+        E_FIELD_TYPE.RELATIONSHIP,
       ].includes(field.type)
     ) {
       populate.push({
@@ -331,7 +331,7 @@ export async function buildPopulate(
       });
     }
 
-    if (field.type === FIELD_TYPE.REACTION) {
+    if (field.type === E_FIELD_TYPE.REACTION) {
       populate.push({
         path: field.slug,
         populate: {
@@ -341,7 +341,7 @@ export async function buildPopulate(
       });
     }
 
-    if (field.type === FIELD_TYPE.EVALUATION) {
+    if (field.type === E_FIELD_TYPE.EVALUATION) {
       populate.push({
         path: field.slug,
         populate: {
@@ -351,7 +351,7 @@ export async function buildPopulate(
       });
     }
 
-    if (field.type === FIELD_TYPE.RELATIONSHIP) {
+    if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
       const relationshipTableId =
         field?.configuration?.relationship?.table?._id?.toString();
       const relationshipTable = await Table.findOne({
@@ -380,7 +380,7 @@ export async function buildPopulate(
       }
     }
 
-    if (field.type === FIELD_TYPE.FIELD_GROUP) {
+    if (field.type === E_FIELD_TYPE.FIELD_GROUP) {
       const groupId = field?.configuration?.group?._id?.toString();
 
       const group = await Table.findOne({
@@ -434,11 +434,13 @@ export async function buildQuery(
     ...(trashed && { trashed: trashed === 'true' }),
   };
 
-  for (const field of fields.filter((f) => f.type !== FIELD_TYPE.FIELD_GROUP)) {
+  for (const field of fields.filter(
+    (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP,
+  )) {
     const slug = String(field.slug?.toString());
 
     if (
-      [FIELD_TYPE.TEXT_SHORT, FIELD_TYPE.TEXT_LONG].includes(field.type) &&
+      [E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG].includes(field.type) &&
       payload[slug]
     ) {
       query[slug] = {
@@ -449,9 +451,9 @@ export async function buildQuery(
 
     if (
       [
-        FIELD_TYPE.RELATIONSHIP,
-        FIELD_TYPE.DROPDOWN,
-        FIELD_TYPE.CATEGORY,
+        E_FIELD_TYPE.RELATIONSHIP,
+        E_FIELD_TYPE.DROPDOWN,
+        E_FIELD_TYPE.CATEGORY,
       ].includes(field.type) &&
       payload[slug]
     ) {
@@ -460,7 +462,7 @@ export async function buildQuery(
       };
     }
 
-    if (field.type === FIELD_TYPE.DATE) {
+    if (field.type === E_FIELD_TYPE.DATE) {
       const initialKey = `${slug}-initial`;
       const finalKey = `${slug}-final`;
 
@@ -477,14 +479,14 @@ export async function buildQuery(
   }
 
   const hasFieldGroupQuery = fields.some((f) => {
-    if (f.type !== FIELD_TYPE.FIELD_GROUP) return false;
+    if (f.type !== E_FIELD_TYPE.FIELD_GROUP) return false;
     const groupPrefix = f.slug.concat('-');
     return Object.keys(payload).some((key) => key.startsWith(groupPrefix));
   });
 
   if (hasFieldGroupQuery) {
     for (const field of fields.filter(
-      (f) => f.type === FIELD_TYPE.FIELD_GROUP,
+      (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
     )) {
       const slug = String(field.slug?.toString());
 
@@ -535,9 +537,11 @@ export async function buildQuery(
     const searchQuery: Query[] = [];
 
     for (const field of fields.filter(
-      (f) => f.type !== FIELD_TYPE.FIELD_GROUP,
+      (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP,
     )) {
-      if ([FIELD_TYPE.TEXT_SHORT, FIELD_TYPE.TEXT_LONG].includes(field?.type)) {
+      if (
+        [E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG].includes(field?.type)
+      ) {
         const slug = String(field.slug?.toString());
         searchQuery.push({
           [slug]: {

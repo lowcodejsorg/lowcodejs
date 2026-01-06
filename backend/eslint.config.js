@@ -24,13 +24,6 @@ export default [
       ...js.configs.recommended.rules,
       ...tseslint.configs.recommended.rules,
       'prettier/prettier': 'error',
-      '@typescript-eslint/consistent-type-imports': [
-        'error',
-        {
-          prefer: 'type-imports',
-          disallowTypeAnnotations: false,
-        },
-      ],
       '@typescript-eslint/explicit-function-return-type': [
         'error',
         {
@@ -48,6 +41,10 @@ export default [
           'newlines-between': 'always',
         },
       ],
+      // Desabilitado porque quebra DI com fastify-decorators
+      // A regra converte imports de classes para 'import type', removendo
+      // a referência no runtime e quebrando o reflect-metadata
+      '@typescript-eslint/consistent-type-imports': 'off',
     },
     settings: {
       'import/resolver': {

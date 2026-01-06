@@ -3,7 +3,7 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { MENU_ITEM_TYPE } from '@application/core/entity.core';
+import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { Menu as Model } from '@application/model/menu.model';
 
@@ -26,7 +26,7 @@ export default class MenuDeleteUseCase {
         return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
 
       // Se for SEPARATOR, verificar se tem filhos ativos
-      if (menu.type === MENU_ITEM_TYPE.SEPARATOR) {
+      if (menu.type === E_MENU_ITEM_TYPE.SEPARATOR) {
         const childrenCount = await Model.countDocuments({
           parent: menu._id,
           trashed: false,

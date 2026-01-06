@@ -6,7 +6,7 @@ import type z from 'zod';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
-  MENU_ITEM_TYPE,
+  E_MENU_ITEM_TYPE,
   type Menu as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -49,7 +49,9 @@ export default class MenuCreateUseCase {
           HTTPException.Conflict('Menu already exists', 'MENU_ALREADY_EXISTS'),
         );
 
-      if ([MENU_ITEM_TYPE.TABLE, MENU_ITEM_TYPE.FORM].includes(payload.type)) {
+      if (
+        [E_MENU_ITEM_TYPE.TABLE, E_MENU_ITEM_TYPE.FORM].includes(payload.type)
+      ) {
         if (!payload.table)
           return left(
             HTTPException.BadRequest(
@@ -65,18 +67,18 @@ export default class MenuCreateUseCase {
             HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
           );
 
-        if (payload.type === MENU_ITEM_TYPE.TABLE)
+        if (payload.type === E_MENU_ITEM_TYPE.TABLE)
           payload.url = '/tables/'.concat(table.slug);
 
-        if (payload.type === MENU_ITEM_TYPE.FORM)
+        if (payload.type === E_MENU_ITEM_TYPE.FORM)
           payload.url = '/tables/'.concat(table.slug).concat('/row/create');
       }
 
-      if ([MENU_ITEM_TYPE.PAGE].includes(payload.type)) {
+      if ([E_MENU_ITEM_TYPE.PAGE].includes(payload.type)) {
         payload.url = '/pages/'.concat(slug);
       }
 
-      if (parent && parent.type !== MENU_ITEM_TYPE.SEPARATOR) {
+      if (parent && parent.type !== E_MENU_ITEM_TYPE.SEPARATOR) {
         await Model.create({
           ...parent.toJSON({
             flattenObjectIds: true,
@@ -91,7 +93,7 @@ export default class MenuCreateUseCase {
 
         await parent
           .set({
-            type: MENU_ITEM_TYPE.SEPARATOR,
+            type: E_MENU_ITEM_TYPE.SEPARATOR,
             slug: slugify(parent.name.concat('-separator'), {
               lower: true,
               trim: true,

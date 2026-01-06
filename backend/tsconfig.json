@@ -27,14 +27,6 @@
     "useDefineForClassFields": false,
     "resolveJsonModule": true
   },
-  "include": [
-    "application",
-    "bin",
-    "config",
-    "start",
-    "database",
-    "_types",
-    "application/core"
-  ],
+  "include": ["application", "bin", "config", "start", "database", "_types"],
   "exclude": ["node_modules", "build"]
 }

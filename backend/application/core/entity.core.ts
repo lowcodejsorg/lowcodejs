@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-
 /**
  * Make some property optional an type
  *
@@ -16,49 +14,49 @@
  */
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
-export enum TOKEN_STATUS {
-  REQUESTED = 'REQUESTED',
-  EXPIRED = 'EXPIRED',
-  VALIDATED = 'VALIDATED',
-}
+export const E_TOKEN_STATUS = {
+  REQUESTED: 'REQUESTED',
+  EXPIRED: 'EXPIRED',
+  VALIDATED: 'VALIDATED',
+} as const;
 
-export enum FIELD_TYPE {
-  TEXT_SHORT = 'TEXT_SHORT',
-  TEXT_LONG = 'TEXT_LONG',
-  DROPDOWN = 'DROPDOWN',
-  DATE = 'DATE',
-  RELATIONSHIP = 'RELATIONSHIP',
-  FILE = 'FILE',
-  FIELD_GROUP = 'FIELD_GROUP',
-  REACTION = 'REACTION',
-  EVALUATION = 'EVALUATION',
-  CATEGORY = 'CATEGORY',
-}
+export const E_FIELD_TYPE = {
+  TEXT_SHORT: 'TEXT_SHORT',
+  TEXT_LONG: 'TEXT_LONG',
+  DROPDOWN: 'DROPDOWN',
+  DATE: 'DATE',
+  RELATIONSHIP: 'RELATIONSHIP',
+  FILE: 'FILE',
+  FIELD_GROUP: 'FIELD_GROUP',
+  REACTION: 'REACTION',
+  EVALUATION: 'EVALUATION',
+  CATEGORY: 'CATEGORY',
+} as const;
 
-export enum FIELD_FORMAT {
+export const E_FIELD_FORMAT = {
   // TEXT_SHORT
-  ALPHA_NUMERIC = 'ALPHA_NUMERIC',
-  INTEGER = 'INTEGER',
-  DECIMAL = 'DECIMAL',
-  URL = 'URL',
-  EMAIL = 'EMAIL',
+  ALPHA_NUMERIC: 'ALPHA_NUMERIC',
+  INTEGER: 'INTEGER',
+  DECIMAL: 'DECIMAL',
+  URL: 'URL',
+  EMAIL: 'EMAIL',
 
   // DATE
-  DD_MM_YYYY = 'dd/MM/yyyy',
-  MM_DD_YYYY = 'MM/dd/yyyy',
-  YYYY_MM_DD = 'yyyy/MM/dd',
-  DD_MM_YYYY_HH_MM_SS = 'dd/MM/yyyy HH:mm:ss',
-  MM_DD_YYYY_HH_MM_SS = 'MM/dd/yyyy HH:mm:ss',
-  YYYY_MM_DD_HH_MM_SS = 'yyyy/MM/dd HH:mm:ss',
-  DD_MM_YYYY_DASH = 'dd-MM-yyyy',
-  MM_DD_YYYY_DASH = 'MM-dd-yyyy',
-  YYYY_MM_DD_DASH = 'yyyy-MM-dd',
-  DD_MM_YYYY_HH_MM_SS_DASH = 'dd-MM-yyyy HH:mm:ss',
-  MM_DD_YYYY_HH_MM_SS_DASH = 'MM-dd-yyyy HH:mm:ss',
-  YYYY_MM_DD_HH_MM_SS_DASH = 'yyyy-MM-dd HH:mm:ss',
-}
+  DD_MM_YYYY: 'dd/MM/yyyy',
+  MM_DD_YYYY: 'MM/dd/yyyy',
+  YYYY_MM_DD: 'yyyy/MM/dd',
+  DD_MM_YYYY_HH_MM_SS: 'dd/MM/yyyy HH:mm:ss',
+  MM_DD_YYYY_HH_MM_SS: 'MM/dd/yyyy HH:mm:ss',
+  YYYY_MM_DD_HH_MM_SS: 'yyyy/MM/dd HH:mm:ss',
+  DD_MM_YYYY_DASH: 'dd-MM-yyyy',
+  MM_DD_YYYY_DASH: 'MM-dd-yyyy',
+  YYYY_MM_DD_DASH: 'yyyy-MM-dd',
+  DD_MM_YYYY_HH_MM_SS_DASH: 'dd-MM-yyyy HH:mm:ss',
+  MM_DD_YYYY_HH_MM_SS_DASH: 'MM-dd-yyyy HH:mm:ss',
+  YYYY_MM_DD_HH_MM_SS_DASH: 'yyyy-MM-dd HH:mm:ss',
+} as const;
 
-export const ERole = {
+export const E_ROLE = {
   MASTER: 'MASTER',
   ADMINISTRATOR: 'ADMINISTRATOR',
   MANAGER: 'MANAGER',
@@ -68,7 +66,7 @@ export const ERole = {
 export interface JWTPayload {
   sub: string;
   email: string;
-  role: keyof typeof ERole;
+  role: keyof typeof E_ROLE;
   type: 'access' | 'refresh';
 }
 
@@ -83,7 +81,7 @@ export interface Base {
 export interface ValidationToken extends Base {
   user: string;
   code: string;
-  status: TOKEN_STATUS;
+  status: keyof typeof E_TOKEN_STATUS;
 }
 
 export interface Storage extends Base {
@@ -173,11 +171,11 @@ export type FieldConfigurationGroup = Pick<Table, '_id' | 'slug'>;
 export interface Field extends Base {
   name: string;
   slug: string;
-  type: FIELD_TYPE;
+  type: keyof typeof E_FIELD_TYPE;
   configuration: {
     required: boolean;
     multiple: boolean;
-    format: FIELD_FORMAT | null;
+    format: keyof typeof E_FIELD_FORMAT | null;
     listing: boolean;
     filtering: boolean;
     defaultValue: string | null;
@@ -243,18 +241,18 @@ export interface Evaluation extends Base {
   value: number;
 }
 
-export enum MENU_ITEM_TYPE {
-  TABLE = 'table',
-  PAGE = 'page',
-  FORM = 'form',
-  EXTERNAL = 'external',
-  SEPARATOR = 'separator',
-}
+export const E_MENU_ITEM_TYPE = {
+  TABLE: 'TABLE',
+  PAGE: 'PAGE',
+  FORM: 'FORM',
+  EXTERNAL: 'EXTERNAL',
+  SEPARATOR: 'SEPARATOR',
+} as const;
 
 export interface Menu extends Base {
   name: string;
   slug: string;
-  type: MENU_ITEM_TYPE;
+  type: keyof typeof E_MENU_ITEM_TYPE;
   table: string | null;
   parent: string | null;
   url: string | null;

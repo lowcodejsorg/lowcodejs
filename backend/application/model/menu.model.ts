@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 import {
-  MENU_ITEM_TYPE,
+  E_MENU_ITEM_TYPE,
   type Menu as Core,
 } from '@application/core/entity.core';
 
@@ -17,7 +17,7 @@ export const Schema = new mongoose.Schema(
     slug: { type: String, required: true },
     type: {
       type: String,
-      enum: Object.values(MENU_ITEM_TYPE),
+      enum: Object.values(E_MENU_ITEM_TYPE),
       required: true,
     },
 

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
@@ -6,7 +7,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { User as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { User as Model } from '@application/model/user.model';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
 import type {
   UserUpdateBodyValidator,
@@ -19,40 +20,26 @@ type Payload = z.infer<typeof UserUpdateBodyValidator> &
 
 @Service()
 export default class UserUpdateUseCase {
+  constructor(private readonly userRepository: UserContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      if (!payload?.group)
-        return left(
-          HTTPException.BadRequest('Group not informed', 'GROUP_NOT_INFORMED'),
-        );
-
-      const user = await Model.findOne({ _id: payload._id });
+      const user = await this.userRepository.findBy({
+        _id: payload._id,
+        exact: true,
+      });
 
       if (!user)
         return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
 
-      user.set({
+      const updated = await this.userRepository.update({
         ...payload,
-        group: payload.group,
         ...(payload.password && {
-          password: await hash(payload.password, 6),
+          password: await hash(payload.password, 12),
         }),
       });
 
-      await user.save();
-
-      const populated = await user?.populate([
-        {
-          path: 'group',
-        },
-      ]);
-
-      return right({
-        ...populated?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: populated?._id.toString(),
-      });
+      return right(updated);
     } catch (error) {
       console.error(error);
       return left(

@@ -4,7 +4,7 @@ import type z from 'zod';
 
 import { left, right, type Either } from '@application/core/either.core';
 import {
-  TOKEN_STATUS,
+  E_TOKEN_STATUS,
   type User as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -32,7 +32,7 @@ export default class MagicLinkUseCase {
           ),
         );
 
-      if (token.status === TOKEN_STATUS.VALIDATED)
+      if (token.status === E_TOKEN_STATUS.VALIDATED)
         return left(
           HTTPException.Conflict(
             'Validation token code already used',
@@ -40,7 +40,7 @@ export default class MagicLinkUseCase {
           ),
         );
 
-      if (token.status === TOKEN_STATUS.EXPIRED)
+      if (token.status === E_TOKEN_STATUS.EXPIRED)
         return left(
           HTTPException.Gone(
             'Validation token code expired',
@@ -61,7 +61,7 @@ export default class MagicLinkUseCase {
             ...token?.toJSON({
               flattenObjectIds: true,
             }),
-            status: TOKEN_STATUS.EXPIRED,
+            status: E_TOKEN_STATUS.EXPIRED,
           })
           .save();
 
@@ -78,7 +78,7 @@ export default class MagicLinkUseCase {
           ...token.toJSON({
             flattenObjectIds: true,
           }),
-          status: TOKEN_STATUS.VALIDATED,
+          status: E_TOKEN_STATUS.VALIDATED,
         })
         .save();
 

@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
@@ -8,13 +10,12 @@ import scalar from '@scalar/fastify-api-reference';
 import fastify from 'fastify';
 import { bootstrap } from 'fastify-decorators';
 import { join } from 'node:path';
-import 'reflect-metadata';
-import { ZodError } from 'zod';
+import z, { ZodError } from 'zod';
 
+import { loadControllers } from '@application/core/controllers';
+import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
-
-import { loadControllers } from './controllers';
-import { Env } from './env';
+import { Env } from '@start/env';
 
 const kernel = fastify({
   logger: false,
@@ -82,6 +83,54 @@ kernel.register(_static, {
   prefix: '/storage/',
 });
 
+kernel.setErrorHandler((error: Record<string, unknown>, _, response) => {
+  console.error(error);
+
+  if (error instanceof HTTPException) {
+    return response.status(error.code).send({
+      message: error.message,
+      code: error.code,
+      cause: error.cause,
+    });
+  }
+
+  if (error instanceof ZodError) {
+    const fieldErrors = z.flattenError(error).fieldErrors as Record<
+      string,
+      string[]
+    >;
+
+    const errors = Object.entries(fieldErrors).reduce(
+      (acc, [key, [value]]) => {
+        acc[key] = value;
+        return acc;
+      },
+      {} as Record<string, string>,
+    );
+
+    return response.status(400).send({
+      message: 'Invalid request',
+      code: 400,
+      cause: 'INVALID_PAYLOAD_FORMAT',
+      errors,
+    });
+  }
+
+  if (error.code === 'FST_ERR_VALIDATION') {
+    return response.status(Number(error.statusCode)).send({
+      message: 'Invalid request',
+      code: error.statusCode,
+      cause: 'PAYLOAD_SERIALIZATION_ERROR',
+    });
+  }
+
+  return response.status(500).send({
+    message: 'Internal server error',
+    cause: 'SERVER_ERROR',
+    code: 500,
+  });
+});
+
 kernel.register(swagger, {
   openapi: {
     info: {
@@ -90,10 +139,10 @@ kernel.register(swagger, {
       description: 'LowCodeJs API with JWT cookie-based authentication',
     },
     servers: [
-      {
-        url: 'http://localhost:3000',
-        description: 'Development server',
-      },
+      // {
+      //   url: 'http://localhost:3000',
+      //   description: 'Development server',
+      // },
       {
         url: 'https://api.demo.lowcodejs.org',
         description: 'Demo server',
@@ -125,35 +174,14 @@ kernel.register(scalar, {
   },
 });
 
+registerDependencies();
+
 kernel.register(bootstrap, {
-  // directory: resolve(process.cwd(), 'application', 'resources'),
-  // mask: /\.controller\.(t|j)s$/,
   controllers: [...(await loadControllers())],
 });
 
 kernel.get('/openapi.json', async function () {
   return kernel.swagger();
-});
-
-kernel.setErrorHandler((error, _, response) => {
-  console.error(error);
-  if (error instanceof HTTPException) {
-    return response.status(Number(error.code || 500)).send({
-      message: error.message || 'Internal Server Error',
-      cause: error.cause || 'SERVER_ERROR',
-      code: Number(error.code || 500),
-    });
-  }
-
-  if (error instanceof ZodError) {
-    console.error('ZOD ERROR', error);
-  }
-
-  return response.status(500).send({
-    message: 'Internal server error',
-    cause: 'SERVER_ERROR',
-    code: 500,
-  });
 });
 
 export { kernel };

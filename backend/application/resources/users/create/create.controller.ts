@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
@@ -10,7 +11,6 @@ import { UserCreateBodyValidator } from './create.validator';
 @Controller()
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: UserCreateUseCase = getInstanceByToken(
       UserCreateUseCase,
     ),

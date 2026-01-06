@@ -6,12 +6,12 @@ import { CalendarIcon, FilterIcon, TextIcon, XIcon } from 'lucide-react';
 import React from 'react';
 
 import type { TreeNode } from '@/components/common/-tree-list';
-import type { ComboboxOption } from '@/components/ui/combobox';
-import { Combobox } from '@/components/ui/combobox';
 import { TreeList } from '@/components/common/-tree-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
+import type { ComboboxOption } from '@/components/ui/combobox';
+import { Combobox } from '@/components/ui/combobox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import {
   InputGroup,
@@ -128,7 +128,9 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
       }
 
       if (field.type === FIELD_TYPE.DROPDOWN && Array.isArray(value)) {
-        const values = value.map((v: ComboboxOption) => v.value).filter(Boolean);
+        const values = value
+          .map((v: ComboboxOption) => v.value)
+          .filter(Boolean);
         if (values.length > 0) {
           filters[field.slug] = values.join(',');
         }

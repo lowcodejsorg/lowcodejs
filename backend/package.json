@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "tsx watch bin/server.ts",
+    "dev": "node --import @swc-node/register/esm-register --watch bin/server.ts",
     "start": "node build/bin/server.js",
     "build": "tsc -b && tsup",
     "seed": "npx tsx database/seeders/main.ts",
@@ -17,6 +17,8 @@
   "devDependencies": {
     "@eslint/js": "^9.35.0",
     "@faker-js/faker": "^10.0.0",
+    "@swc-node/register": "^1.11.1",
+    "@swc/core": "^1.15.8",
     "@types/bcryptjs": "^2.4.6",
     "@types/ejs": "^3.1.5",
     "@types/jsonwebtoken": "^9.0.10",

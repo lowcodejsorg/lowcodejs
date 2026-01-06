@@ -2,7 +2,7 @@ import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
 import { left, right, type Either } from '@application/core/either.core';
-import { TOKEN_STATUS } from '@application/core/entity.core';
+import { E_TOKEN_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { User as Model } from '@application/model/user.model';
 import { ValidationToken } from '@application/model/validation-token.model';
@@ -26,7 +26,7 @@ export default class RequestCodeUseCase {
 
       await ValidationToken.create({
         code,
-        status: TOKEN_STATUS.REQUESTED,
+        status: E_TOKEN_STATUS.REQUESTED,
         user: user._id.toString(),
       });
 

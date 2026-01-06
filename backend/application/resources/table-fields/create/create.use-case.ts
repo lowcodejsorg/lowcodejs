@@ -4,7 +4,7 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
@@ -55,7 +55,7 @@ export default class TableFieldCreateUseCase {
         },
       });
 
-      if (field.type === FIELD_TYPE.FIELD_GROUP) {
+      if (field.type === E_FIELD_TYPE.FIELD_GROUP) {
         const _schema = buildSchema([]);
 
         const group = await Table.create({

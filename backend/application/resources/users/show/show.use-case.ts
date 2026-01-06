@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -5,31 +6,28 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { User as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { User as Model } from '@application/model/user.model';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
 import type { UserShowParamValidator } from './show.validator';
 
 type Response = Either<HTTPException, Entity>;
 type Payload = z.infer<typeof UserShowParamValidator>;
+
 @Service()
 export default class UserShowUseCase {
+  constructor(private readonly userRepository: UserContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const user = await Model.findOne({ _id: payload._id }).populate([
-        {
-          path: 'group',
-        },
-      ]);
+      const user = await this.userRepository.findBy({
+        _id: payload._id,
+        exact: true,
+      });
 
       if (!user)
         return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
 
-      return right({
-        ...user?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: user?._id.toString(),
-      });
+      return right(user);
     } catch (error) {
       console.error(error);
       return left(

@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { FIELD_FORMAT } from '@application/core/entity.core';
+import { E_FIELD_FORMAT } from '@application/core/entity.core';
 
 const Category = z.object({
   id: z.string().trim(),
@@ -23,7 +23,7 @@ const Relationship = z.object({
 export const TableFieldConfiguration = z.object({
   required: z.boolean().default(false),
   multiple: z.boolean().default(false),
-  format: z.enum(FIELD_FORMAT).nullable().default(null),
+  format: z.enum(E_FIELD_FORMAT).nullable().default(null),
   listing: z.boolean().default(false),
   filtering: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),

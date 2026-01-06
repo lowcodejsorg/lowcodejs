@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -9,8 +10,7 @@ import type {
   Paginated,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { normalize } from '@application/core/util.core';
-import { User as Model } from '@application/model/user.model';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
 import type { UserPaginatedQueryValidator } from './paginated.validator';
 
@@ -19,34 +19,23 @@ type Payload = z.infer<typeof UserPaginatedQueryValidator>;
 
 @Service()
 export default class UserPaginatedUseCase {
+  constructor(private readonly userRepository: UserContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const skip = (payload.page - 1) * payload.perPage;
+      const query = {
+        ...payload,
+        _id: payload.sub,
+      };
 
-      const query: Record<string, object> = {};
+      delete query.sub;
 
-      if (payload.sub) {
-        query._id = { $ne: payload.sub };
-      }
+      console.log('query', query);
 
-      if (payload.search) {
-        query.$or = [
-          { name: { $regex: normalize(payload.search), $options: 'i' } },
-          { email: { $regex: normalize(payload.search), $options: 'i' } },
-        ];
-      }
+      console.log('typeof userRepository', typeof this.userRepository);
 
-      const users = await Model.find(query)
-        .populate([
-          {
-            path: 'group',
-          },
-        ])
-        .skip(skip)
-        .limit(payload.perPage)
-        .sort({ name: 'asc' });
-
-      const total = await Model.countDocuments(query);
+      const users = await this.userRepository.findMany(query);
+      const total = await this.userRepository.count(query);
 
       const lastPage = Math.ceil(total / payload.perPage);
 
@@ -60,10 +49,7 @@ export default class UserPaginatedUseCase {
 
       return right({
         meta,
-        data: users?.map((u) => ({
-          ...u?.toJSON(),
-          _id: u?._id.toString(),
-        })),
+        data: users,
       });
     } catch (error) {
       console.error(error);

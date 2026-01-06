@@ -6,7 +6,7 @@ import type z from 'zod';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
-  MENU_ITEM_TYPE,
+  E_MENU_ITEM_TYPE,
   type Menu as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -89,7 +89,7 @@ export default class MenuUpdateUseCase {
       // Validação e configuração por tipo
       if (
         payload.type &&
-        [MENU_ITEM_TYPE.TABLE, MENU_ITEM_TYPE.FORM].includes(payload.type)
+        [E_MENU_ITEM_TYPE.TABLE, E_MENU_ITEM_TYPE.FORM].includes(payload.type)
       ) {
         if (!payload.table) {
           return left(
@@ -107,14 +107,14 @@ export default class MenuUpdateUseCase {
             HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
           );
 
-        if (payload.type === MENU_ITEM_TYPE.TABLE)
+        if (payload.type === E_MENU_ITEM_TYPE.TABLE)
           payload.url = '/tables/'.concat(table.slug);
 
-        if (payload.type === MENU_ITEM_TYPE.FORM)
+        if (payload.type === E_MENU_ITEM_TYPE.FORM)
           payload.url = '/tables/'.concat(table.slug).concat('/row/create');
       }
 
-      if (payload.type && [MENU_ITEM_TYPE.PAGE].includes(payload.type)) {
+      if (payload.type && [E_MENU_ITEM_TYPE.PAGE].includes(payload.type)) {
         payload.url = '/pages/'.concat(finalSlug);
       }
 
@@ -131,7 +131,7 @@ export default class MenuUpdateUseCase {
         }
 
         // Lógica de conversão para separator (similar ao create)
-        if (parent.type !== MENU_ITEM_TYPE.SEPARATOR) {
+        if (parent.type !== E_MENU_ITEM_TYPE.SEPARATOR) {
           await Model.create({
             ...parent.toJSON({
               flattenObjectIds: true,
@@ -146,7 +146,7 @@ export default class MenuUpdateUseCase {
 
           await parent
             .set({
-              type: MENU_ITEM_TYPE.SEPARATOR,
+              type: E_MENU_ITEM_TYPE.SEPARATOR,
               slug: slugify(parent.name.concat('-separator'), {
                 lower: true,
                 trim: true,

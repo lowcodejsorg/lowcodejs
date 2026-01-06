@@ -2,7 +2,7 @@
 import mongoose from 'mongoose';
 
 import type { Field as Core } from '@application/core/entity.core';
-import { FIELD_FORMAT, FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@application/core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;
@@ -93,7 +93,7 @@ const Configuration = new mongoose.Schema(
     },
     format: {
       type: String,
-      enum: Object.values(FIELD_FORMAT),
+      enum: Object.values(E_FIELD_FORMAT),
       default: null,
     },
     listing: {
@@ -146,7 +146,7 @@ export const Schema = new mongoose.Schema(
     slug: { type: String },
     type: {
       type: String,
-      enum: Object.values(FIELD_TYPE),
+      enum: Object.values(E_FIELD_TYPE),
       required: true,
     },
     configuration: { type: Configuration, required: true },
