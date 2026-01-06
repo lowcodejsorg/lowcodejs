@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 
+import { E_ROLE } from '@application/core/entity.core';
 import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 
@@ -17,16 +18,18 @@ export default async function Seed(): Promise<void> {
 
   const groups = await UserGroup.find();
 
-  const masterGroup = groups.find((g) => g.slug === 'master');
-  const administratorGroup = groups.find((g) => g.slug === 'administrator');
-  const managerGroup = groups.find((g) => g.slug === 'manager');
-  const registeredGroup = groups.find((g) => g.slug === 'registered');
+  const masterGroup = groups.find((g) => g.slug === E_ROLE.MASTER);
+  const administratorGroup = groups.find(
+    (g) => g.slug === E_ROLE.ADMINISTRATOR,
+  );
+  const managerGroup = groups.find((g) => g.slug === E_ROLE.MANAGER);
+  const registeredGroup = groups.find((g) => g.slug === E_ROLE.REGISTERED);
 
   const password = await bcrypt.hash('10203040', 6);
   const payload: Payload[] = [
     {
       name: 'admin',
-      group: masterGroup?._id?.toString() as string,
+      group: administratorGroup?._id?.toString() as string,
       email: 'admin@admin.com',
       password: await bcrypt.hash('admin', 6),
       status: 'active',

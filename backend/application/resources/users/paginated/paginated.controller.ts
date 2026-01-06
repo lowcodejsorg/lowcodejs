@@ -34,7 +34,10 @@ export default class {
 
     const result = await this.useCase.execute({
       ...query,
-      sub: request?.user?.sub,
+      user: {
+        _id: request?.user?.sub,
+        role: request?.user?.role,
+      },
     });
 
     if (result.isLeft()) {

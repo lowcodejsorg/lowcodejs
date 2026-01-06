@@ -102,16 +102,6 @@ export const UpdateProfileFormFields = withForm({
                 <p className="text-sm text-muted-foreground">
                   {groupData.description || 'Sem descrição disponível'}
                 </p>
-                <div className="flex flex-wrap gap-1">
-                  {groupData.permissions.map((permission) => (
-                    <span
-                      key={permission.slug}
-                      className="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10"
-                    >
-                      {permission.name}
-                    </span>
-                  ))}
-                </div>
               </div>
             </div>
           </div>

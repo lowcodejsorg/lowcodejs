@@ -1,7 +1,6 @@
-import type { Optional } from '@application/core/entity.core';
+import { E_ROLE, type Optional } from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 import { UserGroup } from '@application/model/user-group.model';
-import { GroupSlugMapper } from '@config/util.config';
 
 type Payload = Optional<
   import('@application/core/entity.core').UserGroup,
@@ -65,30 +64,30 @@ export default async function Seed(): Promise<void> {
   const payload: Payload[] = [
     {
       name: 'Master',
-      slug: GroupSlugMapper.MASTER,
+      slug: E_ROLE.MASTER,
       description:
-        'Full system access - manages everything including system configurations',
+        'Acesso total ao sistema - gerencia tudo, incluindo configurações do sistema',
       permissions: permissionsSuper,
     },
     {
       name: 'Administrator',
-      slug: GroupSlugMapper.ADMINISTRATOR,
+      slug: E_ROLE.ADMINISTRATOR,
       description:
-        'Full table management - manages all tables, fields and records',
+        'Gerenciamento total de tabelas - gerencia todas as tabelas, campos e registros',
       permissions: permissionsAdministrator,
     },
     {
       name: 'Manager',
-      slug: GroupSlugMapper.MANAGER,
+      slug: E_ROLE.MANAGER,
       description:
-        'Creates own tables and manages tables where is owner or admin. Can view and create records in all accessible tables',
+        'Cria suas próprias tabelas e gerencia tabelas onde é proprietário ou administrador. Pode visualizar e criar registros em todas as tabelas acessíveis',
       permissions: permissionsManager,
     },
     {
       name: 'Registered',
-      slug: GroupSlugMapper.REGISTERED,
+      slug: E_ROLE.REGISTERED,
       description:
-        'Can view tables and create records (respecting visibility). Manages only tables where is admin',
+        'Pode visualizar tabelas e criar registros (respeitando visibilidade). Gerencia apenas tabelas onde é administrador',
       permissions: permissionsRegistered,
     },
   ];

@@ -43,8 +43,8 @@ export default class UserInMemoryRepository implements UserContractRepository {
   async findMany(payload?: UserQueryPayload): Promise<User[]> {
     let filtered = this.items;
 
-    if (payload?._id) {
-      filtered = filtered.filter((user) => user._id !== payload._id);
+    if (payload?.user?._id) {
+      filtered = filtered.filter((user) => user._id !== payload.user?._id);
     }
 
     if (payload?.search) {

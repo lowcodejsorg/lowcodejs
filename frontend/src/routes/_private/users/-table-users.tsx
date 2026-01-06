@@ -22,10 +22,10 @@ interface Props {
 }
 
 const RoleMapper = {
-  administrator: 'Administrador',
-  registered: 'Registrado',
-  manager: 'Gerente',
-  master: 'Dono',
+  ADMINISTRATOR: 'Administrador',
+  REGISTERED: 'Registrado',
+  MANAGER: 'Gerente',
+  MASTER: 'Dono',
 };
 
 const StatusMapper = {
@@ -95,14 +95,12 @@ export function TableUsers({ data, headers }: Props): React.ReactElement {
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data
-          .filter((u) => u.group.slug !== 'master')
-          .map((user) => (
-            <TableUserRow
-              user={user}
-              key={user._id}
-            />
-          ))}
+        {data.map((user) => (
+          <TableUserRow
+            user={user}
+            key={user._id}
+          />
+        ))}
       </TableBody>
     </Table>
   );

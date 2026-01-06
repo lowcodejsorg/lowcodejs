@@ -23,16 +23,9 @@ export default class UserPaginatedUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const query = {
-        ...payload,
-        _id: payload.sub,
-      };
+      const users = await this.userRepository.findMany(payload);
 
-      delete query.sub;
-
-      const users = await this.userRepository.findMany(query);
-
-      const total = await this.userRepository.count(query);
+      const total = await this.userRepository.count(payload);
 
       const lastPage = Math.ceil(total / payload.perPage);
 

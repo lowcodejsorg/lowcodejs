@@ -27,10 +27,3 @@ export const PermissionSlugMapper = {
   REMOVE_ROW: 'remove-row',
   VIEW_ROW: 'view-row',
 };
-
-export const GroupSlugMapper = {
-  MASTER: 'master',
-  ADMINISTRATOR: 'administrator',
-  MANAGER: 'manager',
-  REGISTERED: 'registered',
-};

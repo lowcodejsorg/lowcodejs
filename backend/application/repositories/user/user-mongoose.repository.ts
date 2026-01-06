@@ -1,6 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import type { User } from '@application/core/entity.core';
+import { E_ROLE, type User } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { User as Model } from '@application/model/user.model';
 
@@ -51,11 +51,19 @@ export default class UserMongooseRepository implements UserContractRepository {
   }
 
   async findMany(payload?: UserQueryPayload): Promise<User[]> {
-    console.log('FIND MANY');
     const query: Record<string, unknown> = {};
 
-    if (payload?._id) {
-      query._id = { $ne: payload._id };
+    if (payload?.user?._id) {
+      query._id = { $ne: payload.user._id };
+    }
+
+    if (payload?.user?.role === 'ADMINISTRATOR') {
+      const UserGroupModel = Model.db.model('UserGroup');
+      const masterGroup = await UserGroupModel.findOne({ slug: E_ROLE.MASTER });
+
+      if (masterGroup) {
+        query.group = { $ne: masterGroup._id.toString() };
+      }
     }
 
     if (payload?.search) {
@@ -64,6 +72,8 @@ export default class UserMongooseRepository implements UserContractRepository {
         { email: { $regex: normalize(payload.search), $options: 'i' } },
       ];
     }
+
+    console.log({ query });
 
     let dbQuery = Model.find(query)
       .populate([{ path: 'group' }])
@@ -109,8 +119,16 @@ export default class UserMongooseRepository implements UserContractRepository {
   async count(payload?: UserQueryPayload): Promise<number> {
     const query: Record<string, unknown> = {};
 
-    if (payload?._id) {
-      query._id = { $ne: payload._id };
+    if (payload?.user?._id) {
+      query._id = { $ne: payload.user._id };
+    }
+
+    if (payload?.user?.role === 'ADMINISTRATOR') {
+      const UserGroupModel = Model.db.model('UserGroup');
+      const masterGroup = await UserGroupModel.findOne({ slug: 'master' });
+      if (masterGroup) {
+        query.group = { $ne: masterGroup._id };
+      }
     }
 
     if (payload?.search) {

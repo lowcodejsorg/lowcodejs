@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import type { User } from '@application/core/entity.core';
+import type { E_ROLE, User } from '@application/core/entity.core';
 
 export interface UserCreatePayload {
   name: string;
@@ -18,7 +18,11 @@ export interface UserQueryPayload {
   page?: number;
   perPage?: number;
   search?: string;
-  _id?: string;
+  // _id?: string;
+  user?: {
+    _id: string;
+    role: keyof typeof E_ROLE;
+  };
 }
 
 export interface UserUpdatePayload {
