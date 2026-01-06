@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -9,8 +10,7 @@ import type {
   Paginated,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { normalize } from '@application/core/util.core';
-import { Menu as Model } from '@application/model/menu.model';
+import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
 import type { MenuPaginatedQueryValidator } from './paginated.validator';
 
@@ -19,32 +19,21 @@ type Payload = z.infer<typeof MenuPaginatedQueryValidator>;
 
 @Service()
 export default class MenuPaginatedUseCase {
+  constructor(private readonly menuRepository: MenuContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const skip = (payload.page - 1) * payload.perPage;
+      const menus = await this.menuRepository.findMany({
+        page: payload.page,
+        perPage: payload.perPage,
+        search: payload.search,
+        trashed: false,
+      });
 
-      const query: Record<string, unknown> = {};
-
-      if (payload.search) {
-        query.$or = [
-          { name: { $regex: normalize(payload.search), $options: 'i' } },
-          { slug: { $regex: normalize(payload.search), $options: 'i' } },
-        ];
-      }
-
-      query.trashed = false;
-
-      const menus = await Model.find(query)
-        .populate([
-          {
-            path: 'table',
-          },
-        ])
-        .skip(skip)
-        .limit(payload.perPage)
-        .sort({ name: 'asc', slug: 'asc' });
-
-      const total = await Model.countDocuments(query);
+      const total = await this.menuRepository.count({
+        search: payload.search,
+        trashed: false,
+      });
 
       const lastPage = Math.ceil(total / payload.perPage);
 
@@ -58,10 +47,7 @@ export default class MenuPaginatedUseCase {
 
       return right({
         meta,
-        data: menus?.map((u) => ({
-          ...u?.toJSON(),
-          _id: u?._id.toString(),
-        })),
+        data: menus,
       });
     } catch (error) {
       console.error(error);

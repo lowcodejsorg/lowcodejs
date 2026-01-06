@@ -1,26 +1,25 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { UserGroup as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { UserGroup as Model } from '@application/model/user-group.model';
+import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 type Response = Either<HTTPException, Entity[]>;
 
 @Service()
 export default class UserGroupListUseCase {
+  constructor(
+    private readonly userGroupRepository: UserGroupContractRepository,
+  ) {}
+
   async execute(): Promise<Response> {
     try {
-      const groups = await Model.find();
-      return right(
-        groups.map((group) => ({
-          ...group.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: group._id.toString(),
-        })),
-      );
+      const groups = await this.userGroupRepository.findMany();
+
+      return right(groups);
     } catch (error) {
       console.error(error);
       return left(

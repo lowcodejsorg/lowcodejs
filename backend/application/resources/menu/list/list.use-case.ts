@@ -1,25 +1,23 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { Menu as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Menu as Model } from '@application/model/menu.model';
+import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
 type Response = Either<HTTPException, Entity[]>;
 
 @Service()
-export default class MenuPaginatedUseCase {
+export default class MenuListUseCase {
+  constructor(private readonly menuRepository: MenuContractRepository) {}
+
   async execute(): Promise<Response> {
     try {
-      const menus = await Model.find({ trashed: false }).sort({ name: 'asc' });
+      const menus = await this.menuRepository.findMany({ trashed: false });
 
-      return right(
-        menus?.map((u) => ({
-          ...u?.toJSON(),
-          _id: u?._id.toString(),
-        })),
-      );
+      return right(menus);
     } catch (error) {
       console.error(error);
       return left(

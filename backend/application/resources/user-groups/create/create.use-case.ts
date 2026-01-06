@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import slugify from 'slugify';
 import type z from 'zod';
@@ -6,7 +7,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { UserGroup as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { UserGroup as Model } from '@application/model/user-group.model';
+import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 import type { UserCreateGroupBodyValidator } from './create.validator';
 
@@ -15,12 +16,17 @@ type Payload = z.infer<typeof UserCreateGroupBodyValidator>;
 
 @Service()
 export default class UserGroupCreateUseCase {
+  constructor(
+    private readonly userGroupRepository: UserGroupContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
       const slug = slugify(payload.name, { trim: true, lower: true });
 
-      const group = await Model.findOne({
+      const group = await this.userGroupRepository.findBy({
         slug,
+        exact: true,
       });
 
       if (group)
@@ -31,27 +37,16 @@ export default class UserGroupCreateUseCase {
       if (!(payload?.permissions?.length > 0))
         return left(
           HTTPException.BadRequest(
-            'Ao menos uma permissão deve ser informada para o grupo de usuários',
+            'Ao menos uma permissao deve ser informada para o grupo de usuarios',
           ),
         );
 
-      const created = await Model.create({
+      const created = await this.userGroupRepository.create({
         ...payload,
         slug,
       });
 
-      const populated = await created.populate([
-        {
-          path: 'permissions',
-        },
-      ]);
-
-      return right({
-        ...populated?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: populated?._id.toString(),
-      });
+      return right(created);
     } catch (error) {
       console.error(error);
       return left(

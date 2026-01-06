@@ -3,7 +3,8 @@ import type { FastifySchema } from 'fastify';
 export const MenuCreateSchema: FastifySchema = {
   tags: ['Menu'],
   summary: 'Create a new menu item',
-  description: 'Creates a new menu item with name, type and optional configurations',
+  description:
+    'Creates a new menu item with name, type and optional configurations',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
@@ -51,7 +52,11 @@ export const MenuCreateSchema: FastifySchema = {
         type: { type: 'string', description: 'Menu type' },
         parent: { type: 'string', nullable: true, description: 'Parent ID' },
         table: { type: 'string', nullable: true, description: 'Table ID' },
-        pageContent: { type: 'string', nullable: true, description: 'Page content' },
+        pageContent: {
+          type: 'string',
+          nullable: true,
+          description: 'Page content',
+        },
         url: { type: 'string', nullable: true, description: 'URL' },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },

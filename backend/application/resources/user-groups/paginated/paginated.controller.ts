@@ -3,8 +3,8 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
-import UserGroupPaginatedUseCase from './list-paginated.use-case';
 import { UserGroupPaginatedSchema } from './paginated.schema';
+import UserGroupPaginatedUseCase from './paginated.use-case';
 import { UserGroupPaginatedQueryValidator } from './paginated.validator';
 
 @Controller({

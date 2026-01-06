@@ -1,5 +1,5 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import mongoose from 'mongoose';
 import slugify from 'slugify';
 import type z from 'zod';
 
@@ -10,8 +10,8 @@ import {
   type Menu as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Menu as Model } from '@application/model/menu.model';
 import { Table } from '@application/model/table.model';
+import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
 import type {
   MenuUpdateBodyValidator,
@@ -24,22 +24,27 @@ type Payload = z.infer<typeof MenuUpdateBodyValidator> &
 
 @Service()
 export default class MenuUpdateUseCase {
+  constructor(private readonly menuRepository: MenuContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      // Verifica se o menu existe
-      const existingMenu = await Model.findById(payload._id);
+      const existingMenu = await this.menuRepository.findBy({
+        _id: payload._id,
+        exact: true,
+      });
 
       if (!existingMenu)
         return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
 
-      // Gerar slug final considerando parent
       let finalSlug = payload.slug || existingMenu.slug;
       let parent = null;
 
-      // Se o parent está sendo alterado, regenerar slug
       if (payload.parent !== undefined) {
         if (payload.parent) {
-          parent = await Model.findById(payload.parent);
+          parent = await this.menuRepository.findBy({
+            _id: payload.parent,
+            exact: true,
+          });
 
           if (!parent)
             return left(
@@ -54,10 +59,11 @@ export default class MenuUpdateUseCase {
             trim: true,
           });
         }
-        // Se parent é null, usar slug original sem sufixo
       } else if (existingMenu.parent) {
-        // Se não está alterando parent mas o menu atual tem parent, manter slug com parent
-        const currentParent = await Model.findById(existingMenu.parent);
+        const currentParent = await this.menuRepository.findBy({
+          _id: existingMenu.parent,
+          exact: true,
+        });
         if (currentParent) {
           finalSlug = slugify(
             finalSlug.concat('-').concat(currentParent.slug),
@@ -69,15 +75,14 @@ export default class MenuUpdateUseCase {
         }
       }
 
-      // Verifica se o novo slug final já existe
       if (finalSlug !== existingMenu.slug) {
-        const menuWithSameSlug = await Model.findOne({
+        const menuWithSameSlug = await this.menuRepository.findBy({
           slug: finalSlug,
-          _id: { $ne: payload._id },
           trashed: false,
+          exact: true,
         });
 
-        if (menuWithSameSlug)
+        if (menuWithSameSlug && menuWithSameSlug._id !== payload._id)
           return left(
             HTTPException.Conflict(
               'Menu already exists',
@@ -86,7 +91,6 @@ export default class MenuUpdateUseCase {
           );
       }
 
-      // Validação e configuração por tipo
       if (
         payload.type &&
         (payload.type === E_MENU_ITEM_TYPE.TABLE ||
@@ -119,9 +123,7 @@ export default class MenuUpdateUseCase {
         payload.url = '/pages/'.concat(finalSlug);
       }
 
-      // Validação do parent e conversão para separator se necessário
       if (parent) {
-        // Verifica se não está tentando criar loop (menu sendo pai de si mesmo)
         if (payload.parent === payload._id) {
           return left(
             HTTPException.BadRequest(
@@ -131,58 +133,37 @@ export default class MenuUpdateUseCase {
           );
         }
 
-        // Lógica de conversão para separator (similar ao create)
         if (parent.type !== E_MENU_ITEM_TYPE.SEPARATOR) {
-          await Model.create({
-            ...parent.toJSON({
-              flattenObjectIds: true,
-            }),
-            parent: parent._id,
-            _id: new mongoose.Types.ObjectId(),
+          await this.menuRepository.create({
+            name: parent.name,
             slug: slugify(parent.name, {
               lower: true,
               trim: true,
             }),
+            type: parent.type,
+            table: parent.table,
+            parent: parent._id,
+            url: parent.url,
+            html: parent.html,
           });
 
-          await parent
-            .set({
-              type: E_MENU_ITEM_TYPE.SEPARATOR,
-              slug: slugify(parent.name.concat('-separator'), {
-                lower: true,
-                trim: true,
-              }),
-            })
-            .save();
+          await this.menuRepository.update({
+            _id: parent._id,
+            type: E_MENU_ITEM_TYPE.SEPARATOR,
+            slug: slugify(parent.name.concat('-separator'), {
+              lower: true,
+              trim: true,
+            }),
+          });
         }
       }
 
-      // Atualiza o menu
-      const updated = await Model.findByIdAndUpdate(
-        payload._id,
-        { ...payload, slug: finalSlug },
-        {
-          new: true,
-          runValidators: true,
-        },
-      );
-
-      if (!updated) {
-        return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
-      }
-
-      const populated = await updated.populate([
-        {
-          path: 'table',
-        },
-      ]);
-
-      return right({
-        ...populated?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: populated?._id.toString(),
+      const updated = await this.menuRepository.update({
+        ...payload,
+        slug: finalSlug,
       });
+
+      return right(updated);
     } catch (error) {
       console.error(error);
       return left(

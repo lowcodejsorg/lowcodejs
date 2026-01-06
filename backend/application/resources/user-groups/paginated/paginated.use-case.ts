@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -9,39 +10,30 @@ import type {
   Paginated,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { normalize } from '@application/core/util.core';
-import { UserGroup as Model } from '@application/model/user-group.model';
+import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 import type { UserGroupPaginatedQueryValidator } from './paginated.validator';
 
 type Response = Either<HTTPException, Paginated<Entity>>;
 type Payload = z.infer<typeof UserGroupPaginatedQueryValidator>;
+
 @Service()
 export default class UserGroupPaginatedUseCase {
+  constructor(
+    private readonly userGroupRepository: UserGroupContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const skip = (payload.page - 1) * payload.perPage;
+      const groups = await this.userGroupRepository.findMany({
+        page: payload.page,
+        perPage: payload.perPage,
+        search: payload.search,
+      });
 
-      const query: Record<string, object> = {};
-
-      if (payload.search) {
-        query.$or = [
-          { name: { $regex: normalize(payload.search), $options: 'i' } },
-          { description: { $regex: normalize(payload.search), $options: 'i' } },
-        ];
-      }
-
-      const groups = await Model.find(query)
-        .populate([
-          {
-            path: 'permissions',
-          },
-        ])
-        .skip(skip)
-        .limit(payload.perPage)
-        .sort({ name: 'asc' });
-
-      const total = await Model.countDocuments(query);
+      const total = await this.userGroupRepository.count({
+        search: payload.search,
+      });
 
       const lastPage = Math.ceil(total / payload.perPage);
 
@@ -55,12 +47,7 @@ export default class UserGroupPaginatedUseCase {
 
       return right({
         meta,
-        data: groups?.map((u) => ({
-          ...u?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: u?._id.toString(),
-        })),
+        data: groups,
       });
     } catch (error) {
       console.error(error);

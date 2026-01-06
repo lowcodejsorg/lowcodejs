@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -5,7 +6,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { UserGroup as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { UserGroup as Model } from '@application/model/user-group.model';
+import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 import type {
   UserGroupUpdateBodyValidator,
@@ -18,56 +19,35 @@ type Payload = z.infer<typeof UserGroupUpdateBodyValidator> &
 
 @Service()
 export default class UserGroupUpdateUseCase {
+  constructor(
+    private readonly userGroupRepository: UserGroupContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const group = await Model.findOne({
+      const group = await this.userGroupRepository.findBy({
         _id: payload._id,
-      }).populate([
-        {
-          path: 'permissions',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!group)
         return left(
-          HTTPException.NotFound('Grupo de usuários não foi encontrado'),
+          HTTPException.NotFound(
+            'Grupo de usuarios nao foi encontrado',
+            'USER_GROUP_NOT_FOUND',
+          ),
         );
 
       if (!(payload?.permissions?.length > 0))
         return left(
           HTTPException.BadRequest(
-            'Ao menos uma permissão deve ser informada para o grupo de usuários',
+            'Ao menos uma permissao deve ser informada para o grupo de usuarios',
           ),
         );
 
-      await group
-        .set({
-          ...group?.toJSON({
-            flattenObjectIds: true,
-          }),
-          ...payload,
-        })
-        .save();
+      const updated = await this.userGroupRepository.update(payload);
 
-      await group?.populate([
-        {
-          path: 'permissions',
-        },
-      ]);
-
-      console.log({
-        ...group?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: group?._id.toString(),
-      });
-
-      return right({
-        ...group?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: group?._id.toString(),
-      });
+      return right(updated);
     } catch (error) {
       console.error(error);
       return left(

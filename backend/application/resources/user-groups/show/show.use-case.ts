@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -5,33 +6,35 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { UserGroup as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { UserGroup as Model } from '@application/model/user-group.model';
+import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 import type { UserGroupShowParamValidator } from './show.validator';
 
 type Response = Either<HTTPException, Entity>;
 type Payload = z.infer<typeof UserGroupShowParamValidator>;
+
 @Service()
 export default class UserGroupShowUseCase {
+  constructor(
+    private readonly userGroupRepository: UserGroupContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const group = await Model.findOne({
+      const group = await this.userGroupRepository.findBy({
         _id: payload._id,
-      }).populate([
-        {
-          path: 'permissions',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!group)
-        return left(HTTPException.NotFound('Grupo de usuários não encontrado'));
+        return left(
+          HTTPException.NotFound(
+            'Grupo de usuarios nao encontrado',
+            'USER_GROUP_NOT_FOUND',
+          ),
+        );
 
-      return right({
-        ...group?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: group?._id.toString(),
-      });
+      return right(group);
     } catch (error) {
       console.error(error);
       return left(

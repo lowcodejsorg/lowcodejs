@@ -3,7 +3,7 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
-import MenuPaginatedUseCase from './paginated.use-case';
+import MenuPaginatedUseCase from './list.use-case';
 
 @Controller({
   route: '/menu',
