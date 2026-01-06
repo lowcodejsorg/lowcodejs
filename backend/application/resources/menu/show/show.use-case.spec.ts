@@ -54,6 +54,7 @@ describe('Menu Show Use Case', () => {
     const result = await sut.execute({ _id: parent._id });
 
     expect(result.isRight()).toBe(true);
+
     if (result.isRight()) {
       expect(result.value.children).toHaveLength(2);
     }

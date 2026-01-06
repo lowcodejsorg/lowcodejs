@@ -10,7 +10,7 @@ import { MenuContractRepository } from '@application/repositories/menu/menu-cont
 
 import type { MenuShowParamValidator } from './show.validator';
 
-type Response = Either<HTTPException, Entity>;
+type Response = Either<HTTPException, Entity & { children: Entity[] }>;
 type Payload = z.infer<typeof MenuShowParamValidator>;
 
 @Service()
@@ -34,12 +34,7 @@ export default class MenuShowUseCase {
 
       return right({
         ...menu,
-        children: children.map((child) => ({
-          _id: child._id,
-          name: child.name,
-          type: child.type,
-          slug: child.slug,
-        })),
+        children,
       });
     } catch (error) {
       console.error(error);
