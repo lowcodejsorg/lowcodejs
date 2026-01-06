@@ -38,8 +38,8 @@ export default class UserCreateUseCase {
       });
 
       return right(created);
-    } catch (error) {
-      console.error(error);
+    } catch (_error) {
+      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

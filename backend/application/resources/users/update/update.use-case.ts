@@ -40,8 +40,8 @@ export default class UserUpdateUseCase {
       });
 
       return right(updated);
-    } catch (error) {
-      console.error(error);
+    } catch (_error) {
+      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

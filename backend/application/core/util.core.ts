@@ -308,7 +308,9 @@ export function getRelationship(fields: Field[] = []): Field[] {
     E_FIELD_TYPE.EVALUATION,
   ];
 
-  return fields?.filter((field) => field.type && types.includes(field.type));
+  return fields.filter(
+    (field) => field.type && types.some((t) => t === field.type),
+  );
 }
 
 export async function buildPopulate(
@@ -319,12 +321,10 @@ export async function buildPopulate(
 
   for await (const field of relacionamentos) {
     if (
-      ![
-        E_FIELD_TYPE.FIELD_GROUP,
-        E_FIELD_TYPE.REACTION,
-        E_FIELD_TYPE.EVALUATION,
-        E_FIELD_TYPE.RELATIONSHIP,
-      ].includes(field.type)
+      field.type !== E_FIELD_TYPE.FIELD_GROUP &&
+      field.type !== E_FIELD_TYPE.REACTION &&
+      field.type !== E_FIELD_TYPE.EVALUATION &&
+      field.type !== E_FIELD_TYPE.RELATIONSHIP
     ) {
       populate.push({
         path: field.slug,
@@ -440,7 +440,8 @@ export async function buildQuery(
     const slug = String(field.slug?.toString());
 
     if (
-      [E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG].includes(field.type) &&
+      (field.type === E_FIELD_TYPE.TEXT_SHORT ||
+        field.type === E_FIELD_TYPE.TEXT_LONG) &&
       payload[slug]
     ) {
       query[slug] = {
@@ -450,11 +451,9 @@ export async function buildQuery(
     }
 
     if (
-      [
-        E_FIELD_TYPE.RELATIONSHIP,
-        E_FIELD_TYPE.DROPDOWN,
-        E_FIELD_TYPE.CATEGORY,
-      ].includes(field.type) &&
+      (field.type === E_FIELD_TYPE.RELATIONSHIP ||
+        field.type === E_FIELD_TYPE.DROPDOWN ||
+        field.type === E_FIELD_TYPE.CATEGORY) &&
       payload[slug]
     ) {
       query[slug] = {
@@ -540,7 +539,8 @@ export async function buildQuery(
       (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP,
     )) {
       if (
-        [E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG].includes(field?.type)
+        field?.type === E_FIELD_TYPE.TEXT_LONG ||
+        field?.type === E_FIELD_TYPE.TEXT_SHORT
       ) {
         const slug = String(field.slug?.toString());
         searchQuery.push({

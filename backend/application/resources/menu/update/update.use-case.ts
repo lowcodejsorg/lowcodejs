@@ -89,7 +89,8 @@ export default class MenuUpdateUseCase {
       // Validação e configuração por tipo
       if (
         payload.type &&
-        [E_MENU_ITEM_TYPE.TABLE, E_MENU_ITEM_TYPE.FORM].includes(payload.type)
+        (payload.type === E_MENU_ITEM_TYPE.TABLE ||
+          payload.type === E_MENU_ITEM_TYPE.FORM)
       ) {
         if (!payload.table) {
           return left(
@@ -114,7 +115,7 @@ export default class MenuUpdateUseCase {
           payload.url = '/tables/'.concat(table.slug).concat('/row/create');
       }
 
-      if (payload.type && [E_MENU_ITEM_TYPE.PAGE].includes(payload.type)) {
+      if (payload.type && payload.type === E_MENU_ITEM_TYPE.PAGE) {
         payload.url = '/pages/'.concat(finalSlug);
       }
 

@@ -30,11 +30,8 @@ export default class UserPaginatedUseCase {
 
       delete query.sub;
 
-      console.log('query', query);
-
-      console.log('typeof userRepository', typeof this.userRepository);
-
       const users = await this.userRepository.findMany(query);
+
       const total = await this.userRepository.count(query);
 
       const lastPage = Math.ceil(total / payload.perPage);
@@ -51,8 +48,8 @@ export default class UserPaginatedUseCase {
         meta,
         data: users,
       });
-    } catch (error) {
-      console.error(error);
+    } catch (_error) {
+      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

@@ -28,8 +28,8 @@ export default class UserShowUseCase {
         return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
 
       return right(user);
-    } catch (error) {
-      console.error(error);
+    } catch (_error) {
+      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

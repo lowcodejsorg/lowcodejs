@@ -1,6 +1,6 @@
 import type { FastifyReply } from 'fastify';
 
-import type { ERole, JWTPayload, User } from '@application/core/entity.core';
+import type { E_ROLE, JWTPayload, User } from '@application/core/entity.core';
 
 export interface TokenPair {
   accessToken: string;
@@ -14,7 +14,7 @@ export const createTokens = async (
   const jwt: JWTPayload = {
     sub: user._id.toString(),
     email: user.email,
-    role: user?.group?.slug?.toUpperCase() as keyof typeof ERole,
+    role: user?.group?.slug?.toUpperCase() as keyof typeof E_ROLE,
     type: 'access',
   };
 
