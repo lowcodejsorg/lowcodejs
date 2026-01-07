@@ -21,11 +21,11 @@ interface TableMenusProps {
 }
 
 const TypeMapper = {
-  page: 'Página',
-  table: 'Tabela',
-  form: 'Formulário',
-  external: 'Link Externo',
-  separator: 'Separador',
+  [E_MENU_ITEM_TYPE.PAGE]: 'Página',
+  [E_MENU_ITEM_TYPE.TABLE]: 'Tabela',
+  [E_MENU_ITEM_TYPE.FORM]: 'Formulário',
+  [E_MENU_ITEM_TYPE.EXTERNAL]: 'Link Externo',
+  [E_MENU_ITEM_TYPE.SEPARATOR]: 'Separador',
 };
 
 function TableMenuRow({ menu }: { menu: IMenu }) {

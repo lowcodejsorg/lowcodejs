@@ -19,7 +19,7 @@ export type MenuFormType = z.infer<typeof MenuCreateSchema>;
 
 export const menuFormDefaultValues: MenuFormType = {
   name: '',
-  type: 'separator',
+  type: E_MENU_ITEM_TYPE.SEPARATOR,
   table: '',
   html: '',
   url: '',
@@ -30,7 +30,7 @@ export const CreateMenuFormFields = withForm({
   defaultValues: menuFormDefaultValues,
   props: {
     isPending: false,
-    menuType: 'separator' as string,
+    menuType: E_MENU_ITEM_TYPE.SEPARATOR as string,
   },
   render: function Render({ form, isPending, menuType }) {
     return (

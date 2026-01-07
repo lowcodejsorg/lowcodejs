@@ -19,7 +19,7 @@ export type MenuUpdateFormValues = z.infer<typeof MenuUpdateSchema>;
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   name: '',
-  type: 'separator',
+  type: E_MENU_ITEM_TYPE.SEPARATOR,
   table: '',
   html: '',
   url: '',
@@ -31,7 +31,7 @@ export const UpdateMenuFormFields = withForm({
   props: {
     isPending: false,
     mode: 'show' as 'show' | 'edit',
-    menuType: 'separator' as string,
+    menuType: E_MENU_ITEM_TYPE.SEPARATOR as string,
   },
   render: function Render({ form, isPending, mode, menuType }) {
     const isDisabled = mode === 'show' || isPending;
