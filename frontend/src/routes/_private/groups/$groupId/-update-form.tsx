@@ -7,7 +7,15 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { E_ROLE } from '@/lib/constant';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+
+const RoleMapper = {
+  [E_ROLE.ADMINISTRATOR]: 'Administrador',
+  [E_ROLE.REGISTERED]: 'Registrado',
+  [E_ROLE.MANAGER]: 'Gerente',
+  [E_ROLE.MASTER]: 'Dono',
+};
 
 export const GroupUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
@@ -42,7 +50,7 @@ export const UpdateGroupFormFields = withForm({
             <InputGroupInput
               disabled
               type="text"
-              value={slug}
+              value={RoleMapper[slug as keyof typeof RoleMapper] || slug}
               readOnly
               className="bg-muted"
             />
