@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import type { E_ROLE, User } from '@application/core/entity.core';
+import type { E_ROLE, IUser } from '@application/core/entity.core';
 
 export interface UserCreatePayload {
   name: string;
@@ -35,10 +35,10 @@ export interface UserUpdatePayload {
 }
 
 export abstract class UserContractRepository {
-  abstract create(payload: UserCreatePayload): Promise<User>;
-  abstract findBy(payload: UserFindByPayload): Promise<User | null>;
-  abstract findMany(payload?: UserQueryPayload): Promise<User[]>;
-  abstract update(payload: UserUpdatePayload): Promise<User>;
+  abstract create(payload: UserCreatePayload): Promise<IUser>;
+  abstract findBy(payload: UserFindByPayload): Promise<IUser | null>;
+  abstract findMany(payload?: UserQueryPayload): Promise<IUser[]>;
+  abstract update(payload: UserUpdatePayload): Promise<IUser>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: UserQueryPayload): Promise<number>;
 }

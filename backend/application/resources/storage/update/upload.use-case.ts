@@ -4,7 +4,7 @@ import { getInstanceByToken, Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type {
-  Storage as Entity,
+  IStorage as Entity,
   Optional,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';

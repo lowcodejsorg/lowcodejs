@@ -3,7 +3,7 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { Meta, Paginated } from '@application/core/entity.core';
+import type { IMeta, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { normalize } from '@application/core/util.core';
 import { Table as Model } from '@application/model/table.model';
@@ -12,7 +12,7 @@ import type { TablePaginatedQueryValidator } from './paginated.validator';
 
 type Response = Either<
   HTTPException,
-  Paginated<import('@application/core/entity.core').Table>
+  Paginated<import('@application/core/entity.core').ITable>
 >;
 
 type Payload = z.infer<typeof TablePaginatedQueryValidator>;
@@ -75,7 +75,7 @@ export default class TablePaginatedUseCase {
 
       const lastPage = Math.ceil(total / payload.perPage);
 
-      const meta: Meta = {
+      const meta: IMeta = {
         total,
         perPage: payload.perPage,
         page: payload.page,

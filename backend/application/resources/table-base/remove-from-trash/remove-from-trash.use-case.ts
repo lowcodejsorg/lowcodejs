@@ -10,7 +10,7 @@ import type { TableRemoveFromTrashParamValidator } from './remove-from-trash.val
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Table
+  import('@application/core/entity.core').ITable
 >;
 type Payload = z.infer<typeof TableRemoveFromTrashParamValidator>;
 

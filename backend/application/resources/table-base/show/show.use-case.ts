@@ -10,7 +10,7 @@ import type { TableShowParamValidator } from './show.validator';
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Table
+  import('@application/core/entity.core').ITable
 >;
 
 type Payload = z.infer<typeof TableShowParamValidator>;

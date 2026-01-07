@@ -11,7 +11,7 @@ import type { TableFieldShowParamValidator } from './show.validator';
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Field
+  import('@application/core/entity.core').IField
 >;
 type Payload = z.infer<typeof TableFieldShowParamValidator>;
 

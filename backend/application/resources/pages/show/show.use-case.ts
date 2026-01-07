@@ -3,13 +3,13 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { Menu } from '@application/core/entity.core';
+import type { IMenu } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { Menu as Model } from '@application/model/menu.model';
 
 import type { PageShowParamValidator } from './show.validator';
 
-type Response = Either<HTTPException, Menu>;
+type Response = Either<HTTPException, IMenu>;
 type Payload = z.infer<typeof PageShowParamValidator>;
 @Service()
 export default class PageShowUseCase {

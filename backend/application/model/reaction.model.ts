@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import type { Reaction as Core } from '@application/core/entity.core';
+import type { IReaction as Core } from '@application/core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;

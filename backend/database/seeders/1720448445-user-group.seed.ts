@@ -3,7 +3,7 @@ import { Permission } from '@application/model/permission.model';
 import { UserGroup } from '@application/model/user-group.model';
 
 type Payload = Optional<
-  import('@application/core/entity.core').UserGroup,
+  import('@application/core/entity.core').IGroup,
   '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
 >;
 

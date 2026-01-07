@@ -1,6 +1,6 @@
 import { type FastifyRequest } from 'fastify';
 
-import type { JWTPayload } from '@application/core/entity.core';
+import type { IJWTPayload } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 
 interface AuthOptions {
@@ -22,7 +22,7 @@ export function AuthenticationMiddleware(
         );
       }
 
-      const accessTokenDecoded: JWTPayload | null =
+      const accessTokenDecoded: IJWTPayload | null =
         await request.server.jwt.decode(String(accessToken));
 
       if (!accessTokenDecoded || accessTokenDecoded.type !== 'access') {

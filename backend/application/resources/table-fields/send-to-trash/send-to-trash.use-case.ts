@@ -12,7 +12,7 @@ import type { TableFieldSendToTrashParamValidator } from './send-to-trash.valida
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Field
+  import('@application/core/entity.core').IField
 >;
 
 type Payload = z.infer<typeof TableFieldSendToTrashParamValidator>;
@@ -61,7 +61,7 @@ export default class TableFieldSendToTrashUseCase {
         .save();
 
       const fields = (
-        table.fields as import('@application/core/entity.core').Field[]
+        table.fields as import('@application/core/entity.core').IField[]
       ).map((f) => {
         if (f._id?.toString() === field._id?.toString()) {
           return {

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import mongoose from 'mongoose';
 
-import type { Field as Core } from '@application/core/entity.core';
+import type { IField as Core } from '@application/core/entity.core';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@application/core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {

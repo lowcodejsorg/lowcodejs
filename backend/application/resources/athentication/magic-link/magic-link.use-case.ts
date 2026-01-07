@@ -5,7 +5,7 @@ import type z from 'zod';
 import { left, right, type Either } from '@application/core/either.core';
 import {
   E_TOKEN_STATUS,
-  type User as Entity,
+  type IUser as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { User } from '@application/model/user.model';

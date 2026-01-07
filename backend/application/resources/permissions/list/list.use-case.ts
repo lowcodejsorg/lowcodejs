@@ -2,7 +2,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { Permission as Entity } from '@application/core/entity.core';
+import type { IPermission as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { Permission as Model } from '@application/model/permission.model';
 

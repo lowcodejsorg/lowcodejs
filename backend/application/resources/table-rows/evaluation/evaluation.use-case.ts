@@ -16,7 +16,7 @@ import type {
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Row
+  import('@application/core/entity.core').IRow
 >;
 
 @Service()
@@ -48,7 +48,7 @@ export default class TableRowEvaluationUseCase {
       });
 
       const populate = await buildPopulate(
-        table.fields as import('@application/core/entity.core').Field[],
+        table.fields as import('@application/core/entity.core').IField[],
       );
 
       const row = await c.findOne({

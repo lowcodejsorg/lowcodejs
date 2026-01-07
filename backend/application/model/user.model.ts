@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import type { User as Core } from '@application/core/entity.core';
+import type { IUser as Core } from '@application/core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;

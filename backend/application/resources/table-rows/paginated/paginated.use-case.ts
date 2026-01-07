@@ -3,7 +3,7 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { Meta, Paginated } from '@application/core/entity.core';
+import type { IMeta, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   buildOrder,
@@ -20,7 +20,7 @@ import type {
 
 type Response = Either<
   HTTPException,
-  Paginated<import('@application/core/entity.core').Row>
+  Paginated<import('@application/core/entity.core').IRow>
 >;
 
 type Payload = z.infer<typeof TableRowPaginatedQueryValidator> &
@@ -55,16 +55,16 @@ export default class TableRowPaginatedUseCase {
 
       const query = await buildQuery(
         payload,
-        table?.fields as import('@application/core/entity.core').Field[],
+        table?.fields as import('@application/core/entity.core').IField[],
       );
 
       const order = buildOrder(
         payload,
-        table?.fields as import('@application/core/entity.core').Field[],
+        table?.fields as import('@application/core/entity.core').IField[],
       );
 
       const populate = await buildPopulate(
-        table?.fields as import('@application/core/entity.core').Field[],
+        table?.fields as import('@application/core/entity.core').IField[],
       );
 
       const rows = await c
@@ -78,7 +78,7 @@ export default class TableRowPaginatedUseCase {
 
       const lastPage = Math.ceil(total / payload.perPage);
 
-      const meta: Meta = {
+      const meta: IMeta = {
         total,
         perPage: payload.perPage,
         page: payload.page,

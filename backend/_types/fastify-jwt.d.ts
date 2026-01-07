@@ -1,4 +1,4 @@
-import type { JWTPayload } from '@application/core/entity.core';
+import type { IJWTPayload } from '@application/core/entity.core';
 
 import '@fastify/jwt';
 

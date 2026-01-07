@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import type { UserGroup as Core } from '@application/core/entity.core';
+import type { IGroup as Core } from '@application/core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;

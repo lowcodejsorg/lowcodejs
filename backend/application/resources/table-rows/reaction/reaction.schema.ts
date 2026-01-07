@@ -97,7 +97,7 @@ export const TableRowReactionSchema: FastifySchema = {
       },
     },
     404: {
-      description: 'Not found - Table, row, or field does not exist',
+      description: 'Not found - ITable, row, or field does not exist',
       type: 'object',
       properties: {
         message: {

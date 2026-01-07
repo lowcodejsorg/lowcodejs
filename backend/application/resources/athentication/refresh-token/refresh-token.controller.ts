@@ -1,7 +1,7 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
-import type { JWTPayload } from '@application/core/entity.core';
+import type { IJWTPayload } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { setCookieTokens } from '@application/utils/cookies.util';
 import { createTokens } from '@application/utils/jwt.util';
@@ -43,7 +43,7 @@ export default class {
         });
       }
 
-      const refreshTokenDecoded: JWTPayload | null =
+      const refreshTokenDecoded: IJWTPayload | null =
         await request.server.jwt.decode(refreshToken);
 
       if (!refreshTokenDecoded || refreshTokenDecoded.type !== 'refresh') {

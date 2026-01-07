@@ -1,6 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import type { Menu } from '@application/core/entity.core';
+import type { IMenu } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Menu as Model } from '@application/model/menu.model';
 
@@ -14,7 +14,7 @@ import type {
 
 @Service()
 export default class MenuMongooseRepository implements MenuContractRepository {
-  async create(payload: MenuCreatePayload): Promise<Menu> {
+  async create(payload: MenuCreatePayload): Promise<IMenu> {
     const created = await Model.create(payload);
 
     const populated = await created.populate([{ path: 'table' }]);
@@ -29,7 +29,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     exact = false,
     trashed = false,
     ...payload
-  }: MenuFindByPayload): Promise<Menu | null> {
+  }: MenuFindByPayload): Promise<IMenu | null> {
     const conditions: Record<string, unknown>[] = [];
 
     if (payload._id) conditions.push({ _id: payload._id });
@@ -58,7 +58,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     };
   }
 
-  async findMany(payload?: MenuQueryPayload): Promise<Menu[]> {
+  async findMany(payload?: MenuQueryPayload): Promise<IMenu[]> {
     const query: Record<string, unknown> = {};
 
     if (payload?._id) {
@@ -99,7 +99,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     }));
   }
 
-  async update({ _id, ...payload }: MenuUpdatePayload): Promise<Menu> {
+  async update({ _id, ...payload }: MenuUpdatePayload): Promise<IMenu> {
     const menu = await Model.findOne({ _id });
 
     if (!menu) throw new Error('Menu not found');

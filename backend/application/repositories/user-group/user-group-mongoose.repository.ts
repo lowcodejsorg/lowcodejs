@@ -1,6 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import type { UserGroup } from '@application/core/entity.core';
+import type { IGroup } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { UserGroup as Model } from '@application/model/user-group.model';
 
@@ -14,7 +14,7 @@ import type {
 
 @Service()
 export default class UserGroupMongooseRepository implements UserGroupContractRepository {
-  async create(payload: UserGroupCreatePayload): Promise<UserGroup> {
+  async create(payload: UserGroupCreatePayload): Promise<IGroup> {
     const created = await Model.create(payload);
 
     const populated = await created.populate([{ path: 'permissions' }]);
@@ -28,7 +28,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
   async findBy({
     exact = false,
     ...payload
-  }: UserGroupFindByPayload): Promise<UserGroup | null> {
+  }: UserGroupFindByPayload): Promise<IGroup | null> {
     const conditions: Record<string, unknown>[] = [];
 
     if (payload._id) conditions.push({ _id: payload._id });
@@ -52,7 +52,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
     };
   }
 
-  async findMany(payload?: UserGroupQueryPayload): Promise<UserGroup[]> {
+  async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
     const query: Record<string, unknown> = {};
 
     if (payload?._id) {
@@ -86,7 +86,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
   async update({
     _id,
     ...payload
-  }: UserGroupUpdatePayload): Promise<UserGroup> {
+  }: UserGroupUpdatePayload): Promise<IGroup> {
     const group = await Model.findOne({ _id });
 
     if (!group) throw new Error('UserGroup not found');

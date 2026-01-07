@@ -63,7 +63,15 @@ export const E_ROLE = {
   REGISTERED: 'REGISTERED',
 } as const;
 
-export interface JWTPayload {
+export const E_MENU_ITEM_TYPE = {
+  TABLE: 'TABLE',
+  PAGE: 'PAGE',
+  FORM: 'FORM',
+  EXTERNAL: 'EXTERNAL',
+  SEPARATOR: 'SEPARATOR',
+} as const;
+
+export interface IJWTPayload {
   sub: string;
   email: string;
   role: keyof typeof E_ROLE;
@@ -78,13 +86,13 @@ export interface Base {
   trashed: boolean;
 }
 
-export interface ValidationToken extends Base {
+export interface IValidationToken extends Base {
   user: string;
   code: string;
   status: keyof typeof E_TOKEN_STATUS;
 }
 
-export interface Storage extends Base {
+export interface IStorage extends Base {
   url: string;
   filename: string;
   type: string;
@@ -92,50 +100,50 @@ export interface Storage extends Base {
   size: number;
 }
 
-export interface Permission extends Base {
+export interface IPermission extends Base {
   name: string;
   slug: string;
   description: string | null;
 }
 
-export interface UserGroup extends Base {
+export interface IGroup extends Base {
   name: string;
   slug: string;
   description: string | null;
-  permissions: string[] | Permission[];
+  permissions: string[] | IPermission[];
 }
 
-export interface User extends Base {
+export interface IUser extends Base {
   name: string;
   email: string;
   password: string;
   status: 'active' | 'inactive';
-  group: UserGroup;
+  group: IGroup;
 }
 
-export interface Schema {
+export interface ISchema {
   type: 'Number' | 'String' | 'Date' | 'Boolean' | 'ObjectId';
   required?: boolean;
   ref?: string;
   default?: string | number | boolean | null;
 }
 
-export type TableSchema = Record<string, Schema | Schema[]>;
+export type ITableSchema = Record<string, ISchema | ISchema[]>;
 
-export interface Table extends Base {
-  _schema: TableSchema;
+export interface ITable extends Base {
+  _schema: ITableSchema;
   name: string;
   description: string | null;
-  logo: string | Storage | null;
+  logo: string | IStorage | null;
   slug: string;
-  fields: string[] | Field[];
+  fields: string[] | IField[];
   type: 'table' | 'field-group';
   configuration: {
     style: 'gallery' | 'list';
     visibility: 'public' | 'restricted' | 'open' | 'form' | 'private';
     collaboration: 'open' | 'restricted';
-    administrators: string[] | User[];
-    owner: string | User;
+    administrators: string[] | IUser[];
+    owner: string | IUser;
     fields: {
       orderList: string[];
       orderForm: string[];
@@ -154,55 +162,55 @@ export interface Table extends Base {
   };
 }
 
-export interface Category {
+export interface ICategory {
   id: string;
   label: string;
   children: unknown[];
 }
 
-export interface FieldConfigurationRelationship {
-  table: Pick<Table, '_id' | 'slug'>;
-  field: Pick<Field, '_id' | 'slug'>;
+export interface IFieldConfigurationRelationship {
+  table: Pick<ITable, '_id' | 'slug'>;
+  field: Pick<IField, '_id' | 'slug'>;
   order: 'asc' | 'desc';
 }
 
-export type FieldConfigurationGroup = Pick<Table, '_id' | 'slug'>;
+export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
 
-export interface Field extends Base {
+export interface IField extends Base {
   name: string;
   slug: string;
-  type: keyof typeof E_FIELD_TYPE;
+  type: (typeof E_FIELD_TYPE)[keyof typeof E_FIELD_TYPE];
   configuration: {
     required: boolean;
     multiple: boolean;
-    format: keyof typeof E_FIELD_FORMAT | null;
+    format: (typeof E_FIELD_FORMAT)[keyof typeof E_FIELD_FORMAT] | null;
     listing: boolean;
     filtering: boolean;
     defaultValue: string | null;
-    relationship: FieldConfigurationRelationship | null;
+    relationship: IFieldConfigurationRelationship | null;
     dropdown: string[];
-    category: Category[];
-    group: FieldConfigurationGroup | null;
+    category: ICategory[];
+    group: IFieldConfigurationGroup | null;
   };
 }
 
-export interface Row extends Base, Record<string, any> {}
+export interface IRow extends Base, Record<string, any> {}
 
-export interface Attachment {
+export interface IAttachment {
   filename: string;
   content: Buffer | string;
 }
 
-export interface EmailOptions {
+export interface IEmailOptions {
   from?: string;
   to: string;
   subject: string;
   text?: string;
   html?: string;
-  attachments?: Array<Attachment>;
+  attachments?: Array<IAttachment>;
 }
 
-export interface SentMessageInfo {
+export interface ISentMessageInfo {
   accepted: string[];
   rejected: string[];
   envelope: {
@@ -211,7 +219,7 @@ export interface SentMessageInfo {
   };
 }
 
-export interface Search extends Record<string, unknown> {
+export interface ISearch extends Record<string, unknown> {
   page: number;
   perPage: number;
   search?: string;
@@ -219,47 +227,40 @@ export interface Search extends Record<string, unknown> {
   sub?: string;
 }
 
-export interface Meta {
+export interface IMeta {
   total: number;
   page: number;
   perPage: number;
   lastPage: number;
   firstPage: number;
 }
+
 export interface Paginated<Entity> {
   data: Entity[];
-  meta: Meta;
+  meta: IMeta;
 }
 
-export interface Reaction extends Base {
-  user: string | User;
+export interface IReaction extends Base {
+  user: string | IUser;
   type: 'like' | 'unlike';
 }
 
-export interface Evaluation extends Base {
-  user: string | User;
+export interface IEvaluation extends Base {
+  user: string | IUser;
   value: number;
 }
 
-export const E_MENU_ITEM_TYPE = {
-  TABLE: 'TABLE',
-  PAGE: 'PAGE',
-  FORM: 'FORM',
-  EXTERNAL: 'EXTERNAL',
-  SEPARATOR: 'SEPARATOR',
-} as const;
-
-export interface Menu extends Base {
+export interface IMenu extends Base {
   name: string;
   slug: string;
-  type: keyof typeof E_MENU_ITEM_TYPE;
+  type: (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
   table: string | null;
   parent: string | null;
   url: string | null;
   html: string | null;
 }
 
-export interface Setting {
+export interface ISetting {
   LOCALE: string;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_ACCEPTED: string;

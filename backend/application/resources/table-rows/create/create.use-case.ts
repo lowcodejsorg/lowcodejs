@@ -15,7 +15,7 @@ import type {
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Row
+  import('@application/core/entity.core').IRow
 >;
 
 type Payload = z.infer<typeof TableRowCreateBodyValidator> &
@@ -42,7 +42,7 @@ export default class TableRowCreateUseCase {
       const groupPayload = [];
 
       const groups = (
-        table.fields as import('@application/core/entity.core').Field[]
+        table.fields as import('@application/core/entity.core').IField[]
       )?.filter((c) => c.type === E_FIELD_TYPE.FIELD_GROUP);
 
       for await (const group of groups) {
@@ -70,7 +70,7 @@ export default class TableRowCreateUseCase {
 
         for (const item of payload[
           group.slug
-        ] as import('@application/core/entity.core').Row[]) {
+        ] as import('@application/core/entity.core').IRow[]) {
           groupPayload.push({
             table: buildGroup,
             payload: item,
@@ -122,7 +122,7 @@ export default class TableRowCreateUseCase {
       });
 
       const populate = await buildPopulate(
-        table?.fields as import('@application/core/entity.core').Field[],
+        table?.fields as import('@application/core/entity.core').IField[],
       );
 
       const created = await build.create({

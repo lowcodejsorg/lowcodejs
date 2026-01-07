@@ -4,7 +4,7 @@ import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { Menu as Entity } from '@application/core/entity.core';
+import type { IMenu as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 

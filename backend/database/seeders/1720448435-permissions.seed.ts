@@ -3,7 +3,7 @@ import { Permission } from '@application/model/permission.model';
 import { PermissionSlugMapper } from '@config/util.config';
 
 type Payload = Optional<
-  import('@application/core/entity.core').Permission,
+  import('@application/core/entity.core').IPermission,
   '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
 >;
 

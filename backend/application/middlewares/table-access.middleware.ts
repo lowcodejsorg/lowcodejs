@@ -1,7 +1,7 @@
 import type { FastifyRequest } from 'fastify';
 import z from 'zod';
 
-import type { Permission, Table } from '@application/core/entity.core';
+import type { IPermission, ITable } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { Table as TableModel } from '@application/model/table.model';
 import { User as UserModel } from '@application/model/user.model';
@@ -39,7 +39,7 @@ async function checkUserHasPermission(
     throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
   }
 
-  const group = user.group as { permissions?: Permission[] } | undefined;
+  const group = user.group as { permissions?: IPermission[] } | undefined;
 
   if (!group?.permissions || !Array.isArray(group.permissions)) {
     throw HTTPException.Forbidden(
@@ -85,14 +85,14 @@ export function TableAccessMiddleware(options: AccessOptions) {
     const { slug } = params.data;
 
     // 2. Buscar tabela (exceto para CREATE_TABLE)
-    let table: Table | undefined = request.table;
+    let table: ITable | undefined = request.table;
 
     if (slug && requiredPermission !== 'CREATE_TABLE') {
       if (!table) {
         table = (await TableModel.findOne({
           slug,
           trashed: false,
-        }).lean()) as unknown as Table;
+        }).lean()) as unknown as ITable;
 
         if (!table) {
           throw HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND');

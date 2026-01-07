@@ -17,7 +17,7 @@ import type {
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Field
+  import('@application/core/entity.core').IField
 >;
 type Payload = z.infer<typeof TableFieldCreateBodyValidator> &
   z.infer<typeof TableFieldCreateParamValidator>;
@@ -38,7 +38,7 @@ export default class TableFieldCreateUseCase {
       const slug = slugify(payload.name, { lower: true, trim: true });
 
       const existFieldOnTable = (
-        table.fields as import('@application/core/entity.core').Field[]
+        table.fields as import('@application/core/entity.core').IField[]
       )?.find((field) => field.slug === slug);
 
       if (existFieldOnTable)
@@ -104,7 +104,7 @@ export default class TableFieldCreateUseCase {
       }
 
       const fields = [
-        ...((table.fields as import('@application/core/entity.core').Field[]) ??
+        ...((table.fields as import('@application/core/entity.core').IField[]) ??
           []),
         {
           ...field.toJSON({

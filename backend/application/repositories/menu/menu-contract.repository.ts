@@ -1,10 +1,12 @@
 /* eslint-disable no-unused-vars */
-import type { E_MENU_ITEM_TYPE, Menu } from '@application/core/entity.core';
+import type { E_MENU_ITEM_TYPE, IMenu } from '@application/core/entity.core';
+
+type MenuItemType = (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
 
 export interface MenuCreatePayload {
   name: string;
   slug: string;
-  type: keyof typeof E_MENU_ITEM_TYPE;
+  type: MenuItemType;
   table?: string | null;
   parent?: string | null;
   url?: string | null;
@@ -32,7 +34,7 @@ export interface MenuUpdatePayload {
   _id: string;
   name?: string;
   slug?: string;
-  type?: keyof typeof E_MENU_ITEM_TYPE;
+  type?: MenuItemType;
   table?: string | null;
   parent?: string | null;
   url?: string | null;
@@ -40,10 +42,10 @@ export interface MenuUpdatePayload {
 }
 
 export abstract class MenuContractRepository {
-  abstract create(payload: MenuCreatePayload): Promise<Menu>;
-  abstract findBy(payload: MenuFindByPayload): Promise<Menu | null>;
-  abstract findMany(payload?: MenuQueryPayload): Promise<Menu[]>;
-  abstract update(payload: MenuUpdatePayload): Promise<Menu>;
+  abstract create(payload: MenuCreatePayload): Promise<IMenu>;
+  abstract findBy(payload: MenuFindByPayload): Promise<IMenu | null>;
+  abstract findMany(payload?: MenuQueryPayload): Promise<IMenu[]>;
+  abstract update(payload: MenuUpdatePayload): Promise<IMenu>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: MenuQueryPayload): Promise<number>;
 }

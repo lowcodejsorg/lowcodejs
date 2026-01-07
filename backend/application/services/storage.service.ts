@@ -3,11 +3,11 @@ import { Service } from 'fastify-decorators';
 import { access, unlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 
-import type { Optional, Storage } from '@application/core/entity.core';
+import type { Optional, IStorage } from '@application/core/entity.core';
 import { Env } from '@start/env';
 
 type Response = Optional<
-  Storage,
+  IStorage,
   '_id' | 'createdAt' | 'updatedAt' | 'trashedAt' | 'trashed'
 >;
 @Service()

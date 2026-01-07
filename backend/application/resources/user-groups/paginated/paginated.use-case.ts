@@ -5,8 +5,8 @@ import type z from 'zod';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type {
-  UserGroup as Entity,
-  Meta,
+  IGroup as Entity,
+  IMeta,
   Paginated,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -37,7 +37,7 @@ export default class UserGroupPaginatedUseCase {
 
       const lastPage = Math.ceil(total / payload.perPage);
 
-      const meta: Meta = {
+      const meta: IMeta = {
         total,
         perPage: payload.perPage,
         page: payload.page,

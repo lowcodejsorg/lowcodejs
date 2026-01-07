@@ -17,7 +17,7 @@ import type {
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Field
+  import('@application/core/entity.core').IField
 >;
 type Payload = z.infer<typeof TableFieldUpdateBodyValidator> &
   z.infer<typeof TableFieldUpdateParamValidator>;
@@ -49,7 +49,7 @@ export default class TableFieldUpdateUseCase {
 
       if (
         table?.fields?.filter(
-          (f) => !(f as import('@application/core/entity.core').Field).trashed,
+          (f) => !(f as import('@application/core/entity.core').IField).trashed,
         ).length === 1 &&
         payload.trashed
       ) {
@@ -141,7 +141,7 @@ export default class TableFieldUpdateUseCase {
       }
 
       const fields = (
-        table.fields as import('@application/core/entity.core').Field[]
+        table.fields as import('@application/core/entity.core').IField[]
       ).map((f) => {
         if (f._id?.toString() === field._id?.toString()) {
           return {

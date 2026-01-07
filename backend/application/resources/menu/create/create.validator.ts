@@ -3,10 +3,12 @@ import z from 'zod';
 
 import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 
+const menuItemTypeValues = Object.values(E_MENU_ITEM_TYPE) as [string, ...string[]];
+
 export const MenuCreateBodyValidator = z
   .object({
     name: z.string().trim().min(1, 'Nome é obrigatório'),
-    type: z.enum(E_MENU_ITEM_TYPE),
+    type: z.enum(menuItemTypeValues),
     table: z.string().nullable().optional(),
     parent: z.string().nullable().optional(),
     html: z.string().nullable().optional(),

@@ -7,11 +7,14 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
   E_MENU_ITEM_TYPE,
-  type Menu as Entity,
+  type IMenu as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { Table } from '@application/model/table.model';
-import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
+import {
+  MenuContractRepository,
+  type MenuCreatePayload,
+} from '@application/repositories/menu/menu-contract.repository';
 
 import type { MenuCreateBodyValidator } from './create.validator';
 
@@ -115,7 +118,7 @@ export default class MenuCreateUseCase {
       const created = await this.menuRepository.create({
         ...payload,
         slug,
-      });
+      } as MenuCreatePayload);
 
       return right(created);
     } catch (error) {

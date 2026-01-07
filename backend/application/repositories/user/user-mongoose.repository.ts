@@ -1,6 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import { E_ROLE, type User } from '@application/core/entity.core';
+import { E_ROLE, type IUser } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { User as Model } from '@application/model/user.model';
 
@@ -14,7 +14,7 @@ import type {
 
 @Service()
 export default class UserMongooseRepository implements UserContractRepository {
-  async create(payload: UserCreatePayload): Promise<User> {
+  async create(payload: UserCreatePayload): Promise<IUser> {
     const created = await Model.create(payload);
 
     const populated = await created.populate([{ path: 'group' }]);
@@ -28,7 +28,7 @@ export default class UserMongooseRepository implements UserContractRepository {
   async findBy({
     exact = false,
     ...payload
-  }: UserFindByPayload): Promise<User | null> {
+  }: UserFindByPayload): Promise<IUser | null> {
     const conditions: Record<string, unknown>[] = [];
 
     if (payload._id) conditions.push({ _id: payload._id });
@@ -50,7 +50,7 @@ export default class UserMongooseRepository implements UserContractRepository {
     };
   }
 
-  async findMany(payload?: UserQueryPayload): Promise<User[]> {
+  async findMany(payload?: UserQueryPayload): Promise<IUser[]> {
     const query: Record<string, unknown> = {};
 
     if (payload?.user?._id) {
@@ -92,7 +92,7 @@ export default class UserMongooseRepository implements UserContractRepository {
     }));
   }
 
-  async update({ _id, ...payload }: UserUpdatePayload): Promise<User> {
+  async update({ _id, ...payload }: UserUpdatePayload): Promise<IUser> {
     const user = await Model.findOne({ _id });
 
     if (!user) throw new Error('User not found');

@@ -5,7 +5,7 @@ import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 
 type BasePayload = Omit<
-  import('@application/core/entity.core').User,
+  import('@application/core/entity.core').IUser,
   '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt' | 'group'
 >;
 

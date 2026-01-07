@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-import type { ValidationToken as Core } from '@application/core/entity.core';
+import type { IValidationToken as Core } from '@application/core/entity.core';
 import { E_TOKEN_STATUS } from '@application/core/entity.core';
 
 interface Entity extends Omit<Core, '_id'>, mongoose.Document {
