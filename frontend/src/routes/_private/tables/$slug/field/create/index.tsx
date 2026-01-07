@@ -27,8 +27,8 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
-import type { FIELD_FORMAT } from '@/lib/constant';
-import { FIELD_TYPE } from '@/lib/constant';
+import type { E_FIELD_FORMAT } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type {
   ICategory,
   IField,
@@ -41,7 +41,7 @@ export const Route = createFileRoute('/_private/tables/$slug/field/create/')({
   component: RouteComponent,
   validateSearch: z.object({
     'field-type': z
-      .enum(Object.keys(FIELD_TYPE) as [string, ...Array<string>])
+      .enum(Object.keys(E_FIELD_TYPE) as [string, ...Array<string>])
       .optional(),
     from: z.string().optional(),
   }),
@@ -219,14 +219,14 @@ function RouteComponent(): React.JSX.Element {
 
       await _create.mutateAsync({
         name: value.name,
-        type: value.type as keyof typeof FIELD_TYPE,
+        type: value.type as keyof typeof E_FIELD_TYPE,
         configuration: {
           required: config.required,
           multiple: config.multiple,
           listing: config.listing,
           filtering: config.filtering,
           format: config.format
-            ? (config.format as keyof typeof FIELD_FORMAT)
+            ? (config.format as keyof typeof E_FIELD_FORMAT)
             : null,
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown
@@ -257,7 +257,7 @@ function RouteComponent(): React.JSX.Element {
   // Blocked types for field-group tables
   const blockedTypes =
     table.status === 'success' && table.data.type === 'field-group'
-      ? [FIELD_TYPE.FIELD_GROUP, FIELD_TYPE.REACTION, FIELD_TYPE.EVALUATION]
+      ? [E_FIELD_TYPE.FIELD_GROUP, E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION]
       : [];
 
   const isPending = _create.status === 'pending';
@@ -282,7 +282,7 @@ function RouteComponent(): React.JSX.Element {
             <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">
-            {defaultFieldType === FIELD_TYPE.FIELD_GROUP
+            {defaultFieldType === E_FIELD_TYPE.FIELD_GROUP
               ? 'Novo grupo de campos'
               : 'Novo campo'}
           </h1>
@@ -290,7 +290,7 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {/* Info text for field group */}
-      {defaultFieldType === FIELD_TYPE.FIELD_GROUP && (
+      {defaultFieldType === E_FIELD_TYPE.FIELD_GROUP && (
         <p className="text-sm text-muted-foreground px-2 pb-2">
           O grupo de campos é composto por outros campos que devem ser
           configurados nas configurações da tabela em "Gerenciar grupo de

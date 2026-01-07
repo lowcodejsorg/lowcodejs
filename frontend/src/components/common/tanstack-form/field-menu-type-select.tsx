@@ -7,15 +7,15 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import { MENU_ITEM_TYPE } from '@/lib/constant';
+import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
 const MenuTypeOptions = [
-  { value: MENU_ITEM_TYPE.TABLE, label: 'Tabela' },
-  { value: MENU_ITEM_TYPE.PAGE, label: 'Página' },
-  { value: MENU_ITEM_TYPE.FORM, label: 'Formulário' },
-  { value: MENU_ITEM_TYPE.EXTERNAL, label: 'Link Externo' },
-  { value: MENU_ITEM_TYPE.SEPARATOR, label: 'Separador' },
+  { value: E_MENU_ITEM_TYPE.TABLE, label: 'Tabela' },
+  { value: E_MENU_ITEM_TYPE.PAGE, label: 'Página' },
+  { value: E_MENU_ITEM_TYPE.FORM, label: 'Formulário' },
+  { value: E_MENU_ITEM_TYPE.EXTERNAL, label: 'Link Externo' },
+  { value: E_MENU_ITEM_TYPE.SEPARATOR, label: 'Separador' },
 ];
 
 interface FieldMenuTypeSelectProps {
@@ -43,7 +43,7 @@ export function FieldMenuTypeSelect({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(value as keyof typeof MENU_ITEM_TYPE);
+          field.handleChange(value as (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE]);
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>

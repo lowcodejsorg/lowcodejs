@@ -8,15 +8,15 @@ export const MetaDefault: Meta = {
   firstPage: 1,
 };
 
-export const MENU_ITEM_TYPE = {
-  TABLE: 'table',
-  PAGE: 'page',
-  FORM: 'form',
-  EXTERNAL: 'external',
-  SEPARATOR: 'separator',
-};
+export const E_MENU_ITEM_TYPE = {
+  TABLE: 'TABLE',
+  PAGE: 'PAGE',
+  FORM: 'FORM',
+  EXTERNAL: 'EXTERNAL',
+  SEPARATOR: 'SEPARATOR',
+} as const;
 
-export const FIELD_TYPE = {
+export const E_FIELD_TYPE = {
   TEXT_SHORT: 'TEXT_SHORT',
   TEXT_LONG: 'TEXT_LONG',
   DROPDOWN: 'DROPDOWN',
@@ -29,7 +29,7 @@ export const FIELD_TYPE = {
   CATEGORY: 'CATEGORY',
 } as const;
 
-export const FIELD_FORMAT = {
+export const E_FIELD_FORMAT = {
   // TEXT_SHORT
   ALPHA_NUMERIC: 'ALPHA_NUMERIC',
   INTEGER: 'INTEGER',

@@ -3,12 +3,12 @@ import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
-import type { MENU_ITEM_TYPE } from '@/lib/constant';
+import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 
 type Payload = {
   name: string;
-  type: keyof typeof MENU_ITEM_TYPE;
+  type: (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
   parent?: string | null;
   table?: string | null;
   html?: string | null;

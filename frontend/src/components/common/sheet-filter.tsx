@@ -39,7 +39,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { ICategory, IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -89,11 +89,11 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
     for (const field of fields) {
       const fieldValue = search[field.slug];
       if (typeof fieldValue === 'string') {
-        if (field.type === FIELD_TYPE.DROPDOWN) {
+        if (field.type === E_FIELD_TYPE.DROPDOWN) {
           initialValues[field.slug] = fieldValue
             .split(',')
             .map((v) => ({ value: v, label: v }));
-        } else if (field.type === FIELD_TYPE.CATEGORY) {
+        } else if (field.type === E_FIELD_TYPE.CATEGORY) {
           initialValues[field.slug] = fieldValue.split(',');
         } else {
           initialValues[field.slug] = fieldValue;
@@ -119,15 +119,15 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
 
       if (
         [
-          FIELD_TYPE.TEXT_SHORT.toString(),
-          FIELD_TYPE.TEXT_LONG.toString(),
+          E_FIELD_TYPE.TEXT_SHORT.toString(),
+          E_FIELD_TYPE.TEXT_LONG.toString(),
         ].includes(field.type) &&
         value
       ) {
         filters[field.slug] = String(value);
       }
 
-      if (field.type === FIELD_TYPE.DROPDOWN && Array.isArray(value)) {
+      if (field.type === E_FIELD_TYPE.DROPDOWN && Array.isArray(value)) {
         const values = value
           .map((v: ComboboxOption) => v.value)
           .filter(Boolean);
@@ -136,13 +136,13 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
         }
       }
 
-      if (field.type === FIELD_TYPE.CATEGORY && Array.isArray(value)) {
+      if (field.type === E_FIELD_TYPE.CATEGORY && Array.isArray(value)) {
         if (value.length > 0) {
           filters[field.slug] = value.join(',');
         }
       }
 
-      if (field.type === FIELD_TYPE.DATE) {
+      if (field.type === E_FIELD_TYPE.DATE) {
         const initial = filterValues[`${field.slug}-initial`];
         const final = filterValues[`${field.slug}-final`];
 
@@ -237,7 +237,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                 key={field.slug}
                 className="flex w-full flex-col relative"
               >
-                {field.type === FIELD_TYPE.TEXT_SHORT && (
+                {field.type === E_FIELD_TYPE.TEXT_SHORT && (
                   <FilterTextShort
                     field={field}
                     value={filterValues[field.slug] ?? ''}
@@ -252,7 +252,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.TEXT_LONG && (
+                {field.type === E_FIELD_TYPE.TEXT_LONG && (
                   <FilterTextShort
                     field={field}
                     value={filterValues[field.slug] ?? ''}
@@ -267,7 +267,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.DROPDOWN && (
+                {field.type === E_FIELD_TYPE.DROPDOWN && (
                   <FilterDropdown
                     field={field}
                     value={filterValues[field.slug] ?? []}
@@ -280,7 +280,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.DATE && (
+                {field.type === E_FIELD_TYPE.DATE && (
                   <FilterDate
                     field={field}
                     initialValue={filterValues[`${field.slug}-initial`]}
@@ -300,7 +300,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.CATEGORY && (
+                {field.type === E_FIELD_TYPE.CATEGORY && (
                   <FilterCategory
                     field={field}
                     value={filterValues[field.slug] ?? []}

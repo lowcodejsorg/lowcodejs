@@ -12,7 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { MENU_ITEM_TYPE } from '@/lib/constant';
+import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -52,13 +52,13 @@ function TableMenuRow({ menu }: { menu: IMenu }) {
         <Badge
           className={cn(
             'font-semibold border-transparent',
-            menu.type === MENU_ITEM_TYPE.PAGE && 'bg-green-100 text-green-700',
-            menu.type === MENU_ITEM_TYPE.TABLE &&
+            menu.type === E_MENU_ITEM_TYPE.PAGE && 'bg-green-100 text-green-700',
+            menu.type === E_MENU_ITEM_TYPE.TABLE &&
               'bg-yellow-100 text-yellow-700',
-            menu.type === MENU_ITEM_TYPE.FORM && 'bg-blue-100 text-blue-700',
-            menu.type === MENU_ITEM_TYPE.EXTERNAL &&
+            menu.type === E_MENU_ITEM_TYPE.FORM && 'bg-blue-100 text-blue-700',
+            menu.type === E_MENU_ITEM_TYPE.EXTERNAL &&
               'bg-violet-100 text-violet-700',
-            menu.type === MENU_ITEM_TYPE.SEPARATOR &&
+            menu.type === E_MENU_ITEM_TYPE.SEPARATOR &&
               'bg-gray-100 text-gray-700',
           )}
         >

@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
 import { usePermission } from '@/hooks/use-table-permission';
-import { FIELD_TYPE, MetaDefault } from '@/lib/constant';
+import { E_FIELD_TYPE, MetaDefault } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/')({
@@ -42,7 +42,7 @@ function RouteComponent(): React.JSX.Element {
       _id: 'name',
       slug: 'name',
       name: 'Nome',
-      type: FIELD_TYPE.TEXT_SHORT,
+      type: E_FIELD_TYPE.TEXT_SHORT,
       trashed: false,
       trashedAt: null,
       createdAt: '',

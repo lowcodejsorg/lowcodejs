@@ -20,7 +20,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import type { MENU_ITEM_TYPE } from '@/lib/constant';
+import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { MetaDefault } from '@/lib/constant';
 import type { IMenu, Paginated } from '@/lib/interfaces';
 
@@ -93,7 +93,7 @@ function RouteComponent(): React.JSX.Element {
 
       await _create.mutateAsync({
         name: value.name,
-        type: value.type as keyof typeof MENU_ITEM_TYPE,
+        type: value.type as (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE],
         parent: value.parent || null,
         table: value.table || null,
         html: value.html || null,

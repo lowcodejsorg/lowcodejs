@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 import type { ComboboxOption } from '@/components/ui/combobox';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IStorage } from '@/lib/interfaces';
 
 type SearchableOption = {
@@ -22,11 +22,11 @@ export function buildDefaultValuesFromRow(
     const existingValue = data[field.slug];
 
     switch (field.type) {
-      case FIELD_TYPE.TEXT_SHORT:
-      case FIELD_TYPE.TEXT_LONG:
+      case E_FIELD_TYPE.TEXT_SHORT:
+      case E_FIELD_TYPE.TEXT_LONG:
         defaults[field.slug] = existingValue ?? '';
         break;
-      case FIELD_TYPE.DROPDOWN: {
+      case E_FIELD_TYPE.DROPDOWN: {
         // Always array - convert single value to array if needed
         const values = Array.isArray(existingValue)
           ? existingValue
@@ -39,16 +39,16 @@ export function buildDefaultValuesFromRow(
         }));
         break;
       }
-      case FIELD_TYPE.DATE:
+      case E_FIELD_TYPE.DATE:
         defaults[field.slug] = existingValue ?? '';
         break;
-      case FIELD_TYPE.FILE:
+      case E_FIELD_TYPE.FILE:
         defaults[field.slug] = {
           files: [] as Array<File>,
           storages: (existingValue as Array<IStorage>) ?? [],
         };
         break;
-      case FIELD_TYPE.RELATIONSHIP: {
+      case E_FIELD_TYPE.RELATIONSHIP: {
         const relationshipFieldSlug =
           field.configuration.relationship?.field?.slug;
 
@@ -77,7 +77,7 @@ export function buildDefaultValuesFromRow(
         }
         break;
       }
-      case FIELD_TYPE.CATEGORY: {
+      case E_FIELD_TYPE.CATEGORY: {
         // Always array - convert single value to array if needed
         const categoryValue = Array.isArray(existingValue)
           ? existingValue
@@ -87,7 +87,7 @@ export function buildDefaultValuesFromRow(
         defaults[field.slug] = categoryValue;
         break;
       }
-      case FIELD_TYPE.FIELD_GROUP:
+      case E_FIELD_TYPE.FIELD_GROUP:
         // Ensure it's always an array
         if (Array.isArray(existingValue) && existingValue.length > 0) {
           defaults[field.slug] = existingValue;
@@ -123,11 +123,11 @@ export function buildPayload(
     const value = values[field.slug];
 
     switch (field.type) {
-      case FIELD_TYPE.TEXT_SHORT:
-      case FIELD_TYPE.TEXT_LONG:
+      case E_FIELD_TYPE.TEXT_SHORT:
+      case E_FIELD_TYPE.TEXT_LONG:
         payload[field.slug] = value || null;
         break;
-      case FIELD_TYPE.DROPDOWN: {
+      case E_FIELD_TYPE.DROPDOWN: {
         const dropdownValue = (value as Array<ComboboxOption>) || [];
         if (field.configuration.multiple) {
           payload[field.slug] = dropdownValue.map((opt) => opt.value);
@@ -137,10 +137,10 @@ export function buildPayload(
         }
         break;
       }
-      case FIELD_TYPE.DATE:
+      case E_FIELD_TYPE.DATE:
         payload[field.slug] = value || null;
         break;
-      case FIELD_TYPE.FILE: {
+      case E_FIELD_TYPE.FILE: {
         const fileValue = value as {
           files: Array<File>;
           storages: Array<IStorage>;
@@ -153,7 +153,7 @@ export function buildPayload(
         }
         break;
       }
-      case FIELD_TYPE.RELATIONSHIP: {
+      case E_FIELD_TYPE.RELATIONSHIP: {
         const relValue = (value as Array<SearchableOption>) || [];
         if (field.configuration.multiple) {
           payload[field.slug] = relValue.map((opt) => opt.value);
@@ -163,7 +163,7 @@ export function buildPayload(
         }
         break;
       }
-      case FIELD_TYPE.CATEGORY: {
+      case E_FIELD_TYPE.CATEGORY: {
         const categoryValue = Array.isArray(value) ? value : value ? [value] : [];
         if (field.configuration.multiple) {
           payload[field.slug] = categoryValue;
@@ -173,7 +173,7 @@ export function buildPayload(
         }
         break;
       }
-      case FIELD_TYPE.FIELD_GROUP: {
+      case E_FIELD_TYPE.FIELD_GROUP: {
         const groupValue = value as Array<Record<string, any>>;
         // Always send as array, but limit to 1 item if multiple=false
         if (field.configuration.multiple) {
@@ -230,8 +230,8 @@ export function UpdateRowFormFields({
       {activeFields.map((field) => {
         // Skip non-editable field types
         if (
-          field.type === FIELD_TYPE.REACTION ||
-          field.type === FIELD_TYPE.EVALUATION
+          field.type === E_FIELD_TYPE.REACTION ||
+          field.type === E_FIELD_TYPE.EVALUATION
         ) {
           return null;
         }
@@ -248,56 +248,56 @@ export function UpdateRowFormFields({
           >
             {(formField: any) => {
               switch (field.type) {
-                case FIELD_TYPE.TEXT_SHORT:
+                case E_FIELD_TYPE.TEXT_SHORT:
                   return (
                     <formField.TableRowTextField
                       field={field}
                       disabled={disabled}
                     />
                   );
-                case FIELD_TYPE.TEXT_LONG:
+                case E_FIELD_TYPE.TEXT_LONG:
                   return (
                     <formField.TableRowTextareaField
                       field={field}
                       disabled={disabled}
                     />
                   );
-                case FIELD_TYPE.DROPDOWN:
+                case E_FIELD_TYPE.DROPDOWN:
                   return (
                     <formField.TableRowDropdownField
                       field={field}
                       disabled={disabled}
                     />
                   );
-                case FIELD_TYPE.DATE:
+                case E_FIELD_TYPE.DATE:
                   return (
                     <formField.TableRowDateField
                       field={field}
                       disabled={disabled}
                     />
                   );
-                case FIELD_TYPE.FILE:
+                case E_FIELD_TYPE.FILE:
                   return (
                     <formField.TableRowFileField
                       field={field}
                       disabled={disabled}
                     />
                   );
-                case FIELD_TYPE.RELATIONSHIP:
+                case E_FIELD_TYPE.RELATIONSHIP:
                   return (
                     <formField.TableRowRelationshipField
                       field={field}
                       disabled={disabled}
                     />
                   );
-                case FIELD_TYPE.CATEGORY:
+                case E_FIELD_TYPE.CATEGORY:
                   return (
                     <formField.TableRowCategoryField
                       field={field}
                       disabled={disabled}
                     />
                   );
-                case FIELD_TYPE.FIELD_GROUP:
+                case E_FIELD_TYPE.FIELD_GROUP:
                   return (
                     <formField.TableRowFieldGroupField
                       field={field}

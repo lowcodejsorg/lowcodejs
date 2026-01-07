@@ -25,7 +25,7 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
-import type { FIELD_FORMAT, FIELD_TYPE } from '@/lib/constant';
+import type { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
@@ -405,14 +405,14 @@ function FieldUpdateContent({
 
       await _update.mutateAsync({
         name: value.name,
-        type: value.type as keyof typeof FIELD_TYPE,
+        type: value.type as keyof typeof E_FIELD_TYPE,
         configuration: {
           required: config.required,
           multiple: config.multiple,
           listing: config.listing,
           filtering: config.filtering,
           format: config.format
-            ? (config.format as keyof typeof FIELD_FORMAT)
+            ? (config.format as keyof typeof E_FIELD_FORMAT)
             : null,
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown

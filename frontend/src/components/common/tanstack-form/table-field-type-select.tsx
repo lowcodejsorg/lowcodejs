@@ -7,20 +7,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
 const COLUMN_TYPE_LIST = [
-  { label: 'Texto', value: FIELD_TYPE.TEXT_SHORT },
-  { label: 'Texto longo', value: FIELD_TYPE.TEXT_LONG },
-  { label: 'Dropdown', value: FIELD_TYPE.DROPDOWN },
-  { label: 'Arquivo', value: FIELD_TYPE.FILE },
-  { label: 'Data', value: FIELD_TYPE.DATE },
-  { label: 'Relacionamento', value: FIELD_TYPE.RELATIONSHIP },
-  { label: 'Grupo de campos', value: FIELD_TYPE.FIELD_GROUP },
-  { label: 'Categoria', value: FIELD_TYPE.CATEGORY },
-  { label: 'Reação', value: FIELD_TYPE.REACTION },
-  { label: 'Avaliação', value: FIELD_TYPE.EVALUATION },
+  { label: 'Texto', value: E_FIELD_TYPE.TEXT_SHORT },
+  { label: 'Texto longo', value: E_FIELD_TYPE.TEXT_LONG },
+  { label: 'Dropdown', value: E_FIELD_TYPE.DROPDOWN },
+  { label: 'Arquivo', value: E_FIELD_TYPE.FILE },
+  { label: 'Data', value: E_FIELD_TYPE.DATE },
+  { label: 'Relacionamento', value: E_FIELD_TYPE.RELATIONSHIP },
+  { label: 'Grupo de campos', value: E_FIELD_TYPE.FIELD_GROUP },
+  { label: 'Categoria', value: E_FIELD_TYPE.CATEGORY },
+  { label: 'Reação', value: E_FIELD_TYPE.REACTION },
+  { label: 'Avaliação', value: E_FIELD_TYPE.EVALUATION },
 ];
 
 interface TableFieldTypeSelectProps {

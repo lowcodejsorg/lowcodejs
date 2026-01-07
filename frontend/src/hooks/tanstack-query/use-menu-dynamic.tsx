@@ -12,17 +12,17 @@ import { useMemo } from 'react';
 
 import { useMenuReadList } from './use-menu-read-list';
 
+import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { getStaticMenusByRole } from '@/lib/menu/menu';
 import type { MenuGroupItem, MenuRoute } from '@/lib/menu/menu-route';
 
 // Mapeamento de ícones por tipo de menu
 const TYPE_ICONS: Record<string, LucideIcon> = {
-  table: TableIcon,
-  list: LayoutListIcon,
-  page: FileTextIcon,
-  form: PlusCircleIcon,
-  external: ExternalLinkIcon,
+  [E_MENU_ITEM_TYPE.TABLE]: TableIcon,
+  [E_MENU_ITEM_TYPE.PAGE]: FileTextIcon,
+  [E_MENU_ITEM_TYPE.FORM]: PlusCircleIcon,
+  [E_MENU_ITEM_TYPE.EXTERNAL]: ExternalLinkIcon,
 };
 
 // Tipo para menu com children

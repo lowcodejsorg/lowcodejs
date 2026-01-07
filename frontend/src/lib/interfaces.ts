@@ -14,7 +14,11 @@
  * ```
  */
 
-import type { FIELD_FORMAT, FIELD_TYPE, MENU_ITEM_TYPE } from './constant';
+import type {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  E_MENU_ITEM_TYPE,
+} from './constant';
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
 
@@ -70,7 +74,7 @@ export interface IUser extends Base {
 export interface IMenu extends Base {
   name: string;
   slug: string;
-  type: keyof typeof MENU_ITEM_TYPE;
+  type: (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
   table: ITable | null;
   parent: IMenu | null;
   url: string | null;
@@ -94,11 +98,11 @@ export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
 export interface IField extends Base {
   name: string;
   slug: string;
-  type: keyof typeof FIELD_TYPE;
+  type: (typeof E_FIELD_TYPE)[keyof typeof E_FIELD_TYPE];
   configuration: {
     required: boolean;
     multiple: boolean;
-    format: keyof typeof FIELD_FORMAT | null;
+    format: (typeof E_FIELD_FORMAT)[keyof typeof E_FIELD_FORMAT] | null;
     listing: boolean;
     filtering: boolean;
     defaultValue: string | null;

@@ -5,7 +5,7 @@ import z from 'zod';
 import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ICategory } from '@/lib/interfaces';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 
 export const FieldUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
@@ -65,16 +65,16 @@ export const UpdateFieldFormFields = withForm({
   render: function Render({ form, isPending, mode, tableSlug }) {
     // useStore para valores reativos do form
     const fieldType = useStore(form.store, (state) => state.values.type);
-    const isTextShort = fieldType === FIELD_TYPE.TEXT_SHORT;
-    const isTextLong = fieldType === FIELD_TYPE.TEXT_LONG;
-    const isDropdown = fieldType === FIELD_TYPE.DROPDOWN;
-    const isDate = fieldType === FIELD_TYPE.DATE;
-    const isRelationship = fieldType === FIELD_TYPE.RELATIONSHIP;
-    const isCategory = fieldType === FIELD_TYPE.CATEGORY;
-    const isFile = fieldType === FIELD_TYPE.FILE;
-    const isFieldGroup = fieldType === FIELD_TYPE.FIELD_GROUP;
-    const isReaction = fieldType === FIELD_TYPE.REACTION;
-    const isEvaluation = fieldType === FIELD_TYPE.EVALUATION;
+    const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
+    const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
+    const isDropdown = fieldType === E_FIELD_TYPE.DROPDOWN;
+    const isDate = fieldType === E_FIELD_TYPE.DATE;
+    const isRelationship = fieldType === E_FIELD_TYPE.RELATIONSHIP;
+    const isCategory = fieldType === E_FIELD_TYPE.CATEGORY;
+    const isFile = fieldType === E_FIELD_TYPE.FILE;
+    const isFieldGroup = fieldType === E_FIELD_TYPE.FIELD_GROUP;
+    const isReaction = fieldType === E_FIELD_TYPE.REACTION;
+    const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
 
     // useStore para reatividade - re-renderiza quando tableSlug muda
     const relationshipTableSlug = useStore(
