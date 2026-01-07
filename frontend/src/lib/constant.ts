@@ -29,6 +29,13 @@ export const E_FIELD_TYPE = {
   CATEGORY: 'CATEGORY',
 } as const;
 
+export const E_ROLE = {
+  MASTER: 'MASTER',
+  ADMINISTRATOR: 'ADMINISTRATOR',
+  MANAGER: 'MANAGER',
+  REGISTERED: 'REGISTERED',
+} as const;
+
 export const E_FIELD_FORMAT = {
   // TEXT_SHORT
   ALPHA_NUMERIC: 'ALPHA_NUMERIC',

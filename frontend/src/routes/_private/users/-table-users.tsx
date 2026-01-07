@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { E_ROLE } from '@/lib/constant';
 import type { IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -22,10 +23,10 @@ interface Props {
 }
 
 const RoleMapper = {
-  ADMINISTRATOR: 'Administrador',
-  REGISTERED: 'Registrado',
-  MANAGER: 'Gerente',
-  MASTER: 'Dono',
+  [E_ROLE.ADMINISTRATOR]: 'Administrador',
+  [E_ROLE.REGISTERED]: 'Registrado',
+  [E_ROLE.MANAGER]: 'Gerente',
+  [E_ROLE.MASTER]: 'Dono',
 };
 
 const StatusMapper = {
