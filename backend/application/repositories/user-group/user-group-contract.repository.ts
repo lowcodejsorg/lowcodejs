@@ -1,33 +1,29 @@
 /* eslint-disable no-unused-vars */
-import type { IGroup } from '@application/core/entity.core';
+import type { IGroup, Merge } from '@application/core/entity.core';
 
-export interface UserGroupCreatePayload {
-  name: string;
-  slug: string;
-  description?: string | null;
-  permissions: string[];
-}
+export type UserGroupCreatePayload = Merge<
+  Pick<IGroup, 'name' | 'slug'>,
+  {
+    description?: string | null;
+    permissions: string[];
+  }
+>;
 
-export interface UserGroupFindByPayload {
-  _id?: string;
-  slug?: string;
-  exact?: boolean;
-}
+export type UserGroupUpdatePayload = Merge<
+  Pick<IGroup, '_id'>,
+  Partial<UserGroupCreatePayload>
+>;
 
-export interface UserGroupQueryPayload {
+export type UserGroupFindByPayload = Merge<
+  Partial<Pick<IGroup, '_id' | 'slug'>>,
+  { exact: boolean }
+>;
+
+export type UserGroupQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
-  _id?: string;
-}
-
-export interface UserGroupUpdatePayload {
-  _id: string;
-  name?: string;
-  slug?: string;
-  description?: string | null;
-  permissions?: string[];
-}
+};
 
 export abstract class UserGroupContractRepository {
   abstract create(payload: UserGroupCreatePayload): Promise<IGroup>;

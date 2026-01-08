@@ -1,33 +1,33 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IMenu } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Menu as Model } from '@application/model/menu.model';
+import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
-import type { PageShowParamValidator } from './show.validator';
+import type { PageShowPayload } from './show.validator';
 
 type Response = Either<HTTPException, IMenu>;
-type Payload = z.infer<typeof PageShowParamValidator>;
+type Payload = PageShowPayload;
+
 @Service()
 export default class PageShowUseCase {
+  constructor(private readonly menuRepository: MenuContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const menu = await Model.findOne({ slug: payload.slug });
+      const menu = await this.menuRepository.findBy({
+        slug: payload.slug,
+        exact: true,
+      });
 
       if (!menu)
         return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
 
-      return right({
-        ...menu?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: menu?._id.toString(),
-      });
+      return right(menu);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

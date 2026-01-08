@@ -1,38 +1,36 @@
 /* eslint-disable no-unused-vars */
-import type { E_ROLE, IUser } from '@application/core/entity.core';
+import type {
+  E_ROLE,
+  E_USER_STATUS,
+  IUser,
+  Merge,
+  ValueOf,
+} from '@application/core/entity.core';
 
-export interface UserCreatePayload {
-  name: string;
-  email: string;
-  password: string;
-  group: string;
-}
+export type UserCreatePayload = Merge<
+  Pick<IUser, 'name' | 'email' | 'password'>,
+  { group: string; status?: ValueOf<typeof E_USER_STATUS> }
+>;
 
-export interface UserFindByPayload {
-  _id?: string;
-  email?: string;
-  exact?: boolean;
-}
+export type UserUpdatePayload = Merge<
+  Merge<Pick<IUser, '_id'>, Partial<UserCreatePayload>>,
+  { group?: string; status?: ValueOf<typeof E_USER_STATUS> }
+>;
 
-export interface UserQueryPayload {
+export type UserFindByPayload = Merge<
+  Partial<Pick<IUser, '_id' | 'email'>>,
+  { exact: boolean }
+>;
+
+export type UserQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
-  // _id?: string;
-  user?: {
-    _id: string;
-    role: keyof typeof E_ROLE;
-  };
-}
-
-export interface UserUpdatePayload {
-  _id: string;
-  name?: string;
-  email?: string;
-  password?: string;
-  status?: 'active' | 'inactive';
-  group?: string;
-}
+  user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+  _ids?: string[];
+  status?: ValueOf<typeof E_USER_STATUS>;
+  trashed?: boolean;
+};
 
 export abstract class UserContractRepository {
   abstract create(payload: UserCreatePayload): Promise<IUser>;

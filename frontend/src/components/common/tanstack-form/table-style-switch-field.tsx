@@ -2,6 +2,7 @@ import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 
 import { FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
+import { E_TABLE_STYLE } from '@/lib/constant';
 
 interface TableStyleSwitchFieldProps {
   label: string;
@@ -28,9 +29,11 @@ export function TableStyleSwitchField({
         <span className="text-sm text-muted-foreground">Lista</span>
         <Switch
           disabled={disabled}
-          checked={field.state.value === 'gallery'}
+          checked={field.state.value === E_TABLE_STYLE.GALLERY}
           onCheckedChange={(checked) => {
-            field.handleChange(checked ? 'gallery' : 'list');
+            field.handleChange(
+              checked ? E_TABLE_STYLE.GALLERY : E_TABLE_STYLE.LIST,
+            );
           }}
         />
         <span className="text-sm text-muted-foreground">Galeria</span>

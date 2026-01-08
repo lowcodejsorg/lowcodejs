@@ -16,7 +16,7 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadMenu } from '@/hooks/tanstack-query/use-menu-read';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
+import { E_MENU_ITEM_TYPE, MetaDefault } from '@/lib/constant';
 import type { IMenu, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/$menuId/')({
@@ -165,7 +165,9 @@ function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
   });
 
   const isPending = _update.status === 'pending';
-  const menuType = useStore(form.store, (state) => state.values.type);
+  const menuType = useStore(form.store, (state) => state.values.type) as
+    | (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE]
+    | '';
 
   return (
     <>

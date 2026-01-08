@@ -132,7 +132,7 @@ function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
 
   for (const menu of menuTree) {
     // Se é SEPARATOR, cria CollapsibleItem com seus filhos
-    if (menu.type.toLocaleLowerCase() === 'separator') {
+    if (menu.type === E_MENU_ITEM_TYPE.SEPARATOR) {
       if (menu.children && menu.children.length > 0) {
         items.push({
           title: menu.name,

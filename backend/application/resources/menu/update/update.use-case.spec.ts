@@ -1,16 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
+import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import MenuUpdateUseCase from './update.use-case';
 
 let menuInMemoryRepository: MenuInMemoryRepository;
+let tableInMemoryRepository: TableInMemoryRepository;
 let sut: MenuUpdateUseCase;
 
 describe('Menu Update Use Case', () => {
   beforeEach(() => {
     menuInMemoryRepository = new MenuInMemoryRepository();
-    sut = new MenuUpdateUseCase(menuInMemoryRepository);
+    tableInMemoryRepository = new TableInMemoryRepository();
+    sut = new MenuUpdateUseCase(
+      menuInMemoryRepository,
+      tableInMemoryRepository,
+    );
   });
 
   it('deve atualizar um menu com sucesso', async () => {

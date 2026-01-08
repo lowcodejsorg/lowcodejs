@@ -3,21 +3,24 @@ import mongoose from 'mongoose';
 
 import { Table } from '@application/model/table.model';
 
-import type { IField, Optional, IRow, ISchema, ITableSchema } from './entity.core';
-import { E_FIELD_TYPE } from './entity.core';
+import type { IField, IRow, ITableSchema, Optional } from './entity.core';
+import { E_FIELD_TYPE, E_SCHEMA_TYPE } from './entity.core';
 import { HandlerFunction } from './table/method.core';
 
-const FieldTypeMapper: Record<keyof typeof E_FIELD_TYPE, ISchema['type']> = {
-  [E_FIELD_TYPE.TEXT_SHORT]: 'String',
-  [E_FIELD_TYPE.TEXT_LONG]: 'String',
-  [E_FIELD_TYPE.DROPDOWN]: 'String',
-  [E_FIELD_TYPE.FILE]: 'ObjectId',
-  [E_FIELD_TYPE.DATE]: 'Date',
-  [E_FIELD_TYPE.RELATIONSHIP]: 'ObjectId',
-  [E_FIELD_TYPE.FIELD_GROUP]: 'ObjectId',
-  [E_FIELD_TYPE.EVALUATION]: 'ObjectId',
-  [E_FIELD_TYPE.REACTION]: 'ObjectId',
-  [E_FIELD_TYPE.CATEGORY]: 'String',
+const FieldTypeMapper: Record<
+  keyof typeof E_FIELD_TYPE,
+  (typeof E_SCHEMA_TYPE)[keyof typeof E_SCHEMA_TYPE]
+> = {
+  [E_FIELD_TYPE.TEXT_SHORT]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.TEXT_LONG]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.DROPDOWN]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.FILE]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.DATE]: E_SCHEMA_TYPE.DATE,
+  [E_FIELD_TYPE.RELATIONSHIP]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.FIELD_GROUP]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.EVALUATION]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.REACTION]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.CATEGORY]: E_SCHEMA_TYPE.OBJECT_ID,
 };
 
 function mapperSchema(field: IField): ITableSchema {
@@ -147,7 +150,8 @@ export function buildSchema(fields: IField[]): ITableSchema {
   return schema;
 }
 
-interface Entity extends Omit<IRow, '_id'>, mongoose.Document<Omit<IRow, '_id'>> {
+interface Entity
+  extends Omit<IRow, '_id'>, mongoose.Document<Omit<IRow, '_id'>> {
   _id: mongoose.Types.ObjectId;
 }
 
@@ -188,7 +192,7 @@ export async function buildTable(
       const result = HandlerFunction(
         table?.methods?.beforeSave?.code!,
         this,
-        table.slug.toLowerCase(),
+        table.slug,
         table.fields.map((f: any) => f.slug),
         {
           ...(this.isNew && { userAction: 'novo_registro' }),
@@ -214,7 +218,7 @@ export async function buildTable(
       const result = HandlerFunction(
         table?.methods?.afterSave?.code!,
         doc,
-        table.slug.toLowerCase(),
+        table.slug,
         table.fields.map((f: any) => f.slug),
         {
           ...(doc.isNew && { userAction: 'novo_registro' }),
@@ -241,7 +245,7 @@ export async function buildTable(
         const result = HandlerFunction(
           table?.methods?.onLoad?.code!,
           doc,
-          table.slug.toLowerCase(),
+          table.slug,
           table.fields.map((f: any) => f.slug),
           {
             userAction: 'carregamento_formulario',
@@ -253,32 +257,6 @@ export async function buildTable(
 
         if (!result.success) {
           console.error('Erro no onLoad (não bloqueante):', result.error);
-        }
-      }
-      next();
-    });
-
-    // Para consultas múltiplas (find)
-    schema.post('find', async function (docs, next) {
-      if (docs && Array.isArray(docs)) {
-        console.log('ON LOAD - find');
-        for (const doc of docs) {
-          const result = HandlerFunction(
-            table?.methods?.onLoad?.code!,
-            doc,
-            table.slug.toLowerCase(),
-            table.fields.map((f: any) => f.slug),
-            {
-              userAction: 'carregamento_formulario',
-              executionMoment: 'carregamento_formulario',
-              tableId: table._id?.toString(),
-              userId: doc.creator?.toString(),
-            },
-          );
-
-          if (!result.success) {
-            console.error('Erro no onLoad (não bloqueante):', result.error);
-          }
         }
       }
       next();

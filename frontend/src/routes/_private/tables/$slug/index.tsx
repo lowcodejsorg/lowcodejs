@@ -33,7 +33,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { MetaDefault } from '@/lib/constant';
+import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
@@ -130,12 +130,12 @@ function RouteComponent(): React.JSX.Element {
         {table.status === 'pending' && <TableSkeleton />}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === 'list' && (
+          table.data.configuration.style === E_TABLE_STYLE.LIST && (
             <TableListViewSkeleton />
           )}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === 'gallery' && (
+          table.data.configuration.style === E_TABLE_STYLE.GALLERY && (
             <TableGridViewSkeleton />
           )}
 
@@ -183,7 +183,7 @@ function RouteComponent(): React.JSX.Element {
           })()}
 
         {table.status === 'success' &&
-          table.data.configuration.style === 'list' &&
+          table.data.configuration.style === E_TABLE_STYLE.LIST &&
           rows.status === 'success' && (
             <TableListView
               headers={table.data.fields}
@@ -192,7 +192,7 @@ function RouteComponent(): React.JSX.Element {
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === 'gallery' &&
+          table.data.configuration.style === E_TABLE_STYLE.GALLERY &&
           rows.status === 'success' && (
             <TableGridView
               headers={table.data.fields}

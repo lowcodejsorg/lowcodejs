@@ -2,10 +2,13 @@ import { E_ROLE, type Optional } from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 import { UserGroup } from '@application/model/user-group.model';
 
-type Payload = Optional<
-  import('@application/core/entity.core').IGroup,
-  '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
->;
+type Payload = Omit<
+  Optional<
+    import('@application/core/entity.core').IGroup,
+    '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
+  >,
+  'permissions'
+> & { permissions: string[] };
 
 export default async function Seed(): Promise<void> {
   await UserGroup.deleteMany({});

@@ -10,7 +10,7 @@ import { TableUpdateSchema } from './update.schema';
 import TableUpdateUseCase from './update.use-case';
 import {
   TableUpdateBodyValidator,
-  TableUpdateParamValidator,
+  TableUpdateParamsValidator,
 } from './update.validator';
 
 @Controller({
@@ -39,7 +39,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableUpdateBodyValidator.parse(request.body);
-    const params = TableUpdateParamValidator.parse(request.params);
+    const params = TableUpdateParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
       ...params,

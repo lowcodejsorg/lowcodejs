@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -8,10 +7,10 @@ import type { IUser as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
-import type { UserShowParamValidator } from './show.validator';
+import type { UserShowPayload } from './show.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = z.infer<typeof UserShowParamValidator>;
+type Payload = UserShowPayload;
 
 @Service()
 export default class UserShowUseCase {
@@ -29,7 +28,6 @@ export default class UserShowUseCase {
 
       return right(user);
     } catch (_error) {
-      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

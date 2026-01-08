@@ -8,7 +8,7 @@ import { TableRowCreateSchema } from './create.schema';
 import TableRowCreateUseCase from './create.use-case';
 import {
   TableRowCreateBodyValidator,
-  TableRowCreateParamValidator,
+  TableRowCreateParamsValidator,
 } from './create.validator';
 
 @Controller({
@@ -39,7 +39,7 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     console.log('request.body', request.body);
     const payload = TableRowCreateBodyValidator.parse(request.body);
-    const params = TableRowCreateParamValidator.parse(request.params);
+    const params = TableRowCreateParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
       ...payload,

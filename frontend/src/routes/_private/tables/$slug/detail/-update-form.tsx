@@ -1,6 +1,11 @@
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
+import {
+  E_COLLABORATION,
+  E_TABLE_STYLE,
+  E_VISIBILITY,
+} from '@/lib/constant';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import type { ITable } from '@/lib/interfaces';
 
@@ -10,9 +15,15 @@ export const TableUpdateSchema = z.object({
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
   description: z.string().default(''),
-  style: z.enum(['list', 'gallery']),
-  visibility: z.enum(['public', 'restricted', 'open', 'form', 'private']),
-  collaboration: z.enum(['open', 'restricted']),
+  style: z.enum([E_TABLE_STYLE.LIST, E_TABLE_STYLE.GALLERY]),
+  visibility: z.enum([
+    E_VISIBILITY.PUBLIC,
+    E_VISIBILITY.RESTRICTED,
+    E_VISIBILITY.OPEN,
+    E_VISIBILITY.FORM,
+    E_VISIBILITY.PRIVATE,
+  ]),
+  collaboration: z.enum([E_COLLABORATION.OPEN, E_COLLABORATION.RESTRICTED]),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
@@ -23,9 +34,9 @@ export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
   description: '',
-  style: 'list',
-  visibility: 'restricted',
-  collaboration: 'restricted',
+  style: E_TABLE_STYLE.LIST,
+  visibility: E_VISIBILITY.RESTRICTED,
+  collaboration: E_COLLABORATION.RESTRICTED,
   logo: null,
   logoFile: [],
   administrators: [],

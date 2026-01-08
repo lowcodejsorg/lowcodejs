@@ -1,18 +1,24 @@
 import type { FastifyRequest } from 'fastify';
 import z from 'zod';
 
-import type { IPermission, ITable } from '@application/core/entity.core';
+import {
+  E_TABLE_PERMISSION,
+  E_TABLE_VISIBILITY,
+  E_USER_STATUS,
+  IPermission,
+  ITable,
+  ValueOf,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { Table as TableModel } from '@application/model/table.model';
 import { User as UserModel } from '@application/model/user.model';
-import { PermissionSlugMapper } from '@config/util.config';
 
 const ParamsSchema = z.object({
   slug: z.string().trim().min(1).optional(),
 });
 
 interface AccessOptions {
-  requiredPermission: keyof typeof PermissionSlugMapper;
+  requiredPermission: ValueOf<typeof E_TABLE_PERMISSION>;
 }
 
 /**
@@ -20,9 +26,9 @@ interface AccessOptions {
  */
 async function checkUserHasPermission(
   userId: string,
-  permission: keyof typeof PermissionSlugMapper,
+  permission: ValueOf<typeof E_TABLE_PERMISSION>,
 ): Promise<void> {
-  const permissionSlug = PermissionSlugMapper[permission].toLowerCase();
+  const permissionSlug = E_TABLE_PERMISSION[permission];
 
   const user = await UserModel.findOne({ _id: userId })
     .populate({
@@ -35,7 +41,7 @@ async function checkUserHasPermission(
     throw HTTPException.Forbidden('User not found', 'USER_NOT_FOUND');
   }
 
-  if (user.status !== 'active') {
+  if (user.status !== E_USER_STATUS.ACTIVE) {
     throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
   }
 
@@ -49,7 +55,7 @@ async function checkUserHasPermission(
   }
 
   const hasPermission = group.permissions.some(
-    (p) => p.slug?.toLowerCase() === permissionSlug,
+    (p) => p.slug === permissionSlug,
   );
 
   if (!hasPermission) {
@@ -105,7 +111,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
     // 3. EXCEÇÃO PÚBLICA: tabela pública + VIEW → visitante pode ver/filtrar
     if (
       table &&
-      table.configuration?.visibility === 'public' &&
+      table.configuration?.visibility === E_TABLE_VISIBILITY.PUBLIC &&
       request.method === 'GET' &&
       ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(requiredPermission)
     ) {
@@ -115,7 +121,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
     // 4. EXCEÇÃO FORMULÁRIO: tabela form + POST CREATE_ROW → visitante pode criar registro
     if (
       table &&
-      table.configuration?.visibility === 'form' &&
+      table.configuration?.visibility === E_TABLE_VISIBILITY.FORM &&
       request.method === 'POST' &&
       requiredPermission === 'CREATE_ROW'
     ) {
@@ -157,14 +163,15 @@ export function TableAccessMiddleware(options: AccessOptions) {
     if (isOwner || isTableAdmin) {
       // Verificar se usuário está ativo
       const userDoc = await UserModel.findOne({ _id: user.sub }).lean();
-      if (!userDoc || userDoc.status !== 'active') {
+      if (!userDoc || userDoc.status !== E_USER_STATUS.ACTIVE) {
         throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
       }
       return;
     }
 
     // 9. Usuário logado NÃO é dono/admin → aplicar regras de visibilidade
-    const visibility = table.configuration?.visibility || 'restricted';
+    const visibility =
+      table.configuration?.visibility || E_TABLE_VISIBILITY.RESTRICTED;
 
     // Ações que SEMPRE requerem dono/admin (independente da visibilidade)
     const ownerOnlyActions = [
@@ -186,11 +193,11 @@ export function TableAccessMiddleware(options: AccessOptions) {
 
     // 10. Regras específicas por visibilidade
     switch (visibility) {
-      case 'private':
+      case E_TABLE_VISIBILITY.PRIVATE:
         // PRIVADA: Bloqueia TUDO para não-dono/admin
         throw HTTPException.Forbidden('This table is private', 'TABLE_PRIVATE');
 
-      case 'restricted':
+      case E_TABLE_VISIBILITY.RESTRICTED:
         // RESTRITA: Só permite VIEW (CREATE_ROW bloqueado)
         if (requiredPermission === 'CREATE_ROW') {
           throw HTTPException.Forbidden(
@@ -200,15 +207,15 @@ export function TableAccessMiddleware(options: AccessOptions) {
         }
         break;
 
-      case 'open':
+      case E_TABLE_VISIBILITY.OPEN:
         // ABERTA: Permite VIEW e CREATE_ROW (UPDATE/REMOVE já bloqueado acima)
         break;
 
-      case 'public':
+      case E_TABLE_VISIBILITY.PUBLIC:
         // PÚBLICA: Permite VIEW e CREATE_ROW (UPDATE/REMOVE já bloqueado acima)
         break;
 
-      case 'form':
+      case E_TABLE_VISIBILITY.FORM:
         // FORMULÁRIO: Bloqueia VIEW (CREATE_ROW já tratado para visitante acima)
         if (
           ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(requiredPermission)

@@ -12,3 +12,5 @@ export const TableCreateBodyValidator = z.object({
     ),
   owner: z.string().trim().optional(),
 });
+
+export type TableCreatePayload = z.infer<typeof TableCreateBodyValidator>;

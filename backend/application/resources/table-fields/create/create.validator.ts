@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_TYPE, Merge } from '@application/core/entity.core';
 
 import { TableFieldConfiguration } from '../table-field-base.schema';
 
@@ -10,6 +10,11 @@ export const TableFieldCreateBodyValidator = z.object({
   configuration: TableFieldConfiguration,
 });
 
-export const TableFieldCreateParamValidator = z.object({
+export const TableFieldCreateParamsValidator = z.object({
   slug: z.string().trim(),
 });
+
+export type TableFieldCreatePayload = Merge<
+  z.infer<typeof TableFieldCreateParamsValidator>,
+  z.infer<typeof TableFieldCreateBodyValidator>
+>;

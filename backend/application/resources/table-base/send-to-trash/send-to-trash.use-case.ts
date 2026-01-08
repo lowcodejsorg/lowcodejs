@@ -1,25 +1,26 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
+import type { ITable as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Table } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TableSendToTrashParamValidator } from './send-to-trash.validator';
+import type { TableSendToTrashPayload } from './send-to-trash.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').ITable
->;
-type Payload = z.infer<typeof TableSendToTrashParamValidator>;
+type Response = Either<HTTPException, Entity>;
+type Payload = TableSendToTrashPayload;
 
 @Service()
 export default class TableSendToTrashUseCase {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
+        exact: true,
       });
 
       if (!table)
@@ -32,41 +33,14 @@ export default class TableSendToTrashUseCase {
           HTTPException.Conflict('Table already in trash', 'ALREADY_TRASHED'),
         );
 
-      await table
-        .set({
-          ...table.toJSON(),
-          trashed: true,
-          trashedAt: new Date(),
-        })
-        .save();
-
-      const populated = await table?.populate([
-        {
-          path: 'configuration.administrators',
-          select: 'name _id',
-          model: 'User',
-        },
-        {
-          path: 'logo',
-          model: 'Storage',
-        },
-        {
-          path: 'configuration.owner',
-          select: 'name _id',
-          model: 'User',
-        },
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
-
-      return right({
-        ...populated.toJSON(),
-        _id: populated._id.toString(),
+      const updated = await this.tableRepository.update({
+        _id: table._id,
+        trashed: true,
+        trashedAt: new Date(),
       });
+
+      return right(updated);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

@@ -25,7 +25,8 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
-import type { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import type { E_FIELD_FORMAT } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
@@ -89,7 +90,7 @@ function RouteComponent(): React.JSX.Element {
             <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">
-            {_read.status === 'success' && _read.data.type === 'FIELD_GROUP'
+            {_read.status === 'success' && _read.data.type === E_FIELD_TYPE.FIELD_GROUP
               ? 'Detalhes do grupo de campos'
               : 'Detalhes do campo'}
           </h1>
@@ -97,7 +98,7 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {/* Info text for field group */}
-      {_read.status === 'success' && _read.data.type === 'FIELD_GROUP' && (
+      {_read.status === 'success' && _read.data.type === E_FIELD_TYPE.FIELD_GROUP && (
         <p className="text-sm text-muted-foreground px-2 pb-2">
           O grupo de campos é composto por outros campos que devem ser
           configurados nas configurações da tabela em "Gerenciar grupo de
@@ -412,7 +413,7 @@ function FieldUpdateContent({
           listing: config.listing,
           filtering: config.filtering,
           format: config.format
-            ? (config.format as keyof typeof E_FIELD_FORMAT)
+            ? (config.format as (typeof E_FIELD_FORMAT)[keyof typeof E_FIELD_FORMAT])
             : null,
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown

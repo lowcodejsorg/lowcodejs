@@ -7,7 +7,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 import TableRowUpdateUseCase from './update.use-case';
 import {
   TableRowUpdateBodyValidator,
-  TableRowUpdateParamValidator,
+  TableRowUpdateParamsValidator,
 } from './update.validator';
 
 @Controller({
@@ -199,7 +199,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableRowUpdateBodyValidator.parse(request.body);
-    const params = TableRowUpdateParamValidator.parse(request.params);
+    const params = TableRowUpdateParamsValidator.parse(request.params);
     const result = await this.useCase.execute({
       ...payload,
       ...params,

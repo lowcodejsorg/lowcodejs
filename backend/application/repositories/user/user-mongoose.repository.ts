@@ -14,15 +14,66 @@ import type {
 
 @Service()
 export default class UserMongooseRepository implements UserContractRepository {
+  private readonly populateOptions = [
+    { path: 'group', populate: { path: 'permissions' } },
+  ];
+
+  private async buildWhereClause(
+    payload?: UserQueryPayload,
+  ): Promise<Record<string, unknown>> {
+    const where: Record<string, unknown> = {};
+
+    // Filtro por trashed
+    if (payload?.trashed !== undefined) {
+      where.trashed = payload.trashed;
+    } else {
+      where.trashed = false;
+    }
+
+    // Filtro por múltiplos IDs
+    if (payload?._ids && payload._ids.length > 0) {
+      where._id = { $in: payload._ids };
+    }
+
+    // Filtro por status
+    if (payload?.status) {
+      where.status = payload.status;
+    }
+
+    if (payload?.user?._id) {
+      where._id = { $ne: payload.user._id };
+    }
+
+    if (payload?.user?.role === 'ADMINISTRATOR') {
+      const UserGroupModel = Model.db.model('UserGroup');
+      const masterGroup = await UserGroupModel.findOne({ slug: E_ROLE.MASTER });
+
+      if (masterGroup) {
+        where.group = { $ne: masterGroup._id.toString() };
+      }
+    }
+
+    if (payload?.search) {
+      where.$or = [
+        { name: { $regex: normalize(payload.search), $options: 'i' } },
+        { email: { $regex: normalize(payload.search), $options: 'i' } },
+      ];
+    }
+
+    return where;
+  }
+
+  private transform(entity: InstanceType<typeof Model>): IUser {
+    return {
+      ...entity.toJSON({ flattenObjectIds: true }),
+      _id: entity._id.toString(),
+    };
+  }
+
   async create(payload: UserCreatePayload): Promise<IUser> {
     const created = await Model.create(payload);
-
-    const populated = await created.populate([{ path: 'group' }]);
-
-    return {
-      ...populated.toJSON({ flattenObjectIds: true }),
-      _id: populated._id.toString(),
-    };
+    const populated = await created.populate(this.populateOptions);
+    return this.transform(populated);
   }
 
   async findBy({
@@ -40,56 +91,31 @@ export default class UserMongooseRepository implements UserContractRepository {
 
     const whereClause = exact ? { $and: conditions } : { $or: conditions };
 
-    const user = await Model.findOne(whereClause).populate([{ path: 'group' }]);
+    const user = await Model.findOne(whereClause).populate(this.populateOptions);
 
     if (!user) return null;
 
-    return {
-      ...user.toJSON({ flattenObjectIds: true }),
-      _id: user._id.toString(),
-    };
+    return this.transform(user);
   }
 
   async findMany(payload?: UserQueryPayload): Promise<IUser[]> {
-    const query: Record<string, unknown> = {};
+    const where = await this.buildWhereClause(payload);
 
-    if (payload?.user?._id) {
-      query._id = { $ne: payload.user._id };
-    }
-
-    if (payload?.user?.role === 'ADMINISTRATOR') {
-      const UserGroupModel = Model.db.model('UserGroup');
-      const masterGroup = await UserGroupModel.findOne({ slug: E_ROLE.MASTER });
-
-      if (masterGroup) {
-        query.group = { $ne: masterGroup._id.toString() };
-      }
-    }
-
-    if (payload?.search) {
-      query.$or = [
-        { name: { $regex: normalize(payload.search), $options: 'i' } },
-        { email: { $regex: normalize(payload.search), $options: 'i' } },
-      ];
-    }
-
-    console.log({ query });
-
-    let dbQuery = Model.find(query)
-      .populate([{ path: 'group' }])
-      .sort({ name: 'asc' });
+    let skip: number | undefined;
+    let take: number | undefined;
 
     if (payload?.page && payload?.perPage) {
-      const skip = (payload.page - 1) * payload.perPage;
-      dbQuery = dbQuery.skip(skip).limit(payload.perPage);
+      skip = (payload.page - 1) * payload.perPage;
+      take = payload.perPage;
     }
 
-    const users = await dbQuery;
+    const users = await Model.find(where)
+      .populate(this.populateOptions)
+      .sort({ name: 'asc' })
+      .skip(skip ?? 0)
+      .limit(take ?? 0);
 
-    return users.map((u) => ({
-      ...u.toJSON({ flattenObjectIds: true }),
-      _id: u._id.toString(),
-    }));
+    return users.map((u) => this.transform(u));
   }
 
   async update({ _id, ...payload }: UserUpdatePayload): Promise<IUser> {
@@ -101,12 +127,9 @@ export default class UserMongooseRepository implements UserContractRepository {
 
     await user.save();
 
-    const populated = await user.populate([{ path: 'group' }]);
+    const populated = await user.populate(this.populateOptions);
 
-    return {
-      ...populated.toJSON({ flattenObjectIds: true }),
-      _id: populated._id.toString(),
-    };
+    return this.transform(populated);
   }
 
   async delete(_id: string): Promise<void> {
@@ -117,27 +140,7 @@ export default class UserMongooseRepository implements UserContractRepository {
   }
 
   async count(payload?: UserQueryPayload): Promise<number> {
-    const query: Record<string, unknown> = {};
-
-    if (payload?.user?._id) {
-      query._id = { $ne: payload.user._id };
-    }
-
-    if (payload?.user?.role === 'ADMINISTRATOR') {
-      const UserGroupModel = Model.db.model('UserGroup');
-      const masterGroup = await UserGroupModel.findOne({ slug: 'master' });
-      if (masterGroup) {
-        query.group = { $ne: masterGroup._id };
-      }
-    }
-
-    if (payload?.search) {
-      query.$or = [
-        { name: { $regex: normalize(payload.search), $options: 'i' } },
-        { email: { $regex: normalize(payload.search), $options: 'i' } },
-      ];
-    }
-
-    return Model.countDocuments(query);
+    const where = await this.buildWhereClause(payload);
+    return Model.countDocuments(where);
   }
 }

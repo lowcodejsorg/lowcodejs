@@ -1,77 +1,43 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IMeta, Paginated } from '@application/core/entity.core';
+import type {
+  ITable as Entity,
+  IMeta,
+  Paginated,
+} from '@application/core/entity.core';
+import { E_TABLE_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { normalize } from '@application/core/util.core';
-import { Table as Model } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TablePaginatedQueryValidator } from './paginated.validator';
+import type { TablePaginatedPayload } from './paginated.validator';
 
-type Response = Either<
-  HTTPException,
-  Paginated<import('@application/core/entity.core').ITable>
->;
-
-type Payload = z.infer<typeof TablePaginatedQueryValidator>;
+type Response = Either<HTTPException, Paginated<Entity>>;
+type Payload = TablePaginatedPayload;
 
 @Service()
 export default class TablePaginatedUseCase {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const skip = (payload.page - 1) * payload.perPage;
+      const trashed = payload.trashed === 'true';
 
-      const query: Record<string, unknown> = {
-        type: 'table',
-      };
+      const tables = await this.tableRepository.findMany({
+        page: payload.page,
+        perPage: payload.perPage,
+        search: payload.search ?? payload.name,
+        type: E_TABLE_TYPE.TABLE,
+        trashed,
+      });
 
-      if (payload.search) {
-        query.$or = [
-          { name: { $regex: normalize(payload.search), $options: 'i' } },
-          { description: { $regex: normalize(payload.search), $options: 'i' } },
-        ];
-      }
-
-      if (payload.name)
-        query.name = { $regex: normalize(payload.name), $options: 'i' };
-
-      if (payload.trashed && payload.trashed === 'true') query.trashed = true;
-      else query.trashed = false;
-
-      console.log(JSON.stringify(payload, null, 2));
-
-      const tables = await Model.find(query)
-        .populate([
-          {
-            path: 'configuration.administrators',
-            select: 'name _id',
-            model: 'User',
-          },
-          {
-            path: 'logo',
-            model: 'Storage',
-          },
-          {
-            path: 'configuration.owner',
-            select: 'name _id',
-            model: 'User',
-          },
-          {
-            path: 'fields',
-            model: 'Field',
-          },
-        ])
-        .skip(skip)
-        .limit(payload.perPage)
-        .sort({
-          name: payload['order-name'] ?? 'asc',
-          slug: payload['order-link'] ?? 'asc',
-          createdAt: payload['order-created-at'] ?? 'asc',
-        });
-
-      const total = await Model.countDocuments(query);
+      const total = await this.tableRepository.count({
+        search: payload.search ?? payload.name,
+        type: E_TABLE_TYPE.TABLE,
+        trashed,
+      });
 
       const lastPage = Math.ceil(total / payload.perPage);
 
@@ -85,15 +51,9 @@ export default class TablePaginatedUseCase {
 
       return right({
         meta,
-        data: tables?.map((u) => {
-          return {
-            ...u?.toJSON(),
-            _id: u?._id.toString(),
-          };
-        }),
+        data: tables,
       });
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

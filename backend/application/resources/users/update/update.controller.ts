@@ -8,7 +8,7 @@ import { UserUpdateSchema } from './update.schema';
 import UserUpdateUseCase from './update.use-case';
 import {
   UserUpdateBodyValidator,
-  UserUpdateParamValidator,
+  UserUpdateParamsValidator,
 } from './update.validator';
 
 @Controller({
@@ -33,7 +33,7 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = UserUpdateParamValidator.parse(request.params);
+    const params = UserUpdateParamsValidator.parse(request.params);
     const payload = UserUpdateBodyValidator.parse(request.body);
 
     const result = await this.useCase.execute({

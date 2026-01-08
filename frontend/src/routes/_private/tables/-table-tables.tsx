@@ -16,6 +16,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { E_VISIBILITY } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
 
 interface Props {
@@ -30,11 +31,11 @@ const VISIBILITY_CONFIG: Record<
     variant: 'default' | 'secondary' | 'outline' | 'destructive';
   }
 > = {
-  private: { label: 'Privada', variant: 'destructive' },
-  restricted: { label: 'Restrita', variant: 'secondary' },
-  open: { label: 'Aberta', variant: 'default' },
-  public: { label: 'Pública', variant: 'outline' },
-  form: { label: 'Formulário', variant: 'secondary' },
+  [E_VISIBILITY.PRIVATE]: { label: 'Privada', variant: 'destructive' },
+  [E_VISIBILITY.RESTRICTED]: { label: 'Restrita', variant: 'secondary' },
+  [E_VISIBILITY.OPEN]: { label: 'Aberta', variant: 'default' },
+  [E_VISIBILITY.PUBLIC]: { label: 'Pública', variant: 'outline' },
+  [E_VISIBILITY.FORM]: { label: 'Formulário', variant: 'secondary' },
 };
 
 function TableTableRow({ table }: { table: ITable }): React.JSX.Element {

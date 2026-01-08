@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { E_TABLE_TYPE } from '@/lib/constant';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/order')({
   component: RouteComponent,
@@ -51,7 +52,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   const title =
-    table.data?.type === 'field-group'
+    table.data?.type === E_TABLE_TYPE.FIELD_GROUP
       ? 'Gerenciar campos do grupo'
       : 'Gerenciar campos';
 

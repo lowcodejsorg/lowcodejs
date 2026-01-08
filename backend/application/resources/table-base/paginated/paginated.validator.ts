@@ -12,3 +12,5 @@ export const TablePaginatedQueryValidator = z.object({
   'order-link': z.enum(['asc', 'desc']).default('asc'),
   'order-created-at': z.enum(['asc', 'desc']).default('asc'),
 });
+
+export type TablePaginatedPayload = z.infer<typeof TablePaginatedQueryValidator>;

@@ -8,7 +8,7 @@ import { TableRowEvaluationSchema } from './evaluation.schema';
 import TableRowEvaluationUseCase from './evaluation.use-case';
 import {
   TableRowEvaluationBodyValidator,
-  TableRowEvaluationParamValidator,
+  TableRowEvaluationParamsValidator,
 } from './evaluation.validator';
 
 @Controller({
@@ -38,7 +38,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableRowEvaluationBodyValidator.parse(request.body);
-    const params = TableRowEvaluationParamValidator.parse(request.params);
+    const params = TableRowEvaluationParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
       ...payload,

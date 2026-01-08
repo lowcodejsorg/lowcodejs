@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useProfileRead } from './tanstack-query/use-profile-read';
 
+import { E_VISIBILITY } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
 
@@ -88,16 +89,17 @@ export function useTablePermission(
 
       // Usuário não logado
       if (!userId) {
-        const visibility = table?.configuration?.visibility || 'restricted';
+        const visibility =
+          table?.configuration?.visibility || E_VISIBILITY.RESTRICTED;
         // Visitante pode ver tabelas públicas
         if (
-          visibility === 'public' &&
+          visibility === E_VISIBILITY.PUBLIC &&
           ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)
         ) {
           return true;
         }
         // Visitante pode criar registro em tabelas de formulário
-        if (visibility === 'form' && action === 'CREATE_ROW') {
+        if (visibility === E_VISIBILITY.FORM && action === 'CREATE_ROW') {
           return true;
         }
         return false;
@@ -119,27 +121,28 @@ export function useTablePermission(
       }
 
       // Aplicar regras de visibilidade
-      const visibility = table?.configuration?.visibility || 'restricted';
+      const visibility =
+        table?.configuration?.visibility || E_VISIBILITY.RESTRICTED;
 
       switch (visibility) {
-        case 'private':
+        case E_VISIBILITY.PRIVATE:
           // PRIVADA: Apenas dono/admin pode fazer tudo
           return false;
 
-        case 'restricted':
+        case E_VISIBILITY.RESTRICTED:
           // RESTRITA: Usuário logado pode ver, mas não criar
           if (action === 'CREATE_ROW') return false;
           break;
 
-        case 'open':
+        case E_VISIBILITY.OPEN:
           // ABERTA: Usuário logado pode ver e criar
           break;
 
-        case 'public':
+        case E_VISIBILITY.PUBLIC:
           // PÚBLICA: Usuário logado pode ver e criar
           break;
 
-        case 'form':
+        case E_VISIBILITY.FORM:
           // FORMULÁRIO: Usuário logado NÃO pode ver (só criar via visitante)
           if (['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)) {
             return false;

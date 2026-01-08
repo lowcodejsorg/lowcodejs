@@ -147,6 +147,7 @@ export const Schema = new mongoose.Schema(
     type: {
       type: String,
       enum: Object.values(E_FIELD_TYPE),
+      default: E_FIELD_TYPE.TEXT_SHORT,
       required: true,
     },
     configuration: { type: Configuration, required: true },

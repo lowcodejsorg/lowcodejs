@@ -15,9 +15,13 @@
  */
 
 import type {
+  E_COLLABORATION,
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_MENU_ITEM_TYPE,
+  E_TABLE_STYLE,
+  E_TABLE_TYPE,
+  E_VISIBILITY,
 } from './constant';
 
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
@@ -129,11 +133,11 @@ export interface ITable extends Base {
   logo: IStorage | null;
   slug: string;
   fields: Array<IField>;
-  type: 'table' | 'field-group';
+  type: (typeof E_TABLE_TYPE)[keyof typeof E_TABLE_TYPE];
   configuration: {
-    style: 'gallery' | 'list';
-    visibility: 'public' | 'restricted' | 'open' | 'form';
-    collaboration: 'open' | 'restricted';
+    style: (typeof E_TABLE_STYLE)[keyof typeof E_TABLE_STYLE];
+    visibility: (typeof E_VISIBILITY)[keyof typeof E_VISIBILITY];
+    collaboration: (typeof E_COLLABORATION)[keyof typeof E_COLLABORATION];
     administrators: Array<IUser>;
     owner: IUser;
     fields: {

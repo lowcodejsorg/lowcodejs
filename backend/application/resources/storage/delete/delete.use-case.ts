@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 import { getInstanceByToken, Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
-import { Storage as Model } from '@application/model/storage.model';
+import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
 import StorageService from '@application/services/storage.service';
 
 type Response = Either<HTTPException, null>;
@@ -11,7 +12,7 @@ type Response = Either<HTTPException, null>;
 @Service()
 export default class StorageDeleteUseCase {
   constructor(
-    // eslint-disable-next-line no-unused-vars
+    private readonly storageRepository: StorageContractRepository,
     private readonly service: StorageService = getInstanceByToken(
       StorageService,
     ),
@@ -19,7 +20,7 @@ export default class StorageDeleteUseCase {
 
   async execute({ _id }: { _id: string }): Promise<Response> {
     try {
-      const storage = await Model.findByIdAndDelete({ _id });
+      const storage = await this.storageRepository.delete(_id);
 
       if (!storage) {
         return left(
@@ -31,7 +32,6 @@ export default class StorageDeleteUseCase {
 
       return right(null);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

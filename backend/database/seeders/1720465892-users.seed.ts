@@ -1,6 +1,6 @@
 import bcrypt from 'bcryptjs';
 
-import { E_ROLE } from '@application/core/entity.core';
+import { E_ROLE, E_USER_STATUS } from '@application/core/entity.core';
 import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 
@@ -32,28 +32,28 @@ export default async function Seed(): Promise<void> {
       group: administratorGroup?._id?.toString() as string,
       email: 'admin@admin.com',
       password: await bcrypt.hash('admin', 6),
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     },
     {
       name: 'master',
       group: masterGroup?._id?.toString() as string,
       email: 'master@lowcodejs.org',
       password,
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     },
     {
       name: 'administrator',
       group: administratorGroup?._id?.toString() as string,
       email: 'administrator@lowcodejs.org',
       password,
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     },
     {
       name: 'manager',
       group: managerGroup?._id?.toString() as string,
       email: 'manager@lowcodejs.org',
       password,
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     },
 
     {
@@ -61,7 +61,7 @@ export default async function Seed(): Promise<void> {
       group: registeredGroup?._id?.toString() as string,
       email: 'registered@lowcodejs.org',
       password,
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     },
   ];
   await User.insertMany(payload);

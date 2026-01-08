@@ -28,7 +28,7 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import type {
   ICategory,
   IField,
@@ -226,7 +226,7 @@ function RouteComponent(): React.JSX.Element {
           listing: config.listing,
           filtering: config.filtering,
           format: config.format
-            ? (config.format as keyof typeof E_FIELD_FORMAT)
+            ? (config.format as (typeof E_FIELD_FORMAT)[keyof typeof E_FIELD_FORMAT])
             : null,
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown
@@ -256,7 +256,7 @@ function RouteComponent(): React.JSX.Element {
 
   // Blocked types for field-group tables
   const blockedTypes =
-    table.status === 'success' && table.data.type === 'field-group'
+    table.status === 'success' && table.data.type === E_TABLE_TYPE.FIELD_GROUP
       ? [E_FIELD_TYPE.FIELD_GROUP, E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION]
       : [];
 

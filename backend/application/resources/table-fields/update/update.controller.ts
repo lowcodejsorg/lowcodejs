@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
 
@@ -8,7 +9,7 @@ import { TableFieldUpdateSchema } from './update.schema';
 import TableFieldUpdateUseCase from './update.use-case';
 import {
   TableFieldUpdateBodyValidator,
-  TableFieldUpdateParamValidator,
+  TableFieldUpdateParamsValidator,
 } from './update.validator';
 
 @Controller({
@@ -16,7 +17,6 @@ import {
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: TableFieldUpdateUseCase = getInstanceByToken(
       TableFieldUpdateUseCase,
     ),
@@ -38,7 +38,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableFieldUpdateBodyValidator.parse(request.body);
-    const params = TableFieldUpdateParamValidator.parse(request.params);
+    const params = TableFieldUpdateParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
       ...payload,

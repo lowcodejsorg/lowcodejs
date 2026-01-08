@@ -1,33 +1,38 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_TYPE,
+  E_TABLE_TYPE,
+  E_USER_STATUS,
+  type ITable as Entity,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildTable } from '@application/core/util.core';
-import { Field } from '@application/model/field.model';
-import { Table } from '@application/model/table.model';
-import { User } from '@application/model/user.model';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
-import type {
-  TableUpdateBodyValidator,
-  TableUpdateParamValidator,
-} from './update.validator';
+import type { TableUpdatePayload } from './update.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').ITable
->;
-type Payload = z.infer<typeof TableUpdateBodyValidator> &
-  z.infer<typeof TableUpdateParamValidator>;
+type Response = Either<HTTPException, Entity>;
+type Payload = TableUpdatePayload;
 
 @Service()
 export default class TableUpdateUseCase {
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly userRepository: UserContractRepository,
+    private readonly fieldRepository: FieldContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
+        exact: true,
       });
 
       if (!table)
@@ -41,11 +46,11 @@ export default class TableUpdateUseCase {
         payload.configuration.administrators.length > 0
       ) {
         const adminIds = payload.configuration.administrators;
-        const activeAdmins = await User.find({
-          _id: { $in: adminIds },
-          status: 'active',
+        const activeAdmins = await this.userRepository.findMany({
+          _ids: adminIds,
+          status: E_USER_STATUS.ACTIVE,
           trashed: false,
-        }).lean();
+        });
 
         if (activeAdmins.length !== adminIds.length) {
           return left(
@@ -57,69 +62,52 @@ export default class TableUpdateUseCase {
         }
       }
 
-      await table
-        .set({
-          ...table.toJSON(),
-          ...payload,
-          configuration: {
-            ...table?.toJSON()?.configuration,
-            ...payload.configuration,
-            administrators: payload.configuration?.administrators ?? [],
-          },
-        })
-        .save();
+      // Mapear configuration populada para strings (IDs)
+      const updated = await this.tableRepository.update({
+        _id: table._id,
+        ...payload,
+        configuration: {
+          ...payload.configuration,
+          owner: table.configuration.owner._id,
+          style: payload.configuration.style ?? table.configuration.style,
+          visibility:
+            payload.configuration.visibility ?? table.configuration.visibility,
+          collaboration:
+            payload.configuration.collaboration ??
+            table.configuration.collaboration,
+          fields: payload.configuration.fields ?? table.configuration.fields,
+          administrators:
+            payload.configuration.administrators ??
+            table.configuration.administrators.flatMap((a) => a._id),
+        },
+      });
 
       // Propagar visibilidade para grupos de campos (FIELD_GROUP)
       if (payload.configuration?.visibility) {
-        const fieldGroupFields = await Field.find({
-          _id: { $in: table.fields },
+        const fieldIds = table.fields?.flatMap((f) => f._id) ?? [];
+
+        const fieldGroupFields = await this.fieldRepository.findMany({
+          _ids: fieldIds,
           type: E_FIELD_TYPE.FIELD_GROUP,
         });
 
         const groupIds = fieldGroupFields
           .map((f) => f.configuration?.group?._id)
-          .filter(Boolean);
+          .filter((id): id is string => Boolean(id));
 
         if (groupIds.length > 0) {
-          await Table.updateMany(
-            { _id: { $in: groupIds }, type: 'field-group' },
-            { 'configuration.visibility': payload.configuration.visibility },
-          );
+          await this.tableRepository.updateMany({
+            _ids: groupIds,
+            type: E_TABLE_TYPE.FIELD_GROUP,
+            data: { visibility: payload.configuration.visibility },
+          });
         }
       }
 
-      const populated = await table?.populate([
-        {
-          path: 'configuration.administrators',
-          select: 'name _id',
-          model: 'User',
-        },
-        {
-          path: 'logo',
-          model: 'Storage',
-        },
-        {
-          path: 'configuration.owner',
-          select: 'name _id',
-          model: 'User',
-        },
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+      await buildTable(updated);
 
-      await buildTable({
-        ...populated.toJSON(),
-        _id: populated._id.toString(),
-      });
-
-      return right({
-        ...populated?.toJSON(),
-        _id: populated._id.toString(),
-      });
+      return right(updated);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

@@ -8,7 +8,7 @@ import { TableRowReactionSchema } from './reaction.schema';
 import TableRowReactionUseCase from './reaction.use-case';
 import {
   TableRowReactionBodyValidator,
-  TableRowReactionParamValidator,
+  TableRowReactionParamsValidator,
 } from './reaction.validator';
 
 @Controller({
@@ -38,7 +38,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableRowReactionBodyValidator.parse(request.body);
-    const params = TableRowReactionParamValidator.parse(request.params);
+    const params = TableRowReactionParamsValidator.parse(request.params);
     const result = await this.useCase.execute({
       ...payload,
       ...params,

@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -12,10 +11,10 @@ import type {
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
-import type { MenuPaginatedQueryValidator } from './paginated.validator';
+import type { MenuPaginatedPayload } from './paginated.validator';
 
 type Response = Either<HTTPException, Paginated<Entity>>;
-type Payload = z.infer<typeof MenuPaginatedQueryValidator>;
+type Payload = MenuPaginatedPayload;
 
 @Service()
 export default class MenuPaginatedUseCase {
@@ -50,7 +49,6 @@ export default class MenuPaginatedUseCase {
         data: menus,
       });
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

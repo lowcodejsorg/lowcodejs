@@ -56,10 +56,6 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
   async findMany(payload?: MenuQueryPayload): Promise<IMenu[]> {
     let filtered = this.items;
 
-    if (payload?._id) {
-      filtered = filtered.filter((m) => m._id !== payload._id);
-    }
-
     const trashed = payload?.trashed ?? false;
     filtered = filtered.filter((m) => m.trashed === trashed);
 

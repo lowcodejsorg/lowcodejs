@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, PUT } from 'fastify-decorators';
 import z from 'zod';
@@ -66,15 +67,6 @@ export default class {
             .FILE_UPLOAD_ACCEPTED.split(';') ?? [],
       });
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return response.status(400).send({
-          message: 'Invalid request data',
-          code: 400,
-          cause: 'VALIDATION_ERROR',
-        });
-      }
-
-      console.error('Error updating system settings:', error);
       return response.status(500).send({
         message: 'Internal server error while updating settings',
         code: 500,

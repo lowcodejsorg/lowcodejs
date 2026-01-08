@@ -7,7 +7,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 import { TableRowPaginatedSchema } from './paginated.schema';
 import TableRowPaginatedUseCase from './paginated.use-case';
 import {
-  TableRowPaginatedParamValidator,
+  TableRowPaginatedParamsValidator,
   TableRowPaginatedQueryValidator,
 } from './paginated.validator';
 
@@ -38,7 +38,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const query = TableRowPaginatedQueryValidator.parse(request.query);
-    const params = TableRowPaginatedParamValidator.parse(request.params);
+    const params = TableRowPaginatedParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({ ...query, ...params });
 

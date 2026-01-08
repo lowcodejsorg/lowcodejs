@@ -31,7 +31,9 @@ export const UpdateMenuFormFields = withForm({
   props: {
     isPending: false,
     mode: 'show' as 'show' | 'edit',
-    menuType: E_MENU_ITEM_TYPE.SEPARATOR as string,
+    menuType: E_MENU_ITEM_TYPE.SEPARATOR as
+      | (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE]
+      | '',
   },
   render: function Render({ form, isPending, mode, menuType }) {
     const isDisabled = mode === 'show' || isPending;
@@ -96,15 +98,15 @@ export const UpdateMenuFormFields = withForm({
         )}
 
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
-        {[E_MENU_ITEM_TYPE.TABLE, E_MENU_ITEM_TYPE.FORM].includes(menuType) && (
+        {(menuType === E_MENU_ITEM_TYPE.TABLE ||
+          menuType === E_MENU_ITEM_TYPE.FORM) && (
           <form.AppField
             name="table"
             validators={{
               onBlur: ({ value }) => {
                 if (
-                  [E_MENU_ITEM_TYPE.TABLE, E_MENU_ITEM_TYPE.FORM].includes(
-                    menuType,
-                  ) &&
+                  (menuType === E_MENU_ITEM_TYPE.TABLE ||
+                    menuType === E_MENU_ITEM_TYPE.FORM) &&
                   (!value || value.trim() === '')
                 ) {
                   return { message: 'Tabela é obrigatória' };

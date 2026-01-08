@@ -1,0 +1,51 @@
+/* eslint-disable no-unused-vars */
+import type {
+  E_TOKEN_STATUS,
+  IValidationToken,
+  Merge,
+  ValueOf,
+} from '@application/core/entity.core';
+
+// export type ValidationTokenCreatePayload = {
+//   user: string;
+//   code: string;
+//   status: ValueOf<typeof E_TOKEN_STATUS>;
+// };
+
+export type ValidationTokenCreatePayload = Merge<
+  Pick<IValidationToken, 'code' | 'status'>,
+  { user: string }
+>;
+export type ValidationTokenUpdatePayload = Merge<
+  Pick<IValidationToken, '_id'>,
+  Partial<ValidationTokenCreatePayload>
+>;
+
+export type ValidationTokenFindByPayload = Merge<
+  Partial<Pick<IValidationToken, '_id' | 'code'>>,
+  { user?: string; exact: boolean }
+>;
+
+export type ValidationTokenQueryPayload = {
+  page?: number;
+  perPage?: number;
+  user?: string;
+  status?: ValueOf<typeof E_TOKEN_STATUS>;
+};
+
+export abstract class ValidationTokenContractRepository {
+  abstract create(
+    payload: ValidationTokenCreatePayload,
+  ): Promise<IValidationToken>;
+  abstract findBy(
+    payload: ValidationTokenFindByPayload,
+  ): Promise<IValidationToken | null>;
+  abstract findMany(
+    payload?: ValidationTokenQueryPayload,
+  ): Promise<IValidationToken[]>;
+  abstract update(
+    payload: ValidationTokenUpdatePayload,
+  ): Promise<IValidationToken>;
+  abstract delete(_id: string): Promise<void>;
+  abstract count(payload?: ValidationTokenQueryPayload): Promise<number>;
+}

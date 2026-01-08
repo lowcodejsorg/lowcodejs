@@ -1,4 +1,4 @@
-import type { IGroup } from '@application/core/entity.core';
+import type { IGroup, IPermission } from '@application/core/entity.core';
 
 import type {
   UserGroupContractRepository,
@@ -16,7 +16,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
       ...payload,
       _id: crypto.randomUUID(),
       description: payload.description ?? null,
-      permissions: payload.permissions,
+      permissions: payload.permissions.map((p) => ({ _id: p }) as IPermission),
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -44,10 +44,6 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
     let filtered = this.items;
 
-    if (payload?._id) {
-      filtered = filtered.filter((g) => g._id !== payload._id);
-    }
-
     if (payload?.search) {
       const search = payload.search.toLowerCase();
       filtered = filtered.filter(
@@ -68,10 +64,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     return filtered;
   }
 
-  async update({
-    _id,
-    ...payload
-  }: UserGroupUpdatePayload): Promise<IGroup> {
+  async update({ _id, ...payload }: UserGroupUpdatePayload): Promise<IGroup> {
     const group = this.items.find((g) => g._id === _id);
     if (!group) throw new Error('UserGroup not found');
     Object.assign(group, payload, { updatedAt: new Date() });

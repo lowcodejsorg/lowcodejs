@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -12,10 +11,10 @@ import type {
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
-import type { UserPaginatedQueryValidator } from './paginated.validator';
+import type { UserPaginatedPayload } from './paginated.validator';
 
 type Response = Either<HTTPException, Paginated<Entity>>;
-type Payload = z.infer<typeof UserPaginatedQueryValidator>;
+type Payload = UserPaginatedPayload;
 
 @Service()
 export default class UserPaginatedUseCase {
@@ -42,7 +41,6 @@ export default class UserPaginatedUseCase {
         data: users,
       });
     } catch (_error) {
-      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

@@ -1,24 +1,29 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import slugify from 'slugify';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
+import {
+  E_TABLE_COLLABORATION,
+  E_TABLE_STYLE,
+  E_TABLE_TYPE,
+  E_TABLE_VISIBILITY,
+  type ITable as Entity,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema } from '@application/core/util.core';
-import { Table as Model } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TableCreateBodyValidator } from './create.validator';
+import type { TableCreatePayload } from './create.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').ITable
->;
-
-type Payload = z.infer<typeof TableCreateBodyValidator>;
+type Response = Either<HTTPException, Entity>;
+type Payload = TableCreatePayload;
 
 @Service()
 export default class TableCreateUseCase {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
       if (!payload.owner)
@@ -28,9 +33,12 @@ export default class TableCreateUseCase {
 
       const slug = slugify(payload.name, { lower: true, trim: true });
 
-      const table = await Model.findOne({ slug });
+      const existingTable = await this.tableRepository.findBy({
+        slug,
+        exact: true,
+      });
 
-      if (table)
+      if (existingTable)
         return left(
           HTTPException.Conflict(
             'Table already exists',
@@ -40,18 +48,18 @@ export default class TableCreateUseCase {
 
       const _schema = buildSchema([]);
 
-      const created = await Model.create({
+      const created = await this.tableRepository.create({
         ...payload,
         _schema,
         slug,
         fields: [],
-        type: 'table',
+        type: E_TABLE_TYPE.TABLE,
         configuration: {
           owner: payload.owner,
           administrators: [],
-          collaboration: 'restricted',
-          style: 'list',
-          visibility: 'restricted',
+          collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+          style: E_TABLE_STYLE.LIST,
+          visibility: E_TABLE_VISIBILITY.RESTRICTED,
           fields: {
             orderForm: [],
             orderList: [],
@@ -59,33 +67,8 @@ export default class TableCreateUseCase {
         },
       });
 
-      const populated = await created.populate([
-        {
-          path: 'configuration.administrators',
-          select: 'name _id',
-          model: 'User',
-        },
-        {
-          path: 'logo',
-          model: 'Storage',
-        },
-        {
-          path: 'configuration.owner',
-          select: 'name _id',
-          model: 'User',
-        },
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
-
-      return right({
-        ...populated.toJSON(),
-        _id: created._id.toString(),
-      });
+      return right(created);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

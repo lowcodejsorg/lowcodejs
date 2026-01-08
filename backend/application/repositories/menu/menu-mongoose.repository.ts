@@ -14,15 +14,44 @@ import type {
 
 @Service()
 export default class MenuMongooseRepository implements MenuContractRepository {
+  private readonly populateOptions = [{ path: 'table' }, { path: 'parent' }];
+
+  private buildWhereClause(
+    payload?: MenuQueryPayload,
+  ): Record<string, unknown> {
+    const where: Record<string, unknown> = {};
+
+    if (payload?.trashed !== undefined) {
+      where.trashed = payload.trashed;
+    } else {
+      where.trashed = false;
+    }
+
+    if (payload?.parent !== undefined) {
+      where.parent = payload.parent;
+    }
+
+    if (payload?.search) {
+      where.$or = [
+        { name: { $regex: normalize(payload.search), $options: 'i' } },
+        { slug: { $regex: normalize(payload.search), $options: 'i' } },
+      ];
+    }
+
+    return where;
+  }
+
+  private transform(entity: InstanceType<typeof Model>): IMenu {
+    return {
+      ...entity.toJSON({ flattenObjectIds: true }),
+      _id: entity._id.toString(),
+    };
+  }
+
   async create(payload: MenuCreatePayload): Promise<IMenu> {
     const created = await Model.create(payload);
-
-    const populated = await created.populate([{ path: 'table' }]);
-
-    return {
-      ...populated.toJSON({ flattenObjectIds: true }),
-      _id: populated._id.toString(),
-    };
+    const populated = await created.populate(this.populateOptions);
+    return this.transform(populated);
   }
 
   async findBy({
@@ -45,58 +74,33 @@ export default class MenuMongooseRepository implements MenuContractRepository {
       ? { $and: [...conditions, { trashed }] }
       : { $or: conditions, trashed };
 
-    const menu = await Model.findOne(whereClause).populate([
-      { path: 'table' },
-      { path: 'parent' },
-    ]);
+    const menu = await Model.findOne(whereClause).populate(
+      this.populateOptions,
+    );
 
     if (!menu) return null;
 
-    return {
-      ...menu.toJSON({ flattenObjectIds: true }),
-      _id: menu._id.toString(),
-    };
+    return this.transform(menu);
   }
 
   async findMany(payload?: MenuQueryPayload): Promise<IMenu[]> {
-    const query: Record<string, unknown> = {};
+    const where = this.buildWhereClause(payload);
 
-    if (payload?._id) {
-      query._id = { $ne: payload._id };
-    }
-
-    if (payload?.trashed !== undefined) {
-      query.trashed = payload.trashed;
-    } else {
-      query.trashed = false;
-    }
-
-    if (payload?.parent !== undefined) {
-      query.parent = payload.parent;
-    }
-
-    if (payload?.search) {
-      query.$or = [
-        { name: { $regex: normalize(payload.search), $options: 'i' } },
-        { slug: { $regex: normalize(payload.search), $options: 'i' } },
-      ];
-    }
-
-    let dbQuery = Model.find(query)
-      .populate([{ path: 'table' }])
-      .sort({ name: 'asc', slug: 'asc' });
+    let skip: number | undefined;
+    let take: number | undefined;
 
     if (payload?.page && payload?.perPage) {
-      const skip = (payload.page - 1) * payload.perPage;
-      dbQuery = dbQuery.skip(skip).limit(payload.perPage);
+      skip = (payload.page - 1) * payload.perPage;
+      take = payload.perPage;
     }
 
-    const menus = await dbQuery;
+    const menus = await Model.find(where)
+      .populate(this.populateOptions)
+      .sort({ name: 'asc', slug: 'asc' })
+      .skip(skip ?? 0)
+      .limit(take ?? 0);
 
-    return menus.map((m) => ({
-      ...m.toJSON({ flattenObjectIds: true }),
-      _id: m._id.toString(),
-    }));
+    return menus.map((m) => this.transform(m));
   }
 
   async update({ _id, ...payload }: MenuUpdatePayload): Promise<IMenu> {
@@ -108,12 +112,9 @@ export default class MenuMongooseRepository implements MenuContractRepository {
 
     await menu.save();
 
-    const populated = await menu.populate([{ path: 'table' }]);
+    const populated = await menu.populate(this.populateOptions);
 
-    return {
-      ...populated.toJSON({ flattenObjectIds: true }),
-      _id: populated._id.toString(),
-    };
+    return this.transform(populated);
   }
 
   async delete(_id: string): Promise<void> {
@@ -124,29 +125,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
   }
 
   async count(payload?: MenuQueryPayload): Promise<number> {
-    const query: Record<string, unknown> = {};
-
-    if (payload?._id) {
-      query._id = { $ne: payload._id };
-    }
-
-    if (payload?.trashed !== undefined) {
-      query.trashed = payload.trashed;
-    } else {
-      query.trashed = false;
-    }
-
-    if (payload?.parent !== undefined) {
-      query.parent = payload.parent;
-    }
-
-    if (payload?.search) {
-      query.$or = [
-        { name: { $regex: normalize(payload.search), $options: 'i' } },
-        { slug: { $regex: normalize(payload.search), $options: 'i' } },
-      ];
-    }
-
-    return Model.countDocuments(query);
+    const where = this.buildWhereClause(payload);
+    return Model.countDocuments(where);
   }
 }

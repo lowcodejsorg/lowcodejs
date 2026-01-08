@@ -18,6 +18,7 @@ export const Schema = new mongoose.Schema(
     type: {
       type: String,
       enum: Object.values(E_MENU_ITEM_TYPE),
+      default: E_MENU_ITEM_TYPE.SEPARATOR,
       required: true,
     },
 

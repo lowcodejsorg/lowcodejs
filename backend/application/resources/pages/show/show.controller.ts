@@ -4,7 +4,7 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
 import PageShowUseCase from './show.use-case';
-import { PageShowParamValidator } from './show.validator';
+import { PageShowParamsValidator } from './show.validator';
 
 @Controller({
   route: '/pages',
@@ -29,7 +29,7 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = PageShowParamValidator.parse(request.params);
+    const params = PageShowParamsValidator.parse(request.params);
     const result = await this.useCase.execute(params);
 
     if (result.isLeft()) {

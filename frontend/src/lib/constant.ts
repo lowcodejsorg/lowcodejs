@@ -56,4 +56,27 @@ export const E_FIELD_FORMAT = {
   DD_MM_YYYY_HH_MM_SS_DASH: 'dd-MM-yyyy HH:mm:ss',
   MM_DD_YYYY_HH_MM_SS_DASH: 'MM-dd-yyyy HH:mm:ss',
   YYYY_MM_DD_HH_MM_SS_DASH: 'yyyy-MM-dd HH:mm:ss',
-};
+} as const;
+
+export const E_TABLE_TYPE = {
+  TABLE: 'TABLE',
+  FIELD_GROUP: 'FIELD_GROUP',
+} as const;
+
+export const E_TABLE_STYLE = {
+  LIST: 'LIST',
+  GALLERY: 'GALLERY',
+} as const;
+
+export const E_VISIBILITY = {
+  PUBLIC: 'PUBLIC',
+  RESTRICTED: 'RESTRICTED',
+  OPEN: 'OPEN',
+  FORM: 'FORM',
+  PRIVATE: 'PRIVATE',
+} as const;
+
+export const E_COLLABORATION = {
+  OPEN: 'OPEN',
+  RESTRICTED: 'RESTRICTED',
+} as const;

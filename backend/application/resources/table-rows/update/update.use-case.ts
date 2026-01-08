@@ -1,54 +1,41 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_TYPE, type IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
-import { Table } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type {
-  TableRowUpdateBodyValidator,
-  TableRowUpdateParamValidator,
-} from './update.validator';
+import type { TableRowUpdatePayload } from './update.validator';
 
 type Response = Either<
   HTTPException,
   import('@application/core/entity.core').IRow
 >;
 
-type Payload = z.infer<typeof TableRowUpdateBodyValidator> &
-  z.infer<typeof TableRowUpdateParamValidator>;
+type Payload = TableRowUpdatePayload;
 
 @Service()
 export default class TableRowUpdateUseCase {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!table)
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const build = await buildTable({
-        ...table?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: table?._id?.toString(),
-      });
+      const build = await buildTable(table);
 
-      const populate = await buildPopulate(
-        table?.fields as import('@application/core/entity.core').IField[],
-      );
+      const populate = await buildPopulate(table.fields as IField[]);
 
       const row = await build.findOne({ _id: payload._id }).populate(populate);
 
@@ -57,19 +44,15 @@ export default class TableRowUpdateUseCase {
 
       const groupPayload = [];
 
-      const groups = (
-        table.fields as import('@application/core/entity.core').IField[]
-      )?.filter((field) => field.type === E_FIELD_TYPE.FIELD_GROUP);
+      const groups = (table.fields as IField[])?.filter(
+        (field) => field.type === E_FIELD_TYPE.FIELD_GROUP,
+      );
 
       for await (const group of groups) {
-        const groupTable = await Table.findOne({
+        const groupTable = await this.tableRepository.findBy({
           slug: group.configuration?.group?.slug?.toString(),
-        }).populate([
-          {
-            path: 'fields',
-            model: 'Field',
-          },
-        ]);
+          exact: true,
+        });
 
         if (!groupTable) continue;
 
@@ -77,12 +60,7 @@ export default class TableRowUpdateUseCase {
 
         if (!hasGroupPayload) continue;
 
-        const buildGroup = await buildTable({
-          ...groupTable?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: groupTable?._id?.toString(),
-        });
+        const buildGroup = await buildTable(groupTable);
 
         for (const item of payload[
           group.slug
@@ -158,7 +136,6 @@ export default class TableRowUpdateUseCase {
         _id: row?._id?.toString(),
       });
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

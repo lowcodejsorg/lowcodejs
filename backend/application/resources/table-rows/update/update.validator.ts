@@ -1,5 +1,7 @@
 import z from 'zod';
 
+import { Merge } from '@application/core/entity.core';
+
 export const TableRowUpdateBodyValidator = z.record(
   z.string(),
   z.union([
@@ -20,7 +22,12 @@ export const TableRowUpdateBodyValidator = z.record(
   ]),
 );
 
-export const TableRowUpdateParamValidator = z.object({
+export const TableRowUpdateParamsValidator = z.object({
   slug: z.string().trim(),
   _id: z.string().trim(),
 });
+
+export type TableRowUpdatePayload = Merge<
+  z.infer<typeof TableRowUpdateParamsValidator>,
+  z.infer<typeof TableRowUpdateBodyValidator>
+>;

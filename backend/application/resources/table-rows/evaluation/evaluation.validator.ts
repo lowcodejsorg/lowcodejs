@@ -1,12 +1,19 @@
 import z from 'zod';
 
+import { Merge } from '@application/core/entity.core';
+
 export const TableRowEvaluationBodyValidator = z.object({
   value: z.number(),
   field: z.string().trim(),
-  user: z.string().trim().optional(),
+  user: z.string().trim(),
 });
 
-export const TableRowEvaluationParamValidator = z.object({
+export const TableRowEvaluationParamsValidator = z.object({
   slug: z.string().trim(),
   _id: z.string().trim(),
 });
+
+export type TableRowEvaluationPayload = Merge<
+  z.infer<typeof TableRowEvaluationParamsValidator>,
+  z.infer<typeof TableRowEvaluationBodyValidator>
+>;

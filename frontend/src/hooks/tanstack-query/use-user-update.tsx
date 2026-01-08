@@ -1,7 +1,9 @@
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+
 import { API } from '@/lib/api';
-import { IUser } from '@/lib/interfaces';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type { IUser } from '@/lib/interfaces';
 
 type Payload = Partial<
   Pick<IUser, 'name' | 'email' | 'password' | 'status'> & {

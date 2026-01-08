@@ -1,3 +1,6 @@
+import { InfoIcon } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -6,8 +9,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { InfoIcon } from 'lucide-react';
 import type { ITable } from '@/lib/interfaces';
 
 interface CodeEditorInfoModalProps {
@@ -41,7 +42,12 @@ export function CodeEditorInfoModal({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="h-7 w-7 p-0"
+        >
           <InfoIcon className="w-3 h-3" />
         </Button>
       </DialogTrigger>
@@ -54,7 +60,9 @@ export function CodeEditorInfoModal({
         </DialogHeader>
         <div className="space-y-6 text-sm">
           <div>
-            <h3 className="font-semibold mb-2">Variáveis Globais Disponíveis:</h3>
+            <h3 className="font-semibold mb-2">
+              Variáveis Globais Disponíveis:
+            </h3>
             <div className="bg-muted p-3 rounded-md space-y-2">
               <p>
                 <code className="bg-background px-1 rounded">userAction</code>:
@@ -72,8 +80,10 @@ export function CodeEditorInfoModal({
                 </li>
               </ul>
               <p>
-                <code className="bg-background px-1 rounded">executionMoment</code>:
-                Momento da execução
+                <code className="bg-background px-1 rounded">
+                  executionMoment
+                </code>
+                : Momento da execução
               </p>
               <ul className="ml-4 space-y-1 text-muted-foreground">
                 <li>
@@ -166,7 +176,10 @@ export function CodeEditorInfoModal({
                     <div className="mt-2 border rounded p-2">
                       <p className="text-xs font-medium mb-1">Desta tabela:</p>
                       {Object.keys(fieldPlaceholders).map((placeholder) => (
-                        <div key={placeholder} className="text-xs">
+                        <div
+                          key={placeholder}
+                          className="text-xs"
+                        >
                           <code className="text-green-600">{placeholder}</code>
                         </div>
                       ))}

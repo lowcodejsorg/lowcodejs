@@ -1,40 +1,42 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
+import type { IField as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema } from '@application/core/util.core';
-import { Field } from '@application/model/field.model';
-import { Table } from '@application/model/table.model';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TableFieldRemoveFromTrashParamValidator } from './remove-from-trash.validator';
+import type { TableFieldRemoveFromTrashPayload } from './remove-from-trash.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').IField
->;
-type Payload = z.infer<typeof TableFieldRemoveFromTrashParamValidator>;
+type Response = Either<HTTPException, Entity>;
+type Payload = TableFieldRemoveFromTrashPayload;
 
 @Service()
 export default class TableFieldRemoveFromTrashUseCase {
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly fieldRepository: FieldContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!table)
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const field = await Field.findOne({ _id: payload._id });
+      const field = await this.fieldRepository.findBy({
+        _id: payload._id,
+        exact: true,
+      });
 
       if (!field)
         return left(
@@ -46,59 +48,35 @@ export default class TableFieldRemoveFromTrashUseCase {
           HTTPException.Conflict('Field is not in trash', 'NOT_TRASHED'),
         );
 
-      await field
-        .set({
-          ...field.toJSON({
-            flattenObjectIds: true,
-          }),
-          configuration: {
-            ...field?.toJSON({
-              flattenObjectIds: true,
-            })?.configuration,
-            listing: true,
-            filtering: true,
-            required: false,
-          },
-          trashedAt: null,
-          trashed: false,
-        })
-        .save();
-
-      const fields = (
-        table.fields as import('@application/core/entity.core').IField[]
-      ).map((f) => {
-        if (f._id?.toString() === field._id?.toString()) {
-          return {
-            ...field?.toJSON({
-              flattenObjectIds: true,
-            }),
-            _id: field?._id?.toString(),
-          };
-        }
-
-        return f;
+      const updatedField = await this.fieldRepository.update({
+        _id: field._id,
+        configuration: {
+          ...field.configuration,
+          listing: true,
+          filtering: true,
+          required: false,
+        },
+        trashed: false,
+        trashedAt: null,
       });
+
+      const fields = table.fields.map((f) =>
+        f._id === field._id ? updatedField : f,
+      );
 
       const _schema = buildSchema(fields);
 
-      await table
-        .set({
-          ...table.toJSON({
-            flattenObjectIds: true,
-          }),
-          fields: fields.flatMap((f) => f?._id?.toString()),
-          _schema,
-        })
-        .save();
-
-      return right({
-        ...field.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: field._id?.toString(),
+      await this.tableRepository.update({
+        _id: table._id,
+        fields: fields.flatMap((f) => f._id),
+        _schema,
+        configuration: {
+          owner: table.configuration.owner._id,
+        },
       });
+
+      return right(updatedField);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

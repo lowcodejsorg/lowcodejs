@@ -1,7 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -9,14 +8,10 @@ import type { IUser as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
-import type {
-  UserUpdateBodyValidator,
-  UserUpdateParamValidator,
-} from './update.validator';
+import type { UserUpdatePayload } from './update.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = z.infer<typeof UserUpdateBodyValidator> &
-  z.infer<typeof UserUpdateParamValidator>;
+type Payload = UserUpdatePayload;
 
 @Service()
 export default class UserUpdateUseCase {
@@ -41,7 +36,6 @@ export default class UserUpdateUseCase {
 
       return right(updated);
     } catch (_error) {
-      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

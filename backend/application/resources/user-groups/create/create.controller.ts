@@ -5,7 +5,7 @@ import { AuthenticationMiddleware } from '@application/middlewares/authenticatio
 
 import { UserGroupCreateSchema } from './create.schema';
 import UserGroupCreateUseCase from './create.use-case';
-import { UserCreateGroupBodyValidator } from './create.validator';
+import { UserGroupCreateBodyValidator } from './create.validator';
 
 @Controller()
 export default class {
@@ -28,7 +28,7 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const body = UserCreateGroupBodyValidator.parse(request.body);
+    const body = UserGroupCreateBodyValidator.parse(request.body);
 
     const result = await this.useCase.execute(body);
 

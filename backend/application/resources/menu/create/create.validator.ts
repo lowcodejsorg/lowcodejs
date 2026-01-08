@@ -3,12 +3,10 @@ import z from 'zod';
 
 import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 
-const menuItemTypeValues = Object.values(E_MENU_ITEM_TYPE) as [string, ...string[]];
-
 export const MenuCreateBodyValidator = z
   .object({
     name: z.string().trim().min(1, 'Nome é obrigatório'),
-    type: z.enum(menuItemTypeValues),
+    type: z.enum(E_MENU_ITEM_TYPE),
     table: z.string().nullable().optional(),
     parent: z.string().nullable().optional(),
     html: z.string().nullable().optional(),
@@ -41,7 +39,9 @@ export const MenuCreateBodyValidator = z
       return true;
     },
     {
-      message: 'Conteúdo HTML não é permitido para páginas',
+      message: 'Conteúdo HTML é obrigatório para páginas',
       path: ['html'],
     },
   );
+
+export type MenuCreatePayload = z.infer<typeof MenuCreateBodyValidator>;

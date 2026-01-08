@@ -1,9 +1,7 @@
 import slugify from 'slugify';
 import z from 'zod';
 
-import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
-
-const menuItemTypeValues = Object.values(E_MENU_ITEM_TYPE) as [string, ...string[]];
+import { E_MENU_ITEM_TYPE, Merge } from '@application/core/entity.core';
 
 export const MenuUpdateParamsValidator = z.object({
   _id: z.string().min(1, 'ID é obrigatório'),
@@ -12,7 +10,7 @@ export const MenuUpdateParamsValidator = z.object({
 export const MenuUpdateBodyValidator = z
   .object({
     name: z.string().trim().min(1, 'Nome é obrigatório').optional(),
-    type: z.enum(menuItemTypeValues).optional(),
+    type: z.enum(E_MENU_ITEM_TYPE).optional(),
     table: z.string().nullable().optional(),
     parent: z.string().nullable().optional(),
     html: z.string().nullable().optional(),
@@ -51,3 +49,8 @@ export const MenuUpdateBodyValidator = z
       path: ['html'],
     },
   );
+
+export type MenuUpdatePayload = Merge<
+  z.infer<typeof MenuUpdateParamsValidator>,
+  z.infer<typeof MenuUpdateBodyValidator>
+>;

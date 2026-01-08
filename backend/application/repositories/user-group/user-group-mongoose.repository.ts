@@ -14,15 +14,34 @@ import type {
 
 @Service()
 export default class UserGroupMongooseRepository implements UserGroupContractRepository {
+  private readonly populateOptions = [{ path: 'permissions' }];
+
+  private buildWhereClause(
+    payload?: UserGroupQueryPayload,
+  ): Record<string, unknown> {
+    const where: Record<string, unknown> = {};
+
+    if (payload?.search) {
+      where.$or = [
+        { name: { $regex: normalize(payload.search), $options: 'i' } },
+        { description: { $regex: normalize(payload.search), $options: 'i' } },
+      ];
+    }
+
+    return where;
+  }
+
+  private transform(entity: InstanceType<typeof Model>): IGroup {
+    return {
+      ...entity.toJSON({ flattenObjectIds: true }),
+      _id: entity._id.toString(),
+    };
+  }
+
   async create(payload: UserGroupCreatePayload): Promise<IGroup> {
     const created = await Model.create(payload);
-
-    const populated = await created.populate([{ path: 'permissions' }]);
-
-    return {
-      ...populated.toJSON({ flattenObjectIds: true }),
-      _id: populated._id.toString(),
-    };
+    const populated = await created.populate(this.populateOptions);
+    return this.transform(populated);
   }
 
   async findBy({
@@ -40,53 +59,36 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
 
     const whereClause = exact ? { $and: conditions } : { $or: conditions };
 
-    const group = await Model.findOne(whereClause).populate([
-      { path: 'permissions' },
-    ]);
+    const group = await Model.findOne(whereClause).populate(
+      this.populateOptions,
+    );
 
     if (!group) return null;
 
-    return {
-      ...group.toJSON({ flattenObjectIds: true }),
-      _id: group._id.toString(),
-    };
+    return this.transform(group);
   }
 
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
-    const query: Record<string, unknown> = {};
+    const where = this.buildWhereClause(payload);
 
-    if (payload?._id) {
-      query._id = { $ne: payload._id };
-    }
-
-    if (payload?.search) {
-      query.$or = [
-        { name: { $regex: normalize(payload.search), $options: 'i' } },
-        { description: { $regex: normalize(payload.search), $options: 'i' } },
-      ];
-    }
-
-    let dbQuery = Model.find(query)
-      .populate([{ path: 'permissions' }])
-      .sort({ name: 'asc' });
+    let skip: number | undefined;
+    let take: number | undefined;
 
     if (payload?.page && payload?.perPage) {
-      const skip = (payload.page - 1) * payload.perPage;
-      dbQuery = dbQuery.skip(skip).limit(payload.perPage);
+      skip = (payload.page - 1) * payload.perPage;
+      take = payload.perPage;
     }
 
-    const groups = await dbQuery;
+    const groups = await Model.find(where)
+      .populate(this.populateOptions)
+      .sort({ name: 'asc' })
+      .skip(skip ?? 0)
+      .limit(take ?? 0);
 
-    return groups.map((g) => ({
-      ...g.toJSON({ flattenObjectIds: true }),
-      _id: g._id.toString(),
-    }));
+    return groups.map((g) => this.transform(g));
   }
 
-  async update({
-    _id,
-    ...payload
-  }: UserGroupUpdatePayload): Promise<IGroup> {
+  async update({ _id, ...payload }: UserGroupUpdatePayload): Promise<IGroup> {
     const group = await Model.findOne({ _id });
 
     if (!group) throw new Error('UserGroup not found');
@@ -95,12 +97,9 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
 
     await group.save();
 
-    const populated = await group.populate([{ path: 'permissions' }]);
+    const populated = await group.populate(this.populateOptions);
 
-    return {
-      ...populated.toJSON({ flattenObjectIds: true }),
-      _id: populated._id.toString(),
-    };
+    return this.transform(populated);
   }
 
   async delete(_id: string): Promise<void> {
@@ -111,19 +110,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
   }
 
   async count(payload?: UserGroupQueryPayload): Promise<number> {
-    const query: Record<string, unknown> = {};
-
-    if (payload?._id) {
-      query._id = { $ne: payload._id };
-    }
-
-    if (payload?.search) {
-      query.$or = [
-        { name: { $regex: normalize(payload.search), $options: 'i' } },
-        { description: { $regex: normalize(payload.search), $options: 'i' } },
-      ];
-    }
-
-    return Model.countDocuments(query);
+    const where = this.buildWhereClause(payload);
+    return Model.countDocuments(where);
   }
 }

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { E_USER_STATUS } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 
 import UserUpdateUseCase from './update.use-case';
@@ -26,7 +27,7 @@ describe('User Update Use Case', () => {
       name: 'John Updated',
       email: 'john.updated@example.com',
       group: 'new-group-id',
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     });
 
     expect(result.isRight()).toBe(true);
@@ -49,7 +50,7 @@ describe('User Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       group: 'group-id',
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
       password: 'newpassword',
     });
 
@@ -66,7 +67,7 @@ describe('User Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       group: 'group-id',
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -87,7 +88,7 @@ describe('User Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       group: 'group-id',
-      status: 'active',
+      status: E_USER_STATUS.ACTIVE,
     });
 
     expect(result.isLeft()).toBe(true);

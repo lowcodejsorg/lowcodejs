@@ -16,6 +16,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useMenuReadList } from '@/hooks/tanstack-query/use-menu-read-list';
+import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
 interface MenuComboboxProps {
@@ -48,7 +49,7 @@ export function MenuCombobox({
       if (excludeId && menu._id === excludeId) return false;
 
       // Include separators
-      if (menu.type.toLowerCase() === 'separator') return true;
+      if (menu.type === E_MENU_ITEM_TYPE.SEPARATOR) return true;
 
       // Include root items (no parent)
       if (!menu.parent) return true;

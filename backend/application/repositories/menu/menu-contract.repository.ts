@@ -1,45 +1,28 @@
 /* eslint-disable no-unused-vars */
-import type { E_MENU_ITEM_TYPE, IMenu } from '@application/core/entity.core';
+import type { IMenu, Merge } from '@application/core/entity.core';
 
-type MenuItemType = (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
+export type MenuCreatePayload = Merge<
+  Pick<IMenu, 'name' | 'slug' | 'type'>,
+  Partial<Pick<IMenu, 'table' | 'parent' | 'url' | 'html'>>
+>;
 
-export interface MenuCreatePayload {
-  name: string;
-  slug: string;
-  type: MenuItemType;
-  table?: string | null;
-  parent?: string | null;
-  url?: string | null;
-  html?: string | null;
-}
+export type MenuUpdatePayload = Merge<
+  Pick<IMenu, '_id'>,
+  Partial<MenuCreatePayload>
+>;
 
-export interface MenuFindByPayload {
-  _id?: string;
-  slug?: string;
-  parent?: string | null;
-  trashed?: boolean;
-  exact?: boolean;
-}
+export type MenuFindByPayload = Merge<
+  Partial<Pick<IMenu, '_id' | 'slug' | 'parent'>>,
+  { trashed?: boolean; exact: boolean }
+>;
 
-export interface MenuQueryPayload {
+export type MenuQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
   trashed?: boolean;
   parent?: string | null;
-  _id?: string;
-}
-
-export interface MenuUpdatePayload {
-  _id: string;
-  name?: string;
-  slug?: string;
-  type?: MenuItemType;
-  table?: string | null;
-  parent?: string | null;
-  url?: string | null;
-  html?: string | null;
-}
+};
 
 export abstract class MenuContractRepository {
   abstract create(payload: MenuCreatePayload): Promise<IMenu>;

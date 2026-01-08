@@ -19,7 +19,6 @@ export default class MenuListUseCase {
 
       return right(menus);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
