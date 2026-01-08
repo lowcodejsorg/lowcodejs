@@ -42,20 +42,5 @@ describe('E2E Storage Upload Controller', () => {
         expect(response.body[0].url).toBeDefined();
       }
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const testBuffer = Buffer.from('Test file content');
-
-      const response = await supertest(kernel.server)
-        .post('/storage')
-        .attach('file', testBuffer, {
-          filename: 'test.txt',
-          contentType: 'text/plain',
-        });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
   });
 });

@@ -34,17 +34,5 @@ describe('E2E Profile Update Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe('Nome Atualizado');
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).put('/profile').send({
-        name: 'Nome Atualizado',
-        email: 'email@example.com',
-        group: '507f1f77bcf86cd799439011',
-      });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
   });
 });

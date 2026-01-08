@@ -52,7 +52,7 @@ describe('Validate Code Use Case', () => {
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {
       expect(result.value.code).toBe(410);
-      expect(result.value.cause).toBe('CODE_EXPIRED');
+      expect(result.value.cause).toBe('VALIDATION_TOKEN_EXPIRED');
     }
   });
 

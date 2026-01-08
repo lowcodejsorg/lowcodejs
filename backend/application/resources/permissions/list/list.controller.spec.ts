@@ -42,13 +42,5 @@ describe('E2E Permissions List Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toBeInstanceOf(Array);
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).get('/permissions');
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
   });
 });

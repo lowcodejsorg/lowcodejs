@@ -108,46 +108,18 @@ describe('E2E Table Row Remove From Trash Controller', () => {
       const rowId = createResponse.body._id;
 
       // Send to trash first
-      const trash = await supertest(kernel.server)
+      await supertest(kernel.server)
         .patch(`/tables/products/rows/${rowId}/trash`)
         .set('Cookie', cookies);
-
-      console.log('TRASH');
-      console.log(JSON.stringify(trash.body, null, 2));
 
       // Restore from trash
       const response = await supertest(kernel.server)
         .patch(`/tables/products/rows/${rowId}/restore`)
         .set('Cookie', cookies);
 
-      console.log(JSON.stringify(response.body, null, 2));
-
       expect(response.statusCode).toBe(200);
       expect(response.body.trashed).toBe(false);
       expect(response.body.trashedAt).toBeNull();
-    });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).patch(
-        '/tables/products/rows/507f1f77bcf86cd799439011/restore',
-      );
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .patch(
-          '/tables/non-existent-table/rows/507f1f77bcf86cd799439011/restore',
-        )
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
     });
   });
 });

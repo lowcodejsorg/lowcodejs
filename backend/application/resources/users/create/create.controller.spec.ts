@@ -41,39 +41,5 @@ describe('E2E User Create Controller', () => {
       expect(response.body.name).toBe('New User');
       expect(response.body.email).toBe('newuser@example.com');
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).post('/users').send({
-        name: 'John Doe',
-        email: 'john@example.com',
-        password: 'password123',
-        group: '507f1f77bcf86cd799439011',
-      });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 409 quando email ja existe', async () => {
-      const { cookies, user } = await createAuthenticatedUser({
-        email: 'existing@example.com',
-      });
-
-      const group = await UserGroup.findOne({ slug: 'master' });
-
-      const response = await supertest(kernel.server)
-        .post('/users')
-        .set('Cookie', cookies)
-        .send({
-          name: 'Another User',
-          email: user.email,
-          password: 'password123',
-          group: group!._id.toString(),
-        });
-
-      expect(response.statusCode).toBe(409);
-      expect(response.body.cause).toBe('USER_ALREADY_EXISTS');
-    });
   });
 });

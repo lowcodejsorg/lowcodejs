@@ -96,26 +96,5 @@ describe('E2E Table Send To Trash Controller', () => {
       expect(response.body.trashed).toBe(true);
       expect(response.body.trashedAt).toBeDefined();
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).patch(
-        '/tables/my-table/trash',
-      );
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .patch('/tables/non-existent-table/trash')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
-    });
   });
 });

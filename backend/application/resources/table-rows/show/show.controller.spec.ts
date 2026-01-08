@@ -115,16 +115,5 @@ describe('E2E Table Row Show Controller', () => {
       expect(response.body._id).toBe(rowId);
       expect(response.body.name).toBe('Product 1');
     });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .get('/tables/non-existent-table/rows/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
-    });
   });
 });

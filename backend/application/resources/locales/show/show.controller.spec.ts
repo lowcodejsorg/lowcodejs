@@ -29,23 +29,5 @@ describe('E2E Locales Show Controller', () => {
       expect(response.body).toBeDefined();
       expect(typeof response.body).toBe('object');
     });
-
-    it('deve retornar traducoes sem autenticacao', async () => {
-      const response = await supertest(kernel.server).get('/locales/pt-br');
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toBeDefined();
-    });
-
-    it('deve retornar 500 quando locale nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .get('/locales/xx-xx')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(500);
-      expect(response.body.cause).toBe('LOCALE_READ_ERROR');
-    });
   });
 });

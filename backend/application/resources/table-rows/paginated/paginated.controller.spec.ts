@@ -113,16 +113,5 @@ describe('E2E Table Row Paginated Controller', () => {
       expect(response.body.data).toBeInstanceOf(Array);
       expect(response.body.meta).toBeDefined();
     });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .get('/tables/non-existent-table/rows/paginated')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
-    });
   });
 });

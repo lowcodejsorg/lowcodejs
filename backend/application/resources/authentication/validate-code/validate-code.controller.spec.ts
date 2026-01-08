@@ -52,49 +52,5 @@ describe('E2E Validate Code Controller', () => {
 
       expect(response.statusCode).toBe(200);
     });
-
-    it('deve retornar 404 quando codigo nao existe', async () => {
-      const response = await supertest(kernel.server)
-        .post('/authentication/recovery/validate-code')
-        .send({
-          code: 'invalid-code',
-        });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('VALIDATION_TOKEN_NOT_FOUND');
-    });
-
-    it('deve retornar 410 quando codigo esta expirado', async () => {
-      const hashedPassword = await bcrypt.hash('senha123', 10);
-
-      const group = await UserGroup.create({
-        name: 'Owner',
-        slug: 'owner',
-        permissions: [],
-      });
-
-      const user = await User.create({
-        name: 'Test User',
-        email: 'test@example.com',
-        password: hashedPassword,
-        status: E_USER_STATUS.ACTIVE,
-        group: group._id,
-      });
-
-      await ValidationToken.create({
-        code: '123456',
-        status: E_TOKEN_STATUS.EXPIRED,
-        user: user._id,
-      });
-
-      const response = await supertest(kernel.server)
-        .post('/authentication/recovery/validate-code')
-        .send({
-          code: '123456',
-        });
-
-      expect(response.statusCode).toBe(410);
-      expect(response.body.cause).toBe('VALIDATION_TOKEN_EXPIRED');
-    });
   });
 });

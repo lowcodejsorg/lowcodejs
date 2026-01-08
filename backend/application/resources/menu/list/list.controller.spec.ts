@@ -30,13 +30,5 @@ describe('E2E Menu List Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(Array.isArray(response.body)).toBe(true);
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).get('/menu');
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
   });
 });

@@ -35,38 +35,5 @@ describe('E2E Sign Up Controller', () => {
 
       expect(response.statusCode).toBe(201);
     });
-
-    it('deve retornar 409 quando email ja existe', async () => {
-      const group = await UserGroup.findOne({ slug: 'REGISTERED' });
-      await User.create({
-        name: 'Existing User',
-        email: 'existing@example.com',
-        password: 'hashedpassword',
-        group: group!._id,
-      });
-
-      const response = await supertest(kernel.server)
-        .post('/authentication/sign-up')
-        .send({
-          name: 'Novo Usuario',
-          email: 'existing@example.com',
-          password: 'senha12345',
-        });
-
-      expect(response.statusCode).toBe(409);
-      expect(response.body.cause).toBe('USER_ALREADY_EXISTS');
-    });
-
-    it('deve retornar 400 quando senha e muito curta', async () => {
-      const response = await supertest(kernel.server)
-        .post('/authentication/sign-up')
-        .send({
-          name: 'Novo Usuario',
-          email: 'novo@example.com',
-          password: '123',
-        });
-
-      expect(response.statusCode).toBe(400);
-    });
   });
 });

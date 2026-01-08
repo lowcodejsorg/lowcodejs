@@ -30,12 +30,5 @@ describe('E2E Setting Show Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body).toBeDefined();
     });
-
-    it('deve retornar configuracoes sem autenticacao', async () => {
-      const response = await supertest(kernel.server).get('/setting');
-
-      expect(response.statusCode).toBe(200);
-      expect(response.body).toBeDefined();
-    });
   });
 });

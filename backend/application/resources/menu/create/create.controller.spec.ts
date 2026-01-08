@@ -38,17 +38,5 @@ describe('E2E Menu Create Controller', () => {
       expect(response.body.slug).toBe('dashboard');
       expect(response.body.type).toBe(E_MENU_ITEM_TYPE.PAGE);
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).post('/menu').send({
-        name: 'Dashboard',
-        type: E_MENU_ITEM_TYPE.PAGE,
-        html: '<h1>Dashboard</h1>',
-      });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
   });
 });

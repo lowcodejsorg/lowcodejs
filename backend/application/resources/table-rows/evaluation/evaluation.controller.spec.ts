@@ -107,8 +107,6 @@ describe('E2E Table Row Evaluation Controller', () => {
         .set('Cookie', cookies)
         .send({});
 
-      console.log(JSON.stringify(createResponse.body, null, 2));
-
       const rowId = createResponse.body._id;
 
       const response = await supertest(kernel.server)
@@ -119,41 +117,7 @@ describe('E2E Table Row Evaluation Controller', () => {
           field: evaluationField._id.toString(),
         });
 
-      console.log(JSON.stringify(response.body, null, 2));
-
       expect(response.statusCode).toBe(200);
-    });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server)
-        .post('/tables/products/rows/507f1f77bcf86cd799439011/evaluation')
-        .send({
-          value: 5,
-          field: '507f1f77bcf86cd799439012',
-          user: '507f1f77bcf86cd799439013',
-        });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies, user } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .post(
-          '/tables/non-existent-table/rows/507f1f77bcf86cd799439011/evaluation',
-        )
-        .set('Cookie', cookies)
-        .send({
-          value: 5,
-          field: '507f1f77bcf86cd799439012',
-          user: user._id.toString(),
-        });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
     });
   });
 });

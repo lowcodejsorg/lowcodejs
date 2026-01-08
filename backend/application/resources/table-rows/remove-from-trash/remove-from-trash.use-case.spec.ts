@@ -19,7 +19,8 @@ const { mockRow } = vi.hoisted(() => ({
       trashed: false,
     }),
     populate: vi.fn().mockReturnThis(),
-    updateOne: vi.fn().mockResolvedValue(undefined),
+    set: vi.fn().mockReturnThis(),
+    save: vi.fn().mockResolvedValue(undefined),
   },
 }));
 

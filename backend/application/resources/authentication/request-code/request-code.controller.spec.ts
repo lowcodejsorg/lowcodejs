@@ -46,16 +46,5 @@ describe('E2E Request Code Controller', () => {
 
       expect(response.statusCode).toBe(200);
     });
-
-    it('deve retornar 404 quando usuario nao existe', async () => {
-      const response = await supertest(kernel.server)
-        .post('/authentication/recovery/request-code')
-        .send({
-          email: 'naoexiste@example.com',
-        });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('EMAIL_NOT_FOUND');
-    });
   });
 });

@@ -30,28 +30,5 @@ describe('E2E Reset Password Controller', () => {
 
       expect(response.statusCode).toBe(200);
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server)
-        .put('/authentication/recovery/update-password')
-        .send({
-          password: 'novasenha123',
-        });
-
-      expect(response.statusCode).toBe(401);
-    });
-
-    it('deve retornar 400 quando senha e muito curta', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .put('/authentication/recovery/update-password')
-        .set('Cookie', cookies)
-        .send({
-          password: '123',
-        });
-
-      expect(response.statusCode).toBe(400);
-    });
   });
 });

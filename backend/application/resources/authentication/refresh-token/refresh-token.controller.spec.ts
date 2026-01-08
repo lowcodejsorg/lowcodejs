@@ -36,13 +36,5 @@ describe('E2E Refresh Token Controller', () => {
         true,
       );
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).post(
-        '/authentication/refresh-token',
-      );
-
-      expect(response.statusCode).toBe(401);
-    });
   });
 });

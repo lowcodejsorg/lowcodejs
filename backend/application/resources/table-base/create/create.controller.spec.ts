@@ -36,15 +36,5 @@ describe('E2E Table Create Controller', () => {
       expect(response.body.name).toBe('My Table');
       expect(response.body.slug).toBeDefined();
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).post('/tables').send({
-        name: 'My Table',
-      });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
   });
 });

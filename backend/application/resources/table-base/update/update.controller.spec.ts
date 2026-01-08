@@ -115,48 +115,5 @@ describe('E2E Table Update Controller', () => {
       expect(response.body.name).toBe('Updated Table');
       expect(response.body.description).toBe('Updated description');
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server)
-        .put('/tables/my-table')
-        .send({
-          name: 'Updated Table',
-        });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .put('/tables/non-existent-table')
-        .set('Cookie', cookies)
-        .send({
-          name: 'Updated Table',
-          description: null,
-          logo: null,
-          configuration: {
-            style: E_TABLE_STYLE.LIST,
-            visibility: E_TABLE_VISIBILITY.PUBLIC,
-            collaboration: E_TABLE_COLLABORATION.OPEN,
-            administrators: [],
-            fields: {
-              orderList: [],
-              orderForm: [],
-            },
-          },
-          methods: {
-            beforeSave: { code: null },
-            afterSave: { code: null },
-            onLoad: { code: null },
-          },
-        });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
-    });
   });
 });

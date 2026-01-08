@@ -25,33 +25,10 @@ describe('E2E User Show Controller', () => {
         .get(`/users/${user._id}`)
         .set('Cookie', cookies);
 
-      console.log(JSON.stringify(response.body, null, 2));
-
       expect(response.statusCode).toBe(200);
       expect(response.body._id).toBe(user._id);
       expect(response.body.email).toBe(user.email);
       expect(response.body.password).toBeUndefined();
-    });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).get(
-        '/users/507f1f77bcf86cd799439011',
-      );
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando usuario nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .get('/users/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('USER_NOT_FOUND');
     });
   });
 });

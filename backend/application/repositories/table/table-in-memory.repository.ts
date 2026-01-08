@@ -29,15 +29,27 @@ export default class TableInMemoryRepository implements TableContractRepository 
       description: payload.description ?? null,
       logo: payload.logo ? ({ _id: payload.logo } as IStorage) : null,
       slug: payload.slug,
-      fields: (payload.fields ?? []).map((f) => (typeof f === 'object' ? f : { _id: f }) as IField),
+      fields: (payload.fields ?? []).map(
+        (f) => (typeof f === 'object' ? f : { _id: f }) as IField,
+      ),
       type: payload.type ?? ('TABLE' as typeof E_TABLE_TYPE.TABLE),
       configuration: {
-        style: payload.configuration.style ?? ('LIST' as typeof E_TABLE_STYLE.LIST),
-        visibility: payload.configuration.visibility ?? ('RESTRICTED' as typeof E_TABLE_VISIBILITY.RESTRICTED),
-        collaboration: payload.configuration.collaboration ?? ('RESTRICTED' as typeof E_TABLE_COLLABORATION.RESTRICTED),
-        administrators: (payload.configuration.administrators ?? []).map((a) => ({ _id: a }) as IUser),
+        style:
+          payload.configuration.style ?? ('LIST' as typeof E_TABLE_STYLE.LIST),
+        visibility:
+          payload.configuration.visibility ??
+          ('RESTRICTED' as typeof E_TABLE_VISIBILITY.RESTRICTED),
+        collaboration:
+          payload.configuration.collaboration ??
+          ('RESTRICTED' as typeof E_TABLE_COLLABORATION.RESTRICTED),
+        administrators: (payload.configuration.administrators ?? []).map(
+          (a) => ({ _id: a }) as IUser,
+        ),
         owner: { _id: payload.configuration.owner } as IUser,
-        fields: payload.configuration.fields ?? { orderList: [], orderForm: [] },
+        fields: payload.configuration.fields ?? {
+          orderList: [],
+          orderForm: [],
+        },
       },
       methods: payload.methods ?? {
         onLoad: { code: null },
@@ -53,7 +65,11 @@ export default class TableInMemoryRepository implements TableContractRepository 
     return table;
   }
 
-  async findBy({ _id, slug, exact = false }: TableFindByPayload): Promise<ITable | null> {
+  async findBy({
+    _id,
+    slug,
+    exact = false,
+  }: TableFindByPayload): Promise<ITable | null> {
     const table = this.items.find((t) => {
       if (exact) {
         return (_id ? t._id === _id : true) && (slug ? t.slug === slug : true);
@@ -88,7 +104,9 @@ export default class TableInMemoryRepository implements TableContractRepository 
     }
 
     if (payload?.owner) {
-      filtered = filtered.filter((t) => (t.configuration.owner as IUser)?._id === payload.owner);
+      filtered = filtered.filter(
+        (t) => (t.configuration.owner as IUser)?._id === payload.owner,
+      );
     }
 
     filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
@@ -114,10 +132,15 @@ export default class TableInMemoryRepository implements TableContractRepository 
     }
     if (payload.configuration) {
       if (payload.configuration.administrators !== undefined) {
-        table.configuration.administrators = payload.configuration.administrators.map((a) => ({ _id: a }) as IUser);
+        table.configuration.administrators =
+          payload.configuration.administrators.map(
+            (a) => ({ _id: a }) as IUser,
+          );
       }
       if (payload.configuration.owner !== undefined) {
-        table.configuration.owner = { _id: payload.configuration.owner } as IUser;
+        table.configuration.owner = {
+          _id: payload.configuration.owner,
+        } as IUser;
       }
       if (payload.configuration.style !== undefined) {
         table.configuration.style = payload.configuration.style;
@@ -133,7 +156,8 @@ export default class TableInMemoryRepository implements TableContractRepository 
       }
     }
     if (payload.name !== undefined) table.name = payload.name;
-    if (payload.description !== undefined) table.description = payload.description;
+    if (payload.description !== undefined)
+      table.description = payload.description;
     if (payload.slug !== undefined) table.slug = payload.slug;
     if (payload.type !== undefined) table.type = payload.type;
     if (payload._schema !== undefined) table._schema = payload._schema;
@@ -145,7 +169,11 @@ export default class TableInMemoryRepository implements TableContractRepository 
     return table;
   }
 
-  async updateMany({ _ids, type, data }: TableUpdateManyPayload): Promise<void> {
+  async updateMany({
+    _ids,
+    type,
+    data,
+  }: TableUpdateManyPayload): Promise<void> {
     let filtered = this.items.filter((t) => _ids.includes(t._id));
 
     if (type) {
@@ -155,7 +183,8 @@ export default class TableInMemoryRepository implements TableContractRepository 
     for (const table of filtered) {
       if (data.visibility) table.configuration.visibility = data.visibility;
       if (data.style) table.configuration.style = data.style;
-      if (data.collaboration) table.configuration.collaboration = data.collaboration;
+      if (data.collaboration)
+        table.configuration.collaboration = data.collaboration;
       table.updatedAt = new Date();
     }
   }

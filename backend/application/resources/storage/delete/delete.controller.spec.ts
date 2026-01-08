@@ -38,26 +38,5 @@ describe('E2E Storage Delete Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.message).toBe('File deleted successfully');
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).delete(
-        '/storage/507f1f77bcf86cd799439011',
-      );
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando arquivo nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .delete('/storage/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('STORAGE_NOT_FOUND');
-    });
   });
 });

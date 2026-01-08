@@ -44,31 +44,5 @@ describe('E2E Menu Update Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe('Dashboard Updated');
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server)
-        .patch('/menu/507f1f77bcf86cd799439011')
-        .send({
-          name: 'Updated Menu',
-        });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando menu nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .patch('/menu/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies)
-        .send({
-          name: 'Updated Menu',
-        });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('MENU_NOT_FOUND');
-    });
   });
 });

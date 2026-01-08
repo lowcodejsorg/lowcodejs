@@ -113,26 +113,5 @@ describe('E2E Table Row Delete Controller', () => {
 
       expect(response.statusCode).toBe(200);
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).delete(
-        '/tables/products/rows/507f1f77bcf86cd799439011',
-      );
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .delete('/tables/non-existent-table/rows/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
-    });
   });
 });

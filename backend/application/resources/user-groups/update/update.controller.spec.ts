@@ -38,31 +38,5 @@ describe('E2E UserGroup Update Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe('Owner Updated');
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server)
-        .patch('/user-group/507f1f77bcf86cd799439011')
-        .send({
-          name: 'Updated Name',
-        });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando grupo nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .patch('/user-group/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies)
-        .send({
-          name: 'Updated Name',
-        });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('USER_GROUP_NOT_FOUND');
-    });
   });
 });

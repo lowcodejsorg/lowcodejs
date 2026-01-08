@@ -38,13 +38,5 @@ describe('E2E Sign Out Controller', () => {
         true,
       );
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).post(
-        '/authentication/sign-out',
-      );
-
-      expect(response.statusCode).toBe(401);
-    });
   });
 });

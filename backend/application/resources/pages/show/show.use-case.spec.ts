@@ -35,7 +35,7 @@ describe('Page Show Use Case', () => {
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {
       expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('MENU_NOT_FOUND');
+      expect(result.value.cause).toBe('PAGE_NOT_FOUND');
     }
   });
 

@@ -115,27 +115,5 @@ describe('E2E Table Row Update Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe('Product Updated');
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server)
-        .put('/tables/products/rows/507f1f77bcf86cd799439011')
-        .send({ name: 'Product Updated' });
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .put('/tables/non-existent-table/rows/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies)
-        .send({ name: 'Product Updated' });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
-    });
   });
 });

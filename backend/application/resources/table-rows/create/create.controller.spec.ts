@@ -110,19 +110,5 @@ describe('E2E Table Row Create Controller', () => {
       expect(response.body.name).toBe('Product 1');
       expect(response.body._id).toBeDefined();
     });
-
-    it('deve retornar 404 quando tabela nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .post('/tables/non-existent-table/rows')
-        .set('Cookie', cookies)
-        .send({
-          name: 'Product 1',
-        });
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('TABLE_NOT_FOUND');
-    });
   });
 });

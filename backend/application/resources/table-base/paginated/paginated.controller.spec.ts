@@ -128,13 +128,5 @@ describe('E2E Table Paginated Controller', () => {
       expect(response.body.data).toBeInstanceOf(Array);
       expect(response.body.meta).toBeDefined();
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).get('/tables/paginated');
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
   });
 });

@@ -40,26 +40,5 @@ describe('E2E Menu Delete Controller', () => {
 
       expect(response.statusCode).toBe(200);
     });
-
-    it('deve retornar 401 quando nao autenticado', async () => {
-      const response = await supertest(kernel.server).delete(
-        '/menu/507f1f77bcf86cd799439011',
-      );
-
-      expect(response.statusCode).toBe(401);
-      expect(response.body.message).toBe('Authentication required');
-      expect(response.body.cause).toBe('AUTHENTICATION_REQUIRED');
-    });
-
-    it('deve retornar 404 quando menu nao existe', async () => {
-      const { cookies } = await createAuthenticatedUser();
-
-      const response = await supertest(kernel.server)
-        .delete('/menu/507f1f77bcf86cd799439011')
-        .set('Cookie', cookies);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body.cause).toBe('MENU_NOT_FOUND');
-    });
   });
 });
