@@ -98,7 +98,6 @@ export default class MagicLinkUseCase {
 
       return right(user);
     } catch (error) {
-      console.log(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

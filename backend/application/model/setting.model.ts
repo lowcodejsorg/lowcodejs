@@ -17,6 +17,8 @@ const Schema = new mongoose.Schema(
     EMAIL_PROVIDER_PORT: { type: Number },
     EMAIL_PROVIDER_USER: { type: String },
     EMAIL_PROVIDER_PASSWORD: { type: String },
+    trashed: { type: Boolean, default: false },
+    trashedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

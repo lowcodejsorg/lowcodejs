@@ -7,7 +7,7 @@ import type { IPermission as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { PermissionContractRepository } from '@application/repositories/permission/permission-contract.repository';
 
-type Resultado = Either<HTTPException, Entity[]>;
+type Response = Either<HTTPException, Entity[]>;
 
 @Service()
 export default class PermissionListUseCase {
@@ -15,7 +15,7 @@ export default class PermissionListUseCase {
     private readonly permissionRepository: PermissionContractRepository,
   ) {}
 
-  async execute(): Promise<Resultado> {
+  async execute(): Promise<Response> {
     try {
       const permissions = await this.permissionRepository.findMany();
       return right(permissions);

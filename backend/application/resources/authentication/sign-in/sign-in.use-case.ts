@@ -27,10 +27,15 @@ export default class SignInUseCase {
         exact: true,
       });
 
-      if (!user) return left(HTTPException.Unauthorized());
+      if (!user)
+        return left(
+          HTTPException.Unauthorized('Credenciais invalidas', 'INVALID_CREDENTIALS'),
+        );
 
       if (user.status === E_USER_STATUS.INACTIVE)
-        return left(HTTPException.Unauthorized());
+        return left(
+          HTTPException.Unauthorized('Usuario inativo', 'USER_INACTIVE'),
+        );
 
       const passwordDoesMatch = await bcrypt.compare(
         payload.password,

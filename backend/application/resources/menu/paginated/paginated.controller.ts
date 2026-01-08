@@ -25,7 +25,6 @@ export default class {
           optional: false,
         }),
       ],
-      // schema: UserPaginatedSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

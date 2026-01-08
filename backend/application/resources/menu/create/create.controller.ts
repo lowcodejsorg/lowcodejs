@@ -23,7 +23,6 @@ export default class {
           optional: false,
         }),
       ],
-      // schema: UserCreateSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

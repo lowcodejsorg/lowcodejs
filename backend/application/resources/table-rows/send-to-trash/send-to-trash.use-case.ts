@@ -58,13 +58,6 @@ export default class TableRowSendToTrashUseCase {
 
       const populated = await row.populate(populate);
 
-      console.log({
-        ...populated.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: populated._id.toString(),
-      });
-
       return right({
         ...populated.toJSON({
           flattenObjectIds: true,

@@ -4,11 +4,11 @@ export const TableCreateBodyValidator = z.object({
   name: z
     .string()
     .trim()
-    .min(1, 'Name is required')
-    .max(40, 'Name must be at most 40 characters')
+    .min(1, 'Nome é obrigatório')
+    .max(40, 'Nome deve ter no máximo 40 caracteres')
     .regex(
       /^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/,
-      'Name can only contain letters, numbers, spaces, hyphen, underscore and ç',
+      'Nome pode conter apenas letras, números, espaços, hífen, underscore e ç',
     ),
   owner: z.string().trim().optional(),
 });

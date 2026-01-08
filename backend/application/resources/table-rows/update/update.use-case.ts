@@ -126,8 +126,6 @@ export default class TableRowUpdateUseCase {
 
       await row.populate(populate);
 
-      console.log('row', JSON.stringify(row, null, 2));
-
       // @ts-ignore
       return right({
         ...row.toJSON({
