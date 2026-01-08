@@ -108,6 +108,8 @@ export default class TableUpdateUseCase {
 
       return right(updated);
     } catch (error) {
+      console.log(error);
+
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

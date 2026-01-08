@@ -68,9 +68,9 @@ export const TablePaginatedSchema: FastifySchema = {
       },
       type: {
         type: 'string',
-        enum: ['table', 'field-group'],
+        enum: ['TABLE', 'FIELD_GROUP'],
         description: 'Filter by table type (optional)',
-        examples: ['table', 'field-group'],
+        examples: ['TABLE', 'FIELD_GROUP'],
       },
       name: {
         type: 'string',
@@ -166,17 +166,17 @@ export const TablePaginatedSchema: FastifySchema = {
                 properties: {
                   style: {
                     type: 'string',
-                    enum: ['gallery', 'list'],
+                    enum: ['GALLERY', 'LIST'],
                     description: 'Display style',
                   },
                   visibility: {
                     type: 'string',
-                    enum: ['public', 'restricted', 'open', 'form', 'private'],
+                    enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
                     description: 'Visibility setting',
                   },
                   collaboration: {
                     type: 'string',
-                    enum: ['open', 'restricted'],
+                    enum: ['OPEN', 'RESTRICTED'],
                     description: 'Collaboration setting',
                   },
                   administrators: {
@@ -220,7 +220,7 @@ export const TablePaginatedSchema: FastifySchema = {
               },
               type: {
                 type: 'string',
-                enum: ['table', 'field-group'],
+                enum: ['TABLE', 'FIELD_GROUP'],
                 description: 'Table type',
               },
               methods: {

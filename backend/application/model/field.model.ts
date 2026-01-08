@@ -1,12 +1,10 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 import mongoose from 'mongoose';
 
-import type { IField as Core } from '@application/core/entity.core';
+import type { IField as Core, Merge } from '@application/core/entity.core';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@application/core/entity.core';
 
-interface Entity extends Omit<Core, '_id'>, mongoose.Document {
-  _id: mongoose.Types.ObjectId;
-}
+type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 const Relationship = new mongoose.Schema(
   {

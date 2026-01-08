@@ -17,7 +17,28 @@ export const UserGroupListSchema: FastifySchema = {
           name: { type: 'string' },
           slug: { type: 'string' },
           description: { type: 'string' },
-          permissions: { type: 'array', items: { type: 'string' } },
+          permissions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string', description: 'Permission ID' },
+                name: {
+                  type: 'string',
+                  description: 'Permission name',
+                },
+                slug: {
+                  type: 'string',
+                  description: 'Permission slug',
+                },
+                description: {
+                  type: 'string',
+                  nullable: true,
+                  description: 'Permission description',
+                },
+              },
+            },
+          },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },

@@ -49,10 +49,12 @@ export default class TableRowSendToTrashUseCase {
           HTTPException.Conflict('Row already in trash', 'ALREADY_TRASHED'),
         );
 
-      await row.updateOne({
-        trashed: true,
-        trashedAt: new Date(),
-      });
+      await row
+        .set({
+          trashed: true,
+          trashedAt: new Date(),
+        })
+        .save();
 
       const populated = await row.populate(populate);
 

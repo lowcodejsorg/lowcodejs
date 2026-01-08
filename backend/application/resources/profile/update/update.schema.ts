@@ -60,7 +60,7 @@ export const ProfileUpdateSchema: FastifySchema = {
         },
         status: {
           type: 'string',
-          enum: ['active', 'inactive'],
+          enum: ['ACTIVE', 'INACTIVE'],
           description: 'User status',
         },
         group: {

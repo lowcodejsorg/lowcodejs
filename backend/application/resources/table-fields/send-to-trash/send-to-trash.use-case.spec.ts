@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
@@ -29,13 +30,18 @@ describe('Table Field Send To Trash Use Case', () => {
     const field = await fieldInMemoryRepository.create({
       name: 'Nome',
       slug: 'nome',
-      type: E_FIELD_TYPE.TEXT,
+      type: E_FIELD_TYPE.TEXT_SHORT,
       configuration: {
         listing: true,
         filtering: true,
         required: true,
-        unique: false,
         dropdown: [],
+        category: [],
+        defaultValue: null,
+        format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+        group: null,
+        multiple: false,
+        relationship: null,
       },
     });
 
@@ -111,13 +117,18 @@ describe('Table Field Send To Trash Use Case', () => {
     const field = await fieldInMemoryRepository.create({
       name: 'Nome',
       slug: 'nome',
-      type: E_FIELD_TYPE.TEXT,
+      type: E_FIELD_TYPE.TEXT_SHORT,
       configuration: {
         listing: true,
         filtering: true,
         required: true,
-        unique: false,
         dropdown: [],
+        category: [],
+        defaultValue: null,
+        format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+        group: null,
+        multiple: false,
+        relationship: null,
       },
     });
 

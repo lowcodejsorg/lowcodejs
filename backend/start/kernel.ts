@@ -84,7 +84,7 @@ kernel.register(_static, {
 });
 
 kernel.setErrorHandler((error: Record<string, unknown>, _, response) => {
-  console.error(error);
+  // console.error('setErrorHandler', error);
 
   if (error instanceof HTTPException) {
     return response.status(error.code).send({

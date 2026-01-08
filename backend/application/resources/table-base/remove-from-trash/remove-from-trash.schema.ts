@@ -173,17 +173,17 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
           properties: {
             style: {
               type: 'string',
-              enum: ['gallery', 'list'],
+              enum: ['GALLERY', 'LIST'],
               description: 'Display style',
             },
             visibility: {
               type: 'string',
-              enum: ['public', 'restricted', 'open', 'form', 'private'],
+              enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
               description: 'Visibility setting',
             },
             collaboration: {
               type: 'string',
-              enum: ['open', 'restricted'],
+              enum: ['OPEN', 'RESTRICTED'],
               description: 'Collaboration setting',
             },
             administrators: {
@@ -224,7 +224,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
         },
         type: {
           type: 'string',
-          enum: ['table', 'field-group'],
+          enum: ['TABLE', 'FIELD_GROUP'],
           description: 'table type',
         },
         _schema: {

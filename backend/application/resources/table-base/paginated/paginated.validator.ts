@@ -8,9 +8,11 @@ export const TablePaginatedQueryValidator = z.object({
   name: z.string().trim().optional(),
   trashed: z.string().trim().optional(),
 
-  'order-name': z.enum(['asc', 'desc']).default('asc'),
-  'order-link': z.enum(['asc', 'desc']).default('asc'),
-  'order-created-at': z.enum(['asc', 'desc']).default('asc'),
+  'order-name': z.enum(['asc', 'desc']).optional().default('asc'),
+  'order-link': z.enum(['asc', 'desc']).optional().default('asc'),
+  'order-created-at': z.enum(['asc', 'desc']).optional().default('asc'),
 });
 
-export type TablePaginatedPayload = z.infer<typeof TablePaginatedQueryValidator>;
+export type TablePaginatedPayload = z.infer<
+  typeof TablePaginatedQueryValidator
+>;

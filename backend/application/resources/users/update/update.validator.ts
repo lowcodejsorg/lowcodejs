@@ -4,9 +4,9 @@ import { E_USER_STATUS, Merge } from '@application/core/entity.core';
 
 import { UserBaseValidator } from '../user-base.validator';
 
-export const UserUpdateBodyValidator = UserBaseValidator.extend({
+export const UserUpdateBodyValidator = UserBaseValidator.partial().extend({
   password: z.string().trim().optional(),
-  status: z.enum([E_USER_STATUS.ACTIVE, E_USER_STATUS.INACTIVE]),
+  status: z.enum([E_USER_STATUS.ACTIVE, E_USER_STATUS.INACTIVE]).optional(),
 });
 
 export const UserUpdateParamsValidator = z.object({

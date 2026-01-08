@@ -29,7 +29,7 @@ export const TableRowReactionSchema: FastifySchema = {
     properties: {
       type: {
         type: 'string',
-        enum: ['like', 'unlike'],
+        enum: ['LIKE', 'UNLIKE'],
         description: 'Type of reaction',
       },
       field: {

@@ -24,6 +24,9 @@ describe('Table Paginated Use Case', () => {
       page: 1,
       perPage: 20,
       trashed: 'false',
+      'order-created-at': 'asc',
+      'order-link': 'asc',
+      'order-name': 'asc',
     });
 
     expect(result.isRight()).toBe(true);
@@ -70,6 +73,9 @@ describe('Table Paginated Use Case', () => {
       page: 1,
       perPage: 20,
       trashed: 'false',
+      'order-created-at': 'asc',
+      'order-link': 'asc',
+      'order-name': 'asc',
     });
 
     expect(result.isRight()).toBe(true);
@@ -102,6 +108,9 @@ describe('Table Paginated Use Case', () => {
       page: 1,
       perPage: 10,
       trashed: 'false',
+      'order-created-at': 'asc',
+      'order-link': 'asc',
+      'order-name': 'asc',
     });
 
     expect(result.isRight()).toBe(true);
@@ -151,6 +160,9 @@ describe('Table Paginated Use Case', () => {
       perPage: 20,
       trashed: 'false',
       search: 'Clientes',
+      'order-created-at': 'asc',
+      'order-link': 'asc',
+      'order-name': 'asc',
     });
 
     expect(result.isRight()).toBe(true);
@@ -169,6 +181,9 @@ describe('Table Paginated Use Case', () => {
       page: 1,
       perPage: 20,
       trashed: 'false',
+      'order-created-at': 'asc',
+      'order-link': 'asc',
+      'order-name': 'asc',
     });
 
     expect(result.isLeft()).toBe(true);

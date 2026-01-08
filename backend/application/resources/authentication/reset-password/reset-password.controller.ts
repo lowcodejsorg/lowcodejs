@@ -19,7 +19,7 @@ export default class {
   ) {}
 
   @PUT({
-    url: 'recovery/update-password',
+    url: '/recovery/update-password',
     options: {
       onRequest: [
         AuthenticationMiddleware({

@@ -1,4 +1,7 @@
-import { E_TABLE_PERMISSION, type Optional } from '@application/core/entity.core';
+import {
+  E_TABLE_PERMISSION,
+  type Optional,
+} from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 
 type Payload = Optional<

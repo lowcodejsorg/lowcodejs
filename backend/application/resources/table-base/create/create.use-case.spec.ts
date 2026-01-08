@@ -21,7 +21,6 @@ describe('Table Create Use Case', () => {
   it('deve criar tabela com sucesso', async () => {
     const result = await sut.execute({
       name: 'Clientes',
-      description: 'Tabela de clientes',
       owner: 'owner-id',
     });
 
@@ -35,7 +34,6 @@ describe('Table Create Use Case', () => {
   it('deve retornar erro OWNER_REQUIRED quando owner nao for informado', async () => {
     const result = await sut.execute({
       name: 'Clientes',
-      description: 'Tabela de clientes',
       owner: '',
     });
 
@@ -64,7 +62,6 @@ describe('Table Create Use Case', () => {
 
     const result = await sut.execute({
       name: 'Clientes',
-      description: 'Tabela de clientes',
       owner: 'owner-id',
     });
 
@@ -82,7 +79,6 @@ describe('Table Create Use Case', () => {
 
     const result = await sut.execute({
       name: 'Clientes',
-      description: 'Tabela de clientes',
       owner: 'owner-id',
     });
 

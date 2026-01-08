@@ -7,7 +7,8 @@ export const UserGroupUpdateParamsValidator = z.object({
 });
 
 export const UserGroupUpdateBodyValidator = z.object({
-  description: z.string().trim().nullable(),
+  name: z.string().trim().optional(),
+  description: z.string().trim().nullable().optional(),
   permissions: z.array(z.string().trim()).default([]),
 });
 

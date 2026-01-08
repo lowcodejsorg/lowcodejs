@@ -1,6 +1,8 @@
-import 'dotenv/config';
-// import dotenv from 'dotenv';
+import { config } from 'dotenv';
 import { z } from 'zod';
+
+const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
+config({ path: envFile });
 
 const EnvSchema = z.object({
   LOCALE: z.enum(['pt-br', 'en-us']).default('pt-br'),

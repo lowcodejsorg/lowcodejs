@@ -5,7 +5,6 @@ import { Merge } from '@application/core/entity.core';
 export const TableRowEvaluationBodyValidator = z.object({
   value: z.number(),
   field: z.string().trim(),
-  user: z.string().trim(),
 });
 
 export const TableRowEvaluationParamsValidator = z.object({
@@ -14,6 +13,11 @@ export const TableRowEvaluationParamsValidator = z.object({
 });
 
 export type TableRowEvaluationPayload = Merge<
-  z.infer<typeof TableRowEvaluationParamsValidator>,
-  z.infer<typeof TableRowEvaluationBodyValidator>
+  Merge<
+    z.infer<typeof TableRowEvaluationParamsValidator>,
+    z.infer<typeof TableRowEvaluationBodyValidator>
+  >,
+  {
+    user: string;
+  }
 >;

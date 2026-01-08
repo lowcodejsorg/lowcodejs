@@ -16,7 +16,7 @@ export const MenuCreateSchema: FastifySchema = {
       },
       type: {
         type: 'string',
-        enum: ['table', 'page', 'form', 'external', 'separator'],
+        enum: ['TABLE', 'PAGE', 'FORM', 'EXTERNAL', 'SEPARATOR'],
         description: 'Menu item type',
       },
       parent: {

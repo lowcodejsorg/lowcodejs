@@ -49,10 +49,7 @@ export default class TableRowRemoveFromTrashUseCase {
           HTTPException.Conflict('Row is not in trash', 'NOT_TRASHED'),
         );
 
-      await row.updateOne({
-        trashed: false,
-        trashedAt: null,
-      });
+      await row.set({ trashed: false, trashedAt: null }).save();
 
       const populated = await row.populate(populate);
 

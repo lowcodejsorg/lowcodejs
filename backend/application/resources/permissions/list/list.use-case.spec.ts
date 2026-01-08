@@ -26,11 +26,13 @@ describe('Permission List Use Case', () => {
     await permissionInMemoryRepository.create({
       name: 'Create User',
       slug: 'CREATE_USER',
+      description: 'Create a new user',
     });
 
     await permissionInMemoryRepository.create({
       name: 'Update User',
       slug: 'UPDATE_USER',
+      description: 'Update a user',
     });
 
     const result = await sut.execute();

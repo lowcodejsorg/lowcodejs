@@ -54,14 +54,21 @@ export const UserCreateSchema: FastifySchema = {
             },
             permissions: {
               type: 'array',
-              items: { type: 'object' },
-              description: 'Group permissions',
+              items: {
+                type: 'object',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  slug: { type: 'string' },
+                  description: { type: 'string' },
+                },
+              },
             },
           },
         },
         status: {
           type: 'string',
-          enum: ['active', 'inactive'],
+          enum: ['ACTIVE', 'INACTIVE'],
           description: 'User status',
         },
         createdAt: { type: 'string', format: 'date-time' },

@@ -17,7 +17,7 @@ export default class {
   ) {}
 
   @POST({
-    url: 'recovery/validate-code',
+    url: '/recovery/validate-code',
     options: {
       schema: ValidateCodeSchema,
     },

@@ -3,9 +3,8 @@ import z from 'zod';
 import { E_REACTION_TYPE, Merge } from '@application/core/entity.core';
 
 export const TableRowReactionBodyValidator = z.object({
-  type: z.enum(E_REACTION_TYPE),
+  type: z.enum([E_REACTION_TYPE.LIKE, E_REACTION_TYPE.UNLIKE]),
   field: z.string().trim(),
-  user: z.string().trim(),
 });
 
 export const TableRowReactionParamsValidator = z.object({
@@ -14,6 +13,11 @@ export const TableRowReactionParamsValidator = z.object({
 });
 
 export type TableRowReactionPayload = Merge<
-  z.infer<typeof TableRowReactionParamsValidator>,
-  z.infer<typeof TableRowReactionBodyValidator>
+  Merge<
+    z.infer<typeof TableRowReactionParamsValidator>,
+    z.infer<typeof TableRowReactionBodyValidator>
+  >,
+  {
+    user: string;
+  }
 >;

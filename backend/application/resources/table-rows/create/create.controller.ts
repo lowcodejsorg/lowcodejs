@@ -37,7 +37,6 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    console.log('request.body', request.body);
     const payload = TableRowCreateBodyValidator.parse(request.body);
     const params = TableRowCreateParamsValidator.parse(request.params);
 

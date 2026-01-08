@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
@@ -10,14 +11,13 @@ import { RequestCodeBodyValidator } from './request-code.validator';
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: RequestCodeUseCase = getInstanceByToken(
       RequestCodeUseCase,
     ),
   ) {}
 
   @POST({
-    url: 'recovery/request-code',
+    url: '/recovery/request-code',
     options: {
       schema: RequestCodeSchema,
     },
