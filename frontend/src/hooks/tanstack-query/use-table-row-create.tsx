@@ -4,29 +4,25 @@ import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
-
-type Payload = {
-  slug: string;
-  data: Record<string, unknown>;
-};
+import type { RowCreatePayload } from '@/lib/payloads';
 
 type UseTableRowCreateProps = Pick<
   Omit<
-    UseMutationOptions<IRow, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IRow, AxiosError | Error, RowCreatePayload, unknown>,
     'mutationFn' | 'onSuccess'
   >,
   'onError'
 > & {
-  onSuccess?: (data: IRow, variables: Payload) => void;
+  onSuccess?: (data: IRow, variables: RowCreatePayload) => void;
 };
 
 export function useCreateTableRow(
   props: UseTableRowCreateProps,
-): ReturnType<typeof useMutation<IRow, AxiosError | Error, Payload>> {
+): ReturnType<typeof useMutation<IRow, AxiosError | Error, RowCreatePayload>> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: RowCreatePayload) {
       const route = '/tables/'.concat(payload.slug).concat('/rows');
       const response = await API.post<IRow>(route, payload.data);
       return response.data;

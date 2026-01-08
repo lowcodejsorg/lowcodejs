@@ -1,10 +1,11 @@
-import { clsx, type ClassValue } from 'clsx'
-import { twMerge } from 'tailwind-merge'
+import type { ClassValue } from 'clsx';
+import { clsx } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
-import type { ICategory } from './interfaces'
+import type { ICategory } from './interfaces';
 
-export function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs))
+export function cn(...inputs: Array<ClassValue>): string {
+  return twMerge(clsx(inputs));
 }
 
 export function getCategoryItem(
@@ -13,12 +14,12 @@ export function getCategoryItem(
 ): ICategory | undefined {
   for (const category of categories) {
     if (category.id === id) {
-      return category
+      return category;
     }
-    if (category.children?.length > 0) {
-      const found = getCategoryItem(category.children, id)
-      if (found) return found
+    if (category.children.length > 0) {
+      const found = getCategoryItem(category.children, id);
+      if (found) return found;
     }
   }
-  return undefined
+  return undefined;
 }

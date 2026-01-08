@@ -20,6 +20,9 @@ export function TableFieldDropdownOptions({
   const field = useFieldContext<Array<ComboboxOption>>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
+  // Extrair IDs dos items para o Combobox
+  const selectedIds = field.state.value?.map((item) => item.value) ?? [];
+
   return (
     <Field data-invalid={isInvalid}>
       <FieldLabel htmlFor={field.name}>
@@ -28,8 +31,9 @@ export function TableFieldDropdownOptions({
       </FieldLabel>
       <Combobox
         disabled={disabled}
-        onChange={(options) => field.handleChange(options)}
-        value={field.state.value}
+        items={field.state.value}
+        onChange={(_ids, items) => field.handleChange(items)}
+        value={selectedIds}
         creatable
         allowReorder
         multiple

@@ -1,11 +1,12 @@
 import { UserIcon } from 'lucide-react';
-import z from 'zod';
+import { z } from 'zod';
 
 import { FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import type { IGroup } from '@/lib/interfaces';
 
+// Schema com campos de UI (confirmPassword é apenas validação no frontend)
 export const ProfileUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório'),
   email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
@@ -14,7 +15,13 @@ export const ProfileUpdateSchema = z.object({
   confirmPassword: z.string().default(''),
 });
 
-export type ProfileUpdateFormValues = z.infer<typeof ProfileUpdateSchema>;
+export type ProfileUpdateFormValues = {
+  name: string;
+  email: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+};
 
 export const profileUpdateFormDefaultValues: ProfileUpdateFormValues = {
   name: '',

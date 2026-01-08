@@ -1,19 +1,14 @@
-import { API } from '@/lib/api';
-import { IGroup } from '@/lib/interfaces';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
-type Payload = Partial<
-  Pick<IGroup, 'name' | 'description'> & {
-    permissions: string[];
-  }
-> & {
-  _id: string;
-};
+import { API } from '@/lib/api';
+import type { IGroup } from '@/lib/interfaces';
+import type { UserGroupUpdatePayload } from '@/lib/payloads';
 
 type UseGroupUpdateProps = Pick<
   Omit<
-    UseMutationOptions<IGroup, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IGroup, AxiosError | Error, UserGroupUpdatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -21,7 +16,7 @@ type UseGroupUpdateProps = Pick<
 
 export function useUpdateGroup(props: UseGroupUpdateProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: UserGroupUpdatePayload) {
       const route = '/user-group/'.concat(payload._id);
       const response = await API.patch<IGroup>(route, payload);
       return response.data;

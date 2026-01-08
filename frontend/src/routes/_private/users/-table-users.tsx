@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { E_ROLE } from '@/lib/constant';
+import { E_ROLE, E_USER_STATUS } from '@/lib/constant';
 import type { IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -30,8 +30,8 @@ const RoleMapper = {
 };
 
 const StatusMapper = {
-  active: 'Ativo',
-  inactive: 'Inativo',
+  [E_USER_STATUS.ACTIVE]: 'Ativo',
+  [E_USER_STATUS.INACTIVE]: 'Inativo',
 };
 
 function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
@@ -62,8 +62,8 @@ function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
           variant="outline"
           className={cn(
             'font-semibold border-transparent',
-            user.status === 'active' && 'bg-green-100 text-green-700',
-            user.status === 'inactive' && 'bg-destructive/10 text-destructive',
+            user.status === E_USER_STATUS.ACTIVE && 'bg-green-100 text-green-700',
+            user.status === E_USER_STATUS.INACTIVE && 'bg-destructive/10 text-destructive',
           )}
         >
           {StatusMapper[user.status] || 'N/A'}

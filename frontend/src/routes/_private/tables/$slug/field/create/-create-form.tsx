@@ -171,7 +171,7 @@ export const CreateFieldFormFields = withForm({
                 label="Formato"
                 placeholder="Selecione um formato para o campo"
                 disabled={isPending}
-                fieldType="TEXT_SHORT"
+                fieldType={E_FIELD_TYPE.TEXT_SHORT}
                 required
               />
             )}
@@ -247,7 +247,7 @@ export const CreateFieldFormFields = withForm({
                 label="Formato da data"
                 placeholder="Selecione o formato da data"
                 disabled={isPending}
-                fieldType="DATE"
+                fieldType={E_FIELD_TYPE.DATE}
                 required
               />
             )}

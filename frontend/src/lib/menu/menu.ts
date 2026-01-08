@@ -6,6 +6,9 @@ import {
   UserIcon,
   UsersIcon,
 } from 'lucide-react';
+
+import { E_ROLE } from '@/lib/constant';
+
 import { MenuRoute } from './menu-route';
 
 export const getStaticMenusByRole = (
@@ -19,7 +22,7 @@ export const getStaticMenusByRole = (
   ];
 
   switch (role) {
-    case 'MASTER':
+    case E_ROLE.MASTER:
       return {
         before: tablesMenu,
         after: [
@@ -43,7 +46,7 @@ export const getStaticMenusByRole = (
         ],
       };
 
-    case 'ADMINISTRATOR': {
+    case E_ROLE.ADMINISTRATOR: {
       return {
         before: tablesMenu,
         after: [
@@ -61,7 +64,7 @@ export const getStaticMenusByRole = (
         ],
       };
     }
-    case 'MANAGER': {
+    case E_ROLE.MANAGER: {
       return {
         before: tablesMenu,
         after: [
@@ -72,7 +75,7 @@ export const getStaticMenusByRole = (
         ],
       };
     }
-    case 'REGISTERED':
+    case E_ROLE.REGISTERED:
       return {
         before: tablesMenu,
         after: [

@@ -44,7 +44,7 @@ export default class UserMongooseRepository implements UserContractRepository {
       where._id = { $ne: payload.user._id };
     }
 
-    if (payload?.user?.role === 'ADMINISTRATOR') {
+    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
       const UserGroupModel = Model.db.model('UserGroup');
       const masterGroup = await UserGroupModel.findOne({ slug: E_ROLE.MASTER });
 

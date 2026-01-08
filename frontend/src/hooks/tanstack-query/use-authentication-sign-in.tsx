@@ -3,15 +3,11 @@ import { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
-
-type Payload = {
-  email: string;
-  password: string;
-};
+import type { SignInPayload } from '@/lib/payloads';
 
 type UseAuthenticationSignInProps = Pick<
   Omit<
-    UseMutationOptions<IUser, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IUser, AxiosError | Error, SignInPayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -19,7 +15,7 @@ type UseAuthenticationSignInProps = Pick<
 
 export function useAuthenticationSignIn(props: UseAuthenticationSignInProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: SignInPayload) {
       await API.post('/authentication/sign-in', payload);
       const response = await API.get<IUser>('/profile');
       return response.data;

@@ -4,30 +4,25 @@ import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
-
-type Payload = {
-  slug: string;
-  rowId: string;
-  data: Record<string, unknown>;
-};
+import type { RowUpdatePayload } from '@/lib/payloads';
 
 type UseTableRowUpdateProps = Pick<
   Omit<
-    UseMutationOptions<IRow, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IRow, AxiosError | Error, RowUpdatePayload, unknown>,
     'mutationFn' | 'onSuccess'
   >,
   'onError'
 > & {
-  onSuccess?: (data: IRow, variables: Payload) => void;
+  onSuccess?: (data: IRow, variables: RowUpdatePayload) => void;
 };
 
 export function useUpdateTableRow(
   props: UseTableRowUpdateProps,
-): ReturnType<typeof useMutation<IRow, AxiosError | Error, Payload>> {
+): ReturnType<typeof useMutation<IRow, AxiosError | Error, RowUpdatePayload>> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: RowUpdatePayload) {
       const route = '/tables/'
         .concat(payload.slug)
         .concat('/rows/')

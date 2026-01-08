@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import type { ComboboxOption } from '@/components/ui/combobox';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IStorage } from '@/lib/interfaces';
 
@@ -128,12 +127,11 @@ export function buildPayload(
         payload[field.slug] = value || null;
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        const dropdownValue = (value as Array<ComboboxOption>) || [];
+        const dropdownValue = (value as Array<string>) || [];
         if (field.configuration.multiple) {
-          payload[field.slug] = dropdownValue.map((opt) => opt.value);
+          payload[field.slug] = dropdownValue;
         } else {
-          // Always array, but limit to 1 item
-          payload[field.slug] = dropdownValue.slice(0, 1).map((opt) => opt.value);
+          payload[field.slug] = dropdownValue.slice(0, 1);
         }
         break;
       }

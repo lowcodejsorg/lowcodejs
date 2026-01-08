@@ -231,7 +231,7 @@ function RouteComponent(): React.JSX.Element {
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown
             ? config.dropdown.map((item) => item.value)
-            : null,
+            : [],
           relationship: hasRelationship
             ? {
                 table: {
@@ -248,7 +248,7 @@ function RouteComponent(): React.JSX.Element {
           group: null,
           category: hasCategory
             ? convertTreeNodeToCategory(config.category)
-            : null,
+            : [],
         },
       });
     },

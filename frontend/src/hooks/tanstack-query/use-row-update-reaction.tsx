@@ -3,18 +3,11 @@ import { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
-
-type Payload = {
-  tableSlug: string;
-  rowId: string;
-  user: string;
-  field: string;
-  type: 'like' | 'unlike';
-};
+import type { RowReactionPayload } from '@/lib/payloads';
 
 type UseRowUpdateReactionProps = Pick<
   Omit<
-    UseMutationOptions<IRow, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IRow, AxiosError | Error, RowReactionPayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -22,14 +15,13 @@ type UseRowUpdateReactionProps = Pick<
 
 export function useRowUpdateReaction(props: UseRowUpdateReactionProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: RowReactionPayload) {
       const route = '/tables/'
         .concat(payload.tableSlug)
         .concat('/rows/')
         .concat(payload.rowId)
         .concat('/reaction');
       const response = await API.post<IRow>(route, {
-        user: payload.user,
         field: payload.field,
         type: payload.type,
       });

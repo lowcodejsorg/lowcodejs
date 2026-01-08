@@ -418,7 +418,7 @@ function FieldUpdateContent({
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown
             ? config.dropdown.map((item) => item.value)
-            : null,
+            : [],
           relationship: hasRelationship
             ? {
                 table: {
@@ -435,7 +435,7 @@ function FieldUpdateContent({
           group: null,
           category: hasCategory
             ? (config.category as unknown as IField['configuration']['category'])
-            : null,
+            : [],
         },
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,

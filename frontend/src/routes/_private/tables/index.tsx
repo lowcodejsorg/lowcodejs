@@ -49,9 +49,9 @@ function RouteComponent(): React.JSX.Element {
       updatedAt: null,
       configuration: {
         format: null,
-        category: null,
+        category: [],
         defaultValue: null,
-        dropdown: null,
+        dropdown: [],
         filtering: true,
         group: null,
         listing: true,

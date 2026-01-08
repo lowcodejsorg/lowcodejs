@@ -2,6 +2,7 @@ import type { FastifyRequest } from 'fastify';
 import z from 'zod';
 
 import {
+  E_ROLE,
   E_TABLE_PERMISSION,
   E_TABLE_VISIBILITY,
   E_USER_STATUS,
@@ -142,7 +143,12 @@ export function TableAccessMiddleware(options: AccessOptions) {
       );
     }
 
-    // 6. CREATE_TABLE: apenas verificar permissão do grupo
+    // 6. MASTER tem acesso total a tudo
+    if (user.role === E_ROLE.MASTER) {
+      return;
+    }
+
+    // 7. CREATE_TABLE: apenas verificar permissão do grupo
     if (requiredPermission === 'CREATE_TABLE') {
       await checkUserHasPermission(user.sub, requiredPermission);
       return;

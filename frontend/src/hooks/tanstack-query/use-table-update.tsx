@@ -4,23 +4,11 @@ import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
-
-type Payload = Partial<
-  Pick<ITable, 'name' | 'description' | 'methods'> & {
-    logo: string | null;
-    fields: string[];
-    configuration: Omit<ITable['configuration'], 'administrators' | 'owner'> & {
-      administrators: string[];
-      owner?: string;
-    };
-  }
-> & {
-  slug: string;
-};
+import type { TableUpdatePayload } from '@/lib/payloads';
 
 type UseTableUpdateProps = Pick<
   Omit<
-    UseMutationOptions<ITable, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<ITable, AxiosError | Error, TableUpdatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -28,7 +16,7 @@ type UseTableUpdateProps = Pick<
 
 export function useUpdateTable(props: UseTableUpdateProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: TableUpdatePayload) {
       const route = '/tables/'.concat(payload.slug);
       const response = await API.put<ITable>(route, payload);
       return response.data;

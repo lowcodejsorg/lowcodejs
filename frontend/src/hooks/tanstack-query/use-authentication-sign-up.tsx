@@ -2,16 +2,11 @@ import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
-
-type Payload = {
-  name: string;
-  email: string;
-  password: string;
-};
+import type { SignUpPayload } from '@/lib/payloads';
 
 type UseAuthenticationSignUpProps = Pick<
   Omit<
-    UseMutationOptions<void, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<void, AxiosError | Error, SignUpPayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -19,7 +14,7 @@ type UseAuthenticationSignUpProps = Pick<
 
 export function useAuthenticationSignUp(props: UseAuthenticationSignUpProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: SignUpPayload) {
       await API.post('/authentication/sign-up', payload);
     },
     ...props,

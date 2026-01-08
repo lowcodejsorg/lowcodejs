@@ -1,21 +1,14 @@
 import { FileTextIcon } from 'lucide-react';
-import z from 'zod';
 
 import { SeparatorInfo } from '../-separator-info';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import type { MenuCreatePayload } from '@/lib/payloads';
+import { MenuCreateBodySchema } from '@/lib/schemas';
 
-export const MenuCreateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  type: z.string().min(1, 'Tipo é obrigatório'),
-  table: z.string().optional(),
-  html: z.string().optional(),
-  url: z.string().optional(),
-  parent: z.string().optional(),
-});
-
-export type MenuFormType = z.infer<typeof MenuCreateSchema>;
+export const MenuCreateSchema = MenuCreateBodySchema;
+export type MenuFormType = MenuCreatePayload;
 
 export const menuFormDefaultValues: MenuFormType = {
   name: '',

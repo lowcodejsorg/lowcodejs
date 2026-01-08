@@ -3,21 +3,12 @@ import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
-import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
-
-type Payload = {
-  name: string;
-  type: (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
-  parent?: string | null;
-  table?: string | null;
-  html?: string | null;
-  url?: string | null;
-};
+import type { MenuCreatePayload } from '@/lib/payloads';
 
 type UseMenuCreateProps = Pick<
   Omit<
-    UseMutationOptions<IMenu, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IMenu, AxiosError | Error, MenuCreatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -25,7 +16,7 @@ type UseMenuCreateProps = Pick<
 
 export function useCreateMenu(props: UseMenuCreateProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: MenuCreatePayload) {
       const response = await API.post<IMenu>('/menu', payload);
       return response.data;
     },

@@ -1,14 +1,16 @@
 import { FileTextIcon } from 'lucide-react';
-import z from 'zod';
+import { z } from 'zod';
 
 import {
-  E_COLLABORATION,
+  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_VISIBILITY,
+  E_TABLE_VISIBILITY,
 } from '@/lib/constant';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import type { ITable } from '@/lib/interfaces';
+import type { ITable, Merge } from '@/lib/interfaces';
+import type { TableConfigurationPayload } from '@/lib/payloads';
 
+// Schema estendido com campos de UI (logoFile)
 export const TableUpdateSchema = z.object({
   name: z
     .string()
@@ -17,26 +19,33 @@ export const TableUpdateSchema = z.object({
   description: z.string().default(''),
   style: z.enum([E_TABLE_STYLE.LIST, E_TABLE_STYLE.GALLERY]),
   visibility: z.enum([
-    E_VISIBILITY.PUBLIC,
-    E_VISIBILITY.RESTRICTED,
-    E_VISIBILITY.OPEN,
-    E_VISIBILITY.FORM,
-    E_VISIBILITY.PRIVATE,
+    E_TABLE_VISIBILITY.PUBLIC,
+    E_TABLE_VISIBILITY.RESTRICTED,
+    E_TABLE_VISIBILITY.OPEN,
+    E_TABLE_VISIBILITY.FORM,
+    E_TABLE_VISIBILITY.PRIVATE,
   ]),
-  collaboration: z.enum([E_COLLABORATION.OPEN, E_COLLABORATION.RESTRICTED]),
+  collaboration: z.enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED]),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
 });
 
-export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
+export type TableUpdateFormValues = Merge<
+  {
+    name: string;
+    description: string;
+    logo: string | null;
+  } & Required<Pick<TableConfigurationPayload, 'style' | 'visibility' | 'collaboration' | 'administrators'>>,
+  { logoFile: File[] }
+>;
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
   description: '',
   style: E_TABLE_STYLE.LIST,
-  visibility: E_VISIBILITY.RESTRICTED,
-  collaboration: E_COLLABORATION.RESTRICTED,
+  visibility: E_TABLE_VISIBILITY.RESTRICTED,
+  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   logo: null,
   logoFile: [],
   administrators: [],

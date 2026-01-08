@@ -78,13 +78,6 @@ function RouteComponent(): React.JSX.Element {
             refetch={table.refetch}
           />
         )}
-        {table.status === 'pending' && (
-          <div className="p-2 space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-75 w-full" />
-            <Skeleton className="h-10 w-32 ml-auto" />
-          </div>
-        )}
         {table.status === 'success' && (
           <MethodsFormContent
             data={table.data}

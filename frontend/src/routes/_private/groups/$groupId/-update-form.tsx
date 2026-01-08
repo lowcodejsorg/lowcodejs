@@ -1,5 +1,4 @@
 import { HashIcon, UsersIcon } from 'lucide-react';
-import z from 'zod';
 
 import { Field, FieldLabel } from '@/components/ui/field';
 import {
@@ -9,6 +8,7 @@ import {
 } from '@/components/ui/input-group';
 import { E_ROLE } from '@/lib/constant';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import { UserGroupUpdateBodySchema } from '@/lib/schemas';
 
 const RoleMapper = {
   [E_ROLE.ADMINISTRATOR]: 'Administrador',
@@ -17,13 +17,12 @@ const RoleMapper = {
   [E_ROLE.MASTER]: 'Dono',
 };
 
-export const GroupUpdateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  description: z.string().default(''),
-  permissions: z.array(z.string()).min(1, 'Selecione ao menos uma permissão'),
-});
-
-export type GroupUpdateFormValues = z.infer<typeof GroupUpdateSchema>;
+export const GroupUpdateSchema = UserGroupUpdateBodySchema;
+export type GroupUpdateFormValues = {
+  name: string;
+  description: string;
+  permissions: Array<string>;
+};
 
 export const groupUpdateFormDefaultValues: GroupUpdateFormValues = {
   name: '',
@@ -99,7 +98,7 @@ export const UpdateGroupFormFields = withForm({
           name="permissions"
           validators={{
             onBlur: ({ value }) => {
-              if (value.length === 0) {
+              if (!value || value.length === 0) {
                 return { message: 'Selecione ao menos uma permissão' };
               }
               return undefined;

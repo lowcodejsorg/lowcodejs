@@ -3,7 +3,11 @@ import { AxiosError } from 'axios';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
+import {
+  ProfileUpdateSchema,
+  UpdateProfileFormFields,
+  type ProfileUpdateFormValues,
+} from './-update-form';
 import { UpdateProfileFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -97,7 +101,7 @@ function ProfileUpdateContent({ data }: { data: IUser }): React.JSX.Element {
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
-    },
+    } satisfies ProfileUpdateFormValues,
     onSubmit: async ({ value }) => {
       const validation = ProfileUpdateSchema.safeParse(value);
       if (!validation.success) return;

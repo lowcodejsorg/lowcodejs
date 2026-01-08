@@ -4,14 +4,11 @@ import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IGroup } from '@/lib/interfaces';
-
-type Payload = Pick<IGroup, 'name' | 'description'> & {
-  permissions: Array<string>;
-};
+import type { UserGroupCreatePayload } from '@/lib/payloads';
 
 type UseGroupCreateProps = Pick<
   Omit<
-    UseMutationOptions<IGroup, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IGroup, AxiosError | Error, UserGroupCreatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -19,7 +16,7 @@ type UseGroupCreateProps = Pick<
 
 export function useCreateGroup(props: UseGroupCreateProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: UserGroupCreatePayload) {
       const route = '/user-group';
       const response = await API.post<IGroup>(route, payload);
       return response.data;

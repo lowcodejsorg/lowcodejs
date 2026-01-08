@@ -13,12 +13,12 @@ export function TableRowDropdownField({
   field,
   disabled,
 }: TableRowDropdownFieldProps): React.JSX.Element {
-  const formField = useFieldContext<Array<ComboboxOption>>();
+  const formField = useFieldContext<Array<string>>();
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
 
-  const options: Array<ComboboxOption> =
+  const items: Array<ComboboxOption> =
     field.configuration.dropdown?.map((d) => ({
       value: d,
       label: d,
@@ -33,8 +33,8 @@ export function TableRowDropdownField({
       <Combobox
         disabled={disabled}
         value={formField.state.value}
-        onChange={(opts) => formField.handleChange(opts)}
-        options={options}
+        onChange={(ids) => formField.handleChange(ids)}
+        items={items}
         placeholder={`Selecione ${field.name.toLowerCase()}`}
         multiple={field.configuration.multiple}
       />

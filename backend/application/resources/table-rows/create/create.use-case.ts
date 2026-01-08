@@ -118,6 +118,7 @@ export default class TableRowCreateUseCase {
         _id: row?._id?.toString(),
       });
     } catch (error) {
+      console.log(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

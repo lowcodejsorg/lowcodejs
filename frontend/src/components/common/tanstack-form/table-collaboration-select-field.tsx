@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TABLE_COLLABORATION_OPTIONS } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
 interface TableCollaborationSelectFieldProps {
@@ -43,8 +44,11 @@ export function TableCollaborationSelectField({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="restricted">Restrita</SelectItem>
-          <SelectItem value="open">Aberta</SelectItem>
+          {TABLE_COLLABORATION_OPTIONS.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       {isInvalid && <FieldError errors={field.state.meta.errors} />}

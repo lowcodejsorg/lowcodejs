@@ -10,7 +10,6 @@ import { TreeList } from '@/components/common/-tree-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import type { ComboboxOption } from '@/components/ui/combobox';
 import { Combobox } from '@/components/ui/combobox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import {
@@ -128,9 +127,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
       }
 
       if (field.type === E_FIELD_TYPE.DROPDOWN && Array.isArray(value)) {
-        const values = value
-          .map((v: ComboboxOption) => v.value)
-          .filter(Boolean);
+        const values = (value as Array<string>).filter(Boolean);
         if (values.length > 0) {
           filters[field.slug] = values.join(',');
         }
@@ -383,8 +380,8 @@ function FilterDropdown({
   onChange,
 }: {
   field: IField;
-  value: Array<ComboboxOption>;
-  onChange: (value: Array<ComboboxOption>) => void;
+  value: Array<string>;
+  onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
   const options =
     field.configuration.dropdown?.map((d) => ({
@@ -393,7 +390,7 @@ function FilterDropdown({
     })) ?? [];
 
   // Para single select, extrair o valor da primeira opção
-  const singleValue = value.length > 0 ? value[0].value : '';
+  const singleValue = value.length > 0 ? value[0] : '';
 
   return (
     <Field>
@@ -401,8 +398,8 @@ function FilterDropdown({
       {field.configuration.multiple ? (
         <Combobox
           value={value}
-          onChange={onChange}
-          options={options}
+          onChange={(ids) => onChange(ids)}
+          items={options}
           placeholder={`Filtrar por ${field.name.toLowerCase()}`}
           multiple
           className="w-full"
@@ -410,7 +407,7 @@ function FilterDropdown({
       ) : (
         <Select
           value={singleValue}
-          onValueChange={(v) => onChange(v ? [{ value: v, label: v }] : [])}
+          onValueChange={(v) => onChange(v ? [v] : [])}
         >
           <SelectTrigger className="w-full">
             <SelectValue

@@ -5,7 +5,11 @@ import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
+import {
+  MenuUpdateSchema,
+  UpdateMenuFormFields,
+  type MenuUpdateFormValues,
+} from './-update-form';
 import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -140,12 +144,12 @@ function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
   const form = useAppForm({
     defaultValues: {
       name: data.name,
-      type: data.type as string,
-      table: data.table?._id || '',
-      html: data.html || '',
-      url: data.url || '',
-      parent: data.parent?._id || '',
-    },
+      type: data.type,
+      table: data.table?._id ?? '',
+      html: data.html ?? '',
+      url: data.url ?? '',
+      parent: data.parent?._id ?? '',
+    } satisfies MenuUpdateFormValues,
     onSubmit: async ({ value }) => {
       const validation = MenuUpdateSchema.safeParse(value);
       if (!validation.success) return;
@@ -156,10 +160,10 @@ function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
         _id: data._id,
         name: value.name,
         type: value.type,
-        parent: value.parent !== '' ? value.parent : null,
-        table: value.table !== '' ? value.table : null,
-        html: value.html !== '' ? value.html : null,
-        url: value.url !== '' ? value.url : null,
+        parent: value.parent || null,
+        table: value.table || null,
+        html: value.html || null,
+        url: value.url || null,
       });
     },
   });

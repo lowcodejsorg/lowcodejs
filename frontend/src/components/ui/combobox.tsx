@@ -1,4 +1,5 @@
 import { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox';
+import type { DragEndEvent } from '@dnd-kit/core';
 import {
   DndContext,
   KeyboardSensor,
@@ -7,7 +8,6 @@ import {
   useSensor,
   useSensors,
 } from '@dnd-kit/core';
-import type { DragEndEvent } from '@dnd-kit/core';
 import {
   SortableContext,
   horizontalListSortingStrategy,
@@ -41,13 +41,24 @@ export interface ComboboxGroup {
   options: Array<ComboboxOption>;
 }
 
-export interface ComboboxProps {
-  // Valor e onChange
-  value?: Array<ComboboxOption>;
-  onChange?: (options: Array<ComboboxOption>) => void;
+export interface ComboboxProps<T = ComboboxOption> {
+  /** Lista de itens */
+  items?: Array<T>;
+  /** Valor selecionado (IDs) */
+  value?: Array<string>;
+  /** Callback quando valor muda */
+  onChange?: (value: Array<string>, items: Array<T>) => void;
 
-  // Opções (estáticas ou agrupadas)
-  options?: Array<ComboboxOption>;
+  /** Extrai o ID único do item (default: item.value) */
+  getItemId?: (item: T) => string;
+  /** Extrai o label de exibição do item (default: item.label) */
+  getItemLabel?: (item: T) => string;
+  /** Extrai o valor de busca do item (default: label) */
+  getItemSearchValue?: (item: T) => string;
+  /** Renderiza o conteúdo do item na lista */
+  renderItem?: (item: T) => React.ReactNode;
+
+  /** Grupos de opções (para organizar itens) */
   groups?: Array<ComboboxGroup>;
 
   // Comportamento
@@ -59,7 +70,7 @@ export interface ComboboxProps {
 
   // Creatable
   creatable?: boolean;
-  onCreateOption?: (inputValue: string) => ComboboxOption | void;
+  onCreateOption?: (inputValue: string) => T | void;
 
   // Async
   onSearch?: (query: string) => void | Promise<void>;
@@ -73,6 +84,10 @@ export interface ComboboxProps {
   className?: string;
   emptyMessage?: string;
   loadingMessage?: string;
+  /** Limite de badges exibidos no trigger (modo multiple) */
+  maxBadges?: number;
+  /** Exibe checkboxes nos itens (modo multiple) */
+  showCheckboxes?: boolean;
 }
 
 // ============================================================================
@@ -94,10 +109,14 @@ function useDebounce<T>(value: T, delay: number): T {
 // Main Component
 // ============================================================================
 
-function Combobox({
+function Combobox<T = ComboboxOption>({
+  items = [],
   value = [],
   onChange,
-  options = [],
+  getItemId: getItemIdProp,
+  getItemLabel: getItemLabelProp,
+  getItemSearchValue: _getItemSearchValue,
+  renderItem,
   groups,
   placeholder = 'Selecione...',
   disabled = false,
@@ -113,9 +132,46 @@ function Combobox({
   className,
   emptyMessage = 'Nenhum resultado encontrado.',
   loadingMessage = 'Carregando...',
-}: ComboboxProps): React.JSX.Element {
+  maxBadges,
+  showCheckboxes = false,
+}: ComboboxProps<T>): React.JSX.Element {
   const [inputValue, setInputValue] = React.useState('');
   const debouncedInputValue = useDebounce(inputValue, debounceMs);
+
+  // Defaults para getters (assume ComboboxOption se não fornecido)
+  const getItemId = React.useCallback(
+    (item: T): string => {
+      if (getItemIdProp) return getItemIdProp(item);
+      return (item as unknown as ComboboxOption).value;
+    },
+    [getItemIdProp],
+  );
+
+  const getItemLabel = React.useCallback(
+    (item: T): string => {
+      if (getItemLabelProp) return getItemLabelProp(item);
+      return (item as unknown as ComboboxOption).label;
+    },
+    [getItemLabelProp],
+  );
+
+  // Converter items para formato interno (ComboboxOption com _item)
+  const allItems = React.useMemo(() => {
+    const baseItems = groups
+      ? groups.flatMap((g) => g.options as unknown as Array<T>)
+      : items;
+
+    return baseItems.map((item) => ({
+      value: getItemId(item),
+      label: getItemLabel(item),
+      _item: item,
+    }));
+  }, [items, groups, getItemId, getItemLabel]);
+
+  // Items selecionados (baseado em value = array de IDs)
+  const selectedItems = React.useMemo(() => {
+    return allItems.filter((item) => value.includes(item.value));
+  }, [allItems, value]);
 
   // Chamar onSearch quando o valor debounced mudar
   React.useEffect(() => {
@@ -124,36 +180,43 @@ function Combobox({
     }
   }, [debouncedInputValue, onSearch]);
 
-  // Combinar options e groups em uma lista flat
-  const allOptions = React.useMemo(() => {
-    if (groups) {
-      return groups.flatMap((g) => g.options);
-    }
-    return options;
-  }, [options, groups]);
-
-  // Opções disponíveis (não selecionadas)
+  // Opções disponíveis (não selecionadas, com _item para renderItem)
   const availableOptions = React.useMemo(() => {
-    if (!multiple) return allOptions;
-    return allOptions.filter(
-      (opt) => !value.some((v) => v.value === opt.value),
-    );
-  }, [allOptions, value, multiple]);
+    const opts = allItems.map((item) => ({
+      value: item.value,
+      label: item.label,
+      _item: item._item,
+    }));
+    if (!multiple) return opts;
+    return opts.filter((opt) => !value.includes(opt.value));
+  }, [allItems, value, multiple]);
 
   // Verificar se pode criar nova opção
   const canCreate = React.useMemo(() => {
     if (!creatable || !inputValue.trim()) return false;
     const normalizedInput = inputValue.trim().toLowerCase();
-    const existsInOptions = allOptions.some(
+    const existsInOptions = allItems.some(
       (opt) => opt.label.toLowerCase() === normalizedInput,
     );
-    const existsInValue = value.some(
-      (opt) => opt.label.toLowerCase() === normalizedInput,
+    const existsInSelected = selectedItems.some(
+      (item) => item.label.toLowerCase() === normalizedInput,
     );
-    return !existsInOptions && !existsInValue;
-  }, [creatable, inputValue, allOptions, value]);
+    return !existsInOptions && !existsInSelected;
+  }, [creatable, inputValue, allItems, selectedItems]);
 
-  // Handler para mudança de valor
+  // Helper para chamar onChange com IDs e items originais
+  const emitChange = React.useCallback(
+    (newIds: Array<string>) => {
+      if (!onChange) return;
+      const newItems = allItems
+        .filter((item) => newIds.includes(item.value))
+        .map((item) => item._item);
+      onChange(newIds, newItems);
+    },
+    [onChange, allItems],
+  );
+
+  // Handler para mudança de valor (do primitivo)
   const handleValueChange = React.useCallback(
     (newValue: ComboboxOption | Array<ComboboxOption> | null) => {
       if (!onChange) return;
@@ -164,16 +227,16 @@ function Combobox({
           onMaxSelected?.(maxSelected);
           return;
         }
-        onChange(newArray);
+        emitChange(newArray.map((opt) => opt.value));
       } else {
         if (newValue === null) {
-          onChange([]);
+          emitChange([]);
         } else {
-          onChange([newValue as ComboboxOption]);
+          emitChange([(newValue as ComboboxOption).value]);
         }
       }
     },
-    [onChange, multiple, maxSelected, onMaxSelected],
+    [onChange, multiple, maxSelected, onMaxSelected, emitChange],
   );
 
   // Handler para criar nova opção
@@ -181,23 +244,32 @@ function Combobox({
     if (!canCreate) return;
 
     const trimmedValue = inputValue.trim();
-    let newOption: ComboboxOption;
+    let newItem: T;
 
     if (onCreateOption) {
       const result = onCreateOption(trimmedValue);
-      newOption = result || { value: trimmedValue, label: trimmedValue };
+      newItem =
+        result ||
+        ({ value: trimmedValue, label: trimmedValue } as unknown as T);
     } else {
-      newOption = { value: trimmedValue, label: trimmedValue };
+      newItem = { value: trimmedValue, label: trimmedValue } as unknown as T;
     }
+
+    const newId = getItemId(newItem);
 
     if (multiple) {
       if (value.length >= maxSelected) {
         onMaxSelected?.(maxSelected);
         return;
       }
-      onChange?.([...value, newOption]);
+      const newIds = [...value, newId];
+      const newItems = [
+        ...allItems.filter((i) => value.includes(i.value)).map((i) => i._item),
+        newItem,
+      ];
+      onChange?.(newIds, newItems);
     } else {
-      onChange?.([newOption]);
+      onChange?.([newId], [newItem]);
     }
     setInputValue('');
   }, [
@@ -209,6 +281,8 @@ function Combobox({
     maxSelected,
     onMaxSelected,
     onChange,
+    getItemId,
+    allItems,
   ]);
 
   // Handler para reordenar (dnd-kit)
@@ -217,26 +291,38 @@ function Combobox({
       const { active, over } = event;
       if (!over || active.id === over.id) return;
 
-      const oldIndex = value.findIndex((v) => v.value === active.id);
-      const newIndex = value.findIndex((v) => v.value === over.id);
+      const oldIndex = value.findIndex((id) => id === active.id);
+      const newIndex = value.findIndex((id) => id === over.id);
 
       if (oldIndex === -1 || newIndex === -1) return;
 
-      const newValue = [...value];
-      const [removed] = newValue.splice(oldIndex, 1);
-      newValue.splice(newIndex, 0, removed);
+      const newIds = [...value];
+      const [removed] = newIds.splice(oldIndex, 1);
+      newIds.splice(newIndex, 0, removed);
 
-      onChange?.(newValue);
+      emitChange(newIds);
     },
-    [value, onChange],
+    [value, emitChange],
   );
 
-  // Valor interno para o ComboboxPrimitive
-  const internalValue = multiple ? value : (value[0] ?? null);
+  // Valor selecionado como ComboboxOption para triggers
+  const selectedAsOptions = React.useMemo(() => {
+    return selectedItems.map((item) => ({
+      value: item.value,
+      label: item.label,
+    }));
+  }, [selectedItems]);
+
+  // Valor interno para o ComboboxPrimitive (ComboboxOption ou array)
+  const internalValue = multiple
+    ? selectedAsOptions
+    : (selectedAsOptions[0] ?? null);
 
   // Items para o ComboboxPrimitive (incluindo item creatable)
-  const items = React.useMemo(() => {
-    const result = [...availableOptions];
+  const primitiveItems = React.useMemo((): Array<
+    ComboboxOption & { _item?: T }
+  > => {
+    const result: Array<ComboboxOption & { _item?: T }> = [...availableOptions];
     if (canCreate) {
       result.push({
         value: `__create__${inputValue.trim()}`,
@@ -246,10 +332,19 @@ function Combobox({
     return result;
   }, [availableOptions, canCreate, inputValue]);
 
+  // Handler para remover item (usado pelos triggers)
+  const handleRemove = React.useCallback(
+    (optionToRemove: ComboboxOption) => {
+      const newIds = value.filter((id) => id !== optionToRemove.value);
+      emitChange(newIds);
+    },
+    [value, emitChange],
+  );
+
   return (
     <ComboboxPrimitive.Root
       data-slot="combobox"
-      items={items}
+      items={primitiveItems}
       value={internalValue}
       onValueChange={handleValueChange}
       disabled={disabled}
@@ -259,17 +354,18 @@ function Combobox({
     >
       {multiple ? (
         <MultipleComboboxTrigger
-          value={value}
+          value={selectedAsOptions}
           placeholder={placeholder}
           disabled={disabled}
           className={className}
           allowReorder={allowReorder}
           onDragEnd={handleDragEnd}
-          onChange={onChange}
+          onRemove={handleRemove}
+          maxBadges={maxBadges}
         />
       ) : (
         <SingleComboboxTrigger
-          value={value}
+          value={selectedAsOptions}
           placeholder={placeholder}
           disabled={disabled}
           className={className}
@@ -303,7 +399,7 @@ function Combobox({
             ) : groups ? (
               <ComboboxGroupedList
                 groups={groups}
-                value={value}
+                value={selectedAsOptions}
                 canCreate={canCreate}
                 inputValue={inputValue}
                 onCreateClick={handleCreate}
@@ -316,6 +412,8 @@ function Combobox({
                 inputValue={inputValue}
                 onCreateClick={handleCreate}
                 emptyMessage={emptyMessage}
+                showCheckboxes={showCheckboxes && multiple}
+                renderItem={renderItem}
               />
             )}
           </ComboboxPrimitive.Popup>
@@ -403,7 +501,8 @@ function MultipleComboboxTrigger({
   className,
   allowReorder,
   onDragEnd,
-  onChange,
+  onRemove,
+  maxBadges,
 }: {
   value: Array<ComboboxOption>;
   placeholder: string;
@@ -411,7 +510,8 @@ function MultipleComboboxTrigger({
   className?: string;
   allowReorder: boolean;
   onDragEnd: (event: DragEndEvent) => void;
-  onChange?: (options: Array<ComboboxOption>) => void;
+  onRemove: (option: ComboboxOption) => void;
+  maxBadges?: number;
 }): React.JSX.Element {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -425,14 +525,19 @@ function MultipleComboboxTrigger({
   const handleRemove = React.useCallback(
     (optionToRemove: ComboboxOption) => {
       if (optionToRemove.fixed) return;
-      onChange?.(value.filter((v) => v.value !== optionToRemove.value));
+      onRemove(optionToRemove);
     },
-    [value, onChange],
+    [onRemove],
   );
+
+  // Limitar badges exibidos se maxBadges definido
+  const displayItems = maxBadges ? value.slice(0, maxBadges) : value;
+  const remaining =
+    maxBadges && value.length > maxBadges ? value.length - maxBadges : 0;
 
   const chipContent = (
     <>
-      {value.map((item) =>
+      {displayItems.map((item) =>
         allowReorder && !item.fixed ? (
           <SortableChip
             key={item.value}
@@ -448,6 +553,11 @@ function MultipleComboboxTrigger({
             onRemove={handleRemove}
           />
         ),
+      )}
+      {remaining > 0 && (
+        <div className="bg-muted text-muted-foreground flex items-center rounded px-1.5 py-0.5 text-xs">
+          +{remaining}
+        </div>
       )}
     </>
   );
@@ -620,18 +730,22 @@ function SortableChip({
 // List Components
 // ============================================================================
 
-function ComboboxFlatList({
+function ComboboxFlatList<T>({
   options,
   canCreate,
   inputValue,
   onCreateClick,
   emptyMessage,
+  showCheckboxes = false,
+  renderItem,
 }: {
-  options: Array<ComboboxOption>;
+  options: Array<ComboboxOption & { _item?: T }>;
   canCreate: boolean;
   inputValue: string;
   onCreateClick: () => void;
   emptyMessage: string;
+  showCheckboxes?: boolean;
+  renderItem?: (item: T) => React.ReactNode;
 }): React.JSX.Element {
   return (
     <>
@@ -677,13 +791,27 @@ function ComboboxFlatList({
                 'data-[disabled]:pointer-events-none data-[disabled]:opacity-50',
               )}
             >
-              <ComboboxPrimitive.ItemIndicator
-                data-slot="combobox-item-indicator"
-                className="absolute right-2 flex size-3.5 items-center justify-center"
-              >
-                <CheckIcon className="size-4" />
-              </ComboboxPrimitive.ItemIndicator>
-              <span>{item.label}</span>
+              {showCheckboxes ? (
+                <ComboboxPrimitive.ItemIndicator
+                  data-slot="combobox-item-indicator"
+                  className="flex size-4 items-center justify-center rounded border border-primary data-[selected]:bg-primary data-[selected]:text-primary-foreground"
+                  keepMounted
+                >
+                  <CheckIcon className="size-3" />
+                </ComboboxPrimitive.ItemIndicator>
+              ) : (
+                <ComboboxPrimitive.ItemIndicator
+                  data-slot="combobox-item-indicator"
+                  className="absolute right-2 flex size-3.5 items-center justify-center"
+                >
+                  <CheckIcon className="size-4" />
+                </ComboboxPrimitive.ItemIndicator>
+              )}
+              {renderItem && item._item ? (
+                renderItem(item._item)
+              ) : (
+                <span className="flex-1">{item.label}</span>
+              )}
             </ComboboxPrimitive.Item>
           ))}
       </ComboboxPrimitive.List>

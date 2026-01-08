@@ -1,4 +1,5 @@
-import { Badge } from '@/components/ui/badge';
+import { TableRowBadgeList } from './table-row-badge-list';
+
 import type { IField, IRow } from '@/lib/interfaces';
 
 interface TableRowRelationshipCellProps {
@@ -10,8 +11,8 @@ export function TableRowRelationshipCell({
   field,
   row,
 }: TableRowRelationshipCellProps): React.JSX.Element {
-  const relationshipFieldSlug = field.configuration.relationship?.field?.slug;
-  const rawValues = Array.from(row?.[field.slug] ?? []);
+  const relationshipFieldSlug = field.configuration.relationship?.field.slug;
+  const rawValues = Array.from(row[field.slug] ?? []);
 
   const values = rawValues.map<string>((item) => {
     if (typeof item === 'object' && item !== null && relationshipFieldSlug) {
@@ -20,17 +21,10 @@ export function TableRowRelationshipCell({
     return String(item);
   });
 
-  if (values.length === 0) {
-    return <span className="text-muted-foreground text-sm">-</span>;
-  }
-
   return (
-    <div className="inline-flex flex-wrap gap-1">
-      {values.map((value, index) => (
-        <Badge key={index} variant="outline" className="text-muted-foreground">
-          {value}
-        </Badge>
-      ))}
-    </div>
+    <TableRowBadgeList
+      values={values}
+      renderLabel={(value) => value}
+    />
   );
 }

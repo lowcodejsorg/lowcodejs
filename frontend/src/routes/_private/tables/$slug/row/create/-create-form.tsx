@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import type { ComboboxOption } from '@/components/ui/combobox';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
 
@@ -67,12 +66,11 @@ export function buildPayload(
         payload[field.slug] = value || null;
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        const dropdownValue = (value as Array<ComboboxOption>) || [];
+        const dropdownValue = (value as Array<string>) || [];
         if (field.configuration.multiple) {
-          payload[field.slug] = dropdownValue.map((opt) => opt.value);
+          payload[field.slug] = dropdownValue;
         } else {
-          // Always array, but limit to 1 item
-          payload[field.slug] = dropdownValue.slice(0, 1).map((opt) => opt.value);
+          payload[field.slug] = dropdownValue.slice(0, 1);
         }
         break;
       }
@@ -88,7 +86,9 @@ export function buildPayload(
           payload[field.slug] = fileValue.storages.map((s) => s._id);
         } else {
           // Always array, but limit to 1 item
-          payload[field.slug] = fileValue.storages.slice(0, 1).map((s) => s._id);
+          payload[field.slug] = fileValue.storages
+            .slice(0, 1)
+            .map((s) => s._id);
         }
         break;
       }
@@ -103,7 +103,11 @@ export function buildPayload(
         break;
       }
       case E_FIELD_TYPE.CATEGORY: {
-        const categoryValue = Array.isArray(value) ? value : value ? [value] : [];
+        const categoryValue = Array.isArray(value)
+          ? value
+          : value
+            ? [value]
+            : [];
         if (field.configuration.multiple) {
           payload[field.slug] = categoryValue;
         } else {

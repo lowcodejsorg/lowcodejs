@@ -180,7 +180,7 @@ export const E_SCHEMA_TYPE = {
   STRING: 'String',
   DATE: 'Date',
   BOOLEAN: 'Boolean',
-  OBJECT_ID: 'Boolean',
+  OBJECT_ID: 'ObjectId',
 } as const;
 
 export type ISchema = {
