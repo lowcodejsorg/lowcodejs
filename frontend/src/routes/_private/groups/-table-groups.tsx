@@ -2,7 +2,6 @@ import { useRouter } from '@tanstack/react-router';
 import { ArrowRightIcon } from 'lucide-react';
 import React from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import {
@@ -44,9 +43,7 @@ function TableGroupRow({ group }: { group: IGroup }): React.JSX.Element {
           USER_GROUP_MAPPER[group.slug as keyof typeof USER_GROUP_MAPPER]}
         {!(group.slug in USER_GROUP_MAPPER) && group.name}
       </TableCell>
-      <TableCell>
-        <Badge variant="outline">{group.slug}</Badge>
-      </TableCell>
+
       <TableCell className="truncate max-w-xs">
         {group.description || 'N/A'}
       </TableCell>
