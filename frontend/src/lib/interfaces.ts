@@ -127,7 +127,7 @@ export interface ITable extends Base {
   fields: Array<IField>;
   type: 'table' | 'field-group';
   configuration: {
-    style: 'gallery' | 'list';
+    style: 'gallery' | 'list' | 'document';
     visibility: 'public' | 'restricted' | 'open' | 'form';
     collaboration: 'open' | 'restricted';
     administrators: Array<IUser>;

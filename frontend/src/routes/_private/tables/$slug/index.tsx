@@ -36,6 +36,9 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { MetaDefault } from '@/lib/constant';
 import { useAuthenticationStore } from '@/stores/authentication';
 
+import { TableDocumentView } from './-table-document-view';
+import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
+
 export const Route = createFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
   validateSearch: z
@@ -138,6 +141,11 @@ function RouteComponent(): React.JSX.Element {
           table.data.configuration.style === 'gallery' && (
             <TableGridViewSkeleton />
           )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === 'document' && (
+            <TableDocumentViewSkeleton />
+          )}
 
         {rows.status === 'error' &&
           (() => {
@@ -195,6 +203,15 @@ function RouteComponent(): React.JSX.Element {
           table.data.configuration.style === 'gallery' &&
           rows.status === 'success' && (
             <TableGridView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.configuration.style === 'document' &&
+          rows.status === 'success' && (
+            <TableDocumentView
               headers={table.data.fields}
               order={table.data.configuration.fields.orderList}
               data={rows.data.data}

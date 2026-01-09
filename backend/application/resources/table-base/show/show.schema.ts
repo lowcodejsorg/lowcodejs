@@ -204,7 +204,7 @@ export const TableShowSchema: FastifySchema = {
           properties: {
             style: {
               type: 'string',
-              enum: ['gallery', 'list'],
+              enum: ['gallery', 'list', 'document'],
               description: 'Display style',
             },
             visibility: {

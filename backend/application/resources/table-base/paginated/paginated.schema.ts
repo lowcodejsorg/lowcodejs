@@ -166,7 +166,7 @@ export const TablePaginatedSchema: FastifySchema = {
                 properties: {
                   style: {
                     type: 'string',
-                    enum: ['gallery', 'list'],
+                    enum: ['gallery', 'list', 'document'],
                     description: 'Display style',
                   },
                   visibility: {

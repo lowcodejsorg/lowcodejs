@@ -26,7 +26,7 @@ const Configuration = new mongoose.Schema(
   {
     style: {
       type: String,
-      enum: ['gallery', 'list'],
+      enum: ['gallery', 'list', 'document'],
       default: 'list',
     },
     visibility: {

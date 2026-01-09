@@ -1,7 +1,7 @@
 import z from 'zod';
 
 export const TableConfigurationSchema = z.object({
-  style: z.enum(['gallery', 'list']).default('list'),
+  style: z.enum(['gallery', 'list', 'document']).default('list'),
   visibility: z
     .enum(['public', 'restricted', 'open', 'form', 'private'])
     .default('public'),

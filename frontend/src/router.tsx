@@ -6,6 +6,8 @@ import * as TanstackQuery from './integrations/tanstack-query/root-provider';
 // Import the generated route tree
 import { routeTree } from './routeTree.gen';
 
+import { RootProvider as FumadocsRootProvider } from 'fumadocs-ui/provider/tanstack'
+
 // Create a new router instance
 export const getRouter = () => {
   const rqContext = TanstackQuery.getContext();
@@ -17,7 +19,13 @@ export const getRouter = () => {
     Wrap: (props: { children: React.ReactNode }) => {
       return (
         <TanstackQuery.Provider {...rqContext}>
-          {props.children}
+          <FumadocsRootProvider 
+          theme={{ defaultTheme: 'light', enableSystem: false }}
+          search={{ enabled: false }}
+          
+          >
+            {props.children}
+          </FumadocsRootProvider>
         </TanstackQuery.Provider>
       );
     },

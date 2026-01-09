@@ -131,7 +131,7 @@ export interface Table extends Base {
   fields: string[] | Field[];
   type: 'table' | 'field-group';
   configuration: {
-    style: 'gallery' | 'list';
+    style: 'gallery' | 'list' | 'document';
     visibility: 'public' | 'restricted' | 'open' | 'form' | 'private';
     collaboration: 'open' | 'restricted';
     administrators: string[] | User[];
