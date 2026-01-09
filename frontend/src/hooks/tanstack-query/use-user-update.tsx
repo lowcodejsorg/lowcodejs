@@ -1,19 +1,14 @@
-import { API } from '@/lib/api';
-import { IUser } from '@/lib/interfaces';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
-type Payload = Partial<
-  Pick<IUser, 'name' | 'email' | 'password' | 'status'> & {
-    group: string;
-  }
-> & {
-  _id: string;
-};
+import { API } from '@/lib/api';
+import type { IUser } from '@/lib/interfaces';
+import type { UserUpdatePayload } from '@/lib/payloads';
 
 type UseUserUpdateProps = Pick<
   Omit<
-    UseMutationOptions<IUser, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IUser, AxiosError | Error, UserUpdatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -21,7 +16,7 @@ type UseUserUpdateProps = Pick<
 
 export function useUpdateUser(props: UseUserUpdateProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: UserUpdatePayload) {
       const route = '/users/'.concat(payload._id);
       const response = await API.patch<IUser>(route, payload);
       return response.data;

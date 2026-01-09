@@ -1,22 +1,14 @@
-import { API } from '@/lib/api';
-import { IMenu } from '@/lib/interfaces';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
-type Payload = Partial<{
-  name: string;
-  type: string;
-  parent: string | null;
-  table: string | null;
-  html: string | null;
-  url: string | null;
-}> & {
-  _id: string;
-};
+import { API } from '@/lib/api';
+import type { IMenu } from '@/lib/interfaces';
+import type { MenuUpdatePayload } from '@/lib/payloads';
 
 type UseMenuUpdateProps = Pick<
   Omit<
-    UseMutationOptions<IMenu, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IMenu, AxiosError | Error, MenuUpdatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -24,7 +16,7 @@ type UseMenuUpdateProps = Pick<
 
 export function useUpdateMenu(props: UseMenuUpdateProps) {
   return useMutation({
-    mutationFn: async function ({ _id, ...payload }: Payload) {
+    mutationFn: async function ({ _id, ...payload }: MenuUpdatePayload) {
       const route = '/menu/'.concat(_id);
       const response = await API.patch<IMenu>(route, payload);
       return response.data;

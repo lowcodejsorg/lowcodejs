@@ -8,8 +8,6 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
-import { useTablePermission } from '@/hooks/use-table-permission';
 import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
@@ -35,7 +33,9 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { FIELD_TYPE } from '@/lib/constant';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -107,7 +107,7 @@ export function TableListViewHeader({
             <Button
               className={cn(
                 'h-auto px-1 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent',
-                field.type === FIELD_TYPE.FIELD_GROUP && 'invisible',
+                field.type === E_FIELD_TYPE.FIELD_GROUP && 'invisible',
               )}
               variant="outline"
             >
@@ -172,14 +172,14 @@ function RenderCell({
   }
 
   switch (field.type) {
-    case FIELD_TYPE.TEXT_SHORT:
+    case E_FIELD_TYPE.TEXT_SHORT:
       return (
         <TableRowTextShortCell
           field={field}
           row={row}
         />
       );
-    case FIELD_TYPE.TEXT_LONG:
+    case E_FIELD_TYPE.TEXT_LONG:
       return (
         <TableRowTextLongCell
           field={field}
@@ -187,42 +187,42 @@ function RenderCell({
           className="max-w-sm truncate"
         />
       );
-    case FIELD_TYPE.DATE:
+    case E_FIELD_TYPE.DATE:
       return (
         <TableRowDateCell
           field={field}
           row={row}
         />
       );
-    case FIELD_TYPE.DROPDOWN:
+    case E_FIELD_TYPE.DROPDOWN:
       return (
         <TableRowDropdownCell
           field={field}
           row={row}
         />
       );
-    case FIELD_TYPE.CATEGORY:
+    case E_FIELD_TYPE.CATEGORY:
       return (
         <TableRowCategoryCell
           field={field}
           row={row}
         />
       );
-    case FIELD_TYPE.RELATIONSHIP:
+    case E_FIELD_TYPE.RELATIONSHIP:
       return (
         <TableRowRelationshipCell
           field={field}
           row={row}
         />
       );
-    case FIELD_TYPE.FILE:
+    case E_FIELD_TYPE.FILE:
       return (
         <TableRowFileCell
           field={field}
           row={row}
         />
       );
-    case FIELD_TYPE.FIELD_GROUP:
+    case E_FIELD_TYPE.FIELD_GROUP:
       return (
         <TableRowFieldGroupCell
           field={field}
@@ -230,7 +230,7 @@ function RenderCell({
           tableSlug={tableSlug}
         />
       );
-    case FIELD_TYPE.REACTION:
+    case E_FIELD_TYPE.REACTION:
       return (
         <TableRowReactionCell
           field={field}
@@ -238,7 +238,7 @@ function RenderCell({
           tableSlug={tableSlug}
         />
       );
-    case FIELD_TYPE.EVALUATION:
+    case E_FIELD_TYPE.EVALUATION:
       return (
         <TableRowEvaluationCell
           field={field}

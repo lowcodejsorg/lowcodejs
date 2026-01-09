@@ -1,6 +1,11 @@
 import type { FastifyReply } from 'fastify';
 
-import type { E_ROLE, JWTPayload, User } from '@application/core/entity.core';
+import {
+  E_JWT_TYPE,
+  type E_ROLE,
+  type IJWTPayload,
+  type IUser,
+} from '@application/core/entity.core';
 
 export interface TokenPair {
   accessToken: string;
@@ -8,14 +13,14 @@ export interface TokenPair {
 }
 
 export const createTokens = async (
-  user: Pick<User, '_id' | 'email' | 'group'>,
+  user: Pick<IUser, '_id' | 'email' | 'group'>,
   response: FastifyReply,
 ): Promise<TokenPair> => {
-  const jwt: JWTPayload = {
+  const jwt: IJWTPayload = {
     sub: user._id.toString(),
     email: user.email,
     role: user?.group?.slug?.toUpperCase() as keyof typeof E_ROLE,
-    type: 'access',
+    type: E_JWT_TYPE.ACCESS,
   };
 
   const accessToken = await response.jwtSign(jwt, {
@@ -26,7 +31,7 @@ export const createTokens = async (
   const refreshToken = await response.jwtSign(
     {
       sub: user._id.toString(),
-      type: 'refresh',
+      type: E_JWT_TYPE.REFRESH,
     },
     {
       sub: user._id.toString(),

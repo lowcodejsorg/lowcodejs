@@ -4,7 +4,11 @@ import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { GroupUpdateSchema, UpdateGroupFormFields } from './-update-form';
+import {
+  GroupUpdateSchema,
+  UpdateGroupFormFields,
+  type GroupUpdateFormValues,
+} from './-update-form';
 import { UpdateGroupFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -137,7 +141,7 @@ function GroupUpdateContent({ data }: { data: IGroup }): React.JSX.Element {
       name: data.name,
       description: data.description ?? '',
       permissions: data.permissions.map((p) => p._id),
-    },
+    } satisfies GroupUpdateFormValues,
     onSubmit: async ({ value }) => {
       const validation = GroupUpdateSchema.safeParse(value);
       if (!validation.success) return;

@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/tooltip';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
+import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { MenuRoute } from '@/lib/menu/menu-route';
 import { useAuthenticationStore } from '@/stores/authentication';
 
@@ -155,7 +156,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
                               {item.items.map((subItem) => {
                                 const isExternal =
                                   'type' in subItem &&
-                                  subItem.type === 'external';
+                                  subItem.type === E_MENU_ITEM_TYPE.EXTERNAL;
 
                                 return (
                                   <SidebarMenuSubItem key={subItem.title}>
@@ -205,7 +206,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
                     /\/$/,
                     '',
                   );
-                  const isExternal = 'type' in item && item.type === 'external';
+                  const isExternal = 'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
 
                   return (
                     <SidebarMenuItem key={item.title}>

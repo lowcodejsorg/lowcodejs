@@ -5,7 +5,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
 
 interface TableRowFieldGroupFieldProps {
@@ -173,9 +173,9 @@ function NestedGroupField({
 }): React.JSX.Element | null {
   // Skip non-editable field types
   if (
-    groupField.type === FIELD_TYPE.REACTION ||
-    groupField.type === FIELD_TYPE.EVALUATION ||
-    groupField.type === FIELD_TYPE.FIELD_GROUP
+    groupField.type === E_FIELD_TYPE.REACTION ||
+    groupField.type === E_FIELD_TYPE.EVALUATION ||
+    groupField.type === E_FIELD_TYPE.FIELD_GROUP
   ) {
     return null;
   }
@@ -193,49 +193,49 @@ function NestedGroupField({
     >
       {(formField: any) => {
         switch (groupField.type) {
-          case FIELD_TYPE.TEXT_SHORT:
+          case E_FIELD_TYPE.TEXT_SHORT:
             return (
               <formField.TableRowTextField
                 field={groupField}
                 disabled={disabled}
               />
             );
-          case FIELD_TYPE.TEXT_LONG:
+          case E_FIELD_TYPE.TEXT_LONG:
             return (
               <formField.TableRowTextareaField
                 field={groupField}
                 disabled={disabled}
               />
             );
-          case FIELD_TYPE.DROPDOWN:
+          case E_FIELD_TYPE.DROPDOWN:
             return (
               <formField.TableRowDropdownField
                 field={groupField}
                 disabled={disabled}
               />
             );
-          case FIELD_TYPE.DATE:
+          case E_FIELD_TYPE.DATE:
             return (
               <formField.TableRowDateField
                 field={groupField}
                 disabled={disabled}
               />
             );
-          case FIELD_TYPE.FILE:
+          case E_FIELD_TYPE.FILE:
             return (
               <formField.TableRowFileField
                 field={groupField}
                 disabled={disabled}
               />
             );
-          case FIELD_TYPE.RELATIONSHIP:
+          case E_FIELD_TYPE.RELATIONSHIP:
             return (
               <formField.TableRowRelationshipField
                 field={groupField}
                 disabled={disabled}
               />
             );
-          case FIELD_TYPE.CATEGORY:
+          case E_FIELD_TYPE.CATEGORY:
             return (
               <formField.TableRowCategoryField
                 field={groupField}

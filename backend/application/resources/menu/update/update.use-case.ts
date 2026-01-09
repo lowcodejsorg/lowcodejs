@@ -1,30 +1,31 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import slugify from 'slugify';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
   E_MENU_ITEM_TYPE,
-  type Menu as Entity,
+  type IMenu as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Table } from '@application/model/table.model';
-import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
+import {
+  MenuContractRepository,
+  type MenuUpdatePayload as RepositoryMenuUpdatePayload,
+} from '@application/repositories/menu/menu-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type {
-  MenuUpdateBodyValidator,
-  MenuUpdateParamsValidator,
-} from './update.validator';
+import type { MenuUpdatePayload } from './update.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = z.infer<typeof MenuUpdateBodyValidator> &
-  z.infer<typeof MenuUpdateParamsValidator>;
+type Payload = MenuUpdatePayload;
 
 @Service()
 export default class MenuUpdateUseCase {
-  constructor(private readonly menuRepository: MenuContractRepository) {}
+  constructor(
+    private readonly menuRepository: MenuContractRepository,
+    private readonly tableRepository: TableContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -105,7 +106,10 @@ export default class MenuUpdateUseCase {
           );
         }
 
-        const table = await Table.findById(payload.table);
+        const table = await this.tableRepository.findBy({
+          _id: payload.table,
+          exact: true,
+        });
 
         if (!table)
           return left(
@@ -161,11 +165,10 @@ export default class MenuUpdateUseCase {
       const updated = await this.menuRepository.update({
         ...payload,
         slug: finalSlug,
-      });
+      } as RepositoryMenuUpdatePayload);
 
       return right(updated);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

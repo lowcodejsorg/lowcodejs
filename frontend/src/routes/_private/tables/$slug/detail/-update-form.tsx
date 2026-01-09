@@ -1,31 +1,51 @@
 import { FileTextIcon } from 'lucide-react';
-import z from 'zod';
+import { z } from 'zod';
 
+import {
+  E_TABLE_COLLABORATION,
+  E_TABLE_STYLE,
+  E_TABLE_VISIBILITY,
+} from '@/lib/constant';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import type { ITable } from '@/lib/interfaces';
+import type { ITable, Merge } from '@/lib/interfaces';
+import type { TableConfigurationPayload } from '@/lib/payloads';
 
+// Schema estendido com campos de UI (logoFile)
 export const TableUpdateSchema = z.object({
   name: z
     .string()
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
   description: z.string().default(''),
-  style: z.enum(['list', 'gallery']),
-  visibility: z.enum(['public', 'restricted', 'open', 'form', 'private']),
-  collaboration: z.enum(['open', 'restricted']),
+  style: z.enum([E_TABLE_STYLE.LIST, E_TABLE_STYLE.GALLERY]),
+  visibility: z.enum([
+    E_TABLE_VISIBILITY.PUBLIC,
+    E_TABLE_VISIBILITY.RESTRICTED,
+    E_TABLE_VISIBILITY.OPEN,
+    E_TABLE_VISIBILITY.FORM,
+    E_TABLE_VISIBILITY.PRIVATE,
+  ]),
+  collaboration: z.enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED]),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
 });
 
-export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
+export type TableUpdateFormValues = Merge<
+  {
+    name: string;
+    description: string;
+    logo: string | null;
+  } & Required<Pick<TableConfigurationPayload, 'style' | 'visibility' | 'collaboration' | 'administrators'>>,
+  { logoFile: File[] }
+>;
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
   description: '',
-  style: 'list',
-  visibility: 'restricted',
-  collaboration: 'restricted',
+  style: E_TABLE_STYLE.LIST,
+  visibility: E_TABLE_VISIBILITY.RESTRICTED,
+  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
   logo: null,
   logoFile: [],
   administrators: [],

@@ -1,15 +1,12 @@
 import { API } from '@/lib/api';
 import { ISetting } from '@/lib/interfaces';
+import type { SettingUpdatePayload } from '@/lib/payloads';
 import { useMutation, UseMutationOptions } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 
-type Payload = Partial<Omit<ISetting, 'FILE_UPLOAD_ACCEPTED'>> & {
-  FILE_UPLOAD_ACCEPTED: string;
-};
-
 type UseSettingUpdateProps = Pick<
   Omit<
-    UseMutationOptions<ISetting, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<ISetting, AxiosError | Error, SettingUpdatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -17,7 +14,7 @@ type UseSettingUpdateProps = Pick<
 
 export function useUpdateSetting(props: UseSettingUpdateProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: SettingUpdatePayload) {
       const route = '/setting';
       const response = await API.put<ISetting>(route, payload);
       return response.data;

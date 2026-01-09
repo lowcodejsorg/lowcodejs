@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
 
-import type { Setting as Core } from '@application/core/entity.core';
+import type { ISetting as Core, Merge } from '@application/core/entity.core';
 
-interface Entity extends Omit<Core, '_id'>, mongoose.Document {
-  _id: mongoose.Types.ObjectId;
-}
+type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 const Schema = new mongoose.Schema(
   {
@@ -19,6 +17,8 @@ const Schema = new mongoose.Schema(
     EMAIL_PROVIDER_PORT: { type: Number },
     EMAIL_PROVIDER_USER: { type: String },
     EMAIL_PROVIDER_PASSWORD: { type: String },
+    trashed: { type: Boolean, default: false },
+    trashedAt: { type: Date, default: null },
   },
   { timestamps: true },
 );

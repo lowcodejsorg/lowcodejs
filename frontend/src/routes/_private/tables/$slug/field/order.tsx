@@ -18,6 +18,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { E_TABLE_TYPE } from '@/lib/constant';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/order')({
   component: RouteComponent,
@@ -51,7 +52,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   const title =
-    table.data?.type === 'field-group'
+    table.data?.type === E_TABLE_TYPE.FIELD_GROUP
       ? 'Gerenciar campos do grupo'
       : 'Gerenciar campos';
 
@@ -91,36 +92,6 @@ function RouteComponent(): React.JSX.Element {
             message="Erro ao buscar dados da tabela"
             refetch={table.refetch}
           />
-        )}
-
-        {table.status === 'pending' && (
-          <div className="w-full max-w-6xl mx-auto space-y-4">
-            {/* Tabs skeleton */}
-            <div className="grid w-full grid-cols-3 gap-1 p-1 bg-muted rounded-lg">
-              <Skeleton className="h-9 rounded-md" />
-              <Skeleton className="h-9 rounded-md" />
-              <Skeleton className="h-9 rounded-md" />
-            </div>
-
-            {/* Fields list skeleton */}
-            <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="flex items-center justify-between gap-2 rounded-lg border bg-card p-3"
-                >
-                  <Skeleton className="h-5 w-32" />
-                  <div className="flex items-center gap-1">
-                    <Skeleton className="h-8 w-8 rounded-md" />
-                    <Skeleton className="h-8 w-8 rounded-md" />
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Button skeleton */}
-            <Skeleton className="h-10 w-full rounded-md" />
-          </div>
         )}
 
         {table.status === 'success' && (

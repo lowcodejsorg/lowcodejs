@@ -23,6 +23,7 @@ export default defineConfig({
   test: {
     pool: 'forks',
     root: './',
+    maxWorkers: 1,
     globals: true,
     environment: 'node',
     setupFiles: ['./test/setup.e2e.ts'],

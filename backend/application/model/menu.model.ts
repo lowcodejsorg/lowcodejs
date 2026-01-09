@@ -2,12 +2,11 @@ import mongoose from 'mongoose';
 
 import {
   E_MENU_ITEM_TYPE,
-  type Menu as Core,
+  Merge,
+  type IMenu as Core,
 } from '@application/core/entity.core';
 
-interface Entity extends Omit<Core, '_id'>, mongoose.Document {
-  _id: mongoose.Types.ObjectId;
-}
+type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 export const Schema = new mongoose.Schema(
   {
@@ -18,6 +17,7 @@ export const Schema = new mongoose.Schema(
     type: {
       type: String,
       enum: Object.values(E_MENU_ITEM_TYPE),
+      default: E_MENU_ITEM_TYPE.SEPARATOR,
       required: true,
     },
 

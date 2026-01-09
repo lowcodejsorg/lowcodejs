@@ -7,13 +7,14 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { API } from '@/lib/api';
-import type { IField, IRow, Paginated } from '@/lib/interfaces';
+import { E_REACTION_TYPE } from '@/lib/constant';
+import type { IField, IRow, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 
 interface Reaction {
-  type: 'like' | 'unlike';
-  user: { _id: string };
+  type: ValueOf<typeof E_REACTION_TYPE>;
+  user?: { _id: string };
 }
 
 interface TableRowReactionCellProps {
@@ -31,16 +32,21 @@ export function TableRowReactionCell({
 
   const data = Array.from<Reaction>(row[field.slug] ?? []);
 
-  const totalLike = data.filter((d) => d.type === 'like').length;
-  const totalUnlike = data.filter((d) => d.type === 'unlike').length;
+  const totalLike = data.filter((d) => d.type === E_REACTION_TYPE.LIKE).length;
+  const totalUnlike = data.filter(
+    (d) => d.type === E_REACTION_TYPE.UNLIKE,
+  ).length;
 
   const userLike = data.some(
-    (d) => d.type === 'like' && d.user._id.toString() === user?._id.toString(),
+    (d) =>
+      d.type === E_REACTION_TYPE.LIKE &&
+      d.user?._id.toString() === user?._id.toString(),
   );
 
   const userUnlike = data.some(
     (d) =>
-      d.type === 'unlike' && d.user._id.toString() === user?._id.toString(),
+      d.type === E_REACTION_TYPE.UNLIKE &&
+      d.user?._id.toString() === user?._id.toString(),
   );
 
   const search = useSearch({
@@ -100,7 +106,7 @@ export function TableRowReactionCell({
           reaction.mutateAsync({
             user: user._id.toString(),
             field: field.slug,
-            type: 'like',
+            type: E_REACTION_TYPE.LIKE,
           });
         }}
       >
@@ -120,7 +126,7 @@ export function TableRowReactionCell({
           reaction.mutateAsync({
             user: user._id.toString(),
             field: field.slug,
-            type: 'unlike',
+            type: E_REACTION_TYPE.UNLIKE,
           });
         }}
       >

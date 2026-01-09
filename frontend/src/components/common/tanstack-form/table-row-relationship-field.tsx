@@ -1,31 +1,23 @@
-import {
-  CheckIcon,
-  ChevronsUpDownIcon,
-  LoaderIcon,
-} from 'lucide-react';
-import React from 'react';
+import * as React from 'react';
 
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { Spinner } from '@/components/ui/spinner';
 import { useRelationshipRowsReadPaginated } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated';
-import type { IField } from '@/lib/interfaces';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import type { IField, IRow } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface TableRowRelationshipFieldProps {
@@ -46,21 +38,20 @@ export function TableRowRelationshipField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
+  const anchorRef = useComboboxAnchor();
 
-  const [open, setOpen] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
 
   const relConfig = field.configuration.relationship;
   const isMultiple = field.configuration.multiple;
-  const selectedValues = formField.state.value ?? [];
 
   // Debounce search query
   React.useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(searchQuery);
     }, 300);
-    return () => clearTimeout(timer);
+    return (): void => clearTimeout(timer);
   }, [searchQuery]);
 
   const { data, isLoading } = useRelationshipRowsReadPaginated({
@@ -69,7 +60,7 @@ export function TableRowRelationshipField({
     search: debouncedQuery,
     page: 1,
     perPage: 50,
-    enabled: Boolean(relConfig) && open,
+    enabled: Boolean(relConfig),
   });
 
   if (!relConfig) {
@@ -83,54 +74,121 @@ export function TableRowRelationshipField({
     );
   }
 
-  const allItems =
-    data?.data.map((row) => ({
-      value: row._id,
-      label: String(row[relConfig.field.slug] ?? row._id),
-    })) ?? [];
+  const allItems: Array<IRow> = data?.data ?? [];
 
-  const handleSelect = (item: SearchableOption): void => {
+  // Map selected options to IRow objects for the combobox
+  const selectedItems = React.useMemo(() => {
+    return formField.state.value
+      .map((opt) => allItems.find((row) => row._id === opt.value))
+      .filter((row): row is IRow => row !== undefined);
+  }, [formField.state.value, allItems]);
+
+  const handleValueChange = (newValue: IRow | Array<IRow> | null): void => {
     if (isMultiple) {
-      const isSelected = selectedValues.some((v) => v.value === item.value);
-      if (isSelected) {
-        formField.handleChange(
-          selectedValues.filter((v) => v.value !== item.value),
-        );
-      } else {
-        formField.handleChange([...selectedValues, item]);
-      }
+      const items = newValue as Array<IRow>;
+      const newValues = items.map((row) => ({
+        value: row._id,
+        label: String(row[relConfig.field.slug] ?? row._id),
+      }));
+      formField.handleChange(newValues);
     } else {
-      formField.handleChange([item]);
-      setOpen(false);
+      const row = newValue as IRow | null;
+      if (row) {
+        formField.handleChange([
+          {
+            value: row._id,
+            label: String(row[relConfig.field.slug] ?? row._id),
+          },
+        ]);
+      } else {
+        formField.handleChange([]);
+      }
     }
   };
 
-  const displayValue = (): React.ReactNode => {
-    if (selectedValues.length === 0) {
-      return (
-        <span className="text-muted-foreground">
-          Selecione {field.name.toLowerCase()}
-        </span>
-      );
-    }
-    if (isMultiple) {
-      return (
-        <div className="flex flex-wrap gap-1">
-          {selectedValues.slice(0, 2).map((v) => (
-            <Badge key={v.value} variant="secondary" className="text-xs">
-              {v.label}
-            </Badge>
-          ))}
-          {selectedValues.length > 2 && (
-            <Badge variant="outline" className="text-xs">
-              +{selectedValues.length - 2}
-            </Badge>
+  if (isMultiple) {
+    return (
+      <Field data-invalid={isInvalid}>
+        <FieldLabel htmlFor={formField.name}>
+          {field.name}
+          {isRequired && <span className="text-destructive"> *</span>}
+        </FieldLabel>
+        <div className="relative">
+          <Combobox
+            items={allItems}
+            multiple
+            value={selectedItems}
+            onValueChange={handleValueChange}
+            inputValue={searchQuery}
+            onInputValueChange={setSearchQuery}
+            itemToStringLabel={(row: IRow) =>
+              String(row[relConfig.field.slug] ?? row._id)
+            }
+            disabled={disabled}
+          >
+            <ComboboxChips
+              ref={anchorRef}
+              className={cn(isInvalid && 'border-destructive')}
+            >
+              <ComboboxValue>
+                {(values: Array<IRow>): React.ReactNode => (
+                  <React.Fragment>
+                    {values.slice(0, 2).map((row) => (
+                      <ComboboxChip
+                        key={row._id}
+                        aria-label={String(
+                          row[relConfig.field.slug] ?? row._id,
+                        )}
+                      >
+                        {String(row[relConfig.field.slug] ?? row._id)}
+                      </ComboboxChip>
+                    ))}
+                    {values.length > 2 && (
+                      <span className="text-muted-foreground text-xs">
+                        +{values.length - 2}
+                      </span>
+                    )}
+                    <ComboboxChipsInput
+                      placeholder={
+                        values.length > 0
+                          ? ''
+                          : `Selecione ${field.name.toLowerCase()}`
+                      }
+                    />
+                  </React.Fragment>
+                )}
+              </ComboboxValue>
+            </ComboboxChips>
+            <ComboboxContent anchor={anchorRef}>
+              <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+              <ComboboxList>
+                {isLoading ? (
+                  <div className="flex items-center justify-center p-3">
+                    <Spinner className="opacity-50" />
+                  </div>
+                ) : (
+                  (row: IRow): React.ReactNode => (
+                    <ComboboxItem
+                      key={row._id}
+                      value={row}
+                    >
+                      {String(row[relConfig.field.slug] ?? row._id)}
+                    </ComboboxItem>
+                  )
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+          {isLoading && (
+            <div className="absolute right-10 top-1/2 -translate-y-1/2">
+              <Spinner className="opacity-50" />
+            </div>
           )}
         </div>
-      );
-    }
-    return selectedValues[0]?.label;
-  };
+        {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      </Field>
+    );
+  }
 
   return (
     <Field data-invalid={isInvalid}>
@@ -138,65 +196,52 @@ export function TableRowRelationshipField({
         {field.name}
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            role="combobox"
-            aria-expanded={open}
-            disabled={disabled}
-            className="w-full justify-between h-auto min-h-9 py-2"
-          >
-            {displayValue()}
-            <ChevronsUpDownIcon className="ml-2 size-4 shrink-0 opacity-50" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-full min-w-60 p-0" align="start">
-          <Command shouldFilter={false}>
-            <CommandInput
-              placeholder={`Buscar ${field.name.toLowerCase()}...`}
-              value={searchQuery}
-              onValueChange={setSearchQuery}
-            />
-            <CommandList>
-              <CommandEmpty>
-                {isLoading ? 'Carregando...' : 'Nenhum resultado encontrado'}
-              </CommandEmpty>
-              <CommandGroup>
-                {allItems.map((item) => {
-                  const isSelected = selectedValues.some(
-                    (v) => v.value === item.value,
-                  );
-                  return (
-                    <CommandItem
-                      key={item.value}
-                      value={item.value}
-                      onSelect={() => handleSelect(item)}
-                    >
-                      {isMultiple ? (
-                        <Checkbox checked={isSelected} className="mr-2" />
-                      ) : (
-                        <CheckIcon
-                          className={cn(
-                            'mr-2 size-4',
-                            isSelected ? 'opacity-100' : 'opacity-0',
-                          )}
-                        />
-                      )}
-                      {item.label}
-                    </CommandItem>
-                  );
-                })}
-              </CommandGroup>
-              {isLoading && (
-                <div className="flex justify-center p-2">
-                  <LoaderIcon className="size-4 animate-spin opacity-50" />
+      <div className="relative">
+        <Combobox
+          items={allItems}
+          value={selectedItems[0] ?? null}
+          onValueChange={handleValueChange}
+          inputValue={searchQuery}
+          onInputValueChange={setSearchQuery}
+          itemToStringLabel={(row: IRow) =>
+            String(row[relConfig.field.slug] ?? row._id)
+          }
+          disabled={disabled}
+        >
+          <ComboboxInput
+            placeholder={
+              formField.state.value[0]?.label ||
+              `Selecione ${field.name.toLowerCase()}`
+            }
+            showClear={formField.state.value.length > 0}
+            className={cn(isInvalid && 'border-destructive')}
+          />
+          <ComboboxContent>
+            <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+            <ComboboxList>
+              {isLoading ? (
+                <div className="flex items-center justify-center p-3">
+                  <Spinner className="opacity-50" />
                 </div>
+              ) : (
+                (row: IRow): React.ReactNode => (
+                  <ComboboxItem
+                    key={row._id}
+                    value={row}
+                  >
+                    {String(row[relConfig.field.slug] ?? row._id)}
+                  </ComboboxItem>
+                )
               )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+        {isLoading && (
+          <div className="absolute right-10 top-1/2 -translate-y-1/2">
+            <Spinner className="opacity-50" />
+          </div>
+        )}
+      </div>
       {isInvalid && <FieldError errors={formField.state.meta.errors} />}
     </Field>
   );

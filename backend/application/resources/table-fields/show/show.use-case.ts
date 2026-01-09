@@ -1,26 +1,30 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
+import type { IField as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Field } from '@application/model/field.model';
-import { Table } from '@application/model/table.model';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TableFieldShowParamValidator } from './show.validator';
+import type { TableFieldShowPayload } from './show.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').Field
->;
-type Payload = z.infer<typeof TableFieldShowParamValidator>;
+type Response = Either<HTTPException, Entity>;
+type Payload = TableFieldShowPayload;
 
 @Service()
 export default class TableFieldShowUseCase {
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly fieldRepository: FieldContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
+        exact: true,
       });
 
       if (!table)
@@ -28,21 +32,18 @@ export default class TableFieldShowUseCase {
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const field = await Field.findOne({ _id: payload._id });
+      const field = await this.fieldRepository.findBy({
+        _id: payload._id,
+        exact: true,
+      });
 
       if (!field)
         return left(
           HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
         );
 
-      return right({
-        ...field.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: field._id.toString(),
-      });
+      return right(field);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

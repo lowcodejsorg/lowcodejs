@@ -8,7 +8,7 @@ import { TableFieldCreateSchema } from './create.schema';
 import TableFieldCreateUseCase from './create.use-case';
 import {
   TableFieldCreateBodyValidator,
-  TableFieldCreateParamValidator,
+  TableFieldCreateParamsValidator,
 } from './create.validator';
 
 @Controller({
@@ -38,7 +38,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableFieldCreateBodyValidator.parse(request.body);
-    const params = TableFieldCreateParamValidator.parse(request.params);
+    const params = TableFieldCreateParamsValidator.parse(request.params);
     const result = await this.useCase.execute({ ...payload, ...params });
 
     if (result.isLeft()) {

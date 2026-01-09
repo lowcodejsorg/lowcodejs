@@ -1,75 +1,51 @@
+/* eslint-disable no-unused-vars */
 import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { User as Entity } from '@application/core/entity.core';
+import type { IUser as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { User as Model } from '@application/model/user.model';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { isPasswordMatch } from '@config/util.config';
 
-import type {
-  ProfileUpdateBodyValidator,
-  ProfileUpdateParamValidator,
-} from './update.validator';
+import type { ProfileUpdatePayload } from './update.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = z.infer<typeof ProfileUpdateBodyValidator> &
-  z.infer<typeof ProfileUpdateParamValidator>;
+type Payload = ProfileUpdatePayload;
 
 @Service()
 export default class ProfileUpdateUseCase {
+  constructor(private readonly userRepository: UserContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      console.log(JSON.stringify(payload, null, 2));
       if (!payload?.group)
         return left(
           HTTPException.BadRequest('Group not informed', 'GROUP_NOT_INFORMED'),
         );
 
-      const user = await Model.findOne({ _id: payload._id }).populate([
-        {
-          path: 'group',
-          populate: {
-            path: 'permissions',
-          },
-        },
-      ]);
+      const user = await this.userRepository.findBy({
+        _id: payload._id,
+        exact: true,
+      });
 
       if (!user)
         return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
 
       if (!payload.allowPasswordChange) {
-        await user
-          .set({
-            ...user?.toJSON({
-              flattenObjectIds: true,
-            }),
-            ...payload,
-            group: payload.group,
-          })
-          .save();
-
-        return right({
-          ...user?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: user?._id.toString(),
+        const updated = await this.userRepository.update({
+          _id: user._id,
+          name: payload.name,
+          email: payload.email,
+          group: payload.group,
         });
+
+        return right(updated);
       }
 
-      console.log({
-        hashed: user.toJSON({
-          flattenObjectIds: true,
-        }).password,
-        plain: payload.newPassword as string,
-      });
-
       const isMatch = await isPasswordMatch({
-        hashed: user.toJSON({
-          flattenObjectIds: true,
-        }).password,
+        hashed: user.password,
         plain: payload.currentPassword as string,
       });
 
@@ -83,25 +59,16 @@ export default class ProfileUpdateUseCase {
 
       const password = await hash(payload.newPassword as string, 6);
 
-      await user
-        .set({
-          ...user?.toJSON({
-            flattenObjectIds: true,
-          }),
-          ...payload,
-          group: payload.group,
-          password,
-        })
-        .save();
-
-      return right({
-        ...user?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: user?._id.toString(),
+      const updated = await this.userRepository.update({
+        _id: user._id,
+        name: payload.name,
+        email: payload.email,
+        group: payload.group,
+        password,
       });
+
+      return right(updated);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

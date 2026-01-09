@@ -1,9 +1,8 @@
-import type { JWTPayload } from '@application/core/entity.core';
-
+import { IJWTPayload } from '@application/core/entity.core';
 import '@fastify/jwt';
 
 declare module '@fastify/jwt' {
   export interface FastifyJWT {
-    user: JWTPayload;
+    user: IJWTPayload;
   }
 }

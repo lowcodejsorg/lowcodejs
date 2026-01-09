@@ -1,22 +1,25 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
-import { Table } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TableDeleteParamValidator } from './delete.validator';
+import type { TableDeletePayload } from './delete.validator';
 
 type Response = Either<HTTPException, null>;
-type Payload = z.infer<typeof TableDeleteParamValidator>;
+type Payload = TableDeletePayload;
 
 @Service()
 export default class TableDeleteUseCase {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
+        exact: true,
       });
 
       if (!table)
@@ -24,10 +27,10 @@ export default class TableDeleteUseCase {
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      await table.deleteOne();
+      await this.tableRepository.delete(table._id);
+
       return right(null);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

@@ -1,46 +1,50 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import slugify from 'slugify';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_TYPE,
+  E_TABLE_COLLABORATION,
+  E_TABLE_STYLE,
+  E_TABLE_TYPE,
+  E_TABLE_VISIBILITY,
+  type IField as Entity,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
-import { Field } from '@application/model/field.model';
-import { Table } from '@application/model/table.model';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type {
-  TableFieldUpdateBodyValidator,
-  TableFieldUpdateParamValidator,
-} from './update.validator';
+import type { TableFieldUpdatePayload } from './update.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').Field
->;
-type Payload = z.infer<typeof TableFieldUpdateBodyValidator> &
-  z.infer<typeof TableFieldUpdateParamValidator>;
+type Response = Either<HTTPException, Entity>;
+type Payload = TableFieldUpdatePayload;
 
 @Service()
 export default class TableFieldUpdateUseCase {
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly fieldRepository: FieldContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!table)
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const field = await Field.findOne({ _id: payload._id });
+      const field = await this.fieldRepository.findBy({
+        _id: payload._id,
+        exact: true,
+      });
 
       if (!field)
         return left(
@@ -48,9 +52,7 @@ export default class TableFieldUpdateUseCase {
         );
 
       if (
-        table?.fields?.filter(
-          (f) => !(f as import('@application/core/entity.core').Field).trashed,
-        ).length === 1 &&
+        table.fields?.filter((f) => !f.trashed).length === 1 &&
         payload.trashed
       ) {
         return left(
@@ -62,37 +64,29 @@ export default class TableFieldUpdateUseCase {
       }
 
       const oldSlug = field.slug;
-
       const slug = slugify(payload.name, { lower: true, trim: true });
 
-      await field
-        .set({
-          ...field.toJSON({
-            flattenObjectIds: true,
-          }),
-          ...payload,
-          slug,
-          ...(payload.trashed && { trashed: payload.trashed }),
-          ...(payload.trashedAt && {
-            trashedAt: payload.trashedAt,
-          }),
-        })
-        .save();
+      let updatedField = await this.fieldRepository.update({
+        ...payload,
+        _id: field._id,
+        slug,
+        ...(payload.trashed && { trashed: payload.trashed }),
+        ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
+      });
 
-      if (field.type === E_FIELD_TYPE.FIELD_GROUP) {
+      if (updatedField.type === E_FIELD_TYPE.FIELD_GROUP) {
         let group;
 
-        // Se já tem grupo, busca existente
-        if (field.configuration?.group?._id) {
-          group = await Table.findOne({
-            _id: field.configuration.group._id,
+        if (updatedField.configuration?.group?._id) {
+          group = await this.tableRepository.findBy({
+            _id: updatedField.configuration.group._id,
+            exact: true,
           });
         }
 
-        // Se não tem grupo, cria novo
         if (!group) {
           const _schema = buildSchema([]);
-          group = await Table.create({
+          group = await this.tableRepository.create({
             _schema,
             fields: [],
             slug,
@@ -102,79 +96,52 @@ export default class TableFieldUpdateUseCase {
                 orderForm: [],
                 orderList: [],
               },
-              collaboration: 'restricted',
-              style: 'list',
-              visibility: 'restricted',
-              owner: table?.configuration?.owner?.toString(),
+              collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+              style: E_TABLE_STYLE.LIST,
+              visibility: E_TABLE_VISIBILITY.RESTRICTED,
+              owner: table.configuration.owner._id,
             },
             description: null,
-            name: field.name,
-            type: 'field-group',
+            name: updatedField.name,
+            type: E_TABLE_TYPE.FIELD_GROUP,
           });
 
-          // Atualiza field com referência ao grupo
-          await field
-            .set({
-              ...field.toJSON({
-                flattenObjectIds: true,
-              }),
-              configuration: {
-                ...field.toJSON({
-                  flattenObjectIds: true,
-                }).configuration,
-                group: {
-                  _id: group._id,
-                  slug: group.slug,
-                },
+          updatedField = await this.fieldRepository.update({
+            _id: updatedField._id,
+            configuration: {
+              ...updatedField.configuration,
+              group: {
+                _id: group._id,
+                slug: group.slug,
               },
-            })
-            .save();
+            },
+          });
         }
 
-        // Sempre registra o modelo do grupo
-        await buildTable({
-          ...group.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: group._id.toString(),
-        });
+        await buildTable(group);
       }
 
-      const fields = (
-        table.fields as import('@application/core/entity.core').Field[]
-      ).map((f) => {
-        if (f._id?.toString() === field._id?.toString()) {
-          return {
-            ...field?.toJSON({
-              flattenObjectIds: true,
-            }),
-            _id: field?._id?.toString(),
-          };
-        }
-
-        return f;
-      });
+      const fields = table.fields.map((f) =>
+        f._id === field._id ? updatedField : f,
+      );
 
       const _schema = buildSchema(fields);
 
-      await table
-        .set({
-          ...table.toJSON({
-            flattenObjectIds: true,
-          }),
-          _schema,
-          fields: fields.flatMap((f) => f._id?.toString()),
-        })
-        .save();
+      await this.tableRepository.update({
+        _id: table._id,
+        _schema,
+        fields: fields.flatMap((f) => f._id),
+        configuration: {
+          owner: table.configuration.owner._id,
+        },
+      });
 
       if (oldSlug !== slug) {
-        const c = await buildTable({
-          ...table.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: table._id.toString(),
+        const collection = await buildTable({
+          ...table,
+          _id: table._id,
         });
-        await c.updateMany(
+        await collection.updateMany(
           {},
           {
             $rename: {
@@ -184,14 +151,8 @@ export default class TableFieldUpdateUseCase {
         );
       }
 
-      return right({
-        ...field.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: field._id.toString(),
-      });
+      return right(updatedField);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

@@ -48,16 +48,8 @@ export default [
     },
     settings: {
       'import/resolver': {
-        alias: {
-          map: [
-            ['@application', './application'],
-            ['@bin', './bin'],
-            ['@config', './config'],
-            ['@database', './database'],
-            ['@start', './start'],
-            // ['@types', './_types'],
-          ],
-          extensions: ['.ts', '.js', '.json'],
+        typescript: {
+          alwaysTryTypes: true,
         },
       },
     },

@@ -1,17 +1,16 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { Menu as Entity } from '@application/core/entity.core';
+import type { IMenu as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
-import type { MenuShowParamValidator } from './show.validator';
+import type { MenuShowPayload } from './show.validator';
 
 type Response = Either<HTTPException, Entity & { children: Entity[] }>;
-type Payload = z.infer<typeof MenuShowParamValidator>;
+type Payload = MenuShowPayload;
 
 @Service()
 export default class MenuShowUseCase {
@@ -37,7 +36,6 @@ export default class MenuShowUseCase {
         children,
       });
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

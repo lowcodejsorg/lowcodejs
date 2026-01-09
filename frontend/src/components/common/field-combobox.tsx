@@ -1,22 +1,16 @@
-import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
+import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
-import { cn } from '@/lib/utils';
+import type { IField } from '@/lib/interfaces';
 
 interface FieldComboboxProps {
   value?: string;
@@ -35,75 +29,53 @@ export function FieldCombobox({
   disabled = false,
   tableSlug,
 }: FieldComboboxProps): React.JSX.Element {
-  const [open, setOpen] = React.useState(false);
-
   const { data, status } = useReadTable({ slug: tableSlug });
   const fields = data?.fields ?? [];
 
-  const selectedField = fields.find((field) => field._id === value);
+  // Find selected field
+  const selectedField = React.useMemo(() => {
+    return fields.find((f) => f._id === value) ?? null;
+  }, [fields, value]);
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
+    <Combobox
+      items={fields}
+      value={selectedField}
+      onValueChange={(field: IField | null) => {
+        onValueChange?.(field?._id ?? '', field?.slug);
+      }}
+      itemToStringLabel={(field: IField) => field.name}
+      disabled={disabled}
     >
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn('w-full justify-between', className)}
-          disabled={disabled || status === 'pending'}
-        >
-          {selectedField && `${selectedField.name}`}
-          {!selectedField && placeholder}
-          <ChevronsUpDown className="opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput
-            placeholder="Buscar campo..."
-            className="h-9"
-          />
-          <CommandList>
-            <CommandEmpty>Nenhum campo encontrado.</CommandEmpty>
-            <CommandGroup>
-              {fields.map((field) => (
-                <CommandItem
-                  key={field._id}
-                  value={`${field.name}`}
-                  onSelect={() => {
-                    if (!(field._id === value)) {
-                      onValueChange?.(field._id, field.slug);
-                    }
-
-                    if (field._id === value) {
-                      onValueChange?.('', undefined);
-                    }
-
-                    setOpen(false);
-                  }}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{field.name}</span>
-                    <span className="text-xs text-muted-foreground">
-                      {field.slug}
-                    </span>
-                  </div>
-                  <Check
-                    className={cn(
-                      'ml-auto',
-                      value === field._id && 'opacity-100',
-                      !(value === field._id) && 'opacity-0',
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      <ComboboxInput
+        placeholder={selectedField?.name || placeholder}
+        showClear={!!selectedField}
+        className={className}
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>Nenhum campo encontrado.</ComboboxEmpty>
+        <ComboboxList>
+          {status === 'pending' ? (
+            <div className="flex items-center justify-center p-3">
+              <Spinner className="opacity-50" />
+            </div>
+          ) : (
+            (field: IField): React.ReactNode => (
+              <ComboboxItem
+                key={field._id}
+                value={field}
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium">{field.name}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {field.slug}
+                  </span>
+                </div>
+              </ComboboxItem>
+            )
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

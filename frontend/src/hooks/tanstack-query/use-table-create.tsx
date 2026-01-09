@@ -1,16 +1,14 @@
-import { API } from '@/lib/api';
-import { ITable } from '@/lib/interfaces';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type { UseMutationOptions } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
-type Payload = Pick<ITable, 'name'> & {
-  description?: string | null;
-  logo?: string | null;
-};
+import { API } from '@/lib/api';
+import type { ITable } from '@/lib/interfaces';
+import type { TableCreatePayload } from '@/lib/payloads';
 
 type UseTableCreateProps = Pick<
   Omit<
-    UseMutationOptions<ITable, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<ITable, AxiosError | Error, TableCreatePayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -18,7 +16,7 @@ type UseTableCreateProps = Pick<
 
 export function useCreateTable(props: UseTableCreateProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: TableCreatePayload) {
       const route = '/tables';
       const response = await API.post<ITable>(route, payload);
       return response.data;

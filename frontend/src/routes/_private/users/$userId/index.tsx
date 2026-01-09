@@ -4,7 +4,11 @@ import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { UpdateUserFormFields, UserUpdateSchema } from './-update-form';
+import {
+  UpdateUserFormFields,
+  UserUpdateSchema,
+  type UserUpdateFormValues,
+} from './-update-form';
 import { UpdateUserFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -139,7 +143,7 @@ function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
       password: '',
       status: data.status,
       group: data.group._id,
-    },
+    } satisfies UserUpdateFormValues,
     onSubmit: async ({ value }) => {
       const validation = UserUpdateSchema.safeParse(value);
       if (!validation.success) return;

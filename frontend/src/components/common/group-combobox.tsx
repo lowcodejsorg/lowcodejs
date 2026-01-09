@@ -1,22 +1,17 @@
-import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
-import { Button } from '@/components/ui/button';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
+import { Spinner } from '@/components/ui/spinner';
 import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
-import { cn } from '@/lib/utils';
+import { USER_GROUP_MAPPER } from '@/lib/constant';
+import type { IGroup } from '@/lib/interfaces';
 
 interface GroupComboboxProps {
   value?: string;
@@ -29,75 +24,57 @@ interface GroupComboboxProps {
 export function GroupCombobox({
   value = '',
   onValueChange,
-  placeholder = 'Selecione uma grupo...',
+  placeholder = 'Selecione um grupo...',
   className,
   disabled = false,
 }: GroupComboboxProps): React.JSX.Element {
-  const [open, setOpen] = React.useState(false);
-
   const { data: groups, status } = useGroupReadList();
 
-  const selectedGroup = groups?.find((group) => group._id === value);
+  const items = groups ?? [];
+
+  // Find selected group
+  const selectedGroup = React.useMemo(() => {
+    return items.find((g) => g._id === value) ?? null;
+  }, [items, value]);
 
   return (
-    <Popover
-      open={open}
-      onOpenChange={setOpen}
+    <Combobox
+      items={items}
+      value={selectedGroup}
+      onValueChange={(group: IGroup | null) => {
+        onValueChange?.(group?._id ?? '');
+      }}
+      itemToStringLabel={(group: IGroup) => group.name}
+      disabled={disabled}
     >
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn('w-full justify-between', className)}
-          disabled={disabled || status === 'pending'}
-        >
-          {selectedGroup && `${selectedGroup.name}`}
-          {!selectedGroup && placeholder}
-          <ChevronsUpDown className="opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0">
-        <Command>
-          <CommandInput
-            placeholder="Buscar grupo..."
-            className="h-9"
-          />
-          <CommandList>
-            <CommandEmpty>Nenhum grupo encontrada.</CommandEmpty>
-            <CommandGroup>
-              {groups?.map((group) => (
-                <CommandItem
-                  key={group._id}
-                  value={`${group.name}`}
-                  onSelect={() => {
-                    if (!(group._id === value)) {
-                      onValueChange?.(group._id);
-                    }
-
-                    if (group._id === value) {
-                      onValueChange?.('');
-                    }
-
-                    setOpen(false);
-                  }}
-                >
-                  <div className="flex flex-col">
-                    <span className="font-medium">{group.name}</span>
-                  </div>
-                  <Check
-                    className={cn(
-                      'ml-auto',
-                      value === group._id && 'opacity-100',
-                      !(value === group._id) && 'opacity-0',
-                    )}
-                  />
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+      <ComboboxInput
+        placeholder={selectedGroup?.name || placeholder}
+        showClear={!!selectedGroup}
+        className={className}
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>Nenhum grupo encontrado.</ComboboxEmpty>
+        <ComboboxList>
+          {status === 'pending' ? (
+            <div className="flex items-center justify-center p-3">
+              <Spinner className="opacity-50" />
+            </div>
+          ) : (
+            (group: IGroup): React.ReactNode => (
+              <ComboboxItem
+                key={group._id}
+                value={group}
+              >
+                {group.slug in USER_GROUP_MAPPER &&
+                  USER_GROUP_MAPPER[
+                    group.slug as keyof typeof USER_GROUP_MAPPER
+                  ]}
+                {!(group.slug in USER_GROUP_MAPPER) && group.slug}
+              </ComboboxItem>
+            )
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

@@ -1,17 +1,16 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { UserGroup as Entity } from '@application/core/entity.core';
+import type { IGroup as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
-import type { UserGroupShowParamValidator } from './show.validator';
+import type { UserGroupShowPayload } from './show.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = z.infer<typeof UserGroupShowParamValidator>;
+type Payload = UserGroupShowPayload;
 
 @Service()
 export default class UserGroupShowUseCase {
@@ -36,7 +35,6 @@ export default class UserGroupShowUseCase {
 
       return right(group);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

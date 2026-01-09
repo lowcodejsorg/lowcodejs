@@ -6,7 +6,8 @@
       "@bin/*": ["./bin/*"],
       "@config/*": ["./config/*"],
       "@database/*": ["./database/*"],
-      "@start/*": ["./start/*"]
+      "@start/*": ["./start/*"],
+      "@test/*": ["./test/*"]
     },
     "rootDirs": ["./application", "./bin", "./config", "./start", "./database"],
     "typeRoots": ["_types", "./node_modules/@types"],
@@ -27,6 +28,14 @@
     "useDefineForClassFields": false,
     "resolveJsonModule": true
   },
-  "include": ["application", "bin", "config", "start", "database", "_types"],
+  "include": [
+    "application",
+    "bin",
+    "config",
+    "start",
+    "database",
+    "_types",
+    "test"
+  ],
   "exclude": ["node_modules", "build"]
 }

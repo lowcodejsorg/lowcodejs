@@ -1,4 +1,3 @@
-/* eslint-disable import/order */
 import type { ControllersListConfig } from 'fastify-decorators/interfaces/bootstrap-config';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -7,7 +6,7 @@ import { Env } from '@start/env';
 
 type Controllers = ControllersListConfig['controllers'];
 
-const isDevOrTest = ['development', 'test'].includes(Env.NODE_ENV);
+const isDevOrTest = ['development'].includes(Env.NODE_ENV);
 const controllerPattern = /^(?!.*\.spec\.).*\.controller\.(ts|js)$/;
 
 export async function loadControllers(): Promise<Controllers> {

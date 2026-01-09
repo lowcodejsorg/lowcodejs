@@ -1,16 +1,11 @@
 import { FileTextIcon } from 'lucide-react';
-import z from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import type { TableCreatePayload } from '@/lib/payloads';
+import { TableCreateBodySchema } from '@/lib/schemas';
 
-export const TableCreateSchema = z.object({
-  name: z
-    .string()
-    .min(1, 'Nome é obrigatório')
-    .max(40, 'Nome deve ter no máximo 40 caracteres'),
-});
-
-export type TableCreateFormValues = z.infer<typeof TableCreateSchema>;
+export const TableCreateSchema = TableCreateBodySchema;
+export type TableCreateFormValues = TableCreatePayload;
 
 export const tableCreateFormDefaultValues: TableCreateFormValues = {
   name: '',

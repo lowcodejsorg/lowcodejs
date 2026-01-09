@@ -72,7 +72,6 @@ function RouteComponent(): React.JSX.Element {
             refetch={_read.refetch}
           />
         )}
-        {_read.status === 'pending' && <UpdateTableFormSkeleton />}
         {_read.status === 'success' && (
           <TableUpdateContent data={_read.data} />
         )}

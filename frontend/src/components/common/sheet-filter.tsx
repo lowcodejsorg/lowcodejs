@@ -10,8 +10,18 @@ import { TreeList } from '@/components/common/-tree-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import type { ComboboxOption } from '@/components/ui/combobox';
-import { Combobox } from '@/components/ui/combobox';
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '@/components/ui/combobox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import {
   InputGroup,
@@ -39,7 +49,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { ICategory, IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -89,11 +99,11 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
     for (const field of fields) {
       const fieldValue = search[field.slug];
       if (typeof fieldValue === 'string') {
-        if (field.type === FIELD_TYPE.DROPDOWN) {
+        if (field.type === E_FIELD_TYPE.DROPDOWN) {
           initialValues[field.slug] = fieldValue
             .split(',')
             .map((v) => ({ value: v, label: v }));
-        } else if (field.type === FIELD_TYPE.CATEGORY) {
+        } else if (field.type === E_FIELD_TYPE.CATEGORY) {
           initialValues[field.slug] = fieldValue.split(',');
         } else {
           initialValues[field.slug] = fieldValue;
@@ -119,30 +129,28 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
 
       if (
         [
-          FIELD_TYPE.TEXT_SHORT.toString(),
-          FIELD_TYPE.TEXT_LONG.toString(),
+          E_FIELD_TYPE.TEXT_SHORT.toString(),
+          E_FIELD_TYPE.TEXT_LONG.toString(),
         ].includes(field.type) &&
         value
       ) {
         filters[field.slug] = String(value);
       }
 
-      if (field.type === FIELD_TYPE.DROPDOWN && Array.isArray(value)) {
-        const values = value
-          .map((v: ComboboxOption) => v.value)
-          .filter(Boolean);
+      if (field.type === E_FIELD_TYPE.DROPDOWN && Array.isArray(value)) {
+        const values = (value as Array<string>).filter(Boolean);
         if (values.length > 0) {
           filters[field.slug] = values.join(',');
         }
       }
 
-      if (field.type === FIELD_TYPE.CATEGORY && Array.isArray(value)) {
+      if (field.type === E_FIELD_TYPE.CATEGORY && Array.isArray(value)) {
         if (value.length > 0) {
           filters[field.slug] = value.join(',');
         }
       }
 
-      if (field.type === FIELD_TYPE.DATE) {
+      if (field.type === E_FIELD_TYPE.DATE) {
         const initial = filterValues[`${field.slug}-initial`];
         const final = filterValues[`${field.slug}-final`];
 
@@ -237,7 +245,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                 key={field.slug}
                 className="flex w-full flex-col relative"
               >
-                {field.type === FIELD_TYPE.TEXT_SHORT && (
+                {field.type === E_FIELD_TYPE.TEXT_SHORT && (
                   <FilterTextShort
                     field={field}
                     value={filterValues[field.slug] ?? ''}
@@ -252,7 +260,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.TEXT_LONG && (
+                {field.type === E_FIELD_TYPE.TEXT_LONG && (
                   <FilterTextShort
                     field={field}
                     value={filterValues[field.slug] ?? ''}
@@ -267,7 +275,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.DROPDOWN && (
+                {field.type === E_FIELD_TYPE.DROPDOWN && (
                   <FilterDropdown
                     field={field}
                     value={filterValues[field.slug] ?? []}
@@ -280,7 +288,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.DATE && (
+                {field.type === E_FIELD_TYPE.DATE && (
                   <FilterDate
                     field={field}
                     initialValue={filterValues[`${field.slug}-initial`]}
@@ -300,7 +308,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                   />
                 )}
 
-                {field.type === FIELD_TYPE.CATEGORY && (
+                {field.type === E_FIELD_TYPE.CATEGORY && (
                   <FilterCategory
                     field={field}
                     value={filterValues[field.slug] ?? []}
@@ -377,58 +385,116 @@ function FilterTextShort({
   );
 }
 
+interface DropdownOption {
+  value: string;
+  label: string;
+}
+
 function FilterDropdown({
   field,
   value,
   onChange,
 }: {
   field: IField;
-  value: Array<ComboboxOption>;
-  onChange: (value: Array<ComboboxOption>) => void;
+  value: Array<string>;
+  onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
-  const options =
-    field.configuration.dropdown?.map((d) => ({
+  const anchorRef = useComboboxAnchor();
+  const options: Array<DropdownOption> = field.configuration.dropdown.map(
+    (d) => ({
       value: d,
       label: d,
-    })) ?? [];
+    }),
+  );
+
+  // Find selected options for multiple select
+  const selectedOptions = React.useMemo(() => {
+    return options.filter((opt) => value.includes(opt.value));
+  }, [options, value]);
 
   // Para single select, extrair o valor da primeira opção
-  const singleValue = value.length > 0 ? value[0].value : '';
+  const singleValue = value.length > 0 ? value[0] : '';
+
+  if (field.configuration.multiple) {
+    return (
+      <Field>
+        <FieldLabel>{field.name}</FieldLabel>
+        <Combobox
+          items={options}
+          multiple
+          value={selectedOptions}
+          onValueChange={(newValue: Array<DropdownOption>) => {
+            onChange(newValue.map((v) => v.value));
+          }}
+          itemToStringLabel={(opt: DropdownOption) => opt.label}
+        >
+          <ComboboxChips
+            ref={anchorRef}
+            className="w-full"
+          >
+            <ComboboxValue>
+              {(values: Array<DropdownOption>): React.ReactNode => (
+                <React.Fragment>
+                  {values.map((opt) => (
+                    <ComboboxChip
+                      key={opt.value}
+                      aria-label={opt.label}
+                    >
+                      {opt.label}
+                    </ComboboxChip>
+                  ))}
+                  <ComboboxChipsInput
+                    placeholder={
+                      values.length > 0
+                        ? ''
+                        : `Filtrar por ${field.name.toLowerCase()}`
+                    }
+                  />
+                </React.Fragment>
+              )}
+            </ComboboxValue>
+          </ComboboxChips>
+          <ComboboxContent anchor={anchorRef}>
+            <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+            <ComboboxList>
+              {(opt: DropdownOption): React.ReactNode => (
+                <ComboboxItem
+                  key={opt.value}
+                  value={opt}
+                >
+                  {opt.label}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+      </Field>
+    );
+  }
 
   return (
     <Field>
       <FieldLabel>{field.name}</FieldLabel>
-      {field.configuration.multiple ? (
-        <Combobox
-          value={value}
-          onChange={onChange}
-          options={options}
-          placeholder={`Filtrar por ${field.name.toLowerCase()}`}
-          multiple
-          className="w-full"
-        />
-      ) : (
-        <Select
-          value={singleValue}
-          onValueChange={(v) => onChange(v ? [{ value: v, label: v }] : [])}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue
-              placeholder={`Filtrar por ${field.name.toLowerCase()}`}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-              >
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+      <Select
+        value={singleValue}
+        onValueChange={(v) => onChange(v ? [v] : [])}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue
+            placeholder={`Filtrar por ${field.name.toLowerCase()}`}
+          />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </Field>
   );
 }
@@ -517,7 +583,7 @@ function FilterCategory({
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
-  const categories = field.configuration.category ?? [];
+  const categories = field.configuration.category;
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedLabel = React.useMemo(() => {

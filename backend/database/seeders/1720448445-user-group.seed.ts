@@ -1,16 +1,27 @@
-import { E_ROLE, type Optional } from '@application/core/entity.core';
+import {
+  E_ROLE,
+  E_TABLE_PERMISSION,
+  Merge,
+  type Optional,
+} from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 import { UserGroup } from '@application/model/user-group.model';
 
-type Payload = Optional<
-  import('@application/core/entity.core').UserGroup,
-  '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
->;
+import { PayloadPermissionSeeder } from './1720448435-permissions.seed';
+
+type Payload = Omit<
+  Optional<
+    import('@application/core/entity.core').IGroup,
+    '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
+  >,
+  'permissions'
+> & { permissions: string[] };
 
 export default async function Seed(): Promise<void> {
   await UserGroup.deleteMany({});
 
-  const permissions = await Permission.find();
+  const permissions: Merge<PayloadPermissionSeeder, { _id: string }>[] =
+    await Permission.find();
 
   // Super Admin (Master): TODAS as permissões do sistema
   const permissionsSuper = permissions.flatMap((p) => p?._id?.toString() || '');
@@ -21,43 +32,33 @@ export default async function Seed(): Promise<void> {
   );
 
   // Manager: Pode criar tabelas próprias e gerenciar onde é admin/dono
-  // ✅ INCLUI create-field (faltava antes)
   const permissionsManager = permissions
     ?.filter((p) =>
       [
-        'create-table', // apenas tabelas próprias
-        'update-table', // somente tabelas próprias ou onde é admin
-        'remove-table', // somente tabelas próprias ou onde é admin
-        'view-table', // Sim (respeitando visibilidade)
-        'create-field', // ✅ ADICIONADO - somente tabelas próprias ou onde é admin
-        'update-field', // somente tabelas próprias ou onde é admin
-        'remove-field', // somente tabelas próprias ou onde é admin
-        'view-field', // Sim
-        'create-row', // Sim (respeitando visibilidade)
-        'update-row', // somente tabelas próprias ou onde é admin
-        'remove-row', // somente tabelas próprias ou onde é admin
-        'view-row', // Sim (respeitando visibilidade)
-      ].includes(p?.slug),
+        E_TABLE_PERMISSION.CREATE_TABLE, // apenas tabelas próprias
+        E_TABLE_PERMISSION.UPDATE_TABLE, // somente tabelas próprias ou onde é admin
+        E_TABLE_PERMISSION.REMOVE_TABLE, // somente tabelas próprias ou onde é admin
+        E_TABLE_PERMISSION.VIEW_TABLE, // Sim (respeitando visibilidade)
+        E_TABLE_PERMISSION.CREATE_FIELD, // somente tabelas próprias ou onde é admin
+        E_TABLE_PERMISSION.UPDATE_FIELD, // somente tabelas próprias ou onde é admin
+        E_TABLE_PERMISSION.REMOVE_FIELD, // somente tabelas próprias ou onde é admin
+        E_TABLE_PERMISSION.VIEW_FIELD, // Sim
+        E_TABLE_PERMISSION.CREATE_ROW, // Sim (respeitando visibilidade)
+        E_TABLE_PERMISSION.UPDATE_ROW, // somente tabelas próprias ou onde é admin
+        E_TABLE_PERMISSION.REMOVE_ROW, // somente tabelas próprias ou onde é admin
+        E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
+      ].includes(p.slug),
     )
     .flatMap((p) => p?._id?.toString() || '');
 
   // Registered: Acesso limitado, só gerencia onde é admin
-  // ✅ INCLUI create-row (faltava antes)
   const permissionsRegistered = permissions
     ?.filter((p) =>
       [
-        'update-table', // apenas onde é admin
-        'remove-table', // apenas onde é admin
-        'view-table', // Sim (respeitando visibilidade)
-        'create-field', // apenas onde é admin
-        'update-field', // apenas onde é admin
-        'remove-field', // apenas onde é admin
-        'view-field', // Sim
-        'create-row', // ✅ ADICIONADO - Sim (respeitando visibilidade)
-        'update-row', // apenas onde é admin
-        'remove-row', // apenas onde é admin
-        'view-row', // Sim (respeitando visibilidade)
-      ].includes(p?.slug),
+        E_TABLE_PERMISSION.VIEW_TABLE, // Sim (respeitando visibilidade)
+        E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
+        // @ts-ignore
+      ].includes(p.slug),
     )
     .flatMap((p) => p._id?.toString() || '');
 

@@ -1,5 +1,5 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -7,10 +7,10 @@ import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
-import type { MenuDeleteParamValidator } from './delete.validator';
+import type { MenuDeletePayload } from './delete.validator';
 
 type Response = Either<HTTPException, null>;
-type Payload = z.infer<typeof MenuDeleteParamValidator>;
+type Payload = MenuDeletePayload;
 
 @Service()
 export default class MenuDeleteUseCase {
@@ -47,7 +47,6 @@ export default class MenuDeleteUseCase {
 
       return right(null);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

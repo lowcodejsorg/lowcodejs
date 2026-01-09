@@ -3,15 +3,11 @@ import { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
-
-type Payload = {
-  slug: string;
-  rowId: string;
-};
+import type { RowActionPayload } from '@/lib/payloads';
 
 type UseRowUpdateTrashProps = Pick<
   Omit<
-    UseMutationOptions<IRow, AxiosError | Error, Payload, unknown>,
+    UseMutationOptions<IRow, AxiosError | Error, RowActionPayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
@@ -19,7 +15,7 @@ type UseRowUpdateTrashProps = Pick<
 
 export function useRowUpdateTrash(props: UseRowUpdateTrashProps) {
   return useMutation({
-    mutationFn: async function (payload: Payload) {
+    mutationFn: async function (payload: RowActionPayload) {
       const route = '/tables/'
         .concat(payload.slug)
         .concat('/rows/')

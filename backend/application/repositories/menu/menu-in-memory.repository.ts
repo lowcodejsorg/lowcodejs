@@ -1,4 +1,4 @@
-import type { Menu } from '@application/core/entity.core';
+import type { IMenu } from '@application/core/entity.core';
 
 import type {
   MenuContractRepository,
@@ -9,10 +9,10 @@ import type {
 } from './menu-contract.repository';
 
 export default class MenuInMemoryRepository implements MenuContractRepository {
-  private items: Menu[] = [];
+  private items: IMenu[] = [];
 
-  async create(payload: MenuCreatePayload): Promise<Menu> {
-    const menu: Menu = {
+  async create(payload: MenuCreatePayload): Promise<IMenu> {
+    const menu: IMenu = {
       ...payload,
       _id: crypto.randomUUID(),
       table: payload.table ?? null,
@@ -34,7 +34,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     parent,
     trashed = false,
     exact = false,
-  }: MenuFindByPayload): Promise<Menu | null> {
+  }: MenuFindByPayload): Promise<IMenu | null> {
     const menu = this.items.find((m) => {
       if (exact) {
         return (
@@ -53,12 +53,8 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     return menu ?? null;
   }
 
-  async findMany(payload?: MenuQueryPayload): Promise<Menu[]> {
+  async findMany(payload?: MenuQueryPayload): Promise<IMenu[]> {
     let filtered = this.items;
-
-    if (payload?._id) {
-      filtered = filtered.filter((m) => m._id !== payload._id);
-    }
 
     const trashed = payload?.trashed ?? false;
     filtered = filtered.filter((m) => m.trashed === trashed);
@@ -87,7 +83,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     return filtered;
   }
 
-  async update({ _id, ...payload }: MenuUpdatePayload): Promise<Menu> {
+  async update({ _id, ...payload }: MenuUpdatePayload): Promise<IMenu> {
     const menu = this.items.find((m) => m._id === _id);
     if (!menu) throw new Error('Menu not found');
     Object.assign(menu, payload, { updatedAt: new Date() });

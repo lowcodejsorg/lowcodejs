@@ -51,7 +51,7 @@ function RootDocument({
       <head>
         <HeadContent />
       </head>
-      <body>
+      <body className="antialiased">
         {/* <Header /> */}
         {children}
         <Toaster />

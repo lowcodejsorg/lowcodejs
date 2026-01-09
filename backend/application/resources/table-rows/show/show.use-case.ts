@@ -1,49 +1,41 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
+import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
-import { Table } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TableRowShowParamValidator } from './show.validator';
+import type { TableRowShowPayload } from './show.validator';
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Row
+  import('@application/core/entity.core').IRow
 >;
+
+type Payload = TableRowShowPayload;
 
 @Service()
 export default class TableRowShowUseCase {
-  async execute(
-    payload: z.infer<typeof TableRowShowParamValidator>,
-  ): Promise<Response> {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
+  async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!table)
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const c = await buildTable({
-        ...table?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: table?._id.toString(),
-      });
+      const c = await buildTable(table);
 
-      const populate = await buildPopulate(
-        table.fields as import('@application/core/entity.core').Field[],
-      );
+      const populate = await buildPopulate(table.fields as IField[]);
 
       const row = await c.findOne({
         _id: payload._id,
@@ -61,7 +53,6 @@ export default class TableRowShowUseCase {
         _id: populated?._id?.toString(),
       });
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

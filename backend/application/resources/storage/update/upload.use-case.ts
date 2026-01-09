@@ -1,26 +1,23 @@
+/* eslint-disable no-unused-vars */
 import type { MultipartFile } from '@fastify/multipart';
 import { getInstanceByToken, Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type {
-  Storage as Entity,
-  Optional,
-} from '@application/core/entity.core';
+import type { IStorage as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Storage as Model } from '@application/model/storage.model';
+import {
+  StorageContractRepository,
+  type StorageCreatePayload,
+} from '@application/repositories/storage/storage-contract.repository';
 import StorageService from '@application/services/storage.service';
-type Response = Either<HTTPException, Entity[]>;
 
-type Sended = Optional<
-  Entity,
-  '_id' | 'createdAt' | 'updatedAt' | 'trashedAt' | 'trashed'
->;
+type Response = Either<HTTPException, Entity[]>;
 
 @Service()
 export default class StorageUploadUseCase {
   constructor(
-    // eslint-disable-next-line no-unused-vars
+    private readonly storageRepository: StorageContractRepository,
     private readonly service: StorageService = getInstanceByToken(
       StorageService,
     ),
@@ -30,25 +27,17 @@ export default class StorageUploadUseCase {
     payload: AsyncIterableIterator<MultipartFile>,
   ): Promise<Response> {
     try {
-      const data: Sended[] = [];
+      const data: StorageCreatePayload[] = [];
 
       for await (const part of payload) {
         const sended = await this.service.upload(part);
         data.push(sended);
       }
 
-      const storages = await Model.insertMany(data);
+      const storages = await this.storageRepository.createMany(data);
 
-      return right(
-        storages.map((storage) => ({
-          ...storage.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: storage._id.toString(),
-        })),
-      );
+      return right(storages);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

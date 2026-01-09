@@ -1,10 +1,12 @@
 import mongoose from 'mongoose';
 
-import type { User as Core } from '@application/core/entity.core';
+import {
+  E_USER_STATUS,
+  Merge,
+  type IUser as Core,
+} from '@application/core/entity.core';
 
-interface Entity extends Omit<Core, '_id'>, mongoose.Document {
-  _id: mongoose.Types.ObjectId;
-}
+type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 export const Schema = new mongoose.Schema(
   {
@@ -15,8 +17,8 @@ export const Schema = new mongoose.Schema(
     password: { type: String, required: true },
     status: {
       type: String,
-      enum: ['active', 'inactive'],
-      default: 'inactive',
+      enum: Object.values(E_USER_STATUS),
+      default: E_USER_STATUS.INACTIVE,
     },
     group: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
 

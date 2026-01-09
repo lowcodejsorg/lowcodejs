@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 
 import { useProfileRead } from './tanstack-query/use-profile-read';
 
+import { E_ROLE, E_TABLE_VISIBILITY } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
 
@@ -81,30 +82,36 @@ export function useTablePermission(
     return profile.data.group.permissions.map((p) => p.slug.toLowerCase());
   }, [profile.data]);
 
+  const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
+
   const can = useMemo(() => {
     return (action: TableAction): boolean => {
+      // MASTER tem acesso total a tudo
+      if (isMaster) return true;
+
       // Dono ou admin da tabela pode fazer tudo
       if (isOwnerOrAdmin) return true;
 
       // Usuário não logado
       if (!userId) {
-        const visibility = table?.configuration?.visibility || 'restricted';
+        const visibility =
+          table?.configuration.visibility || E_TABLE_VISIBILITY.RESTRICTED;
         // Visitante pode ver tabelas públicas
         if (
-          visibility === 'public' &&
+          visibility === E_TABLE_VISIBILITY.PUBLIC &&
           ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)
         ) {
           return true;
         }
         // Visitante pode criar registro em tabelas de formulário
-        if (visibility === 'form' && action === 'CREATE_ROW') {
+        if (visibility === E_TABLE_VISIBILITY.FORM && action === 'CREATE_ROW') {
           return true;
         }
         return false;
       }
 
       // Ações que SEMPRE requerem dono/admin (independente da visibilidade)
-      const ownerOnlyActions: TableAction[] = [
+      const ownerOnlyActions: Array<TableAction> = [
         'CREATE_FIELD',
         'UPDATE_FIELD',
         'REMOVE_FIELD',
@@ -119,27 +126,28 @@ export function useTablePermission(
       }
 
       // Aplicar regras de visibilidade
-      const visibility = table?.configuration?.visibility || 'restricted';
+      const visibility =
+        table?.configuration.visibility || E_TABLE_VISIBILITY.RESTRICTED;
 
       switch (visibility) {
-        case 'private':
+        case E_TABLE_VISIBILITY.PRIVATE:
           // PRIVADA: Apenas dono/admin pode fazer tudo
           return false;
 
-        case 'restricted':
+        case E_TABLE_VISIBILITY.RESTRICTED:
           // RESTRITA: Usuário logado pode ver, mas não criar
           if (action === 'CREATE_ROW') return false;
           break;
 
-        case 'open':
+        case E_TABLE_VISIBILITY.OPEN:
           // ABERTA: Usuário logado pode ver e criar
           break;
 
-        case 'public':
+        case E_TABLE_VISIBILITY.PUBLIC:
           // PÚBLICA: Usuário logado pode ver e criar
           break;
 
-        case 'form':
+        case E_TABLE_VISIBILITY.FORM:
           // FORMULÁRIO: Usuário logado NÃO pode ver (só criar via visitante)
           if (['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)) {
             return false;
@@ -151,7 +159,7 @@ export function useTablePermission(
       const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
       return permissions.includes(requiredSlug);
     };
-  }, [isOwnerOrAdmin, permissions, table, userId]);
+  }, [isMaster, isOwnerOrAdmin, permissions, table, userId]);
 
   return {
     isOwner,
@@ -172,6 +180,8 @@ export function usePermission(): {
 } {
   const profile = useProfileRead();
 
+  const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
+
   const permissions = useMemo(() => {
     if (!profile.data) return [];
     return profile.data.group.permissions.map((p) => p.slug.toLowerCase());
@@ -179,10 +189,13 @@ export function usePermission(): {
 
   const can = useMemo(() => {
     return (action: TableAction): boolean => {
+      // MASTER tem acesso total a tudo
+      if (isMaster) return true;
+
       const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
       return permissions.includes(requiredSlug);
     };
-  }, [permissions]);
+  }, [isMaster, permissions]);
 
   return {
     can,

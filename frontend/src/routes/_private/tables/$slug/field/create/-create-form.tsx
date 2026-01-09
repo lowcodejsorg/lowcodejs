@@ -2,10 +2,14 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
-import type { ComboboxOption } from '@/components/ui/combobox';
 import type { TreeNode } from '@/components/common/-tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
+
+interface DropdownOption {
+  value: string;
+  label: string;
+}
 
 export const FieldCreateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
@@ -13,7 +17,7 @@ export const FieldCreateSchema = z.object({
   configuration: z.object({
     format: z.string().default(''),
     defaultValue: z.string().default(''),
-    dropdown: z.array(z.custom<ComboboxOption>()).default([]),
+    dropdown: z.array(z.custom<DropdownOption>()).default([]),
     relationship: z.object({
       tableId: z.string().default(''),
       tableSlug: z.string().default(''),
@@ -23,8 +27,8 @@ export const FieldCreateSchema = z.object({
     }),
     category: z.array(z.custom<TreeNode>()).default([]),
     multiple: z.boolean().default(false),
-    filtering: z.boolean().default(false),
-    listing: z.boolean().default(false),
+    filtering: z.boolean().default(true),
+    listing: z.boolean().default(true),
     required: z.boolean().default(false),
   }),
 });
@@ -47,8 +51,8 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
     },
     category: [],
     multiple: false,
-    filtering: false,
-    listing: false,
+    filtering: true,
+    listing: true,
     required: false,
   },
 };
@@ -75,16 +79,16 @@ export const CreateFieldFormFields = withForm({
       (state) => state.values.configuration.relationship.tableSlug,
     );
 
-    const isTextShort = fieldType === FIELD_TYPE.TEXT_SHORT;
-    const isTextLong = fieldType === FIELD_TYPE.TEXT_LONG;
-    const isDropdown = fieldType === FIELD_TYPE.DROPDOWN;
-    const isDate = fieldType === FIELD_TYPE.DATE;
-    const isRelationship = fieldType === FIELD_TYPE.RELATIONSHIP;
-    const isCategory = fieldType === FIELD_TYPE.CATEGORY;
-    const isFile = fieldType === FIELD_TYPE.FILE;
-    const isFieldGroup = fieldType === FIELD_TYPE.FIELD_GROUP;
-    const isReaction = fieldType === FIELD_TYPE.REACTION;
-    const isEvaluation = fieldType === FIELD_TYPE.EVALUATION;
+    const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
+    const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
+    const isDropdown = fieldType === E_FIELD_TYPE.DROPDOWN;
+    const isDate = fieldType === E_FIELD_TYPE.DATE;
+    const isRelationship = fieldType === E_FIELD_TYPE.RELATIONSHIP;
+    const isCategory = fieldType === E_FIELD_TYPE.CATEGORY;
+    const isFile = fieldType === E_FIELD_TYPE.FILE;
+    const isFieldGroup = fieldType === E_FIELD_TYPE.FIELD_GROUP;
+    const isReaction = fieldType === E_FIELD_TYPE.REACTION;
+    const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
 
     const showMultiple =
       isDropdown || isFile || isRelationship || isFieldGroup || isCategory;
@@ -120,7 +124,7 @@ export const CreateFieldFormFields = withForm({
         </form.AppField>
 
         {/* Campo Tipo (oculto quando field-type=FIELD_GROUP na query) */}
-        {defaultFieldType !== FIELD_TYPE.FIELD_GROUP && (
+        {defaultFieldType !== E_FIELD_TYPE.FIELD_GROUP && (
           <form.AppField
             name="type"
             validators={{
@@ -145,7 +149,7 @@ export const CreateFieldFormFields = withForm({
         )}
 
         {/* Texto informativo para grupo de campos (seleção manual) */}
-        {isFieldGroup && defaultFieldType !== FIELD_TYPE.FIELD_GROUP && (
+        {isFieldGroup && defaultFieldType !== E_FIELD_TYPE.FIELD_GROUP && (
           <p className="text-sm text-muted-foreground">
             O grupo de campos é composto por outros campos que devem ser
             configurados nas configurações da tabela em "Gerenciar grupo de
@@ -171,7 +175,7 @@ export const CreateFieldFormFields = withForm({
                 label="Formato"
                 placeholder="Selecione um formato para o campo"
                 disabled={isPending}
-                fieldType="TEXT_SHORT"
+                fieldType={E_FIELD_TYPE.TEXT_SHORT}
                 required
               />
             )}
@@ -247,7 +251,7 @@ export const CreateFieldFormFields = withForm({
                 label="Formato da data"
                 placeholder="Selecione o formato da data"
                 disabled={isPending}
-                fieldType="DATE"
+                fieldType={E_FIELD_TYPE.DATE}
                 required
               />
             )}

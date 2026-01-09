@@ -1,10 +1,15 @@
 import mongoose from 'mongoose';
 
-import type { Table as Core } from '@application/core/entity.core';
+import {
+  E_TABLE_COLLABORATION,
+  E_TABLE_STYLE,
+  E_TABLE_TYPE,
+  E_TABLE_VISIBILITY,
+  Merge,
+  type ITable as Core,
+} from '@application/core/entity.core';
 
-interface Entity extends Omit<Core, '_id'>, mongoose.Document {
-  _id: mongoose.Types.ObjectId;
-}
+type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 const FieldConfiguration = new mongoose.Schema(
   {
@@ -26,18 +31,18 @@ const Configuration = new mongoose.Schema(
   {
     style: {
       type: String,
-      enum: ['gallery', 'list', 'document'],
-      default: 'list',
+      enum: Object.values(E_TABLE_STYLE),
+      default: E_TABLE_STYLE.LIST,
     },
     visibility: {
       type: String,
-      enum: ['public', 'restricted', 'open', 'form', 'private'],
-      default: 'restricted',
+      enum: Object.values(E_TABLE_VISIBILITY),
+      default: E_TABLE_VISIBILITY.RESTRICTED,
     },
     collaboration: {
       type: String,
-      enum: ['open', 'restricted'],
-      default: 'restricted',
+      enum: Object.values(E_TABLE_COLLABORATION),
+      default: E_TABLE_COLLABORATION.RESTRICTED,
     },
     administrators: [
       {
@@ -106,8 +111,8 @@ export const Schema = new mongoose.Schema(
     ],
     type: {
       type: String,
-      enum: ['table', 'field-group'],
-      default: 'table',
+      enum: Object.values(E_TABLE_TYPE),
+      default: E_TABLE_TYPE.TABLE,
     },
     configuration: {
       type: Configuration,

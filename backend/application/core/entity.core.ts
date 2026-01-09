@@ -13,6 +13,11 @@
  * ```
  */
 export type Optional<T, K extends keyof T> = Pick<Partial<T>, K> & Omit<T, K>;
+export type Merge<T, U> = {
+  [K in keyof (T & U)]: (T & U)[K];
+};
+
+export type ValueOf<T> = T[keyof T];
 
 export const E_TOKEN_STATUS = {
   REQUESTED: 'REQUESTED',
@@ -63,184 +68,6 @@ export const E_ROLE = {
   REGISTERED: 'REGISTERED',
 } as const;
 
-export interface JWTPayload {
-  sub: string;
-  email: string;
-  role: keyof typeof E_ROLE;
-  type: 'access' | 'refresh';
-}
-
-export interface Base {
-  _id: string;
-  createdAt: Date;
-  updatedAt: Date | null;
-  trashedAt: Date | null;
-  trashed: boolean;
-}
-
-export interface ValidationToken extends Base {
-  user: string;
-  code: string;
-  status: keyof typeof E_TOKEN_STATUS;
-}
-
-export interface Storage extends Base {
-  url: string;
-  filename: string;
-  type: string;
-  originalName: string;
-  size: number;
-}
-
-export interface Permission extends Base {
-  name: string;
-  slug: string;
-  description: string | null;
-}
-
-export interface UserGroup extends Base {
-  name: string;
-  slug: string;
-  description: string | null;
-  permissions: string[] | Permission[];
-}
-
-export interface User extends Base {
-  name: string;
-  email: string;
-  password: string;
-  status: 'active' | 'inactive';
-  group: UserGroup;
-}
-
-export interface Schema {
-  type: 'Number' | 'String' | 'Date' | 'Boolean' | 'ObjectId';
-  required?: boolean;
-  ref?: string;
-  default?: string | number | boolean | null;
-}
-
-export type TableSchema = Record<string, Schema | Schema[]>;
-
-export interface Table extends Base {
-  _schema: TableSchema;
-  name: string;
-  description: string | null;
-  logo: string | Storage | null;
-  slug: string;
-  fields: string[] | Field[];
-  type: 'table' | 'field-group';
-  configuration: {
-    style: 'gallery' | 'list' | 'document';
-    visibility: 'public' | 'restricted' | 'open' | 'form' | 'private';
-    collaboration: 'open' | 'restricted';
-    administrators: string[] | User[];
-    owner: string | User;
-    fields: {
-      orderList: string[];
-      orderForm: string[];
-    };
-  };
-  methods: {
-    onLoad: {
-      code: string | null;
-    };
-    beforeSave: {
-      code: string | null;
-    };
-    afterSave: {
-      code: string | null;
-    };
-  };
-}
-
-export interface Category {
-  id: string;
-  label: string;
-  children: unknown[];
-}
-
-export interface FieldConfigurationRelationship {
-  table: Pick<Table, '_id' | 'slug'>;
-  field: Pick<Field, '_id' | 'slug'>;
-  order: 'asc' | 'desc';
-}
-
-export type FieldConfigurationGroup = Pick<Table, '_id' | 'slug'>;
-
-export interface Field extends Base {
-  name: string;
-  slug: string;
-  type: keyof typeof E_FIELD_TYPE;
-  configuration: {
-    required: boolean;
-    multiple: boolean;
-    format: keyof typeof E_FIELD_FORMAT | null;
-    listing: boolean;
-    filtering: boolean;
-    defaultValue: string | null;
-    relationship: FieldConfigurationRelationship | null;
-    dropdown: string[];
-    category: Category[];
-    group: FieldConfigurationGroup | null;
-  };
-}
-
-export interface Row extends Base, Record<string, any> {}
-
-export interface Attachment {
-  filename: string;
-  content: Buffer | string;
-}
-
-export interface EmailOptions {
-  from?: string;
-  to: string;
-  subject: string;
-  text?: string;
-  html?: string;
-  attachments?: Array<Attachment>;
-}
-
-export interface SentMessageInfo {
-  accepted: string[];
-  rejected: string[];
-  envelope: {
-    from: string;
-    to: string[];
-  };
-}
-
-export interface Search extends Record<string, unknown> {
-  page: number;
-  perPage: number;
-  search?: string;
-  trashed?: 'true' | 'false';
-  sub?: string;
-}
-
-export interface Meta {
-  total: number;
-  page: number;
-  perPage: number;
-  lastPage: number;
-  firstPage: number;
-}
-export interface Paginated<Entity> {
-  data: Entity[];
-  meta: Meta;
-}
-
-export interface Reaction extends Base {
-  user: string | User;
-  type: 'like' | 'unlike';
-}
-
-export interface Evaluation extends Base {
-  user: string | User;
-  value: number;
-}
-
 export const E_MENU_ITEM_TYPE = {
   TABLE: 'TABLE',
   PAGE: 'PAGE',
@@ -249,17 +76,274 @@ export const E_MENU_ITEM_TYPE = {
   SEPARATOR: 'SEPARATOR',
 } as const;
 
-export interface Menu extends Base {
-  name: string;
-  slug: string;
-  type: keyof typeof E_MENU_ITEM_TYPE;
-  table: string | null;
-  parent: string | null;
-  url: string | null;
-  html: string | null;
-}
+export const E_TABLE_TYPE = {
+  TABLE: 'TABLE',
+  FIELD_GROUP: 'FIELD_GROUP',
+} as const;
 
-export interface Setting {
+export const E_TABLE_STYLE = {
+  LIST: 'LIST',
+  GALLERY: 'GALLERY',
+} as const;
+
+export const E_TABLE_VISIBILITY = {
+  PUBLIC: 'PUBLIC',
+  RESTRICTED: 'RESTRICTED',
+  OPEN: 'OPEN',
+  FORM: 'FORM',
+  PRIVATE: 'PRIVATE',
+} as const;
+
+export const E_TABLE_COLLABORATION = {
+  OPEN: 'OPEN',
+  RESTRICTED: 'RESTRICTED',
+} as const;
+
+export const E_JWT_TYPE = {
+  ACCESS: 'ACCESS',
+  REFRESH: 'REFRESH',
+} as const;
+
+export type IJWTPayload = {
+  sub: string;
+  email: string;
+  role: ValueOf<typeof E_ROLE>;
+  type: ValueOf<typeof E_JWT_TYPE>;
+};
+
+export type Base = {
+  _id: string;
+  createdAt: Date;
+  updatedAt: Date | null;
+  trashedAt: Date | null;
+  trashed: boolean;
+};
+
+export type IValidationToken = Merge<
+  Base,
+  {
+    user: IUser;
+    code: string;
+    status: ValueOf<typeof E_TOKEN_STATUS>;
+  }
+>;
+
+export type IStorage = Merge<
+  Base,
+  {
+    url: string;
+    filename: string;
+    type: string;
+    originalName: string;
+    size: number;
+  }
+>;
+
+export type IPermission = Merge<
+  Base,
+  {
+    name: string;
+    slug: string;
+    description: string | null;
+  }
+>;
+
+export type IGroup = Merge<
+  Base,
+  {
+    name: string;
+    slug: string;
+    description: string | null;
+    permissions: IPermission[];
+  }
+>;
+
+export const E_USER_STATUS = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+} as const;
+
+export type IUser = Merge<
+  Base,
+  {
+    name: string;
+    email: string;
+    password: string;
+    status: ValueOf<typeof E_USER_STATUS>;
+    group: IGroup;
+  }
+>;
+
+// MANTER SEM PADRÃO UPPERCASE POIS MAPEIA AS CHAVE <- VALOR PARA MONGOOSE
+export const E_SCHEMA_TYPE = {
+  NUMBER: 'Number',
+  STRING: 'String',
+  DATE: 'Date',
+  BOOLEAN: 'Boolean',
+  OBJECT_ID: 'ObjectId',
+} as const;
+
+export type ISchema = {
+  type: ValueOf<typeof E_SCHEMA_TYPE>;
+  required?: boolean;
+  ref?: string;
+  default?: string | number | boolean | null;
+};
+
+export type ITableSchema = Record<string, ISchema | ISchema[]>;
+
+export type ITableConfiguration = {
+  style: ValueOf<typeof E_TABLE_STYLE>;
+  visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
+  collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
+  administrators: IUser[];
+  owner: IUser;
+  fields: {
+    orderList: string[];
+    orderForm: string[];
+  };
+};
+
+export type ITableMethod = {
+  onLoad: { code: string | null };
+  beforeSave: { code: string | null };
+  afterSave: { code: string | null };
+};
+
+export type ITable = Merge<
+  Base,
+  {
+    _schema: ITableSchema;
+    name: string;
+    description: string | null;
+    logo: IStorage | null;
+    slug: string;
+    fields: IField[];
+    type: ValueOf<typeof E_TABLE_TYPE>;
+    configuration: ITableConfiguration;
+    methods: ITableMethod;
+  }
+>;
+
+export type ICategory = {
+  id: string;
+  label: string;
+  children: unknown[];
+};
+
+export type IFieldConfigurationRelationship = {
+  table: Pick<ITable, '_id' | 'slug'>;
+  field: Pick<IField, '_id' | 'slug'>;
+  order: 'asc' | 'desc';
+};
+
+export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
+
+export type IField = Merge<
+  Base,
+  {
+    name: string;
+    slug: string;
+    type: ValueOf<typeof E_FIELD_TYPE>;
+    configuration: {
+      required: boolean;
+      multiple: boolean;
+      format: ValueOf<typeof E_FIELD_FORMAT> | null;
+      listing: boolean;
+      filtering: boolean;
+      defaultValue: string | null;
+      relationship: IFieldConfigurationRelationship | null;
+      dropdown: string[];
+      category: ICategory[];
+      group: IFieldConfigurationGroup | null;
+    };
+  }
+>;
+
+export type IRow = Merge<Base, Record<string, any>>;
+
+export type IAttachment = {
+  filename: string;
+  content: Buffer | string;
+};
+
+export type IEmailOptions = {
+  from?: string;
+  to: string;
+  subject: string;
+  text?: string;
+  html?: string;
+  attachments?: Array<IAttachment>;
+};
+
+export type ISentMessageInfo = {
+  accepted: string[];
+  rejected: string[];
+  envelope: {
+    from: string;
+    to: string[];
+  };
+};
+
+export type ISearch = Merge<
+  Record<string, unknown>,
+  {
+    page: number;
+    perPage: number;
+    search?: string;
+    trashed?: 'true' | 'false';
+    sub?: string;
+  }
+>;
+
+export type IMeta = {
+  total: number;
+  page: number;
+  perPage: number;
+  lastPage: number;
+  firstPage: number;
+};
+
+export type Paginated<Entity> = {
+  data: Entity[];
+  meta: IMeta;
+};
+
+export const E_REACTION_TYPE = {
+  LIKE: 'LIKE',
+  UNLIKE: 'UNLIKE',
+} as const;
+
+export type IReaction = Merge<
+  Base,
+  {
+    user: IUser;
+    type: ValueOf<typeof E_REACTION_TYPE>;
+  }
+>;
+
+export type IEvaluation = Merge<
+  Base,
+  {
+    user: IUser;
+    value: number;
+  }
+>;
+
+export type IMenu = Merge<
+  Base,
+  {
+    name: string;
+    slug: string;
+    type: ValueOf<typeof E_MENU_ITEM_TYPE>;
+    table: string | null;
+    parent: string | null;
+    url: string | null;
+    html: string | null;
+  }
+>;
+
+export type ISetting = {
   LOCALE: string;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_ACCEPTED: string;
@@ -271,4 +355,24 @@ export interface Setting {
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;
   EMAIL_PROVIDER_PASSWORD?: string;
-}
+};
+
+export const E_TABLE_PERMISSION = {
+  // TABLE
+  CREATE_TABLE: 'CREATE_TABLE',
+  UPDATE_TABLE: 'UPDATE_TABLE',
+  REMOVE_TABLE: 'REMOVE_TABLE',
+  VIEW_TABLE: 'VIEW_TABLE',
+
+  // FIELD
+  CREATE_FIELD: 'CREATE_FIELD',
+  UPDATE_FIELD: 'UPDATE_FIELD',
+  REMOVE_FIELD: 'REMOVE_FIELD',
+  VIEW_FIELD: 'VIEW_FIELD',
+
+  // ROW
+  CREATE_ROW: 'CREATE_ROW',
+  UPDATE_ROW: 'UPDATE_ROW',
+  REMOVE_ROW: 'REMOVE_ROW',
+  VIEW_ROW: 'VIEW_ROW',
+} as const;

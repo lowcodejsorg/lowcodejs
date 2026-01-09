@@ -1,25 +1,24 @@
 import { FileTextIcon } from 'lucide-react';
-import z from 'zod';
 
 import { SeparatorInfo } from '../-separator-info';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { MENU_ITEM_TYPE } from '@/lib/constant';
+import { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { MenuUpdateBodySchema } from '@/lib/schemas';
 
-export const MenuUpdateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  type: z.string().min(1, 'Tipo é obrigatório'),
-  table: z.string().default(''),
-  html: z.string().default(''),
-  url: z.string().default(''),
-  parent: z.string().default(''),
-});
-
-export type MenuUpdateFormValues = z.infer<typeof MenuUpdateSchema>;
+export const MenuUpdateSchema = MenuUpdateBodySchema;
+export type MenuUpdateFormValues = {
+  name: string;
+  type: (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
+  table: string;
+  html: string;
+  url: string;
+  parent: string;
+};
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   name: '',
-  type: 'separator',
+  type: E_MENU_ITEM_TYPE.SEPARATOR,
   table: '',
   html: '',
   url: '',
@@ -31,7 +30,9 @@ export const UpdateMenuFormFields = withForm({
   props: {
     isPending: false,
     mode: 'show' as 'show' | 'edit',
-    menuType: 'separator' as string,
+    menuType: E_MENU_ITEM_TYPE.SEPARATOR as
+      | (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE]
+      | '',
   },
   render: function Render({ form, isPending, mode, menuType }) {
     const isDisabled = mode === 'show' || isPending;
@@ -83,7 +84,7 @@ export const UpdateMenuFormFields = withForm({
         </form.AppField>
 
         {/* Campo Parent - Oculto para tipo SEPARATOR */}
-        {menuType !== MENU_ITEM_TYPE.SEPARATOR && (
+        {menuType !== E_MENU_ITEM_TYPE.SEPARATOR && (
           <form.AppField name="parent">
             {(field) => (
               <field.FieldMenuCombobox
@@ -96,15 +97,15 @@ export const UpdateMenuFormFields = withForm({
         )}
 
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
-        {[MENU_ITEM_TYPE.TABLE, MENU_ITEM_TYPE.FORM].includes(menuType) && (
+        {(menuType === E_MENU_ITEM_TYPE.TABLE ||
+          menuType === E_MENU_ITEM_TYPE.FORM) && (
           <form.AppField
             name="table"
             validators={{
               onBlur: ({ value }) => {
                 if (
-                  [MENU_ITEM_TYPE.TABLE, MENU_ITEM_TYPE.FORM].includes(
-                    menuType,
-                  ) &&
+                  (menuType === E_MENU_ITEM_TYPE.TABLE ||
+                    menuType === E_MENU_ITEM_TYPE.FORM) &&
                   (!value || value.trim() === '')
                 ) {
                   return { message: 'Tabela é obrigatória' };
@@ -125,7 +126,7 @@ export const UpdateMenuFormFields = withForm({
         )}
 
         {/* Campo HTML - Condicional para tipo PAGE */}
-        {menuType === MENU_ITEM_TYPE.PAGE && (
+        {menuType === E_MENU_ITEM_TYPE.PAGE && (
           <form.AppField
             name="html"
             validators={{
@@ -147,13 +148,13 @@ export const UpdateMenuFormFields = withForm({
         )}
 
         {/* Campo URL - Condicional para tipo EXTERNAL */}
-        {menuType === MENU_ITEM_TYPE.EXTERNAL && (
+        {menuType === E_MENU_ITEM_TYPE.EXTERNAL && (
           <form.AppField
             name="url"
             validators={{
               onBlur: ({ value }) => {
                 if (
-                  menuType === MENU_ITEM_TYPE.EXTERNAL &&
+                  menuType === E_MENU_ITEM_TYPE.EXTERNAL &&
                   (!value || value.trim() === '')
                 ) {
                   return { message: 'URL é obrigatória' };
@@ -181,7 +182,7 @@ export const UpdateMenuFormFields = withForm({
         )}
 
         {/* Info para tipo SEPARATOR */}
-        {menuType === MENU_ITEM_TYPE.SEPARATOR && <SeparatorInfo />}
+        {menuType === E_MENU_ITEM_TYPE.SEPARATOR && <SeparatorInfo />}
       </section>
     );
   },

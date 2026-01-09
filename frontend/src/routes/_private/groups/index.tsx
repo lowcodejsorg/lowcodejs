@@ -20,7 +20,7 @@ export const Route = createFileRoute('/_private/groups/')({
   }),
 });
 
-function RouteComponent() {
+function RouteComponent(): React.JSX.Element {
   const search = useSearch({
     from: '/_private/groups/',
   });
@@ -68,13 +68,13 @@ function RouteComponent() {
         {pagination.status === 'success' && (
           <TableGroups
             headers={headers}
-            data={pagination.data?.data || []}
+            data={pagination.data.data}
           />
         )}
       </div>
 
       <div className="shrink-0 border-t p-2">
-        <Pagination meta={pagination?.data?.meta ?? MetaDefault} />
+        <Pagination meta={pagination.data?.meta ?? MetaDefault} />
       </div>
     </div>
   );

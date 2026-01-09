@@ -39,7 +39,7 @@ export const UserUpdateSchema: FastifySchema = {
       },
       status: {
         type: 'string',
-        enum: ['active', 'inactive'],
+        enum: ['ACTIVE', 'INACTIVE'],
         description: 'User status',
       },
     },

@@ -17,6 +17,7 @@ import {
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { E_TABLE_STYLE } from '@/lib/constant';
 import type { ITable, Paginated } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
@@ -69,16 +70,9 @@ export function TableStyleViewDropdown({
   // Ocultar se não pode editar tabela
   if (!permission.can('UPDATE_TABLE')) return null;
 
-  const canShowDocument =
-    table.status === 'success' &&
-    table.data?.fields?.some(
-      (f) => !f.trashed && f.type === FIELD_TYPE.TEXT_SHORT
-    ) &&
-    table.data?.fields?.some(
-      (f) => !f.trashed && f.type === FIELD_TYPE.TEXT_LONG
-    );
-
-  const handleStyleChange = (style: 'list' | 'gallery' | 'document') => {
+  const handleStyleChange = (
+    style: (typeof E_TABLE_STYLE)[keyof typeof E_TABLE_STYLE],
+  ) => {
     if (!table.data) return;
 
     update.mutate({
@@ -96,7 +90,7 @@ export function TableStyleViewDropdown({
     } as any);
   };
 
-  const currentStyle = table.data?.configuration?.style ?? 'list';
+  const currentStyle = table.data?.configuration?.style ?? E_TABLE_STYLE.LIST;
   const isDisabled =
     (table.status === 'success' && table.data?.fields?.length === 0) ||
     table.status === 'pending' ||
@@ -117,7 +111,7 @@ export function TableStyleViewDropdown({
         >
           {update.status === 'pending' ? (
             <LoaderCircleIcon className="size-4 animate-spin" />
-          ) : currentStyle === 'gallery' ? (
+          ) : currentStyle === E_TABLE_STYLE.GALLERY ? (
             <LayoutDashboardIcon className="size-4" />
           ) : (
             <LayoutListIcon className="size-4" />
@@ -130,17 +124,17 @@ export function TableStyleViewDropdown({
         <DropdownMenuContent className="max-w-xs">
           <DropdownMenuRadioGroup value={currentStyle}>
             <DropdownMenuRadioItem
-              value="list"
+              value={E_TABLE_STYLE.LIST}
               className="inline-flex space-x-1 w-full"
-              onClick={() => handleStyleChange('list')}
+              onClick={() => handleStyleChange(E_TABLE_STYLE.LIST)}
             >
               <LayoutListIcon className="size-4" />
               <span>Lista</span>
             </DropdownMenuRadioItem>
             <DropdownMenuRadioItem
               className="inline-flex space-x-1 w-full"
-              value="gallery"
-              onClick={() => handleStyleChange('gallery')}
+              value={E_TABLE_STYLE.GALLERY}
+              onClick={() => handleStyleChange(E_TABLE_STYLE.GALLERY)}
             >
               <LayoutDashboardIcon className="size-4" />
               <span>Galeria</span>

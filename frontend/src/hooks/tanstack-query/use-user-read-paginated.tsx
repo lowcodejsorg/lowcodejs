@@ -3,15 +3,10 @@ import { useQuery } from '@tanstack/react-query';
 
 import { API } from '@/lib/api';
 import type { IUser, Paginated } from '@/lib/interfaces';
-
-type SearchParams = {
-  page?: number;
-  perPage?: number;
-  search?: string;
-};
+import type { BaseQueryPayload } from '@/lib/payloads';
 
 export function useUserReadPaginated(
-  params?: SearchParams,
+  params?: BaseQueryPayload,
 ): UseQueryResult<Paginated<IUser>, Error> {
   const search = params ?? { page: 1, perPage: 50 };
 

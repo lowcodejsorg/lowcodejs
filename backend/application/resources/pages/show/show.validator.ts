@@ -1,5 +1,7 @@
 import z from 'zod';
 
-export const PageShowParamValidator = z.object({
+export const PageShowParamsValidator = z.object({
   slug: z.string().trim(),
 });
+
+export type PageShowPayload = z.infer<typeof PageShowParamsValidator>;

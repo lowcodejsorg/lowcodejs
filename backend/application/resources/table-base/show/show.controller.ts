@@ -6,7 +6,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableShowSchema } from './show.schema';
 import TableShowUseCase from './show.use-case';
-import { TableShowParamValidator } from './show.validator';
+import { TableShowParamsValidator } from './show.validator';
 
 @Controller({
   route: 'tables',
@@ -34,7 +34,7 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = TableShowParamValidator.parse(request.params);
+    const params = TableShowParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
       ...params,

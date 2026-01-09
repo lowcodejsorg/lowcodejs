@@ -1,39 +1,42 @@
 /* eslint-disable no-unused-vars */
-import type { UserGroup } from '@application/core/entity.core';
+import type {
+  E_ROLE,
+  IGroup,
+  IUser,
+  Merge,
+  ValueOf,
+} from '@application/core/entity.core';
 
-export interface UserGroupCreatePayload {
-  name: string;
-  slug: string;
-  description?: string | null;
-  permissions: string[];
-}
+export type UserGroupCreatePayload = Merge<
+  Pick<IGroup, 'name' | 'slug'>,
+  {
+    description?: string | null;
+    permissions: string[];
+  }
+>;
 
-export interface UserGroupFindByPayload {
-  _id?: string;
-  slug?: string;
-  exact?: boolean;
-}
+export type UserGroupUpdatePayload = Merge<
+  Pick<IGroup, '_id'>,
+  Partial<UserGroupCreatePayload>
+>;
 
-export interface UserGroupQueryPayload {
+export type UserGroupFindByPayload = Merge<
+  Partial<Pick<IGroup, '_id' | 'slug'>>,
+  { exact: boolean }
+>;
+
+export type UserGroupQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
-  _id?: string;
-}
-
-export interface UserGroupUpdatePayload {
-  _id: string;
-  name?: string;
-  slug?: string;
-  description?: string | null;
-  permissions?: string[];
-}
+  user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+};
 
 export abstract class UserGroupContractRepository {
-  abstract create(payload: UserGroupCreatePayload): Promise<UserGroup>;
-  abstract findBy(payload: UserGroupFindByPayload): Promise<UserGroup | null>;
-  abstract findMany(payload?: UserGroupQueryPayload): Promise<UserGroup[]>;
-  abstract update(payload: UserGroupUpdatePayload): Promise<UserGroup>;
+  abstract create(payload: UserGroupCreatePayload): Promise<IGroup>;
+  abstract findBy(payload: UserGroupFindByPayload): Promise<IGroup | null>;
+  abstract findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]>;
+  abstract update(payload: UserGroupUpdatePayload): Promise<IGroup>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: UserGroupQueryPayload): Promise<number>;
 }

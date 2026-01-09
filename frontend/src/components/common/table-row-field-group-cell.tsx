@@ -1,4 +1,4 @@
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 
@@ -46,7 +46,7 @@ export function TableRowFieldGroupCell({
           className="grid grid-cols-2 gap-2 p-2 border rounded"
         >
           {table.data.fields
-            .filter((f) => f.type !== FIELD_TYPE.FIELD_GROUP && !f.trashed)
+            .filter((f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed)
             .map((groupField) => (
               <div key={groupField._id} className="flex flex-col gap-0.5">
                 <span className="text-xs font-medium text-muted-foreground">
@@ -79,23 +79,23 @@ function RenderGroupFieldCell({
   }
 
   switch (field.type) {
-    case FIELD_TYPE.TEXT_SHORT:
+    case E_FIELD_TYPE.TEXT_SHORT:
       return <TableRowTextShortCell field={field} row={row} />;
-    case FIELD_TYPE.TEXT_LONG:
+    case E_FIELD_TYPE.TEXT_LONG:
       return <TableRowTextLongCell field={field} row={row} />;
-    case FIELD_TYPE.DATE:
+    case E_FIELD_TYPE.DATE:
       return <TableRowDateCell field={field} row={row} />;
-    case FIELD_TYPE.DROPDOWN:
+    case E_FIELD_TYPE.DROPDOWN:
       return <TableRowDropdownCell field={field} row={row} />;
-    case FIELD_TYPE.CATEGORY:
+    case E_FIELD_TYPE.CATEGORY:
       return <TableRowCategoryCell field={field} row={row} />;
-    case FIELD_TYPE.RELATIONSHIP:
+    case E_FIELD_TYPE.RELATIONSHIP:
       return <TableRowRelationshipCell field={field} row={row} />;
-    case FIELD_TYPE.FILE:
+    case E_FIELD_TYPE.FILE:
       return <TableRowFileCell field={field} row={row} />;
-    case FIELD_TYPE.REACTION:
+    case E_FIELD_TYPE.REACTION:
       return <TableRowReactionCell field={field} row={row} tableSlug={tableSlug} />;
-    case FIELD_TYPE.EVALUATION:
+    case E_FIELD_TYPE.EVALUATION:
       return <TableRowEvaluationCell field={field} row={row} tableSlug={tableSlug} />;
     default:
       return <span className="text-muted-foreground text-sm">-</span>;

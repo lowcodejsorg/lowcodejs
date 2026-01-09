@@ -1,18 +1,17 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import slugify from 'slugify';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { UserGroup as Entity } from '@application/core/entity.core';
+import type { IGroup as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
-import type { UserCreateGroupBodyValidator } from './create.validator';
+import type { UserGroupCreatePayload } from './create.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = z.infer<typeof UserCreateGroupBodyValidator>;
+type Payload = UserGroupCreatePayload;
 
 @Service()
 export default class UserGroupCreateUseCase {
@@ -48,7 +47,6 @@ export default class UserGroupCreateUseCase {
 
       return right(created);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

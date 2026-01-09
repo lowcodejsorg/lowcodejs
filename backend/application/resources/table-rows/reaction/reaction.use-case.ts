@@ -1,55 +1,46 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 import type { ObjectId } from 'mongoose';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
+import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
-import { Reaction } from '@application/model/reaction.model';
-import { Table } from '@application/model/table.model';
+import { ReactionContractRepository } from '@application/repositories/reaction/reaction-contract.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type {
-  TableRowReactionBodyValidator,
-  TableRowReactionParamValidator,
-} from './reaction.validator';
+import type { TableRowReactionPayload } from './reaction.validator';
 
 type Response = Either<
   HTTPException,
-  import('@application/core/entity.core').Row
+  import('@application/core/entity.core').IRow
 >;
 
-type Payload = z.infer<typeof TableRowReactionBodyValidator> &
-  z.infer<typeof TableRowReactionParamValidator>;
+type Payload = TableRowReactionPayload;
 
 @Service()
 export default class TableRowReactionUseCase {
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly reactionRepository: ReactionContractRepository,
+  ) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!table)
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const c = await buildTable({
-        ...table.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: table._id.toString(),
-      });
+      const c = await buildTable(table);
 
-      const populate = await buildPopulate(
-        table.fields as import('@application/core/entity.core').Field[],
-      );
+      const populate = await buildPopulate(table.fields as IField[]);
 
       const row = await c.findOne({
         _id: payload._id,
@@ -58,26 +49,21 @@ export default class TableRowReactionUseCase {
       if (!row)
         return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
 
-      let reaction = await Reaction.findOne({
+      let reaction = await this.reactionRepository.findBy({
         user: payload.user,
+        exact: true,
       });
 
       if (!reaction) {
-        reaction = await Reaction.create({
+        reaction = await this.reactionRepository.create({
           type: payload.type,
           user: payload.user,
         });
-      }
-
-      if (reaction) {
-        await reaction
-          .set({
-            ...reaction.toJSON({
-              flattenObjectIds: true,
-            }),
-            type: payload.type,
-          })
-          .save();
+      } else {
+        reaction = await this.reactionRepository.update({
+          _id: reaction._id,
+          type: payload.type,
+        });
       }
 
       const reactions =
@@ -86,14 +72,7 @@ export default class TableRowReactionUseCase {
 
       // se não existir a reação adiciona o id na propriedade do registro
       if (!reactions.includes(reactionId))
-        await row
-          ?.set({
-            ...row?.toJSON({
-              flattenObjectIds: true,
-            }),
-            [payload.field]: [...reactions, reactionId],
-          })
-          .save();
+        await row?.set(payload.field, [...reactions, reactionId]).save();
 
       const populated = await row?.populate(populate);
 
@@ -104,7 +83,6 @@ export default class TableRowReactionUseCase {
         _id: populated?._id.toString(),
       });
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

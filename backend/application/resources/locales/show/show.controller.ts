@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET } from 'fastify-decorators';
 import { readFile } from 'fs/promises';
@@ -64,7 +65,6 @@ export default class {
 
       return response.status(200).send(translations);
     } catch (error) {
-      console.error(error);
       return response.status(500).send({
         message: 'Internal server error',
         code: 500,

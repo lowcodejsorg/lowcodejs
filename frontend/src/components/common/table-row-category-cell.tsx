@@ -1,6 +1,7 @@
-import { Badge } from '@/components/ui/badge';
 import type { IField, IRow } from '@/lib/interfaces';
 import { getCategoryItem } from '@/lib/utils';
+
+import { TableRowBadgeList } from './table-row-badge-list';
 
 interface TableRowCategoryCellProps {
   row: IRow;
@@ -16,17 +17,11 @@ export function TableRowCategoryCell({
     getCategoryItem(field.configuration.category ?? [], value),
   );
 
-  if (items.length === 0) {
-    return <span className="text-muted-foreground text-sm">-</span>;
-  }
-
   return (
-    <div className="inline-flex flex-wrap gap-1">
-      {items.map((item) => (
-        <Badge key={item?.id} variant="outline" className="text-muted-foreground">
-          {item?.label}
-        </Badge>
-      ))}
-    </div>
+    <TableRowBadgeList
+      values={items}
+      renderLabel={(item) => item?.label}
+      getKey={(item) => item?.id ?? ''}
+    />
   );
 }

@@ -1,6 +1,7 @@
+/* eslint-disable no-unused-vars */
 import { type FastifyRequest } from 'fastify';
 
-import type { JWTPayload } from '@application/core/entity.core';
+import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 
 interface AuthOptions {
@@ -22,10 +23,13 @@ export function AuthenticationMiddleware(
         );
       }
 
-      const accessTokenDecoded: JWTPayload | null =
+      const accessTokenDecoded: IJWTPayload | null =
         await request.server.jwt.decode(String(accessToken));
 
-      if (!accessTokenDecoded || accessTokenDecoded.type !== 'access') {
+      if (
+        !accessTokenDecoded ||
+        accessTokenDecoded.type !== E_JWT_TYPE.ACCESS
+      ) {
         if (options.optional) return;
         throw HTTPException.Unauthorized(
           'Authentication required',
@@ -37,12 +41,11 @@ export function AuthenticationMiddleware(
         sub: accessTokenDecoded.sub,
         email: accessTokenDecoded.email,
         role: accessTokenDecoded.role,
-        type: 'access',
+        type: E_JWT_TYPE.ACCESS,
       };
     } catch (error) {
       if (options.optional) return;
 
-      console.error('Authentication error:', error);
       throw HTTPException.Unauthorized(
         'Authentication required',
         'AUTHENTICATION_REQUIRED',

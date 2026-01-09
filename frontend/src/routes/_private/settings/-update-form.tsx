@@ -9,7 +9,7 @@ import {
   UploadIcon,
 } from 'lucide-react';
 import React from 'react';
-import z from 'zod';
+import { z } from 'zod';
 
 import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
 import {
@@ -34,8 +34,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import type { ISetting, IStorage } from '@/lib/interfaces';
+import type { ISetting, IStorage, Merge } from '@/lib/interfaces';
 
+// Schema com campos de UI (logoSmallFile/logoLargeFile são para upload no frontend)
 export const SettingUpdateSchema = z.object({
   LOCALE: z.string().min(1, 'O idioma é obrigatório'),
   LOGO_SMALL_URL: z.string().nullable(),
@@ -52,7 +53,23 @@ export const SettingUpdateSchema = z.object({
   logoLargeFile: z.array(z.instanceof(File)),
 });
 
-export type SettingUpdateFormValues = z.infer<typeof SettingUpdateSchema>;
+// Form usa string para números (inputs), payload usa number
+export type SettingUpdateFormValues = Merge<
+  {
+    LOCALE: string;
+    LOGO_SMALL_URL: string | null;
+    LOGO_LARGE_URL: string | null;
+    FILE_UPLOAD_MAX_SIZE: string;
+    FILE_UPLOAD_MAX_FILES_PER_UPLOAD: string;
+    FILE_UPLOAD_ACCEPTED: string;
+    PAGINATION_PER_PAGE: string;
+    EMAIL_PROVIDER_HOST: string;
+    EMAIL_PROVIDER_PORT: string;
+    EMAIL_PROVIDER_USER: string;
+    EMAIL_PROVIDER_PASSWORD: string;
+  },
+  { logoSmallFile: File[]; logoLargeFile: File[] }
+>;
 
 export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   LOCALE: 'pt-br',

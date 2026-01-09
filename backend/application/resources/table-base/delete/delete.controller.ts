@@ -8,7 +8,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableDeleteSchema } from './delete.schema';
 import TableDeleteUseCase from './delete.use-case';
-import { TableDeleteParamValidator } from './delete.validator';
+import { TableDeleteParamsValidator } from './delete.validator';
 
 @Controller({
   route: 'tables',
@@ -35,7 +35,7 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = TableDeleteParamValidator.parse(request.params);
+    const params = TableDeleteParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute(params);
 

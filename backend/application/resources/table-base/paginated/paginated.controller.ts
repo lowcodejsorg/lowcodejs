@@ -36,7 +36,6 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    console.log('request.query', request.query);
     const query = TablePaginatedQueryValidator.parse(request.query);
 
     const result = await this.useCase.execute({

@@ -1,5 +1,3 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -8,6 +6,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
 interface TableVisibilitySelectFieldProps {
@@ -36,18 +36,23 @@ export function TableVisibilitySelectField({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(value as 'public' | 'restricted' | 'open' | 'form' | 'private');
+          field.handleChange(
+            value as 'public' | 'restricted' | 'open' | 'form' | 'private',
+          );
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="private">Privada</SelectItem>
-          <SelectItem value="restricted">Restrita</SelectItem>
-          <SelectItem value="open">Aberta</SelectItem>
-          <SelectItem value="public">Pública</SelectItem>
-          <SelectItem value="form">Formulário online</SelectItem>
+          {TABLE_VISIBILITY_OPTIONS.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+            >
+              {option.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
       {isInvalid && <FieldError errors={field.state.meta.errors} />}

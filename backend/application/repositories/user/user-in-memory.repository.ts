@@ -1,4 +1,4 @@
-import type { User } from '@application/core/entity.core';
+import { E_USER_STATUS, type IUser } from '@application/core/entity.core';
 
 import type {
   UserContractRepository,
@@ -9,14 +9,14 @@ import type {
 } from './user-contract.repository';
 
 export default class UserInMemoryRepository implements UserContractRepository {
-  private items: User[] = [];
+  private items: IUser[] = [];
 
-  async create(payload: UserCreatePayload): Promise<User> {
-    const user: User = {
+  async create(payload: UserCreatePayload): Promise<IUser> {
+    const user: IUser = {
       ...payload,
       _id: crypto.randomUUID(),
-      status: 'inactive',
-      group: { _id: payload.group } as User['group'],
+      status: E_USER_STATUS.ACTIVE,
+      group: { _id: payload.group } as IUser['group'],
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -26,7 +26,11 @@ export default class UserInMemoryRepository implements UserContractRepository {
     return user;
   }
 
-  async findBy({ _id, email, exact }: UserFindByPayload): Promise<User | null> {
+  async findBy({
+    _id,
+    email,
+    exact,
+  }: UserFindByPayload): Promise<IUser | null> {
     const user = this.items.find((_user) => {
       if (exact) {
         return (
@@ -40,8 +44,25 @@ export default class UserInMemoryRepository implements UserContractRepository {
     return user ?? null;
   }
 
-  async findMany(payload?: UserQueryPayload): Promise<User[]> {
+  async findMany(payload?: UserQueryPayload): Promise<IUser[]> {
     let filtered = this.items;
+
+    // Filtro por trashed
+    if (payload?.trashed !== undefined) {
+      filtered = filtered.filter((user) => user.trashed === payload.trashed);
+    } else {
+      filtered = filtered.filter((user) => !user.trashed);
+    }
+
+    // Filtro por múltiplos IDs
+    if (payload?._ids && payload._ids.length > 0) {
+      filtered = filtered.filter((user) => payload._ids!.includes(user._id));
+    }
+
+    // Filtro por status
+    if (payload?.status) {
+      filtered = filtered.filter((user) => user.status === payload.status);
+    }
 
     if (payload?.user?._id) {
       filtered = filtered.filter((user) => user._id !== payload.user?._id);
@@ -64,7 +85,7 @@ export default class UserInMemoryRepository implements UserContractRepository {
     return filtered;
   }
 
-  async update({ _id, ...payload }: UserUpdatePayload): Promise<User> {
+  async update({ _id, ...payload }: UserUpdatePayload): Promise<IUser> {
     const updated = this.items.find((user) => user._id === _id);
     if (!updated) throw new Error('User not found');
     Object.assign(updated, payload, { updatedAt: new Date() });

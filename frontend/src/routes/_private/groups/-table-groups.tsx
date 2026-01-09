@@ -1,4 +1,7 @@
-import { Badge } from '@/components/ui/badge';
+import { useRouter } from '@tanstack/react-router';
+import { ArrowRightIcon } from 'lucide-react';
+import React from 'react';
+
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import {
@@ -9,17 +12,15 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { IGroup } from '@/lib/interfaces';
-import { useRouter } from '@tanstack/react-router';
-import { ArrowRightIcon } from 'lucide-react';
-import React from 'react';
+import { USER_GROUP_MAPPER } from '@/lib/constant';
+import type { IGroup } from '@/lib/interfaces';
 
 interface Props {
-  data: IGroup[];
-  headers: string[];
+  data: Array<IGroup>;
+  headers: Array<string>;
 }
 
-function TableGroupRow({ group }: { group: IGroup }) {
+function TableGroupRow({ group }: { group: IGroup }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -37,10 +38,12 @@ function TableGroupRow({ group }: { group: IGroup }) {
         });
       }}
     >
-      <TableCell>{group.name}</TableCell>
       <TableCell>
-        <Badge variant="outline">{group.slug}</Badge>
+        {group.slug in USER_GROUP_MAPPER &&
+          USER_GROUP_MAPPER[group.slug as keyof typeof USER_GROUP_MAPPER]}
+        {!(group.slug in USER_GROUP_MAPPER) && group.name}
       </TableCell>
+
       <TableCell className="truncate max-w-xs">
         {group.description || 'N/A'}
       </TableCell>
@@ -62,7 +65,7 @@ export function TableGroups({ data, headers }: Props): React.ReactElement {
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow className="">
-          {headers?.map((head) => (
+          {headers.map((head) => (
             <TableHead key={head}>
               <span>{head}</span>
             </TableHead>

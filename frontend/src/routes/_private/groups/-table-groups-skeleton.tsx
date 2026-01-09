@@ -11,13 +11,13 @@ import {
 export function TableGroupsSkeleton({
   headers,
 }: {
-  headers: string[];
+  headers: Array<string>;
 }): React.JSX.Element {
   return (
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow>
-          {headers?.map((head) => (
+          {headers.map((head) => (
             <TableHead key={head}>
               <span>{head}</span>
             </TableHead>
@@ -30,9 +30,6 @@ export function TableGroupsSkeleton({
           <TableRow key={index}>
             <TableCell>
               <Skeleton className="h-4 w-37.5" />
-            </TableCell>
-            <TableCell>
-              <Skeleton className="h-6 w-30 rounded-full" />
             </TableCell>
             <TableCell>
               <Skeleton className="h-4 w-62.5" />

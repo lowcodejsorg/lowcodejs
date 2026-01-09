@@ -1,4 +1,4 @@
-import type { UserGroup } from '@application/core/entity.core';
+import { E_ROLE, type IGroup, type IPermission } from '@application/core/entity.core';
 
 import type {
   UserGroupContractRepository,
@@ -9,14 +9,14 @@ import type {
 } from './user-group-contract.repository';
 
 export default class UserGroupInMemoryRepository implements UserGroupContractRepository {
-  private items: UserGroup[] = [];
+  private items: IGroup[] = [];
 
-  async create(payload: UserGroupCreatePayload): Promise<UserGroup> {
-    const group: UserGroup = {
+  async create(payload: UserGroupCreatePayload): Promise<IGroup> {
+    const group: IGroup = {
       ...payload,
       _id: crypto.randomUUID(),
       description: payload.description ?? null,
-      permissions: payload.permissions,
+      permissions: payload.permissions.map((p) => ({ _id: p }) as IPermission),
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -30,7 +30,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     _id,
     slug,
     exact = false,
-  }: UserGroupFindByPayload): Promise<UserGroup | null> {
+  }: UserGroupFindByPayload): Promise<IGroup | null> {
     const group = this.items.find((g) => {
       if (exact) {
         return (_id ? g._id === _id : true) && (slug ? g.slug === slug : true);
@@ -41,11 +41,11 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     return group ?? null;
   }
 
-  async findMany(payload?: UserGroupQueryPayload): Promise<UserGroup[]> {
+  async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
     let filtered = this.items;
 
-    if (payload?._id) {
-      filtered = filtered.filter((g) => g._id !== payload._id);
+    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
+      filtered = filtered.filter((g) => g.slug !== E_ROLE.MASTER);
     }
 
     if (payload?.search) {
@@ -68,10 +68,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     return filtered;
   }
 
-  async update({
-    _id,
-    ...payload
-  }: UserGroupUpdatePayload): Promise<UserGroup> {
+  async update({ _id, ...payload }: UserGroupUpdatePayload): Promise<IGroup> {
     const group = this.items.find((g) => g._id === _id);
     if (!group) throw new Error('UserGroup not found');
     Object.assign(group, payload, { updatedAt: new Date() });

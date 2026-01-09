@@ -6,7 +6,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableRowSendToTrashSchema } from './send-to-trash.schema';
 import TableRowSendToTrashUseCase from './send-to-trash.use-case';
-import { TableRowSendToTrashParamValidator } from './send-to-trash.validator';
+import { TableRowSendToTrashParamsValidator } from './send-to-trash.validator';
 
 @Controller({
   route: 'tables',
@@ -34,7 +34,7 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = TableRowSendToTrashParamValidator.parse(request.params);
+    const params = TableRowSendToTrashParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({ ...params });
 

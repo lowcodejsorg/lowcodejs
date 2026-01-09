@@ -1,18 +1,17 @@
 /* eslint-disable no-unused-vars */
 import bcrypt from 'bcryptjs';
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { User as Entity } from '@application/core/entity.core';
+import type { IUser as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
-import type { UserCreateBodyValidator } from './create.validator';
+import type { UserCreatePayload } from './create.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = z.infer<typeof UserCreateBodyValidator>;
+type Payload = UserCreatePayload;
 
 @Service()
 export default class UserCreateUseCase {
@@ -39,7 +38,6 @@ export default class UserCreateUseCase {
 
       return right(created);
     } catch (_error) {
-      // console.error(_error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

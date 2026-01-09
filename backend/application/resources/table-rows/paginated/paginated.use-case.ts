@@ -1,9 +1,9 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { Meta, Paginated } from '@application/core/entity.core';
+import type { IField, IMeta, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   buildOrder,
@@ -11,61 +11,42 @@ import {
   buildQuery,
   buildTable,
 } from '@application/core/util.core';
-import { Table } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type {
-  TableRowPaginatedParamValidator,
-  TableRowPaginatedQueryValidator,
-} from './paginated.validator';
+import type { TableRowPaginatedPayload } from './paginated.validator';
 
 type Response = Either<
   HTTPException,
-  Paginated<import('@application/core/entity.core').Row>
+  Paginated<import('@application/core/entity.core').IRow>
 >;
 
-type Payload = z.infer<typeof TableRowPaginatedQueryValidator> &
-  z.infer<typeof TableRowPaginatedParamValidator>;
+type Payload = TableRowPaginatedPayload;
 
 @Service()
 export default class TableRowPaginatedUseCase {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
       const skip = (payload.page - 1) * payload.perPage;
 
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!table)
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const c = await buildTable({
-        ...table?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: table?._id.toString(),
-      });
+      const c = await buildTable(table);
 
-      const query = await buildQuery(
-        payload,
-        table?.fields as import('@application/core/entity.core').Field[],
-      );
+      const query = await buildQuery(payload, table.fields as IField[]);
 
-      const order = buildOrder(
-        payload,
-        table?.fields as import('@application/core/entity.core').Field[],
-      );
+      const order = buildOrder(payload, table.fields as IField[]);
 
-      const populate = await buildPopulate(
-        table?.fields as import('@application/core/entity.core').Field[],
-      );
+      const populate = await buildPopulate(table.fields as IField[]);
 
       const rows = await c
         .find(query)
@@ -78,7 +59,7 @@ export default class TableRowPaginatedUseCase {
 
       const lastPage = Math.ceil(total / payload.perPage);
 
-      const meta: Meta = {
+      const meta: IMeta = {
         total,
         perPage: payload.perPage,
         page: payload.page,
@@ -97,7 +78,6 @@ export default class TableRowPaginatedUseCase {
         })),
       });
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

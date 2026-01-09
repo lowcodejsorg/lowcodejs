@@ -6,7 +6,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableRemoveFromTrashSchema } from './remove-from-trash.schema';
 import TableRemoveFromTrashUseCase from './remove-from-trash.use-case';
-import { TableRemoveFromTrashParamValidator } from './remove-from-trash.validator';
+import { TableRemoveFromTrashParamsValidator } from './remove-from-trash.validator';
 
 @Controller({
   route: 'tables',
@@ -34,7 +34,7 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = TableRemoveFromTrashParamValidator.parse(request.params);
+    const params = TableRemoveFromTrashParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute(params);
 

@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -134,12 +134,12 @@ export function TableConfigurationDropdown({
 
   const activeFields =
     table.data?.fields.filter(
-      (f) => f.type !== FIELD_TYPE.FIELD_GROUP && !f.trashed,
+      (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
     ) ?? [];
 
   const fieldGroups =
     table.data?.fields.filter(
-      (f) => f.type === FIELD_TYPE.FIELD_GROUP && !f.trashed,
+      (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
     ) ?? [];
 
   // Ocultar dropdown se não tiver permissão de gerenciar
@@ -235,7 +235,7 @@ export function TableConfigurationDropdown({
           )}
         </DropdownMenuGroup>
 
-        {table.data?.type === 'table' &&
+        {table.data?.type === E_TABLE_TYPE.TABLE &&
           (permission.can('CREATE_FIELD') || permission.can('UPDATE_FIELD')) && (
             <React.Fragment>
               <DropdownMenuSeparator />
@@ -249,7 +249,7 @@ export function TableConfigurationDropdown({
                       router.navigate({
                         to: '/tables/$slug/field/create',
                         params: { slug },
-                        search: { 'field-type': FIELD_TYPE.FIELD_GROUP },
+                        search: { 'field-type': E_FIELD_TYPE.FIELD_GROUP },
                       });
                     }}
                   >
@@ -287,9 +287,9 @@ export function TableConfigurationDropdown({
                 }}
               >
                 <PencilIcon className="size-4" />
-                {table.data?.type === 'table' && <span>Editar tabela</span>}
+                {table.data?.type === E_TABLE_TYPE.TABLE && <span>Editar tabela</span>}
 
-                {table.data?.type === 'field-group' && <span>Editar grupo</span>}
+                {table.data?.type === E_TABLE_TYPE.FIELD_GROUP && <span>Editar grupo</span>}
               </DropdownMenuItem>
 
               <DropdownMenuItem
@@ -305,7 +305,7 @@ export function TableConfigurationDropdown({
                 <span>Métodos</span>
               </DropdownMenuItem>
 
-              {table.data?.type === 'table' && (
+              {table.data?.type === E_TABLE_TYPE.TABLE && (
                 <DropdownMenuItem
                   className="inline-flex space-x-1 w-full"
                   onClick={() => setApiModalOpen(true)}
@@ -315,7 +315,7 @@ export function TableConfigurationDropdown({
                 </DropdownMenuItem>
               )}
 
-              {table.data?.type === 'table' && (
+              {table.data?.type === E_TABLE_TYPE.TABLE && (
                 <DropdownMenuItem
                   className="inline-flex space-x-1 w-full"
                   onClick={() => {

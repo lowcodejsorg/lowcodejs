@@ -1,23 +1,23 @@
 import { UserIcon } from 'lucide-react';
-import z from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import { E_USER_STATUS } from '@/lib/constant';
+import { UserUpdateBodySchema } from '@/lib/schemas';
 
-export const UserUpdateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
-  password: z.string().default(''),
-  status: z.enum(['active', 'inactive']),
-  group: z.string().min(1, 'Grupo é obrigatório'),
-});
-
-export type UserUpdateFormValues = z.infer<typeof UserUpdateSchema>;
+export const UserUpdateSchema = UserUpdateBodySchema;
+export type UserUpdateFormValues = {
+  name: string;
+  email: string;
+  password: string;
+  status: (typeof E_USER_STATUS)[keyof typeof E_USER_STATUS];
+  group: string;
+};
 
 export const userUpdateFormDefaultValues: UserUpdateFormValues = {
   name: '',
   email: '',
   password: '',
-  status: 'active',
+  status: E_USER_STATUS.ACTIVE,
   group: '',
 };
 

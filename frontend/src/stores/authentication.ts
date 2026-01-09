@@ -2,17 +2,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import type { E_ROLE } from '@/lib/constant';
 import type { IUser } from '@/lib/interfaces';
 
-export const ERole = {
-  ADMINISTRATOR: 'ADMINISTRATOR',
-  REGISTERED: 'REGISTERED',
-  MANAGER: 'MANAGER',
-  MASTER: 'MASTER',
-} as const;
-
 export type Authenticated = Pick<IUser, 'name' | 'email'> & {
-  role: keyof typeof ERole;
+  role: keyof typeof E_ROLE;
   sub: string;
 };
 

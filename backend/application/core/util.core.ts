@@ -3,24 +3,27 @@ import mongoose from 'mongoose';
 
 import { Table } from '@application/model/table.model';
 
-import type { Field, Optional, Row, Schema, TableSchema } from './entity.core';
-import { E_FIELD_TYPE } from './entity.core';
+import type { IField, IRow, ITableSchema, Optional } from './entity.core';
+import { E_FIELD_TYPE, E_SCHEMA_TYPE } from './entity.core';
 import { HandlerFunction } from './table/method.core';
 
-const FieldTypeMapper: Record<keyof typeof E_FIELD_TYPE, Schema['type']> = {
-  [E_FIELD_TYPE.TEXT_SHORT]: 'String',
-  [E_FIELD_TYPE.TEXT_LONG]: 'String',
-  [E_FIELD_TYPE.DROPDOWN]: 'String',
-  [E_FIELD_TYPE.FILE]: 'ObjectId',
-  [E_FIELD_TYPE.DATE]: 'Date',
-  [E_FIELD_TYPE.RELATIONSHIP]: 'ObjectId',
-  [E_FIELD_TYPE.FIELD_GROUP]: 'ObjectId',
-  [E_FIELD_TYPE.EVALUATION]: 'ObjectId',
-  [E_FIELD_TYPE.REACTION]: 'ObjectId',
-  [E_FIELD_TYPE.CATEGORY]: 'String',
+const FieldTypeMapper: Record<
+  keyof typeof E_FIELD_TYPE,
+  (typeof E_SCHEMA_TYPE)[keyof typeof E_SCHEMA_TYPE]
+> = {
+  [E_FIELD_TYPE.TEXT_SHORT]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.TEXT_LONG]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.DROPDOWN]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.FILE]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.DATE]: E_SCHEMA_TYPE.DATE,
+  [E_FIELD_TYPE.RELATIONSHIP]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.FIELD_GROUP]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.EVALUATION]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.REACTION]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.CATEGORY]: E_SCHEMA_TYPE.STRING,
 };
 
-function mapperSchema(field: Field): TableSchema {
+function mapperSchema(field: IField): ITableSchema {
   const mapper = {
     [E_FIELD_TYPE.TEXT_SHORT]: {
       [field.slug]: {
@@ -128,8 +131,8 @@ function mapperSchema(field: Field): TableSchema {
   return mapper[field.type as keyof typeof mapper];
 }
 
-export function buildSchema(fields: Field[]): TableSchema {
-  const schema: TableSchema = {
+export function buildSchema(fields: IField[]): ITableSchema {
+  const schema: ITableSchema = {
     trashedAt: {
       type: 'Date',
       default: null,
@@ -147,13 +150,14 @@ export function buildSchema(fields: Field[]): TableSchema {
   return schema;
 }
 
-interface Entity extends Omit<Row, '_id'>, mongoose.Document<Omit<Row, '_id'>> {
+interface Entity
+  extends Omit<IRow, '_id'>, mongoose.Document<Omit<IRow, '_id'>> {
   _id: mongoose.Types.ObjectId;
 }
 
 export async function buildTable(
   table: Optional<
-    import('@application/core/entity.core').Table,
+    import('@application/core/entity.core').ITable,
     '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
   >,
 ): Promise<mongoose.Model<Entity>> {
@@ -188,7 +192,7 @@ export async function buildTable(
       const result = HandlerFunction(
         table?.methods?.beforeSave?.code!,
         this,
-        table.slug.toLowerCase(),
+        table.slug,
         table.fields.map((f: any) => f.slug),
         {
           ...(this.isNew && { userAction: 'novo_registro' }),
@@ -214,7 +218,7 @@ export async function buildTable(
       const result = HandlerFunction(
         table?.methods?.afterSave?.code!,
         doc,
-        table.slug.toLowerCase(),
+        table.slug,
         table.fields.map((f: any) => f.slug),
         {
           ...(doc.isNew && { userAction: 'novo_registro' }),
@@ -241,7 +245,7 @@ export async function buildTable(
         const result = HandlerFunction(
           table?.methods?.onLoad?.code!,
           doc,
-          table.slug.toLowerCase(),
+          table.slug,
           table.fields.map((f: any) => f.slug),
           {
             userAction: 'carregamento_formulario',
@@ -253,32 +257,6 @@ export async function buildTable(
 
         if (!result.success) {
           console.error('Erro no onLoad (não bloqueante):', result.error);
-        }
-      }
-      next();
-    });
-
-    // Para consultas múltiplas (find)
-    schema.post('find', async function (docs, next) {
-      if (docs && Array.isArray(docs)) {
-        console.log('ON LOAD - find');
-        for (const doc of docs) {
-          const result = HandlerFunction(
-            table?.methods?.onLoad?.code!,
-            doc,
-            table.slug.toLowerCase(),
-            table.fields.map((f: any) => f.slug),
-            {
-              userAction: 'carregamento_formulario',
-              executionMoment: 'carregamento_formulario',
-              tableId: table._id?.toString(),
-              userId: doc.creator?.toString(),
-            },
-          );
-
-          if (!result.success) {
-            console.error('Erro no onLoad (não bloqueante):', result.error);
-          }
         }
       }
       next();
@@ -299,7 +277,7 @@ export async function buildTable(
   return model;
 }
 
-export function getRelationship(fields: Field[] = []): Field[] {
+export function getRelationship(fields: IField[] = []): IField[] {
   const types = [
     E_FIELD_TYPE.RELATIONSHIP,
     E_FIELD_TYPE.FILE,
@@ -314,7 +292,7 @@ export function getRelationship(fields: Field[] = []): Field[] {
 }
 
 export async function buildPopulate(
-  fields?: Field[],
+  fields?: IField[],
 ): Promise<{ path: string; model?: string; select?: string }[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
@@ -367,7 +345,7 @@ export async function buildPopulate(
         });
 
         const relationshipFields = getRelationship(
-          relationshipTable?.fields as Field[],
+          relationshipTable?.fields as IField[],
         );
         const relationshipPopulate = await buildPopulate(relationshipFields);
 
@@ -400,7 +378,7 @@ export async function buildPopulate(
           _id: group._id.toString(),
         });
 
-        const groupRelationship = getRelationship(group?.fields as Field[]);
+        const groupRelationship = getRelationship(group?.fields as IField[]);
 
         const groupFields = await buildPopulate(groupRelationship);
 
@@ -428,7 +406,7 @@ type Query = Record<string, any>;
 
 export async function buildQuery(
   { search, trashed, ...payload }: Partial<Query>,
-  fields: Field[] = [],
+  fields: IField[] = [],
 ): Promise<Query> {
   let query: Query = {
     ...(trashed && { trashed: trashed === 'true' }),
@@ -502,7 +480,7 @@ export async function buildQuery(
 
       let groupPayload: Query = {};
 
-      for (const fieldGroup of group?.fields as import('@application/core/entity.core').Field[]) {
+      for (const fieldGroup of group?.fields as import('@application/core/entity.core').IField[]) {
         const fieldGroupSlug = slug.concat('-').concat(String(fieldGroup.slug));
         if (!(fieldGroupSlug in payload)) continue;
         groupPayload[fieldGroup.slug] = payload[fieldGroupSlug];
@@ -510,7 +488,7 @@ export async function buildQuery(
 
       const queryGroup = await buildQuery(
         { ...groupPayload },
-        group?.fields as import('@application/core/entity.core').Field[],
+        group?.fields as import('@application/core/entity.core').IField[],
       );
 
       if (Object.keys(queryGroup).length > 0 && group) {
@@ -569,13 +547,13 @@ export type QueryOrder = Record<
   | boolean
   | null
   | unknown
-  | RootFilterQuery<Row>
+  | RootFilterQuery<IRow>
   | QueryOrder[]
 >;
 
 export function buildOrder(
   query: Partial<QueryOrder>,
-  fields: Field[] = [],
+  fields: IField[] = [],
 ): {
   [key: string]: SortOrder;
 } {

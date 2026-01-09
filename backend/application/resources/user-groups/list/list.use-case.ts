@@ -3,11 +3,20 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { UserGroup as Entity } from '@application/core/entity.core';
+import type {
+  E_ROLE,
+  IGroup as Entity,
+  IUser,
+  Merge,
+  ValueOf,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 type Response = Either<HTTPException, Entity[]>;
+type Payload = {
+  user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+};
 
 @Service()
 export default class UserGroupListUseCase {
@@ -15,13 +24,14 @@ export default class UserGroupListUseCase {
     private readonly userGroupRepository: UserGroupContractRepository,
   ) {}
 
-  async execute(): Promise<Response> {
+  async execute(payload?: Payload): Promise<Response> {
     try {
-      const groups = await this.userGroupRepository.findMany();
+      const groups = await this.userGroupRepository.findMany({
+        user: payload?.user,
+      });
 
       return right(groups);
     } catch (error) {
-      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

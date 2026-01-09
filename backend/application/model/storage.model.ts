@@ -1,10 +1,8 @@
 import mongoose from 'mongoose';
 
-import type { Storage as Core } from '@application/core/entity.core';
+import type { IStorage as Core, Merge } from '@application/core/entity.core';
 
-interface Entity extends Omit<Core, '_id'>, mongoose.Document {
-  _id: mongoose.Types.ObjectId;
-}
+type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 export const Schema = new mongoose.Schema(
   {

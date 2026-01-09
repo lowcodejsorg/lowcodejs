@@ -42,22 +42,21 @@ export const TableUpdateSchema: FastifySchema = {
         properties: {
           style: {
             type: 'string',
-            enum: ['gallery', 'list', 'document'],
-            default: 'list',
+            enum: ['GALLERY', 'LIST', 'DOCUMENT'],
+            default: 'LIST',
             description: 'Display style',
           },
           visibility: {
             type: 'string',
-            enum: ['public', 'restricted', 'open', 'form', 'private'],
-            default: 'public',
-            description: 'Visibility setting (note: restricted not restricted)',
+            enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
+            default: 'PUBLIC',
+            description: 'Visibility setting',
           },
           collaboration: {
             type: 'string',
-            enum: ['open', 'restricted'],
-            default: 'open',
-            description:
-              'Collaboration setting (note: restricted not restricted)',
+            enum: ['OPEN', 'RESTRICTED'],
+            default: 'OPEN',
+            description: 'Collaboration setting',
           },
           administrators: {
             type: 'array',
@@ -165,17 +164,17 @@ export const TableUpdateSchema: FastifySchema = {
           properties: {
             style: {
               type: 'string',
-              enum: ['gallery', 'list', 'document'],
+              enum: ['GALLERY', 'LIST', 'DOCUMENT'],
               description: 'Display style',
             },
             visibility: {
               type: 'string',
-              enum: ['public', 'restricted', 'open', 'form', 'private'],
+              enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
               description: 'Visibility setting',
             },
             collaboration: {
               type: 'string',
-              enum: ['open', 'restricted'],
+              enum: ['OPEN', 'RESTRICTED'],
               description: 'Collaboration setting',
             },
             administrators: {
@@ -216,7 +215,7 @@ export const TableUpdateSchema: FastifySchema = {
         },
         type: {
           type: 'string',
-          enum: ['table', 'field-group'],
+          enum: ['TABLE', 'FIELD_GROUP'],
           description: 'Table type',
         },
         methods: {

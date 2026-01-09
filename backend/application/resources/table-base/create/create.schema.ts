@@ -81,14 +81,14 @@ export const TableCreateSchema: FastifySchema = {
         configuration: {
           type: 'object',
           properties: {
-            style: { type: 'string', enum: ['gallery', 'list', 'document'] },
+            style: { type: 'string', enum: ['GALLERY', 'LIST', 'DOCUMENT'] },
             visibility: {
               type: 'string',
-              enum: ['public', 'restricted', 'open', 'form', 'private'],
+              enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
             },
             collaboration: {
               type: 'string',
-              enum: ['open', 'restricted'],
+              enum: ['OPEN', 'RESTRICTED'],
             },
             administrators: {
               type: 'array',
@@ -121,7 +121,7 @@ export const TableCreateSchema: FastifySchema = {
         },
         type: {
           type: 'string',
-          enum: ['table', 'field-group'],
+          enum: ['TABLE', 'FIELD_GROUP'],
           description: 'Table type',
         },
         methods: {

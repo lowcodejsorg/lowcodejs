@@ -1,7 +1,7 @@
 import slugify from 'slugify';
 import z from 'zod';
 
-import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
+import { E_MENU_ITEM_TYPE, Merge } from '@application/core/entity.core';
 
 export const MenuUpdateParamsValidator = z.object({
   _id: z.string().min(1, 'ID é obrigatório'),
@@ -49,3 +49,8 @@ export const MenuUpdateBodyValidator = z
       path: ['html'],
     },
   );
+
+export type MenuUpdatePayload = Merge<
+  z.infer<typeof MenuUpdateParamsValidator>,
+  z.infer<typeof MenuUpdateBodyValidator>
+>;

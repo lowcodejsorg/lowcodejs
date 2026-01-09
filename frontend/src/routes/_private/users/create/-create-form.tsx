@@ -1,16 +1,11 @@
 import { UserIcon } from 'lucide-react';
-import z from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import type { UserCreatePayload } from '@/lib/payloads';
+import { UserCreateBodySchema } from '@/lib/schemas';
 
-export const UserCreateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
-  password: z.string().min(6, 'Senha deve ter no mínimo 6 caracteres'),
-  group: z.string().min(1, 'Grupo é obrigatório'),
-});
-
-export type UserFormType = z.infer<typeof UserCreateSchema>;
+export const UserCreateSchema = UserCreateBodySchema;
+export type UserFormType = UserCreatePayload;
 
 export const userFormDefaultValues: UserFormType = {
   name: '',

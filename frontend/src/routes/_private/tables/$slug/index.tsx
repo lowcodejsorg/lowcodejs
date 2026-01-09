@@ -4,7 +4,7 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
+import type { AxiosError } from 'axios';
 import { ArrowLeftIcon, PlusIcon, ShieldXIcon } from 'lucide-react';
 import z from 'zod';
 
@@ -16,6 +16,11 @@ import { TableListViewSkeleton } from './-table-list-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
+import { Pagination } from '@/components/common/pagination';
+import { SheetFilter } from '@/components/common/sheet-filter';
+import { TableStyleViewDropdown } from '@/components/common/table-style-view';
+import { TrashButton } from '@/components/common/trash-button';
+import { Button } from '@/components/ui/button';
 import {
   Empty,
   EmptyDescription,
@@ -23,17 +28,12 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from '@/components/ui/empty';
-import { Pagination } from '@/components/common/pagination';
-import { SheetFilter } from '@/components/common/sheet-filter';
-import { TableStyleViewDropdown } from '@/components/common/table-style-view';
-import { TrashButton } from '@/components/common/trash-button';
-import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { MetaDefault } from '@/lib/constant';
+import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { useAuthenticationStore } from '@/stores/authentication';
 
 import { TableDocumentView } from './-table-document-view';
@@ -133,12 +133,12 @@ function RouteComponent(): React.JSX.Element {
         {table.status === 'pending' && <TableSkeleton />}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === 'list' && (
+          table.data.configuration.style === E_TABLE_STYLE.LIST && (
             <TableListViewSkeleton />
           )}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === 'gallery' && (
+          table.data.configuration.style === E_TABLE_STYLE.GALLERY && (
             <TableGridViewSkeleton />
           )}
         {table.status === 'success' &&
@@ -148,18 +148,18 @@ function RouteComponent(): React.JSX.Element {
           )}
 
         {rows.status === 'error' &&
-          (() => {
+          ((): React.JSX.Element => {
             const error = rows.error as AxiosError<{
               code: number;
               cause: string;
             }>;
-            const cause = error?.response?.data?.cause;
+            const cause = error.response?.data.cause;
 
             // Erros de permissão - sem botão de refetch
             if (
               cause === 'TABLE_PRIVATE' ||
               cause === 'FORM_VIEW_RESTRICTED' ||
-              error?.response?.status === 403
+              error.response?.status === 403
             ) {
               const message =
                 cause === 'TABLE_PRIVATE'
@@ -191,7 +191,7 @@ function RouteComponent(): React.JSX.Element {
           })()}
 
         {table.status === 'success' &&
-          table.data.configuration.style === 'list' &&
+          table.data.configuration.style === E_TABLE_STYLE.LIST &&
           rows.status === 'success' && (
             <TableListView
               headers={table.data.fields}
@@ -200,7 +200,7 @@ function RouteComponent(): React.JSX.Element {
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === 'gallery' &&
+          table.data.configuration.style === E_TABLE_STYLE.GALLERY &&
           rows.status === 'success' && (
             <TableGridView
               headers={table.data.fields}

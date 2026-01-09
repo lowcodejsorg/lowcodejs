@@ -39,7 +39,9 @@ export const MenuCreateBodyValidator = z
       return true;
     },
     {
-      message: 'Conteúdo HTML não é permitido para páginas',
+      message: 'Conteúdo HTML é obrigatório para páginas',
       path: ['html'],
     },
   );
+
+export type MenuCreatePayload = z.infer<typeof MenuCreateBodyValidator>;

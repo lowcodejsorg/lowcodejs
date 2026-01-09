@@ -1,15 +1,11 @@
 import { UsersIcon } from 'lucide-react';
-import z from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import type { UserGroupCreatePayload } from '@/lib/payloads';
+import { UserGroupCreateBodySchema } from '@/lib/schemas';
 
-export const GroupCreateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório'),
-  description: z.string().optional(),
-  permissions: z.array(z.string()).min(1, 'Selecione ao menos uma permissão'),
-});
-
-export type GroupFormType = z.infer<typeof GroupCreateSchema>;
+export const GroupCreateSchema = UserGroupCreateBodySchema;
+export type GroupFormType = UserGroupCreatePayload;
 
 export const groupFormDefaultValues: GroupFormType = {
   name: '',

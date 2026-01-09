@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { E_USER_STATUS, USER_GROUP_MAPPER } from '@/lib/constant';
 import type { IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -21,16 +22,9 @@ interface Props {
   headers: Array<string>;
 }
 
-const RoleMapper = {
-  ADMINISTRATOR: 'Administrador',
-  REGISTERED: 'Registrado',
-  MANAGER: 'Gerente',
-  MASTER: 'Dono',
-};
-
 const StatusMapper = {
-  active: 'Ativo',
-  inactive: 'Inativo',
+  [E_USER_STATUS.ACTIVE]: 'Ativo',
+  [E_USER_STATUS.INACTIVE]: 'Inativo',
 };
 
 function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
@@ -54,15 +48,19 @@ function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
       <TableCell>{user.name}</TableCell>
       <TableCell>{user.email}</TableCell>
       <TableCell>
-        {RoleMapper[user.group.slug as keyof typeof RoleMapper] || 'N/A'}
+        {user.group.slug in USER_GROUP_MAPPER &&
+          USER_GROUP_MAPPER[user.group.slug as keyof typeof USER_GROUP_MAPPER]}
+        {!(user.group.slug in USER_GROUP_MAPPER) && user.group.slug}
       </TableCell>
       <TableCell>
         <Badge
           variant="outline"
           className={cn(
             'font-semibold border-transparent',
-            user.status === 'active' && 'bg-green-100 text-green-700',
-            user.status === 'inactive' && 'bg-destructive/10 text-destructive',
+            user.status === E_USER_STATUS.ACTIVE &&
+              'bg-green-100 text-green-700',
+            user.status === E_USER_STATUS.INACTIVE &&
+              'bg-destructive/10 text-destructive',
           )}
         >
           {StatusMapper[user.status] || 'N/A'}

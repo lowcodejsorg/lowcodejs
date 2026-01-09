@@ -1,38 +1,33 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type z from 'zod';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import {
+  E_FIELD_TYPE,
+  type IField,
+  type IRow,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
-import { Table } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type {
-  TableRowCreateBodyValidator,
-  TableRowCreateParamValidator,
-} from './create.validator';
+import type { TableRowCreatePayload } from './create.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').Row
->;
+type Response = Either<HTTPException, IRow>;
 
-type Payload = z.infer<typeof TableRowCreateBodyValidator> &
-  z.infer<typeof TableRowCreateParamValidator>;
+type Payload = TableRowCreatePayload;
 
 @Service()
 export default class TableRowCreateUseCase {
+  constructor(private readonly tableRepository: TableContractRepository) {}
+
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await Table.findOne({
+      const table = await this.tableRepository.findBy({
         slug: payload.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+        exact: true,
+      });
 
       if (!table)
         return left(
@@ -41,19 +36,15 @@ export default class TableRowCreateUseCase {
 
       const groupPayload = [];
 
-      const groups = (
-        table.fields as import('@application/core/entity.core').Field[]
-      )?.filter((c) => c.type === E_FIELD_TYPE.FIELD_GROUP);
+      const groups = (table.fields as IField[])?.filter(
+        (c) => c.type === E_FIELD_TYPE.FIELD_GROUP,
+      );
 
       for await (const group of groups) {
-        const groupTable = await Table.findOne({
+        const groupTable = await this.tableRepository.findBy({
           slug: group.configuration?.group?.slug?.toString(),
-        }).populate([
-          {
-            path: 'fields',
-            model: 'Field',
-          },
-        ]);
+          exact: true,
+        });
 
         if (!groupTable) continue;
 
@@ -61,16 +52,11 @@ export default class TableRowCreateUseCase {
 
         if (!hasGroupPayload) continue;
 
-        const buildGroup = await buildTable({
-          ...groupTable?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: groupTable?._id?.toString(),
-        });
+        const buildGroup = await buildTable(groupTable);
 
         for (const item of payload[
           group.slug
-        ] as import('@application/core/entity.core').Row[]) {
+        ] as import('@application/core/entity.core').IRow[]) {
           groupPayload.push({
             table: buildGroup,
             payload: item,
@@ -114,16 +100,9 @@ export default class TableRowCreateUseCase {
         payload[groupSlug] = processedGroupIds[groupSlug];
       }
 
-      const build = await buildTable({
-        ...table?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: table?._id?.toString(),
-      });
+      const build = await buildTable(table);
 
-      const populate = await buildPopulate(
-        table?.fields as import('@application/core/entity.core').Field[],
-      );
+      const populate = await buildPopulate(table.fields as IField[]);
 
       const created = await build.create({
         ...payload,
@@ -139,7 +118,7 @@ export default class TableRowCreateUseCase {
         _id: row?._id?.toString(),
       });
     } catch (error) {
-      console.error(error);
+      console.log(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

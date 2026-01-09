@@ -1,23 +1,20 @@
-import { Check, ChevronsUpDown } from 'lucide-react';
 import * as React from 'react';
 
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-  CommandList,
-} from '@/components/ui/command';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '@/components/ui/combobox';
 import { useUserReadPaginated } from '@/hooks/tanstack-query/use-user-read-paginated';
-import { cn } from '@/lib/utils';
+import { E_USER_STATUS } from '@/lib/constant';
+import type { IUser } from '@/lib/interfaces';
 
 interface UserMultiSelectProps {
   value?: Array<string>;
@@ -36,8 +33,8 @@ export function UserMultiSelect({
   disabled = false,
   excludeUserId,
 }: UserMultiSelectProps): React.JSX.Element {
-  const [open, setOpen] = React.useState(false);
   const [search, setSearch] = React.useState('');
+  const anchorRef = useComboboxAnchor();
 
   const { data: usersData, status } = useUserReadPaginated({
     page: 1,
@@ -45,83 +42,78 @@ export function UserMultiSelect({
     search: search || undefined,
   });
 
-  // Filtrar apenas usuários ativos e excluir o owner
   const users = React.useMemo(() => {
     if (!usersData?.data) return [];
     return usersData.data.filter(
-      (user) => user.status === 'active' && user._id !== excludeUserId,
+      (user) =>
+        user.status === E_USER_STATUS.ACTIVE && user._id !== excludeUserId,
     );
   }, [usersData?.data, excludeUserId]);
 
-  const selectedUsers = users.filter((user) => value.includes(user._id));
-
-  const handleSelect = (userId: string) => {
-    const newValue = value.includes(userId)
-      ? value.filter((id) => id !== userId)
-      : [...value, userId];
-
-    onValueChange?.(newValue);
-  };
+  // Map selected IDs to user objects
+  const selectedUsers = React.useMemo(() => {
+    return users.filter((user) => value.includes(user._id));
+  }, [users, value]);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn('w-full justify-between min-h-10 h-auto', className)}
-          disabled={disabled || status === 'pending'}
-        >
-          <div className="flex flex-wrap gap-1 flex-1">
-            {selectedUsers.length > 0 ? (
-              selectedUsers.map((user) => (
-                <Badge key={user._id} variant="secondary">
-                  {user.name}
-                </Badge>
-              ))
-            ) : (
-              <span className="text-muted-foreground">{placeholder}</span>
-            )}
-          </div>
-          <ChevronsUpDown className="opacity-50 ml-2 shrink-0" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command>
-          <CommandInput
-            placeholder="Buscar usuário..."
-            className="h-9"
-            value={search}
-            onValueChange={setSearch}
-          />
-          <CommandList>
-            <CommandEmpty>Nenhum usuário encontrado.</CommandEmpty>
-            <CommandGroup>
-              {users.map((user) => (
-                <CommandItem
+    <Combobox
+      items={users}
+      multiple
+      value={selectedUsers}
+      onValueChange={(newUsers: Array<IUser>) => {
+        onValueChange?.(newUsers.map((u) => u._id));
+      }}
+      inputValue={search}
+      onInputValueChange={setSearch}
+      itemToStringLabel={(user: IUser) => user.name}
+      disabled={disabled}
+    >
+      <ComboboxChips
+        ref={anchorRef}
+        className={className}
+      >
+        <ComboboxValue>
+          {(selectedValue: Array<IUser>): React.ReactNode => (
+            <React.Fragment>
+              {selectedValue.map((user) => (
+                <ComboboxChip
                   key={user._id}
-                  value={`${user.name} ${user.email}`}
-                  onSelect={() => handleSelect(user._id)}
+                  aria-label={user.name}
                 >
-                  <div className="flex flex-col flex-1">
-                    <span className="font-medium">{user.name}</span>
-                    <span className="text-sm text-muted-foreground">
-                      {user.email}
-                    </span>
-                  </div>
-                  <Check
-                    className={cn(
-                      'ml-auto',
-                      value.includes(user._id) ? 'opacity-100' : 'opacity-0',
-                    )}
-                  />
-                </CommandItem>
+                  {user.name}
+                </ComboboxChip>
               ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              <ComboboxChipsInput
+                placeholder={selectedValue.length > 0 ? '' : placeholder}
+              />
+            </React.Fragment>
+          )}
+        </ComboboxValue>
+      </ComboboxChips>
+      <ComboboxContent anchor={anchorRef}>
+        <ComboboxEmpty>Nenhum usuário encontrado.</ComboboxEmpty>
+        <ComboboxList>
+          {status === 'pending' ? (
+            <div className="text-muted-foreground p-3 text-center text-sm">
+              Carregando...
+            </div>
+          ) : (
+            (user: IUser): React.ReactNode => (
+              <ComboboxItem
+                key={user._id}
+                value={user}
+              >
+                <div className="flex flex-1 flex-col">
+                  <span className="font-medium">{user.name}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {user.email}
+                  </span>
+                </div>
+              </ComboboxItem>
+            )
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

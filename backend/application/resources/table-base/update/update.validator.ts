@@ -1,5 +1,7 @@
 import z from 'zod';
 
+import { Merge } from '@application/core/entity.core';
+
 import {
   TableConfigurationSchema,
   TableMethodSchema,
@@ -21,6 +23,11 @@ export const TableUpdateBodyValidator = z.object({
   methods: TableMethodSchema,
 });
 
-export const TableUpdateParamValidator = z.object({
+export const TableUpdateParamsValidator = z.object({
   slug: z.string().trim(),
 });
+
+export type TableUpdatePayload = Merge<
+  z.infer<typeof TableUpdateParamsValidator>,
+  z.infer<typeof TableUpdateBodyValidator>
+>;

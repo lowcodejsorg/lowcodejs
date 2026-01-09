@@ -7,16 +7,9 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import { MENU_ITEM_TYPE } from '@/lib/constant';
+import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { MENU_ITEM_TYPE_OPTIONS } from '@/lib/constant';
 import { cn } from '@/lib/utils';
-
-const MenuTypeOptions = [
-  { value: MENU_ITEM_TYPE.TABLE, label: 'Tabela' },
-  { value: MENU_ITEM_TYPE.PAGE, label: 'Página' },
-  { value: MENU_ITEM_TYPE.FORM, label: 'Formulário' },
-  { value: MENU_ITEM_TYPE.EXTERNAL, label: 'Link Externo' },
-  { value: MENU_ITEM_TYPE.SEPARATOR, label: 'Separador' },
-];
 
 interface FieldMenuTypeSelectProps {
   label: string;
@@ -43,14 +36,16 @@ export function FieldMenuTypeSelect({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(value as keyof typeof MENU_ITEM_TYPE);
+          field.handleChange(
+            value as (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE],
+          );
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {MenuTypeOptions.map((option) => (
+          {MENU_ITEM_TYPE_OPTIONS.map((option) => (
             <SelectItem
               key={option.value}
               value={option.value}
