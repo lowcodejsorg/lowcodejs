@@ -161,22 +161,23 @@ export function TableRowRelationshipField({
             </ComboboxChips>
             <ComboboxContent anchor={anchorRef}>
               <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
-              <ComboboxList>
-                {isLoading ? (
-                  <div className="flex items-center justify-center p-3">
-                    <Spinner className="opacity-50" />
-                  </div>
-                ) : (
-                  (row: IRow): React.ReactNode => (
+              {isLoading && (
+                <div className="flex items-center justify-center p-3">
+                  <Spinner className="opacity-50" />
+                </div>
+              )}
+              {!isLoading && (
+                <ComboboxList>
+                  {(row: IRow): React.ReactNode => (
                     <ComboboxItem
                       key={row._id}
                       value={row}
                     >
                       {String(row[relConfig.field.slug] ?? row._id)}
                     </ComboboxItem>
-                  )
-                )}
-              </ComboboxList>
+                  )}
+                </ComboboxList>
+              )}
             </ComboboxContent>
           </Combobox>
           {isLoading && (
@@ -218,22 +219,23 @@ export function TableRowRelationshipField({
           />
           <ComboboxContent>
             <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
-            <ComboboxList>
-              {isLoading ? (
-                <div className="flex items-center justify-center p-3">
-                  <Spinner className="opacity-50" />
-                </div>
-              ) : (
-                (row: IRow): React.ReactNode => (
+            {isLoading && (
+              <div className="flex items-center justify-center p-3">
+                <Spinner className="opacity-50" />
+              </div>
+            )}
+            {!isLoading && (
+              <ComboboxList>
+                {(row: IRow): React.ReactNode => (
                   <ComboboxItem
                     key={row._id}
                     value={row}
                   >
                     {String(row[relConfig.field.slug] ?? row._id)}
                   </ComboboxItem>
-                )
-              )}
-            </ComboboxList>
+                )}
+              </ComboboxList>
+            )}
           </ComboboxContent>
         </Combobox>
         {isLoading && (

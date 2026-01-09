@@ -1,7 +1,8 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { E_USER_STATUS } from '@/lib/constant';
+import type { ValueOf } from '@/lib/interfaces';
 
 interface FieldSwitchProps {
   label: string;
@@ -18,7 +19,7 @@ export function FieldSwitch({
   activeLabel = 'Ativo',
   inactiveLabel = 'Inativo',
 }: FieldSwitchProps): React.JSX.Element {
-  const field = useFieldContext<'active' | 'inactive'>();
+  const field = useFieldContext<ValueOf<typeof E_USER_STATUS>>();
 
   return (
     <div className="flex flex-row items-center justify-between rounded-lg border p-3">
@@ -32,9 +33,11 @@ export function FieldSwitch({
         <span className="text-sm text-muted-foreground">{inactiveLabel}</span>
         <Switch
           disabled={disabled}
-          checked={field.state.value === 'active'}
+          checked={field.state.value === E_USER_STATUS.ACTIVE}
           onCheckedChange={(checked) => {
-            field.handleChange(checked ? 'active' : 'inactive');
+            field.handleChange(
+              checked ? E_USER_STATUS.ACTIVE : E_USER_STATUS.INACTIVE,
+            );
           }}
         />
         <span className="text-sm text-muted-foreground">{activeLabel}</span>

@@ -58,13 +58,14 @@ export function TableCombobox({
       />
       <ComboboxContent>
         <ComboboxEmpty>Nenhuma tabela encontrada.</ComboboxEmpty>
-        <ComboboxList>
-          {status === 'pending' ? (
-            <div className="text-muted-foreground p-3 text-center text-sm">
-              Carregando...
-            </div>
-          ) : (
-            (table: ITable): React.ReactNode => (
+        {status === 'pending' && (
+          <div className="text-muted-foreground p-3 text-center text-sm">
+            Carregando...
+          </div>
+        )}
+        {status === 'success' && (
+          <ComboboxList>
+            {(table: ITable): React.ReactNode => (
               <ComboboxItem
                 key={table._id}
                 value={table}
@@ -76,9 +77,9 @@ export function TableCombobox({
                   </span>
                 </div>
               </ComboboxItem>
-            )
-          )}
-        </ComboboxList>
+            )}
+          </ComboboxList>
+        )}
       </ComboboxContent>
     </Combobox>
   );

@@ -16,17 +16,20 @@ import {
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useCreateUser } from '@/hooks/tanstack-query/use-user-create';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { IUser, Paginated } from '@/lib/interfaces';
+import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/users/create/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
+  const authentication = useAuthenticationStore();
+
   const { queryClient } = getContext();
   const sidebar = useSidebar();
   const router = useRouter();
@@ -35,7 +38,14 @@ function RouteComponent(): React.JSX.Element {
   const _create = useCreateUser({
     onSuccess(data) {
       queryClient.setQueryData<Paginated<IUser>>(
-        ['/users/paginated', { page: 1, perPage: 50 }],
+        [
+          '/users/paginated',
+          {
+            page: 1,
+            perPage: 50,
+            authenticated: authentication.authenticated?.sub,
+          },
+        ],
         (cached) => {
           if (!cached) {
             return {

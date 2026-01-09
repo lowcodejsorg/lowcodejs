@@ -65,13 +65,14 @@ export function MenuCombobox({
       />
       <ComboboxContent>
         <ComboboxEmpty>Nenhum menu encontrado.</ComboboxEmpty>
-        <ComboboxList>
-          {status === 'pending' ? (
-            <div className="flex items-center justify-center p-3">
-              <Spinner className="opacity-50" />
-            </div>
-          ) : (
-            (menu: IMenu): React.ReactNode => (
+        {status === 'pending' && (
+          <div className="flex items-center justify-center p-3">
+            <Spinner className="opacity-50" />
+          </div>
+        )}
+        {status === 'success' && (
+          <ComboboxList>
+            {(menu: IMenu): React.ReactNode => (
               <ComboboxItem
                 key={menu._id}
                 value={menu}
@@ -83,9 +84,9 @@ export function MenuCombobox({
                   </span>
                 </div>
               </ComboboxItem>
-            )
-          )}
-        </ComboboxList>
+            )}
+          </ComboboxList>
+        )}
       </ComboboxContent>
     </Combobox>
   );

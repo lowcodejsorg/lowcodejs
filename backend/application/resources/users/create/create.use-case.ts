@@ -4,7 +4,10 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IUser as Entity } from '@application/core/entity.core';
+import {
+  E_USER_STATUS,
+  type IUser as Entity,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
@@ -34,6 +37,7 @@ export default class UserCreateUseCase {
       const created = await this.userRepository.create({
         ...payload,
         password: passwordHash,
+        status: E_USER_STATUS.ACTIVE,
       });
 
       return right(created);

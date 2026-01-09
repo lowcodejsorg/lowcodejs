@@ -204,3 +204,8 @@ export const USER_GROUP_MAPPER = {
   [E_ROLE.MANAGER]: 'Gerente',
   [E_ROLE.MASTER]: 'Master (Super Administrador)',
 } as const;
+
+export const USER_STATUS_MAPPER = {
+  [E_USER_STATUS.ACTIVE]: 'Ativo',
+  [E_USER_STATUS.INACTIVE]: 'Inativo',
+} as const;

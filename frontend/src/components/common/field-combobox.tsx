@@ -54,13 +54,14 @@ export function FieldCombobox({
       />
       <ComboboxContent>
         <ComboboxEmpty>Nenhum campo encontrado.</ComboboxEmpty>
-        <ComboboxList>
-          {status === 'pending' ? (
-            <div className="flex items-center justify-center p-3">
-              <Spinner className="opacity-50" />
-            </div>
-          ) : (
-            (field: IField): React.ReactNode => (
+        {status === 'pending' && (
+          <div className="flex items-center justify-center p-3">
+            <Spinner className="opacity-50" />
+          </div>
+        )}
+        {status === 'success' && (
+          <ComboboxList>
+            {(field: IField): React.ReactNode => (
               <ComboboxItem
                 key={field._id}
                 value={field}
@@ -72,9 +73,9 @@ export function FieldCombobox({
                   </span>
                 </div>
               </ComboboxItem>
-            )
-          )}
-        </ComboboxList>
+            )}
+          </ComboboxList>
+        )}
       </ComboboxContent>
     </Combobox>
   );

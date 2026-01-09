@@ -4,23 +4,21 @@ import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import {
-  UpdateUserFormFields,
-  UserUpdateSchema,
-  type UserUpdateFormValues,
-} from './-update-form';
+import type { UserUpdateFormValues } from './-update-form';
+import { UpdateUserFormFields, UserUpdateSchema } from './-update-form';
 import { UpdateUserFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadUser } from '@/hooks/tanstack-query/use-user-read';
 import { useUpdateUser } from '@/hooks/tanstack-query/use-user-update';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { IUser, Paginated } from '@/lib/interfaces';
+import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/users/$userId/')({
   component: RouteComponent,
@@ -75,6 +73,8 @@ function RouteComponent(): React.JSX.Element {
 }
 
 function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
+  const authentication = useAuthenticationStore();
+
   const { queryClient } = getContext();
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
@@ -86,7 +86,14 @@ function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
         updatedData,
       );
       queryClient.setQueryData<Paginated<IUser>>(
-        ['/users/paginated', { page: 1, perPage: 50 }],
+        [
+          '/users/paginated',
+          {
+            page: 1,
+            perPage: 50,
+            authenticated: authentication.authenticated?.sub,
+          },
+        ],
         (cached) => {
           if (!cached) {
             return {

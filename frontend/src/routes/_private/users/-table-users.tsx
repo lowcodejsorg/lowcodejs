@@ -13,7 +13,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { E_USER_STATUS, USER_GROUP_MAPPER } from '@/lib/constant';
+import {
+  E_USER_STATUS,
+  USER_GROUP_MAPPER,
+  USER_STATUS_MAPPER,
+} from '@/lib/constant';
 import type { IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -21,11 +25,6 @@ interface Props {
   data: Array<IUser>;
   headers: Array<string>;
 }
-
-const StatusMapper = {
-  [E_USER_STATUS.ACTIVE]: 'Ativo',
-  [E_USER_STATUS.INACTIVE]: 'Inativo',
-};
 
 function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
   const sidebar = useSidebar();
@@ -63,7 +62,8 @@ function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
               'bg-destructive/10 text-destructive',
           )}
         >
-          {StatusMapper[user.status] || 'N/A'}
+          {user.status in USER_STATUS_MAPPER && USER_STATUS_MAPPER[user.status]}
+          {!(user.status in USER_STATUS_MAPPER) && user.status}
         </Badge>
       </TableCell>
 

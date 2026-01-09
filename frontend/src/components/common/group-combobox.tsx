@@ -30,7 +30,14 @@ export function GroupCombobox({
 }: GroupComboboxProps): React.JSX.Element {
   const { data: groups, status } = useGroupReadList();
 
-  const items = groups ?? [];
+  const items =
+    groups?.map((g) => ({
+      ...g,
+      name:
+        g.slug in USER_GROUP_MAPPER
+          ? USER_GROUP_MAPPER[g.slug as keyof typeof USER_GROUP_MAPPER]
+          : g.name,
+    })) ?? [];
 
   // Find selected group
   const selectedGroup = React.useMemo(() => {
@@ -54,26 +61,23 @@ export function GroupCombobox({
       />
       <ComboboxContent>
         <ComboboxEmpty>Nenhum grupo encontrado.</ComboboxEmpty>
-        <ComboboxList>
-          {status === 'pending' ? (
-            <div className="flex items-center justify-center p-3">
-              <Spinner className="opacity-50" />
-            </div>
-          ) : (
-            (group: IGroup): React.ReactNode => (
+        {status === 'pending' && (
+          <div className="flex items-center justify-center p-3">
+            <Spinner className="opacity-50" />
+          </div>
+        )}
+        {status === 'success' && (
+          <ComboboxList>
+            {(group: IGroup): React.ReactNode => (
               <ComboboxItem
                 key={group._id}
                 value={group}
               >
-                {group.slug in USER_GROUP_MAPPER &&
-                  USER_GROUP_MAPPER[
-                    group.slug as keyof typeof USER_GROUP_MAPPER
-                  ]}
-                {!(group.slug in USER_GROUP_MAPPER) && group.slug}
+                {group.name}
               </ComboboxItem>
-            )
-          )}
-        </ComboboxList>
+            )}
+          </ComboboxList>
+        )}
       </ComboboxContent>
     </Combobox>
   );
