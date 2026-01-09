@@ -1,10 +1,13 @@
 import {
   E_ROLE,
   E_TABLE_PERMISSION,
+  Merge,
   type Optional,
 } from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 import { UserGroup } from '@application/model/user-group.model';
+
+import { PayloadPermissionSeeder } from './1720448435-permissions.seed';
 
 type Payload = Omit<
   Optional<
@@ -17,7 +20,8 @@ type Payload = Omit<
 export default async function Seed(): Promise<void> {
   await UserGroup.deleteMany({});
 
-  const permissions = await Permission.find();
+  const permissions: Merge<PayloadPermissionSeeder, { _id: string }>[] =
+    await Permission.find();
 
   // Super Admin (Master): TODAS as permissões do sistema
   const permissionsSuper = permissions.flatMap((p) => p?._id?.toString() || '');
@@ -43,7 +47,7 @@ export default async function Seed(): Promise<void> {
         E_TABLE_PERMISSION.UPDATE_ROW, // somente tabelas próprias ou onde é admin
         E_TABLE_PERMISSION.REMOVE_ROW, // somente tabelas próprias ou onde é admin
         E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
-      ].includes(p?.slug),
+      ].includes(p.slug),
     )
     .flatMap((p) => p?._id?.toString() || '');
 
@@ -51,18 +55,10 @@ export default async function Seed(): Promise<void> {
   const permissionsRegistered = permissions
     ?.filter((p) =>
       [
-        E_TABLE_PERMISSION.UPDATE_TABLE, // apenas onde é admin
-        E_TABLE_PERMISSION.REMOVE_TABLE, // apenas onde é admin
         E_TABLE_PERMISSION.VIEW_TABLE, // Sim (respeitando visibilidade)
-        E_TABLE_PERMISSION.CREATE_FIELD, // apenas onde é admin
-        E_TABLE_PERMISSION.UPDATE_FIELD, // apenas onde é admin
-        E_TABLE_PERMISSION.REMOVE_FIELD, // apenas onde é admin
-        E_TABLE_PERMISSION.VIEW_FIELD, // Sim
-        E_TABLE_PERMISSION.CREATE_ROW, // Sim (respeitando visibilidade)
-        E_TABLE_PERMISSION.UPDATE_ROW, // apenas onde é admin
-        E_TABLE_PERMISSION.REMOVE_ROW, // apenas onde é admin
         E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
-      ].includes(p?.slug),
+        // @ts-ignore
+      ].includes(p.slug),
     )
     .flatMap((p) => p._id?.toString() || '');
 

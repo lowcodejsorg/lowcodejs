@@ -1,18 +1,20 @@
 import {
   E_TABLE_PERMISSION,
-  type Optional,
+  IPermission,
+  Merge,
+  ValueOf,
 } from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 
-type Payload = Optional<
-  import('@application/core/entity.core').IPermission,
-  '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
+export type PayloadPermissionSeeder = Merge<
+  Pick<IPermission, 'name' | 'description'>,
+  { slug: ValueOf<typeof E_TABLE_PERMISSION> }
 >;
 
 export default async function Seed(): Promise<void> {
   await Permission.deleteMany({});
 
-  const payload: Payload[] = [
+  const PAYLOAD_PERMISSION_SEEDER: PayloadPermissionSeeder[] = [
     {
       name: 'Create table',
       slug: E_TABLE_PERMISSION.CREATE_TABLE,
@@ -76,6 +78,6 @@ export default async function Seed(): Promise<void> {
     },
   ];
 
-  await Permission.insertMany(payload);
+  await Permission.insertMany(PAYLOAD_PERMISSION_SEEDER);
   console.info('🌱 \x1b[32m permissions \x1b[0m');
 }
