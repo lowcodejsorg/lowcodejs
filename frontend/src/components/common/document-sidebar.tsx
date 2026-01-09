@@ -150,10 +150,10 @@ function Tree({
                     >
                     {hasChildren ? (
                         <button
-                        type="button"
-                        onClick={() => toggleOpen(n.id)}
-                        className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
-                        aria-label={isOpen ? 'Recolher' : 'Expandir'}
+                            type="button"
+                            onClick={() => toggleOpen(n.id)}
+                            className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
+                            aria-label={isOpen ? 'Recolher' : 'Expandir'}
                         >
                         {isOpen ? (
                             <ChevronDownIcon className="size-4 opacity-70" />
@@ -176,7 +176,7 @@ function Tree({
                         onClick={() => onSelect(n.id)}
                         className="flex-1 text-left truncate cursor-pointer"
                         title={n.label}
-                        >
+                    >
                         {n.label}
                     </button>
                 </div>

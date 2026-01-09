@@ -29,19 +29,19 @@ export function DocumentContent({
                 if (!titleRaw.trim()) return null;
                 
                 const bodyRaw = s.bodyField
-                ? getStr((selectedRow as any)?.[s.bodyField.slug])
-                : '';
-                if (!bodyRaw.trim()) return null;
+                    ? getStr((selectedRow as any)?.[s.bodyField.slug])
+                    : '';
+                    if (!bodyRaw.trim()) return null;
                 
                 return (
                     <section key={s.id}>
-                    <h2 id={s.id}>
-                    <TableRowTextShortCell field={s.titleField} row={selectedRow} />
-                    </h2>
-                    
-                    <div className="not-prose">
-                    <TableRowTextLongCell field={s.bodyField} row={selectedRow} />
-                    </div>
+                        <h2 id={s.id}>
+                            <TableRowTextShortCell field={s.titleField} row={selectedRow} />
+                        </h2>
+                        
+                        <div className="not-prose">
+                            <TableRowTextLongCell field={s.bodyField} row={selectedRow} />
+                        </div>
                     </section>
                 );
             })

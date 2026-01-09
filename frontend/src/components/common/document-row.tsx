@@ -52,10 +52,10 @@ export function DocumentRow({
             
             return (
                 <section key={`${row._id}-${b.id}`} className="space-y-2">
-                <h2 className="text-base font-semibold leading-6">{title}</h2>
-                <p className="text-sm leading-6 text-foreground/90 whitespace-pre-wrap">
-                {body}
-                </p>
+                    <h2 className="text-base font-semibold leading-6">{title}</h2>
+                    <p className="text-sm leading-6 text-foreground/90 whitespace-pre-wrap">
+                        {body}
+                    </p>
                 </section>
             );
         })}
