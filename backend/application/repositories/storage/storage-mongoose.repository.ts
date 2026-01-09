@@ -14,7 +14,9 @@ import type {
 
 @Service()
 export default class StorageMongooseRepository implements StorageContractRepository {
-  private buildWhereClause(payload?: StorageQueryPayload): Record<string, unknown> {
+  private buildWhereClause(
+    payload?: StorageQueryPayload,
+  ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     if (payload?.type) where.type = payload.type;

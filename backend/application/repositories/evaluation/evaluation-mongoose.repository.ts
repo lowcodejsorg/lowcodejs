@@ -15,7 +15,9 @@ import type {
 export default class EvaluationMongooseRepository implements EvaluationContractRepository {
   private readonly populateOptions = [{ path: 'user' }];
 
-  private buildWhereClause(payload?: EvaluationQueryPayload): Record<string, unknown> {
+  private buildWhereClause(
+    payload?: EvaluationQueryPayload,
+  ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     if (payload?.user) where.user = payload.user;
@@ -51,7 +53,9 @@ export default class EvaluationMongooseRepository implements EvaluationContractR
 
     const whereClause = exact ? { $and: conditions } : { $or: conditions };
 
-    const evaluation = await Model.findOne(whereClause).populate(this.populateOptions);
+    const evaluation = await Model.findOne(whereClause).populate(
+      this.populateOptions,
+    );
 
     if (!evaluation) return null;
 
@@ -78,7 +82,10 @@ export default class EvaluationMongooseRepository implements EvaluationContractR
     return evaluations.map((e) => this.transform(e));
   }
 
-  async update({ _id, ...payload }: EvaluationUpdatePayload): Promise<IEvaluation> {
+  async update({
+    _id,
+    ...payload
+  }: EvaluationUpdatePayload): Promise<IEvaluation> {
     const evaluation = await Model.findOne({ _id });
 
     if (!evaluation) throw new Error('Evaluation not found');

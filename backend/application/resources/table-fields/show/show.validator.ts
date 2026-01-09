@@ -5,4 +5,6 @@ export const TableFieldShowParamsValidator = z.object({
   _id: z.string().trim(),
 });
 
-export type TableFieldShowPayload = z.infer<typeof TableFieldShowParamsValidator>;
+export type TableFieldShowPayload = z.infer<
+  typeof TableFieldShowParamsValidator
+>;

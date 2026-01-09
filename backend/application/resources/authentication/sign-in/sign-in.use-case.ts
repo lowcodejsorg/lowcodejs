@@ -29,7 +29,10 @@ export default class SignInUseCase {
 
       if (!user)
         return left(
-          HTTPException.Unauthorized('Credenciais invalidas', 'INVALID_CREDENTIALS'),
+          HTTPException.Unauthorized(
+            'Credenciais invalidas',
+            'INVALID_CREDENTIALS',
+          ),
         );
 
       if (user.status === E_USER_STATUS.INACTIVE)

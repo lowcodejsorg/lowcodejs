@@ -9,6 +9,8 @@ import { ArrowLeftIcon, PlusIcon, ShieldXIcon } from 'lucide-react';
 import z from 'zod';
 
 import { TableConfigurationDropdown } from './-table-configuration';
+import { TableDocumentView } from './-table-document-view';
+import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
 import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableListView } from './-table-list-view';
@@ -35,9 +37,6 @@ import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-r
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { useAuthenticationStore } from '@/stores/authentication';
-
-import { TableDocumentView } from './-table-document-view';
-import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
@@ -143,7 +142,7 @@ function RouteComponent(): React.JSX.Element {
           )}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === 'document' && (
+          table.data.configuration.style === E_TABLE_STYLE.DOCUMENT && (
             <TableDocumentViewSkeleton />
           )}
 
@@ -209,12 +208,13 @@ function RouteComponent(): React.JSX.Element {
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === 'document' &&
+          table.data.configuration.style === E_TABLE_STYLE.DOCUMENT &&
           rows.status === 'success' && (
             <TableDocumentView
               headers={table.data.fields}
               order={table.data.configuration.fields.orderList}
               data={rows.data.data}
+              tableSlug={slug}
             />
           )}
       </div>

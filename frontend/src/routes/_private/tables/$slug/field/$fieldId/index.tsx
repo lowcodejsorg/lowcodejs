@@ -27,7 +27,7 @@ import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
-import type { IField, ITable, Paginated } from '@/lib/interfaces';
+import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
   component: RouteComponent,
@@ -413,7 +413,7 @@ function FieldUpdateContent({
           listing: config.listing,
           filtering: config.filtering,
           format: config.format
-            ? (config.format as (typeof E_FIELD_FORMAT)[keyof typeof E_FIELD_FORMAT])
+            ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
             : null,
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown

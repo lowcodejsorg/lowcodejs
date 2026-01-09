@@ -3,13 +3,13 @@ import mongoose from 'mongoose';
 
 import { Table } from '@application/model/table.model';
 
-import type { IField, IRow, ITableSchema, Optional } from './entity.core';
+import type { IField, IRow, ITableSchema, Optional, ValueOf } from './entity.core';
 import { E_FIELD_TYPE, E_SCHEMA_TYPE } from './entity.core';
 import { HandlerFunction } from './table/method.core';
 
 const FieldTypeMapper: Record<
   keyof typeof E_FIELD_TYPE,
-  (typeof E_SCHEMA_TYPE)[keyof typeof E_SCHEMA_TYPE]
+  ValueOf<typeof E_SCHEMA_TYPE>
 > = {
   [E_FIELD_TYPE.TEXT_SHORT]: E_SCHEMA_TYPE.STRING,
   [E_FIELD_TYPE.TEXT_LONG]: E_SCHEMA_TYPE.STRING,

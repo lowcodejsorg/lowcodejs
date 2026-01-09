@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/select';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import type { ValueOf } from '@/lib/interfaces';
 import { MENU_ITEM_TYPE_OPTIONS } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
@@ -37,7 +38,7 @@ export function FieldMenuTypeSelect({
         value={field.state.value}
         onValueChange={(value) => {
           field.handleChange(
-            value as (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE],
+            value as ValueOf<typeof E_MENU_ITEM_TYPE>,
           );
         }}
       >

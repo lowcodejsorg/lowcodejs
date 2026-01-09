@@ -4,4 +4,6 @@ export const TableSendToTrashParamsValidator = z.object({
   slug: z.string().trim(),
 });
 
-export type TableSendToTrashPayload = z.infer<typeof TableSendToTrashParamsValidator>;
+export type TableSendToTrashPayload = z.infer<
+  typeof TableSendToTrashParamsValidator
+>;

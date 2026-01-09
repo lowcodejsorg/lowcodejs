@@ -21,7 +21,7 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { E_MENU_ITEM_TYPE, MetaDefault } from '@/lib/constant';
-import type { IMenu, Paginated } from '@/lib/interfaces';
+import type { IMenu, Paginated, ValueOf } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/create/')({
   component: RouteComponent,
@@ -92,7 +92,7 @@ function RouteComponent(): React.JSX.Element {
 
       await _create.mutateAsync({
         name: value.name,
-        type: value.type as (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE],
+        type: value.type as ValueOf<typeof E_MENU_ITEM_TYPE>,
         parent: value.parent || null,
         table: value.table || null,
         html: value.html || null,
@@ -103,7 +103,7 @@ function RouteComponent(): React.JSX.Element {
 
   const isPending = _create.status === 'pending';
   const menuType = useStore(form.store, (state) => state.values.type) as
-    | (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE]
+    | ValueOf<typeof E_MENU_ITEM_TYPE>
     | '';
 
   return (

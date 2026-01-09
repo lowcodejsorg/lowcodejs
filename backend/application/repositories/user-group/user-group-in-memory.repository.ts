@@ -1,4 +1,8 @@
-import { E_ROLE, type IGroup, type IPermission } from '@application/core/entity.core';
+import {
+  E_ROLE,
+  type IGroup,
+  type IPermission,
+} from '@application/core/entity.core';
 
 import type {
   UserGroupContractRepository,

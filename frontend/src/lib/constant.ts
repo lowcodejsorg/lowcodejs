@@ -66,6 +66,7 @@ export const E_TABLE_TYPE = {
 export const E_TABLE_STYLE = {
   LIST: 'LIST',
   GALLERY: 'GALLERY',
+  DOCUMENT: 'DOCUMENT',
 } as const;
 
 export const E_TABLE_VISIBILITY = {

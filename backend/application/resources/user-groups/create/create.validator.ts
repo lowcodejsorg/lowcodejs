@@ -6,4 +6,6 @@ export const UserGroupCreateBodyValidator = z.object({
   permissions: z.array(z.string().trim()).default([]),
 });
 
-export type UserGroupCreatePayload = z.infer<typeof UserGroupCreateBodyValidator>;
+export type UserGroupCreatePayload = z.infer<
+  typeof UserGroupCreateBodyValidator
+>;

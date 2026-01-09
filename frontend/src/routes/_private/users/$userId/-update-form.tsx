@@ -2,6 +2,7 @@ import { UserIcon } from 'lucide-react';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_USER_STATUS } from '@/lib/constant';
+import type { ValueOf } from '@/lib/interfaces';
 import { UserUpdateBodySchema } from '@/lib/schemas';
 
 export const UserUpdateSchema = UserUpdateBodySchema;
@@ -9,7 +10,7 @@ export type UserUpdateFormValues = {
   name: string;
   email: string;
   password: string;
-  status: (typeof E_USER_STATUS)[keyof typeof E_USER_STATUS];
+  status: ValueOf<typeof E_USER_STATUS>;
   group: string;
 };
 

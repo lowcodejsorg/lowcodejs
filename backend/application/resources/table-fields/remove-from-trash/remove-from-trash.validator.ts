@@ -5,4 +5,6 @@ export const TableFieldRemoveFromTrashParamsValidator = z.object({
   _id: z.string().trim(),
 });
 
-export type TableFieldRemoveFromTrashPayload = z.infer<typeof TableFieldRemoveFromTrashParamsValidator>;
+export type TableFieldRemoveFromTrashPayload = z.infer<
+  typeof TableFieldRemoveFromTrashParamsValidator
+>;

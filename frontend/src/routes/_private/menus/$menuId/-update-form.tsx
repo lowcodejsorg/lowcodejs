@@ -4,12 +4,13 @@ import { SeparatorInfo } from '../-separator-info';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import type { ValueOf } from '@/lib/interfaces';
 import { MenuUpdateBodySchema } from '@/lib/schemas';
 
 export const MenuUpdateSchema = MenuUpdateBodySchema;
 export type MenuUpdateFormValues = {
   name: string;
-  type: (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE];
+  type: ValueOf<typeof E_MENU_ITEM_TYPE>;
   table: string;
   html: string;
   url: string;
@@ -31,7 +32,7 @@ export const UpdateMenuFormFields = withForm({
     isPending: false,
     mode: 'show' as 'show' | 'edit',
     menuType: E_MENU_ITEM_TYPE.SEPARATOR as
-      | (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE]
+      | ValueOf<typeof E_MENU_ITEM_TYPE>
       | '',
   },
   render: function Render({ form, isPending, mode, menuType }) {

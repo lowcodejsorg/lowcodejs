@@ -1,10 +1,11 @@
 import {
   LayoutDashboardIcon,
   LayoutListIcon,
-  LoaderCircleIcon,
-  ListTreeIcon
+  ListTreeIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
+
+import { Spinner } from '../ui/spinner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,13 +19,9 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE } from '@/lib/constant';
-import type { ITable, Paginated } from '@/lib/interfaces';
+import type { ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
-
-import { FIELD_TYPE } from '@/lib/constant';
-
-
 
 interface TableStyleViewDropdownProps {
   slug: string;
@@ -70,9 +67,7 @@ export function TableStyleViewDropdown({
   // Ocultar se não pode editar tabela
   if (!permission.can('UPDATE_TABLE')) return null;
 
-  const handleStyleChange = (
-    style: (typeof E_TABLE_STYLE)[keyof typeof E_TABLE_STYLE],
-  ) => {
+  const handleStyleChange = (style: ValueOf<typeof E_TABLE_STYLE>): void => {
     if (!table.data) return;
 
     update.mutate({
@@ -82,17 +77,17 @@ export function TableStyleViewDropdown({
       configuration: {
         ...table.data.configuration,
         style,
-        administrators:
-          table.data.configuration.administrators?.map((a) => a._id) ?? [],
-        owner: table.data.configuration.owner?._id ?? '',
+        administrators: table.data.configuration.administrators.flatMap(
+          (a) => a._id,
+        ),
       },
       logo: table.data.logo?._id ?? null,
     } as any);
   };
 
-  const currentStyle = table.data?.configuration?.style ?? E_TABLE_STYLE.LIST;
+  const currentStyle = table.data?.configuration.style ?? E_TABLE_STYLE.LIST;
   const isDisabled =
-    (table.status === 'success' && table.data?.fields?.length === 0) ||
+    (table.status === 'success' && table.data.fields.length === 0) ||
     table.status === 'pending' ||
     update.status === 'pending';
 
@@ -109,13 +104,23 @@ export function TableStyleViewDropdown({
           className={cn('shadow-none p-1 h-auto')}
           variant="outline"
         >
-          {update.status === 'pending' ? (
-            <LoaderCircleIcon className="size-4 animate-spin" />
-          ) : currentStyle === E_TABLE_STYLE.GALLERY ? (
-            <LayoutDashboardIcon className="size-4" />
-          ) : (
-            <LayoutListIcon className="size-4" />
-          )}
+          {update.status === 'pending' && <Spinner />}
+
+          {update.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.GALLERY && (
+              <LayoutDashboardIcon className="size-4" />
+            )}
+
+          {update.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.LIST && (
+              <LayoutListIcon className="size-4" />
+            )}
+
+          {update.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.DOCUMENT && (
+              <ListTreeIcon className="size-4" />
+            )}
+
           <span>Exibicao</span>
         </Button>
       </DropdownMenuTrigger>
@@ -139,12 +144,12 @@ export function TableStyleViewDropdown({
               <LayoutDashboardIcon className="size-4" />
               <span>Galeria</span>
             </DropdownMenuRadioItem>
-            
-            {canShowDocument && ( 
+
+            {canShowDocument && (
               <DropdownMenuRadioItem
                 className="inline-flex space-x-1 w-full"
                 value="document"
-                onClick={() => handleStyleChange('document')}
+                onClick={() => handleStyleChange(E_TABLE_STYLE.DOCUMENT)}
               >
                 <ListTreeIcon className="size-4" />
                 <span>Documento</span>

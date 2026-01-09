@@ -14,7 +14,9 @@ import type {
 
 @Service()
 export default class PermissionMongooseRepository implements PermissionContractRepository {
-  private buildWhereClause(payload?: PermissionQueryPayload): Record<string, unknown> {
+  private buildWhereClause(
+    payload?: PermissionQueryPayload,
+  ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     if (payload?.search) {
@@ -77,7 +79,10 @@ export default class PermissionMongooseRepository implements PermissionContractR
     return permissions.map((p) => this.transform(p));
   }
 
-  async update({ _id, ...payload }: PermissionUpdatePayload): Promise<IPermission> {
+  async update({
+    _id,
+    ...payload
+  }: PermissionUpdatePayload): Promise<IPermission> {
     const permission = await Model.findOne({ _id });
 
     if (!permission) throw new Error('Permission not found');

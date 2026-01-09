@@ -4,6 +4,7 @@ import { SeparatorInfo } from '../-separator-info';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import type { ValueOf } from '@/lib/interfaces';
 import type { MenuCreatePayload } from '@/lib/payloads';
 import { MenuCreateBodySchema } from '@/lib/schemas';
 
@@ -24,7 +25,7 @@ export const CreateMenuFormFields = withForm({
   props: {
     isPending: false,
     menuType: E_MENU_ITEM_TYPE.SEPARATOR as
-      | (typeof E_MENU_ITEM_TYPE)[keyof typeof E_MENU_ITEM_TYPE]
+      | ValueOf<typeof E_MENU_ITEM_TYPE>
       | '',
   },
   render: function Render({ form, isPending, menuType }) {
