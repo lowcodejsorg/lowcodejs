@@ -81,7 +81,7 @@ export const TableCreateSchema: FastifySchema = {
         configuration: {
           type: 'object',
           properties: {
-            style: { type: 'string', enum: ['GALLERY', 'LIST'] },
+            style: { type: 'string', enum: ['GALLERY', 'LIST', 'DOCUMENT'] },
             visibility: {
               type: 'string',
               enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],

@@ -2,6 +2,7 @@ import {
   LayoutDashboardIcon,
   LayoutListIcon,
   LoaderCircleIcon,
+  ListTreeIcon
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -20,6 +21,10 @@ import { E_TABLE_STYLE } from '@/lib/constant';
 import type { ITable, Paginated } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
+
+import { FIELD_TYPE } from '@/lib/constant';
+
+
 
 interface TableStyleViewDropdownProps {
   slug: string;
@@ -134,6 +139,17 @@ export function TableStyleViewDropdown({
               <LayoutDashboardIcon className="size-4" />
               <span>Galeria</span>
             </DropdownMenuRadioItem>
+            
+            {canShowDocument && ( 
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value="document"
+                onClick={() => handleStyleChange('document')}
+              >
+                <ListTreeIcon className="size-4" />
+                <span>Documento</span>
+              </DropdownMenuRadioItem>
+            )}
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       )}
