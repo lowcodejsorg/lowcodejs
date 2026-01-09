@@ -1,4 +1,4 @@
-import type { IGroup, IPermission } from '@application/core/entity.core';
+import { E_ROLE, type IGroup, type IPermission } from '@application/core/entity.core';
 
 import type {
   UserGroupContractRepository,
@@ -43,6 +43,10 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
 
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
     let filtered = this.items;
+
+    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
+      filtered = filtered.filter((g) => g.slug !== E_ROLE.MASTER);
+    }
 
     if (payload?.search) {
       const search = payload.search.toLowerCase();

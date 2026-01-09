@@ -1,6 +1,14 @@
 import * as React from 'react';
 
-import { Combobox } from '@/components/ui/combobox';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
+import { Spinner } from '@/components/ui/spinner';
 import { useMenuReadList } from '@/hooks/tanstack-query/use-menu-read-list';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
@@ -35,26 +43,50 @@ export function MenuCombobox({
     });
   }, [menus, excludeId]);
 
+  // Find selected menu
+  const selectedMenu = React.useMemo(() => {
+    return availableMenus.find((m) => m._id === value) ?? null;
+  }, [availableMenus, value]);
+
   return (
     <Combobox
-      value={value ? [value] : []}
-      onChange={(ids) => onValueChange?.(ids[0] ?? '')}
       items={availableMenus}
-      loading={status === 'pending'}
-      getItemId={(menu) => menu._id}
-      getItemLabel={(menu) => menu.name}
-      renderItem={(menu: IMenu) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{menu.name}</span>
-          <span className="text-xs text-muted-foreground">
-            {menu.slug} • {menu.type}
-          </span>
-        </div>
-      )}
-      placeholder={placeholder}
-      emptyMessage="Nenhum menu encontrado."
-      className={className}
+      value={selectedMenu}
+      onValueChange={(menu: IMenu | null) => {
+        onValueChange?.(menu?._id ?? '');
+      }}
+      itemToStringLabel={(menu: IMenu) => menu.name}
       disabled={disabled}
-    />
+    >
+      <ComboboxInput
+        placeholder={selectedMenu?.name || placeholder}
+        showClear={!!selectedMenu}
+        className={className}
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>Nenhum menu encontrado.</ComboboxEmpty>
+        <ComboboxList>
+          {status === 'pending' ? (
+            <div className="flex items-center justify-center p-3">
+              <Spinner className="opacity-50" />
+            </div>
+          ) : (
+            (menu: IMenu): React.ReactNode => (
+              <ComboboxItem
+                key={menu._id}
+                value={menu}
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium">{menu.name}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {menu.slug} • {menu.type}
+                  </span>
+                </div>
+              </ComboboxItem>
+            )
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

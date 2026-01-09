@@ -71,14 +71,7 @@ export default class TableRowEvaluationUseCase {
       const evaluationId = evaluation?._id?.toString();
 
       if (!evaluations.includes(evaluationId))
-        await row
-          ?.set({
-            ...row?.toJSON({
-              flattenObjectIds: true,
-            }),
-            [payload.field]: [...evaluations, evaluationId],
-          })
-          .save();
+        await row.set(payload.field, [...evaluations, evaluationId]).save();
 
       const populated = await row?.populate(populate);
 

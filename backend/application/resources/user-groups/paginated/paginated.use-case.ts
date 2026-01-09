@@ -28,10 +28,12 @@ export default class UserGroupPaginatedUseCase {
         page: payload.page,
         perPage: payload.perPage,
         search: payload.search,
+        user: payload.user,
       });
 
       const total = await this.userGroupRepository.count({
         search: payload.search,
+        user: payload.user,
       });
 
       const lastPage = Math.ceil(total / payload.perPage);

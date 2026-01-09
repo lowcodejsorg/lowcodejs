@@ -207,6 +207,7 @@ export type BaseQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
+  authenticated?: string;
 };
 
 export type UserQueryPayload = Merge<

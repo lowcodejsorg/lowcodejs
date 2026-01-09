@@ -72,14 +72,7 @@ export default class TableRowReactionUseCase {
 
       // se não existir a reação adiciona o id na propriedade do registro
       if (!reactions.includes(reactionId))
-        await row
-          ?.set({
-            ...row?.toJSON({
-              flattenObjectIds: true,
-            }),
-            [payload.field]: [...reactions, reactionId],
-          })
-          .save();
+        await row?.set(payload.field, [...reactions, reactionId]).save();
 
       const populated = await row?.populate(populate);
 

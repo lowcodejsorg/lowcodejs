@@ -10,7 +10,18 @@ import { TreeList } from '@/components/common/-tree-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
-import { Combobox } from '@/components/ui/combobox';
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '@/components/ui/combobox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import {
   InputGroup,
@@ -374,6 +385,11 @@ function FilterTextShort({
   );
 }
 
+interface DropdownOption {
+  value: string;
+  label: string;
+}
+
 function FilterDropdown({
   field,
   value,
@@ -383,49 +399,102 @@ function FilterDropdown({
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
-  const options =
-    field.configuration.dropdown?.map((d) => ({
+  const anchorRef = useComboboxAnchor();
+  const options: Array<DropdownOption> = field.configuration.dropdown.map(
+    (d) => ({
       value: d,
       label: d,
-    })) ?? [];
+    }),
+  );
+
+  // Find selected options for multiple select
+  const selectedOptions = React.useMemo(() => {
+    return options.filter((opt) => value.includes(opt.value));
+  }, [options, value]);
 
   // Para single select, extrair o valor da primeira opção
   const singleValue = value.length > 0 ? value[0] : '';
 
+  if (field.configuration.multiple) {
+    return (
+      <Field>
+        <FieldLabel>{field.name}</FieldLabel>
+        <Combobox
+          items={options}
+          multiple
+          value={selectedOptions}
+          onValueChange={(newValue: Array<DropdownOption>) => {
+            onChange(newValue.map((v) => v.value));
+          }}
+          itemToStringLabel={(opt: DropdownOption) => opt.label}
+        >
+          <ComboboxChips
+            ref={anchorRef}
+            className="w-full"
+          >
+            <ComboboxValue>
+              {(values: Array<DropdownOption>): React.ReactNode => (
+                <React.Fragment>
+                  {values.map((opt) => (
+                    <ComboboxChip
+                      key={opt.value}
+                      aria-label={opt.label}
+                    >
+                      {opt.label}
+                    </ComboboxChip>
+                  ))}
+                  <ComboboxChipsInput
+                    placeholder={
+                      values.length > 0
+                        ? ''
+                        : `Filtrar por ${field.name.toLowerCase()}`
+                    }
+                  />
+                </React.Fragment>
+              )}
+            </ComboboxValue>
+          </ComboboxChips>
+          <ComboboxContent anchor={anchorRef}>
+            <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+            <ComboboxList>
+              {(opt: DropdownOption): React.ReactNode => (
+                <ComboboxItem
+                  key={opt.value}
+                  value={opt}
+                >
+                  {opt.label}
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
+      </Field>
+    );
+  }
+
   return (
     <Field>
       <FieldLabel>{field.name}</FieldLabel>
-      {field.configuration.multiple ? (
-        <Combobox
-          value={value}
-          onChange={(ids) => onChange(ids)}
-          items={options}
-          placeholder={`Filtrar por ${field.name.toLowerCase()}`}
-          multiple
-          className="w-full"
-        />
-      ) : (
-        <Select
-          value={singleValue}
-          onValueChange={(v) => onChange(v ? [v] : [])}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue
-              placeholder={`Filtrar por ${field.name.toLowerCase()}`}
-            />
-          </SelectTrigger>
-          <SelectContent>
-            {options.map((option) => (
-              <SelectItem
-                key={option.value}
-                value={option.value}
-              >
-                {option.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      )}
+      <Select
+        value={singleValue}
+        onValueChange={(v) => onChange(v ? [v] : [])}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue
+            placeholder={`Filtrar por ${field.name.toLowerCase()}`}
+          />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem
+              key={option.value}
+              value={option.value}
+            >
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </Field>
   );
 }
@@ -514,7 +583,7 @@ function FilterCategory({
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
-  const categories = field.configuration.category ?? [];
+  const categories = field.configuration.category;
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedLabel = React.useMemo(() => {

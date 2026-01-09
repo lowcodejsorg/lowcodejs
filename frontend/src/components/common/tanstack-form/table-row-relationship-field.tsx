@@ -1,6 +1,18 @@
-import React from 'react';
+import * as React from 'react';
 
-import { Combobox } from '@/components/ui/combobox';
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useRelationshipRowsReadPaginated } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated';
@@ -26,13 +38,13 @@ export function TableRowRelationshipField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
+  const anchorRef = useComboboxAnchor();
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
 
   const relConfig = field.configuration.relationship;
   const isMultiple = field.configuration.multiple;
-  const selectedValues = formField.state.value;
 
   // Debounce search query
   React.useEffect(() => {
@@ -64,13 +76,119 @@ export function TableRowRelationshipField({
 
   const allItems: Array<IRow> = data?.data ?? [];
 
-  const handleValueChange = (_ids: Array<string>, items: Array<IRow>): void => {
-    const newValues = items.map((row) => ({
-      value: row._id,
-      label: String(row[relConfig.field.slug] ?? row._id),
-    }));
-    formField.handleChange(newValues);
+  // Map selected options to IRow objects for the combobox
+  const selectedItems = React.useMemo(() => {
+    return formField.state.value
+      .map((opt) => allItems.find((row) => row._id === opt.value))
+      .filter((row): row is IRow => row !== undefined);
+  }, [formField.state.value, allItems]);
+
+  const handleValueChange = (newValue: IRow | Array<IRow> | null): void => {
+    if (isMultiple) {
+      const items = newValue as Array<IRow>;
+      const newValues = items.map((row) => ({
+        value: row._id,
+        label: String(row[relConfig.field.slug] ?? row._id),
+      }));
+      formField.handleChange(newValues);
+    } else {
+      const row = newValue as IRow | null;
+      if (row) {
+        formField.handleChange([
+          {
+            value: row._id,
+            label: String(row[relConfig.field.slug] ?? row._id),
+          },
+        ]);
+      } else {
+        formField.handleChange([]);
+      }
+    }
   };
+
+  if (isMultiple) {
+    return (
+      <Field data-invalid={isInvalid}>
+        <FieldLabel htmlFor={formField.name}>
+          {field.name}
+          {isRequired && <span className="text-destructive"> *</span>}
+        </FieldLabel>
+        <div className="relative">
+          <Combobox
+            items={allItems}
+            multiple
+            value={selectedItems}
+            onValueChange={handleValueChange}
+            inputValue={searchQuery}
+            onInputValueChange={setSearchQuery}
+            itemToStringLabel={(row: IRow) =>
+              String(row[relConfig.field.slug] ?? row._id)
+            }
+            disabled={disabled}
+          >
+            <ComboboxChips
+              ref={anchorRef}
+              className={cn(isInvalid && 'border-destructive')}
+            >
+              <ComboboxValue>
+                {(values: Array<IRow>): React.ReactNode => (
+                  <React.Fragment>
+                    {values.slice(0, 2).map((row) => (
+                      <ComboboxChip
+                        key={row._id}
+                        aria-label={String(
+                          row[relConfig.field.slug] ?? row._id,
+                        )}
+                      >
+                        {String(row[relConfig.field.slug] ?? row._id)}
+                      </ComboboxChip>
+                    ))}
+                    {values.length > 2 && (
+                      <span className="text-muted-foreground text-xs">
+                        +{values.length - 2}
+                      </span>
+                    )}
+                    <ComboboxChipsInput
+                      placeholder={
+                        values.length > 0
+                          ? ''
+                          : `Selecione ${field.name.toLowerCase()}`
+                      }
+                    />
+                  </React.Fragment>
+                )}
+              </ComboboxValue>
+            </ComboboxChips>
+            <ComboboxContent anchor={anchorRef}>
+              <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+              <ComboboxList>
+                {isLoading ? (
+                  <div className="flex items-center justify-center p-3">
+                    <Spinner className="opacity-50" />
+                  </div>
+                ) : (
+                  (row: IRow): React.ReactNode => (
+                    <ComboboxItem
+                      key={row._id}
+                      value={row}
+                    >
+                      {String(row[relConfig.field.slug] ?? row._id)}
+                    </ComboboxItem>
+                  )
+                )}
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
+          {isLoading && (
+            <div className="absolute right-10 top-1/2 -translate-y-1/2">
+              <Spinner className="opacity-50" />
+            </div>
+          )}
+        </div>
+        {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      </Field>
+    );
+  }
 
   return (
     <Field data-invalid={isInvalid}>
@@ -80,21 +198,44 @@ export function TableRowRelationshipField({
       </FieldLabel>
       <div className="relative">
         <Combobox
-          value={selectedValues.map((v) => v.value)}
-          onChange={handleValueChange}
           items={allItems}
-          loading={isLoading}
-          getItemId={(row) => row._id}
-          getItemLabel={(row) => String(row[relConfig.field.slug] ?? row._id)}
-          multiple={isMultiple}
-          showCheckboxes={isMultiple}
-          maxBadges={2}
-          onSearch={setSearchQuery}
-          placeholder={`Selecione ${field.name.toLowerCase()}`}
-          emptyMessage="Nenhum resultado encontrado"
+          value={selectedItems[0] ?? null}
+          onValueChange={handleValueChange}
+          inputValue={searchQuery}
+          onInputValueChange={setSearchQuery}
+          itemToStringLabel={(row: IRow) =>
+            String(row[relConfig.field.slug] ?? row._id)
+          }
           disabled={disabled}
-          className={cn(isInvalid && 'border-destructive')}
-        />
+        >
+          <ComboboxInput
+            placeholder={
+              formField.state.value[0]?.label ||
+              `Selecione ${field.name.toLowerCase()}`
+            }
+            showClear={formField.state.value.length > 0}
+            className={cn(isInvalid && 'border-destructive')}
+          />
+          <ComboboxContent>
+            <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+            <ComboboxList>
+              {isLoading ? (
+                <div className="flex items-center justify-center p-3">
+                  <Spinner className="opacity-50" />
+                </div>
+              ) : (
+                (row: IRow): React.ReactNode => (
+                  <ComboboxItem
+                    key={row._id}
+                    value={row}
+                  >
+                    {String(row[relConfig.field.slug] ?? row._id)}
+                  </ComboboxItem>
+                )
+              )}
+            </ComboboxList>
+          </ComboboxContent>
+        </Combobox>
         {isLoading && (
           <div className="absolute right-10 top-1/2 -translate-y-1/2">
             <Spinner className="opacity-50" />

@@ -1,6 +1,17 @@
 import * as React from 'react';
 
-import { Combobox } from '@/components/ui/combobox';
+import {
+  Combobox,
+  ComboboxChip,
+  ComboboxChips,
+  ComboboxChipsInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
+} from '@/components/ui/combobox';
 import { useUserReadPaginated } from '@/hooks/tanstack-query/use-user-read-paginated';
 import { E_USER_STATUS } from '@/lib/constant';
 import type { IUser } from '@/lib/interfaces';
@@ -23,6 +34,7 @@ export function UserMultiSelect({
   excludeUserId,
 }: UserMultiSelectProps): React.JSX.Element {
   const [search, setSearch] = React.useState('');
+  const anchorRef = useComboboxAnchor();
 
   const { data: usersData, status } = useUserReadPaginated({
     page: 1,
@@ -38,27 +50,70 @@ export function UserMultiSelect({
     );
   }, [usersData?.data, excludeUserId]);
 
+  // Map selected IDs to user objects
+  const selectedUsers = React.useMemo(() => {
+    return users.filter((user) => value.includes(user._id));
+  }, [users, value]);
+
   return (
     <Combobox
-      value={value}
-      onChange={(ids) => onValueChange?.(ids)}
       items={users}
-      loading={status === 'pending'}
-      getItemId={(user) => user._id}
-      getItemLabel={(user) => user.name}
-      getItemSearchValue={(user) => `${user.name} ${user.email}`}
-      renderItem={(user: IUser) => (
-        <div className="flex flex-col flex-1">
-          <span className="font-medium">{user.name}</span>
-          <span className="text-sm text-muted-foreground">{user.email}</span>
-        </div>
-      )}
-      onSearch={setSearch}
-      placeholder={placeholder}
-      emptyMessage="Nenhum usuário encontrado."
-      className={className}
-      disabled={disabled}
       multiple
-    />
+      value={selectedUsers}
+      onValueChange={(newUsers: Array<IUser>) => {
+        onValueChange?.(newUsers.map((u) => u._id));
+      }}
+      inputValue={search}
+      onInputValueChange={setSearch}
+      itemToStringLabel={(user: IUser) => user.name}
+      disabled={disabled}
+    >
+      <ComboboxChips
+        ref={anchorRef}
+        className={className}
+      >
+        <ComboboxValue>
+          {(selectedValue: Array<IUser>): React.ReactNode => (
+            <React.Fragment>
+              {selectedValue.map((user) => (
+                <ComboboxChip
+                  key={user._id}
+                  aria-label={user.name}
+                >
+                  {user.name}
+                </ComboboxChip>
+              ))}
+              <ComboboxChipsInput
+                placeholder={selectedValue.length > 0 ? '' : placeholder}
+              />
+            </React.Fragment>
+          )}
+        </ComboboxValue>
+      </ComboboxChips>
+      <ComboboxContent anchor={anchorRef}>
+        <ComboboxEmpty>Nenhum usuário encontrado.</ComboboxEmpty>
+        <ComboboxList>
+          {status === 'pending' ? (
+            <div className="text-muted-foreground p-3 text-center text-sm">
+              Carregando...
+            </div>
+          ) : (
+            (user: IUser): React.ReactNode => (
+              <ComboboxItem
+                key={user._id}
+                value={user}
+              >
+                <div className="flex flex-1 flex-col">
+                  <span className="font-medium">{user.name}</span>
+                  <span className="text-muted-foreground text-sm">
+                    {user.email}
+                  </span>
+                </div>
+              </ComboboxItem>
+            )
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

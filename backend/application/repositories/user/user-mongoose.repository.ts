@@ -91,7 +91,9 @@ export default class UserMongooseRepository implements UserContractRepository {
 
     const whereClause = exact ? { $and: conditions } : { $or: conditions };
 
-    const user = await Model.findOne(whereClause).populate(this.populateOptions);
+    const user = await Model.findOne(whereClause).populate(
+      this.populateOptions,
+    );
 
     if (!user) return null;
 

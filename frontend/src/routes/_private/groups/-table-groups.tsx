@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { E_ROLE } from '@/lib/constant';
+import { USER_GROUP_MAPPER } from '@/lib/constant';
 import type { IGroup } from '@/lib/interfaces';
 
 interface Props {
@@ -21,14 +21,7 @@ interface Props {
   headers: Array<string>;
 }
 
-const RoleMapper = {
-  [E_ROLE.ADMINISTRATOR]: 'Administrador',
-  [E_ROLE.REGISTERED]: 'Registrado',
-  [E_ROLE.MANAGER]: 'Gerente',
-  [E_ROLE.MASTER]: 'Dono',
-};
-
-function TableGroupRow({ group }: { group: IGroup }) {
+function TableGroupRow({ group }: { group: IGroup }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -46,11 +39,13 @@ function TableGroupRow({ group }: { group: IGroup }) {
         });
       }}
     >
-      <TableCell>{group.name}</TableCell>
       <TableCell>
-        <Badge variant="outline">
-          {RoleMapper[group.slug as keyof typeof RoleMapper] || group.slug}
-        </Badge>
+        {group.slug in USER_GROUP_MAPPER &&
+          USER_GROUP_MAPPER[group.slug as keyof typeof USER_GROUP_MAPPER]}
+        {!(group.slug in USER_GROUP_MAPPER) && group.name}
+      </TableCell>
+      <TableCell>
+        <Badge variant="outline">{group.slug}</Badge>
       </TableCell>
       <TableCell className="truncate max-w-xs">
         {group.description || 'N/A'}

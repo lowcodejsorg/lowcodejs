@@ -29,7 +29,12 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const result = await this.useCase.execute();
+    const result = await this.useCase.execute({
+      user: {
+        _id: request?.user?.sub,
+        role: request?.user?.role,
+      },
+    });
 
     if (result.isLeft()) {
       const error = result.value;

@@ -31,7 +31,14 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const query = UserGroupPaginatedQueryValidator.parse(request.query);
-    const result = await this.useCase.execute(query);
+
+    const result = await this.useCase.execute({
+      ...query,
+      user: {
+        _id: request?.user?.sub,
+        role: request?.user?.role,
+      },
+    });
 
     if (result.isLeft()) {
       const error = result.value;

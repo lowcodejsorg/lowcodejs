@@ -1,6 +1,13 @@
 import * as React from 'react';
 
-import { Combobox } from '@/components/ui/combobox';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
 import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
 import type { ITable } from '@/lib/interfaces';
 
@@ -29,24 +36,50 @@ export function TableCombobox({
     return allTables.filter((t) => t.slug !== excludeSlug);
   }, [data?.data, excludeSlug]);
 
+  // Find selected table
+  const selectedTable = React.useMemo(() => {
+    return tables.find((t) => t._id === value) ?? null;
+  }, [tables, value]);
+
   return (
     <Combobox
-      value={value ? [value] : []}
-      onChange={(ids, items) => onValueChange?.(ids[0] ?? '', items[0]?.slug)}
       items={tables}
-      loading={status === 'pending'}
-      getItemId={(table) => table._id}
-      getItemLabel={(table) => table.name}
-      renderItem={(table: ITable) => (
-        <div className="flex flex-col">
-          <span className="font-medium">{table.name}</span>
-          <span className="text-xs text-muted-foreground">{table.slug}</span>
-        </div>
-      )}
-      placeholder={placeholder}
-      emptyMessage="Nenhuma tabela encontrada."
-      className={className}
+      value={selectedTable}
+      onValueChange={(table: ITable | null) => {
+        onValueChange?.(table?._id ?? '', table?.slug);
+      }}
+      itemToStringLabel={(table: ITable) => table.name}
       disabled={disabled}
-    />
+    >
+      <ComboboxInput
+        placeholder={selectedTable?.name || placeholder}
+        showClear={!!selectedTable}
+        className={className}
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>Nenhuma tabela encontrada.</ComboboxEmpty>
+        <ComboboxList>
+          {status === 'pending' ? (
+            <div className="text-muted-foreground p-3 text-center text-sm">
+              Carregando...
+            </div>
+          ) : (
+            (table: ITable): React.ReactNode => (
+              <ComboboxItem
+                key={table._id}
+                value={table}
+              >
+                <div className="flex flex-col">
+                  <span className="font-medium">{table.name}</span>
+                  <span className="text-muted-foreground text-xs">
+                    {table.slug}
+                  </span>
+                </div>
+              </ComboboxItem>
+            )
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

@@ -2,10 +2,14 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
-import type { ComboboxOption } from '@/components/ui/combobox';
 import type { TreeNode } from '@/components/common/-tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_TYPE } from '@/lib/constant';
+
+interface DropdownOption {
+  value: string;
+  label: string;
+}
 
 export const FieldCreateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
@@ -13,7 +17,7 @@ export const FieldCreateSchema = z.object({
   configuration: z.object({
     format: z.string().default(''),
     defaultValue: z.string().default(''),
-    dropdown: z.array(z.custom<ComboboxOption>()).default([]),
+    dropdown: z.array(z.custom<DropdownOption>()).default([]),
     relationship: z.object({
       tableId: z.string().default(''),
       tableSlug: z.string().default(''),
@@ -23,8 +27,8 @@ export const FieldCreateSchema = z.object({
     }),
     category: z.array(z.custom<TreeNode>()).default([]),
     multiple: z.boolean().default(false),
-    filtering: z.boolean().default(false),
-    listing: z.boolean().default(false),
+    filtering: z.boolean().default(true),
+    listing: z.boolean().default(true),
     required: z.boolean().default(false),
   }),
 });
@@ -47,8 +51,8 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
     },
     category: [],
     multiple: false,
-    filtering: false,
-    listing: false,
+    filtering: true,
+    listing: true,
     required: false,
   },
 };

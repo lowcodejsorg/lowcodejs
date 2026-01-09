@@ -1,5 +1,11 @@
 /* eslint-disable no-unused-vars */
-import type { IGroup, Merge } from '@application/core/entity.core';
+import type {
+  E_ROLE,
+  IGroup,
+  IUser,
+  Merge,
+  ValueOf,
+} from '@application/core/entity.core';
 
 export type UserGroupCreatePayload = Merge<
   Pick<IGroup, 'name' | 'slug'>,
@@ -23,6 +29,7 @@ export type UserGroupQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
+  user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
 };
 
 export abstract class UserGroupContractRepository {

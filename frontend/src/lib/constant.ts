@@ -163,9 +163,18 @@ export const DATE_FORMAT_OPTIONS = [
   { label: 'DD-MM-AAAA', value: E_FIELD_FORMAT.DD_MM_YYYY_DASH },
   { label: 'MM-DD-AAAA', value: E_FIELD_FORMAT.MM_DD_YYYY_DASH },
   { label: 'AAAA-MM-DD', value: E_FIELD_FORMAT.YYYY_MM_DD_DASH },
-  { label: 'DD-MM-AAAA hh:mm:ss', value: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS_DASH },
-  { label: 'MM-DD-AAAA hh:mm:ss', value: E_FIELD_FORMAT.MM_DD_YYYY_HH_MM_SS_DASH },
-  { label: 'AAAA-MM-DD hh:mm:ss', value: E_FIELD_FORMAT.YYYY_MM_DD_HH_MM_SS_DASH },
+  {
+    label: 'DD-MM-AAAA hh:mm:ss',
+    value: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS_DASH,
+  },
+  {
+    label: 'MM-DD-AAAA hh:mm:ss',
+    value: E_FIELD_FORMAT.MM_DD_YYYY_HH_MM_SS_DASH,
+  },
+  {
+    label: 'AAAA-MM-DD hh:mm:ss',
+    value: E_FIELD_FORMAT.YYYY_MM_DD_HH_MM_SS_DASH,
+  },
 ] as const;
 
 export const MENU_ITEM_TYPE_OPTIONS = [
@@ -188,3 +197,10 @@ export const TABLE_VISIBILITY_OPTIONS = [
   { label: 'Pública', value: E_TABLE_VISIBILITY.PUBLIC },
   { label: 'Formulário online', value: E_TABLE_VISIBILITY.FORM },
 ] as const;
+
+export const USER_GROUP_MAPPER = {
+  [E_ROLE.ADMINISTRATOR]: 'Administrador',
+  [E_ROLE.REGISTERED]: 'Registrado',
+  [E_ROLE.MANAGER]: 'Gerente',
+  [E_ROLE.MASTER]: 'Master (Super Administrador)',
+} as const;

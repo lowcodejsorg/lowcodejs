@@ -2,8 +2,12 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
-import type { ComboboxOption } from '@/components/ui/combobox';
 import type { ICategory } from '@/lib/interfaces';
+
+interface DropdownOption {
+  value: string;
+  label: string;
+}
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_TYPE } from '@/lib/constant';
 
@@ -13,7 +17,7 @@ export const FieldUpdateSchema = z.object({
   configuration: z.object({
     format: z.string().default(''),
     defaultValue: z.string().default(''),
-    dropdown: z.array(z.custom<ComboboxOption>()).default([]),
+    dropdown: z.array(z.custom<DropdownOption>()).default([]),
     relationship: z.object({
       tableId: z.string().default(''),
       tableSlug: z.string().default(''),

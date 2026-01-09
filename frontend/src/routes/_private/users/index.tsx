@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useUserReadPaginated } from '@/hooks/tanstack-query/use-user-read-paginated';
 import { MetaDefault } from '@/lib/constant';
+import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/users/')({
   component: RouteComponent,
@@ -21,6 +22,8 @@ export const Route = createFileRoute('/_private/users/')({
 });
 
 function RouteComponent(): React.JSX.Element {
+  const authenticated = useAuthenticationStore();
+
   const search = useSearch({
     from: '/_private/users/',
   });
@@ -29,7 +32,10 @@ function RouteComponent(): React.JSX.Element {
 
   const sidebar = useSidebar();
 
-  const pagination = useUserReadPaginated(search);
+  const pagination = useUserReadPaginated({
+    ...search,
+    authenticated: authenticated.authenticated?.sub,
+  });
 
   const headers = ['Nome', 'E-mail', 'Papel', 'Status'];
 

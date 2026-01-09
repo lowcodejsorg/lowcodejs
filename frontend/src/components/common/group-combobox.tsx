@@ -1,7 +1,17 @@
 import * as React from 'react';
 
-import { Combobox } from '@/components/ui/combobox';
+import {
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+} from '@/components/ui/combobox';
+import { Spinner } from '@/components/ui/spinner';
 import { useGroupReadList } from '@/hooks/tanstack-query/use-group-read-list';
+import { USER_GROUP_MAPPER } from '@/lib/constant';
+import type { IGroup } from '@/lib/interfaces';
 
 interface GroupComboboxProps {
   value?: string;
@@ -20,18 +30,51 @@ export function GroupCombobox({
 }: GroupComboboxProps): React.JSX.Element {
   const { data: groups, status } = useGroupReadList();
 
+  const items = groups ?? [];
+
+  // Find selected group
+  const selectedGroup = React.useMemo(() => {
+    return items.find((g) => g._id === value) ?? null;
+  }, [items, value]);
+
   return (
     <Combobox
-      value={value ? [value] : []}
-      onChange={(ids) => onValueChange?.(ids[0] ?? '')}
-      items={groups ?? []}
-      loading={status === 'pending'}
-      getItemId={(group) => group._id}
-      getItemLabel={(group) => group.name}
-      placeholder={placeholder}
-      emptyMessage="Nenhum grupo encontrado."
-      className={className}
+      items={items}
+      value={selectedGroup}
+      onValueChange={(group: IGroup | null) => {
+        onValueChange?.(group?._id ?? '');
+      }}
+      itemToStringLabel={(group: IGroup) => group.name}
       disabled={disabled}
-    />
+    >
+      <ComboboxInput
+        placeholder={selectedGroup?.name || placeholder}
+        showClear={!!selectedGroup}
+        className={className}
+      />
+      <ComboboxContent>
+        <ComboboxEmpty>Nenhum grupo encontrado.</ComboboxEmpty>
+        <ComboboxList>
+          {status === 'pending' ? (
+            <div className="flex items-center justify-center p-3">
+              <Spinner className="opacity-50" />
+            </div>
+          ) : (
+            (group: IGroup): React.ReactNode => (
+              <ComboboxItem
+                key={group._id}
+                value={group}
+              >
+                {group.slug in USER_GROUP_MAPPER &&
+                  USER_GROUP_MAPPER[
+                    group.slug as keyof typeof USER_GROUP_MAPPER
+                  ]}
+                {!(group.slug in USER_GROUP_MAPPER) && group.slug}
+              </ComboboxItem>
+            )
+          )}
+        </ComboboxList>
+      </ComboboxContent>
+    </Combobox>
   );
 }

@@ -1,6 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import type { IGroup } from '@application/core/entity.core';
+import { E_ROLE, type IGroup } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { UserGroup as Model } from '@application/model/user-group.model';
 
@@ -16,10 +16,14 @@ import type {
 export default class UserGroupMongooseRepository implements UserGroupContractRepository {
   private readonly populateOptions = [{ path: 'permissions' }];
 
-  private buildWhereClause(
+  private async buildWhereClause(
     payload?: UserGroupQueryPayload,
-  ): Record<string, unknown> {
+  ): Promise<Record<string, unknown>> {
     const where: Record<string, unknown> = {};
+
+    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
+      where.slug = { $ne: E_ROLE.MASTER };
+    }
 
     if (payload?.search) {
       where.$or = [
@@ -69,7 +73,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
   }
 
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
-    const where = this.buildWhereClause(payload);
+    const where = await this.buildWhereClause(payload);
 
     let skip: number | undefined;
     let take: number | undefined;
@@ -110,7 +114,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
   }
 
   async count(payload?: UserGroupQueryPayload): Promise<number> {
-    const where = this.buildWhereClause(payload);
+    const where = await this.buildWhereClause(payload);
     return Model.countDocuments(where);
   }
 }
