@@ -18,7 +18,7 @@ import {
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { E_TABLE_STYLE } from '@/lib/constant';
+import { E_FIELD_TYPE, E_TABLE_STYLE } from '@/lib/constant';
 import type { ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
@@ -86,10 +86,25 @@ export function TableStyleViewDropdown({
   };
 
   const currentStyle = table.data?.configuration.style ?? E_TABLE_STYLE.LIST;
+
   const isDisabled =
     (table.status === 'success' && table.data.fields.length === 0) ||
     table.status === 'pending' ||
     update.status === 'pending';
+
+  const existFieldTextShort =
+    table.status === 'success' &&
+    table.data.fields.some(
+      (f) => !f.trashed && f.type === E_FIELD_TYPE.TEXT_SHORT,
+    );
+  const existFieldTextLong =
+    table.status === 'success' &&
+    table.data.fields.some(
+      (f) => !f.trashed && f.type === E_FIELD_TYPE.TEXT_LONG,
+    );
+
+  const canShowDocument =
+    table.status === 'success' && existFieldTextShort && existFieldTextLong;
 
   return (
     <DropdownMenu
@@ -145,16 +160,16 @@ export function TableStyleViewDropdown({
               <span>Galeria</span>
             </DropdownMenuRadioItem>
 
-            {/* {canShowDocument && ( */}
-            <DropdownMenuRadioItem
-              className="inline-flex space-x-1 w-full"
-              value="document"
-              onClick={() => handleStyleChange(E_TABLE_STYLE.DOCUMENT)}
-            >
-              <ListTreeIcon className="size-4" />
-              <span>Documento</span>
-            </DropdownMenuRadioItem>
-            {/* )} */}
+            {canShowDocument && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value="document"
+                onClick={() => handleStyleChange(E_TABLE_STYLE.DOCUMENT)}
+              >
+                <ListTreeIcon className="size-4" />
+                <span>Documento</span>
+              </DropdownMenuRadioItem>
+            )}
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       )}

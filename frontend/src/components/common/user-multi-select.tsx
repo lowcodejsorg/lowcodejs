@@ -22,7 +22,6 @@ interface UserMultiSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
-  excludeUserId?: string;
 }
 
 export function UserMultiSelect({
@@ -31,7 +30,6 @@ export function UserMultiSelect({
   placeholder = 'Selecione administradores...',
   className,
   disabled = false,
-  excludeUserId,
 }: UserMultiSelectProps): React.JSX.Element {
   const [search, setSearch] = React.useState('');
   const anchorRef = useComboboxAnchor();
@@ -45,10 +43,9 @@ export function UserMultiSelect({
   const users = React.useMemo(() => {
     if (!usersData?.data) return [];
     return usersData.data.filter(
-      (user) =>
-        user.status === E_USER_STATUS.ACTIVE && user._id !== excludeUserId,
+      (user) => user.status === E_USER_STATUS.ACTIVE,
     );
-  }, [usersData?.data, excludeUserId]);
+  }, [usersData?.data]);
 
   // Map selected IDs to user objects
   const selectedUsers = React.useMemo(() => {
