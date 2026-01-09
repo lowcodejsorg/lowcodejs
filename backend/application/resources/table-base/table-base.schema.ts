@@ -8,7 +8,7 @@ import {
 
 export const TableConfigurationSchema = z.object({
   style: z
-    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST])
+    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
     .default(E_TABLE_STYLE.LIST),
   visibility: z
     .enum([

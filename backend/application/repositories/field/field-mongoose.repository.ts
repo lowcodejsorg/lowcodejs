@@ -14,7 +14,9 @@ import type {
 
 @Service()
 export default class FieldMongooseRepository implements FieldContractRepository {
-  private buildWhereClause(payload?: FieldQueryPayload): Record<string, unknown> {
+  private buildWhereClause(
+    payload?: FieldQueryPayload,
+  ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     if (payload?.type) where.type = payload.type;

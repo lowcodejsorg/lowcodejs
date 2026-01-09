@@ -24,7 +24,11 @@ export default class PermissionInMemoryRepository implements PermissionContractR
     return permission;
   }
 
-  async findBy({ _id, slug, exact = false }: PermissionFindByPayload): Promise<IPermission | null> {
+  async findBy({
+    _id,
+    slug,
+    exact = false,
+  }: PermissionFindByPayload): Promise<IPermission | null> {
     const permission = this.items.find((p) => {
       if (exact) {
         return (_id ? p._id === _id : true) && (slug ? p.slug === slug : true);
@@ -53,7 +57,10 @@ export default class PermissionInMemoryRepository implements PermissionContractR
     return filtered;
   }
 
-  async update({ _id, ...payload }: PermissionUpdatePayload): Promise<IPermission> {
+  async update({
+    _id,
+    ...payload
+  }: PermissionUpdatePayload): Promise<IPermission> {
     const permission = this.items.find((p) => p._id === _id);
     if (!permission) throw new Error('Permission not found');
     Object.assign(permission, payload, { updatedAt: new Date() });

@@ -38,7 +38,7 @@ import { TableRowFileField } from '@/components/common/tanstack-form/table-row-f
 import { TableRowRelationshipField } from '@/components/common/tanstack-form/table-row-relationship-field';
 import { TableRowTextField } from '@/components/common/tanstack-form/table-row-text-field';
 import { TableRowTextareaField } from '@/components/common/tanstack-form/table-row-textarea-field';
-import { TableStyleSwitchField } from '@/components/common/tanstack-form/table-style-switch-field';
+import { TableStyleSelectField } from '@/components/common/tanstack-form/table-style-select-field';
 import { TableVisibilitySelectField } from '@/components/common/tanstack-form/table-visibility-select-field';
 
 export const { useAppForm, withForm } = createFormHook({
@@ -65,7 +65,7 @@ export const { useAppForm, withForm } = createFormHook({
     TableComboboxField,
     TableVisibilitySelectField,
     TableCollaborationSelectField,
-    TableStyleSwitchField,
+    TableStyleSelectField,
     // Table field configuration
     TableFieldTypeSelect,
     TableFieldFormatSelect,

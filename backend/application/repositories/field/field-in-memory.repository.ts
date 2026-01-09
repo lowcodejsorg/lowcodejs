@@ -24,7 +24,11 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
     return field;
   }
 
-  async findBy({ _id, slug, exact = false }: FieldFindByPayload): Promise<IField | null> {
+  async findBy({
+    _id,
+    slug,
+    exact = false,
+  }: FieldFindByPayload): Promise<IField | null> {
     const field = this.items.find((f) => {
       if (exact) {
         return (_id ? f._id === _id : true) && (slug ? f.slug === slug : true);

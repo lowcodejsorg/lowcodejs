@@ -25,7 +25,11 @@ export default class ReactionInMemoryRepository implements ReactionContractRepos
     return reaction;
   }
 
-  async findBy({ _id, user, exact = false }: ReactionFindByPayload): Promise<IReaction | null> {
+  async findBy({
+    _id,
+    user,
+    exact = false,
+  }: ReactionFindByPayload): Promise<IReaction | null> {
     const reaction = this.items.find((r) => {
       if (exact) {
         return (
@@ -42,7 +46,9 @@ export default class ReactionInMemoryRepository implements ReactionContractRepos
     let filtered = this.items;
 
     if (payload?.user) {
-      filtered = filtered.filter((r) => (r.user as IUser)?._id === payload.user);
+      filtered = filtered.filter(
+        (r) => (r.user as IUser)?._id === payload.user,
+      );
     }
 
     if (payload?.type) {

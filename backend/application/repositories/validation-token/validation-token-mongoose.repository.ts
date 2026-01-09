@@ -38,7 +38,9 @@ export default class ValidationTokenMongooseRepository implements ValidationToke
     };
   }
 
-  async create(payload: ValidationTokenCreatePayload): Promise<IValidationToken> {
+  async create(
+    payload: ValidationTokenCreatePayload,
+  ): Promise<IValidationToken> {
     const created = await Model.create(payload);
     const populated = await created.populate(this.populateOptions);
     return this.transform(populated);
@@ -60,14 +62,18 @@ export default class ValidationTokenMongooseRepository implements ValidationToke
 
     const whereClause = exact ? { $and: conditions } : { $or: conditions };
 
-    const token = await Model.findOne(whereClause).populate(this.populateOptions);
+    const token = await Model.findOne(whereClause).populate(
+      this.populateOptions,
+    );
 
     if (!token) return null;
 
     return this.transform(token);
   }
 
-  async findMany(payload?: ValidationTokenQueryPayload): Promise<IValidationToken[]> {
+  async findMany(
+    payload?: ValidationTokenQueryPayload,
+  ): Promise<IValidationToken[]> {
     const where = this.buildWhereClause(payload);
 
     let skip: number | undefined;

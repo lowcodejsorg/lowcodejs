@@ -14,4 +14,6 @@ export const UserGroupPaginatedQueryValidator = z.object({
     .optional(),
 });
 
-export type UserGroupPaginatedPayload = z.infer<typeof UserGroupPaginatedQueryValidator>;
+export type UserGroupPaginatedPayload = z.infer<
+  typeof UserGroupPaginatedQueryValidator
+>;

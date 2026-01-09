@@ -35,6 +35,7 @@ import type {
   IRow,
   ITable,
   Paginated,
+  ValueOf,
 } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/create/')({
@@ -226,7 +227,7 @@ function RouteComponent(): React.JSX.Element {
           listing: config.listing,
           filtering: config.filtering,
           format: config.format
-            ? (config.format as (typeof E_FIELD_FORMAT)[keyof typeof E_FIELD_FORMAT])
+            ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
             : null,
           defaultValue: config.defaultValue || null,
           dropdown: hasDropdown

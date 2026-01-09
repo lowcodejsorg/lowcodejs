@@ -15,7 +15,9 @@ import type {
 export default class ReactionMongooseRepository implements ReactionContractRepository {
   private readonly populateOptions = [{ path: 'user' }];
 
-  private buildWhereClause(payload?: ReactionQueryPayload): Record<string, unknown> {
+  private buildWhereClause(
+    payload?: ReactionQueryPayload,
+  ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     if (payload?.user) where.user = payload.user;
@@ -52,7 +54,9 @@ export default class ReactionMongooseRepository implements ReactionContractRepos
 
     const whereClause = exact ? { $and: conditions } : { $or: conditions };
 
-    const reaction = await Model.findOne(whereClause).populate(this.populateOptions);
+    const reaction = await Model.findOne(whereClause).populate(
+      this.populateOptions,
+    );
 
     if (!reaction) return null;
 

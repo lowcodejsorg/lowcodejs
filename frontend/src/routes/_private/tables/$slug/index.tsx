@@ -9,6 +9,8 @@ import { ArrowLeftIcon, PlusIcon, ShieldXIcon } from 'lucide-react';
 import z from 'zod';
 
 import { TableConfigurationDropdown } from './-table-configuration';
+import { TableDocumentView } from './-table-document-view';
+import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
 import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableListView } from './-table-list-view';
@@ -138,6 +140,11 @@ function RouteComponent(): React.JSX.Element {
           table.data.configuration.style === E_TABLE_STYLE.GALLERY && (
             <TableGridViewSkeleton />
           )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === E_TABLE_STYLE.DOCUMENT && (
+            <TableDocumentViewSkeleton />
+          )}
 
         {rows.status === 'error' &&
           ((): React.JSX.Element => {
@@ -198,6 +205,16 @@ function RouteComponent(): React.JSX.Element {
               headers={table.data.fields}
               order={table.data.configuration.fields.orderList}
               data={rows.data.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.configuration.style === E_TABLE_STYLE.DOCUMENT &&
+          rows.status === 'success' && (
+            <TableDocumentView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
+              tableSlug={slug}
             />
           )}
       </div>

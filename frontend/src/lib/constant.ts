@@ -66,6 +66,7 @@ export const E_TABLE_TYPE = {
 export const E_TABLE_STYLE = {
   LIST: 'LIST',
   GALLERY: 'GALLERY',
+  DOCUMENT: 'DOCUMENT',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -196,6 +197,12 @@ export const TABLE_VISIBILITY_OPTIONS = [
   { label: 'Aberta', value: E_TABLE_VISIBILITY.OPEN },
   { label: 'Pública', value: E_TABLE_VISIBILITY.PUBLIC },
   { label: 'Formulário online', value: E_TABLE_VISIBILITY.FORM },
+] as const;
+
+export const TABLE_STYLE_OPTIONS = [
+  { label: 'Lista', value: E_TABLE_STYLE.LIST },
+  { label: 'Galeria', value: E_TABLE_STYLE.GALLERY },
+  { label: 'Documento', value: E_TABLE_STYLE.DOCUMENT },
 ] as const;
 
 export const USER_GROUP_MAPPER = {

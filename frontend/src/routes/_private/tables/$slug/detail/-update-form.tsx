@@ -1,12 +1,12 @@
 import { FileTextIcon } from 'lucide-react';
 import { z } from 'zod';
 
+import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@/lib/constant';
-import { withForm } from '@/integrations/tanstack-form/form-hook';
 import type { ITable, Merge } from '@/lib/interfaces';
 import type { TableConfigurationPayload } from '@/lib/payloads';
 
@@ -17,7 +17,11 @@ export const TableUpdateSchema = z.object({
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
   description: z.string().default(''),
-  style: z.enum([E_TABLE_STYLE.LIST, E_TABLE_STYLE.GALLERY]),
+  style: z.enum([
+    E_TABLE_STYLE.LIST,
+    E_TABLE_STYLE.GALLERY,
+    E_TABLE_STYLE.DOCUMENT,
+  ]),
   visibility: z.enum([
     E_TABLE_VISIBILITY.PUBLIC,
     E_TABLE_VISIBILITY.RESTRICTED,
@@ -25,7 +29,10 @@ export const TableUpdateSchema = z.object({
     E_TABLE_VISIBILITY.FORM,
     E_TABLE_VISIBILITY.PRIVATE,
   ]),
-  collaboration: z.enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED]),
+  collaboration: z.enum([
+    E_TABLE_COLLABORATION.OPEN,
+    E_TABLE_COLLABORATION.RESTRICTED,
+  ]),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
@@ -36,8 +43,13 @@ export type TableUpdateFormValues = Merge<
     name: string;
     description: string;
     logo: string | null;
-  } & Required<Pick<TableConfigurationPayload, 'style' | 'visibility' | 'collaboration' | 'administrators'>>,
-  { logoFile: File[] }
+  } & Required<
+    Pick<
+      TableConfigurationPayload,
+      'style' | 'visibility' | 'collaboration' | 'administrators'
+    >
+  >,
+  { logoFile: Array<File> }
 >;
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
@@ -133,9 +145,9 @@ export const UpdateTableFormFields = withForm({
         {/* Campo Style */}
         <form.AppField name="style">
           {(field) => (
-            <field.TableStyleSwitchField
+            <field.TableStyleSelectField
               label="Layout de visualização"
-              description="Defina como a tabela será exibida"
+              placeholder="Selecione o estilo de visualização"
               disabled={isDisabled}
             />
           )}
@@ -192,11 +204,6 @@ export const UpdateTableFormFields = withForm({
               label="Administradores"
               placeholder="Selecione administradores"
               disabled={isDisabled}
-              excludeUserId={
-                typeof tableData?.configuration.owner === 'string'
-                  ? tableData.configuration.owner
-                  : tableData?.configuration.owner?._id
-              }
             />
           )}
         </form.AppField>
