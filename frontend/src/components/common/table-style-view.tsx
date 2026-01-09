@@ -106,22 +106,22 @@ export function TableStyleViewDropdown({
         >
           {update.status === 'pending' && <Spinner />}
 
-          {update.status === 'success' &&
+          {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.GALLERY && (
               <LayoutDashboardIcon className="size-4" />
             )}
 
-          {update.status === 'success' &&
+          {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.LIST && (
               <LayoutListIcon className="size-4" />
             )}
 
-          {update.status === 'success' &&
+          {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.DOCUMENT && (
               <ListTreeIcon className="size-4" />
             )}
 
-          <span>Exibicao</span>
+          <span>Exibição</span>
         </Button>
       </DropdownMenuTrigger>
 
@@ -145,16 +145,16 @@ export function TableStyleViewDropdown({
               <span>Galeria</span>
             </DropdownMenuRadioItem>
 
-            {canShowDocument && (
-              <DropdownMenuRadioItem
-                className="inline-flex space-x-1 w-full"
-                value="document"
-                onClick={() => handleStyleChange(E_TABLE_STYLE.DOCUMENT)}
-              >
-                <ListTreeIcon className="size-4" />
-                <span>Documento</span>
-              </DropdownMenuRadioItem>
-            )}
+            {/* {canShowDocument && ( */}
+            <DropdownMenuRadioItem
+              className="inline-flex space-x-1 w-full"
+              value="document"
+              onClick={() => handleStyleChange(E_TABLE_STYLE.DOCUMENT)}
+            >
+              <ListTreeIcon className="size-4" />
+              <span>Documento</span>
+            </DropdownMenuRadioItem>
+            {/* )} */}
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       )}
