@@ -140,18 +140,18 @@ function RouteComponent(): React.JSX.Element {
           )}
 
         {rows.status === 'error' &&
-          (() => {
+          ((): React.JSX.Element => {
             const error = rows.error as AxiosError<{
               code: number;
               cause: string;
             }>;
-            const cause = error?.response?.data?.cause;
+            const cause = error.response?.data.cause;
 
             // Erros de permissão - sem botão de refetch
             if (
               cause === 'TABLE_PRIVATE' ||
               cause === 'FORM_VIEW_RESTRICTED' ||
-              error?.response?.status === 403
+              error.response?.status === 403
             ) {
               const message =
                 cause === 'TABLE_PRIVATE'

@@ -14,7 +14,7 @@ import { cn } from '@/lib/utils';
 
 interface Reaction {
   type: ValueOf<typeof E_REACTION_TYPE>;
-  user: { _id: string };
+  user?: { _id: string };
 }
 
 interface TableRowReactionCellProps {
@@ -40,13 +40,13 @@ export function TableRowReactionCell({
   const userLike = data.some(
     (d) =>
       d.type === E_REACTION_TYPE.LIKE &&
-      d.user._id.toString() === user?._id.toString(),
+      d.user?._id.toString() === user?._id.toString(),
   );
 
   const userUnlike = data.some(
     (d) =>
       d.type === E_REACTION_TYPE.UNLIKE &&
-      d.user._id.toString() === user?._id.toString(),
+      d.user?._id.toString() === user?._id.toString(),
   );
 
   const search = useSearch({
