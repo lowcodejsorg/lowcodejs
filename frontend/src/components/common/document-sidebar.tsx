@@ -50,66 +50,66 @@ function TreeItem({
     
     return (
         <div>
-        <div
-        className={[
-            'w-full rounded-md px-2 py-1.5 text-sm transition',
-            'flex items-center gap-2',
-            active ? 'bg-muted font-medium' : 'hover:bg-muted/60',
-        ].join(' ')}
-        style={{ paddingLeft: 8 + level * 12 }}
-        >
-        {/* Toggle */}
-        {hasChildren ? (
+            <div
+            className={[
+                'w-full rounded-md px-2 py-1.5 text-sm transition',
+                'flex items-center gap-2',
+                active ? 'bg-muted font-medium' : 'hover:bg-muted/60',
+            ].join(' ')}
+            style={{ paddingLeft: 8 + level * 12 }}
+            >
+            {/* Toggle */}
+            {hasChildren ? (
+                <button
+                type="button"
+                onClick={() => toggleOpen(node.id)}
+                className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
+                aria-label={isOpen ? 'Recolher' : 'Expandir'}
+                >
+                {isOpen ? (
+                    <ChevronDownIcon className="size-4 opacity-70" />
+                ) : (
+                    <ChevronRightIcon className="size-4 opacity-70" />
+                )}
+                </button>
+            ) : (
+                <span className="w-[22px]" />
+            )}
+            
+            {/* Icon */}
+            {hasChildren ? (
+                <FolderIcon className="size-4 opacity-70" />
+            ) : (
+                <TagIcon className="size-4 opacity-70" />
+            )}
+            
+            {/* Select */}
             <button
             type="button"
-            onClick={() => toggleOpen(node.id)}
-            className="p-0.5 rounded hover:bg-background/60"
-            aria-label={isOpen ? 'Recolher' : 'Expandir'}
+            onClick={() => onSelect(node.id)}
+            className="flex-1 text-left truncate"
+            title={node.label}
             >
-            {isOpen ? (
-                <ChevronDownIcon className="size-4 opacity-70" />
-            ) : (
-                <ChevronRightIcon className="size-4 opacity-70" />
-            )}
+            {node.label}
             </button>
-        ) : (
-            <span className="w-[22px]" />
-        )}
-        
-        {/* Icon */}
-        {hasChildren ? (
-            <FolderIcon className="size-4 opacity-70" />
-        ) : (
-            <TagIcon className="size-4 opacity-70" />
-        )}
-        
-        {/* Select */}
-        <button
-        type="button"
-        onClick={() => onSelect(node.id)}
-        className="flex-1 text-left truncate"
-        title={node.label}
-        >
-        {node.label}
-        </button>
-        </div>
-        
-        {/* children */}
-        {hasChildren && isOpen ? (
-            <div className="mt-1 space-y-1">
-            {node.children!.map((child) => (
-                <TreeItem
-                key={child.id}
-                node={child}
-                level={level + 1}
-                selectedId={selectedId}
-                onSelect={onSelect}
-                isOpen={isOpen} // placeholder, overridden in parent render
-                toggleOpen={toggleOpen}
-                />
-            ))}
             </div>
-        ) : null}
+        
+            {/* children */}
+            {hasChildren && isOpen ? (
+                <div className="mt-1 space-y-1">
+                {node.children!.map((child) => (
+                    <TreeItem
+                        key={child.id}
+                        node={child}
+                        level={level + 1}
+                        selectedId={selectedId}
+                        onSelect={onSelect}
+                        isOpen={isOpen} 
+                        toggleOpen={toggleOpen}
+                    />
+                ))}
+                </div>
+            ) : null}
         </div>
     );
 }
@@ -140,56 +140,56 @@ function Tree({
             
             return (
                 <div key={n.id}>
-                <div
-                className={[
-                    'w-full rounded-md px-2 py-1.5 text-sm transition',
-                    'flex items-center gap-2',
-                    selectedId === n.id ? 'bg-muted font-medium' : 'hover:bg-muted/60',
-                ].join(' ')}
-                style={{ paddingLeft: 8 + level * 12 }}
-                >
-                {hasChildren ? (
-                    <button
-                    type="button"
-                    onClick={() => toggleOpen(n.id)}
-                    className="p-0.5 rounded hover:bg-background/60"
-                    aria-label={isOpen ? 'Recolher' : 'Expandir'}
+                    <div
+                    className={[
+                        'w-full rounded-md px-2 py-1.5 text-sm transition',
+                        'flex items-center gap-2',
+                        selectedId === n.id ? 'bg-muted font-medium' : 'hover:bg-muted/60',
+                    ].join(' ')}
+                    style={{ paddingLeft: 8 + level * 12 }}
                     >
-                    {isOpen ? (
-                        <ChevronDownIcon className="size-4 opacity-70" />
+                    {hasChildren ? (
+                        <button
+                        type="button"
+                        onClick={() => toggleOpen(n.id)}
+                        className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
+                        aria-label={isOpen ? 'Recolher' : 'Expandir'}
+                        >
+                        {isOpen ? (
+                            <ChevronDownIcon className="size-4 opacity-70" />
+                        ) : (
+                            <ChevronRightIcon className="size-4 opacity-70" />
+                        )}
+                        </button>
                     ) : (
-                        <ChevronRightIcon className="size-4 opacity-70" />
+                        <span className="w-[22px]" />
                     )}
+                    
+                    {hasChildren ? (
+                        <FolderTreeIcon className="size-4 opacity-70" />
+                    ) : (
+                        <WorkflowIcon className="size-4 opacity-70" />
+                    )}
+                    
+                    <button
+                        type="button"
+                        onClick={() => onSelect(n.id)}
+                        className="flex-1 text-left truncate cursor-pointer"
+                        title={n.label}
+                        >
+                        {n.label}
                     </button>
-                ) : (
-                    <span className="w-[22px]" />
-                )}
-                
-                {hasChildren ? (
-                    <FolderTreeIcon className="size-4 opacity-70" />
-                ) : (
-                    <WorkflowIcon className="size-4 opacity-70" />
-                )}
-                
-                <button
-                type="button"
-                onClick={() => onSelect(n.id)}
-                className="flex-1 text-left truncate"
-                title={n.label}
-                >
-                {n.label}
-                </button>
                 </div>
                 
                 {hasChildren && isOpen ? (
                     <div className="mt-1">
                     <Tree
-                    nodes={n.children!}
-                    selectedId={selectedId}
-                    onSelect={onSelect}
-                    openMap={openMap}
-                    toggleOpen={toggleOpen}
-                    level={level + 1}
+                        nodes={n.children!}
+                        selectedId={selectedId}
+                        onSelect={onSelect}
+                        openMap={openMap}
+                        toggleOpen={toggleOpen}
+                        level={level + 1}
                     />
                     </div>
                 ) : null}

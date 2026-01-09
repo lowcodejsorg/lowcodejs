@@ -83,6 +83,7 @@ export function rowIndentPxFromLeaf(
   else if (typeof v === 'string') leaf = v;
 
   const depth = leaf ? depthMap.get(leaf) ?? 0 : 0;
+  return 0; // Disabled indent for now
   return depth * 16;
 }
 
@@ -97,4 +98,23 @@ export function rowLeafLabel(
 
   if (!leaf) return null;
   return labelMap.get(leaf) ?? null;
+}
+
+export function buildCategoryOrderMap(
+  nodes: CatNode[],
+  map = new Map<string, number>(),
+  counterRef = { i: 0 },
+) {
+  for (const n of nodes) {
+    map.set(n.id, counterRef.i++);
+    if (n.children?.length) buildCategoryOrderMap(n.children, map, counterRef);
+  }
+  return map;
+}
+
+export function getRowLeafId(row: any, categorySlug: string): string | null {
+  const v = row?.[categorySlug];
+  if (Array.isArray(v) && v.length) return v[v.length - 1];
+  if (typeof v === 'string') return v;
+  return null;
 }

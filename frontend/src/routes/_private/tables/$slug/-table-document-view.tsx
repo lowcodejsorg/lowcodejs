@@ -10,6 +10,8 @@ import {
   rowIndentPxFromLeaf,
   rowLeafLabel,
   type CatNode,
+  buildCategoryOrderMap,
+  getRowLeafId,
 } from '@/lib/document-helpers';
 
 import { DocumentSidebar } from '@/components/common/document-sidebar';
@@ -58,6 +60,30 @@ export function TableDocumentView({
   const getLeafLabel = (row: IRow) =>
     categoryField ? rowLeafLabel(row, categoryField.slug, labelMap) : null;
 
+  const categoryOrderMap = useMemo(
+    () => buildCategoryOrderMap(categoryTree),
+    [categoryTree]
+  );
+  
+  const sortedRows = useMemo(() => {
+    if (!categoryField) return filteredRows;
+  
+    const slug = categoryField.slug;
+  
+    return [...filteredRows].sort((a, b) => {
+      const leafA = getRowLeafId(a as any, slug);
+      const leafB = getRowLeafId(b as any, slug);
+  
+      const ordA = leafA ? (categoryOrderMap.get(leafA) ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
+      const ordB = leafB ? (categoryOrderMap.get(leafB) ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
+  
+      if (ordA !== ordB) return ordA - ordB;
+
+      return String(a._id).localeCompare(String(b._id));
+    });
+  }, [filteredRows, categoryField, categoryOrderMap]);
+  
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] min-h-[calc(100vh-64px)]">
 
@@ -78,7 +104,7 @@ export function TableDocumentView({
       )}
 
       <DocumentMain
-        rows={filteredRows}
+        rows={sortedRows}
         total={data.length}
         filterLabel={filterLabel}
         blocks={docBlocks}

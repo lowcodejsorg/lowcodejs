@@ -2,23 +2,45 @@ import React from 'react';
 import type { IRow } from '@/lib/interfaces';
 import type { DocBlock } from '@/lib/document-helpers';
 import { getStr } from '@/lib/document-helpers';
+import { Button } from '../ui/button';
+import { EllipsisVerticalIcon } from 'lucide-react';
+import { useParams, useRouter } from '@tanstack/react-router';
 
 export function DocumentRow({
     row,
     blocks,
     indentPx,
-    leafLabel,
 }: {
     row: IRow;
     blocks: DocBlock[];
     indentPx: number;
     leafLabel?: string | null;
 }) {
+
+    const router = useRouter();
+    const { slug } = useParams({
+        from: '/_private/tables/$slug/',
+    });
+
     return (
-        <article style={{ marginLeft: indentPx }} className="py-6">
+        <article style={{ marginLeft: indentPx }} className="py-3">
         {/* {leafLabel ? (
             <div className="mb-3 text-xs text-muted-foreground">{leafLabel}</div>
         ) : null} */}
+        <div className="flex flex-row justify-end">
+            <Button
+                variant="ghost"
+                className="p-0 cursor-pointer"
+                onClick={() => {
+                    router.navigate({
+                    to: '/tables/$slug/row/$rowId',
+                    params: { slug, rowId: row._id },
+                    });
+                }}
+                >
+                <EllipsisVerticalIcon />
+            </Button>
+        </div>
         
         <div className="space-y-8">
         {blocks.map((b) => {
