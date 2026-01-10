@@ -43,6 +43,9 @@ export const E_FIELD_FORMAT = {
   DECIMAL: 'DECIMAL',
   URL: 'URL',
   EMAIL: 'EMAIL',
+  // TEXT_LONG
+  RICH_TEXT: 'RICH_TEXT',
+  PLAIN_TEXT: 'PLAIN_TEXT',
   // DATE
   DD_MM_YYYY: 'dd/MM/yyyy',
   MM_DD_YYYY: 'MM/dd/yyyy',
@@ -152,6 +155,11 @@ export const TEXT_FORMAT_OPTIONS = [
   { label: 'Decimal', value: E_FIELD_FORMAT.DECIMAL },
   { label: 'URL', value: E_FIELD_FORMAT.URL },
   { label: 'E-mail', value: E_FIELD_FORMAT.EMAIL },
+] as const;
+
+export const TEXT_LONG_FORMAT_OPTIONS = [
+  { label: 'Área de texto', value: E_FIELD_FORMAT.PLAIN_TEXT },
+  { label: 'Editor rico', value: E_FIELD_FORMAT.RICH_TEXT },
 ] as const;
 
 export const DATE_FORMAT_OPTIONS = [

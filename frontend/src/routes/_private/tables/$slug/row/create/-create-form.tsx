@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
 
 type SearchableOption = {
@@ -66,7 +66,8 @@ export function buildPayload(
         payload[field.slug] = value || null;
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        const dropdownValue = (value as Array<string>) || [];
+        const dropdownValue = Array.from<string>(value ?? []);
+
         if (field.configuration.multiple) {
           payload[field.slug] = dropdownValue;
         } else {
@@ -93,7 +94,7 @@ export function buildPayload(
         break;
       }
       case E_FIELD_TYPE.RELATIONSHIP: {
-        const relValue = (value as Array<SearchableOption>) || [];
+        const relValue = Array.from<SearchableOption>(value ?? []);
         if (field.configuration.multiple) {
           payload[field.slug] = relValue.map((opt) => opt.value);
         } else {
@@ -117,12 +118,13 @@ export function buildPayload(
         break;
       }
       case E_FIELD_TYPE.FIELD_GROUP: {
-        const groupValue = value as Array<Record<string, any>>;
+        // const groupValue = value as Array<Record<string, any>>;
+        const groupValue = Array.from<Record<string, any>>(value ?? []);
         // Always send as array, but limit to 1 item if multiple=false
         if (field.configuration.multiple) {
-          payload[field.slug] = groupValue || [];
+          payload[field.slug] = groupValue;
         } else {
-          payload[field.slug] = groupValue?.slice(0, 1) || [];
+          payload[field.slug] = groupValue.slice(0, 1);
         }
         break;
       }
@@ -199,6 +201,14 @@ export function CreateRowFormFields({
                     />
                   );
                 case E_FIELD_TYPE.TEXT_LONG:
+                  if (field.configuration.format === E_FIELD_FORMAT.RICH_TEXT) {
+                    return (
+                      <formField.TableRowRichTextField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  }
                   return (
                     <formField.TableRowTextareaField
                       field={field}

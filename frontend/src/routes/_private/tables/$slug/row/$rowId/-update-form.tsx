@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IStorage } from '@/lib/interfaces';
 
 type SearchableOption = {
@@ -147,7 +147,9 @@ export function buildPayload(
           payload[field.slug] = fileValue.storages.map((s) => s._id);
         } else {
           // Always array, but limit to 1 item
-          payload[field.slug] = fileValue.storages.slice(0, 1).map((s) => s._id);
+          payload[field.slug] = fileValue.storages
+            .slice(0, 1)
+            .map((s) => s._id);
         }
         break;
       }
@@ -162,7 +164,11 @@ export function buildPayload(
         break;
       }
       case E_FIELD_TYPE.CATEGORY: {
-        const categoryValue = Array.isArray(value) ? value : value ? [value] : [];
+        const categoryValue = Array.isArray(value)
+          ? value
+          : value
+            ? [value]
+            : [];
         if (field.configuration.multiple) {
           payload[field.slug] = categoryValue;
         } else {
@@ -254,6 +260,15 @@ export function UpdateRowFormFields({
                     />
                   );
                 case E_FIELD_TYPE.TEXT_LONG:
+                  if (field.configuration.format === E_FIELD_FORMAT.RICH_TEXT) {
+                    return (
+                      <formField.TableRowRichTextField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  }
+
                   return (
                     <formField.TableRowTextareaField
                       field={field}

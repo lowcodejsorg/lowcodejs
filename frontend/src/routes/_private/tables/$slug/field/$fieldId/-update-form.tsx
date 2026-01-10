@@ -9,7 +9,7 @@ interface DropdownOption {
   label: string;
 }
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 
 export const FieldUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
@@ -84,6 +84,10 @@ export const UpdateFieldFormFields = withForm({
     const relationshipTableSlug = useStore(
       form.store,
       (state) => state.values.configuration.relationship.tableSlug,
+    );
+    const textLongFormat = useStore(
+      form.store,
+      (state) => state.values.configuration.format,
     );
 
     const showMultiple =
@@ -173,8 +177,40 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Campo Valor Padrão (TEXT_LONG) */}
+        {/* Campo Formato (TEXT_LONG) */}
         {isTextLong && (
+          <form.AppField
+            name="configuration.format"
+            validators={{
+              onBlur: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return { message: 'Formato é obrigatório' };
+                }
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <field.TableFieldFormatSelect
+                label="Formato"
+                placeholder="Selecione um formato para o campo"
+                disabled={isDisabled}
+                fieldType={E_FIELD_TYPE.TEXT_LONG}
+                required
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Campo Valor Padrão (TEXT_LONG - Editor Rico) */}
+        {isTextLong && textLongFormat === E_FIELD_FORMAT.RICH_TEXT && (
+          <form.AppField name="configuration.defaultValue">
+            {(field) => <field.FieldEditor label="Valor padrão" />}
+          </form.AppField>
+        )}
+
+        {/* Campo Valor Padrão (TEXT_LONG - Área de Texto) */}
+        {isTextLong && textLongFormat !== E_FIELD_FORMAT.RICH_TEXT && (
           <form.AppField name="configuration.defaultValue">
             {(field) => (
               <field.FieldTextarea

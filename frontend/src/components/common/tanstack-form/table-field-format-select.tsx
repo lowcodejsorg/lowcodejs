@@ -1,5 +1,3 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -8,10 +6,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import {
   DATE_FORMAT_OPTIONS,
   E_FIELD_TYPE,
   TEXT_FORMAT_OPTIONS,
+  TEXT_LONG_FORMAT_OPTIONS,
 } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
@@ -19,11 +19,15 @@ interface TableFieldFormatSelectProps {
   label: string;
   placeholder?: string;
   disabled?: boolean;
-  fieldType:
-    | typeof E_FIELD_TYPE.TEXT_SHORT
-    | typeof E_FIELD_TYPE.DATE;
+  fieldType: keyof typeof FORMAT_OPTIONS_MAP;
   required?: boolean;
 }
+
+const FORMAT_OPTIONS_MAP = {
+  [E_FIELD_TYPE.TEXT_SHORT]: TEXT_FORMAT_OPTIONS,
+  [E_FIELD_TYPE.TEXT_LONG]: TEXT_LONG_FORMAT_OPTIONS,
+  [E_FIELD_TYPE.DATE]: DATE_FORMAT_OPTIONS,
+} as const;
 
 export function TableFieldFormatSelect({
   label,
@@ -35,10 +39,7 @@ export function TableFieldFormatSelect({
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
-  const formatList =
-    fieldType === E_FIELD_TYPE.TEXT_SHORT
-      ? TEXT_FORMAT_OPTIONS
-      : DATE_FORMAT_OPTIONS;
+  const formatList = FORMAT_OPTIONS_MAP[fieldType];
 
   return (
     <Field data-invalid={isInvalid}>
@@ -56,7 +57,10 @@ export function TableFieldFormatSelect({
         </SelectTrigger>
         <SelectContent>
           {formatList.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
+            <SelectItem
+              key={item.value}
+              value={item.value}
+            >
               {item.label}
             </SelectItem>
           ))}

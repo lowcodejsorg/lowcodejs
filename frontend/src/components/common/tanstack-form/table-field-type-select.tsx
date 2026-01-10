@@ -16,6 +16,7 @@ interface TableFieldTypeSelectProps {
   disabled?: boolean;
   blockedTypes?: Array<string>;
   required?: boolean;
+  onTypeChange?: (type: string) => void;
 }
 
 export function TableFieldTypeSelect({
@@ -24,6 +25,7 @@ export function TableFieldTypeSelect({
   disabled,
   blockedTypes = [],
   required,
+  onTypeChange,
 }: TableFieldTypeSelectProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
@@ -43,6 +45,7 @@ export function TableFieldTypeSelect({
         value={field.state.value}
         onValueChange={(value) => {
           field.handleChange(value);
+          onTypeChange?.(value);
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>
