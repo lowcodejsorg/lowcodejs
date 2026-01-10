@@ -107,6 +107,21 @@ export const MenuUpdateBodySchema = z.object({
 });
 
 // ============== TABLE ==============
+const TableCreateConfigurationSchema = z.object({
+  style: z
+    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
+    .default(E_TABLE_STYLE.LIST),
+  visibility: z
+    .enum([
+      E_TABLE_VISIBILITY.PUBLIC,
+      E_TABLE_VISIBILITY.RESTRICTED,
+      E_TABLE_VISIBILITY.OPEN,
+      E_TABLE_VISIBILITY.FORM,
+      E_TABLE_VISIBILITY.PRIVATE,
+    ])
+    .default(E_TABLE_VISIBILITY.RESTRICTED),
+});
+
 export const TableCreateBodySchema = z.object({
   name: z
     .string()
@@ -118,11 +133,13 @@ export const TableCreateBodySchema = z.object({
       'Nome pode conter apenas letras, números, espaços, hífen, underscore e ç',
     ),
   owner: z.string().trim().optional(),
+  logo: z.string().trim().nullable().optional(),
+  configuration: TableCreateConfigurationSchema.optional(),
 });
 
 export const TableConfigurationSchema = z.object({
   style: z
-    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST])
+    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
     .default(E_TABLE_STYLE.LIST),
   visibility: z
     .enum([

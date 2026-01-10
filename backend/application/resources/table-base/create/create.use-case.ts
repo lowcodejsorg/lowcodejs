@@ -58,8 +58,9 @@ export default class TableCreateUseCase {
           owner: payload.owner,
           administrators: [],
           collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-          style: E_TABLE_STYLE.LIST,
-          visibility: E_TABLE_VISIBILITY.RESTRICTED,
+          style: payload.configuration?.style ?? E_TABLE_STYLE.LIST,
+          visibility:
+            payload.configuration?.visibility ?? E_TABLE_VISIBILITY.RESTRICTED,
           fields: {
             orderForm: [],
             orderList: [],

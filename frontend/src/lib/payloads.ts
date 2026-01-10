@@ -91,6 +91,11 @@ export type MenuUpdatePayload = {
 export type TableCreatePayload = {
   name: string;
   owner?: string;
+  logo?: string | null;
+  configuration?: {
+    style?: ValueOf<typeof E_TABLE_STYLE>;
+    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
+  };
 };
 
 export type TableConfigurationPayload = {

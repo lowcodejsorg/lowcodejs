@@ -14,6 +14,29 @@ export const TableCreateSchema: FastifySchema = {
         type: 'string',
         description: 'Table name',
       },
+      logo: {
+        type: 'string',
+        nullable: true,
+        description: 'Storage ID for table logo',
+      },
+      configuration: {
+        type: 'object',
+        description: 'Table configuration (optional)',
+        properties: {
+          style: {
+            type: 'string',
+            enum: ['GALLERY', 'LIST', 'DOCUMENT'],
+            default: 'LIST',
+            description: 'Table display style',
+          },
+          visibility: {
+            type: 'string',
+            enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
+            default: 'RESTRICTED',
+            description: 'Table visibility level',
+          },
+        },
+      },
     },
   },
   response: {
