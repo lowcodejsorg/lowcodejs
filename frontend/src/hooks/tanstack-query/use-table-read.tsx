@@ -17,3 +17,34 @@ export function useReadTable(payload: {
     enabled: Boolean(payload.slug),
   });
 }
+
+interface PaginatedTablesResponse {
+  data: ITable[];
+  meta: {
+    page: number;
+    perPage: number;
+    total: number;
+  };
+}
+
+export function useReadTables(payload?: {
+  page?: number;
+  perPage?: number;
+}): UseQueryResult<ITable[], Error> {
+  const page = payload?.page ?? 1;
+  const perPage = payload?.perPage ?? 50;
+
+  return useQuery({
+    queryKey: ['/tables/paginated', page, perPage],
+    queryFn: async () => {
+      const response = await API.get<PaginatedTablesResponse>(
+        '/tables/paginated',
+        {
+          params: { page, perPage },
+        },
+      );
+
+      return response.data.data;
+    },
+  });
+}

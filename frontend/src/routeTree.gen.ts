@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
 import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index'
+import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index'
 import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index'
 import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/settings/index'
 import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index'
@@ -43,6 +44,11 @@ const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
 const PrivateUsersIndexRoute = PrivateUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any)
+const PrivateToolsIndexRoute = PrivateToolsIndexRouteImport.update({
+  id: '/tools/',
+  path: '/tools/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any)
 const PrivateTablesIndexRoute = PrivateTablesIndexRouteImport.update({
@@ -188,6 +194,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof PrivateProfileIndexRoute
   '/settings': typeof PrivateSettingsIndexRoute
   '/tables': typeof PrivateTablesIndexRoute
+  '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
@@ -215,6 +222,7 @@ export interface FileRoutesByTo {
   '/profile': typeof PrivateProfileIndexRoute
   '/settings': typeof PrivateSettingsIndexRoute
   '/tables': typeof PrivateTablesIndexRoute
+  '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
@@ -244,6 +252,7 @@ export interface FileRoutesById {
   '/_private/profile/': typeof PrivateProfileIndexRoute
   '/_private/settings/': typeof PrivateSettingsIndexRoute
   '/_private/tables/': typeof PrivateTablesIndexRoute
+  '/_private/tools/': typeof PrivateToolsIndexRoute
   '/_private/users/': typeof PrivateUsersIndexRoute
   '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/_private/groups/$groupId/': typeof PrivateGroupsGroupIdIndexRoute
@@ -273,6 +282,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/tables'
+    | '/tools'
     | '/users'
     | '/tables/$slug/methods'
     | '/groups/$groupId'
@@ -300,6 +310,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/tables'
+    | '/tools'
     | '/users'
     | '/tables/$slug/methods'
     | '/groups/$groupId'
@@ -328,6 +339,7 @@ export interface FileRouteTypes {
     | '/_private/profile/'
     | '/_private/settings/'
     | '/_private/tables/'
+    | '/_private/tools/'
     | '/_private/users/'
     | '/_private/tables/$slug/methods'
     | '/_private/groups/$groupId/'
@@ -366,6 +378,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof PrivateUsersIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
+    '/_private/tools/': {
+      id: '/_private/tools/'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof PrivateToolsIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/tables/': {
@@ -547,6 +566,7 @@ interface PrivateLayoutRouteChildren {
   PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute
   PrivateSettingsIndexRoute: typeof PrivateSettingsIndexRoute
   PrivateTablesIndexRoute: typeof PrivateTablesIndexRoute
+  PrivateToolsIndexRoute: typeof PrivateToolsIndexRoute
   PrivateUsersIndexRoute: typeof PrivateUsersIndexRoute
   PrivateTablesSlugMethodsRoute: typeof PrivateTablesSlugMethodsRoute
   PrivateGroupsGroupIdIndexRoute: typeof PrivateGroupsGroupIdIndexRoute
@@ -573,6 +593,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateProfileIndexRoute: PrivateProfileIndexRoute,
   PrivateSettingsIndexRoute: PrivateSettingsIndexRoute,
   PrivateTablesIndexRoute: PrivateTablesIndexRoute,
+  PrivateToolsIndexRoute: PrivateToolsIndexRoute,
   PrivateUsersIndexRoute: PrivateUsersIndexRoute,
   PrivateTablesSlugMethodsRoute: PrivateTablesSlugMethodsRoute,
   PrivateGroupsGroupIdIndexRoute: PrivateGroupsGroupIdIndexRoute,
