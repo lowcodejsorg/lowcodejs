@@ -1,48 +1,13 @@
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { CalendarIcon } from 'lucide-react';
-
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
-import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
+import { Datepicker } from '@/components/common/datepicker';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { E_FIELD_FORMAT } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface TableRowDateFieldProps {
   field: IField;
   disabled?: boolean;
-}
-
-function getDateFormatString(dateFormat: string | null): string {
-  switch (dateFormat) {
-    case 'DD_MM_YYYY':
-    case 'DD_MM_YYYY_DASH':
-      return 'dd/MM/yyyy';
-    case 'MM_DD_YYYY':
-    case 'MM_DD_YYYY_DASH':
-      return 'MM/dd/yyyy';
-    case 'YYYY_MM_DD':
-    case 'YYYY_MM_DD_DASH':
-      return 'yyyy/MM/dd';
-    case 'DD_MM_YYYY_HH_MM_SS':
-    case 'DD_MM_YYYY_HH_MM_SS_DASH':
-      return 'dd/MM/yyyy HH:mm:ss';
-    case 'MM_DD_YYYY_HH_MM_SS':
-    case 'MM_DD_YYYY_HH_MM_SS_DASH':
-      return 'MM/dd/yyyy HH:mm:ss';
-    case 'YYYY_MM_DD_HH_MM_SS':
-    case 'YYYY_MM_DD_HH_MM_SS_DASH':
-      return 'yyyy/MM/dd HH:mm:ss';
-    default:
-      return 'dd/MM/yyyy';
-  }
 }
 
 export function TableRowDateField({
@@ -54,10 +19,12 @@ export function TableRowDateField({
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
 
-  const formatString = getDateFormatString(field.configuration.format);
+  const formatString = field.configuration.format ?? E_FIELD_FORMAT.DD_MM_YYYY;
   const dateValue = formField.state.value
     ? new Date(formField.state.value)
-    : undefined;
+    : null;
+
+  console.log('isInvalid', isInvalid);
 
   return (
     <Field data-invalid={isInvalid}>
@@ -65,32 +32,17 @@ export function TableRowDateField({
         {field.name}
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button
-            variant="outline"
-            disabled={disabled}
-            className={cn(
-              'w-full justify-start text-left font-normal',
-              !formField.state.value && 'text-muted-foreground',
-            )}
-          >
-            <CalendarIcon className="mr-2 size-4" />
-            {formField.state.value
-              ? format(dateValue!, formatString, { locale: ptBR })
-              : 'Selecione uma data'}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={dateValue}
-            onSelect={(date) =>
-              formField.handleChange(date?.toISOString() ?? '')
-            }
-          />
-        </PopoverContent>
-      </Popover>
+      <Datepicker
+        value={dateValue}
+        onChange={(date) => formField.handleChange(date?.toISOString() ?? '')}
+        displayFormat={formatString}
+        placeholder="Selecione uma data"
+        disabled={disabled}
+        className={cn(
+          disabled && 'pointer-events-none opacity-50',
+          isInvalid && 'border-destructive',
+        )}
+      />
       {isInvalid && <FieldError errors={formField.state.meta.errors} />}
     </Field>
   );

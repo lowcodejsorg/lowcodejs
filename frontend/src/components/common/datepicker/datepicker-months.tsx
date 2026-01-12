@@ -1,0 +1,40 @@
+import { MONTHS_SHORT } from './datepicker-utils';
+
+import { cn } from '@/lib/utils';
+
+interface DatepickerMonthsProps {
+  currentMonth: number;
+  onSelectMonth: (month: number) => void;
+}
+
+export function DatepickerMonths({
+  currentMonth,
+  onSelectMonth,
+}: DatepickerMonthsProps): React.JSX.Element {
+  return (
+    <div className="p-2">
+      <div className="grid grid-cols-3 gap-2">
+        {MONTHS_SHORT.map((month, index) => {
+          const isSelected = currentMonth === index;
+
+          return (
+            <button
+              key={month}
+              type="button"
+              onClick={() => onSelectMonth(index)}
+              className={cn(
+                'flex items-center justify-center py-3 px-2 text-sm rounded-md transition-colors',
+                'hover:bg-accent hover:text-accent-foreground',
+                'focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-1',
+                isSelected &&
+                  'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground',
+              )}
+            >
+              {month}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}

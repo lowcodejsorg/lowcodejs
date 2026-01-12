@@ -138,22 +138,24 @@ export function buildPayload(
 
 // Validator for required fields
 export function createRequiredValidator(fieldName: string) {
+  const validate = ({ value }: { value: any }): { message: string } | undefined => {
+    if (value === null || value === undefined || value === '') {
+      return { message: `${fieldName} é obrigatório` };
+    }
+    if (Array.isArray(value) && value.length === 0) {
+      return { message: `${fieldName} é obrigatório` };
+    }
+    if (typeof value === 'object' && 'storages' in value) {
+      const storageValue = value as { storages: Array<IStorage> };
+      if (storageValue.storages.length === 0) {
+        return { message: `${fieldName} é obrigatório` };
+      }
+    }
+    return undefined;
+  };
+
   return {
-    onBlur: ({ value }: { value: any }): { message: string } | undefined => {
-      if (value === null || value === undefined || value === '') {
-        return { message: `${fieldName} é obrigatório` };
-      }
-      if (Array.isArray(value) && value.length === 0) {
-        return { message: `${fieldName} é obrigatório` };
-      }
-      if (typeof value === 'object' && 'storages' in value) {
-        const storageValue = value as { storages: Array<IStorage> };
-        if (storageValue.storages.length === 0) {
-          return { message: `${fieldName} é obrigatório` };
-        }
-      }
-      return undefined;
-    },
+    onChange: validate,
   };
 }
 
