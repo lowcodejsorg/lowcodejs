@@ -5,7 +5,8 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
-import { ArrowLeftIcon, PlusIcon, ShieldXIcon } from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import z from 'zod';
 
 import { TableConfigurationDropdown } from './-table-configuration';
@@ -89,11 +90,31 @@ function RouteComponent(): React.JSX.Element {
               <ArrowLeftIcon />
             </Button>
           )}
-          {table.status === 'pending' ? (
-            <Skeleton className="h-8 w-40" />
-          ) : (
-            <h1 className="text-2xl font-medium">{table.data?.name ?? ''}</h1>
+
+          {table.status === 'pending' && <Skeleton className="h-8 w-40" />}
+
+          {table.status === 'success' && (
+            <h1 className="text-2xl font-medium">{table.data.name}</h1>
           )}
+
+          <Button
+            variant="outline"
+            className="shadow-none p-1 h-auto"
+            // size="icon-sm"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast('Link da tabela copiado', {
+                className:
+                  '!bg-primary !text-primary-foreground !border-primary',
+                description:
+                  'O link da tabela foi copiado para a área de transferência',
+                closeButton: true,
+              });
+            }}
+          >
+            <Share2Icon />
+            <span className="sr-only">Compartilhar</span>
+          </Button>
         </div>
 
         <div className="inline-flex items-center space-x-2">
@@ -105,6 +126,7 @@ function RouteComponent(): React.JSX.Element {
             />
           )}
           <TrashButton />
+
           <TableStyleViewDropdown slug={slug} />
           <TableConfigurationDropdown tableSlug={slug} />
 
