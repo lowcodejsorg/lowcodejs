@@ -101,14 +101,8 @@ jobs:
           name: backend-build
           path: backend/
 
-      - name: Debug - List files
-        run: |
-          echo "=== Backend folder ==="
-          ls -la backend/
-          echo "=== Backend build folder ==="
-          ls -la backend/build/ || echo "build/ not found"
-          echo "=== Backend node_modules ==="
-          ls -la backend/node_modules/ | head -20 || echo "node_modules/ not found"
+      - name: Remove .dockerignore (permite copiar build artifacts)
+        run: rm -f backend/.dockerignore
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -146,12 +140,8 @@ jobs:
           name: frontend-build
           path: frontend/
 
-      - name: Debug - List files
-        run: |
-          echo "=== Frontend folder ==="
-          ls -la frontend/
-          echo "=== Frontend .output folder ==="
-          ls -la frontend/.output/ || echo ".output/ not found"
+      - name: Remove .dockerignore (permite copiar build artifacts)
+        run: rm -f frontend/.dockerignore
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
