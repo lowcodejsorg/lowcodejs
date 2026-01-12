@@ -1,42 +1,22 @@
-FROM node:22-alpine AS build
-
-WORKDIR /app
-
-COPY package*.json ./
-RUN npm install
-
-COPY . .
-
-# Usar build existente se disponível, senão fazer build
-RUN if [ ! -d "build" ] || [ -z "$(ls -A build 2>/dev/null)" ]; then npm run build; fi
-
-RUN mkdir -p build/dist/js
-RUN cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js build/dist/js/
-
-# Stage de produção
-FROM node:22-alpine AS production
+FROM node:22-alpine
 
 WORKDIR /app
 
 # Instalar curl para healthcheck
 RUN apk add --no-cache curl
 
-# Instalar apenas dependências de produção
-COPY package*.json ./
-RUN npm install
+# Copiar build pronto (vem do artifact)
+COPY build/ ./
+COPY node_modules/ ./node_modules/
+COPY package.json ./
 
-
-RUN mkdir -p dist/js && \
-    cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js dist/js/
-
-COPY --from=build /app/build/ ./
-
+# Criar diretório storage
 RUN mkdir -p ./_storage
 
 # Copiar logos padrão
-COPY --from=build /app/_storage/large.png ./_storage/
-COPY --from=build /app/_storage/small.png ./_storage/
+COPY _storage/large.png _storage/small.png ./_storage/
 
+# Usuário não-root
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nodejs -u 1001 -G nodejs && \
     chown -R nodejs:nodejs /app
