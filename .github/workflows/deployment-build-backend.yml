@@ -14,26 +14,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: backend/package-lock.json
 
-      - name: Cache backend dependencies
-        uses: actions/cache@v4
-        with:
-          path: backend/node_modules
-          key: backend-deps-${{ hashFiles('backend/package-lock.json') }}
-          restore-keys: |
-            backend-deps-
-
-      - name: Install backend dependencies
+      - name: Install dependencies
         working-directory: ./backend
         run: npm install
 
-      - name: Build backend
+      - name: Build
         working-directory: ./backend
         run: npm run build
 
-      - name: Upload backend build artifacts
+      - name: Prune dev dependencies
+        working-directory: ./backend
+        run: npm prune --production
+
+      - name: Copy scalar standalone
+        working-directory: ./backend
+        run: |
+          mkdir -p build/dist/js
+          cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js build/dist/js/
+
+      - name: Upload build artifact
         uses: actions/upload-artifact@v4
         with:
-          name: backend-build-${{ github.sha }}
-          path: backend/build
+          name: backend-build
+          path: |
+            backend/build/
+            backend/node_modules/
+            backend/package.json
+            backend/_storage/
           retention-days: 1
