@@ -1,15 +1,11 @@
-import { ChevronsLeftIcon, ChevronsRightIcon } from 'lucide-react';
-
 import { generateYearRange } from './datepicker-utils';
 
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface DatepickerYearsProps {
   currentYear: number;
   centerYear: number;
   onSelectYear: (year: number) => void;
-  onNavigateYears: (direction: 'prev' | 'next') => void;
   minYear?: number | null;
   maxYear?: number | null;
 }
@@ -18,7 +14,6 @@ export function DatepickerYears({
   currentYear,
   centerYear,
   onSelectYear,
-  onNavigateYears,
   minYear,
   maxYear,
 }: DatepickerYearsProps): React.JSX.Element {
@@ -26,35 +21,8 @@ export function DatepickerYears({
 
   return (
     <div className="p-2">
-      {/* Navigation */}
-      <div className="flex items-center justify-between mb-2">
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          onClick={() => onNavigateYears('prev')}
-        >
-          <ChevronsLeftIcon className="size-4" />
-        </Button>
-
-        <span className="text-sm font-medium text-muted-foreground">
-          {years[0]} - {years[years.length - 1]}
-        </span>
-
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          className="size-8"
-          onClick={() => onNavigateYears('next')}
-        >
-          <ChevronsRightIcon className="size-4" />
-        </Button>
-      </div>
-
       {/* Years grid */}
-      <div className="grid grid-cols-3 gap-2">
+      <div className="grid grid-cols-2 gap-2 mt-2">
         {years.map((year) => {
           const isSelected = currentYear === year;
           const isDisabled =

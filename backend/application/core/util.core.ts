@@ -3,7 +3,13 @@ import mongoose from 'mongoose';
 
 import { Table } from '@application/model/table.model';
 
-import type { IField, IRow, ITableSchema, Optional, ValueOf } from './entity.core';
+import type {
+  IField,
+  IRow,
+  ITableSchema,
+  Optional,
+  ValueOf,
+} from './entity.core';
 import { E_FIELD_TYPE, E_SCHEMA_TYPE } from './entity.core';
 import { HandlerFunction } from './table/method.core';
 
@@ -445,11 +451,13 @@ export async function buildQuery(
 
       if (payload[initialKey]) {
         const initial = new Date(String(payload[initialKey]));
+        query[field.slug] = query[field.slug] || {};
         query[field.slug].$gte = new Date(initial.setUTCHours(0, 0, 0, 0));
       }
 
       if (payload[finalKey]) {
         const final = new Date(String(payload[finalKey]));
+        query[field.slug] = query[field.slug] || {};
         query[field.slug].$lte = new Date(final.setUTCHours(23, 59, 59, 999));
       }
     }

@@ -1,12 +1,17 @@
 import { useState, useCallback } from 'react';
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-react';
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
 import { DatepickerDays } from './datepicker-days';
 import { DatepickerMonths } from './datepicker-months';
 import { DatepickerYears } from './datepicker-years';
-import { getMonthName, navigateMonth } from './datepicker-utils';
+import { getMonthShortName, navigateMonth } from './datepicker-utils';
 
 type View = 'days' | 'months' | 'years';
 
@@ -15,6 +20,16 @@ interface DatepickerCalendarProps {
   onSelectDate: (date: Date) => void;
   minDate?: Date | null;
   maxDate?: Date | null;
+  // Range props
+  rangeStart?: Date | null;
+  rangeEnd?: Date | null;
+  hoverDate?: Date | null;
+  onDateHover?: (date: Date | null) => void;
+  isRangeMode?: boolean;
+  // Controlled month props (for dual calendar)
+  displayMonth?: Date;
+  onMonthChange?: (date: Date) => void;
+  hideNavigation?: boolean;
 }
 
 export function DatepickerCalendar({
@@ -22,32 +37,61 @@ export function DatepickerCalendar({
   onSelectDate,
   minDate,
   maxDate,
+  rangeStart,
+  rangeEnd,
+  hoverDate,
+  onDateHover,
+  isRangeMode = false,
+  displayMonth,
+  onMonthChange,
+  hideNavigation = false,
 }: DatepickerCalendarProps): React.JSX.Element {
   const [view, setView] = useState<View>('days');
-  const [currentMonth, setCurrentMonth] = useState<Date>(
-    selectedDate || new Date(),
+  const [internalMonth, setInternalMonth] = useState<Date>(
+    displayMonth || selectedDate || new Date(),
   );
+
+  // Use controlled or internal month
+  const currentMonth = displayMonth || internalMonth;
+
   const [yearRangeCenter, setYearRangeCenter] = useState<number>(
     currentMonth.getFullYear(),
   );
 
+  const updateMonth = useCallback(
+    (newMonth: Date) => {
+      if (onMonthChange) {
+        onMonthChange(newMonth);
+      } else {
+        setInternalMonth(newMonth);
+      }
+    },
+    [onMonthChange],
+  );
+
   const handlePrevMonth = useCallback(() => {
-    setCurrentMonth((prev) => navigateMonth(prev, 'prev'));
-  }, []);
+    updateMonth(navigateMonth(currentMonth, 'prev'));
+  }, [currentMonth, updateMonth]);
 
   const handleNextMonth = useCallback(() => {
-    setCurrentMonth((prev) => navigateMonth(prev, 'next'));
-  }, []);
+    updateMonth(navigateMonth(currentMonth, 'next'));
+  }, [currentMonth, updateMonth]);
 
-  const handleSelectMonth = useCallback((month: number) => {
-    setCurrentMonth((prev) => new Date(prev.getFullYear(), month, 1));
-    setView('days');
-  }, []);
+  const handleSelectMonth = useCallback(
+    (month: number) => {
+      updateMonth(new Date(currentMonth.getFullYear(), month, 1));
+      setView('days');
+    },
+    [currentMonth, updateMonth],
+  );
 
-  const handleSelectYear = useCallback((year: number) => {
-    setCurrentMonth((prev) => new Date(year, prev.getMonth(), 1));
-    setView('months');
-  }, []);
+  const handleSelectYear = useCallback(
+    (year: number) => {
+      updateMonth(new Date(year, currentMonth.getMonth(), 1));
+      setView('months');
+    },
+    [currentMonth, updateMonth],
+  );
 
   const handleNavigateYears = useCallback((direction: 'prev' | 'next') => {
     setYearRangeCenter((prev) => prev + (direction === 'next' ? 12 : -12));
@@ -60,141 +104,139 @@ export function DatepickerCalendar({
     [onSelectDate],
   );
 
+  const handleMonthClick = useCallback(() => {
+    setView((prev) => (prev === 'months' ? 'days' : 'months'));
+  }, []);
+
+  const handleYearClick = useCallback(() => {
+    setYearRangeCenter(currentMonth.getFullYear());
+    setView((prev) => (prev === 'years' ? 'days' : 'years'));
+  }, [currentMonth]);
+
   const minYear = minDate ? minDate.getFullYear() : null;
   const maxYear = maxDate ? maxDate.getFullYear() : null;
 
   return (
     <div className="w-[280px]">
       {/* Header with navigation */}
-      <div className="flex items-center justify-between px-2 py-2 border-b">
-        {view === 'days' && (
-          <>
+      <div className="flex items-center space-x-1.5 border border-border rounded-md px-2 py-1.5">
+        {/* Left navigation - Prev month (days view) or Prev years (years view) */}
+        <div className="flex-none">
+          {view === 'days' && !hideNavigation && (
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-8"
+              className="size-8 rounded-full"
               onClick={handlePrevMonth}
             >
               <ChevronLeftIcon className="size-4" />
             </Button>
-
-            <div className="flex items-center gap-1">
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 font-medium"
-                onClick={() => setView('months')}
-              >
-                {getMonthName(currentMonth.getMonth())}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="h-8 px-2 font-medium"
-                onClick={() => {
-                  setYearRangeCenter(currentMonth.getFullYear());
-                  setView('years');
-                }}
-              >
-                {currentMonth.getFullYear()}
-              </Button>
-            </div>
-
+          )}
+          {view === 'years' && (
             <Button
               type="button"
               variant="ghost"
               size="icon"
-              className="size-8"
+              className="size-8 rounded-full"
+              onClick={() => handleNavigateYears('prev')}
+            >
+              <ChevronsLeftIcon className="size-4" />
+            </Button>
+          )}
+          {(view === 'months' || (view === 'days' && hideNavigation)) && (
+            <div className="size-8" />
+          )}
+        </div>
+
+        {/* Month and Year buttons - always visible */}
+        <div className="flex flex-1 items-center space-x-1.5">
+          <div className="w-1/2">
+            <Button
+              type="button"
+              variant={view === 'months' ? 'secondary' : 'ghost'}
+              className="w-full h-8 font-medium"
+              onClick={handleMonthClick}
+            >
+              {getMonthShortName(currentMonth.getMonth())}
+            </Button>
+          </div>
+          <div className="w-1/2">
+            <Button
+              type="button"
+              variant={view === 'years' ? 'secondary' : 'ghost'}
+              className="w-full h-8 font-medium"
+              onClick={handleYearClick}
+            >
+              {currentMonth.getFullYear()}
+            </Button>
+          </div>
+        </div>
+
+        {/* Right navigation - Next month (days view) or Next years (years view) */}
+        <div className="flex-none">
+          {view === 'days' && !hideNavigation && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="size-8 rounded-full"
               onClick={handleNextMonth}
             >
               <ChevronRightIcon className="size-4" />
             </Button>
-          </>
-        )}
-
-        {view === 'months' && (
-          <>
+          )}
+          {view === 'years' && (
             <Button
               type="button"
               variant="ghost"
-              size="sm"
-              className="h-8"
-              onClick={() => setView('days')}
+              size="icon"
+              className="size-8 rounded-full"
+              onClick={() => handleNavigateYears('next')}
             >
-              <ChevronLeftIcon className="size-4 mr-1" />
-              Voltar
+              <ChevronsRightIcon className="size-4" />
             </Button>
-
-            <span className="text-sm font-medium">
-              {currentMonth.getFullYear()}
-            </span>
-
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-8"
-              onClick={() => {
-                setYearRangeCenter(currentMonth.getFullYear());
-                setView('years');
-              }}
-            >
-              Ano
-            </Button>
-          </>
-        )}
-
-        {view === 'years' && (
-          <>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              className="h-8"
-              onClick={() => setView('months')}
-            >
-              <ChevronLeftIcon className="size-4 mr-1" />
-              Voltar
-            </Button>
-
-            <span className="text-sm font-medium">Selecionar Ano</span>
-
-            <div className="w-16" />
-          </>
-        )}
+          )}
+          {(view === 'months' || (view === 'days' && hideNavigation)) && (
+            <div className="size-8" />
+          )}
+        </div>
       </div>
 
       {/* Content */}
-      {view === 'days' && (
-        <DatepickerDays
-          currentMonth={currentMonth}
-          selectedDate={selectedDate}
-          onSelectDate={handleSelectDate}
-          minDate={minDate}
-          maxDate={maxDate}
-        />
-      )}
+      <div className="min-h-[285px]">
+        {view === 'days' && (
+          <DatepickerDays
+            currentMonth={currentMonth}
+            selectedDate={selectedDate}
+            onSelectDate={handleSelectDate}
+            minDate={minDate}
+            maxDate={maxDate}
+            rangeStart={rangeStart}
+            rangeEnd={rangeEnd}
+            hoverDate={hoverDate}
+            onDateHover={onDateHover}
+            isRangeMode={isRangeMode}
+          />
+        )}
 
-      {view === 'months' && (
-        <DatepickerMonths
-          currentMonth={currentMonth.getMonth()}
-          onSelectMonth={handleSelectMonth}
-        />
-      )}
+        {view === 'months' && (
+          <DatepickerMonths
+            currentMonth={currentMonth.getMonth()}
+            onSelectMonth={handleSelectMonth}
+          />
+        )}
 
-      {view === 'years' && (
-        <DatepickerYears
-          currentYear={currentMonth.getFullYear()}
-          centerYear={yearRangeCenter}
-          onSelectYear={handleSelectYear}
-          onNavigateYears={handleNavigateYears}
-          minYear={minYear}
-          maxYear={maxYear}
-        />
-      )}
+        {view === 'years' && (
+          <DatepickerYears
+            currentYear={currentMonth.getFullYear()}
+            centerYear={yearRangeCenter}
+            onSelectYear={handleSelectYear}
+            minYear={minYear}
+            maxYear={maxYear}
+          />
+        )}
+      </div>
     </div>
   );
 }

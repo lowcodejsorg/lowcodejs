@@ -21,10 +21,11 @@ export function TableRowDateField({
 
   const formatString = field.configuration.format ?? E_FIELD_FORMAT.DD_MM_YYYY;
   const dateValue = formField.state.value
-    ? new Date(formField.state.value)
+    ? {
+        startDate: new Date(formField.state.value),
+        endDate: new Date(formField.state.value),
+      }
     : null;
-
-  console.log('isInvalid', isInvalid);
 
   return (
     <Field data-invalid={isInvalid}>
@@ -34,10 +35,14 @@ export function TableRowDateField({
       </FieldLabel>
       <Datepicker
         value={dateValue}
-        onChange={(date) => formField.handleChange(date?.toISOString() ?? '')}
+        onChange={(value) =>
+          formField.handleChange(value?.startDate?.toISOString() ?? '')
+        }
         displayFormat={formatString}
-        placeholder="Selecione uma data"
+        placeholder={field.configuration.format ?? E_FIELD_FORMAT.DD_MM_YYYY}
         disabled={disabled}
+        useRange={false}
+        asSingle
         className={cn(
           disabled && 'pointer-events-none opacity-50',
           isInvalid && 'border-destructive',

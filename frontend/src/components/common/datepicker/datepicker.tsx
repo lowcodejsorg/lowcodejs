@@ -2,7 +2,14 @@ import { CalendarIcon, XIcon } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 
 import { DatepickerCalendar } from './datepicker-calendar';
-import { formatDate, isDateStringValid, parseDate } from './datepicker-utils';
+import {
+  formatDate,
+  formatDateRange,
+  isDateStringValid,
+  navigateMonth,
+  parseDate,
+  parseDateRange,
+} from './datepicker-utils';
 
 import {
   InputGroup,
@@ -38,84 +45,242 @@ function applyDateMask(value: string, format: string): string {
   return masked;
 }
 
+function applyRangeMask(
+  value: string,
+  format: string,
+  rangeSeparator: string,
+): string {
+  // Split by separator to handle each date independently
+  const parts = value.split(rangeSeparator);
+
+  if (parts.length === 1) {
+    return applyDateMask(parts[0].trim(), format);
+  }
+
+  const start = applyDateMask(parts[0].trim(), format);
+  const end = applyDateMask(parts.slice(1).join(rangeSeparator).trim(), format);
+
+  if (end) {
+    return `${start} ${rangeSeparator} ${end}`;
+  }
+
+  return start;
+}
+
+export interface DatepickerValue {
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
 export interface DatepickerProps {
-  value: Date | null;
-  onChange: (date: Date | null) => void;
+  value: DatepickerValue | null;
+  onChange: (value: DatepickerValue | null) => void;
   displayFormat?: string;
   placeholder?: string;
   disabled?: boolean;
+  readOnly?: boolean;
+  required?: boolean;
   minDate?: Date | null;
   maxDate?: Date | null;
   className?: string;
+  // Range control props
+  useRange?: boolean; // true = 2 calendars, false = 1 calendar (default: true)
+  asSingle?: boolean; // true = single date (start=end), false = range (default: false)
+  separator?: string; // separator in input (default: "~")
 }
 
 export function Datepicker({
   value,
   onChange,
   displayFormat = 'dd/MM/yyyy',
-  placeholder = 'Selecione uma data',
+  placeholder,
   disabled = false,
+  readOnly = false,
+  required = false,
   minDate,
   maxDate,
   className,
+  useRange = true,
+  asSingle = false,
+  separator = '~',
 }: DatepickerProps): React.JSX.Element {
   const [open, setOpen] = useState(false);
-  const [inputValue, setInputValue] = useState<string>(
-    value ? formatDate(value, displayFormat) : '',
+  const [hoverDate, setHoverDate] = useState<Date | null>(null);
+
+  // Range selection state
+  const [rangeStart, setRangeStart] = useState<Date | null>(
+    value?.startDate || null,
   );
+  const [rangeEnd, setRangeEnd] = useState<Date | null>(value?.endDate || null);
+
+  // For dual calendar, track left calendar month
+  const [leftCalendarMonth, setLeftCalendarMonth] = useState<Date>(
+    value?.startDate || new Date(),
+  );
+
+  // Generate input value from current value
+  const getInputValue = useCallback(() => {
+    if (!value?.startDate && !value?.endDate) return '';
+
+    if (asSingle) {
+      return formatDate(value.startDate, displayFormat);
+    }
+
+    return formatDateRange(
+      value.startDate,
+      value.endDate,
+      displayFormat,
+      separator,
+    );
+  }, [value, asSingle, displayFormat, separator]);
+
+  const [inputValue, setInputValue] = useState<string>(getInputValue());
 
   // Sync input value when external value changes
   useEffect(() => {
-    setInputValue(value ? formatDate(value, displayFormat) : '');
-  }, [value, displayFormat]);
+    setInputValue(getInputValue());
+    setRangeStart(value?.startDate || null);
+    setRangeEnd(value?.endDate || null);
+    if (value?.startDate) {
+      setLeftCalendarMonth(value.startDate);
+    }
+  }, [value, getInputValue]);
+
+  // Reset range selection when popover closes
+  useEffect(() => {
+    if (!open) {
+      setHoverDate(null);
+      // Reset to confirmed value
+      setRangeStart(value?.startDate || null);
+      setRangeEnd(value?.endDate || null);
+    }
+  }, [open, value]);
 
   const handleInputChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const raw = e.target.value;
-      const masked = applyDateMask(raw, displayFormat);
-      setInputValue(masked);
 
-      if (masked === '') {
-        onChange(null);
-        return;
-      }
+      if (asSingle) {
+        const masked = applyDateMask(raw, displayFormat);
+        setInputValue(masked);
 
-      // Só faz parse quando a string tem o tamanho esperado do formato
-      if (masked.length === displayFormat.length) {
-        const parsed = parseDate(masked, displayFormat);
-        if (parsed && isDateStringValid(masked, displayFormat)) {
-          onChange(parsed);
+        if (masked === '') {
+          onChange(null);
+          return;
+        }
+
+        if (masked.length === displayFormat.length) {
+          const parsed = parseDate(masked, displayFormat);
+          if (parsed && isDateStringValid(masked, displayFormat)) {
+            onChange({ startDate: parsed, endDate: parsed });
+          }
+        }
+      } else {
+        const masked = applyRangeMask(raw, displayFormat, separator);
+        setInputValue(masked);
+
+        if (masked === '') {
+          onChange(null);
+          return;
+        }
+
+        const expectedLength =
+          displayFormat.length * 2 + ` ${separator} `.length;
+        if (masked.length >= expectedLength) {
+          const { startDate, endDate } = parseDateRange(
+            masked,
+            displayFormat,
+            separator,
+          );
+          if (startDate && endDate) {
+            onChange({ startDate, endDate });
+          }
         }
       }
     },
-    [onChange, displayFormat],
+    [onChange, displayFormat, asSingle, separator],
   );
 
   const handleClear = useCallback(() => {
     onChange(null);
     setInputValue('');
+    setRangeStart(null);
+    setRangeEnd(null);
   }, [onChange]);
 
   const handleInputBlur = useCallback(() => {
-    // On blur, if the input doesn't match a valid date, reset to the current value
     if (inputValue === '') {
       onChange(null);
       return;
     }
 
-    if (!isDateStringValid(inputValue, displayFormat)) {
-      setInputValue(value ? formatDate(value, displayFormat) : '');
-    }
-  }, [inputValue, value, displayFormat, onChange]);
+    // Reset to current value if input is invalid
+    setInputValue(getInputValue());
+  }, [inputValue, onChange, getInputValue]);
 
   const handleSelectDate = useCallback(
     (date: Date) => {
-      onChange(date);
-      setInputValue(formatDate(date, displayFormat));
-      setOpen(false);
+      if (asSingle) {
+        // Single mode: immediately set start = end
+        onChange({ startDate: date, endDate: date });
+        setInputValue(formatDate(date, displayFormat));
+        setOpen(false);
+      } else {
+        // Range mode
+        if (!rangeStart || (rangeStart && rangeEnd)) {
+          // Start new selection
+          setRangeStart(date);
+          setRangeEnd(null);
+        } else {
+          // Complete the range
+          let start = rangeStart;
+          let end = date;
+
+          // Swap if end is before start
+          if (end < start) {
+            [start, end] = [end, start];
+          }
+
+          setRangeStart(start);
+          setRangeEnd(end);
+          onChange({ startDate: start, endDate: end });
+          setInputValue(
+            formatDateRange(start, end, displayFormat, separator),
+          );
+          setOpen(false);
+        }
+      }
     },
-    [onChange, displayFormat],
+    [asSingle, rangeStart, rangeEnd, onChange, displayFormat, separator],
   );
+
+  const handleDateHover = useCallback((date: Date | null) => {
+    setHoverDate(date);
+  }, []);
+
+  const handlePrevMonth = useCallback(() => {
+    setLeftCalendarMonth((prev) => navigateMonth(prev, 'prev'));
+  }, []);
+
+  const handleNextMonth = useCallback(() => {
+    setLeftCalendarMonth((prev) => navigateMonth(prev, 'next'));
+  }, []);
+
+  // Compute right calendar month (1 month after left)
+  const rightCalendarMonth = navigateMonth(leftCalendarMonth, 'next');
+
+  // Determine if we're in range selection mode (selecting second date)
+  const isSelectingRange = !asSingle && rangeStart && !rangeEnd;
+
+  // Get placeholder text
+  const getPlaceholder = () => {
+    if (placeholder) return placeholder;
+    if (asSingle) return 'Selecione uma data';
+    return `dd/mm/aaaa ${separator} dd/mm/aaaa`;
+  };
+
+  // Check if we have a value to show clear button
+  const hasValue = value?.startDate || value?.endDate;
 
   return (
     <InputGroup
@@ -127,11 +292,13 @@ export function Datepicker({
         value={inputValue}
         onChange={handleInputChange}
         onBlur={handleInputBlur}
-        placeholder={placeholder}
+        placeholder={getPlaceholder()}
         disabled={disabled}
+        readOnly={readOnly}
+        required={required}
       />
       <InputGroupAddon align="inline-end">
-        {value && !disabled && (
+        {hasValue && !disabled && !readOnly && (
           <InputGroupButton
             size="icon-xs"
             onClick={handleClear}
@@ -147,7 +314,7 @@ export function Datepicker({
           <PopoverTrigger asChild>
             <InputGroupButton
               size="icon-xs"
-              disabled={disabled}
+              disabled={disabled || readOnly}
               aria-label="Abrir calendário"
             >
               <CalendarIcon className="size-4" />
@@ -158,12 +325,101 @@ export function Datepicker({
             align="end"
             sideOffset={8}
           >
-            <DatepickerCalendar
-              selectedDate={value}
-              onSelectDate={handleSelectDate}
-              minDate={minDate}
-              maxDate={maxDate}
-            />
+            {useRange ? (
+              // Dual calendar layout
+              <div className="flex">
+                {/* Left calendar */}
+                <div className="relative">
+                  <DatepickerCalendar
+                    selectedDate={asSingle ? value?.startDate || null : null}
+                    onSelectDate={handleSelectDate}
+                    minDate={minDate}
+                    maxDate={maxDate}
+                    rangeStart={rangeStart}
+                    rangeEnd={rangeEnd}
+                    hoverDate={isSelectingRange ? hoverDate : null}
+                    onDateHover={handleDateHover}
+                    isRangeMode={!asSingle}
+                    displayMonth={leftCalendarMonth}
+                    onMonthChange={setLeftCalendarMonth}
+                    hideNavigation
+                  />
+                  {/* Navigation - prev month */}
+                  <button
+                    type="button"
+                    onClick={handlePrevMonth}
+                    className="absolute left-4 top-3 size-8 flex items-center justify-center rounded-full hover:bg-accent"
+                  >
+                    <svg
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Vertical separator */}
+                <div className="w-px bg-border my-2" />
+
+                {/* Right calendar */}
+                <div className="relative">
+                  <DatepickerCalendar
+                    selectedDate={asSingle ? value?.startDate || null : null}
+                    onSelectDate={handleSelectDate}
+                    minDate={minDate}
+                    maxDate={maxDate}
+                    rangeStart={rangeStart}
+                    rangeEnd={rangeEnd}
+                    hoverDate={isSelectingRange ? hoverDate : null}
+                    onDateHover={handleDateHover}
+                    isRangeMode={!asSingle}
+                    displayMonth={rightCalendarMonth}
+                    hideNavigation
+                  />
+                  {/* Navigation - next month */}
+                  <button
+                    type="button"
+                    onClick={handleNextMonth}
+                    className="absolute right-4 top-3 size-8 flex items-center justify-center rounded-full hover:bg-accent"
+                  >
+                    <svg
+                      className="size-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // Single calendar layout
+              <DatepickerCalendar
+                selectedDate={asSingle ? value?.startDate || null : null}
+                onSelectDate={handleSelectDate}
+                minDate={minDate}
+                maxDate={maxDate}
+                rangeStart={rangeStart}
+                rangeEnd={rangeEnd}
+                hoverDate={isSelectingRange ? hoverDate : null}
+                onDateHover={handleDateHover}
+                isRangeMode={!asSingle}
+              />
+            )}
           </PopoverContent>
         </Popover>
       </InputGroupAddon>

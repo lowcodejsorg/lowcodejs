@@ -173,3 +173,85 @@ export function isDateDisabled(
 export function navigateMonth(date: Date, direction: 'prev' | 'next'): Date {
   return addMonths(date, direction === 'next' ? 1 : -1);
 }
+
+// Range utilities
+export interface DateRange {
+  startDate: Date | null;
+  endDate: Date | null;
+}
+
+export function isDateInRange(
+  date: Date,
+  start: Date | null,
+  end: Date | null,
+): boolean {
+  if (!start || !end) return false;
+
+  const day = startOfDay(date);
+  const startDay = startOfDay(start);
+  const endDay = startOfDay(end);
+
+  return (
+    (isAfter(day, startDay) || dateFnsIsSameDay(day, startDay)) &&
+    (isBefore(day, endDay) || dateFnsIsSameDay(day, endDay))
+  );
+}
+
+export function isDateBetween(
+  date: Date,
+  start: Date | null,
+  end: Date | null,
+): boolean {
+  if (!start || !end) return false;
+
+  const day = startOfDay(date);
+  const startDay = startOfDay(start);
+  const endDay = startOfDay(end);
+
+  // Ensure start is before end
+  const [actualStart, actualEnd] = isBefore(startDay, endDay)
+    ? [startDay, endDay]
+    : [endDay, startDay];
+
+  return isAfter(day, actualStart) && isBefore(day, actualEnd);
+}
+
+export function formatDateRange(
+  start: Date | null,
+  end: Date | null,
+  formatStr: string = 'dd/MM/yyyy',
+  separator: string = '~',
+): string {
+  if (!start && !end) return '';
+
+  const startStr = start ? format(start, formatStr, { locale: ptBR }) : '';
+  const endStr = end ? format(end, formatStr, { locale: ptBR }) : '';
+
+  if (startStr && endStr) {
+    return `${startStr} ${separator} ${endStr}`;
+  }
+
+  return startStr || endStr;
+}
+
+export function parseDateRange(
+  text: string,
+  formatStr: string = 'dd/MM/yyyy',
+  separator: string = '~',
+): DateRange {
+  const parts = text.split(separator).map((p) => p.trim());
+
+  if (parts.length === 2) {
+    return {
+      startDate: parseDate(parts[0], formatStr),
+      endDate: parseDate(parts[1], formatStr),
+    };
+  }
+
+  if (parts.length === 1 && parts[0]) {
+    const date = parseDate(parts[0], formatStr);
+    return { startDate: date, endDate: date };
+  }
+
+  return { startDate: null, endDate: null };
+}

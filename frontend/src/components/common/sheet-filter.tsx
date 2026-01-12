@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { format, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, FilterIcon, TextIcon, XIcon } from 'lucide-react';
+import { FilterIcon, TextIcon, XIcon } from 'lucide-react';
 import React from 'react';
 
 import type { TreeNode } from '@/components/common/-tree-list';
 import { TreeList } from '@/components/common/-tree-list';
+import {
+  Datepicker,
+  type DatepickerValue,
+} from '@/components/common/datepicker';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar } from '@/components/ui/calendar';
 import {
   Combobox,
   ComboboxChip,
@@ -109,13 +111,25 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
           initialValues[field.slug] = fieldValue;
         }
       }
-      const initialDateValue = search[`${field.slug}-initial`];
-      if (typeof initialDateValue === 'string') {
-        initialValues[`${field.slug}-initial`] = parseISO(initialDateValue);
-      }
-      const finalDateValue = search[`${field.slug}-final`];
-      if (typeof finalDateValue === 'string') {
-        initialValues[`${field.slug}-final`] = parseISO(finalDateValue);
+
+      // Para campos DATE, usar o novo formato DatepickerValue
+      if (field.type === E_FIELD_TYPE.DATE) {
+        const initialDateStr = search[`${field.slug}-initial`];
+        const finalDateStr = search[`${field.slug}-final`];
+
+        if (
+          typeof initialDateStr === 'string' ||
+          typeof finalDateStr === 'string'
+        ) {
+          initialValues[field.slug] = {
+            startDate:
+              typeof initialDateStr === 'string'
+                ? parseISO(initialDateStr)
+                : null,
+            endDate:
+              typeof finalDateStr === 'string' ? parseISO(finalDateStr) : null,
+          };
+        }
       }
     }
     setFilterValues(initialValues);
@@ -151,14 +165,19 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
       }
 
       if (field.type === E_FIELD_TYPE.DATE) {
-        const initial = filterValues[`${field.slug}-initial`];
-        const final = filterValues[`${field.slug}-final`];
+        const dateValue = filterValues[field.slug] as DatepickerValue | null;
 
-        if (initial instanceof Date) {
-          filters[`${field.slug}-initial`] = format(initial, 'yyyy-MM-dd');
+        if (dateValue?.startDate) {
+          filters[`${field.slug}-initial`] = format(
+            dateValue.startDate,
+            'yyyy-MM-dd',
+          );
         }
-        if (final instanceof Date) {
-          filters[`${field.slug}-final`] = format(final, 'yyyy-MM-dd');
+        if (dateValue?.endDate) {
+          filters[`${field.slug}-final`] = format(
+            dateValue.endDate,
+            'yyyy-MM-dd',
+          );
         }
       }
     }
@@ -291,18 +310,11 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
                 {field.type === E_FIELD_TYPE.DATE && (
                   <FilterDate
                     field={field}
-                    initialValue={filterValues[`${field.slug}-initial`]}
-                    finalValue={filterValues[`${field.slug}-final`]}
-                    onChangeInitial={(value) =>
+                    value={filterValues[field.slug] ?? null}
+                    onChange={(value) =>
                       setFilterValues((prev) => ({
                         ...prev,
-                        [`${field.slug}-initial`]: value,
-                      }))
-                    }
-                    onChangeFinal={(value) =>
-                      setFilterValues((prev) => ({
-                        ...prev,
-                        [`${field.slug}-final`]: value,
+                        [field.slug]: value,
                       }))
                     }
                   />
@@ -501,75 +513,23 @@ function FilterDropdown({
 
 function FilterDate({
   field,
-  initialValue,
-  finalValue,
-  onChangeInitial,
-  onChangeFinal,
+  value,
+  onChange,
 }: {
   field: IField;
-  initialValue?: Date;
-  finalValue?: Date;
-  onChangeInitial: (value: Date | undefined) => void;
-  onChangeFinal: (value: Date | undefined) => void;
+  value: DatepickerValue | null;
+  onChange: (value: DatepickerValue | null) => void;
 }): React.JSX.Element {
   return (
     <Field>
       <FieldLabel>{field.name}</FieldLabel>
-      <div className="inline-flex w-full space-x-2">
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                'w-full justify-start text-left font-normal',
-                !initialValue && 'text-muted-foreground',
-              )}
-            >
-              <CalendarIcon className="mr-2 size-4" />
-              {initialValue
-                ? format(initialValue, 'dd/MM/yyyy', { locale: ptBR })
-                : 'Data inicial'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-0"
-            align="start"
-          >
-            <Calendar
-              mode="single"
-              selected={initialValue}
-              onSelect={onChangeInitial}
-            />
-          </PopoverContent>
-        </Popover>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button
-              variant="outline"
-              className={cn(
-                'w-full justify-start text-left font-normal',
-                !finalValue && 'text-muted-foreground',
-              )}
-            >
-              <CalendarIcon className="mr-2 size-4" />
-              {finalValue
-                ? format(finalValue, 'dd/MM/yyyy', { locale: ptBR })
-                : 'Data final'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent
-            className="w-auto p-0"
-            align="start"
-          >
-            <Calendar
-              mode="single"
-              selected={finalValue}
-              onSelect={onChangeFinal}
-            />
-          </PopoverContent>
-        </Popover>
-      </div>
+      <Datepicker
+        value={value}
+        onChange={onChange}
+        useRange={false}
+        asSingle={false}
+        placeholder="Selecione o período"
+      />
     </Field>
   );
 }
