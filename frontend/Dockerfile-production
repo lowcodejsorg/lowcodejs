@@ -15,7 +15,8 @@ RUN chmod +x /docker-entrypoint.sh
 # Usuário não-root
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nitro && \
-    chown nitro:nodejs /docker-entrypoint.sh
+    chown nitro:nodejs /docker-entrypoint.sh && \
+    chown -R nitro:nodejs /app/.output
 
 USER nitro
 
