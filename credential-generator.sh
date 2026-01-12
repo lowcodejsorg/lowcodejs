@@ -43,4 +43,4 @@ echo "COOKIE_SECRET=$COOKIE_SECRET" >> "$ENV_FILE"
 # Remove os arquivos temporários
 rm temp_private.pem temp_public.pem
 
-echo "✅ Chaves geradas e adicionadas ao arquivo $ENV_FILE com sucesso!"
+echo "Chaves geradas e adicionadas ao arquivo $ENV_FILE com sucesso!"
