@@ -34,4 +34,5 @@ jobs:
           path: |
             frontend/.output/
             frontend/docker-entrypoint.sh
+          include-hidden-files: true
           retention-days: 1
