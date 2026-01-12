@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import type { IField, IRow } from '@/lib/interfaces';
 import {
   firstCategoryField,
@@ -12,10 +12,16 @@ import {
   type CatNode,
   buildCategoryOrderMap,
   getRowLeafId,
+  rowHeadingLevelFromLeaf,
+  buildDescendantsMap,
 } from '@/lib/document-helpers';
 
 import { DocumentSidebar } from '@/components/common/document-sidebar';
 import { DocumentMain } from '@/components/common/document-main';
+import { DocumentPrintButton } from '@/components/common/document-print-button';
+import * as ReactToPrint from "react-to-print";
+
+const { useReactToPrint } = ReactToPrint;
 
 export function TableDocumentView({
   data,
@@ -29,6 +35,7 @@ export function TableDocumentView({
 }): React.ReactElement {
   const categoryField = useMemo(() => firstCategoryField(headers, order), [headers, order]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const orderedHeaders = useMemo(
     () => headers.filter((h) => !h.trashed).sort(headerSorter(order)),
@@ -45,10 +52,18 @@ export function TableDocumentView({
   const depthMap = useMemo(() => buildDepthMap(categoryTree), [categoryTree]);
   const labelMap = useMemo(() => buildLabelMap(categoryTree), [categoryTree]);
 
+  const descendantsMap = useMemo(
+    () => buildDescendantsMap(categoryTree),
+    [categoryTree]
+  );
+
   const filteredRows = useMemo(() => {
     if (!categoryField) return data;
-    return data.filter((row) => rowMatchesCategory(row, categoryField.slug, selectedCategoryId));
-  }, [data, categoryField, selectedCategoryId]);
+  
+    return data.filter((row) =>
+      rowMatchesCategory(row, categoryField.slug, selectedCategoryId, descendantsMap)
+    );
+  }, [data, categoryField, selectedCategoryId, descendantsMap]);
 
   const filterLabel = selectedCategoryId
     ? labelMap.get(selectedCategoryId) ?? selectedCategoryId
@@ -64,6 +79,7 @@ export function TableDocumentView({
     () => buildCategoryOrderMap(categoryTree),
     [categoryTree]
   );
+
   
   const sortedRows = useMemo(() => {
     if (!categoryField) return filteredRows;
@@ -82,35 +98,45 @@ export function TableDocumentView({
       return String(a._id).localeCompare(String(b._id));
     });
   }, [filteredRows, categoryField, categoryOrderMap]);
+
+
+  const getHeadingLevel = (row: IRow) =>
+    categoryField ? rowHeadingLevelFromLeaf(row, categoryField.slug, depthMap) : 2;
+
+  const contentRef = useRef<HTMLDivElement>(null);
   
+  const printPdf = useReactToPrint({contentRef})
+  function handlePrint() {
+    printPdf();
+    console.log('printing')
+  }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-[320px_minmax(0,1fr)] min-h-[calc(100vh-64px)]">
+    <div className="flex flex-row min-h-[calc(100vh-64px)] gap-4 relative w-full">
 
-      {categoryField ? (
-        <DocumentSidebar
-          subtitle={`Por: ${categoryField.name}`}
-          nodes={categoryTree}
-          selectedId={selectedCategoryId}
-          onSelect={setSelectedCategoryId}
-        />
-      ) : (
-        <DocumentSidebar
-          subtitle={`Por`}
-          nodes={categoryTree}  
-          selectedId={selectedCategoryId}
-          onSelect={setSelectedCategoryId}
-        />
-      )}
+      <DocumentPrintButton onClick={handlePrint} />
 
-      <DocumentMain
-        rows={sortedRows}
-        total={data.length}
-        filterLabel={filterLabel}
-        blocks={docBlocks}
-        getIndentPx={getIndentPx}
-        getLeafLabel={getLeafLabel}
+      <DocumentSidebar
+        subtitle={`Por: ${categoryField?.name}`}
+        nodes={categoryTree}
+        selectedId={selectedCategoryId}
+        onSelect={setSelectedCategoryId}
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(v => !v)}
       />
+
+      <div ref={contentRef} className="w-full">
+        <DocumentMain
+          rows={sortedRows}
+          total={data.length}
+          filterLabel={filterLabel}
+          blocks={docBlocks}
+          getIndentPx={getIndentPx}
+          getLeafLabel={getLeafLabel}
+          getHeadingLevel={getHeadingLevel}
+        />
+      </div>
+      
     </div>
   );
 }

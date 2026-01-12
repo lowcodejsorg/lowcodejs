@@ -9,6 +9,7 @@ export function DocumentMain({
     blocks,
     getIndentPx,
     getLeafLabel,
+    getHeadingLevel,
 }: {
     rows: IRow[];
     total: number;
@@ -16,9 +17,11 @@ export function DocumentMain({
     blocks: DocBlock[];
     getIndentPx: (row: IRow) => number;
     getLeafLabel: (row: IRow) => string | null;
+    getHeadingLevel: (row: IRow) => number;
 }) {
+
     return (
-        <main className="p-4 min-h-0 overflow-auto">
+        <main className="p-4 min-h-0 overflow-auto w-full ">
             <div className="mb-3 flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                     Mostrando{' '}
@@ -42,6 +45,7 @@ export function DocumentMain({
                     blocks={blocks}
                     indentPx={getIndentPx(row)}
                     leafLabel={getLeafLabel(row)}
+                    headingLevel={getHeadingLevel(row)}
                     />
                 ))}
                 </div>
@@ -51,5 +55,6 @@ export function DocumentMain({
                 </div>
             )}
         </main>
+        
     );
 }

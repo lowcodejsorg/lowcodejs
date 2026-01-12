@@ -7,6 +7,7 @@ import {
     ListTreeIcon,
     TagIcon,
     WorkflowIcon,
+    ChevronLeftIcon,
 } from 'lucide-react';
 import type { CatNode } from '@/lib/document-helpers';
 
@@ -206,17 +207,22 @@ export function DocumentSidebar({
     nodes,
     selectedId,
     onSelect,
+    isOpen,
+    onToggle,
 }: {
     title?: string;
     subtitle?: string;
     nodes: CatNode[];
     selectedId: string | null;
     onSelect: (id: string | null) => void;
+    isOpen: boolean;
+    onToggle: (isOpen: boolean) => void;
 }) {
     const parentMap = useMemo(() => buildParentMap(nodes, null, new Map()), [nodes]);
     
     // estado de colapso: { [idDoNode]: boolean }
     const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+
     
     const toggleOpen = (id: string) => {
         setOpenMap((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -238,34 +244,53 @@ export function DocumentSidebar({
     }, [selectedId, parentMap]);
     
     return (
-        <aside className="border-r bg-background min-h-0">
-            <div className="p-3 border-b">
-                <div className="text-sm font-medium">{title}</div>
-                    {subtitle ? <div className="text-xs text-muted-foreground">{subtitle}</div> : null}
-                </div>
-                
-                <div className="p-2 space-y-2 overflow-auto h-full">
-                <button
-                    type="button"
-                    onClick={() => onSelect(null)}
-                    className={[
-                        'w-full text-left rounded-md px-2 py-1.5 text-sm transition',
-                        'flex items-center gap-2',
-                        selectedId === null ? 'bg-muted font-medium' : 'hover:bg-muted/60',
-                    ].join(' ')}
-                >
-                    <FolderIcon className="size-4 opacity-70" />
-                    <span>Todas</span>
-                </button>
-                
-                <Tree
-                    nodes={nodes}
-                    selectedId={selectedId}
-                    onSelect={onSelect}
-                    openMap={openMap}
-                    toggleOpen={toggleOpen}
-                />
-            </div>
-        </aside>
+        <div className="relative">
+            <button
+                onClick={onToggle}
+                className="p-2 rounded cursor-pointer absolute top-2 right-1"
+            >
+                {isOpen ? 
+                    <ChevronLeftIcon className="size-5" /> : 
+                    <ChevronRightIcon className="size-5" />
+                }
+            </button>
+            <aside
+                className={[
+                    "fixed md:static left-0 top-0 bottom-0 z-40 bg-background border-r h-full",
+                    "transition-all duration-300",
+                    isOpen ? "w-72" : "w-10",
+                    ].join(" ")}
+             >
+                {isOpen && <div className="p-3 border-b flex items-center justify-between">
+                    <div className="text-sm font-medium">{title}</div>
+                </div>}
+
+                    
+                {isOpen && 
+                    <div className="p-2 space-y-2 overflow-auto h-full">
+                        <button
+                            type="button"
+                            onClick={() => onSelect(null)}
+                            className={[
+                                'w-full text-left rounded-md px-2 py-1.5 text-sm transition',
+                                'flex items-center gap-2 cursor-pointer',
+                                selectedId === null ? 'bg-muted font-medium' : 'hover:bg-muted/60',
+                            ].join(' ')}
+                        >
+                            <FolderIcon className="size-4 opacity-70" />
+                            <span>Todas</span>
+                        </button>
+                        
+                        <Tree
+                            nodes={nodes}
+                            selectedId={selectedId}
+                            onSelect={onSelect}
+                            openMap={openMap}
+                            toggleOpen={toggleOpen}
+                        />
+                    </div>
+                }
+            </aside>
+        </div>
     );
 }
