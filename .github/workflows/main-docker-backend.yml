@@ -19,7 +19,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: backend-build
-          path: .
+          path: backend/
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
