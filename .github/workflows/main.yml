@@ -5,163 +5,22 @@ on:
     branches: [main]
 
 jobs:
-  # ═══════════════════════════════════════════════════════════════
-  # FASE 1: BUILD NODE.JS (paralelo)
-  # ═══════════════════════════════════════════════════════════════
-
   build-backend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: backend/package-lock.json
-
-      - name: Install dependencies
-        working-directory: ./backend
-        run: npm install
-
-      - name: Build
-        working-directory: ./backend
-        run: npm run build
-
-      - name: Prune dev dependencies
-        working-directory: ./backend
-        run: npm prune --production
-
-      - name: Copy scalar standalone
-        working-directory: ./backend
-        run: |
-          mkdir -p build/dist/js
-          cp node_modules/@scalar/fastify-api-reference/dist/js/standalone.js build/dist/js/
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: backend-build
-          path: |
-            backend/build/
-            backend/node_modules/
-            backend/package.json
-            backend/_storage/
-          retention-days: 1
+    uses: ./.github/workflows/main-build-backend.yml
 
   build-frontend:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-
-      - name: Install dependencies
-        working-directory: ./frontend
-        run: npm install
-
-      - name: Build
-        working-directory: ./frontend
-        run: npm run build
-        env:
-          NODE_OPTIONS: '--max-old-space-size=4096'
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: frontend-build
-          path: |
-            frontend/.output/
-            frontend/docker-entrypoint.sh
-          include-hidden-files: true
-          retention-days: 1
-
-  # ═══════════════════════════════════════════════════════════════
-  # FASE 2: BUILD DOCKER (paralelo)
-  # ═══════════════════════════════════════════════════════════════
+    uses: ./.github/workflows/main-build-frontend.yml
 
   docker-backend:
     needs: build-backend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: backend-build
-          path: backend/
-
-      - name: Remove .dockerignore (permite copiar build artifacts)
-        run: rm -f backend/.dockerignore
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push backend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./backend
-          file: ./backend/Dockerfile-production
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:latest
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
+    uses: ./.github/workflows/main-docker-backend.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   docker-frontend:
     needs: build-frontend
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: frontend-build
-          path: frontend/
-
-      - name: Remove .dockerignore (permite copiar build artifacts)
-        run: rm -f frontend/.dockerignore
-
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./frontend
-          file: ./frontend/Dockerfile-production
-          push: true
-          platforms: linux/amd64,linux/arm64
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:latest
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,mode=max,scope=frontend
+    uses: ./.github/workflows/main-docker-frontend.yml
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
