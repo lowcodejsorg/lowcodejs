@@ -45,6 +45,7 @@ DB_PASSWORD=sua_senha_segura
 ```
 
 Este script gera automaticamente:
+
 - JWT_PRIVATE_KEY e JWT_PUBLIC_KEY (chaves RSA)
 - COOKIE_SECRET (string aleatoria)
 
@@ -68,56 +69,37 @@ docker exec lowcodejs-api node database/seeders/main.js
 - API: `http://SEU_IP:3000`
 - Documentacao: `http://SEU_IP:3000/documentation`
 
-Credenciais padrao:
-- Email: `admin@lowcodejs.org`
-- Senha: `admin123`
-
----
-
-## Comandos Uteis
-
-| Comando | Descricao |
-|---------|-----------|
-| `docker compose -f docker-compose.oficial.yml up -d` | Iniciar containers |
-| `docker compose -f docker-compose.oficial.yml down` | Parar containers |
-| `docker compose -f docker-compose.oficial.yml logs -f` | Ver logs em tempo real |
-| `docker compose -f docker-compose.oficial.yml logs -f api` | Ver logs apenas da API |
-| `docker compose -f docker-compose.oficial.yml pull` | Atualizar imagens |
-| `docker exec lowcodejs-api node database/seeders/main.js` | Executar seed |
-
 ---
 
 ## Variaveis de Ambiente
 
 ### Obrigatorias
 
-| Variavel | Descricao |
-|----------|-----------|
-| `DB_PASSWORD` | Senha do MongoDB |
-| `APP_SERVER_URL` | URL publica da API |
-| `APP_CLIENT_URL` | URL publica do frontend |
+| Variavel            | Descricao                  |
+| ------------------- | -------------------------- |
+| `DB_PASSWORD`       | Senha do MongoDB           |
+| `APP_SERVER_URL`    | URL publica da API         |
+| `APP_CLIENT_URL`    | URL publica do frontend    |
 | `VITE_API_BASE_URL` | URL da API para o frontend |
-| `COOKIE_DOMAIN` | Dominio para cookies |
+| `COOKIE_DOMAIN`     | Dominio para cookies       |
 
-### Geradas automaticamente
+| Variavel               | Descricao                     | Padrao      |
+| ---------------------- | ----------------------------- | ----------- |
+| `DB_USERNAME`          | Usuario do MongoDB            | `lowcodejs` |
+| `DB_NAME`              | Nome do banco                 | `lowcodejs` |
+| `APP_SERVER_PORT`      | Porta da API no host          | `3000`      |
+| `APP_CLIENT_PORT`      | Porta do frontend no host     | `5173`      |
+| `LOCALE`               | Idioma                        | `pt-br`     |
+| `PAGINATION_PER_PAGE`  | Itens por pagina              | `20`        |
+| `FILE_UPLOAD_MAX_SIZE` | Tamanho max de upload (bytes) | `10485760`  |
 
-| Variavel | Descricao |
-|----------|-----------|
-| `JWT_PRIVATE_KEY` | Chave privada RSA (base64) |
-| `JWT_PUBLIC_KEY` | Chave publica RSA (base64) |
-| `COOKIE_SECRET` | Secret para assinatura de cookies |
+### Chaves que devem ser geradas
 
-### Opcionais
-
-| Variavel | Descricao | Padrao |
-|----------|-----------|--------|
-| `DB_USERNAME` | Usuario do MongoDB | `lowcodejs` |
-| `DB_NAME` | Nome do banco | `lowcodejs` |
-| `APP_SERVER_PORT` | Porta da API no host | `3000` |
-| `APP_CLIENT_PORT` | Porta do frontend no host | `5173` |
-| `LOCALE` | Idioma | `pt-br` |
-| `PAGINATION_PER_PAGE` | Itens por pagina | `20` |
-| `FILE_UPLOAD_MAX_SIZE` | Tamanho max de upload (bytes) | `10485760` |
+| Variavel          | Descricao                         |
+| ----------------- | --------------------------------- |
+| `JWT_PRIVATE_KEY` | Chave privada RSA (base64)        |
+| `JWT_PUBLIC_KEY`  | Chave publica RSA (base64)        |
+| `COOKIE_SECRET`   | Secret para assinatura de cookies |
 
 ---
 
@@ -137,6 +119,7 @@ docker compose -f docker-compose.oficial.yml up -d
 ### Container nao inicia
 
 Verifique os logs:
+
 ```bash
 docker compose -f docker-compose.oficial.yml logs -f
 ```

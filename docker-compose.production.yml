@@ -67,8 +67,8 @@ services:
       VITE_API_BASE_URL: https://api.${ENVIRONMENT}.lowcodejs.org
       NITRO_PORT: 3000
       NITRO_HOST: 0.0.0.0
-    volumes:
-      - app-public-volume:/app/.output/public
+    # volumes:
+    #   - app-public-volume:/app/.output/public
     depends_on:
       - api
     networks:
@@ -99,8 +99,8 @@ volumes:
     driver: local
   storage-api-volume:
     driver: local
-  app-public-volume:
-    driver: local
+  # app-public-volume:
+  #   driver: local
 
 networks:
   traefik-network:
