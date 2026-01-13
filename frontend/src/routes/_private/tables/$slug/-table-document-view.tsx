@@ -20,6 +20,7 @@ import { DocumentSidebar } from '@/components/common/document-sidebar';
 import { DocumentMain } from '@/components/common/document-main';
 import { DocumentPrintButton } from '@/components/common/document-print-button';
 import * as ReactToPrint from "react-to-print";
+import { DocumentToc } from '@/components/common/document-toc';
 
 const { useReactToPrint } = ReactToPrint;
 
@@ -108,7 +109,6 @@ export function TableDocumentView({
   const printPdf = useReactToPrint({contentRef})
   function handlePrint() {
     printPdf();
-    console.log('printing')
   }
 
   return (
@@ -126,6 +126,7 @@ export function TableDocumentView({
       />
 
       <div ref={contentRef} className="w-full">
+        <DocumentToc nodes={categoryTree} title={categoryField?.name ?? 'Sumário'} />
         <DocumentMain
           rows={sortedRows}
           total={data.length}
