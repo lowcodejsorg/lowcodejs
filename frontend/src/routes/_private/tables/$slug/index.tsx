@@ -37,6 +37,10 @@ import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-r
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { useAuthenticationStore } from '@/stores/authentication';
+import { TableCardView } from './-table-card-view';
+import { TableMosaicView } from './-table-mosaic-view';
+import { TableCardViewSkeleton } from './-table-card-view-skeleton';
+import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
@@ -145,6 +149,16 @@ function RouteComponent(): React.JSX.Element {
           table.data.configuration.style === E_TABLE_STYLE.DOCUMENT && (
             <TableDocumentViewSkeleton />
           )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === E_TABLE_STYLE.CARD && (
+            <TableCardViewSkeleton />
+          )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === E_TABLE_STYLE.MOSAIC && (
+            <TableMosaicViewSkeleton />
+          )}
 
         {rows.status === 'error' &&
           ((): React.JSX.Element => {
@@ -217,6 +231,25 @@ function RouteComponent(): React.JSX.Element {
               tableSlug={slug}
             />
           )}
+        {table.status === 'success' &&
+          table.data.configuration.style === E_TABLE_STYLE.CARD &&
+          rows.status === 'success' && (
+            <TableCardView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.configuration.style === E_TABLE_STYLE.MOSAIC &&
+          rows.status === 'success' && (
+            <TableMosaicView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
+            />
+          )}
+          
       </div>
 
       <div className="shrink-0 border-t p-2">

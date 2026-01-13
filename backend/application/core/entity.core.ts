@@ -85,6 +85,8 @@ export const E_TABLE_STYLE = {
   LIST: 'LIST',
   GALLERY: 'GALLERY',
   DOCUMENT: 'DOCUMENT',
+  CARD: 'CARD',
+  MOSAIC: 'MOSAIC',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
