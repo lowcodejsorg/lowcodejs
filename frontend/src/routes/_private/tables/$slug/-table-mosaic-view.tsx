@@ -126,11 +126,7 @@ function RenderMosaicCell({
 
   return (
     <div className="flex flex-col gap-0.5">
-      { field.type !== E_FIELD_TYPE.FILE && (
-        <span className="text-xs font-medium text-muted-foreground">
-          {field.name}
-        </span>
-      )}
+      
       {renderContent()}
     </div>
   );
