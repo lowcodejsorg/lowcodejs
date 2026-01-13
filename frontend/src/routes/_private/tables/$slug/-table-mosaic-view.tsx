@@ -1,7 +1,6 @@
 import React from "react";
 import { useParams, useRouter } from "@tanstack/react-router";
 import type { IField, IRow } from "@/lib/interfaces";
-import { RenderCell } from "./-table-list-view";
 import { E_FIELD_TYPE } from "@/lib/constant";
 import { HeaderFilter, HeaderSorter } from "@/lib/layout-pickers";
 import { TableRowEvaluationCell } from "@/components/common/table-row-evaluation-cell";
