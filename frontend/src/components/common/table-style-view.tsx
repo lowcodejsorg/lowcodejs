@@ -92,10 +92,10 @@ export function TableStyleViewDropdown({
     table.status === 'pending' ||
     update.status === 'pending';
 
-  const existFieldTextShort =
+  const existFieldCategory =
     table.status === 'success' &&
     table.data.fields.some(
-      (f) => !f.trashed && f.type === E_FIELD_TYPE.TEXT_SHORT,
+      (f) => !f.trashed && f.type === E_FIELD_TYPE.CATEGORY,
     );
   const existFieldTextLong =
     table.status === 'success' &&
@@ -104,7 +104,7 @@ export function TableStyleViewDropdown({
     );
 
   const canShowDocument =
-    table.status === 'success' && existFieldTextShort && existFieldTextLong;
+    table.status === 'success' && existFieldCategory && existFieldTextLong;
 
   return (
     <DropdownMenu
