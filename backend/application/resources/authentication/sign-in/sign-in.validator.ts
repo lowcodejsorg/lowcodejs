@@ -7,7 +7,7 @@ export const SignInBodyValidator = z.object({
     .trim(),
   password: z
     .string({ message: 'A senha é obrigatória' })
-    .min(4, 'A senha deve ter no mínimo 4 caracteres')
+    .min(1, 'A senha é obrigatória')
     .trim(),
 });
 

@@ -40,7 +40,7 @@ const FormSignInSchema = z.object({
     .email('Digite um email válido'),
   password: z
     .string({ message: 'A senha é obrigatória' })
-    .min(4, 'A senha deve ter no mínimo 4 caracteres'),
+    .min(1, 'A senha é obrigatória'),
 });
 
 function RouteComponent(): React.JSX.Element {
@@ -69,6 +69,13 @@ function RouteComponent(): React.JSX.Element {
       const route = ROLE_DEFAULT_ROUTE[role];
 
       router.navigate({ to: route, replace: true });
+
+      toast('Login realizado com sucesso!', {
+        className: '!bg-green-500 !text-primary-foreground !border-green-500',
+        description: 'Volte sempre!',
+        descriptionClassName: '!text-primary-foreground',
+        closeButton: true,
+      });
     },
     onError(error) {
       if (error instanceof AxiosError) {

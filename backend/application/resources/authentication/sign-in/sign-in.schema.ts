@@ -19,10 +19,10 @@ export const SignInSchema: FastifySchema = {
       },
       password: {
         type: 'string',
-        minLength: 4,
+        minLength: 1,
         errorMessage: {
           type: 'A senha deve ser um texto',
-          minLength: 'A senha deve ter no mínimo 4 caracteres',
+          minLength: 'A senha é obrigatória',
         },
       },
     },
