@@ -5,7 +5,9 @@
   },
   "scripts": {
     "prepare": "husky",
-    "build:backend": "cd backend && NODE_OPTIONS='--max-old-space-size=4096' npm run build",
+    "test:unit:backend": "cd backend && npm run test:unit",
+    "test:e2e:backend": "cd backend && npm run test:e2e",
+    "build:backend": "cd backend && npm run build",
     "build:frontend": "cd frontend && NODE_OPTIONS='--max-old-space-size=4096' npm run build",
     "build": "run-p build:*"
   }
