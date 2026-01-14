@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "npm-run-all2": "^8.0.4"
+  },
+  "scripts": {
+    "prepare": "husky",
+    "build:backend": "cd backend && NODE_OPTIONS='--max-old-space-size=4096' npm run build",
+    "build:frontend": "cd frontend && NODE_OPTIONS='--max-old-space-size=4096' npm run build",
+    "build": "run-p build:*"
+  }
+}
