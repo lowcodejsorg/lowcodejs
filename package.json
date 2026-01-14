@@ -5,6 +5,8 @@
   },
   "scripts": {
     "prepare": "husky",
+    "lint:backend": "cd backend && npm run lint",
+    "lint:frontend": "cd frontend && npm run lint",
     "test:unit:backend": "cd backend && npm run test:unit",
     "test:e2e:backend": "cd backend && npm run test:e2e",
     "build:backend": "cd backend && npm run build",
