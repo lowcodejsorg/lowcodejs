@@ -40,7 +40,7 @@ describe('E2E Sign In Controller', () => {
         .post('/authentication/sign-in')
         .send({
           email: 'test@example.com',
-          password: 'senha123',
+          password: 'S3nha@123A',
         });
 
       expect(response.statusCode).toBe(200);
