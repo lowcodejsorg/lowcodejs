@@ -13,6 +13,9 @@ import type {
 import { E_FIELD_TYPE, E_SCHEMA_TYPE } from './entity.core';
 import { HandlerFunction } from './table/method.core';
 
+export const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
+
 const FieldTypeMapper: Record<
   keyof typeof E_FIELD_TYPE,
   ValueOf<typeof E_SCHEMA_TYPE>

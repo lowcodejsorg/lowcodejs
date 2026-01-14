@@ -44,7 +44,7 @@ export default class UserPaginatedUseCase {
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
-          'LIST_USER_PAGINATED_ERROR',
+          'LIST_USERS_ERROR',
         ),
       );
     }

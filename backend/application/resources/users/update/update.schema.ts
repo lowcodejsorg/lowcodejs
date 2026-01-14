@@ -13,35 +13,72 @@ export const UserUpdateSchema: FastifySchema = {
       _id: {
         type: 'string',
         description: 'User ID',
+        errorMessage: {
+          type: 'O ID deve ser um texto',
+        },
+      },
+    },
+    errorMessage: {
+      required: {
+        _id: 'O ID é obrigatório',
       },
     },
   },
   body: {
     type: 'object',
-    required: ['name', 'email', 'group', 'status'],
     properties: {
       name: {
         type: 'string',
+        minLength: 1,
         description: 'Updated user full name',
+        errorMessage: {
+          type: 'O nome deve ser um texto',
+          minLength: 'O nome é obrigatório',
+        },
       },
       email: {
         type: 'string',
         format: 'email',
         description: 'Updated user email address',
+        errorMessage: {
+          type: 'O email deve ser um texto',
+          format: 'Digite um email válido',
+        },
       },
       group: {
         type: 'string',
+        minLength: 1,
         description: 'Updated user group ID',
+        errorMessage: {
+          type: 'O grupo deve ser um texto',
+          minLength: 'O grupo é obrigatório',
+        },
       },
       password: {
         type: 'string',
+        minLength: 6,
+        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?":{}|<>])',
         description: 'New password (optional)',
+        errorMessage: {
+          type: 'A senha deve ser um texto',
+          minLength: 'A senha deve ter no mínimo 6 caracteres',
+          pattern:
+            'A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+        },
       },
       status: {
         type: 'string',
         enum: ['ACTIVE', 'INACTIVE'],
         description: 'User status',
+        errorMessage: {
+          type: 'O status deve ser um texto',
+          enum: 'O status deve ser ACTIVE ou INACTIVE',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
@@ -74,13 +111,18 @@ export const UserUpdateSchema: FastifySchema = {
           description: 'Validation error message',
         },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Field-specific validation errors',
+        },
       },
       examples: [
         {
           message: 'Validation failed',
           code: 400,
-          cause: 'INVALID_PARAMETERS',
+          cause: 'INVALID_PAYLOAD_FORMAT',
         },
       ],
     },

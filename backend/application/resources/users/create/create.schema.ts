@@ -12,21 +12,53 @@ export const UserCreateSchema: FastifySchema = {
     properties: {
       name: {
         type: 'string',
+        minLength: 1,
         description: 'User full name',
+        errorMessage: {
+          type: 'O nome deve ser um texto',
+          minLength: 'O nome é obrigatório',
+        },
       },
       email: {
         type: 'string',
         format: 'email',
         description: 'User email address',
+        errorMessage: {
+          type: 'O email deve ser um texto',
+          format: 'Digite um email válido',
+        },
       },
       password: {
         type: 'string',
+        minLength: 6,
+        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?":{}|<>])',
         description: 'User password',
+        errorMessage: {
+          type: 'A senha deve ser um texto',
+          minLength: 'A senha deve ter no mínimo 6 caracteres',
+          pattern:
+            'A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+        },
       },
       group: {
         type: 'string',
+        minLength: 1,
         description: 'User group ID',
+        errorMessage: {
+          type: 'O grupo deve ser um texto',
+          minLength: 'O grupo é obrigatório',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        name: 'O nome é obrigatório',
+        email: 'O email é obrigatório',
+        password: 'A senha é obrigatória',
+        group: 'O grupo é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
@@ -87,7 +119,12 @@ export const UserCreateSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['GROUP_NOT_INFORMED', 'INVALID_PARAMETERS'],
+          enum: ['GROUP_NOT_INFORMED', 'INVALID_PAYLOAD_FORMAT'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Field-specific validation errors',
         },
       },
       examples: [

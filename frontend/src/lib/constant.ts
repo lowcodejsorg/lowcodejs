@@ -228,3 +228,6 @@ export const USER_STATUS_MAPPER = {
   [E_USER_STATUS.ACTIVE]: 'Ativo',
   [E_USER_STATUS.INACTIVE]: 'Inativo',
 } as const;
+
+export const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
