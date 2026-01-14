@@ -1,4 +1,4 @@
-import type { FastifySchema } from 'fastify-swagger';
+import { FastifySchema } from 'fastify';
 
 export const TableUpdateSchema: FastifySchema = {
   tags: ['Tables'],
