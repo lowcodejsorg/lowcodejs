@@ -28,7 +28,7 @@ const TypeMapper = {
   [E_MENU_ITEM_TYPE.SEPARATOR]: 'Separador',
 };
 
-function TableMenuRow({ menu }: { menu: IMenu }) {
+function TableMenuRow({ menu }: { menu: IMenu }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -52,7 +52,8 @@ function TableMenuRow({ menu }: { menu: IMenu }) {
         <Badge
           className={cn(
             'font-semibold border-transparent',
-            menu.type === E_MENU_ITEM_TYPE.PAGE && 'bg-green-100 text-green-700',
+            menu.type === E_MENU_ITEM_TYPE.PAGE &&
+              'bg-green-100 text-green-700',
             menu.type === E_MENU_ITEM_TYPE.TABLE &&
               'bg-yellow-100 text-yellow-700',
             menu.type === E_MENU_ITEM_TYPE.FORM && 'bg-blue-100 text-blue-700',
@@ -77,7 +78,7 @@ function TableMenuRow({ menu }: { menu: IMenu }) {
   );
 }
 
-export function TableMenus({ data }: TableMenusProps) {
+export function TableMenus({ data }: TableMenusProps): React.JSX.Element {
   const headers = ['Nome', 'Slug', 'Tipo'];
 
   return (

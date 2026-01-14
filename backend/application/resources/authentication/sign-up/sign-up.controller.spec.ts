@@ -24,13 +24,13 @@ describe('E2E Sign Up Controller', () => {
   });
 
   describe('POST /authentication/sign-up', () => {
-    it('deve criar usuario com sucesso', async () => {
+    it('deve criar usuário com sucesso', async () => {
       const response = await supertest(kernel.server)
         .post('/authentication/sign-up')
         .send({
-          name: 'Novo Usuario',
+          name: 'Novo Usuário',
           email: 'novo@example.com',
-          password: 'senha12345',
+          password: 'S3nha@123A',
         });
 
       expect(response.statusCode).toBe(201);

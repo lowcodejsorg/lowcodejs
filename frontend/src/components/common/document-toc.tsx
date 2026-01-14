@@ -1,9 +1,9 @@
-import type { CatNode } from "@/lib/document-helpers";
+import type { CatNode } from '@/lib/document-helpers';
 
 type TocItem = { id: string; label: string; level: number };
 
-function flatten(nodes: CatNode[], level = 1): TocItem[] {
-  const out: TocItem[] = [];
+function flatten(nodes: Array<CatNode>, level: number = 1): Array<TocItem> {
+  const out: Array<TocItem> = [];
   for (const n of nodes) {
     out.push({ id: n.id, label: n.label, level });
     if (n.children?.length) out.push(...flatten(n.children, level + 1));
@@ -11,7 +11,13 @@ function flatten(nodes: CatNode[], level = 1): TocItem[] {
   return out;
 }
 
-export function DocumentToc({ nodes, title }: { nodes: CatNode[]; title: string }) {
+export function DocumentToc({
+  nodes,
+  title,
+}: {
+  nodes: Array<CatNode>;
+  title: string;
+}): React.JSX.Element | null {
   const items = flatten(nodes);
   if (!items.length) return null;
 
@@ -22,7 +28,10 @@ export function DocumentToc({ nodes, title }: { nodes: CatNode[]; title: string 
       <nav aria-label="Sumário">
         <ol className="m-0 p-0 list-none">
           {items.map((it) => (
-            <li key={it.id} style={{ paddingLeft: (it.level - 1) * 12 }}>
+            <li
+              key={it.id}
+              style={{ paddingLeft: (it.level - 1) * 12 }}
+            >
               <a
                 href={`#sec-${it.id}`}
                 className="toc-link flex items-baseline gap-2 no-underline font-semibold"

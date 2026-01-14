@@ -7,7 +7,7 @@
     "vite.config.js",
     "src/components/common/-tree-editor"
   ],
-
+  //
   "compilerOptions": {
     "target": "es2024",
     "jsx": "react-jsx",

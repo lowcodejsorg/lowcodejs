@@ -12,10 +12,10 @@ import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { ITable, Paginated } from '@/lib/interfaces';
@@ -72,19 +72,13 @@ function RouteComponent(): React.JSX.Element {
             refetch={_read.refetch}
           />
         )}
-        {_read.status === 'success' && (
-          <TableUpdateContent data={_read.data} />
-        )}
+        {_read.status === 'success' && <TableUpdateContent data={_read.data} />}
       </div>
     </div>
   );
 }
 
-function TableUpdateContent({
-  data,
-}: {
-  data: ITable;
-}): React.JSX.Element {
+function TableUpdateContent({ data }: { data: ITable }): React.JSX.Element {
   const { queryClient } = getContext();
   const table = useReadTable({ slug: data.slug });
   const permission = useTablePermission(table.data);

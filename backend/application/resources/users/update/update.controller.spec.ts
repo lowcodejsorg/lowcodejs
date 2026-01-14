@@ -34,7 +34,7 @@ describe('E2E User Update Controller', () => {
           name: 'Updated Name',
           email: user.email,
           group: group._id.toString(),
-          password: 'password123',
+          password: 'S3nha@123A',
           status: E_USER_STATUS.ACTIVE,
         });
 

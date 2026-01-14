@@ -54,6 +54,8 @@ services:
       - NITRO_PORT=3000
     ports:
       - "${APP_CLIENT_PORT:-5173}:3000"
+    volumes:
+      - lowcodejs-app-public:/app/.output/public
     depends_on:
       api:
         condition: service_healthy
@@ -71,6 +73,8 @@ volumes:
   lowcodejs-mongo-data:
     driver: local
   lowcodejs-storage:
+    driver: local
+  lowcodejs-app-public:
     driver: local
 
 # Rede interna para comunicação entre containers

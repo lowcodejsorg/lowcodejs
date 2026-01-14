@@ -1,6 +1,6 @@
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, Share2Icon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -64,6 +64,23 @@ function RouteComponent(): React.JSX.Element {
             <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">Detalhes do registro</h1>
+          <Button
+            variant="outline"
+            className="shadow-none p-1 h-auto"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast('Link do registro copiado', {
+                className:
+                  '!bg-primary !text-primary-foreground !border-primary',
+                description:
+                  'O link do registro foi copiado para a área de transferência',
+                closeButton: true,
+              });
+            }}
+          >
+            <Share2Icon />
+            <span className="sr-only">Compartilhar</span>
+          </Button>
         </div>
         <div className="inline-flex items-center space-x-2">
           {isSuccess && !row.data.trashed && permission.can('REMOVE_ROW') && (

@@ -153,6 +153,7 @@ export default class TableFieldUpdateUseCase {
 
       return right(updatedField);
     } catch (error) {
+      console.log(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

@@ -11,7 +11,7 @@ export function TableRowTextShortCell({
 }: TableRowTextShortCellProps): React.JSX.Element {
   return (
     <p className="text-muted-foreground text-sm max-w-sm truncate">
-      {row?.[field.slug] ?? '-'}
+      {row[field.slug] ?? '-'}
     </p>
   );
 }

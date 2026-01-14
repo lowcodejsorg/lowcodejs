@@ -40,13 +40,16 @@ export function TableRowFileCell({
                 <img
                   src={value.url}
                   alt={value.originalName}
-                  className={cn("object-cover", isCardOrMosaic ? "size-full h-full" : "size-16")}
+                  className={cn(
+                    'object-cover',
+                    isCardOrMosaic ? 'size-full h-full' : 'size-16',
+                  )}
                 />
-                { !isCardOrMosaic && (
+                {!isCardOrMosaic && (
                   <span className="text-xs text-center">
                     {value.originalName}
-                  </span>)
-                }
+                  </span>
+                )}
               </Link>
             </li>
           );

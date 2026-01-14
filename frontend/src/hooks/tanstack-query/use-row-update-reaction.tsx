@@ -1,5 +1,9 @@
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
@@ -13,7 +17,9 @@ type UseRowUpdateReactionProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useRowUpdateReaction(props: UseRowUpdateReactionProps) {
+export function useRowUpdateReaction(
+  props: UseRowUpdateReactionProps,
+): UseMutationResult<IRow, AxiosError | Error, RowReactionPayload, unknown> {
   return useMutation({
     mutationFn: async function (payload: RowReactionPayload) {
       const route = '/tables/'

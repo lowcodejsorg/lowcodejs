@@ -88,8 +88,9 @@ function FieldGroupSubMenu({
             </DropdownMenuItem>
           )}
 
-          {permission.can('UPDATE_FIELD') &&
-            activeFields.length > 0 && <DropdownMenuSeparator />}
+          {permission.can('UPDATE_FIELD') && activeFields.length > 0 && (
+            <DropdownMenuSeparator />
+          )}
 
           {permission.can('UPDATE_FIELD') &&
             activeFields.map((groupField) => (
@@ -236,7 +237,8 @@ export function TableConfigurationDropdown({
         </DropdownMenuGroup>
 
         {table.data?.type === E_TABLE_TYPE.TABLE &&
-          (permission.can('CREATE_FIELD') || permission.can('UPDATE_FIELD')) && (
+          (permission.can('CREATE_FIELD') ||
+            permission.can('UPDATE_FIELD')) && (
             <React.Fragment>
               <DropdownMenuSeparator />
 
@@ -287,9 +289,13 @@ export function TableConfigurationDropdown({
                 }}
               >
                 <PencilIcon className="size-4" />
-                {table.data?.type === E_TABLE_TYPE.TABLE && <span>Editar tabela</span>}
+                {table.data?.type === E_TABLE_TYPE.TABLE && (
+                  <span>Editar tabela</span>
+                )}
 
-                {table.data?.type === E_TABLE_TYPE.FIELD_GROUP && <span>Editar grupo</span>}
+                {table.data?.type === E_TABLE_TYPE.FIELD_GROUP && (
+                  <span>Editar grupo</span>
+                )}
               </DropdownMenuItem>
 
               <DropdownMenuItem

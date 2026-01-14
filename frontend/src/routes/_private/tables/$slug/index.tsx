@@ -5,9 +5,12 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
-import { ArrowLeftIcon, PlusIcon, ShieldXIcon } from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
+import { toast } from 'sonner';
 import z from 'zod';
 
+import { TableCardView } from './-table-card-view';
+import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
 import { TableDocumentView } from './-table-document-view';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
@@ -15,6 +18,8 @@ import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableListView } from './-table-list-view';
 import { TableListViewSkeleton } from './-table-list-view-skeleton';
+import { TableMosaicView } from './-table-mosaic-view';
+import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -37,10 +42,6 @@ import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-r
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { useAuthenticationStore } from '@/stores/authentication';
-import { TableCardView } from './-table-card-view';
-import { TableMosaicView } from './-table-mosaic-view';
-import { TableCardViewSkeleton } from './-table-card-view-skeleton';
-import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
@@ -93,11 +94,31 @@ function RouteComponent(): React.JSX.Element {
               <ArrowLeftIcon />
             </Button>
           )}
-          {table.status === 'pending' ? (
-            <Skeleton className="h-8 w-40" />
-          ) : (
-            <h1 className="text-2xl font-medium">{table.data?.name ?? ''}</h1>
+
+          {table.status === 'pending' && <Skeleton className="h-8 w-40" />}
+
+          {table.status === 'success' && (
+            <h1 className="text-2xl font-medium">{table.data.name}</h1>
           )}
+
+          <Button
+            variant="outline"
+            className="shadow-none p-1 h-auto"
+            // size="icon-sm"
+            onClick={() => {
+              navigator.clipboard.writeText(window.location.href);
+              toast('Link da tabela copiado', {
+                className:
+                  '!bg-primary !text-primary-foreground !border-primary',
+                description:
+                  'O link da tabela foi copiado para a área de transferência',
+                closeButton: true,
+              });
+            }}
+          >
+            <Share2Icon />
+            <span className="sr-only">Compartilhar</span>
+          </Button>
         </div>
 
         <div className="inline-flex items-center space-x-2">
@@ -109,6 +130,7 @@ function RouteComponent(): React.JSX.Element {
             />
           )}
           <TrashButton />
+
           <TableStyleViewDropdown slug={slug} />
           <TableConfigurationDropdown tableSlug={slug} />
 
@@ -249,7 +271,6 @@ function RouteComponent(): React.JSX.Element {
               data={rows.data.data}
             />
           )}
-          
       </div>
 
       <div className="shrink-0 border-t p-2">

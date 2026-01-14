@@ -11,7 +11,6 @@ export function TableCardViewSkeleton(): React.JSX.Element {
         >
           <CardContent className="p-4">
             <div className="flex gap-4">
-             
               <Skeleton className="w-[140px] h-[105px] rounded-xl shrink-0" />
 
               <div className="flex-1 space-y-4">
@@ -21,7 +20,7 @@ export function TableCardViewSkeleton(): React.JSX.Element {
                 </div>
 
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  {Array.from({ length: 4 }).map((_, j) => (
+                  {Array.from({ length: 4 }).map((_unused, j) => (
                     <div
                       key={j}
                       className="flex flex-col gap-1"

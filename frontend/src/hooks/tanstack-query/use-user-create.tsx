@@ -1,4 +1,7 @@
-import type { UseMutationOptions } from '@tanstack/react-query';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -14,7 +17,9 @@ type UseUserCreateProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useCreateUser(props: UseUserCreateProps) {
+export function useCreateUser(
+  props: UseUserCreateProps,
+): UseMutationResult<IUser, AxiosError | Error, UserCreatePayload, unknown> {
   return useMutation({
     mutationFn: async function (payload: UserCreatePayload) {
       const route = '/users';

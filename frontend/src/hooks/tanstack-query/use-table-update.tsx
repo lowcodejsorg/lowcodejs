@@ -1,4 +1,7 @@
-import type { UseMutationOptions } from '@tanstack/react-query';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -14,7 +17,9 @@ type UseTableUpdateProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useUpdateTable(props: UseTableUpdateProps) {
+export function useUpdateTable(
+  props: UseTableUpdateProps,
+): UseMutationResult<ITable, AxiosError | Error, TableUpdatePayload, unknown> {
   return useMutation({
     mutationFn: async function (payload: TableUpdatePayload) {
       const route = '/tables/'.concat(payload.slug);

@@ -52,7 +52,7 @@ export function TableRowCategoryField({
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
 
-  const categories = field.configuration.category ?? [];
+  const categories = field.configuration.category;
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedIds = React.useMemo(() => {

@@ -17,10 +17,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { E_MENU_ITEM_TYPE, MetaDefault } from '@/lib/constant';
+import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { MetaDefault } from '@/lib/constant';
 import type { IMenu, Paginated, ValueOf } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/create/')({
@@ -92,7 +93,7 @@ function RouteComponent(): React.JSX.Element {
 
       await _create.mutateAsync({
         name: value.name,
-        type: value.type as ValueOf<typeof E_MENU_ITEM_TYPE>,
+        type: value.type,
         parent: value.parent || null,
         table: value.table || null,
         html: value.html || null,

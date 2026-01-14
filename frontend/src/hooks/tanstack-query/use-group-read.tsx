@@ -1,8 +1,12 @@
-import { API } from '@/lib/api';
-import { IGroup } from '@/lib/interfaces';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
-export function useReadGroup(payload: { groupId: string }) {
+import { API } from '@/lib/api';
+import type { IGroup } from '@/lib/interfaces';
+
+export function useReadGroup(payload: {
+  groupId: string;
+}): UseQueryResult<IGroup> {
   return useQuery({
     queryKey: ['/user-group/'.concat(payload.groupId), payload.groupId],
     queryFn: async function () {

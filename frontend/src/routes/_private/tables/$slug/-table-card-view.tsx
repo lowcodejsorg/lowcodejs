@@ -1,18 +1,19 @@
-import React from "react";
-import { useParams, useRouter } from "@tanstack/react-router";
-import type { IField, IRow } from "@/lib/interfaces";
-import { HeaderFilter, HeaderSorter } from "@/lib/layout-pickers";
-import { TableRowTextShortCell } from "@/components/common/table-row-text-short-cell";
-import { TableRowTextLongCell } from "@/components/common/table-row-text-long-cell";
-import { E_FIELD_TYPE } from "@/lib/constant";
-import { TableRowDateCell } from "@/components/common/table-row-date-cell";
-import { TableRowDropdownCell } from "@/components/common/table-row-dropdown-cell";
-import { TableRowRelationshipCell } from "@/components/common/table-row-relationship-cell";
-import { TableRowCategoryCell } from "@/components/common/table-row-category-cell";
-import { TableRowFileCell } from "@/components/common/table-row-file-cell";
-import { TableRowFieldGroupCell } from "@/components/common/table-row-field-group-cell";
-import { TableRowReactionCell } from "@/components/common/table-row-reaction-cell";
-import { TableRowEvaluationCell } from "@/components/common/table-row-evaluation-cell";
+import { useParams, useRouter } from '@tanstack/react-router';
+import React from 'react';
+
+import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
+import { TableRowDateCell } from '@/components/common/table-row-date-cell';
+import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
+import { TableRowEvaluationCell } from '@/components/common/table-row-evaluation-cell';
+import { TableRowFieldGroupCell } from '@/components/common/table-row-field-group-cell';
+import { TableRowFileCell } from '@/components/common/table-row-file-cell';
+import { TableRowReactionCell } from '@/components/common/table-row-reaction-cell';
+import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
+import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
+import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import type { IField, IRow } from '@/lib/interfaces';
+import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
 
 interface Props {
   data: Array<IRow>;
@@ -123,27 +124,28 @@ function RenderCardCell({
     }
   };
 
-  return (
-    <div className="flex flex-col gap-0.5">
-      
-      {renderContent()}
-    </div>
-  );
+  return <div className="flex flex-col gap-0.5">{renderContent()}</div>;
 }
 
-
-
-export function TableCardView({ data, headers, order }: Props) {
+export function TableCardView({
+  data,
+  headers,
+  order,
+}: Props): React.JSX.Element {
   const router = useRouter();
-  const { slug } = useParams({ from: "/_private/tables/$slug/" });
+  const { slug } = useParams({ from: '/_private/tables/$slug/' });
 
   const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
-  const thumbField = visibleHeaders.find((f) => f.type === "FILE");
-  const titleField = visibleHeaders.find((f) => f.type === "TEXT_SHORT");
-  const descField = visibleHeaders.find((f) => f.type === "TEXT_LONG");
+  const thumbField = visibleHeaders.find((f) => f.type === 'FILE');
+  const titleField = visibleHeaders.find((f) => f.type === 'TEXT_SHORT');
+  const descField = visibleHeaders.find((f) => f.type === 'TEXT_LONG');
 
-  const used = new Set([thumbField?._id, titleField?._id, descField?._id].filter(Boolean) as string[]);
+  const used = new Set(
+    [thumbField?._id, titleField?._id, descField?._id].filter(
+      Boolean,
+    ) as Array<string>,
+  );
   const extraFields = visibleHeaders.filter((f) => !used.has(f._id));
 
   return (
@@ -154,7 +156,7 @@ export function TableCardView({ data, headers, order }: Props) {
           className="py-4 cursor-pointer hover:bg-muted/30 rounded-xl px-2"
           onClick={() => {
             router.navigate({
-              to: "/tables/$slug/row/$rowId",
+              to: '/tables/$slug/row/$rowId',
               params: { slug, rowId: row._id },
             });
           }}
@@ -163,7 +165,11 @@ export function TableCardView({ data, headers, order }: Props) {
             <div className="w-[200px] shrink-0">
               <div className="h-full w-full overflow-hidden rounded-xl bg-muted">
                 {thumbField ? (
-                  <RenderCardCell field={thumbField} row={row} tableSlug={slug} />
+                  <RenderCardCell
+                    field={thumbField}
+                    row={row}
+                    tableSlug={slug}
+                  />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">
                     sem imagem
@@ -176,7 +182,11 @@ export function TableCardView({ data, headers, order }: Props) {
               <div className="space-y-1">
                 <div className="text-base font-semibold truncate">
                   {titleField ? (
-                    <RenderCardCell field={titleField} row={row} tableSlug={slug} />
+                    <RenderCardCell
+                      field={titleField}
+                      row={row}
+                      tableSlug={slug}
+                    />
                   ) : (
                     <span className="text-muted-foreground">Sem título</span>
                   )}
@@ -184,17 +194,30 @@ export function TableCardView({ data, headers, order }: Props) {
 
                 {descField ? (
                   <div className="text-sm text-muted-foreground line-clamp-2">
-                    <RenderCardCell field={descField} row={row} tableSlug={slug} />
+                    <RenderCardCell
+                      field={descField}
+                      row={row}
+                      tableSlug={slug}
+                    />
                   </div>
                 ) : null}
               </div>
 
               <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
                 {extraFields.map((field) => (
-                  <div key={field._id} className="text-sm">
-                    <div className="text-xs text-muted-foreground">{field.name}</div>
+                  <div
+                    key={field._id}
+                    className="text-sm"
+                  >
+                    <div className="text-xs text-muted-foreground">
+                      {field.name}
+                    </div>
                     <div className="text-foreground">
-                      <RenderCardCell field={field} row={row} tableSlug={slug} />
+                      <RenderCardCell
+                        field={field}
+                        row={row}
+                        tableSlug={slug}
+                      />
                     </div>
                   </div>
                 ))}
