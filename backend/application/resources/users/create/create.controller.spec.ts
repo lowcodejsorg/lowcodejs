@@ -33,7 +33,7 @@ describe('E2E User Create Controller', () => {
         .send({
           name: 'New User',
           email: 'newuser@example.com',
-          password: 'password123',
+          password: 'S3nha@123A',
           group: group._id.toString(),
         });
 
