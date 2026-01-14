@@ -8,9 +8,8 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint",
+    "lint": "prettier --write . && eslint --fix",
     "format": "prettier",
-    "check": "prettier --write . && eslint --fix",
     "prepare": "husky"
   },
   "dependencies": {
