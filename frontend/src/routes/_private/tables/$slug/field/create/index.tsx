@@ -258,7 +258,11 @@ function RouteComponent(): React.JSX.Element {
   // Blocked types for field-group tables
   const blockedTypes =
     table.status === 'success' && table.data.type === E_TABLE_TYPE.FIELD_GROUP
-      ? [E_FIELD_TYPE.FIELD_GROUP, E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION]
+      ? [
+          E_FIELD_TYPE.FIELD_GROUP,
+          E_FIELD_TYPE.REACTION,
+          E_FIELD_TYPE.EVALUATION,
+        ]
       : [];
 
   const isPending = _create.status === 'pending';

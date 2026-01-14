@@ -37,9 +37,7 @@ export function FieldMenuTypeSelect({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(
-            value as ValueOf<typeof E_MENU_ITEM_TYPE>,
-          );
+          field.handleChange(value as ValueOf<typeof E_MENU_ITEM_TYPE>);
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>

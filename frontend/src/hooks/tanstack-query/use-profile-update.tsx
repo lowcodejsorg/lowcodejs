@@ -6,7 +6,12 @@ import { AxiosError } from 'axios';
 
 type UseProfileUpdateProps = Pick<
   Omit<
-    UseMutationOptions<IUser, AxiosError | Error, ProfileUpdatePayload, unknown>,
+    UseMutationOptions<
+      IUser,
+      AxiosError | Error,
+      ProfileUpdatePayload,
+      unknown
+    >,
     'mutationFn'
   >,
   'onSuccess' | 'onError'

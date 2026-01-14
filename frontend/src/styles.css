@@ -88,8 +88,6 @@ code {
   --sidebar-ring: oklch(0.439 0 0);
 }
 
-
-
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -138,24 +136,39 @@ code {
   }
 }
 
-.print-only { display: none; }
+.print-only {
+  display: none;
+}
 
 @media print {
-  .print-only { display: block !important; }
-  .no-print { display: none !important; }
-  .print-toc { break-after: page; }
+  .print-only {
+    display: block !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .print-toc {
+    break-after: page;
+  }
   article {
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  h1, h2, h3, h4 {
+  h1,
+  h2,
+  h3,
+  h4 {
     break-after: avoid;
     page-break-after: avoid;
     break-inside: avoid;
     page-break-inside: avoid;
   }
-  h1 + p, h2 + p, h3 + p,
-  h1 + section, h2 + section, h3 + section {
+  h1 + p,
+  h2 + p,
+  h3 + p,
+  h1 + section,
+  h2 + section,
+  h3 + section {
     break-before: avoid;
     page-break-before: avoid;
   }

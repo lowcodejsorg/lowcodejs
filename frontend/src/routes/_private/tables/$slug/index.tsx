@@ -271,7 +271,6 @@ function RouteComponent(): React.JSX.Element {
               data={rows.data.data}
             />
           )}
-          
       </div>
 
       <div className="shrink-0 border-t p-2">

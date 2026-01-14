@@ -206,7 +206,8 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
                     /\/$/,
                     '',
                   );
-                  const isExternal = 'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
+                  const isExternal =
+                    'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
 
                   return (
                     <SidebarMenuItem key={item.title}>

@@ -114,15 +114,15 @@ export function TableStyleViewDropdown({
 
   const existFieldFile =
     table.status === 'success' &&
-    table.data.fields.some(
-      (f) => !f.trashed && f.type === E_FIELD_TYPE.FILE,
-    );
+    table.data.fields.some((f) => !f.trashed && f.type === E_FIELD_TYPE.FILE);
 
   const canShowDocument =
     table.status === 'success' && existFieldCategory && existFieldTextLong;
-  
-  const canShowCard = existFieldFile && existFieldTextLong && existFieldTextShort;
-  const canShowMosaic = existFieldFile && existFieldTextLong && existFieldTextShort;
+
+  const canShowCard =
+    existFieldFile && existFieldTextLong && existFieldTextShort;
+  const canShowMosaic =
+    existFieldFile && existFieldTextLong && existFieldTextShort;
 
   return (
     <DropdownMenu
@@ -197,8 +197,7 @@ export function TableStyleViewDropdown({
               >
                 <LayoutPanelLeft className="size-4" />
                 <span>Card</span>
-
-                </DropdownMenuRadioItem>
+              </DropdownMenuRadioItem>
             )}
 
             {canShowMosaic && (
@@ -211,7 +210,6 @@ export function TableStyleViewDropdown({
                 <span>Mosaico</span>
               </DropdownMenuRadioItem>
             )}
-
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       )}

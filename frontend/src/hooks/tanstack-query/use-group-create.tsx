@@ -8,7 +8,12 @@ import type { UserGroupCreatePayload } from '@/lib/payloads';
 
 type UseGroupCreateProps = Pick<
   Omit<
-    UseMutationOptions<IGroup, AxiosError | Error, UserGroupCreatePayload, unknown>,
+    UseMutationOptions<
+      IGroup,
+      AxiosError | Error,
+      UserGroupCreatePayload,
+      unknown
+    >,
     'mutationFn'
   >,
   'onSuccess' | 'onError'

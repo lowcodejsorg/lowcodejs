@@ -138,7 +138,11 @@ export function buildPayload(
 
 // Validator for required fields
 export function createRequiredValidator(fieldName: string) {
-  const validate = ({ value }: { value: any }): { message: string } | undefined => {
+  const validate = ({
+    value,
+  }: {
+    value: any;
+  }): { message: string } | undefined => {
     if (value === null || value === undefined || value === '') {
       return { message: `${fieldName} é obrigatório` };
     }

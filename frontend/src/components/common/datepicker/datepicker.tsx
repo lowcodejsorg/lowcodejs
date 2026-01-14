@@ -244,9 +244,7 @@ export function Datepicker({
           setRangeStart(start);
           setRangeEnd(end);
           onChange({ startDate: start, endDate: end });
-          setInputValue(
-            formatDateRange(start, end, displayFormat, separator),
-          );
+          setInputValue(formatDateRange(start, end, displayFormat, separator));
           setOpen(false);
         }
       }

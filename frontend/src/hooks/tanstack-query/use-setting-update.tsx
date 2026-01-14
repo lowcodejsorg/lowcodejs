@@ -6,7 +6,12 @@ import { AxiosError } from 'axios';
 
 type UseSettingUpdateProps = Pick<
   Omit<
-    UseMutationOptions<ISetting, AxiosError | Error, SettingUpdatePayload, unknown>,
+    UseMutationOptions<
+      ISetting,
+      AxiosError | Error,
+      SettingUpdatePayload,
+      unknown
+    >,
     'mutationFn'
   >,
   'onSuccess' | 'onError'

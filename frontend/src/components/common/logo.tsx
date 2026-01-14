@@ -1,4 +1,4 @@
-import { cn } from '@/lib/utils'
+import { cn } from '@/lib/utils';
 
 export function Logo(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -50,5 +50,5 @@ export function Logo(props: React.SVGProps<SVGSVGElement>) {
         fill="#FAA73F"
       />
     </svg>
-  )
+  );
 }

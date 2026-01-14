@@ -45,7 +45,10 @@ export function TableCollaborationSelectField({
         </SelectTrigger>
         <SelectContent>
           {TABLE_COLLABORATION_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+            >
               {option.label}
             </SelectItem>
           ))}

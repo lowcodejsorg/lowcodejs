@@ -12,7 +12,6 @@ export function TableMosaicViewSkeleton(): React.JSX.Element {
             key={i}
             className="mb-4 break-inside-avoid overflow-hidden"
           >
-            
             <Skeleton
               className="w-full"
               style={{ height: imgHeight }}

@@ -16,7 +16,14 @@ type Params = {
 export function useRelationshipRowsReadPaginated(
   params: Params,
 ): UseQueryResult<Paginated<IRow>, Error> {
-  const { tableSlug, fieldSlug, search, page = 1, perPage = 10, enabled = true } = params;
+  const {
+    tableSlug,
+    fieldSlug,
+    search,
+    page = 1,
+    perPage = 10,
+    enabled = true,
+  } = params;
 
   return useQuery({
     queryKey: ['relationship', fieldSlug, tableSlug, search],

@@ -48,7 +48,10 @@ export function TableRowFieldGroupCell({
           {table.data.fields
             .filter((f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed)
             .map((groupField) => (
-              <div key={groupField._id} className="flex flex-col gap-0.5">
+              <div
+                key={groupField._id}
+                className="flex flex-col gap-0.5"
+              >
                 <span className="text-xs font-medium text-muted-foreground">
                   {groupField.name}
                 </span>
@@ -80,23 +83,70 @@ function RenderGroupFieldCell({
 
   switch (field.type) {
     case E_FIELD_TYPE.TEXT_SHORT:
-      return <TableRowTextShortCell field={field} row={row} />;
+      return (
+        <TableRowTextShortCell
+          field={field}
+          row={row}
+        />
+      );
     case E_FIELD_TYPE.TEXT_LONG:
-      return <TableRowTextLongCell field={field} row={row} />;
+      return (
+        <TableRowTextLongCell
+          field={field}
+          row={row}
+        />
+      );
     case E_FIELD_TYPE.DATE:
-      return <TableRowDateCell field={field} row={row} />;
+      return (
+        <TableRowDateCell
+          field={field}
+          row={row}
+        />
+      );
     case E_FIELD_TYPE.DROPDOWN:
-      return <TableRowDropdownCell field={field} row={row} />;
+      return (
+        <TableRowDropdownCell
+          field={field}
+          row={row}
+        />
+      );
     case E_FIELD_TYPE.CATEGORY:
-      return <TableRowCategoryCell field={field} row={row} />;
+      return (
+        <TableRowCategoryCell
+          field={field}
+          row={row}
+        />
+      );
     case E_FIELD_TYPE.RELATIONSHIP:
-      return <TableRowRelationshipCell field={field} row={row} />;
+      return (
+        <TableRowRelationshipCell
+          field={field}
+          row={row}
+        />
+      );
     case E_FIELD_TYPE.FILE:
-      return <TableRowFileCell field={field} row={row} />;
+      return (
+        <TableRowFileCell
+          field={field}
+          row={row}
+        />
+      );
     case E_FIELD_TYPE.REACTION:
-      return <TableRowReactionCell field={field} row={row} tableSlug={tableSlug} />;
+      return (
+        <TableRowReactionCell
+          field={field}
+          row={row}
+          tableSlug={tableSlug}
+        />
+      );
     case E_FIELD_TYPE.EVALUATION:
-      return <TableRowEvaluationCell field={field} row={row} tableSlug={tableSlug} />;
+      return (
+        <TableRowEvaluationCell
+          field={field}
+          row={row}
+          tableSlug={tableSlug}
+        />
+      );
     default:
       return <span className="text-muted-foreground text-sm">-</span>;
   }

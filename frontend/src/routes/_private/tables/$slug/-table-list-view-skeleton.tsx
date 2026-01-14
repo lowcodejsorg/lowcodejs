@@ -14,7 +14,10 @@ export function TableListViewSkeleton(): React.JSX.Element {
       <TableHeader className="sticky top-0 bg-background">
         <TableRow>
           {Array.from({ length: 4 }).map((_, index) => (
-            <TableHead key={index} className="w-auto">
+            <TableHead
+              key={index}
+              className="w-auto"
+            >
               <Skeleton className="h-4 w-24" />
             </TableHead>
           ))}

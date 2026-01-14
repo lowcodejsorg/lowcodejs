@@ -21,7 +21,10 @@ export function RecentActivity(): React.JSX.Element {
         {mockRecentActivity.map((activity) => {
           const Icon = iconMap[activity.type as keyof typeof iconMap] || Table;
           return (
-            <div key={activity.id} className="flex items-center gap-4">
+            <div
+              key={activity.id}
+              className="flex items-center gap-4"
+            >
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
                 <Icon className="h-4 w-4 text-muted-foreground" />
               </div>

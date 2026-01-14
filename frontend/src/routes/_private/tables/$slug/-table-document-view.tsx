@@ -19,7 +19,7 @@ import {
 import { DocumentSidebar } from '@/components/common/document-sidebar';
 import { DocumentMain } from '@/components/common/document-main';
 import { DocumentPrintButton } from '@/components/common/document-print-button';
-import * as ReactToPrint from "react-to-print";
+import * as ReactToPrint from 'react-to-print';
 import { DocumentToc } from '@/components/common/document-toc';
 
 const { useReactToPrint } = ReactToPrint;
@@ -34,16 +34,24 @@ export function TableDocumentView({
   order: Array<string>;
   tableSlug: string;
 }): React.ReactElement {
-  const categoryField = useMemo(() => firstCategoryField(headers, order), [headers, order]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const categoryField = useMemo(
+    () => firstCategoryField(headers, order),
+    [headers, order],
+  );
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
+    null,
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const orderedHeaders = useMemo(
     () => headers.filter((h) => !h.trashed).sort(headerSorter(order)),
-    [headers, order]
+    [headers, order],
   );
 
-  const docBlocks = useMemo(() => buildDocBlocks(orderedHeaders), [orderedHeaders]);
+  const docBlocks = useMemo(
+    () => buildDocBlocks(orderedHeaders),
+    [orderedHeaders],
+  );
 
   const categoryTree: CatNode[] = useMemo(() => {
     if (!categoryField) return [];
@@ -55,19 +63,24 @@ export function TableDocumentView({
 
   const descendantsMap = useMemo(
     () => buildDescendantsMap(categoryTree),
-    [categoryTree]
+    [categoryTree],
   );
 
   const filteredRows = useMemo(() => {
     if (!categoryField) return data;
-  
+
     return data.filter((row) =>
-      rowMatchesCategory(row, categoryField.slug, selectedCategoryId, descendantsMap)
+      rowMatchesCategory(
+        row,
+        categoryField.slug,
+        selectedCategoryId,
+        descendantsMap,
+      ),
     );
   }, [data, categoryField, selectedCategoryId, descendantsMap]);
 
   const filterLabel = selectedCategoryId
-    ? labelMap.get(selectedCategoryId) ?? selectedCategoryId
+    ? (labelMap.get(selectedCategoryId) ?? selectedCategoryId)
     : null;
 
   const getIndentPx = (row: IRow) =>
@@ -78,42 +91,45 @@ export function TableDocumentView({
 
   const categoryOrderMap = useMemo(
     () => buildCategoryOrderMap(categoryTree),
-    [categoryTree]
+    [categoryTree],
   );
 
-  
   const sortedRows = useMemo(() => {
     if (!categoryField) return filteredRows;
-  
+
     const slug = categoryField.slug;
-  
+
     return [...filteredRows].sort((a, b) => {
       const leafA = getRowLeafId(a as any, slug);
       const leafB = getRowLeafId(b as any, slug);
-  
-      const ordA = leafA ? (categoryOrderMap.get(leafA) ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
-      const ordB = leafB ? (categoryOrderMap.get(leafB) ?? Number.POSITIVE_INFINITY) : Number.POSITIVE_INFINITY;
-  
+
+      const ordA = leafA
+        ? (categoryOrderMap.get(leafA) ?? Number.POSITIVE_INFINITY)
+        : Number.POSITIVE_INFINITY;
+      const ordB = leafB
+        ? (categoryOrderMap.get(leafB) ?? Number.POSITIVE_INFINITY)
+        : Number.POSITIVE_INFINITY;
+
       if (ordA !== ordB) return ordA - ordB;
 
       return String(a._id).localeCompare(String(b._id));
     });
   }, [filteredRows, categoryField, categoryOrderMap]);
 
-
   const getHeadingLevel = (row: IRow) =>
-    categoryField ? rowHeadingLevelFromLeaf(row, categoryField.slug, depthMap) : 2;
+    categoryField
+      ? rowHeadingLevelFromLeaf(row, categoryField.slug, depthMap)
+      : 2;
 
   const contentRef = useRef<HTMLDivElement>(null);
-  
-  const printPdf = useReactToPrint({contentRef})
+
+  const printPdf = useReactToPrint({ contentRef });
   function handlePrint() {
     printPdf();
   }
 
   return (
     <div className="flex flex-row min-h-[calc(100vh-64px)] gap-4 relative w-full">
-
       <DocumentPrintButton onClick={handlePrint} />
 
       <DocumentSidebar
@@ -122,11 +138,17 @@ export function TableDocumentView({
         selectedId={selectedCategoryId}
         onSelect={setSelectedCategoryId}
         isOpen={isSidebarOpen}
-        onToggle={() => setIsSidebarOpen(v => !v)}
+        onToggle={() => setIsSidebarOpen((v) => !v)}
       />
 
-      <div ref={contentRef} className="w-full">
-        <DocumentToc nodes={categoryTree} title={categoryField?.name ?? 'Sumário'} />
+      <div
+        ref={contentRef}
+        className="w-full"
+      >
+        <DocumentToc
+          nodes={categoryTree}
+          title={categoryField?.name ?? 'Sumário'}
+        />
         <DocumentMain
           rows={sortedRows}
           total={data.length}
@@ -137,7 +159,6 @@ export function TableDocumentView({
           getHeadingLevel={getHeadingLevel}
         />
       </div>
-      
     </div>
   );
 }

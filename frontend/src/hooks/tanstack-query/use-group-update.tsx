@@ -8,7 +8,12 @@ import type { UserGroupUpdatePayload } from '@/lib/payloads';
 
 type UseGroupUpdateProps = Pick<
   Omit<
-    UseMutationOptions<IGroup, AxiosError | Error, UserGroupUpdatePayload, unknown>,
+    UseMutationOptions<
+      IGroup,
+      AxiosError | Error,
+      UserGroupUpdatePayload,
+      unknown
+    >,
     'mutationFn'
   >,
   'onSuccess' | 'onError'

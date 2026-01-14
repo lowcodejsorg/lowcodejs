@@ -33,7 +33,10 @@ export function ChartUsers(): React.JSX.Element {
         <CardTitle>Usuários por Status</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="h-[200px] w-full"
+        >
           <PieChart accessibilityLayer>
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
             <Pie

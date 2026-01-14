@@ -72,19 +72,13 @@ function RouteComponent(): React.JSX.Element {
             refetch={_read.refetch}
           />
         )}
-        {_read.status === 'success' && (
-          <TableUpdateContent data={_read.data} />
-        )}
+        {_read.status === 'success' && <TableUpdateContent data={_read.data} />}
       </div>
     </div>
   );
 }
 
-function TableUpdateContent({
-  data,
-}: {
-  data: ITable;
-}): React.JSX.Element {
+function TableUpdateContent({ data }: { data: ITable }): React.JSX.Element {
   const { queryClient } = getContext();
   const table = useReadTable({ slug: data.slug });
   const permission = useTablePermission(table.data);

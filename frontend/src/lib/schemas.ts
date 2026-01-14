@@ -83,10 +83,12 @@ export const UserUpdateBodySchema = UserBaseSchema.partial().extend({
 });
 
 export const UserUpdateFormSchema = UserBaseSchema.extend({
-  password: z.string().refine(
-    (val) => val === '' || (val.length >= 6 && PASSWORD_REGEX.test(val)),
-    'A senha deve ter 6+ caracteres com: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
-  ),
+  password: z
+    .string()
+    .refine(
+      (val) => val === '' || (val.length >= 6 && PASSWORD_REGEX.test(val)),
+      'A senha deve ter 6+ caracteres com: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+    ),
   status: z.enum([E_USER_STATUS.ACTIVE, E_USER_STATUS.INACTIVE], {
     message: 'O status deve ser ACTIVE ou INACTIVE',
   }),
