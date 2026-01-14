@@ -1,17 +1,17 @@
-import { useState, useCallback } from 'react';
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ChevronsLeftIcon,
   ChevronsRightIcon,
 } from 'lucide-react';
-
-import { Button } from '@/components/ui/button';
+import { useCallback, useState } from 'react';
 
 import { DatepickerDays } from './datepicker-days';
 import { DatepickerMonths } from './datepicker-months';
-import { DatepickerYears } from './datepicker-years';
 import { getMonthShortName, navigateMonth } from './datepicker-utils';
+import { DatepickerYears } from './datepicker-years';
+
+import { Button } from '@/components/ui/button';
 
 type View = 'days' | 'months' | 'years';
 
@@ -117,7 +117,7 @@ export function DatepickerCalendar({
   const maxYear = maxDate ? maxDate.getFullYear() : null;
 
   return (
-    <div className="w-[280px]">
+    <div className="w-70">
       {/* Header with navigation */}
       <div className="flex items-center space-x-1.5 border border-border rounded-md px-2 py-1.5">
         {/* Left navigation - Prev month (days view) or Prev years (years view) */}

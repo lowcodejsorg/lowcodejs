@@ -1,9 +1,9 @@
 import {
+  LayoutDashboard,
   LayoutDashboardIcon,
   LayoutListIcon,
-  ListTreeIcon,
-  LayoutDashboard,
   LayoutPanelLeft,
+  ListTreeIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
 

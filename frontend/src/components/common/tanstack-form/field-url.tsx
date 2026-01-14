@@ -1,13 +1,12 @@
 import { LinkIcon } from 'lucide-react';
 
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 
 interface FieldUrlProps {
   label: string;

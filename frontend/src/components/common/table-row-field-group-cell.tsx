@@ -1,7 +1,3 @@
-import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow } from '@/lib/interfaces';
-import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
-
 import { TableRowCategoryCell } from './table-row-category-cell';
 import { TableRowDateCell } from './table-row-date-cell';
 import { TableRowDropdownCell } from './table-row-dropdown-cell';
@@ -11,6 +7,10 @@ import { TableRowReactionCell } from './table-row-reaction-cell';
 import { TableRowRelationshipCell } from './table-row-relationship-cell';
 import { TableRowTextLongCell } from './table-row-text-long-cell';
 import { TableRowTextShortCell } from './table-row-text-short-cell';
+
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import type { IField, IRow } from '@/lib/interfaces';
 
 interface TableRowFieldGroupCellProps {
   row: IRow;
@@ -31,7 +31,7 @@ export function TableRowFieldGroupCell({
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
-  const groupData = row?.[field.slug] ?? [];
+  const groupData = row[field.slug] ?? [];
   const total = groupData.length || 0;
 
   if (total === 0) {
@@ -42,7 +42,7 @@ export function TableRowFieldGroupCell({
     <div className="flex flex-col gap-2">
       {groupData.map((groupRow: IRow, index: number) => (
         <div
-          key={groupRow._id ?? index}
+          key={groupRow._id || index}
           className="grid grid-cols-2 gap-2 p-2 border rounded"
         >
           {table.data.fields

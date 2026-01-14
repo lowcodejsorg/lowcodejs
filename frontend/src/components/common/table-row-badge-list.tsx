@@ -9,7 +9,7 @@ interface TableRowBadgeListProps<T> {
 export function TableRowBadgeList<T>({
   values,
   renderLabel,
-  getKey = (_, i) => i,
+  getKey = (_: T, i: number): string | number => i,
 }: TableRowBadgeListProps<T>): React.JSX.Element {
   if (values.length === 0) {
     return <span className="text-muted-foreground text-sm">-</span>;

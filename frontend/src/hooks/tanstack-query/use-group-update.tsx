@@ -1,4 +1,7 @@
-import type { UseMutationOptions } from '@tanstack/react-query';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -19,7 +22,14 @@ type UseGroupUpdateProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useUpdateGroup(props: UseGroupUpdateProps) {
+export function useUpdateGroup(
+  props: UseGroupUpdateProps,
+): UseMutationResult<
+  IGroup,
+  AxiosError | Error,
+  UserGroupUpdatePayload,
+  unknown
+> {
   return useMutation({
     mutationFn: async function (payload: UserGroupUpdatePayload) {
       const route = '/user-group/'.concat(payload._id);

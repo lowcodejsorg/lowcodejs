@@ -1,26 +1,26 @@
-import React, { useMemo, useState, useRef } from 'react';
-import type { IField, IRow } from '@/lib/interfaces';
-import {
-  firstCategoryField,
-  buildDepthMap,
-  buildLabelMap,
-  buildDocBlocks,
-  headerSorter,
-  rowMatchesCategory,
-  rowIndentPxFromLeaf,
-  rowLeafLabel,
-  type CatNode,
-  buildCategoryOrderMap,
-  getRowLeafId,
-  rowHeadingLevelFromLeaf,
-  buildDescendantsMap,
-} from '@/lib/document-helpers';
+import React, { useMemo, useRef, useState } from 'react';
+import * as ReactToPrint from 'react-to-print';
 
-import { DocumentSidebar } from '@/components/common/document-sidebar';
 import { DocumentMain } from '@/components/common/document-main';
 import { DocumentPrintButton } from '@/components/common/document-print-button';
-import * as ReactToPrint from 'react-to-print';
+import { DocumentSidebar } from '@/components/common/document-sidebar';
 import { DocumentToc } from '@/components/common/document-toc';
+import type { CatNode } from '@/lib/document-helpers';
+import {
+  buildCategoryOrderMap,
+  buildDepthMap,
+  buildDescendantsMap,
+  buildDocBlocks,
+  buildLabelMap,
+  firstCategoryField,
+  getRowLeafId,
+  headerSorter,
+  rowHeadingLevelFromLeaf,
+  rowIndentPxFromLeaf,
+  rowLeafLabel,
+  rowMatchesCategory,
+} from '@/lib/document-helpers';
+import type { IField, IRow } from '@/lib/interfaces';
 
 const { useReactToPrint } = ReactToPrint;
 
@@ -53,9 +53,9 @@ export function TableDocumentView({
     [orderedHeaders],
   );
 
-  const categoryTree: CatNode[] = useMemo(() => {
+  const categoryTree: Array<CatNode> = useMemo(() => {
     if (!categoryField) return [];
-    return (categoryField.configuration?.category ?? []) as CatNode[];
+    return categoryField.configuration.category as Array<CatNode>;
   }, [categoryField]);
 
   const depthMap = useMemo(() => buildDepthMap(categoryTree), [categoryTree]);
@@ -83,10 +83,10 @@ export function TableDocumentView({
     ? (labelMap.get(selectedCategoryId) ?? selectedCategoryId)
     : null;
 
-  const getIndentPx = (row: IRow) =>
+  const getIndentPx = (row: IRow): number =>
     categoryField ? rowIndentPxFromLeaf(row, categoryField.slug, depthMap) : 0;
 
-  const getLeafLabel = (row: IRow) =>
+  const getLeafLabel = (row: IRow): string | null =>
     categoryField ? rowLeafLabel(row, categoryField.slug, labelMap) : null;
 
   const categoryOrderMap = useMemo(
@@ -116,7 +116,7 @@ export function TableDocumentView({
     });
   }, [filteredRows, categoryField, categoryOrderMap]);
 
-  const getHeadingLevel = (row: IRow) =>
+  const getHeadingLevel = (row: IRow): number =>
     categoryField
       ? rowHeadingLevelFromLeaf(row, categoryField.slug, depthMap)
       : 2;
@@ -124,7 +124,7 @@ export function TableDocumentView({
   const contentRef = useRef<HTMLDivElement>(null);
 
   const printPdf = useReactToPrint({ contentRef });
-  function handlePrint() {
+  function handlePrint(): void {
     printPdf();
   }
 

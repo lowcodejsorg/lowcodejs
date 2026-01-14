@@ -1,11 +1,14 @@
-import React from 'react';
-import type { IRow } from '@/lib/interfaces';
-import type { DocBlock } from '@/lib/document-helpers';
-import { getStr, getRowLeafId } from '@/lib/document-helpers';
-import { Button } from '../ui/button';
-import { EllipsisVerticalIcon } from 'lucide-react';
 import { useParams, useRouter } from '@tanstack/react-router';
+import { EllipsisVerticalIcon } from 'lucide-react';
+import React from 'react';
+
+import { Button } from '../ui/button';
+
 import { DocumentHeadingRow } from './document-heading-row';
+
+import type { DocBlock } from '@/lib/document-helpers';
+import { getRowLeafId, getStr } from '@/lib/document-helpers';
+import type { IRow } from '@/lib/interfaces';
 
 export function DocumentRow({
   row,
@@ -15,11 +18,11 @@ export function DocumentRow({
   headingLevel,
 }: {
   row: IRow;
-  blocks: DocBlock[];
+  blocks: Array<DocBlock>;
   indentPx: number;
   leafLabel?: string | null;
   headingLevel?: number;
-}) {
+}): React.JSX.Element {
   const router = useRouter();
   const { slug } = useParams({
     from: '/_private/tables/$slug/',

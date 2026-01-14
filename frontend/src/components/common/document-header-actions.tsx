@@ -1,11 +1,12 @@
 import { ArrowRightIcon } from 'lucide-react';
+
 import { Button } from '@/components/ui/button';
 
 export function DocumentHeaderActions({
   onViewDetails,
 }: {
   onViewDetails: () => void;
-}) {
+}): React.JSX.Element {
   return (
     <div className="flex justify-end w-full">
       <Button

@@ -1,6 +1,6 @@
-import type { IRow } from '@/lib/interfaces';
 import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
+import type { IRow } from '@/lib/interfaces';
 
 export type DocSection = {
   id: string;
@@ -16,9 +16,9 @@ export function DocumentContent({
 }: {
   selectedRow: IRow | undefined;
   title: string;
-  sections: DocSection[];
+  sections: Array<DocSection>;
   getStr: (v: unknown) => string;
-}) {
+}): React.JSX.Element {
   return (
     <div className="prose dark:prose-invert max-w-none">
       <h1>{title}</h1>

@@ -9,6 +9,8 @@ import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import z from 'zod';
 
+import { TableCardView } from './-table-card-view';
+import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
 import { TableDocumentView } from './-table-document-view';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
@@ -16,6 +18,8 @@ import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableListView } from './-table-list-view';
 import { TableListViewSkeleton } from './-table-list-view-skeleton';
+import { TableMosaicView } from './-table-mosaic-view';
+import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -38,10 +42,6 @@ import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-r
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { useAuthenticationStore } from '@/stores/authentication';
-import { TableCardView } from './-table-card-view';
-import { TableMosaicView } from './-table-mosaic-view';
-import { TableCardViewSkeleton } from './-table-card-view-skeleton';
-import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,

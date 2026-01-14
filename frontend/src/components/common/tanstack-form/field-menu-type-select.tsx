@@ -8,8 +8,8 @@ import {
 } from '@/components/ui/select';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import type { ValueOf } from '@/lib/interfaces';
 import { MENU_ITEM_TYPE_OPTIONS } from '@/lib/constant';
+import type { ValueOf } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface FieldMenuTypeSelectProps {

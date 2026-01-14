@@ -1,6 +1,6 @@
 import { cn } from '@/lib/utils';
 
-export function Logo(props: React.SVGProps<SVGSVGElement>) {
+export function Logo(props: React.SVGProps<SVGSVGElement>): React.JSX.Element {
   return (
     <svg
       viewBox="0 0 118 24"

@@ -1,7 +1,12 @@
-import { Button } from '../ui/button';
 import { PrinterIcon } from 'lucide-react';
 
-export function DocumentPrintButton({ onClick }: { onClick: () => void }) {
+import { Button } from '../ui/button';
+
+export function DocumentPrintButton({
+  onClick,
+}: {
+  onClick: () => void;
+}): React.JSX.Element {
   return (
     <Button
       onClick={onClick}

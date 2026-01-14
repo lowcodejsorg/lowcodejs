@@ -20,7 +20,7 @@ export function TableCardViewSkeleton(): React.JSX.Element {
                 </div>
 
                 <div className="grid grid-cols-2 gap-x-6 gap-y-3">
-                  {Array.from({ length: 4 }).map((_, j) => (
+                  {Array.from({ length: 4 }).map((_unused, j) => (
                     <div
                       key={j}
                       className="flex flex-col gap-1"

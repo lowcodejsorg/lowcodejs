@@ -1,8 +1,13 @@
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+
 import { API } from '@/lib/api';
-import { ISetting } from '@/lib/interfaces';
+import type { ISetting } from '@/lib/interfaces';
 import type { SettingUpdatePayload } from '@/lib/payloads';
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 
 type UseSettingUpdateProps = Pick<
   Omit<
@@ -17,7 +22,14 @@ type UseSettingUpdateProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useUpdateSetting(props: UseSettingUpdateProps) {
+export function useUpdateSetting(
+  props: UseSettingUpdateProps,
+): UseMutationResult<
+  ISetting,
+  AxiosError | Error,
+  SettingUpdatePayload,
+  unknown
+> {
   return useMutation({
     mutationFn: async function (payload: SettingUpdatePayload) {
       const route = '/setting';

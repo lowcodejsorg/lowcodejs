@@ -28,7 +28,7 @@ const TypeMapper = {
   [E_MENU_ITEM_TYPE.SEPARATOR]: 'Separador',
 };
 
-function TableMenuRow({ menu }: { menu: IMenu }) {
+function TableMenuRow({ menu }: { menu: IMenu }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -78,7 +78,7 @@ function TableMenuRow({ menu }: { menu: IMenu }) {
   );
 }
 
-export function TableMenus({ data }: TableMenusProps) {
+export function TableMenus({ data }: TableMenusProps): React.JSX.Element {
   const headers = ['Nome', 'Slug', 'Tipo'];
 
   return (

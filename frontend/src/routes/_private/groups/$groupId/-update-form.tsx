@@ -6,8 +6,8 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
-import { E_ROLE } from '@/lib/constant';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import { E_ROLE } from '@/lib/constant';
 import { UserGroupUpdateBodySchema } from '@/lib/schemas';
 
 const RoleMapper = {
@@ -98,7 +98,7 @@ export const UpdateGroupFormFields = withForm({
           name="permissions"
           validators={{
             onBlur: ({ value }) => {
-              if (!value || value.length === 0) {
+              if (value.length === 0) {
                 return { message: 'Selecione ao menos uma permissão' };
               }
               return undefined;

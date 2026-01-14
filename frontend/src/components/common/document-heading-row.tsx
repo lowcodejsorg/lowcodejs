@@ -1,5 +1,6 @@
-import { cn } from '@/lib/utils';
 import React from 'react';
+
+import { cn } from '@/lib/utils';
 
 export function DocumentHeadingRow({
   id,
@@ -11,7 +12,7 @@ export function DocumentHeadingRow({
   level: number;
   className?: string;
   children: React.ReactNode;
-}) {
+}): React.JSX.Element {
   const headingStyles: Record<number, string> = {
     2: 'text-2xl font-bold mt-8',
     3: 'text-xl font-semibold mt-6',

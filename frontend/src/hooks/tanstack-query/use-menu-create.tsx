@@ -1,4 +1,7 @@
-import type { UseMutationOptions } from '@tanstack/react-query';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -14,7 +17,9 @@ type UseMenuCreateProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useCreateMenu(props: UseMenuCreateProps) {
+export function useCreateMenu(
+  props: UseMenuCreateProps,
+): UseMutationResult<IMenu, AxiosError | Error, MenuCreatePayload, unknown> {
   return useMutation({
     mutationFn: async function (payload: MenuCreatePayload) {
       const response = await API.post<IMenu>('/menu', payload);

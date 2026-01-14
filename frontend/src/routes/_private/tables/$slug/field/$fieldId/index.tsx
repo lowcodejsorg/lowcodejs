@@ -25,8 +25,8 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
-import { E_FIELD_TYPE } from '@/lib/constant';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
@@ -190,11 +190,11 @@ function FieldUpdateContent({
           if (!old) return old;
           return {
             meta: old.meta,
-            data: old.data.map((table) => {
-              if (table.slug === slug) {
+            data: old.data.map((t) => {
+              if (t.slug === slug) {
                 return {
-                  ...table,
-                  fields: table.fields.map((f) => {
+                  ...t,
+                  fields: t.fields.map((f) => {
                     if (f._id === response._id) {
                       return response;
                     }
@@ -202,7 +202,7 @@ function FieldUpdateContent({
                   }),
                 };
               }
-              return table;
+              return t;
             }),
           };
         },
@@ -375,11 +375,10 @@ function FieldUpdateContent({
       configuration: {
         format: data.configuration.format ?? '',
         defaultValue: data.configuration.defaultValue ?? '',
-        dropdown:
-          data.configuration.dropdown?.map((d) => ({
-            value: d,
-            label: d,
-          })) ?? [],
+        dropdown: data.configuration.dropdown.map((d) => ({
+          value: d,
+          label: d,
+        })),
         relationship: {
           tableId: data.configuration.relationship?.table._id ?? '',
           tableSlug: data.configuration.relationship?.table.slug ?? '',
@@ -387,7 +386,7 @@ function FieldUpdateContent({
           fieldSlug: data.configuration.relationship?.field.slug ?? '',
           order: data.configuration.relationship?.order ?? '',
         },
-        category: data.configuration.category ?? [],
+        category: data.configuration.category,
         multiple: data.configuration.multiple,
         filtering: data.configuration.filtering,
         listing: data.configuration.listing,

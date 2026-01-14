@@ -1,15 +1,16 @@
+import type { IField } from './interfaces';
+
 import { E_FIELD_TYPE } from '@/lib/constant';
-import { IField } from './interfaces';
 
 export function sortByOrder<T extends { order?: number; position?: number }>(
-  fields: T[],
-) {
+  fields: Array<T>,
+): Array<T> {
   return [...fields].sort(
     (a, b) => (a.order ?? a.position ?? 0) - (b.order ?? b.position ?? 0),
   );
 }
 
-export function isEmpty(v: any) {
+export function isEmpty(v: any): boolean {
   if (v === null || v === undefined) return true;
   if (typeof v === 'string' && v.trim() === '') return true;
   if (Array.isArray(v) && v.length === 0) return true;
@@ -25,7 +26,10 @@ export function getFileUrl(value: any): string | null {
   return null;
 }
 
-export function pickThumbTitleDesc(fieldsOrdered: any[], row: any) {
+export function pickThumbTitleDesc(
+  fieldsOrdered: Array<any>,
+  row: any,
+): { thumb: any; title: any; desc: any } {
   const thumb = fieldsOrdered.find(
     (f) => f.type === E_FIELD_TYPE.FILE && !isEmpty(row[f.slug ?? f.id]),
   );

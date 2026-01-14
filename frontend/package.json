@@ -8,7 +8,7 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "prettier --write . && eslint --fix",
+    "lint": "prettier --write . && eslint --fix \"**/*.{ts,tsx}\"",
     "format": "prettier",
     "prepare": "husky"
   },

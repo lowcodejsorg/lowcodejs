@@ -41,10 +41,10 @@ export function TableRowEvaluationCell({
   const data = Array.from<Evaluation>(row[field.slug] ?? []);
 
   const userEvaluation = data.some(
-    (d) => d.user?._id?.toString() === user?._id?.toString(),
+    (d) => d.user._id.toString() === user?._id.toString(),
   );
   const userEvaluationValue = data.find(
-    (d) => d.user?._id?.toString() === user?._id?.toString(),
+    (d) => d.user._id.toString() === user?._id.toString(),
   )?.value;
 
   const average =
@@ -72,7 +72,7 @@ export function TableRowEvaluationCell({
       const response = await API.post<IRow>(route, payload);
       return response.data;
     },
-    onSuccess(data) {
+    onSuccess(response) {
       QueryClient.setQueryData<Paginated<IRow>>(
         [
           '/tables/'.concat(tableSlug).concat('/rows/paginated'),
@@ -84,23 +84,25 @@ export function TableRowEvaluationCell({
 
           return {
             meta: old.meta,
-            data: old.data.map((item) => (item._id === data._id ? data : item)),
+            data: old.data.map((item) =>
+              item._id === response._id ? response : item,
+            ),
           };
         },
       );
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const data = error.response?.data;
-        if (data?.message) {
-          toast.error(data.message);
+        const errorData = error.response?.data;
+        if (errorData?.message) {
+          toast.error(errorData.message);
         }
       }
       console.error(error);
     },
   });
 
-  const displayRating = userEvaluationValue ?? hoverRating ?? average;
+  const displayRating = userEvaluationValue ?? (hoverRating || average);
 
   return (
     <div className={cn('flex items-center gap-2', className)}>

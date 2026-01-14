@@ -1,14 +1,14 @@
 import { Bar, BarChart, XAxis, YAxis } from 'recharts';
 
+import { mockTablesPerMonth } from './-mock-data';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-  type ChartConfig,
 } from '@/components/ui/chart';
-
-import { mockTablesPerMonth } from './-mock-data';
+import type { ChartConfig } from '@/components/ui/chart';
 
 const chartConfig = {
   tables: {

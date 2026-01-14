@@ -1,2 +1,2 @@
-# npm run build:backend
-# npm run build:frontend
+npm run lint:backend
+npm run lint:frontend

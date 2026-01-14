@@ -1,10 +1,10 @@
-import { Table, Users, FileText, Pencil } from 'lucide-react';
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { FileText, Pencil, Table, Users } from 'lucide-react';
 
 import { mockRecentActivity } from './-mock-data';
 
-const iconMap = {
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const iconMap: Record<string, typeof Table> = {
   table_created: Table,
   table_updated: Pencil,
   user_created: Users,
@@ -19,7 +19,7 @@ export function RecentActivity(): React.JSX.Element {
       </CardHeader>
       <CardContent className="space-y-4">
         {mockRecentActivity.map((activity) => {
-          const Icon = iconMap[activity.type as keyof typeof iconMap] || Table;
+          const Icon = iconMap[activity.type] ?? Table;
           return (
             <div
               key={activity.id}

@@ -1,18 +1,19 @@
-import React from 'react';
 import { useParams, useRouter } from '@tanstack/react-router';
-import type { IField, IRow } from '@/lib/interfaces';
-import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
-import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
-import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import React from 'react';
+
+import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
-import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
-import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
-import { TableRowFileCell } from '@/components/common/table-row-file-cell';
-import { TableRowFieldGroupCell } from '@/components/common/table-row-field-group-cell';
-import { TableRowReactionCell } from '@/components/common/table-row-reaction-cell';
 import { TableRowEvaluationCell } from '@/components/common/table-row-evaluation-cell';
+import { TableRowFieldGroupCell } from '@/components/common/table-row-field-group-cell';
+import { TableRowFileCell } from '@/components/common/table-row-file-cell';
+import { TableRowReactionCell } from '@/components/common/table-row-reaction-cell';
+import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
+import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
+import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import type { IField, IRow } from '@/lib/interfaces';
+import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
 
 interface Props {
   data: Array<IRow>;
@@ -126,7 +127,11 @@ function RenderCardCell({
   return <div className="flex flex-col gap-0.5">{renderContent()}</div>;
 }
 
-export function TableCardView({ data, headers, order }: Props) {
+export function TableCardView({
+  data,
+  headers,
+  order,
+}: Props): React.JSX.Element {
   const router = useRouter();
   const { slug } = useParams({ from: '/_private/tables/$slug/' });
 
@@ -139,7 +144,7 @@ export function TableCardView({ data, headers, order }: Props) {
   const used = new Set(
     [thumbField?._id, titleField?._id, descField?._id].filter(
       Boolean,
-    ) as string[],
+    ) as Array<string>,
   );
   const extraFields = visibleHeaders.filter((f) => !used.has(f._id));
 

@@ -1,8 +1,7 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import type { TreeNode } from '@/components/common/-tree-list';
 import { TreeEditor } from '@/components/common/-tree-node';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
 interface TableFieldCategoryTreeProps {
@@ -24,8 +23,8 @@ export function TableFieldCategoryTree({
         {required && <span className="text-destructive"> *</span>}
       </FieldLabel>
       <TreeEditor
-        initialData={field.state.value ?? []}
-        onChange={(data) => field.handleChange(data)}
+        initialData={field.state.value}
+        onChange={(treeData) => field.handleChange(treeData)}
         className={cn(isInvalid && 'border-destructive')}
       />
       {isInvalid && <FieldError errors={field.state.meta.errors} />}

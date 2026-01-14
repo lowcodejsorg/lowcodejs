@@ -10,8 +10,8 @@ import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useUpdateSetting } from '@/hooks/tanstack-query/use-setting-update';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { ISetting } from '@/lib/interfaces';
 

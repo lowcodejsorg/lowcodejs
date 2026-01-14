@@ -1,21 +1,21 @@
-import React, { useEffect, useMemo, useState } from 'react';
 import {
   ChevronDownIcon,
+  ChevronLeftIcon,
   ChevronRightIcon,
   FolderIcon,
   FolderTreeIcon,
-  ListTreeIcon,
   TagIcon,
   WorkflowIcon,
-  ChevronLeftIcon,
 } from 'lucide-react';
+import React, { useEffect, useMemo, useState } from 'react';
+
 import type { CatNode } from '@/lib/document-helpers';
 
 function buildParentMap(
-  nodes: CatNode[],
+  nodes: Array<CatNode>,
   parentId: string | null,
   map: Map<string, string | null>,
-) {
+): Map<string, string | null> {
   for (const n of nodes) {
     map.set(n.id, parentId);
     if (n.children?.length) buildParentMap(n.children, n.id, map);
@@ -23,8 +23,11 @@ function buildParentMap(
   return map;
 }
 
-function getAncestors(id: string, parentMap: Map<string, string | null>) {
-  const out: string[] = [];
+function getAncestors(
+  id: string,
+  parentMap: Map<string, string | null>,
+): Array<string> {
+  const out: Array<string> = [];
   let cur: string | null | undefined = id;
   while (cur) {
     const p = parentMap.get(cur);
@@ -49,7 +52,7 @@ function TreeItem({
   onSelect: (id: string | null) => void;
   isOpen: boolean;
   toggleOpen: (id: string) => void;
-}) {
+}): React.JSX.Element {
   const hasChildren = !!node.children?.length;
   const active = selectedId === node.id;
 
@@ -130,13 +133,13 @@ function Tree({
   toggleOpen,
   level = 0,
 }: {
-  nodes: CatNode[];
+  nodes: Array<CatNode>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   openMap: Record<string, boolean>;
   toggleOpen: (id: string) => void;
   level?: number;
-}) {
+}): React.JSX.Element {
   return (
     <div className="space-y-1">
       {nodes.map((n) => {
@@ -218,12 +221,12 @@ export function DocumentSidebar({
 }: {
   title?: string;
   subtitle?: string;
-  nodes: CatNode[];
+  nodes: Array<CatNode>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   isOpen: boolean;
   onToggle: (isOpen: boolean) => void;
-}) {
+}): React.JSX.Element {
   const parentMap = useMemo(
     () => buildParentMap(nodes, null, new Map()),
     [nodes],
@@ -232,7 +235,7 @@ export function DocumentSidebar({
   // estado de colapso: { [idDoNode]: boolean }
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
-  const toggleOpen = (id: string) => {
+  const toggleOpen = (id: string): void => {
     setOpenMap((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 

@@ -2,8 +2,8 @@ import type { CatNode } from '@/lib/document-helpers';
 
 type TocItem = { id: string; label: string; level: number };
 
-function flatten(nodes: CatNode[], level = 1): TocItem[] {
-  const out: TocItem[] = [];
+function flatten(nodes: Array<CatNode>, level: number = 1): Array<TocItem> {
+  const out: Array<TocItem> = [];
   for (const n of nodes) {
     out.push({ id: n.id, label: n.label, level });
     if (n.children?.length) out.push(...flatten(n.children, level + 1));
@@ -15,9 +15,9 @@ export function DocumentToc({
   nodes,
   title,
 }: {
-  nodes: CatNode[];
+  nodes: Array<CatNode>;
   title: string;
-}) {
+}): React.JSX.Element | null {
   const items = flatten(nodes);
   if (!items.length) return null;
 
