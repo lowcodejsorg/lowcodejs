@@ -1,12 +1,12 @@
 import React from 'react';
 import type { IRow } from '@/lib/interfaces';
 import type { DocBlock } from '@/lib/document-helpers';
-import { buildLabelMap, firstCategoryField, getStr, rowLeafLabel } from '@/lib/document-helpers';
+import { getStr, getRowLeafId } from '@/lib/document-helpers';
 import { Button } from '../ui/button';
 import { EllipsisVerticalIcon } from 'lucide-react';
 import { useParams, useRouter } from '@tanstack/react-router';
-import { useMemo } from 'react';
 import { DocumentHeadingRow } from './document-heading-row';
+
 
 export function DocumentRow({
     row,
@@ -26,7 +26,8 @@ export function DocumentRow({
     const { slug } = useParams({
         from: '/_private/tables/$slug/',
     });
-
+    
+    const leafId = getRowLeafId(row, 'category');
 
     return (
         <article style={{ marginLeft: indentPx }} className="my-2  relative">
@@ -49,6 +50,7 @@ export function DocumentRow({
             <div className="space-y-4">
                 {leafLabel ? (
                     <DocumentHeadingRow
+                        id={`sec-${leafId}`} 
                         level={headingLevel ?? 2}
                     >
                         {leafLabel}

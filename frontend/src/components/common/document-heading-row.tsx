@@ -2,10 +2,12 @@ import { cn } from '@/lib/utils';
 import React from 'react';
 
 export function DocumentHeadingRow({
+    id,
     level,
     className,
     children,
   }: {
+    id: string;
     level: number;
     className?: string;
     children: React.ReactNode;
@@ -19,7 +21,7 @@ export function DocumentHeadingRow({
       6: "text-sm font-semibold mt-2",
     };
 
-    const Tag = (`h${level}` as keyof JSX.IntrinsicElements);
+    const Tag = (`h${level}` as keyof JSX.IntrinsicElements) as React.ElementType;
   
-    return <Tag className={cn(className, headingStyles[level])}>{children}</Tag>;
+    return <Tag id={id} className={cn(className, headingStyles[level])}>{children}</Tag>;
 }

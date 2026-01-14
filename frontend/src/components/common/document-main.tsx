@@ -1,6 +1,8 @@
 import type { IRow } from '@/lib/interfaces';
 import type { DocBlock } from '@/lib/document-helpers';
 import { DocumentRow } from '@/components/common/document-row';
+import { DocumentToc } from "@/components/common/document-toc";
+import type { CatNode } from "@/lib/document-helpers";
 
 export function DocumentMain({
     rows,
@@ -22,7 +24,7 @@ export function DocumentMain({
 
     return (
         <main className="p-4 min-h-0 overflow-auto w-full ">
-            <div className="mb-3 flex items-center justify-between">
+            <div className="no-print mb-3 flex items-center justify-between">
                 <div className="text-sm text-muted-foreground">
                     Mostrando{' '}
                     <span className="font-medium text-foreground">{rows.length}</span> de{' '}
@@ -31,7 +33,7 @@ export function DocumentMain({
                 
                 {filterLabel ? (
                     <div className="text-sm">
-                    Filtro: <span className="font-medium">{filterLabel}</span>
+                        Filtro: <span className="font-medium">{filterLabel}</span>
                     </div>
                 ) : null}
             </div>
