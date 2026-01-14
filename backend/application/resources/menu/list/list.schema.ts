@@ -100,13 +100,13 @@ export const UserPaginatedSchema: FastifySchema = {
       properties: {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['LIST_USERS_ERROR'] },
+        cause: { type: 'string', enum: ['LIST_MENU_PAGINATED_ERROR'] },
       },
       examples: [
         {
           message: 'Internal server error',
           code: 500,
-          cause: 'LIST_USERS_ERROR',
+          cause: 'LIST_MENU_PAGINATED_ERROR',
         },
       ],
     },
