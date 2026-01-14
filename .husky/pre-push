@@ -1,4 +1,5 @@
 
-npm run build:backend
-npm run build:frontend
+# npm run build:backend
+# npm run build:frontend
 npm run test:unit:backend
+npm run test:e2e:backend
