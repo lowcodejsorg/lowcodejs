@@ -135,7 +135,7 @@ export function rowLeafLabel(
   categorySlug: string,
   labelMap: Map<string, string>,
 ): string | null {
-  const v = (row as any)?.[categorySlug];
+  const v = row[categorySlug];
   const leaf =
     Array.isArray(v) && v.length
       ? v[v.length - 1]
@@ -159,8 +159,8 @@ export function buildCategoryOrderMap(
   return map;
 }
 
-export function getRowLeafId(row: any, categorySlug: string): string | null {
-  const v = row?.[categorySlug];
+export function getRowLeafId(row: IRow, categorySlug: string): string | null {
+  const v = row[categorySlug];
   if (Array.isArray(v) && v.length) return v[v.length - 1];
   if (typeof v === 'string') return v;
   return null;
