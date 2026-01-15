@@ -144,6 +144,11 @@ echo "Arquivo ./backend/.env criado (sem VITE_*)"
 grep "^VITE_" ./.env > ./frontend/.env 2>/dev/null || true
 echo "Arquivo ./frontend/.env criado (apenas VITE_*)"
 
+if [ -f "./.env.test" ]; then
+    cp ./.env.test ./backend/.env.test
+    echo "Arquivo ./backend/.env.test criado"
+fi
+
 echo ""
 echo "Configuração concluída com sucesso!"
 echo ""
