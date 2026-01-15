@@ -8,7 +8,10 @@ import { DocumentHeadingRow } from './document-heading-row';
 
 import type { DocBlock } from '@/lib/document-helpers';
 import { getRowLeafId, getStr } from '@/lib/document-helpers';
-import type { IRow } from '@/lib/interfaces';
+import type { IField, IRow } from '@/lib/interfaces';
+import { TableRowTextLongCell } from './table-row-text-long-cell';
+import { useTablePermission } from '@/hooks/use-table-permission';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 
 export function DocumentRow({
   row,
@@ -30,25 +33,31 @@ export function DocumentRow({
 
   const leafId = getRowLeafId(row, 'category');
 
+  const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+
   return (
     <article
       style={{ marginLeft: indentPx }}
       className="my-2  relative"
     >
-      <div className="flex flex-row justify-end absolute top-0 right-0">
-        <Button
-          variant="ghost"
-          className="p-0 cursor-pointer"
-          onClick={() => {
-            router.navigate({
-              to: '/tables/$slug/row/$rowId',
-              params: { slug, rowId: row._id },
-            });
-          }}
-        >
-          <EllipsisVerticalIcon />
-        </Button>
-      </div>
+
+      {permission.can('UPDATE_ROW') && (
+        <div className="flex flex-row justify-end absolute top-0 right-0">
+          <Button
+            variant="ghost"
+            className="p-0 cursor-pointer"
+            onClick={() => {
+              router.navigate({
+                to: '/tables/$slug/row/$rowId',
+                params: { slug, rowId: row._id },
+              });
+            }}
+          >
+            <EllipsisVerticalIcon />
+          </Button>
+        </div>
+      )}
 
       <div className="space-y-4">
         {leafLabel ? (
@@ -60,10 +69,10 @@ export function DocumentRow({
           </DocumentHeadingRow>
         ) : null}
         {blocks.map((b) => {
-          const title = getStr((row as any)?.[b.titleField.slug]).trim();
+          const title = getStr((row)?.[b.titleField.slug]).trim();
 
           const body = b.bodyField
-            ? getStr((row as any)?.[b.bodyField.slug]).trim()
+            ? getStr((row)?.[b.bodyField.slug]).trim()
             : '';
           if (!body) return null;
 
@@ -77,9 +86,10 @@ export function DocumentRow({
                   {title}
                 </h2>
               ) : null}
-              <p className="text-sm leading-4 text-gray-700 whitespace-pre-wrap">
-                {body}
-              </p>
+              <TableRowTextLongCell
+                field={b.bodyField ?? {} as IField}
+                row={row}
+              />
             </section>
           );
         })}
