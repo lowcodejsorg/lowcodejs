@@ -2,86 +2,134 @@ import type { FastifySchema } from 'fastify';
 
 export const MenuCreateSchema: FastifySchema = {
   tags: ['Menu'],
-  summary: 'Create a new menu item',
+  summary: 'Criar um novo item de menu',
   description:
-    'Creates a new menu item with name, type and optional configurations',
+    'Cria um novo item de menu com nome, tipo e configurações opcionais',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
     required: ['name', 'type'],
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        name: 'O nome é obrigatório',
+        type: 'O tipo é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
+    },
     properties: {
       name: {
         type: 'string',
-        description: 'Menu item name',
+        minLength: 1,
+        description: 'Nome do item de menu',
+        errorMessage: {
+          type: 'O nome deve ser um texto',
+          minLength: 'O nome é obrigatório',
+        },
       },
       type: {
         type: 'string',
         enum: ['TABLE', 'PAGE', 'FORM', 'EXTERNAL', 'SEPARATOR'],
-        description: 'Menu item type',
+        description: 'Tipo do item de menu',
+        errorMessage: {
+          type: 'O tipo deve ser um texto',
+          enum: 'Tipo inválido',
+        },
       },
       parent: {
         type: 'string',
-        description: 'Parent menu item ID',
+        description: 'ID do menu pai',
         nullable: true,
+        errorMessage: {
+          type: 'O menu pai deve ser um texto',
+        },
       },
       table: {
         type: 'string',
-        description: 'Table ID (required for table/form types)',
+        description: 'ID da tabela (obrigatório para tipos TABLE/FORM)',
         nullable: true,
+        errorMessage: {
+          type: 'A tabela deve ser um texto',
+        },
       },
-      pageContent: {
+      html: {
         type: 'string',
-        description: 'HTML content (for page type)',
+        description: 'Conteúdo HTML (para tipo PAGE)',
         nullable: true,
+        errorMessage: {
+          type: 'O HTML deve ser um texto',
+        },
       },
       url: {
         type: 'string',
-        description: 'External URL (for external type)',
+        description: 'URL externa (para tipo EXTERNAL)',
         nullable: true,
+        errorMessage: {
+          type: 'A URL deve ser um texto',
+        },
       },
     },
   },
   response: {
     201: {
-      description: 'Menu item created successfully',
+      description: 'Item de menu criado com sucesso',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'Menu ID' },
-        name: { type: 'string', description: 'Menu name' },
-        slug: { type: 'string', description: 'Menu slug' },
-        type: { type: 'string', description: 'Menu type' },
-        parent: { type: 'string', nullable: true, description: 'Parent ID' },
-        table: { type: 'string', nullable: true, description: 'Table ID' },
-        pageContent: {
-          type: 'string',
-          nullable: true,
-          description: 'Page content',
-        },
+        _id: { type: 'string', description: 'ID do menu' },
+        name: { type: 'string', description: 'Nome do menu' },
+        slug: { type: 'string', description: 'Slug do menu' },
+        type: { type: 'string', description: 'Tipo do menu' },
+        parent: { type: 'string', nullable: true, description: 'ID do pai' },
+        table: { type: 'string', nullable: true, description: 'ID da tabela' },
+        html: { type: 'string', nullable: true, description: 'Conteúdo HTML' },
         url: { type: 'string', nullable: true, description: 'URL' },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },
       },
     },
     400: {
-      description: 'Bad request - Validation failed',
+      description: 'Requisição inválida - Falha na validação',
       type: 'object',
       properties: {
-        message: { type: 'string' },
+        message: { type: 'string', description: 'Mensagem de erro' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        cause: {
+          type: 'string',
+          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Erros de validação por campo',
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - Autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Não autorizado'] },
+        code: { type: 'number', enum: [401] },
+        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
     },
     404: {
-      description: 'Table not found (for table/form types)',
+      description: 'Recurso não encontrado',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Table not found'] },
+        message: {
+          type: 'string',
+          enum: ['Table not found', 'Parent menu not found'],
+        },
         code: { type: 'number', enum: [404] },
-        cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
+        cause: {
+          type: 'string',
+          enum: ['TABLE_NOT_FOUND', 'PARENT_MENU_NOT_FOUND'],
+        },
       },
     },
     409: {
-      description: 'Conflict - Menu with this name already exists',
+      description: 'Conflito - Menu com este nome já existe',
       type: 'object',
       properties: {
         message: { type: 'string', enum: ['Menu already exists'] },
@@ -90,10 +138,10 @@ export const MenuCreateSchema: FastifySchema = {
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['CREATE_MENU_ERROR'] },
       },

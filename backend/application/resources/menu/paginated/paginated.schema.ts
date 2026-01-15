@@ -2,9 +2,9 @@ import type { FastifySchema } from 'fastify';
 
 export const MenuPaginatedSchema: FastifySchema = {
   tags: ['Menu'],
-  summary: 'List menu items with pagination',
+  summary: 'Listar itens de menu com paginação',
   description:
-    'Retrieves a paginated list of menu items with optional search functionality',
+    'Retorna uma lista paginada de itens de menu com funcionalidade de busca',
   security: [{ cookieAuth: [] }],
   querystring: {
     type: 'object',
@@ -13,30 +13,24 @@ export const MenuPaginatedSchema: FastifySchema = {
         type: 'number',
         minimum: 1,
         default: 1,
-        description: 'Page number (starts from 1)',
-        examples: [1, 2, 5],
+        description: 'Número da página',
       },
       perPage: {
         type: 'number',
         minimum: 1,
         maximum: 100,
         default: 50,
-        description: 'Number of items per page (max 100)',
-        examples: [10, 25, 50, 100],
+        description: 'Itens por página',
       },
       search: {
         type: 'string',
-        minLength: 1,
-        description:
-          'Search term for filtering menu items by name or slug (optional)',
-        examples: ['menu', 'dashboard', 'admin'],
+        description: 'Termo de busca para filtrar itens de menu',
       },
     },
-    additionalProperties: false,
   },
   response: {
     200: {
-      description: 'Paginated list of menu items',
+      description: 'Lista paginada de itens de menu',
       type: 'object',
       properties: {
         data: {
@@ -44,14 +38,14 @@ export const MenuPaginatedSchema: FastifySchema = {
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string' },
-              name: { type: 'string' },
-              slug: { type: 'string' },
-              type: { type: 'string' },
-              parent: { type: 'string', nullable: true },
-              table: { type: 'string', nullable: true },
-              pageContent: { type: 'string', nullable: true },
-              url: { type: 'string', nullable: true },
+              _id: { type: 'string', description: 'ID do menu' },
+              name: { type: 'string', description: 'Nome do menu' },
+              slug: { type: 'string', description: 'Slug do menu' },
+              type: { type: 'string', description: 'Tipo do menu' },
+              parent: { type: 'string', nullable: true, description: 'ID do pai' },
+              table: { type: 'string', nullable: true, description: 'ID da tabela' },
+              html: { type: 'string', nullable: true, description: 'Conteúdo HTML' },
+              url: { type: 'string', nullable: true, description: 'URL' },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
             },
@@ -59,47 +53,34 @@ export const MenuPaginatedSchema: FastifySchema = {
         },
         meta: {
           type: 'object',
+          description: 'Metadados da paginação',
           properties: {
-            total: { type: 'number' },
-            perPage: { type: 'number' },
-            page: { type: 'number' },
-            lastPage: { type: 'number' },
-            firstPage: { type: 'number' },
+            total: { type: 'number', description: 'Total de registros' },
+            perPage: { type: 'number', description: 'Itens por página' },
+            page: { type: 'number', description: 'Página atual' },
+            lastPage: { type: 'number', description: 'Última página' },
+            firstPage: { type: 'number', description: 'Primeira página' },
           },
         },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
-      examples: [
-        {
-          message: 'Unauthorized',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['LIST_MENU_PAGINATED_ERROR'] },
       },
-      examples: [
-        {
-          message: 'Internal server error',
-          code: 500,
-          cause: 'LIST_MENU_PAGINATED_ERROR',
-        },
-      ],
     },
   },
 };

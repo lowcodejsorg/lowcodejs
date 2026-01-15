@@ -1,114 +1,47 @@
 import type { FastifySchema } from 'fastify';
 
-export const UserPaginatedSchema: FastifySchema = {
-  tags: ['Users'],
-  summary: 'List users with pagination',
-  description:
-    'Retrieves a paginated list of users with optional search functionality',
+export const MenuListSchema: FastifySchema = {
+  tags: ['Menu'],
+  summary: 'Listar todos os itens de menu',
+  description: 'Retorna a lista completa de itens de menu sem paginação',
   security: [{ cookieAuth: [] }],
-  querystring: {
-    type: 'object',
-    properties: {
-      page: {
-        type: 'number',
-        minimum: 1,
-        default: 1,
-        description: 'Page number (starts from 1)',
-        examples: [1, 2, 5],
-      },
-      perPage: {
-        type: 'number',
-        minimum: 1,
-        maximum: 100,
-        default: 50,
-        description: 'Number of items per page (max 100)',
-        examples: [10, 25, 50, 100],
-      },
-      search: {
-        type: 'string',
-        minLength: 1,
-        description:
-          'Search term for filtering users by name or email (optional)',
-        examples: ['john', 'john@example.com', 'doe'],
-      },
-      sub: {
-        type: 'string',
-        description:
-          'User ID for filtering specific user (optional, used internally)',
-        examples: ['507f1f77bcf86cd799439011'],
-      },
-    },
-    additionalProperties: false,
-  },
   response: {
     200: {
-      description: 'Paginated list of users',
-      type: 'object',
-      properties: {
-        data: {
-          type: 'array',
-          items: {
-            type: 'object',
-            properties: {
-              _id: { type: 'string' },
-              name: { type: 'string' },
-              email: { type: 'string' },
-              group: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string' },
-                  name: { type: 'string' },
-                },
-              },
-              status: { type: 'string' },
-              createdAt: { type: 'string', format: 'date-time' },
-              updatedAt: { type: 'string', format: 'date-time' },
-            },
-          },
-        },
-        meta: {
-          type: 'object',
-          properties: {
-            total: { type: 'number' },
-            perPage: { type: 'number' },
-            page: { type: 'number' },
-            lastPage: { type: 'number' },
-            firstPage: { type: 'number' },
-          },
+      description: 'Lista completa de itens de menu',
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          _id: { type: 'string', description: 'ID do menu' },
+          name: { type: 'string', description: 'Nome do menu' },
+          slug: { type: 'string', description: 'Slug do menu' },
+          type: { type: 'string', description: 'Tipo do menu' },
+          parent: { type: 'string', nullable: true, description: 'ID do pai' },
+          table: { type: 'string', nullable: true, description: 'ID da tabela' },
+          html: { type: 'string', nullable: true, description: 'Conteúdo HTML' },
+          url: { type: 'string', nullable: true, description: 'URL' },
+          createdAt: { type: 'string', format: 'date-time' },
+          updatedAt: { type: 'string', format: 'date-time' },
         },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
-      examples: [
-        {
-          message: 'Unauthorized',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['LIST_MENU_PAGINATED_ERROR'] },
+        cause: { type: 'string', enum: ['LIST_MENU_ERROR'] },
       },
-      examples: [
-        {
-          message: 'Internal server error',
-          code: 500,
-          cause: 'LIST_MENU_PAGINATED_ERROR',
-        },
-      ],
     },
   },
 };

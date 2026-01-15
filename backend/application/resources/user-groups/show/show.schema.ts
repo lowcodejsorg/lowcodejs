@@ -43,7 +43,10 @@ export const UserGroupShowSchema: FastifySchema = {
               _id: { type: 'string', description: 'ID da permissão' },
               name: { type: 'string', description: 'Nome da permissão' },
               slug: { type: 'string', description: 'Slug da permissão' },
-              description: { type: 'string', description: 'Descrição da permissão' },
+              description: {
+                type: 'string',
+                description: 'Descrição da permissão',
+              },
             },
           },
         },

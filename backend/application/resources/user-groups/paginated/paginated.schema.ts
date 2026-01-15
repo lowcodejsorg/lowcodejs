@@ -44,7 +44,10 @@ export const UserGroupPaginatedSchema: FastifySchema = {
                 type: 'string',
                 description: 'Identificador único do grupo',
               },
-              description: { type: 'string', description: 'Descrição do grupo' },
+              description: {
+                type: 'string',
+                description: 'Descrição do grupo',
+              },
               permissions: {
                 type: 'array',
                 description: 'Permissões atribuídas ao grupo',

@@ -21,8 +21,8 @@ export default class MenuListUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
-          'LIST_MENU_PAGINATED_ERROR',
+          'Erro interno do servidor',
+          'LIST_MENU_ERROR',
         ),
       );
     }
