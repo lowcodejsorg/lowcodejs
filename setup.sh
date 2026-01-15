@@ -79,6 +79,11 @@ echo "2. Gerando credenciais e criando .env..."
 cp ./.env.example ./.env
 echo "Arquivo ./.env criado na raiz"
 
+if [ -f "./.env.test.example" ]; then
+    cp ./.env.test.example ./.env.test
+    echo "Arquivo ./.env.test criado na raiz"
+fi
+
 chmod +x ./credential-generator.sh
 echo "Gerando credenciais JWT..."
 ./credential-generator.sh
