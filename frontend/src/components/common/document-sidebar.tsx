@@ -1,15 +1,22 @@
+import { useParams, useRouter } from '@tanstack/react-router';
 import {
+  BookOpenCheckIcon,
   ChevronDownIcon,
-  ChevronLeftIcon,
   ChevronRightIcon,
   FolderIcon,
   FolderTreeIcon,
+  PanelLeftCloseIcon,
+  PanelLeftOpenIcon,
+  SettingsIcon,
   TagIcon,
   WorkflowIcon,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import type { CatNode } from '@/lib/document-helpers';
+import type { IField } from '@/lib/interfaces';
 
 function buildParentMap(
   nodes: Array<CatNode>,
@@ -218,6 +225,7 @@ export function DocumentSidebar({
   onSelect,
   isOpen,
   onToggle,
+  categoryField,
 }: {
   title?: string;
   subtitle?: string;
@@ -225,21 +233,19 @@ export function DocumentSidebar({
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   isOpen: boolean;
-  onToggle: (isOpen: boolean) => void;
+  onToggle: () => void;
+  categoryField: IField;
 }): React.JSX.Element {
   const parentMap = useMemo(
     () => buildParentMap(nodes, null, new Map()),
     [nodes],
   );
-
-  // estado de colapso: { [idDoNode]: boolean }
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
 
   const toggleOpen = (id: string): void => {
     setOpenMap((prev) => ({ ...prev, [id]: !prev[id] }));
   };
 
-  // auto-expande o caminho do item selecionado
   useEffect(() => {
     if (!selectedId) return;
     const ancestors = getAncestors(selectedId, parentMap);
@@ -248,11 +254,17 @@ export function DocumentSidebar({
     setOpenMap((prev) => {
       const next = { ...prev };
       for (const a of ancestors) next[a] = true;
-      // abre também o próprio se tiver filhos
       next[selectedId] = true;
       return next;
     });
   }, [selectedId, parentMap]);
+
+  const router = useRouter();
+  const { slug } = useParams({
+    from: '/_private/tables/$slug/',
+  });
+  const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
 
   return (
     <div className="relative">
@@ -261,9 +273,9 @@ export function DocumentSidebar({
         className="p-2 rounded cursor-pointer absolute top-2 right-1"
       >
         {isOpen ? (
-          <ChevronLeftIcon className="size-5" />
+          <PanelLeftCloseIcon className="size-5" />
         ) : (
-          <ChevronRightIcon className="size-5" />
+          <PanelLeftOpenIcon className="size-5" />
         )}
       </button>
       <aside
@@ -280,7 +292,7 @@ export function DocumentSidebar({
         )}
 
         {isOpen && (
-          <div className="p-2 space-y-2 overflow-auto h-full">
+          <div className="p-2 space-y-2 overflow-auto h-full relative">
             <button
               type="button"
               onClick={() => onSelect(null)}
@@ -292,9 +304,28 @@ export function DocumentSidebar({
                   : 'hover:bg-muted/60',
               ].join(' ')}
             >
-              <FolderIcon className="size-4 opacity-70" />
+              <BookOpenCheckIcon className="size-4 opacity-70" />
               <span>Todas</span>
             </button>
+
+            {/* Editar categoria */}
+            {permission.can('UPDATE_FIELD') && (
+              <div className="flex flex-row justify-end absolute top-3 right-4 z-10">
+                <button
+                  type="button"
+                  className="p-0 cursor-pointer bg-muted rounded-md p-1 hover:bg-muted/60"
+                  aria-label="Editar categoria"
+                  onClick={() => {
+                    router.navigate({
+                      to: '/tables/$slug/field/$fieldId',
+                      params: { slug, fieldId: categoryField._id },
+                    });
+                  }}
+                >
+                  <SettingsIcon className="size-4" />
+                </button>
+              </div>
+            )}
 
             <Tree
               nodes={nodes}
