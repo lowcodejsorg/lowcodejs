@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const ProfileUpdateSchema: FastifySchema = {
-  tags: ['Profile'],
-  summary: 'Update current user profile',
+  tags: ['Perfil'],
+  summary: 'Atualizar perfil do usuário atual',
   description:
-    "Updates the authenticated user's profile information including personal data and optionally password change.",
+    'Atualiza as informações do perfil do usuário autenticado incluindo dados pessoais e opcionalmente a senha',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
@@ -12,60 +12,91 @@ export const ProfileUpdateSchema: FastifySchema = {
     properties: {
       name: {
         type: 'string',
-        description: 'User full name',
-        examples: ['John Doe', 'Maria Silva'],
+        minLength: 1,
+        description: 'Nome completo do usuário',
+        errorMessage: {
+          type: 'O nome deve ser um texto',
+          minLength: 'O nome é obrigatório',
+        },
       },
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address',
-        examples: ['john@example.com', 'maria@example.com'],
+        description: 'Email do usuário',
+        errorMessage: {
+          type: 'O email deve ser um texto',
+          format: 'Digite um email válido',
+        },
       },
       group: {
         type: 'string',
-        description: 'User group ID',
-        examples: ['507f1f77bcf86cd799439011'],
+        minLength: 1,
+        description: 'ID do grupo do usuário',
+        errorMessage: {
+          type: 'O grupo deve ser um texto',
+          minLength: 'O grupo é obrigatório',
+        },
       },
       allowPasswordChange: {
         type: 'boolean',
         default: false,
         description:
-          'Enable password change (if true, currentPassword and newPassword are required)',
+          'Habilitar alteração de senha (se true, currentPassword e newPassword são obrigatórios)',
       },
       currentPassword: {
         type: 'string',
+        minLength: 1,
         description:
-          'Current password (required when allowPasswordChange is true)',
-        examples: ['currentPassword123'],
+          'Senha atual (obrigatório quando allowPasswordChange é true)',
+        errorMessage: {
+          type: 'A senha atual deve ser um texto',
+          minLength: 'A senha atual é obrigatória',
+        },
       },
       newPassword: {
         type: 'string',
-        minLength: 8,
-        description: 'New password (required when allowPasswordChange is true)',
-        examples: ['newPassword123'],
+        minLength: 6,
+        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?":{}|<>])',
+        description:
+          'Nova senha (obrigatório quando allowPasswordChange é true)',
+        errorMessage: {
+          type: 'A nova senha deve ser um texto',
+          minLength: 'A nova senha deve ter no mínimo 6 caracteres',
+          pattern:
+            'A nova senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        name: 'O nome é obrigatório',
+        email: 'O email é obrigatório',
+        group: 'O grupo é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
     200: {
-      description: 'Profile updated successfully',
+      description: 'Perfil atualizado com sucesso',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'User ID' },
-        name: { type: 'string', description: 'Updated user name' },
+        _id: { type: 'string', description: 'ID do usuário' },
+        name: { type: 'string', description: 'Nome atualizado' },
         email: {
           type: 'string',
           format: 'email',
-          description: 'Updated user email',
+          description: 'Email atualizado',
         },
         status: {
           type: 'string',
           enum: ['ACTIVE', 'INACTIVE'],
-          description: 'User status',
+          description: 'Status do usuário',
         },
         group: {
           type: 'object',
-          description: 'Updated user group with populated permissions',
+          description: 'Grupo do usuário atualizado com permissões populadas',
           properties: {
             _id: { type: 'string' },
             name: { type: 'string' },
@@ -89,27 +120,32 @@ export const ProfileUpdateSchema: FastifySchema = {
         updatedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Profile update timestamp',
+          description: 'Data da atualização do perfil',
         },
       },
     },
     400: {
-      description: 'Bad request - Validation error or missing required fields',
+      description: 'Requisição inválida - Erro de validação ou campos faltando',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          enum: ['Group not informed', 'Invalid password', 'Validation error'],
+          description: 'Mensagem de erro',
         },
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['GROUP_NOT_INFORMED', 'INVALID_PARAMETERS'],
+          enum: ['GROUP_NOT_INFORMED', 'INVALID_PAYLOAD_FORMAT'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Erros de validação por campo',
         },
       },
       examples: [
         {
-          message: 'Group not informed',
+          message: 'Grupo não informado',
           code: 400,
           cause: 'GROUP_NOT_INFORMED',
         },
@@ -117,12 +153,12 @@ export const ProfileUpdateSchema: FastifySchema = {
     },
     401: {
       description:
-        'Unauthorized - Authentication required or invalid current password',
+        'Não autorizado - Autenticação necessária ou senha atual inválida',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          enum: ['Unauthorized', 'Invalid credentials'],
+          enum: ['Não autorizado', 'Credenciais inválidas'],
         },
         code: { type: 'number', enum: [401] },
         cause: {
@@ -132,26 +168,26 @@ export const ProfileUpdateSchema: FastifySchema = {
       },
       examples: [
         {
-          message: 'Invalid credentials',
+          message: 'Credenciais inválidas',
           code: 401,
           cause: 'INVALID_CREDENTIALS',
         },
       ],
     },
     404: {
-      description: 'Not found - User profile not found',
+      description: 'Usuário não encontrado',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['User not found'] },
+        message: { type: 'string', enum: ['Usuário não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['USER_NOT_FOUND'] },
       },
     },
     500: {
-      description: 'Internal server error - Database or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['UPDATE_USER_PROFILE_ERROR'] },
       },

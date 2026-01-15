@@ -1,63 +1,111 @@
 import type { FastifySchema } from 'fastify';
 
 export const MagicLinkSchema: FastifySchema = {
-  tags: ['Authentication'],
-  summary: 'Magic link authentication',
+  tags: ['Autenticação'],
+  summary: 'Autenticação via magic link',
   description:
-    'Authenticates user via magic link and redirects to dashboard with authentication cookies set',
+    'Autentica o usuário via magic link e redireciona para o dashboard com os cookies de autenticação configurados',
   querystring: {
     type: 'object',
     required: ['code'],
     properties: {
       code: {
         type: 'string',
-        description: 'Magic link authentication code',
+        description: 'Código de autenticação do magic link',
+        errorMessage: {
+          type: 'O código deve ser um texto',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        code: 'O código é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
     302: {
-      description: 'Successful authentication - redirects to dashboard',
+      description: 'Autenticação bem-sucedida - redireciona para o dashboard',
       type: 'object',
       properties: {},
     },
-    400: {
-      description: 'Bad request - Invalid or expired magic link code',
+    404: {
+      description: 'Não encontrado - Token ou usuário não encontrado',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          enum: ['Invalid magic link code', 'Magic link has expired'],
+          enum: ['Token de validação não encontrado', 'Usuário não encontrado'],
         },
-        code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_CODE', 'CODE_EXPIRED'] },
+        code: { type: 'number', enum: [404] },
+        cause: {
+          type: 'string',
+          enum: ['VALIDATION_TOKEN_NOT_FOUND', 'USER_NOT_FOUND'],
+        },
       },
       examples: [
         {
-          message: 'Invalid magic link code',
-          code: 400,
-          cause: 'INVALID_CODE',
+          message: 'Token de validação não encontrado',
+          code: 404,
+          cause: 'VALIDATION_TOKEN_NOT_FOUND',
         },
         {
-          message: 'Magic link has expired',
-          code: 400,
-          cause: 'CODE_EXPIRED',
+          message: 'Usuário não encontrado',
+          code: 404,
+          cause: 'USER_NOT_FOUND',
+        },
+      ],
+    },
+    409: {
+      description: 'Conflito - Token já utilizado',
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          enum: ['Token de validação já foi utilizado'],
+        },
+        code: { type: 'number', enum: [409] },
+        cause: { type: 'string', enum: ['VALIDATION_TOKEN_ALREADY_USED'] },
+      },
+      examples: [
+        {
+          message: 'Token de validação já foi utilizado',
+          code: 409,
+          cause: 'VALIDATION_TOKEN_ALREADY_USED',
+        },
+      ],
+    },
+    410: {
+      description: 'Expirado - Token expirado',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Token de validação expirado'] },
+        code: { type: 'number', enum: [410] },
+        cause: { type: 'string', enum: ['VALIDATION_TOKEN_EXPIRED'] },
+      },
+      examples: [
+        {
+          message: 'Token de validação expirado',
+          code: 410,
+          cause: 'VALIDATION_TOKEN_EXPIRED',
         },
       ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['INTERNAL_SERVER_ERROR'] },
+        cause: { type: 'string', enum: ['MAGIC_LINK_ERROR'] },
       },
       examples: [
         {
-          message: 'Internal server error',
+          message: 'Erro interno do servidor',
           code: 500,
-          cause: 'INTERNAL_SERVER_ERROR',
+          cause: 'MAGIC_LINK_ERROR',
         },
       ],
     },

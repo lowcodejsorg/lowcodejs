@@ -1,55 +1,59 @@
 import type { FastifySchema } from 'fastify';
 
 export const PermissionListSchema: FastifySchema = {
-  tags: ['Permissions'],
-  summary: 'List permissions',
-  description: 'Get list of all available permissions in the system',
+  tags: ['Permissões'],
+  summary: 'Listar permissões',
+  description: 'Retorna a lista de todas as permissões disponíveis no sistema',
   security: [{ cookieAuth: [] }],
   response: {
     200: {
-      description: 'List of all permissions',
+      description: 'Lista de todas as permissões',
       type: 'array',
       items: {
         type: 'object',
         properties: {
-          _id: { type: 'string' },
-          name: { type: 'string' },
-          slug: { type: 'string' },
-          description: { type: 'string', nullable: true },
+          _id: { type: 'string', description: 'ID da permissão' },
+          name: { type: 'string', description: 'Nome da permissão' },
+          slug: { type: 'string', description: 'Slug da permissão' },
+          description: {
+            type: 'string',
+            nullable: true,
+            description: 'Descrição da permissão',
+          },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },
         },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
       examples: [
         {
-          message: 'Unauthorized',
+          message: 'Não autorizado',
           code: 401,
           cause: 'AUTHENTICATION_REQUIRED',
         },
       ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['LIST_PERMISSIONS_ERROR'] },
+        cause: { type: 'string', enum: ['LIST_PERMISSION_ERROR'] },
       },
       examples: [
         {
-          message: 'Internal server error',
+          message: 'Erro interno do servidor',
           code: 500,
-          cause: 'LIST_PERMISSIONS_ERROR',
+          cause: 'LIST_PERMISSION_ERROR',
         },
       ],
     },

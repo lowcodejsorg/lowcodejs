@@ -1,59 +1,53 @@
 import type { FastifySchema } from 'fastify';
 
 export const ProfileShowSchema: FastifySchema = {
-  tags: ['Profile'],
-  summary: 'Get current user profile',
+  tags: ['Perfil'],
+  summary: 'Buscar perfil do usuário atual',
   description:
-    "Retrieves the authenticated user's profile information including personal data, group, and permissions.",
+    'Retorna as informações do perfil do usuário autenticado incluindo dados pessoais, grupo e permissões',
   security: [{ cookieAuth: [] }],
   response: {
     200: {
-      description: 'User profile retrieved successfully',
+      description: 'Perfil do usuário recuperado com sucesso',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'User ID' },
-        name: { type: 'string', description: 'User full name' },
+        _id: { type: 'string', description: 'ID do usuário' },
+        name: { type: 'string', description: 'Nome completo do usuário' },
         email: {
           type: 'string',
           format: 'email',
-          description: 'User email address',
+          description: 'Email do usuário',
         },
         status: {
           type: 'string',
           enum: ['ACTIVE', 'INACTIVE'],
-          description: 'User account status',
+          description: 'Status da conta do usuário',
         },
         group: {
           type: 'object',
-          description: 'User group with populated permissions',
+          description: 'Grupo do usuário com permissões populadas',
           properties: {
-            _id: { type: 'string', description: 'Group ID' },
-            name: { type: 'string', description: 'Group name' },
-            slug: { type: 'string', description: 'Group slug' },
+            _id: { type: 'string', description: 'ID do grupo' },
+            name: { type: 'string', description: 'Nome do grupo' },
+            slug: { type: 'string', description: 'Slug do grupo' },
             description: {
               type: 'string',
               nullable: true,
-              description: 'Group description',
+              description: 'Descrição do grupo',
             },
             permissions: {
               type: 'array',
-              description: 'Array of permissions assigned to this group',
+              description: 'Array de permissões atribuídas ao grupo',
               items: {
                 type: 'object',
                 properties: {
-                  _id: { type: 'string', description: 'Permission ID' },
-                  name: {
-                    type: 'string',
-                    description: 'Permission name',
-                  },
-                  slug: {
-                    type: 'string',
-                    description: 'Permission slug',
-                  },
+                  _id: { type: 'string', description: 'ID da permissão' },
+                  name: { type: 'string', description: 'Nome da permissão' },
+                  slug: { type: 'string', description: 'Slug da permissão' },
                   description: {
                     type: 'string',
                     nullable: true,
-                    description: 'Permission description',
+                    description: 'Descrição da permissão',
                   },
                 },
               },
@@ -65,45 +59,45 @@ export const ProfileShowSchema: FastifySchema = {
         createdAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Account creation timestamp',
+          description: 'Data de criação da conta',
         },
         updatedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Last profile update timestamp',
+          description: 'Data da última atualização do perfil',
         },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
     },
     404: {
-      description: 'Not found - User profile not found',
+      description: 'Usuário não encontrado',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['User not found'] },
+        message: { type: 'string', enum: ['Usuário não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['USER_NOT_FOUND'] },
       },
       examples: [
         {
-          message: 'User not found',
+          message: 'Usuário não encontrado',
           code: 404,
           cause: 'USER_NOT_FOUND',
         },
       ],
     },
     500: {
-      description: 'Internal server error - Database or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['GET_USER_PROFILE_ERROR'] },
       },

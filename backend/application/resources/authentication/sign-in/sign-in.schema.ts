@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const SignInSchema: FastifySchema = {
-  tags: ['Authentication'],
+  tags: ['Autenticação'],
   summary: 'User authentication sign in',
   description:
     'Authenticates a user with email and password, returning JWT tokens as HTTP-only cookies',
@@ -70,7 +70,7 @@ export const SignInSchema: FastifySchema = {
       properties: {
         message: {
           type: 'string',
-          enum: ['Credenciais invalidas', 'Usuario inativo'],
+          enum: ['Credenciais invalidas', 'Usuário inativo'],
         },
         code: { type: 'number', enum: [401] },
         cause: {
