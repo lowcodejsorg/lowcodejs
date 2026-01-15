@@ -30,7 +30,10 @@ export const ValidateCodeSchema: FastifySchema = {
       description: 'Código validado com sucesso',
       type: 'object',
       properties: {
-        token: { type: 'string', description: 'Token temporário para redefinição de senha' },
+        token: {
+          type: 'string',
+          description: 'Token temporário para redefinição de senha',
+        },
         message: { type: 'string' },
       },
     },

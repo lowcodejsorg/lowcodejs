@@ -10,8 +10,8 @@ import {
   type IUser as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 import type { SignUpBodyValidator } from './sign-up.validator';
 
