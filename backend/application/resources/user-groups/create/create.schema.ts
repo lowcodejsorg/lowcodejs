@@ -1,63 +1,83 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserGroupCreateSchema: FastifySchema = {
-  tags: ['User Group'],
-  summary: 'Create a new user group',
+  tags: ['Grupos de Usuários'],
+  summary: 'Criar um novo grupo de usuários',
   description:
-    'Creates a new user group with name, description and permissions',
+    'Cria um novo grupo de usuários com nome, descrição e permissões',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['name'],
+    required: ['name', 'permissions'],
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        name: 'O nome é obrigatório',
+        permissions: 'Pelo menos uma permissão é obrigatória',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
+    },
     properties: {
       name: {
         type: 'string',
-        description: 'User group name',
+        minLength: 1,
+        description: 'Nome do grupo de usuários',
+        errorMessage: {
+          type: 'O nome deve ser um texto',
+          minLength: 'O nome é obrigatório',
+        },
       },
       description: {
         type: 'string',
         nullable: true,
-        description: 'User group description',
+        description: 'Descrição do grupo de usuários',
+        errorMessage: {
+          type: 'A descrição deve ser um texto',
+        },
       },
       permissions: {
         type: 'array',
+        minItems: 1,
         items: { type: 'string' },
-        description: 'Array of permission IDs',
+        description: 'Lista de IDs de permissões',
+        errorMessage: {
+          type: 'Permissões deve ser uma lista',
+          minItems: 'Pelo menos uma permissão é obrigatória',
+        },
       },
     },
   },
   response: {
     201: {
-      description: 'User group created successfully',
+      description: 'Grupo de usuários criado com sucesso',
       type: 'object',
       properties: {
-        _id: { type: 'string' },
-        name: { type: 'string' },
-        slug: { type: 'string' },
-        description: { type: 'string' },
-        // permissions: { type: 'array', items: { type: 'string' } },
+        _id: { type: 'string', description: 'ID do grupo' },
+        name: { type: 'string', description: 'Nome do grupo' },
+        slug: { type: 'string', description: 'Identificador único do grupo' },
+        description: { type: 'string', description: 'Descrição do grupo' },
         permissions: {
           type: 'array',
-          description: 'Permissions assigned to the user group',
+          description: 'Permissões atribuídas ao grupo',
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string', description: 'Field ID' },
-              name: { type: 'string', description: 'Field name' },
-              slug: { type: 'string', description: 'Field slug' },
+              _id: { type: 'string', description: 'ID da permissão' },
+              name: { type: 'string', description: 'Nome da permissão' },
+              slug: { type: 'string', description: 'Slug da permissão' },
               description: {
                 type: 'string',
-                description: 'Field description',
+                description: 'Descrição da permissão',
               },
               trashed: {
                 type: 'boolean',
-                description: 'Is field in trash',
+                description: 'Se a permissão está na lixeira',
               },
               trashedAt: {
                 type: 'string',
                 format: 'date-time',
                 nullable: true,
-                description: 'When field was trashed',
+                description: 'Data em que foi movido para lixeira',
               },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
@@ -69,55 +89,48 @@ export const UserGroupCreateSchema: FastifySchema = {
       },
     },
     400: {
-      description: 'Bad request - Validation error',
+      description: 'Requisição inválida - Falha na validação',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          description: 'Validation error message',
+          description: 'Mensagem de erro de validação',
         },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
-      },
-      examples: [
-        {
-          message: 'Validation failed',
-          code: 400,
-          cause: 'INVALID_PARAMETERS',
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Erros de validação por campo',
         },
-      ],
+      },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
-      examples: [
-        {
-          message: 'Unauthorized',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
-    500: {
-      description: 'Internal server error',
+    409: {
+      description: 'Conflito - Grupo já existe',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Group already exists'] },
+        code: { type: 'number', enum: [409] },
+        cause: { type: 'string', enum: ['GROUP_EXISTS'] },
+      },
+    },
+    500: {
+      description: 'Erro interno do servidor',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['CREATE_USER_GROUP_ERROR'] },
       },
-      examples: [
-        {
-          message: 'Internal server error',
-          code: 500,
-          cause: 'CREATE_USER_GROUP_ERROR',
-        },
-      ],
     },
   },
 };

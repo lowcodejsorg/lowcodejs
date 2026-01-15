@@ -3,7 +3,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function TableMosaicViewSkeleton(): React.JSX.Element {
   return (
-    <div className="p-4 [column-gap:16px] columns-1 sm:columns-2 lg:columns-3 xl:columns-4">
+    <div className="p-4 gap-x-4 columns-1 sm:columns-2 lg:columns-3 xl:columns-4">
       {Array.from({ length: 12 }).map((_, i) => {
         const imgHeight = 120 + (i % 5) * 30; // variação tipo Pinterest
 
