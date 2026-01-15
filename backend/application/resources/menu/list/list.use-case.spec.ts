@@ -63,7 +63,7 @@ describe('Menu List Use Case', () => {
     }
   });
 
-  it('deve retornar erro LIST_MENU_PAGINATED_ERROR quando houver falha', async () => {
+  it('deve retornar erro LIST_MENU_ERROR quando houver falha', async () => {
     vi.spyOn(menuInMemoryRepository, 'findMany').mockRejectedValueOnce(
       new Error('Database error'),
     );
@@ -73,7 +73,7 @@ describe('Menu List Use Case', () => {
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {
       expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('LIST_MENU_PAGINATED_ERROR');
+      expect(result.value.cause).toBe('LIST_MENU_ERROR');
     }
   });
 });

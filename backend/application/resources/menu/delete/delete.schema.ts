@@ -73,7 +73,10 @@ export const MenuDeleteSchema: FastifySchema = {
         data: {
           type: 'object',
           properties: {
-            childrenCount: { type: 'number', description: 'Quantidade de filhos' },
+            childrenCount: {
+              type: 'number',
+              description: 'Quantidade de filhos',
+            },
             children: {
               type: 'array',
               description: 'Lista de filhos',

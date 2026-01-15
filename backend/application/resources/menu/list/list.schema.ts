@@ -17,8 +17,16 @@ export const MenuListSchema: FastifySchema = {
           slug: { type: 'string', description: 'Slug do menu' },
           type: { type: 'string', description: 'Tipo do menu' },
           parent: { type: 'string', nullable: true, description: 'ID do pai' },
-          table: { type: 'string', nullable: true, description: 'ID da tabela' },
-          html: { type: 'string', nullable: true, description: 'Conteúdo HTML' },
+          table: {
+            type: 'string',
+            nullable: true,
+            description: 'ID da tabela',
+          },
+          html: {
+            type: 'string',
+            nullable: true,
+            description: 'Conteúdo HTML',
+          },
           url: { type: 'string', nullable: true, description: 'URL' },
           createdAt: { type: 'string', format: 'date-time' },
           updatedAt: { type: 'string', format: 'date-time' },

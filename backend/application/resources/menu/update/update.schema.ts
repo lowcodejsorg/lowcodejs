@@ -107,7 +107,10 @@ export const MenuUpdateSchema: FastifySchema = {
       properties: {
         message: { type: 'string', description: 'Mensagem de erro' },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'] },
+        cause: {
+          type: 'string',
+          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
