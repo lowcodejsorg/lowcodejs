@@ -5,13 +5,13 @@ import React from 'react';
 import { Button } from '../ui/button';
 
 import { DocumentHeadingRow } from './document-heading-row';
+import { TableRowTextLongCell } from './table-row-text-long-cell';
 
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import type { DocBlock } from '@/lib/document-helpers';
 import { getRowLeafId, getStr } from '@/lib/document-helpers';
-import type { IField, IRow } from '@/lib/interfaces';
-import { TableRowTextLongCell } from './table-row-text-long-cell';
-import { useTablePermission } from '@/hooks/use-table-permission';
-import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import type { IRow } from '@/lib/interfaces';
 
 export function DocumentRow({
   row,
@@ -41,7 +41,6 @@ export function DocumentRow({
       style={{ marginLeft: indentPx }}
       className="my-2  relative"
     >
-
       {permission.can('UPDATE_ROW') && (
         <div className="flex flex-row justify-end absolute top-0 right-0">
           <Button
@@ -69,11 +68,9 @@ export function DocumentRow({
           </DocumentHeadingRow>
         ) : null}
         {blocks.map((b) => {
-          const title = getStr((row)?.[b.titleField.slug]).trim();
+          const title = getStr(row[b.titleField.slug]).trim();
 
-          const body = b.bodyField
-            ? getStr((row)?.[b.bodyField.slug]).trim()
-            : '';
+          const body = b.bodyField ? getStr(row[b.bodyField.slug]).trim() : '';
           if (!body) return null;
 
           return (
@@ -86,10 +83,12 @@ export function DocumentRow({
                   {title}
                 </h2>
               ) : null}
-              <TableRowTextLongCell
-                field={b.bodyField ?? {} as IField}
-                row={row}
-              />
+              {b.bodyField ? (
+                <TableRowTextLongCell
+                  field={b.bodyField}
+                  row={row}
+                />
+              ) : null}
             </section>
           );
         })}
