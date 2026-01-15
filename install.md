@@ -20,6 +20,7 @@ chmod +x ./setup.sh
 > **Windows:** Use o Git Bash para executar os comandos.
 
 O script `setup.sh` irá:
+
 - Criar o arquivo `.env` a partir do `.env.example`
 - Gerar credenciais JWT automaticamente
 - Separar variáveis de ambiente para backend e frontend
@@ -42,11 +43,11 @@ docker exec -it low-code-js-api npm run seed
 
 ### Acessos
 
-| Serviço   | URL                                    |
-|-----------|----------------------------------------|
-| Frontend  | http://localhost:5173                  |
-| Backend   | http://localhost:3000                  |
-| Docs API  | http://localhost:3000/documentation    |
+| Serviço  | URL                                 |
+| -------- | ----------------------------------- |
+| Frontend | http://localhost:5173               |
+| Backend  | http://localhost:3000               |
+| Docs API | http://localhost:3000/documentation |
 
 ---
 
@@ -89,16 +90,16 @@ cp .env.example .env
 
 ### Principais variáveis
 
-| Variável | Descrição | Padrão |
-|----------|-----------|--------|
-| `NODE_ENV` | Ambiente de execução | `development` |
-| `PORT` | Porta do backend | `3000` |
-| `DB_USERNAME` | Usuário do MongoDB | `lowcodejs` |
-| `DB_PASSWORD` | Senha do MongoDB | `lowcodejs` |
-| `DB_NAME` | Nome do banco | `lowcodejs` |
-| `DATABASE_URL` | URL de conexão MongoDB | `mongodb://...` |
-| `APP_SERVER_URL` | URL pública do backend | `http://localhost:3000` |
-| `APP_CLIENT_URL` | URL pública do frontend | `http://localhost:5173` |
+| Variável         | Descrição                | Padrão                  |
+| ---------------- | ------------------------ | ----------------------- |
+| `NODE_ENV`       | Ambiente de execução     | `development`           |
+| `PORT`           | Porta do backend         | `3000`                  |
+| `DB_USERNAME`    | Usuário do MongoDB       | `lowcodejs`             |
+| `DB_PASSWORD`    | Senha do MongoDB         | `lowcodejs`             |
+| `DB_NAME`        | Nome do banco            | `lowcodejs`             |
+| `DATABASE_URL`   | URL de conexão MongoDB   | `mongodb://...`         |
+| `APP_SERVER_URL` | URL pública do backend   | `http://localhost:3000` |
+| `APP_CLIENT_URL` | URL pública do frontend  | `http://localhost:5173` |
 
 ### Segurança (JWT e Cookies)
 
@@ -109,6 +110,25 @@ As chaves JWT são geradas automaticamente pelo script `setup.sh`. Para gerar ma
 ```
 
 > ⚠️ **NUNCA** use as chaves padrão em produção!
+
+---
+
+## Limpeza Completa (Reset)
+
+Para remover todos os containers, imagens e volumes do projeto:
+
+```bash
+# Parar os containers
+docker stop low-code-js-app low-code-js-mongo low-code-js-api
+
+# Remover containers, imagens e cache
+docker system prune -f -a --volumes
+
+# Remover o volume do MongoDB
+docker volume rm low-code-js_mongo-volume
+```
+
+> ⚠️ **Atenção:** Isso apagará todos os dados do banco de dados!
 
 ---
 
