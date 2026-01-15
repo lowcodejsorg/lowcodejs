@@ -100,8 +100,8 @@ export function TableDocumentView({
     const slug = categoryField.slug;
 
     return [...filteredRows].sort((a, b) => {
-      const leafA = getRowLeafId(a as any, slug);
-      const leafB = getRowLeafId(b as any, slug);
+      const leafA = getRowLeafId(a, slug);
+      const leafB = getRowLeafId(b, slug);
 
       const ordA = leafA
         ? (categoryOrderMap.get(leafA) ?? Number.POSITIVE_INFINITY)
@@ -139,6 +139,7 @@ export function TableDocumentView({
         onSelect={setSelectedCategoryId}
         isOpen={isSidebarOpen}
         onToggle={() => setIsSidebarOpen((v) => !v)}
+        categoryField={categoryField ?? ({} as IField)}
       />
 
       <div

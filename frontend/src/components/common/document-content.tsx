@@ -1,11 +1,11 @@
 import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
-import type { IRow } from '@/lib/interfaces';
+import type { IField, IRow } from '@/lib/interfaces';
 
 export type DocSection = {
   id: string;
-  titleField: any;
-  bodyField?: any;
+  titleField: IField;
+  bodyField: IField;
 };
 
 export function DocumentContent({
@@ -14,7 +14,7 @@ export function DocumentContent({
   sections,
   getStr,
 }: {
-  selectedRow: IRow | undefined;
+  selectedRow: IRow;
   title: string;
   sections: Array<DocSection>;
   getStr: (v: unknown) => string;
@@ -23,14 +23,12 @@ export function DocumentContent({
     <div className="prose dark:prose-invert max-w-none">
       <h1>{title}</h1>
 
-      {selectedRow && sections.length ? (
+      {sections.length ? (
         sections.map((s) => {
-          const titleRaw = getStr((selectedRow as any)?.[s.titleField.slug]);
+          const titleRaw = getStr(selectedRow[s.titleField.slug]);
           if (!titleRaw.trim()) return null;
 
-          const bodyRaw = s.bodyField
-            ? getStr((selectedRow as any)?.[s.bodyField.slug])
-            : '';
+          const bodyRaw = getStr(selectedRow[s.bodyField.slug]);
           if (!bodyRaw.trim()) return null;
 
           return (

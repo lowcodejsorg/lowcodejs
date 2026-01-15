@@ -1,6 +1,5 @@
 import { DocumentRow } from '@/components/common/document-row';
-import { DocumentToc } from '@/components/common/document-toc';
-import type { CatNode, DocBlock } from '@/lib/document-helpers';
+import type { DocBlock } from '@/lib/document-helpers';
 import type { IRow } from '@/lib/interfaces';
 
 export function DocumentMain({
