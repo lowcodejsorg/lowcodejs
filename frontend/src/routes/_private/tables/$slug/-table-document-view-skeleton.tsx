@@ -9,7 +9,10 @@ export function TableDocumentViewSkeleton(): React.JSX.Element {
         <Card className="p-3 space-y-3">
           <Skeleton className="h-4 w-24" />
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="space-y-1">
+            <div
+              key={i}
+              className="space-y-1"
+            >
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-3 w-3/4" />
             </div>
@@ -23,7 +26,10 @@ export function TableDocumentViewSkeleton(): React.JSX.Element {
 
           {/* Seções */}
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="space-y-3">
+            <div
+              key={i}
+              className="space-y-3"
+            >
               {/* h2 */}
               <Skeleton className="h-5 w-1/3" />
               {/* parágrafo */}
@@ -38,7 +44,10 @@ export function TableDocumentViewSkeleton(): React.JSX.Element {
         <Card className="p-3 space-y-3 hidden lg:block">
           <Skeleton className="h-4 w-20" />
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-3 w-full" />
+            <Skeleton
+              key={i}
+              className="h-3 w-full"
+            />
           ))}
         </Card>
       </div>

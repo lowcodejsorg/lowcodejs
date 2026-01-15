@@ -52,25 +52,21 @@ export function buildDocBlocks(headersOrdered: Array<IField>): Array<DocBlock> {
 
   const blocks: Array<DocBlock> = [];
 
-  for (let i = 0; i < h.length; i++) {
-    const cur = h[i];
-    if (cur.type !== E_FIELD_TYPE.TEXT_SHORT) continue;
+  const info: { titleField?: IField; bodyField?: IField } = {};
 
-    const next = h[i + 1];
+  h.map((field) => {
+    if (field.type === E_FIELD_TYPE.TEXT_SHORT) {
+      info.titleField = field;
+    } else if (field.type === E_FIELD_TYPE.TEXT_LONG) {
+      info.bodyField = field;
+    }
+  });
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!next) continue;
-
-    const bodyField = next.type === E_FIELD_TYPE.TEXT_LONG ? next : undefined;
-
-    blocks.push({
-      id: `block-${cur._id}`,
-      titleField: cur,
-      bodyField,
-    });
-
-    if (bodyField) i += 1;
-  }
+  blocks.push({
+    id: `block-${info.titleField?.slug}`,
+    titleField: info.titleField as IField,
+    bodyField: info.bodyField,
+  });
 
   return blocks;
 }
@@ -83,13 +79,26 @@ export function rowMatchesCategory(
   row: IRow,
   categorySlug: string,
   selectedId: string | null,
+  descendantsMap?: Map<string, Set<string>>,
 ): boolean {
   if (!selectedId) return true;
+
+  const allowed = new Set<string>([
+    selectedId,
+    ...(descendantsMap?.get(selectedId) ?? new Set<string>()),
+  ]);
+
   const v = row[categorySlug];
-  if (Array.isArray(v)) return v.includes(selectedId);
-  if (typeof v === 'string') return v === selectedId;
+
+  if (Array.isArray(v)) {
+    return v.some((id) => allowed.has(String(id)));
+  }
+  if (typeof v === 'string') {
+    return allowed.has(v);
+  }
   return false;
 }
+
 export function rowIndentPxFromLeaf(
   row: IRow,
   categorySlug: string,
@@ -103,6 +112,22 @@ export function rowIndentPxFromLeaf(
 
   const depth = leaf ? (depthMap.get(leaf) ?? 0) : 0;
   return depth * 16;
+}
+
+export function rowHeadingLevelFromLeaf(
+  row: IRow,
+  categorySlug: string,
+  depthMap: Map<string, number>,
+): number {
+  const v = row[categorySlug];
+  let leaf: string | null = null;
+
+  if (Array.isArray(v) && v.length) leaf = v[v.length - 1];
+  else if (typeof v === 'string') leaf = v;
+
+  const depth = leaf ? (depthMap.get(leaf) ?? 0) : 0;
+
+  return Math.max(2, Math.min(6, 2 + depth));
 }
 
 export function rowLeafLabel(
@@ -139,4 +164,25 @@ export function getRowLeafId(row: any, categorySlug: string): string | null {
   if (Array.isArray(v) && v.length) return v[v.length - 1];
   if (typeof v === 'string') return v;
   return null;
+}
+
+export function buildDescendantsMap(
+  nodes: Array<CatNode>,
+): Map<string, Set<string>> {
+  const map = new Map<string, Set<string>>();
+
+  function collectDescendants(node: CatNode): Set<string> {
+    const set = new Set<string>();
+    if (node.children?.length) {
+      for (const child of node.children) {
+        set.add(child.id);
+        for (const x of collectDescendants(child)) set.add(x);
+      }
+    }
+    map.set(node.id, set);
+    return set;
+  }
+
+  for (const n of nodes) collectDescendants(n);
+  return map;
 }

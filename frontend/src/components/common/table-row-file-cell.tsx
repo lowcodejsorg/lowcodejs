@@ -8,12 +8,14 @@ interface TableRowFileCellProps {
   row: IRow;
   field: IField;
   isGallery?: boolean;
+  isCardOrMosaic?: boolean;
 }
 
 export function TableRowFileCell({
   field,
   row,
   isGallery = false,
+  isCardOrMosaic = false,
 }: TableRowFileCellProps): React.JSX.Element {
   const values = Array.from<IStorage>(row[field.slug] ?? []);
 
@@ -26,7 +28,7 @@ export function TableRowFileCell({
       {values.map((value) => {
         const isImage = value.type.includes('image');
 
-        if (isGallery && isImage) {
+        if ((isGallery || isCardOrMosaic) && isImage) {
           return (
             <li key={value._id}>
               <Link
@@ -38,17 +40,22 @@ export function TableRowFileCell({
                 <img
                   src={value.url}
                   alt={value.originalName}
-                  className="size-16 object-cover"
+                  className={cn(
+                    'object-cover',
+                    isCardOrMosaic ? 'size-full h-full' : 'size-16',
+                  )}
                 />
-                <span className="text-xs text-center">
-                  {value.originalName}
-                </span>
+                {!isCardOrMosaic && (
+                  <span className="text-xs text-center">
+                    {value.originalName}
+                  </span>
+                )}
               </Link>
             </li>
           );
         }
 
-        if (isGallery && !isImage) {
+        if ((isGallery || isCardOrMosaic) && !isImage) {
           return (
             <li key={value._id}>
               <Link

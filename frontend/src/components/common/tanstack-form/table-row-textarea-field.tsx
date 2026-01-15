@@ -1,7 +1,6 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Textarea } from '@/components/ui/textarea';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IField } from '@/lib/interfaces';
 
 interface TableRowTextareaFieldProps {
@@ -29,7 +28,7 @@ export function TableRowTextareaField({
         id={formField.name}
         name={formField.name}
         placeholder={`Digite ${field.name.toLowerCase()}`}
-        value={formField.state.value ?? ''}
+        value={formField.state.value || ''}
         onBlur={formField.handleBlur}
         onChange={(e) => formField.handleChange(e.target.value)}
         rows={3}

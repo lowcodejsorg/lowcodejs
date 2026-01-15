@@ -5,22 +5,20 @@ import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import {
-  MenuUpdateSchema,
-  UpdateMenuFormFields,
-  type MenuUpdateFormValues,
-} from './-update-form';
+import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
+import type { MenuUpdateFormValues } from './-update-form';
 import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadMenu } from '@/hooks/tanstack-query/use-menu-read';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { E_MENU_ITEM_TYPE, MetaDefault } from '@/lib/constant';
+import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { MetaDefault } from '@/lib/constant';
 import type { IMenu, Paginated, ValueOf } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/$menuId/')({

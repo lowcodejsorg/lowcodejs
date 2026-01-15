@@ -8,9 +8,8 @@
     "start": "node .output/server/index.mjs",
     "preview": "vite preview",
     "test": "vitest run",
-    "lint": "eslint",
+    "lint": "prettier --write . && eslint --fix \"**/*.{ts,tsx}\"",
     "format": "prettier",
-    "check": "prettier --write . && eslint --fix",
     "prepare": "husky"
   },
   "dependencies": {
@@ -76,6 +75,7 @@
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.68.0",
     "react-resizable-panels": "^4.0.3",
+    "react-to-print": "^3.2.0",
     "reactjs-tiptap-editor": "^1.0.6",
     "recharts": "^2.15.4",
     "sonner": "^2.0.7",

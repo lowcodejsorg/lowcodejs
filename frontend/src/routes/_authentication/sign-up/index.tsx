@@ -1,5 +1,6 @@
 import { useForm } from '@tanstack/react-form';
 import { Link, createFileRoute, useRouter } from '@tanstack/react-router';
+import { AxiosError } from 'axios';
 import {
   EyeClosedIcon,
   EyeIcon,
@@ -8,6 +9,7 @@ import {
   UserIcon,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Logo } from '@/components/common/logo';
@@ -27,20 +29,33 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationSignUp } from '@/hooks/tanstack-query/use-authentication-sign-up';
+import type { IHTTPExeptionError } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_authentication/sign-up/')({
   component: RouteComponent,
 });
 
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
+
 const FormSignUpSchema = z
   .object({
-    name: z.string().min(1, 'Nome é obrigatório'),
-    email: z.email('Digite um e-mail válido').min(1, 'E-mail é obrigatório'),
+    name: z
+      .string({ message: 'O nome é obrigatório' })
+      .min(1, 'O nome é obrigatório'),
+    email: z
+      .string({ message: 'O email é obrigatório' })
+      .email('Digite um email válido'),
     password: z
-      .string()
-      .min(6, 'A senha deve ter pelo menos 6 caracteres')
-      .min(1, 'Senha é obrigatória'),
-    confirmPassword: z.string().min(1, 'Confirmação de senha é obrigatória'),
+      .string({ message: 'A senha é obrigatória' })
+      .min(6, 'A senha deve ter no mínimo 6 caracteres')
+      .regex(
+        passwordRegex,
+        'A senha deve conter: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+      ),
+    confirmPassword: z
+      .string({ message: 'A confirmação de senha é obrigatória' })
+      .min(1, 'A confirmação de senha é obrigatória'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'As senhas não coincidem',
@@ -53,13 +68,65 @@ function RouteComponent(): React.JSX.Element {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const signUpMutation = useAuthenticationSignUp({
-    async onSuccess() {
+    onSuccess() {
       router.navigate({ to: '/', replace: true });
     },
     onError(error) {
-      console.error(error);
+      if (error instanceof AxiosError) {
+        const data = error.response?.data as IHTTPExeptionError<
+          Partial<
+            Pick<
+              z.infer<typeof FormSignUpSchema>,
+              'name' | 'email' | 'password'
+            >
+          >
+        >;
+
+        // 400 - Validation errors
+        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
+          if (data.errors['name']) setFieldError('name', data.errors['name']);
+
+          if (data.errors['email'])
+            setFieldError('email', data.errors['email']);
+
+          if (data.errors['password'])
+            setFieldError('password', data.errors['password']);
+
+          return;
+        }
+
+        // 409 - User already exists
+        if (data.cause === 'USER_ALREADY_EXISTS' && data.code === 409) {
+          setFieldError('email', 'Este email já está em uso');
+          return;
+        }
+      }
+
+      toast('Erro ao criar conta', {
+        className: '!bg-destructive !text-white !border-destructive',
+        description: 'Tente novamente mais tarde',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
     },
   });
+
+  function setFieldError(
+    field: keyof Pick<
+      z.infer<typeof FormSignUpSchema>,
+      'name' | 'email' | 'password'
+    >,
+    message: string,
+  ): void {
+    form.setFieldMeta(field, (prev) => {
+      return {
+        ...prev,
+        isTouched: true,
+        errors: [{ message }],
+        errorMap: { onSubmit: { message } },
+      };
+    });
+  }
 
   const form = useForm({
     defaultValues: {

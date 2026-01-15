@@ -1,49 +1,48 @@
-import type { IRow } from '@/lib/interfaces';
-import type { DocSection } from '@/components/common/document-content';
+import type { CatNode } from '@/lib/document-helpers';
+
+type TocItem = { id: string; label: string; level: number };
+
+function flatten(nodes: Array<CatNode>, level: number = 1): Array<TocItem> {
+  const out: Array<TocItem> = [];
+  for (const n of nodes) {
+    out.push({ id: n.id, label: n.label, level });
+    if (n.children?.length) out.push(...flatten(n.children, level + 1));
+  }
+  return out;
+}
 
 export function DocumentToc({
-  selectedRow,
-  sections,
-  getStr,
+  nodes,
+  title,
 }: {
-  selectedRow: IRow | undefined;
-  sections: DocSection[];
-  getStr: (v: unknown) => string;
-}) {
-  if (!selectedRow) return null;
-
-  const visible = sections.filter((s) => {
-    const t = getStr((selectedRow as any)?.[s.titleField.slug]);
-    const b = s.bodyField ? getStr((selectedRow as any)?.[s.bodyField.slug]) : '';
-    return t.trim() && b.trim();
-  });
-
-  if (!visible.length) return null;
+  nodes: Array<CatNode>;
+  title: string;
+}): React.JSX.Element | null {
+  const items = flatten(nodes);
+  if (!items.length) return null;
 
   return (
-    <aside className="hidden lg:block">
-      <div className="sticky top-20 rounded-xl border bg-background/40 p-3">
-        <div className="text-xs font-medium text-muted-foreground mb-2">
-          Nesta página
-        </div>
+    <section className="print-only p-4">
+      <h2 className="text-2xl font-bold mb-3">{title}</h2>
 
-        <div className="space-y-1">
-          {visible.map((s) => (
-            <button
-              key={s.id}
-              className="w-full text-left rounded-md px-2 py-1 text-sm hover:bg-muted"
-              onClick={() => {
-                document.getElementById(s.id)?.scrollIntoView({
-                  behavior: 'smooth',
-                  block: 'start',
-                });
-              }}
+      <nav aria-label="Sumário">
+        <ol className="m-0 p-0 list-none">
+          {items.map((it) => (
+            <li
+              key={it.id}
+              style={{ paddingLeft: (it.level - 1) * 12 }}
             >
-              {getStr((selectedRow as any)?.[s.titleField.slug]) || s.titleField.name}
-            </button>
+              <a
+                href={`#sec-${it.id}`}
+                className="toc-link flex items-baseline gap-2 no-underline font-semibold"
+              >
+                <span className="toc-title">{it.label}</span>
+                <span className="toc-dots flex-1 border-b border-dotted border-gray-400 translate-y-[-2px]" />
+              </a>
+            </li>
           ))}
-        </div>
-      </div>
-    </aside>
+        </ol>
+      </nav>
+    </section>
   );
 }

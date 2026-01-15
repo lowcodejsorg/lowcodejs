@@ -2,14 +2,14 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
+import { withForm } from '@/integrations/tanstack-form/form-hook';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { ICategory } from '@/lib/interfaces';
 
 interface DropdownOption {
   value: string;
   label: string;
 }
-import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 
 export const FieldUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),

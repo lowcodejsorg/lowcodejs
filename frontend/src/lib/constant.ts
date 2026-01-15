@@ -70,6 +70,8 @@ export const E_TABLE_STYLE = {
   LIST: 'LIST',
   GALLERY: 'GALLERY',
   DOCUMENT: 'DOCUMENT',
+  CARD: 'CARD',
+  MOSAIC: 'MOSAIC',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -211,6 +213,8 @@ export const TABLE_STYLE_OPTIONS = [
   { label: 'Lista', value: E_TABLE_STYLE.LIST },
   { label: 'Galeria', value: E_TABLE_STYLE.GALLERY },
   { label: 'Documento', value: E_TABLE_STYLE.DOCUMENT },
+  { label: 'Card', value: E_TABLE_STYLE.CARD },
+  { label: 'Mosaico', value: E_TABLE_STYLE.MOSAIC },
 ] as const;
 
 export const USER_GROUP_MAPPER = {
@@ -224,3 +228,6 @@ export const USER_STATUS_MAPPER = {
   [E_USER_STATUS.ACTIVE]: 'Ativo',
   [E_USER_STATUS.INACTIVE]: 'Inativo',
 } as const;
+
+export const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;

@@ -11,7 +11,7 @@ export function TableGridViewSkeleton(): React.JSX.Element {
             className="overflow-hidden"
           >
             <CardContent className="p-3 space-y-3">
-              {Array.from({ length: 4 }).map((_, fieldIndex) => (
+              {Array.from({ length: 4 }).map((_unused, fieldIndex) => (
                 <div
                   key={fieldIndex}
                   className="flex flex-col gap-0.5"

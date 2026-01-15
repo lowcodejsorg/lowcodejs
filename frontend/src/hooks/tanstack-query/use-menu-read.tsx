@@ -1,8 +1,12 @@
-import { API } from '@/lib/api';
-import { IMenu } from '@/lib/interfaces';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
-export function useReadMenu(payload: { menuId: string }) {
+import { API } from '@/lib/api';
+import type { IMenu } from '@/lib/interfaces';
+
+export function useReadMenu(payload: {
+  menuId: string;
+}): UseQueryResult<IMenu> {
   return useQuery({
     queryKey: ['/menu/'.concat(payload.menuId), payload.menuId],
     queryFn: async function () {

@@ -67,7 +67,7 @@ export const UpdateMenuFormFields = withForm({
           name="type"
           validators={{
             onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
+              if (value.trim() === '') {
                 return { message: 'Tipo é obrigatório' };
               }
               return undefined;
@@ -104,11 +104,7 @@ export const UpdateMenuFormFields = withForm({
             name="table"
             validators={{
               onBlur: ({ value }) => {
-                if (
-                  (menuType === E_MENU_ITEM_TYPE.TABLE ||
-                    menuType === E_MENU_ITEM_TYPE.FORM) &&
-                  (!value || value.trim() === '')
-                ) {
+                if (value.trim() === '') {
                   return { message: 'Tabela é obrigatória' };
                 }
                 return undefined;
@@ -154,18 +150,13 @@ export const UpdateMenuFormFields = withForm({
             name="url"
             validators={{
               onBlur: ({ value }) => {
-                if (
-                  menuType === E_MENU_ITEM_TYPE.EXTERNAL &&
-                  (!value || value.trim() === '')
-                ) {
+                if (value.trim() === '') {
                   return { message: 'URL é obrigatória' };
                 }
-                if (value && value.trim() !== '') {
-                  try {
-                    new URL(value);
-                  } catch {
-                    return { message: 'URL inválida' };
-                  }
+                try {
+                  new URL(value);
+                } catch {
+                  return { message: 'URL inválida' };
                 }
                 return undefined;
               },

@@ -1,7 +1,7 @@
+import { TableRowBadgeList } from './table-row-badge-list';
+
 import type { IField, IRow } from '@/lib/interfaces';
 import { getCategoryItem } from '@/lib/utils';
-
-import { TableRowBadgeList } from './table-row-badge-list';
 
 interface TableRowCategoryCellProps {
   row: IRow;
@@ -12,9 +12,9 @@ export function TableRowCategoryCell({
   field,
   row,
 }: TableRowCategoryCellProps): React.JSX.Element {
-  const values = Array.from<string>(row?.[field.slug] ?? []);
+  const values = Array.from<string>(row[field.slug] ?? []);
   const items = values.map((value) =>
-    getCategoryItem(field.configuration.category ?? [], value),
+    getCategoryItem(field.configuration.category, value),
   );
 
   return (
