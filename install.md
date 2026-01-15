@@ -112,34 +112,6 @@ As chaves JWT são geradas automaticamente pelo script `setup.sh`. Para gerar ma
 
 ---
 
-## Deploy em Produção (VPS)
-
-1. Configure `APP_SERVER_URL` no `.env` com o IP/domínio do servidor:
-
-```env
-APP_SERVER_URL=http://SEU_IP:3000
-```
-
-2. Suba os containers:
-
-```bash
-docker compose -f docker-compose.oficial.yml up -d
-```
-
-3. Configure a URL do frontend:
-
-```bash
-./setup.sh --frontend-url
-```
-
-4. Execute as seeds:
-
-```bash
-docker exec low-code-js-api npm run seed
-```
-
----
-
 ## Troubleshooting
 
 ### Erro de permissão no setup.sh
