@@ -133,6 +133,12 @@ export type ICategory = {
   children: Array<ICategory>;
 };
 
+export type IDropdown = {
+  id: string;
+  label: string;
+  color: string | null;
+};
+
 export type IFieldConfigurationRelationship = {
   table: Pick<ITable, '_id' | 'slug'>;
   field: Pick<IField, '_id' | 'slug'>;
@@ -155,7 +161,7 @@ export type IField = Merge<
       filtering: boolean;
       defaultValue: string | null;
       relationship: IFieldConfigurationRelationship | null;
-      dropdown: Array<string>;
+      dropdown: Array<IDropdown>;
       category: Array<ICategory>;
       group: IFieldConfigurationGroup | null;
     };

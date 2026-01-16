@@ -398,6 +398,7 @@ function FilterTextShort({
 interface DropdownOption {
   value: string;
   label: string;
+  color?: string | null;
 }
 
 function FilterDropdown({
@@ -412,8 +413,9 @@ function FilterDropdown({
   const anchorRef = useComboboxAnchor();
   const options: Array<DropdownOption> = field.configuration.dropdown.map(
     (d) => ({
-      value: d,
-      label: d,
+      value: d.id,
+      label: d.label,
+      color: d.color,
     }),
   );
 

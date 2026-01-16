@@ -157,8 +157,15 @@ export const TableShowSchema: FastifySchema = {
                   },
                   dropdown: {
                     type: 'array',
-                    items: { type: 'string' },
                     description: 'Dropdown options for DROPDOWN fields',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        label: { type: 'string' },
+                        color: { type: 'string' },
+                      },
+                    },
                   },
                   category: {
                     type: 'array',

@@ -26,16 +26,20 @@ export function buildDefaultValuesFromRow(
         defaults[field.slug] = existingValue ?? '';
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        // Always array - convert single value to array if needed
-        const values = Array.isArray(existingValue)
-          ? existingValue
-          : existingValue
-            ? [existingValue]
-            : [];
-        defaults[field.slug] = values.map((v: string) => ({
-          value: v,
-          label: v,
-        }));
+        const existing = data[field.slug];
+        if (field.configuration.multiple) {
+          const ids = Array.isArray(existing)
+            ? existing
+            : existing
+              ? [existing]
+              : [];
+          defaults[field.slug] = ids as Array<string>;
+        } else {
+          const id = Array.isArray(existing)
+            ? (existing[0] ?? null)
+            : (existing ?? null);
+          defaults[field.slug] = id as string | null;
+        }
         break;
       }
       case E_FIELD_TYPE.DATE:
@@ -127,11 +131,11 @@ export function buildPayload(
         payload[field.slug] = value || null;
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        const dropdownValue = (value as Array<string>) || [];
         if (field.configuration.multiple) {
-          payload[field.slug] = dropdownValue;
+          payload[field.slug] = (value as Array<string>) ?? [];
         } else {
-          payload[field.slug] = dropdownValue.slice(0, 1);
+          payload[field.slug] =
+            typeof value === 'string' && value ? value : null;
         }
         break;
       }

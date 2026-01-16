@@ -2,7 +2,7 @@ import type { ClassValue } from 'clsx';
 import { clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
-import type { ICategory } from './interfaces';
+import type { ICategory, IDropdown } from './interfaces';
 
 export function cn(...inputs: Array<ClassValue>): string {
   return twMerge(clsx(inputs));
@@ -22,4 +22,11 @@ export function getCategoryItem(
     }
   }
   return undefined;
+}
+
+export function getDropdownItem(
+  items: Array<IDropdown>,
+  id: string,
+): IDropdown | undefined {
+  return items.find((item) => item.id === id);
 }

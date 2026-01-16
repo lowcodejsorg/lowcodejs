@@ -7,8 +7,9 @@ import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { ICategory } from '@/lib/interfaces';
 
 interface DropdownOption {
-  value: string;
+  id: string;
   label: string;
+  color: string | null;
 }
 
 export const FieldUpdateSchema = z.object({
