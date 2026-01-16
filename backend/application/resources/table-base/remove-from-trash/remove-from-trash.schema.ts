@@ -126,8 +126,14 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   },
                   dropdown: {
                     type: 'array',
-                    items: { type: 'string' },
                     description: 'Dropdown options for DROPDOWN fields',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        label: { type: 'string' },
+                      },
+                    },
                   },
                   category: {
                     type: 'array',

@@ -79,6 +79,28 @@ const Category = new mongoose.Schema(
   },
 );
 
+
+const Dropdown = new mongoose.Schema(
+  {
+    id: {
+      type: String,
+      required: true,
+    },
+    label: {
+      type: String,
+      required: true,
+    },
+    color: {
+      type: String,
+      default: null,
+    },
+  },
+  {
+    _id: false,
+  },
+);
+
+
 const Configuration = new mongoose.Schema(
   {
     required: {
@@ -111,7 +133,7 @@ const Configuration = new mongoose.Schema(
       default: null,
     },
     dropdown: {
-      type: [String],
+      type: [Dropdown],
       default: function (): null {
         return null;
       },

@@ -133,6 +133,12 @@ export type ICategory = {
   children: Array<ICategory>;
 };
 
+export type IDropdown = {
+  id: string;
+  label: string;
+  color: string;
+};
+
 export type IFieldConfigurationRelationship = {
   table: Pick<ITable, '_id' | 'slug'>;
   field: Pick<IField, '_id' | 'slug'>;

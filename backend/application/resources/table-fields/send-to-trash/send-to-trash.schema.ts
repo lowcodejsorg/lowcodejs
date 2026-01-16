@@ -82,7 +82,6 @@ export const TableFieldSendToTrashSchema: FastifySchema = {
             },
             dropdown: {
               type: 'array',
-              items: { type: 'string' },
               nullable: true,
               description: 'Dropdown options',
             },
