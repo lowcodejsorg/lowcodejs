@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { Merge } from '@application/core/entity.core';
+import { IUser, Merge } from '@application/core/entity.core';
 import { PASSWORD_REGEX } from '@application/core/util.core';
 
 export const ResetPasswordBodyValidator = z.object({
@@ -14,11 +14,7 @@ export const ResetPasswordBodyValidator = z.object({
     .trim(),
 });
 
-export const ResetPasswordParamsValidator = z.object({
-  _id: z.string({ message: 'O ID é obrigatório' }).trim(),
-});
-
 export type ResetPasswordPayload = Merge<
   z.infer<typeof ResetPasswordBodyValidator>,
-  z.infer<typeof ResetPasswordParamsValidator>
+  Pick<IUser, '_id'>
 >;

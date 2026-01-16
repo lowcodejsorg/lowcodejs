@@ -21,7 +21,7 @@ describe('Refresh Token Use Case', () => {
       group: 'group-id',
     });
 
-    const result = await sut.execute({ user: user._id });
+    const result = await sut.execute({ _id: user._id });
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
@@ -31,7 +31,7 @@ describe('Refresh Token Use Case', () => {
   });
 
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existir', async () => {
-    const result = await sut.execute({ user: 'non-existent-id' });
+    const result = await sut.execute({ _id: 'non-existent-id' });
 
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {
@@ -45,7 +45,7 @@ describe('Refresh Token Use Case', () => {
       new Error('Database error'),
     );
 
-    const result = await sut.execute({ user: 'some-id' });
+    const result = await sut.execute({ _id: 'some-id' });
 
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {

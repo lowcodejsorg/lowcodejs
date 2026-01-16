@@ -6,27 +6,6 @@ export const RefreshTokenSchema: FastifySchema = {
   description:
     'Renova os tokens de acesso e refresh usando o token de refresh atual dos cookies. Requer cookie de refresh token válido',
   security: [{ cookieAuth: [] }],
-  body: {
-    type: 'object',
-    required: ['user'],
-    properties: {
-      user: {
-        type: 'string',
-        minLength: 1,
-        description: 'ID do usuário',
-        errorMessage: {
-          type: 'O usuário é obrigatório',
-          minLength: 'O usuário é obrigatório',
-        },
-      },
-    },
-    additionalProperties: false,
-    errorMessage: {
-      required: {
-        user: 'O usuário é obrigatório',
-      },
-    },
-  },
   response: {
     200: {
       description: 'Tokens renovados com sucesso',

@@ -10,10 +10,7 @@ export const MenuPaginatedQueryValidator = z.object({
     .min(1, 'O limite por página deve ser maior que zero')
     .max(100, 'O limite por página deve ser no máximo 100')
     .default(50),
-  search: z
-    .string({ message: 'A busca deve ser um texto' })
-    .trim()
-    .optional(),
+  search: z.string({ message: 'A busca deve ser um texto' }).trim().optional(),
 });
 
 export type MenuPaginatedPayload = z.infer<typeof MenuPaginatedQueryValidator>;

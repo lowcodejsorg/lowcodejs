@@ -25,6 +25,8 @@ describe('E2E Refresh Token Controller', () => {
         .post('/authentication/refresh-token')
         .set('Cookie', cookies);
 
+      console.log(response.body);
+
       expect(response.statusCode).toBe(200);
 
       const responseCookies = Array.from<string>(

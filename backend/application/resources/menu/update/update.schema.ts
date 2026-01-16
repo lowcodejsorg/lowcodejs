@@ -68,8 +68,7 @@ export const MenuUpdateSchema: FastifySchema = {
       },
       html: {
         type: 'string',
-        description:
-          'Conteúdo HTML (obrigatório quando type=PAGE)',
+        description: 'Conteúdo HTML (obrigatório quando type=PAGE)',
         nullable: true,
         errorMessage: {
           type: 'O HTML deve ser um texto',

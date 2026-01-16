@@ -28,6 +28,8 @@ describe('E2E Reset Password Controller', () => {
           password: 'S3nha@123A',
         });
 
+      console.log(response.body);
+
       expect(response.statusCode).toBe(200);
     });
   });

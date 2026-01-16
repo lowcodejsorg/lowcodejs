@@ -4,9 +4,7 @@ import z from 'zod';
 import { E_MENU_ITEM_TYPE, Merge } from '@application/core/entity.core';
 
 export const MenuUpdateParamsValidator = z.object({
-  _id: z
-    .string({ message: 'O ID é obrigatório' })
-    .min(1, 'O ID é obrigatório'),
+  _id: z.string({ message: 'O ID é obrigatório' }).min(1, 'O ID é obrigatório'),
 });
 
 export const MenuUpdateBodyValidator = z
@@ -29,10 +27,7 @@ export const MenuUpdateBodyValidator = z
       .string({ message: 'O HTML deve ser um texto' })
       .nullable()
       .optional(),
-    url: z
-      .string({ message: 'A URL deve ser um texto' })
-      .nullable()
-      .optional(),
+    url: z.string({ message: 'A URL deve ser um texto' }).nullable().optional(),
   })
   .transform((payload) => {
     return {
