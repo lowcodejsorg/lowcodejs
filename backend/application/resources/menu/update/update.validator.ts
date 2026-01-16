@@ -4,17 +4,30 @@ import z from 'zod';
 import { E_MENU_ITEM_TYPE, Merge } from '@application/core/entity.core';
 
 export const MenuUpdateParamsValidator = z.object({
-  _id: z.string().min(1, 'ID é obrigatório'),
+  _id: z.string({ message: 'O ID é obrigatório' }).min(1, 'O ID é obrigatório'),
 });
 
 export const MenuUpdateBodyValidator = z
   .object({
-    name: z.string().trim().min(1, 'Nome é obrigatório').optional(),
-    type: z.enum(E_MENU_ITEM_TYPE).optional(),
-    table: z.string().nullable().optional(),
-    parent: z.string().nullable().optional(),
-    html: z.string().nullable().optional(),
-    url: z.string().nullable().optional(),
+    name: z
+      .string({ message: 'O nome deve ser um texto' })
+      .trim()
+      .min(1, 'O nome é obrigatório')
+      .optional(),
+    type: z.enum(E_MENU_ITEM_TYPE, { message: 'Tipo inválido' }).optional(),
+    table: z
+      .string({ message: 'A tabela deve ser um texto' })
+      .nullable()
+      .optional(),
+    parent: z
+      .string({ message: 'O menu pai deve ser um texto' })
+      .nullable()
+      .optional(),
+    html: z
+      .string({ message: 'O HTML deve ser um texto' })
+      .nullable()
+      .optional(),
+    url: z.string({ message: 'A URL deve ser um texto' }).nullable().optional(),
   })
   .transform((payload) => {
     return {

@@ -58,7 +58,7 @@ export default class {
       }
 
       const result = await this.useCase.execute({
-        user: refreshTokenDecoded.sub,
+        _id: refreshTokenDecoded.sub,
       });
 
       if (result.isLeft()) {

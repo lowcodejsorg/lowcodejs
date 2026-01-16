@@ -1,5 +1,3 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -8,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { TABLE_COLLABORATION_OPTIONS } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
@@ -45,7 +44,10 @@ export function TableCollaborationSelectField({
         </SelectTrigger>
         <SelectContent>
           {TABLE_COLLABORATION_OPTIONS.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
+            <SelectItem
+              key={option.value}
+              value={option.value}
+            >
               {option.label}
             </SelectItem>
           ))}

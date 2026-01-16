@@ -131,7 +131,7 @@ interface Table {
   fields: Field[];
   type: 'table' | 'field-group';
   configuration: {
-    style: 'gallery' | 'list' | 'document';
+    style: 'gallery' | 'list' | 'document' | 'card' |  'mosaic';
     visibility: 'public' | 'restricted';
     collaboration: 'open' | 'restricted';
     administrators: User[];

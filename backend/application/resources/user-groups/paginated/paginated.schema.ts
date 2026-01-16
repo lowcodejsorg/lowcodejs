@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserGroupPaginatedSchema: FastifySchema = {
-  tags: ['User Group'],
-  summary: 'List user groups with pagination',
+  tags: ['Grupos de Usuários'],
+  summary: 'Listar grupos de usuários com paginação',
   description:
-    'Retrieves a paginated list of user groups with optional search functionality',
+    'Retorna uma lista paginada de grupos de usuários com funcionalidade de busca',
   security: [{ cookieAuth: [] }],
   querystring: {
     type: 'object',
@@ -13,24 +13,24 @@ export const UserGroupPaginatedSchema: FastifySchema = {
         type: 'number',
         minimum: 1,
         default: 1,
-        description: 'Page number',
+        description: 'Número da página',
       },
       perPage: {
         type: 'number',
         minimum: 1,
         maximum: 100,
         default: 50,
-        description: 'Items per page',
+        description: 'Itens por página',
       },
       search: {
         type: 'string',
-        description: 'Search term for filtering groups',
+        description: 'Termo de busca para filtrar grupos',
       },
     },
   },
   response: {
     200: {
-      description: 'Paginated list of user groups',
+      description: 'Lista paginada de grupos de usuários',
       type: 'object',
       properties: {
         data: {
@@ -38,33 +38,38 @@ export const UserGroupPaginatedSchema: FastifySchema = {
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string' },
-              name: { type: 'string' },
-              slug: { type: 'string' },
-              description: { type: 'string' },
-              // permissions: { type: 'array', items: { type: 'string' } },
+              _id: { type: 'string', description: 'ID do grupo' },
+              name: { type: 'string', description: 'Nome do grupo' },
+              slug: {
+                type: 'string',
+                description: 'Identificador único do grupo',
+              },
+              description: {
+                type: 'string',
+                description: 'Descrição do grupo',
+              },
               permissions: {
                 type: 'array',
-                description: 'Permissions assigned to the user group',
+                description: 'Permissões atribuídas ao grupo',
                 items: {
                   type: 'object',
                   properties: {
-                    _id: { type: 'string', description: 'Field ID' },
-                    name: { type: 'string', description: 'Field name' },
-                    slug: { type: 'string', description: 'Field slug' },
+                    _id: { type: 'string', description: 'ID da permissão' },
+                    name: { type: 'string', description: 'Nome da permissão' },
+                    slug: { type: 'string', description: 'Slug da permissão' },
                     description: {
                       type: 'string',
-                      description: 'Field description',
+                      description: 'Descrição da permissão',
                     },
                     trashed: {
                       type: 'boolean',
-                      description: 'Is field in trash',
+                      description: 'Se a permissão está na lixeira',
                     },
                     trashedAt: {
                       type: 'string',
                       format: 'date-time',
                       nullable: true,
-                      description: 'When field was trashed',
+                      description: 'Data em que foi movido para lixeira',
                     },
                     createdAt: { type: 'string', format: 'date-time' },
                     updatedAt: { type: 'string', format: 'date-time' },
@@ -78,47 +83,34 @@ export const UserGroupPaginatedSchema: FastifySchema = {
         },
         meta: {
           type: 'object',
+          description: 'Metadados da paginação',
           properties: {
-            total: { type: 'number' },
-            perPage: { type: 'number' },
-            page: { type: 'number' },
-            lastPage: { type: 'number' },
-            firstPage: { type: 'number' },
+            total: { type: 'number', description: 'Total de registros' },
+            perPage: { type: 'number', description: 'Itens por página' },
+            page: { type: 'number', description: 'Página atual' },
+            lastPage: { type: 'number', description: 'Última página' },
+            firstPage: { type: 'number', description: 'Primeira página' },
           },
         },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Authentication required'] },
+        message: { type: 'string', enum: ['Autenticação necessária'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
-      examples: [
-        {
-          message: 'Authentication required',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['INTERNAL_SERVER_ERROR'] },
+        cause: { type: 'string', enum: ['LIST_USER_GROUP_PAGINATED_ERROR'] },
       },
-      examples: [
-        {
-          message: 'Internal server error',
-          code: 500,
-          cause: 'INTERNAL_SERVER_ERROR',
-        },
-      ],
     },
   },
 };

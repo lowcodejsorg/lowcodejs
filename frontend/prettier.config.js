@@ -12,6 +12,6 @@ const config = {
   singleAttributePerLine: true,
   printWidth: 80,
   endOfLine: 'auto',
-}
+};
 
-export default config
+export default config;

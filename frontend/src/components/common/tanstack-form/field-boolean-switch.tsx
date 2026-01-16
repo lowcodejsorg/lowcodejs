@@ -1,7 +1,6 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
 interface FieldBooleanSwitchProps {

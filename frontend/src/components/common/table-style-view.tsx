@@ -1,6 +1,8 @@
 import {
+  LayoutDashboard,
   LayoutDashboardIcon,
   LayoutListIcon,
+  LayoutPanelLeft,
   ListTreeIcon,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -97,14 +99,30 @@ export function TableStyleViewDropdown({
     table.data.fields.some(
       (f) => !f.trashed && f.type === E_FIELD_TYPE.CATEGORY,
     );
+
+  const existFieldTextShort =
+    table.status === 'success' &&
+    table.data.fields.some(
+      (f) => !f.trashed && f.type === E_FIELD_TYPE.TEXT_SHORT,
+    );
+
   const existFieldTextLong =
     table.status === 'success' &&
     table.data.fields.some(
       (f) => !f.trashed && f.type === E_FIELD_TYPE.TEXT_LONG,
     );
 
+  const existFieldFile =
+    table.status === 'success' &&
+    table.data.fields.some((f) => !f.trashed && f.type === E_FIELD_TYPE.FILE);
+
   const canShowDocument =
     table.status === 'success' && existFieldCategory && existFieldTextLong;
+
+  const canShowCard =
+    existFieldFile && existFieldTextLong && existFieldTextShort;
+  const canShowMosaic =
+    existFieldFile && existFieldTextLong && existFieldTextShort;
 
   return (
     <DropdownMenu
@@ -168,6 +186,28 @@ export function TableStyleViewDropdown({
               >
                 <ListTreeIcon className="size-4" />
                 <span>Documento</span>
+              </DropdownMenuRadioItem>
+            )}
+
+            {canShowCard && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value="card"
+                onClick={() => handleStyleChange(E_TABLE_STYLE.CARD)}
+              >
+                <LayoutPanelLeft className="size-4" />
+                <span>Card</span>
+              </DropdownMenuRadioItem>
+            )}
+
+            {canShowMosaic && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value="mosaic"
+                onClick={() => handleStyleChange(E_TABLE_STYLE.MOSAIC)}
+              >
+                <LayoutDashboard className="size-4" />
+                <span>Mosaico</span>
               </DropdownMenuRadioItem>
             )}
           </DropdownMenuRadioGroup>

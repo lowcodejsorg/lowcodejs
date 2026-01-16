@@ -38,13 +38,10 @@ async function checkUserHasPermission(
     })
     .lean();
 
-  if (!user) {
-    throw HTTPException.Forbidden('User not found', 'USER_NOT_FOUND');
-  }
+  if (!user) throw HTTPException.Forbidden('User not found', 'USER_NOT_FOUND');
 
-  if (user.status !== E_USER_STATUS.ACTIVE) {
+  if (user.status !== E_USER_STATUS.ACTIVE)
     throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
-  }
 
   const group = user.group as { permissions?: IPermission[] } | undefined;
 
@@ -94,7 +91,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
     // 2. Buscar tabela (exceto para CREATE_TABLE)
     let table: ITable | undefined = request.table;
 
-    if (slug && requiredPermission !== 'CREATE_TABLE') {
+    if (slug && requiredPermission !== E_TABLE_PERMISSION.CREATE_TABLE) {
       if (!table) {
         // Para operações de restore, buscar tabelas na lixeira
         const isRestoreOperation = request.url.endsWith('/restore');
@@ -136,6 +133,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
 
     // 5. Exigir autenticação para todas as outras ações
     const user = request.user;
+
     if (!user) {
       throw HTTPException.Unauthorized(
         'User not authenticated',
@@ -148,8 +146,17 @@ export function TableAccessMiddleware(options: AccessOptions) {
       return;
     }
 
+    // 6.1. ADMINISTRATOR tem acesso total a TODAS as tabelas
+    if (user.role === E_ROLE.ADMINISTRATOR) {
+      const userDoc = await UserModel.findOne({ _id: user.sub }).lean();
+      if (!userDoc || userDoc.status !== E_USER_STATUS.ACTIVE) {
+        throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
+      }
+      return;
+    }
+
     // 7. CREATE_TABLE: apenas verificar permissão do grupo
-    if (requiredPermission === 'CREATE_TABLE') {
+    if (requiredPermission === E_TABLE_PERMISSION.CREATE_TABLE) {
       await checkUserHasPermission(user.sub, requiredPermission);
       return;
     }
@@ -186,14 +193,17 @@ export function TableAccessMiddleware(options: AccessOptions) {
 
     // Ações que SEMPRE requerem dono/admin (independente da visibilidade)
     const ownerOnlyActions = [
-      'CREATE_FIELD',
-      'UPDATE_FIELD',
-      'REMOVE_FIELD', // Gerenciar campos
-      'UPDATE_TABLE',
-      'REMOVE_TABLE', // Gerenciar tabela
-      'UPDATE_ROW',
-      'REMOVE_ROW', // Editar/apagar registros
-    ];
+      // Gerenciar campos
+      E_TABLE_PERMISSION.CREATE_FIELD,
+      E_TABLE_PERMISSION.UPDATE_FIELD,
+      E_TABLE_PERMISSION.REMOVE_FIELD,
+      // Gerenciar tabela
+      E_TABLE_PERMISSION.UPDATE_TABLE,
+      E_TABLE_PERMISSION.REMOVE_TABLE,
+      // Editar/apagar registros
+      E_TABLE_PERMISSION.UPDATE_ROW,
+      E_TABLE_PERMISSION.REMOVE_ROW,
+    ].flatMap((p) => p.toString());
 
     if (ownerOnlyActions.includes(requiredPermission)) {
       throw HTTPException.Forbidden(

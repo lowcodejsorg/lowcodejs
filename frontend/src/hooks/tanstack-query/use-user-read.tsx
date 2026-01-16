@@ -1,8 +1,12 @@
-import { API } from '@/lib/api';
-import { IUser } from '@/lib/interfaces';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
-export function useReadUser(payload: { userId: string }) {
+import { API } from '@/lib/api';
+import type { IUser } from '@/lib/interfaces';
+
+export function useReadUser(payload: {
+  userId: string;
+}): UseQueryResult<IUser> {
   return useQuery({
     queryKey: ['/users/'.concat(payload.userId), payload.userId],
     queryFn: async function () {

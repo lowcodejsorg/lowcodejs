@@ -229,7 +229,7 @@ export const TreeList: React.FC<TreeListProps> = ({
 
       if (onSelectionChange) {
         const selectedNodes = Array.from(newSelectedIds)
-          .map((id) => findNodeById(data, id))
+          .map((nodeId) => findNodeById(data, nodeId))
           .filter((node): node is TreeNode => node !== null);
 
         onSelectionChange(Array.from(newSelectedIds), selectedNodes);

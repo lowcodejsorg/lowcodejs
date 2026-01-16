@@ -10,7 +10,6 @@ import { RichTextClear } from 'reactjs-tiptap-editor/clear';
 import { RichTextColor } from 'reactjs-tiptap-editor/color';
 import { RichTextColumn } from 'reactjs-tiptap-editor/column';
 import { RichTextEmoji } from 'reactjs-tiptap-editor/emoji';
-
 import { RichTextExportPdf } from 'reactjs-tiptap-editor/exportpdf';
 import { RichTextFontFamily } from 'reactjs-tiptap-editor/fontfamily';
 import { RichTextFontSize } from 'reactjs-tiptap-editor/fontsize';
@@ -44,7 +43,7 @@ import { RichTextVideo } from 'reactjs-tiptap-editor/video';
 import 'katex/dist/katex.min.css';
 import 'reactjs-tiptap-editor/style.css';
 
-export function Toolbar() {
+export function Toolbar(): React.JSX.Element {
   return (
     <div className="flex items-center p-1! gap-2 flex-wrap border-b! border-solid! border-[#a5a4a4]!">
       <RichTextUndo />

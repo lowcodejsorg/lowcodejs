@@ -3,19 +3,16 @@ import { AxiosError } from 'axios';
 import React from 'react';
 import { toast } from 'sonner';
 
-import {
-  ProfileUpdateSchema,
-  UpdateProfileFormFields,
-  type ProfileUpdateFormValues,
-} from './-update-form';
+import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
+import type { ProfileUpdateFormValues } from './-update-form';
 import { UpdateProfileFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IUser } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';

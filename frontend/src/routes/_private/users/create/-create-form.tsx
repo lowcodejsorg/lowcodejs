@@ -23,17 +23,7 @@ export const CreateUserFormFields = withForm({
     return (
       <section className="space-y-4 p-2">
         {/* Campo Nome */}
-        <form.AppField
-          name="name"
-          validators={{
-            onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
-              }
-              return undefined;
-            },
-          }}
-        >
+        <form.AppField name="name">
           {(field) => (
             <field.FieldText
               label="Nome"
@@ -45,21 +35,7 @@ export const CreateUserFormFields = withForm({
         </form.AppField>
 
         {/* Campo Email */}
-        <form.AppField
-          name="email"
-          validators={{
-            onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
-                return { message: 'E-mail é obrigatório' };
-              }
-              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-              if (!emailRegex.test(value)) {
-                return { message: 'Digite um e-mail válido' };
-              }
-              return undefined;
-            },
-          }}
-        >
+        <form.AppField name="email">
           {(field) => (
             <field.FieldEmail
               label="E-mail"
@@ -70,20 +46,7 @@ export const CreateUserFormFields = withForm({
         </form.AppField>
 
         {/* Campo Senha */}
-        <form.AppField
-          name="password"
-          validators={{
-            onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
-                return { message: 'Senha é obrigatória' };
-              }
-              if (value.length < 6) {
-                return { message: 'Senha deve ter no mínimo 6 caracteres' };
-              }
-              return undefined;
-            },
-          }}
-        >
+        <form.AppField name="password">
           {(field) => (
             <field.FieldPassword
               label="Senha"
@@ -94,17 +57,7 @@ export const CreateUserFormFields = withForm({
         </form.AppField>
 
         {/* Campo Grupo */}
-        <form.AppField
-          name="group"
-          validators={{
-            onBlur: ({ value }) => {
-              if (!value || value.trim() === '') {
-                return { message: 'Grupo é obrigatório' };
-              }
-              return undefined;
-            },
-          }}
-        >
+        <form.AppField name="group">
           {(field) => (
             <field.FieldGroupCombobox
               label="Grupo"

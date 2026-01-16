@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const SignInSchema: FastifySchema = {
-  tags: ['Authentication'],
+  tags: ['Autenticação'],
   summary: 'User authentication sign in',
   description:
     'Authenticates a user with email and password, returning JWT tokens as HTTP-only cookies',
@@ -12,12 +12,27 @@ export const SignInSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'User email address',
+        errorMessage: {
+          type: 'O email deve ser um texto',
+          format: 'Digite um email válido',
+        },
       },
       password: {
         type: 'string',
-        description: 'User password',
+        minLength: 1,
+        errorMessage: {
+          type: 'A senha deve ser um texto',
+          minLength: 'A senha é obrigatória',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        email: 'O email é obrigatório',
+        password: 'A senha é obrigatória',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
@@ -36,49 +51,43 @@ export const SignInSchema: FastifySchema = {
       },
     },
     400: {
-      description:
-        'Bad request - Invalid request format or Zod validation failed',
+      description: 'Bad request - Validation failed',
       type: 'object',
       properties: {
-        message: { type: 'string', description: 'Error description' },
+        message: { type: 'string', enum: ['Invalid request'] },
         code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Field-specific validation errors',
+        },
       },
     },
     401: {
-      description: 'Unauthorized - User not found, inactive, or wrong password',
+      description: 'Unauthorized - Invalid credentials or inactive user',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          description: 'Specific error message',
+          enum: ['Credenciais invalidas', 'Usuário inativo'],
         },
         code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        cause: {
+          type: 'string',
+          enum: [
+            'INVALID_CREDENTIALS',
+            'USER_INACTIVE',
+            'AUTHENTICATION_REQUIRED',
+          ],
+        },
       },
-      examples: [
-        {
-          message: 'Unauthorized',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-        {
-          message: 'Unauthorized',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-        {
-          message: 'Credenciais invalidas',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
     500: {
       description: 'Internal server error - Database or server issues',
       type: 'object',
       properties: {
-        message: { type: 'string', description: 'Internal server error' },
+        message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['SIGN_IN_ERROR'] },
       },

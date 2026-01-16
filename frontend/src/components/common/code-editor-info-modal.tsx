@@ -24,12 +24,11 @@ export function CodeEditorInfoModal({
     if (!table?.fields) return {};
 
     const placeholders: Record<string, string> = {};
-    const tableName =
-      table.name?.toLowerCase().replace(/\s+/g, '_') || 'tabela';
+    const tableName = table.name.toLowerCase().replace(/\s+/g, '_') || 'tabela';
 
     for (const field of table.fields) {
       const fieldName =
-        field.name?.toLowerCase().replace(/\s+/g, '_') || 'campo';
+        field.name.toLowerCase().replace(/\s+/g, '_') || 'campo';
       const placeholderName = `${tableName}_${fieldName}`;
       placeholders[placeholderName] = `Valor de ${field.name}`;
     }

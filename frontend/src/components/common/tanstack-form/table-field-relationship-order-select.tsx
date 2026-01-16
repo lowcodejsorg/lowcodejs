@@ -1,5 +1,3 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   Select,
@@ -8,6 +6,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
 const ORDER_LIST = [
@@ -47,7 +46,10 @@ export function TableFieldRelationshipOrderSelect({
         </SelectTrigger>
         <SelectContent>
           {ORDER_LIST.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
+            <SelectItem
+              key={item.value}
+              value={item.value}
+            >
               {item.label}
             </SelectItem>
           ))}

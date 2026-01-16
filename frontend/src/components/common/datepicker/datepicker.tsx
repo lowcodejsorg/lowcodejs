@@ -227,7 +227,7 @@ export function Datepicker({
         setOpen(false);
       } else {
         // Range mode
-        if (!rangeStart || (rangeStart && rangeEnd)) {
+        if (!rangeStart || rangeEnd) {
           // Start new selection
           setRangeStart(date);
           setRangeEnd(null);
@@ -244,9 +244,7 @@ export function Datepicker({
           setRangeStart(start);
           setRangeEnd(end);
           onChange({ startDate: start, endDate: end });
-          setInputValue(
-            formatDateRange(start, end, displayFormat, separator),
-          );
+          setInputValue(formatDateRange(start, end, displayFormat, separator));
           setOpen(false);
         }
       }
@@ -273,7 +271,7 @@ export function Datepicker({
   const isSelectingRange = !asSingle && rangeStart && !rangeEnd;
 
   // Get placeholder text
-  const getPlaceholder = () => {
+  const getPlaceholder = (): string => {
     if (placeholder) return placeholder;
     if (asSingle) return 'Selecione uma data';
     return `dd/mm/aaaa ${separator} dd/mm/aaaa`;

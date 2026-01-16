@@ -1,6 +1,5 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { CodeEditor } from '@/components/common/code-editor';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { ITable } from '@/lib/interfaces';
 
 interface FieldCodeEditorProps {

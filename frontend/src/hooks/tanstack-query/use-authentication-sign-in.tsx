@@ -1,5 +1,9 @@
-import { useMutation, UseMutationOptions } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
@@ -13,7 +17,9 @@ type UseAuthenticationSignInProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useAuthenticationSignIn(props: UseAuthenticationSignInProps) {
+export function useAuthenticationSignIn(
+  props: UseAuthenticationSignInProps,
+): UseMutationResult<IUser, AxiosError | Error, SignInPayload> {
   return useMutation({
     mutationFn: async function (payload: SignInPayload) {
       await API.post('/authentication/sign-in', payload);

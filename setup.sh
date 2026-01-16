@@ -79,6 +79,11 @@ echo "2. Gerando credenciais e criando .env..."
 cp ./.env.example ./.env
 echo "Arquivo ./.env criado na raiz"
 
+if [ -f "./.env.test.example" ]; then
+    cp ./.env.test.example ./.env.test
+    echo "Arquivo ./.env.test criado na raiz"
+fi
+
 chmod +x ./credential-generator.sh
 echo "Gerando credenciais JWT..."
 ./credential-generator.sh
@@ -138,6 +143,11 @@ echo "Arquivo ./backend/.env criado (sem VITE_*)"
 
 grep "^VITE_" ./.env > ./frontend/.env 2>/dev/null || true
 echo "Arquivo ./frontend/.env criado (apenas VITE_*)"
+
+if [ -f "./.env.test" ]; then
+    cp ./.env.test ./backend/.env.test
+    echo "Arquivo ./backend/.env.test criado"
+fi
 
 echo ""
 echo "Configuração concluída com sucesso!"
