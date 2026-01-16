@@ -68,7 +68,8 @@ export const MenuUpdateSchema: FastifySchema = {
       },
       html: {
         type: 'string',
-        description: 'Conteúdo HTML (para tipo PAGE)',
+        description:
+          'Conteúdo HTML (obrigatório quando type=PAGE)',
         nullable: true,
         errorMessage: {
           type: 'O HTML deve ser um texto',
@@ -76,7 +77,7 @@ export const MenuUpdateSchema: FastifySchema = {
       },
       url: {
         type: 'string',
-        description: 'URL externa (para tipo EXTERNAL)',
+        description: 'URL externa (obrigatório quando type=EXTERNAL)',
         nullable: true,
         errorMessage: {
           type: 'A URL deve ser um texto',

@@ -1,17 +1,28 @@
 import z from 'zod';
 
-import { E_ROLE } from '@application/core/entity.core';
+import { E_ROLE, IUser, Merge, ValueOf } from '@application/core/entity.core';
 
 export const UserPaginatedQueryValidator = z.object({
-  page: z.coerce.number().default(1),
-  perPage: z.coerce.number().default(50),
-  search: z.string().trim().optional(),
-  user: z
-    .object({
-      _id: z.string().trim(),
-      role: z.enum(E_ROLE),
-    })
-    .optional(),
+  page: z.coerce
+    .number({ message: 'A página deve ser um número' })
+    .min(1, 'A página deve ser maior que zero')
+    .default(1),
+  perPage: z.coerce
+    .number({ message: 'O limite por página deve ser um número' })
+    .min(1, 'O limite por página deve ser maior que zero')
+    .max(100, 'O limite por página deve ser no máximo 100')
+    .default(50),
+  search: z.string({ message: 'A busca deve ser um texto' }).trim().optional(),
 });
 
-export type UserPaginatedPayload = z.infer<typeof UserPaginatedQueryValidator>;
+export type UserPaginatedPayload = Merge<
+  z.infer<typeof UserPaginatedQueryValidator>,
+  {
+    user?: Merge<
+      Pick<IUser, '_id'>,
+      {
+        role: ValueOf<typeof E_ROLE>;
+      }
+    >;
+  }
+>;

@@ -31,30 +31,38 @@ export const SettingUpdateSchema: FastifySchema = {
       },
       FILE_UPLOAD_MAX_SIZE: {
         type: 'number',
-        description: 'Tamanho máximo de arquivo em bytes',
+        minimum: 1,
+        description: 'Tamanho máximo de arquivo em bytes (mínimo 1)',
         errorMessage: {
-          type: 'O tamanho máximo deve ser um número',
+          type: 'O tamanho máximo de arquivo deve ser um número',
+          minimum: 'O tamanho máximo de arquivo deve ser maior que zero',
         },
       },
       FILE_UPLOAD_ACCEPTED: {
         type: 'string',
+        minLength: 1,
         description: 'Extensões de arquivo aceitas (separadas por ;)',
         errorMessage: {
-          type: 'As extensões aceitas devem ser um texto',
+          type: 'As extensões aceitas são obrigatórias',
+          minLength: 'As extensões aceitas são obrigatórias',
         },
       },
       FILE_UPLOAD_MAX_FILES_PER_UPLOAD: {
         type: 'number',
-        description: 'Máximo de arquivos por upload',
+        minimum: 1,
+        description: 'Máximo de arquivos por upload (mínimo 1)',
         errorMessage: {
-          type: 'O máximo de arquivos deve ser um número',
+          type: 'O máximo de arquivos por upload deve ser um número',
+          minimum: 'O máximo de arquivos por upload deve ser maior que zero',
         },
       },
       PAGINATION_PER_PAGE: {
         type: 'number',
-        description: 'Itens por página padrão',
+        minimum: 1,
+        description: 'Itens por página padrão (mínimo 1)',
         errorMessage: {
           type: 'A paginação deve ser um número',
+          minimum: 'A paginação deve ser maior que zero',
         },
       },
       EMAIL_PROVIDER_HOST: {
@@ -68,9 +76,11 @@ export const SettingUpdateSchema: FastifySchema = {
       },
       EMAIL_PROVIDER_PORT: {
         type: 'number',
-        description: 'Porta do servidor de email',
+        minimum: 1,
+        description: 'Porta do servidor de email (mínimo 1)',
         errorMessage: {
           type: 'A porta de email deve ser um número',
+          minimum: 'A porta de email deve ser maior que zero',
         },
       },
       EMAIL_PROVIDER_USER: {

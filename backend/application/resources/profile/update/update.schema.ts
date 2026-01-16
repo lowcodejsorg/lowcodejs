@@ -45,12 +45,10 @@ export const ProfileUpdateSchema: FastifySchema = {
       },
       currentPassword: {
         type: 'string',
-        minLength: 1,
         description:
-          'Senha atual (obrigatório quando allowPasswordChange é true)',
+          'Senha atual (opcional, usado quando allowPasswordChange é true)',
         errorMessage: {
           type: 'A senha atual deve ser um texto',
-          minLength: 'A senha atual é obrigatória',
         },
       },
       newPassword: {
@@ -58,7 +56,7 @@ export const ProfileUpdateSchema: FastifySchema = {
         minLength: 6,
         pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?":{}|<>])',
         description:
-          'Nova senha (obrigatório quando allowPasswordChange é true)',
+          'Nova senha (opcional, usado quando allowPasswordChange é true)',
         errorMessage: {
           type: 'A nova senha deve ser um texto',
           minLength: 'A nova senha deve ter no mínimo 6 caracteres',

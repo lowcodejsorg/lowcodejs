@@ -5,6 +5,19 @@ export const ResetPasswordSchema: FastifySchema = {
   summary: 'Atualizar senha após recuperação',
   description:
     'Atualiza a senha do usuário usando um token de recuperação válido obtido da validação do código',
+  params: {
+    type: 'object',
+    required: ['_id'],
+    properties: {
+      _id: {
+        type: 'string',
+        description: 'ID do token de recuperação',
+        errorMessage: {
+          type: 'O ID é obrigatório',
+        },
+      },
+    },
+  },
   body: {
     type: 'object',
     required: ['password'],
