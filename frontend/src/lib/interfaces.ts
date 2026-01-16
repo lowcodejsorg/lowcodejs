@@ -212,12 +212,12 @@ export type ISetting = {
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   FILE_UPLOAD_ACCEPTED: Array<string>;
   PAGINATION_PER_PAGE: number;
+  MODEL_CLONE_TABLES: Array<string>;
   DATABASE_URL: string;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;
   EMAIL_PROVIDER_PASSWORD: string;
-  MODEL_CLONE_TABLES: Array<string>;
 };
 
 export type IRow = Merge<Base, Record<string, any>> & {

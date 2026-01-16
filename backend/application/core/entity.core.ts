@@ -356,6 +356,7 @@ export type ISetting = {
   FILE_UPLOAD_ACCEPTED: string;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   PAGINATION_PER_PAGE: number;
+  MODEL_CLONE_TABLES: string;
   LOGO_SMALL_URL?: string;
   LOGO_LARGE_URL?: string;
   EMAIL_PROVIDER_HOST: string;

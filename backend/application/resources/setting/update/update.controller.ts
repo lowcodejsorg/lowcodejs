@@ -47,6 +47,12 @@ export default class {
               flattenObjectIds: true,
             })
             .FILE_UPLOAD_ACCEPTED.split(';') ?? [],
+        MODEL_CLONE_TABLES:
+          updated
+            .toJSON({
+              flattenObjectIds: true,
+            })
+            .MODEL_CLONE_TABLES.split(';') ?? [],
       });
     } catch (error) {
       return response.status(500).send({

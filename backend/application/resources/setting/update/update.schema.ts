@@ -65,6 +65,14 @@ export const SettingUpdateSchema: FastifySchema = {
           minimum: 'A paginação deve ser maior que zero',
         },
       },
+      MODEL_CLONE_TABLES: {
+        type: 'string',
+        nullable: true,
+        description: 'Configuração de tabelas permitidas para clonagem de modelos',
+        errorMessage: {
+          type: 'O modelo de tabelas deve ser um texto',
+        },
+      },
       EMAIL_PROVIDER_HOST: {
         type: 'string',
         minLength: 1,
@@ -161,6 +169,11 @@ export const SettingUpdateSchema: FastifySchema = {
         PAGINATION_PER_PAGE: {
           type: 'number',
           description: 'Itens por página padrão',
+        },
+        MODEL_CLONE_TABLES: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Modelo de Tabelas para Clonagem',
         },
         EMAIL_PROVIDER_HOST: {
           type: 'string',

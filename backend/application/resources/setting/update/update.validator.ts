@@ -17,6 +17,10 @@ export const SettingUpdateBodyValidator = z.object({
   PAGINATION_PER_PAGE: z.coerce
     .number({ message: 'A paginação deve ser um número' })
     .min(1, 'A paginação deve ser maior que zero'),
+  MODEL_CLONE_TABLES: z
+    .string()
+    .trim()
+    .optional(),
   EMAIL_PROVIDER_HOST: z
     .string({ message: 'O host de email é obrigatório' })
     .min(1, 'O host de email é obrigatório')

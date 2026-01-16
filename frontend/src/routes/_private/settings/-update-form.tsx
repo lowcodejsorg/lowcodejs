@@ -573,7 +573,6 @@ export const UpdateSettingFormFields = withForm({
                       label="Tabelas"
                       placeholder="Selecione as tabelas..."
                       disabled={isDisabled}
-                      required
                     />
                   )}
                 </form.AppField>
