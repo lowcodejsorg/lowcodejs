@@ -202,9 +202,21 @@ function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
           return;
         }
 
+        if (errorData.cause === 'UPDATE_USER_ERROR' && errorData.code === 500) {
+          toast('Erro ao atualizar o usuário', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao atualizar o usuário. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
         toast('Erro ao atualizar o usuário', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: 'Erro ao atualizar o usuário',
+          description:
+            'Houve um erro interno ao atualizar o usuário. Tente novamente mais tarde.',
           descriptionClassName: '!text-white',
           closeButton: true,
         });

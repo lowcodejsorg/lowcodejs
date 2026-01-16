@@ -20,7 +20,7 @@ import { useCreateGroup } from '@/hooks/tanstack-query/use-group-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import type { IGroup, Paginated } from '@/lib/interfaces';
+import type { IGroup, IHTTPExeptionError, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/groups/create/')({
   component: RouteComponent,
@@ -31,6 +31,18 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate();
+
+  function setFieldError(
+    field: 'name' | 'description' | 'permissions',
+    message: string,
+  ): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
 
   const _create = useCreateGroup({
     onSuccess(data) {
@@ -67,15 +79,48 @@ function RouteComponent(): React.JSX.Element {
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const data = error.response?.data;
+        const data = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+          description?: string;
+          permissions?: string;
+        }>;
 
-        toast('Erro ao criar o grupo', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: data?.message ?? 'Erro ao criar o grupo',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        // 409 - Grupo já existe (GROUP_EXISTS)
+        if (data.cause === 'GROUP_EXISTS' && data.code === 409) {
+          setFieldError('name', 'Já existe um grupo com este nome');
+          return;
+        }
+
+        // 400 - Erros de validação (INVALID_PAYLOAD_FORMAT)
+        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
+          if (data.errors['name']) setFieldError('name', data.errors['name']);
+          if (data.errors['description'])
+            setFieldError('description', data.errors['description']);
+          if (data.errors['permissions'])
+            setFieldError('permissions', data.errors['permissions']);
+          return;
+        }
+
+        // 500 - Erro interno (CREATE_USER_GROUP_ERROR)
+        if (data.cause === 'CREATE_USER_GROUP_ERROR' && data.code === 500) {
+          toast('Erro ao criar o grupo', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao criar o grupo. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
       }
+
+      toast('Erro ao criar o grupo', {
+        className: '!bg-destructive !text-white !border-destructive',
+        description:
+          'Houve um erro interno ao criar o grupo. Tente novamente mais tarde.',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
 
       console.error(error);
     },
