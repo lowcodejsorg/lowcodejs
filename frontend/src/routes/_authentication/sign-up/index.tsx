@@ -100,11 +100,21 @@ function RouteComponent(): React.JSX.Element {
           setFieldError('email', 'Este email já está em uso');
           return;
         }
+
+        if (data.cause === 'SIGN_UP_ERROR' && data.code === 500) {
+          toast('Erro ao fazer cadastro', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao fazer cadastro. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+        }
       }
 
       toast('Erro ao criar conta', {
         className: '!bg-destructive !text-white !border-destructive',
-        description: 'Tente novamente mais tarde',
+        description: 'Houve um erro interno. Tente novamente mais tarde.',
         descriptionClassName: '!text-white',
         closeButton: true,
       });
