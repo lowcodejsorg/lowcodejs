@@ -108,7 +108,10 @@ function SettingUpdateContent({ data }: { data: ISetting }): React.JSX.Element {
         }>;
 
         // 404 - Arquivo não encontrado (SETTINGS_FILE_NOT_FOUND)
-        if (errorData.cause === 'SETTINGS_FILE_NOT_FOUND' && errorData.code === 404) {
+        if (
+          errorData.cause === 'SETTINGS_FILE_NOT_FOUND' &&
+          errorData.code === 404
+        ) {
           toast('Configurações não encontradas', {
             className: '!bg-destructive !text-white !border-destructive',
             description: 'O arquivo de configurações não foi encontrado',
@@ -124,17 +127,52 @@ function SettingUpdateContent({ data }: { data: ISetting }): React.JSX.Element {
             errorData.cause === 'VALIDATION_ERROR') &&
           errorData.code === 400
         ) {
-          if (errorData.errors['LOCALE']) setFieldError('LOCALE', errorData.errors['LOCALE']);
-          if (errorData.errors['LOGO_SMALL_URL']) setFieldError('LOGO_SMALL_URL', errorData.errors['LOGO_SMALL_URL']);
-          if (errorData.errors['LOGO_LARGE_URL']) setFieldError('LOGO_LARGE_URL', errorData.errors['LOGO_LARGE_URL']);
-          if (errorData.errors['FILE_UPLOAD_MAX_SIZE']) setFieldError('FILE_UPLOAD_MAX_SIZE', errorData.errors['FILE_UPLOAD_MAX_SIZE']);
-          if (errorData.errors['FILE_UPLOAD_MAX_FILES_PER_UPLOAD']) setFieldError('FILE_UPLOAD_MAX_FILES_PER_UPLOAD', errorData.errors['FILE_UPLOAD_MAX_FILES_PER_UPLOAD']);
-          if (errorData.errors['FILE_UPLOAD_ACCEPTED']) setFieldError('FILE_UPLOAD_ACCEPTED', errorData.errors['FILE_UPLOAD_ACCEPTED']);
-          if (errorData.errors['PAGINATION_PER_PAGE']) setFieldError('PAGINATION_PER_PAGE', errorData.errors['PAGINATION_PER_PAGE']);
-          if (errorData.errors['EMAIL_PROVIDER_HOST']) setFieldError('EMAIL_PROVIDER_HOST', errorData.errors['EMAIL_PROVIDER_HOST']);
-          if (errorData.errors['EMAIL_PROVIDER_PORT']) setFieldError('EMAIL_PROVIDER_PORT', errorData.errors['EMAIL_PROVIDER_PORT']);
-          if (errorData.errors['EMAIL_PROVIDER_USER']) setFieldError('EMAIL_PROVIDER_USER', errorData.errors['EMAIL_PROVIDER_USER']);
-          if (errorData.errors['EMAIL_PROVIDER_PASSWORD']) setFieldError('EMAIL_PROVIDER_PASSWORD', errorData.errors['EMAIL_PROVIDER_PASSWORD']);
+          if (errorData.errors['LOCALE'])
+            setFieldError('LOCALE', errorData.errors['LOCALE']);
+          if (errorData.errors['LOGO_SMALL_URL'])
+            setFieldError('LOGO_SMALL_URL', errorData.errors['LOGO_SMALL_URL']);
+          if (errorData.errors['LOGO_LARGE_URL'])
+            setFieldError('LOGO_LARGE_URL', errorData.errors['LOGO_LARGE_URL']);
+          if (errorData.errors['FILE_UPLOAD_MAX_SIZE'])
+            setFieldError(
+              'FILE_UPLOAD_MAX_SIZE',
+              errorData.errors['FILE_UPLOAD_MAX_SIZE'],
+            );
+          if (errorData.errors['FILE_UPLOAD_MAX_FILES_PER_UPLOAD'])
+            setFieldError(
+              'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
+              errorData.errors['FILE_UPLOAD_MAX_FILES_PER_UPLOAD'],
+            );
+          if (errorData.errors['FILE_UPLOAD_ACCEPTED'])
+            setFieldError(
+              'FILE_UPLOAD_ACCEPTED',
+              errorData.errors['FILE_UPLOAD_ACCEPTED'],
+            );
+          if (errorData.errors['PAGINATION_PER_PAGE'])
+            setFieldError(
+              'PAGINATION_PER_PAGE',
+              errorData.errors['PAGINATION_PER_PAGE'],
+            );
+          if (errorData.errors['EMAIL_PROVIDER_HOST'])
+            setFieldError(
+              'EMAIL_PROVIDER_HOST',
+              errorData.errors['EMAIL_PROVIDER_HOST'],
+            );
+          if (errorData.errors['EMAIL_PROVIDER_PORT'])
+            setFieldError(
+              'EMAIL_PROVIDER_PORT',
+              errorData.errors['EMAIL_PROVIDER_PORT'],
+            );
+          if (errorData.errors['EMAIL_PROVIDER_USER'])
+            setFieldError(
+              'EMAIL_PROVIDER_USER',
+              errorData.errors['EMAIL_PROVIDER_USER'],
+            );
+          if (errorData.errors['EMAIL_PROVIDER_PASSWORD'])
+            setFieldError(
+              'EMAIL_PROVIDER_PASSWORD',
+              errorData.errors['EMAIL_PROVIDER_PASSWORD'],
+            );
           return;
         }
 
@@ -146,7 +184,8 @@ function SettingUpdateContent({ data }: { data: ISetting }): React.JSX.Element {
         ) {
           toast('Erro ao atualizar configurações', {
             className: '!bg-destructive !text-white !border-destructive',
-            description: 'Houve um erro ao atualizar as configurações. Tente novamente mais tarde.',
+            description:
+              'Houve um erro ao atualizar as configurações. Tente novamente mais tarde.',
             descriptionClassName: '!text-white',
             closeButton: true,
           });
@@ -156,7 +195,8 @@ function SettingUpdateContent({ data }: { data: ISetting }): React.JSX.Element {
 
       toast('Erro ao atualizar configurações', {
         className: '!bg-destructive !text-white !border-destructive',
-        description: 'Houve um erro interno ao atualizar as configurações. Tente novamente mais tarde.',
+        description:
+          'Houve um erro interno ao atualizar as configurações. Tente novamente mais tarde.',
         descriptionClassName: '!text-white',
         closeButton: true,
       });
