@@ -20,7 +20,7 @@ describe('E2E Sign In Controller', () => {
 
   describe('POST /authentication/sign-in', () => {
     it('deve retornar 200 e setar cookies com credenciais validas', async () => {
-      const hashedPassword = await bcrypt.hash('senha123', 10);
+      const hashedPassword = await bcrypt.hash('S3nha@123A', 10);
 
       const group = await UserGroup.create({
         name: 'Owner',
@@ -40,7 +40,7 @@ describe('E2E Sign In Controller', () => {
         .post('/authentication/sign-in')
         .send({
           email: 'test@example.com',
-          password: 'senha123',
+          password: 'S3nha@123A',
         });
 
       expect(response.statusCode).toBe(200);

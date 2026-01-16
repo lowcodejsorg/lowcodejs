@@ -8,6 +8,7 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
   E_USER_STATUS,
+  PASSWORD_REGEX,
 } from './constant';
 
 // ============== AUTHENTICATION ==============
@@ -40,22 +41,64 @@ export const ResetPasswordParamsSchema = z.object({
 
 // ============== USER ==============
 export const UserBaseSchema = z.object({
-  name: z.string().trim(),
-  email: z.email().trim(),
-  group: z.string().trim(),
+  name: z
+    .string({ message: 'O nome é obrigatório' })
+    .trim()
+    .min(1, 'O nome é obrigatório'),
+  email: z
+    .string({ message: 'O email é obrigatório' })
+    .trim()
+    .email('Digite um email válido'),
+  group: z
+    .string({ message: 'O grupo é obrigatório' })
+    .min(1, 'O grupo é obrigatório'),
 });
 
 export const UserCreateBodySchema = UserBaseSchema.extend({
-  password: z.string().trim(),
+  password: z
+    .string({ message: 'A senha é obrigatória' })
+    .trim()
+    .min(6, 'A senha deve ter no mínimo 6 caracteres')
+    .regex(
+      PASSWORD_REGEX,
+      'A senha deve conter: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+    ),
 });
 
 export const UserUpdateBodySchema = UserBaseSchema.partial().extend({
-  password: z.string().trim().optional(),
-  status: z.enum([E_USER_STATUS.ACTIVE, E_USER_STATUS.INACTIVE]).optional(),
+  password: z
+    .string({ message: 'A senha deve ser um texto' })
+    .trim()
+    .min(6, 'A senha deve ter no mínimo 6 caracteres')
+    .regex(
+      PASSWORD_REGEX,
+      'A senha deve conter: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+    )
+    .optional(),
+  status: z
+    .enum([E_USER_STATUS.ACTIVE, E_USER_STATUS.INACTIVE], {
+      message: 'O status deve ser ACTIVE ou INACTIVE',
+    })
+    .optional(),
+});
+
+export const UserUpdateFormSchema = UserBaseSchema.extend({
+  password: z
+    .string()
+    .refine(
+      (val) => val === '' || (val.length >= 6 && PASSWORD_REGEX.test(val)),
+      'A senha deve ter 6+ caracteres com: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+    ),
+  status: z.enum([E_USER_STATUS.ACTIVE, E_USER_STATUS.INACTIVE], {
+    message: 'O status deve ser ACTIVE ou INACTIVE',
+  }),
 });
 
 export const UserUpdateParamsSchema = z.object({
-  _id: z.string().trim(),
+  _id: z
+    .string({ message: 'O ID é obrigatório' })
+    .trim()
+    .min(1, 'O ID é obrigatório'),
 });
 
 // ============== USER GROUP ==============
@@ -107,6 +150,21 @@ export const MenuUpdateBodySchema = z.object({
 });
 
 // ============== TABLE ==============
+const TableCreateConfigurationSchema = z.object({
+  style: z
+    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
+    .default(E_TABLE_STYLE.LIST),
+  visibility: z
+    .enum([
+      E_TABLE_VISIBILITY.PUBLIC,
+      E_TABLE_VISIBILITY.RESTRICTED,
+      E_TABLE_VISIBILITY.OPEN,
+      E_TABLE_VISIBILITY.FORM,
+      E_TABLE_VISIBILITY.PRIVATE,
+    ])
+    .default(E_TABLE_VISIBILITY.RESTRICTED),
+});
+
 export const TableCreateBodySchema = z.object({
   name: z
     .string()
@@ -118,11 +176,13 @@ export const TableCreateBodySchema = z.object({
       'Nome pode conter apenas letras, números, espaços, hífen, underscore e ç',
     ),
   owner: z.string().trim().optional(),
+  logo: z.string().trim().nullable().optional(),
+  configuration: TableCreateConfigurationSchema.optional(),
 });
 
 export const TableConfigurationSchema = z.object({
   style: z
-    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST])
+    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
     .default(E_TABLE_STYLE.LIST),
   visibility: z
     .enum([

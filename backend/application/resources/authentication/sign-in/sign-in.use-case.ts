@@ -37,7 +37,7 @@ export default class SignInUseCase {
 
       if (user.status === E_USER_STATUS.INACTIVE)
         return left(
-          HTTPException.Unauthorized('Usuario inativo', 'USER_INACTIVE'),
+          HTTPException.Unauthorized('Usuário inativo', 'USER_INACTIVE'),
         );
 
       const passwordDoesMatch = await bcrypt.compare(
@@ -46,7 +46,12 @@ export default class SignInUseCase {
       );
 
       if (!passwordDoesMatch)
-        return left(HTTPException.Unauthorized('Credenciais invalidas'));
+        return left(
+          HTTPException.Unauthorized(
+            'Credenciais invalidas',
+            'INVALID_CREDENTIALS',
+          ),
+        );
 
       return right(user);
     } catch (error) {

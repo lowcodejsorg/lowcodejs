@@ -37,6 +37,7 @@ import { TableRowDropdownField } from '@/components/common/tanstack-form/table-r
 import { TableRowFieldGroupField } from '@/components/common/tanstack-form/table-row-field-group-field';
 import { TableRowFileField } from '@/components/common/tanstack-form/table-row-file-field';
 import { TableRowRelationshipField } from '@/components/common/tanstack-form/table-row-relationship-field';
+import { TableRowRichTextField } from '@/components/common/tanstack-form/table-row-rich-text-field';
 import { TableRowTextField } from '@/components/common/tanstack-form/table-row-text-field';
 import { TableRowTextareaField } from '@/components/common/tanstack-form/table-row-textarea-field';
 import { TableStyleSelectField } from '@/components/common/tanstack-form/table-style-select-field';
@@ -79,6 +80,7 @@ export const { useAppForm, withForm } = createFormHook({
     // Table row data input
     TableRowTextField,
     TableRowTextareaField,
+    TableRowRichTextField,
     TableRowDropdownField,
     TableRowDateField,
     TableRowFileField,

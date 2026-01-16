@@ -19,6 +19,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/
+
+      - name: Remove .dockerignore (permite copiar build artifacts)
+        run: rm -f frontend/.dockerignore
+
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -39,6 +48,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-app:${{ inputs.branch }}
-          build-args: |
-            VITE_API_BASE_URL=https://api.${{ inputs.branch }}.lowcodejs.org
-          no-cache: true
+          cache-from: type=gha,scope=frontend-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=frontend-${{ inputs.branch }}

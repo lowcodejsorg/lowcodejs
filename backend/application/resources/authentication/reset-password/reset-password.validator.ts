@@ -1,16 +1,20 @@
 import z from 'zod';
 
-import { Merge } from '@application/core/entity.core';
+import { IUser, Merge } from '@application/core/entity.core';
+import { PASSWORD_REGEX } from '@application/core/util.core';
 
 export const ResetPasswordBodyValidator = z.object({
-  password: z.string().trim().min(8),
-});
-
-export const ResetPasswordParamsValidator = z.object({
-  _id: z.string().trim(),
+  password: z
+    .string({ message: 'A senha é obrigatória' })
+    .min(6, 'A senha deve ter no mínimo 6 caracteres')
+    .regex(
+      PASSWORD_REGEX,
+      'A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+    )
+    .trim(),
 });
 
 export type ResetPasswordPayload = Merge<
   z.infer<typeof ResetPasswordBodyValidator>,
-  z.infer<typeof ResetPasswordParamsValidator>
+  Pick<IUser, '_id'>
 >;

@@ -1,4 +1,4 @@
-import type { FastifySchema } from 'fastify';
+import { FastifySchema } from 'fastify';
 
 export const TableUpdateSchema: FastifySchema = {
   tags: ['Tables'],
@@ -42,7 +42,7 @@ export const TableUpdateSchema: FastifySchema = {
         properties: {
           style: {
             type: 'string',
-            enum: ['GALLERY', 'LIST', 'DOCUMENT'],
+            enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC'],
             default: 'LIST',
             description: 'Display style',
           },
@@ -164,7 +164,7 @@ export const TableUpdateSchema: FastifySchema = {
           properties: {
             style: {
               type: 'string',
-              enum: ['GALLERY', 'LIST', 'DOCUMENT'],
+              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC'],
               description: 'Display style',
             },
             visibility: {

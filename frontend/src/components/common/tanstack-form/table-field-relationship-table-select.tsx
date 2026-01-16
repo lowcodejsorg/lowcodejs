@@ -1,7 +1,6 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { TableCombobox } from '@/components/common/table-combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
 interface TableFieldRelationshipTableSelectProps {

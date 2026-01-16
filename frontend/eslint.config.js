@@ -5,7 +5,7 @@ import globals from 'globals';
 
 export default defineConfig([
   ...tanstackConfig,
-  globalIgnores(['dist', 'node_modules']),
+  globalIgnores(['dist', 'node_modules', 'src/components/ui']),
   {
     files: ['**/*.{ts,tsx}'],
     ignores: ['eslint.config.js'],

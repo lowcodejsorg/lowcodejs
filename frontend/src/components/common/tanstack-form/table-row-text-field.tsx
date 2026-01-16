@@ -1,13 +1,12 @@
 import { TextIcon } from 'lucide-react';
 
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IField } from '@/lib/interfaces';
 
 interface TableRowTextFieldProps {
@@ -37,7 +36,7 @@ export function TableRowTextField({
           name={formField.name}
           type="text"
           placeholder={`Digite ${field.name.toLowerCase()}`}
-          value={formField.state.value ?? ''}
+          value={formField.state.value || ''}
           onBlur={formField.handleBlur}
           onChange={(e) => formField.handleChange(e.target.value)}
           aria-invalid={isInvalid}

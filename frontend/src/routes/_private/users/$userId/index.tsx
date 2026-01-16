@@ -17,7 +17,7 @@ import { useUpdateUser } from '@/hooks/tanstack-query/use-user-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import type { IUser, Paginated } from '@/lib/interfaces';
+import type { IHTTPExeptionError, IUser, Paginated } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/users/$userId/')({
@@ -79,6 +79,39 @@ function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
+  const form = useAppForm({
+    defaultValues: {
+      name: data.name,
+      email: data.email,
+      password: '',
+      status: data.status,
+      group: data.group._id,
+    } satisfies UserUpdateFormValues,
+    validators: {
+      onSubmit: UserUpdateSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (_update.status === 'pending') return;
+      await _update.mutateAsync({
+        ...value,
+        _id: data._id,
+        ...(value.password !== '' && { password: value.password }),
+      });
+    },
+  });
+
+  function setFieldError(
+    field: 'name' | 'email' | 'password' | 'status' | 'group',
+    message: string,
+  ): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
+
   const _update = useUpdateUser({
     onSuccess(updatedData) {
       queryClient.setQueryData<IUser>(
@@ -129,39 +162,67 @@ function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
+        const errorData = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+          email?: string;
+          password?: string;
+          status?: string;
+          group?: string;
+        }>;
+
+        // 404 - Usuário não encontrado
+        if (errorData.cause === 'USER_NOT_FOUND' && errorData.code === 404) {
+          toast('Usuário não encontrado', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'O usuário que você está tentando atualizar não existe',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        // 400 - Erros de validação
+        if (
+          errorData.cause === 'INVALID_PAYLOAD_FORMAT' &&
+          errorData.code === 400
+        ) {
+          if (errorData.errors['name'])
+            setFieldError('name', errorData.errors['name']);
+
+          if (errorData.errors['email'])
+            setFieldError('email', errorData.errors['email']);
+
+          if (errorData.errors['password'])
+            setFieldError('password', errorData.errors['password']);
+
+          if (errorData.errors['group'])
+            setFieldError('group', errorData.errors['group']);
+
+          return;
+        }
+
+        if (errorData.cause === 'UPDATE_USER_ERROR' && errorData.code === 500) {
+          toast('Erro ao atualizar o usuário', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao atualizar o usuário. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
 
         toast('Erro ao atualizar o usuário', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar o usuário',
+          description:
+            'Houve um erro interno ao atualizar o usuário. Tente novamente mais tarde.',
           descriptionClassName: '!text-white',
           closeButton: true,
         });
       }
 
       console.error(error);
-    },
-  });
-
-  const form = useAppForm({
-    defaultValues: {
-      name: data.name,
-      email: data.email,
-      password: '',
-      status: data.status,
-      group: data.group._id,
-    } satisfies UserUpdateFormValues,
-    onSubmit: async ({ value }) => {
-      const validation = UserUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
-      if (_update.status === 'pending') return;
-
-      await _update.mutateAsync({
-        ...value,
-        _id: data._id,
-        password: value.password !== '' ? value.password : undefined,
-      });
     },
   });
 

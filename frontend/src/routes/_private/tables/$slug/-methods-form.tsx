@@ -32,20 +32,35 @@ export const MethodsFormFields = withForm({
           momentos do ciclo de vida do registro.
         </p>
 
-        <Tabs defaultValue="onLoad" className="w-full">
+        <Tabs
+          defaultValue="onLoad"
+          className="w-full"
+        >
           <TabsList className="w-full">
-            <TabsTrigger value="onLoad" className="flex-1">
+            <TabsTrigger
+              value="onLoad"
+              className="flex-1"
+            >
               Ao Carregar
             </TabsTrigger>
-            <TabsTrigger value="beforeSave" className="flex-1">
+            <TabsTrigger
+              value="beforeSave"
+              className="flex-1"
+            >
               Antes de Salvar
             </TabsTrigger>
-            <TabsTrigger value="afterSave" className="flex-1">
+            <TabsTrigger
+              value="afterSave"
+              className="flex-1"
+            >
               Após Salvar
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="onLoad" className="mt-4">
+          <TabsContent
+            value="onLoad"
+            className="mt-4"
+          >
             <form.AppField name="onLoad">
               {(field) => (
                 <field.FieldCodeEditor
@@ -60,7 +75,10 @@ export const MethodsFormFields = withForm({
             </p>
           </TabsContent>
 
-          <TabsContent value="beforeSave" className="mt-4">
+          <TabsContent
+            value="beforeSave"
+            className="mt-4"
+          >
             <form.AppField name="beforeSave">
               {(field) => (
                 <field.FieldCodeEditor
@@ -75,7 +93,10 @@ export const MethodsFormFields = withForm({
             </p>
           </TabsContent>
 
-          <TabsContent value="afterSave" className="mt-4">
+          <TabsContent
+            value="afterSave"
+            className="mt-4"
+          >
             <form.AppField name="afterSave">
               {(field) => (
                 <field.FieldCodeEditor
@@ -86,8 +107,7 @@ export const MethodsFormFields = withForm({
             </form.AppField>
             <p className="text-sm text-muted-foreground mt-2">
               Executado após salvar o registro. Use para enviar notificações,
-              atualizar registros relacionados ou executar ações
-              pós-salvamento.
+              atualizar registros relacionados ou executar ações pós-salvamento.
             </p>
           </TabsContent>
         </Tabs>

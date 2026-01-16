@@ -22,6 +22,11 @@ export default class UserCreateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
+      if (!payload.group)
+        return left(
+          HTTPException.BadRequest('Group not informed', 'GROUP_NOT_INFORMED'),
+        );
+
       const user = await this.userRepository.findBy({
         email: payload.email,
         exact: true,

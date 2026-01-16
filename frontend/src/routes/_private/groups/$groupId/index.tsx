@@ -4,23 +4,20 @@ import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import {
-  GroupUpdateSchema,
-  UpdateGroupFormFields,
-  type GroupUpdateFormValues,
-} from './-update-form';
+import { GroupUpdateSchema, UpdateGroupFormFields } from './-update-form';
+import type { GroupUpdateFormValues } from './-update-form';
 import { UpdateGroupFormSkeleton } from './-update-form-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useReadGroup } from '@/hooks/tanstack-query/use-group-read';
 import { useUpdateGroup } from '@/hooks/tanstack-query/use-group-update';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import type { IGroup, Paginated } from '@/lib/interfaces';
+import type { IGroup, IHTTPExeptionError, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/groups/$groupId/')({
   component: RouteComponent,
@@ -79,6 +76,18 @@ function GroupUpdateContent({ data }: { data: IGroup }): React.JSX.Element {
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
+  function setFieldError(
+    field: 'name' | 'description' | 'permissions',
+    message: string,
+  ): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
+
   const _update = useUpdateGroup({
     onSuccess(updatedData) {
       queryClient.setQueryData<IGroup>(
@@ -122,15 +131,63 @@ function GroupUpdateContent({ data }: { data: IGroup }): React.JSX.Element {
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
+        const errorData = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+          description?: string;
+          permissions?: string;
+        }>;
 
-        toast('Erro ao atualizar o grupo', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar o grupo',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        // 404 - Grupo não encontrado (USER_GROUP_NOT_FOUND)
+        if (
+          errorData.cause === 'USER_GROUP_NOT_FOUND' &&
+          errorData.code === 404
+        ) {
+          toast('Grupo não encontrado', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: 'O grupo que você está tentando atualizar não existe',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        // 400 - Erros de validação (INVALID_PAYLOAD_FORMAT)
+        if (
+          errorData.cause === 'INVALID_PAYLOAD_FORMAT' &&
+          errorData.code === 400
+        ) {
+          if (errorData.errors['name'])
+            setFieldError('name', errorData.errors['name']);
+          if (errorData.errors['description'])
+            setFieldError('description', errorData.errors['description']);
+          if (errorData.errors['permissions'])
+            setFieldError('permissions', errorData.errors['permissions']);
+          return;
+        }
+
+        // 500 - Erro interno (UPDATE_USER_GROUP_ERROR)
+        if (
+          errorData.cause === 'UPDATE_USER_GROUP_ERROR' &&
+          errorData.code === 500
+        ) {
+          toast('Erro ao atualizar o grupo', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao atualizar o grupo. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
       }
+
+      toast('Erro ao atualizar o grupo', {
+        className: '!bg-destructive !text-white !border-destructive',
+        description:
+          'Houve um erro interno ao atualizar o grupo. Tente novamente mais tarde.',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
 
       console.error(error);
     },

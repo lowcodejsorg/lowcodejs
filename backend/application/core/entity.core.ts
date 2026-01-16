@@ -46,6 +46,10 @@ export const E_FIELD_FORMAT = {
   URL: 'URL',
   EMAIL: 'EMAIL',
 
+  // TEXT_LONG
+  RICH_TEXT: 'RICH_TEXT',
+  PLAIN_TEXT: 'PLAIN_TEXT',
+
   // DATE
   DD_MM_YYYY: 'dd/MM/yyyy',
   MM_DD_YYYY: 'MM/dd/yyyy',
@@ -85,6 +89,8 @@ export const E_TABLE_STYLE = {
   LIST: 'LIST',
   GALLERY: 'GALLERY',
   DOCUMENT: 'DOCUMENT',
+  CARD: 'CARD',
+  MOSAIC: 'MOSAIC',
 } as const;
 
 export const E_TABLE_VISIBILITY = {

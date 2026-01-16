@@ -7,10 +7,8 @@ import type { IUser as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
-import type { ProfileShowPayload } from './show.validator';
-
 type Response = Either<HTTPException, Entity>;
-type Payload = ProfileShowPayload;
+type Payload = { _id: string };
 
 @Service()
 export default class ProfileShowUseCase {

@@ -68,7 +68,7 @@ export type SettingUpdateFormValues = Merge<
     EMAIL_PROVIDER_USER: string;
     EMAIL_PROVIDER_PASSWORD: string;
   },
-  { logoSmallFile: File[]; logoLargeFile: File[] }
+  { logoSmallFile: Array<File>; logoLargeFile: Array<File> }
 >;
 
 export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {

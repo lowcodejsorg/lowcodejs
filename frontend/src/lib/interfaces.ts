@@ -273,3 +273,11 @@ export type IEvaluation = Merge<
     value: number;
   }
 >;
+
+export type IHTTPException = {
+  code: number;
+  cause: string;
+  message: string;
+};
+
+export type IHTTPExeptionError<T> = Merge<IHTTPException, { errors: T }>;

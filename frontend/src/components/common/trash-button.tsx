@@ -9,7 +9,7 @@ import { cn } from '@/lib/utils';
 export function TrashButton(): React.JSX.Element {
   const search = useSearch({
     strict: false,
-  }) as Record<string, any>;
+  });
 
   const router = useRouter();
 

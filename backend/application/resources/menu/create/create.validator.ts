@@ -5,12 +5,24 @@ import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 
 export const MenuCreateBodyValidator = z
   .object({
-    name: z.string().trim().min(1, 'Nome é obrigatório'),
-    type: z.enum(E_MENU_ITEM_TYPE),
-    table: z.string().nullable().optional(),
-    parent: z.string().nullable().optional(),
-    html: z.string().nullable().optional(),
-    url: z.string().nullable().optional(),
+    name: z
+      .string({ message: 'O nome é obrigatório' })
+      .trim()
+      .min(1, 'O nome é obrigatório'),
+    type: z.enum(E_MENU_ITEM_TYPE, { message: 'Tipo inválido' }),
+    table: z
+      .string({ message: 'A tabela deve ser um texto' })
+      .nullable()
+      .optional(),
+    parent: z
+      .string({ message: 'O menu pai deve ser um texto' })
+      .nullable()
+      .optional(),
+    html: z
+      .string({ message: 'O HTML deve ser um texto' })
+      .nullable()
+      .optional(),
+    url: z.string({ message: 'A URL deve ser um texto' }).nullable().optional(),
   })
   .transform((payload) => {
     return {

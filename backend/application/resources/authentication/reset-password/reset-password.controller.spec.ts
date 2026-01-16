@@ -25,8 +25,10 @@ describe('E2E Reset Password Controller', () => {
         .put('/authentication/recovery/update-password')
         .set('Cookie', cookies)
         .send({
-          password: 'novasenha123',
+          password: 'S3nha@123A',
         });
+
+      console.log(response.body);
 
       expect(response.statusCode).toBe(200);
     });

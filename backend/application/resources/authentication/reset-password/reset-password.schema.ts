@@ -1,38 +1,55 @@
 import type { FastifySchema } from 'fastify';
 
 export const ResetPasswordSchema: FastifySchema = {
-  tags: ['Authentication'],
-  summary: 'Update password after recovery',
+  tags: ['Autenticação'],
+  summary: 'Atualizar senha após recuperação',
   description:
-    'Updates user password using a valid recovery token obtained from code validation',
+    'Atualiza a senha do usuário usando um token de recuperação válido obtido da validação do código',
   body: {
     type: 'object',
     required: ['password'],
     properties: {
       password: {
         type: 'string',
-        minLength: 8,
-        description: 'New password (minimum 8 characters)',
+        minLength: 6,
+        pattern: '^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?":{}|<>])',
+        description:
+          'Nova senha (mínimo 6 caracteres, deve conter maiúscula, minúscula, número e caractere especial)',
+        errorMessage: {
+          type: 'A senha deve ser um texto',
+          minLength: 'A senha deve ter no mínimo 6 caracteres',
+          pattern:
+            'A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        password: 'A senha é obrigatória',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
     200: {
-      description: 'Password updated successfully',
+      description: 'Senha atualizada com sucesso',
       type: 'object',
       properties: {
         message: { type: 'string' },
       },
     },
     400: {
-      description: 'Bad request - Invalid token or password validation error',
+      description:
+        'Requisição inválida - Token inválido ou erro de validação de senha',
       type: 'object',
       properties: {
         message: {
           type: 'string',
           enum: [
-            'Invalid recovery token',
-            'Password must be at least 8 characters',
+            'Token de recuperação inválido',
+            'A senha deve ter no mínimo 6 caracteres',
+            'A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
           ],
         },
         code: { type: 'number', enum: [400] },
@@ -43,30 +60,46 @@ export const ResetPasswordSchema: FastifySchema = {
       },
       examples: [
         {
-          message: 'Invalid recovery token',
+          message: 'Token de recuperação inválido',
           code: 400,
           cause: 'INVALID_TOKEN',
         },
         {
-          message: 'Password must be at least 8 characters',
+          message: 'A senha deve ter no mínimo 6 caracteres',
           code: 400,
           cause: 'INVALID_PARAMETERS',
         },
       ],
     },
-    500: {
-      description: 'Internal server error',
+    404: {
+      description: 'Não encontrado - Usuário não encontrado',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
-        code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['INTERNAL_SERVER_ERROR'] },
+        message: { type: 'string', enum: ['Usuário não encontrado'] },
+        code: { type: 'number', enum: [404] },
+        cause: { type: 'string', enum: ['USER_NOT_FOUND'] },
       },
       examples: [
         {
-          message: 'Internal server error',
+          message: 'Usuário não encontrado',
+          code: 404,
+          cause: 'USER_NOT_FOUND',
+        },
+      ],
+    },
+    500: {
+      description: 'Erro interno do servidor',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
+        code: { type: 'number', enum: [500] },
+        cause: { type: 'string', enum: ['UPDATE_PASSWORD_ERROR'] },
+      },
+      examples: [
+        {
+          message: 'Erro interno do servidor',
           code: 500,
-          cause: 'INTERNAL_SERVER_ERROR',
+          cause: 'UPDATE_PASSWORD_ERROR',
         },
       ],
     },

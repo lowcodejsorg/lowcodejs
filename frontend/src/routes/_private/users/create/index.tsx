@@ -20,7 +20,7 @@ import { useCreateUser } from '@/hooks/tanstack-query/use-user-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import type { IUser, Paginated } from '@/lib/interfaces';
+import type { IHTTPExeptionError, IUser, Paginated } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/users/create/')({
@@ -34,6 +34,29 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate();
+
+  const form = useAppForm({
+    defaultValues: userFormDefaultValues,
+    validators: {
+      onSubmit: UserCreateSchema,
+    },
+    onSubmit: async ({ value }) => {
+      if (_create.status === 'pending') return;
+      await _create.mutateAsync(value);
+    },
+  });
+
+  function setFieldError(
+    field: 'name' | 'email' | 'password' | 'group',
+    message: string,
+  ): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
 
   const _create = useCreateUser({
     onSuccess(data) {
@@ -77,29 +100,61 @@ function RouteComponent(): React.JSX.Element {
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const data = error.response?.data;
+        const data = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+          email?: string;
+          password?: string;
+          group?: string;
+        }>;
+
+        // 409 - Email já em uso
+        if (data.cause === 'USER_ALREADY_EXISTS' && data.code === 409) {
+          setFieldError('email', 'Este email já está em uso');
+          return;
+        }
+
+        // 400 - Grupo não informado
+        if (data.cause === 'GROUP_NOT_INFORMED' && data.code === 400) {
+          setFieldError('group', 'Grupo é obrigatório');
+          return;
+        }
+
+        // 400 - Erros de validação
+        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
+          if (data.errors['name']) setFieldError('name', data.errors['name']);
+
+          if (data.errors['email'])
+            setFieldError('email', data.errors['email']);
+
+          if (data.errors['password'])
+            setFieldError('password', data.errors['password']);
+
+          if (data.errors['group'])
+            setFieldError('group', data.errors['group']);
+          return;
+        }
+
+        if (data.cause === 'CREATE_USER_ERROR' && data.code === 500) {
+          toast('Erro ao criar o usuário', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao criar o usuário. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
 
         toast('Erro ao criar o usuário', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: data?.message ?? 'Erro ao criar o usuário',
+          description:
+            'Houve um erro interno ao criar o usuário. Tente novamente mais tarde.',
           descriptionClassName: '!text-white',
           closeButton: true,
         });
       }
 
       console.error(error);
-    },
-  });
-
-  const form = useAppForm({
-    defaultValues: userFormDefaultValues,
-    onSubmit: async ({ value }) => {
-      const validation = UserCreateSchema.safeParse(value);
-      if (!validation.success) return;
-
-      if (_create.status === 'pending') return;
-
-      await _create.mutateAsync(value);
     },
   });
 

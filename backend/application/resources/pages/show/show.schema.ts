@@ -1,111 +1,99 @@
 import type { FastifySchema } from 'fastify';
 
-export const ProfileShowSchema: FastifySchema = {
-  tags: ['Profile'],
-  summary: 'Get current user profile',
-  description:
-    "Retrieves the authenticated user's profile information including personal data, group, and permissions.",
+export const PageShowSchema: FastifySchema = {
+  tags: ['Páginas'],
+  summary: 'Buscar página por slug',
+  description: 'Retorna uma página específica pelo slug para renderização',
   security: [{ cookieAuth: [] }],
-  response: {
-    200: {
-      description: 'User profile retrieved successfully',
-      type: 'object',
-      properties: {
-        _id: { type: 'string', description: 'User ID' },
-        name: { type: 'string', description: 'User full name' },
-        email: {
-          type: 'string',
-          format: 'email',
-          description: 'User email address',
-        },
-        status: {
-          type: 'string',
-          enum: ['active', 'inactive'],
-          description: 'User account status',
-        },
-        group: {
-          type: 'object',
-          description: 'User group with populated permissions',
-          properties: {
-            _id: { type: 'string', description: 'Group ID' },
-            name: { type: 'string', description: 'Group name' },
-            slug: { type: 'string', description: 'Group slug' },
-            description: {
-              type: 'string',
-              nullable: true,
-              description: 'Group description',
-            },
-            permissions: {
-              type: 'array',
-              description: 'Array of permissions assigned to this group',
-              items: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string', description: 'Permission ID' },
-                  name: {
-                    type: 'string',
-                    description: 'Permission name',
-                  },
-                  slug: {
-                    type: 'string',
-                    description: 'Permission slug',
-                  },
-                  description: {
-                    type: 'string',
-                    nullable: true,
-                    description: 'Permission description',
-                  },
-                },
-              },
-            },
-            createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' },
-          },
-        },
-        createdAt: {
-          type: 'string',
-          format: 'date-time',
-          description: 'Account creation timestamp',
-        },
-        updatedAt: {
-          type: 'string',
-          format: 'date-time',
-          description: 'Last profile update timestamp',
+  params: {
+    type: 'object',
+    required: ['slug'],
+    properties: {
+      slug: {
+        type: 'string',
+        description: 'Slug da página',
+        errorMessage: {
+          type: 'O slug deve ser um texto',
         },
       },
     },
-    401: {
-      description: 'Unauthorized - Authentication required',
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        slug: 'O slug é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
+    },
+  },
+  response: {
+    200: {
+      description: 'Página encontrada com sucesso',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        _id: { type: 'string', description: 'ID da página' },
+        name: { type: 'string', description: 'Nome da página' },
+        slug: { type: 'string', description: 'Slug da página' },
+        type: {
+          type: 'string',
+          enum: ['PAGE', 'TABLE', 'URL'],
+          description: 'Tipo do item de menu',
+        },
+        table: {
+          type: 'string',
+          nullable: true,
+          description: 'ID da tabela (quando tipo é TABLE)',
+        },
+        parent: {
+          type: 'string',
+          nullable: true,
+          description: 'ID do menu pai',
+        },
+        url: {
+          type: 'string',
+          nullable: true,
+          description: 'URL externa (quando tipo é URL)',
+        },
+        html: {
+          type: 'string',
+          nullable: true,
+          description: 'Conteúdo HTML da página (quando tipo é PAGE)',
+        },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+    401: {
+      description: 'Não autorizado - Autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
     },
     404: {
-      description: 'Not found - User profile not found',
+      description: 'Página não encontrada',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['User not found'] },
+        message: { type: 'string', enum: ['Página não encontrada'] },
         code: { type: 'number', enum: [404] },
-        cause: { type: 'string', enum: ['USER_NOT_FOUND'] },
+        cause: { type: 'string', enum: ['PAGE_NOT_FOUND'] },
       },
       examples: [
         {
-          message: 'User not found',
+          message: 'Página não encontrada',
           code: 404,
-          cause: 'USER_NOT_FOUND',
+          cause: 'PAGE_NOT_FOUND',
         },
       ],
     },
     500: {
-      description: 'Internal server error - Database or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['GET_USER_PROFILE_ERROR'] },
+        cause: { type: 'string', enum: ['GET_MENU_ERROR'] },
       },
     },
   },

@@ -4,7 +4,7 @@ import z from 'zod';
 
 import type { TreeNode } from '@/components/common/-tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 
 interface DropdownOption {
   value: string;
@@ -78,6 +78,10 @@ export const CreateFieldFormFields = withForm({
       form.store,
       (state) => state.values.configuration.relationship.tableSlug,
     );
+    const textLongFormat = useStore(
+      form.store,
+      (state) => state.values.configuration.format,
+    );
 
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
     const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
@@ -143,6 +147,19 @@ export const CreateFieldFormFields = withForm({
                 disabled={isPending || Boolean(defaultFieldType)}
                 blockedTypes={blockedTypes}
                 required
+                onTypeChange={(type) => {
+                  if (type === E_FIELD_TYPE.TEXT_LONG) {
+                    form.setFieldValue(
+                      'configuration.format',
+                      E_FIELD_FORMAT.PLAIN_TEXT,
+                    );
+                  } else if (
+                    type !== E_FIELD_TYPE.TEXT_SHORT &&
+                    type !== E_FIELD_TYPE.DATE
+                  ) {
+                    form.setFieldValue('configuration.format', '');
+                  }
+                }}
               />
             )}
           </form.AppField>
@@ -195,8 +212,40 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Campo Valor Padrão (TEXT_LONG) */}
+        {/* Campo Formato (TEXT_LONG) */}
         {isTextLong && (
+          <form.AppField
+            name="configuration.format"
+            validators={{
+              onBlur: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return { message: 'Formato é obrigatório' };
+                }
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <field.TableFieldFormatSelect
+                label="Formato"
+                placeholder="Selecione um formato para o campo"
+                disabled={isPending}
+                fieldType={E_FIELD_TYPE.TEXT_LONG}
+                required
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Campo Valor Padrão (TEXT_LONG - Editor Rico) */}
+        {isTextLong && textLongFormat === E_FIELD_FORMAT.RICH_TEXT && (
+          <form.AppField name="configuration.defaultValue">
+            {(field) => <field.FieldEditor label="Valor padrão" />}
+          </form.AppField>
+        )}
+
+        {/* Campo Valor Padrão (TEXT_LONG - Área de Texto) */}
+        {isTextLong && textLongFormat !== E_FIELD_FORMAT.RICH_TEXT && (
           <form.AppField name="configuration.defaultValue">
             {(field) => (
               <field.FieldTextarea

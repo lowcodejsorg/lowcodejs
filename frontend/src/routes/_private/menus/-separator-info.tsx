@@ -1,6 +1,6 @@
 import { InfoIcon } from 'lucide-react';
 
-export function SeparatorInfo() {
+export function SeparatorInfo(): React.JSX.Element {
   return (
     <div className="bg-primary/10 border border-primary/20 rounded-md p-4">
       <div className="flex items-start gap-3">

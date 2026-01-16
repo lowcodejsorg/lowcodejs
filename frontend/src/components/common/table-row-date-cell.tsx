@@ -1,6 +1,7 @@
-import type { IField, IRow } from '@/lib/interfaces';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+
+import type { IField, IRow } from '@/lib/interfaces';
 
 interface TableRowDateCellProps {
   row: IRow;
@@ -11,7 +12,7 @@ export function TableRowDateCell({
   field,
   row,
 }: TableRowDateCellProps): React.JSX.Element {
-  const value = row?.[field.slug];
+  const value = row[field.slug];
   const dateFormat = field.configuration.format ?? 'dd/MM/yyyy';
 
   return (

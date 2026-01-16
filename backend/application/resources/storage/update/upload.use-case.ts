@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 import type { MultipartFile } from '@fastify/multipart';
-import { getInstanceByToken, Service } from 'fastify-decorators';
+import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -18,9 +18,7 @@ type Response = Either<HTTPException, Entity[]>;
 export default class StorageUploadUseCase {
   constructor(
     private readonly storageRepository: StorageContractRepository,
-    private readonly service: StorageService = getInstanceByToken(
-      StorageService,
-    ),
+    private readonly service: StorageService,
   ) {}
 
   async execute(

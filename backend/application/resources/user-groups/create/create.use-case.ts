@@ -36,7 +36,7 @@ export default class UserGroupCreateUseCase {
       if (!(payload?.permissions?.length > 0))
         return left(
           HTTPException.BadRequest(
-            'Ao menos uma permissao deve ser informada para o grupo de usuarios',
+            'Ao menos uma permissão deve ser informada para o grupo de usuários',
           ),
         );
 

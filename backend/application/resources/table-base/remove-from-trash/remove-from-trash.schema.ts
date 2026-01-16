@@ -173,7 +173,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
           properties: {
             style: {
               type: 'string',
-              enum: ['GALLERY', 'LIST', 'DOCUMENT'],
+              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC'],
               description: 'Display style',
             },
             visibility: {

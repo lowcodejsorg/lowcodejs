@@ -19,11 +19,14 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download backend build artifacts
+      - name: Download build artifact
         uses: actions/download-artifact@v4
         with:
-          name: backend-build-${{ github.sha }}
-          path: backend/build
+          name: backend-build
+          path: backend/
+
+      - name: Remove .dockerignore (permite copiar build artifacts)
+        run: rm -f backend/.dockerignore
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -45,4 +48,5 @@ jobs:
           push: true
           platforms: linux/amd64,linux/arm64
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/lowcodejs-api:${{ inputs.branch }}
-          no-cache: true
+          cache-from: type=gha,scope=backend-${{ inputs.branch }}
+          cache-to: type=gha,mode=max,scope=backend-${{ inputs.branch }}

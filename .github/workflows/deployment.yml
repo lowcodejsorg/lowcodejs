@@ -5,8 +5,15 @@ on:
     branches: [develop, demo, intranet]
 
 jobs:
+  test-backend:
+    uses: ./.github/workflows/deployment-test-backend.yml
+
   build-backend:
+    needs: test-backend
     uses: ./.github/workflows/deployment-build-backend.yml
+
+  build-frontend:
+    uses: ./.github/workflows/deployment-build-frontend.yml
 
   docker-backend:
     needs: build-backend
@@ -18,6 +25,7 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   docker-frontend:
+    needs: build-frontend
     uses: ./.github/workflows/deployment-docker-frontend.yml
     with:
       branch: ${{ github.ref_name }}

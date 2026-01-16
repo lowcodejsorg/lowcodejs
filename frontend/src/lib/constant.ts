@@ -43,6 +43,9 @@ export const E_FIELD_FORMAT = {
   DECIMAL: 'DECIMAL',
   URL: 'URL',
   EMAIL: 'EMAIL',
+  // TEXT_LONG
+  RICH_TEXT: 'RICH_TEXT',
+  PLAIN_TEXT: 'PLAIN_TEXT',
   // DATE
   DD_MM_YYYY: 'dd/MM/yyyy',
   MM_DD_YYYY: 'MM/dd/yyyy',
@@ -67,6 +70,8 @@ export const E_TABLE_STYLE = {
   LIST: 'LIST',
   GALLERY: 'GALLERY',
   DOCUMENT: 'DOCUMENT',
+  CARD: 'CARD',
+  MOSAIC: 'MOSAIC',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -154,6 +159,11 @@ export const TEXT_FORMAT_OPTIONS = [
   { label: 'E-mail', value: E_FIELD_FORMAT.EMAIL },
 ] as const;
 
+export const TEXT_LONG_FORMAT_OPTIONS = [
+  { label: 'Área de texto', value: E_FIELD_FORMAT.PLAIN_TEXT },
+  { label: 'Editor rico', value: E_FIELD_FORMAT.RICH_TEXT },
+] as const;
+
 export const DATE_FORMAT_OPTIONS = [
   { label: 'DD/MM/AAAA', value: E_FIELD_FORMAT.DD_MM_YYYY },
   { label: 'MM/DD/AAAA', value: E_FIELD_FORMAT.MM_DD_YYYY },
@@ -203,6 +213,8 @@ export const TABLE_STYLE_OPTIONS = [
   { label: 'Lista', value: E_TABLE_STYLE.LIST },
   { label: 'Galeria', value: E_TABLE_STYLE.GALLERY },
   { label: 'Documento', value: E_TABLE_STYLE.DOCUMENT },
+  { label: 'Card', value: E_TABLE_STYLE.CARD },
+  { label: 'Mosaico', value: E_TABLE_STYLE.MOSAIC },
 ] as const;
 
 export const USER_GROUP_MAPPER = {
@@ -216,3 +228,6 @@ export const USER_STATUS_MAPPER = {
   [E_USER_STATUS.ACTIVE]: 'Ativo',
   [E_USER_STATUS.INACTIVE]: 'Inativo',
 } as const;
+
+export const PASSWORD_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
