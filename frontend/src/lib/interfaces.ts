@@ -217,6 +217,7 @@ export type ISetting = {
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;
   EMAIL_PROVIDER_PASSWORD: string;
+  MODEL_CLONE_TABLES: Array<string>;
 };
 
 export type IRow = Merge<Base, Record<string, any>> & {

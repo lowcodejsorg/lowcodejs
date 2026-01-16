@@ -544,6 +544,44 @@ export const UpdateSettingFormFields = withForm({
           </Card>
         )}
 
+        {/* Modelo de Tabelas para Clones */}
+        {settingData && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DatabaseIcon className="w-5 h-5" />
+                Modelo de Tabelas
+              </CardTitle>
+              <CardDescription>
+                Selecione um modelo para clonagem de tabelas
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Field>
+                <form.AppField
+                  name="MODEL_CLONE_TABLES"
+                  validators={{
+                    onBlur: ({ value }) => {
+                      if (!Array.isArray(value) || value.length === 0) {
+                        return { message: 'Selecione ao menos uma tabela' };
+                      }
+                    },
+                  }}
+                >
+                  {(field) => (
+                    <field.FieldTableMultiSelect
+                      label="Tabelas"
+                      placeholder="Selecione as tabelas..."
+                      disabled={isDisabled}
+                      required
+                    />
+                  )}
+                </form.AppField>
+              </Field>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Servidor de Email */}
         <Card>
           <CardHeader>
