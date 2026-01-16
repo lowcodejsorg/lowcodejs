@@ -19,7 +19,12 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { MetaDefault } from '@/lib/constant';
-import type { IMenu, Paginated, ValueOf } from '@/lib/interfaces';
+import type {
+  IHTTPExeptionError,
+  IMenu,
+  Paginated,
+  ValueOf,
+} from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/$menuId/')({
   component: RouteComponent,
@@ -78,6 +83,18 @@ function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
+  function setFieldError(
+    field: 'name' | 'type' | 'table' | 'parent' | 'html' | 'url',
+    message: string,
+  ): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
+
   const _update = useUpdateMenu({
     onSuccess(updatedData) {
       queryClient.setQueryData<IMenu>(
@@ -125,15 +142,99 @@ function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
+        const errorData = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+          type?: string;
+          table?: string;
+          parent?: string;
+          html?: string;
+          url?: string;
+        }>;
 
-        toast('Erro ao atualizar o menu', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar o menu',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        // 404 - Menu não encontrado
+        if (errorData.cause === 'MENU_NOT_FOUND' && errorData.code === 404) {
+          toast('Menu não encontrado', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: 'O menu que você está tentando atualizar não existe',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        // 404 - Menu pai não encontrado
+        if (
+          errorData.cause === 'PARENT_MENU_NOT_FOUND' &&
+          errorData.code === 404
+        ) {
+          setFieldError('parent', 'Menu pai não encontrado');
+          return;
+        }
+
+        // 409 - Menu já existe
+        if (
+          errorData.cause === 'MENU_ALREADY_EXISTS' &&
+          errorData.code === 409
+        ) {
+          setFieldError('name', 'Já existe um menu com este nome');
+          return;
+        }
+
+        // 404 - Tabela não encontrada
+        if (errorData.cause === 'TABLE_NOT_FOUND' && errorData.code === 404) {
+          setFieldError('table', 'Tabela não encontrada');
+          return;
+        }
+
+        // 400 - Parâmetros inválidos
+        if (
+          errorData.cause === 'INVALID_PARAMETERS' &&
+          errorData.code === 400
+        ) {
+          setFieldError('table', 'Tabela é obrigatória para este tipo de menu');
+          return;
+        }
+
+        // 400 - Erros de validação
+        if (
+          errorData.cause === 'INVALID_PAYLOAD_FORMAT' &&
+          errorData.code === 400
+        ) {
+          if (errorData.errors['name'])
+            setFieldError('name', errorData.errors['name']);
+          if (errorData.errors['type'])
+            setFieldError('type', errorData.errors['type']);
+          if (errorData.errors['table'])
+            setFieldError('table', errorData.errors['table']);
+          if (errorData.errors['parent'])
+            setFieldError('parent', errorData.errors['parent']);
+          if (errorData.errors['html'])
+            setFieldError('html', errorData.errors['html']);
+          if (errorData.errors['url'])
+            setFieldError('url', errorData.errors['url']);
+          return;
+        }
+
+        // 500 - Erro interno
+        if (errorData.cause === 'UPDATE_MENU_ERROR' && errorData.code === 500) {
+          toast('Erro ao atualizar o menu', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao atualizar o menu. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
       }
+
+      toast('Erro ao atualizar o menu', {
+        className: '!bg-destructive !text-white !border-destructive',
+        description:
+          'Houve um erro interno ao atualizar o menu. Tente novamente mais tarde.',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
 
       console.error(error);
     },
