@@ -136,7 +136,7 @@ export type ICategory = {
 export type IDropdown = {
   id: string;
   label: string;
-  color: string;
+  color: string | null;
 };
 
 export type IFieldConfigurationRelationship = {
@@ -161,7 +161,7 @@ export type IField = Merge<
       filtering: boolean;
       defaultValue: string | null;
       relationship: IFieldConfigurationRelationship | null;
-      dropdown: Array<string>;
+      dropdown: Array<IDropdown>;
       category: Array<ICategory>;
       group: IFieldConfigurationGroup | null;
     };

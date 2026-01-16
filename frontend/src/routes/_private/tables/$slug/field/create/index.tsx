@@ -230,9 +230,7 @@ function RouteComponent(): React.JSX.Element {
             ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
             : null,
           defaultValue: config.defaultValue || null,
-          dropdown: hasDropdown
-            ? config.dropdown.map((item) => item.value)
-            : [],
+          dropdown: hasDropdown ? config.dropdown.map((item) => item) : [],
           relationship: hasRelationship
             ? {
                 table: {

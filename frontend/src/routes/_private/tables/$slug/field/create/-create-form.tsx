@@ -7,8 +7,9 @@ import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 
 interface DropdownOption {
-  value: string;
+  id: string;
   label: string;
+  color: string | null;
 }
 
 export const FieldCreateSchema = z.object({

@@ -66,12 +66,19 @@ export function buildPayload(
         payload[field.slug] = value || null;
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        const dropdownValue = Array.from<string>(value ?? []);
-
+        const existing = values[field.slug];
         if (field.configuration.multiple) {
-          payload[field.slug] = dropdownValue;
+          const ids = Array.isArray(existing)
+            ? existing
+            : existing
+              ? [existing]
+              : [];
+          payload[field.slug] = ids as Array<string>;
         } else {
-          payload[field.slug] = dropdownValue.slice(0, 1);
+          const id = Array.isArray(existing)
+            ? (existing[0] ?? null)
+            : (existing ?? null);
+          payload[field.slug] = id as string | null;
         }
         break;
       }

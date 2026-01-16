@@ -486,6 +486,8 @@ interface ComboboxSortableChipsProps {
   disabled?: boolean;
   className?: string;
   children?: React.ReactNode;
+  getItemColor?: (id: string) => string | undefined;
+  onItemColorChange?: (id: string, color?: string) => void;
 }
 
 function ComboboxSortableChips({
@@ -495,6 +497,8 @@ function ComboboxSortableChips({
   disabled = false,
   className,
   children,
+  getItemColor,
+  onItemColorChange,
 }: ComboboxSortableChipsProps): React.JSX.Element {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -548,6 +552,8 @@ function ComboboxSortableChips({
               label={item.label}
               onRemove={onRemove}
               disabled={disabled}
+              color={getItemColor?.(item.id)}
+              onColorChange={(color) => onItemColorChange?.(item.id, color)}
             />
           ))}
           {children}
@@ -563,6 +569,8 @@ interface ComboboxSortableChipProps {
   onRemove?: (id: string) => void;
   disabled?: boolean;
   className?: string;
+  color?: string;
+  onColorChange?: (color?: string) => void;
 }
 
 function ComboboxSortableChip({
@@ -571,6 +579,8 @@ function ComboboxSortableChip({
   onRemove,
   disabled = false,
   className,
+  color,
+  onColorChange,
 }: ComboboxSortableChipProps): React.JSX.Element {
   const {
     attributes,
@@ -586,6 +596,14 @@ function ComboboxSortableChip({
     transition,
     opacity: isDragging ? 0.5 : 1,
     zIndex: isDragging ? 1 : 0,
+  };
+
+  const colorInputRef = React.useRef<HTMLInputElement | null>(null);
+
+  const canPickColor = !!onColorChange && !disabled;
+
+  const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onColorChange?.(e.target.value);
   };
 
   return (
@@ -609,13 +627,52 @@ function ComboboxSortableChip({
       >
         <GripVerticalIcon className="size-3" />
       </button>
+
+      {onColorChange && (
+        <button
+          type="button"
+          className={cn(
+            'mx-0.5 inline-flex items-center justify-center',
+            'h-4 w-4 rounded-full border',
+            'opacity-80 hover:opacity-100',
+            disabled && 'pointer-events-none',
+          )}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!canPickColor) return;
+            colorInputRef.current?.click();
+          }}
+          title={color ?? 'Escolher cor'}
+        >
+          <span
+            className="h-3 w-3 rounded-full"
+            style={{ backgroundColor: color ?? 'transparent' }}
+          />
+        </button>
+      )}
+
       <span className="px-0.5">{label}</span>
+
+      {onColorChange && (
+        <input
+          ref={colorInputRef}
+          type="color"
+          value={color ?? '#000000'}
+          onChange={handleColorChange}
+          className="hidden"
+          tabIndex={-1}
+        />
+      )}
+
       {onRemove && (
         <Button
           variant="ghost"
           size="icon"
           className="size-5 p-0 opacity-50 hover:opacity-100"
-          onClick={() => onRemove(id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onRemove(id);
+          }}
           disabled={disabled}
         >
           <XIcon className="pointer-events-none size-3" />

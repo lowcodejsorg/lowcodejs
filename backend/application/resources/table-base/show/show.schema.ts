@@ -163,6 +163,7 @@ export const TableShowSchema: FastifySchema = {
                       properties: {
                         id: { type: 'string' },
                         label: { type: 'string' },
+                        color: { type: 'string' },
                       },
                     },
                   },
