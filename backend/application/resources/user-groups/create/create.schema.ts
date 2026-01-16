@@ -8,11 +8,12 @@ export const UserGroupCreateSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['name', 'permissions'],
+    required: ['name', 'description', 'permissions'],
     additionalProperties: false,
     errorMessage: {
       required: {
         name: 'O nome é obrigatório',
+        description: 'A descrição é obrigatória',
         permissions: 'Pelo menos uma permissão é obrigatória',
       },
       additionalProperties: 'Campos extras não são permitidos',

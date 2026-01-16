@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const SignUpSchema: FastifySchema = {
-  tags: ['Authentication'],
+  tags: ['Autenticação'],
   summary: 'User registration sign up',
   description: 'Creates a new user account with name, email and password',
   body: {

@@ -1,16 +1,22 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, GET } from 'fastify-decorators';
-import { readdir } from 'fs/promises';
-import { join } from 'path';
+import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
 import { LocaleListSchema } from './list.schema';
+import LocaleListUseCase from './list.use-case';
 
 @Controller({
   route: '/locales',
 })
 export default class {
+  constructor(
+    private readonly useCase: LocaleListUseCase = getInstanceByToken(
+      LocaleListUseCase,
+    ),
+  ) {}
+
   @GET({
     url: '/',
     options: {
@@ -23,9 +29,17 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const pathname = join(process.cwd(), '_locales');
-    const files = await readdir(pathname);
-    const locales = files.map((file) => ({ locale: file.split('.')[0] }));
-    return response.send(locales);
+    const result = await this.useCase.execute();
+
+    if (result.isLeft()) {
+      const error = result.value;
+      return response.status(error.code).send({
+        message: error.message,
+        code: error.code,
+        cause: error.cause,
+      });
+    }
+
+    return response.send(result.value);
   }
 }

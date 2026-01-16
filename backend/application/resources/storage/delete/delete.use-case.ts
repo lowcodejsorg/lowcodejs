@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { getInstanceByToken, Service } from 'fastify-decorators';
+import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -13,9 +13,7 @@ type Response = Either<HTTPException, null>;
 export default class StorageDeleteUseCase {
   constructor(
     private readonly storageRepository: StorageContractRepository,
-    private readonly service: StorageService = getInstanceByToken(
-      StorageService,
-    ),
+    private readonly service: StorageService,
   ) {}
 
   async execute({ _id }: { _id: string }): Promise<Response> {

@@ -52,12 +52,14 @@ export default async function Seed(): Promise<void> {
     .flatMap((p) => p?._id?.toString() || '');
 
   // Registered: Acesso limitado, só gerencia onde é admin
+  // Pode visualizar tabelas/campos/registros e criar registros (respeitando visibilidade)
   const permissionsRegistered = permissions
     ?.filter((p) =>
       [
         E_TABLE_PERMISSION.VIEW_TABLE, // Sim (respeitando visibilidade)
+        E_TABLE_PERMISSION.VIEW_FIELD, // Sim (necessário para ver os campos da tabela)
         E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
-        // @ts-ignore
+        E_TABLE_PERMISSION.CREATE_ROW, // Sim (respeitando visibilidade)
       ].includes(p.slug),
     )
     .flatMap((p) => p._id?.toString() || '');
