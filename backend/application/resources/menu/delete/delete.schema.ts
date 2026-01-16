@@ -2,9 +2,9 @@ import type { FastifySchema } from 'fastify';
 
 export const MenuDeleteSchema: FastifySchema = {
   tags: ['Menu'],
-  summary: 'Delete menu by ID (soft delete)',
+  summary: 'Excluir menu por ID (soft delete)',
   description:
-    'Moves a menu item to trash. Prevents deletion of separators with active children.',
+    'Move um item de menu para a lixeira. Impede exclusão de separadores com filhos ativos.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,26 +12,50 @@ export const MenuDeleteSchema: FastifySchema = {
     properties: {
       _id: {
         type: 'string',
-        description: 'Menu ID',
+        minLength: 1,
+        description: 'ID do menu',
+        errorMessage: {
+          type: 'O ID deve ser um texto',
+          minLength: 'O ID é obrigatório',
+        },
+      },
+    },
+    errorMessage: {
+      required: {
+        _id: 'O ID é obrigatório',
       },
     },
   },
   response: {
     200: {
-      description: 'Menu successfully moved to trash',
+      description: 'Menu movido para lixeira com sucesso',
       type: 'null',
     },
-    401: {
-      description: 'Unauthorized - Authentication required',
+    400: {
+      description: 'Requisição inválida - Falha na validação',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', description: 'Mensagem de erro' },
+        code: { type: 'number', enum: [400] },
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Erros de validação por campo',
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - Autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
     },
     404: {
-      description: 'Menu not found',
+      description: 'Menu não encontrado',
       type: 'object',
       properties: {
         message: { type: 'string', enum: ['Menu not found'] },
@@ -40,7 +64,7 @@ export const MenuDeleteSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Separator has active children',
+      description: 'Separador possui filhos ativos',
       type: 'object',
       properties: {
         message: { type: 'string', enum: ['Separator has active children'] },
@@ -49,9 +73,13 @@ export const MenuDeleteSchema: FastifySchema = {
         data: {
           type: 'object',
           properties: {
-            childrenCount: { type: 'number' },
+            childrenCount: {
+              type: 'number',
+              description: 'Quantidade de filhos',
+            },
             children: {
               type: 'array',
+              description: 'Lista de filhos',
               items: {
                 type: 'object',
                 properties: {
@@ -66,10 +94,10 @@ export const MenuDeleteSchema: FastifySchema = {
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['DELETE_MENU_ERROR'] },
       },

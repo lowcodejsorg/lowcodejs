@@ -18,7 +18,7 @@ describe('E2E Locales Show Controller', () => {
   });
 
   describe('GET /locales/:locale', () => {
-    it('deve retornar traducoes do locale com sucesso (autenticado)', async () => {
+    it('deve retornar traduções do locale com sucesso (autenticado)', async () => {
       const { cookies } = await createAuthenticatedUser();
 
       const response = await supertest(kernel.server)

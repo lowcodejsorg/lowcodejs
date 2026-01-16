@@ -1,16 +1,16 @@
 import { Pie, PieChart } from 'recharts';
 
+import { mockUsersByStatus } from './-mock-data';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
   ChartLegend,
   ChartLegendContent,
-  type ChartConfig,
+  ChartTooltip,
+  ChartTooltipContent,
 } from '@/components/ui/chart';
-
-import { mockUsersByStatus } from './-mock-data';
+import type { ChartConfig } from '@/components/ui/chart';
 
 const chartConfig = {
   value: {
@@ -33,7 +33,10 @@ export function ChartUsers(): React.JSX.Element {
         <CardTitle>Usuários por Status</CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
+        <ChartContainer
+          config={chartConfig}
+          className="h-[200px] w-full"
+        >
           <PieChart accessibilityLayer>
             <ChartTooltip content={<ChartTooltipContent hideLabel />} />
             <Pie

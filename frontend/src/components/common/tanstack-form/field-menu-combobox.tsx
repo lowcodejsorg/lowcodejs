@@ -1,10 +1,9 @@
 import { FolderTreeIcon } from 'lucide-react';
 
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { MenuCombobox } from '@/components/common/menu-combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
 interface FieldMenuComboboxProps {

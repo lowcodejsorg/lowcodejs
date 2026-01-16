@@ -52,10 +52,7 @@ export function buildDocBlocks(headersOrdered: Array<IField>): Array<DocBlock> {
 
   const blocks: Array<DocBlock> = [];
 
-
-
   const info: { titleField?: IField; bodyField?: IField } = {};
-
 
   h.map((field) => {
     if (field.type === E_FIELD_TYPE.TEXT_SHORT) {
@@ -82,8 +79,8 @@ export function rowMatchesCategory(
   row: IRow,
   categorySlug: string,
   selectedId: string | null,
-  descendantsMap?: Map<string, Set<string>>
-) {
+  descendantsMap?: Map<string, Set<string>>,
+): boolean {
   if (!selectedId) return true;
 
   const allowed = new Set<string>([
@@ -91,7 +88,7 @@ export function rowMatchesCategory(
     ...(descendantsMap?.get(selectedId) ?? new Set<string>()),
   ]);
 
-  const v = row?.[categorySlug];
+  const v = row[categorySlug];
 
   if (Array.isArray(v)) {
     return v.some((id) => allowed.has(String(id)));
@@ -117,7 +114,6 @@ export function rowIndentPxFromLeaf(
   return depth * 16;
 }
 
-
 export function rowHeadingLevelFromLeaf(
   row: IRow,
   categorySlug: string,
@@ -134,13 +130,12 @@ export function rowHeadingLevelFromLeaf(
   return Math.max(2, Math.min(6, 2 + depth));
 }
 
-
 export function rowLeafLabel(
   row: IRow,
   categorySlug: string,
   labelMap: Map<string, string>,
 ): string | null {
-  const v = (row as any)?.[categorySlug];
+  const v = row[categorySlug];
   const leaf =
     Array.isArray(v) && v.length
       ? v[v.length - 1]
@@ -164,14 +159,16 @@ export function buildCategoryOrderMap(
   return map;
 }
 
-export function getRowLeafId(row: any, categorySlug: string): string | null {
-  const v = row?.[categorySlug];
+export function getRowLeafId(row: IRow, categorySlug: string): string | null {
+  const v = row[categorySlug];
   if (Array.isArray(v) && v.length) return v[v.length - 1];
   if (typeof v === 'string') return v;
   return null;
 }
 
-export function buildDescendantsMap(nodes: CatNode[]) {
+export function buildDescendantsMap(
+  nodes: Array<CatNode>,
+): Map<string, Set<string>> {
   const map = new Map<string, Set<string>>();
 
   function collectDescendants(node: CatNode): Set<string> {

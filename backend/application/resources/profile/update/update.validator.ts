@@ -1,19 +1,40 @@
 import z from 'zod';
 
 import { Merge } from '@application/core/entity.core';
+import { PASSWORD_REGEX } from '@application/core/util.core';
 
 export const ProfileUpdateBodyValidator = z.object({
-  name: z.string().trim(),
-  email: z.string().email().trim(),
-  group: z.string().trim(),
+  name: z
+    .string({ message: 'O nome é obrigatório' })
+    .min(1, 'O nome é obrigatório')
+    .trim(),
+  email: z
+    .string({ message: 'O email é obrigatório' })
+    .email('Digite um email válido')
+    .trim(),
+  group: z
+    .string({ message: 'O grupo é obrigatório' })
+    .min(1, 'O grupo é obrigatório')
+    .trim(),
 
-  currentPassword: z.string().trim().optional(),
-  newPassword: z.string().trim().optional(),
+  currentPassword: z
+    .string({ message: 'A senha atual deve ser um texto' })
+    .trim()
+    .optional(),
+  newPassword: z
+    .string({ message: 'A nova senha deve ser um texto' })
+    .min(6, 'A nova senha deve ter no mínimo 6 caracteres')
+    .regex(
+      PASSWORD_REGEX,
+      'A nova senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+    )
+    .trim()
+    .optional(),
   allowPasswordChange: z.coerce.boolean().default(false),
 });
 
 export const ProfileUpdateParamsValidator = z.object({
-  _id: z.string().trim(),
+  _id: z.string({ message: 'O ID é obrigatório' }).trim(),
 });
 
 export type ProfileUpdatePayload = Merge<

@@ -1,4 +1,7 @@
-import type { UseMutationOptions } from '@tanstack/react-query';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -14,7 +17,9 @@ type UseMenuUpdateProps = Pick<
   'onSuccess' | 'onError'
 >;
 
-export function useUpdateMenu(props: UseMenuUpdateProps) {
+export function useUpdateMenu(
+  props: UseMenuUpdateProps,
+): UseMutationResult<IMenu, AxiosError | Error, MenuUpdatePayload, unknown> {
   return useMutation({
     mutationFn: async function ({ _id, ...payload }: MenuUpdatePayload) {
       const route = '/menu/'.concat(_id);

@@ -9,6 +9,8 @@ import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import z from 'zod';
 
+import { TableCardView } from './-table-card-view';
+import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
 import { TableDocumentView } from './-table-document-view';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
@@ -16,6 +18,8 @@ import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableListView } from './-table-list-view';
 import { TableListViewSkeleton } from './-table-list-view-skeleton';
+import { TableMosaicView } from './-table-mosaic-view';
+import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
@@ -167,6 +171,16 @@ function RouteComponent(): React.JSX.Element {
           table.data.configuration.style === E_TABLE_STYLE.DOCUMENT && (
             <TableDocumentViewSkeleton />
           )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === E_TABLE_STYLE.CARD && (
+            <TableCardViewSkeleton />
+          )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === E_TABLE_STYLE.MOSAIC && (
+            <TableMosaicViewSkeleton />
+          )}
 
         {rows.status === 'error' &&
           ((): React.JSX.Element => {
@@ -237,6 +251,24 @@ function RouteComponent(): React.JSX.Element {
               order={table.data.configuration.fields.orderList}
               data={rows.data.data}
               tableSlug={slug}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.configuration.style === E_TABLE_STYLE.CARD &&
+          rows.status === 'success' && (
+            <TableCardView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.configuration.style === E_TABLE_STYLE.MOSAIC &&
+          rows.status === 'success' && (
+            <TableMosaicView
+              headers={table.data.fields}
+              order={table.data.configuration.fields.orderList}
+              data={rows.data.data}
             />
           )}
       </div>

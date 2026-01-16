@@ -17,7 +17,7 @@ export const getRouter = () => {
     Wrap: (props: { children: React.ReactNode }) => {
       return (
         <TanstackQuery.Provider {...rqContext}>
-            {props.children}
+          {props.children}
         </TanstackQuery.Provider>
       );
     },

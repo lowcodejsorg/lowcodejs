@@ -1,7 +1,6 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { EditorExample } from '@/components/common/editor';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
 interface FieldEditorProps {

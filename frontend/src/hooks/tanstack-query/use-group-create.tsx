@@ -1,4 +1,7 @@
-import type { UseMutationOptions } from '@tanstack/react-query';
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
@@ -8,13 +11,25 @@ import type { UserGroupCreatePayload } from '@/lib/payloads';
 
 type UseGroupCreateProps = Pick<
   Omit<
-    UseMutationOptions<IGroup, AxiosError | Error, UserGroupCreatePayload, unknown>,
+    UseMutationOptions<
+      IGroup,
+      AxiosError | Error,
+      UserGroupCreatePayload,
+      unknown
+    >,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
 >;
 
-export function useCreateGroup(props: UseGroupCreateProps) {
+export function useCreateGroup(
+  props: UseGroupCreateProps,
+): UseMutationResult<
+  IGroup,
+  AxiosError | Error,
+  UserGroupCreatePayload,
+  unknown
+> {
   return useMutation({
     mutationFn: async function (payload: UserGroupCreatePayload) {
       const route = '/user-group';

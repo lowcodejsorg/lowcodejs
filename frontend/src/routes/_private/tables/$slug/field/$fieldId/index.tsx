@@ -25,8 +25,8 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
-import { E_FIELD_TYPE } from '@/lib/constant';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
@@ -90,7 +90,8 @@ function RouteComponent(): React.JSX.Element {
             <ArrowLeftIcon />
           </Button>
           <h1 className="text-xl font-medium">
-            {_read.status === 'success' && _read.data.type === E_FIELD_TYPE.FIELD_GROUP
+            {_read.status === 'success' &&
+            _read.data.type === E_FIELD_TYPE.FIELD_GROUP
               ? 'Detalhes do grupo de campos'
               : 'Detalhes do campo'}
           </h1>
@@ -98,13 +99,14 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {/* Info text for field group */}
-      {_read.status === 'success' && _read.data.type === E_FIELD_TYPE.FIELD_GROUP && (
-        <p className="text-sm text-muted-foreground px-2 pb-2">
-          O grupo de campos é composto por outros campos que devem ser
-          configurados nas configurações da tabela em "Gerenciar grupo de
-          campos".
-        </p>
-      )}
+      {_read.status === 'success' &&
+        _read.data.type === E_FIELD_TYPE.FIELD_GROUP && (
+          <p className="text-sm text-muted-foreground px-2 pb-2">
+            O grupo de campos é composto por outros campos que devem ser
+            configurados nas configurações da tabela em "Gerenciar grupo de
+            campos".
+          </p>
+        )}
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
@@ -188,11 +190,11 @@ function FieldUpdateContent({
           if (!old) return old;
           return {
             meta: old.meta,
-            data: old.data.map((table) => {
-              if (table.slug === slug) {
+            data: old.data.map((t) => {
+              if (t.slug === slug) {
                 return {
-                  ...table,
-                  fields: table.fields.map((f) => {
+                  ...t,
+                  fields: t.fields.map((f) => {
                     if (f._id === response._id) {
                       return response;
                     }
@@ -200,7 +202,7 @@ function FieldUpdateContent({
                   }),
                 };
               }
-              return table;
+              return t;
             }),
           };
         },
@@ -373,11 +375,10 @@ function FieldUpdateContent({
       configuration: {
         format: data.configuration.format ?? '',
         defaultValue: data.configuration.defaultValue ?? '',
-        dropdown:
-          data.configuration.dropdown?.map((d) => ({
-            value: d,
-            label: d,
-          })) ?? [],
+        dropdown: data.configuration.dropdown.map((d) => ({
+          value: d,
+          label: d,
+        })),
         relationship: {
           tableId: data.configuration.relationship?.table._id ?? '',
           tableSlug: data.configuration.relationship?.table.slug ?? '',
@@ -385,7 +386,7 @@ function FieldUpdateContent({
           fieldSlug: data.configuration.relationship?.field.slug ?? '',
           order: data.configuration.relationship?.order ?? '',
         },
-        category: data.configuration.category ?? [],
+        category: data.configuration.category,
         multiple: data.configuration.multiple,
         filtering: data.configuration.filtering,
         listing: data.configuration.listing,

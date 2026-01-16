@@ -5,7 +5,11 @@ on:
     branches: [main]
 
 jobs:
+  test-backend:
+    uses: ./.github/workflows/main-test-backend.yml
+
   build-backend:
+    needs: test-backend
     uses: ./.github/workflows/main-build-backend.yml
 
   build-frontend:

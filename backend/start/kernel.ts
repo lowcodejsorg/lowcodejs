@@ -7,6 +7,7 @@ import multipart from '@fastify/multipart';
 import _static from '@fastify/static';
 import swagger from '@fastify/swagger';
 import scalar from '@scalar/fastify-api-reference';
+import ajv from 'ajv-errors';
 import fastify from 'fastify';
 import { bootstrap } from 'fastify-decorators';
 import { join } from 'node:path';
@@ -17,8 +18,37 @@ import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
 import { Env } from '@start/env';
 
+interface ValidationErrorDetail {
+  instancePath: string;
+  schemaPath: string;
+  keyword: string;
+  params: {
+    limit?: number;
+    missingProperty?: string;
+    [key: string]: unknown;
+  };
+  message: string;
+  emUsed?: boolean;
+}
+
+interface ValidationError {
+  instancePath: string;
+  schemaPath: string;
+  keyword: string;
+  params: {
+    errors: ValidationErrorDetail[];
+  };
+  message: string;
+}
+
 const kernel = fastify({
   logger: false,
+  ajv: {
+    customOptions: {
+      allErrors: true, // Retorna todos os erros, não só o primeiro
+    },
+    plugins: [ajv],
+  },
 });
 
 kernel.register(cors, {
@@ -83,9 +113,8 @@ kernel.register(_static, {
   prefix: '/storage/',
 });
 
-kernel.setErrorHandler((error: Record<string, unknown>, _, response) => {
-  // console.error('setErrorHandler', error);
-
+kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
+  console.error(JSON.stringify(error, null, 2));
   if (error instanceof HTTPException) {
     return response.status(error.code).send({
       message: error.message,
@@ -117,10 +146,27 @@ kernel.setErrorHandler((error: Record<string, unknown>, _, response) => {
   }
 
   if (error.code === 'FST_ERR_VALIDATION') {
+    const validation = error.validation as ValidationError[];
+
+    const errors = validation.reduce(
+      (acc: Record<string, string>, err: ValidationError) => {
+        const field = err.instancePath
+          ? err.instancePath.slice(1)
+          : err.params?.errors?.[0]?.params?.missingProperty || 'unknown';
+
+        if (err.message && field) {
+          acc[field] = err.message;
+        }
+        return acc;
+      },
+      {},
+    );
+
     return response.status(Number(error.statusCode)).send({
       message: 'Invalid request',
       code: error.statusCode,
-      cause: 'PAYLOAD_SERIALIZATION_ERROR',
+      cause: 'INVALID_PAYLOAD_FORMAT',
+      ...(Object.keys(errors).length > 0 && { errors }),
     });
   }
 

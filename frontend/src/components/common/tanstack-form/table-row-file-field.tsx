@@ -1,7 +1,6 @@
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-
 import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IField, IStorage } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -24,7 +23,7 @@ export function TableRowFileField({
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
 
-  const value = formField.state.value ?? { files: [], storages: [] };
+  const value = formField.state.value;
 
   return (
     <Field data-invalid={isInvalid}>

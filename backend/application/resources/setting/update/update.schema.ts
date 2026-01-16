@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const SettingUpdateSchema: FastifySchema = {
-  tags: ['Settings'],
-  summary: 'Update system settings',
+  tags: ['Configurações'],
+  summary: 'Atualizar configurações do sistema',
   description:
-    'Updates system configuration settings in the settings properties file. Allows modification of locale, file upload configurations, and pagination settings.',
+    'Atualiza as configurações do sistema incluindo locale, upload de arquivos e configurações de email',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
@@ -14,7 +14,6 @@ export const SettingUpdateSchema: FastifySchema = {
       'FILE_UPLOAD_ACCEPTED',
       'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
       'PAGINATION_PER_PAGE',
-      // 'DATABASE_URL',
       'EMAIL_PROVIDER_HOST',
       'EMAIL_PROVIDER_PORT',
       'EMAIL_PROVIDER_USER',
@@ -24,212 +23,219 @@ export const SettingUpdateSchema: FastifySchema = {
       LOCALE: {
         type: 'string',
         enum: ['pt-br', 'en-us'],
-        description: 'System default language',
+        description: 'Idioma padrão do sistema',
+        errorMessage: {
+          type: 'O locale deve ser um texto',
+          enum: 'O locale deve ser pt-br ou en-us',
+        },
       },
       FILE_UPLOAD_MAX_SIZE: {
         type: 'number',
-        description: 'Maximum file size in bytes',
-        examples: [10485760],
+        minimum: 1,
+        description: 'Tamanho máximo de arquivo em bytes (mínimo 1)',
+        errorMessage: {
+          type: 'O tamanho máximo de arquivo deve ser um número',
+          minimum: 'O tamanho máximo de arquivo deve ser maior que zero',
+        },
       },
       FILE_UPLOAD_ACCEPTED: {
         type: 'string',
-        description: 'Accepted file extensions',
-        examples: ['jpg; jpeg; png; pdf; doc; docx'],
+        minLength: 1,
+        description: 'Extensões de arquivo aceitas (separadas por ;)',
+        errorMessage: {
+          type: 'As extensões aceitas são obrigatórias',
+          minLength: 'As extensões aceitas são obrigatórias',
+        },
       },
       FILE_UPLOAD_MAX_FILES_PER_UPLOAD: {
         type: 'number',
-        description: 'Maximum files per upload',
-        examples: [5],
+        minimum: 1,
+        description: 'Máximo de arquivos por upload (mínimo 1)',
+        errorMessage: {
+          type: 'O máximo de arquivos por upload deve ser um número',
+          minimum: 'O máximo de arquivos por upload deve ser maior que zero',
+        },
       },
       PAGINATION_PER_PAGE: {
         type: 'number',
-        description: 'Default items per page',
-        examples: [20],
-      },
-      DATABASE_URL: {
-        type: 'string',
-        description: 'MongoDB connection URL',
-        examples: ['mongodb://localhost:27017/lowcodejs'],
+        minimum: 1,
+        description: 'Itens por página padrão (mínimo 1)',
+        errorMessage: {
+          type: 'A paginação deve ser um número',
+          minimum: 'A paginação deve ser maior que zero',
+        },
       },
       EMAIL_PROVIDER_HOST: {
         type: 'string',
-        description: 'Email server host',
-        examples: ['smtp.gmail.com'],
+        minLength: 1,
+        description: 'Host do servidor de email',
+        errorMessage: {
+          type: 'O host de email deve ser um texto',
+          minLength: 'O host de email é obrigatório',
+        },
       },
       EMAIL_PROVIDER_PORT: {
         type: 'number',
-        description: 'Email server port',
-        examples: [587],
+        minimum: 1,
+        description: 'Porta do servidor de email (mínimo 1)',
+        errorMessage: {
+          type: 'A porta de email deve ser um número',
+          minimum: 'A porta de email deve ser maior que zero',
+        },
       },
       EMAIL_PROVIDER_USER: {
         type: 'string',
-        description: 'Email server username',
-        examples: ['user@example.com'],
+        minLength: 1,
+        description: 'Usuário do servidor de email',
+        errorMessage: {
+          type: 'O usuário de email deve ser um texto',
+          minLength: 'O usuário de email é obrigatório',
+        },
       },
       EMAIL_PROVIDER_PASSWORD: {
         type: 'string',
-        description: 'Email server password',
-        examples: ['password123'],
+        minLength: 1,
+        description: 'Senha do servidor de email',
+        errorMessage: {
+          type: 'A senha de email deve ser um texto',
+          minLength: 'A senha de email é obrigatória',
+        },
       },
       LOGO_SMALL_URL: {
         type: 'string',
-        description: 'URL for the small logo',
-        examples: ['/assets/logo-small.png'],
+        nullable: true,
+        description: 'URL do logo pequeno',
+        errorMessage: {
+          type: 'A URL do logo pequeno deve ser um texto',
+        },
       },
       LOGO_LARGE_URL: {
         type: 'string',
-        description: 'URL for the large logo',
-        examples: ['/assets/logo-large.png'],
+        nullable: true,
+        description: 'URL do logo grande',
+        errorMessage: {
+          type: 'A URL do logo grande deve ser um texto',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        LOCALE: 'O locale é obrigatório',
+        FILE_UPLOAD_MAX_SIZE: 'O tamanho máximo de arquivo é obrigatório',
+        FILE_UPLOAD_ACCEPTED: 'As extensões aceitas são obrigatórias',
+        FILE_UPLOAD_MAX_FILES_PER_UPLOAD:
+          'O máximo de arquivos por upload é obrigatório',
+        PAGINATION_PER_PAGE: 'A paginação é obrigatória',
+        EMAIL_PROVIDER_HOST: 'O host de email é obrigatório',
+        EMAIL_PROVIDER_PORT: 'A porta de email é obrigatória',
+        EMAIL_PROVIDER_USER: 'O usuário de email é obrigatório',
+        EMAIL_PROVIDER_PASSWORD: 'A senha de email é obrigatória',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
     200: {
-      description: 'Settings updated successfully',
+      description: 'Configurações atualizadas com sucesso',
       type: 'object',
       properties: {
         LOCALE: {
           type: 'string',
           enum: ['pt-br', 'en-us'],
-          description: 'System default language',
+          description: 'Idioma padrão do sistema',
         },
         FILE_UPLOAD_MAX_SIZE: {
           type: 'number',
-          description: 'Maximum file size in bytes',
-          examples: [10485760],
+          description: 'Tamanho máximo de arquivo em bytes',
         },
         FILE_UPLOAD_ACCEPTED: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Accepted file extensions',
-          examples: [['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx']],
+          description: 'Extensões de arquivo aceitas',
         },
         FILE_UPLOAD_MAX_FILES_PER_UPLOAD: {
           type: 'number',
-          description: 'Maximum files per upload',
-          examples: [5],
+          description: 'Máximo de arquivos por upload',
         },
         PAGINATION_PER_PAGE: {
           type: 'number',
-          description: 'Default items per page',
-          examples: [20],
-        },
-        DATABASE_URL: {
-          type: 'string',
-          description: 'MongoDB connection URL',
-          examples: ['mongodb://localhost:27017/lowcodejs'],
+          description: 'Itens por página padrão',
         },
         EMAIL_PROVIDER_HOST: {
           type: 'string',
-          description: 'Email server host',
-          examples: ['smtp.gmail.com'],
+          description: 'Host do servidor de email',
         },
         EMAIL_PROVIDER_PORT: {
           type: 'number',
-          description: 'Email server port',
-          examples: [587],
+          description: 'Porta do servidor de email',
         },
         EMAIL_PROVIDER_USER: {
           type: 'string',
-          description: 'Email server username',
-          examples: ['user@example.com'],
+          description: 'Usuário do servidor de email',
         },
         EMAIL_PROVIDER_PASSWORD: {
           type: 'string',
-          description: 'Email server password',
-          examples: ['password123'],
+          description: 'Senha do servidor de email',
         },
         LOGO_SMALL_URL: {
           type: 'string',
-          description: 'URL for the small logo',
-          examples: ['/assets/logo-small.png'],
+          description: 'URL do logo pequeno',
         },
         LOGO_LARGE_URL: {
           type: 'string',
-          description: 'URL for the large logo',
-          examples: ['/assets/logo-large.png'],
+          description: 'URL do logo grande',
         },
       },
-      examples: [
-        {
-          LOCALE: 'en-us',
-          FILE_UPLOAD_MAX_SIZE: 10485760,
-          FILE_UPLOAD_ACCEPTED: ['jpg', 'jpeg', 'png', 'pdf', 'doc', 'docx'],
-          FILE_UPLOAD_MAX_FILES_PER_UPLOAD: 5,
-          PAGINATION_PER_PAGE: 20,
-          DATABASE_URL: 'mongodb://localhost:27017/lowcodejs',
-          EMAIL_PROVIDER_HOST: 'smtp.gmail.com',
-          EMAIL_PROVIDER_PORT: 587,
-          EMAIL_PROVIDER_USER: 'user@example.com',
-          EMAIL_PROVIDER_PASSWORD: 'password123',
-        },
-      ],
     },
     400: {
-      description: 'Bad request - Invalid request data or validation error',
+      description: 'Requisição inválida - Erro de validação',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          enum: [
-            'Invalid request data',
-            'Validation error',
-            'Invalid file size format',
-            'Invalid locale',
-          ],
+          description: 'Mensagem de erro',
         },
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PARAMETERS', 'VALIDATION_ERROR'],
+          enum: ['INVALID_PAYLOAD_FORMAT', 'VALIDATION_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Erros de validação por campo',
         },
       },
-      examples: [
-        {
-          message: 'Invalid request data',
-          code: 400,
-          cause: 'VALIDATION_ERROR',
-        },
-      ],
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
     },
     404: {
-      description: 'Not found - Configuration file not found',
+      description: 'Arquivo de configurações não encontrado',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          enum: ['Configuration file not found'],
+          enum: ['Arquivo de configurações não encontrado'],
         },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['SETTINGS_FILE_NOT_FOUND'] },
       },
-      examples: [
-        {
-          message: 'Configuration file not found',
-          code: 404,
-          cause: 'SETTINGS_FILE_NOT_FOUND',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error - File writing or server issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          enum: [
-            'Internal server error while updating settings',
-            'File write error',
-          ],
+          enum: ['Erro interno do servidor ao atualizar configurações'],
         },
         code: { type: 'number', enum: [500] },
         cause: {

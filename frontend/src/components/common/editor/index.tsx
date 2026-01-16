@@ -12,11 +12,6 @@ import {
 import { EditorContent, useEditor } from '@tiptap/react';
 import React, { useCallback } from 'react';
 import { RichTextProvider } from 'reactjs-tiptap-editor';
-
-// Base Kit
-// import { TextStyle } from '@tiptap/extension-text-style';
-
-// build extensions
 import { Attachment } from 'reactjs-tiptap-editor/attachment';
 import { Blockquote } from 'reactjs-tiptap-editor/blockquote';
 import { Bold } from 'reactjs-tiptap-editor/bold';
@@ -60,17 +55,13 @@ import { TextDirection } from 'reactjs-tiptap-editor/textdirection';
 import { TextUnderline } from 'reactjs-tiptap-editor/textunderline';
 import { Video } from 'reactjs-tiptap-editor/video';
 
-// Slash Command
-
-// Bubble
-
 import 'katex/dist/katex.min.css';
 import 'reactjs-tiptap-editor/style.css';
 
 import { Bubble } from './buble';
 import { Toolbar } from './toolbar';
 
-function convertBase64ToBlob(base64: string) {
+function convertBase64ToBlob(base64: string): Blob {
   const arr = base64.split(',');
   const mime = arr[0].match(/:(.*?);/)![1];
   const bstr = atob(arr[1]);
@@ -190,11 +181,13 @@ const extensions = [
 
 localeActions.setLang('pt_BR');
 
-function debounce(func: any, wait: number) {
+function debounce(
+  func: (...args: Array<any>) => void,
+  wait: number,
+): (...args: Array<any>) => void {
   let timeout: NodeJS.Timeout;
-  return function (...args: Array<any>) {
+  return function (this: unknown, ...args: Array<any>): void {
     clearTimeout(timeout);
-    // @ts-ignore
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
@@ -204,43 +197,46 @@ interface EditorExampleProps {
   onChange?: (value: string) => void;
 }
 
-export function EditorExample({ value, onChange }: EditorExampleProps = {}) {
+export function EditorExample({
+  value,
+  onChange,
+}: EditorExampleProps = {}): React.JSX.Element | null {
   const isControlled = value !== undefined && onChange !== undefined;
   const content = isControlled ? value : '<p>Escreva algo...</p>';
 
   const onValueChange = useCallback(
     debounce((newValue: any) => {
-      if (isControlled && onChange) {
+      if (isControlled) {
         onChange(newValue);
       }
     }, 300),
     [isControlled, onChange],
   );
 
-  const editor = useEditor({
+  const ed = useEditor({
     textDirection: 'auto',
     extensions,
     immediatelyRender: false,
-    onUpdate: ({ editor }) => {
-      const html = editor.getHTML();
+    onUpdate: ({ editor: editorInstance }) => {
+      const html = editorInstance.getHTML();
       onValueChange(html);
     },
     content,
   });
 
   React.useEffect(() => {
-    // @ts-ignore E
-    window['editor'] = editor;
-  }, [editor]);
+    // @ts-ignore - Exposing editor instance for debugging
+    window['editor'] = ed;
+  }, [ed]);
 
-  if (!editor) return null;
+  if (!ed) return null;
 
   return (
     <div className="p-6 flex flex-col w-full gap-6 mx-auto my-0 overflow-y-auto">
-      <RichTextProvider editor={editor}>
+      <RichTextProvider editor={ed}>
         <div className="flex max-h-full w-full flex-col">
           <Toolbar />
-          <EditorContent editor={editor} />
+          <EditorContent editor={ed} />
           <Bubble />
           <SlashCommandList />
         </div>

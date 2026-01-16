@@ -67,7 +67,7 @@ export function TableRowReactionCell({
       const response = await API.post<IRow>(route, payload);
       return response.data;
     },
-    onSuccess(data) {
+    onSuccess(response) {
       QueryClient.setQueryData<Paginated<IRow>>(
         [
           '/tables/'.concat(tableSlug).concat('/rows/paginated'),
@@ -78,16 +78,18 @@ export function TableRowReactionCell({
           if (!old) return old;
           return {
             meta: old.meta,
-            data: old.data.map((item) => (item._id === data._id ? data : item)),
+            data: old.data.map((item) =>
+              item._id === response._id ? response : item,
+            ),
           };
         },
       );
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const data = error.response?.data;
-        if (data?.message) {
-          toast.error(data.message);
+        const errorData = error.response?.data;
+        if (errorData?.message) {
+          toast.error(errorData.message);
         }
       }
       console.error(error);

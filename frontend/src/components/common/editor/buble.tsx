@@ -11,7 +11,7 @@ import {
   RichTextBubbleVideo,
 } from 'reactjs-tiptap-editor/bubble';
 
-export function Bubble() {
+export function Bubble(): React.JSX.Element {
   return (
     <React.Fragment>
       <RichTextBubbleColumns />

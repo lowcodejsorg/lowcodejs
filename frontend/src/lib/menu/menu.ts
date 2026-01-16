@@ -7,9 +7,9 @@ import {
   UsersIcon,
 } from 'lucide-react';
 
-import { E_ROLE } from '@/lib/constant';
+import type { MenuRoute } from './menu-route';
 
-import { MenuRoute } from './menu-route';
+import { E_ROLE } from '@/lib/constant';
 
 export const getStaticMenusByRole = (
   role: string,

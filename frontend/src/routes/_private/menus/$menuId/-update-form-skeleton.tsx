@@ -4,7 +4,7 @@ import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupAddon } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function UpdateMenuFormSkeleton() {
+export function UpdateMenuFormSkeleton(): React.JSX.Element {
   return (
     <section className="space-y-4 p-2">
       {/* Nome */}

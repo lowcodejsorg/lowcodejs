@@ -53,7 +53,7 @@ export function TableRowFieldGroupField({
 
   const groupTable = useReadTable({ slug: groupConfig?.slug ?? '' });
 
-  const items = formField.state.value ?? [{}];
+  const items = formField.state.value;
 
   const addItem = (): void => {
     formField.handleChange([...items, {}]);
