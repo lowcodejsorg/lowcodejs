@@ -187,7 +187,10 @@ function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
         }
 
         // 400 - Parâmetros inválidos
-        if (errorData.cause === 'INVALID_PARAMETERS' && errorData.code === 400) {
+        if (
+          errorData.cause === 'INVALID_PARAMETERS' &&
+          errorData.code === 400
+        ) {
           setFieldError('table', 'Tabela é obrigatória para este tipo de menu');
           return;
         }
