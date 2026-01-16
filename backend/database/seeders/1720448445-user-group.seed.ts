@@ -60,7 +60,9 @@ export default async function Seed(): Promise<void> {
         E_TABLE_PERMISSION.VIEW_FIELD, // Sim (necessário para ver os campos da tabela)
         E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
         E_TABLE_PERMISSION.CREATE_ROW, // Sim (respeitando visibilidade)
-      ].includes(p.slug),
+      ]
+        .flatMap((p) => p.toString() || '')
+        .includes(p.slug),
     )
     .flatMap((p) => p._id?.toString() || '');
 
