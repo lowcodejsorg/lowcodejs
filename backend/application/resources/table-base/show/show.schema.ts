@@ -158,7 +158,7 @@ export const TableShowSchema: FastifySchema = {
                   dropdown: {
                     type: 'array',
                     description: 'Dropdown options for DROPDOWN fields',
-                    items: { 
+                    items: {
                       type: 'object',
                       properties: {
                         id: { type: 'string' },

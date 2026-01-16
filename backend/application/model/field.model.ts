@@ -79,7 +79,6 @@ const Category = new mongoose.Schema(
   },
 );
 
-
 const Dropdown = new mongoose.Schema(
   {
     id: {
@@ -99,7 +98,6 @@ const Dropdown = new mongoose.Schema(
     _id: false,
   },
 );
-
 
 const Configuration = new mongoose.Schema(
   {
