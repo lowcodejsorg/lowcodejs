@@ -36,6 +36,14 @@ export const SettingShowSchema: FastifySchema = {
           description: 'Itens por página padrão',
           examples: [20],
         },
+        MODEL_CLONE_TABLES: {
+          type: 'string',
+          nullable: true,
+          description: 'Configuração de tabelas permitidas para clonagem de modelos',
+          errorMessage: {
+            type: 'O modelo de tabelas deve ser um texto',
+          },
+        },
         DATABASE_URL: {
           type: 'string',
           description: 'URL de conexão do MongoDB',

@@ -5,6 +5,7 @@ import {
   TableIcon,
   UserIcon,
   UsersIcon,
+  WrenchIcon,
 } from 'lucide-react';
 
 import type { MenuRoute } from './menu-route';
@@ -37,6 +38,7 @@ export const getStaticMenusByRole = (
               { title: 'Menus', url: '/menus', icon: MenuIcon },
               { title: 'Grupos', url: '/groups', icon: GroupIcon },
               { title: 'Usuários', url: '/users', icon: UsersIcon },
+              { title: 'Ferramentas', url: '/tools', icon: WrenchIcon },
             ],
           },
           {

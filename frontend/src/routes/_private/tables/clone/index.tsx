@@ -11,7 +11,7 @@ import {
   CreateTableFormFields,
   TableCreateSchema,
   tableCreateFormDefaultValues,
-} from './-create-form';
+} from './-clone-form';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { Button } from '@/components/ui/button';
@@ -24,8 +24,9 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
 import type { ITable, Paginated } from '@/lib/interfaces';
+import { API } from '@/lib/api';
 
-export const Route = createFileRoute('/_private/tables/create/')({
+export const Route = createFileRoute('/_private/tables/clone/')({
   component: RouteComponent,
 });
 
@@ -108,17 +109,35 @@ function RouteComponent(): React.JSX.Element {
     defaultValues: tableCreateFormDefaultValues,
     onSubmit: async ({ value }) => {
       const validation = TableCreateSchema.safeParse(value);
-      if (!validation.success) return;
 
+      if (!validation.success) return;
       if (_create.status === 'pending') return;
 
-      await _create.mutateAsync({
-        name: value.name.trim(),
-        logo: value.logo,
-        configuration: value.configuration,
-      });
+      try {  
+        const response = await API.post('/tools/clone-table', {
+          baseTableId: value.MODEL_CLONE_TABLES,
+          name: value.name.trim(),
+        });
+  
+        const { slug } = response.data;
+  
+        router.navigate({
+          to: '/tables/$slug',
+          params: {
+            slug,
+          },
+          search: {
+            page: 1,
+            perPage: 20,
+          },
+        });  
+        
+      } catch (error) {
+        console.error('Erro ao clonar tabela:', error);
+      } 
     },
   });
+  
 
   const isPending = _create.status === 'pending';
 
@@ -133,7 +152,7 @@ function RouteComponent(): React.JSX.Element {
             onClick={() => {
               sidebar.setOpen(true);
               router.navigate({
-                to: '/tables',
+                to: '/tables/new',
                 replace: true,
                 search: { page: 1, perPage: 50 },
               });
@@ -141,7 +160,7 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-xl font-medium">Nova tabela</h1>
+          <h1 className="text-xl font-medium">Criar nova tabela utilizando modelo</h1>
         </div>
       </div>
 
@@ -171,7 +190,7 @@ function RouteComponent(): React.JSX.Element {
                 className="w-full max-w-3xs"
                 disabled={isSubmitting}
                 onClick={() => {
-                  navigate({ to: '/tables', search: { page: 1, perPage: 50 } });
+                  navigate({ to: '/tables/new' });
                 }}
               >
                 <span>Cancelar</span>

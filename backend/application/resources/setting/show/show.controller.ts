@@ -29,11 +29,14 @@ export default class {
         ...process.env,
         FILE_UPLOAD_ACCEPTED:
           process.env.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
+        MODEL_CLONE_TABLES: [],
       });
+
 
     return response.send({
       ...setting,
       FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED.split(';') ?? [],
+      MODEL_CLONE_TABLES: setting.MODEL_CLONE_TABLES.split(';') ?? [],
     });
   }
 }
