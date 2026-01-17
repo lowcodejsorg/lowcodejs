@@ -44,7 +44,7 @@ export const CreateTableFormFields = withForm({
         typeof v === 'string' ? v.trim() : String(v._id ?? v).trim()
       )
     : typeof settings?.MODEL_CLONE_TABLES === 'string'
-      ? settings.MODEL_CLONE_TABLES.split(';').map((id) => id.trim())
+      ? settings.MODEL_CLONE_TABLES.split(',').map((id) => id.trim())
       : [];
 
     if (isLoadingTables || isLoadingSettings) {

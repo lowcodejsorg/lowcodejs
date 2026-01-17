@@ -55,7 +55,7 @@ export function FilteredTableComboboxField({
   );
 
   /**
-   * Filtragem REAL
+   * Filtragem real
    */
   const options: SelectOption[] = useMemo(() => {
     if (normalizedAllowedIds.length === 0) return [];

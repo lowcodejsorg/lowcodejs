@@ -1,14 +1,27 @@
-import mongoose from 'mongoose';
+import { Service } from 'typedi';
+import mongoose, { Types } from 'mongoose';
+import slugify from 'slugify';
 
 import HTTPException from '@application/core/exception.core';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 
-import TableRepository from '@application/repositories/table/table-mongoose.repository';
-import FieldRepository from '@application/repositories/field/field-mongoose.repository';
-
 import type { ITable } from '@application/core/entity.core';
 import type { CloneTablePayload } from './clone-table.validator';
+
+import type {
+  TableContractRepository,
+  TableCreatePayload,
+} from '@application/repositories/table/table-contract.repository';
+
+import type {
+  FieldContractRepository,
+} from '@application/repositories/field/field-contract.repository';
+
+export type CloneTableUseCasePayload =
+  CloneTablePayload & {
+    ownerId: string;
+  };
 
 type Response = Either<
   HTTPException,
@@ -18,16 +31,28 @@ type Response = Either<
   }
 >;
 
-export default class CloneTableUseCase {
-  private readonly tableRepository = new TableRepository();
-  private readonly fieldRepository = new FieldRepository();
+type TableToPersist = Omit<
+  ITable,
+  '_id' | '__v' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
+> & {
+  fields: Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+  trashed: boolean;
+  trashedAt: Date | null;
+};
 
-  async execute(payload: CloneTablePayload): Promise<Response> {
+@Service()
+export default class CloneTableUseCase {
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly fieldRepository: FieldContractRepository,
+  ) {}
+
+  async execute(
+    payload: CloneTableUseCasePayload,
+  ): Promise<Response> {
     try {
-      /**
-	   * Buscar os dados na base conforme o _id que passei como
-	   * parametro
-	   */
       const baseTable = await this.tableRepository.findBy({
         _id: payload.baseTableId,
         exact: true,
@@ -42,47 +67,51 @@ export default class CloneTableUseCase {
         );
       }
 
-      /** 
-	   * Inicia o processo de clonagem, removendo informações
-	   * desnecessárias que serão criadas ao clonar
-	   */
-      const clonedTable: any = JSON.parse(JSON.stringify(baseTable));
+      /**
+       * structuredClone
+       * Garante que nenhuma mutação afete a baseTable
+       */
+      const baseClone = structuredClone(baseTable);
 
-      delete clonedTable._id;
-      delete clonedTable.__v;
-      delete clonedTable.createdAt;
-      delete clonedTable.updatedAt;
-      delete clonedTable.trashed;
-      delete clonedTable.trashedAt;
-
-      clonedTable.name = payload.name;
-      clonedTable.slug = this.generateSlug(payload.name);
-      clonedTable.createdAt = new Date();
-      clonedTable.updatedAt = new Date();
-      clonedTable.trashed = false;
-      clonedTable.trashedAt = null;
+      const clonedTable: TableToPersist = {
+        ...baseClone,
+        name: payload.name,
+        slug: slugify(payload.name, {
+          lower: true,
+          strict: true,
+          trim: true,
+        }),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        trashed: false,
+        trashedAt: null,
+        configuration: {
+          ...baseClone.configuration,
+          owner: payload.ownerId,
+        },
+      };
 
       /**
-	   * Agora um tratamento normalizando os fields,
-	   * porque eu preciso criar novos fields, eles não pode continuar
-	   * com os da tabela modelo
-	   */
-      const normalizedFields = this.normalizeFields(baseTable.fields);
-
+       * Clone e persistência dos fields
+       */
       const {
         newFields,
         fieldIdMap,
-      } = this.cloneFields(normalizedFields);
+      } = this.cloneFields(
+        this.normalizeFields(baseClone.fields),
+      );
 
-	  // Persistindo
       for (const field of newFields) {
-		await this.fieldRepository.create(field);
-	  }
+        await this.fieldRepository.create(field);
+      }
 
-      // Na coleção clonada so armazena os id's dos fields
-      clonedTable.fields = newFields.map((f) => f._id);
+      clonedTable.fields = newFields.map(
+        (field) => field._id,
+      );
 
-      // As referencias são remapeadas na coleção
+      /**
+       * Remapeamento das referências internas
+       */
       if (clonedTable.configuration?.fields) {
         clonedTable.configuration.fields.orderList =
           this.remapFieldIds(
@@ -97,15 +126,34 @@ export default class CloneTableUseCase {
           );
       }
 
-      // Persistindo a nova coleção/tabela
-      const newTable = await this.tableRepository.create(clonedTable);
+      /**
+       * Payload final respeitando o contrato do repositório
+       */
+      const createPayload: TableCreatePayload = {
+        name: clonedTable.name,
+        slug: clonedTable.slug,
+        description: clonedTable.description ?? null,
+        type: clonedTable.type,
+        logo: clonedTable.logo ?? null,
+        fields: clonedTable.fields,
+        configuration: clonedTable.configuration,
+        methods: clonedTable.methods,
+        trashed: clonedTable.trashed,
+        trashedAt: clonedTable.trashedAt,
+      };
+
+      const newTable =
+        await this.tableRepository.create(createPayload);
 
       return right({
         table: newTable,
         fieldIdMap,
       });
     } catch (error) {
-      console.error('CLONE TABLE USE CASE ERROR:', error);
+      console.error(
+        'CLONE TABLE USE CASE ERROR:',
+        error,
+      );
 
       return left(
         HTTPException.InternalServerError(
@@ -116,16 +164,10 @@ export default class CloneTableUseCase {
     }
   }
 
-  private generateSlug(name: string): string {
-    return name
-      .toLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-  }
-
-  private normalizeFields(fields: unknown): any[] {
+  /**
+   * Normaliza fields vindos do banco
+   */
+  private normalizeFields(fields: unknown): unknown[] {
     if (!fields) return [];
 
     if (Array.isArray(fields)) return fields;
@@ -141,31 +183,40 @@ export default class CloneTableUseCase {
     throw new Error('UNSUPPORTED_FIELDS_TYPE');
   }
 
-  private cloneFields(fields: any[]): {
-    newFields: any[];
+  /**
+   * Clona fields gerando novos ObjectIds
+   */
+  private cloneFields(
+    fields: unknown[],
+  ): {
+    newFields: { _id: Types.ObjectId }[];
     fieldIdMap: Record<string, string>;
   } {
-    const newFields: any[] = [];
+    const newFields: { _id: Types.ObjectId }[] = [];
     const fieldIdMap: Record<string, string> = {};
 
-    for (const field of fields) {
-      const clonedField = JSON.parse(JSON.stringify(field));
+    type FieldWithId = {
+      _id: Types.ObjectId | string;
+      [key: string]: unknown;
+    };
 
-      const oldId = String(clonedField._id);
+    for (const field of fields as FieldWithId[]) {
       const newId = new mongoose.Types.ObjectId();
 
-      clonedField._id = newId;
+      fieldIdMap[String(field._id)] = String(newId);
 
-      fieldIdMap[oldId] = String(newId);
-      newFields.push(clonedField);
+      newFields.push({
+        ...field,
+        _id: newId,
+      });
     }
 
-    return {
-      newFields,
-      fieldIdMap,
-    };
+    return { newFields, fieldIdMap };
   }
 
+  /**
+   * Remapeia listas de IDs usando o mapa antigo -> novo
+   */
   private remapFieldIds(
     ids: string[] | undefined,
     map: Record<string, string>,
