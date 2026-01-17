@@ -22,10 +22,6 @@ export const Route = createFileRoute('/_private/settings/')({
 function RouteComponent(): React.JSX.Element {
   const _read = useSettingRead();
 
-  console.log('--------------')
-  console.log(_read.data)
-  console.log('--------------')
-
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}

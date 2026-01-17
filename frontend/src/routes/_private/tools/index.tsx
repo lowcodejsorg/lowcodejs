@@ -58,8 +58,6 @@ function RouteComponent() {
         name: tableName,
       });
 
-      console.log('Tabela clonada com sucesso:', response.data);
-
       const { slug } = response.data;
 
       router.navigate({
