@@ -1,10 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
+import { PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
 import { SettingUpdateSchema, UpdateSettingFormFields } from './-update-form';
 import { UpdateSettingFormSkeleton } from './-update-form-skeleton';
+import { SettingView } from './-view';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,8 @@ export const Route = createFileRoute('/_private/settings/')({
 function RouteComponent(): React.JSX.Element {
   const _read = useSettingRead();
 
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -29,6 +33,17 @@ function RouteComponent(): React.JSX.Element {
         <div className="inline-flex items-center space-x-2">
           <h1 className="text-xl font-medium">Configurações do Sistema</h1>
         </div>
+        {_read.status === 'success' && mode === 'show' && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setMode('edit')}
+          >
+            <PencilIcon className="h-4 w-4 mr-1" />
+            <span>Editar</span>
+          </Button>
+        )}
       </div>
 
       {/* Content */}
@@ -41,17 +56,29 @@ function RouteComponent(): React.JSX.Element {
         )}
         {_read.status === 'pending' && <UpdateSettingFormSkeleton />}
         {_read.status === 'success' && (
-          <SettingUpdateContent data={_read.data} />
+          <SettingUpdateContent
+            data={_read.data}
+            mode={mode}
+            setMode={setMode}
+          />
         )}
       </div>
     </div>
   );
 }
 
-function SettingUpdateContent({ data }: { data: ISetting }): React.JSX.Element {
-  const { queryClient } = getContext();
+interface SettingUpdateContentProps {
+  data: ISetting;
+  mode: 'show' | 'edit';
+  setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+}
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+function SettingUpdateContent({
+  data,
+  mode,
+  setMode,
+}: SettingUpdateContentProps): React.JSX.Element {
+  const { queryClient } = getContext();
 
   function setFieldError(
     field:
@@ -239,8 +266,7 @@ function SettingUpdateContent({ data }: { data: ISetting }): React.JSX.Element {
         ),
         FILE_UPLOAD_ACCEPTED: value.FILE_UPLOAD_ACCEPTED.split(';')
           .map((s) => s.trim())
-          .filter(Boolean)
-          .join(';'),
+          .filter(Boolean),
         PAGINATION_PER_PAGE: Number(value.PAGINATION_PER_PAGE),
         EMAIL_PROVIDER_HOST: value.EMAIL_PROVIDER_HOST.trim(),
         EMAIL_PROVIDER_PORT: Number(value.EMAIL_PROVIDER_PORT),
@@ -256,66 +282,60 @@ function SettingUpdateContent({ data }: { data: ISetting }): React.JSX.Element {
 
   return (
     <>
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <UpdateSettingFormFields
-          form={form}
-          isPending={isPending}
-          mode={mode}
-          settingData={data}
-        />
-      </form>
+      {mode === 'show' && <SettingView data={data} />}
 
-      {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              {mode === 'show' && (
+      {mode === 'edit' && (
+        <form
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <UpdateSettingFormFields
+            form={form}
+            isPending={isPending}
+            mode={mode}
+            settingData={data}
+          />
+        </form>
+      )}
+
+      {/* Footer */}
+      {mode === 'edit' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  className="w-full max-w-3xs"
-                  onClick={() => setMode('edit')}
+                  variant="outline"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    form.reset();
+                    setMode('show');
+                  }}
                 >
-                  <span>Editar</span>
+                  <span>Cancelar</span>
                 </Button>
-              )}
-
-              {mode === 'edit' && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full max-w-3xs"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      form.reset();
-                      setMode('show');
-                    }}
-                  >
-                    <span>Cancelar</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full max-w-3xs"
-                    disabled={!canSubmit}
-                    onClick={() => form.handleSubmit()}
-                  >
-                    {isSubmitting && <Spinner />}
-                    <span>Salvar</span>
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        />
-      </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Salvar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </>
   );
 }
