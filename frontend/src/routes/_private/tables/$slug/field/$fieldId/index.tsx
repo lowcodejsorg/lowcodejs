@@ -376,8 +376,9 @@ function FieldUpdateContent({
         format: data.configuration.format ?? '',
         defaultValue: data.configuration.defaultValue ?? '',
         dropdown: data.configuration.dropdown.map((d) => ({
-          value: d,
-          label: d,
+          id: d.id,
+          label: d.label,
+          color: d.color,
         })),
         relationship: {
           tableId: data.configuration.relationship?.table._id ?? '',
@@ -417,9 +418,7 @@ function FieldUpdateContent({
             ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
             : null,
           defaultValue: config.defaultValue || null,
-          dropdown: hasDropdown
-            ? config.dropdown.map((item) => item.value)
-            : [],
+          dropdown: hasDropdown ? config.dropdown.map((item) => item) : [],
           relationship: hasRelationship
             ? {
                 table: {

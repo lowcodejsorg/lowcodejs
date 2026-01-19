@@ -160,7 +160,7 @@ interface Field {
     filtering: boolean;
     defaultValue: string;
     relationship: FieldConfigurationRelationship;
-    dropdown: string[];
+    dropdown: Dropdown[];
     category: Category[];
     group: FieldConfigurationGroup;
   };

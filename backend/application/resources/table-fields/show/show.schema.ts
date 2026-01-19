@@ -78,9 +78,16 @@ export const TableFieldShowSchema: FastifySchema = {
             },
             dropdown: {
               type: 'array',
-              items: { type: 'string' },
               nullable: true,
               description: 'Dropdown options',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  label: { type: 'string' },
+                  color: { type: 'string' },
+                },
+              },
             },
             relationship: {
               type: 'object',
