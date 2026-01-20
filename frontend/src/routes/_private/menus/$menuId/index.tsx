@@ -1,13 +1,14 @@
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import { AxiosError } from 'axios';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import type { MenuUpdateFormValues } from './-update-form';
 import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
+import { MenuView } from './-view';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
@@ -40,6 +41,8 @@ function RouteComponent(): React.JSX.Element {
 
   const _read = useReadMenu({ menuId });
 
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -61,6 +64,17 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes do menu</h1>
         </div>
+        {_read.status === 'success' && mode === 'show' && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setMode('edit')}
+          >
+            <PencilIcon className="h-4 w-4 mr-1" />
+            <span>Editar</span>
+          </Button>
+        )}
       </div>
 
       {/* Content */}
@@ -72,16 +86,30 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
         {_read.status === 'pending' && <UpdateMenuFormSkeleton />}
-        {_read.status === 'success' && <MenuUpdateContent data={_read.data} />}
+        {_read.status === 'success' && (
+          <MenuUpdateContent
+            data={_read.data}
+            mode={mode}
+            setMode={setMode}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
-  const { queryClient } = getContext();
+interface MenuUpdateContentProps {
+  data: IMenu;
+  mode: 'show' | 'edit';
+  setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+}
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+function MenuUpdateContent({
+  data,
+  mode,
+  setMode,
+}: MenuUpdateContentProps): React.JSX.Element {
+  const { queryClient } = getContext();
 
   function setFieldError(
     field: 'name' | 'type' | 'table' | 'parent' | 'html' | 'url',
@@ -274,66 +302,60 @@ function MenuUpdateContent({ data }: { data: IMenu }): React.JSX.Element {
 
   return (
     <>
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <UpdateMenuFormFields
-          form={form}
-          isPending={isPending}
-          mode={mode}
-          menuType={menuType}
-        />
-      </form>
+      {mode === 'show' && <MenuView data={data} />}
 
-      {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              {mode === 'show' && (
+      {mode === 'edit' && (
+        <form
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <UpdateMenuFormFields
+            form={form}
+            isPending={isPending}
+            mode={mode}
+            menuType={menuType}
+          />
+        </form>
+      )}
+
+      {/* Footer */}
+      {mode === 'edit' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  className="w-full max-w-3xs"
-                  onClick={() => setMode('edit')}
+                  variant="outline"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    form.reset();
+                    setMode('show');
+                  }}
                 >
-                  <span>Editar</span>
+                  <span>Cancelar</span>
                 </Button>
-              )}
-
-              {mode === 'edit' && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full max-w-3xs"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      form.reset();
-                      setMode('show');
-                    }}
-                  >
-                    <span>Cancelar</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full max-w-3xs"
-                    disabled={!canSubmit}
-                    onClick={() => form.handleSubmit()}
-                  >
-                    {isSubmitting && <Spinner />}
-                    <span>Salvar</span>
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        />
-      </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Salvar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </>
   );
 }
