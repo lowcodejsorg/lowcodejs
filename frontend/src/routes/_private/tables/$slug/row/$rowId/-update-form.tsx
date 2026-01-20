@@ -90,6 +90,29 @@ export function buildDefaultValuesFromRow(
         defaults[field.slug] = categoryValue;
         break;
       }
+      case E_FIELD_TYPE.USER: {
+        if (field.configuration.multiple) {
+          const values = (existingValue as Array<Record<string, any>>) ?? [];
+          defaults[field.slug] = values.map((v) => ({
+            value: v._id,
+            label: v.name || v.email || v._id,
+          }));
+        } else {
+          // Handle both array and object formats
+          const value = Array.isArray(existingValue)
+            ? (existingValue[0] as Record<string, any> | undefined)
+            : (existingValue as Record<string, any> | null);
+          defaults[field.slug] = value
+            ? [
+                {
+                  value: value._id,
+                  label: value.name || value.email || value._id,
+                },
+              ]
+            : [];
+        }
+        break;
+      }
       case E_FIELD_TYPE.FIELD_GROUP:
         // Ensure it's always an array
         if (Array.isArray(existingValue) && existingValue.length > 0) {
@@ -178,6 +201,16 @@ export function buildPayload(
         } else {
           // Always array, but limit to 1 item
           payload[field.slug] = categoryValue.slice(0, 1);
+        }
+        break;
+      }
+      case E_FIELD_TYPE.USER: {
+        const userValue = (value as Array<SearchableOption>) || [];
+        if (field.configuration.multiple) {
+          payload[field.slug] = userValue.map((opt) => opt.value);
+        } else {
+          // Always array, but limit to 1 item
+          payload[field.slug] = userValue.slice(0, 1).map((opt) => opt.value);
         }
         break;
       }
@@ -321,6 +354,13 @@ export function UpdateRowFormFields({
                       disabled={disabled}
                       tableSlug={tableSlug}
                       form={form}
+                    />
+                  );
+                case E_FIELD_TYPE.USER:
+                  return (
+                    <formField.TableRowUserField
+                      field={field}
+                      disabled={disabled}
                     />
                   );
                 default:

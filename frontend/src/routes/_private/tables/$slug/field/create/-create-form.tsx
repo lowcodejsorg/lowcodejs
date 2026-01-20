@@ -94,9 +94,15 @@ export const CreateFieldFormFields = withForm({
     const isFieldGroup = fieldType === E_FIELD_TYPE.FIELD_GROUP;
     const isReaction = fieldType === E_FIELD_TYPE.REACTION;
     const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
+    const isUser = fieldType === E_FIELD_TYPE.USER;
 
     const showMultiple =
-      isDropdown || isFile || isRelationship || isFieldGroup || isCategory;
+      isDropdown ||
+      isFile ||
+      isRelationship ||
+      isFieldGroup ||
+      isCategory ||
+      isUser;
     const showFiltering = !isReaction && !isFile;
     const showRequired = !isReaction && !isEvaluation;
 

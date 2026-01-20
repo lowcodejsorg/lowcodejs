@@ -36,6 +36,7 @@ export const E_FIELD_TYPE = {
   REACTION: 'REACTION',
   EVALUATION: 'EVALUATION',
   CATEGORY: 'CATEGORY',
+  USER: 'USER',
 } as const;
 
 export const E_FIELD_FORMAT = {

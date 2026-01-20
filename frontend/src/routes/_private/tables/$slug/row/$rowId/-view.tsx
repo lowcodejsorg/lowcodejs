@@ -8,6 +8,7 @@ import { TableRowReactionCell } from '@/components/common/table-row-reaction-cel
 import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
 import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
+import { TableRowUserCell } from '@/components/common/table-row-user-cell';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
 
@@ -95,6 +96,13 @@ export function RowView({
             row={data}
             field={field}
             tableSlug={tableSlug}
+          />
+        );
+      case E_FIELD_TYPE.USER:
+        return (
+          <TableRowUserCell
+            row={data}
+            field={field}
           />
         );
       default:

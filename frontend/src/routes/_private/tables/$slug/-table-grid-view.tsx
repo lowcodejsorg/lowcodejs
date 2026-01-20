@@ -12,6 +12,7 @@ import { TableRowReactionCell } from '@/components/common/table-row-reaction-cel
 import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
 import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
+import { TableRowUserCell } from '@/components/common/table-row-user-cell';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
@@ -131,6 +132,13 @@ function RenderGridCell({
             field={field}
             row={row}
             tableSlug={tableSlug}
+          />
+        );
+      case E_FIELD_TYPE.USER:
+        return (
+          <TableRowUserCell
+            field={field}
+            row={row}
           />
         );
       default:

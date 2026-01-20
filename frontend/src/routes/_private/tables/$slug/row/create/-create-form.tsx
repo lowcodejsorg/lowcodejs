@@ -40,6 +40,9 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
       case E_FIELD_TYPE.FIELD_GROUP:
         defaults[field.slug] = [{}];
         break;
+      case E_FIELD_TYPE.USER:
+        defaults[field.slug] = []; // Always array of {value, label}
+        break;
       default:
         defaults[field.slug] = '';
     }
@@ -132,6 +135,16 @@ export function buildPayload(
           payload[field.slug] = groupValue;
         } else {
           payload[field.slug] = groupValue.slice(0, 1);
+        }
+        break;
+      }
+      case E_FIELD_TYPE.USER: {
+        const userValue = Array.from<SearchableOption>(value ?? []);
+        if (field.configuration.multiple) {
+          payload[field.slug] = userValue.map((opt) => opt.value);
+        } else {
+          // Always array, but limit to 1 item
+          payload[field.slug] = userValue.slice(0, 1).map((opt) => opt.value);
         }
         break;
       }
@@ -270,6 +283,13 @@ export function CreateRowFormFields({
                       disabled={disabled}
                       tableSlug={tableSlug}
                       form={form}
+                    />
+                  );
+                case E_FIELD_TYPE.USER:
+                  return (
+                    <formField.TableRowUserField
+                      field={field}
+                      disabled={disabled}
                     />
                   );
                 default:
