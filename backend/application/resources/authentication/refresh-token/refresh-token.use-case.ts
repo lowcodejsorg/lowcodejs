@@ -18,7 +18,7 @@ export default class RefreshTokenUseCase {
   async execute(payload: Payload): Promise<Response> {
     try {
       const user = await this.userRepository.findBy({
-        _id: payload.user,
+        _id: payload._id,
         exact: true,
       });
 

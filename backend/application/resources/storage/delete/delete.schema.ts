@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const StorageDeleteSchema: FastifySchema = {
-  tags: ['Storage'],
-  summary: 'Delete file from storage',
+  tags: ['Armazenamento'],
+  summary: 'Deletar arquivo do armazenamento',
   description:
-    'Permanently deletes a file from both the database and file system. This action cannot be undone.',
+    'Remove permanentemente um arquivo do banco de dados e do sistema de arquivos. Esta ação não pode ser desfeita',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -12,55 +12,64 @@ export const StorageDeleteSchema: FastifySchema = {
     properties: {
       _id: {
         type: 'string',
-        description: 'Storage record ID to delete',
+        description: 'ID do registro de armazenamento para deletar',
         examples: ['507f1f77bcf86cd799439011'],
+        errorMessage: {
+          type: 'O ID deve ser um texto',
+        },
       },
     },
     additionalProperties: false,
+    errorMessage: {
+      required: {
+        _id: 'O ID é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
+    },
   },
   response: {
     200: {
-      description: 'File deleted successfully',
+      description: 'Arquivo deletado com sucesso',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['File deleted successfully'] },
+        message: { type: 'string', enum: ['Arquivo deletado com sucesso'] },
         deletedAt: {
           type: 'string',
           format: 'date-time',
-          description: 'Deletion timestamp',
+          description: 'Data da exclusão',
         },
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
     },
     404: {
-      description: 'Not found - Storage record does not exist',
+      description: 'Arquivo não encontrado',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Storage not found'] },
+        message: { type: 'string', enum: ['Arquivo não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['STORAGE_NOT_FOUND'] },
       },
       examples: [
         {
-          message: 'Storage not found',
+          message: 'Arquivo não encontrado',
           code: 404,
           cause: 'STORAGE_NOT_FOUND',
         },
       ],
     },
     500: {
-      description: 'Internal server error - Database or file system issues',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['STORAGE_DELETE_ERROR'] },
       },

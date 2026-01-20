@@ -1,7 +1,7 @@
 import type { FastifySchema } from 'fastify';
 
 export const LocaleListSchema: FastifySchema = {
-  tags: ['Locale'],
+  tags: ['Traduções'],
   summary: 'Get list of available locales',
   description:
     'Retrieves a list of all available system locales for internationalization',

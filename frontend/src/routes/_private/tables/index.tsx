@@ -64,6 +64,7 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
+      {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
@@ -89,6 +90,7 @@ function RouteComponent(): React.JSX.Element {
         </div>
       </div>
 
+      {/* content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
         {pagination.status === 'pending' && (
           <TableTablesSkeleton headers={headers} />
@@ -109,6 +111,7 @@ function RouteComponent(): React.JSX.Element {
         )}
       </div>
 
+      {/* footer */}
       <div className="shrink-0 border-t p-2">
         <Pagination meta={pagination.data?.meta ?? MetaDefault} />
       </div>

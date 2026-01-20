@@ -155,7 +155,7 @@ export function TableMosaicView({
   );
 
   return (
-    <div className="[column-gap:16px] columns-1 sm:columns-2 lg:columns-3 xl:columns-4">
+    <div className="gap-x-4 columns-1 sm:columns-2 lg:columns-3 xl:columns-4">
       {data.map((row) => (
         <article
           key={row._id}
@@ -175,7 +175,7 @@ export function TableMosaicView({
                 tableSlug={slug}
               />
             ) : (
-              <div className="w-full aspect-[4/3] flex items-center justify-center text-xs text-muted-foreground">
+              <div className="w-full aspect-4/3 flex items-center justify-center text-xs text-muted-foreground">
                 sem imagem
               </div>
             )}

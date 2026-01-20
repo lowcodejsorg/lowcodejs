@@ -1,9 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
 export const RequestCodeSchema: FastifySchema = {
-  tags: ['Authentication'],
-  summary: 'Request password recovery code',
-  description: 'Sends a password recovery code to the specified email address',
+  tags: ['Autenticação'],
+  summary: 'Solicitar código de recuperação de senha',
+  description:
+    'Envia um código de recuperação de senha para o endereço de email especificado',
   body: {
     type: 'object',
     required: ['email'],
@@ -11,61 +12,72 @@ export const RequestCodeSchema: FastifySchema = {
       email: {
         type: 'string',
         format: 'email',
-        description: 'Email address to send recovery code to',
+        description: 'Endereço de email para enviar o código de recuperação',
+        errorMessage: {
+          type: 'O email deve ser um texto',
+          format: 'Digite um email válido',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        email: 'O email é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
     200: {
-      description: 'Recovery code sent successfully',
+      description: 'Código de recuperação enviado com sucesso',
       type: 'object',
       properties: {
         message: { type: 'string' },
       },
     },
     400: {
-      description: 'Bad request - Invalid email or validation error',
+      description: 'Requisição inválida - Email inválido ou erro de validação',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Invalid email format'] },
+        message: { type: 'string', enum: ['Formato de email inválido'] },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
       },
       examples: [
         {
-          message: 'Invalid email format',
+          message: 'Formato de email inválido',
           code: 400,
           cause: 'INVALID_PARAMETERS',
         },
       ],
     },
     404: {
-      description: 'Email not found',
+      description: 'Email não encontrado',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Email not found'] },
+        message: { type: 'string', enum: ['Email não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['EMAIL_NOT_FOUND'] },
       },
       examples: [
         {
-          message: 'Email not found',
+          message: 'Email não encontrado',
           code: 404,
           cause: 'EMAIL_NOT_FOUND',
         },
       ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['INTERNAL_SERVER_ERROR'] },
       },
       examples: [
         {
-          message: 'Internal server error',
+          message: 'Erro interno do servidor',
           code: 500,
           cause: 'INTERNAL_SERVER_ERROR',
         },

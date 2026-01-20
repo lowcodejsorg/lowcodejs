@@ -98,11 +98,21 @@ function RouteComponent(): React.JSX.Element {
 
           return;
         }
+
+        if (data.cause === 'SIGN_IN_ERROR' && data.code === 500) {
+          toast('Erro ao fazer login', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao fazer login. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+        }
       }
 
       toast('Erro ao fazer login', {
         className: '!bg-destructive !text-white !border-destructive',
-        description: 'Erro ao fazer login',
+        description: 'Houve um erro interno ao fazer login. Tente novamente.',
         descriptionClassName: '!text-white',
         closeButton: true,
       });

@@ -2,8 +2,8 @@ import type { FastifySchema } from 'fastify';
 
 export const MenuShowSchema: FastifySchema = {
   tags: ['Menu'],
-  summary: 'Get menu by ID',
-  description: 'Retrieves a specific menu item by its ID',
+  summary: 'Buscar menu por ID',
+  description: 'Retorna um item de menu específico pelo seu ID',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -11,23 +11,33 @@ export const MenuShowSchema: FastifySchema = {
     properties: {
       _id: {
         type: 'string',
-        description: 'Menu ID',
+        minLength: 1,
+        description: 'ID do menu',
+        errorMessage: {
+          type: 'O ID deve ser um texto',
+          minLength: 'O ID é obrigatório',
+        },
+      },
+    },
+    errorMessage: {
+      required: {
+        _id: 'O ID é obrigatório',
       },
     },
   },
   response: {
     200: {
-      description: 'Menu details',
+      description: 'Detalhes do item de menu',
       type: 'object',
       properties: {
-        _id: { type: 'string', description: 'Menu ID' },
-        name: { type: 'string', description: 'Menu name' },
-        slug: { type: 'string', description: 'Menu slug' },
-        type: { type: 'string', description: 'Menu type' },
+        _id: { type: 'string', description: 'ID do menu' },
+        name: { type: 'string', description: 'Nome do menu' },
+        slug: { type: 'string', description: 'Slug do menu' },
+        type: { type: 'string', description: 'Tipo do menu' },
         parent: {
           type: 'object',
           nullable: true,
-          description: 'Parent menu',
+          description: 'Menu pai',
           properties: {
             _id: { type: 'string' },
             name: { type: 'string' },
@@ -38,7 +48,7 @@ export const MenuShowSchema: FastifySchema = {
         table: {
           type: 'object',
           nullable: true,
-          description: 'Associated table',
+          description: 'Tabela associada',
           properties: {
             _id: { type: 'string' },
             name: { type: 'string' },
@@ -48,19 +58,19 @@ export const MenuShowSchema: FastifySchema = {
         html: {
           type: 'string',
           nullable: true,
-          description: 'Page content',
+          description: 'Conteúdo HTML',
         },
         url: { type: 'string', nullable: true, description: 'URL' },
         children: {
           type: 'array',
-          description: 'Active child menu items',
+          description: 'Itens de menu filhos ativos',
           items: {
             type: 'object',
             properties: {
-              _id: { type: 'string', description: 'Child menu ID' },
-              name: { type: 'string', description: 'Child menu name' },
-              type: { type: 'string', description: 'Child menu type' },
-              slug: { type: 'string', description: 'Child menu slug' },
+              _id: { type: 'string', description: 'ID do menu filho' },
+              name: { type: 'string', description: 'Nome do menu filho' },
+              type: { type: 'string', description: 'Tipo do menu filho' },
+              slug: { type: 'string', description: 'Slug do menu filho' },
             },
           },
         },
@@ -68,17 +78,31 @@ export const MenuShowSchema: FastifySchema = {
         updatedAt: { type: 'string', format: 'date-time' },
       },
     },
-    401: {
-      description: 'Unauthorized - Authentication required',
+    400: {
+      description: 'Requisição inválida - Falha na validação',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Unauthorized'] },
+        message: { type: 'string', description: 'Mensagem de erro' },
+        code: { type: 'number', enum: [400] },
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Erros de validação por campo',
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - Autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
     },
     404: {
-      description: 'Menu not found',
+      description: 'Menu não encontrado',
       type: 'object',
       properties: {
         message: { type: 'string', enum: ['Menu not found'] },
@@ -87,10 +111,10 @@ export const MenuShowSchema: FastifySchema = {
       },
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['GET_MENU_BY_ID_ERROR'] },
       },

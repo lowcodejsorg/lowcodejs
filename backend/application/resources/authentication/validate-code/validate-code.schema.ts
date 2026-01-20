@@ -1,66 +1,98 @@
 import type { FastifySchema } from 'fastify';
 
 export const ValidateCodeSchema: FastifySchema = {
-  tags: ['Authentication'],
-  summary: 'Validate password recovery code',
+  tags: ['Autenticação'],
+  summary: 'Validar código de recuperação de senha',
   description:
-    'Validates a password recovery code and returns a temporary token for password reset',
+    'Valida um código de recuperação de senha e retorna um token temporário para redefinição de senha',
   body: {
     type: 'object',
     required: ['code'],
     properties: {
       code: {
         type: 'string',
-        description: 'Recovery code received via email',
+        description: 'Código de recuperação recebido via email',
+        errorMessage: {
+          type: 'O código deve ser um texto',
+        },
       },
+    },
+    additionalProperties: false,
+    errorMessage: {
+      required: {
+        code: 'O código é obrigatório',
+      },
+      additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
     200: {
-      description: 'Code validated successfully',
+      description: 'Código validado com sucesso',
       type: 'object',
       properties: {
-        token: { type: 'string' },
+        token: {
+          type: 'string',
+          description: 'Token temporário para redefinição de senha',
+        },
         message: { type: 'string' },
       },
     },
-    400: {
-      description: 'Bad request - Invalid or expired code',
+    404: {
+      description: 'Não encontrado - Token de validação não encontrado',
       type: 'object',
       properties: {
         message: {
           type: 'string',
-          enum: ['Invalid recovery code', 'Recovery code has expired'],
+          enum: ['Token de validação não encontrado'],
         },
-        code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_CODE', 'CODE_EXPIRED'] },
+        code: { type: 'number', enum: [404] },
+        cause: { type: 'string', enum: ['VALIDATION_TOKEN_NOT_FOUND'] },
       },
       examples: [
         {
-          message: 'Invalid recovery code',
-          code: 400,
-          cause: 'INVALID_CODE',
+          message: 'Token de validação não encontrado',
+          code: 404,
+          cause: 'VALIDATION_TOKEN_NOT_FOUND',
+        },
+      ],
+    },
+    410: {
+      description: 'Expirado - Token de validação expirado',
+      type: 'object',
+      properties: {
+        message: {
+          type: 'string',
+          enum: ['Código expirado', 'Token de validação expirado'],
+        },
+        code: { type: 'number', enum: [410] },
+        cause: { type: 'string', enum: ['VALIDATION_TOKEN_EXPIRED'] },
+      },
+      examples: [
+        {
+          message: 'Código expirado',
+          code: 410,
+          cause: 'VALIDATION_TOKEN_EXPIRED',
         },
         {
-          message: 'Recovery code has expired',
-          code: 400,
-          cause: 'CODE_EXPIRED',
+          message: 'Token de validação expirado',
+          code: 410,
+          cause: 'VALIDATION_TOKEN_EXPIRED',
         },
       ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['INTERNAL_SERVER_ERROR'] },
+        cause: { type: 'string', enum: ['VALIDATE_CODE_ERROR'] },
       },
       examples: [
         {
-          message: 'Internal server error',
+          message: 'Erro interno do servidor',
           code: 500,
-          cause: 'INTERNAL_SERVER_ERROR',
+          cause: 'VALIDATE_CODE_ERROR',
         },
       ],
     },

@@ -83,11 +83,15 @@ export function useTablePermission(
   }, [profile.data]);
 
   const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
+  const isAdministrator = profile.data?.group.slug === E_ROLE.ADMINISTRATOR;
 
   const can = useMemo(() => {
     return (action: TableAction): boolean => {
       // MASTER tem acesso total a tudo
       if (isMaster) return true;
+
+      // ADMINISTRATOR tem acesso total a TODAS as tabelas
+      if (isAdministrator) return true;
 
       // Dono ou admin da tabela pode fazer tudo
       if (isOwnerOrAdmin) return true;
@@ -159,7 +163,7 @@ export function useTablePermission(
       const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
       return permissions.includes(requiredSlug);
     };
-  }, [isMaster, isOwnerOrAdmin, permissions, table, userId]);
+  }, [isMaster, isAdministrator, isOwnerOrAdmin, permissions, table, userId]);
 
   return {
     isOwner,
@@ -181,6 +185,7 @@ export function usePermission(): {
   const profile = useProfileRead();
 
   const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
+  const isAdministrator = profile.data?.group.slug === E_ROLE.ADMINISTRATOR;
 
   const permissions = useMemo(() => {
     if (!profile.data) return [];
@@ -192,10 +197,13 @@ export function usePermission(): {
       // MASTER tem acesso total a tudo
       if (isMaster) return true;
 
+      // ADMINISTRATOR tem acesso total a tabelas
+      if (isAdministrator) return true;
+
       const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
       return permissions.includes(requiredSlug);
     };
-  }, [isMaster, permissions]);
+  }, [isMaster, isAdministrator, permissions]);
 
   return {
     can,

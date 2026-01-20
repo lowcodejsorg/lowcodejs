@@ -1,30 +1,12 @@
 /* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, PUT } from 'fastify-decorators';
-import z from 'zod';
-
-const EnvSchema = z.object({
-  LOCALE: z.enum(['pt-br', 'en-us']).default('pt-br'),
-  FILE_UPLOAD_MAX_SIZE: z.coerce.number().default(1024 * 1024 * 5),
-  FILE_UPLOAD_ACCEPTED: z.string(),
-  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.coerce.number().default(10),
-  PAGINATION_PER_PAGE: z.coerce.number().default(50),
-
-  LOGO_SMALL_URL: z.string().trim().optional().nullable(),
-  LOGO_LARGE_URL: z.string().trim().optional().nullable(),
-
-  // DATABASE_URL: z.string().trim(),
-
-  EMAIL_PROVIDER_PASSWORD: z.string().trim(),
-  EMAIL_PROVIDER_HOST: z.string().trim(),
-  EMAIL_PROVIDER_PORT: z.coerce.number(),
-  EMAIL_PROVIDER_USER: z.string().trim(),
-});
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { Setting } from '@application/model/setting.model';
 
 import { SettingUpdateSchema } from './update.schema';
+import { SettingUpdateBodyValidator } from './update.validator';
 
 @Controller({
   route: '/setting',
@@ -44,7 +26,7 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     try {
-      const payload = EnvSchema.parse(request.body);
+      const payload = SettingUpdateBodyValidator.parse(request.body);
 
       const updated = await Setting.findOneAndUpdate({}, payload, {
         upsert: true,

@@ -1,11 +1,12 @@
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
+import { TableView } from './-view';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
@@ -30,6 +31,8 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const _read = useReadTable({ slug });
   const permission = useTablePermission(_read.data);
+
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   // Loading enquanto verifica permissão
   if (_read.status === 'pending' || permission.isLoading) {
@@ -62,6 +65,19 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes da tabela</h1>
         </div>
+        {_read.status === 'success' &&
+          mode === 'show' &&
+          permission.can('UPDATE_TABLE') && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setMode('edit')}
+            >
+              <PencilIcon className="h-4 w-4 mr-1" />
+              <span>Editar</span>
+            </Button>
+          )}
       </div>
 
       {/* Content */}
@@ -72,19 +88,30 @@ function RouteComponent(): React.JSX.Element {
             refetch={_read.refetch}
           />
         )}
-        {_read.status === 'success' && <TableUpdateContent data={_read.data} />}
+        {_read.status === 'success' && (
+          <TableUpdateContent
+            data={_read.data}
+            mode={mode}
+            setMode={setMode}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function TableUpdateContent({ data }: { data: ITable }): React.JSX.Element {
-  const { queryClient } = getContext();
-  const table = useReadTable({ slug: data.slug });
-  const permission = useTablePermission(table.data);
-  const canEdit = permission.can('UPDATE_TABLE');
+interface TableUpdateContentProps {
+  data: ITable;
+  mode: 'show' | 'edit';
+  setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+}
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+function TableUpdateContent({
+  data,
+  mode,
+  setMode,
+}: TableUpdateContentProps): React.JSX.Element {
+  const { queryClient } = getContext();
 
   const _update = useUpdateTable({
     onSuccess(updatedData) {
@@ -186,66 +213,60 @@ function TableUpdateContent({ data }: { data: ITable }): React.JSX.Element {
 
   return (
     <>
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <UpdateTableFormFields
-          form={form}
-          isPending={isPending}
-          mode={mode}
-          tableData={data}
-        />
-      </form>
+      {mode === 'show' && <TableView data={data} />}
 
-      {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              {mode === 'show' && canEdit && (
+      {mode === 'edit' && (
+        <form
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <UpdateTableFormFields
+            form={form}
+            isPending={isPending}
+            mode={mode}
+            tableData={data}
+          />
+        </form>
+      )}
+
+      {/* Footer */}
+      {mode === 'edit' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  className="w-full max-w-3xs"
-                  onClick={() => setMode('edit')}
+                  variant="outline"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    form.reset();
+                    setMode('show');
+                  }}
                 >
-                  <span>Editar</span>
+                  <span>Cancelar</span>
                 </Button>
-              )}
-
-              {mode === 'edit' && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full max-w-3xs"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      form.reset();
-                      setMode('show');
-                    }}
-                  >
-                    <span>Cancelar</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full max-w-3xs"
-                    disabled={!canSubmit}
-                    onClick={() => form.handleSubmit()}
-                  >
-                    {isSubmitting && <Spinner />}
-                    <span>Salvar</span>
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        />
-      </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Salvar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </>
   );
 }

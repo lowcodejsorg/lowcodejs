@@ -134,9 +134,21 @@ function RouteComponent(): React.JSX.Element {
           return;
         }
 
+        if (data.cause === 'CREATE_USER_ERROR' && data.code === 500) {
+          toast('Erro ao criar o usuário', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao criar o usuário. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
         toast('Erro ao criar o usuário', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: 'Erro ao criar o usuário',
+          description:
+            'Houve um erro interno ao criar o usuário. Tente novamente mais tarde.',
           descriptionClassName: '!text-white',
           closeButton: true,
         });

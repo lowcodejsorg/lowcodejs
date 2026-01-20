@@ -1,12 +1,13 @@
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
 import type { UserUpdateFormValues } from './-update-form';
 import { UpdateUserFormFields, UserUpdateSchema } from './-update-form';
 import { UpdateUserFormSkeleton } from './-update-form-skeleton';
+import { UserView } from './-view';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
@@ -34,6 +35,8 @@ function RouteComponent(): React.JSX.Element {
 
   const _read = useReadUser({ userId });
 
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -55,6 +58,17 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes do usuário</h1>
         </div>
+        {_read.status === 'success' && mode === 'show' && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setMode('edit')}
+          >
+            <PencilIcon className="h-4 w-4 mr-1" />
+            <span>Editar</span>
+          </Button>
+        )}
       </div>
 
       {/* Content */}
@@ -66,18 +80,32 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
         {_read.status === 'pending' && <UpdateUserFormSkeleton />}
-        {_read.status === 'success' && <UserUpdateContent data={_read.data} />}
+        {_read.status === 'success' && (
+          <UserUpdateContent
+            data={_read.data}
+            mode={mode}
+            setMode={setMode}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
+interface UserUpdateContentProps {
+  data: IUser;
+  mode: 'show' | 'edit';
+  setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+}
+
+function UserUpdateContent({
+  data,
+  mode,
+  setMode,
+}: UserUpdateContentProps): React.JSX.Element {
   const authentication = useAuthenticationStore();
 
   const { queryClient } = getContext();
-
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   const form = useAppForm({
     defaultValues: {
@@ -202,9 +230,21 @@ function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
           return;
         }
 
+        if (errorData.cause === 'UPDATE_USER_ERROR' && errorData.code === 500) {
+          toast('Erro ao atualizar o usuário', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao atualizar o usuário. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
         toast('Erro ao atualizar o usuário', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: 'Erro ao atualizar o usuário',
+          description:
+            'Houve um erro interno ao atualizar o usuário. Tente novamente mais tarde.',
           descriptionClassName: '!text-white',
           closeButton: true,
         });
@@ -218,65 +258,59 @@ function UserUpdateContent({ data }: { data: IUser }): React.JSX.Element {
 
   return (
     <>
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <UpdateUserFormFields
-          form={form}
-          isPending={isPending}
-          mode={mode}
-        />
-      </form>
+      {mode === 'show' && <UserView data={data} />}
 
-      {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              {mode === 'show' && (
+      {mode === 'edit' && (
+        <form
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <UpdateUserFormFields
+            form={form}
+            isPending={isPending}
+            mode={mode}
+          />
+        </form>
+      )}
+
+      {/* Footer */}
+      {mode === 'edit' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  className="w-full max-w-3xs"
-                  onClick={() => setMode('edit')}
+                  variant="outline"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    form.reset();
+                    setMode('show');
+                  }}
                 >
-                  <span>Editar</span>
+                  <span>Cancelar</span>
                 </Button>
-              )}
-
-              {mode === 'edit' && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full max-w-3xs"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      form.reset();
-                      setMode('show');
-                    }}
-                  >
-                    <span>Cancelar</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full max-w-3xs"
-                    disabled={!canSubmit}
-                    onClick={() => form.handleSubmit()}
-                  >
-                    {isSubmitting && <Spinner />}
-                    <span>Salvar</span>
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        />
-      </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Salvar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </>
   );
 }

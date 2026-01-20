@@ -3,6 +3,7 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { PageShowSchema } from './show.schema';
 import PageShowUseCase from './show.use-case';
 import { PageShowParamsValidator } from './show.validator';
 
@@ -25,6 +26,7 @@ export default class {
           optional: false,
         }),
       ],
+      schema: PageShowSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

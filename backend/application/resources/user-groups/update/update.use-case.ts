@@ -33,7 +33,7 @@ export default class UserGroupUpdateUseCase {
           ),
         );
 
-      if (!(payload?.permissions?.length > 0))
+      if (payload.permissions && payload.permissions.length === 0)
         return left(
           HTTPException.BadRequest(
             'Ao menos uma permissao deve ser informada para o grupo de usuarios',

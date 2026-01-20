@@ -1,12 +1,13 @@
 import { createFileRoute, useParams, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
 import { GroupUpdateSchema, UpdateGroupFormFields } from './-update-form';
 import type { GroupUpdateFormValues } from './-update-form';
 import { UpdateGroupFormSkeleton } from './-update-form-skeleton';
+import { GroupView } from './-view';
 
 import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
@@ -17,7 +18,7 @@ import { useUpdateGroup } from '@/hooks/tanstack-query/use-group-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import type { IGroup, Paginated } from '@/lib/interfaces';
+import type { IGroup, IHTTPExeptionError, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/groups/$groupId/')({
   component: RouteComponent,
@@ -32,6 +33,8 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
 
   const _read = useReadGroup({ groupId });
+
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -54,6 +57,17 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes do grupo</h1>
         </div>
+        {_read.status === 'success' && mode === 'show' && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setMode('edit')}
+          >
+            <PencilIcon className="h-4 w-4 mr-1" />
+            <span>Editar</span>
+          </Button>
+        )}
       </div>
 
       {/* Content */}
@@ -65,16 +79,42 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
         {_read.status === 'pending' && <UpdateGroupFormSkeleton />}
-        {_read.status === 'success' && <GroupUpdateContent data={_read.data} />}
+        {_read.status === 'success' && (
+          <GroupUpdateContent
+            data={_read.data}
+            mode={mode}
+            setMode={setMode}
+          />
+        )}
       </div>
     </div>
   );
 }
 
-function GroupUpdateContent({ data }: { data: IGroup }): React.JSX.Element {
+interface GroupUpdateContentProps {
+  data: IGroup;
+  mode: 'show' | 'edit';
+  setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+}
+
+function GroupUpdateContent({
+  data,
+  mode,
+  setMode,
+}: GroupUpdateContentProps): React.JSX.Element {
   const { queryClient } = getContext();
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+  function setFieldError(
+    field: 'name' | 'description' | 'permissions',
+    message: string,
+  ): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
 
   const _update = useUpdateGroup({
     onSuccess(updatedData) {
@@ -119,15 +159,63 @@ function GroupUpdateContent({ data }: { data: IGroup }): React.JSX.Element {
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
+        const errorData = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+          description?: string;
+          permissions?: string;
+        }>;
 
-        toast('Erro ao atualizar o grupo', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar o grupo',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        // 404 - Grupo não encontrado (USER_GROUP_NOT_FOUND)
+        if (
+          errorData.cause === 'USER_GROUP_NOT_FOUND' &&
+          errorData.code === 404
+        ) {
+          toast('Grupo não encontrado', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: 'O grupo que você está tentando atualizar não existe',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        // 400 - Erros de validação (INVALID_PAYLOAD_FORMAT)
+        if (
+          errorData.cause === 'INVALID_PAYLOAD_FORMAT' &&
+          errorData.code === 400
+        ) {
+          if (errorData.errors['name'])
+            setFieldError('name', errorData.errors['name']);
+          if (errorData.errors['description'])
+            setFieldError('description', errorData.errors['description']);
+          if (errorData.errors['permissions'])
+            setFieldError('permissions', errorData.errors['permissions']);
+          return;
+        }
+
+        // 500 - Erro interno (UPDATE_USER_GROUP_ERROR)
+        if (
+          errorData.cause === 'UPDATE_USER_GROUP_ERROR' &&
+          errorData.code === 500
+        ) {
+          toast('Erro ao atualizar o grupo', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao atualizar o grupo. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
       }
+
+      toast('Erro ao atualizar o grupo', {
+        className: '!bg-destructive !text-white !border-destructive',
+        description:
+          'Houve um erro interno ao atualizar o grupo. Tente novamente mais tarde.',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
 
       console.error(error);
     },
@@ -157,66 +245,60 @@ function GroupUpdateContent({ data }: { data: IGroup }): React.JSX.Element {
 
   return (
     <>
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <UpdateGroupFormFields
-          form={form}
-          isPending={isPending}
-          mode={mode}
-          slug={data.slug}
-        />
-      </form>
+      {mode === 'show' && <GroupView data={data} />}
 
-      {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              {mode === 'show' && (
+      {mode === 'edit' && (
+        <form
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <UpdateGroupFormFields
+            form={form}
+            isPending={isPending}
+            mode={mode}
+            slug={data.slug}
+          />
+        </form>
+      )}
+
+      {/* Footer */}
+      {mode === 'edit' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  className="w-full max-w-3xs"
-                  onClick={() => setMode('edit')}
+                  variant="outline"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    form.reset();
+                    setMode('show');
+                  }}
                 >
-                  <span>Editar</span>
+                  <span>Cancelar</span>
                 </Button>
-              )}
-
-              {mode === 'edit' && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full max-w-3xs"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      form.reset();
-                      setMode('show');
-                    }}
-                  >
-                    <span>Cancelar</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full max-w-3xs"
-                    disabled={!canSubmit}
-                    onClick={() => form.handleSubmit()}
-                  >
-                    {isSubmitting && <Spinner />}
-                    <span>Salvar</span>
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        />
-      </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="disabled:cursor-not-allowed"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Salvar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </>
   );
 }

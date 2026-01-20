@@ -1,40 +1,41 @@
 import type { FastifySchema } from 'fastify';
 
 export const UserGroupListSchema: FastifySchema = {
-  tags: ['User Group'],
-  summary: 'List all user groups',
+  tags: ['Grupos de Usuários'],
+  summary: 'Listar todos os grupos de usuários',
   description:
-    'Retrieves a complete list of all user groups without pagination',
+    'Retorna a lista completa de todos os grupos de usuários sem paginação',
   security: [{ cookieAuth: [] }],
   response: {
     200: {
-      description: 'Complete list of user groups',
+      description: 'Lista completa de grupos de usuários',
       type: 'array',
       items: {
         type: 'object',
         properties: {
-          _id: { type: 'string' },
-          name: { type: 'string' },
-          slug: { type: 'string' },
-          description: { type: 'string' },
+          _id: { type: 'string', description: 'ID do grupo' },
+          name: { type: 'string', description: 'Nome do grupo' },
+          slug: { type: 'string', description: 'Identificador único do grupo' },
+          description: { type: 'string', description: 'Descrição do grupo' },
           permissions: {
             type: 'array',
+            description: 'Permissões atribuídas ao grupo',
             items: {
               type: 'object',
               properties: {
-                _id: { type: 'string', description: 'Permission ID' },
+                _id: { type: 'string', description: 'ID da permissão' },
                 name: {
                   type: 'string',
-                  description: 'Permission name',
+                  description: 'Nome da permissão',
                 },
                 slug: {
                   type: 'string',
-                  description: 'Permission slug',
+                  description: 'Slug da permissão',
                 },
                 description: {
                   type: 'string',
                   nullable: true,
-                  description: 'Permission description',
+                  description: 'Descrição da permissão',
                 },
               },
             },
@@ -45,36 +46,22 @@ export const UserGroupListSchema: FastifySchema = {
       },
     },
     401: {
-      description: 'Unauthorized - Authentication required',
+      description: 'Não autorizado - Autenticação necessária',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Authentication required'] },
+        message: { type: 'string', enum: ['Autenticação necessária'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
       },
-      examples: [
-        {
-          message: 'Authentication required',
-          code: 401,
-          cause: 'AUTHENTICATION_REQUIRED',
-        },
-      ],
     },
     500: {
-      description: 'Internal server error',
+      description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Internal server error'] },
+        message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['INTERNAL_SERVER_ERROR'] },
+        cause: { type: 'string', enum: ['LIST_USER_GROUP_ERROR'] },
       },
-      examples: [
-        {
-          message: 'Internal server error',
-          code: 500,
-          cause: 'INTERNAL_SERVER_ERROR',
-        },
-      ],
     },
   },
 };
