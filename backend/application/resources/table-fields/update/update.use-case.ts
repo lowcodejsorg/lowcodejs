@@ -13,7 +13,7 @@ import {
   type IField as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
+import { buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -85,7 +85,7 @@ export default class TableFieldUpdateUseCase {
         }
 
         if (!group) {
-          const _schema = buildSchema([]);
+          const _schema = this.tableRepository.buildSchema([]);
           group = await this.tableRepository.create({
             _schema,
             fields: [],
@@ -125,7 +125,7 @@ export default class TableFieldUpdateUseCase {
         f._id === field._id ? updatedField : f,
       );
 
-      const _schema = buildSchema(fields);
+      const _schema = this.tableRepository.buildSchema(fields);
 
       await this.tableRepository.update({
         _id: table._id,

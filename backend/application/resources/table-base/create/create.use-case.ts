@@ -12,7 +12,6 @@ import {
   type ITable as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { TableCreatePayload } from './create.validator';
@@ -46,7 +45,7 @@ export default class TableCreateUseCase {
           ),
         );
 
-      const _schema = buildSchema([]);
+      const _schema = this.tableRepository.buildSchema([]);
 
       const created = await this.tableRepository.create({
         ...payload,

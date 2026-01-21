@@ -12,9 +12,9 @@ import TableInMemoryRepository from '@application/repositories/table/table-in-me
 
 import TableFieldCreateUseCase from './create.use-case';
 
-vi.mock('@application/core/util.core', () => ({
+vi.mock('@application/core/util.core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@application/core/util.core')>()),
   buildTable: vi.fn().mockResolvedValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
 }));
 
 let tableInMemoryRepository: TableInMemoryRepository;

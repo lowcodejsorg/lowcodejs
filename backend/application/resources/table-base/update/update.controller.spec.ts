@@ -8,7 +8,7 @@ import {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
-import { buildSchema } from '@application/core/util.core';
+import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
 import { UserGroup } from '@application/model/user-group.model';
@@ -19,6 +19,8 @@ import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 
 describe('E2E Table Update Controller', () => {
+  const tableRepo = new TableMongooseRepository();
+
   beforeEach(async () => {
     await kernel.ready();
     await User.deleteMany({});
@@ -69,7 +71,7 @@ describe('E2E Table Update Controller', () => {
         name: 'My Table',
         slug: 'my-table',
         fields: [field._id.toString()],
-        _schema: buildSchema([
+        _schema: tableRepo.buildSchema([
           {
             ...field.toJSON(),
             _id: field._id.toString(),

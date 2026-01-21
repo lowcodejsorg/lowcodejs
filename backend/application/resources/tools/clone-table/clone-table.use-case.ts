@@ -6,7 +6,6 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField, ITable } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import {
   TableContractRepository,
@@ -69,7 +68,7 @@ export default class CloneTableUseCase {
         baseTable.fields,
       );
 
-      const _schema = buildSchema(clonedFields);
+      const _schema = this.tableRepository.buildSchema(clonedFields);
 
       const orderList = this.remapFieldIds(
         baseTable.configuration?.fields?.orderList,

@@ -4,6 +4,7 @@ import type {
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  IField,
   ITable,
   ITableMethod,
   ITableSchema,
@@ -73,4 +74,8 @@ export abstract class TableContractRepository {
   abstract updateMany(payload: TableUpdateManyPayload): Promise<void>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: TableQueryPayload): Promise<number>;
+
+  //
+  abstract mapperSchemaField(field: IField): ITableSchema;
+  abstract buildSchema(fields: IField[]): ITableSchema;
 }

@@ -12,11 +12,11 @@ import TableInMemoryRepository from '@application/repositories/table/table-in-me
 
 import TableFieldUpdateUseCase from './update.use-case';
 
-vi.mock('@application/core/util.core', () => ({
+vi.mock('@application/core/util.core', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@application/core/util.core')>()),
   buildTable: vi.fn().mockResolvedValue({
     updateMany: vi.fn().mockResolvedValue(undefined),
   }),
-  buildSchema: vi.fn().mockReturnValue({}),
 }));
 
 let tableInMemoryRepository: TableInMemoryRepository;

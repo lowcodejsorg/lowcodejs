@@ -3,20 +3,14 @@ import mongoose from 'mongoose';
 
 import { Table } from '@application/model/table.model';
 
-import type {
-  IField,
-  IRow,
-  ITableSchema,
-  Optional,
-  ValueOf,
-} from './entity.core';
+import type { IField, IRow, Optional, ValueOf } from './entity.core';
 import { E_FIELD_TYPE, E_SCHEMA_TYPE } from './entity.core';
 import { HandlerFunction } from './table/method.core';
 
 export const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
 
-const FieldTypeMapper: Record<
+export const FieldTypeMapper: Record<
   keyof typeof E_FIELD_TYPE,
   ValueOf<typeof E_SCHEMA_TYPE>
 > = {
@@ -32,143 +26,6 @@ const FieldTypeMapper: Record<
   [E_FIELD_TYPE.CATEGORY]: E_SCHEMA_TYPE.STRING,
   [E_FIELD_TYPE.USER]: E_SCHEMA_TYPE.OBJECT_ID,
 };
-
-function mapperSchema(field: IField): ITableSchema {
-  const mapper = {
-    [E_FIELD_TYPE.TEXT_SHORT]: {
-      [field.slug]: {
-        type: FieldTypeMapper[field.type] || 'String',
-        required: Boolean(field.configuration?.required || false),
-      },
-    },
-
-    [E_FIELD_TYPE.TEXT_LONG]: {
-      [field.slug]: {
-        type: FieldTypeMapper[field.type] || 'String',
-        required: Boolean(field.configuration?.required || false),
-      },
-    },
-
-    [E_FIELD_TYPE.DROPDOWN]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-        },
-      ],
-    },
-
-    [E_FIELD_TYPE.FILE]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-          ref: 'Storage',
-        },
-      ],
-    },
-
-    [E_FIELD_TYPE.RELATIONSHIP]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-          ref: field?.configuration?.relationship?.table?.slug ?? undefined,
-        },
-      ],
-    },
-
-    [E_FIELD_TYPE.FIELD_GROUP]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-          ref: field?.configuration?.group?.slug ?? undefined,
-        },
-      ],
-    },
-
-    [E_FIELD_TYPE.CATEGORY]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-        },
-      ],
-    },
-
-    [E_FIELD_TYPE.EVALUATION]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'Number',
-          required: false,
-          ref: 'Evaluation',
-        },
-      ],
-    },
-
-    [E_FIELD_TYPE.REACTION]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: false,
-          ref: 'Reaction',
-        },
-      ],
-    },
-
-    [E_FIELD_TYPE.USER]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-          ref: 'User',
-        },
-      ],
-    },
-  };
-
-  if (!(field.type in mapper) && !field?.configuration?.multiple) {
-    return {
-      [field.slug]: {
-        type: FieldTypeMapper[field.type] || 'String',
-        required: Boolean(field.configuration?.required || false),
-      },
-    };
-  }
-
-  if (!(field.type in mapper) && field?.configuration?.multiple) {
-    return {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-        },
-      ],
-    };
-  }
-
-  return mapper[field.type as keyof typeof mapper];
-}
-
-export function buildSchema(fields: IField[]): ITableSchema {
-  const schema: ITableSchema = {
-    trashedAt: {
-      type: 'Date',
-      default: null,
-    },
-    trashed: {
-      type: 'Boolean',
-      default: false,
-    },
-  };
-
-  for (const field of fields) {
-    Object.assign(schema, mapperSchema(field));
-  }
-
-  return schema;
-}
 
 interface Entity
   extends Omit<IRow, '_id'>, mongoose.Document<Omit<IRow, '_id'>> {
