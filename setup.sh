@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env sh
 
 # Script de configuração inicial do projeto LowCodeJS
 # Compatível com: Linux, macOS e Windows (Git Bash)
 
-set -e  # Para o script se houver erro
+set -e
 
 # Função para configurar a URL da API no frontend (após docker compose up)
 setup_frontend_url() {
@@ -64,17 +64,20 @@ fi
 echo "1. Verificando .env.example na raiz..."
 
 if [ ! -f "./.env.example" ]; then
-    echo "Arquivo ./.env.example não encontrado na raiz do projeto"
-    exit 1
+  echo "Arquivo ./.env.example não encontrado"
+  exit 1
 fi
 
 if [ ! -f "./credential-generator.sh" ]; then
-    echo "Arquivo ./credential-generator.sh não encontrado"
-    exit 1
+  echo "Arquivo ./credential-generator.sh não encontrado"
+  exit 1
 fi
 
+# --------------------------------------------------
+# Criar .env
+# --------------------------------------------------
 echo ""
-echo "2. Gerando credenciais e criando .env..."
+echo "2. Criando .env e gerando credenciais..."
 
 cp ./.env.example ./.env
 echo "Arquivo ./.env criado na raiz"
@@ -88,13 +91,19 @@ chmod +x ./credential-generator.sh
 echo "Gerando credenciais JWT..."
 ./credential-generator.sh
 
+# --------------------------------------------------
+# Interpolação segura (sem source)
+# --------------------------------------------------
 echo ""
 echo "3. Interpolando variáveis de ambiente..."
 
-# Carregar variáveis do .env para o ambiente
-set -a
-source ./.env
-set +a
+if ! command -v envsubst >/dev/null 2>&1; then
+  echo "envsubst não encontrado. Instale gettext."
+  exit 1
+fi
+
+# Exporta SOMENTE os nomes das variáveis (sem executar valores)
+export $(grep -E '^[A-Z0-9_]+=' ./.env | cut -d= -f1)
 
 # Verificar se envsubst está disponível
 if command -v envsubst &> /dev/null; then
@@ -132,6 +141,9 @@ else
     echo "Variáveis interpoladas com sucesso (fallback)"
 fi
 
+# --------------------------------------------------
+# Separação backend / frontend
+# --------------------------------------------------
 echo ""
 echo "4. Separando variáveis de ambiente..."
 

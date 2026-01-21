@@ -186,16 +186,23 @@ export type ProfileUpdatePayload = {
 export type SettingUpdatePayload = Partial<{
   LOCALE: string;
   FILE_UPLOAD_MAX_SIZE: number;
-  FILE_UPLOAD_ACCEPTED: Array<string>;
+  FILE_UPLOAD_ACCEPTED: string;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   PAGINATION_PER_PAGE: number;
   LOGO_SMALL_URL: string;
   LOGO_LARGE_URL: string;
+  MODEL_CLONE_TABLES: Array<string>;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;
   EMAIL_PROVIDER_PASSWORD: string;
 }>;
+
+// ============== CLONE TABLE ==============
+export type CloneTablePayload = {
+  baseTableId: string;
+  name: string;
+};
 
 // ============== REACTION ==============
 export type ReactionCreatePayload = {

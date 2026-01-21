@@ -14,6 +14,7 @@ import { FieldMenuTypeSelect } from '@/components/common/tanstack-form/field-men
 import { FieldPassword } from '@/components/common/tanstack-form/field-password';
 import { FieldPermissionMultiSelect } from '@/components/common/tanstack-form/field-permission-multi-select';
 import { FieldSwitch } from '@/components/common/tanstack-form/field-switch';
+import { FieldTableMultiSelect } from '@/components/common/tanstack-form/field-table-multi-select';
 import { FieldText } from '@/components/common/tanstack-form/field-text';
 import { FieldTextarea } from '@/components/common/tanstack-form/field-textarea';
 import { FieldUrl } from '@/components/common/tanstack-form/field-url';
@@ -63,6 +64,7 @@ export const { useAppForm, withForm } = createFormHook({
     FieldMenuTypeSelect,
     FieldPermissionMultiSelect,
     FieldUserMultiSelect,
+    FieldTableMultiSelect,
     // Table configuration
     TableComboboxField,
     TableVisibilitySelectField,

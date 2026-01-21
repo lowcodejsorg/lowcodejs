@@ -128,10 +128,10 @@ function RouteComponent(): React.JSX.Element {
 
   const form = useAppForm({
     defaultValues: groupFormDefaultValues,
+    validators: {
+      onSubmit: GroupCreateSchema,
+    },
     onSubmit: async ({ value }) => {
-      const validation = GroupCreateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_create.status === 'pending') return;
 
       await _create.mutateAsync({
