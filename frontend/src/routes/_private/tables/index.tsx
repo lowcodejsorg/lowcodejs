@@ -79,7 +79,7 @@ function RouteComponent(): React.JSX.Element {
               onClick={() => {
                 sidebar.setOpen(false);
                 router.navigate({
-                  to: '/tables/create',
+                  to: '/tables/new',
                   replace: true,
                 });
               }}

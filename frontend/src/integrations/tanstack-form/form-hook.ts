@@ -18,6 +18,7 @@ import { FieldText } from '@/components/common/tanstack-form/field-text';
 import { FieldTextarea } from '@/components/common/tanstack-form/field-textarea';
 import { FieldUrl } from '@/components/common/tanstack-form/field-url';
 import { FieldUserMultiSelect } from '@/components/common/tanstack-form/field-user-multi-select';
+import { FieldTableMultiSelect } from '@/components/common/tanstack-form/field-table-multi-select';
 // Table configuration
 import { TableCollaborationSelectField } from '@/components/common/tanstack-form/table-collaboration-select-field';
 import { TableComboboxField } from '@/components/common/tanstack-form/table-combobox-field';
@@ -62,6 +63,7 @@ export const { useAppForm, withForm } = createFormHook({
     FieldMenuTypeSelect,
     FieldPermissionMultiSelect,
     FieldUserMultiSelect,
+    FieldTableMultiSelect,
     // Table configuration
     TableComboboxField,
     TableVisibilitySelectField,

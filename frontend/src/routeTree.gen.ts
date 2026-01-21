@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
 import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index'
+import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index'
 import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index'
 import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/settings/index'
 import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index'
@@ -22,7 +23,9 @@ import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authent
 import { Route as PrivatePagesSlugRouteImport } from './routes/_private/pages/$slug'
 import { Route as PrivateUsersCreateIndexRouteImport } from './routes/_private/users/create/index'
 import { Route as PrivateUsersUserIdIndexRouteImport } from './routes/_private/users/$userId/index'
+import { Route as PrivateTablesNewIndexRouteImport } from './routes/_private/tables/new/index'
 import { Route as PrivateTablesCreateIndexRouteImport } from './routes/_private/tables/create/index'
+import { Route as PrivateTablesCloneIndexRouteImport } from './routes/_private/tables/clone/index'
 import { Route as PrivateTablesSlugIndexRouteImport } from './routes/_private/tables/$slug/index'
 import { Route as PrivateMenusCreateIndexRouteImport } from './routes/_private/menus/create/index'
 import { Route as PrivateMenusMenuIdIndexRouteImport } from './routes/_private/menus/$menuId/index'
@@ -43,6 +46,11 @@ const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
 const PrivateUsersIndexRoute = PrivateUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any)
+const PrivateToolsIndexRoute = PrivateToolsIndexRouteImport.update({
+  id: '/tools/',
+  path: '/tools/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any)
 const PrivateTablesIndexRoute = PrivateTablesIndexRouteImport.update({
@@ -102,12 +110,22 @@ const PrivateUsersUserIdIndexRoute = PrivateUsersUserIdIndexRouteImport.update({
   path: '/users/$userId/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any)
+const PrivateTablesNewIndexRoute = PrivateTablesNewIndexRouteImport.update({
+  id: '/tables/new/',
+  path: '/tables/new/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any)
 const PrivateTablesCreateIndexRoute =
   PrivateTablesCreateIndexRouteImport.update({
     id: '/tables/create/',
     path: '/tables/create/',
     getParentRoute: () => PrivateLayoutRoute,
   } as any)
+const PrivateTablesCloneIndexRoute = PrivateTablesCloneIndexRouteImport.update({
+  id: '/tables/clone/',
+  path: '/tables/clone/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any)
 const PrivateTablesSlugIndexRoute = PrivateTablesSlugIndexRouteImport.update({
   id: '/tables/$slug/',
   path: '/tables/$slug/',
@@ -188,6 +206,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof PrivateProfileIndexRoute
   '/settings': typeof PrivateSettingsIndexRoute
   '/tables': typeof PrivateTablesIndexRoute
+  '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
@@ -195,7 +214,9 @@ export interface FileRoutesByFullPath {
   '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
   '/menus/create': typeof PrivateMenusCreateIndexRoute
   '/tables/$slug': typeof PrivateTablesSlugIndexRoute
+  '/tables/clone': typeof PrivateTablesCloneIndexRoute
   '/tables/create': typeof PrivateTablesCreateIndexRoute
+  '/tables/new': typeof PrivateTablesNewIndexRoute
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/field/order': typeof PrivateTablesSlugFieldOrderRoute
@@ -215,6 +236,7 @@ export interface FileRoutesByTo {
   '/profile': typeof PrivateProfileIndexRoute
   '/settings': typeof PrivateSettingsIndexRoute
   '/tables': typeof PrivateTablesIndexRoute
+  '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
@@ -222,7 +244,9 @@ export interface FileRoutesByTo {
   '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
   '/menus/create': typeof PrivateMenusCreateIndexRoute
   '/tables/$slug': typeof PrivateTablesSlugIndexRoute
+  '/tables/clone': typeof PrivateTablesCloneIndexRoute
   '/tables/create': typeof PrivateTablesCreateIndexRoute
+  '/tables/new': typeof PrivateTablesNewIndexRoute
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/field/order': typeof PrivateTablesSlugFieldOrderRoute
@@ -244,6 +268,7 @@ export interface FileRoutesById {
   '/_private/profile/': typeof PrivateProfileIndexRoute
   '/_private/settings/': typeof PrivateSettingsIndexRoute
   '/_private/tables/': typeof PrivateTablesIndexRoute
+  '/_private/tools/': typeof PrivateToolsIndexRoute
   '/_private/users/': typeof PrivateUsersIndexRoute
   '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/_private/groups/$groupId/': typeof PrivateGroupsGroupIdIndexRoute
@@ -251,7 +276,9 @@ export interface FileRoutesById {
   '/_private/menus/$menuId/': typeof PrivateMenusMenuIdIndexRoute
   '/_private/menus/create/': typeof PrivateMenusCreateIndexRoute
   '/_private/tables/$slug/': typeof PrivateTablesSlugIndexRoute
+  '/_private/tables/clone/': typeof PrivateTablesCloneIndexRoute
   '/_private/tables/create/': typeof PrivateTablesCreateIndexRoute
+  '/_private/tables/new/': typeof PrivateTablesNewIndexRoute
   '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute
   '/_private/users/create/': typeof PrivateUsersCreateIndexRoute
   '/_private/tables/$slug/field/order': typeof PrivateTablesSlugFieldOrderRoute
@@ -273,6 +300,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/tables'
+    | '/tools'
     | '/users'
     | '/tables/$slug/methods'
     | '/groups/$groupId'
@@ -280,7 +308,9 @@ export interface FileRouteTypes {
     | '/menus/$menuId'
     | '/menus/create'
     | '/tables/$slug'
+    | '/tables/clone'
     | '/tables/create'
+    | '/tables/new'
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/order'
@@ -300,6 +330,7 @@ export interface FileRouteTypes {
     | '/profile'
     | '/settings'
     | '/tables'
+    | '/tools'
     | '/users'
     | '/tables/$slug/methods'
     | '/groups/$groupId'
@@ -307,7 +338,9 @@ export interface FileRouteTypes {
     | '/menus/$menuId'
     | '/menus/create'
     | '/tables/$slug'
+    | '/tables/clone'
     | '/tables/create'
+    | '/tables/new'
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/order'
@@ -328,6 +361,7 @@ export interface FileRouteTypes {
     | '/_private/profile/'
     | '/_private/settings/'
     | '/_private/tables/'
+    | '/_private/tools/'
     | '/_private/users/'
     | '/_private/tables/$slug/methods'
     | '/_private/groups/$groupId/'
@@ -335,7 +369,9 @@ export interface FileRouteTypes {
     | '/_private/menus/$menuId/'
     | '/_private/menus/create/'
     | '/_private/tables/$slug/'
+    | '/_private/tables/clone/'
     | '/_private/tables/create/'
+    | '/_private/tables/new/'
     | '/_private/users/$userId/'
     | '/_private/users/create/'
     | '/_private/tables/$slug/field/order'
@@ -366,6 +402,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof PrivateUsersIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
+    '/_private/tools/': {
+      id: '/_private/tools/'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof PrivateToolsIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/tables/': {
@@ -445,11 +488,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateUsersUserIdIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_private/tables/new/': {
+      id: '/_private/tables/new/'
+      path: '/tables/new'
+      fullPath: '/tables/new'
+      preLoaderRoute: typeof PrivateTablesNewIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/create/': {
       id: '/_private/tables/create/'
       path: '/tables/create'
       fullPath: '/tables/create'
       preLoaderRoute: typeof PrivateTablesCreateIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
+    '/_private/tables/clone/': {
+      id: '/_private/tables/clone/'
+      path: '/tables/clone'
+      fullPath: '/tables/clone'
+      preLoaderRoute: typeof PrivateTablesCloneIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/tables/$slug/': {
@@ -547,6 +604,7 @@ interface PrivateLayoutRouteChildren {
   PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute
   PrivateSettingsIndexRoute: typeof PrivateSettingsIndexRoute
   PrivateTablesIndexRoute: typeof PrivateTablesIndexRoute
+  PrivateToolsIndexRoute: typeof PrivateToolsIndexRoute
   PrivateUsersIndexRoute: typeof PrivateUsersIndexRoute
   PrivateTablesSlugMethodsRoute: typeof PrivateTablesSlugMethodsRoute
   PrivateGroupsGroupIdIndexRoute: typeof PrivateGroupsGroupIdIndexRoute
@@ -554,7 +612,9 @@ interface PrivateLayoutRouteChildren {
   PrivateMenusMenuIdIndexRoute: typeof PrivateMenusMenuIdIndexRoute
   PrivateMenusCreateIndexRoute: typeof PrivateMenusCreateIndexRoute
   PrivateTablesSlugIndexRoute: typeof PrivateTablesSlugIndexRoute
+  PrivateTablesCloneIndexRoute: typeof PrivateTablesCloneIndexRoute
   PrivateTablesCreateIndexRoute: typeof PrivateTablesCreateIndexRoute
+  PrivateTablesNewIndexRoute: typeof PrivateTablesNewIndexRoute
   PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute
   PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute
   PrivateTablesSlugFieldOrderRoute: typeof PrivateTablesSlugFieldOrderRoute
@@ -573,6 +633,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateProfileIndexRoute: PrivateProfileIndexRoute,
   PrivateSettingsIndexRoute: PrivateSettingsIndexRoute,
   PrivateTablesIndexRoute: PrivateTablesIndexRoute,
+  PrivateToolsIndexRoute: PrivateToolsIndexRoute,
   PrivateUsersIndexRoute: PrivateUsersIndexRoute,
   PrivateTablesSlugMethodsRoute: PrivateTablesSlugMethodsRoute,
   PrivateGroupsGroupIdIndexRoute: PrivateGroupsGroupIdIndexRoute,
@@ -580,7 +641,9 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateMenusMenuIdIndexRoute: PrivateMenusMenuIdIndexRoute,
   PrivateMenusCreateIndexRoute: PrivateMenusCreateIndexRoute,
   PrivateTablesSlugIndexRoute: PrivateTablesSlugIndexRoute,
+  PrivateTablesCloneIndexRoute: PrivateTablesCloneIndexRoute,
   PrivateTablesCreateIndexRoute: PrivateTablesCreateIndexRoute,
+  PrivateTablesNewIndexRoute: PrivateTablesNewIndexRoute,
   PrivateUsersUserIdIndexRoute: PrivateUsersUserIdIndexRoute,
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
   PrivateTablesSlugFieldOrderRoute: PrivateTablesSlugFieldOrderRoute,
