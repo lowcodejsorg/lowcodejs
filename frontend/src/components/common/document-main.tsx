@@ -2,6 +2,16 @@ import { DocumentRow } from '@/components/common/document-row';
 import type { DocBlock } from '@/lib/document-helpers';
 import type { IRow } from '@/lib/interfaces';
 
+interface DocumentMainProps {
+  rows: Array<IRow>;
+  total: number;
+  filterLabel?: string | null;
+  blocks: Array<DocBlock>;
+  getIndentPx: (row: IRow) => number;
+  getLeafLabel: (row: IRow) => string | null;
+  getHeadingLevel: (row: IRow) => number;
+}
+
 export function DocumentMain({
   rows,
   total,
@@ -10,15 +20,7 @@ export function DocumentMain({
   getIndentPx,
   getLeafLabel,
   getHeadingLevel,
-}: {
-  rows: Array<IRow>;
-  total: number;
-  filterLabel?: string | null;
-  blocks: Array<DocBlock>;
-  getIndentPx: (row: IRow) => number;
-  getLeafLabel: (row: IRow) => string | null;
-  getHeadingLevel: (row: IRow) => number;
-}): React.JSX.Element {
+}: DocumentMainProps): React.JSX.Element {
   return (
     <main className="p-4 min-h-0 overflow-auto w-full ">
       <div className="no-print mb-3 flex items-center justify-between">

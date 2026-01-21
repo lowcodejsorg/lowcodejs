@@ -27,6 +27,7 @@ export const E_FIELD_TYPE = {
   REACTION: 'REACTION',
   EVALUATION: 'EVALUATION',
   CATEGORY: 'CATEGORY',
+  USER: 'USER',
 } as const;
 
 export const E_ROLE = {
@@ -149,6 +150,7 @@ export const FIELD_TYPE_OPTIONS = [
   { label: 'Categoria', value: E_FIELD_TYPE.CATEGORY },
   { label: 'Reação', value: E_FIELD_TYPE.REACTION },
   { label: 'Avaliação', value: E_FIELD_TYPE.EVALUATION },
+  { label: 'Usuário', value: E_FIELD_TYPE.USER },
 ] as const;
 
 export const TEXT_FORMAT_OPTIONS = [

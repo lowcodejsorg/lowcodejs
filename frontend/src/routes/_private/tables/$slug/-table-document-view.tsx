@@ -1,10 +1,12 @@
-import React, { useMemo, useRef, useState } from 'react';
-import * as ReactToPrint from 'react-to-print';
+import { pdf } from '@react-pdf/renderer';
+import React, { useMemo, useState } from 'react';
 
 import { DocumentMain } from '@/components/common/document-main';
+import { DocumentPdf } from '@/components/common/document-pdf';
 import { DocumentPrintButton } from '@/components/common/document-print-button';
 import { DocumentSidebar } from '@/components/common/document-sidebar';
 import { DocumentToc } from '@/components/common/document-toc';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import type { CatNode } from '@/lib/document-helpers';
 import {
   buildCategoryOrderMap,
@@ -22,12 +24,11 @@ import {
 } from '@/lib/document-helpers';
 import type { IField, IRow } from '@/lib/interfaces';
 
-const { useReactToPrint } = ReactToPrint;
-
 export function TableDocumentView({
   data,
   headers,
   order,
+  tableSlug,
 }: {
   data: Array<IRow>;
   headers: Array<IField>;
@@ -42,6 +43,8 @@ export function TableDocumentView({
     null,
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  const table = useReadTable({ slug: tableSlug });
 
   const orderedHeaders = useMemo(
     () => headers.filter((h) => !h.trashed).sort(headerSorter(order)),
@@ -121,11 +124,27 @@ export function TableDocumentView({
       ? rowHeadingLevelFromLeaf(row, categoryField.slug, depthMap)
       : 2;
 
-  const contentRef = useRef<HTMLDivElement>(null);
+  async function handlePrint(): Promise<void> {
+    const blob = await pdf(
+      <DocumentPdf
+        title={table.data?.name ?? ''}
+        categoryTitle={categoryField?.name ?? 'Sumario'}
+        nodes={categoryTree}
+        rows={sortedRows}
+        blocks={docBlocks}
+        categorySlug={categoryField?.slug ?? 'category'}
+        getLeafLabel={getLeafLabel}
+        getHeadingLevel={getHeadingLevel}
+        getIndentPx={getIndentPx}
+      />,
+    ).toBlob();
 
-  const printPdf = useReactToPrint({ contentRef });
-  function handlePrint(): void {
-    printPdf();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${tableSlug}-document.pdf`;
+    link.click();
+    URL.revokeObjectURL(url);
   }
 
   return (
@@ -142,10 +161,7 @@ export function TableDocumentView({
         categoryField={categoryField ?? ({} as IField)}
       />
 
-      <div
-        ref={contentRef}
-        className="w-full"
-      >
+      <div className="w-full">
         <DocumentToc
           nodes={categoryTree}
           title={categoryField?.name ?? 'Sumário'}

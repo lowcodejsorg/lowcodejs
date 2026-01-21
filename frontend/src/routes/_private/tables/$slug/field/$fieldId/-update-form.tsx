@@ -80,6 +80,7 @@ export const UpdateFieldFormFields = withForm({
     const isFieldGroup = fieldType === E_FIELD_TYPE.FIELD_GROUP;
     const isReaction = fieldType === E_FIELD_TYPE.REACTION;
     const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
+    const isUser = fieldType === E_FIELD_TYPE.USER;
 
     // useStore para reatividade - re-renderiza quando tableSlug muda
     const relationshipTableSlug = useStore(
@@ -92,7 +93,12 @@ export const UpdateFieldFormFields = withForm({
     );
 
     const showMultiple =
-      isDropdown || isFile || isRelationship || isFieldGroup || isCategory;
+      isDropdown ||
+      isFile ||
+      isRelationship ||
+      isFieldGroup ||
+      isCategory ||
+      isUser;
     const showFiltering = !isReaction && !isFile;
     const showRequired = !isReaction && !isEvaluation;
 

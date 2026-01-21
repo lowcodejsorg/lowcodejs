@@ -30,6 +30,7 @@ const FieldTypeMapper: Record<
   [E_FIELD_TYPE.EVALUATION]: E_SCHEMA_TYPE.OBJECT_ID,
   [E_FIELD_TYPE.REACTION]: E_SCHEMA_TYPE.OBJECT_ID,
   [E_FIELD_TYPE.CATEGORY]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.USER]: E_SCHEMA_TYPE.OBJECT_ID,
 };
 
 function mapperSchema(field: IField): ITableSchema {
@@ -112,6 +113,16 @@ function mapperSchema(field: IField): ITableSchema {
           type: FieldTypeMapper[field.type] || 'String',
           required: false,
           ref: 'Reaction',
+        },
+      ],
+    },
+
+    [E_FIELD_TYPE.USER]: {
+      [field.slug]: [
+        {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: Boolean(field.configuration?.required || false),
+          ref: 'User',
         },
       ],
     },
@@ -293,6 +304,7 @@ export function getRelationship(fields: IField[] = []): IField[] {
     E_FIELD_TYPE.FIELD_GROUP,
     E_FIELD_TYPE.REACTION,
     E_FIELD_TYPE.EVALUATION,
+    E_FIELD_TYPE.USER,
   ];
 
   return fields.filter(
@@ -311,10 +323,19 @@ export async function buildPopulate(
       field.type !== E_FIELD_TYPE.FIELD_GROUP &&
       field.type !== E_FIELD_TYPE.REACTION &&
       field.type !== E_FIELD_TYPE.EVALUATION &&
-      field.type !== E_FIELD_TYPE.RELATIONSHIP
+      field.type !== E_FIELD_TYPE.RELATIONSHIP &&
+      field.type !== E_FIELD_TYPE.USER
     ) {
       populate.push({
         path: field.slug,
+      });
+    }
+
+    if (field.type === E_FIELD_TYPE.USER) {
+      populate.push({
+        path: field.slug,
+        model: 'User',
+        select: 'name email _id',
       });
     }
 
@@ -440,7 +461,8 @@ export async function buildQuery(
     if (
       (field.type === E_FIELD_TYPE.RELATIONSHIP ||
         field.type === E_FIELD_TYPE.DROPDOWN ||
-        field.type === E_FIELD_TYPE.CATEGORY) &&
+        field.type === E_FIELD_TYPE.CATEGORY ||
+        field.type === E_FIELD_TYPE.USER) &&
       payload[slug]
     ) {
       query[slug] = {

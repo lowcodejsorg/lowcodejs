@@ -18,8 +18,6 @@ export function TableRowDropdownCell({
     getDropdownItem(field.configuration.dropdown, value),
   );
 
-  console.log(field.configuration.dropdown);
-
   return (
     <TableRowBadgeList
       values={items}
