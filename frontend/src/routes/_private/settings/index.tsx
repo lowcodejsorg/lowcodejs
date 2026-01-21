@@ -89,6 +89,7 @@ function SettingUpdateContent({
       | 'FILE_UPLOAD_MAX_FILES_PER_UPLOAD'
       | 'FILE_UPLOAD_ACCEPTED'
       | 'PAGINATION_PER_PAGE'
+      | 'MODEL_CLONE_TABLES'
       | 'EMAIL_PROVIDER_HOST'
       | 'EMAIL_PROVIDER_PORT'
       | 'EMAIL_PROVIDER_USER'
@@ -128,6 +129,7 @@ function SettingUpdateContent({
           FILE_UPLOAD_MAX_FILES_PER_UPLOAD?: string;
           FILE_UPLOAD_ACCEPTED?: string;
           PAGINATION_PER_PAGE?: string;
+          MODEL_CLONE_TABLES?: string;
           EMAIL_PROVIDER_HOST?: string;
           EMAIL_PROVIDER_PORT?: string;
           EMAIL_PROVIDER_USER?: string;
@@ -180,6 +182,11 @@ function SettingUpdateContent({
               'PAGINATION_PER_PAGE',
               errorData.errors['PAGINATION_PER_PAGE'],
             );
+          if (errorData.errors['MODEL_CLONE_TABLES'])
+            setFieldError(
+              'MODEL_CLONE_TABLES',
+              errorData.errors['MODEL_CLONE_TABLES'],
+            );
           if (errorData.errors['EMAIL_PROVIDER_HOST'])
             setFieldError(
               'EMAIL_PROVIDER_HOST',
@@ -227,8 +234,6 @@ function SettingUpdateContent({
         descriptionClassName: '!text-white',
         closeButton: true,
       });
-
-      console.error(error);
     },
   });
 
@@ -243,6 +248,7 @@ function SettingUpdateContent({
       ),
       FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
       PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
+      MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES.map((t) => t._id),
       EMAIL_PROVIDER_HOST: data.EMAIL_PROVIDER_HOST,
       EMAIL_PROVIDER_PORT: String(data.EMAIL_PROVIDER_PORT),
       EMAIL_PROVIDER_USER: data.EMAIL_PROVIDER_USER,
@@ -250,10 +256,10 @@ function SettingUpdateContent({
       logoSmallFile: [] as Array<File>,
       logoLargeFile: [] as Array<File>,
     },
+    validators: {
+      onSubmit: SettingUpdateSchema,
+    },
     onSubmit: async ({ value }) => {
-      const validation = SettingUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
 
       const payload = {
@@ -266,8 +272,10 @@ function SettingUpdateContent({
         ),
         FILE_UPLOAD_ACCEPTED: value.FILE_UPLOAD_ACCEPTED.split(';')
           .map((s) => s.trim())
-          .filter(Boolean),
+          .filter(Boolean)
+          .join(';'),
         PAGINATION_PER_PAGE: Number(value.PAGINATION_PER_PAGE),
+        MODEL_CLONE_TABLES: value.MODEL_CLONE_TABLES,
         EMAIL_PROVIDER_HOST: value.EMAIL_PROVIDER_HOST.trim(),
         EMAIL_PROVIDER_PORT: Number(value.EMAIL_PROVIDER_PORT),
         EMAIL_PROVIDER_USER: value.EMAIL_PROVIDER_USER.trim(),

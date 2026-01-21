@@ -218,6 +218,7 @@ export type ISetting = {
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   FILE_UPLOAD_ACCEPTED: Array<string>;
   PAGINATION_PER_PAGE: number;
+  MODEL_CLONE_TABLES: Array<ITable>;
   DATABASE_URL: string;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
@@ -286,3 +287,9 @@ export type IHTTPException = {
 };
 
 export type IHTTPExeptionError<T> = Merge<IHTTPException, { errors: T }>;
+
+export interface ICloneTableResponse {
+  tableId: string;
+  slug: string;
+  fieldIdMap: Record<string, string>;
+}

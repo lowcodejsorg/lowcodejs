@@ -1,0 +1,30 @@
+/* Remove o InputSearch SOMENTE na página Tools */
+[data-tsd-source^='/src/components/common/input-search.tsx'] {
+  display: none !important;
+}
+
+/* Container fixo do Select (não pode variar de tamanho) */
+.fixedSelectContent {
+  max-height: 320px;
+  /* min-height: 320px; */
+  overflow: hidden;
+}
+
+/* Área rolável da lista */
+.fixedSelectList {
+  max-height: 220px;
+  /* min-height: 220px; */
+  overflow-y: auto;
+}
+
+/* Estado vazio ocupa o mesmo espaço da lista */
+.emptyState {
+  /* min-height: 220px; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: hsl(var(--muted-foreground));
+  font-size: 0.875rem;
+  padding: 0 1rem;
+}
