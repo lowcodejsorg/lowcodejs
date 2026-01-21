@@ -18,7 +18,7 @@ describe('Setting Update Use Case', () => {
       LOCALE: 'en-us',
       FILE_UPLOAD_MAX_SIZE: 5242880,
       FILE_UPLOAD_ACCEPTED: 'jpg;png;pdf',
-      MODEL_CLONE_TABLES: 'table1;table2',
+      MODEL_CLONE_TABLES: ['table1', 'table2'],
     });
 
     expect(result.isRight()).toBe(true);

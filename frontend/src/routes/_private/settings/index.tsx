@@ -237,9 +237,6 @@ function SettingUpdateContent({
     },
   });
 
-  const normalizeToString = (value: string | Array<string>): string =>
-    Array.isArray(value) ? value.join(';') : value;
-
   const form = useAppForm({
     defaultValues: {
       LOCALE: data.LOCALE,
@@ -251,7 +248,7 @@ function SettingUpdateContent({
       ),
       FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
       PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
-      MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES,
+      MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES.map((t) => t._id),
       EMAIL_PROVIDER_HOST: data.EMAIL_PROVIDER_HOST,
       EMAIL_PROVIDER_PORT: String(data.EMAIL_PROVIDER_PORT),
       EMAIL_PROVIDER_USER: data.EMAIL_PROVIDER_USER,
@@ -275,9 +272,10 @@ function SettingUpdateContent({
         ),
         FILE_UPLOAD_ACCEPTED: value.FILE_UPLOAD_ACCEPTED.split(';')
           .map((s) => s.trim())
-          .filter(Boolean),
+          .filter(Boolean)
+          .join(';'),
         PAGINATION_PER_PAGE: Number(value.PAGINATION_PER_PAGE),
-        MODEL_CLONE_TABLES: normalizeToString(value.MODEL_CLONE_TABLES),
+        MODEL_CLONE_TABLES: value.MODEL_CLONE_TABLES,
         EMAIL_PROVIDER_HOST: value.EMAIL_PROVIDER_HOST.trim(),
         EMAIL_PROVIDER_PORT: Number(value.EMAIL_PROVIDER_PORT),
         EMAIL_PROVIDER_USER: value.EMAIL_PROVIDER_USER.trim(),

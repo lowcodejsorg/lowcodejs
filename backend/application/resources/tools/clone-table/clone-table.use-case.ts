@@ -6,8 +6,9 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField, ITable } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
-import type {
+import { buildSchema } from '@application/core/util.core';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import {
   TableContractRepository,
   TableCreatePayload,
 } from '@application/repositories/table/table-contract.repository';
@@ -73,9 +74,11 @@ export default class CloneTableUseCase {
         trim: true,
       });
 
-      const { newFieldIds, fieldIdMap } = await this.cloneFields(
+      const { newFieldIds, fieldIdMap, clonedFields } = await this.cloneFields(
         baseTable.fields,
       );
+
+      const _schema = buildSchema(clonedFields);
 
       const orderList = this.remapFieldIds(
         baseTable.configuration?.fields?.orderList,
@@ -88,6 +91,7 @@ export default class CloneTableUseCase {
       );
 
       const createPayload: TableCreatePayload = {
+        _schema,
         name: payload.name,
         slug: newSlug,
         description: baseTable.description ?? null,
@@ -126,14 +130,17 @@ export default class CloneTableUseCase {
     }
   }
 
-  private async cloneFields(
-    fields: IField[],
-  ): Promise<{ newFieldIds: string[]; fieldIdMap: Record<string, string> }> {
+  private async cloneFields(fields: IField[]): Promise<{
+    newFieldIds: string[];
+    fieldIdMap: Record<string, string>;
+    clonedFields: IField[];
+  }> {
     const newFieldIds: string[] = [];
     const fieldIdMap: Record<string, string> = {};
+    const clonedFields: IField[] = [];
 
     if (!fields || !Array.isArray(fields)) {
-      return { newFieldIds, fieldIdMap };
+      return { newFieldIds, fieldIdMap, clonedFields };
     }
 
     for (const field of fields) {
@@ -146,9 +153,10 @@ export default class CloneTableUseCase {
 
       newFieldIds.push(createdField._id);
       fieldIdMap[field._id] = createdField._id;
+      clonedFields.push(createdField);
     }
 
-    return { newFieldIds, fieldIdMap };
+    return { newFieldIds, fieldIdMap, clonedFields };
   }
 
   private remapFieldIds(

@@ -37,13 +37,17 @@ export const SettingShowSchema: FastifySchema = {
           examples: [20],
         },
         MODEL_CLONE_TABLES: {
-          type: 'string',
-          nullable: true,
-          description:
-            'Configuração de tabelas permitidas para clonagem de modelos',
-          errorMessage: {
-            type: 'O modelo de tabelas deve ser um texto',
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { type: 'string' },
+              slug: { type: 'string' },
+              description: { type: 'string', nullable: true },
+            },
           },
+          description: 'Lista de tabelas permitidas para clonagem de modelos',
         },
         DATABASE_URL: {
           type: 'string',

@@ -15,7 +15,7 @@ export default class SettingMongooseRepository implements SettingContractReposit
   }
 
   async get(): Promise<ISetting | null> {
-    const setting = await Model.findOne();
+    const setting = await Model.findOne().populate('MODEL_CLONE_TABLES');
 
     if (!setting) return null;
 
@@ -26,7 +26,7 @@ export default class SettingMongooseRepository implements SettingContractReposit
     const setting = await Model.findOneAndUpdate({}, payload, {
       new: true,
       upsert: true,
-    });
+    }).populate('MODEL_CLONE_TABLES');
 
     return this.transform(setting);
   }

@@ -4,7 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
-import type {
+import {
   SettingContractRepository,
   SettingUpdatePayload,
 } from '@application/repositories/setting/setting-contract.repository';
@@ -26,7 +26,7 @@ export default class SettingUpdateUseCase {
       return right({
         ...updated,
         FILE_UPLOAD_ACCEPTED: updated.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
-        MODEL_CLONE_TABLES: updated.MODEL_CLONE_TABLES?.split(';') ?? [],
+        // MODEL_CLONE_TABLES já vem populado do repository
       });
     } catch (_error) {
       return left(

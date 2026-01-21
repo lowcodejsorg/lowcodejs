@@ -18,7 +18,7 @@ describe('Setting Show Use Case', () => {
       LOCALE: 'en-us',
       FILE_UPLOAD_MAX_SIZE: 5242880,
       FILE_UPLOAD_ACCEPTED: 'jpg;png',
-      MODEL_CLONE_TABLES: 'table1;table2',
+      MODEL_CLONE_TABLES: ['table1', 'table2'],
     });
 
     const result = await sut.execute();

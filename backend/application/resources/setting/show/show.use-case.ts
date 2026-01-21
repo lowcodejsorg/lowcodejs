@@ -5,7 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { ISetting } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import type { SettingContractRepository } from '@application/repositories/setting/setting-contract.repository';
+import { SettingContractRepository } from '@application/repositories/setting/setting-contract.repository';
 
 type Response = Either<HTTPException, ISetting | Record<string, unknown>>;
 
@@ -29,7 +29,7 @@ export default class SettingShowUseCase {
       return right({
         ...setting,
         FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
-        MODEL_CLONE_TABLES: setting.MODEL_CLONE_TABLES?.split(';') ?? [],
+        // MODEL_CLONE_TABLES já vem populado do repository
       });
     } catch (_error) {
       return left(
