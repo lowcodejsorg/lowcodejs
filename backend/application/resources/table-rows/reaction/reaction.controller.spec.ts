@@ -10,7 +10,6 @@ import {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
-import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
 import { Field } from '@application/model/field.model';
 import { Reaction } from '@application/model/reaction.model';
 import { Table } from '@application/model/table.model';
@@ -18,6 +17,7 @@ import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 
