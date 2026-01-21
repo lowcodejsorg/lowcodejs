@@ -19,7 +19,7 @@ export function useReadTable(payload: {
 }
 
 interface PaginatedTablesResponse {
-  data: ITable[];
+  data: Array<ITable>;
   meta: {
     page: number;
     perPage: number;
@@ -30,7 +30,7 @@ interface PaginatedTablesResponse {
 export function useReadTables(payload?: {
   page?: number;
   perPage?: number;
-}): UseQueryResult<ITable[], Error> {
+}): UseQueryResult<Array<ITable>, Error> {
   const page = payload?.page ?? 1;
   const perPage = payload?.perPage ?? 50;
 

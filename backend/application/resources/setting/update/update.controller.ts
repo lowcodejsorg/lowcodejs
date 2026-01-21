@@ -1,20 +1,25 @@
 /* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, PUT } from 'fastify-decorators';
+import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
-import { Setting } from '@application/model/setting.model';
 
 import { SettingUpdateSchema } from './update.schema';
+import SettingUpdateUseCase from './update.use-case';
 import { SettingUpdateBodyValidator } from './update.validator';
 
 @Controller({
   route: '/setting',
 })
 export default class {
+  constructor(
+    private readonly useCase: SettingUpdateUseCase = getInstanceByToken(
+      SettingUpdateUseCase,
+    ),
+  ) {}
+
   @PUT({
     url: '',
-    // url: '/:filename',
     options: {
       onRequest: [
         AuthenticationMiddleware({
@@ -25,41 +30,20 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    try {
-      const payload = SettingUpdateBodyValidator.parse(request.body);
+    const payload = SettingUpdateBodyValidator.parse(request.body);
 
-      const updated = await Setting.findOneAndUpdate({}, payload, {
-        upsert: true,
-        new: true,
-      });
+    const result = await this.useCase.execute(payload);
 
-      for (const [key, value] of Object.entries(payload)) {
-        process.env[key] = String(value);
-      }
+    if (result.isLeft()) {
+      const error = result.value;
 
-      return response.status(200).send({
-        ...updated.toJSON({
-          flattenObjectIds: true,
-        }),
-        FILE_UPLOAD_ACCEPTED:
-          updated
-            .toJSON({
-              flattenObjectIds: true,
-            })
-            .FILE_UPLOAD_ACCEPTED.split(';') ?? [],
-        MODEL_CLONE_TABLES:
-          updated
-            .toJSON({
-              flattenObjectIds: true,
-            })
-            .MODEL_CLONE_TABLES.split(';') ?? [],
-      });
-    } catch (error) {
-      return response.status(500).send({
-        message: 'Internal server error while updating settings',
-        code: 500,
-        cause: 'SETTINGS_UPDATE_ERROR',
+      return response.status(error.code).send({
+        message: error.message,
+        code: error.code,
+        cause: error.cause,
       });
     }
+
+    return response.status(200).send(result.value);
   }
 }

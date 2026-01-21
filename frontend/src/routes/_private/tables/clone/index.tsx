@@ -1,16 +1,12 @@
-import {
-  createFileRoute,
-  useNavigate,
-  useRouter,
-} from '@tanstack/react-router';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
-  CreateTableFormFields,
-  TableCreateSchema,
-  tableCreateFormDefaultValues,
+  CloneTableBodySchema,
+  CloneTableFormFields,
+  cloneTableFormDefaultValues,
 } from './-clone-form';
 
 import { AccessDenied } from '@/components/common/access-denied';
@@ -18,128 +14,123 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
+import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import type { ITable, Paginated } from '@/lib/interfaces';
-import { API } from '@/lib/api';
+import type { IHTTPExeptionError } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/clone/')({
   component: RouteComponent,
 });
 
+function CloneFormSkeleton(): React.JSX.Element {
+  return (
+    <div className="p-4 space-y-4">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+}
+
 function RouteComponent(): React.JSX.Element {
   const { queryClient } = getContext();
   const sidebar = useSidebar();
   const router = useRouter();
-  const navigate = useNavigate();
   const permission = usePermission();
 
-  // Loading enquanto verifica permissão
-  if (permission.isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
-  }
-
-  // Mostrar erro se não tem permissão
-  if (!permission.can('CREATE_TABLE')) {
-    return <AccessDenied />;
-  }
-
-  const _create = useCreateTable({
+  const _clone = useCloneTable({
     onSuccess(data) {
-      queryClient.setQueryData<Paginated<ITable>>(
-        ['/tables/paginated', { page: 1, perPage: 50 }],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [data],
-            };
-          }
-
-          return {
-            meta: {
-              ...cached.meta,
-              total: cached.meta.total + 1,
-            },
-            data: [data, ...cached.data],
-          };
-        },
-      );
-
       queryClient.invalidateQueries({
         queryKey: ['/tables'],
       });
 
-      toast('Tabela criada', {
+      queryClient.invalidateQueries({
+        queryKey: ['/tables/paginated'],
+      });
+
+      toast('Tabela clonada', {
         className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi criada com sucesso',
+        description: 'A tabela foi clonada com sucesso',
         descriptionClassName: '!text-white',
         closeButton: true,
       });
 
       form.reset();
-      navigate({ to: '/tables', search: { page: 1, perPage: 50 } });
       sidebar.setOpen(true);
+
+      router.navigate({
+        to: '/tables/$slug',
+        params: {
+          slug: data.slug,
+        },
+      });
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const data = error.response?.data;
+        const errorData = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+          baseTableId?: string;
+        }>;
 
-        toast('Erro ao criar a tabela', {
+        if (errorData.cause === 'TABLE_NOT_FOUND' && errorData.code === 404) {
+          toast('Modelo não encontrado', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: 'A tabela modelo selecionada não foi encontrada',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        if (
+          (errorData.cause === 'INVALID_PAYLOAD_FORMAT' ||
+            errorData.cause === 'VALIDATION_ERROR') &&
+          errorData.code === 400
+        ) {
+          toast('Erro de validação', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description: errorData.message || 'Verifique os dados informados',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
+
+        toast('Erro ao clonar tabela', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: data?.message ?? 'Erro ao criar a tabela',
+          description: errorData.message || 'Erro ao clonar a tabela',
           descriptionClassName: '!text-white',
           closeButton: true,
         });
+        return;
       }
 
-      console.error(error);
+      toast('Erro ao clonar tabela', {
+        className: '!bg-destructive !text-white !border-destructive',
+        description: 'Houve um erro interno ao clonar a tabela',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
     },
   });
 
   const form = useAppForm({
-    defaultValues: tableCreateFormDefaultValues,
+    defaultValues: cloneTableFormDefaultValues,
+    validators: {
+      onSubmit: CloneTableBodySchema,
+    },
     onSubmit: async ({ value }) => {
-      const validation = TableCreateSchema.safeParse(value);
+      if (_clone.status === 'pending') return;
 
-      if (!validation.success) return;
-      if (_create.status === 'pending') return;
-
-      try {  
-        const response = await API.post('/tools/clone-table', {
-          baseTableId: value.MODEL_CLONE_TABLES,
-          name: value.name.trim(),
-        });
-  
-        const { slug } = response.data;
-  
-        router.navigate({
-          to: '/tables/$slug',
-          params: {
-            slug,
-          },
-          search: {
-            page: 1,
-            perPage: 20,
-          },
-        });  
-        
-      } catch (error) {
-        console.error('Erro ao clonar tabela:', error);
-      } 
+      await _clone.mutateAsync({
+        baseTableId: value.MODEL_CLONE_TABLES,
+        name: value.name.trim(),
+      });
     },
   });
-  
 
-  const isPending = _create.status === 'pending';
+  const isPending = _clone.status === 'pending';
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -160,54 +151,66 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-xl font-medium">Criar nova tabela utilizando modelo</h1>
+          <h1 className="text-xl font-medium">
+            Criar nova tabela utilizando modelo
+          </h1>
         </div>
       </div>
 
       {/* Content */}
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <CreateTableFormFields
-          form={form}
-          isPending={isPending}
-        />
-      </form>
+      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+        {permission.isLoading && <CloneFormSkeleton />}
+        {!permission.isLoading && !permission.can('CREATE_TABLE') && (
+          <AccessDenied />
+        )}
+        {!permission.isLoading && permission.can('CREATE_TABLE') && (
+          <form
+            className="flex-1 flex flex-col"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <CloneTableFormFields
+              form={form}
+              isPending={isPending}
+            />
+          </form>
+        )}
+      </div>
 
       {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full max-w-3xs"
-                disabled={isSubmitting}
-                onClick={() => {
-                  navigate({ to: '/tables/new' });
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                type="button"
-                className="w-full max-w-3xs"
-                disabled={!canSubmit}
-                onClick={() => form.handleSubmit()}
-              >
-                {isSubmitting && <Spinner />}
-                <span>Criar</span>
-              </Button>
-            </div>
-          )}
-        />
-      </div>
+      {!permission.isLoading && permission.can('CREATE_TABLE') && (
+        <div className="shrink-0 border-t p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full max-w-3xs"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    router.navigate({ to: '/tables/new' });
+                  }}
+                >
+                  <span>Cancelar</span>
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full max-w-3xs"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Criar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }

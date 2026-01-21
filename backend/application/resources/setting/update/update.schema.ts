@@ -68,7 +68,8 @@ export const SettingUpdateSchema: FastifySchema = {
       MODEL_CLONE_TABLES: {
         type: 'string',
         nullable: true,
-        description: 'Configuração de tabelas permitidas para clonagem de modelos',
+        description:
+          'Configuração de tabelas permitidas para clonagem de modelos',
         errorMessage: {
           type: 'O modelo de tabelas deve ser um texto',
         },

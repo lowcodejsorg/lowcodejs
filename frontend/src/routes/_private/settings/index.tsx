@@ -89,6 +89,7 @@ function SettingUpdateContent({
       | 'FILE_UPLOAD_MAX_FILES_PER_UPLOAD'
       | 'FILE_UPLOAD_ACCEPTED'
       | 'PAGINATION_PER_PAGE'
+      | 'MODEL_CLONE_TABLES'
       | 'EMAIL_PROVIDER_HOST'
       | 'EMAIL_PROVIDER_PORT'
       | 'EMAIL_PROVIDER_USER'
@@ -128,6 +129,7 @@ function SettingUpdateContent({
           FILE_UPLOAD_MAX_FILES_PER_UPLOAD?: string;
           FILE_UPLOAD_ACCEPTED?: string;
           PAGINATION_PER_PAGE?: string;
+          MODEL_CLONE_TABLES?: string;
           EMAIL_PROVIDER_HOST?: string;
           EMAIL_PROVIDER_PORT?: string;
           EMAIL_PROVIDER_USER?: string;
@@ -180,6 +182,11 @@ function SettingUpdateContent({
               'PAGINATION_PER_PAGE',
               errorData.errors['PAGINATION_PER_PAGE'],
             );
+          if (errorData.errors['MODEL_CLONE_TABLES'])
+            setFieldError(
+              'MODEL_CLONE_TABLES',
+              errorData.errors['MODEL_CLONE_TABLES'],
+            );
           if (errorData.errors['EMAIL_PROVIDER_HOST'])
             setFieldError(
               'EMAIL_PROVIDER_HOST',
@@ -227,12 +234,10 @@ function SettingUpdateContent({
         descriptionClassName: '!text-white',
         closeButton: true,
       });
-
-      console.error(error);
     },
   });
 
-  const normalizeToString = (value: string | string[]) =>
+  const normalizeToString = (value: string | Array<string>): string =>
     Array.isArray(value) ? value.join(';') : value;
 
   const form = useAppForm({
@@ -254,10 +259,10 @@ function SettingUpdateContent({
       logoSmallFile: [] as Array<File>,
       logoLargeFile: [] as Array<File>,
     },
+    validators: {
+      onSubmit: SettingUpdateSchema,
+    },
     onSubmit: async ({ value }) => {
-      const validation = SettingUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
 
       const payload = {

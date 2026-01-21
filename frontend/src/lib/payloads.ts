@@ -191,11 +191,18 @@ export type SettingUpdatePayload = Partial<{
   PAGINATION_PER_PAGE: number;
   LOGO_SMALL_URL: string;
   LOGO_LARGE_URL: string;
+  MODEL_CLONE_TABLES: string;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;
   EMAIL_PROVIDER_PASSWORD: string;
 }>;
+
+// ============== CLONE TABLE ==============
+export type CloneTablePayload = {
+  baseTableId: string;
+  name: string;
+};
 
 // ============== REACTION ==============
 export type ReactionCreatePayload = {

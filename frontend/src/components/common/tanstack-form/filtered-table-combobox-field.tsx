@@ -4,13 +4,10 @@ import { useMemo } from 'react';
 import { TableComboboxFilteredSafe } from '@/components/common/table-combobox-filtered';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Spinner } from '@/components/ui/spinner';
+import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
-
-export interface TableEntity {
-  _id: string;
-  name: string;
-}
 
 interface SelectOption {
   value: string;
@@ -23,13 +20,10 @@ interface FilteredTableComboboxFieldProps {
   disabled?: boolean;
   required?: boolean;
 
-  /** dados já carregados */
-  tables: TableEntity[];
-
   /** IDs permitidos (vindos do settings) */
-  allowedTableIds: string[];
+  allowedTableIds: Array<string>;
 
-  mapOption?: (table: TableEntity) => SelectOption;
+  mapOption?: (table: { _id: string; name: string }) => SelectOption;
 }
 
 export function FilteredTableComboboxField({
@@ -37,10 +31,9 @@ export function FilteredTableComboboxField({
   placeholder,
   disabled,
   required,
-  tables,
   allowedTableIds,
   mapOption,
-}: FilteredTableComboboxFieldProps): React.JSX.Element {
+}: FilteredTableComboboxFieldProps): React.JSX.Element | null {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -51,26 +44,33 @@ export function FilteredTableComboboxField({
    */
   const normalizedAllowedIds = useMemo(
     () => allowedTableIds.map((id) => String(id).trim()),
-    [allowedTableIds]
+    [allowedTableIds],
   );
 
   /**
-   * Filtragem real
+   * Busca as tabelas diretamente com _ids filtrados
    */
-  const options: SelectOption[] = useMemo(() => {
-    if (normalizedAllowedIds.length === 0) return [];
+  const { data, status } = useTablesReadPaginated(
+    normalizedAllowedIds.length > 0
+      ? { _ids: normalizedAllowedIds }
+      : undefined,
+  );
 
-    return tables
-      .filter((t) => normalizedAllowedIds.includes(String(t._id)))
-      .map((t) =>
-        mapOption
-          ? mapOption(t)
-          : {
-              value: t._id,
-              label: t.name,
-            }
-      );
-  }, [tables, normalizedAllowedIds, mapOption]);
+  const tables = data?.data ?? [];
+
+  /**
+   * Mapeia para options
+   */
+  const options: Array<SelectOption> = useMemo(() => {
+    return tables.map((t) =>
+      mapOption
+        ? mapOption(t)
+        : {
+            value: t._id,
+            label: t.name,
+          },
+    );
+  }, [tables, mapOption]);
 
   /**
    * Não renderiza nada enquanto ainda não há IDs permitidos
@@ -78,6 +78,19 @@ export function FilteredTableComboboxField({
    */
   if (normalizedAllowedIds.length === 0) {
     return null;
+  }
+
+  if (status === 'pending') {
+    return (
+      <Field>
+        <FieldLabel>
+          {label} {required && <span className="text-destructive">*</span>}
+        </FieldLabel>
+        <div className="flex items-center justify-center p-3">
+          <Spinner className="opacity-50" />
+        </div>
+      </Field>
+    );
   }
 
   if (options.length === 0) {
@@ -96,11 +109,6 @@ export function FilteredTableComboboxField({
       </Field>
     );
   }
-
-  // Vou manter estes consoles para validações futuras
-  // console.log('allowed', normalizedAllowedIds);
-  // console.log('tables', tables.map(t => t._id));
-  // console.log('options', options);
 
   return (
     <Field data-invalid={isInvalid}>

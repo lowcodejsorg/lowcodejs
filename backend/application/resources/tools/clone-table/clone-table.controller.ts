@@ -1,49 +1,55 @@
-import { Controller, POST } from 'fastify-decorators';
-import { FastifyReply, FastifyRequest } from 'fastify';
-import { Inject, Service } from 'typedi';
+/* eslint-disable no-unused-vars */
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+
+import { CloneTableSchema } from './clone-table.schema';
 import CloneTableUseCase from './clone-table.use-case';
 import { CloneTableValidator } from './clone-table.validator';
-import { CloneTableSchema } from './clone-table.schema';
 
-@Service()
 @Controller({
   route: '/tools',
 })
-export default class CloneTableController {
+export default class {
   constructor(
-    @Inject(() => CloneTableUseCase)
-    private readonly useCase: CloneTableUseCase,
+    private readonly useCase: CloneTableUseCase = getInstanceByToken(
+      CloneTableUseCase,
+    ),
   ) {}
 
   @POST({
     url: '/clone-table',
-    schema: CloneTableSchema,
+    options: {
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+      ],
+      schema: CloneTableSchema,
+    },
   })
-  async handler(
-    request: FastifyRequest,
-    reply: FastifyReply,
-  ): Promise<void> {
-    const payload = CloneTableValidator.parse(request.body);
+  async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
+    const body = CloneTableValidator.parse(request.body);
 
     const result = await this.useCase.execute({
-      ...payload,
+      ...body,
       ownerId: request.user.sub,
     });
 
     if (result.isLeft()) {
       const error = result.value;
 
-      return reply.code(error.code).send({
+      return response.status(error.code).send({
         message: error.message,
-        cause: error.cause,
         code: error.code,
+        cause: error.cause,
       });
     }
 
     const { table, fieldIdMap } = result.value;
 
-    return reply.send({
+    return response.status(201).send({
       tableId: table._id,
       slug: table.slug,
       fieldIdMap,

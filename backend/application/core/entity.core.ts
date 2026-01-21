@@ -241,7 +241,7 @@ export type ICategory = {
 export type IDropdown = {
   id: string;
   label: string;
-  color?: string;
+  color?: string | null;
 };
 
 export type IFieldConfigurationRelationship = {
@@ -363,8 +363,8 @@ export type ISetting = {
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   PAGINATION_PER_PAGE: number;
   MODEL_CLONE_TABLES: string;
-  LOGO_SMALL_URL?: string;
-  LOGO_LARGE_URL?: string;
+  LOGO_SMALL_URL?: string | null;
+  LOGO_LARGE_URL?: string | null;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;

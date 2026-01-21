@@ -14,11 +14,11 @@ import { FieldMenuTypeSelect } from '@/components/common/tanstack-form/field-men
 import { FieldPassword } from '@/components/common/tanstack-form/field-password';
 import { FieldPermissionMultiSelect } from '@/components/common/tanstack-form/field-permission-multi-select';
 import { FieldSwitch } from '@/components/common/tanstack-form/field-switch';
+import { FieldTableMultiSelect } from '@/components/common/tanstack-form/field-table-multi-select';
 import { FieldText } from '@/components/common/tanstack-form/field-text';
 import { FieldTextarea } from '@/components/common/tanstack-form/field-textarea';
 import { FieldUrl } from '@/components/common/tanstack-form/field-url';
 import { FieldUserMultiSelect } from '@/components/common/tanstack-form/field-user-multi-select';
-import { FieldTableMultiSelect } from '@/components/common/tanstack-form/field-table-multi-select';
 // Table configuration
 import { TableCollaborationSelectField } from '@/components/common/tanstack-form/table-collaboration-select-field';
 import { TableComboboxField } from '@/components/common/tanstack-form/table-combobox-field';

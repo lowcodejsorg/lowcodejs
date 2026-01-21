@@ -22,6 +22,7 @@ interface TableMultiSelectProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  allowedTableIds?: Array<string>;
 }
 
 export function TableMultiSelect({
@@ -30,16 +31,17 @@ export function TableMultiSelect({
   placeholder = 'Selecione tabelas...',
   className,
   disabled = false,
+  allowedTableIds,
 }: TableMultiSelectProps): React.JSX.Element {
   const anchorRef = useComboboxAnchor();
-  const { data: tables, status } = useTablesReadPaginated();
+  const { data: tables, status } = useTablesReadPaginated(
+    allowedTableIds?.length ? { _ids: allowedTableIds } : undefined,
+  );
 
-  const items: ITable[] = tables?.data ?? [];
+  const items: Array<ITable> = tables?.data ?? [];
 
-  const selectedTables = React.useMemo<ITable[]>(() => {
-    return items.filter((table) =>
-      value.includes(table._id)
-    );
+  const selectedTables = React.useMemo<Array<ITable>>(() => {
+    return items.filter((table) => value.includes(table._id));
   }, [items, value]);
 
   return (

@@ -23,7 +23,7 @@ interface TableComboboxFilteredSafeProps {
   disabled?: boolean;
 
   /** opções já filtradas */
-  options: SelectOption[];
+  options: Array<SelectOption>;
 }
 
 export function TableComboboxFilteredSafe({

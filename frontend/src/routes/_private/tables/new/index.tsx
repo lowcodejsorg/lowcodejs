@@ -1,19 +1,21 @@
-import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { DatabaseIcon, CopyIcon } from 'lucide-react'
-
-export const Route = createFileRoute('/_private/tables/new/')({
-  component: RouteComponent,
-})
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { CopyIcon, DatabaseIcon } from 'lucide-react';
+import React from 'react';
 
 import styles from './new.module.css';
 
-function RouteComponent() {
-  const navigate = useNavigate()
+export const Route = createFileRoute('/_private/tables/new/')({
+  component: RouteComponent,
+});
+
+function RouteComponent(): React.JSX.Element {
+  const navigate = useNavigate();
 
   return (
-    <div className={`flex h-full items-center justify-center ${styles.hideSearch}`}>
+    <div
+      className={`flex h-full items-center justify-center ${styles.hideSearch}`}
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full px-4">
-
         {/* Criar a partir de modelo */}
         <button
           onClick={() => navigate({ to: '/tables/clone' })}
@@ -47,8 +49,7 @@ function RouteComponent() {
             </p>
           </div>
         </button>
-
       </div>
     </div>
-  )
+  );
 }

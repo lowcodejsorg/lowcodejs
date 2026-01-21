@@ -1,15 +1,22 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, GET } from 'fastify-decorators';
+import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
-import { Setting } from '@application/model/setting.model';
 
 import { SettingShowSchema } from './show.schema';
+import SettingShowUseCase from './show.use-case';
 
 @Controller({
   route: '/setting',
 })
 export default class {
+  constructor(
+    private readonly useCase: SettingShowUseCase = getInstanceByToken(
+      SettingShowUseCase,
+    ),
+  ) {}
+
   @GET({
     url: '',
     options: {
@@ -22,21 +29,18 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const setting = await Setting.findOne().lean();
+    const result = await this.useCase.execute();
 
-    if (!setting)
-      return response.send({
-        ...process.env,
-        FILE_UPLOAD_ACCEPTED:
-          process.env.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
-        MODEL_CLONE_TABLES: [],
+    if (result.isLeft()) {
+      const error = result.value;
+
+      return response.status(error.code).send({
+        message: error.message,
+        code: error.code,
+        cause: error.cause,
       });
+    }
 
-
-    return response.send({
-      ...setting,
-      FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED.split(';') ?? [],
-      MODEL_CLONE_TABLES: setting.MODEL_CLONE_TABLES.split(';') ?? [],
-    });
+    return response.send(result.value);
   }
 }

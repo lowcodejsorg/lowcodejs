@@ -45,6 +45,7 @@ export const SettingUpdateSchema = z.object({
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.string(),
   FILE_UPLOAD_ACCEPTED: z.string(),
   PAGINATION_PER_PAGE: z.string(),
+  MODEL_CLONE_TABLES: z.array(z.string()),
   EMAIL_PROVIDER_HOST: z.string(),
   EMAIL_PROVIDER_PORT: z.string(),
   EMAIL_PROVIDER_USER: z.string(),
@@ -63,6 +64,7 @@ export type SettingUpdateFormValues = Merge<
     FILE_UPLOAD_MAX_FILES_PER_UPLOAD: string;
     FILE_UPLOAD_ACCEPTED: string;
     PAGINATION_PER_PAGE: string;
+    MODEL_CLONE_TABLES: Array<string>;
     EMAIL_PROVIDER_HOST: string;
     EMAIL_PROVIDER_PORT: string;
     EMAIL_PROVIDER_USER: string;
@@ -79,6 +81,7 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: '5',
   FILE_UPLOAD_ACCEPTED: 'pdf;csv;png;jpeg;jpg;webp',
   PAGINATION_PER_PAGE: '50',
+  MODEL_CLONE_TABLES: [],
   EMAIL_PROVIDER_HOST: '',
   EMAIL_PROVIDER_PORT: '587',
   EMAIL_PROVIDER_USER: '',

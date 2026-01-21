@@ -23,11 +23,20 @@ import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { MetaDefault } from '@/lib/constant';
-import type { ITable, Paginated } from '@/lib/interfaces';
+import type { IHTTPExeptionError, ITable, Paginated } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/create/')({
   component: RouteComponent,
 });
+
+function CreateFormSkeleton(): React.JSX.Element {
+  return (
+    <div className="p-4 space-y-4">
+      <Skeleton className="h-10 w-full" />
+      <Skeleton className="h-10 w-full" />
+    </div>
+  );
+}
 
 function RouteComponent(): React.JSX.Element {
   const { queryClient } = getContext();
@@ -36,19 +45,13 @@ function RouteComponent(): React.JSX.Element {
   const navigate = useNavigate();
   const permission = usePermission();
 
-  // Loading enquanto verifica permissão
-  if (permission.isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
-  }
-
-  // Mostrar erro se não tem permissão
-  if (!permission.can('CREATE_TABLE')) {
-    return <AccessDenied />;
+  function setFieldError(field: 'name', message: string): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
   }
 
   const _create = useCreateTable({
@@ -90,26 +93,50 @@ function RouteComponent(): React.JSX.Element {
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const data = error.response?.data;
+        const data = error.response?.data as IHTTPExeptionError<{
+          name?: string;
+        }>;
+
+        // 409 - Tabela já existe (TABLE_EXISTS)
+        if (data.cause === 'TABLE_EXISTS' && data.code === 409) {
+          setFieldError('name', 'Já existe uma tabela com este nome');
+          return;
+        }
+
+        // 400 - Erros de validação (INVALID_PAYLOAD_FORMAT)
+        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
+          if (data.errors['name']) setFieldError('name', data.errors['name']);
+          return;
+        }
+
+        // 500 - Erro interno (CREATE_TABLE_ERROR)
+        if (data.cause === 'CREATE_TABLE_ERROR' && data.code === 500) {
+          toast('Erro ao criar a tabela', {
+            className: '!bg-destructive !text-white !border-destructive',
+            description:
+              'Houve um erro ao criar a tabela. Tente novamente mais tarde.',
+            descriptionClassName: '!text-white',
+            closeButton: true,
+          });
+          return;
+        }
 
         toast('Erro ao criar a tabela', {
           className: '!bg-destructive !text-white !border-destructive',
-          description: data?.message ?? 'Erro ao criar a tabela',
+          description: data.message || 'Erro ao criar a tabela',
           descriptionClassName: '!text-white',
           closeButton: true,
         });
       }
-
-      console.error(error);
     },
   });
 
   const form = useAppForm({
     defaultValues: tableCreateFormDefaultValues,
+    validators: {
+      onSubmit: TableCreateSchema,
+    },
     onSubmit: async ({ value }) => {
-      const validation = TableCreateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_create.status === 'pending') return;
 
       await _create.mutateAsync({
@@ -146,49 +173,62 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {/* Content */}
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <CreateTableFormFields
-          form={form}
-          isPending={isPending}
-        />
-      </form>
+      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+        {permission.isLoading && <CreateFormSkeleton />}
+        {!permission.isLoading && !permission.can('CREATE_TABLE') && (
+          <AccessDenied />
+        )}
+        {!permission.isLoading && permission.can('CREATE_TABLE') && (
+          <form
+            className="flex-1 flex flex-col"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <CreateTableFormFields
+              form={form}
+              isPending={isPending}
+            />
+          </form>
+        )}
+      </div>
 
       {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full max-w-3xs"
-                disabled={isSubmitting}
-                onClick={() => {
-                  navigate({ to: '/tables', search: { page: 1, perPage: 50 } });
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                type="button"
-                className="w-full max-w-3xs"
-                disabled={!canSubmit}
-                onClick={() => form.handleSubmit()}
-              >
-                {isSubmitting && <Spinner />}
-                <span>Criar</span>
-              </Button>
-            </div>
-          )}
-        />
-      </div>
+      {!permission.isLoading && permission.can('CREATE_TABLE') && (
+        <div className="shrink-0 border-t p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end space-x-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full max-w-3xs"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    navigate({
+                      to: '/tables',
+                      search: { page: 1, perPage: 50 },
+                    });
+                  }}
+                >
+                  <span>Cancelar</span>
+                </Button>
+                <Button
+                  type="button"
+                  className="w-full max-w-3xs"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Criar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </div>
   );
 }

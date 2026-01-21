@@ -5,12 +5,9 @@ const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 config({ path: envFile });
 
 const EnvSchema = z.object({
-
   LOCALE: z.enum(['pt-br', 'en-us']).default('pt-br'),
   FILE_UPLOAD_MAX_SIZE: z.coerce.number().default(1024 * 1024 * 5),
-  FILE_UPLOAD_ACCEPTED: z
-  .string()
-  .transform((val) =>
+  FILE_UPLOAD_ACCEPTED: z.string().transform((val) =>
     val
       .split(';')
       .map((s) => s.trim())

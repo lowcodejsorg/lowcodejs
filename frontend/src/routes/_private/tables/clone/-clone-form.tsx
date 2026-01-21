@@ -1,53 +1,48 @@
 import { FileTextIcon } from 'lucide-react';
 import { z } from 'zod';
 
-import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
-import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
-
 import { FilteredTableComboboxField } from '@/components/common/tanstack-form/filtered-table-combobox-field';
+import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
+import { withForm } from '@/integrations/tanstack-form/form-hook';
 
-export const TableCreateSchema = z.object({
+export const CloneTableBodySchema = z.object({
   name: z
-    .string()
-    .min(1, 'Nome é obrigatório')
-    .max(40, 'Nome deve ter no máximo 40 caracteres'),
+    .string({ message: 'O nome é obrigatório' })
+    .trim()
+    .min(1, 'O nome é obrigatório')
+    .max(40, 'O nome deve ter no máximo 40 caracteres'),
 
   MODEL_CLONE_TABLES: z
-    .string()
+    .string({ message: 'O modelo é obrigatório' })
+    .trim()
     .min(1, 'Selecione um modelo'),
 });
 
-export type TableCreateFormValues = {
+export type CloneTableFormValues = {
   name: string;
   MODEL_CLONE_TABLES: string;
 };
 
-export const tableCreateFormDefaultValues: TableCreateFormValues = {
+export const cloneTableFormDefaultValues: CloneTableFormValues = {
   name: '',
   MODEL_CLONE_TABLES: '',
 };
 
-export const CreateTableFormFields = withForm({
-  defaultValues: tableCreateFormDefaultValues,
+export const CloneTableFormFields = withForm({
+  defaultValues: cloneTableFormDefaultValues,
   props: {
     isPending: false,
   },
   render: function Render({ form, isPending }) {
-    const { data, isLoading: isLoadingTables } = useTablesReadPaginated();
-    const tables = data?.data ?? [];
-
     const { data: settings, isLoading: isLoadingSettings } = useSettingRead();
 
-    const allowedIds: string[] = Array.isArray(settings?.MODEL_CLONE_TABLES)
-    ? settings.MODEL_CLONE_TABLES.map((v) =>
-        typeof v === 'string' ? v.trim() : String(v._id ?? v).trim()
-      )
-    : typeof settings?.MODEL_CLONE_TABLES === 'string'
-      ? settings.MODEL_CLONE_TABLES.split(',').map((id) => id.trim())
+    const allowedIds: Array<string> = Array.isArray(
+      settings?.MODEL_CLONE_TABLES,
+    )
+      ? settings.MODEL_CLONE_TABLES.map((v: string) => v.trim())
       : [];
 
-    if (isLoadingTables || isLoadingSettings) {
+    if (isLoadingSettings) {
       return null;
     }
 
@@ -102,7 +97,6 @@ export const CreateTableFormFields = withForm({
               <FilteredTableComboboxField
                 label="Modelos disponíveis"
                 placeholder="Selecione o modelo..."
-                tables={tables}
                 required
                 allowedTableIds={allowedIds}
                 mapOption={(table) => ({
