@@ -8,7 +8,12 @@ export const CloneTableValidator = z.object({
   name: z
     .string({ message: 'O nome da nova tabela é obrigatório' })
     .trim()
-    .min(1, 'O nome da nova tabela é obrigatório'),
+    .min(1, 'O nome da nova tabela é obrigatório')
+    .max(40, 'Nome deve ter no máximo 40 caracteres')
+    .regex(
+      /^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/,
+      'Nome pode conter apenas letras, números, espaços, hífen, underscore e ç',
+    ),
 });
 
 export type CloneTablePayload = z.infer<typeof CloneTableValidator>;

@@ -13,25 +13,29 @@ import type { DocBlock } from '@/lib/document-helpers';
 import { getRowLeafId, getStr } from '@/lib/document-helpers';
 import type { IRow } from '@/lib/interfaces';
 
+const CATEGORY_FIELD_SLUG = 'category';
+
+interface DocumentRowProps {
+  row: IRow;
+  blocks: Array<DocBlock>;
+  indentPx: number;
+  leafLabel?: string | null;
+  headingLevel?: number;
+}
+
 export function DocumentRow({
   row,
   blocks,
   indentPx,
   leafLabel,
   headingLevel,
-}: {
-  row: IRow;
-  blocks: Array<DocBlock>;
-  indentPx: number;
-  leafLabel?: string | null;
-  headingLevel?: number;
-}): React.JSX.Element {
+}: DocumentRowProps): React.JSX.Element {
   const router = useRouter();
   const { slug } = useParams({
     from: '/_private/tables/$slug/',
   });
 
-  const leafId = getRowLeafId(row, 'category');
+  const leafId = getRowLeafId(row, CATEGORY_FIELD_SLUG);
 
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);

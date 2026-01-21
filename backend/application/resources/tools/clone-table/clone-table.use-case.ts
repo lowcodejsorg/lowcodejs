@@ -45,15 +45,6 @@ export default class CloneTableUseCase {
         );
       }
 
-      if (!payload.name || payload.name.trim().length === 0) {
-        return left(
-          HTTPException.BadRequest(
-            'Nome da tabela é obrigatório',
-            'NAME_REQUIRED',
-          ),
-        );
-      }
-
       const baseTable = await this.tableRepository.findBy({
         _id: payload.baseTableId,
         exact: true,
