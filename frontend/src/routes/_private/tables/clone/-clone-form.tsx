@@ -119,11 +119,19 @@ export const CloneTableFormFields = withForm({
 });
 
 interface ModelSelectFieldProps {
-  tables: Array<{ _id: string; name: string; slug: string; description: string | null }>;
+  tables: Array<{
+    _id: string;
+    name: string;
+    slug: string;
+    description: string | null;
+  }>;
   disabled?: boolean;
 }
 
-function ModelSelectField({ tables, disabled }: ModelSelectFieldProps): React.JSX.Element {
+function ModelSelectField({
+  tables,
+  disabled,
+}: ModelSelectFieldProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
 
@@ -136,7 +144,8 @@ function ModelSelectField({ tables, disabled }: ModelSelectFieldProps): React.JS
         <Alert className="bg-amber-50 border-amber-200 text-amber-800">
           <AlertCircle className="h-4 w-4 text-amber-600" />
           <AlertDescription>
-            Nenhum modelo disponível para clonagem. Configure os modelos nas configurações do sistema.
+            Nenhum modelo disponível para clonagem. Configure os modelos nas
+            configurações do sistema.
           </AlertDescription>
         </Alert>
       </Field>
@@ -161,7 +170,10 @@ function ModelSelectField({ tables, disabled }: ModelSelectFieldProps): React.JS
         </SelectTrigger>
         <SelectContent>
           {tables.map((table) => (
-            <SelectItem key={table._id} value={table._id}>
+            <SelectItem
+              key={table._id}
+              value={table._id}
+            >
               {table.name}
             </SelectItem>
           ))}

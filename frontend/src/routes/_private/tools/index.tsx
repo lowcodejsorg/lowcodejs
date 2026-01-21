@@ -184,7 +184,10 @@ function RouteComponent(): React.JSX.Element {
                   <Field>
                     <FieldLabel>Modelo base</FieldLabel>
 
-                    <Select value={model} onValueChange={setModel}>
+                    <Select
+                      value={model}
+                      onValueChange={setModel}
+                    >
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Selecione um modelo" />
                       </SelectTrigger>
@@ -197,7 +200,10 @@ function RouteComponent(): React.JSX.Element {
                             </div>
                           ) : (
                             models.map((item) => (
-                              <SelectItem key={item.value} value={item.value}>
+                              <SelectItem
+                                key={item.value}
+                                value={item.value}
+                              >
                                 {item.label}
                               </SelectItem>
                             ))
