@@ -22,9 +22,8 @@ export function TableRowUserCell({
   });
 
   return (
-    <TableRowBadgeList
-      values={values}
-      renderLabel={(value) => value}
-    />
+    <p className="text-muted-foreground text-sm max-w-sm truncate">
+      { values.length > 0 ? values.join(', ') : '-' }
+    </p>
   );
 }
