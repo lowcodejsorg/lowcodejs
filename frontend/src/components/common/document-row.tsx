@@ -21,6 +21,7 @@ interface DocumentRowProps {
   indentPx: number;
   leafLabel?: string | null;
   headingLevel?: number;
+  leafIcon?: React.ReactNode;
 }
 
 export function DocumentRow({
@@ -29,6 +30,7 @@ export function DocumentRow({
   indentPx,
   leafLabel,
   headingLevel,
+  leafIcon,
 }: DocumentRowProps): React.JSX.Element {
   const router = useRouter();
   const { slug } = useParams({
@@ -67,6 +69,7 @@ export function DocumentRow({
           <DocumentHeadingRow
             id={`sec-${leafId}`}
             level={headingLevel ?? 2}
+            // icon={leafIcon}
           >
             {leafLabel}
           </DocumentHeadingRow>

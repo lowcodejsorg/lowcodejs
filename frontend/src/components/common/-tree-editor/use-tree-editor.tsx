@@ -155,6 +155,11 @@ export const useTreeEditor = (
     setSelectedNodeId(null);
   };
 
+  const handleReorder = (updatedData: Array<TreeNode>) => {
+    setTreeData(updatedData);
+    onChange?.(updatedData);
+  };
+
   return {
     treeData,
     selectedNodeId,
@@ -172,5 +177,6 @@ export const useTreeEditor = (
     handleSaveEdit,
     handleCancelEdit,
     handleDeleteNode,
+    handleReorder,
   };
 };
