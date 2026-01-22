@@ -1,4 +1,5 @@
 import { pdf } from '@react-pdf/renderer';
+import { FolderTreeIcon, WorkflowIcon } from 'lucide-react';
 import React, { useMemo, useState } from 'react';
 
 import { DocumentMain } from '@/components/common/document-main';
@@ -69,6 +70,18 @@ export function TableDocumentView({
     [categoryTree],
   );
 
+  const hasChildrenMap = useMemo(() => {
+    const map = new Map<string, boolean>();
+    const walk = (nodes: Array<CatNode>): void => {
+      for (const n of nodes) {
+        map.set(n.id, !!n.children?.length);
+        if (n.children?.length) walk(n.children);
+      }
+    };
+    walk(categoryTree);
+    return map;
+  }, [categoryTree]);
+
   const filteredRows = useMemo(() => {
     if (!categoryField) return data;
 
@@ -124,6 +137,18 @@ export function TableDocumentView({
       ? rowHeadingLevelFromLeaf(row, categoryField.slug, depthMap)
       : 2;
 
+  const getLeafIcon = (row: IRow): React.ReactNode | null => {
+    if (!categoryField) return null;
+    const leafId = getRowLeafId(row, categoryField.slug);
+    if (!leafId) return null;
+    const hasChildren = hasChildrenMap.get(leafId);
+    return hasChildren ? (
+      <FolderTreeIcon className="size-4" />
+    ) : (
+      <WorkflowIcon className="size-4" />
+    );
+  };
+
   async function handlePrint(): Promise<void> {
     const blob = await pdf(
       <DocumentPdf
@@ -174,6 +199,7 @@ export function TableDocumentView({
           getIndentPx={getIndentPx}
           getLeafLabel={getLeafLabel}
           getHeadingLevel={getHeadingLevel}
+          getLeafIcon={getLeafIcon}
         />
       </div>
     </div>

@@ -10,6 +10,7 @@ interface DocumentMainProps {
   getIndentPx: (row: IRow) => number;
   getLeafLabel: (row: IRow) => string | null;
   getHeadingLevel: (row: IRow) => number;
+  getLeafIcon?: (row: IRow) => React.ReactNode | null;
 }
 
 export function DocumentMain({
@@ -20,6 +21,7 @@ export function DocumentMain({
   getIndentPx,
   getLeafLabel,
   getHeadingLevel,
+  getLeafIcon,
 }: DocumentMainProps): React.JSX.Element {
   return (
     <main className="p-4 min-h-0 overflow-auto w-full ">
@@ -47,6 +49,7 @@ export function DocumentMain({
               indentPx={getIndentPx(row)}
               leafLabel={getLeafLabel(row)}
               headingLevel={getHeadingLevel(row)}
+              leafIcon={getLeafIcon ? getLeafIcon(row) : null}
             />
           ))}
         </div>

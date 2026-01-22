@@ -7,11 +7,13 @@ export function DocumentHeadingRow({
   level,
   className,
   children,
+  icon,
 }: {
   id: string;
   level: number;
   className?: string;
   children: React.ReactNode;
+  icon?: React.ReactNode;
 }): React.JSX.Element {
   const headingStyles: Record<number, string> = {
     2: 'text-2xl font-bold mt-8',
@@ -28,7 +30,10 @@ export function DocumentHeadingRow({
       id={id}
       className={cn(className, headingStyles[level])}
     >
-      {children}
+      <span className="inline-flex items-center gap-2">
+        {icon ? <span className="inline-flex opacity-70">{icon}</span> : null}
+        <span>{children}</span>
+      </span>
     </Tag>
   );
 }
