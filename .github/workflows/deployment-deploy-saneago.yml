@@ -82,6 +82,8 @@ jobs:
             cat > .env << EOF
             ENVIRONMENT=${{ inputs.branch }}
             NODE_ENV=production
+            API_HOST=api.admin-saneago.3ck.org
+            APP_HOST=admin-saneago.3ck.org
             PORT=3000
             DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             DB_USERNAME=${{ inputs.branch }}

@@ -52,11 +52,13 @@ services:
       - traefik-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${ENVIRONMENT}-api.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-api.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-api.rule=Host(`${API_HOST:-api.${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-api.entrypoints=websecure"
       - "traefik.http.routers.${ENVIRONMENT}-api.tls.certresolver=myresolver"
       - "traefik.http.services.${ENVIRONMENT}-api.loadbalancer.server.port=3000"
-      - "traefik.http.routers.${ENVIRONMENT}-api-http.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-api-http.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-api-http.rule=Host(`${API_HOST:-api.${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-api-http.entrypoints=web"
       - "traefik.http.routers.${ENVIRONMENT}-api-http.middlewares=https-only@file"
 
@@ -81,11 +83,13 @@ services:
       start_period: 60s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${APP_HOST:-${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-app.entrypoints=websecure"
       - "traefik.http.routers.${ENVIRONMENT}-app.tls.certresolver=myresolver"
       - "traefik.http.services.${ENVIRONMENT}-app.loadbalancer.server.port=3000"
-      - "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${APP_HOST:-${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-app-http.entrypoints=web"
       - "traefik.http.routers.${ENVIRONMENT}-app-http.middlewares=https-only@file"
       # Headers anti-cache para garantir que navegadores busquem sempre a versão mais recente
