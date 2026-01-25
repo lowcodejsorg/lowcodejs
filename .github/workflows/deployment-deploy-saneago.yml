@@ -1,0 +1,129 @@
+name: Deploy to VPS (Saneago)
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        type: string
+    secrets:
+      VPS_HOST:
+        required: true
+      VPS_USER:
+        required: true
+      VPS_SSH_KEY:
+        required: true
+      DOCKERHUB_USERNAME:
+        required: true
+      DB_PASSWORD:
+        required: true
+      JWT_PRIVATE_KEY:
+        required: true
+      JWT_PUBLIC_KEY:
+        required: true
+      COOKIE_SECRET:
+        required: true
+      COOKIE_DOMAIN:
+        required: true
+      EMAIL_PROVIDER_PASSWORD:
+        required: true
+      EMAIL_PROVIDER_USER:
+        required: true
+      EMAIL_PROVIDER_HOST:
+        required: true
+      EMAIL_PROVIDER_PORT:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create deployment directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: mkdir -p /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}
+
+      - name: Copy docker-compose to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.production.yml"
+          target: "/home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}"
+
+
+      - name: Copy storage files to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "backend/_storage/large.png,backend/_storage/small.png"
+          target: "/home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp"
+          strip_components: 2
+
+      - name: Deploy to VPS
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            cd /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}
+
+            # Criar arquivo .env com as variáveis
+            cat > .env << EOF
+            ENVIRONMENT=${{ inputs.branch }}
+            NODE_ENV=production
+            PORT=3000
+            DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+            DB_USERNAME=${{ inputs.branch }}
+            DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+            DB_NAME=${{ inputs.branch }}
+            DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@${{ inputs.branch }}-lowcodejs-mongo-1:27017/${{ inputs.branch }}?authSource=admin
+            APP_SERVER_URL=https://api.admin-saneago.3ck.org
+            APP_CLIENT_URL=https://admin-saneago.3ck.org
+            JWT_PRIVATE_KEY=${{ secrets.JWT_PRIVATE_KEY }}
+            JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }}
+            COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}
+            COOKIE_DOMAIN=.3ck.org
+            EMAIL_PROVIDER_PASSWORD=${{ secrets.EMAIL_PROVIDER_PASSWORD }}
+            EMAIL_PROVIDER_USER=${{ secrets.EMAIL_PROVIDER_USER }}
+            EMAIL_PROVIDER_HOST=${{ secrets.EMAIL_PROVIDER_HOST }}
+            EMAIL_PROVIDER_PORT=${{ secrets.EMAIL_PROVIDER_PORT }}
+            VITE_API_BASE_URL=https://api.admin-saneago.3ck.org
+            FILE_UPLOAD_MAX_SIZE=10485760
+            FILE_UPLOAD_ACCEPTED=jpg;jpeg;png;pdf;doc;docx;xls;xlsx;txt;zip;rar
+            FILE_UPLOAD_MAX_FILES_PER_UPLOAD=10
+            LOCALE=pt-br
+            PAGINATION_PER_PAGE=20
+            LOGO_SMALL_URL=https://api.admin-saneago.3ck.org/storage/small.png
+            LOGO_LARGE_URL=https://api.admin-saneago.3ck.org/storage/large.png
+            EOF
+
+            echo "Environment variables configured successfully. Deploying..."
+
+            # Deploy - Forçar pull fresh e recreate de containers
+            docker compose -f docker-compose.production.yml pull
+            docker image prune -f || true
+            docker compose -f docker-compose.production.yml up -d --force-recreate
+
+            # Aguardar container da API estar pronto
+            sleep 5
+
+            # Copiar logos para o container
+            CONTAINER_NAME="${{ inputs.branch }}-lowcodejs-api-1"
+            docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp/large.png $CONTAINER_NAME:/app/_storage/
+            docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp/small.png $CONTAINER_NAME:/app/_storage/
+
+            # Limpar arquivos temporários
+            rm -rf /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp
+
+            echo "Deploy completed successfully!"
