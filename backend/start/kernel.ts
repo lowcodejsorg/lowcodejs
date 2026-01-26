@@ -184,20 +184,20 @@ kernel.register(swagger, {
       version: '1.0.0',
       description: 'LowCodeJs API with JWT cookie-based authentication',
     },
-    servers: [
-      // {
-      //   url: 'http://localhost:3000',
-      //   description: 'Development server',
-      // },
-      {
-        url: 'https://api.demo.lowcodejs.org',
-        description: 'Demo server',
-      },
-      {
-        url: 'https://api.develop.lowcodejs.org',
-        description: 'Develop server',
-      },
-    ],
+    // servers: [
+    //   // {
+    //   //   url: 'http://localhost:3000',
+    //   //   description: 'Development server',
+    //   // },
+    //   {
+    //     url: 'https://api.demo.lowcodejs.org',
+    //     description: 'Demo server',
+    //   },
+    //   {
+    //     url: 'https://api.develop.lowcodejs.org',
+    //     description: 'Develop server',
+    //   },
+    // ],
     components: {
       securitySchemes: {
         cookieAuth: {
