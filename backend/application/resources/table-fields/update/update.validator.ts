@@ -16,6 +16,7 @@ export const TableFieldUpdateBodyValidator = z.object({
     .transform((value) => {
       return value ? new Date(value) : null;
     }),
+  group: z.string().trim().optional(),
 });
 
 export const TableFieldUpdateParamsValidator = z.object({

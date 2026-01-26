@@ -32,6 +32,17 @@ export default class TableFieldShowUseCase {
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
+      // Se foi fornecido um group slug, valida que o grupo existe
+      const groupSlug = payload.group;
+      if (groupSlug) {
+        const targetGroup = table.groups?.find((g) => g.slug === groupSlug);
+        if (!targetGroup) {
+          return left(
+            HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          );
+        }
+      }
+
       const field = await this.fieldRepository.findBy({
         _id: payload._id,
         exact: true,

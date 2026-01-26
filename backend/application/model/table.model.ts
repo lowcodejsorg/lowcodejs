@@ -27,6 +27,16 @@ const FieldConfiguration = new mongoose.Schema(
   },
 );
 
+const GroupConfiguration = new mongoose.Schema(
+  {
+    slug: { type: String, required: true },
+    name: { type: String, required: true },
+    fields: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Field' }],
+    _schema: { type: mongoose.Schema.Types.Mixed, default: {} },
+  },
+  { _id: true, timestamps: true },
+);
+
 const Configuration = new mongoose.Schema(
   {
     style: {
@@ -125,6 +135,10 @@ export const Schema = new mongoose.Schema(
         beforeSave: { code: null },
         afterSave: { code: null },
       },
+    },
+    groups: {
+      type: [GroupConfiguration],
+      default: [],
     },
 
     trashed: { type: Boolean, default: false },

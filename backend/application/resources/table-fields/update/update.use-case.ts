@@ -6,11 +6,10 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   type IField as Entity,
+  type IField,
+  type IGroupConfiguration,
+  type ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
@@ -40,6 +39,18 @@ export default class TableFieldUpdateUseCase {
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
+
+      // Se foi fornecido um group slug, atualiza o campo no grupo
+      const groupSlug = payload.group;
+      if (groupSlug) {
+        const targetGroup = table.groups?.find((g) => g.slug === groupSlug);
+        if (!targetGroup) {
+          return left(
+            HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          );
+        }
+        return this.updateFieldInGroup(payload, table, targetGroup);
+      }
 
       const field = await this.fieldRepository.findBy({
         _id: payload._id,
@@ -74,65 +85,59 @@ export default class TableFieldUpdateUseCase {
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
       });
 
+      let groups = table.groups || [];
+
       if (updatedField.type === E_FIELD_TYPE.FIELD_GROUP) {
-        let group;
+        // Verifica se já existe um grupo para este campo
+        const existingGroup = groups.find(
+          (g) => g.slug === field.configuration?.group?.slug,
+        );
 
-        if (updatedField.configuration?.group?._id) {
-          group = await this.tableRepository.findBy({
-            _id: updatedField.configuration.group._id,
-            exact: true,
-          });
-        }
-
-        if (!group) {
-          const _schema = buildSchema([]);
-          group = await this.tableRepository.create({
-            _schema,
-            fields: [],
+        if (!existingGroup) {
+          // Cria novo grupo em groups
+          const newGroup: IGroupConfiguration = {
             slug,
-            configuration: {
-              administrators: [],
-              fields: {
-                orderForm: [],
-                orderList: [],
-              },
-              collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-              style: E_TABLE_STYLE.LIST,
-              visibility: E_TABLE_VISIBILITY.RESTRICTED,
-              owner: table.configuration.owner._id,
-            },
-            description: null,
             name: updatedField.name,
-            type: E_TABLE_TYPE.FIELD_GROUP,
-          });
+            fields: [],
+            _schema: {},
+          };
 
-          updatedField = await this.fieldRepository.update({
-            _id: updatedField._id,
-            configuration: {
-              ...updatedField.configuration,
-              group: {
-                _id: group._id,
-                slug: group.slug,
-              },
-            },
-          });
+          groups = [...groups, newGroup];
+        } else if (oldSlug !== slug) {
+          // Atualiza o slug do grupo existente
+          groups = groups.map((g) =>
+            g.slug === existingGroup.slug
+              ? { ...g, slug, name: updatedField.name }
+              : g,
+          );
         }
 
-        await buildTable(group);
+        updatedField = await this.fieldRepository.update({
+          _id: updatedField._id,
+          configuration: {
+            ...updatedField.configuration,
+            group: { slug },
+          },
+        });
       }
 
       const fields = table.fields.map((f) =>
         f._id === field._id ? updatedField : f,
       );
 
-      const _schema = buildSchema(fields);
+      const _schema = buildSchema(fields, groups);
 
       await this.tableRepository.update({
         _id: table._id,
         _schema,
         fields: fields.flatMap((f) => f._id),
+        groups,
         configuration: {
+          ...table.configuration,
           owner: table.configuration.owner._id,
+          administrators: table.configuration.administrators.flatMap(
+            (a) => a._id,
+          ),
         },
       });
 
@@ -140,6 +145,8 @@ export default class TableFieldUpdateUseCase {
         const collection = await buildTable({
           ...table,
           _id: table._id,
+          _schema,
+          groups,
         });
         await collection.updateMany(
           {},
@@ -153,7 +160,7 @@ export default class TableFieldUpdateUseCase {
 
       return right(updatedField);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
@@ -161,5 +168,74 @@ export default class TableFieldUpdateUseCase {
         ),
       );
     }
+  }
+
+  private async updateFieldInGroup(
+    payload: Payload,
+    parentTable: ITable,
+    targetGroup: IGroupConfiguration,
+  ): Promise<Response> {
+    const field = await this.fieldRepository.findBy({
+      _id: payload._id,
+      exact: true,
+    });
+
+    if (!field)
+      return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
+
+    const oldSlug = field.slug;
+    const slug = slugify(payload.name, { lower: true, trim: true });
+
+    const updatedField = await this.fieldRepository.update({
+      ...payload,
+      _id: field._id,
+      slug,
+      ...(payload.trashed && { trashed: payload.trashed }),
+      ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
+    });
+
+    // Atualiza o grupo com o campo atualizado
+    const updatedGroups = parentTable.groups.map((g) => {
+      if (g.slug !== targetGroup.slug) return g;
+
+      const updatedFields = g.fields.map((f) =>
+        f._id === field._id ? updatedField : f,
+      );
+      const groupSchema = buildSchema(updatedFields);
+
+      return {
+        ...g,
+        fields: updatedFields,
+        _schema: groupSchema,
+      };
+    });
+
+    // Reconstrói o schema da tabela pai com os grupos atualizados
+    const parentSchema = buildSchema(
+      parentTable.fields as IField[],
+      updatedGroups,
+    );
+
+    await this.tableRepository.update({
+      _id: parentTable._id,
+      _schema: parentSchema,
+      groups: updatedGroups,
+      configuration: {
+        ...parentTable.configuration,
+        owner: parentTable.configuration.owner._id,
+        administrators: parentTable.configuration.administrators.flatMap(
+          (a) => a._id,
+        ),
+      },
+    });
+
+    await buildTable({
+      ...parentTable,
+      _id: parentTable._id,
+      _schema: parentSchema,
+      groups: updatedGroups,
+    });
+
+    return right(updatedField);
   }
 }

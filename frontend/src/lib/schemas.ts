@@ -287,7 +287,6 @@ export const FieldConfigurationSchema = z.object({
   category: z.array(CategorySchema).default([]),
   group: z
     .object({
-      _id: z.string().trim(),
       slug: z.string().trim(),
     })
     .nullable()

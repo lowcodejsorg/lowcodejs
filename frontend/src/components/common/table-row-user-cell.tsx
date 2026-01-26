@@ -23,7 +23,7 @@ export function TableRowUserCell({
 
   return (
     <p className="text-muted-foreground text-sm max-w-sm truncate">
-      { values.length > 0 ? values.join(', ') : '-' }
+      {values.length > 0 ? values.join(', ') : '-'}
     </p>
   );
 }

@@ -106,18 +106,32 @@ interface FieldOrderFormProps {
   table: ITable;
   reference: 'orderList' | 'orderForm';
   onSuccess?: () => void;
+  /** Se for contexto de grupo embedded */
+  groupSlug?: string;
+  /** Campos do grupo (quando em contexto de grupo) */
+  groupFields?: Array<IField>;
 }
 
 export function FieldOrderForm({
   table,
   reference,
   onSuccess,
+  groupSlug,
+  groupFields,
 }: FieldOrderFormProps): React.JSX.Element {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const order = table.configuration.fields[reference];
-  const activeFields = table.fields.filter((f) => !f.trashed);
+  const isGroupContext = !!groupSlug && !!groupFields;
+
+  // Para grupos, a ordem é simplesmente a ordem no array de campos
+  // Para tabelas, usa configuration.fields[reference]
+  const order = isGroupContext
+    ? groupFields.map((f) => f._id)
+    : table.configuration.fields[reference];
+
+  const sourceFields = isGroupContext ? groupFields : table.fields;
+  const activeFields = sourceFields.filter((f) => !f.trashed);
 
   const sorted = [...activeFields].sort(
     (a, b) => order.indexOf(a._id) - order.indexOf(b._id),
@@ -163,6 +177,47 @@ export function FieldOrderForm({
   }
 
   function handleSave(): void {
+    // Para contexto de grupo, atualiza groups com a nova ordem
+    if (isGroupContext && groupSlug) {
+      const updatedGroups = table.groups.map((g) => {
+        if (g.slug === groupSlug) {
+          // Mantém campos trashed no final, mas atualiza a ordem dos ativos
+          const trashedFields = g.fields.filter((f) => f.trashed);
+          return {
+            ...g,
+            fields: [...fields, ...trashedFields],
+          };
+        }
+        return g;
+      });
+
+      update.mutate({
+        slug: table.slug,
+        name: table.name,
+        description: table.description,
+        logo: table.logo?._id ?? null,
+        configuration: {
+          visibility: table.configuration.visibility,
+          style: table.configuration.style,
+          collaboration: table.configuration.collaboration,
+          fields: table.configuration.fields,
+          administrators: table.configuration.administrators.map((admin) =>
+            typeof admin === 'string' ? admin : admin._id,
+          ),
+        },
+        groups: updatedGroups,
+        fields: table.fields.map((f) => f._id),
+        methods: {
+          ...table.methods,
+          afterSave: table.methods.afterSave,
+          beforeSave: table.methods.beforeSave,
+          onLoad: table.methods.onLoad,
+        },
+      });
+      return;
+    }
+
+    // Para tabelas normais, atualiza fields e configuration.fields
     update.mutate({
       slug: table.slug,
       name: table.name,
@@ -194,6 +249,7 @@ export function FieldOrderForm({
     router.navigate({
       to: '/tables/$slug/field/$fieldId',
       params: { slug: table.slug, fieldId },
+      search: groupSlug ? { group: groupSlug } : undefined,
     });
   }
 
@@ -243,13 +299,22 @@ export function FieldOrderForm({
 
 interface TrashedFieldsListProps {
   table: ITable;
+  /** Se for contexto de grupo embedded */
+  groupSlug?: string;
+  /** Campos do grupo (quando em contexto de grupo) */
+  groupFields?: Array<IField>;
 }
 
 export function TrashedFieldsList({
   table,
+  groupSlug,
+  groupFields,
 }: TrashedFieldsListProps): React.JSX.Element | null {
   const router = useRouter();
-  const trashedFields = table.fields.filter((f) => f.trashed);
+
+  const isGroupContext = !!groupSlug && !!groupFields;
+  const sourceFields = isGroupContext ? groupFields : table.fields;
+  const trashedFields = sourceFields.filter((f) => f.trashed);
 
   if (trashedFields.length === 0) {
     return null;
@@ -259,6 +324,7 @@ export function TrashedFieldsList({
     router.navigate({
       to: '/tables/$slug/field/$fieldId',
       params: { slug: table.slug, fieldId },
+      search: groupSlug ? { group: groupSlug } : undefined,
     });
   }
 

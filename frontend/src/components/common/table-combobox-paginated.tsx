@@ -1,6 +1,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import * as React from 'react';
 
+import { Button } from '@/components/ui/button';
 import {
   Combobox,
   ComboboxContent,
@@ -9,7 +10,6 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
-import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { API } from '@/lib/api';
@@ -93,7 +93,10 @@ export function TableComboboxPaginated({
           <>
             <ComboboxList>
               {(table: ITable): React.ReactNode => (
-                <ComboboxItem key={table._id} value={table}>
+                <ComboboxItem
+                  key={table._id}
+                  value={table}
+                >
                   <div className="flex flex-col">
                     <span className="font-medium">{table.name}</span>
                     <span className="text-muted-foreground text-xs">

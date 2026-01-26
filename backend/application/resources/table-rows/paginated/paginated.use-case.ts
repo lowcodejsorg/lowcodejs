@@ -28,7 +28,6 @@ export default class TableRowPaginatedUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      console.log('payload', payload);
       const skip = (payload.page - 1) * payload.perPage;
 
       const table = await this.tableRepository.findBy({
@@ -48,8 +47,6 @@ export default class TableRowPaginatedUseCase {
       const order = buildOrder(payload, table.fields as IField[]);
 
       const populate = await buildPopulate(table.fields as IField[]);
-
-      console.log(query);
 
       const rows = await c
         .find(query)

@@ -34,70 +34,27 @@ export default class TableRowCreateUseCase {
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const groupPayload = [];
-
-      const groups = (table.fields as IField[])?.filter(
-        (c) => c.type === E_FIELD_TYPE.FIELD_GROUP,
+      // Processa campos FIELD_GROUP como embedded documents
+      const groupFields = (table.fields as IField[])?.filter(
+        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
       );
 
-      for await (const group of groups) {
-        const groupTable = await this.tableRepository.findBy({
-          slug: group.configuration?.group?.slug?.toString(),
-          exact: true,
-        });
+      for (const groupField of groupFields) {
+        const groupSlug = groupField.slug;
+        const groupData = payload[groupSlug];
 
-        if (!groupTable) continue;
-
-        const hasGroupPayload = payload[group.slug];
-
-        if (!hasGroupPayload) continue;
-
-        const buildGroup = await buildTable(groupTable);
-
-        for (const item of payload[
-          group.slug
-        ] as import('@application/core/entity.core').IRow[]) {
-          groupPayload.push({
-            table: buildGroup,
-            payload: item,
-            group: group.slug,
-          });
+        if (
+          groupData &&
+          Array.isArray(groupData) &&
+          groupData.length > 0 &&
+          typeof groupData[0] === 'object' &&
+          groupData[0] !== null
+        ) {
+          // Sanitiza os dados embedded (remove _id interno se existir)
+          payload[groupSlug] = (
+            groupData as Array<{ _id?: string; [key: string]: unknown }>
+          ).map(({ _id, ...rest }) => rest);
         }
-      }
-
-      const processedGroupIds: { [key: string]: string[] } = {};
-
-      for await (const item of groupPayload) {
-        if (!processedGroupIds[item.group]) {
-          processedGroupIds[item.group] = [];
-        }
-
-        const rowGroup = await item.table.findOne({
-          _id: item.payload._id,
-        });
-
-        if (!rowGroup) {
-          const created = await item.table.create({
-            ...item.payload,
-          });
-
-          processedGroupIds[item.group].push(created?._id?.toString());
-        } else {
-          await rowGroup
-            .set({
-              ...rowGroup.toJSON({
-                flattenObjectIds: true,
-              }),
-              ...item.payload,
-            })
-            .save();
-
-          processedGroupIds[item.group].push(rowGroup?._id?.toString());
-        }
-      }
-
-      for (const groupSlug in processedGroupIds) {
-        payload[groupSlug] = processedGroupIds[groupSlug];
       }
 
       const build = await buildTable(table);
@@ -118,7 +75,7 @@ export default class TableRowCreateUseCase {
         _id: row?._id?.toString(),
       });
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

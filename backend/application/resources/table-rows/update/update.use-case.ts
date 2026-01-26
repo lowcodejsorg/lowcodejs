@@ -42,78 +42,28 @@ export default class TableRowUpdateUseCase {
       if (!row)
         return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
 
-      const groupPayload = [];
-
-      const groups = (table.fields as IField[])?.filter(
-        (field) => field.type === E_FIELD_TYPE.FIELD_GROUP,
+      // Processa campos FIELD_GROUP como embedded documents
+      const groupFields = (table.fields as IField[])?.filter(
+        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
       );
 
-      for await (const group of groups) {
-        const groupTable = await this.tableRepository.findBy({
-          slug: group.configuration?.group?.slug?.toString(),
-          exact: true,
-        });
+      for (const groupField of groupFields) {
+        const groupSlug = groupField.slug;
+        const groupData = payload[groupSlug];
 
-        if (!groupTable) continue;
-
-        const hasGroupPayload = payload[group.slug];
-
-        if (!hasGroupPayload) continue;
-
-        const buildGroup = await buildTable(groupTable);
-
-        for (const item of payload[
-          group.slug
-        ] as import('@application/core/entity.core').IRow[]) {
-          groupPayload.push({
-            table: buildGroup,
-            payload: item,
-            group: group.slug,
-          });
+        if (
+          groupData &&
+          Array.isArray(groupData) &&
+          groupData.length > 0 &&
+          typeof groupData[0] === 'object' &&
+          groupData[0] !== null
+        ) {
+          // Sanitiza os dados embedded (remove _id interno se existir)
+          payload[groupSlug] = (
+            groupData as Array<{ _id?: string; [key: string]: unknown }>
+          ).map(({ _id, ...rest }) => rest);
         }
       }
-
-      const processedGroupIds: { [key: string]: string[] } = {};
-
-      for await (const item of groupPayload) {
-        if (!processedGroupIds[item.group]) {
-          processedGroupIds[item.group] = [];
-        }
-
-        const groupRow = await item.table.findOne({
-          _id: item.payload._id,
-        });
-
-        if (!groupRow) {
-          const created = await item.table.create({
-            ...item.payload,
-          });
-
-          processedGroupIds[item.group].push(created?._id?.toString());
-        } else {
-          await groupRow
-            .set({
-              ...groupRow.toJSON({
-                flattenObjectIds: true,
-              }),
-              ...item.payload,
-            })
-            .save();
-
-          processedGroupIds[item.group].push(groupRow?._id?.toString());
-        }
-      }
-
-      for (const groupSlug in processedGroupIds) {
-        payload[groupSlug] = processedGroupIds[groupSlug];
-      }
-
-      // await row.updateOne({
-      //   ...row.toJSON({
-      //     flattenObjectIds: true,
-      //   }),
-      //   ...payload,
-      // });
 
       await row
         .set({

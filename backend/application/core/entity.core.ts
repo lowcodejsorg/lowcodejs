@@ -198,7 +198,23 @@ export type ISchema = {
   default?: string | number | boolean | null;
 };
 
-export type ITableSchema = Record<string, ISchema | ISchema[]>;
+export type IEmbeddedSchema = {
+  type: 'Embedded';
+  schema: ITableSchema;
+  required: boolean;
+};
+
+export type ITableSchema = Record<
+  string,
+  ISchema | ISchema[] | IEmbeddedSchema[]
+>;
+
+export type IGroupConfiguration = {
+  slug: string;
+  name: string;
+  fields: IField[];
+  _schema: ITableSchema;
+};
 
 export type ITableConfiguration = {
   style: ValueOf<typeof E_TABLE_STYLE>;
@@ -230,6 +246,7 @@ export type ITable = Merge<
     type: ValueOf<typeof E_TABLE_TYPE>;
     configuration: ITableConfiguration;
     methods: ITableMethod;
+    groups: IGroupConfiguration[];
   }
 >;
 
@@ -251,7 +268,10 @@ export type IFieldConfigurationRelationship = {
   order: 'asc' | 'desc';
 };
 
-export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
+export type IFieldConfigurationGroup = {
+  _id?: string;
+  slug: string;
+};
 
 export type IField = Merge<
   Base,

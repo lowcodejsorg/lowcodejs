@@ -6,7 +6,10 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableFieldRemoveFromTrashSchema } from './remove-from-trash.schema';
 import TableFieldRemoveFromTrashUseCase from './remove-from-trash.use-case';
-import { TableFieldRemoveFromTrashParamsValidator } from './remove-from-trash.validator';
+import {
+  TableFieldRemoveFromTrashParamsValidator,
+  TableFieldRemoveFromTrashQueryValidator,
+} from './remove-from-trash.validator';
 
 @Controller({
   route: 'tables',
@@ -37,8 +40,9 @@ export default class {
     const params = TableFieldRemoveFromTrashParamsValidator.parse(
       request.params,
     );
+    const query = TableFieldRemoveFromTrashQueryValidator.parse(request.query);
 
-    const result = await this.useCase.execute(params);
+    const result = await this.useCase.execute({ ...params, ...query });
 
     if (result.isLeft()) {
       const error = result.value;

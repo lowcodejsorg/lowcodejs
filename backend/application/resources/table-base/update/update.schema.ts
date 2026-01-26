@@ -254,6 +254,48 @@ export const TableUpdateSchema: FastifySchema = {
           },
           description: 'Table methods configuration',
         },
+        groups: {
+          type: 'array',
+          description: 'Field groups configuration',
+          items: {
+            type: 'object',
+            properties: {
+              slug: { type: 'string', description: 'Group slug' },
+              name: { type: 'string', description: 'Group name' },
+              fields: {
+                type: 'array',
+                description: 'Fields within the group',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string' },
+                    name: { type: 'string' },
+                    slug: { type: 'string' },
+                    type: { type: 'string' },
+                    configuration: {
+                      type: 'object',
+                      additionalProperties: true,
+                    },
+                    trashed: { type: 'boolean' },
+                    trashedAt: {
+                      type: 'string',
+                      format: 'date-time',
+                      nullable: true,
+                    },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    updatedAt: { type: 'string', format: 'date-time' },
+                  },
+                  additionalProperties: true,
+                },
+              },
+              _schema: {
+                type: 'object',
+                description: 'Group schema',
+                additionalProperties: true,
+              },
+            },
+          },
+        },
         _schema: {
           type: 'object',
           description:

@@ -44,7 +44,7 @@ export const Route = createFileRoute('/_private/tables/$slug/field/create/')({
     'field-type': z
       .enum(Object.keys(E_FIELD_TYPE) as [string, ...Array<string>])
       .optional(),
-    from: z.string().optional(),
+    group: z.string().optional(),
   }),
 });
 
@@ -65,33 +65,20 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/tables/$slug/field/create/',
   });
 
-  const { 'field-type': defaultFieldType, from } = useSearch({
+  const { 'field-type': defaultFieldType, group: groupSlug } = useSearch({
     from: '/_private/tables/$slug/field/create/',
   });
 
-  const originSlug = from ?? slug;
-
   const table = useReadTable({ slug });
+
+  // Se foi fornecido um group slug, é contexto de grupo
+  const isGroupContext = !!groupSlug;
+
   const permission = useTablePermission(table.data);
 
-  // Loading enquanto verifica permissão
-  if (table.status === 'pending' || permission.isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
-  }
-
-  // Mostrar erro se não tem permissão
-  if (!permission.can('CREATE_FIELD')) {
-    return <AccessDenied />;
-  }
-
+  // Hooks devem ser chamados ANTES de qualquer early return (Regra dos Hooks do React)
   const _create = useMutation({
-    mutationFn: async (payload: Partial<IField>) => {
+    mutationFn: async (payload: Partial<IField> & { group?: string }) => {
       const route = '/tables/'.concat(slug).concat('/fields');
       const response = await API.post<IField>(route, payload);
       return response.data;
@@ -101,6 +88,20 @@ function RouteComponent(): React.JSX.Element {
         ['/tables/'.concat(slug), slug],
         (old) => {
           if (!old) return old;
+
+          // Se estamos em contexto de grupo, atualiza groups
+          if (isGroupContext && groupSlug) {
+            return {
+              ...old,
+              groups: old.groups.map((g) =>
+                g.slug === groupSlug
+                  ? { ...g, fields: [...g.fields, response] }
+                  : g,
+              ),
+            };
+          }
+
+          // Atualiza campos da tabela normalmente
           return {
             ...old,
             fields: [...old.fields, response],
@@ -130,6 +131,18 @@ function RouteComponent(): React.JSX.Element {
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug === slug) {
+                // Se estamos em contexto de grupo, atualiza groups
+                if (isGroupContext && groupSlug) {
+                  return {
+                    ...t,
+                    groups: t.groups.map((g) =>
+                      g.slug === groupSlug
+                        ? { ...g, fields: [...g.fields, response] }
+                        : g,
+                    ),
+                  };
+                }
+
                 return {
                   ...t,
                   fields: [...t.fields, response],
@@ -155,23 +168,26 @@ function RouteComponent(): React.JSX.Element {
         },
       );
 
-      queryClient.setQueryData<Paginated<IRow>>(
-        [
-          '/tables/'.concat(slug).concat('/rows/paginated'),
-          slug,
-          { page: 1, perPage: 50 },
-        ],
-        (old) => {
-          if (!old) return old;
-          return {
-            meta: old.meta,
-            data: old.data.map((row) => ({
-              ...row,
-              [response.slug]: null,
-            })),
-          };
-        },
-      );
+      // Não atualiza rows quando em contexto de grupo (campos ficam embedded)
+      if (!isGroupContext) {
+        queryClient.setQueryData<Paginated<IRow>>(
+          [
+            '/tables/'.concat(slug).concat('/rows/paginated'),
+            slug,
+            { page: 1, perPage: 50 },
+          ],
+          (old) => {
+            if (!old) return old;
+            return {
+              meta: old.meta,
+              data: old.data.map((row) => ({
+                ...row,
+                [response.slug]: null,
+              })),
+            };
+          },
+        );
+      }
 
       toast('Campo criado', {
         className: '!bg-green-600 !text-white !border-green-600',
@@ -185,7 +201,7 @@ function RouteComponent(): React.JSX.Element {
       navigate({
         to: '/tables/$slug',
         replace: true,
-        params: { slug: originSlug },
+        params: { slug },
       });
     },
     onError(error) {
@@ -249,13 +265,31 @@ function RouteComponent(): React.JSX.Element {
             ? convertTreeNodeToCategory(config.category)
             : [],
         },
+        group: groupSlug,
       });
     },
   });
 
-  // Blocked types for field-group tables
+  // Loading enquanto verifica permissão
+  if (table.status === 'pending' || permission.isLoading) {
+    return (
+      <div className="p-4 space-y-4">
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    );
+  }
+
+  // Mostrar erro se não tem permissão
+  if (!permission.can('CREATE_FIELD')) {
+    return <AccessDenied />;
+  }
+
+  // Blocked types for field-group tables or when in group context
   const blockedTypes =
-    table.status === 'success' && table.data.type === E_TABLE_TYPE.FIELD_GROUP
+    isGroupContext ||
+    (table.status === 'success' && table.data.type === E_TABLE_TYPE.FIELD_GROUP)
       ? [
           E_FIELD_TYPE.FIELD_GROUP,
           E_FIELD_TYPE.REACTION,
@@ -278,7 +312,7 @@ function RouteComponent(): React.JSX.Element {
               navigate({
                 to: '/tables/$slug',
                 replace: true,
-                params: { slug: originSlug },
+                params: { slug },
               });
             }}
           >
@@ -335,7 +369,7 @@ function RouteComponent(): React.JSX.Element {
                   navigate({
                     to: '/tables/$slug',
                     replace: true,
-                    params: { slug: originSlug },
+                    params: { slug },
                   });
                 }}
               >

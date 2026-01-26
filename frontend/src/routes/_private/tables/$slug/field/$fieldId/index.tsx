@@ -33,7 +33,7 @@ import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
   component: RouteComponent,
   validateSearch: z.object({
-    from: z.string().optional(),
+    group: z.string().optional(),
   }),
 });
 
@@ -45,14 +45,12 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/tables/$slug/field/$fieldId/',
   });
 
-  const { from } = useSearch({
+  const { group: groupSlug } = useSearch({
     from: '/_private/tables/$slug/field/$fieldId/',
   });
 
-  const originSlug = from ?? slug;
-
   const table = useReadTable({ slug });
-  const _read = useFieldRead({ tableSlug: slug, fieldId });
+  const _read = useFieldRead({ tableSlug: slug, fieldId, groupSlug });
   const permission = useTablePermission(table.data);
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
@@ -86,7 +84,7 @@ function RouteComponent(): React.JSX.Element {
               navigate({
                 to: '/tables/$slug',
                 replace: true,
-                params: { slug: originSlug },
+                params: { slug },
               });
             }}
           >
@@ -145,6 +143,7 @@ function RouteComponent(): React.JSX.Element {
             slug={slug}
             mode={mode}
             setMode={setMode}
+            groupSlug={groupSlug}
           />
         )}
       </div>
@@ -157,6 +156,8 @@ interface FieldUpdateContentProps {
   slug: string;
   mode: 'show' | 'edit';
   setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+  /** Slug do grupo (quando em contexto de grupo) */
+  groupSlug?: string;
 }
 
 function FieldUpdateContent({
@@ -164,14 +165,18 @@ function FieldUpdateContent({
   slug,
   mode,
   setMode,
+  groupSlug,
 }: FieldUpdateContentProps): React.JSX.Element {
   const { queryClient } = getContext();
+
+  const isGroupContext = !!groupSlug;
 
   const _update = useMutation({
     mutationFn: async (
       payload: Partial<IField> & {
         trashed?: boolean;
         trashedAt?: string | null;
+        group?: string;
       },
     ) => {
       const route = '/tables/'.concat(slug).concat('/fields/').concat(data._id);
@@ -191,6 +196,24 @@ function FieldUpdateContent({
         ['/tables/'.concat(slug), slug],
         (old) => {
           if (!old) return old;
+
+          // Se for contexto de grupo, atualiza groups
+          if (isGroupContext && groupSlug) {
+            return {
+              ...old,
+              groups: old.groups.map((g) =>
+                g.slug === groupSlug
+                  ? {
+                      ...g,
+                      fields: g.fields.map((f) =>
+                        f._id === response._id ? response : f,
+                      ),
+                    }
+                  : g,
+              ),
+            };
+          }
+
           return {
             ...old,
             fields: old.fields.map((f) => {
@@ -211,6 +234,23 @@ function FieldUpdateContent({
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug === slug) {
+                // Se for contexto de grupo, atualiza groups
+                if (isGroupContext && groupSlug) {
+                  return {
+                    ...t,
+                    groups: t.groups.map((g) =>
+                      g.slug === groupSlug
+                        ? {
+                            ...g,
+                            fields: g.fields.map((f) =>
+                              f._id === response._id ? response : f,
+                            ),
+                          }
+                        : g,
+                    ),
+                  };
+                }
+
                 return {
                   ...t,
                   fields: t.fields.map((f) => {
@@ -458,6 +498,7 @@ function FieldUpdateContent({
         },
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
+        group: groupSlug,
       });
     },
   });

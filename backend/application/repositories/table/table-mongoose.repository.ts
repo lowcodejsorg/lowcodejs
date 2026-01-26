@@ -20,6 +20,7 @@ export default class TableMongooseRepository implements TableContractRepository 
     { path: 'fields' },
     { path: 'configuration.owner' },
     { path: 'configuration.administrators' },
+    { path: 'groups.fields' },
   ];
 
   private buildWhereClause(

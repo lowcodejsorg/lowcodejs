@@ -145,7 +145,9 @@ export type IFieldConfigurationRelationship = {
   order: 'asc' | 'desc';
 };
 
-export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
+export type IFieldConfigurationGroup = {
+  slug: string;
+};
 
 export type IField = Merge<
   Base,
@@ -177,6 +179,13 @@ export type ISchema = {
 
 export type ITableSchema = Record<string, ISchema | Array<ISchema>>;
 
+export type IGroupConfiguration = {
+  slug: string;
+  name: string;
+  fields: Array<IField>;
+  _schema: ITableSchema;
+};
+
 export type ITableConfiguration = {
   style: ValueOf<typeof E_TABLE_STYLE>;
   visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
@@ -207,6 +216,7 @@ export type ITable = Merge<
     type: ValueOf<typeof E_TABLE_TYPE>;
     configuration: ITableConfiguration;
     methods: ITableMethod;
+    groups: Array<IGroupConfiguration>;
   }
 >;
 

@@ -4,6 +4,7 @@ import type {
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  IGroupConfiguration,
   ITable,
   ITableMethod,
   ITableSchema,
@@ -33,6 +34,7 @@ export type TableCreatePayload = Merge<
     type?: ValueOf<typeof E_TABLE_TYPE>;
     configuration: TableConfigurationPayload;
     methods?: ITableMethod;
+    groups?: IGroupConfiguration[];
   }
 >;
 
@@ -41,6 +43,7 @@ export type TableUpdatePayload = Merge<
   Partial<TableCreatePayload> & {
     trashed?: boolean;
     trashedAt?: Date | null;
+    groups?: IGroupConfiguration[];
   }
 >;
 

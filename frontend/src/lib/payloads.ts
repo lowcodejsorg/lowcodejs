@@ -124,6 +124,12 @@ export type TableUpdatePayload = {
   configuration?: TableConfigurationPayload;
   methods?: TableMethodPayload;
   fields?: Array<string>;
+  groups?: Array<{
+    slug: string;
+    name: string;
+    fields: Array<{ _id: string }>;
+    _schema: Record<string, unknown>;
+  }>;
 };
 
 // ============== FIELD ==============

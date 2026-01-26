@@ -23,17 +23,25 @@ import { E_TABLE_TYPE } from '@/lib/constant';
 export const Route = createFileRoute('/_private/tables/$slug/field/order')({
   component: RouteComponent,
   validateSearch: z.object({
-    from: z.string().optional(),
+    group: z.string().optional(),
   }),
 });
 
 function RouteComponent(): React.JSX.Element {
   const { slug } = useParams({ from: '/_private/tables/$slug/field/order' });
-  const { from } = useSearch({ from: '/_private/tables/$slug/field/order' });
+  const { group: groupSlug } = useSearch({
+    from: '/_private/tables/$slug/field/order',
+  });
   const sidebar = useSidebar();
   const router = useRouter();
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);
+
+  // Se foi fornecido um group slug, é contexto de grupo
+  const isGroupContext = !!groupSlug;
+  const targetGroup = isGroupContext
+    ? (table.data?.groups ?? []).find((g) => g.slug === groupSlug)
+    : null;
 
   // Loading enquanto verifica permissão
   if (table.status === 'pending' || permission.isLoading) {
@@ -52,19 +60,23 @@ function RouteComponent(): React.JSX.Element {
   }
 
   const title =
-    table.data?.type === E_TABLE_TYPE.FIELD_GROUP
+    isGroupContext || table.data?.type === E_TABLE_TYPE.FIELD_GROUP
       ? 'Gerenciar campos do grupo'
       : 'Gerenciar campos';
 
-  const trashedCount = table.data?.fields.filter((f) => f.trashed).length ?? 0;
+  // Se for contexto de grupo, usa campos do grupo; senão, campos da tabela
+  const fields =
+    isGroupContext && targetGroup
+      ? targetGroup.fields
+      : (table.data?.fields ?? []);
 
-  const targetSlug = from ?? slug;
+  const trashedCount = fields.filter((f) => f.trashed).length;
 
   const handleBack = (): void => {
     sidebar.setOpen(true);
     router.navigate({
       to: '/tables/$slug',
-      params: { slug: targetSlug },
+      params: { slug },
       replace: true,
     });
   };
@@ -115,6 +127,10 @@ function RouteComponent(): React.JSX.Element {
                 table={table.data}
                 reference="orderList"
                 onSuccess={handleBack}
+                groupSlug={groupSlug}
+                groupFields={
+                  isGroupContext && targetGroup ? targetGroup.fields : undefined
+                }
               />
             </TabsContent>
 
@@ -123,11 +139,21 @@ function RouteComponent(): React.JSX.Element {
                 table={table.data}
                 reference="orderForm"
                 onSuccess={handleBack}
+                groupSlug={groupSlug}
+                groupFields={
+                  isGroupContext && targetGroup ? targetGroup.fields : undefined
+                }
               />
             </TabsContent>
 
             <TabsContent value="trashed">
-              <TrashedFieldsList table={table.data} />
+              <TrashedFieldsList
+                table={table.data}
+                groupSlug={groupSlug}
+                groupFields={
+                  isGroupContext && targetGroup ? targetGroup.fields : undefined
+                }
+              />
             </TabsContent>
           </Tabs>
         )}

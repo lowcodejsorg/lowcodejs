@@ -7,6 +7,7 @@ import type { IField } from '@/lib/interfaces';
 interface UseFieldReadParams {
   tableSlug: string;
   fieldId: string;
+  groupSlug?: string;
 }
 
 export function useFieldRead(
@@ -16,9 +17,13 @@ export function useFieldRead(
     queryKey: [
       `/tables/${params.tableSlug}/fields/${params.fieldId}`,
       params.fieldId,
+      params.groupSlug,
     ],
     queryFn: async function () {
-      const route = `/tables/${params.tableSlug}/fields/${params.fieldId}`;
+      let route = `/tables/${params.tableSlug}/fields/${params.fieldId}`;
+      if (params.groupSlug) {
+        route = route.concat('?group=').concat(params.groupSlug);
+      }
       const response = await API.get<IField>(route);
       return response.data;
     },
