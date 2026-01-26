@@ -37,6 +37,7 @@ function RouteComponent(): React.JSX.Element {
     /^\/tables\/[^/]+\/methods$/,
     /^\/users\/.+$/,
     '/users/create',
+    '/tools',
   ];
 
   return (

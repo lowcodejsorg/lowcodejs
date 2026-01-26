@@ -4,11 +4,8 @@ import { kernel } from '@start/kernel';
 
 async function start(): Promise<void> {
   try {
-    console.log('Fastify ready');
-    // Wait for Fastify to be ready
     await kernel.ready();
 
-    // Start the server
     await kernel.listen({ port: Env.PORT, host: '0.0.0.0' });
     console.info(`HTTP Server running on http://localhost:${Env.PORT}`);
   } catch (err) {

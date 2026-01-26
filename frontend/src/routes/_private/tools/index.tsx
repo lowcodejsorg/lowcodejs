@@ -1,13 +1,11 @@
 import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { AlertCircle, WrenchIcon } from 'lucide-react';
+import { WrenchIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import styles from './tools.module.css';
-
 import { AccessDenied } from '@/components/common/access-denied';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { TableComboboxPaginated } from '@/components/common/table-combobox-paginated';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,17 +16,9 @@ import {
 } from '@/components/ui/card';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
-import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { usePermission } from '@/hooks/use-table-permission';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IHTTPExeptionError } from '@/lib/interfaces';
@@ -53,12 +43,6 @@ function RouteComponent(): React.JSX.Element {
 
   const [model, setModel] = React.useState<string>('');
   const [tableName, setTableName] = React.useState<string>('');
-
-  // Usa as tabelas populadas diretamente do settings
-  const { data: settings, isLoading } = useSettingRead();
-  const allowedTables = Array.isArray(settings?.MODEL_CLONE_TABLES)
-    ? settings.MODEL_CLONE_TABLES
-    : [];
 
   const _clone = useCloneTable({
     onSuccess(data) {
@@ -133,20 +117,8 @@ function RouteComponent(): React.JSX.Element {
     });
   };
 
-  const models = React.useMemo(
-    () =>
-      allowedTables.map((table) => ({
-        value: String(table._id),
-        label: table.name,
-        slug: table.slug,
-      })),
-    [allowedTables],
-  );
-
   return (
-    <div
-      className={`flex flex-col h-full overflow-hidden ${styles.hideSearch}`}
-    >
+    <div className={`flex flex-col h-full overflow-hidden`}>
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <h1 className="text-xl font-medium">Ferramentas do Sistema</h1>
@@ -171,71 +143,38 @@ function RouteComponent(): React.JSX.Element {
             </CardHeader>
 
             <CardContent>
-              {models.length === 0 && !isLoading ? (
-                <Alert className="bg-amber-50 border-amber-200 text-amber-800">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
-                  <AlertDescription>
-                    Nenhum modelo disponível para clonagem. Configure os modelos
-                    nas configurações do sistema.
-                  </AlertDescription>
-                </Alert>
-              ) : (
-                <div className="space-y-4 max-w-md">
-                  <Field>
-                    <FieldLabel>Modelo base</FieldLabel>
+              <div className="space-y-4 max-w-md">
+                <Field>
+                  <FieldLabel>Modelo base</FieldLabel>
+                  <TableComboboxPaginated
+                    value={model}
+                    onValueChange={(value) => setModel(value)}
+                    placeholder="Selecione um modelo"
+                  />
+                </Field>
 
-                    <Select
-                      value={model}
-                      onValueChange={setModel}
-                    >
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Selecione um modelo" />
-                      </SelectTrigger>
+                <Field>
+                  <FieldLabel>Nome da nova tabela</FieldLabel>
+                  <InputGroup>
+                    <InputGroupInput
+                      placeholder="ex: Atividades"
+                      value={tableName}
+                      onChange={(e) => setTableName(e.target.value)}
+                    />
+                  </InputGroup>
+                </Field>
 
-                      <SelectContent className={styles.fixedSelectContent}>
-                        <div className={styles.fixedSelectList}>
-                          {isLoading ? (
-                            <div className={styles.emptyState}>
-                              Carregando modelos...
-                            </div>
-                          ) : (
-                            models.map((item) => (
-                              <SelectItem
-                                key={item.value}
-                                value={item.value}
-                              >
-                                {item.label}
-                              </SelectItem>
-                            ))
-                          )}
-                        </div>
-                      </SelectContent>
-                    </Select>
-                  </Field>
-
-                  <Field>
-                    <FieldLabel>Nome da nova tabela</FieldLabel>
-                    <InputGroup>
-                      <InputGroupInput
-                        placeholder="ex: Atividades"
-                        value={tableName}
-                        onChange={(e) => setTableName(e.target.value)}
-                      />
-                    </InputGroup>
-                  </Field>
-
-                  <div className="flex justify-end">
-                    <Button
-                      type="button"
-                      disabled={!model || !tableName || isCloning}
-                      onClick={handleCloneTable}
-                    >
-                      {isCloning && <Spinner />}
-                      <span>{isCloning ? 'Clonando...' : 'Clonar Modelo'}</span>
-                    </Button>
-                  </div>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    disabled={!model || !tableName || isCloning}
+                    onClick={handleCloneTable}
+                  >
+                    {isCloning && <Spinner />}
+                    <span>{isCloning ? 'Clonando...' : 'Clonar Modelo'}</span>
+                  </Button>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
         )}
