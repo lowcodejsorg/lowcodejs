@@ -556,7 +556,7 @@ export const UpdateSettingFormFields = withForm({
                 Modelo de Tabelas
               </CardTitle>
               <CardDescription>
-                Selecione um modelo para clonagem de tabelas
+                Defina modelos de tabelas para clonagem
               </CardDescription>
             </CardHeader>
             <CardContent>

@@ -248,7 +248,7 @@ function SettingUpdateContent({
       ),
       FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
       PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
-      MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES.map((t) => t._id),
+      MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES.flatMap((t) => t._id),
       EMAIL_PROVIDER_HOST: data.EMAIL_PROVIDER_HOST,
       EMAIL_PROVIDER_PORT: String(data.EMAIL_PROVIDER_PORT),
       EMAIL_PROVIDER_USER: data.EMAIL_PROVIDER_USER,

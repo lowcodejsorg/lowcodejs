@@ -7,6 +7,7 @@ import {
   UploadIcon,
 } from 'lucide-react';
 
+import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,
@@ -156,6 +157,38 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             <p className="text-sm text-muted-foreground">
               {data.PAGINATION_PER_PAGE}
             </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Modelo de Tabelas */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <DatabaseIcon className="w-5 h-5" />
+            Modelo de Tabelas
+          </CardTitle>
+          <CardDescription>
+            Tabelas permitidas para clonagem de modelos
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Tabelas selecionadas</p>
+            {data.MODEL_CLONE_TABLES.length > 0 ? (
+              <div className="flex flex-wrap gap-2 mt-1">
+                {data.MODEL_CLONE_TABLES.map((table) => (
+                  <Badge
+                    key={table._id}
+                    variant="secondary"
+                  >
+                    {table.name}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">-</p>
+            )}
           </div>
         </CardContent>
       </Card>
