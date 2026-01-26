@@ -25,9 +25,9 @@ jobs:
         working-directory: ./backend
         run: npm run build
 
-      - name: Prune dev dependencies
-        working-directory: ./backend
-        run: npm prune --production
+      #- name: Prune dev dependencies
+      #  working-directory: ./backend
+      #  run: npm prune --production
 
       - name: Copy scalar standalone
         working-directory: ./backend
