@@ -69,7 +69,8 @@ jobs:
             DB_USERNAME=${{ inputs.branch }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_NAME=${{ inputs.branch }}
-            DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@${{ inputs.branch }}-lowcodejs-mongo-1:27017/${{ inputs.branch }}?authSource=admin
+            # DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@${{ inputs.branch }}-lowcodejs-mongo-1:27017/${{ inputs.branch }}?authSource=admin
+            DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@mongo:27017/${{ inputs.branch }}?authSource=admin
             APP_SERVER_URL=https://api.${{ inputs.branch }}.lowcodejs.org
             APP_CLIENT_URL=https://${{ inputs.branch }}.lowcodejs.org
             JWT_PRIVATE_KEY=${{ secrets.JWT_PRIVATE_KEY }}
