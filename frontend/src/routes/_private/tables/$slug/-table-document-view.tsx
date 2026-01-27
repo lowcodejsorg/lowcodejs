@@ -200,6 +200,7 @@ export function TableDocumentView({
           getLeafLabel={getLeafLabel}
           getHeadingLevel={getHeadingLevel}
           getLeafIcon={getLeafIcon}
+          categorySlug={categoryField?.slug ?? 'category'}
         />
       </div>
     </div>
