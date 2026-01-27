@@ -3,11 +3,13 @@ import {
   useNavigate,
   useParams,
   useRouter,
+  useSearch,
 } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
+import z from 'zod';
 
 import {
   CreateRowFormFields,
@@ -23,9 +25,14 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { E_FIELD_TYPE } from '@/lib/constant';
 
 export const Route = createFileRoute('/_private/tables/$slug/row/create/')({
   component: RouteComponent,
+  validateSearch: z.object({
+    categoryId: z.string().optional(),
+    categorySlug: z.string().optional(),
+  }),
 });
 
 function RouteComponent(): React.JSX.Element {
@@ -34,6 +41,10 @@ function RouteComponent(): React.JSX.Element {
   const navigate = useNavigate();
 
   const { slug } = useParams({
+    from: '/_private/tables/$slug/row/create/',
+  });
+
+  const { categoryId, categorySlug } = useSearch({
     from: '/_private/tables/$slug/row/create/',
   });
 
@@ -195,6 +206,35 @@ function RouteComponent(): React.JSX.Element {
       await _create.mutateAsync({ slug, data });
     },
   });
+
+  const [prefillApplied, setPrefillApplied] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!categoryId || !categorySlug) return;
+    if (table.status !== 'success') return;
+    if (prefillApplied) return;
+
+    const targetField = activeFields.find(
+      (field) =>
+        field.slug === categorySlug && field.type === E_FIELD_TYPE.CATEGORY,
+    );
+
+    if (!targetField) return;
+
+    const value = targetField.configuration.multiple
+      ? [categoryId]
+      : categoryId;
+
+    form.setFieldValue(categorySlug, value);
+    setPrefillApplied(true);
+  }, [
+    activeFields,
+    categoryId,
+    categorySlug,
+    form,
+    prefillApplied,
+    table.status,
+  ]);
 
   if (table.status === 'pending' || permission.isLoading) {
     return (

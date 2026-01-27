@@ -24,7 +24,7 @@ export function DocumentMain({
   getLeafIcon,
 }: DocumentMainProps): React.JSX.Element {
   return (
-    <main className="p-4 min-h-0 overflow-auto w-full ">
+    <main className="p-4 w-full">
       <div className="no-print mb-3 flex items-center justify-between">
         <div className="text-sm text-muted-foreground">
           Mostrando{' '}
