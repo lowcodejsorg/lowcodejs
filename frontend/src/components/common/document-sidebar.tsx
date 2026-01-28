@@ -1,33 +1,47 @@
+import type {
+  DragCancelEvent,
+  DragEndEvent,
+  DragOverEvent,
+  DragStartEvent,
+} from '@dnd-kit/core';
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useDroppable,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import {
   BookOpenCheckIcon,
-  ChevronDownIcon,
-  ChevronRightIcon,
-  FolderIcon,
-  FolderTreeIcon,
+  GripVerticalIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
   PlusIcon,
   SettingsIcon,
-  TagIcon,
-  WorkflowIcon,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Button } from '@/components/ui/button';
+import { DocumentSidebarAddDialog } from '@/components/common/document-sidebar-add-dialog';
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
-import { Spinner } from '@/components/ui/spinner';
+  buildParentMap,
+  findNodeAndRemove,
+  findNodeByIdLocal,
+  getAncestors,
+  getDropMode,
+  insertNodeAt,
+  isDescendant,
+  reorderInTree,
+  updateNodeLabel,
+} from '@/components/common/document-sidebar-helpers';
+import type { DropMode } from '@/components/common/document-sidebar-helpers';
+import { DocumentSidebarTree } from '@/components/common/document-sidebar-tree';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
@@ -35,226 +49,6 @@ import { E_FIELD_TYPE } from '@/lib/constant';
 import { buildLabelMap } from '@/lib/document-helpers';
 import type { CatNode } from '@/lib/document-helpers';
 import type { IField } from '@/lib/interfaces';
-
-function buildParentMap(
-  nodes: Array<CatNode>,
-  parentId: string | null,
-  map: Map<string, string | null>,
-): Map<string, string | null> {
-  for (const n of nodes) {
-    map.set(n.id, parentId);
-    if (n.children?.length) buildParentMap(n.children, n.id, map);
-  }
-  return map;
-}
-
-function getAncestors(
-  id: string,
-  parentMap: Map<string, string | null>,
-): Array<string> {
-  const out: Array<string> = [];
-  let cur: string | null | undefined = id;
-  while (cur) {
-    const p = parentMap.get(cur);
-    if (!p) break;
-    out.push(p);
-    cur = p;
-  }
-  return out;
-}
-
-function TreeItem({
-  node,
-  level,
-  selectedId,
-  onSelect,
-  isOpen,
-  toggleOpen,
-}: {
-  node: CatNode;
-  level: number;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-  isOpen: boolean;
-  toggleOpen: (id: string) => void;
-}): React.JSX.Element {
-  const hasChildren = !!node.children?.length;
-  const active = selectedId === node.id;
-
-  return (
-    <div>
-      <div
-        className={[
-          'w-full rounded-md px-2 py-1.5 text-sm transition',
-          'flex items-center gap-2',
-          active ? 'bg-muted font-medium' : 'hover:bg-muted/60',
-        ].join(' ')}
-        style={{ paddingLeft: 8 + level * 12 }}
-      >
-        {/* Toggle */}
-        {hasChildren ? (
-          <button
-            type="button"
-            onClick={() => toggleOpen(node.id)}
-            className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
-            aria-label={isOpen ? 'Recolher' : 'Expandir'}
-          >
-            {isOpen ? (
-              <ChevronDownIcon className="size-4 opacity-70" />
-            ) : (
-              <ChevronRightIcon className="size-4 opacity-70" />
-            )}
-          </button>
-        ) : (
-          <span className="w-[22px]" />
-        )}
-
-        {/* Icon */}
-        {hasChildren ? (
-          <FolderIcon className="size-4 opacity-70" />
-        ) : (
-          <TagIcon className="size-4 opacity-70" />
-        )}
-
-        {/* Select */}
-        <button
-          type="button"
-          onClick={() => onSelect(node.id)}
-          className="flex-1 text-left truncate"
-          title={node.label}
-        >
-          {node.label}
-        </button>
-      </div>
-
-      {/* children */}
-      {hasChildren && isOpen ? (
-        <div className="mt-1 space-y-1">
-          {node.children!.map((child) => (
-            <TreeItem
-              key={child.id}
-              node={child}
-              level={level + 1}
-              selectedId={selectedId}
-              onSelect={onSelect}
-              isOpen={isOpen}
-              toggleOpen={toggleOpen}
-            />
-          ))}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-/**
- * Render recursivo com estado de openMap
- */
-function Tree({
-  nodes,
-  selectedId,
-  onSelect,
-  openMap,
-  toggleOpen,
-  level = 0,
-  onAddChild,
-  canAdd = false,
-}: {
-  nodes: Array<CatNode>;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-  openMap: Record<string, boolean>;
-  toggleOpen: (id: string) => void;
-  level?: number;
-  onAddChild?: (id: string) => void;
-  canAdd?: boolean;
-}): React.JSX.Element {
-  return (
-    <div className="space-y-1">
-      {nodes.map((n) => {
-        const hasChildren = !!n.children?.length;
-        const isOpen = hasChildren ? !!openMap[n.id] : false;
-        const showAdd = canAdd && onAddChild;
-
-        return (
-          <div key={n.id}>
-            <div
-              className={[
-                'w-full rounded-md px-2 py-1.5 text-sm transition',
-                'flex items-center gap-2',
-                selectedId === n.id
-                  ? 'bg-muted font-medium'
-                  : 'hover:bg-muted/60',
-              ].join(' ')}
-              style={{ paddingLeft: 8 + level * 12 }}
-            >
-              {hasChildren ? (
-                <button
-                  type="button"
-                  onClick={() => toggleOpen(n.id)}
-                  className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
-                  aria-label={isOpen ? 'Recolher' : 'Expandir'}
-                >
-                  {isOpen ? (
-                    <ChevronDownIcon className="size-4 opacity-70" />
-                  ) : (
-                    <ChevronRightIcon className="size-4 opacity-70" />
-                  )}
-                </button>
-              ) : (
-                <span className="w-[22px]" />
-              )}
-
-              {hasChildren ? (
-                <FolderTreeIcon className="size-4 opacity-70" />
-              ) : (
-                <WorkflowIcon className="size-4 opacity-70" />
-              )}
-
-              <button
-                type="button"
-                onClick={() => onSelect(n.id)}
-                className="flex-1 text-left truncate cursor-pointer"
-                title={n.label}
-              >
-                {n.label}
-              </button>
-
-              {showAdd && (
-                <button
-                  type="button"
-                  className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
-                  aria-label="Adicionar sub-item"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onAddChild(n.id);
-                  }}
-                >
-                  <PlusIcon className="size-4 opacity-70" />
-                </button>
-              )}
-            </div>
-
-            {hasChildren && isOpen ? (
-              <div className="mt-1">
-                <Tree
-                  nodes={n.children!}
-                  selectedId={selectedId}
-                  onSelect={onSelect}
-                  openMap={openMap}
-                  toggleOpen={toggleOpen}
-                  level={level + 1}
-                  onAddChild={onAddChild}
-                  canAdd={canAdd}
-                />
-              </div>
-            ) : null}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
 
 export function DocumentSidebar({
   title = 'Índice',
@@ -275,15 +69,42 @@ export function DocumentSidebar({
   onToggle: () => void;
   categoryField: IField;
 }): React.JSX.Element {
+  const [treeNodes, setTreeNodes] = useState<Array<CatNode>>(nodes);
   const parentMap = useMemo(
-    () => buildParentMap(nodes, null, new Map()),
-    [nodes],
+    () => buildParentMap(treeNodes, null, new Map()),
+    [treeNodes],
   );
-  const labelMap = useMemo(() => buildLabelMap(nodes), [nodes]);
+  const labelMap = useMemo(() => buildLabelMap(treeNodes), [treeNodes]);
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addParentId, setAddParentId] = useState<string | null>(null);
   const [newLabel, setNewLabel] = useState('');
+  const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
+  const [editingLabel, setEditingLabel] = useState('');
+  const [dragEnabledId, setDragEnabledId] = useState<string | null>(null);
+  const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [dragOverMode, setDragOverMode] = useState<DropMode>(null);
+  const rootDropId = 'document-sidebar-root';
+  const { setNodeRef: setRootDropRef, isOver: isOverRoot } = useDroppable({
+    id: rootDropId,
+    data: { parentId: null },
+  });
+
+  useEffect(() => {
+    setTreeNodes(nodes);
+  }, [nodes]);
+
+  useEffect((): void | (() => void) => {
+    if (!dragEnabledId) return;
+    const handleKeyDown = (event: KeyboardEvent): void => {
+      if (event.key === 'Escape') {
+        setDragEnabledId(null);
+        cancelEdit();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [dragEnabledId]);
 
   const toggleOpen = (id: string): void => {
     setOpenMap((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -314,6 +135,13 @@ export function DocumentSidebar({
     permission.can('UPDATE_FIELD') &&
     categoryField._id &&
     categoryField.type === E_FIELD_TYPE.CATEGORY;
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
 
   const addCategory = useMutation({
     mutationFn: async (payload: { label: string; parentId: string | null }) => {
@@ -369,6 +197,213 @@ export function DocumentSidebar({
     setAddModalOpen(true);
   };
 
+  const updateCategoryTree = useMutation({
+    mutationFn: async (category: Array<CatNode>) => {
+      const route = `/tables/${slug}/fields/${categoryField._id}`;
+      const response = await API.put<IField>(route, {
+        name: categoryField.name,
+        type: categoryField.type,
+        configuration: {
+          required: categoryField.configuration.required,
+          multiple: categoryField.configuration.multiple,
+          listing: categoryField.configuration.listing,
+          filtering: categoryField.configuration.filtering,
+          format: categoryField.configuration.format,
+          defaultValue: categoryField.configuration.defaultValue,
+          dropdown: categoryField.configuration.dropdown,
+          relationship: categoryField.configuration.relationship,
+          group: null,
+          category,
+        },
+        trashed: categoryField.trashed,
+        trashedAt: categoryField.trashedAt,
+      });
+      return response.data;
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: ['/tables/'.concat(slug), slug],
+      });
+    },
+    onError(error) {
+      if (error instanceof AxiosError) {
+        const errorData = error.response?.data;
+        toast('Erro ao atualizar categorias', {
+          className: '!bg-destructive !text-white !border-destructive',
+          description: errorData?.message ?? 'Erro ao atualizar categorias',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      }
+      console.error(error);
+    },
+  });
+
+  const startEdit = (nodeId: string, label: string): void => {
+    if (!canManageCategory) return;
+    setEditingNodeId(nodeId);
+    setEditingLabel(label);
+    setDragEnabledId(nodeId);
+  };
+
+  const cancelEdit = (): void => {
+    setEditingNodeId(null);
+    setEditingLabel('');
+  };
+
+  const saveEdit = async (): Promise<void> => {
+    if (!editingNodeId) return;
+    const label = editingLabel.trim();
+    if (!label) {
+      cancelEdit();
+      return;
+    }
+
+    const currentNode = findNodeByIdLocal(treeNodes, editingNodeId);
+    if (currentNode?.label === label) {
+      cancelEdit();
+      return;
+    }
+
+    const previous = treeNodes;
+    const updated = updateNodeLabel(treeNodes, editingNodeId, label);
+    setTreeNodes(updated);
+    setEditingNodeId(null);
+    setEditingLabel('');
+
+    try {
+      await updateCategoryTree.mutateAsync(updated);
+    } catch {
+      setTreeNodes(previous);
+    }
+  };
+
+  const handleDragStart = (event: DragStartEvent): void => {
+    if (!dragEnabledId || !canManageCategory) return;
+    if (String(event.active.id) !== dragEnabledId) return;
+  };
+
+  const handleDragOver = (event: DragOverEvent): void => {
+    if (!dragEnabledId || !canManageCategory) return;
+    const { active, over } = event;
+    if (!over) {
+      setDragOverId(null);
+      setDragOverMode(null);
+      return;
+    }
+
+    if (over.id === rootDropId) {
+      setDragOverId(null);
+      setDragOverMode(null);
+      return;
+    }
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+    if (
+      isDescendant(treeNodes, activeId, overId) ||
+      (over.data.current?.parentId &&
+        isDescendant(treeNodes, activeId, String(over.data.current.parentId)))
+    ) {
+      setDragOverId(null);
+      setDragOverMode(null);
+      return;
+    }
+
+    const mode = getDropMode(event);
+    setDragOverId(overId);
+    setDragOverMode(mode);
+  };
+
+  const handleDragCancel = (_event: DragCancelEvent): void => {
+    setDragOverId(null);
+    setDragOverMode(null);
+  };
+
+  const handleDragEnd = async (event: DragEndEvent): Promise<void> => {
+    if (!dragEnabledId || !canManageCategory) return;
+    const { active, over } = event;
+    setDragOverId(null);
+    setDragOverMode(null);
+    if (!over || active.id === over.id) return;
+
+    const activeParentId =
+      (active.data.current?.parentId as string | null | undefined) ?? null;
+    const overParentId =
+      (over.data.current?.parentId as string | null | undefined) ?? null;
+
+    const activeId = String(active.id);
+    const overId = String(over.id);
+
+    if (over.id === rootDropId) {
+      if (activeParentId === null) return;
+      const { updated, removed } = findNodeAndRemove(treeNodes, activeId);
+      if (!removed) return;
+      const next = insertNodeAt(updated, null, updated.length, removed);
+      const previous = treeNodes;
+      setTreeNodes(next);
+      try {
+        await updateCategoryTree.mutateAsync(next);
+      } catch {
+        setTreeNodes(previous);
+      }
+      return;
+    }
+
+    if (
+      (overParentId && isDescendant(treeNodes, activeId, overParentId)) ||
+      isDescendant(treeNodes, activeId, overId)
+    ) {
+      return;
+    }
+
+    const computedMode = getDropMode(event);
+    const shouldNest = computedMode === 'nest';
+
+    let next = treeNodes;
+
+    if (activeParentId === overParentId) {
+      if (shouldNest) {
+        if (activeId !== overId) {
+          const { updated, removed } = findNodeAndRemove(treeNodes, activeId);
+          if (!removed) return;
+          const targetNode = findNodeByIdLocal(updated, overId);
+          const childIndex = targetNode?.children?.length ?? 0;
+          next = insertNodeAt(updated, overId, childIndex, removed);
+        }
+      } else {
+        next = reorderInTree(treeNodes, activeParentId, activeId, overId);
+      }
+    } else {
+      const { updated, removed } = findNodeAndRemove(treeNodes, activeId);
+      if (!removed) return;
+
+      if (shouldNest) {
+        const targetNode = findNodeByIdLocal(updated, overId);
+        const childIndex = targetNode?.children?.length ?? 0;
+        next = insertNodeAt(updated, overId, childIndex, removed);
+      } else {
+        const targetList =
+          overParentId === null
+            ? updated
+            : (findNodeByIdLocal(updated, overParentId)?.children ?? []);
+        const insertIndex = targetList.findIndex((item) => item.id === overId);
+        const nextIndex = insertIndex === -1 ? targetList.length : insertIndex;
+
+        next = insertNodeAt(updated, overParentId, nextIndex, removed);
+      }
+    }
+
+    if (next === treeNodes) return;
+    const previous = treeNodes;
+    setTreeNodes(next);
+    try {
+      await updateCategoryTree.mutateAsync(next);
+    } catch {
+      setTreeNodes(previous);
+    }
+  };
+
   const handleCreateCategory = async (): Promise<void> => {
     if (!canManageCategory) return;
     const label = newLabel.trim();
@@ -411,6 +446,15 @@ export function DocumentSidebar({
 
         {isOpen && (
           <div className="p-2 space-y-2 overflow-auto flex-1 min-h-0 relative">
+            {dragEnabledId && (
+              <div className="rounded-md border bg-muted/30 px-2 py-1 text-xs text-muted-foreground flex items-center gap-2">
+                <GripVerticalIcon className="size-3.5" />
+                <span>
+                  Modo organização ativo — arraste pelo ícone e pressione Esc
+                  para sair
+                </span>
+              </div>
+            )}
             <div
               className={[
                 'w-full rounded-md px-2 py-1.5 text-sm transition',
@@ -423,7 +467,11 @@ export function DocumentSidebar({
               <div className="flex-1 flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => onSelect(null)}
+                  onClick={() => {
+                    setDragEnabledId(null);
+                    cancelEdit();
+                    onSelect(null);
+                  }}
                   className="flex items-center gap-2 truncate cursor-pointer"
                 >
                   <BookOpenCheckIcon className="size-4 opacity-70" />
@@ -458,20 +506,53 @@ export function DocumentSidebar({
               )}
             </div>
 
-            <Tree
-              nodes={nodes}
-              selectedId={selectedId}
-              onSelect={onSelect}
-              openMap={openMap}
-              toggleOpen={toggleOpen}
-              onAddChild={handleOpenAdd}
-              canAdd={!!canManageCategory}
-            />
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragOver={handleDragOver}
+              onDragStart={handleDragStart}
+              onDragEnd={handleDragEnd}
+              onDragCancel={handleDragCancel}
+            >
+              <div
+                ref={setRootDropRef}
+                className={
+                  isOverRoot
+                    ? 'rounded-md ring-1 ring-primary/40 bg-primary/5'
+                    : undefined
+                }
+              >
+                <DocumentSidebarTree
+                  nodes={treeNodes}
+                  selectedId={selectedId}
+                  onSelect={(id) => {
+                    setDragEnabledId(null);
+                    cancelEdit();
+                    onSelect(id);
+                  }}
+                  openMap={openMap}
+                  toggleOpen={toggleOpen}
+                  onAddChild={handleOpenAdd}
+                  canAdd={!!canManageCategory}
+                  editingNodeId={editingNodeId}
+                  editingLabel={editingLabel}
+                  onEditLabelChange={setEditingLabel}
+                  onStartEdit={startEdit}
+                  onSaveEdit={saveEdit}
+                  onCancelEdit={cancelEdit}
+                  dragEnabledId={dragEnabledId}
+                  dragMode={!!dragEnabledId}
+                  dragOverId={dragOverId}
+                  dragOverMode={dragOverMode}
+                  parentId={null}
+                />
+              </div>
+            </DndContext>
           </div>
         )}
       </aside>
 
-      <Dialog
+      <DocumentSidebarAddDialog
         open={addModalOpen}
         onOpenChange={(open) => {
           setAddModalOpen(open);
@@ -480,44 +561,13 @@ export function DocumentSidebar({
             setAddParentId(null);
           }
         }}
-      >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Nova seção</DialogTitle>
-            <DialogDescription>
-              {parentLabel
-                ? `Criar seção dentro de "${parentLabel}".`
-                : 'Criar seção na raiz.'}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-2">
-            <Input
-              value={newLabel}
-              onChange={(event) => setNewLabel(event.target.value)}
-              placeholder="Nome da seção"
-              autoFocus
-            />
-          </div>
-          <DialogFooter className="flex gap-2 sm:justify-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setAddModalOpen(false)}
-              disabled={addCategory.status === 'pending'}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="button"
-              onClick={() => handleCreateCategory()}
-              disabled={!newLabel.trim() || addCategory.status === 'pending'}
-            >
-              {addCategory.status === 'pending' && <Spinner />}
-              <span>Criar</span>
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        parentLabel={parentLabel}
+        value={newLabel}
+        onValueChange={setNewLabel}
+        onCancel={() => setAddModalOpen(false)}
+        onSubmit={handleCreateCategory}
+        isPending={addCategory.status === 'pending'}
+      />
     </div>
   );
 }
