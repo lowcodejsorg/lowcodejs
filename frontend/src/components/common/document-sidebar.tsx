@@ -1,4 +1,6 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from '@tanstack/react-router';
+import { AxiosError } from 'axios';
 import {
   BookOpenCheckIcon,
   ChevronDownIcon,
@@ -7,14 +9,30 @@ import {
   FolderTreeIcon,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
+  PlusIcon,
   SettingsIcon,
   TagIcon,
   WorkflowIcon,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { API } from '@/lib/api';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import { buildLabelMap } from '@/lib/document-helpers';
 import type { CatNode } from '@/lib/document-helpers';
 import type { IField } from '@/lib/interfaces';
 
@@ -139,6 +157,8 @@ function Tree({
   openMap,
   toggleOpen,
   level = 0,
+  onAddChild,
+  canAdd = false,
 }: {
   nodes: Array<CatNode>;
   selectedId: string | null;
@@ -146,12 +166,15 @@ function Tree({
   openMap: Record<string, boolean>;
   toggleOpen: (id: string) => void;
   level?: number;
+  onAddChild?: (id: string) => void;
+  canAdd?: boolean;
 }): React.JSX.Element {
   return (
     <div className="space-y-1">
       {nodes.map((n) => {
         const hasChildren = !!n.children?.length;
         const isOpen = hasChildren ? !!openMap[n.id] : false;
+        const showAdd = canAdd && onAddChild;
 
         return (
           <div key={n.id}>
@@ -196,6 +219,20 @@ function Tree({
               >
                 {n.label}
               </button>
+
+              {showAdd && (
+                <button
+                  type="button"
+                  className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
+                  aria-label="Adicionar sub-item"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    onAddChild(n.id);
+                  }}
+                >
+                  <PlusIcon className="size-4 opacity-70" />
+                </button>
+              )}
             </div>
 
             {hasChildren && isOpen ? (
@@ -207,6 +244,8 @@ function Tree({
                   openMap={openMap}
                   toggleOpen={toggleOpen}
                   level={level + 1}
+                  onAddChild={onAddChild}
+                  canAdd={canAdd}
                 />
               </div>
             ) : null}
@@ -240,7 +279,11 @@ export function DocumentSidebar({
     () => buildParentMap(nodes, null, new Map()),
     [nodes],
   );
+  const labelMap = useMemo(() => buildLabelMap(nodes), [nodes]);
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
+  const [addModalOpen, setAddModalOpen] = useState(false);
+  const [addParentId, setAddParentId] = useState<string | null>(null);
+  const [newLabel, setNewLabel] = useState('');
 
   const toggleOpen = (id: string): void => {
     setOpenMap((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -260,31 +303,106 @@ export function DocumentSidebar({
   }, [selectedId, parentMap]);
 
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { slug } = useParams({
     from: '/_private/tables/$slug/',
   });
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);
 
+  const canManageCategory =
+    permission.can('UPDATE_FIELD') &&
+    categoryField._id &&
+    categoryField.type === E_FIELD_TYPE.CATEGORY;
+
+  const addCategory = useMutation({
+    mutationFn: async (payload: { label: string; parentId: string | null }) => {
+      const route = `/tables/${slug}/fields/${categoryField._id}/category`;
+      const response = await API.post<{
+        node: { id: string; label: string; parentId: string | null };
+        field: IField;
+      }>(route, payload);
+      return response.data;
+    },
+    onSuccess(data) {
+      queryClient.invalidateQueries({
+        queryKey: ['/tables/'.concat(slug), slug],
+      });
+
+      toast('Seção criada', {
+        className: '!bg-green-600 !text-white !border-green-600',
+        description: 'A seção foi criada com sucesso',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
+
+      setAddModalOpen(false);
+      setNewLabel('');
+
+      router.navigate({
+        to: '/tables/$slug/row/create',
+        params: { slug },
+        search: {
+          categoryId: data.node.id,
+          categorySlug: categoryField.slug,
+        },
+      });
+    },
+    onError(error) {
+      if (error instanceof AxiosError) {
+        const errorData = error.response?.data;
+        toast('Erro ao criar seção', {
+          className: '!bg-destructive !text-white !border-destructive',
+          description: errorData?.message ?? 'Erro ao criar seção',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      }
+      console.error(error);
+    },
+  });
+
+  const handleOpenAdd = (parentId: string | null): void => {
+    if (!canManageCategory) return;
+    setAddParentId(parentId);
+    setNewLabel('');
+    setAddModalOpen(true);
+  };
+
+  const handleCreateCategory = async (): Promise<void> => {
+    if (!canManageCategory) return;
+    const label = newLabel.trim();
+    if (!label) return;
+    if (addCategory.status === 'pending') return;
+
+    await addCategory.mutateAsync({
+      label,
+      parentId: addParentId,
+    });
+  };
+
+  const parentLabel =
+    addParentId && labelMap.get(addParentId) ? labelMap.get(addParentId) : null;
+
   return (
     <div className="relative">
-      <button
-        onClick={onToggle}
-        className="p-2 rounded cursor-pointer absolute top-2 right-1"
-      >
-        {isOpen ? (
-          <PanelLeftCloseIcon className="size-5" />
-        ) : (
-          <PanelLeftOpenIcon className="size-5" />
-        )}
-      </button>
       <aside
         className={[
-          'fixed md:static left-0 top-0 bottom-0 z-40 bg-background border-r h-full',
+          'fixed left-0 top-0 bottom-0 z-40 bg-background border-r h-svh flex flex-col relative md:sticky md:top-0 md:h-full md:inset-auto md:z-0',
           'transition-all duration-300',
           isOpen ? 'w-72' : 'w-10',
         ].join(' ')}
       >
+        <button
+          onClick={onToggle}
+          className="p-2 rounded cursor-pointer absolute top-2 right-1"
+        >
+          {isOpen ? (
+            <PanelLeftCloseIcon className="size-5" />
+          ) : (
+            <PanelLeftOpenIcon className="size-5" />
+          )}
+        </button>
         {isOpen && (
           <div className="p-3 border-b flex items-center justify-between">
             <div className="text-sm font-medium">{title}</div>
@@ -292,40 +410,53 @@ export function DocumentSidebar({
         )}
 
         {isOpen && (
-          <div className="p-2 space-y-2 overflow-auto h-full relative">
-            <button
-              type="button"
-              onClick={() => onSelect(null)}
+          <div className="p-2 space-y-2 overflow-auto flex-1 min-h-0 relative">
+            <div
               className={[
-                'w-full text-left rounded-md px-2 py-1.5 text-sm transition',
-                'flex items-center gap-2 cursor-pointer',
+                'w-full rounded-md px-2 py-1.5 text-sm transition',
+                'flex items-center gap-2',
                 selectedId === null
                   ? 'bg-muted font-medium'
                   : 'hover:bg-muted/60',
               ].join(' ')}
             >
-              <BookOpenCheckIcon className="size-4 opacity-70" />
-              <span>Todas</span>
-            </button>
-
-            {/* Editar categoria */}
-            {permission.can('UPDATE_FIELD') && (
-              <div className="flex flex-row justify-end absolute top-3 right-4 z-10">
+              <div className="flex-1 flex items-center gap-2">
                 <button
                   type="button"
-                  className="p-0 cursor-pointer bg-muted rounded-md p-1 hover:bg-muted/60"
-                  aria-label="Editar categoria"
-                  onClick={() => {
-                    router.navigate({
-                      to: '/tables/$slug/field/$fieldId',
-                      params: { slug, fieldId: categoryField._id },
-                    });
-                  }}
+                  onClick={() => onSelect(null)}
+                  className="flex items-center gap-2 truncate cursor-pointer"
                 >
-                  <SettingsIcon className="size-4" />
+                  <BookOpenCheckIcon className="size-4 opacity-70" />
+                  <span>Todas</span>
                 </button>
+                {permission.can('UPDATE_FIELD') && (
+                  <button
+                    type="button"
+                    className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
+                    aria-label="Editar categoria"
+                    onClick={() => {
+                      router.navigate({
+                        to: '/tables/$slug/field/$fieldId',
+                        params: { slug, fieldId: categoryField._id },
+                      });
+                    }}
+                  >
+                    <SettingsIcon className="size-4 opacity-70" />
+                  </button>
+                )}
               </div>
-            )}
+
+              {canManageCategory && (
+                <button
+                  type="button"
+                  className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
+                  aria-label="Adicionar sessão na raiz"
+                  onClick={() => handleOpenAdd(null)}
+                >
+                  <PlusIcon className="size-4 opacity-70" />
+                </button>
+              )}
+            </div>
 
             <Tree
               nodes={nodes}
@@ -333,10 +464,60 @@ export function DocumentSidebar({
               onSelect={onSelect}
               openMap={openMap}
               toggleOpen={toggleOpen}
+              onAddChild={handleOpenAdd}
+              canAdd={!!canManageCategory}
             />
           </div>
         )}
       </aside>
+
+      <Dialog
+        open={addModalOpen}
+        onOpenChange={(open) => {
+          setAddModalOpen(open);
+          if (!open) {
+            setNewLabel('');
+            setAddParentId(null);
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Nova seção</DialogTitle>
+            <DialogDescription>
+              {parentLabel
+                ? `Criar seção dentro de "${parentLabel}".`
+                : 'Criar seção na raiz.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              value={newLabel}
+              onChange={(event) => setNewLabel(event.target.value)}
+              placeholder="Nome da seção"
+              autoFocus
+            />
+          </div>
+          <DialogFooter className="flex gap-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setAddModalOpen(false)}
+              disabled={addCategory.status === 'pending'}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={() => handleCreateCategory()}
+              disabled={!newLabel.trim() || addCategory.status === 'pending'}
+            >
+              {addCategory.status === 'pending' && <Spinner />}
+              <span>Criar</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

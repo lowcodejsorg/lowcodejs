@@ -173,7 +173,7 @@ export function TableDocumentView({
   }
 
   return (
-    <div className="flex flex-row min-h-[calc(100vh-64px)] gap-4 relative w-full">
+    <div className="flex flex-row h-[calc(100vh-64px)] gap-4 relative w-full overflow-hidden">
       <DocumentPrintButton onClick={handlePrint} />
 
       <DocumentSidebar
@@ -186,7 +186,7 @@ export function TableDocumentView({
         categoryField={categoryField ?? ({} as IField)}
       />
 
-      <div className="w-full">
+      <div className="w-full flex-1 min-w-0 overflow-y-auto">
         <DocumentToc
           nodes={categoryTree}
           title={categoryField?.name ?? 'Sumário'}
@@ -200,6 +200,7 @@ export function TableDocumentView({
           getLeafLabel={getLeafLabel}
           getHeadingLevel={getHeadingLevel}
           getLeafIcon={getLeafIcon}
+          categorySlug={categoryField?.slug ?? 'category'}
         />
       </div>
     </div>
