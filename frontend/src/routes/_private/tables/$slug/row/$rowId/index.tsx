@@ -101,11 +101,11 @@ function RouteComponent(): React.JSX.Element {
           {isSuccess && mode === 'show' && permission.can('UPDATE_ROW') && (
             <Button
               type="button"
-              variant="outline"
+              className="px-2 cursor-pointer max-w-40 w-full"
               size="sm"
               onClick={() => setMode('edit')}
             >
-              <PencilIcon className="h-4 w-4 mr-1" />
+              <PencilIcon className="size-4 mr-1" />
               <span>Editar</span>
             </Button>
           )}
@@ -156,6 +156,18 @@ function RowUpdateContent({
   mode,
   setMode,
 }: RowUpdateContentProps): React.JSX.Element {
+  const sidebar = useSidebar();
+  const router = useRouter();
+
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    router.navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
   const activeFields = React.useMemo(() => {
     const order = table.configuration.fields.orderList;
     const orderedFields = table.fields
@@ -304,11 +316,30 @@ function RowUpdateContent({
   return (
     <>
       {mode === 'show' && (
-        <RowView
-          data={data}
-          fields={activeFields}
-          tableSlug={slug}
-        />
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <RowView
+            data={data}
+            fields={activeFields}
+            tableSlug={slug}
+          />
+        </div>
+      )}
+
+      {/* Footer - Show Mode */}
+      {mode === 'show' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              onClick={goBack}
+            >
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
       )}
 
       {mode === 'edit' && (
@@ -339,7 +370,7 @@ function RowUpdateContent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -351,7 +382,7 @@ function RowUpdateContent({
                 <Button
                   type="button"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >

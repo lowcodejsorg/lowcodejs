@@ -102,11 +102,11 @@ function RouteComponent(): React.JSX.Element {
           permission.can('UPDATE_FIELD') && (
             <Button
               type="button"
-              variant="outline"
+              className="px-2 cursor-pointer"
               size="sm"
               onClick={() => setMode('edit')}
             >
-              <PencilIcon className="h-4 w-4 mr-1" />
+              <PencilIcon className="size-4 mr-1" />
               <span>Editar</span>
             </Button>
           )}
@@ -167,6 +167,18 @@ function FieldUpdateContent({
   setMode,
   groupSlug,
 }: FieldUpdateContentProps): React.JSX.Element {
+  const sidebar = useSidebar();
+  const navigate = useNavigate();
+
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
   const { queryClient } = getContext();
 
   const isGroupContext = !!groupSlug;
@@ -507,7 +519,28 @@ function FieldUpdateContent({
 
   return (
     <>
-      {mode === 'show' && <FieldView data={data} />}
+      {mode === 'show' && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <FieldView data={data} />
+        </div>
+      )}
+
+      {/* Footer - Show Mode */}
+      {mode === 'show' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              onClick={goBack}
+            >
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {mode === 'edit' && (
         <form
@@ -538,7 +571,7 @@ function FieldUpdateContent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -550,7 +583,7 @@ function FieldUpdateContent({
                 <Button
                   type="button"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >

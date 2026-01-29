@@ -70,11 +70,11 @@ function RouteComponent(): React.JSX.Element {
           permission.can('UPDATE_TABLE') && (
             <Button
               type="button"
-              variant="outline"
+              className="px-2 cursor-pointer max-w-40 w-full"
               size="sm"
               onClick={() => setMode('edit')}
             >
-              <PencilIcon className="h-4 w-4 mr-1" />
+              <PencilIcon className="size-4 mr-1" />
               <span>Editar</span>
             </Button>
           )}
@@ -243,7 +243,7 @@ function TableUpdateContent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -255,7 +255,7 @@ function TableUpdateContent({
                 <Button
                   type="button"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >

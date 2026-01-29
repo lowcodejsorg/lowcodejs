@@ -228,7 +228,7 @@ function RouteComponent(): React.JSX.Element {
               <Button
                 type="button"
                 variant="outline"
-                className="w-full max-w-3xs"
+                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                 disabled={isSubmitting}
                 onClick={() => {
                   navigate({ to: '/menus', search: { page: 1, perPage: 50 } });
@@ -238,7 +238,7 @@ function RouteComponent(): React.JSX.Element {
               </Button>
               <Button
                 type="button"
-                className="w-full max-w-3xs"
+                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                 disabled={!canSubmit}
                 onClick={() => form.handleSubmit()}
               >

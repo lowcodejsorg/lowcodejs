@@ -72,7 +72,7 @@ function RouteComponent(): React.JSX.Element {
 
       toast('Login realizado com sucesso!', {
         className: '!bg-green-500 !text-primary-foreground !border-green-500',
-        description: 'Volte sempre!',
+        description: 'Seja bem-vindo!',
         descriptionClassName: '!text-primary-foreground',
         closeButton: true,
       });

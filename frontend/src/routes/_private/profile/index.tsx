@@ -1,11 +1,11 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
 import type { ProfileUpdateFormValues } from './-update-form';
+import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
 import { UpdateProfileFormSkeleton } from './-update-form-skeleton';
 import { ProfileView } from './-view';
 
@@ -38,11 +38,11 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' && mode === 'show' && (
           <Button
             type="button"
-            variant="outline"
+            className="px-2 cursor-pointer max-w-40 w-full"
             size="sm"
             onClick={() => setMode('edit')}
           >
-            <PencilIcon className="h-4 w-4 mr-1" />
+            <PencilIcon className="size-4 mr-1" />
             <span>Editar</span>
           </Button>
         )}
@@ -80,6 +80,15 @@ function ProfileUpdateContent({
   mode,
   setMode,
 }: ProfileUpdateContentProps): React.JSX.Element {
+  const router = useRouter();
+
+  const goBack = (): void => {
+    router.navigate({
+      to: '/',
+      replace: true,
+    });
+  };
+
   const { queryClient } = getContext();
   const authentication = useAuthenticationStore();
 
@@ -168,7 +177,28 @@ function ProfileUpdateContent({
 
   return (
     <>
-      {mode === 'show' && <ProfileView data={data} />}
+      {mode === 'show' && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <ProfileView data={data} />
+        </div>
+      )}
+
+      {/* Footer - Show Mode */}
+      {mode === 'show' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              onClick={goBack}
+            >
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {mode === 'edit' && (
         <form
@@ -200,7 +230,7 @@ function ProfileUpdateContent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -213,7 +243,7 @@ function ProfileUpdateContent({
                 <Button
                   type="button"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >

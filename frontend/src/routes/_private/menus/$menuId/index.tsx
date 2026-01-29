@@ -5,8 +5,8 @@ import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import type { MenuUpdateFormValues } from './-update-form';
+import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
 import { MenuView } from './-view';
 
@@ -67,11 +67,11 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' && mode === 'show' && (
           <Button
             type="button"
-            variant="outline"
+            className="px-2 cursor-pointer max-w-40 w-full"
             size="sm"
             onClick={() => setMode('edit')}
           >
-            <PencilIcon className="h-4 w-4 mr-1" />
+            <PencilIcon className="size-4 mr-1" />
             <span>Editar</span>
           </Button>
         )}
@@ -109,6 +109,18 @@ function MenuUpdateContent({
   mode,
   setMode,
 }: MenuUpdateContentProps): React.JSX.Element {
+  const sidebar = useSidebar();
+  const router = useRouter();
+
+  const goBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/menus',
+      replace: true,
+      search: { page: 1, perPage: 50 },
+    });
+  };
+
   const { queryClient } = getContext();
 
   function setFieldError(
@@ -302,7 +314,28 @@ function MenuUpdateContent({
 
   return (
     <>
-      {mode === 'show' && <MenuView data={data} />}
+      {mode === 'show' && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <MenuView data={data} />
+        </div>
+      )}
+
+      {/* Footer - Show Mode */}
+      {mode === 'show' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              onClick={goBack}
+            >
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {mode === 'edit' && (
         <form
@@ -332,7 +365,7 @@ function MenuUpdateContent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -344,7 +377,7 @@ function MenuUpdateContent({
                 <Button
                   type="button"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >

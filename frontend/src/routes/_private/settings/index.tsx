@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
@@ -36,11 +36,11 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' && mode === 'show' && (
           <Button
             type="button"
-            variant="outline"
+            className="px-2 cursor-pointer max-w-40 w-full"
             size="sm"
             onClick={() => setMode('edit')}
           >
-            <PencilIcon className="h-4 w-4 mr-1" />
+            <PencilIcon className="size-4 mr-1" />
             <span>Editar</span>
           </Button>
         )}
@@ -78,6 +78,15 @@ function SettingUpdateContent({
   mode,
   setMode,
 }: SettingUpdateContentProps): React.JSX.Element {
+  const router = useRouter();
+
+  const goBack = (): void => {
+    router.navigate({
+      to: '/',
+      replace: true,
+    });
+  };
+
   const { queryClient } = getContext();
 
   function setFieldError(
@@ -290,7 +299,11 @@ function SettingUpdateContent({
 
   return (
     <>
-      {mode === 'show' && <SettingView data={data} />}
+      {mode === 'show' && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <SettingView data={data} />
+        </div>
+      )}
 
       {mode === 'edit' && (
         <form
@@ -320,7 +333,7 @@ function SettingUpdateContent({
                   type="button"
                   variant="outline"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -332,7 +345,7 @@ function SettingUpdateContent({
                 <Button
                   type="button"
                   size="sm"
-                  className="disabled:cursor-not-allowed"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >
