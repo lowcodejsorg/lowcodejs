@@ -39,7 +39,11 @@ type FileFieldValue = {
   files: Array<string>;
 };
 
-type RowFieldValue = string | Array<string> | FileFieldValue;
+type RowFieldValue =
+  | string
+  | Array<string>
+  | FileFieldValue
+  | Array<{ value: string; label: string }>;
 
 export type CreateRowDefaultValue = Record<string, RowFieldValue>;
 export function buildCreateRowDefaultValues(
@@ -55,24 +59,18 @@ export function buildCreateRowDefaultValues(
       case E_FIELD_TYPE.TEXT_LONG:
         defaults[field.slug] = field.configuration.defaultValue ?? '';
         break;
-      case E_FIELD_TYPE.DROPDOWN:
-        defaults[field.slug] = [];
-        break;
       case E_FIELD_TYPE.DATE:
         defaults[field.slug] = '';
+        break;
+      case E_FIELD_TYPE.DROPDOWN:
+        defaults[field.slug] = [];
         break;
       case E_FIELD_TYPE.FILE:
         defaults[field.slug] = { storages: [], files: [] };
         break;
       case E_FIELD_TYPE.RELATIONSHIP:
-        defaults[field.slug] = [];
-        break;
       case E_FIELD_TYPE.CATEGORY:
-        defaults[field.slug] = [];
-        break;
       case E_FIELD_TYPE.FIELD_GROUP:
-        defaults[field.slug] = [];
-        break;
       case E_FIELD_TYPE.USER:
         defaults[field.slug] = [];
         break;
@@ -86,11 +84,18 @@ export function buildCreateRowDefaultValues(
 
 // Build default values from existing row data (for editing)
 
+type UpdateRowDefaultValue =
+  | RowFieldValue
+  | Array<Record<string, RowFieldValue>>;
+
+// Valor de UM campo individual (inclui FIELD_GROUP)
+type FieldValue = RowFieldValue | Array<Record<string, RowFieldValue>> | null;
+
 export function buildUpdateRowDefaultValues(
   data: IRow,
   fields: Array<IField>,
-): Record<string, any> {
-  const defaults: Record<string, any> = {};
+): Record<string, UpdateRowDefaultValue> {
+  const defaults: Record<string, UpdateRowDefaultValue> = {};
 
   for (const field of fields) {
     if (field.trashed) continue;
@@ -123,7 +128,7 @@ export function buildUpdateRowDefaultValues(
 
         defaults[field.slug] = {
           files: [],
-          storages: storages,
+          storages: storages.flatMap((s) => s._id),
         };
         break;
       }
@@ -174,162 +179,170 @@ export function buildUpdateRowDefaultValues(
   return defaults;
 }
 
+type RowBasePayload = string | null | Array<string>;
+
+type RowPayload =
+  | string
+  | null
+  | Array<string>
+  | Array<Record<string, RowBasePayload>>;
+
 // Build payload for row create/update API
 export function buildRowPayload(
-  values: Record<string, any>,
+  values: Record<string, FieldValue>,
   fields: Array<IField>,
-): Record<string, any> {
-  const payload: Record<string, any> = {};
+): Record<string, RowPayload> {
+  const payload: Record<string, RowPayload> = {};
 
   for (const field of fields) {
     if (field.trashed) continue;
-
-    const isMultiple = field.configuration.multiple;
     const value = values[field.slug];
-
-    switch (field.type) {
-      case E_FIELD_TYPE.TEXT_SHORT:
-      case E_FIELD_TYPE.TEXT_LONG:
-        if (
-          (value === '' || value === null) &&
-          field.configuration.defaultValue !== null
-        ) {
-          payload[field.slug] = field.configuration.defaultValue;
-        }
-
-        if (value !== '' && value !== null) {
-          payload[field.slug] = value;
-        }
-
-        if (value === '' || field.configuration.defaultValue === null) {
-          payload[field.slug] = null;
-        }
-
-        break;
-      case E_FIELD_TYPE.DROPDOWN: {
-        const options = Array.from<IDropdown>(value);
-
-        const hasItem = options.length > 0;
-
-        if (!isMultiple && hasItem) {
-          const [option] = options;
-          payload[field.slug] = [option];
-        }
-
-        if (isMultiple && hasItem) payload[field.slug] = options;
-
-        if (!hasItem) payload[field.slug] = [];
-
-        break;
-      }
-      case E_FIELD_TYPE.DATE:
-        if (value !== '' && value !== null) {
-          payload[field.slug] = value;
-        }
-
-        if (value === '' || value === null) {
-          payload[field.slug] = null;
-        }
-
-        break;
-      case E_FIELD_TYPE.FILE: {
-        const {
-          storages,
-        }: {
-          storages: Array<IStorage>;
-        } = value;
-
-        const hasItem = storages.length > 0;
-
-        if (!isMultiple && hasItem) {
-          const [storage] = storages;
-          payload[field.slug] = [storage._id];
-        }
-
-        if (isMultiple && hasItem) {
-          payload[field.slug] = storages.flatMap((s) => s._id);
-        }
-
-        if (!hasItem) payload[field.slug] = [];
-
-        break;
-      }
-      case E_FIELD_TYPE.RELATIONSHIP: {
-        const options = Array.from<SearchableOption>(value);
-        const hasItem = options.length > 0;
-
-        if (!isMultiple && hasItem) {
-          const [option] = options;
-          payload[field.slug] = [option.value];
-        }
-
-        if (isMultiple && hasItem) {
-          payload[field.slug] = options.flatMap((option) => option.value);
-        }
-
-        if (!hasItem) payload[field.slug] = [];
-
-        break;
-      }
-      case E_FIELD_TYPE.CATEGORY: {
-        const options = Array.from<ICategory>(value);
-
-        const hasItem = options.length > 0;
-
-        if (!isMultiple && hasItem) {
-          const [option] = options;
-          payload[field.slug] = [option];
-        }
-
-        if (isMultiple && hasItem) {
-          payload[field.slug] = options;
-        }
-
-        if (!hasItem) payload[field.slug] = [];
-
-        break;
-      }
-      case E_FIELD_TYPE.USER: {
-        const options = Array.from<SearchableOption>(value);
-        const hasItem = options.length > 0;
-
-        if (!isMultiple && hasItem) {
-          const [option] = options;
-          payload[field.slug] = [option.value];
-        }
-
-        if (isMultiple && hasItem) {
-          payload[field.slug] = options.flatMap((option) => option.value);
-        }
-
-        if (!hasItem) payload[field.slug] = [];
-
-        break;
-      }
-      case E_FIELD_TYPE.FIELD_GROUP: {
-        const options = Array.from<Record<string, any>>(value);
-
-        const hasItem = options.length > 0;
-
-        if (!isMultiple && hasItem) {
-          const [option] = options;
-          payload[field.slug] = [option];
-        }
-
-        if (isMultiple && hasItem) {
-          payload[field.slug] = options;
-        }
-
-        if (!hasItem) payload[field.slug] = [];
-
-        break;
-      }
-      default:
-        payload[field.slug] = value ?? null;
-    }
+    payload[field.slug] = mountRowValue(value, field);
   }
 
   return payload;
+}
+
+export function mountRowValue(value: FieldValue, field: IField): RowPayload {
+  const isMultiple = field.configuration.multiple;
+
+  switch (field.type) {
+    case E_FIELD_TYPE.TEXT_SHORT:
+    case E_FIELD_TYPE.TEXT_LONG:
+      if (value === '' && field.configuration.defaultValue !== null)
+        return field.configuration.defaultValue;
+
+      if (value !== '' && value !== null) {
+        return value.toString();
+      }
+
+      if (value === '' || field.configuration.defaultValue === null) {
+        return null;
+      }
+
+      return null;
+    case E_FIELD_TYPE.DROPDOWN: {
+      if (value === null) {
+        return [];
+      }
+
+      const options = Array.from<string>(value as Array<string>);
+
+      const hasItem = options.length > 0;
+
+      if (!isMultiple && hasItem) {
+        const [option] = options;
+        return [option];
+      }
+
+      if (isMultiple && hasItem) return options;
+
+      return [];
+    }
+    case E_FIELD_TYPE.DATE: {
+      if (value !== '' && value !== null) {
+        return value as string;
+      }
+
+      return null;
+    }
+    case E_FIELD_TYPE.FILE: {
+      if (value === null) return [];
+
+      const { storages } = value as unknown as { storages: Array<IStorage> };
+
+      const hasItem = storages.length > 0;
+
+      if (!isMultiple && hasItem) {
+        const [storage] = storages;
+        return [storage._id];
+      }
+
+      if (isMultiple && hasItem) {
+        return storages.flatMap((s) => s._id);
+      }
+
+      return [];
+    }
+    case E_FIELD_TYPE.RELATIONSHIP: {
+      if (value === null) return [];
+
+      const options = Array.from<SearchableOption>(
+        value as Array<SearchableOption>,
+      );
+      const hasItem = options.length > 0;
+
+      if (!isMultiple && hasItem) {
+        const [option] = options;
+        return [option.value];
+      }
+
+      if (isMultiple && hasItem) {
+        return options.flatMap((option) => option.value);
+      }
+
+      return [];
+    }
+    case E_FIELD_TYPE.CATEGORY: {
+      if (value === null) return [];
+
+      const options = Array.from<string>(value as Array<string>);
+
+      const hasItem = options.length > 0;
+
+      if (!isMultiple && hasItem) {
+        const [option] = options;
+        return [option];
+      }
+
+      if (isMultiple && hasItem) {
+        return options;
+      }
+
+      return [];
+    }
+    case E_FIELD_TYPE.USER: {
+      if (value === null) return [];
+
+      const options = Array.from<SearchableOption>(
+        value as Array<SearchableOption>,
+      );
+      const hasItem = options.length > 0;
+
+      if (!isMultiple && hasItem) {
+        const [option] = options;
+        return [option.value];
+      }
+
+      if (isMultiple && hasItem) {
+        return options.flatMap((option) => option.value);
+      }
+
+      return [];
+    }
+    case E_FIELD_TYPE.FIELD_GROUP: {
+      if (value === null) return [];
+
+      const options = Array.from<Record<string, RowBasePayload>>(
+        value as Array<Record<string, RowBasePayload>>,
+      );
+
+      const hasItem = options.length > 0;
+
+      if (!isMultiple && hasItem) {
+        const [option] = options;
+        return [option];
+      }
+
+      if (isMultiple && hasItem) {
+        return options;
+      }
+
+      return [];
+    }
+    default:
+      return value !== null ? (value as string) : null;
+  }
 }
 
 export function buildFieldValidator(
