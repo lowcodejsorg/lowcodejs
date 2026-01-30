@@ -1,5 +1,3 @@
-'use client';
-
 import { Combobox as ComboboxPrimitive } from '@base-ui/react/combobox';
 import type { DragEndEvent } from '@dnd-kit/core';
 import {
@@ -696,25 +694,25 @@ function useComboboxAnchor(): React.RefObject<HTMLDivElement | null> {
 
 export {
   Combobox,
-  ComboboxInput,
-  ComboboxContent,
-  ComboboxList,
-  ComboboxItem,
-  ComboboxGroup,
-  ComboboxLabel,
-  ComboboxCollection,
-  ComboboxEmpty,
-  ComboboxSeparator,
-  ComboboxChips,
   ComboboxChip,
+  ComboboxChips,
   ComboboxChipsInput,
-  ComboboxSortableChips,
+  ComboboxClear,
+  ComboboxCollection,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxGroup,
+  ComboboxIcon,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxLabel,
+  ComboboxList,
+  ComboboxSeparator,
   ComboboxSortableChip,
+  ComboboxSortableChips,
+  ComboboxStatus,
   ComboboxTrigger,
   ComboboxValue,
-  ComboboxClear,
-  ComboboxIcon,
-  ComboboxStatus,
   useComboboxAnchor,
 };
 

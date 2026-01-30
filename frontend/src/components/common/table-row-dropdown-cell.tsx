@@ -1,7 +1,7 @@
 import { TableRowBadgeList } from './table-row-badge-list';
 
 import type { IField, IRow } from '@/lib/interfaces';
-import { getDropdownItem } from '@/lib/utils';
+import { getDropdownItem } from '@/lib/table';
 
 interface TableRowDropdownCellProps {
   row: IRow;

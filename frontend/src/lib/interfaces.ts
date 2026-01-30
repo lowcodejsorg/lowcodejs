@@ -36,6 +36,11 @@ export type Merge<T, U> = {
 
 export type ValueOf<T> = T[keyof T];
 
+export type SearchableOption = {
+  value: string;
+  label: string;
+};
+
 export type Meta = {
   total: number;
   page: number;

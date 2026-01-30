@@ -3,11 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import {
-  E_FIELD_TYPE,
-  type IField,
-  type IRow,
-} from '@application/core/entity.core';
+import { E_FIELD_TYPE, type IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -35,7 +31,7 @@ export default class TableRowCreateUseCase {
         );
 
       // Processa campos FIELD_GROUP como embedded documents
-      const groupFields = (table.fields as IField[])?.filter(
+      const groupFields = table.fields?.filter(
         (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
       );
 
@@ -59,7 +55,7 @@ export default class TableRowCreateUseCase {
 
       const build = await buildTable(table);
 
-      const populate = await buildPopulate(table.fields as IField[]);
+      const populate = await buildPopulate(table.fields);
 
       const created = await build.create({
         ...payload,

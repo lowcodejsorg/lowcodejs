@@ -47,7 +47,7 @@ export function TableRowCategoryField({
   field,
   disabled,
 }: TableRowCategoryFieldProps): React.JSX.Element {
-  const formField = useFieldContext<string | Array<string>>();
+  const formField = useFieldContext<Array<string>>();
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
@@ -56,25 +56,16 @@ export function TableRowCategoryField({
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedIds = React.useMemo(() => {
-    if (field.configuration.multiple) {
-      const values = formField.state.value as Array<string> | null;
-      return values ?? [];
-    }
-    return formField.state.value ? [formField.state.value as string] : [];
-  }, [formField.state.value, field.configuration.multiple]);
+    return formField.state.value;
+  }, [formField.state.value]);
 
   const selectedLabel = React.useMemo(() => {
-    if (field.configuration.multiple) {
-      const values = (formField.state.value as Array<string> | null) ?? [];
-      const labels = values
-        .map((id) => findCategoryLabel(id, categories))
-        .filter(Boolean);
-      return labels.length > 0 ? labels.join(', ') : null;
-    }
-    return formField.state.value
-      ? findCategoryLabel(formField.state.value as string, categories)
-      : null;
-  }, [formField.state.value, categories, field.configuration.multiple]);
+    const values = formField.state.value;
+    const labels = values
+      .map((id) => findCategoryLabel(id, categories))
+      .filter(Boolean);
+    return labels.length > 0 ? labels.join(', ') : null;
+  }, [formField.state.value, categories]);
 
   return (
     <Field data-invalid={isInvalid}>
@@ -103,10 +94,14 @@ export function TableRowCategoryField({
             data={treeData}
             selectedIds={selectedIds}
             onSelectionChange={(ids) => {
+              console.log(ids);
+              if (!field.configuration.multiple) {
+                const [id] = ids;
+                formField.handleChange([id]);
+              }
+
               if (field.configuration.multiple) {
                 formField.handleChange(ids);
-              } else {
-                formField.handleChange(ids[0] ?? '');
               }
             }}
             multiSelect={field.configuration.multiple}

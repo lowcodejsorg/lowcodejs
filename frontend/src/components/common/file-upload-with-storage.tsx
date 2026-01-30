@@ -24,6 +24,7 @@ interface FileUploadWithStorageProps {
   value: Array<File>;
   onValueChange: (files: Array<File>) => void;
   onStorageChange: (storages: Array<IStorage>) => void;
+  initialStorages?: Array<IStorage>;
   accept?: string;
   maxFiles?: number;
   maxSize?: number;
@@ -37,6 +38,7 @@ export function FileUploadWithStorage({
   value,
   onValueChange,
   onStorageChange,
+  initialStorages = [],
   accept,
   maxFiles = 1,
   maxSize = 5 * 1024 * 1024,
@@ -46,8 +48,34 @@ export function FileUploadWithStorage({
   shouldDeleteFromStorage = true,
 }: FileUploadWithStorageProps): React.JSX.Element {
   const [storageFiles, setStorageFiles] = React.useState<Map<File, IStorage>>(
-    new Map(),
+    () => {
+      const map = new Map<File, IStorage>();
+      // Inicializa o map com os storages existentes
+      // Os arquivos serão mapeados quando value mudar
+      return map;
+    },
   );
+
+  // Mapeia Files com seus Storages iniciais (por nome/tipo)
+  React.useEffect(() => {
+    if (initialStorages.length === 0 || value.length === 0) return;
+    if (storageFiles.size > 0) return;
+
+    const newMap = new Map<File, IStorage>();
+
+    for (const file of value) {
+      const matchingStorage = initialStorages.find(
+        (s) => s.originalName === file.name && s.type === file.type,
+      );
+      if (matchingStorage) {
+        newMap.set(file, matchingStorage);
+      }
+    }
+
+    if (newMap.size > 0) {
+      setStorageFiles(newMap);
+    }
+  }, [value, initialStorages]);
 
   const upload = useMutation({
     mutationFn: async function (files: Array<File>) {

@@ -33,7 +33,7 @@ export function TableRowDropdownField({
   field,
   disabled,
 }: TableRowDropdownFieldProps): React.JSX.Element {
-  const formField = useFieldContext<string | Array<string> | null>();
+  const formField = useFieldContext<Array<string>>();
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const isRequired = field.configuration.required;
@@ -49,10 +49,7 @@ export function TableRowDropdownField({
   }, [field.configuration.dropdown]);
 
   const selectedIds = React.useMemo(() => {
-    const v = formField.state.value;
-    if (Array.isArray(v)) return v;
-    if (typeof v === 'string' && v) return [v];
-    return [];
+    return formField.state.value;
   }, [formField.state.value]);
 
   const selectedOptions = React.useMemo(() => {
@@ -62,13 +59,13 @@ export function TableRowDropdownField({
   const handleValueChange = (
     value: DropdownOption | Array<DropdownOption> | null,
   ): void => {
-    if (isMultiple) {
-      const values = Array.isArray(value) ? value : [];
-      formField.handleChange(values.map((v) => v.value));
-    } else {
-      const v = !Array.isArray(value) && value ? value.value : null;
-      formField.handleChange(v);
+    if (!value) {
+      formField.handleChange([]);
+      return;
     }
+
+    const options = Array.isArray(value) ? value : [value];
+    formField.handleChange(options.map((v) => v.value));
   };
 
   if (isMultiple) {
@@ -141,7 +138,7 @@ export function TableRowDropdownField({
 
       <Combobox
         items={items}
-        value={selectedOptions[0] ?? null}
+        value={selectedOptions[0] ?? []}
         onValueChange={handleValueChange}
         itemToStringLabel={(opt: DropdownOption) => opt.label}
         disabled={disabled}
