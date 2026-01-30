@@ -241,9 +241,23 @@ export type ISetting = {
   EMAIL_PROVIDER_PASSWORD: string;
 };
 
-export type IRow = Merge<Base, Record<string, any>> & {
-  creator: IUser;
-};
+// type RowResponseValue =
+//   | string
+//   | null
+//   | Array<string>
+//   | Array<IStorage>
+//   | Array<IRow>
+//   | Array<IUser>
+//   | IUser;
+// | Array<Record<string, RowResponseValue>>;
+
+export type IRow = Merge<
+  Base,
+  {
+    creator: IUser;
+    [x: string]: any;
+  }
+>;
 
 export type IAttachment = {
   filename: string;

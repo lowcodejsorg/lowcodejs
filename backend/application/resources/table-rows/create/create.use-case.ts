@@ -5,14 +5,17 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import { E_FIELD_TYPE, type IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { TableRowCreatePayload } from './create.validator';
-
 type Response = Either<HTTPException, IRow>;
 
-type Payload = TableRowCreatePayload;
+// type Payload = TableRowCreatePayload;
+
+type Payload = {
+  [x: string]: any;
+};
 
 @Service()
 export default class TableRowCreateUseCase {
@@ -29,6 +32,18 @@ export default class TableRowCreateUseCase {
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
+
+      const errors = validateRowPayload(payload, table.fields, table.groups);
+
+      if (errors) {
+        return left(
+          HTTPException.BadRequest(
+            'Invalid request',
+            'INVALID_PAYLOAD_FORMAT',
+            errors,
+          ),
+        );
+      }
 
       // Processa campos FIELD_GROUP como embedded documents
       const groupFields = table.fields?.filter(

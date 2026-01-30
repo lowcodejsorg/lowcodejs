@@ -5,17 +5,20 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import { E_FIELD_TYPE, type IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { validateRowPayload } from '@application/core/row-payload-validator.core';
+// import TableFieldRowValidation from '@application/core/table-field-row-validation.exception';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-
-import type { TableRowUpdatePayload } from './update.validator';
 
 type Response = Either<
   HTTPException,
   import('@application/core/entity.core').IRow
 >;
 
-type Payload = TableRowUpdatePayload;
+// type Payload = TableRowUpdatePayload;
+type Payload = {
+  [x: string]: any;
+};
 
 @Service()
 export default class TableRowUpdateUseCase {
@@ -32,6 +35,18 @@ export default class TableRowUpdateUseCase {
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
+
+      const errors = validateRowPayload(payload, table.fields, table.groups);
+
+      if (errors) {
+        return left(
+          HTTPException.BadRequest(
+            'Invalid request',
+            'INVALID_PAYLOAD_FORMAT',
+            errors,
+          ),
+        );
+      }
 
       const build = await buildTable(table);
 

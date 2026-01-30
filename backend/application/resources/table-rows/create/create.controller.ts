@@ -6,10 +6,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableRowCreateSchema } from './create.schema';
 import TableRowCreateUseCase from './create.use-case';
-import {
-  TableRowCreateBodyValidator,
-  TableRowCreateParamsValidator,
-} from './create.validator';
+import { TableRowCreateParamsValidator } from './create.validator';
 
 @Controller({
   route: 'tables',
@@ -37,11 +34,10 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const payload = TableRowCreateBodyValidator.parse(request.body);
     const params = TableRowCreateParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
-      ...payload,
+      ...(request.body as Record<string, any>),
       ...params,
       ...(request?.user?.sub && { creator: request.user.sub }),
     });
@@ -53,6 +49,7 @@ export default class {
         message: error.message,
         code: error.code,
         cause: error.cause,
+        errors: error.errors,
       });
     }
 

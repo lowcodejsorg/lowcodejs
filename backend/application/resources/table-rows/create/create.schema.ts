@@ -106,18 +106,34 @@ export const TableRowCreateSchema: FastifySchema = {
       properties: {
         message: {
           type: 'string',
-          enum: [
-            'Validation failed',
-            'Required field missing',
-            'Invalid field type',
-          ],
+          enum: ['Invalid request'],
         },
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PARAMETERS', 'VALIDATION_ERROR'],
+          enum: ['INVALID_PAYLOAD_FORMAT'],
+        },
+        errors: {
+          type: 'object',
+          description:
+            'Objeto com erros de validação por campo. A chave é o slug do campo e o valor é a mensagem de erro.',
+          additionalProperties: { type: 'string' },
         },
       },
+      examples: [
+        {
+          message: 'Invalid request',
+          code: 400,
+          cause: 'INVALID_PAYLOAD_FORMAT',
+          errors: {
+            dropdown: 'Todos os itens devem ser textos',
+            arquivo: 'Todos os itens devem ser IDs válidos',
+            relacionamento: 'Todos os itens devem ser IDs válidos',
+            categoria: 'Todos os itens devem ser textos',
+            usuario: 'Todos os itens devem ser IDs válidos',
+          },
+        },
+      ],
     },
     401: {
       description: 'Unauthorized - Authentication required',

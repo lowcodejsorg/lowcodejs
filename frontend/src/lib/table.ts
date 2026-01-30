@@ -35,8 +35,8 @@ export function getCategoryItem(
 // Build default values for creating new rows
 
 type FileFieldValue = {
-  storages: Array<string>;
-  files: Array<string>;
+  storages: Array<IStorage>;
+  files: Array<File>;
 };
 
 type RowFieldValue =
@@ -45,11 +45,17 @@ type RowFieldValue =
   | FileFieldValue
   | Array<{ value: string; label: string }>;
 
-export type CreateRowDefaultValue = Record<string, RowFieldValue>;
+export type CreateRowDefaultValue = Record<
+  string,
+  RowFieldValue | Array<Record<string, RowFieldValue>>
+>;
 export function buildCreateRowDefaultValues(
   fields: Array<IField>,
 ): CreateRowDefaultValue {
-  const defaults: Record<string, RowFieldValue> = {};
+  const defaults: Record<
+    string,
+    RowFieldValue | Array<Record<string, RowFieldValue>>
+  > = {};
 
   for (const field of fields) {
     if (field.trashed) continue;
@@ -70,9 +76,11 @@ export function buildCreateRowDefaultValues(
         break;
       case E_FIELD_TYPE.RELATIONSHIP:
       case E_FIELD_TYPE.CATEGORY:
-      case E_FIELD_TYPE.FIELD_GROUP:
       case E_FIELD_TYPE.USER:
         defaults[field.slug] = [];
+        break;
+      case E_FIELD_TYPE.FIELD_GROUP:
+        defaults[field.slug] = [{}];
         break;
       default:
         defaults[field.slug] = '';
@@ -105,15 +113,8 @@ export function buildUpdateRowDefaultValues(
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
       case E_FIELD_TYPE.TEXT_LONG:
-        if (
-          (value === '' || value === null) &&
-          field.configuration.defaultValue !== null
-        ) {
-          defaults[field.slug] = field.configuration.defaultValue;
-        }
-
-        if (value) defaults[field.slug] = value ?? '';
-
+        if (value) defaults[field.slug] = value;
+        else defaults[field.slug] = field.configuration.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DROPDOWN: {
         const options = Array.from<string>(value);
@@ -128,7 +129,7 @@ export function buildUpdateRowDefaultValues(
 
         defaults[field.slug] = {
           files: [],
-          storages: storages.flatMap((s) => s._id),
+          storages,
         };
         break;
       }
@@ -157,19 +158,10 @@ export function buildUpdateRowDefaultValues(
         break;
       }
       case E_FIELD_TYPE.FIELD_GROUP:
-        // Ensure it's always an array
-        if (Array.isArray(value) && value.length > 0) {
+        if (Array.isArray(value) && value.length > 0)
           defaults[field.slug] = value;
-        } else if (
-          value &&
-          typeof value === 'object' &&
-          !Array.isArray(value)
-        ) {
-          // Convert old object format to array format
-          defaults[field.slug] = [value];
-        } else {
-          defaults[field.slug] = [{}];
-        }
+        else if (value && !Array.isArray(value)) defaults[field.slug] = [value];
+        else defaults[field.slug] = [{}];
         break;
       default:
         defaults[field.slug] = value ?? '';
