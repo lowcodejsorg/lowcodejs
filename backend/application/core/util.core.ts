@@ -340,6 +340,7 @@ export function getRelationship(fields: IField[] = []): IField[] {
 
 export async function buildPopulate(
   fields?: IField[],
+  groups?: IGroupConfiguration[],
 ): Promise<{ path: string; model?: string; select?: string }[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
@@ -403,7 +404,10 @@ export async function buildPopulate(
         const relationshipFields = getRelationship(
           relationshipTable?.fields as IField[],
         );
-        const relationshipPopulate = await buildPopulate(relationshipFields);
+        const relationshipPopulate = await buildPopulate(
+          relationshipFields,
+          relationshipTable?.groups as IGroupConfiguration[],
+        );
 
         populate.push({
           path: field.slug,
@@ -415,6 +419,26 @@ export async function buildPopulate(
     }
 
     // FIELD_GROUP não precisa de populate - dados são embedded
+  }
+
+  if (groups) {
+    for (const field of fields ?? []) {
+      if (field.type !== E_FIELD_TYPE.FIELD_GROUP) continue;
+
+      const groupSlug = field?.configuration?.group?.slug;
+      const group = groups.find((g) => g.slug === groupSlug);
+      if (!group) continue;
+
+      for (const groupField of group.fields || []) {
+        if (groupField.type === E_FIELD_TYPE.USER) {
+          populate.push({
+            path: `${field.slug}.${groupField.slug}`,
+            model: 'User',
+            select: 'name email _id',
+          });
+        }
+      }
+    }
   }
 
   return [

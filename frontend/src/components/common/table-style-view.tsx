@@ -116,6 +116,12 @@ export function TableStyleViewDropdown({
     table.status === 'success' &&
     table.data.fields.some((f) => !f.trashed && f.type === E_FIELD_TYPE.FILE);
 
+  const existFieldDropdown =
+    table.status === 'success' &&
+    table.data.fields.some(
+      (f) => !f.trashed && f.type === E_FIELD_TYPE.DROPDOWN,
+    );
+
   const canShowDocument =
     table.status === 'success' && existFieldCategory && existFieldTextLong;
 
@@ -123,6 +129,7 @@ export function TableStyleViewDropdown({
     existFieldFile && existFieldTextLong && existFieldTextShort;
   const canShowMosaic =
     existFieldFile && existFieldTextLong && existFieldTextShort;
+  const canShowKanban = existFieldDropdown;
 
   return (
     <DropdownMenu
@@ -152,6 +159,10 @@ export function TableStyleViewDropdown({
           {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.DOCUMENT && (
               <ListTreeIcon className="size-4" />
+            )}
+          {table.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.KANBAN && (
+              <LayoutDashboard className="size-4" />
             )}
 
           <span>Exibição</span>
@@ -208,6 +219,17 @@ export function TableStyleViewDropdown({
               >
                 <LayoutDashboard className="size-4" />
                 <span>Mosaico</span>
+              </DropdownMenuRadioItem>
+            )}
+
+            {canShowKanban && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value="kanban"
+                onClick={() => handleStyleChange(E_TABLE_STYLE.KANBAN)}
+              >
+                <LayoutDashboard className="size-4" />
+                <span>Kanban</span>
               </DropdownMenuRadioItem>
             )}
           </DropdownMenuRadioGroup>
