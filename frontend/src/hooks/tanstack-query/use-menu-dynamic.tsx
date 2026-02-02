@@ -155,11 +155,11 @@ function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
     }
   }
 
-  // Retorna um único grupo "Menu" com todos os items
+  // Retorna um único grupo sem título (título vazio = sem rótulo)
   return items.length > 0
     ? [
         {
-          title: 'Menu',
+          title: '',
           items: items,
         },
       ]
@@ -202,7 +202,7 @@ export function useMenuDynamic(role: string): {
   const combinedMenu = useMemo(() => {
     // Se está carregando, adiciona um grupo especial com flag isLoading
     const dynamicPart = isLoading
-      ? [{ title: 'Menu', items: [], isLoading: true }]
+      ? [{ title: '', items: [], isLoading: true }]
       : dynamicMenuRoute;
 
     return [...staticMenusBefore, ...dynamicPart, ...staticMenusAfter];

@@ -33,7 +33,7 @@ import { Route as PrivateGroupsCreateIndexRouteImport } from './routes/_private/
 import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private/groups/$groupId/index';
 import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods';
 import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index';
-import { Route as PrivateTablesSlugFieldOrderRouteImport } from './routes/_private/tables/$slug/field/order';
+import { Route as PrivateTablesSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/field/management';
 import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index';
 import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index';
 import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index';
@@ -165,10 +165,10 @@ const PrivateTablesSlugDetailIndexRoute =
     path: '/tables/$slug/detail/',
     getParentRoute: () => PrivateLayoutRoute,
   } as any);
-const PrivateTablesSlugFieldOrderRoute =
-  PrivateTablesSlugFieldOrderRouteImport.update({
-    id: '/tables/$slug/field/order',
-    path: '/tables/$slug/field/order',
+const PrivateTablesSlugFieldManagementRoute =
+  PrivateTablesSlugFieldManagementRouteImport.update({
+    id: '/tables/$slug/field/management',
+    path: '/tables/$slug/field/management',
     getParentRoute: () => PrivateLayoutRoute,
   } as any);
 const PrivateTablesSlugRowCreateIndexRoute =
@@ -219,7 +219,7 @@ export interface FileRoutesByFullPath {
   '/tables/new': typeof PrivateTablesNewIndexRoute;
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute;
   '/users/create': typeof PrivateUsersCreateIndexRoute;
-  '/tables/$slug/field/order': typeof PrivateTablesSlugFieldOrderRoute;
+  '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute;
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute;
   '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
   '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute;
@@ -249,7 +249,7 @@ export interface FileRoutesByTo {
   '/tables/new': typeof PrivateTablesNewIndexRoute;
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute;
   '/users/create': typeof PrivateUsersCreateIndexRoute;
-  '/tables/$slug/field/order': typeof PrivateTablesSlugFieldOrderRoute;
+  '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute;
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute;
   '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
   '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute;
@@ -281,7 +281,7 @@ export interface FileRoutesById {
   '/_private/tables/new/': typeof PrivateTablesNewIndexRoute;
   '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute;
   '/_private/users/create/': typeof PrivateUsersCreateIndexRoute;
-  '/_private/tables/$slug/field/order': typeof PrivateTablesSlugFieldOrderRoute;
+  '/_private/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute;
   '/_private/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute;
   '/_private/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
   '/_private/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute;
@@ -313,7 +313,7 @@ export interface FileRouteTypes {
     | '/tables/new'
     | '/users/$userId'
     | '/users/create'
-    | '/tables/$slug/field/order'
+    | '/tables/$slug/field/management'
     | '/tables/$slug/detail'
     | '/tables/$slug/field/$fieldId'
     | '/tables/$slug/field/create'
@@ -343,7 +343,7 @@ export interface FileRouteTypes {
     | '/tables/new'
     | '/users/$userId'
     | '/users/create'
-    | '/tables/$slug/field/order'
+    | '/tables/$slug/field/management'
     | '/tables/$slug/detail'
     | '/tables/$slug/field/$fieldId'
     | '/tables/$slug/field/create'
@@ -374,7 +374,7 @@ export interface FileRouteTypes {
     | '/_private/tables/new/'
     | '/_private/users/$userId/'
     | '/_private/users/create/'
-    | '/_private/tables/$slug/field/order'
+    | '/_private/tables/$slug/field/management'
     | '/_private/tables/$slug/detail/'
     | '/_private/tables/$slug/field/$fieldId/'
     | '/_private/tables/$slug/field/create/'
@@ -558,11 +558,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateTablesSlugDetailIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
-    '/_private/tables/$slug/field/order': {
-      id: '/_private/tables/$slug/field/order';
-      path: '/tables/$slug/field/order';
-      fullPath: '/tables/$slug/field/order';
-      preLoaderRoute: typeof PrivateTablesSlugFieldOrderRouteImport;
+    '/_private/tables/$slug/field/management': {
+      id: '/_private/tables/$slug/field/management';
+      path: '/tables/$slug/field/management';
+      fullPath: '/tables/$slug/field/management';
+      preLoaderRoute: typeof PrivateTablesSlugFieldManagementRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/$slug/row/create/': {
@@ -617,7 +617,7 @@ interface PrivateLayoutRouteChildren {
   PrivateTablesNewIndexRoute: typeof PrivateTablesNewIndexRoute;
   PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute;
   PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute;
-  PrivateTablesSlugFieldOrderRoute: typeof PrivateTablesSlugFieldOrderRoute;
+  PrivateTablesSlugFieldManagementRoute: typeof PrivateTablesSlugFieldManagementRoute;
   PrivateTablesSlugDetailIndexRoute: typeof PrivateTablesSlugDetailIndexRoute;
   PrivateTablesSlugFieldFieldIdIndexRoute: typeof PrivateTablesSlugFieldFieldIdIndexRoute;
   PrivateTablesSlugFieldCreateIndexRoute: typeof PrivateTablesSlugFieldCreateIndexRoute;
@@ -646,7 +646,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateTablesNewIndexRoute: PrivateTablesNewIndexRoute,
   PrivateUsersUserIdIndexRoute: PrivateUsersUserIdIndexRoute,
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
-  PrivateTablesSlugFieldOrderRoute: PrivateTablesSlugFieldOrderRoute,
+  PrivateTablesSlugFieldManagementRoute: PrivateTablesSlugFieldManagementRoute,
   PrivateTablesSlugDetailIndexRoute: PrivateTablesSlugDetailIndexRoute,
   PrivateTablesSlugFieldFieldIdIndexRoute:
     PrivateTablesSlugFieldFieldIdIndexRoute,

@@ -409,7 +409,7 @@ export const UpdateFieldFormFields = withForm({
         )}
 
         {/* Campo Filtro */}
-        {showFiltering && (
+        {/* {showFiltering && (
           <form.AppField name="configuration.filtering">
             {(field) => (
               <field.FieldBooleanSwitch
@@ -419,10 +419,10 @@ export const UpdateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
-        )}
+        )} */}
 
         {/* Campo Listagem */}
-        <form.AppField name="configuration.listing">
+        {/* <form.AppField name="configuration.listing">
           {(field) => (
             <field.FieldBooleanSwitch
               label="Exibir na listagem"
@@ -430,7 +430,7 @@ export const UpdateFieldFormFields = withForm({
               disabled={isDisabled || lockNonOptions}
             />
           )}
-        </form.AppField>
+        </form.AppField> */}
 
         {/* Campo Obrigatoriedade */}
         {showRequired && (
