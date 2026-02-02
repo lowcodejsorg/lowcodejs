@@ -221,15 +221,18 @@ export function EditorExample({
     [],
   );
 
-  const ed = useEditor({
-    textDirection: 'auto',
-    extensions,
-    immediatelyRender: false,
-    onUpdate: ({ editor: editorInstance }) => {
-      onValueChange(editorInstance);
+  const ed = useEditor(
+    {
+      textDirection: 'auto',
+      extensions,
+      immediatelyRender: false,
+      onUpdate: ({ editor: editorInstance }) => {
+        onValueChange(editorInstance);
+      },
+      content,
     },
-    content,
-  }, []);
+    [],
+  );
 
   React.useEffect(() => {
     // @ts-ignore - Exposing editor instance for debugging
