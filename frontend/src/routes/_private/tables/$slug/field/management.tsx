@@ -8,7 +8,7 @@ import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 import z from 'zod';
 
-import { FieldOrderForm, TrashedFieldsList } from './-field-order-form';
+import { FieldManagementList, TrashedFieldsList } from './-field-order-form';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
@@ -20,17 +20,21 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_TYPE } from '@/lib/constant';
 
-export const Route = createFileRoute('/_private/tables/$slug/field/order')({
-  component: RouteComponent,
-  validateSearch: z.object({
-    group: z.string().optional(),
-  }),
-});
+export const Route = createFileRoute('/_private/tables/$slug/field/management')(
+  {
+    component: RouteComponent,
+    validateSearch: z.object({
+      group: z.string().optional(),
+    }),
+  },
+);
 
 function RouteComponent(): React.JSX.Element {
-  const { slug } = useParams({ from: '/_private/tables/$slug/field/order' });
+  const { slug } = useParams({
+    from: '/_private/tables/$slug/field/management',
+  });
   const { group: groupSlug } = useSearch({
-    from: '/_private/tables/$slug/field/order',
+    from: '/_private/tables/$slug/field/management',
   });
   const sidebar = useSidebar();
   const router = useRouter();
@@ -108,12 +112,12 @@ function RouteComponent(): React.JSX.Element {
 
         {table.status === 'success' && (
           <Tabs
-            defaultValue="orderList"
+            defaultValue="listing"
             className="w-full max-w-6xl mx-auto"
           >
             <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="orderList">Lista / Grid</TabsTrigger>
-              <TabsTrigger value="orderForm">Formulário</TabsTrigger>
+              <TabsTrigger value="listing">Lista / Grid</TabsTrigger>
+              <TabsTrigger value="filtering">Filtros</TabsTrigger>
               <TabsTrigger
                 value="trashed"
                 disabled={trashedCount === 0}
@@ -122,11 +126,10 @@ function RouteComponent(): React.JSX.Element {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="orderList">
-              <FieldOrderForm
+            <TabsContent value="listing">
+              <FieldManagementList
                 table={table.data}
-                reference="orderList"
-                onSuccess={handleBack}
+                visibilityKey="listing"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined
@@ -134,11 +137,10 @@ function RouteComponent(): React.JSX.Element {
               />
             </TabsContent>
 
-            <TabsContent value="orderForm">
-              <FieldOrderForm
+            <TabsContent value="filtering">
+              <FieldManagementList
                 table={table.data}
-                reference="orderForm"
-                onSuccess={handleBack}
+                visibilityKey="filtering"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined

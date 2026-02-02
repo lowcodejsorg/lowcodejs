@@ -441,7 +441,7 @@ export const CreateFieldFormFields = withForm({
         )}
 
         {/* Campo Filtro */}
-        {showFiltering && (
+        {/* {showFiltering && (
           <form.AppField name="configuration.filtering">
             {(field) => (
               <field.FieldBooleanSwitch
@@ -451,10 +451,10 @@ export const CreateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
-        )}
+        )} */}
 
         {/* Campo Listagem */}
-        <form.AppField name="configuration.listing">
+        {/* <form.AppField name="configuration.listing">
           {(field) => (
             <field.FieldBooleanSwitch
               label="Exibir na listagem"
@@ -462,7 +462,7 @@ export const CreateFieldFormFields = withForm({
               disabled={isPending}
             />
           )}
-        </form.AppField>
+        </form.AppField> */}
 
         {/* Campo Obrigatoriedade */}
         {showRequired && (

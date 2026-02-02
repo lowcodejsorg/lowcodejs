@@ -129,7 +129,9 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
 
           return (
             <SidebarGroup key={props.title || 'dynamic-menu'}>
-              {props.title && <SidebarGroupLabel>{props.title}</SidebarGroupLabel>}
+              {props.title && (
+                <SidebarGroupLabel>{props.title}</SidebarGroupLabel>
+              )}
               <SidebarMenu>
                 {props.items.map((item) => {
                   // Verificar se é CollapsibleItem (tem sub-items)

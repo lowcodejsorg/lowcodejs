@@ -86,14 +86,14 @@ function FieldGroupSubMenu({
               className="inline-flex space-x-1 w-full"
               onClick={() => {
                 router.navigate({
-                  to: '/tables/$slug/field/order',
+                  to: '/tables/$slug/field/management',
                   params: { slug: originSlug },
                   search: { group: groupSlug },
                 });
               }}
             >
               <ArrowUpDownIcon className="size-4" />
-              <span>Gerenciar ordem</span>
+              <span>Gerenciar visibilidade</span>
             </DropdownMenuItem>
           )}
 
@@ -212,13 +212,13 @@ export function TableConfigurationDropdown({
                         className="inline-flex space-x-1 w-full"
                         onClick={() => {
                           router.navigate({
-                            to: '/tables/$slug/field/order',
+                            to: '/tables/$slug/field/management',
                             params: { slug },
                           });
                         }}
                       >
                         <ArrowUpDownIcon className="size-4" />
-                        <span>Gerenciar ordem</span>
+                        <span>Gerenciar visibilidade</span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                     </>
