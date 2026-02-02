@@ -48,10 +48,7 @@ import {
   normalizeRowValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
-import {
-  buildDefaultValuesFromRow as buildUpdateDefaultsFromRow,
-  buildPayload as buildUpdatePayload,
-} from '@/routes/_private/tables/$slug/row/$rowId/-update-form';
+import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
 import { useAuthenticationStore } from '@/stores/authentication';
 
 export function KanbanRowDialog({
@@ -211,7 +208,7 @@ export function KanbanRowDialog({
   }, [rowId, quickFields.length]);
 
   const extraForm = useAppForm({
-    defaultValues: row ? buildUpdateDefaultsFromRow(row, editableFields) : {},
+    defaultValues: row ? buildUpdateRowDefaultValues(row, editableFields) : {},
     onSubmit: async ({ value }) => {
       if (!row || updateRow.status === 'pending' || !editingFieldSlug) {
         return;
@@ -220,7 +217,7 @@ export function KanbanRowDialog({
         (editableField) => editableField.slug === editingFieldSlug,
       );
       if (!field) return;
-      const payload = buildUpdatePayload({ [field.slug]: value[field.slug] }, [
+      const payload = buildRowPayload({ [field.slug]: value[field.slug] }, [
         field,
       ]);
       await updateRow.mutateAsync({
@@ -234,7 +231,7 @@ export function KanbanRowDialog({
 
   React.useEffect(() => {
     if (!row) return;
-    extraForm.reset(buildUpdateDefaultsFromRow(row, editableFields));
+    extraForm.reset(buildUpdateRowDefaultValues(row, editableFields));
     setEditingFieldSlug(null);
   }, [rowId, editableFields.length]);
 
@@ -249,7 +246,7 @@ export function KanbanRowDialog({
   const handleStartEditingField = React.useCallback(
     (slug: string) => {
       if (!row) return;
-      extraForm.reset(buildUpdateDefaultsFromRow(row, editableFields));
+      extraForm.reset(buildUpdateRowDefaultValues(row, editableFields));
       setEditingFieldSlug(slug);
     },
     [editableFields, extraForm, row],

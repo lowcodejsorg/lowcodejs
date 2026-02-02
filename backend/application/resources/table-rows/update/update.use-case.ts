@@ -36,7 +36,9 @@ export default class TableRowUpdateUseCase {
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const errors = validateRowPayload(payload, table.fields, table.groups);
+      const errors = validateRowPayload(payload, table.fields, table.groups, {
+        skipMissing: true,
+      });
 
       if (errors) {
         return left(

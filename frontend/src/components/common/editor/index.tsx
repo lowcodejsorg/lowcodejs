@@ -179,7 +179,9 @@ const extensions = [
   SlashCommand,
 ];
 
-localeActions.setLang('pt_BR');
+if (typeof window !== 'undefined') {
+  localeActions.setLang('pt_BR');
+}
 
 function debounce(
   func: (...args: Array<any>) => void,
@@ -235,6 +237,7 @@ export function EditorExample({
   );
 
   React.useEffect(() => {
+    if (typeof window === 'undefined') return;
     // @ts-ignore - Exposing editor instance for debugging
     window['editor'] = ed;
   }, [ed]);

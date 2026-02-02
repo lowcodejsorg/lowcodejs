@@ -360,7 +360,7 @@ export function TableKanbanView({
       if (createRow.status === 'pending') return;
 
       const payload = buildPayload(value, activeFields);
-      payload[fields.list.slug] = createColumnId;
+      payload[fields.list.slug] = [createColumnId];
 
       if (orderFieldSlug) {
         const columnCount = columns.byStatus[createColumnId].length;
@@ -405,7 +405,7 @@ export function TableKanbanView({
     if (!isCreateCardOpen) return;
     createForm.reset(buildDefaultValues(activeFields));
     if (fields.list && createColumnId) {
-      createForm.setFieldValue(fields.list.slug, createColumnId);
+      createForm.setFieldValue(fields.list.slug, [createColumnId]);
     }
   }, [activeFields, createColumnId, createForm, fields.list, isCreateCardOpen]);
 
@@ -667,7 +667,7 @@ export function TableKanbanView({
           if (!row) return;
           const patchData: Record<string, unknown> = {};
           if (sourceColumn !== targetColumn && id === activeId) {
-            patchData[fields.list!.slug] = columnId;
+            patchData[fields.list!.slug] = [columnId];
           }
           if (orderSlug) {
             patchData[orderSlug] = String(index + 1);
@@ -678,7 +678,7 @@ export function TableKanbanView({
           rowById.set(id, {
             ...row,
             ...(sourceColumn !== targetColumn && id === activeId
-              ? { [fields.list!.slug]: columnId }
+              ? { [fields.list!.slug]: [columnId] }
               : {}),
             ...(orderSlug ? { [orderSlug]: String(index + 1) } : {}),
           });
