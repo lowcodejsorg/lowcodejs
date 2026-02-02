@@ -63,6 +63,18 @@ export default class TableFieldUpdateUseCase {
         );
 
       if (
+        field.configuration?.locked &&
+        !this.canUpdateLockedField(payload, field)
+      ) {
+        return left(
+          HTTPException.Forbidden(
+            'Field is locked and cannot be updated',
+            'FIELD_LOCKED',
+          ),
+        );
+      }
+
+      if (
         table.fields?.filter((f) => !f.trashed).length === 1 &&
         payload.trashed
       ) {
@@ -183,6 +195,18 @@ export default class TableFieldUpdateUseCase {
     if (!field)
       return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
 
+    if (
+      field.configuration?.locked &&
+      !this.canUpdateLockedField(payload, field)
+    ) {
+      return left(
+        HTTPException.Forbidden(
+          'Field is locked and cannot be updated',
+          'FIELD_LOCKED',
+        ),
+      );
+    }
+
     const oldSlug = field.slug;
     const slug = slugify(payload.name, { lower: true, trim: true });
 
@@ -237,5 +261,30 @@ export default class TableFieldUpdateUseCase {
     });
 
     return right(updatedField);
+  }
+
+  private canUpdateLockedField(payload: Payload, field: IField): boolean {
+    if (payload.name !== field.name) return false;
+    if (payload.type !== field.type) return false;
+    if (payload.trashed || payload.trashedAt) return false;
+
+    if (!payload.configuration) return false;
+
+    const current = field.configuration;
+    const incoming = payload.configuration;
+
+    const sameConfig =
+      incoming.required === current.required &&
+      incoming.multiple === current.multiple &&
+      incoming.format === current.format &&
+      incoming.listing === current.listing &&
+      incoming.filtering === current.filtering &&
+      incoming.defaultValue === current.defaultValue &&
+      JSON.stringify(incoming.relationship ?? null) ===
+        JSON.stringify(current.relationship ?? null) &&
+      JSON.stringify(incoming.group ?? null) ===
+        JSON.stringify(current.group ?? null);
+
+    return sameConfig;
   }
 }

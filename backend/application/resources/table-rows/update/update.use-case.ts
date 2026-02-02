@@ -50,7 +50,10 @@ export default class TableRowUpdateUseCase {
 
       const build = await buildTable(table);
 
-      const populate = await buildPopulate(table.fields as IField[]);
+      const populate = await buildPopulate(
+        table.fields as IField[],
+        table.groups,
+      );
 
       const row = await build.findOne({ _id: payload._id }).populate(populate);
 

@@ -28,7 +28,7 @@ export function DocumentMain({
 }: DocumentMainProps): React.JSX.Element {
   return (
     <main className="p-4 w-full">
-      <div className="no-print mb-3 flex items-center justify-between">
+      <div className="no-print mb-3 flex flex-wrap items-center gap-3 pr-10">
         <div className="text-sm text-muted-foreground">
           Mostrando{' '}
           <span className="font-medium text-foreground">{rows.length}</span> de{' '}

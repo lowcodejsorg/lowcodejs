@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_FIELD_TYPE, type IRow } from '@application/core/entity.core';
+import { E_FIELD_TYPE, type IField, type IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
@@ -70,7 +70,10 @@ export default class TableRowCreateUseCase {
 
       const build = await buildTable(table);
 
-      const populate = await buildPopulate(table.fields);
+      const populate = await buildPopulate(
+        table.fields as IField[],
+        table.groups,
+      );
 
       const created = await build.create({
         ...payload,
