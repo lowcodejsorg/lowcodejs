@@ -108,9 +108,11 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
           if (props.isLoading) {
             return (
               <SidebarGroup key="dynamic-loading">
-                <SidebarGroupLabel>
-                  <Skeleton className="h-4 w-24" />
-                </SidebarGroupLabel>
+                {props.title && (
+                  <SidebarGroupLabel>
+                    <Skeleton className="h-4 w-24" />
+                  </SidebarGroupLabel>
+                )}
                 <SidebarMenu>
                   {[1, 2, 3].map((i) => (
                     <SidebarMenuItem key={i}>
@@ -126,8 +128,8 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
           }
 
           return (
-            <SidebarGroup key={props.title}>
-              <SidebarGroupLabel>{props.title}</SidebarGroupLabel>
+            <SidebarGroup key={props.title || 'dynamic-menu'}>
+              {props.title && <SidebarGroupLabel>{props.title}</SidebarGroupLabel>}
               <SidebarMenu>
                 {props.items.map((item) => {
                   // Verificar se é CollapsibleItem (tem sub-items)

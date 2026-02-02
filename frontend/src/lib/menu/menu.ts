@@ -15,21 +15,15 @@ import { E_ROLE } from '@/lib/constant';
 export const getStaticMenusByRole = (
   role: string,
 ): { before: MenuRoute; after: MenuRoute } => {
-  const tablesMenu: MenuRoute = [
-    {
-      title: 'Inicio',
-      items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
-    },
-  ];
-
   switch (role) {
     case E_ROLE.MASTER:
       return {
-        before: tablesMenu,
+        before: [],
         after: [
           {
             title: 'Sistema',
             items: [
+              { title: 'Tabelas', url: '/tables', icon: TableIcon },
               {
                 title: 'Configurações',
                 url: '/settings',
@@ -50,11 +44,12 @@ export const getStaticMenusByRole = (
 
     case E_ROLE.ADMINISTRATOR: {
       return {
-        before: tablesMenu,
+        before: [],
         after: [
           {
             title: 'Sistema',
             items: [
+              { title: 'Tabelas', url: '/tables', icon: TableIcon },
               { title: 'Menus', url: '/menus', icon: MenuIcon },
               { title: 'Usuários', url: '/users', icon: UsersIcon },
             ],
@@ -68,8 +63,12 @@ export const getStaticMenusByRole = (
     }
     case E_ROLE.MANAGER: {
       return {
-        before: tablesMenu,
+        before: [],
         after: [
+          {
+            title: 'Sistema',
+            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
+          },
           {
             title: 'Conta',
             items: [{ title: 'Perfil', url: '/profile', icon: UserIcon }],
@@ -79,8 +78,12 @@ export const getStaticMenusByRole = (
     }
     case E_ROLE.REGISTERED:
       return {
-        before: tablesMenu,
+        before: [],
         after: [
+          {
+            title: 'Sistema',
+            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
+          },
           {
             title: 'Conta',
             items: [{ title: 'Perfil', url: '/profile', icon: UserIcon }],
