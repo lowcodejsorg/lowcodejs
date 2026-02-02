@@ -91,7 +91,7 @@ function TreeNodeItem({
         ref={setNodeRef}
         className={cn(
           'w-full rounded-md px-2 py-1.5 text-sm transition',
-          'flex items-center gap-2',
+          'group flex items-center gap-2',
           selectedId === node.id ? 'bg-muted font-medium' : 'hover:bg-muted/60',
           dragOverId === node.id &&
             dragOverMode === 'nest' &&
@@ -174,7 +174,7 @@ function TreeNodeItem({
         {showAdd && (
           <button
             type="button"
-            className="p-0.5 rounded hover:bg-background/60 cursor-pointer"
+            className="p-0.5 rounded hover:bg-background/60 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
             aria-label="Adicionar sub-item"
             onClick={(event) => {
               event.stopPropagation();

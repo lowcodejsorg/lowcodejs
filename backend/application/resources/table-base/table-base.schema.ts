@@ -21,6 +21,7 @@ export const TableConfigurationSchema = z.object({
       E_TABLE_STYLE.DOCUMENT,
       E_TABLE_STYLE.CARD,
       E_TABLE_STYLE.MOSAIC,
+      E_TABLE_STYLE.KANBAN,
     ])
     .default(E_TABLE_STYLE.LIST),
   visibility: z

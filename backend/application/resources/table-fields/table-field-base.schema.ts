@@ -32,6 +32,7 @@ export const TableFieldConfiguration = z.object({
   format: z.enum(E_FIELD_FORMAT).nullable().default(null),
   listing: z.boolean().default(false),
   filtering: z.boolean().default(false),
+  locked: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),
   relationship: Relationship.nullable().default(null),
   dropdown: z.array(Dropdown).default([]),

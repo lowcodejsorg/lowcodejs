@@ -46,7 +46,10 @@ export default class TableRowPaginatedUseCase {
 
       const order = buildOrder(payload, table.fields as IField[]);
 
-      const populate = await buildPopulate(table.fields as IField[]);
+      const populate = await buildPopulate(
+        table.fields as IField[],
+        table.groups,
+      );
 
       const rows = await c
         .find(query)

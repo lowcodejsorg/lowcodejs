@@ -60,6 +60,15 @@ export default class TableFieldSendToTrashUseCase {
           HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
         );
 
+      if (field.configuration?.locked) {
+        return left(
+          HTTPException.Forbidden(
+            'Field is locked and cannot be trashed',
+            'FIELD_LOCKED',
+          ),
+        );
+      }
+
       if (field.trashed)
         return left(
           HTTPException.Conflict('Field already in trash', 'ALREADY_TRASHED'),
@@ -115,6 +124,15 @@ export default class TableFieldSendToTrashUseCase {
 
     if (!field)
       return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
+
+    if (field.configuration?.locked) {
+      return left(
+        HTTPException.Forbidden(
+          'Field is locked and cannot be trashed',
+          'FIELD_LOCKED',
+        ),
+      );
+    }
 
     if (field.trashed)
       return left(

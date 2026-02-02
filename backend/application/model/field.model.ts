@@ -122,6 +122,10 @@ const Configuration = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    locked: {
+      type: Boolean,
+      default: false,
+    },
     defaultValue: {
       type: String,
       default: null,

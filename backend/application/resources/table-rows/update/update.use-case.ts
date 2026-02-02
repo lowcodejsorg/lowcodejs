@@ -36,7 +36,9 @@ export default class TableRowUpdateUseCase {
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
-      const errors = validateRowPayload(payload, table.fields, table.groups);
+      const errors = validateRowPayload(payload, table.fields, table.groups, {
+        skipMissing: true,
+      });
 
       if (errors) {
         return left(
@@ -50,7 +52,10 @@ export default class TableRowUpdateUseCase {
 
       const build = await buildTable(table);
 
-      const populate = await buildPopulate(table.fields as IField[]);
+      const populate = await buildPopulate(
+        table.fields as IField[],
+        table.groups,
+      );
 
       const row = await build.findOne({ _id: payload._id }).populate(populate);
 

@@ -9,6 +9,20 @@ import { SettingContractRepository } from '@application/repositories/setting/set
 
 type Response = Either<HTTPException, ISetting | Record<string, unknown>>;
 
+const KANBAN_TEMPLATE_ID = 'KANBAN_TEMPLATE';
+
+function getKanbanTemplateEntry(): Pick<
+  ISetting['MODEL_CLONE_TABLES'][number],
+  '_id' | 'name' | 'slug' | 'description'
+> {
+  return {
+    _id: KANBAN_TEMPLATE_ID,
+    name: 'Kanban (Tarefas)',
+    slug: 'kanban-tarefas',
+    description: 'Modelo predefinido de tarefas em Kanban',
+  };
+}
+
 @Service()
 export default class SettingShowUseCase {
   constructor(private readonly settingRepository: SettingContractRepository) {}
@@ -22,14 +36,19 @@ export default class SettingShowUseCase {
           ...process.env,
           FILE_UPLOAD_ACCEPTED:
             process.env.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
-          MODEL_CLONE_TABLES: [],
+          MODEL_CLONE_TABLES: [getKanbanTemplateEntry()],
         });
       }
 
       return right({
         ...setting,
         FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
-        // MODEL_CLONE_TABLES já vem populado do repository
+        MODEL_CLONE_TABLES: [
+          getKanbanTemplateEntry(),
+          ...(Array.isArray(setting.MODEL_CLONE_TABLES)
+            ? setting.MODEL_CLONE_TABLES
+            : []),
+        ],
       });
     } catch (_error) {
       return left(

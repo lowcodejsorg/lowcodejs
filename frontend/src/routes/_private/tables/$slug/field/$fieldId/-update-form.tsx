@@ -66,8 +66,9 @@ export const UpdateFieldFormFields = withForm({
     isPending: false,
     mode: 'show' as 'show' | 'edit',
     tableSlug: '' as string,
+    isLocked: false,
   },
-  render: function Render({ form, isPending, mode, tableSlug }) {
+  render: function Render({ form, isPending, mode, tableSlug, isLocked }) {
     // useStore para valores reativos do form
     const fieldType = useStore(form.store, (state) => state.values.type);
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
@@ -103,6 +104,8 @@ export const UpdateFieldFormFields = withForm({
     const showRequired = !isReaction && !isEvaluation;
 
     const isDisabled = mode === 'show' || isPending;
+    const lockAllControls = isLocked && !isDropdown;
+    const lockNonOptions = isLocked && isDropdown;
 
     return (
       <section className="space-y-4 p-2">
@@ -125,7 +128,7 @@ export const UpdateFieldFormFields = withForm({
             <field.FieldText
               label="Nome"
               placeholder="Nome do campo"
-              disabled={isDisabled}
+              disabled={isDisabled || isLocked}
               icon={<FileTextIcon />}
               required
             />
@@ -163,7 +166,7 @@ export const UpdateFieldFormFields = withForm({
               <field.TableFieldFormatSelect
                 label="Formato"
                 placeholder="Selecione um formato para o campo"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
                 fieldType={E_FIELD_TYPE.TEXT_SHORT}
                 required
               />
@@ -178,7 +181,7 @@ export const UpdateFieldFormFields = withForm({
               <field.FieldText
                 label="Valor padrão"
                 placeholder="Valor padrão (deixe em branco se não houver)"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
               />
             )}
           </form.AppField>
@@ -201,7 +204,7 @@ export const UpdateFieldFormFields = withForm({
               <field.TableFieldFormatSelect
                 label="Formato"
                 placeholder="Selecione um formato para o campo"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
                 fieldType={E_FIELD_TYPE.TEXT_LONG}
                 required
               />
@@ -223,7 +226,7 @@ export const UpdateFieldFormFields = withForm({
               <field.FieldTextarea
                 label="Valor padrão"
                 placeholder="Valor padrão (Se deixar em branco, o campo ficará vazio)"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
                 rows={3}
               />
             )}
@@ -271,7 +274,7 @@ export const UpdateFieldFormFields = withForm({
               <field.TableFieldFormatSelect
                 label="Formato da data"
                 placeholder="Selecione o formato da data"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
                 fieldType={E_FIELD_TYPE.DATE}
                 required
               />
@@ -296,7 +299,7 @@ export const UpdateFieldFormFields = withForm({
               <field.TableFieldRelationshipTableSelect
                 label="Tabela de relacionamento"
                 placeholder="Selecione uma tabela"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
                 excludeTableSlug={tableSlug}
                 onTableChange={(slug) => {
                   form.setFieldValue(
@@ -332,7 +335,7 @@ export const UpdateFieldFormFields = withForm({
               <field.TableFieldRelationshipFieldSelect
                 label="Campo de relacionamento"
                 placeholder="Selecione um campo"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
                 tableSlug={relationshipTableSlug}
                 onFieldChange={(slug) => {
                   form.setFieldValue(
@@ -363,7 +366,7 @@ export const UpdateFieldFormFields = withForm({
               <field.TableFieldRelationshipOrderSelect
                 label="Ordem"
                 placeholder="Selecione uma ordem"
-                disabled={isDisabled}
+                disabled={isDisabled || lockAllControls}
                 required
               />
             )}
@@ -399,7 +402,7 @@ export const UpdateFieldFormFields = withForm({
               <field.FieldBooleanSwitch
                 label="Permitir múltiplos"
                 description="Este campo deve permitir múltiplos valores?"
-                disabled={isDisabled}
+                disabled={isDisabled || lockNonOptions}
               />
             )}
           </form.AppField>
@@ -412,7 +415,7 @@ export const UpdateFieldFormFields = withForm({
               <field.FieldBooleanSwitch
                 label="Usar no filtro"
                 description="Usar este campo para filtrar os dados?"
-                disabled={isDisabled}
+                disabled={isDisabled || lockNonOptions}
               />
             )}
           </form.AppField>
@@ -424,7 +427,7 @@ export const UpdateFieldFormFields = withForm({
             <field.FieldBooleanSwitch
               label="Exibir na listagem"
               description="Exibir este campo na listagem?"
-              disabled={isDisabled}
+              disabled={isDisabled || lockNonOptions}
             />
           )}
         </form.AppField>
@@ -436,7 +439,7 @@ export const UpdateFieldFormFields = withForm({
               <field.FieldBooleanSwitch
                 label="Obrigatoriedade"
                 description="Este campo é obrigatório?"
-                disabled={isDisabled}
+                disabled={isDisabled || lockNonOptions}
               />
             )}
           </form.AppField>
@@ -448,7 +451,7 @@ export const UpdateFieldFormFields = withForm({
             <field.FieldBooleanSwitch
               label="Enviar para lixeira"
               description="Enviar este campo para a lixeira?"
-              disabled={isDisabled}
+              disabled={isDisabled || isLocked}
               className="border-destructive/50"
             />
           )}

@@ -25,7 +25,8 @@ export function DocumentHeadingRow({
     6: 'text-sm font-semibold mt-2',
   };
 
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements as React.ElementType;
+  const Tag =
+    `h${level}` as keyof React.JSX.IntrinsicElements as React.ElementType;
 
   return (
     <Tag

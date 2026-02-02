@@ -175,10 +175,15 @@ function validateFieldValue(
   }
 }
 
+type ValidateRowPayloadOptions = {
+  skipMissing?: boolean;
+};
+
 export function validateRowPayload(
   payload: Record<string, unknown>,
   fields: IField[],
   groups?: IGroupConfiguration[],
+  options: ValidateRowPayloadOptions = {},
 ): Record<string, string> | null {
   const errors: Record<string, string> = {};
 
@@ -188,6 +193,10 @@ export function validateRowPayload(
       field.type === E_FIELD_TYPE.REACTION ||
       field.type === E_FIELD_TYPE.EVALUATION
     ) {
+      continue;
+    }
+
+    if (options.skipMissing && !(field.slug in payload)) {
       continue;
     }
 
