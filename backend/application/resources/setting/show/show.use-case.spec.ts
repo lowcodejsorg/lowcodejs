@@ -8,6 +8,13 @@ let settingInMemoryRepository: SettingInMemoryRepository;
 let sut: SettingShowUseCase;
 
 describe('Setting Show Use Case', () => {
+  const kanbanTemplate = {
+    _id: 'KANBAN_TEMPLATE',
+    name: 'Kanban (Tarefas)',
+    slug: 'kanban-tarefas',
+    description: 'Modelo predefinido de tarefas em Kanban',
+  };
+
   beforeEach(() => {
     settingInMemoryRepository = new SettingInMemoryRepository();
     sut = new SettingShowUseCase(settingInMemoryRepository);
@@ -27,7 +34,11 @@ describe('Setting Show Use Case', () => {
     if (result.isRight()) {
       expect(result.value.LOCALE).toBe('en-us');
       expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual(['jpg', 'png']);
-      expect(result.value.MODEL_CLONE_TABLES).toEqual(['table1', 'table2']);
+      expect(result.value.MODEL_CLONE_TABLES).toEqual([
+        kanbanTemplate,
+        'table1',
+        'table2',
+      ]);
     }
   });
 
@@ -36,7 +47,7 @@ describe('Setting Show Use Case', () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.MODEL_CLONE_TABLES).toEqual([]);
+      expect(result.value.MODEL_CLONE_TABLES).toEqual([kanbanTemplate]);
     }
   });
 

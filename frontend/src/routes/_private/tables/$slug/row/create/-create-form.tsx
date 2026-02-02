@@ -157,7 +157,11 @@ export function buildPayload(
 }
 
 // Validator for required fields
-export function createRequiredValidator(fieldName: string) {
+type RequiredValidator = {
+  onChange: ({ value }: { value: any }) => { message: string } | undefined;
+};
+
+export function createRequiredValidator(fieldName: string): RequiredValidator {
   const validate = ({
     value,
   }: {
