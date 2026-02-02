@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { badgeStyleFromColor } from '../table-row-badge-list';
+
 import {
   Combobox,
   ComboboxChip,
@@ -24,6 +26,7 @@ interface TableRowDropdownFieldProps {
 interface DropdownOption {
   value: string;
   label: string;
+  color?: string | null;
 }
 
 export function TableRowDropdownField({
@@ -37,28 +40,32 @@ export function TableRowDropdownField({
   const isMultiple = field.configuration.multiple;
   const anchorRef = useComboboxAnchor();
 
-  const items: Array<DropdownOption> = field.configuration.dropdown.map(
-    (d) => ({
-      value: d,
-      label: d,
-    }),
-  );
+  const items: Array<DropdownOption> = React.useMemo(() => {
+    return field.configuration.dropdown.map((d: any) => ({
+      value: String(d.id),
+      label: String(d.label),
+      color: d.color ?? null,
+    }));
+  }, [field.configuration.dropdown]);
 
-  // Find selected options
+  const selectedIds = React.useMemo(() => {
+    return formField.state.value;
+  }, [formField.state.value]);
+
   const selectedOptions = React.useMemo(() => {
-    return items.filter((item) => formField.state.value.includes(item.value));
-  }, [items, formField.state.value]);
+    return items.filter((item) => selectedIds.includes(item.value));
+  }, [items, selectedIds]);
 
   const handleValueChange = (
-    newValue: DropdownOption | Array<DropdownOption> | null,
+    value: DropdownOption | Array<DropdownOption> | null,
   ): void => {
-    if (isMultiple) {
-      const values = newValue as Array<DropdownOption>;
-      formField.handleChange(values.map((v) => v.value));
-    } else {
-      const value = newValue as DropdownOption | null;
-      formField.handleChange(value ? [value.value] : []);
+    if (!value) {
+      formField.handleChange([]);
+      return;
     }
+
+    const options = Array.isArray(value) ? value : [value];
+    formField.handleChange(options.map((v) => v.value));
   };
 
   if (isMultiple) {
@@ -68,6 +75,7 @@ export function TableRowDropdownField({
           {field.name}
           {isRequired && <span className="text-destructive"> *</span>}
         </FieldLabel>
+
         <Combobox
           items={items}
           multiple
@@ -79,11 +87,12 @@ export function TableRowDropdownField({
           <ComboboxChips ref={anchorRef}>
             <ComboboxValue>
               {(values: Array<DropdownOption>): React.ReactNode => (
-                <React.Fragment>
+                <>
                   {values.map((opt) => (
                     <ComboboxChip
                       key={opt.value}
                       aria-label={opt.label}
+                      style={badgeStyleFromColor(opt.color)}
                     >
                       {opt.label}
                     </ComboboxChip>
@@ -95,16 +104,18 @@ export function TableRowDropdownField({
                         : `Selecione ${field.name.toLowerCase()}`
                     }
                   />
-                </React.Fragment>
+                </>
               )}
             </ComboboxValue>
           </ComboboxChips>
+
           <ComboboxContent anchor={anchorRef}>
             <ComboboxList>
               {(opt: DropdownOption): React.ReactNode => (
                 <ComboboxItem
                   key={opt.value}
                   value={opt}
+                  style={badgeStyleFromColor(opt.color)}
                 >
                   {opt.label}
                 </ComboboxItem>
@@ -112,6 +123,7 @@ export function TableRowDropdownField({
             </ComboboxList>
           </ComboboxContent>
         </Combobox>
+
         {isInvalid && <FieldError errors={formField.state.meta.errors} />}
       </Field>
     );
@@ -123,9 +135,10 @@ export function TableRowDropdownField({
         {field.name}
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
+
       <Combobox
         items={items}
-        value={selectedOptions[0] ?? null}
+        value={selectedOptions[0] ?? []}
         onValueChange={handleValueChange}
         itemToStringLabel={(opt: DropdownOption) => opt.label}
         disabled={disabled}
@@ -149,6 +162,7 @@ export function TableRowDropdownField({
           </ComboboxList>
         </ComboboxContent>
       </Combobox>
+
       {isInvalid && <FieldError errors={formField.state.meta.errors} />}
     </Field>
   );

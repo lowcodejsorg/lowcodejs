@@ -31,23 +31,32 @@ import {
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
-import type { IField } from '@/lib/interfaces';
+import type { IField, ITable } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface FieldGroupSubMenuProps {
   field: IField;
   originSlug: string;
+  parentTable: ITable;
 }
 
 function FieldGroupSubMenu({
   field,
   originSlug,
+  parentTable,
 }: FieldGroupSubMenuProps): React.JSX.Element {
   const router = useRouter();
-  const groupTable = useReadTable({ slug: field.slug });
-  const permission = useTablePermission(groupTable.data);
+  const permission = useTablePermission(parentTable);
 
-  const activeFields = groupTable.data?.fields.filter((f) => !f.trashed) ?? [];
+  // Busca grupo em groups da tabela pai
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+  const group = (parentTable.groups ?? []).find(
+    (g) => g.slug === field.configuration.group?.slug,
+  );
+
+  const activeFields = group?.fields.filter((f) => !f.trashed) ?? [];
+
+  const groupSlug = field.configuration.group?.slug ?? field.slug;
 
   return (
     <DropdownMenuSub>
@@ -62,8 +71,8 @@ function FieldGroupSubMenu({
               onClick={() => {
                 router.navigate({
                   to: '/tables/$slug/field/create',
-                  params: { slug: field.slug },
-                  search: { from: originSlug },
+                  params: { slug: originSlug },
+                  search: { group: groupSlug },
                 });
               }}
             >
@@ -78,8 +87,8 @@ function FieldGroupSubMenu({
               onClick={() => {
                 router.navigate({
                   to: '/tables/$slug/field/order',
-                  params: { slug: field.slug },
-                  search: { from: originSlug },
+                  params: { slug: originSlug },
+                  search: { group: groupSlug },
                 });
               }}
             >
@@ -100,8 +109,8 @@ function FieldGroupSubMenu({
                 onClick={() => {
                   router.navigate({
                     to: '/tables/$slug/field/$fieldId',
-                    params: { slug: field.slug, fieldId: groupField._id },
-                    search: { from: originSlug },
+                    params: { slug: originSlug, fieldId: groupField._id },
+                    search: { group: groupSlug },
                   });
                 }}
               >
@@ -205,7 +214,6 @@ export function TableConfigurationDropdown({
                           router.navigate({
                             to: '/tables/$slug/field/order',
                             params: { slug },
-                            search: { from: slug },
                           });
                         }}
                       >
@@ -261,11 +269,13 @@ export function TableConfigurationDropdown({
                 )}
 
                 {permission.can('UPDATE_FIELD') &&
+                  table.status === 'success' &&
                   fieldGroups.map((field) => (
                     <FieldGroupSubMenu
                       key={field._id}
                       field={field}
                       originSlug={slug}
+                      parentTable={table.data}
                     />
                   ))}
               </DropdownMenuGroup>

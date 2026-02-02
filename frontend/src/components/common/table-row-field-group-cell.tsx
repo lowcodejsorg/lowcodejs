@@ -10,24 +10,38 @@ import { TableRowTextShortCell } from './table-row-text-short-cell';
 
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow } from '@/lib/interfaces';
+import type {
+  IField,
+  IGroupConfiguration,
+  IRow,
+  ITable,
+} from '@/lib/interfaces';
 
 interface TableRowFieldGroupCellProps {
   row: IRow;
   field: IField;
   tableSlug: string;
+  table?: ITable; // Tabela pai com groups
 }
 
 export function TableRowFieldGroupCell({
   field,
   row,
   tableSlug,
+  table: tableProp,
 }: TableRowFieldGroupCellProps): React.JSX.Element {
   const groupSlug = field.configuration.group?.slug;
 
-  const table = useReadTable({ slug: groupSlug ?? '' });
+  // Usa useReadTable como fallback quando table não é passada
+  const tableQuery = useReadTable({ slug: tableSlug });
+  const table = tableProp ?? tableQuery.data;
 
-  if (!groupSlug || table.status !== 'success') {
+  // Busca os campos do grupo em groups
+  const group: IGroupConfiguration | undefined = table?.groups.find(
+    (g) => g.slug === groupSlug,
+  );
+
+  if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
@@ -38,30 +52,32 @@ export function TableRowFieldGroupCell({
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
+  const groupFields = group.fields.filter(
+    (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+  );
+
   return (
     <div className="flex flex-col gap-2">
       {groupData.map((groupRow: IRow, index: number) => (
         <div
           key={groupRow._id || index}
-          className="grid grid-cols-2 gap-2 p-2 border rounded"
+          className="grid grid-cols-2 gap-2"
         >
-          {table.data.fields
-            .filter((f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed)
-            .map((groupField) => (
-              <div
-                key={groupField._id}
-                className="flex flex-col gap-0.5"
-              >
-                <span className="text-xs font-medium text-muted-foreground">
-                  {groupField.name}
-                </span>
-                <RenderGroupFieldCell
-                  field={groupField}
-                  row={groupRow}
-                  tableSlug={tableSlug}
-                />
-              </div>
-            ))}
+          {groupFields.map((groupField) => (
+            <div
+              key={groupField._id}
+              className="flex flex-col gap-0.5"
+            >
+              <span className="text-xs font-medium text-muted-foreground">
+                {groupField.name}
+              </span>
+              <RenderGroupFieldCell
+                field={groupField}
+                row={groupRow}
+                tableSlug={tableSlug}
+              />
+            </div>
+          ))}
         </div>
       ))}
     </div>

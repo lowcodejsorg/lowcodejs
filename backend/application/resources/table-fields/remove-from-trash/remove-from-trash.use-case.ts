@@ -3,7 +3,12 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField as Entity } from '@application/core/entity.core';
+import type {
+  IField,
+  IField as Entity,
+  IGroupConfiguration,
+  ITable,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
@@ -32,6 +37,18 @@ export default class TableFieldRemoveFromTrashUseCase {
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
+
+      // Se foi fornecido um group slug, restaura o campo no grupo
+      const groupSlug = payload.group;
+      if (groupSlug) {
+        const targetGroup = table.groups?.find((g) => g.slug === groupSlug);
+        if (!targetGroup) {
+          return left(
+            HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          );
+        }
+        return this.removeFieldFromTrashInGroup(payload, table, targetGroup);
+      }
 
       const field = await this.fieldRepository.findBy({
         _id: payload._id,
@@ -84,5 +101,73 @@ export default class TableFieldRemoveFromTrashUseCase {
         ),
       );
     }
+  }
+
+  private async removeFieldFromTrashInGroup(
+    payload: Payload,
+    parentTable: ITable,
+    targetGroup: IGroupConfiguration,
+  ): Promise<Response> {
+    const field = await this.fieldRepository.findBy({
+      _id: payload._id,
+      exact: true,
+    });
+
+    if (!field)
+      return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
+
+    if (!field.trashed)
+      return left(
+        HTTPException.Conflict('Field is not in trash', 'NOT_TRASHED'),
+      );
+
+    const updatedField = await this.fieldRepository.update({
+      _id: field._id,
+      configuration: {
+        ...field.configuration,
+        listing: true,
+        filtering: true,
+        required: false,
+      },
+      trashed: false,
+      trashedAt: null,
+    });
+
+    // Atualiza o grupo com o campo restaurado
+    const updatedGroups = parentTable.groups.map((g) => {
+      if (g.slug !== targetGroup.slug) return g;
+
+      const updatedFields = g.fields.map((f) =>
+        f._id === field._id ? updatedField : f,
+      );
+      const groupSchema = buildSchema(updatedFields);
+
+      return {
+        ...g,
+        fields: updatedFields,
+        _schema: groupSchema,
+      };
+    });
+
+    // Reconstrói o schema da tabela pai com os grupos atualizados
+    const parentSchema = buildSchema(
+      parentTable.fields as IField[],
+      updatedGroups,
+    );
+
+    await this.tableRepository.update({
+      _id: parentTable._id,
+      _schema: parentSchema,
+      groups: updatedGroups,
+      configuration: {
+        ...parentTable.configuration,
+        owner: parentTable.configuration.owner._id,
+        administrators: parentTable.configuration.administrators.flatMap(
+          (a) => a._id,
+        ),
+      },
+    });
+
+    return right(updatedField);
   }
 }

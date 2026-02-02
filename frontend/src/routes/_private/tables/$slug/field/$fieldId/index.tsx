@@ -6,12 +6,13 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { ArrowLeftIcon } from 'lucide-react';
+import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 import z from 'zod';
 
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
+import { FieldView } from './-view';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
@@ -32,7 +33,7 @@ import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
   component: RouteComponent,
   validateSearch: z.object({
-    from: z.string().optional(),
+    group: z.string().optional(),
   }),
 });
 
@@ -44,15 +45,15 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/tables/$slug/field/$fieldId/',
   });
 
-  const { from } = useSearch({
+  const { group: groupSlug } = useSearch({
     from: '/_private/tables/$slug/field/$fieldId/',
   });
 
-  const originSlug = from ?? slug;
-
   const table = useReadTable({ slug });
-  const _read = useFieldRead({ tableSlug: slug, fieldId });
+  const _read = useFieldRead({ tableSlug: slug, fieldId, groupSlug });
   const permission = useTablePermission(table.data);
+
+  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   // Loading enquanto verifica permissão
   if (table.status === 'pending' || permission.isLoading) {
@@ -83,7 +84,7 @@ function RouteComponent(): React.JSX.Element {
               navigate({
                 to: '/tables/$slug',
                 replace: true,
-                params: { slug: originSlug },
+                params: { slug },
               });
             }}
           >
@@ -96,6 +97,21 @@ function RouteComponent(): React.JSX.Element {
               : 'Detalhes do campo'}
           </h1>
         </div>
+        {_read.status === 'success' &&
+          mode === 'show' &&
+          permission.can('UPDATE_FIELD') &&
+          (!_read.data.configuration.locked ||
+            _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
+            <Button
+              type="button"
+              className="px-2 cursor-pointer"
+              size="sm"
+              onClick={() => setMode('edit')}
+            >
+              <PencilIcon className="size-4 mr-1" />
+              <span>Editar</span>
+            </Button>
+          )}
       </div>
 
       {/* Info text for field group */}
@@ -107,6 +123,12 @@ function RouteComponent(): React.JSX.Element {
             campos".
           </p>
         )}
+      {_read.status === 'success' && _read.data.configuration.locked && (
+        <p className="text-sm text-amber-600 px-2 pb-2">
+          Este campo faz parte de uma predefinição e não pode ser alterado ou
+          removido.
+        </p>
+      )}
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
@@ -127,6 +149,9 @@ function RouteComponent(): React.JSX.Element {
           <FieldUpdateContent
             data={_read.data}
             slug={slug}
+            mode={mode}
+            setMode={setMode}
+            groupSlug={groupSlug}
           />
         )}
       </div>
@@ -134,25 +159,44 @@ function RouteComponent(): React.JSX.Element {
   );
 }
 
+interface FieldUpdateContentProps {
+  data: IField;
+  slug: string;
+  mode: 'show' | 'edit';
+  setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+  /** Slug do grupo (quando em contexto de grupo) */
+  groupSlug?: string;
+}
+
 function FieldUpdateContent({
   data,
   slug,
-}: {
-  data: IField;
-  slug: string;
-}): React.JSX.Element {
-  const { queryClient } = getContext();
-  const table = useReadTable({ slug });
-  const permission = useTablePermission(table.data);
-  const canEdit = permission.can('UPDATE_FIELD');
+  mode,
+  setMode,
+  groupSlug,
+}: FieldUpdateContentProps): React.JSX.Element {
+  const sidebar = useSidebar();
+  const navigate = useNavigate();
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
+  const { queryClient } = getContext();
+
+  const isGroupContext = !!groupSlug;
 
   const _update = useMutation({
     mutationFn: async (
       payload: Partial<IField> & {
         trashed?: boolean;
         trashedAt?: string | null;
+        group?: string;
       },
     ) => {
       const route = '/tables/'.concat(slug).concat('/fields/').concat(data._id);
@@ -172,6 +216,24 @@ function FieldUpdateContent({
         ['/tables/'.concat(slug), slug],
         (old) => {
           if (!old) return old;
+
+          // Se for contexto de grupo, atualiza groups
+          if (isGroupContext && groupSlug) {
+            return {
+              ...old,
+              groups: old.groups.map((g) =>
+                g.slug === groupSlug
+                  ? {
+                      ...g,
+                      fields: g.fields.map((f) =>
+                        f._id === response._id ? response : f,
+                      ),
+                    }
+                  : g,
+              ),
+            };
+          }
+
           return {
             ...old,
             fields: old.fields.map((f) => {
@@ -192,6 +254,23 @@ function FieldUpdateContent({
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug === slug) {
+                // Se for contexto de grupo, atualiza groups
+                if (isGroupContext && groupSlug) {
+                  return {
+                    ...t,
+                    groups: t.groups.map((g) =>
+                      g.slug === groupSlug
+                        ? {
+                            ...g,
+                            fields: g.fields.map((f) =>
+                              f._id === response._id ? response : f,
+                            ),
+                          }
+                        : g,
+                    ),
+                  };
+                }
+
                 return {
                   ...t,
                   fields: t.fields.map((f) => {
@@ -376,8 +455,9 @@ function FieldUpdateContent({
         format: data.configuration.format ?? '',
         defaultValue: data.configuration.defaultValue ?? '',
         dropdown: data.configuration.dropdown.map((d) => ({
-          value: d,
-          label: d,
+          id: d.id,
+          label: d.label,
+          color: d.color,
         })),
         relationship: {
           tableId: data.configuration.relationship?.table._id ?? '',
@@ -417,9 +497,7 @@ function FieldUpdateContent({
             ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
             : null,
           defaultValue: config.defaultValue || null,
-          dropdown: hasDropdown
-            ? config.dropdown.map((item) => item.value)
-            : [],
+          dropdown: hasDropdown ? config.dropdown.map((item) => item) : [],
           relationship: hasRelationship
             ? {
                 table: {
@@ -440,6 +518,7 @@ function FieldUpdateContent({
         },
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
+        group: groupSlug,
       });
     },
   });
@@ -448,66 +527,83 @@ function FieldUpdateContent({
 
   return (
     <>
-      <form
-        className="flex-1 flex flex-col min-h-0 overflow-auto"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        {/* @ts-ignore TanStack Form type depth issue with nested configuration */}
-        <UpdateFieldFormFields
-          form={form}
-          isPending={isPending}
-          mode={mode}
-          tableSlug={slug}
-        />
-      </form>
+      {mode === 'show' && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <FieldView data={data} />
+        </div>
+      )}
+
+      {/* Footer - Show Mode */}
+      {mode === 'show' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              onClick={goBack}
+            >
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {mode === 'edit' && (
+        <form
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          {/* @ts-ignore TanStack Form type depth issue with nested configuration */}
+          <UpdateFieldFormFields
+            form={form}
+            isPending={isPending}
+            mode={mode}
+            tableSlug={slug}
+            isLocked={data.configuration.locked}
+          />
+        </form>
+      )}
 
       {/* Footer */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              {mode === 'show' && canEdit && (
+      {mode === 'edit' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <div className="flex justify-end gap-2">
                 <Button
                   type="button"
-                  className="w-full max-w-3xs"
-                  onClick={() => setMode('edit')}
+                  variant="outline"
+                  size="sm"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  disabled={isSubmitting}
+                  onClick={() => {
+                    form.reset();
+                    setMode('show');
+                  }}
                 >
-                  <span>Editar</span>
+                  <span>Cancelar</span>
                 </Button>
-              )}
-              {mode === 'edit' && (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full max-w-3xs"
-                    disabled={isSubmitting}
-                    onClick={() => {
-                      form.reset();
-                      setMode('show');
-                    }}
-                  >
-                    <span>Cancelar</span>
-                  </Button>
-                  <Button
-                    type="button"
-                    className="w-full max-w-3xs"
-                    disabled={!canSubmit}
-                    onClick={() => form.handleSubmit()}
-                  >
-                    {isSubmitting && <Spinner />}
-                    <span>Salvar</span>
-                  </Button>
-                </>
-              )}
-            </div>
-          )}
-        />
-      </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  disabled={!canSubmit}
+                  onClick={() => form.handleSubmit()}
+                >
+                  {isSubmitting && <Spinner />}
+                  <span>Salvar</span>
+                </Button>
+              </div>
+            )}
+          />
+        </div>
+      )}
     </>
   );
 }

@@ -36,6 +36,11 @@ export type Merge<T, U> = {
 
 export type ValueOf<T> = T[keyof T];
 
+export type SearchableOption = {
+  value: string;
+  label: string;
+};
+
 export type Meta = {
   total: number;
   page: number;
@@ -133,13 +138,21 @@ export type ICategory = {
   children: Array<ICategory>;
 };
 
+export type IDropdown = {
+  id: string;
+  label: string;
+  color: string | null;
+};
+
 export type IFieldConfigurationRelationship = {
   table: Pick<ITable, '_id' | 'slug'>;
   field: Pick<IField, '_id' | 'slug'>;
   order: 'asc' | 'desc';
 };
 
-export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
+export type IFieldConfigurationGroup = {
+  slug: string;
+};
 
 export type IField = Merge<
   Base,
@@ -154,8 +167,9 @@ export type IField = Merge<
       listing: boolean;
       filtering: boolean;
       defaultValue: string | null;
+      locked?: boolean;
       relationship: IFieldConfigurationRelationship | null;
-      dropdown: Array<string>;
+      dropdown: Array<IDropdown>;
       category: Array<ICategory>;
       group: IFieldConfigurationGroup | null;
     };
@@ -170,6 +184,13 @@ export type ISchema = {
 };
 
 export type ITableSchema = Record<string, ISchema | Array<ISchema>>;
+
+export type IGroupConfiguration = {
+  slug: string;
+  name: string;
+  fields: Array<IField>;
+  _schema: ITableSchema;
+};
 
 export type ITableConfiguration = {
   style: ValueOf<typeof E_TABLE_STYLE>;
@@ -201,6 +222,7 @@ export type ITable = Merge<
     type: ValueOf<typeof E_TABLE_TYPE>;
     configuration: ITableConfiguration;
     methods: ITableMethod;
+    groups: Array<IGroupConfiguration>;
   }
 >;
 
@@ -212,6 +234,7 @@ export type ISetting = {
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   FILE_UPLOAD_ACCEPTED: Array<string>;
   PAGINATION_PER_PAGE: number;
+  MODEL_CLONE_TABLES: Array<ITable>;
   DATABASE_URL: string;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
@@ -219,9 +242,23 @@ export type ISetting = {
   EMAIL_PROVIDER_PASSWORD: string;
 };
 
-export type IRow = Merge<Base, Record<string, any>> & {
-  creator: IUser;
-};
+// type RowResponseValue =
+//   | string
+//   | null
+//   | Array<string>
+//   | Array<IStorage>
+//   | Array<IRow>
+//   | Array<IUser>
+//   | IUser;
+// | Array<Record<string, RowResponseValue>>;
+
+export type IRow = Merge<
+  Base,
+  {
+    creator: IUser;
+    [x: string]: any;
+  }
+>;
 
 export type IAttachment = {
   filename: string;
@@ -280,3 +317,9 @@ export type IHTTPException = {
 };
 
 export type IHTTPExeptionError<T> = Merge<IHTTPException, { errors: T }>;
+
+export interface ICloneTableResponse {
+  tableId: string;
+  slug: string;
+  fieldIdMap: Record<string, string>;
+}

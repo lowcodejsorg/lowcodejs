@@ -17,18 +17,13 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useRelationshipRowsReadPaginated } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IField, IRow, SearchableOption } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface TableRowRelationshipFieldProps {
   field: IField;
   disabled?: boolean;
 }
-
-type SearchableOption = {
-  value: string;
-  label: string;
-};
 
 export function TableRowRelationshipField({
   field,
@@ -91,7 +86,9 @@ export function TableRowRelationshipField({
         label: String(row[relConfig.field.slug] ?? row._id),
       }));
       formField.handleChange(newValues);
-    } else {
+    }
+
+    if (!isMultiple) {
       const row = newValue as IRow | null;
       if (row) {
         formField.handleChange([

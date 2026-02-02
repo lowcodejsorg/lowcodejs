@@ -1,7 +1,9 @@
 /* eslint-disable no-unused-vars */
-import type { ISetting } from '@application/core/entity.core';
+import type { ISetting, Merge } from '@application/core/entity.core';
 
-export type SettingUpdatePayload = Partial<ISetting>;
+export type SettingUpdatePayload = Partial<
+  Merge<Omit<ISetting, 'MODEL_CLONE_TABLES'>, { MODEL_CLONE_TABLES?: string[] }>
+>;
 
 export abstract class SettingContractRepository {
   abstract get(): Promise<ISetting | null>;

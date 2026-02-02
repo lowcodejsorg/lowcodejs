@@ -35,7 +35,10 @@ export default class TableRowShowUseCase {
 
       const c = await buildTable(table);
 
-      const populate = await buildPopulate(table.fields as IField[]);
+      const populate = await buildPopulate(
+        table.fields as IField[],
+        table.groups,
+      );
 
       const row = await c.findOne({
         _id: payload._id,

@@ -14,6 +14,7 @@ import { FieldMenuTypeSelect } from '@/components/common/tanstack-form/field-men
 import { FieldPassword } from '@/components/common/tanstack-form/field-password';
 import { FieldPermissionMultiSelect } from '@/components/common/tanstack-form/field-permission-multi-select';
 import { FieldSwitch } from '@/components/common/tanstack-form/field-switch';
+import { FieldTableMultiSelect } from '@/components/common/tanstack-form/field-table-multi-select';
 import { FieldText } from '@/components/common/tanstack-form/field-text';
 import { FieldTextarea } from '@/components/common/tanstack-form/field-textarea';
 import { FieldUrl } from '@/components/common/tanstack-form/field-url';
@@ -39,6 +40,7 @@ import { TableRowRelationshipField } from '@/components/common/tanstack-form/tab
 import { TableRowRichTextField } from '@/components/common/tanstack-form/table-row-rich-text-field';
 import { TableRowTextField } from '@/components/common/tanstack-form/table-row-text-field';
 import { TableRowTextareaField } from '@/components/common/tanstack-form/table-row-textarea-field';
+import { TableRowUserField } from '@/components/common/tanstack-form/table-row-user-field';
 import { TableStyleSelectField } from '@/components/common/tanstack-form/table-style-select-field';
 import { TableVisibilitySelectField } from '@/components/common/tanstack-form/table-visibility-select-field';
 
@@ -62,6 +64,7 @@ export const { useAppForm, withForm } = createFormHook({
     FieldMenuTypeSelect,
     FieldPermissionMultiSelect,
     FieldUserMultiSelect,
+    FieldTableMultiSelect,
     // Table configuration
     TableComboboxField,
     TableVisibilitySelectField,
@@ -85,6 +88,7 @@ export const { useAppForm, withForm } = createFormHook({
     TableRowRelationshipField,
     TableRowCategoryField,
     TableRowFieldGroupField,
+    TableRowUserField,
   },
   formComponents: {},
 });

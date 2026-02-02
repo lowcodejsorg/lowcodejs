@@ -126,8 +126,14 @@ export const TableSendToTrashSchema: FastifySchema = {
                   },
                   dropdown: {
                     type: 'array',
-                    items: { type: 'string' },
                     description: 'Dropdown options for DROPDOWN fields',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        label: { type: 'string' },
+                      },
+                    },
                   },
                   category: {
                     type: 'array',
@@ -173,7 +179,7 @@ export const TableSendToTrashSchema: FastifySchema = {
           properties: {
             style: {
               type: 'string',
-              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC'],
+              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
               description: 'Display style',
             },
             visibility: {

@@ -6,6 +6,13 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 
+export const GroupConfigurationSchema = z.object({
+  slug: z.string().trim(),
+  name: z.string().trim(),
+  fields: z.array(z.any()).default([]),
+  _schema: z.record(z.string(), z.unknown()).default({}),
+});
+
 export const TableConfigurationSchema = z.object({
   style: z
     .enum([
@@ -14,6 +21,7 @@ export const TableConfigurationSchema = z.object({
       E_TABLE_STYLE.DOCUMENT,
       E_TABLE_STYLE.CARD,
       E_TABLE_STYLE.MOSAIC,
+      E_TABLE_STYLE.KANBAN,
     ])
     .default(E_TABLE_STYLE.LIST),
   visibility: z

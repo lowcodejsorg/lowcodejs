@@ -115,11 +115,13 @@ kernel.register(_static, {
 
 kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
   console.error(JSON.stringify(error, null, 2));
+
   if (error instanceof HTTPException) {
     return response.status(error.code).send({
       message: error.message,
       code: error.code,
       cause: error.cause,
+      ...(error.errors && { errors: error.errors }),
     });
   }
 
@@ -185,17 +187,9 @@ kernel.register(swagger, {
       description: 'LowCodeJs API with JWT cookie-based authentication',
     },
     servers: [
-      // {
-      //   url: 'http://localhost:3000',
-      //   description: 'Development server',
-      // },
       {
-        url: 'https://api.demo.lowcodejs.org',
-        description: 'Demo server',
-      },
-      {
-        url: 'https://api.develop.lowcodejs.org',
-        description: 'Develop server',
+        url: Env.APP_SERVER_URL,
+        description: 'Base URL',
       },
     ],
     components: {

@@ -20,15 +20,22 @@ const Relationship = z.object({
   order: z.enum(['asc', 'desc']).default('asc'),
 });
 
+const Dropdown = z.object({
+  id: z.string().trim(),
+  label: z.string().trim(),
+  color: z.string().nullable().optional(),
+});
+
 export const TableFieldConfiguration = z.object({
   required: z.boolean().default(false),
   multiple: z.boolean().default(false),
   format: z.enum(E_FIELD_FORMAT).nullable().default(null),
   listing: z.boolean().default(false),
   filtering: z.boolean().default(false),
+  locked: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),
   relationship: Relationship.nullable().default(null),
-  dropdown: z.array(z.string().trim()).default([]),
+  dropdown: z.array(Dropdown).default([]),
   category: z.array(Category).default([]),
   group: z
     .object({

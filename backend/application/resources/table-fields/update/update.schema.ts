@@ -45,6 +45,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
           'REACTION',
           'EVALUATION',
           'CATEGORY',
+          'USER',
         ],
         description: 'Field type from FIELD_TYPE enum',
       },
@@ -80,9 +81,16 @@ export const TableFieldUpdateSchema: FastifySchema = {
           },
           dropdown: {
             type: 'array',
-            items: { type: 'string' },
             nullable: true,
             description: 'Options for DROPDOWN type',
+            items: {
+              type: 'object',
+              properties: {
+                id: { type: 'string' },
+                label: { type: 'string' },
+                color: { type: 'string' },
+              },
+            },
           },
           relationship: {
             type: 'object',
@@ -165,6 +173,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
             'REACTION',
             'EVALUATION',
             'CATEGORY',
+            'USER',
           ],
           description: 'Field type',
         },
@@ -199,9 +208,16 @@ export const TableFieldUpdateSchema: FastifySchema = {
             },
             dropdown: {
               type: 'array',
-              items: { type: 'string' },
               nullable: true,
               description: 'Dropdown options',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  label: { type: 'string' },
+                  color: { type: 'string' },
+                },
+              },
             },
             relationship: {
               type: 'object',

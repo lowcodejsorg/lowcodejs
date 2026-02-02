@@ -27,6 +27,7 @@ export const E_FIELD_TYPE = {
   REACTION: 'REACTION',
   EVALUATION: 'EVALUATION',
   CATEGORY: 'CATEGORY',
+  USER: 'USER',
 } as const;
 
 export const E_ROLE = {
@@ -72,6 +73,7 @@ export const E_TABLE_STYLE = {
   DOCUMENT: 'DOCUMENT',
   CARD: 'CARD',
   MOSAIC: 'MOSAIC',
+  KANBAN: 'KANBAN',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -149,6 +151,7 @@ export const FIELD_TYPE_OPTIONS = [
   { label: 'Categoria', value: E_FIELD_TYPE.CATEGORY },
   { label: 'Reação', value: E_FIELD_TYPE.REACTION },
   { label: 'Avaliação', value: E_FIELD_TYPE.EVALUATION },
+  { label: 'Usuário', value: E_FIELD_TYPE.USER },
 ] as const;
 
 export const TEXT_FORMAT_OPTIONS = [
@@ -215,6 +218,7 @@ export const TABLE_STYLE_OPTIONS = [
   { label: 'Documento', value: E_TABLE_STYLE.DOCUMENT },
   { label: 'Card', value: E_TABLE_STYLE.CARD },
   { label: 'Mosaico', value: E_TABLE_STYLE.MOSAIC },
+  { label: 'Kanban', value: E_TABLE_STYLE.KANBAN },
 ] as const;
 
 export const USER_GROUP_MAPPER = {

@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IStorage } from '@/lib/interfaces';
+import { buildFieldValidator } from '@/lib/table';
 
 type SearchableOption = {
   value: string;
@@ -38,7 +38,10 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
         defaults[field.slug] = []; // Always array
         break;
       case E_FIELD_TYPE.FIELD_GROUP:
-        defaults[field.slug] = [{}];
+        defaults[field.slug] = [];
+        break;
+      case E_FIELD_TYPE.USER:
+        defaults[field.slug] = []; // Always array of {value, label}
         break;
       default:
         defaults[field.slug] = '';
@@ -66,12 +69,19 @@ export function buildPayload(
         payload[field.slug] = value || null;
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        const dropdownValue = Array.from<string>(value ?? []);
-
+        const existing = values[field.slug];
         if (field.configuration.multiple) {
-          payload[field.slug] = dropdownValue;
+          const ids = Array.isArray(existing)
+            ? existing
+            : existing
+              ? [existing]
+              : [];
+          payload[field.slug] = ids as Array<string>;
         } else {
-          payload[field.slug] = dropdownValue.slice(0, 1);
+          const id = Array.isArray(existing)
+            ? (existing[0] ?? null)
+            : (existing ?? null);
+          payload[field.slug] = id as string | null;
         }
         break;
       }
@@ -128,6 +138,16 @@ export function buildPayload(
         }
         break;
       }
+      case E_FIELD_TYPE.USER: {
+        const userValue = Array.from<SearchableOption>(value ?? []);
+        if (field.configuration.multiple) {
+          payload[field.slug] = userValue.map((opt) => opt.value);
+        } else {
+          // Always array, but limit to 1 item
+          payload[field.slug] = userValue.slice(0, 1).map((opt) => opt.value);
+        }
+        break;
+      }
       default:
         payload[field.slug] = value || null;
     }
@@ -137,7 +157,11 @@ export function buildPayload(
 }
 
 // Validator for required fields
-export function createRequiredValidator(fieldName: string) {
+type RequiredValidator = {
+  onChange: ({ value }: { value: any }) => { message: string } | undefined;
+};
+
+export function createRequiredValidator(fieldName: string): RequiredValidator {
   const validate = ({
     value,
   }: {
@@ -163,22 +187,22 @@ export function createRequiredValidator(fieldName: string) {
   };
 }
 
-interface CreateRowFormFieldsProps {
+interface RowFormFieldsProps {
   form: any;
-  activeFields: Array<IField>;
+  fields: Array<IField>;
   disabled: boolean;
   tableSlug: string;
 }
 
-export function CreateRowFormFields({
+export function RowFormFields({
   form,
-  activeFields,
+  fields,
   disabled,
   tableSlug,
-}: CreateRowFormFieldsProps): React.JSX.Element {
+}: RowFormFieldsProps): React.JSX.Element {
   return (
     <section className="space-y-4 p-2">
-      {activeFields.map((field) => {
+      {fields.map((field) => {
         // Skip non-editable field types
         if (
           field.type === E_FIELD_TYPE.REACTION ||
@@ -187,15 +211,15 @@ export function CreateRowFormFields({
           return null;
         }
 
-        const isRequired = field.configuration.required;
-
         return (
           <form.AppField
             key={field._id}
             name={field.slug}
-            validators={
-              isRequired ? createRequiredValidator(field.name) : undefined
-            }
+            validators={{
+              onChange: ({ value }: { value: any }) => {
+                return buildFieldValidator(field, value);
+              },
+            }}
           >
             {(formField: any) => {
               switch (field.type) {
@@ -263,6 +287,13 @@ export function CreateRowFormFields({
                       disabled={disabled}
                       tableSlug={tableSlug}
                       form={form}
+                    />
+                  );
+                case E_FIELD_TYPE.USER:
+                  return (
+                    <formField.TableRowUserField
+                      field={field}
+                      disabled={disabled}
                     />
                   );
                 default:

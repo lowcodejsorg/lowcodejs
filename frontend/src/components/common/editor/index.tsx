@@ -179,7 +179,9 @@ const extensions = [
   SlashCommand,
 ];
 
-localeActions.setLang('pt_BR');
+if (typeof window !== 'undefined') {
+  localeActions.setLang('pt_BR');
+}
 
 function debounce(
   func: (...args: Array<any>) => void,
@@ -204,30 +206,50 @@ export function EditorExample({
   const isControlled = value !== undefined && onChange !== undefined;
   const content = isControlled ? value : '<p>Escreva algo...</p>';
 
-  const onValueChange = useCallback(
-    debounce((newValue: any) => {
-      if (isControlled) {
-        onChange(newValue);
-      }
-    }, 300),
-    [isControlled, onChange],
-  );
-
-  const ed = useEditor({
-    textDirection: 'auto',
-    extensions,
-    immediatelyRender: false,
-    onUpdate: ({ editor: editorInstance }) => {
-      const html = editorInstance.getHTML();
-      onValueChange(html);
-    },
-    content,
-  });
+  const onChangeRef = React.useRef(onChange);
+  const isControlledRef = React.useRef(isControlled);
 
   React.useEffect(() => {
+    onChangeRef.current = onChange;
+    isControlledRef.current = isControlled;
+  }, [onChange, isControlled]);
+
+  const onValueChange = useCallback(
+    debounce((editor: any) => {
+      if (!isControlledRef.current) return;
+      const nextValue = editor.getHTML();
+      onChangeRef.current?.(nextValue);
+    }, 300),
+    [],
+  );
+
+  const ed = useEditor(
+    {
+      textDirection: 'auto',
+      extensions,
+      immediatelyRender: false,
+      onUpdate: ({ editor: editorInstance }) => {
+        onValueChange(editorInstance);
+      },
+      content,
+    },
+    [],
+  );
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
     // @ts-ignore - Exposing editor instance for debugging
     window['editor'] = ed;
   }, [ed]);
+
+  React.useEffect(() => {
+    if (!ed || !isControlled) return;
+    if (ed.isFocused) return;
+    const current = ed.getHTML();
+    if (current !== content) {
+      ed.commands.setContent(content, false);
+    }
+  }, [content, ed, isControlled]);
 
   if (!ed) return null;
 

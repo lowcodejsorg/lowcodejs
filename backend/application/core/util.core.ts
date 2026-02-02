@@ -4,7 +4,9 @@ import mongoose from 'mongoose';
 import { Table } from '@application/model/table.model';
 
 import type {
+  IEmbeddedSchema,
   IField,
+  IGroupConfiguration,
   IRow,
   ITableSchema,
   Optional,
@@ -30,9 +32,13 @@ const FieldTypeMapper: Record<
   [E_FIELD_TYPE.EVALUATION]: E_SCHEMA_TYPE.OBJECT_ID,
   [E_FIELD_TYPE.REACTION]: E_SCHEMA_TYPE.OBJECT_ID,
   [E_FIELD_TYPE.CATEGORY]: E_SCHEMA_TYPE.STRING,
+  [E_FIELD_TYPE.USER]: E_SCHEMA_TYPE.OBJECT_ID,
 };
 
-function mapperSchema(field: IField): ITableSchema {
+function mapperSchema(
+  field: IField,
+  groups?: IGroupConfiguration[],
+): ITableSchema {
   const mapper = {
     [E_FIELD_TYPE.TEXT_SHORT]: {
       [field.slug]: {
@@ -77,15 +83,19 @@ function mapperSchema(field: IField): ITableSchema {
       ],
     },
 
-    [E_FIELD_TYPE.FIELD_GROUP]: {
-      [field.slug]: [
-        {
-          type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-          ref: field?.configuration?.group?.slug ?? undefined,
-        },
-      ],
-    },
+    [E_FIELD_TYPE.FIELD_GROUP]: ((): Record<string, IEmbeddedSchema[]> => {
+      const groupSlug = field?.configuration?.group?.slug;
+      const group = groups?.find((g) => g.slug === groupSlug);
+      return {
+        [field.slug]: [
+          {
+            type: 'Embedded' as const,
+            schema: group?._schema || {},
+            required: Boolean(field.configuration?.required || false),
+          },
+        ],
+      };
+    })(),
 
     [E_FIELD_TYPE.CATEGORY]: {
       [field.slug]: [
@@ -115,6 +125,16 @@ function mapperSchema(field: IField): ITableSchema {
         },
       ],
     },
+
+    [E_FIELD_TYPE.USER]: {
+      [field.slug]: [
+        {
+          type: FieldTypeMapper[field.type] || 'String',
+          required: Boolean(field.configuration?.required || false),
+          ref: 'User',
+        },
+      ],
+    },
   };
 
   if (!(field.type in mapper) && !field?.configuration?.multiple) {
@@ -140,7 +160,10 @@ function mapperSchema(field: IField): ITableSchema {
   return mapper[field.type as keyof typeof mapper];
 }
 
-export function buildSchema(fields: IField[]): ITableSchema {
+export function buildSchema(
+  fields: IField[],
+  groups?: IGroupConfiguration[],
+): ITableSchema {
   const schema: ITableSchema = {
     trashedAt: {
       type: 'Date',
@@ -153,7 +176,7 @@ export function buildSchema(fields: IField[]): ITableSchema {
   };
 
   for (const field of fields) {
-    Object.assign(schema, mapperSchema(field));
+    Object.assign(schema, mapperSchema(field, groups));
   }
 
   return schema;
@@ -176,28 +199,45 @@ export async function buildTable(
 
   if (mongoose.models[table.slug]) delete mongoose.models[table.slug];
 
-  const schema = new mongoose.Schema(
-    {
-      ...table?._schema,
-      _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-      creator: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: false,
-      },
+  // Processa _schema para converter campos Embedded em subdocument schemas
+  const schemaDefinition: Record<string, any> = {
+    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    creator: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
     },
-    {
-      timestamps: true,
-      toJSON: { virtuals: true },
-      toObject: { virtuals: true },
-    },
-  );
+  };
+
+  for (const [key, value] of Object.entries(table._schema)) {
+    if (Array.isArray(value) && value[0]?.type === 'Embedded') {
+      // Cria subdocument schema para campos embedded
+      const embeddedSchema = value[0].schema || {};
+      const subSchemaDefinition: Record<string, any> = {};
+
+      for (const [subKey, subValue] of Object.entries(embeddedSchema)) {
+        subSchemaDefinition[subKey] = subValue;
+      }
+
+      const subSchema = new mongoose.Schema(subSchemaDefinition, {
+        _id: false,
+      });
+      schemaDefinition[key] = [subSchema];
+    } else {
+      schemaDefinition[key] = value;
+    }
+  }
+
+  const schema = new mongoose.Schema(schemaDefinition, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
+  });
 
   // ===== ADICIONA OS MIDDLEWARES AQUI =====
 
   if (table?.methods?.beforeSave?.code) {
     schema.pre('save', async function (next) {
-      console.log('BEFORE SAVE');
       const result = HandlerFunction(
         table?.methods?.beforeSave?.code!,
         this,
@@ -222,8 +262,6 @@ export async function buildTable(
 
   if (table?.methods?.afterSave?.code) {
     schema.post('save', async function (doc, next) {
-      console.log('AFTER SAVE');
-
       const result = HandlerFunction(
         table?.methods?.afterSave?.code!,
         doc,
@@ -250,7 +288,6 @@ export async function buildTable(
     // Para consultas individuais (findOne)
     schema.post('findOne', async function (doc, next) {
       if (doc) {
-        console.log('ON LOAD - findOne');
         const result = HandlerFunction(
           table?.methods?.onLoad?.code!,
           doc,
@@ -287,12 +324,13 @@ export async function buildTable(
 }
 
 export function getRelationship(fields: IField[] = []): IField[] {
+  // FIELD_GROUP removido - agora são embedded documents, não precisam de populate
   const types = [
     E_FIELD_TYPE.RELATIONSHIP,
     E_FIELD_TYPE.FILE,
-    E_FIELD_TYPE.FIELD_GROUP,
     E_FIELD_TYPE.REACTION,
     E_FIELD_TYPE.EVALUATION,
+    E_FIELD_TYPE.USER,
   ];
 
   return fields.filter(
@@ -302,6 +340,7 @@ export function getRelationship(fields: IField[] = []): IField[] {
 
 export async function buildPopulate(
   fields?: IField[],
+  groups?: IGroupConfiguration[],
 ): Promise<{ path: string; model?: string; select?: string }[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
@@ -311,10 +350,19 @@ export async function buildPopulate(
       field.type !== E_FIELD_TYPE.FIELD_GROUP &&
       field.type !== E_FIELD_TYPE.REACTION &&
       field.type !== E_FIELD_TYPE.EVALUATION &&
-      field.type !== E_FIELD_TYPE.RELATIONSHIP
+      field.type !== E_FIELD_TYPE.RELATIONSHIP &&
+      field.type !== E_FIELD_TYPE.USER
     ) {
       populate.push({
         path: field.slug,
+      });
+    }
+
+    if (field.type === E_FIELD_TYPE.USER) {
+      populate.push({
+        path: field.slug,
+        model: 'User',
+        select: 'name email _id',
       });
     }
 
@@ -356,7 +404,10 @@ export async function buildPopulate(
         const relationshipFields = getRelationship(
           relationshipTable?.fields as IField[],
         );
-        const relationshipPopulate = await buildPopulate(relationshipFields);
+        const relationshipPopulate = await buildPopulate(
+          relationshipFields,
+          relationshipTable?.groups as IGroupConfiguration[],
+        );
 
         populate.push({
           path: field.slug,
@@ -367,36 +418,25 @@ export async function buildPopulate(
       }
     }
 
-    if (field.type === E_FIELD_TYPE.FIELD_GROUP) {
-      const groupId = field?.configuration?.group?._id?.toString();
+    // FIELD_GROUP não precisa de populate - dados são embedded
+  }
 
-      const group = await Table.findOne({
-        _id: groupId,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+  if (groups) {
+    for (const field of fields ?? []) {
+      if (field.type !== E_FIELD_TYPE.FIELD_GROUP) continue;
 
-      if (group) {
-        await buildTable({
-          ...group.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: group._id.toString(),
-        });
+      const groupSlug = field?.configuration?.group?.slug;
+      const group = groups.find((g) => g.slug === groupSlug);
+      if (!group) continue;
 
-        const groupRelationship = getRelationship(group?.fields as IField[]);
-
-        const groupFields = await buildPopulate(groupRelationship);
-
-        populate.push({
-          path: field.slug,
-          ...(groupFields.length > 0 && {
-            populate: groupFields,
-          }),
-        });
+      for (const groupField of group.fields || []) {
+        if (groupField.type === E_FIELD_TYPE.USER) {
+          populate.push({
+            path: `${field.slug}.${groupField.slug}`,
+            model: 'User',
+            select: 'name email _id',
+          });
+        }
       }
     }
   }
@@ -416,6 +456,7 @@ type Query = Record<string, any>;
 export async function buildQuery(
   { search, trashed, ...payload }: Partial<Query>,
   fields: IField[] = [],
+  groups?: IGroupConfiguration[],
 ): Promise<Query> {
   let query: Query = {
     ...(trashed && { trashed: trashed === 'true' }),
@@ -440,7 +481,8 @@ export async function buildQuery(
     if (
       (field.type === E_FIELD_TYPE.RELATIONSHIP ||
         field.type === E_FIELD_TYPE.DROPDOWN ||
-        field.type === E_FIELD_TYPE.CATEGORY) &&
+        field.type === E_FIELD_TYPE.CATEGORY ||
+        field.type === E_FIELD_TYPE.USER) &&
       payload[slug]
     ) {
       query[slug] = {
@@ -466,57 +508,71 @@ export async function buildQuery(
     }
   }
 
+  // Query em campos FIELD_GROUP usando dot notation (embedded documents)
   const hasFieldGroupQuery = fields.some((f) => {
     if (f.type !== E_FIELD_TYPE.FIELD_GROUP) return false;
     const groupPrefix = f.slug.concat('-');
     return Object.keys(payload).some((key) => key.startsWith(groupPrefix));
   });
 
-  if (hasFieldGroupQuery) {
+  if (hasFieldGroupQuery && groups) {
     for (const field of fields.filter(
       (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
     )) {
-      const slug = String(field.slug?.toString());
-
-      const group = await Table.findOne({
-        slug: field?.configuration?.group?.slug,
-      }).populate([
-        {
-          path: 'fields',
-          model: 'Field',
-        },
-      ]);
+      const groupSlug = field?.configuration?.group?.slug;
+      const group = groups.find((g) => g.slug === groupSlug);
 
       if (!group) continue;
 
-      let groupPayload: Query = {};
+      const groupFields = group.fields || [];
 
-      for (const fieldGroup of group?.fields as import('@application/core/entity.core').IField[]) {
-        const fieldGroupSlug = slug.concat('-').concat(String(fieldGroup.slug));
-        if (!(fieldGroupSlug in payload)) continue;
-        groupPayload[fieldGroup.slug] = payload[fieldGroupSlug];
-      }
+      for (const groupField of groupFields) {
+        const payloadKey = `${field.slug}-${groupField.slug}`;
+        const embeddedPath = `${field.slug}.${groupField.slug}`;
 
-      const queryGroup = await buildQuery(
-        { ...groupPayload },
-        group?.fields as import('@application/core/entity.core').IField[],
-      );
+        if (!(payloadKey in payload)) continue;
 
-      if (Object.keys(queryGroup).length > 0 && group) {
-        const c = await buildTable({
-          ...group?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: group?._id.toString(),
-        });
+        if (
+          groupField.type === E_FIELD_TYPE.TEXT_SHORT ||
+          groupField.type === E_FIELD_TYPE.TEXT_LONG
+        ) {
+          query[embeddedPath] = {
+            $regex: normalize(payload[payloadKey]?.toString()),
+            $options: 'i',
+          };
+        }
 
-        const ids: string[] = await c?.find(queryGroup).distinct('_id');
+        if (
+          groupField.type === E_FIELD_TYPE.RELATIONSHIP ||
+          groupField.type === E_FIELD_TYPE.DROPDOWN ||
+          groupField.type === E_FIELD_TYPE.CATEGORY ||
+          groupField.type === E_FIELD_TYPE.USER
+        ) {
+          query[embeddedPath] = {
+            $in: payload[payloadKey]?.toString().split(','),
+          };
+        }
 
-        if (ids.length === 0) continue;
+        if (groupField.type === E_FIELD_TYPE.DATE) {
+          const initialKey = `${payloadKey}-initial`;
+          const finalKey = `${payloadKey}-final`;
 
-        query[slug] = {
-          $in: ids,
-        };
+          if (payload[initialKey]) {
+            const initial = new Date(String(payload[initialKey]));
+            query[embeddedPath] = query[embeddedPath] || {};
+            query[embeddedPath].$gte = new Date(
+              initial.setUTCHours(0, 0, 0, 0),
+            );
+          }
+
+          if (payload[finalKey]) {
+            const final = new Date(String(payload[finalKey]));
+            query[embeddedPath] = query[embeddedPath] || {};
+            query[embeddedPath].$lte = new Date(
+              final.setUTCHours(23, 59, 59, 999),
+            );
+          }
+        }
       }
     }
   }
@@ -538,6 +594,33 @@ export async function buildQuery(
             $options: 'i',
           },
         });
+      }
+    }
+
+    // Também busca em campos embedded (grupos)
+    if (groups) {
+      for (const field of fields.filter(
+        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
+      )) {
+        const groupSlug = field?.configuration?.group?.slug;
+        const group = groups.find((g) => g.slug === groupSlug);
+
+        if (!group) continue;
+
+        for (const groupField of group.fields || []) {
+          if (
+            groupField.type === E_FIELD_TYPE.TEXT_LONG ||
+            groupField.type === E_FIELD_TYPE.TEXT_SHORT
+          ) {
+            const embeddedPath = `${field.slug}.${groupField.slug}`;
+            searchQuery.push({
+              [embeddedPath]: {
+                $regex: normalize(search),
+                $options: 'i',
+              },
+            });
+          }
+        }
       }
     }
 

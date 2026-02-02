@@ -287,7 +287,6 @@ export const FieldConfigurationSchema = z.object({
   category: z.array(CategorySchema).default([]),
   group: z
     .object({
-      _id: z.string().trim(),
       slug: z.string().trim(),
     })
     .nullable()
@@ -392,6 +391,7 @@ export const SettingUpdateBodySchema = z.object({
   PAGINATION_PER_PAGE: z.number().optional(),
   LOGO_SMALL_URL: z.string().optional(),
   LOGO_LARGE_URL: z.string().optional(),
+  MODEL_CLONE_TABLES: z.string().optional(),
   EMAIL_PROVIDER_HOST: z.string().optional(),
   EMAIL_PROVIDER_PORT: z.number().optional(),
   EMAIL_PROVIDER_USER: z.string().optional(),

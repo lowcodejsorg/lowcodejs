@@ -20,14 +20,15 @@ export default class SettingInMemoryRepository implements SettingContractReposit
         FILE_UPLOAD_ACCEPTED: 'jpg;jpeg;png;pdf',
         FILE_UPLOAD_MAX_FILES_PER_UPLOAD: 10,
         PAGINATION_PER_PAGE: 20,
+        MODEL_CLONE_TABLES: [],
         EMAIL_PROVIDER_HOST: '',
         EMAIL_PROVIDER_PORT: 587,
         EMAIL_PROVIDER_USER: '',
         ...payload,
-      };
+      } as unknown as ISetting;
     } else {
       Object.assign(this.item, payload);
     }
-    return this.item;
+    return this.item!;
   }
 }

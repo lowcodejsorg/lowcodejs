@@ -36,6 +36,7 @@ export const E_FIELD_TYPE = {
   REACTION: 'REACTION',
   EVALUATION: 'EVALUATION',
   CATEGORY: 'CATEGORY',
+  USER: 'USER',
 } as const;
 
 export const E_FIELD_FORMAT = {
@@ -91,6 +92,7 @@ export const E_TABLE_STYLE = {
   DOCUMENT: 'DOCUMENT',
   CARD: 'CARD',
   MOSAIC: 'MOSAIC',
+  KANBAN: 'KANBAN',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -197,7 +199,23 @@ export type ISchema = {
   default?: string | number | boolean | null;
 };
 
-export type ITableSchema = Record<string, ISchema | ISchema[]>;
+export type IEmbeddedSchema = {
+  type: 'Embedded';
+  schema: ITableSchema;
+  required: boolean;
+};
+
+export type ITableSchema = Record<
+  string,
+  ISchema | ISchema[] | IEmbeddedSchema[]
+>;
+
+export type IGroupConfiguration = {
+  slug: string;
+  name: string;
+  fields: IField[];
+  _schema: ITableSchema;
+};
 
 export type ITableConfiguration = {
   style: ValueOf<typeof E_TABLE_STYLE>;
@@ -229,6 +247,7 @@ export type ITable = Merge<
     type: ValueOf<typeof E_TABLE_TYPE>;
     configuration: ITableConfiguration;
     methods: ITableMethod;
+    groups: IGroupConfiguration[];
   }
 >;
 
@@ -238,13 +257,22 @@ export type ICategory = {
   children: unknown[];
 };
 
+export type IDropdown = {
+  id: string;
+  label: string;
+  color?: string | null;
+};
+
 export type IFieldConfigurationRelationship = {
   table: Pick<ITable, '_id' | 'slug'>;
   field: Pick<IField, '_id' | 'slug'>;
   order: 'asc' | 'desc';
 };
 
-export type IFieldConfigurationGroup = Pick<ITable, '_id' | 'slug'>;
+export type IFieldConfigurationGroup = {
+  _id?: string;
+  slug: string;
+};
 
 export type IField = Merge<
   Base,
@@ -259,8 +287,9 @@ export type IField = Merge<
       listing: boolean;
       filtering: boolean;
       defaultValue: string | null;
+      locked?: boolean;
       relationship: IFieldConfigurationRelationship | null;
-      dropdown: string[];
+      dropdown: IDropdown[];
       category: ICategory[];
       group: IFieldConfigurationGroup | null;
     };
@@ -356,8 +385,9 @@ export type ISetting = {
   FILE_UPLOAD_ACCEPTED: string;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
   PAGINATION_PER_PAGE: number;
-  LOGO_SMALL_URL?: string;
-  LOGO_LARGE_URL?: string;
+  MODEL_CLONE_TABLES: ITable[];
+  LOGO_SMALL_URL?: string | null;
+  LOGO_LARGE_URL?: string | null;
   EMAIL_PROVIDER_HOST: string;
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;

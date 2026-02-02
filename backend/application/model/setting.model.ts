@@ -11,6 +11,9 @@ const Schema = new mongoose.Schema(
     FILE_UPLOAD_ACCEPTED: { type: String, default: 'jpg;jpeg;png;pdf' },
     FILE_UPLOAD_MAX_FILES_PER_UPLOAD: { type: Number, default: 10 },
     PAGINATION_PER_PAGE: { type: Number, default: 20 },
+    MODEL_CLONE_TABLES: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'Table' },
+    ],
     LOGO_SMALL_URL: { type: String },
     LOGO_LARGE_URL: { type: String },
     EMAIL_PROVIDER_HOST: { type: String },

@@ -8,6 +8,7 @@ export const TableFieldCreateBodyValidator = z.object({
   name: z.string().trim(),
   type: z.enum(E_FIELD_TYPE),
   configuration: TableFieldConfiguration,
+  group: z.string().trim().optional(),
 });
 
 export const TableFieldCreateParamsValidator = z.object({

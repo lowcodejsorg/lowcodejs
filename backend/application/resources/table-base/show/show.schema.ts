@@ -157,8 +157,15 @@ export const TableShowSchema: FastifySchema = {
                   },
                   dropdown: {
                     type: 'array',
-                    items: { type: 'string' },
                     description: 'Dropdown options for DROPDOWN fields',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        id: { type: 'string' },
+                        label: { type: 'string' },
+                        color: { type: 'string' },
+                      },
+                    },
                   },
                   category: {
                     type: 'array',
@@ -204,7 +211,7 @@ export const TableShowSchema: FastifySchema = {
           properties: {
             style: {
               type: 'string',
-              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC'],
+              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
               description: 'Display style',
             },
             visibility: {
@@ -293,6 +300,68 @@ export const TableShowSchema: FastifySchema = {
             },
           },
           description: 'Table methods configuration',
+        },
+        groups: {
+          type: 'array',
+          description: 'Field groups configuration',
+          items: {
+            type: 'object',
+            properties: {
+              slug: {
+                type: 'string',
+                description: 'Group slug identifier',
+              },
+              name: {
+                type: 'string',
+                description: 'Group display name',
+              },
+              fields: {
+                type: 'array',
+                description: 'Fields within the group (populated)',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string', description: 'Field ID' },
+                    name: { type: 'string', description: 'Field name' },
+                    slug: { type: 'string', description: 'Field slug' },
+                    type: {
+                      type: 'string',
+                      enum: [
+                        'TEXT_SHORT',
+                        'TEXT_LONG',
+                        'DROPDOWN',
+                        'DATE',
+                        'RELATIONSHIP',
+                        'FILE',
+                        'CATEGORY',
+                        'USER',
+                      ],
+                      description: 'Field type',
+                    },
+                    configuration: {
+                      type: 'object',
+                      description: 'Field configuration',
+                      additionalProperties: true,
+                    },
+                    trashed: { type: 'boolean' },
+                    trashedAt: {
+                      type: 'string',
+                      format: 'date-time',
+                      nullable: true,
+                    },
+                    createdAt: { type: 'string', format: 'date-time' },
+                    updatedAt: { type: 'string', format: 'date-time' },
+                  },
+                  additionalProperties: true,
+                },
+              },
+              _schema: {
+                type: 'object',
+                description: 'Generated MongoDB schema for the group',
+                additionalProperties: true,
+              },
+            },
+          },
         },
         _schema: {
           type: 'object',

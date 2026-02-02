@@ -7,7 +7,12 @@ config({ path: envFile });
 const EnvSchema = z.object({
   LOCALE: z.enum(['pt-br', 'en-us']).default('pt-br'),
   FILE_UPLOAD_MAX_SIZE: z.coerce.number().default(1024 * 1024 * 5),
-  FILE_UPLOAD_ACCEPTED: z.string(),
+  FILE_UPLOAD_ACCEPTED: z.string().transform((val) =>
+    val
+      .split(';')
+      .map((s) => s.trim())
+      .filter(Boolean),
+  ),
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.coerce.number().default(10),
   PAGINATION_PER_PAGE: z.coerce.number().default(50),
 

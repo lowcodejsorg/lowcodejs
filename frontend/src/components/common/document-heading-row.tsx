@@ -7,11 +7,15 @@ export function DocumentHeadingRow({
   level,
   className,
   children,
+  icon,
+  actions,
 }: {
   id: string;
   level: number;
   className?: string;
   children: React.ReactNode;
+  icon?: React.ReactNode;
+  actions?: React.ReactNode;
 }): React.JSX.Element {
   const headingStyles: Record<number, string> = {
     2: 'text-2xl font-bold mt-8',
@@ -21,14 +25,21 @@ export function DocumentHeadingRow({
     6: 'text-sm font-semibold mt-2',
   };
 
-  const Tag = `h${level}` as keyof JSX.IntrinsicElements as React.ElementType;
+  const Tag =
+    `h${level}` as keyof React.JSX.IntrinsicElements as React.ElementType;
 
   return (
     <Tag
       id={id}
       className={cn(className, headingStyles[level])}
     >
-      {children}
+      <span className="inline-flex items-center gap-2 w-full">
+        {icon ? <span className="inline-flex opacity-70">{icon}</span> : null}
+        <span>{children}</span>
+        {actions ? (
+          <span className="inline-flex self-end ml-auto">{actions}</span>
+        ) : null}
+      </span>
     </Tag>
   );
 }

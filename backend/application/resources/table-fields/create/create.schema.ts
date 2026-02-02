@@ -40,6 +40,7 @@ export const TableFieldCreateSchema: FastifySchema = {
           'REACTION',
           'EVALUATION',
           'CATEGORY',
+          'USER',
         ],
         description: 'Field type from FIELD_TYPE enum',
       },
@@ -83,10 +84,18 @@ export const TableFieldCreateSchema: FastifySchema = {
           },
           dropdown: {
             type: 'array',
-            items: { type: 'string' },
             nullable: true,
             default: null,
             description: 'Options for DROPDOWN type fields',
+            items: {
+              type: 'object',
+              required: ['id', 'label'],
+              properties: {
+                id: { type: 'string', description: 'Dropdown option ID' },
+                label: { type: 'string', description: 'Dropdown option label' },
+                color: { type: 'string', description: 'Dropdown option color' },
+              },
+            },
           },
           relationship: {
             type: 'object',
@@ -188,6 +197,7 @@ export const TableFieldCreateSchema: FastifySchema = {
             'REACTION',
             'EVALUATION',
             'CATEGORY',
+            'USER',
           ],
           description: 'Field type',
         },
@@ -222,9 +232,16 @@ export const TableFieldCreateSchema: FastifySchema = {
             },
             dropdown: {
               type: 'array',
-              items: { type: 'string' },
               nullable: true,
               description: 'Dropdown options',
+              items: {
+                type: 'object',
+                properties: {
+                  id: { type: 'string' },
+                  label: { type: 'string' },
+                  color: { type: 'string' },
+                },
+              },
             },
             relationship: {
               type: 'object',

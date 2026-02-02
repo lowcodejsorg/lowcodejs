@@ -56,6 +56,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
         beforeSave: { code: null },
         afterSave: { code: null },
       },
+      groups: payload.groups ?? [],
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -154,6 +155,9 @@ export default class TableInMemoryRepository implements TableContractRepository 
       if (payload.configuration.fields !== undefined) {
         table.configuration.fields = payload.configuration.fields;
       }
+    }
+    if (payload.groups !== undefined) {
+      table.groups = payload.groups;
     }
     if (payload.name !== undefined) table.name = payload.name;
     if (payload.description !== undefined)

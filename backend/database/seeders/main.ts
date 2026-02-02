@@ -4,7 +4,6 @@ import { MongooseConnect } from '@config/database.config';
 
 async function seed(): Promise<void> {
   await MongooseConnect();
-  console.log(process.cwd());
   let seeders = await glob(process.cwd() + '/database/seeders/*.seed.{js,ts}');
 
   seeders = seeders.sort((a, b) => {

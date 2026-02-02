@@ -2,16 +2,22 @@ export interface Exception {
   message: string;
   code: number;
   cause: string;
+  errors?: Record<string, string>;
 }
 
 export default class HTTPException extends Error {
   public readonly code: number;
   public override readonly cause: string;
+  public errors?: Record<string, string>;
 
-  private constructor(payload: Exception) {
+  protected constructor(payload: Exception) {
     super(payload.message);
     this.cause = payload.cause;
     this.code = payload.code;
+
+    if (payload.errors) {
+      this.errors = payload.errors;
+    }
   }
 
   // Métodos estáticos para cada código HTTP de erro 4xx e 5xx
@@ -20,8 +26,9 @@ export default class HTTPException extends Error {
   static BadRequest(
     message = 'Bad Request',
     cause = 'INVALID_PARAMETERS',
+    errors?: Record<string, string>,
   ): HTTPException {
-    return new HTTPException({ message, code: 400, cause });
+    return new HTTPException({ message, code: 400, cause, errors });
   }
 
   static Unauthorized(

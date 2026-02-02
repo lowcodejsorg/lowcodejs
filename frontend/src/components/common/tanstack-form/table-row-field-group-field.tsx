@@ -6,12 +6,18 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IStorage } from '@/lib/interfaces';
+import type {
+  IField,
+  IGroupConfiguration,
+  IStorage,
+  ITable,
+} from '@/lib/interfaces';
 
 interface TableRowFieldGroupFieldProps {
   field: IField;
   disabled?: boolean;
   tableSlug?: string;
+  table?: ITable; // Tabela pai com groups
   form: any; // TanStack Form instance
 }
 
@@ -41,6 +47,8 @@ function createNestedRequiredValidator(fieldName: string): {
 export function TableRowFieldGroupField({
   field,
   disabled,
+  table: tableProp,
+  tableSlug,
   form,
 }: TableRowFieldGroupFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<Record<string, any>>>();
@@ -51,7 +59,14 @@ export function TableRowFieldGroupField({
 
   const groupConfig = field.configuration.group;
 
-  const groupTable = useReadTable({ slug: groupConfig?.slug ?? '' });
+  // Usa useReadTable como fallback quando table não é passada
+  const tableQuery = useReadTable({ slug: tableSlug ?? '' });
+  const table = tableProp ?? tableQuery.data;
+
+  // Busca os campos do grupo em groups
+  const group: IGroupConfiguration | undefined = table?.groups.find(
+    (g) => g.slug === groupConfig?.slug,
+  );
 
   const items = formField.state.value;
 
@@ -78,7 +93,8 @@ export function TableRowFieldGroupField({
     );
   }
 
-  if (groupTable.status === 'pending') {
+  // Se não temos a tabela ainda (carregando via useReadTable)
+  if (!tableProp && tableQuery.status === 'pending') {
     return (
       <Field>
         <FieldLabel>{field.name}</FieldLabel>
@@ -89,7 +105,7 @@ export function TableRowFieldGroupField({
     );
   }
 
-  if (groupTable.status === 'error') {
+  if (!tableProp && tableQuery.status === 'error') {
     return (
       <Field>
         <FieldLabel>{field.name}</FieldLabel>
@@ -100,7 +116,18 @@ export function TableRowFieldGroupField({
     );
   }
 
-  const groupFields = groupTable.data.fields.filter((f) => !f.trashed);
+  if (!group) {
+    return (
+      <Field>
+        <FieldLabel>{field.name}</FieldLabel>
+        <p className="text-muted-foreground text-sm">
+          Grupo de campos não encontrado
+        </p>
+      </Field>
+    );
+  }
+
+  const groupFields = group.fields.filter((f) => !f.trashed);
 
   return (
     <Field data-invalid={isInvalid}>
