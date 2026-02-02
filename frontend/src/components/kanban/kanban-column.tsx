@@ -34,7 +34,11 @@ export function KanbanColumn({
   onEditChange: (value: string) => void;
   onEditColorChange: (value: string) => void;
   onEditCancel: () => void;
-  onEditCommit: (optionId: string, nextLabel: string, nextColor: string | null) => void;
+  onEditCommit: (
+    optionId: string,
+    nextLabel: string,
+    nextColor: string | null,
+  ) => void;
 }): React.JSX.Element {
   const colorInputRef = React.useRef<HTMLInputElement | null>(null);
   const {
