@@ -1,0 +1,121 @@
+import { CalendarIcon, UserPlusIcon } from 'lucide-react';
+import React from 'react';
+
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import type { IField, IUser } from '@/lib/interfaces';
+import { getUserInitials } from '@/lib/kanban-helpers';
+
+type EditTarget = 'members' | 'labels' | 'due' | null;
+
+export function KanbanRowQuickActions({
+  members,
+  fields,
+  editTarget,
+  setEditTarget,
+  quickForm,
+}: {
+  members: Array<IUser | string>;
+  fields: {
+    members?: IField;
+    dueDate?: IField;
+    labels?: IField;
+  };
+  editTarget: EditTarget;
+  setEditTarget: (value: EditTarget) => void;
+  quickForm: any;
+}): React.JSX.Element {
+  return (
+    <>
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <div className="flex -space-x-2">
+          {members.map((member, index) => (
+            <Avatar
+              key={index}
+              className="h-7 w-7 border border-background"
+            >
+              <AvatarFallback className="text-[10px]">
+                {getUserInitials(member)}
+              </AvatarFallback>
+            </Avatar>
+          ))}
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={() => setEditTarget('members')}
+          className="cursor-pointer"
+        >
+          <UserPlusIcon className="size-4" />
+          <span>Membros</span>
+        </Button>
+        {fields.dueDate && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditTarget('due')}
+            className="cursor-pointer"
+          >
+            <CalendarIcon className="size-4" />
+            <span>Data de vencimento</span>
+          </Button>
+        )}
+        {fields.labels && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => setEditTarget('labels')}
+            className="cursor-pointer"
+          >
+            <span>Rótulos</span>
+          </Button>
+        )}
+      </div>
+
+      {editTarget && (
+        <form
+          className="mt-4 rounded-md border bg-muted/30 p-4 space-y-3"
+          onSubmit={(event) => {
+            event.preventDefault();
+            quickForm.handleSubmit();
+          }}
+        >
+          {editTarget === 'members' && fields.members && (
+            <quickForm.AppField name={fields.members.slug}>
+              {(formField: any) => (
+                <formField.TableRowUserField field={fields.members!} />
+              )}
+            </quickForm.AppField>
+          )}
+          {editTarget === 'due' && fields.dueDate && (
+            <quickForm.AppField name={fields.dueDate.slug}>
+              {(formField: any) => (
+                <formField.TableRowDateField field={fields.dueDate!} />
+              )}
+            </quickForm.AppField>
+          )}
+          {editTarget === 'labels' && fields.labels && (
+            <quickForm.AppField name={fields.labels.slug}>
+              {(formField: any) => (
+                <formField.TableRowDropdownField field={fields.labels!} />
+              )}
+            </quickForm.AppField>
+          )}
+          <div className="flex gap-2 justify-end">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => setEditTarget(null)}
+            >
+              Cancelar
+            </Button>
+            <Button type="submit">Salvar</Button>
+          </div>
+        </form>
+      )}
+    </>
+  );
+}

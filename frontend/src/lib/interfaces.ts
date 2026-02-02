@@ -162,6 +162,7 @@ export type IField = Merge<
       listing: boolean;
       filtering: boolean;
       defaultValue: string | null;
+      locked?: boolean;
       relationship: IFieldConfigurationRelationship | null;
       dropdown: Array<IDropdown>;
       category: Array<ICategory>;

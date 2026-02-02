@@ -204,13 +204,21 @@ export function EditorExample({
   const isControlled = value !== undefined && onChange !== undefined;
   const content = isControlled ? value : '<p>Escreva algo...</p>';
 
+  const onChangeRef = React.useRef(onChange);
+  const isControlledRef = React.useRef(isControlled);
+
+  React.useEffect(() => {
+    onChangeRef.current = onChange;
+    isControlledRef.current = isControlled;
+  }, [onChange, isControlled]);
+
   const onValueChange = useCallback(
-    debounce((newValue: any) => {
-      if (isControlled) {
-        onChange(newValue);
-      }
+    debounce((editor: any) => {
+      if (!isControlledRef.current) return;
+      const nextValue = editor.getHTML();
+      onChangeRef.current?.(nextValue);
     }, 300),
-    [isControlled, onChange],
+    [],
   );
 
   const ed = useEditor({
@@ -218,16 +226,24 @@ export function EditorExample({
     extensions,
     immediatelyRender: false,
     onUpdate: ({ editor: editorInstance }) => {
-      const html = editorInstance.getHTML();
-      onValueChange(html);
+      onValueChange(editorInstance);
     },
     content,
-  });
+  }, []);
 
   React.useEffect(() => {
     // @ts-ignore - Exposing editor instance for debugging
     window['editor'] = ed;
   }, [ed]);
+
+  React.useEffect(() => {
+    if (!ed || !isControlled) return;
+    if (ed.isFocused) return;
+    const current = ed.getHTML();
+    if (current !== content) {
+      ed.commands.setContent(content, false);
+    }
+  }, [content, ed, isControlled]);
 
   if (!ed) return null;
 

@@ -38,7 +38,7 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
         defaults[field.slug] = []; // Always array
         break;
       case E_FIELD_TYPE.FIELD_GROUP:
-        defaults[field.slug] = [{}];
+        defaults[field.slug] = [];
         break;
       case E_FIELD_TYPE.USER:
         defaults[field.slug] = []; // Always array of {value, label}

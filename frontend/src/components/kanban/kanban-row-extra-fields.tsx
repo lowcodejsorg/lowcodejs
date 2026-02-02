@@ -1,0 +1,89 @@
+import React from 'react';
+
+import { Button } from '@/components/ui/button';
+import type { IField } from '@/lib/interfaces';
+
+export function KanbanRowExtraFieldsSection({
+  extraFields,
+  editingFieldSlug,
+  isExtraFieldEditable,
+  onStartEdit,
+  onCancelEdit,
+  onSubmit,
+  renderExtraField,
+  renderExtraFieldEditor,
+  isSaving,
+}: {
+  extraFields: Array<IField>;
+  editingFieldSlug: string | null;
+  isExtraFieldEditable: (field: IField) => boolean;
+  onStartEdit: (slug: string) => void;
+  onCancelEdit: () => void;
+  onSubmit: () => void;
+  renderExtraField: (field: IField) => React.JSX.Element;
+  renderExtraFieldEditor: (field: IField) => React.JSX.Element;
+  isSaving: boolean;
+}): React.JSX.Element | null {
+  if (extraFields.length === 0) return null;
+
+  return (
+    <section className="mt-6 space-y-4">
+      <h3 className="text-sm font-semibold">Campos adicionais</h3>
+      {extraFields.map((field) => (
+        <div
+          key={field._id}
+          className="space-y-1"
+        >
+          <div className="text-xs text-muted-foreground">{field.name}</div>
+          {editingFieldSlug === field.slug && isExtraFieldEditable(field) ? (
+            <form
+              className="space-y-2"
+              onSubmit={(event) => {
+                event.preventDefault();
+                onSubmit();
+              }}
+            >
+              {renderExtraFieldEditor(field)}
+              <div className="flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  className="cursor-pointer"
+                  onClick={onCancelEdit}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  type="submit"
+                  className="cursor-pointer"
+                  disabled={isSaving}
+                >
+                  Salvar
+                </Button>
+              </div>
+            </form>
+          ) : (
+            <div
+              role="button"
+              tabIndex={0}
+              className="w-full text-left rounded-md border border-transparent px-2 py-1 -ml-2 hover:border-muted-foreground/30 hover:bg-muted/30 cursor-pointer"
+              onClick={() => {
+                if (!isExtraFieldEditable(field)) return;
+                onStartEdit(field.slug);
+              }}
+              onKeyDown={(event) => {
+                if (!isExtraFieldEditable(field)) return;
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  onStartEdit(field.slug);
+                }
+              }}
+            >
+              {renderExtraField(field)}
+            </div>
+          )}
+        </div>
+      ))}
+    </section>
+  );
+}

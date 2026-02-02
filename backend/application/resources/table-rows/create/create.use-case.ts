@@ -59,7 +59,10 @@ export default class TableRowCreateUseCase {
 
       const build = await buildTable(table);
 
-      const populate = await buildPopulate(table.fields as IField[]);
+      const populate = await buildPopulate(
+        table.fields as IField[],
+        table.groups,
+      );
 
       const created = await build.create({
         ...payload,

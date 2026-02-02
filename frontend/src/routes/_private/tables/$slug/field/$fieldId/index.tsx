@@ -99,7 +99,9 @@ function RouteComponent(): React.JSX.Element {
         </div>
         {_read.status === 'success' &&
           mode === 'show' &&
-          permission.can('UPDATE_FIELD') && (
+          permission.can('UPDATE_FIELD') &&
+          (!_read.data.configuration.locked ||
+            _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
             <Button
               type="button"
               variant="outline"
@@ -121,6 +123,12 @@ function RouteComponent(): React.JSX.Element {
             campos".
           </p>
         )}
+      {_read.status === 'success' && _read.data.configuration.locked && (
+        <p className="text-sm text-amber-600 px-2 pb-2">
+          Este campo faz parte de uma predefinição e não pode ser alterado ou
+          removido.
+        </p>
+      )}
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
@@ -523,6 +531,7 @@ function FieldUpdateContent({
             isPending={isPending}
             mode={mode}
             tableSlug={slug}
+            isLocked={data.configuration.locked}
           />
         </form>
       )}

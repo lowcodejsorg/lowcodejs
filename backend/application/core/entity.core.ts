@@ -92,6 +92,7 @@ export const E_TABLE_STYLE = {
   DOCUMENT: 'DOCUMENT',
   CARD: 'CARD',
   MOSAIC: 'MOSAIC',
+  KANBAN: 'KANBAN',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -286,6 +287,7 @@ export type IField = Merge<
       listing: boolean;
       filtering: boolean;
       defaultValue: string | null;
+      locked?: boolean;
       relationship: IFieldConfigurationRelationship | null;
       dropdown: IDropdown[];
       category: ICategory[];

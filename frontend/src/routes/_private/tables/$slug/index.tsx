@@ -16,6 +16,8 @@ import { TableDocumentView } from './-table-document-view';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
 import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
+import { TableKanbanView } from './-table-kanban-view';
+import { TableKanbanViewSkeleton } from './-table-kanban-view-skeleton';
 import { TableListView } from './-table-list-view';
 import { TableListViewSkeleton } from './-table-list-view-skeleton';
 import { TableMosaicView } from './-table-mosaic-view';
@@ -181,6 +183,11 @@ function RouteComponent(): React.JSX.Element {
           table.data.configuration.style === E_TABLE_STYLE.MOSAIC && (
             <TableMosaicViewSkeleton />
           )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.configuration.style === E_TABLE_STYLE.KANBAN && (
+            <TableKanbanViewSkeleton />
+          )}
 
         {rows.status === 'error' &&
           ((): React.JSX.Element => {
@@ -269,6 +276,16 @@ function RouteComponent(): React.JSX.Element {
               headers={table.data.fields}
               order={table.data.configuration.fields.orderList}
               data={rows.data.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.configuration.style === E_TABLE_STYLE.KANBAN &&
+          rows.status === 'success' && (
+            <TableKanbanView
+              headers={table.data.fields}
+              data={rows.data.data}
+              tableSlug={slug}
+              table={table.data}
             />
           )}
       </div>
