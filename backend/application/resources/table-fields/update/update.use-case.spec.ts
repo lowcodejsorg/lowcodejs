@@ -41,6 +41,7 @@ describe('Table Field Update Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: true,
         category: [],
         dropdown: [],
@@ -75,6 +76,7 @@ describe('Table Field Update Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: false,
         dropdown: [],
         category: [],
@@ -104,6 +106,7 @@ describe('Table Field Update Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: false,
         dropdown: [],
         category: [],
@@ -148,6 +151,7 @@ describe('Table Field Update Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: false,
         dropdown: [],
         category: [],
@@ -176,6 +180,7 @@ describe('Table Field Update Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: false,
         dropdown: [],
         category: [],
@@ -211,6 +216,7 @@ describe('Table Field Update Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: false,
         dropdown: [],
         category: [],
@@ -243,6 +249,7 @@ describe('Table Field Update Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: false,
         dropdown: [],
         category: [],

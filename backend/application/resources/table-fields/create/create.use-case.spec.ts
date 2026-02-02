@@ -54,6 +54,7 @@ describe('Table Field Create Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: true,
         category: [],
         dropdown: [],
@@ -81,6 +82,7 @@ describe('Table Field Create Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: true,
         category: [],
         dropdown: [],
@@ -107,6 +109,7 @@ describe('Table Field Create Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: true,
         category: [],
         dropdown: [],
@@ -140,6 +143,7 @@ describe('Table Field Create Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: true,
         category: [],
         dropdown: [],
@@ -170,6 +174,7 @@ describe('Table Field Create Use Case', () => {
       configuration: {
         listing: true,
         filtering: true,
+        locked: false,
         required: true,
         category: [],
         dropdown: [],
