@@ -77,6 +77,10 @@ export function KanbanRowDialog({
     'members' | 'labels' | 'due' | null
   >(null);
   const [taskTitle, setTaskTitle] = React.useState('');
+  const [editingTaskIndex, setEditingTaskIndex] = React.useState<number | null>(
+    null,
+  );
+  const [editingTaskTitle, setEditingTaskTitle] = React.useState('');
   const [commentText, setCommentText] = React.useState('');
   const [editingCommentIndex, setEditingCommentIndex] = React.useState<
     number | null
@@ -114,6 +118,8 @@ export function KanbanRowDialog({
       onRowUpdated?.(data);
       setTaskTitle('');
       setCommentText('');
+      setEditingTaskIndex(null);
+      setEditingTaskTitle('');
     },
     onError() {
       toast('Erro ao atualizar', {
@@ -205,6 +211,8 @@ export function KanbanRowDialog({
   React.useEffect(() => {
     if (!row) return;
     quickForm.reset(buildDefaultValuesFromRow(row, quickFields));
+    setEditingTaskIndex(null);
+    setEditingTaskTitle('');
   }, [rowId, quickFields.length]);
 
   const extraForm = useAppForm({
@@ -289,7 +297,9 @@ export function KanbanRowDialog({
       rowId: row._id,
       data: {
         [fields.tasks.slug]: updated,
-        ...(fields.progress ? { [fields.progress.slug]: nextProgress } : {}),
+        ...(fields.progress
+          ? { [fields.progress.slug]: String(nextProgress) }
+          : {}),
       },
     });
   };
@@ -309,10 +319,67 @@ export function KanbanRowDialog({
       rowId: row._id,
       data: {
         [fields.tasks.slug]: updated,
-        ...(fields.progress ? { [fields.progress.slug]: nextProgress } : {}),
+        ...(fields.progress
+          ? { [fields.progress.slug]: String(nextProgress) }
+          : {}),
       },
     });
     setTaskTitle('');
+  };
+
+  const handleTaskEditStart = (index: number, taskTitleValue: string): void => {
+    setEditingTaskIndex(index);
+    setEditingTaskTitle(taskTitleValue);
+  };
+
+  const handleTaskEditCancel = (): void => {
+    setEditingTaskIndex(null);
+    setEditingTaskTitle('');
+  };
+
+  const handleTaskEditSave = async (index: number): Promise<void> => {
+    if (!fields.tasks) return;
+    const nextTitle = editingTaskTitle.trim();
+    if (!nextTitle) {
+      handleTaskEditCancel();
+      return;
+    }
+    const updated = tasks.map((task, i) =>
+      i === index
+        ? {
+            ...task,
+            titulo: nextTitle,
+          }
+        : task,
+    );
+    const nextProgress = getTaskCompletionPercent(updated);
+    await updateRow.mutateAsync({
+      slug: tableSlug,
+      rowId: row._id,
+      data: {
+        [fields.tasks.slug]: updated,
+        ...(fields.progress
+          ? { [fields.progress.slug]: String(nextProgress) }
+          : {}),
+      },
+    });
+    handleTaskEditCancel();
+  };
+
+  const handleTaskDelete = async (index: number): Promise<void> => {
+    if (!fields.tasks) return;
+    const updated = tasks.filter((_, i) => i !== index);
+    const nextProgress = getTaskCompletionPercent(updated);
+    await updateRow.mutateAsync({
+      slug: tableSlug,
+      rowId: row._id,
+      data: {
+        [fields.tasks.slug]: updated,
+        ...(fields.progress
+          ? { [fields.progress.slug]: String(nextProgress) }
+          : {}),
+      },
+    });
   };
 
   const handleCommentAdd = async (): Promise<void> => {
@@ -617,6 +684,13 @@ export function KanbanRowDialog({
                 taskTitle={taskTitle}
                 onTaskTitleChange={setTaskTitle}
                 onTaskToggle={handleTaskToggle}
+                onTaskDelete={handleTaskDelete}
+                editingTaskIndex={editingTaskIndex}
+                editingTaskTitle={editingTaskTitle}
+                onTaskEditStart={handleTaskEditStart}
+                onTaskEditChange={setEditingTaskTitle}
+                onTaskEditCancel={handleTaskEditCancel}
+                onTaskEditSave={handleTaskEditSave}
                 onTaskAdd={handleTaskAdd}
               />
             )}

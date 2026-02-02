@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
 import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
+import React from 'react';
 import { toast } from 'sonner';
 import z from 'zod';
 
@@ -71,7 +72,22 @@ function RouteComponent(): React.JSX.Element {
   });
 
   const table = useReadTable({ slug });
-  const rows = useReadTableRowPaginated({ slug, search });
+  const tableStyle = table.data?.configuration.style;
+  const shouldDisablePagination =
+    tableStyle === E_TABLE_STYLE.KANBAN ||
+    tableStyle === E_TABLE_STYLE.DOCUMENT;
+  const rowsSearch = React.useMemo(
+    () =>
+      shouldDisablePagination
+        ? {
+            ...search,
+            page: 1,
+            perPage: 100,
+          }
+        : search,
+    [search, shouldDisablePagination],
+  );
+  const rows = useReadTableRowPaginated({ slug, search: rowsSearch });
   const permission = useTablePermission(table.data);
 
   const router = useRouter();
@@ -290,9 +306,11 @@ function RouteComponent(): React.JSX.Element {
           )}
       </div>
 
-      <div className="shrink-0 border-t p-2">
-        <Pagination meta={rows.data?.meta ?? MetaDefault} />
-      </div>
+      {!shouldDisablePagination && (
+        <div className="shrink-0 border-t p-2">
+          <Pagination meta={rows.data?.meta ?? MetaDefault} />
+        </div>
+      )}
     </div>
   );
 }
