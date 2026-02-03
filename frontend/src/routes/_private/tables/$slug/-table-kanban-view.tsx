@@ -63,8 +63,6 @@ export function TableKanbanView({
   const [activeRow, setActiveRow] = React.useState<IRow | null>(null);
   const activeRowId = activeRow?._id ?? null;
   const [isAddListOpen, setIsAddListOpen] = React.useState(false);
-  const [newListLabel, setNewListLabel] = React.useState('');
-  const [newListColor, setNewListColor] = React.useState('#a3a3a3');
   const [rowsState, setRowsState] = React.useState<Array<IRow>>(data);
   const [isCreateCardOpen, setIsCreateCardOpen] = React.useState(false);
   const [createColumnId, setCreateColumnId] = React.useState<string | null>(
@@ -207,8 +205,6 @@ export function TableKanbanView({
         descriptionClassName: '!text-white',
         closeButton: true,
       });
-      setNewListLabel('');
-      setNewListColor('#a3a3a3');
       setIsAddListOpen(false);
     },
     onError() {
@@ -220,6 +216,29 @@ export function TableKanbanView({
       });
     },
   });
+
+  const addListForm = useAppForm({
+    defaultValues: {
+      label: '',
+      color: '#a3a3a3',
+    },
+    onSubmit: async ({ value }) => {
+      const label = value.label.trim();
+      if (!label || addListOption.status === 'pending') return;
+      await addListOption.mutateAsync({
+        label,
+        color: value.color,
+      });
+    },
+  });
+
+  React.useEffect(() => {
+    if (isAddListOpen) return;
+    addListForm.reset({
+      label: '',
+      color: '#a3a3a3',
+    });
+  }, [addListForm, isAddListOpen]);
 
   const updateListOption = useMutation({
     mutationFn: async (payload: {
@@ -816,20 +835,17 @@ export function TableKanbanView({
 
           <KanbanAddListDialog
             open={isAddListOpen}
-            onOpenChange={setIsAddListOpen}
-            label={newListLabel}
-            onLabelChange={setNewListLabel}
-            color={newListColor}
-            onColorChange={setNewListColor}
-            isSubmitting={addListOption.status === 'pending'}
-            onSubmit={() => {
-              const label = newListLabel.trim();
-              if (!label || addListOption.status === 'pending') return;
-              addListOption.mutate({
-                label,
-                color: newListColor,
-              });
+            onOpenChange={(open) => {
+              setIsAddListOpen(open);
+              if (!open) {
+                addListForm.reset({
+                  label: '',
+                  color: '#a3a3a3',
+                });
+              }
             }}
+            form={addListForm}
+            isSubmitting={addListOption.status === 'pending'}
           />
 
           <KanbanCreateCardDialog

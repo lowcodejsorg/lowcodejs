@@ -3,7 +3,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVerticalIcon } from 'lucide-react';
 import React from 'react';
 
-import { badgeStyleFromColor } from '@/components/common/table-row-badge-list';
+import {
+  badgeStyleFromColor,
+  hexToRgb,
+} from '@/components/common/table-row-badge-list';
 import { Badge } from '@/components/ui/badge';
 import {
   columnHeaderStyleFromColor,
@@ -59,13 +62,22 @@ export function KanbanColumn({
   };
 
   const columnStyle = columnStyleFromColor(option.color);
+  const scrollStyle = React.useMemo<React.CSSProperties | undefined>(() => {
+    if (!option.color) return undefined;
+    const rgb = hexToRgb(option.color);
+    if (!rgb) return undefined;
+    return {
+      ['--kanban-scroll-thumb' as string]: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.35)`,
+      ['--kanban-scroll-thumb-hover' as string]: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.55)`,
+    };
+  }, [option.color]);
 
   return (
     <section
       ref={setNodeRef}
       style={{ ...style, ...columnStyle }}
       className={cn(
-        'w-72 shrink-0 rounded-md border bg-muted/30 overflow-hidden',
+        'w-72 shrink-0 rounded-md border bg-muted/30 overflow-hidden flex flex-col h-full min-h-0',
         isDragging && 'opacity-80',
       )}
     >
@@ -160,7 +172,12 @@ export function KanbanColumn({
           {count}
         </Badge>
       </div>
-      <div className="space-y-3 px-2 pb-2 pt-2">{children}</div>
+      <div
+        className="space-y-3 px-2 pb-2 pt-2 flex-1 min-h-0 overflow-y-auto kanban-scroll"
+        style={scrollStyle}
+      >
+        {children}
+      </div>
     </section>
   );
 }

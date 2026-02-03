@@ -44,6 +44,7 @@ import type { DropMode } from '@/components/common/document-sidebar-helpers';
 import { DocumentSidebarTree } from '@/components/common/document-sidebar-tree';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { buildLabelMap } from '@/lib/document-helpers';
@@ -78,7 +79,6 @@ export function DocumentSidebar({
   const [openMap, setOpenMap] = useState<Record<string, boolean>>({});
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [addParentId, setAddParentId] = useState<string | null>(null);
-  const [newLabel, setNewLabel] = useState('');
   const [editingNodeId, setEditingNodeId] = useState<string | null>(null);
   const [editingLabel, setEditingLabel] = useState('');
   const [dragEnabledId, setDragEnabledId] = useState<string | null>(null);
@@ -165,7 +165,6 @@ export function DocumentSidebar({
       });
 
       setAddModalOpen(false);
-      setNewLabel('');
 
       router.navigate({
         to: '/tables/$slug/row/create',
@@ -190,10 +189,31 @@ export function DocumentSidebar({
     },
   });
 
+  const addCategoryForm = useAppForm({
+    defaultValues: {
+      label: '',
+    },
+    onSubmit: async ({ value }) => {
+      if (!canManageCategory) return;
+      const label = value.label.trim();
+      if (!label || addCategory.status === 'pending') return;
+
+      await addCategory.mutateAsync({
+        label,
+        parentId: addParentId,
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (addModalOpen) return;
+    addCategoryForm.reset({ label: '' });
+  }, [addCategoryForm, addModalOpen]);
+
   const handleOpenAdd = (parentId: string | null): void => {
     if (!canManageCategory) return;
     setAddParentId(parentId);
-    setNewLabel('');
+    addCategoryForm.reset({ label: '' });
     setAddModalOpen(true);
   };
 
@@ -406,18 +426,6 @@ export function DocumentSidebar({
     }
   };
 
-  const handleCreateCategory = async (): Promise<void> => {
-    if (!canManageCategory) return;
-    const label = newLabel.trim();
-    if (!label) return;
-    if (addCategory.status === 'pending') return;
-
-    await addCategory.mutateAsync({
-      label,
-      parentId: addParentId,
-    });
-  };
-
   const parentLabel =
     addParentId && labelMap.get(addParentId) ? labelMap.get(addParentId) : null;
 
@@ -559,15 +567,13 @@ export function DocumentSidebar({
         onOpenChange={(open) => {
           setAddModalOpen(open);
           if (!open) {
-            setNewLabel('');
+            addCategoryForm.reset({ label: '' });
             setAddParentId(null);
           }
         }}
         parentLabel={parentLabel}
-        value={newLabel}
-        onValueChange={setNewLabel}
+        form={addCategoryForm}
         onCancel={() => setAddModalOpen(false)}
-        onSubmit={handleCreateCategory}
         isPending={addCategory.status === 'pending'}
       />
     </div>
