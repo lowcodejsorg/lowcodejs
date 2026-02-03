@@ -114,11 +114,19 @@ const Configuration = new mongoose.Schema(
       enum: Object.values(E_FIELD_FORMAT),
       default: null,
     },
-    listing: {
+    filter: {
       type: Boolean,
       default: false,
     },
-    filtering: {
+    form: {
+      type: Boolean,
+      default: false,
+    },
+    detail: {
+      type: Boolean,
+      default: false,
+    },
+    display: {
       type: Boolean,
       default: false,
     },

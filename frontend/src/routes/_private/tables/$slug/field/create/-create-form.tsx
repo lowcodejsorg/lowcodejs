@@ -28,8 +28,10 @@ export const FieldCreateSchema = z.object({
     }),
     category: z.array(z.custom<TreeNode>()).default([]),
     multiple: z.boolean().default(false),
-    filtering: z.boolean().default(true),
-    listing: z.boolean().default(true),
+    filter: z.boolean().default(true),
+    form: z.boolean().default(true),
+    detail: z.boolean().default(true),
+    display: z.boolean().default(true),
     required: z.boolean().default(false),
   }),
 });
@@ -52,8 +54,10 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
     },
     category: [],
     multiple: false,
-    filtering: true,
-    listing: true,
+    filter: true,
+    form: true,
+    detail: true,
+    display: true,
     required: false,
   },
 };
@@ -442,7 +446,7 @@ export const CreateFieldFormFields = withForm({
 
         {/* Campo Filtro */}
         {/* {showFiltering && (
-          <form.AppField name="configuration.filtering">
+          <form.AppField name="configuration.filter">
             {(field) => (
               <field.FieldBooleanSwitch
                 label="Usar no filtro"
@@ -453,8 +457,8 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )} */}
 
-        {/* Campo Listagem */}
-        {/* <form.AppField name="configuration.listing">
+        {/* Campo Exibição */}
+        {/* <form.AppField name="configuration.display">
           {(field) => (
             <field.FieldBooleanSwitch
               label="Exibir na listagem"

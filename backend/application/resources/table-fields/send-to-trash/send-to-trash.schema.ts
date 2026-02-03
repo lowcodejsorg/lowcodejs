@@ -4,7 +4,7 @@ export const TableFieldSendToTrashSchema: FastifySchema = {
   tags: ['Fields'],
   summary: 'Send field to trash',
   description:
-    'Moves a field to trash by setting trashed=true and disabling listing, filtering, and required properties. Updates table schema.',
+    'Moves a field to trash by setting trashed=true and disabling display, form, detail, filter, and required properties. Updates table schema.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -60,12 +60,22 @@ export const TableFieldSendToTrashSchema: FastifySchema = {
               type: 'boolean',
               description: 'Field accepts multiple values',
             },
-            listing: {
+            display: {
               type: 'boolean',
               enum: [false],
               description: 'Field no longer shown in list view when trashed',
             },
-            filtering: {
+            form: {
+              type: 'boolean',
+              enum: [false],
+              description: 'Field no longer shown in form view when trashed',
+            },
+            detail: {
+              type: 'boolean',
+              enum: [false],
+              description: 'Field no longer shown in detail view when trashed',
+            },
+            filter: {
               type: 'boolean',
               enum: [false],
               description: 'Field filtering disabled when trashed',
@@ -102,7 +112,7 @@ export const TableFieldSendToTrashSchema: FastifySchema = {
             },
           },
           description:
-            'Field configuration with listing, filtering, and required set to false',
+            'Field configuration with display, form, detail, filter, and required set to false',
         },
         trashed: {
           type: 'boolean',

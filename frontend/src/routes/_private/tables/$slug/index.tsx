@@ -143,7 +143,7 @@ function RouteComponent(): React.JSX.Element {
           {table.status === 'success' && (
             <SheetFilter
               fields={table.data.fields.filter(
-                (f) => f.configuration.filtering,
+                (f) => f.configuration.filter,
               )}
             />
           )}

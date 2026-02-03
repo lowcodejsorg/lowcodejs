@@ -112,12 +112,14 @@ function RouteComponent(): React.JSX.Element {
 
         {table.status === 'success' && (
           <Tabs
-            defaultValue="listing"
+            defaultValue="display"
             className="w-full max-w-6xl mx-auto"
           >
-            <TabsList className="grid w-full grid-cols-3 mb-4">
-              <TabsTrigger value="listing">Lista / Grid</TabsTrigger>
-              <TabsTrigger value="filtering">Filtros</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-5 mb-4">
+              <TabsTrigger value="display">Lista / Grid</TabsTrigger>
+              <TabsTrigger value="filter">Filtros</TabsTrigger>
+              <TabsTrigger value="form">Formulários</TabsTrigger>
+              <TabsTrigger value="detail">Detalhes</TabsTrigger>
               <TabsTrigger
                 value="trashed"
                 disabled={trashedCount === 0}
@@ -126,10 +128,10 @@ function RouteComponent(): React.JSX.Element {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="listing">
+            <TabsContent value="display">
               <FieldManagementList
                 table={table.data}
-                visibilityKey="listing"
+                visibilityKey="display"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined
@@ -137,10 +139,32 @@ function RouteComponent(): React.JSX.Element {
               />
             </TabsContent>
 
-            <TabsContent value="filtering">
+            <TabsContent value="filter">
               <FieldManagementList
                 table={table.data}
-                visibilityKey="filtering"
+                visibilityKey="filter"
+                groupSlug={groupSlug}
+                groupFields={
+                  isGroupContext && targetGroup ? targetGroup.fields : undefined
+                }
+              />
+            </TabsContent>
+
+            <TabsContent value="form">
+              <FieldManagementList
+                table={table.data}
+                visibilityKey="form"
+                groupSlug={groupSlug}
+                groupFields={
+                  isGroupContext && targetGroup ? targetGroup.fields : undefined
+                }
+              />
+            </TabsContent>
+
+            <TabsContent value="detail">
+              <FieldManagementList
+                table={table.data}
+                visibilityKey="detail"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined

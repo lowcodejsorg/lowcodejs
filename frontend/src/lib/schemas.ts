@@ -279,8 +279,10 @@ export const FieldConfigurationSchema = z.object({
     ])
     .nullable()
     .default(null),
-  listing: z.boolean().default(false),
-  filtering: z.boolean().default(false),
+  filter: z.boolean().default(false),
+  form: z.boolean().default(false),
+  detail: z.boolean().default(false),
+  display: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),
   relationship: RelationshipSchema.nullable().default(null),
   dropdown: z.array(z.string().trim()).default([]),

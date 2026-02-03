@@ -277,8 +277,10 @@ export default class TableFieldUpdateUseCase {
       incoming.required === current.required &&
       incoming.multiple === current.multiple &&
       incoming.format === current.format &&
-      incoming.listing === current.listing &&
-      incoming.filtering === current.filtering &&
+      incoming.filter === current.filter &&
+      incoming.form === current.form &&
+      incoming.detail === current.detail &&
+      incoming.display === current.display &&
       incoming.defaultValue === current.defaultValue &&
       JSON.stringify(incoming.relationship ?? null) ===
         JSON.stringify(current.relationship ?? null) &&

@@ -240,8 +240,10 @@ function RouteComponent(): React.JSX.Element {
         configuration: {
           required: config.required,
           multiple: config.multiple,
-          listing: config.listing,
-          filtering: config.filtering,
+          filter: config.filter,
+          form: config.form,
+          detail: config.detail,
+          display: config.display,
           format: config.format
             ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
             : null,

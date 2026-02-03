@@ -468,8 +468,10 @@ function FieldUpdateContent({
         },
         category: data.configuration.category,
         multiple: data.configuration.multiple,
-        filtering: data.configuration.filtering,
-        listing: data.configuration.listing,
+        filter: data.configuration.filter,
+        form: data.configuration.form,
+        detail: data.configuration.detail,
+        display: data.configuration.display,
         required: data.configuration.required,
       },
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
@@ -491,8 +493,10 @@ function FieldUpdateContent({
         configuration: {
           required: config.required,
           multiple: config.multiple,
-          listing: config.listing,
-          filtering: config.filtering,
+          filter: config.filter,
+          form: config.form,
+          detail: config.detail,
+          display: config.display,
           format: config.format
             ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
             : null,

@@ -91,7 +91,7 @@ function SortableItem({
 interface SortableManagementItemProps {
   field: IField;
   disabled?: boolean;
-  visibilityKey: 'listing' | 'filtering';
+  visibilityKey: 'filter' | 'form' | 'detail' | 'display';
   onEdit: () => void;
   onToggleVisibility: () => void;
   isTogglingVisibility?: boolean;
@@ -384,7 +384,7 @@ export function FieldOrderForm({
 
 interface FieldManagementListProps {
   table: ITable;
-  visibilityKey: 'listing' | 'filtering';
+  visibilityKey: 'filter' | 'form' | 'detail' | 'display';
   /** Se for contexto de grupo embedded */
   groupSlug?: string;
   /** Campos do grupo (quando em contexto de grupo) */
@@ -465,14 +465,22 @@ export function FieldManagementList({
         configuration: {
           required: field.configuration.required,
           multiple: field.configuration.multiple,
-          listing:
-            visibilityKey === 'listing'
+          filter:
+            visibilityKey === 'filter'
               ? newValue
-              : field.configuration.listing,
-          filtering:
-            visibilityKey === 'filtering'
+              : field.configuration.filter,
+          form:
+            visibilityKey === 'form'
               ? newValue
-              : field.configuration.filtering,
+              : field.configuration.form,
+          detail:
+            visibilityKey === 'detail'
+              ? newValue
+              : field.configuration.detail,
+          display:
+            visibilityKey === 'display'
+              ? newValue
+              : field.configuration.display,
           format: field.configuration.format ?? null,
           defaultValue: field.configuration.defaultValue ?? null,
           dropdown: hasDropdown ? field.configuration.dropdown : [],
@@ -586,11 +594,17 @@ export function FieldManagementList({
         },
       );
 
-      const visibilityLabel = visibilityKey === 'listing' ? 'lista' : 'filtros';
+      const visibilityLabels: Record<typeof visibilityKey, string> = {
+        display: 'listagem',
+        filter: 'filtros',
+        form: 'formulários',
+        detail: 'detalhes',
+      };
+      const visibilityLabel = visibilityLabels[visibilityKey];
       toast.success(
         response.configuration[visibilityKey]
-          ? `Campo visível na ${visibilityLabel}`
-          : `Campo oculto na ${visibilityLabel}`,
+          ? `Campo visível em ${visibilityLabel}`
+          : `Campo oculto em ${visibilityLabel}`,
       );
     },
     onError: (error) => {

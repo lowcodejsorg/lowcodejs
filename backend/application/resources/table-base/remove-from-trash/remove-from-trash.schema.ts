@@ -88,11 +88,19 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                     enum: ['email', 'phone', 'url', 'color', 'password'],
                     description: 'Field format validation',
                   },
-                  listing: {
+                  display: {
                     type: 'boolean',
                     description: 'Show in listings',
                   },
-                  filtering: {
+                  form: {
+                    type: 'boolean',
+                    description: 'Show in form view',
+                  },
+                  detail: {
+                    type: 'boolean',
+                    description: 'Show in detail view',
+                  },
+                  filter: {
                     type: 'boolean',
                     description: 'Allow filtering',
                   },
