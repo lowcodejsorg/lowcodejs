@@ -58,15 +58,25 @@ export const TableFieldCreateSchema: FastifySchema = {
             default: false,
             description: 'Field accepts multiple values',
           },
-          listing: {
-            type: 'boolean',
-            default: false,
-            description: 'Show field in list view',
-          },
-          filtering: {
+          filter: {
             type: 'boolean',
             default: false,
             description: 'Allow filtering by this field',
+          },
+          form: {
+            type: 'boolean',
+            default: false,
+            description: 'Show field in create/edit forms',
+          },
+          detail: {
+            type: 'boolean',
+            default: false,
+            description: 'Show field in detail pages',
+          },
+          display: {
+            type: 'boolean',
+            default: false,
+            description: 'Show field in list/grid/kanban views',
           },
           format: {
             type: 'string',
@@ -212,13 +222,21 @@ export const TableFieldCreateSchema: FastifySchema = {
               type: 'boolean',
               description: 'Field accepts multiple values',
             },
-            listing: {
-              type: 'boolean',
-              description: 'Show field in list view',
-            },
-            filtering: {
+            filter: {
               type: 'boolean',
               description: 'Allow filtering by this field',
+            },
+            form: {
+              type: 'boolean',
+              description: 'Show field in create/edit forms',
+            },
+            detail: {
+              type: 'boolean',
+              description: 'Show field in detail pages',
+            },
+            display: {
+              type: 'boolean',
+              description: 'Show field in list/grid/kanban views',
             },
             format: {
               type: 'string',

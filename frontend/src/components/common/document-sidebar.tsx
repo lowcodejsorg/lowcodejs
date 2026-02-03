@@ -206,8 +206,10 @@ export function DocumentSidebar({
         configuration: {
           required: categoryField.configuration.required,
           multiple: categoryField.configuration.multiple,
-          listing: categoryField.configuration.listing,
-          filtering: categoryField.configuration.filtering,
+          filter: categoryField.configuration.filter,
+          form: categoryField.configuration.form,
+          detail: categoryField.configuration.detail,
+          display: categoryField.configuration.display,
           format: categoryField.configuration.format,
           defaultValue: categoryField.configuration.defaultValue,
           dropdown: categoryField.configuration.dropdown,

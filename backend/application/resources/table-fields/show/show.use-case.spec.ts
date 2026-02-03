@@ -47,8 +47,10 @@ describe('Table Field Show Use Case', () => {
       slug: 'nome',
       type: E_FIELD_TYPE.TEXT_SHORT,
       configuration: {
-        listing: true,
-        filtering: true,
+        display: true,
+        form: true,
+        detail: true,
+        filter: true,
         required: true,
         dropdown: [],
         category: [],

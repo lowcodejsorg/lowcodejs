@@ -40,10 +40,12 @@ describe('E2E Table Field Update Controller', () => {
           category: [],
           dropdown: [],
           defaultValue: null,
-          filtering: false,
+          filter: false,
+          form: true,
+          detail: true,
           format: null,
           group: null,
-          listing: true,
+          display: true,
           multiple: false,
           required: false,
           relationship: null,
@@ -93,10 +95,12 @@ describe('E2E Table Field Update Controller', () => {
           category: [],
           dropdown: [],
           defaultValue: null,
-          filtering: true,
+          filter: true,
+          form: true,
+          detail: true,
           format: null,
           group: null,
-          listing: true,
+          display: true,
           multiple: false,
           required: true,
           relationship: null,
@@ -114,7 +118,7 @@ describe('E2E Table Field Update Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe('Updated Field');
       expect(response.body.configuration.required).toBe(true);
-      expect(response.body.configuration.filtering).toBe(true);
+      expect(response.body.configuration.filter).toBe(true);
     });
   });
 });

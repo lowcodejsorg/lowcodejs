@@ -89,11 +89,17 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
           {data.configuration.multiple && (
             <Badge variant="outline">Múltiplos valores</Badge>
           )}
-          {data.configuration.listing && (
+          {data.configuration.display && (
             <Badge variant="outline">Exibir em listagem</Badge>
           )}
-          {data.configuration.filtering && (
+          {data.configuration.filter && (
             <Badge variant="outline">Permitir filtro</Badge>
+          )}
+          {data.configuration.form && (
+            <Badge variant="outline">Exibir em formulários</Badge>
+          )}
+          {data.configuration.detail && (
+            <Badge variant="outline">Exibir em detalhes</Badge>
           )}
         </div>
       </div>

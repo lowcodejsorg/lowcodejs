@@ -4,7 +4,7 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
   tags: ['Fields'],
   summary: 'Remove field from trash',
   description:
-    'Restores a field from trash by setting trashed=false and re-enabling listing and filtering properties. Updates table schema.',
+    'Restores a field from trash by setting trashed=false and re-enabling display, form, detail, and filter properties. Updates table schema.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -61,12 +61,22 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
               type: 'boolean',
               description: 'Field accepts multiple values',
             },
-            listing: {
+            display: {
               type: 'boolean',
               enum: [true],
               description: 'Field is now shown in list view',
             },
-            filtering: {
+            form: {
+              type: 'boolean',
+              enum: [true],
+              description: 'Field is now shown in form view',
+            },
+            detail: {
+              type: 'boolean',
+              enum: [true],
+              description: 'Field is now shown in detail view',
+            },
+            filter: {
               type: 'boolean',
               enum: [true],
               description: 'Field filtering is now enabled',
@@ -103,7 +113,7 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
             },
           },
           description:
-            'Field configuration with listing and filtering restored to true',
+            'Field configuration with display, form, detail, and filter restored to true',
         },
         trashed: {
           type: 'boolean',

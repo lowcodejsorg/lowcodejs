@@ -58,11 +58,19 @@ export const TableFieldShowSchema: FastifySchema = {
               type: 'boolean',
               description: 'Field accepts multiple values',
             },
-            listing: {
+            display: {
               type: 'boolean',
               description: 'Show field in list view',
             },
-            filtering: {
+            form: {
+              type: 'boolean',
+              description: 'Show field in form view',
+            },
+            detail: {
+              type: 'boolean',
+              description: 'Show field in detail view',
+            },
+            filter: {
               type: 'boolean',
               description: 'Allow filtering by this field',
             },

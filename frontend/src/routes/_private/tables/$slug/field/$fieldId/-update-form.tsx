@@ -28,8 +28,10 @@ export const FieldUpdateSchema = z.object({
     }),
     category: z.array(z.custom<ICategory>()).default([]),
     multiple: z.boolean().default(false),
-    filtering: z.boolean().default(false),
-    listing: z.boolean().default(false),
+    filter: z.boolean().default(false),
+    form: z.boolean().default(false),
+    detail: z.boolean().default(false),
+    display: z.boolean().default(false),
     required: z.boolean().default(false),
   }),
   trashed: z.boolean().default(false),
@@ -53,8 +55,10 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
     },
     category: [],
     multiple: false,
-    filtering: false,
-    listing: false,
+    filter: false,
+    form: false,
+    detail: false,
+    display: false,
     required: false,
   },
   trashed: false,
@@ -410,7 +414,7 @@ export const UpdateFieldFormFields = withForm({
 
         {/* Campo Filtro */}
         {/* {showFiltering && (
-          <form.AppField name="configuration.filtering">
+          <form.AppField name="configuration.filter">
             {(field) => (
               <field.FieldBooleanSwitch
                 label="Usar no filtro"
@@ -421,8 +425,8 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )} */}
 
-        {/* Campo Listagem */}
-        {/* <form.AppField name="configuration.listing">
+        {/* Campo Exibição */}
+        {/* <form.AppField name="configuration.display">
           {(field) => (
             <field.FieldBooleanSwitch
               label="Exibir na listagem"

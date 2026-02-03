@@ -137,8 +137,10 @@ export type FieldConfigurationPayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
-  listing?: boolean;
-  filtering?: boolean;
+  filter?: boolean;
+  form?: boolean;
+  detail?: boolean;
+  display?: boolean;
   defaultValue?: string | null;
   relationship?: {
     table: { _id: string; slug: string };
