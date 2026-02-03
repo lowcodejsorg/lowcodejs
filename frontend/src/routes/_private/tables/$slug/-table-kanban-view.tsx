@@ -107,7 +107,7 @@ export function TableKanbanView({
     };
   }, [headers]);
 
-  const listOptions = fields.list?.configuration.dropdown ?? [];
+  const listOptions = fields.list?.dropdown ?? [];
   const orderField = React.useMemo(
     () =>
       headers.find(
@@ -170,7 +170,7 @@ export function TableKanbanView({
         .concat('/fields/')
         .concat(fields.list._id);
       const dropdown = [
-        ...fields.list.configuration.dropdown,
+        ...fields.list.dropdown,
         {
           id: crypto.randomUUID(),
           label: payload.label,
@@ -179,10 +179,7 @@ export function TableKanbanView({
       ];
       const response = await API.put<IField>(route, {
         ...fields.list,
-        configuration: {
-          ...fields.list.configuration,
-          dropdown,
-        },
+        dropdown,
       });
       return response.data;
     },
@@ -249,7 +246,7 @@ export function TableKanbanView({
       if (!fields.list) {
         throw new Error('Campo de lista não encontrado');
       }
-      const dropdown = fields.list.configuration.dropdown.map((opt) =>
+      const dropdown = fields.list.dropdown.map((opt) =>
         opt.id === payload.optionId
           ? { ...opt, label: payload.label, color: payload.color }
           : opt,
@@ -258,10 +255,7 @@ export function TableKanbanView({
         '/tables/'.concat(tableSlug).concat('/fields/').concat(fields.list._id),
         {
           ...fields.list,
-          configuration: {
-            ...fields.list.configuration,
-            dropdown,
-          },
+          dropdown,
         },
       );
       return response.data;
@@ -432,7 +426,7 @@ export function TableKanbanView({
     string | null
   > => {
     if (orderField?.slug) {
-      if (!orderField.configuration.locked) {
+      if (!orderField.locked) {
         try {
           const response = await API.put<IField>(
             '/tables/'
@@ -441,10 +435,7 @@ export function TableKanbanView({
               .concat(orderField._id),
             {
               ...orderField,
-              configuration: {
-                ...orderField.configuration,
-                locked: true,
-              },
+              locked: true,
             },
           );
           const updatedField = response.data;
@@ -478,21 +469,19 @@ export function TableKanbanView({
         {
           name: ORDER_FIELD_NAME,
           type: E_FIELD_TYPE.TEXT_SHORT,
-          configuration: {
-            required: false,
-            multiple: false,
-            format: E_FIELD_FORMAT.INTEGER,
-            filter: false,
-            form: false,
-            detail: false,
-            display: false,
-            defaultValue: null,
-            locked: true,
-            relationship: null,
-            dropdown: [],
-            category: [],
-            group: null,
-          },
+          required: false,
+          multiple: false,
+          format: E_FIELD_FORMAT.INTEGER,
+          showInFilter: false,
+          showInForm: false,
+          showInDetail: false,
+          showInList: false,
+          defaultValue: null,
+          locked: true,
+          relationship: null,
+          dropdown: [],
+          category: [],
+          group: null,
         },
       );
 
@@ -529,7 +518,7 @@ export function TableKanbanView({
     async (nextOrder: Array<string>) => {
       if (!fields.list) return;
       const byId = new Map(
-        fields.list.configuration.dropdown.map((opt) => [opt.id, opt] as const),
+        fields.list.dropdown.map((opt) => [opt.id, opt] as const),
       );
       const nextDropdown = nextOrder.map((id) => byId.get(id)).filter(Boolean);
       try {
@@ -540,10 +529,7 @@ export function TableKanbanView({
             .concat(fields.list._id),
           {
             ...fields.list,
-            configuration: {
-              ...fields.list.configuration,
-              dropdown: nextDropdown,
-            },
+            dropdown: nextDropdown,
           },
         );
         const updatedField = response.data;
@@ -629,7 +615,8 @@ export function TableKanbanView({
 
       const activeId = String(active.id);
       const sourceColumn = active.data.current?.columnId as string;
-      const overColumnId = over.data.current.columnId as string | undefined;
+      const overColumnId = over.data.current?.columnId;
+
       const targetColumn =
         overType === 'card'
           ? (overColumnId as string)

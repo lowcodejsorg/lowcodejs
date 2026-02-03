@@ -41,7 +41,8 @@ export default class TableFieldUpdateUseCase {
         );
 
       // Se foi fornecido um group slug, atualiza o campo no grupo
-      const groupSlug = payload.group;
+      const groupSlug =
+        typeof payload.group === 'string' ? payload.group : payload.group?.slug;
       if (groupSlug) {
         const targetGroup = table.groups?.find((g) => g.slug === groupSlug);
         if (!targetGroup) {
@@ -62,10 +63,7 @@ export default class TableFieldUpdateUseCase {
           HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
         );
 
-      if (
-        field.configuration?.locked &&
-        !this.canUpdateLockedField(payload, field)
-      ) {
+      if (field.locked && !this.canUpdateLockedField(payload, field)) {
         return left(
           HTTPException.Forbidden(
             'Field is locked and cannot be updated',
@@ -89,10 +87,17 @@ export default class TableFieldUpdateUseCase {
       const oldSlug = field.slug;
       const slug = slugify(payload.name, { lower: true, trim: true });
 
+      // Normalize group: if it's a string, convert to object format
+      const normalizedGroup =
+        typeof payload.group === 'string'
+          ? { slug: payload.group }
+          : payload.group;
+
       let updatedField = await this.fieldRepository.update({
         ...payload,
         _id: field._id,
         slug,
+        group: normalizedGroup,
         ...(payload.trashed && { trashed: payload.trashed }),
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
       });
@@ -101,9 +106,7 @@ export default class TableFieldUpdateUseCase {
 
       if (updatedField.type === E_FIELD_TYPE.FIELD_GROUP) {
         // Verifica se já existe um grupo para este campo
-        const existingGroup = groups.find(
-          (g) => g.slug === field.configuration?.group?.slug,
-        );
+        const existingGroup = groups.find((g) => g.slug === field.group?.slug);
 
         if (!existingGroup) {
           // Cria novo grupo em groups
@@ -126,10 +129,7 @@ export default class TableFieldUpdateUseCase {
 
         updatedField = await this.fieldRepository.update({
           _id: updatedField._id,
-          configuration: {
-            ...updatedField.configuration,
-            group: { slug },
-          },
+          group: { slug },
         });
       }
 
@@ -144,13 +144,8 @@ export default class TableFieldUpdateUseCase {
         _schema,
         fields: fields.flatMap((f) => f._id),
         groups,
-        configuration: {
-          ...table.configuration,
-          owner: table.configuration.owner._id,
-          administrators: table.configuration.administrators.flatMap(
-            (a) => a._id,
-          ),
-        },
+        owner: table.owner._id,
+        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       if (oldSlug !== slug) {
@@ -195,10 +190,7 @@ export default class TableFieldUpdateUseCase {
     if (!field)
       return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
 
-    if (
-      field.configuration?.locked &&
-      !this.canUpdateLockedField(payload, field)
-    ) {
+    if (field.locked && !this.canUpdateLockedField(payload, field)) {
       return left(
         HTTPException.Forbidden(
           'Field is locked and cannot be updated',
@@ -210,10 +202,17 @@ export default class TableFieldUpdateUseCase {
     const oldSlug = field.slug;
     const slug = slugify(payload.name, { lower: true, trim: true });
 
+    // Normalize group: if it's a string, convert to object format
+    const normalizedGroup =
+      typeof payload.group === 'string'
+        ? { slug: payload.group }
+        : payload.group;
+
     const updatedField = await this.fieldRepository.update({
       ...payload,
       _id: field._id,
       slug,
+      group: normalizedGroup,
       ...(payload.trashed && { trashed: payload.trashed }),
       ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
     });
@@ -244,13 +243,8 @@ export default class TableFieldUpdateUseCase {
       _id: parentTable._id,
       _schema: parentSchema,
       groups: updatedGroups,
-      configuration: {
-        ...parentTable.configuration,
-        owner: parentTable.configuration.owner._id,
-        administrators: parentTable.configuration.administrators.flatMap(
-          (a) => a._id,
-        ),
-      },
+      owner: parentTable.owner._id,
+      administrators: parentTable.administrators.flatMap((a) => a._id),
     });
 
     await buildTable({
@@ -268,24 +262,19 @@ export default class TableFieldUpdateUseCase {
     if (payload.type !== field.type) return false;
     if (payload.trashed || payload.trashedAt) return false;
 
-    if (!payload.configuration) return false;
-
-    const current = field.configuration;
-    const incoming = payload.configuration;
-
     const sameConfig =
-      incoming.required === current.required &&
-      incoming.multiple === current.multiple &&
-      incoming.format === current.format &&
-      incoming.filter === current.filter &&
-      incoming.form === current.form &&
-      incoming.detail === current.detail &&
-      incoming.display === current.display &&
-      incoming.defaultValue === current.defaultValue &&
-      JSON.stringify(incoming.relationship ?? null) ===
-        JSON.stringify(current.relationship ?? null) &&
-      JSON.stringify(incoming.group ?? null) ===
-        JSON.stringify(current.group ?? null);
+      payload.required === field.required &&
+      payload.multiple === field.multiple &&
+      payload.format === field.format &&
+      payload.showInFilter === field.showInFilter &&
+      payload.showInForm === field.showInForm &&
+      payload.showInDetail === field.showInDetail &&
+      payload.showInList === field.showInList &&
+      payload.defaultValue === field.defaultValue &&
+      JSON.stringify(payload.relationship ?? null) ===
+        JSON.stringify(field.relationship ?? null) &&
+      JSON.stringify(payload.group ?? null) ===
+        JSON.stringify(field.group ?? null);
 
     return sameConfig;
   }

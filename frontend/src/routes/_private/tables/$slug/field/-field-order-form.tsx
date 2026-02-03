@@ -91,7 +91,7 @@ function SortableItem({
 interface SortableManagementItemProps {
   field: IField;
   disabled?: boolean;
-  visibilityKey: 'filter' | 'form' | 'detail' | 'display';
+  visibilityKey: 'showInFilter' | 'showInForm' | 'showInDetail' | 'showInList';
   onEdit: () => void;
   onToggleVisibility: () => void;
   isTogglingVisibility?: boolean;
@@ -120,7 +120,7 @@ function SortableManagementItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const isVisible = field.configuration[visibilityKey];
+  const isVisible = field[visibilityKey];
 
   return (
     <div
@@ -210,10 +210,12 @@ export function FieldOrderForm({
   const isGroupContext = !!groupSlug && !!groupFields;
 
   // Para grupos, a ordem é simplesmente a ordem no array de campos
-  // Para tabelas, usa configuration.fields[reference]
+  // Para tabelas, usa fieldOrderList ou fieldOrderForm
   const order = isGroupContext
-    ? groupFields.map((f) => f._id)
-    : table.configuration.fields[reference];
+    ? groupFields.flatMap((f) => f._id)
+    : reference === 'orderList'
+      ? table.fieldOrderList
+      : table.fieldOrderForm;
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter((f) => !f.trashed);
@@ -281,17 +283,14 @@ export function FieldOrderForm({
         name: table.name,
         description: table.description,
         logo: table.logo?._id ?? null,
-        configuration: {
-          visibility: table.configuration.visibility,
-          style: table.configuration.style,
-          collaboration: table.configuration.collaboration,
-          fields: table.configuration.fields,
-          administrators: table.configuration.administrators.map((admin) =>
-            typeof admin === 'string' ? admin : admin._id,
-          ),
-        },
+        visibility: table.visibility,
+        style: table.style,
+        collaboration: table.collaboration,
+        fieldOrderList: table.fieldOrderList,
+        fieldOrderForm: table.fieldOrderForm,
+        administrators: table.administrators.flatMap((admin) => admin._id),
         groups: updatedGroups,
-        fields: table.fields.map((f) => f._id),
+        fields: table.fields.flatMap((f) => f._id),
         methods: {
           ...table.methods,
           afterSave: table.methods.afterSave,
@@ -302,25 +301,22 @@ export function FieldOrderForm({
       return;
     }
 
-    // Para tabelas normais, atualiza fields e configuration.fields
+    // Para tabelas normais, atualiza fields e fieldOrderList/fieldOrderForm
+    const newOrder = fields.flatMap((f) => f._id);
     update.mutate({
       slug: table.slug,
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      configuration: {
-        visibility: table.configuration.visibility,
-        style: table.configuration.style,
-        collaboration: table.configuration.collaboration,
-        fields: {
-          ...table.configuration.fields,
-          [reference]: fields.map((f) => f._id),
-        },
-        administrators: table.configuration.administrators.map((admin) =>
-          typeof admin === 'string' ? admin : admin._id,
-        ),
-      },
-      fields: fields.map((f) => f._id),
+      visibility: table.visibility,
+      style: table.style,
+      collaboration: table.collaboration,
+      fieldOrderList:
+        reference === 'orderList' ? newOrder : table.fieldOrderList,
+      fieldOrderForm:
+        reference === 'orderForm' ? newOrder : table.fieldOrderForm,
+      administrators: table.administrators.flatMap((admin) => admin._id),
+      fields: fields.flatMap((f) => f._id),
       methods: {
         ...table.methods,
         afterSave: table.methods.afterSave,
@@ -384,7 +380,7 @@ export function FieldOrderForm({
 
 interface FieldManagementListProps {
   table: ITable;
-  visibilityKey: 'filter' | 'form' | 'detail' | 'display';
+  visibilityKey: 'showInFilter' | 'showInForm' | 'showInDetail' | 'showInList';
   /** Se for contexto de grupo embedded */
   groupSlug?: string;
   /** Campos do grupo (quando em contexto de grupo) */
@@ -403,10 +399,10 @@ export function FieldManagementList({
   const isGroupContext = !!groupSlug && !!groupFields;
 
   // Para grupos, a ordem é simplesmente a ordem no array de campos
-  // Para tabelas, usa configuration.fields.orderList
+  // Para tabelas, usa fieldOrderList
   const order = isGroupContext
-    ? groupFields.map((f) => f._id)
-    : table.configuration.fields.orderList;
+    ? groupFields.flatMap((f) => f._id)
+    : table.fieldOrderList;
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter((f) => !f.trashed);
@@ -455,54 +451,43 @@ export function FieldManagementList({
         .concat(field._id);
 
       // Build full payload as API requires complete field data
-      const hasRelationship = field.configuration.relationship !== null;
-      const hasDropdown = field.configuration.dropdown.length > 0;
-      const hasCategory = field.configuration.category.length > 0;
+      const hasRelationship = field.relationship !== null;
+      const hasDropdown = field.dropdown.length > 0;
+      const hasCategory = field.category.length > 0;
 
       const response = await API.put<IField>(route, {
         name: field.name,
         type: field.type,
-        configuration: {
-          required: field.configuration.required,
-          multiple: field.configuration.multiple,
-          filter:
-            visibilityKey === 'filter'
-              ? newValue
-              : field.configuration.filter,
-          form:
-            visibilityKey === 'form'
-              ? newValue
-              : field.configuration.form,
-          detail:
-            visibilityKey === 'detail'
-              ? newValue
-              : field.configuration.detail,
-          display:
-            visibilityKey === 'display'
-              ? newValue
-              : field.configuration.display,
-          format: field.configuration.format ?? null,
-          defaultValue: field.configuration.defaultValue ?? null,
-          dropdown: hasDropdown ? field.configuration.dropdown : [],
-          relationship: hasRelationship
-            ? {
-                table: {
-                  _id: field.configuration.relationship!.table._id,
-                  slug: field.configuration.relationship!.table.slug,
-                },
-                field: {
-                  _id: field.configuration.relationship!.field._id,
-                  slug: field.configuration.relationship!.field.slug,
-                },
-                order: field.configuration.relationship!.order,
-              }
-            : null,
-          group: null,
-          category: hasCategory ? field.configuration.category : [],
-        },
+        required: field.required,
+        multiple: field.multiple,
+        showInFilter:
+          visibilityKey === 'showInFilter' ? newValue : field.showInFilter,
+        showInForm:
+          visibilityKey === 'showInForm' ? newValue : field.showInForm,
+        showInDetail:
+          visibilityKey === 'showInDetail' ? newValue : field.showInDetail,
+        showInList:
+          visibilityKey === 'showInList' ? newValue : field.showInList,
+        format: field.format ?? null,
+        defaultValue: field.defaultValue ?? null,
+        dropdown: hasDropdown ? field.dropdown : [],
+        relationship: hasRelationship
+          ? {
+              table: {
+                _id: field.relationship!.table._id,
+                slug: field.relationship!.table.slug,
+              },
+              field: {
+                _id: field.relationship!.field._id,
+                slug: field.relationship!.field.slug,
+              },
+              order: field.relationship!.order,
+            }
+          : null,
+        group: groupSlug ? { slug: groupSlug } : null,
+        category: hasCategory ? field.category : [],
         trashed: field.trashed,
         trashedAt: field.trashedAt ?? null,
-        group: groupSlug,
       });
       return response.data;
     },
@@ -595,14 +580,14 @@ export function FieldManagementList({
       );
 
       const visibilityLabels: Record<typeof visibilityKey, string> = {
-        display: 'listagem',
-        filter: 'filtros',
-        form: 'formulários',
-        detail: 'detalhes',
+        showInList: 'listagem',
+        showInFilter: 'filtros',
+        showInForm: 'formulários',
+        showInDetail: 'detalhes',
       };
       const visibilityLabel = visibilityLabels[visibilityKey];
       toast.success(
-        response.configuration[visibilityKey]
+        response[visibilityKey]
           ? `Campo visível em ${visibilityLabel}`
           : `Campo oculto em ${visibilityLabel}`,
       );
@@ -649,17 +634,14 @@ export function FieldManagementList({
         name: table.name,
         description: table.description,
         logo: table.logo?._id ?? null,
-        configuration: {
-          visibility: table.configuration.visibility,
-          style: table.configuration.style,
-          collaboration: table.configuration.collaboration,
-          fields: table.configuration.fields,
-          administrators: table.configuration.administrators.map((admin) =>
-            typeof admin === 'string' ? admin : admin._id,
-          ),
-        },
+        visibility: table.visibility,
+        style: table.style,
+        collaboration: table.collaboration,
+        fieldOrderList: table.fieldOrderList,
+        fieldOrderForm: table.fieldOrderForm,
+        administrators: table.administrators.flatMap((admin) => admin._id),
         groups: updatedGroups,
-        fields: table.fields.map((f) => f._id),
+        fields: table.fields.flatMap((f) => f._id),
         methods: {
           ...table.methods,
           afterSave: table.methods.afterSave,
@@ -670,25 +652,19 @@ export function FieldManagementList({
       return;
     }
 
-    // Para tabelas normais, atualiza fields e configuration.fields
+    // Para tabelas normais, atualiza fields e fieldOrderList
     updateTable.mutate({
       slug: table.slug,
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      configuration: {
-        visibility: table.configuration.visibility,
-        style: table.configuration.style,
-        collaboration: table.configuration.collaboration,
-        fields: {
-          ...table.configuration.fields,
-          orderList: fields.map((f) => f._id),
-        },
-        administrators: table.configuration.administrators.map((admin) =>
-          typeof admin === 'string' ? admin : admin._id,
-        ),
-      },
-      fields: fields.map((f) => f._id),
+      visibility: table.visibility,
+      style: table.style,
+      collaboration: table.collaboration,
+      fieldOrderList: fields.flatMap((f) => f._id),
+      fieldOrderForm: table.fieldOrderForm,
+      administrators: table.administrators.flatMap((admin) => admin._id),
+      fields: fields.flatMap((f) => f._id),
       methods: {
         ...table.methods,
         afterSave: table.methods.afterSave,
@@ -707,7 +683,7 @@ export function FieldManagementList({
   }
 
   function handleToggleVisibility(field: IField): void {
-    const currentValue = field.configuration[visibilityKey];
+    const currentValue = field[visibilityKey];
     toggleVisibilityMutation.mutate({
       field,
       newValue: !currentValue,

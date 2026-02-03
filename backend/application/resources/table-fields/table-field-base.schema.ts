@@ -26,24 +26,47 @@ const Dropdown = z.object({
   color: z.string().nullable().optional(),
 });
 
-export const TableFieldConfiguration = z.object({
-  required: z.boolean().default(false),
-  multiple: z.boolean().default(false),
-  format: z.enum(E_FIELD_FORMAT).nullable().default(null),
-  filter: z.boolean().default(false),
-  form: z.boolean().default(false),
-  detail: z.boolean().default(false),
-  display: z.boolean().default(false),
-  locked: z.boolean().default(false),
-  defaultValue: z.string().nullable().default(null),
-  relationship: Relationship.nullable().default(null),
-  dropdown: z.array(Dropdown).default([]),
-  category: z.array(Category).default([]),
-  group: z
-    .object({
-      _id: z.string().trim(),
+// Propriedades flat do campo (não aninhadas em configuration)
+export const FieldRequiredSchema = z.boolean().default(false);
+export const FieldMultipleSchema = z.boolean().default(false);
+export const FieldFormatSchema = z
+  .enum(E_FIELD_FORMAT)
+  .nullable()
+  .default(null);
+export const FieldShowInFilterSchema = z.boolean().default(false);
+export const FieldShowInFormSchema = z.boolean().default(false);
+export const FieldShowInDetailSchema = z.boolean().default(false);
+export const FieldShowInListSchema = z.boolean().default(false);
+export const FieldLockedSchema = z.boolean().default(false);
+export const FieldDefaultValueSchema = z.string().nullable().default(null);
+export const FieldRelationshipSchema = Relationship.nullable().default(null);
+export const FieldDropdownSchema = z.array(Dropdown).default([]);
+export const FieldCategorySchema = z.array(Category).default([]);
+// For API input: can be just a slug string or the full object
+export const FieldGroupSchema = z
+  .union([
+    z.string().trim(),
+    z.object({
+      _id: z.string().trim().optional(),
       slug: z.string().trim(),
-    })
-    .nullable()
-    .default(null),
+    }),
+  ])
+  .nullable()
+  .default(null);
+
+// Schema para body de criação/atualização de campos
+export const TableFieldBaseSchema = z.object({
+  required: FieldRequiredSchema,
+  multiple: FieldMultipleSchema,
+  format: FieldFormatSchema,
+  showInFilter: FieldShowInFilterSchema,
+  showInForm: FieldShowInFormSchema,
+  showInDetail: FieldShowInDetailSchema,
+  showInList: FieldShowInListSchema,
+  locked: FieldLockedSchema,
+  defaultValue: FieldDefaultValueSchema,
+  relationship: FieldRelationshipSchema,
+  dropdown: FieldDropdownSchema,
+  category: FieldCategorySchema,
+  group: FieldGroupSchema,
 });

@@ -43,14 +43,13 @@ describe('Table Paginated Use Case', () => {
       _schema: {},
       fields: [],
       type: E_TABLE_TYPE.TABLE,
-      configuration: {
-        owner: 'owner-id',
-        administrators: [],
-        style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: { orderList: [], orderForm: [] },
-      },
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     await tableInMemoryRepository.create({
@@ -59,14 +58,13 @@ describe('Table Paginated Use Case', () => {
       _schema: {},
       fields: [],
       type: E_TABLE_TYPE.TABLE,
-      configuration: {
-        owner: 'owner-id',
-        administrators: [],
-        style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: { orderList: [], orderForm: [] },
-      },
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     const result = await sut.execute({
@@ -93,14 +91,13 @@ describe('Table Paginated Use Case', () => {
         _schema: {},
         fields: [],
         type: E_TABLE_TYPE.TABLE,
-        configuration: {
-          owner: 'owner-id',
-          administrators: [],
-          style: E_TABLE_STYLE.LIST,
-          visibility: E_TABLE_VISIBILITY.RESTRICTED,
-          collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-          fields: { orderList: [], orderForm: [] },
-        },
+        owner: 'owner-id',
+        administrators: [],
+        style: E_TABLE_STYLE.LIST,
+        visibility: E_TABLE_VISIBILITY.RESTRICTED,
+        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+        fieldOrderList: [],
+        fieldOrderForm: [],
       });
     }
 
@@ -129,14 +126,13 @@ describe('Table Paginated Use Case', () => {
       _schema: {},
       fields: [],
       type: E_TABLE_TYPE.TABLE,
-      configuration: {
-        owner: 'owner-id',
-        administrators: [],
-        style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: { orderList: [], orderForm: [] },
-      },
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     await tableInMemoryRepository.create({
@@ -145,14 +141,13 @@ describe('Table Paginated Use Case', () => {
       _schema: {},
       fields: [],
       type: E_TABLE_TYPE.TABLE,
-      configuration: {
-        owner: 'owner-id',
-        administrators: [],
-        style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: { orderList: [], orderForm: [] },
-      },
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     const result = await sut.execute({

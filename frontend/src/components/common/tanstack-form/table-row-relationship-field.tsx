@@ -31,15 +31,15 @@ export function TableRowRelationshipField({
 }: TableRowRelationshipFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<SearchableOption>>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
   const anchorRef = useComboboxAnchor();
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
 
-  const relConfig = field.configuration.relationship;
-  const isMultiple = field.configuration.multiple;
+  const relConfig = field.relationship;
+  const isMultiple = field.multiple;
 
   // Debounce search query
   React.useEffect(() => {

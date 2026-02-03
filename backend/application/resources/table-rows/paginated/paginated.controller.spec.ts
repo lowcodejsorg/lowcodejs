@@ -47,20 +47,18 @@ describe('E2E Table Row Paginated Controller', () => {
       const { cookies, user } = await createAuthenticatedUser();
 
       const fieldPayload: FieldCreatePayload = {
-        configuration: {
-          category: [],
-          dropdown: [],
-          defaultValue: null,
-          filter: false,
-          form: true,
-          detail: true,
-          format: null,
-          group: null,
-          display: true,
-          multiple: false,
-          required: false,
-          relationship: null,
-        },
+        category: [],
+        dropdown: [],
+        defaultValue: null,
+        showInFilter: false,
+        showInForm: true,
+        showInDetail: true,
+        format: null,
+        group: null,
+        showInList: true,
+        multiple: false,
+        required: false,
+        relationship: null,
         name: 'Name',
         slug: 'name',
         type: E_FIELD_TYPE.TEXT_SHORT,
@@ -69,17 +67,13 @@ describe('E2E Table Row Paginated Controller', () => {
       const field = await Field.create(fieldPayload);
 
       const tablePayload: TableCreatePayload = {
-        configuration: {
-          owner: user._id,
-          administrators: [],
-          collaboration: E_TABLE_COLLABORATION.OPEN,
-          fields: {
-            orderForm: [],
-            orderList: [],
-          },
-          style: E_TABLE_STYLE.LIST,
-          visibility: E_TABLE_VISIBILITY.PUBLIC,
-        },
+        owner: user._id,
+        administrators: [],
+        collaboration: E_TABLE_COLLABORATION.OPEN,
+        fieldOrderForm: [],
+        fieldOrderList: [],
+        style: E_TABLE_STYLE.LIST,
+        visibility: E_TABLE_VISIBILITY.PUBLIC,
         name: 'Products',
         slug: 'products',
         fields: [field._id.toString()],

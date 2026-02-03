@@ -67,14 +67,11 @@ export default class TableFieldRemoveFromTrashUseCase {
 
       const updatedField = await this.fieldRepository.update({
         _id: field._id,
-        configuration: {
-          ...field.configuration,
-          display: true,
-          form: true,
-          detail: true,
-          filter: true,
-          required: false,
-        },
+        showInList: true,
+        showInForm: true,
+        showInDetail: true,
+        showInFilter: true,
+        required: false,
         trashed: false,
         trashedAt: null,
       });
@@ -89,9 +86,7 @@ export default class TableFieldRemoveFromTrashUseCase {
         _id: table._id,
         fields: fields.flatMap((f) => f._id),
         _schema,
-        configuration: {
-          owner: table.configuration.owner._id,
-        },
+        owner: table.owner._id,
       });
 
       return right(updatedField);
@@ -125,14 +120,11 @@ export default class TableFieldRemoveFromTrashUseCase {
 
     const updatedField = await this.fieldRepository.update({
       _id: field._id,
-      configuration: {
-        ...field.configuration,
-        display: true,
-        form: true,
-        detail: true,
-        filter: true,
-        required: false,
-      },
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      required: false,
       trashed: false,
       trashedAt: null,
     });
@@ -163,13 +155,8 @@ export default class TableFieldRemoveFromTrashUseCase {
       _id: parentTable._id,
       _schema: parentSchema,
       groups: updatedGroups,
-      configuration: {
-        ...parentTable.configuration,
-        owner: parentTable.configuration.owner._id,
-        administrators: parentTable.configuration.administrators.flatMap(
-          (a) => a._id,
-        ),
-      },
+      owner: parentTable.owner._id,
+      administrators: parentTable.administrators.flatMap((a) => a._id),
     });
 
     return right(updatedField);

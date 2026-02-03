@@ -15,8 +15,8 @@ export function TableRowRichTextField({
 }: TableRowRichTextFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
 
   // Se disabled, mostrar apenas preview
   if (disabled) {

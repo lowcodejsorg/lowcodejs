@@ -19,7 +19,7 @@ export default class StorageMongooseRepository implements StorageContractReposit
   ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
-    if (payload?.type) where.type = payload.type;
+    if (payload?.mimetype) where.mimetype = payload.mimetype;
 
     if (payload?.search) {
       where.originalName = { $regex: normalize(payload.search), $options: 'i' };

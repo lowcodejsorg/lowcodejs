@@ -36,20 +36,19 @@ describe('E2E Table Field Update Controller', () => {
       const { cookies, user } = await createAuthenticatedUser();
 
       const fieldPayload: FieldCreatePayload = {
-        configuration: {
-          category: [],
-          dropdown: [],
-          defaultValue: null,
-          filter: false,
-          form: true,
-          detail: true,
-          format: null,
-          group: null,
-          display: true,
-          multiple: false,
-          required: false,
-          relationship: null,
-        },
+        category: [],
+        dropdown: [],
+        defaultValue: null,
+        showInFilter: false,
+        showInForm: true,
+        showInDetail: true,
+        format: null,
+        group: null,
+        showInList: true,
+        locked: false,
+        multiple: false,
+        required: false,
+        relationship: null,
         name: 'My Field',
         slug: 'my-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
@@ -58,17 +57,13 @@ describe('E2E Table Field Update Controller', () => {
       const field = await Field.create(fieldPayload);
 
       const tablePayload: TableCreatePayload = {
-        configuration: {
-          owner: user._id,
-          administrators: [],
-          collaboration: E_TABLE_COLLABORATION.OPEN,
-          fields: {
-            orderForm: [],
-            orderList: [],
-          },
-          style: E_TABLE_STYLE.LIST,
-          visibility: E_TABLE_VISIBILITY.PUBLIC,
-        },
+        owner: user._id,
+        administrators: [],
+        collaboration: E_TABLE_COLLABORATION.OPEN,
+        fieldOrderForm: [],
+        fieldOrderList: [],
+        style: E_TABLE_STYLE.LIST,
+        visibility: E_TABLE_VISIBILITY.PUBLIC,
         name: 'My Table',
         slug: 'my-table',
         fields: [field._id.toString()],
@@ -91,20 +86,19 @@ describe('E2E Table Field Update Controller', () => {
       const table = await Table.create(tablePayload);
 
       const updatePayload: FieldCreatePayload = {
-        configuration: {
-          category: [],
-          dropdown: [],
-          defaultValue: null,
-          filter: true,
-          form: true,
-          detail: true,
-          format: null,
-          group: null,
-          display: true,
-          multiple: false,
-          required: true,
-          relationship: null,
-        },
+        category: [],
+        dropdown: [],
+        defaultValue: null,
+        showInFilter: true,
+        showInForm: true,
+        showInDetail: true,
+        format: null,
+        group: null,
+        showInList: true,
+        locked: false,
+        multiple: false,
+        required: true,
+        relationship: null,
         name: 'Updated Field',
         slug: 'updated-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
@@ -117,8 +111,8 @@ describe('E2E Table Field Update Controller', () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe('Updated Field');
-      expect(response.body.configuration.required).toBe(true);
-      expect(response.body.configuration.filter).toBe(true);
+      expect(response.body.required).toBe(true);
+      expect(response.body.showInFilter).toBe(true);
     });
   });
 });

@@ -59,11 +59,18 @@ export function buildCreateRowDefaultValues(
 
   for (const field of fields) {
     if (field.trashed) continue;
+    // Skip system-managed fields
+    if (
+      field.type === E_FIELD_TYPE.REACTION ||
+      field.type === E_FIELD_TYPE.EVALUATION
+    ) {
+      continue;
+    }
 
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
       case E_FIELD_TYPE.TEXT_LONG:
-        defaults[field.slug] = field.configuration.defaultValue ?? '';
+        defaults[field.slug] = field.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DATE:
         defaults[field.slug] = '';
@@ -107,6 +114,13 @@ export function buildUpdateRowDefaultValues(
 
   for (const field of fields) {
     if (field.trashed) continue;
+    // Skip system-managed fields
+    if (
+      field.type === E_FIELD_TYPE.REACTION ||
+      field.type === E_FIELD_TYPE.EVALUATION
+    ) {
+      continue;
+    }
 
     const value = data[field.slug];
 
@@ -114,7 +128,7 @@ export function buildUpdateRowDefaultValues(
       case E_FIELD_TYPE.TEXT_SHORT:
       case E_FIELD_TYPE.TEXT_LONG:
         if (value) defaults[field.slug] = value;
-        else defaults[field.slug] = field.configuration.defaultValue ?? '';
+        else defaults[field.slug] = field.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DROPDOWN: {
         const options = Array.from<string>(value);
@@ -135,7 +149,7 @@ export function buildUpdateRowDefaultValues(
       }
       case E_FIELD_TYPE.RELATIONSHIP: {
         const rows = Array.from<IRow>(value);
-        const relConfig = field.configuration.relationship;
+        const relConfig = field.relationship;
         const labelField = relConfig?.field.slug ?? '_id';
 
         defaults[field.slug] = rows.map((row) => ({
@@ -188,6 +202,13 @@ export function buildRowPayload(
 
   for (const field of fields) {
     if (field.trashed) continue;
+    // Skip system-managed fields
+    if (
+      field.type === E_FIELD_TYPE.REACTION ||
+      field.type === E_FIELD_TYPE.EVALUATION
+    ) {
+      continue;
+    }
     const value = values[field.slug];
     payload[field.slug] = mountRowValue(value, field);
   }
@@ -196,19 +217,22 @@ export function buildRowPayload(
 }
 
 export function mountRowValue(value: FieldValue, field: IField): RowPayload {
-  const isMultiple = field.configuration.multiple;
+  const isMultiple = field.multiple;
 
   switch (field.type) {
+    case E_FIELD_TYPE.EVALUATION:
+    case E_FIELD_TYPE.REACTION:
+      return null; // System-managed, should not be in payloads
     case E_FIELD_TYPE.TEXT_SHORT:
     case E_FIELD_TYPE.TEXT_LONG:
-      if (value === '' && field.configuration.defaultValue !== null)
-        return field.configuration.defaultValue;
+      if (value === '' && field.defaultValue !== null)
+        return field.defaultValue;
 
       if (value !== '' && value !== null) {
         return value.toString();
       }
 
-      if (value === '' || field.configuration.defaultValue === null) {
+      if (value === '' || field.defaultValue === null) {
         return null;
       }
 
@@ -341,11 +365,11 @@ export function buildFieldValidator(
   field: IField,
   value: null | undefined | string | { storages: Array<IStorage> },
 ): { message: string } | undefined {
-  const isRequired = field.configuration.required;
+  const isRequired = field.required;
 
   if (!isRequired) return undefined;
 
-  const isMultiple = field.configuration.multiple;
+  const isMultiple = field.multiple;
 
   const isStorage =
     field.type === E_FIELD_TYPE.FILE &&
@@ -371,5 +395,5 @@ export function buildFieldValidator(
     return { message: 'Adicione ao menos um item a ' + field.name };
   }
 
-  return { message: 'Campo obrigatório' };
+  return undefined;
 }

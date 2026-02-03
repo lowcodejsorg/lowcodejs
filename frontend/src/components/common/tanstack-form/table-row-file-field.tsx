@@ -23,7 +23,7 @@ async function storageToFile(storage: IStorage): Promise<FileWithUploaded> {
   const response = await fetch(storage.url);
   const blob = await response.blob();
   const file: FileWithUploaded = new File([blob], storage.originalName, {
-    type: storage.type,
+    type: storage.mimetype,
   });
   file.isUploaded = true;
   return file;
@@ -35,8 +35,8 @@ export function TableRowFileField({
 }: TableRowFileFieldProps): React.JSX.Element {
   const formField = useFieldContext<FileValue>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
 
   const value = formField.state.value;
 
@@ -99,7 +99,7 @@ export function TableRowFileField({
           formField.handleChange({ ...value, storages })
         }
         initialStorages={initialStorages}
-        maxFiles={field.configuration.multiple ? 10 : 1}
+        maxFiles={field.multiple ? 10 : 1}
         className={cn(disabled && 'pointer-events-none opacity-50')}
       />
       {isInvalid && <FieldError errors={formField.state.meta.errors} />}

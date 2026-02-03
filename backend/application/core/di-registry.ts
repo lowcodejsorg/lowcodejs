@@ -22,6 +22,8 @@ import { UserGroupContractRepository } from '@application/repositories/user-grou
 import UserGroupMongooseRepository from '@application/repositories/user-group/user-group-mongoose.repository';
 import { ValidationTokenContractRepository } from '@application/repositories/validation-token/validation-token-contract.repository';
 import ValidationTokenMongooseRepository from '@application/repositories/validation-token/validation-token-mongoose.repository';
+import { EmailContractService } from '@application/services/email/email-contract.service';
+import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
 
 /**
  * Registro explícito de dependências.
@@ -82,4 +84,6 @@ export function registerDependencies(): void {
     ValidationTokenContractRepository,
     ValidationTokenMongooseRepository,
   );
+
+  injectablesHolder.injectService(EmailContractService, NodemailerEmailService);
 }

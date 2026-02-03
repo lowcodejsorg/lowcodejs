@@ -16,10 +16,10 @@ export function TableRowDateField({
 }: TableRowDateFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
 
-  const formatString = field.configuration.format ?? E_FIELD_FORMAT.DD_MM_YYYY;
+  const formatString = field.format ?? E_FIELD_FORMAT.DD_MM_YYYY;
   const dateValue = formField.state.value
     ? {
         startDate: new Date(formField.state.value),
@@ -39,7 +39,7 @@ export function TableRowDateField({
           formField.handleChange(value?.startDate?.toISOString() ?? '')
         }
         displayFormat={formatString}
-        placeholder={field.configuration.format ?? E_FIELD_FORMAT.DD_MM_YYYY}
+        placeholder={field.format ?? E_FIELD_FORMAT.DD_MM_YYYY}
         disabled={disabled}
         useRange={false}
         asSingle

@@ -114,7 +114,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
     // 3. EXCEÇÃO PÚBLICA: tabela pública + VIEW → visitante pode ver/filtrar
     if (
       table &&
-      table.configuration?.visibility === E_TABLE_VISIBILITY.PUBLIC &&
+      table.visibility === E_TABLE_VISIBILITY.PUBLIC &&
       request.method === 'GET' &&
       ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(requiredPermission)
     ) {
@@ -124,7 +124,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
     // 4. EXCEÇÃO FORMULÁRIO: tabela form + POST CREATE_ROW → visitante pode criar registro
     if (
       table &&
-      table.configuration?.visibility === E_TABLE_VISIBILITY.FORM &&
+      table.visibility === E_TABLE_VISIBILITY.FORM &&
       request.method === 'POST' &&
       requiredPermission === 'CREATE_ROW'
     ) {
@@ -170,8 +170,8 @@ export function TableAccessMiddleware(options: AccessOptions) {
     }
 
     // 8. Verificar se é dono ou admin da tabela
-    const isOwner = user.sub === table.configuration?.owner?.toString();
-    const isTableAdmin = table.configuration?.administrators?.some(
+    const isOwner = user.sub === table.owner?.toString();
+    const isTableAdmin = table.administrators?.some(
       (a) => a?.toString() === user.sub,
     );
 
@@ -188,8 +188,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
     }
 
     // 9. Usuário logado NÃO é dono/admin → aplicar regras de visibilidade
-    const visibility =
-      table.configuration?.visibility || E_TABLE_VISIBILITY.RESTRICTED;
+    const visibility = table.visibility || E_TABLE_VISIBILITY.RESTRICTED;
 
     // Ações que SEMPRE requerem dono/admin (independente da visibilidade)
     const ownerOnlyActions = [

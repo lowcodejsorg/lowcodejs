@@ -1,7 +1,7 @@
 import type { IField } from './interfaces';
 
 export function HeaderFilter(field: IField): boolean {
-  return field.configuration.display && !field.trashed;
+  return field.showInList && !field.trashed;
 }
 
 export function HeaderSorter(order: Array<string>) {

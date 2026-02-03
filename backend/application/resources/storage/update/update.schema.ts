@@ -29,10 +29,10 @@ export const StorageUploadSchema: FastifySchema = {
             description: 'URL completa para acessar o arquivo',
             examples: ['http://localhost:3000/storage/12345678.jpg'],
           },
-          type: {
+          mimetype: {
             type: 'string',
             description: 'Tipo MIME do arquivo',
-            examples: ['image/jpeg', 'application/pdf', 'text/plain'],
+            examples: ['image/webp', 'application/pdf', 'text/plain'],
           },
           size: {
             type: 'number',

@@ -363,6 +363,9 @@ function FileUploadRoot(props: FileUploadRootProps): React.JSX.Element {
     [listeners, files, invalid, onValueChange, urlCache],
   );
 
+  const storeRef = React.useRef(store);
+  storeRef.current = store;
+
   const acceptTypes = React.useMemo(
     () => accept?.split(',').map((t) => t.trim()) ?? null,
     [accept],
@@ -374,7 +377,7 @@ function FileUploadRoot(props: FileUploadRootProps): React.JSX.Element {
       if (frame) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
-        store.dispatch({
+        storeRef.current.dispatch({
           type: 'SET_PROGRESS',
           file,
           progress: Math.min(Math.max(0, progress), 100),

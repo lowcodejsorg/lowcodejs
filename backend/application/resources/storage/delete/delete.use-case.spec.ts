@@ -1,12 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
-import StorageService from '@application/services/storage.service';
+import LocalStorageService from '@application/services/storage.service';
 
 import StorageDeleteUseCase from './delete.use-case';
 
 let storageInMemoryRepository: StorageInMemoryRepository;
-let storageService: StorageService;
+let storageService: LocalStorageService;
 let sut: StorageDeleteUseCase;
 
 describe('Storage Delete Use Case', () => {
@@ -15,17 +15,17 @@ describe('Storage Delete Use Case', () => {
     storageService = {
       upload: vi.fn(),
       delete: vi.fn().mockResolvedValue(undefined),
-    } as unknown as StorageService;
+    } as unknown as LocalStorageService;
     sut = new StorageDeleteUseCase(storageInMemoryRepository, storageService);
   });
 
   it('deve deletar arquivo com sucesso', async () => {
     const storage = await storageInMemoryRepository.create({
-      filename: 'random-name.jpg',
+      filename: 'random-name.webp',
       originalName: 'test.jpg',
-      url: '/uploads/random-name.jpg',
+      url: '/uploads/random-name.webp',
       size: 1024,
-      type: 'image/jpeg',
+      mimetype: 'image/webp',
     });
 
     const result = await sut.execute({ _id: storage._id });

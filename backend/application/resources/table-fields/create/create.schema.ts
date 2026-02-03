@@ -20,7 +20,7 @@ export const TableFieldCreateSchema: FastifySchema = {
   },
   body: {
     type: 'object',
-    required: ['name', 'type', 'configuration'],
+    required: ['name', 'type'],
     properties: {
       name: {
         type: 'string',
@@ -44,141 +44,138 @@ export const TableFieldCreateSchema: FastifySchema = {
         ],
         description: 'Field type from FIELD_TYPE enum',
       },
-      configuration: {
+      required: {
+        type: 'boolean',
+        default: false,
+        description: 'Field is required for data entry',
+      },
+      multiple: {
+        type: 'boolean',
+        default: false,
+        description: 'Field accepts multiple values',
+      },
+      showInFilter: {
+        type: 'boolean',
+        default: false,
+        description: 'Allow filtering by this field',
+      },
+      showInForm: {
+        type: 'boolean',
+        default: false,
+        description: 'Show field in create/edit forms',
+      },
+      showInDetail: {
+        type: 'boolean',
+        default: false,
+        description: 'Show field in detail pages',
+      },
+      showInList: {
+        type: 'boolean',
+        default: false,
+        description: 'Show field in list/grid/kanban views',
+      },
+      locked: {
+        type: 'boolean',
+        default: false,
+        description: 'Field is locked and cannot be modified',
+      },
+      format: {
+        type: 'string',
+        nullable: true,
+        default: null,
+        description:
+          'Field format (for TEXT_SHORT: ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL; for DATE: various date formats)',
+        examples: ['EMAIL', 'dd/MM/yyyy', 'DECIMAL'],
+      },
+      defaultValue: {
+        type: 'string',
+        nullable: true,
+        default: null,
+        description: 'Default field value',
+      },
+      dropdown: {
+        type: 'array',
+        nullable: true,
+        default: [],
+        description: 'Options for DROPDOWN type fields',
+        items: {
+          type: 'object',
+          required: ['id', 'label'],
+          properties: {
+            id: { type: 'string', description: 'Dropdown option ID' },
+            label: { type: 'string', description: 'Dropdown option label' },
+            color: { type: 'string', description: 'Dropdown option color' },
+          },
+        },
+      },
+      relationship: {
         type: 'object',
-        required: ['required', 'multiple'],
+        nullable: true,
+        default: null,
+        description: 'Configuration for RELATIONSHIP type',
         properties: {
-          required: {
-            type: 'boolean',
-            default: false,
-            description: 'Field is required for data entry',
-          },
-          multiple: {
-            type: 'boolean',
-            default: false,
-            description: 'Field accepts multiple values',
-          },
-          filter: {
-            type: 'boolean',
-            default: false,
-            description: 'Allow filtering by this field',
-          },
-          form: {
-            type: 'boolean',
-            default: false,
-            description: 'Show field in create/edit forms',
-          },
-          detail: {
-            type: 'boolean',
-            default: false,
-            description: 'Show field in detail pages',
-          },
-          display: {
-            type: 'boolean',
-            default: false,
-            description: 'Show field in list/grid/kanban views',
-          },
-          format: {
-            type: 'string',
-            nullable: true,
-            default: null,
-            description:
-              'Field format (for TEXT_SHORT: ALPHA_NUMERIC, INTEGER, DECIMAL, URL, EMAIL; for DATE: various date formats)',
-            examples: ['EMAIL', 'dd/MM/yyyy', 'DECIMAL'],
-          },
-          default_value: {
-            type: 'string',
-            nullable: true,
-            default: null,
-            description: 'Default field value',
-          },
-          dropdown: {
-            type: 'array',
-            nullable: true,
-            default: null,
-            description: 'Options for DROPDOWN type fields',
-            items: {
-              type: 'object',
-              required: ['id', 'label'],
-              properties: {
-                id: { type: 'string', description: 'Dropdown option ID' },
-                label: { type: 'string', description: 'Dropdown option label' },
-                color: { type: 'string', description: 'Dropdown option color' },
-              },
-            },
-          },
-          relationship: {
+          table: {
             type: 'object',
-            nullable: true,
-            default: null,
-            description: 'Configuration for RELATIONSHIP type',
-            properties: {
-              table: {
-                type: 'object',
-                required: ['_id', 'slug'],
-                properties: {
-                  _id: {
-                    type: 'string',
-                    description: 'Target table ID',
-                  },
-                  slug: {
-                    type: 'string',
-                    description: 'Target table slug',
-                  },
-                },
-              },
-              field: {
-                type: 'object',
-                required: ['_id', 'slug'],
-                properties: {
-                  _id: { type: 'string', description: 'Target field ID' },
-                  slug: {
-                    type: 'string',
-                    description: 'Target field slug',
-                  },
-                },
-              },
-              order: {
-                type: 'string',
-                enum: ['asc', 'desc'],
-                default: 'asc',
-                description: 'Sort order for relationship data',
-              },
-            },
-          },
-          group: {
-            type: 'object',
-            nullable: true,
-            default: null,
-            description:
-              'Configuration for FIELD_GROUP type (auto-populated on creation)',
+            required: ['_id', 'slug'],
             properties: {
               _id: {
                 type: 'string',
-                description: 'Field group table ID',
+                description: 'Target table ID',
               },
               slug: {
                 type: 'string',
-                description: 'Field group table slug',
+                description: 'Target table slug',
               },
             },
           },
-          category: {
-            type: 'array',
-            nullable: true,
-            default: null,
-            description: 'Categories for CATEGORY type',
-            items: {
-              type: 'object',
-              required: ['id', 'label'],
-              properties: {
-                id: { type: 'string', description: 'Category ID' },
-                label: { type: 'string', description: 'Category label' },
-                children: {
-                  type: 'array',
-                  description: 'Nested categories',
-                },
+          field: {
+            type: 'object',
+            required: ['_id', 'slug'],
+            properties: {
+              _id: { type: 'string', description: 'Target field ID' },
+              slug: {
+                type: 'string',
+                description: 'Target field slug',
               },
+            },
+          },
+          order: {
+            type: 'string',
+            enum: ['asc', 'desc'],
+            default: 'asc',
+            description: 'Sort order for relationship data',
+          },
+        },
+      },
+      group: {
+        anyOf: [
+          { type: 'null' },
+          { type: 'string', description: 'Group slug' },
+          {
+            type: 'object',
+            properties: {
+              _id: { type: 'string', description: 'Field group table ID' },
+              slug: { type: 'string', description: 'Field group table slug' },
+            },
+          },
+        ],
+        default: null,
+        description: 'Configuration for FIELD_GROUP type (slug or object)',
+      },
+      category: {
+        type: 'array',
+        nullable: true,
+        default: [],
+        description: 'Categories for CATEGORY type',
+        items: {
+          type: 'object',
+          required: ['id', 'label'],
+          properties: {
+            id: { type: 'string', description: 'Category ID' },
+            label: { type: 'string', description: 'Category label' },
+            children: {
+              type: 'array',
+              description: 'Nested categories',
             },
           },
         },
@@ -211,103 +208,94 @@ export const TableFieldCreateSchema: FastifySchema = {
           ],
           description: 'Field type',
         },
-        configuration: {
+        required: { type: 'boolean', description: 'Field is required' },
+        multiple: {
+          type: 'boolean',
+          description: 'Field accepts multiple values',
+        },
+        showInFilter: {
+          type: 'boolean',
+          description: 'Allow filtering by this field',
+        },
+        showInForm: {
+          type: 'boolean',
+          description: 'Show field in create/edit forms',
+        },
+        showInDetail: {
+          type: 'boolean',
+          description: 'Show field in detail pages',
+        },
+        showInList: {
+          type: 'boolean',
+          description: 'Show field in list/grid/kanban views',
+        },
+        locked: { type: 'boolean', description: 'Field is locked' },
+        format: {
+          type: 'string',
+          nullable: true,
+          description: 'Field format',
+        },
+        defaultValue: {
+          type: 'string',
+          nullable: true,
+          description: 'Default field value',
+        },
+        dropdown: {
+          type: 'array',
+          nullable: true,
+          description: 'Dropdown options',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string' },
+              color: { type: 'string' },
+            },
+          },
+        },
+        relationship: {
           type: 'object',
+          nullable: true,
+          description: 'Relationship configuration',
           properties: {
-            required: {
-              type: 'boolean',
-              description: 'Field is required',
-            },
-            multiple: {
-              type: 'boolean',
-              description: 'Field accepts multiple values',
-            },
-            filter: {
-              type: 'boolean',
-              description: 'Allow filtering by this field',
-            },
-            form: {
-              type: 'boolean',
-              description: 'Show field in create/edit forms',
-            },
-            detail: {
-              type: 'boolean',
-              description: 'Show field in detail pages',
-            },
-            display: {
-              type: 'boolean',
-              description: 'Show field in list/grid/kanban views',
-            },
-            format: {
-              type: 'string',
-              nullable: true,
-              description: 'Field format',
-            },
-            defaultValue: {
-              type: 'string',
-              nullable: true,
-              description: 'Default field value',
-            },
-            dropdown: {
-              type: 'array',
-              nullable: true,
-              description: 'Dropdown options',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  label: { type: 'string' },
-                  color: { type: 'string' },
-                },
-              },
-            },
-            relationship: {
+            table: {
               type: 'object',
-              nullable: true,
-              description: 'Relationship configuration',
-              properties: {
-                table: {
-                  type: 'object',
-                  properties: {
-                    _id: { type: 'string' },
-                    slug: { type: 'string' },
-                  },
-                },
-                field: {
-                  type: 'object',
-                  properties: {
-                    _id: { type: 'string' },
-                    slug: { type: 'string' },
-                  },
-                },
-                order: { type: 'string', enum: ['asc', 'desc'] },
-              },
-            },
-            category: {
-              type: 'array',
-              nullable: true,
-              description: 'Category options',
-              items: {
-                type: 'object',
-                properties: {
-                  id: { type: 'string' },
-                  label: { type: 'string' },
-                  children: { type: 'array' },
-                },
-              },
-            },
-            group: {
-              type: 'object',
-              nullable: true,
-              description: 'Field group configuration',
               properties: {
                 _id: { type: 'string' },
                 slug: { type: 'string' },
               },
             },
+            field: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string' },
+                slug: { type: 'string' },
+              },
+            },
+            order: { type: 'string', enum: ['asc', 'desc'] },
           },
-          description:
-            'Field configuration with populated group if FIELD_GROUP type',
+        },
+        category: {
+          type: 'array',
+          nullable: true,
+          description: 'Category options',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string' },
+              children: { type: 'array' },
+            },
+          },
+        },
+        group: {
+          type: 'object',
+          nullable: true,
+          description: 'Field group configuration',
+          properties: {
+            _id: { type: 'string' },
+            slug: { type: 'string' },
+          },
         },
         trashed: {
           type: 'boolean',

@@ -75,10 +75,8 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
       </TableCell>
 
       <TableCell>
-        <Badge
-          variant={VISIBILITY_CONFIG[table.configuration.visibility].variant}
-        >
-          {VISIBILITY_CONFIG[table.configuration.visibility].label}
+        <Badge variant={VISIBILITY_CONFIG[table.visibility].variant}>
+          {VISIBILITY_CONFIG[table.visibility].label}
         </Badge>
       </TableCell>
 

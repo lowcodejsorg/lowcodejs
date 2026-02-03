@@ -41,11 +41,8 @@ export default class TableUpdateUseCase {
         );
 
       // Validar que apenas usuários ativos podem ser administradores
-      if (
-        payload.configuration?.administrators &&
-        payload.configuration.administrators.length > 0
-      ) {
-        const adminIds = payload.configuration.administrators;
+      if (payload.administrators && payload.administrators.length > 0) {
+        const adminIds = payload.administrators;
         const activeAdmins = await this.userRepository.findMany({
           _ids: adminIds,
           status: E_USER_STATUS.ACTIVE,
@@ -62,28 +59,22 @@ export default class TableUpdateUseCase {
         }
       }
 
-      // Mapear configuration populada para strings (IDs)
+      // Mapear propriedades populadas para strings (IDs)
       const updated = await this.tableRepository.update({
         _id: table._id,
         ...payload,
-        configuration: {
-          ...payload.configuration,
-          owner: table.configuration.owner._id,
-          style: payload.configuration.style ?? table.configuration.style,
-          visibility:
-            payload.configuration.visibility ?? table.configuration.visibility,
-          collaboration:
-            payload.configuration.collaboration ??
-            table.configuration.collaboration,
-          fields: payload.configuration.fields ?? table.configuration.fields,
-          administrators:
-            payload.configuration.administrators ??
-            table.configuration.administrators.flatMap((a) => a._id),
-        },
+        owner: table.owner._id,
+        style: payload.style ?? table.style,
+        visibility: payload.visibility ?? table.visibility,
+        collaboration: payload.collaboration ?? table.collaboration,
+        fieldOrderList: payload.fieldOrderList ?? table.fieldOrderList,
+        fieldOrderForm: payload.fieldOrderForm ?? table.fieldOrderForm,
+        administrators:
+          payload.administrators ?? table.administrators.flatMap((a) => a._id),
       });
 
       // Propagar visibilidade para grupos de campos (FIELD_GROUP)
-      if (payload.configuration?.visibility) {
+      if (payload.visibility) {
         const fieldIds = table.fields?.flatMap((f) => f._id) ?? [];
 
         const fieldGroupFields = await this.fieldRepository.findMany({
@@ -92,14 +83,14 @@ export default class TableUpdateUseCase {
         });
 
         const groupIds = fieldGroupFields
-          .map((f) => f.configuration?.group?._id)
+          .map((f) => f.group?._id)
           .filter((id): id is string => Boolean(id));
 
         if (groupIds.length > 0) {
           await this.tableRepository.updateMany({
             _ids: groupIds,
             type: E_TABLE_TYPE.FIELD_GROUP,
-            data: { visibility: payload.configuration.visibility },
+            data: { visibility: payload.visibility },
           });
         }
       }

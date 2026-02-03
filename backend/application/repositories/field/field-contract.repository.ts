@@ -8,7 +8,22 @@ import type {
 
 export type FieldCreatePayload = Pick<
   IField,
-  'name' | 'slug' | 'type' | 'configuration'
+  | 'name'
+  | 'slug'
+  | 'type'
+  | 'required'
+  | 'multiple'
+  | 'format'
+  | 'showInFilter'
+  | 'showInForm'
+  | 'showInDetail'
+  | 'showInList'
+  | 'locked'
+  | 'defaultValue'
+  | 'relationship'
+  | 'dropdown'
+  | 'category'
+  | 'group'
 >;
 
 export type FieldUpdatePayload = Merge<

@@ -47,7 +47,7 @@ interface TableListViewProps {
 }
 
 function HeaderFilter(field: IField): boolean {
-  return field.configuration.display && !field.trashed;
+  return field.showInList && !field.trashed;
 }
 
 function HeaderSorter(order: Array<string>) {

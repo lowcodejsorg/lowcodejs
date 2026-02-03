@@ -116,8 +116,8 @@ export default class TableFieldAddCategoryUseCase {
         children: [],
       };
 
-      const existingCategories = Array.isArray(field.configuration.category)
-        ? field.configuration.category
+      const existingCategories = Array.isArray(field.category)
+        ? field.category
         : [];
 
       const parentId = payload.parentId ?? null;
@@ -145,10 +145,7 @@ export default class TableFieldAddCategoryUseCase {
 
       const updatedField = await this.fieldRepository.update({
         _id: field._id,
-        configuration: {
-          ...field.configuration,
-          category: updated,
-        },
+        category: updated,
       });
 
       return right({

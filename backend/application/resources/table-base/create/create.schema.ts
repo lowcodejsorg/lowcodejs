@@ -19,23 +19,17 @@ export const TableCreateSchema: FastifySchema = {
         nullable: true,
         description: 'Storage ID for table logo',
       },
-      configuration: {
-        type: 'object',
-        description: 'Table configuration (optional)',
-        properties: {
-          style: {
-            type: 'string',
-            enum: ['GALLERY', 'LIST', 'DOCUMENT'],
-            default: 'LIST',
-            description: 'Table display style',
-          },
-          visibility: {
-            type: 'string',
-            enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-            default: 'RESTRICTED',
-            description: 'Table visibility level',
-          },
-        },
+      style: {
+        type: 'string',
+        enum: ['GALLERY', 'LIST', 'DOCUMENT'],
+        default: 'LIST',
+        description: 'Table display style',
+      },
+      visibility: {
+        type: 'string',
+        enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
+        default: 'RESTRICTED',
+        description: 'Table visibility level',
       },
     },
   },
@@ -81,9 +75,54 @@ export const TableCreateSchema: FastifySchema = {
                 type: 'string',
                 description: 'Field type from FIELD_TYPE enum',
               },
-              configuration: {
+              required: { type: 'boolean', description: 'Is field required' },
+              multiple: {
+                type: 'boolean',
+                description: 'Allows multiple values',
+              },
+              format: {
+                type: 'string',
+                nullable: true,
+                description: 'Field format validation',
+              },
+              showInList: {
+                type: 'boolean',
+                description: 'Show in listings',
+              },
+              showInForm: { type: 'boolean', description: 'Show in form view' },
+              showInDetail: {
+                type: 'boolean',
+                description: 'Show in detail view',
+              },
+              showInFilter: { type: 'boolean', description: 'Allow filtering' },
+              locked: {
+                type: 'boolean',
+                description: 'Field is locked and cannot be modified',
+              },
+              defaultValue: {
+                type: 'string',
+                nullable: true,
+                description: 'Default field value',
+              },
+              relationship: {
                 type: 'object',
-                description: 'Field configuration',
+                nullable: true,
+                description: 'Relationship configuration',
+              },
+              dropdown: {
+                type: 'array',
+                nullable: true,
+                description: 'Dropdown options',
+              },
+              category: {
+                type: 'array',
+                nullable: true,
+                description: 'Category options',
+              },
+              group: {
+                type: 'object',
+                nullable: true,
+                description: 'Field group configuration',
               },
               trashed: {
                 type: 'boolean',
@@ -101,49 +140,49 @@ export const TableCreateSchema: FastifySchema = {
           },
           description: 'Table fields (processed with slugs)',
         },
-        configuration: {
-          type: 'object',
-          properties: {
-            style: {
-              type: 'string',
-              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
-            },
-            visibility: {
-              type: 'string',
-              enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-            },
-            collaboration: {
-              type: 'string',
-              enum: ['OPEN', 'RESTRICTED'],
-            },
-            administrators: {
-              type: 'array',
-              description: 'Administrator users (populated)',
-              items: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string', description: 'User ID' },
-                  name: { type: 'string', description: 'User name' },
-                },
-              },
-            },
-            owner: {
-              type: 'object',
-              description: 'Table owner (populated)',
-              properties: {
-                _id: { type: 'string', description: 'User ID' },
-                name: { type: 'string', description: 'User name' },
-              },
-            },
-            fields: {
-              type: 'object',
-              properties: {
-                orderList: { type: 'array', items: { type: 'string' } },
-                orderForm: { type: 'array', items: { type: 'string' } },
-              },
+        style: {
+          type: 'string',
+          enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
+          description: 'Table display style',
+        },
+        visibility: {
+          type: 'string',
+          enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
+          description: 'Table visibility level',
+        },
+        collaboration: {
+          type: 'string',
+          enum: ['OPEN', 'RESTRICTED'],
+          description: 'Collaboration setting',
+        },
+        administrators: {
+          type: 'array',
+          description: 'Administrator users (populated)',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string', description: 'User ID' },
+              name: { type: 'string', description: 'User name' },
             },
           },
-          description: 'Table configuration with populated owner',
+        },
+        owner: {
+          type: 'object',
+          description: 'Table owner (populated)',
+          properties: {
+            _id: { type: 'string', description: 'User ID' },
+            name: { type: 'string', description: 'User name' },
+          },
+        },
+        fieldOrderList: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Field order for list view',
+        },
+        fieldOrderForm: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Field order for form view',
         },
         type: {
           type: 'string',
@@ -205,10 +244,19 @@ export const TableCreateSchema: FastifySchema = {
                     name: { type: 'string' },
                     slug: { type: 'string' },
                     type: { type: 'string' },
-                    configuration: {
-                      type: 'object',
-                      additionalProperties: true,
-                    },
+                    required: { type: 'boolean' },
+                    multiple: { type: 'boolean' },
+                    format: { type: 'string', nullable: true },
+                    showInList: { type: 'boolean' },
+                    showInForm: { type: 'boolean' },
+                    showInDetail: { type: 'boolean' },
+                    showInFilter: { type: 'boolean' },
+                    locked: { type: 'boolean' },
+                    defaultValue: { type: 'string', nullable: true },
+                    relationship: { type: 'object', nullable: true },
+                    dropdown: { type: 'array', nullable: true },
+                    category: { type: 'array', nullable: true },
+                    group: { type: 'object', nullable: true },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',

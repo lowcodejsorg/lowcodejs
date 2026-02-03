@@ -15,25 +15,23 @@ interface DropdownOption {
 export const FieldUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
   type: z.string().min(1, 'Tipo é obrigatório'),
-  configuration: z.object({
-    format: z.string().default(''),
-    defaultValue: z.string().default(''),
-    dropdown: z.array(z.custom<DropdownOption>()).default([]),
-    relationship: z.object({
-      tableId: z.string().default(''),
-      tableSlug: z.string().default(''),
-      fieldId: z.string().default(''),
-      fieldSlug: z.string().default(''),
-      order: z.string().default(''),
-    }),
-    category: z.array(z.custom<ICategory>()).default([]),
-    multiple: z.boolean().default(false),
-    filter: z.boolean().default(false),
-    form: z.boolean().default(false),
-    detail: z.boolean().default(false),
-    display: z.boolean().default(false),
-    required: z.boolean().default(false),
+  format: z.string().default(''),
+  defaultValue: z.string().default(''),
+  dropdown: z.array(z.custom<DropdownOption>()).default([]),
+  relationship: z.object({
+    tableId: z.string().default(''),
+    tableSlug: z.string().default(''),
+    fieldId: z.string().default(''),
+    fieldSlug: z.string().default(''),
+    order: z.string().default(''),
   }),
+  category: z.array(z.custom<ICategory>()).default([]),
+  multiple: z.boolean().default(false),
+  showInFilter: z.boolean().default(false),
+  showInForm: z.boolean().default(false),
+  showInDetail: z.boolean().default(false),
+  showInList: z.boolean().default(false),
+  required: z.boolean().default(false),
   trashed: z.boolean().default(false),
 });
 
@@ -42,25 +40,23 @@ export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
 export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   name: '',
   type: '',
-  configuration: {
-    format: '',
-    defaultValue: '',
-    dropdown: [],
-    relationship: {
-      tableId: '',
-      tableSlug: '',
-      fieldId: '',
-      fieldSlug: '',
-      order: '',
-    },
-    category: [],
-    multiple: false,
-    filter: false,
-    form: false,
-    detail: false,
-    display: false,
-    required: false,
+  format: '',
+  defaultValue: '',
+  dropdown: [],
+  relationship: {
+    tableId: '',
+    tableSlug: '',
+    fieldId: '',
+    fieldSlug: '',
+    order: '',
   },
+  category: [],
+  multiple: false,
+  showInFilter: false,
+  showInForm: false,
+  showInDetail: false,
+  showInList: false,
+  required: false,
   trashed: false,
 };
 
@@ -90,12 +86,9 @@ export const UpdateFieldFormFields = withForm({
     // useStore para reatividade - re-renderiza quando tableSlug muda
     const relationshipTableSlug = useStore(
       form.store,
-      (state) => state.values.configuration.relationship.tableSlug,
+      (state) => state.values.relationship.tableSlug,
     );
-    const textLongFormat = useStore(
-      form.store,
-      (state) => state.values.configuration.format,
-    );
+    const textLongFormat = useStore(form.store, (state) => state.values.format);
 
     const showMultiple =
       isDropdown ||
@@ -156,7 +149,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Formato (TEXT_SHORT) */}
         {isTextShort && (
           <form.AppField
-            name="configuration.format"
+            name="format"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.trim() === '') {
@@ -180,7 +173,7 @@ export const UpdateFieldFormFields = withForm({
 
         {/* Campo Valor Padrão (TEXT_SHORT) */}
         {isTextShort && (
-          <form.AppField name="configuration.defaultValue">
+          <form.AppField name="defaultValue">
             {(field) => (
               <field.FieldText
                 label="Valor padrão"
@@ -194,7 +187,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Formato (TEXT_LONG) */}
         {isTextLong && (
           <form.AppField
-            name="configuration.format"
+            name="format"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.trim() === '') {
@@ -218,14 +211,14 @@ export const UpdateFieldFormFields = withForm({
 
         {/* Campo Valor Padrão (TEXT_LONG - Editor Rico) */}
         {isTextLong && textLongFormat === E_FIELD_FORMAT.RICH_TEXT && (
-          <form.AppField name="configuration.defaultValue">
+          <form.AppField name="defaultValue">
             {(field) => <field.FieldEditor label="Valor padrão" />}
           </form.AppField>
         )}
 
         {/* Campo Valor Padrão (TEXT_LONG - Área de Texto) */}
         {isTextLong && textLongFormat !== E_FIELD_FORMAT.RICH_TEXT && (
-          <form.AppField name="configuration.defaultValue">
+          <form.AppField name="defaultValue">
             {(field) => (
               <field.FieldTextarea
                 label="Valor padrão"
@@ -240,7 +233,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Dropdown */}
         {isDropdown && (
           <form.AppField
-            name="configuration.dropdown"
+            name="dropdown"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.length === 0) {
@@ -264,7 +257,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Formato Data */}
         {isDate && (
           <form.AppField
-            name="configuration.format"
+            name="format"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.trim() === '') {
@@ -289,7 +282,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Tabela de Relacionamento */}
         {isRelationship && (
           <form.AppField
-            name="configuration.relationship.tableId"
+            name="relationship.tableId"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.trim() === '') {
@@ -306,15 +299,9 @@ export const UpdateFieldFormFields = withForm({
                 disabled={isDisabled || lockAllControls}
                 excludeTableSlug={tableSlug}
                 onTableChange={(slug) => {
-                  form.setFieldValue(
-                    'configuration.relationship.tableSlug',
-                    slug,
-                  );
-                  form.setFieldValue('configuration.relationship.fieldId', '');
-                  form.setFieldValue(
-                    'configuration.relationship.fieldSlug',
-                    '',
-                  );
+                  form.setFieldValue('relationship.tableSlug', slug);
+                  form.setFieldValue('relationship.fieldId', '');
+                  form.setFieldValue('relationship.fieldSlug', '');
                 }}
                 required
               />
@@ -325,7 +312,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo de Relacionamento (coluna) */}
         {isRelationship && relationshipTableSlug && (
           <form.AppField
-            name="configuration.relationship.fieldId"
+            name="relationship.fieldId"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.trim() === '') {
@@ -342,10 +329,7 @@ export const UpdateFieldFormFields = withForm({
                 disabled={isDisabled || lockAllControls}
                 tableSlug={relationshipTableSlug}
                 onFieldChange={(slug) => {
-                  form.setFieldValue(
-                    'configuration.relationship.fieldSlug',
-                    slug,
-                  );
+                  form.setFieldValue('relationship.fieldSlug', slug);
                 }}
                 required
               />
@@ -356,7 +340,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Ordem (Relacionamento) */}
         {isRelationship && (
           <form.AppField
-            name="configuration.relationship.order"
+            name="relationship.order"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.trim() === '') {
@@ -380,7 +364,7 @@ export const UpdateFieldFormFields = withForm({
         {/* Campo Categoria (Tree) */}
         {isCategory && (
           <form.AppField
-            name="configuration.category"
+            name="category"
             validators={{
               onBlur: ({ value }) => {
                 if (!value || value.length === 0) {
@@ -401,7 +385,7 @@ export const UpdateFieldFormFields = withForm({
 
         {/* Campo Múltiplos */}
         {showMultiple && (
-          <form.AppField name="configuration.multiple">
+          <form.AppField name="multiple">
             {(field) => (
               <field.FieldBooleanSwitch
                 label="Permitir múltiplos"
@@ -414,7 +398,7 @@ export const UpdateFieldFormFields = withForm({
 
         {/* Campo Filtro */}
         {/* {showFiltering && (
-          <form.AppField name="configuration.filter">
+          <form.AppField name="filter">
             {(field) => (
               <field.FieldBooleanSwitch
                 label="Usar no filtro"
@@ -426,7 +410,7 @@ export const UpdateFieldFormFields = withForm({
         )} */}
 
         {/* Campo Exibição */}
-        {/* <form.AppField name="configuration.display">
+        {/* <form.AppField name="display">
           {(field) => (
             <field.FieldBooleanSwitch
               label="Exibir na listagem"
@@ -438,7 +422,7 @@ export const UpdateFieldFormFields = withForm({
 
         {/* Campo Obrigatoriedade */}
         {showRequired && (
-          <form.AppField name="configuration.required">
+          <form.AppField name="required">
             {(field) => (
               <field.FieldBooleanSwitch
                 label="Obrigatoriedade"

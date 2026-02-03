@@ -44,4 +44,5 @@ jobs:
             backend/node_modules/
             backend/package.json
             backend/_storage/
+            backend/templates/
           retention-days: 1

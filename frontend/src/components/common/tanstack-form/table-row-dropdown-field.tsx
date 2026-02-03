@@ -35,18 +35,18 @@ export function TableRowDropdownField({
 }: TableRowDropdownFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<string>>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
-  const isMultiple = field.configuration.multiple;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
+  const isMultiple = field.multiple;
   const anchorRef = useComboboxAnchor();
 
   const items: Array<DropdownOption> = React.useMemo(() => {
-    return field.configuration.dropdown.map((d: any) => ({
+    return field.dropdown.map((d: any) => ({
       value: String(d.id),
       label: String(d.label),
       color: d.color ?? null,
     }));
-  }, [field.configuration.dropdown]);
+  }, [field.dropdown]);
 
   const selectedIds = React.useMemo(() => {
     return formField.state.value;

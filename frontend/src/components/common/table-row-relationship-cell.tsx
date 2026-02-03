@@ -11,7 +11,7 @@ export function TableRowRelationshipCell({
   field,
   row,
 }: TableRowRelationshipCellProps): React.JSX.Element {
-  const relationshipFieldSlug = field.configuration.relationship?.field.slug;
+  const relationshipFieldSlug = field.relationship?.field.slug;
   const rawValues = Array.from(row[field.slug] ?? []);
 
   const values = rawValues.map<string>((item) => {

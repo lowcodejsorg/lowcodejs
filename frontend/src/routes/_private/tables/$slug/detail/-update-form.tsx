@@ -7,8 +7,7 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@/lib/constant';
-import type { ITable, Merge } from '@/lib/interfaces';
-import type { TableConfigurationPayload } from '@/lib/payloads';
+import type { ITable, ValueOf } from '@/lib/interfaces';
 
 // Schema estendido com campos de UI (logoFile)
 export const TableUpdateSchema = z.object({
@@ -41,19 +40,16 @@ export const TableUpdateSchema = z.object({
   administrators: z.array(z.string()).default([]),
 });
 
-export type TableUpdateFormValues = Merge<
-  {
-    name: string;
-    description: string;
-    logo: string | null;
-  } & Required<
-    Pick<
-      TableConfigurationPayload,
-      'style' | 'visibility' | 'collaboration' | 'administrators'
-    >
-  >,
-  { logoFile: Array<File> }
->;
+export type TableUpdateFormValues = {
+  name: string;
+  description: string;
+  style: ValueOf<typeof E_TABLE_STYLE>;
+  visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
+  collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
+  logo: string | null;
+  logoFile: Array<File>;
+  administrators: Array<string>;
+};
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',

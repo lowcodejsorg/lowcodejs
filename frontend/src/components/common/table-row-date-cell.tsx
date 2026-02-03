@@ -13,7 +13,7 @@ export function TableRowDateCell({
   row,
 }: TableRowDateCellProps): React.JSX.Element {
   const value = row[field.slug];
-  const dateFormat = field.configuration.format ?? 'dd/MM/yyyy';
+  const dateFormat = field.format ?? 'dd/MM/yyyy';
 
   return (
     <p className="text-muted-foreground text-sm">

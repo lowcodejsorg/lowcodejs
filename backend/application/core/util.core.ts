@@ -43,14 +43,14 @@ function mapperSchema(
     [E_FIELD_TYPE.TEXT_SHORT]: {
       [field.slug]: {
         type: FieldTypeMapper[field.type] || 'String',
-        required: Boolean(field.configuration?.required || false),
+        required: Boolean(field.required || false),
       },
     },
 
     [E_FIELD_TYPE.TEXT_LONG]: {
       [field.slug]: {
         type: FieldTypeMapper[field.type] || 'String',
-        required: Boolean(field.configuration?.required || false),
+        required: Boolean(field.required || false),
       },
     },
 
@@ -58,7 +58,7 @@ function mapperSchema(
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
+          required: Boolean(field.required || false),
         },
       ],
     },
@@ -67,7 +67,7 @@ function mapperSchema(
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
+          required: Boolean(field.required || false),
           ref: 'Storage',
         },
       ],
@@ -77,21 +77,21 @@ function mapperSchema(
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
-          ref: field?.configuration?.relationship?.table?.slug ?? undefined,
+          required: Boolean(field.required || false),
+          ref: field?.relationship?.table?.slug ?? undefined,
         },
       ],
     },
 
     [E_FIELD_TYPE.FIELD_GROUP]: ((): Record<string, IEmbeddedSchema[]> => {
-      const groupSlug = field?.configuration?.group?.slug;
+      const groupSlug = field?.group?.slug;
       const group = groups?.find((g) => g.slug === groupSlug);
       return {
         [field.slug]: [
           {
             type: 'Embedded' as const,
             schema: group?._schema || {},
-            required: Boolean(field.configuration?.required || false),
+            required: Boolean(field.required || false),
           },
         ],
       };
@@ -101,7 +101,7 @@ function mapperSchema(
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
+          required: Boolean(field.required || false),
         },
       ],
     },
@@ -130,28 +130,28 @@ function mapperSchema(
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
+          required: Boolean(field.required || false),
           ref: 'User',
         },
       ],
     },
   };
 
-  if (!(field.type in mapper) && !field?.configuration?.multiple) {
+  if (!(field.type in mapper) && !field?.multiple) {
     return {
       [field.slug]: {
         type: FieldTypeMapper[field.type] || 'String',
-        required: Boolean(field.configuration?.required || false),
+        required: Boolean(field.required || false),
       },
     };
   }
 
-  if (!(field.type in mapper) && field?.configuration?.multiple) {
+  if (!(field.type in mapper) && field?.multiple) {
     return {
       [field.slug]: [
         {
           type: FieldTypeMapper[field.type] || 'String',
-          required: Boolean(field.configuration?.required || false),
+          required: Boolean(field.required || false),
         },
       ],
     };
@@ -387,8 +387,7 @@ export async function buildPopulate(
     }
 
     if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
-      const relationshipTableId =
-        field?.configuration?.relationship?.table?._id?.toString();
+      const relationshipTableId = field?.relationship?.table?._id?.toString();
       const relationshipTable = await Table.findOne({
         _id: relationshipTableId,
       });
@@ -425,7 +424,7 @@ export async function buildPopulate(
     for (const field of fields ?? []) {
       if (field.type !== E_FIELD_TYPE.FIELD_GROUP) continue;
 
-      const groupSlug = field?.configuration?.group?.slug;
+      const groupSlug = field?.group?.slug;
       const group = groups.find((g) => g.slug === groupSlug);
       if (!group) continue;
 
@@ -519,7 +518,7 @@ export async function buildQuery(
     for (const field of fields.filter(
       (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
     )) {
-      const groupSlug = field?.configuration?.group?.slug;
+      const groupSlug = field?.group?.slug;
       const group = groups.find((g) => g.slug === groupSlug);
 
       if (!group) continue;
@@ -602,7 +601,7 @@ export async function buildQuery(
       for (const field of fields.filter(
         (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
       )) {
-        const groupSlug = field?.configuration?.group?.slug;
+        const groupSlug = field?.group?.slug;
         const group = groups.find((g) => g.slug === groupSlug);
 
         if (!group) continue;

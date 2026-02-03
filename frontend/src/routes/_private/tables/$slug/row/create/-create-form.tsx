@@ -17,7 +17,7 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
       case E_FIELD_TYPE.TEXT_LONG:
-        defaults[field.slug] = field.configuration.defaultValue ?? '';
+        defaults[field.slug] = field.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DROPDOWN:
         defaults[field.slug] = []; // Always array
@@ -70,7 +70,7 @@ export function buildPayload(
         break;
       case E_FIELD_TYPE.DROPDOWN: {
         const existing = values[field.slug];
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           const ids = Array.isArray(existing)
             ? existing
             : existing
@@ -93,7 +93,7 @@ export function buildPayload(
           files: Array<File>;
           storages: Array<IStorage>;
         };
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = fileValue.storages.map((s) => s._id);
         } else {
           // Always array, but limit to 1 item
@@ -105,7 +105,7 @@ export function buildPayload(
       }
       case E_FIELD_TYPE.RELATIONSHIP: {
         const relValue = Array.from<SearchableOption>(value ?? []);
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = relValue.map((opt) => opt.value);
         } else {
           // Always array, but limit to 1 item
@@ -119,7 +119,7 @@ export function buildPayload(
           : value
             ? [value]
             : [];
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = categoryValue;
         } else {
           // Always array, but limit to 1 item
@@ -131,7 +131,7 @@ export function buildPayload(
         // const groupValue = value as Array<Record<string, any>>;
         const groupValue = Array.from<Record<string, any>>(value ?? []);
         // Always send as array, but limit to 1 item if multiple=false
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = groupValue;
         } else {
           payload[field.slug] = groupValue.slice(0, 1);
@@ -140,7 +140,7 @@ export function buildPayload(
       }
       case E_FIELD_TYPE.USER: {
         const userValue = Array.from<SearchableOption>(value ?? []);
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = userValue.map((opt) => opt.value);
         } else {
           // Always array, but limit to 1 item
@@ -231,7 +231,7 @@ export function RowFormFields({
                     />
                   );
                 case E_FIELD_TYPE.TEXT_LONG:
-                  if (field.configuration.format === E_FIELD_FORMAT.RICH_TEXT) {
+                  if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
                     return (
                       <formField.TableRowRichTextField
                         field={field}
