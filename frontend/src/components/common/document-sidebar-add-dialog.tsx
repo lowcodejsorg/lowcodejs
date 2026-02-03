@@ -1,3 +1,4 @@
+import { useStore } from '@tanstack/react-store';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -16,61 +17,70 @@ export function DocumentSidebarAddDialog({
   open,
   onOpenChange,
   parentLabel,
-  value,
-  onValueChange,
+  form,
   onCancel,
-  onSubmit,
   isPending,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   parentLabel: string | null;
-  value: string;
-  onValueChange: (value: string) => void;
+  form: any;
   onCancel: () => void;
-  onSubmit: () => void;
   isPending: boolean;
 }): React.JSX.Element {
+  const label = useStore(form.store, (state) => state.values.label) as string;
+
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
     >
       <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle>Nova seção</DialogTitle>
-          <DialogDescription>
-            {parentLabel
-              ? `Criar seção dentro de "${parentLabel}".`
-              : 'Criar seção na raiz.'}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-2">
-          <Input
-            value={value}
-            onChange={(event) => onValueChange(event.target.value)}
-            placeholder="Nome da seção"
-            autoFocus
-          />
-        </div>
-        <DialogFooter className="flex gap-2 sm:justify-end">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            disabled={isPending}
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            onClick={onSubmit}
-            disabled={!value.trim() || isPending}
-          >
-            {isPending && <Spinner />}
-            <span>Criar</span>
-          </Button>
-        </DialogFooter>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Nova seção</DialogTitle>
+            <DialogDescription>
+              {parentLabel
+                ? `Criar seção dentro de "${parentLabel}".`
+                : 'Criar seção na raiz.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <form.AppField name="label">
+              {(field: any) => (
+                <Input
+                  value={field.state.value}
+                  onChange={(event) => field.handleChange(event.target.value)}
+                  onBlur={field.handleBlur}
+                  placeholder="Nome da seção"
+                  autoFocus
+                />
+              )}
+            </form.AppField>
+          </div>
+          <DialogFooter className="flex gap-2 sm:justify-end">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              disabled={isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              disabled={!label.trim() || isPending}
+            >
+              {isPending && <Spinner />}
+              <span>Criar</span>
+            </Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   );

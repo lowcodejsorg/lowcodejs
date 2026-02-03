@@ -7,8 +7,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import type { E_TABLE_STYLE } from '@/lib/constant';
-import { TABLE_STYLE_OPTIONS } from '@/lib/constant';
+import { E_TABLE_STYLE, TABLE_STYLE_OPTIONS } from '@/lib/constant';
 import type { ValueOf } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -45,14 +44,23 @@ export function TableStyleSelectField({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          {TABLE_STYLE_OPTIONS.map((option) => (
-            <SelectItem
-              key={option.value}
-              value={option.value}
-            >
-              {option.label}
-            </SelectItem>
-          ))}
+          {TABLE_STYLE_OPTIONS.map((option) => {
+            if (
+              option.value === E_TABLE_STYLE.MOSAIC ||
+              option.value === E_TABLE_STYLE.CARD ||
+              option.value === E_TABLE_STYLE.KANBAN
+            ) {
+              return null;
+            }
+            return (
+              <SelectItem
+                key={option.value}
+                value={option.value}
+              >
+                {option.label}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
       {isInvalid && <FieldError errors={field.state.meta.errors} />}
