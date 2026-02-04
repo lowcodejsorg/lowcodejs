@@ -19,30 +19,27 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
     data.type;
 
   const formatLabel = (() => {
-    if (!data.configuration.format) return null;
+    if (!data.format) return null;
 
     if (data.type === E_FIELD_TYPE.TEXT_SHORT) {
       return (
-        TEXT_FORMAT_OPTIONS.find(
-          (opt) => opt.value === data.configuration.format,
-        )?.label || data.configuration.format
+        TEXT_FORMAT_OPTIONS.find((opt) => opt.value === data.format)?.label ||
+        data.format
       );
     }
     if (data.type === E_FIELD_TYPE.TEXT_LONG) {
       return (
-        TEXT_LONG_FORMAT_OPTIONS.find(
-          (opt) => opt.value === data.configuration.format,
-        )?.label || data.configuration.format
+        TEXT_LONG_FORMAT_OPTIONS.find((opt) => opt.value === data.format)
+          ?.label || data.format
       );
     }
     if (data.type === E_FIELD_TYPE.DATE) {
       return (
-        DATE_FORMAT_OPTIONS.find(
-          (opt) => opt.value === data.configuration.format,
-        )?.label || data.configuration.format
+        DATE_FORMAT_OPTIONS.find((opt) => opt.value === data.format)?.label ||
+        data.format
       );
     }
-    return data.configuration.format;
+    return data.format;
   })();
 
   return (
@@ -68,12 +65,10 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
       )}
 
       {/* Valor padrão (se existir) */}
-      {data.configuration.defaultValue && (
+      {data.defaultValue && (
         <div className="space-y-1">
           <p className="text-sm font-medium">Valor padrão</p>
-          <p className="text-sm text-muted-foreground">
-            {data.configuration.defaultValue}
-          </p>
+          <p className="text-sm text-muted-foreground">{data.defaultValue}</p>
         </div>
       )}
 
@@ -81,93 +76,82 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
       <div className="space-y-2">
         <p className="text-sm font-medium">Configurações</p>
         <div className="flex flex-wrap gap-2">
-          <Badge
-            variant={data.configuration.required ? 'default' : 'secondary'}
-          >
-            {data.configuration.required ? 'Obrigatório' : 'Opcional'}
+          <Badge variant={data.required ? 'default' : 'secondary'}>
+            {data.required ? 'Obrigatório' : 'Opcional'}
           </Badge>
-          {data.configuration.multiple && (
-            <Badge variant="outline">Múltiplos valores</Badge>
-          )}
-          {data.configuration.display && (
+          {data.multiple && <Badge variant="outline">Múltiplos valores</Badge>}
+          {data.showInList && (
             <Badge variant="outline">Exibir em listagem</Badge>
           )}
-          {data.configuration.filter && (
+          {data.showInFilter && (
             <Badge variant="outline">Permitir filtro</Badge>
           )}
-          {data.configuration.form && (
+          {data.showInForm && (
             <Badge variant="outline">Exibir em formulários</Badge>
           )}
-          {data.configuration.detail && (
+          {data.showInDetail && (
             <Badge variant="outline">Exibir em detalhes</Badge>
           )}
         </div>
       </div>
 
       {/* Dropdown options (se for dropdown) */}
-      {data.type === E_FIELD_TYPE.DROPDOWN &&
-        data.configuration.dropdown.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Opções do Dropdown</p>
-            <div className="flex flex-wrap gap-1">
-              {data.configuration.dropdown.map((opt) => (
-                <Badge
-                  key={opt.id}
-                  variant="secondary"
-                  style={
-                    opt.color
-                      ? {
-                          backgroundColor: opt.color,
-                          color: '#fff',
-                        }
-                      : undefined
-                  }
-                >
-                  {opt.label}
-                </Badge>
-              ))}
-            </div>
+      {data.type === E_FIELD_TYPE.DROPDOWN && data.dropdown.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Opções do Dropdown</p>
+          <div className="flex flex-wrap gap-1">
+            {data.dropdown.map((opt) => (
+              <Badge
+                key={opt.id}
+                variant="secondary"
+                style={
+                  opt.color
+                    ? {
+                        backgroundColor: opt.color,
+                        color: '#fff',
+                      }
+                    : undefined
+                }
+              >
+                {opt.label}
+              </Badge>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
       {/* Relacionamento (se for relationship) */}
-      {data.type === E_FIELD_TYPE.RELATIONSHIP &&
-        data.configuration.relationship && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Relacionamento</p>
-            <p className="text-sm text-muted-foreground">
-              Tabela: {data.configuration.relationship.table.slug}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Campo: {data.configuration.relationship.field.slug}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Ordem:{' '}
-              {data.configuration.relationship.order === 'asc'
-                ? 'Crescente'
-                : 'Decrescente'}
-            </p>
-          </div>
-        )}
+      {data.type === E_FIELD_TYPE.RELATIONSHIP && data.relationship && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Relacionamento</p>
+          <p className="text-sm text-muted-foreground">
+            Tabela: {data.relationship.table.slug}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Campo: {data.relationship.field.slug}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            Ordem:{' '}
+            {data.relationship.order === 'asc' ? 'Crescente' : 'Decrescente'}
+          </p>
+        </div>
+      )}
 
       {/* Categorias (se for category) */}
-      {data.type === E_FIELD_TYPE.CATEGORY &&
-        data.configuration.category.length > 0 && (
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Categorias</p>
-            <p className="text-sm text-muted-foreground">
-              {data.configuration.category.length} categoria(s) configurada(s)
-            </p>
-          </div>
-        )}
+      {data.type === E_FIELD_TYPE.CATEGORY && data.category.length > 0 && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Categorias</p>
+          <p className="text-sm text-muted-foreground">
+            {data.category.length} categoria(s) configurada(s)
+          </p>
+        </div>
+      )}
 
       {/* Grupo de campos */}
-      {data.type === E_FIELD_TYPE.FIELD_GROUP && data.configuration.group && (
+      {data.type === E_FIELD_TYPE.FIELD_GROUP && data.group && (
         <div className="space-y-1">
           <p className="text-sm font-medium">Tabela do grupo</p>
-          <p className="text-sm text-muted-foreground">
-            {data.configuration.group.slug}
-          </p>
+          <p className="text-sm text-muted-foreground">{data.group.slug}</p>
         </div>
       )}
 

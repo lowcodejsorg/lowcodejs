@@ -41,7 +41,8 @@ export default class TableFieldCreateUseCase {
         );
 
       // Se foi fornecido um group slug, adiciona o campo ao grupo
-      const groupSlug = payload.group;
+      const groupSlug =
+        typeof payload.group === 'string' ? payload.group : payload.group?.slug;
       if (groupSlug) {
         const targetGroup = table.groups?.find((g) => g.slug === groupSlug);
         if (!targetGroup) {
@@ -66,10 +67,7 @@ export default class TableFieldCreateUseCase {
       let field = await this.fieldRepository.create({
         ...payload,
         slug,
-        configuration: {
-          ...payload.configuration,
-          group: null,
-        },
+        group: null,
       });
 
       let groups = table.groups || [];
@@ -87,10 +85,7 @@ export default class TableFieldCreateUseCase {
 
         field = await this.fieldRepository.update({
           _id: field._id,
-          configuration: {
-            ...field.configuration,
-            group: { slug },
-          },
+          group: { slug },
         });
       }
 
@@ -105,13 +100,8 @@ export default class TableFieldCreateUseCase {
           ..._schema,
         },
         groups,
-        configuration: {
-          ...table.configuration,
-          owner: table.configuration.owner._id,
-          administrators: table.configuration.administrators.flatMap(
-            (a) => a._id,
-          ),
-        },
+        owner: table.owner._id,
+        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       await buildTable({
@@ -157,10 +147,7 @@ export default class TableFieldCreateUseCase {
     const field = await this.fieldRepository.create({
       ...payload,
       slug,
-      configuration: {
-        ...payload.configuration,
-        group: null,
-      },
+      group: null,
     });
 
     // Atualiza o grupo com o novo campo e schema
@@ -187,13 +174,8 @@ export default class TableFieldCreateUseCase {
       _id: parentTable._id,
       _schema: parentSchema,
       groups: updatedGroups,
-      configuration: {
-        ...parentTable.configuration,
-        owner: parentTable.configuration.owner._id,
-        administrators: parentTable.configuration.administrators.flatMap(
-          (a) => a._id,
-        ),
-      },
+      owner: parentTable.owner._id,
+      administrators: parentTable.administrators.flatMap((a) => a._id),
     });
 
     await buildTable({

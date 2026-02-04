@@ -1,3 +1,4 @@
+import { useStore } from '@tanstack/react-store';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -13,73 +14,88 @@ import { Input } from '@/components/ui/input';
 export function KanbanAddListDialog({
   open,
   onOpenChange,
-  label,
-  onLabelChange,
-  color,
-  onColorChange,
+  form,
   isSubmitting,
-  onSubmit,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  label: string;
-  onLabelChange: (value: string) => void;
-  color: string;
-  onColorChange: (value: string) => void;
+  form: any;
   isSubmitting: boolean;
-  onSubmit: () => void;
 }): React.JSX.Element {
+  const label = useStore(form.store, (state) => state.values.label) as string;
+  const color = useStore(form.store, (state) => state.values.color) as string;
+
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
     >
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>Adicionar lista</DialogTitle>
-          <DialogDescription>Crie uma nova coluna no kanban.</DialogDescription>
-        </DialogHeader>
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <DialogHeader>
+            <DialogTitle>Adicionar lista</DialogTitle>
+            <DialogDescription>
+              Crie uma nova coluna no kanban.
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-3">
-          <div className="space-y-1">
-            <label className="text-sm font-medium">Nome</label>
-            <Input
-              value={label}
-              onChange={(event) => onLabelChange(event.target.value)}
-              placeholder="Ex: Revisao"
-            />
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="text-sm font-medium">Nome</label>
+              <form.AppField name="label">
+                {(field: any) => (
+                  <Input
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    placeholder="Ex: Revisao"
+                  />
+                )}
+              </form.AppField>
+            </div>
+
+            <form.AppField name="color">
+              {(field: any) => (
+                <div className="flex items-center gap-3">
+                  <label className="text-sm font-medium">Cor</label>
+                  <input
+                    type="color"
+                    value={field.state.value}
+                    onChange={(event) => field.handleChange(event.target.value)}
+                    onBlur={field.handleBlur}
+                    className="h-8 w-12 rounded border bg-transparent p-0"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    {field.state.value}
+                  </span>
+                </div>
+              )}
+            </form.AppField>
           </div>
 
-          <div className="flex items-center gap-3">
-            <label className="text-sm font-medium">Cor</label>
-            <input
-              type="color"
-              value={color}
-              onChange={(event) => onColorChange(event.target.value)}
-              className="h-8 w-12 rounded border bg-transparent p-0"
-            />
-            <span className="text-xs text-muted-foreground">{color}</span>
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={() => onOpenChange(false)}
+              className="cursor-pointer"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="cursor-pointer"
+              disabled={!label.trim() || isSubmitting}
+            >
+              Adicionar
+            </Button>
           </div>
-        </div>
-
-        <div className="flex justify-end gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => onOpenChange(false)}
-            className="cursor-pointer"
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="button"
-            className="cursor-pointer"
-            onClick={onSubmit}
-            disabled={!label.trim() || isSubmitting}
-          >
-            Adicionar
-          </Button>
-        </div>
+        </form>
       </DialogContent>
     </Dialog>
   );

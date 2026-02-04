@@ -36,39 +36,36 @@ describe('E2E Table Field Create Controller', () => {
       const { cookies, user } = await createAuthenticatedUser();
 
       const fieldPayload: FieldCreatePayload = {
-        configuration: {
-          category: [],
-          dropdown: [],
-          defaultValue: null,
-          filter: false,
-          form: true,
-          detail: true,
-          format: null,
-          group: null,
-          display: true,
-          multiple: false,
-          required: false,
-          relationship: null,
-        },
+        category: [],
+        dropdown: [],
+        defaultValue: null,
+        showInFilter: false,
+        showInForm: true,
+        showInDetail: true,
+        format: null,
+        group: null,
+        showInList: true,
+        locked: false,
+        multiple: false,
+        required: false,
+        relationship: null,
         name: 'Existing Field',
         slug: 'existing-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const field = await Field.create(fieldPayload);
 
       const tablePayload: TableCreatePayload = {
-        configuration: {
-          owner: user._id,
-          administrators: [],
-          collaboration: E_TABLE_COLLABORATION.OPEN,
-          fields: {
-            orderForm: [],
-            orderList: [],
-          },
-          style: E_TABLE_STYLE.LIST,
-          visibility: E_TABLE_VISIBILITY.PUBLIC,
-        },
+        owner: user._id,
+        administrators: [],
+        collaboration: E_TABLE_COLLABORATION.OPEN,
+        fieldOrderForm: [],
+        fieldOrderList: [],
+        style: E_TABLE_STYLE.LIST,
+        visibility: E_TABLE_VISIBILITY.PUBLIC,
         name: 'My Table',
         slug: 'my-table',
         fields: [field._id.toString()],
@@ -91,23 +88,24 @@ describe('E2E Table Field Create Controller', () => {
       const table = await Table.create(tablePayload);
 
       const newFieldPayload: FieldCreatePayload = {
-        configuration: {
-          category: [],
-          dropdown: [],
-          defaultValue: null,
-          filter: false,
-          form: true,
-          detail: true,
-          format: null,
-          group: null,
-          display: true,
-          multiple: false,
-          required: false,
-          relationship: null,
-        },
+        category: [],
+        dropdown: [],
+        defaultValue: null,
+        showInFilter: false,
+        showInForm: true,
+        showInDetail: true,
+        format: null,
+        group: null,
+        showInList: true,
+        locked: false,
+        multiple: false,
+        required: false,
+        relationship: null,
         name: 'My Field',
         slug: 'my-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const response = await supertest(kernel.server)

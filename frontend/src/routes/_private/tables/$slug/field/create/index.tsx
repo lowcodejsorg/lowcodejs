@@ -78,7 +78,9 @@ function RouteComponent(): React.JSX.Element {
 
   // Hooks devem ser chamados ANTES de qualquer early return (Regra dos Hooks do React)
   const _create = useMutation({
-    mutationFn: async (payload: Partial<IField> & { group?: string }) => {
+    mutationFn: async (
+      payload: Partial<IField> & { group?: { slug: string } | string | null },
+    ) => {
       const route = '/tables/'.concat(slug).concat('/fields');
       const response = await API.post<IField>(route, payload);
       return response.data;
@@ -105,20 +107,8 @@ function RouteComponent(): React.JSX.Element {
           return {
             ...old,
             fields: [...old.fields, response],
-            configuration: {
-              ...old.configuration,
-              fields: {
-                ...old.configuration.fields,
-                orderForm: [
-                  ...old.configuration.fields.orderForm,
-                  response.slug,
-                ],
-                orderList: [
-                  ...old.configuration.fields.orderList,
-                  response.slug,
-                ],
-              },
-            },
+            fieldOrderForm: [...old.fieldOrderForm, response.slug],
+            fieldOrderList: [...old.fieldOrderList, response.slug],
           };
         },
       );
@@ -146,20 +136,8 @@ function RouteComponent(): React.JSX.Element {
                 return {
                   ...t,
                   fields: [...t.fields, response],
-                  configuration: {
-                    ...t.configuration,
-                    fields: {
-                      ...t.configuration.fields,
-                      orderForm: [
-                        ...t.configuration.fields.orderForm,
-                        response.slug,
-                      ],
-                      orderList: [
-                        ...t.configuration.fields.orderList,
-                        response.slug,
-                      ],
-                    },
-                  },
+                  fieldOrderForm: [...t.fieldOrderForm, response.slug],
+                  fieldOrderList: [...t.fieldOrderList, response.slug],
                 };
               }
               return t;
@@ -229,45 +207,41 @@ function RouteComponent(): React.JSX.Element {
 
       if (_create.status === 'pending') return;
 
-      const config = value.configuration;
-      const hasRelationship = config.relationship.tableId !== '';
-      const hasDropdown = config.dropdown.length > 0;
-      const hasCategory = config.category.length > 0;
+      const hasRelationship = value.relationship.tableId !== '';
+      const hasDropdown = value.dropdown.length > 0;
+      const hasCategory = value.category.length > 0;
 
       await _create.mutateAsync({
         name: value.name,
         type: value.type as keyof typeof E_FIELD_TYPE,
-        configuration: {
-          required: config.required,
-          multiple: config.multiple,
-          filter: config.filter,
-          form: config.form,
-          detail: config.detail,
-          display: config.display,
-          format: config.format
-            ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
-            : null,
-          defaultValue: config.defaultValue || null,
-          dropdown: hasDropdown ? config.dropdown.map((item) => item) : [],
-          relationship: hasRelationship
-            ? {
-                table: {
-                  _id: config.relationship.tableId,
-                  slug: config.relationship.tableSlug,
-                },
-                field: {
-                  _id: config.relationship.fieldId,
-                  slug: config.relationship.fieldSlug,
-                },
-                order: (config.relationship.order || 'asc') as 'asc' | 'desc',
-              }
-            : null,
-          group: null,
-          category: hasCategory
-            ? convertTreeNodeToCategory(config.category)
-            : [],
-        },
-        group: groupSlug,
+        required: value.required,
+        multiple: value.multiple,
+        showInFilter: value.showInFilter,
+        showInForm: value.showInForm,
+        showInDetail: value.showInDetail,
+        showInList: value.showInList,
+        widthInForm: value.widthInForm,
+        widthInList: value.widthInList,
+        format: value.format
+          ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
+          : null,
+        defaultValue: value.defaultValue || null,
+        dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
+        relationship: hasRelationship
+          ? {
+              table: {
+                _id: value.relationship.tableId,
+                slug: value.relationship.tableSlug,
+              },
+              field: {
+                _id: value.relationship.fieldId,
+                slug: value.relationship.fieldSlug,
+              },
+              order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+            }
+          : null,
+        group: groupSlug ? { slug: groupSlug } : null,
+        category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
       });
     },
   });

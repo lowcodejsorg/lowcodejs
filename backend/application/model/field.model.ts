@@ -99,8 +99,18 @@ const Dropdown = new mongoose.Schema(
   },
 );
 
-const Configuration = new mongoose.Schema(
+export const Schema = new mongoose.Schema(
   {
+    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    name: { type: String, required: true },
+    slug: { type: String },
+    type: {
+      type: String,
+      enum: Object.values(E_FIELD_TYPE),
+      default: E_FIELD_TYPE.TEXT_SHORT,
+      required: true,
+    },
+
     required: {
       type: Boolean,
       default: false,
@@ -114,21 +124,29 @@ const Configuration = new mongoose.Schema(
       enum: Object.values(E_FIELD_FORMAT),
       default: null,
     },
-    filter: {
+    showInFilter: {
       type: Boolean,
       default: false,
     },
-    form: {
+    showInForm: {
       type: Boolean,
       default: false,
     },
-    detail: {
+    showInDetail: {
       type: Boolean,
       default: false,
     },
-    display: {
+    showInList: {
       type: Boolean,
       default: false,
+    },
+    widthInForm: {
+      type: Number,
+      default: 50,
+    },
+    widthInList: {
+      type: Number,
+      default: 50,
     },
     locked: {
       type: Boolean,
@@ -163,24 +181,6 @@ const Configuration = new mongoose.Schema(
       type: Group,
       default: null,
     },
-  },
-  {
-    _id: false,
-  },
-);
-
-export const Schema = new mongoose.Schema(
-  {
-    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-    name: { type: String, required: true },
-    slug: { type: String },
-    type: {
-      type: String,
-      enum: Object.values(E_FIELD_TYPE),
-      default: E_FIELD_TYPE.TEXT_SHORT,
-      required: true,
-    },
-    configuration: { type: Configuration, required: true },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
@@ -189,13 +189,12 @@ export const Schema = new mongoose.Schema(
     timestamps: true,
     toJSON: {
       transform: function (_doc, ret: any) {
-        if (ret.configuration) {
-          if (ret.configuration.dropdown === undefined) {
-            ret.configuration.dropdown = null;
-          }
-          if (ret.configuration.category === undefined) {
-            ret.configuration.category = null;
-          }
+        // Garantir valores padrão para dropdown e category
+        if (ret.dropdown === undefined) {
+          ret.dropdown = null;
+        }
+        if (ret.category === undefined) {
+          ret.category = null;
         }
         return ret;
       },

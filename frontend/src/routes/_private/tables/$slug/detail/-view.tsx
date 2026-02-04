@@ -12,18 +12,16 @@ interface TableViewProps {
 
 export function TableView({ data }: TableViewProps): React.JSX.Element {
   const styleLabel =
-    TABLE_STYLE_OPTIONS.find((opt) => opt.value === data.configuration.style)
-      ?.label || data.configuration.style;
+    TABLE_STYLE_OPTIONS.find((opt) => opt.value === data.style)?.label ||
+    data.style;
 
   const visibilityLabel =
-    TABLE_VISIBILITY_OPTIONS.find(
-      (opt) => opt.value === data.configuration.visibility,
-    )?.label || data.configuration.visibility;
+    TABLE_VISIBILITY_OPTIONS.find((opt) => opt.value === data.visibility)
+      ?.label || data.visibility;
 
   const collaborationLabel =
-    TABLE_COLLABORATION_OPTIONS.find(
-      (opt) => opt.value === data.configuration.collaboration,
-    )?.label || data.configuration.collaboration;
+    TABLE_COLLABORATION_OPTIONS.find((opt) => opt.value === data.collaboration)
+      ?.label || data.collaboration;
 
   return (
     <section className="space-y-4 p-2">
@@ -76,9 +74,9 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
       {/* Administradores */}
       <div className="space-y-1">
         <p className="text-sm font-medium">Administradores</p>
-        {data.configuration.administrators.length > 0 ? (
+        {data.administrators.length > 0 ? (
           <div className="flex flex-wrap gap-1">
-            {data.configuration.administrators.map((admin) => (
+            {data.administrators.map((admin) => (
               <Badge
                 key={typeof admin === 'string' ? admin : admin._id}
                 variant="secondary"

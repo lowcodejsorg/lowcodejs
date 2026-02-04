@@ -28,9 +28,23 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
+
+const WIDTH_OPTIONS = [
+  { value: '25', label: '25%' },
+  { value: '50', label: '50%' },
+  { value: '75', label: '75%' },
+  { value: '100', label: '100%' },
+];
 
 interface SortableItemProps {
   field: IField;
@@ -91,19 +105,25 @@ function SortableItem({
 interface SortableManagementItemProps {
   field: IField;
   disabled?: boolean;
-  visibilityKey: 'filter' | 'form' | 'detail' | 'display';
+  visibilityKey: 'showInFilter' | 'showInForm' | 'showInDetail' | 'showInList';
+  widthKey?: 'widthInForm' | 'widthInList';
   onEdit: () => void;
   onToggleVisibility: () => void;
+  onWidthChange?: (width: number) => void;
   isTogglingVisibility?: boolean;
+  isChangingWidth?: boolean;
 }
 
 function SortableManagementItem({
   field,
   disabled,
   visibilityKey,
+  widthKey,
   onEdit,
   onToggleVisibility,
+  onWidthChange,
   isTogglingVisibility,
+  isChangingWidth,
 }: SortableManagementItemProps): React.JSX.Element {
   const {
     attributes,
@@ -120,7 +140,8 @@ function SortableManagementItem({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const isVisible = field.configuration[visibilityKey];
+  const isVisible = field[visibilityKey];
+  const currentWidth = widthKey ? (field[widthKey] ?? 50) : null;
 
   return (
     <div
@@ -130,6 +151,27 @@ function SortableManagementItem({
     >
       <span className="text-sm font-medium">{field.name}</span>
       <div className="flex items-center gap-1">
+        {widthKey && onWidthChange && (
+          <Select
+            value={String(currentWidth)}
+            onValueChange={(value) => onWidthChange(Number(value))}
+            disabled={isChangingWidth}
+          >
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WIDTH_OPTIONS.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -210,10 +252,12 @@ export function FieldOrderForm({
   const isGroupContext = !!groupSlug && !!groupFields;
 
   // Para grupos, a ordem é simplesmente a ordem no array de campos
-  // Para tabelas, usa configuration.fields[reference]
+  // Para tabelas, usa fieldOrderList ou fieldOrderForm
   const order = isGroupContext
-    ? groupFields.map((f) => f._id)
-    : table.configuration.fields[reference];
+    ? groupFields.flatMap((f) => f._id)
+    : reference === 'orderList'
+      ? table.fieldOrderList
+      : table.fieldOrderForm;
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter((f) => !f.trashed);
@@ -281,17 +325,14 @@ export function FieldOrderForm({
         name: table.name,
         description: table.description,
         logo: table.logo?._id ?? null,
-        configuration: {
-          visibility: table.configuration.visibility,
-          style: table.configuration.style,
-          collaboration: table.configuration.collaboration,
-          fields: table.configuration.fields,
-          administrators: table.configuration.administrators.map((admin) =>
-            typeof admin === 'string' ? admin : admin._id,
-          ),
-        },
+        visibility: table.visibility,
+        style: table.style,
+        collaboration: table.collaboration,
+        fieldOrderList: table.fieldOrderList,
+        fieldOrderForm: table.fieldOrderForm,
+        administrators: table.administrators.flatMap((admin) => admin._id),
         groups: updatedGroups,
-        fields: table.fields.map((f) => f._id),
+        fields: table.fields.flatMap((f) => f._id),
         methods: {
           ...table.methods,
           afterSave: table.methods.afterSave,
@@ -302,25 +343,22 @@ export function FieldOrderForm({
       return;
     }
 
-    // Para tabelas normais, atualiza fields e configuration.fields
+    // Para tabelas normais, atualiza fields e fieldOrderList/fieldOrderForm
+    const newOrder = fields.flatMap((f) => f._id);
     update.mutate({
       slug: table.slug,
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      configuration: {
-        visibility: table.configuration.visibility,
-        style: table.configuration.style,
-        collaboration: table.configuration.collaboration,
-        fields: {
-          ...table.configuration.fields,
-          [reference]: fields.map((f) => f._id),
-        },
-        administrators: table.configuration.administrators.map((admin) =>
-          typeof admin === 'string' ? admin : admin._id,
-        ),
-      },
-      fields: fields.map((f) => f._id),
+      visibility: table.visibility,
+      style: table.style,
+      collaboration: table.collaboration,
+      fieldOrderList:
+        reference === 'orderList' ? newOrder : table.fieldOrderList,
+      fieldOrderForm:
+        reference === 'orderForm' ? newOrder : table.fieldOrderForm,
+      administrators: table.administrators.flatMap((admin) => admin._id),
+      fields: fields.flatMap((f) => f._id),
       methods: {
         ...table.methods,
         afterSave: table.methods.afterSave,
@@ -368,23 +406,25 @@ export function FieldOrderForm({
         </p>
       )}
 
-      <Button
-        className="w-full"
-        disabled={!hasChanges || update.isPending}
-        onClick={handleSave}
-      >
-        {update.isPending && (
-          <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-        )}
-        Salvar ordem
-      </Button>
+      {hasChanges && (
+        <Button
+          className="w-full"
+          disabled={!hasChanges || update.isPending}
+          onClick={handleSave}
+        >
+          {update.isPending && (
+            <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          Salvar ordem
+        </Button>
+      )}
     </div>
   );
 }
 
 interface FieldManagementListProps {
   table: ITable;
-  visibilityKey: 'filter' | 'form' | 'detail' | 'display';
+  visibilityKey: 'showInFilter' | 'showInForm' | 'showInDetail' | 'showInList';
   /** Se for contexto de grupo embedded */
   groupSlug?: string;
   /** Campos do grupo (quando em contexto de grupo) */
@@ -403,10 +443,10 @@ export function FieldManagementList({
   const isGroupContext = !!groupSlug && !!groupFields;
 
   // Para grupos, a ordem é simplesmente a ordem no array de campos
-  // Para tabelas, usa configuration.fields.orderList
+  // Para tabelas, usa fieldOrderList
   const order = isGroupContext
-    ? groupFields.map((f) => f._id)
-    : table.configuration.fields.orderList;
+    ? groupFields.flatMap((f) => f._id)
+    : table.fieldOrderList;
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter((f) => !f.trashed);
@@ -416,8 +456,20 @@ export function FieldManagementList({
   );
 
   const [fields, setFields] = useState<Array<IField>>(sorted);
+
   const [hasChanges, setHasChanges] = useState(false);
   const [togglingFieldId, setTogglingFieldId] = useState<string | null>(null);
+  const [changingWidthFieldId, setChangingWidthFieldId] = useState<
+    string | null
+  >(null);
+
+  // Map visibilityKey to widthKey (only for showInForm and showInList)
+  const widthKey: 'widthInForm' | 'widthInList' | undefined =
+    visibilityKey === 'showInForm'
+      ? 'widthInForm'
+      : visibilityKey === 'showInList'
+        ? 'widthInList'
+        : undefined;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -455,54 +507,45 @@ export function FieldManagementList({
         .concat(field._id);
 
       // Build full payload as API requires complete field data
-      const hasRelationship = field.configuration.relationship !== null;
-      const hasDropdown = field.configuration.dropdown.length > 0;
-      const hasCategory = field.configuration.category.length > 0;
+      const hasRelationship = field.relationship !== null;
+      const hasDropdown = field.dropdown.length > 0;
+      const hasCategory = field.category.length > 0;
 
       const response = await API.put<IField>(route, {
         name: field.name,
         type: field.type,
-        configuration: {
-          required: field.configuration.required,
-          multiple: field.configuration.multiple,
-          filter:
-            visibilityKey === 'filter'
-              ? newValue
-              : field.configuration.filter,
-          form:
-            visibilityKey === 'form'
-              ? newValue
-              : field.configuration.form,
-          detail:
-            visibilityKey === 'detail'
-              ? newValue
-              : field.configuration.detail,
-          display:
-            visibilityKey === 'display'
-              ? newValue
-              : field.configuration.display,
-          format: field.configuration.format ?? null,
-          defaultValue: field.configuration.defaultValue ?? null,
-          dropdown: hasDropdown ? field.configuration.dropdown : [],
-          relationship: hasRelationship
-            ? {
-                table: {
-                  _id: field.configuration.relationship!.table._id,
-                  slug: field.configuration.relationship!.table.slug,
-                },
-                field: {
-                  _id: field.configuration.relationship!.field._id,
-                  slug: field.configuration.relationship!.field.slug,
-                },
-                order: field.configuration.relationship!.order,
-              }
-            : null,
-          group: null,
-          category: hasCategory ? field.configuration.category : [],
-        },
+        required: field.required,
+        multiple: field.multiple,
+        showInFilter:
+          visibilityKey === 'showInFilter' ? newValue : field.showInFilter,
+        showInForm:
+          visibilityKey === 'showInForm' ? newValue : field.showInForm,
+        showInDetail:
+          visibilityKey === 'showInDetail' ? newValue : field.showInDetail,
+        showInList:
+          visibilityKey === 'showInList' ? newValue : field.showInList,
+        widthInForm: field.widthInForm,
+        widthInList: field.widthInList,
+        format: field.format ?? null,
+        defaultValue: field.defaultValue ?? null,
+        dropdown: hasDropdown ? field.dropdown : [],
+        relationship: hasRelationship
+          ? {
+              table: {
+                _id: field.relationship!.table._id,
+                slug: field.relationship!.table.slug,
+              },
+              field: {
+                _id: field.relationship!.field._id,
+                slug: field.relationship!.field.slug,
+              },
+              order: field.relationship!.order,
+            }
+          : null,
+        group: groupSlug ? { slug: groupSlug } : null,
+        category: hasCategory ? field.category : [],
         trashed: field.trashed,
         trashedAt: field.trashedAt ?? null,
-        group: groupSlug,
       });
       return response.data;
     },
@@ -595,14 +638,14 @@ export function FieldManagementList({
       );
 
       const visibilityLabels: Record<typeof visibilityKey, string> = {
-        display: 'listagem',
-        filter: 'filtros',
-        form: 'formulários',
-        detail: 'detalhes',
+        showInList: 'listagem',
+        showInFilter: 'filtros',
+        showInForm: 'formulários',
+        showInDetail: 'detalhes',
       };
       const visibilityLabel = visibilityLabels[visibilityKey];
       toast.success(
-        response.configuration[visibilityKey]
+        response[visibilityKey]
           ? `Campo visível em ${visibilityLabel}`
           : `Campo oculto em ${visibilityLabel}`,
       );
@@ -613,6 +656,155 @@ export function FieldManagementList({
     },
     onSettled: () => {
       setTogglingFieldId(null);
+    },
+  });
+
+  const changeWidthMutation = useMutation({
+    mutationFn: async ({
+      field,
+      newWidth,
+      targetWidthKey,
+    }: {
+      field: IField;
+      newWidth: number;
+      targetWidthKey: 'widthInForm' | 'widthInList';
+    }) => {
+      const route = '/tables/'
+        .concat(table.slug)
+        .concat('/fields/')
+        .concat(field._id);
+
+      const hasRelationship = field.relationship !== null;
+      const hasDropdown = field.dropdown.length > 0;
+      const hasCategory = field.category.length > 0;
+
+      const response = await API.put<IField>(route, {
+        name: field.name,
+        type: field.type,
+        required: field.required,
+        multiple: field.multiple,
+        showInFilter: field.showInFilter,
+        showInForm: field.showInForm,
+        showInDetail: field.showInDetail,
+        showInList: field.showInList,
+        widthInForm:
+          targetWidthKey === 'widthInForm' ? newWidth : field.widthInForm,
+        widthInList:
+          targetWidthKey === 'widthInList' ? newWidth : field.widthInList,
+        format: field.format ?? null,
+        defaultValue: field.defaultValue ?? null,
+        dropdown: hasDropdown ? field.dropdown : [],
+        relationship: hasRelationship
+          ? {
+              table: {
+                _id: field.relationship!.table._id,
+                slug: field.relationship!.table.slug,
+              },
+              field: {
+                _id: field.relationship!.field._id,
+                slug: field.relationship!.field.slug,
+              },
+              order: field.relationship!.order,
+            }
+          : null,
+        group: groupSlug ? { slug: groupSlug } : null,
+        category: hasCategory ? field.category : [],
+        trashed: field.trashed,
+        trashedAt: field.trashedAt ?? null,
+      });
+      return response.data;
+    },
+    onMutate: ({ field }) => {
+      setChangingWidthFieldId(field._id);
+    },
+    onSuccess: (response) => {
+      setFields((prev) =>
+        prev.map((f) => (f._id === response._id ? response : f)),
+      );
+
+      queryClient.setQueryData<IField>(
+        [
+          '/tables/'.concat(table.slug).concat('/fields/').concat(response._id),
+          response._id,
+        ],
+        response,
+      );
+
+      queryClient.setQueryData<ITable>(
+        ['/tables/'.concat(table.slug), table.slug],
+        (old) => {
+          if (!old) return old;
+
+          if (isGroupContext && groupSlug) {
+            return {
+              ...old,
+              groups: old.groups.map((g) =>
+                g.slug === groupSlug
+                  ? {
+                      ...g,
+                      fields: g.fields.map((f) =>
+                        f._id === response._id ? response : f,
+                      ),
+                    }
+                  : g,
+              ),
+            };
+          }
+
+          return {
+            ...old,
+            fields: old.fields.map((f) =>
+              f._id === response._id ? response : f,
+            ),
+          };
+        },
+      );
+
+      queryClient.setQueryData<Paginated<ITable>>(
+        ['/tables/paginated', { page: 1, perPage: 50 }],
+        (old) => {
+          if (!old) return old;
+          return {
+            meta: old.meta,
+            data: old.data.map((t) => {
+              if (t.slug === table.slug) {
+                if (isGroupContext && groupSlug) {
+                  return {
+                    ...t,
+                    groups: t.groups.map((g) =>
+                      g.slug === groupSlug
+                        ? {
+                            ...g,
+                            fields: g.fields.map((f) =>
+                              f._id === response._id ? response : f,
+                            ),
+                          }
+                        : g,
+                    ),
+                  };
+                }
+
+                return {
+                  ...t,
+                  fields: t.fields.map((f) =>
+                    f._id === response._id ? response : f,
+                  ),
+                };
+              }
+              return t;
+            }),
+          };
+        },
+      );
+
+      toast.success(`Largura atualizada para ${response[widthKey!]}%`);
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error('Erro ao atualizar largura do campo');
+    },
+    onSettled: () => {
+      setChangingWidthFieldId(null);
     },
   });
 
@@ -649,17 +841,14 @@ export function FieldManagementList({
         name: table.name,
         description: table.description,
         logo: table.logo?._id ?? null,
-        configuration: {
-          visibility: table.configuration.visibility,
-          style: table.configuration.style,
-          collaboration: table.configuration.collaboration,
-          fields: table.configuration.fields,
-          administrators: table.configuration.administrators.map((admin) =>
-            typeof admin === 'string' ? admin : admin._id,
-          ),
-        },
+        visibility: table.visibility,
+        style: table.style,
+        collaboration: table.collaboration,
+        fieldOrderList: table.fieldOrderList,
+        fieldOrderForm: table.fieldOrderForm,
+        administrators: table.administrators.flatMap((admin) => admin._id),
         groups: updatedGroups,
-        fields: table.fields.map((f) => f._id),
+        fields: table.fields.flatMap((f) => f._id),
         methods: {
           ...table.methods,
           afterSave: table.methods.afterSave,
@@ -670,25 +859,19 @@ export function FieldManagementList({
       return;
     }
 
-    // Para tabelas normais, atualiza fields e configuration.fields
+    // Para tabelas normais, atualiza fields e fieldOrderList
     updateTable.mutate({
       slug: table.slug,
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      configuration: {
-        visibility: table.configuration.visibility,
-        style: table.configuration.style,
-        collaboration: table.configuration.collaboration,
-        fields: {
-          ...table.configuration.fields,
-          orderList: fields.map((f) => f._id),
-        },
-        administrators: table.configuration.administrators.map((admin) =>
-          typeof admin === 'string' ? admin : admin._id,
-        ),
-      },
-      fields: fields.map((f) => f._id),
+      visibility: table.visibility,
+      style: table.style,
+      collaboration: table.collaboration,
+      fieldOrderList: fields.flatMap((f) => f._id),
+      fieldOrderForm: table.fieldOrderForm,
+      administrators: table.administrators.flatMap((admin) => admin._id),
+      fields: fields.flatMap((f) => f._id),
       methods: {
         ...table.methods,
         afterSave: table.methods.afterSave,
@@ -707,10 +890,19 @@ export function FieldManagementList({
   }
 
   function handleToggleVisibility(field: IField): void {
-    const currentValue = field.configuration[visibilityKey];
+    const currentValue = field[visibilityKey];
     toggleVisibilityMutation.mutate({
       field,
       newValue: !currentValue,
+    });
+  }
+
+  function handleWidthChange(field: IField, newWidth: number): void {
+    if (!widthKey) return;
+    changeWidthMutation.mutate({
+      field,
+      newWidth,
+      targetWidthKey: widthKey,
     });
   }
 
@@ -732,9 +924,16 @@ export function FieldManagementList({
                 field={field}
                 disabled={updateTable.isPending}
                 visibilityKey={visibilityKey}
+                widthKey={widthKey}
                 onEdit={() => handleEditField(field._id)}
                 onToggleVisibility={() => handleToggleVisibility(field)}
+                onWidthChange={
+                  widthKey
+                    ? (width): void => handleWidthChange(field, width)
+                    : undefined
+                }
                 isTogglingVisibility={togglingFieldId === field._id}
+                isChangingWidth={changingWidthFieldId === field._id}
               />
             ))}
           </div>
@@ -747,16 +946,18 @@ export function FieldManagementList({
         </p>
       )}
 
-      <Button
-        className="w-full"
-        disabled={!hasChanges || updateTable.isPending}
-        onClick={handleSave}
-      >
-        {updateTable.isPending && (
-          <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-        )}
-        Salvar ordem
-      </Button>
+      {hasChanges && (
+        <Button
+          className="w-full"
+          disabled={!hasChanges || updateTable.isPending}
+          onClick={handleSave}
+        >
+          {updateTable.isPending && (
+            <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          Salvar ordem
+        </Button>
+      )}
     </div>
   );
 }

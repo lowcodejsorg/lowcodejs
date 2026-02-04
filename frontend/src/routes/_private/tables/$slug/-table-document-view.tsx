@@ -59,7 +59,7 @@ export function TableDocumentView({
 
   const categoryTree: Array<CatNode> = useMemo(() => {
     if (!categoryField) return [];
-    return categoryField.configuration.category as Array<CatNode>;
+    return categoryField.category as Array<CatNode>;
   }, [categoryField]);
 
   const depthMap = useMemo(() => buildDepthMap(categoryTree), [categoryTree]);

@@ -1,6 +1,6 @@
 import { VM } from 'vm2';
 
-import EmailService from '@application/services/email.service';
+import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
 
 import { normalizeCode } from './normalize-code.core';
 
@@ -63,8 +63,8 @@ export function HandlerFunction(
     const normalizedSlug = slug.replace(/-/g, '_');
     const normalizedFields = fields.map((f) => f.replace(/-/g, '_'));
 
-    // Instancia EmailService para usar no closure
-    const emailService = new EmailService();
+    // Instancia NodemailerEmailService para usar no closure
+    const emailService = new NodemailerEmailService();
 
     // Validações iniciais
     if (!code || code.trim() === '') {
@@ -200,6 +200,55 @@ export function HandlerFunction(
           };
         } catch (error: any) {
           console.error('Erro na função sendEmail:', error);
+          return { success: false, message: 'Erro interno ao enviar email' };
+        }
+      },
+
+      sendEmailTemplate: async (
+        emails: string[],
+        subject: string,
+        message: string,
+        data?: Record<string, any>,
+      ): Promise<{
+        success: boolean;
+        message: string;
+        recipients?: number;
+      }> => {
+        try {
+          if (!Array.isArray(emails) || emails.length === 0) {
+            return { success: false, message: 'Lista de emails inválida' };
+          }
+
+          if (!subject || !message) {
+            return {
+              success: false,
+              message: 'Assunto e mensagem são obrigatórios',
+            };
+          }
+
+          const body = await emailService.buildTemplate({
+            template: 'notification',
+            data: {
+              title: subject,
+              message,
+              data: data || {},
+            },
+          });
+
+          await emailService.sendEmail({
+            body,
+            subject,
+            to: emails,
+            from: 'noreply@lowcode.com',
+          });
+
+          return {
+            success: true,
+            message: 'Email enviado com sucesso',
+            recipients: emails.length,
+          };
+        } catch (error: any) {
+          console.error('Erro na função sendEmailTemplate:', error);
           return { success: false, message: 'Erro interno ao enviar email' };
         }
       },

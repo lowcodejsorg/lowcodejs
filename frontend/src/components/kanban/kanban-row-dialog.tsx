@@ -187,7 +187,7 @@ export function KanbanRowDialog({
         }
 
         if (field.type === E_FIELD_TYPE.DROPDOWN) {
-          if (field.configuration.multiple) {
+          if (field.multiple) {
             payload[field.slug] = Array.isArray(v) ? v : v ? [v] : [];
           } else {
             payload[field.slug] = typeof v === 'string' && v ? v : (v ?? null);
@@ -565,7 +565,7 @@ export function KanbanRowDialog({
             case E_FIELD_TYPE.TEXT_SHORT:
               return <formField.TableRowTextField field={field} />;
             case E_FIELD_TYPE.TEXT_LONG:
-              if (field.configuration.format === E_FIELD_FORMAT.RICH_TEXT) {
+              if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
                 return <formField.TableRowRichTextField field={field} />;
               }
               return <formField.TableRowTextareaField field={field} />;

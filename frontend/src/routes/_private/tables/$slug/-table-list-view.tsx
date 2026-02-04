@@ -47,7 +47,7 @@ interface TableListViewProps {
 }
 
 function HeaderFilter(field: IField): boolean {
-  return field.configuration.display && !field.trashed;
+  return field.showInList && !field.trashed;
 }
 
 function HeaderSorter(order: Array<string>) {
@@ -80,7 +80,7 @@ export function TableListViewHeader({
   return (
     <TableHead
       key={field._id}
-      className="w-auto"
+      style={{ width: `${field.widthInList ?? 50}%` }}
     >
       <div className="inline-flex items-center">
         <Button
@@ -330,7 +330,10 @@ export function TableListView({
               .filter(HeaderFilter)
               .sort(HeaderSorter(order))
               .map((field) => (
-                <TableCell key={field._id.concat('-').concat(row._id)}>
+                <TableCell
+                  key={field._id.concat('-').concat(row._id)}
+                  style={{ width: `${field.widthInList ?? 50}%` }}
+                >
                   <RenderCell
                     field={field}
                     row={row}

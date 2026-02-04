@@ -3,20 +3,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { E_ROLE } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
+import InMemoryEmailService from '@application/services/email/in-memory-email.service';
 
 import SignUpUseCase from './sign-up.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let userGroupInMemoryRepository: UserGroupInMemoryRepository;
+let emailService: InMemoryEmailService;
 let sut: SignUpUseCase;
 
 describe('Sign Up Use Case', () => {
   beforeEach(async () => {
     userInMemoryRepository = new UserInMemoryRepository();
     userGroupInMemoryRepository = new UserGroupInMemoryRepository();
+    emailService = new InMemoryEmailService();
     sut = new SignUpUseCase(
       userInMemoryRepository,
       userGroupInMemoryRepository,
+      emailService,
     );
 
     await userGroupInMemoryRepository.create({
@@ -64,7 +68,12 @@ describe('Sign Up Use Case', () => {
   it('deve retornar erro GROUP_NOT_FOUND quando grupo REGISTERED nao existir', async () => {
     const newUserRepo = new UserInMemoryRepository();
     const newGroupRepo = new UserGroupInMemoryRepository();
-    const newSut = new SignUpUseCase(newUserRepo, newGroupRepo);
+    const newEmailService = new InMemoryEmailService();
+    const newSut = new SignUpUseCase(
+      newUserRepo,
+      newGroupRepo,
+      newEmailService,
+    );
 
     const result = await newSut.execute({
       name: 'John Doe',

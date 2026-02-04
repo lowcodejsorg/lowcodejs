@@ -142,7 +142,7 @@ export type IStorage = Merge<
   {
     url: string;
     filename: string;
-    type: string;
+    mimetype: string;
     originalName: string;
     size: number;
   }
@@ -217,18 +217,6 @@ export type IGroupConfiguration = {
   _schema: ITableSchema;
 };
 
-export type ITableConfiguration = {
-  style: ValueOf<typeof E_TABLE_STYLE>;
-  visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-  administrators: IUser[];
-  owner: IUser;
-  fields: {
-    orderList: string[];
-    orderForm: string[];
-  };
-};
-
 export type ITableMethod = {
   onLoad: { code: string | null };
   beforeSave: { code: string | null };
@@ -245,7 +233,13 @@ export type ITable = Merge<
     slug: string;
     fields: IField[];
     type: ValueOf<typeof E_TABLE_TYPE>;
-    configuration: ITableConfiguration;
+    style: ValueOf<typeof E_TABLE_STYLE>;
+    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
+    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
+    administrators: IUser[];
+    owner: IUser;
+    fieldOrderList: string[];
+    fieldOrderForm: string[];
     methods: ITableMethod;
     groups: IGroupConfiguration[];
   }
@@ -280,21 +274,21 @@ export type IField = Merge<
     name: string;
     slug: string;
     type: ValueOf<typeof E_FIELD_TYPE>;
-    configuration: {
-      required: boolean;
-      multiple: boolean;
-      format: ValueOf<typeof E_FIELD_FORMAT> | null;
-      filter: boolean;
-      form: boolean;
-      detail: boolean;
-      display: boolean;
-      defaultValue: string | null;
-      locked?: boolean;
-      relationship: IFieldConfigurationRelationship | null;
-      dropdown: IDropdown[];
-      category: ICategory[];
-      group: IFieldConfigurationGroup | null;
-    };
+    required: boolean;
+    multiple: boolean;
+    format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    showInFilter: boolean;
+    showInForm: boolean;
+    showInDetail: boolean;
+    showInList: boolean;
+    widthInForm: number | null;
+    widthInList: number | null;
+    defaultValue: string | null;
+    locked?: boolean;
+    relationship: IFieldConfigurationRelationship | null;
+    dropdown: IDropdown[];
+    category: ICategory[];
+    group: IFieldConfigurationGroup | null;
   }
 >;
 

@@ -24,7 +24,7 @@ interface FileUploadWithStorageProps {
   value: Array<File>;
   onValueChange: (files: Array<File>) => void;
   onStorageChange: (storages: Array<IStorage>) => void;
-  initialStorages?: Array<IStorage>;
+  onUploadingChange?: (isUploading: boolean) => void;
   accept?: string;
   maxFiles?: number;
   maxSize?: number;
@@ -38,7 +38,7 @@ export function FileUploadWithStorage({
   value,
   onValueChange,
   onStorageChange,
-  initialStorages = [],
+  onUploadingChange,
   accept,
   maxFiles = 1,
   maxSize = 5 * 1024 * 1024,
@@ -48,34 +48,9 @@ export function FileUploadWithStorage({
   shouldDeleteFromStorage = true,
 }: FileUploadWithStorageProps): React.JSX.Element {
   const [storageFiles, setStorageFiles] = React.useState<Map<File, IStorage>>(
-    () => {
-      const map = new Map<File, IStorage>();
-      // Inicializa o map com os storages existentes
-      // Os arquivos serão mapeados quando value mudar
-      return map;
-    },
+    new Map(),
   );
-
-  // Mapeia Files com seus Storages iniciais (por nome/tipo)
-  React.useEffect(() => {
-    if (initialStorages.length === 0 || value.length === 0) return;
-    if (storageFiles.size > 0) return;
-
-    const newMap = new Map<File, IStorage>();
-
-    for (const file of value) {
-      const matchingStorage = initialStorages.find(
-        (s) => s.originalName === file.name && s.type === file.type,
-      );
-      if (matchingStorage) {
-        newMap.set(file, matchingStorage);
-      }
-    }
-
-    if (newMap.size > 0) {
-      setStorageFiles(newMap);
-    }
-  }, [value, initialStorages]);
+  const [isProcessing, setIsProcessing] = React.useState(false);
 
   const upload = useMutation({
     mutationFn: async function (files: Array<File>) {
@@ -94,7 +69,14 @@ export function FileUploadWithStorage({
         const data = error.response?.data;
 
         if (data?.code === 500 && data?.cause === 'STORAGE_UPLOAD_ERROR') {
-          toast.error(data?.message ?? 'Erro interno do servidor');
+          toast('Erro ao fazer upload', {
+            className:
+              '!bg-destructive !text-primary-foreground !border-destructive',
+            description:
+              'Houve um problema ao tentar fazer upload, tente novamente mais tarde.',
+            descriptionClassName: '!text-primary-foreground',
+            closeButton: true,
+          });
         }
       }
 
@@ -121,7 +103,7 @@ export function FileUploadWithStorage({
   const remove = useMutation({
     mutationFn: async function ({ storage }: { storage: IStorage }) {
       if (shouldDeleteFromStorage) {
-        const route = '/storage/'.concat(storage._id);
+        const route = '/storage/'.concat(storage.id);
         await API.delete(route);
       }
       return storage;
@@ -131,11 +113,21 @@ export function FileUploadWithStorage({
         const data = error.response?.data;
 
         if (data?.code === 404 && data?.cause === 'STORAGE_NOT_FOUND') {
-          toast.error(data?.message ?? 'Arquivo não encontrado');
+          toast(data?.message ?? 'Arquivo não encontrado', {
+            className:
+              '!bg-destructive !text-primary-foreground !border-destructive',
+            descriptionClassName: '!text-primary-foreground',
+            closeButton: true,
+          });
         }
 
         if (data?.code === 500 && data?.cause === 'STORAGE_DELETE_ERROR') {
-          toast.error(data?.message ?? 'Erro interno do servidor');
+          toast(data?.message ?? 'Erro interno do servidor', {
+            className:
+              '!bg-destructive !text-primary-foreground !border-destructive',
+            descriptionClassName: '!text-primary-foreground',
+            closeButton: true,
+          });
         }
       }
 
@@ -146,7 +138,7 @@ export function FileUploadWithStorage({
       let fileToRemove: File | null = null;
 
       for (const [file, storage] of storageFiles.entries()) {
-        if (storage._id === deletedStorage._id) {
+        if (storage.id === deletedStorage.id) {
           fileToRemove = file;
           break;
         }
@@ -165,14 +157,22 @@ export function FileUploadWithStorage({
 
       // Atualizar lista de storages retornando objetos completos
       const remainingStorages = Array.from(storageFiles.values()).filter(
-        (storage) => storage._id !== deletedStorage._id,
+        (storage) => storage.id !== deletedStorage.id,
       );
       onStorageChange(remainingStorages);
     },
   });
 
+  const isPending =
+    isProcessing || upload.status === 'pending' || remove.status === 'pending';
+
+  React.useEffect(() => {
+    onUploadingChange?.(isPending);
+  }, [isPending, onUploadingChange]);
+
   const onUpload: NonNullable<FileUploadProps['onUpload']> = React.useCallback(
     async (files, { onProgress, onSuccess, onError }) => {
+      setIsProcessing(true);
       try {
         const uploadPromises = files.map(async (file) => {
           try {
@@ -203,6 +203,8 @@ export function FileUploadWithStorage({
         await upload.mutateAsync(files);
       } catch (error) {
         console.error('Unexpected error during upload:', error);
+      } finally {
+        setIsProcessing(false);
       }
     },
     [upload],
@@ -219,19 +221,22 @@ export function FileUploadWithStorage({
       errorMessage = 'Número máximo de arquivos excedido';
     }
 
-    toast.error(errorMessage, {
+    toast(errorMessage, {
+      className: '!bg-destructive !text-primary-foreground !border-destructive',
       description: `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}" foi rejeitado`,
+      descriptionClassName: '!text-primary-foreground',
+      closeButton: true,
     });
   }, []);
 
   const handleRemoveFile = React.useCallback(
     (file: File) => {
       const storage = storageFiles.get(file);
-
       if (storage) {
         remove.mutateAsync({ storage });
-      } else {
-        // Se não tem storage ainda (upload não completou), apenas remove local
+      }
+
+      if (!storage) {
         const updatedFiles = value.filter((f) => f !== file);
         onValueChange(updatedFiles);
       }
@@ -257,7 +262,7 @@ export function FileUploadWithStorage({
         {placeholder}
         <FileUploadTrigger
           asChild
-          disabled={upload.status === 'pending' || remove.status === 'pending'}
+          disabled={isPending}
         >
           <Button
             variant="link"
@@ -267,6 +272,9 @@ export function FileUploadWithStorage({
             escolha o arquivo
           </Button>
         </FileUploadTrigger>
+        <span className="w-full text-xs text-muted-foreground">
+          Tamanho máximo: {Math.round(maxSize / (1024 * 1024))}MB
+        </span>
       </FileUploadDropzone>
       <FileUploadList>
         {value.map((file, index) => (

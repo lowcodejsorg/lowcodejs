@@ -50,39 +50,35 @@ describe('E2E Table Row Reaction Controller', () => {
       const { cookies, user } = await createAuthenticatedUser();
 
       const fieldPayload: FieldCreatePayload = {
-        configuration: {
-          category: [],
-          dropdown: [],
-          defaultValue: null,
-          filter: false,
-          form: true,
-          detail: true,
-          format: null,
-          group: null,
-          display: true,
-          multiple: false,
-          required: false,
-          relationship: null,
-        },
+        category: [],
+        dropdown: [],
+        defaultValue: null,
+        showInFilter: false,
+        showInForm: true,
+        showInDetail: true,
+        format: null,
+        group: null,
+        showInList: true,
+        multiple: false,
+        required: false,
+        relationship: null,
         name: 'Likes',
         slug: 'likes',
         type: E_FIELD_TYPE.REACTION,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const reactionField = await Field.create(fieldPayload);
 
       const tablePayload: TableCreatePayload = {
-        configuration: {
-          owner: user._id,
-          administrators: [],
-          collaboration: E_TABLE_COLLABORATION.OPEN,
-          fields: {
-            orderForm: [],
-            orderList: [],
-          },
-          style: E_TABLE_STYLE.LIST,
-          visibility: E_TABLE_VISIBILITY.PUBLIC,
-        },
+        owner: user._id,
+        administrators: [],
+        collaboration: E_TABLE_COLLABORATION.OPEN,
+        fieldOrderForm: [],
+        fieldOrderList: [],
+        style: E_TABLE_STYLE.LIST,
+        visibility: E_TABLE_VISIBILITY.PUBLIC,
         name: 'Posts',
         slug: 'posts',
         fields: [reactionField._id.toString()],

@@ -131,7 +131,7 @@ function RouteComponent(): React.JSX.Element {
             <TabsContent value="display">
               <FieldManagementList
                 table={table.data}
-                visibilityKey="display"
+                visibilityKey="showInList"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined
@@ -142,7 +142,7 @@ function RouteComponent(): React.JSX.Element {
             <TabsContent value="filter">
               <FieldManagementList
                 table={table.data}
-                visibilityKey="filter"
+                visibilityKey="showInFilter"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined
@@ -153,7 +153,7 @@ function RouteComponent(): React.JSX.Element {
             <TabsContent value="form">
               <FieldManagementList
                 table={table.data}
-                visibilityKey="form"
+                visibilityKey="showInForm"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined
@@ -164,7 +164,7 @@ function RouteComponent(): React.JSX.Element {
             <TabsContent value="detail">
               <FieldManagementList
                 table={table.data}
-                visibilityKey="detail"
+                visibilityKey="showInDetail"
                 groupSlug={groupSlug}
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined

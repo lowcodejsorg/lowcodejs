@@ -411,13 +411,11 @@ function FilterDropdown({
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
   const anchorRef = useComboboxAnchor();
-  const options: Array<DropdownOption> = field.configuration.dropdown.map(
-    (d) => ({
-      value: d.id,
-      label: d.label,
-      color: d.color,
-    }),
-  );
+  const options: Array<DropdownOption> = field.dropdown.map((d) => ({
+    value: d.id,
+    label: d.label,
+    color: d.color,
+  }));
 
   // Find selected options for multiple select
   const selectedOptions = React.useMemo(() => {
@@ -427,7 +425,7 @@ function FilterDropdown({
   // Para single select, extrair o valor da primeira opção
   const singleValue = value.length > 0 ? value[0] : '';
 
-  if (field.configuration.multiple) {
+  if (field.multiple) {
     return (
       <Field>
         <FieldLabel>{field.name}</FieldLabel>
@@ -543,7 +541,7 @@ function FilterCategory({
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
-  const categories = field.configuration.category;
+  const categories = field.category;
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedLabel = React.useMemo(() => {
@@ -577,8 +575,8 @@ function FilterCategory({
             data={treeData}
             selectedIds={value}
             onSelectionChange={onChange}
-            multiSelect={field.configuration.multiple}
-            showCheckboxes={field.configuration.multiple}
+            multiSelect={field.multiple}
+            showCheckboxes={field.multiple}
           />
         </PopoverContent>
       </Popover>

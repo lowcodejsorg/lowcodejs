@@ -48,72 +48,68 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
           ],
           description: 'Field type',
         },
-        configuration: {
+        required: {
+          type: 'boolean',
+          enum: [false],
+          description: 'Field required status (remains false after restore)',
+        },
+        multiple: {
+          type: 'boolean',
+          description: 'Field accepts multiple values',
+        },
+        showInList: {
+          type: 'boolean',
+          enum: [true],
+          description: 'Field is now shown in list view',
+        },
+        showInForm: {
+          type: 'boolean',
+          enum: [true],
+          description: 'Field is now shown in form view',
+        },
+        showInDetail: {
+          type: 'boolean',
+          enum: [true],
+          description: 'Field is now shown in detail view',
+        },
+        showInFilter: {
+          type: 'boolean',
+          enum: [true],
+          description: 'Field filtering is now enabled',
+        },
+        locked: {
+          type: 'boolean',
+          description: 'Field is locked and cannot be modified',
+        },
+        format: {
+          type: 'string',
+          nullable: true,
+          description: 'Field format',
+        },
+        defaultValue: {
+          type: 'string',
+          nullable: true,
+          description: 'Default field value',
+        },
+        dropdown: {
+          type: 'array',
+          nullable: true,
+          description: 'Dropdown options',
+        },
+        relationship: {
           type: 'object',
-          properties: {
-            required: {
-              type: 'boolean',
-              enum: [false],
-              description:
-                'Field required status (remains false after restore)',
-            },
-            multiple: {
-              type: 'boolean',
-              description: 'Field accepts multiple values',
-            },
-            display: {
-              type: 'boolean',
-              enum: [true],
-              description: 'Field is now shown in list view',
-            },
-            form: {
-              type: 'boolean',
-              enum: [true],
-              description: 'Field is now shown in form view',
-            },
-            detail: {
-              type: 'boolean',
-              enum: [true],
-              description: 'Field is now shown in detail view',
-            },
-            filter: {
-              type: 'boolean',
-              enum: [true],
-              description: 'Field filtering is now enabled',
-            },
-            format: {
-              type: 'string',
-              nullable: true,
-              description: 'Field format',
-            },
-            default_value: {
-              type: 'string',
-              nullable: true,
-              description: 'Default field value',
-            },
-            dropdown: {
-              type: 'array',
-              nullable: true,
-              description: 'Dropdown options',
-            },
-            relationship: {
-              type: 'object',
-              nullable: true,
-              description: 'Relationship configuration',
-            },
-            group: {
-              type: 'object',
-              nullable: true,
-              description: 'Field group configuration',
-            },
-            category: {
-              type: 'array',
-              nullable: true,
-              description: 'Category options',
-            },
-          },
-          description:
-            'Field configuration with display, form, detail, and filter restored to true',
+          nullable: true,
+          description: 'Relationship configuration',
+        },
+        group: {
+          type: 'object',
+          nullable: true,
+          description: 'Field group configuration',
+        },
+        category: {
+          type: 'array',
+          nullable: true,
+          description: 'Category options',
         },
         trashed: {
           type: 'boolean',

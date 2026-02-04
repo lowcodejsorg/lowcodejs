@@ -29,16 +29,12 @@ describe('E2E Clone Table Controller', () => {
         name: 'Tabela Original',
         slug: 'tabela-original',
         type: 'TABLE',
-        configuration: {
-          owner: user._id,
-          visibility: 'RESTRICTED',
-          collaboration: 'RESTRICTED',
-          style: 'LIST',
-          fields: {
-            orderList: [],
-            orderForm: [],
-          },
-        },
+        owner: user._id,
+        visibility: 'RESTRICTED',
+        collaboration: 'RESTRICTED',
+        style: 'LIST',
+        fieldOrderList: [],
+        fieldOrderForm: [],
       });
 
       const response = await supertest(kernel.server)

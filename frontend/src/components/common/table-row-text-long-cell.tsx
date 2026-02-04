@@ -14,7 +14,7 @@ export function TableRowTextLongCell({
   className,
 }: TableRowTextLongCellProps): React.JSX.Element {
   const value = row[field.slug];
-  const isRichText = field.configuration.format === E_FIELD_FORMAT.RICH_TEXT;
+  const isRichText = field.format === E_FIELD_FORMAT.RICH_TEXT;
 
   if (!value) {
     return <span className="text-muted-foreground text-sm">-</span>;

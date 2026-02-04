@@ -13,9 +13,7 @@ export function TableRowCategoryCell({
   row,
 }: TableRowCategoryCellProps): React.JSX.Element {
   const values = Array.from<string>(row[field.slug] ?? []);
-  const items = values.map((value) =>
-    getCategoryItem(field.configuration.category, value),
-  );
+  const items = values.map((value) => getCategoryItem(field.category, value));
 
   return (
     <TableRowBadgeList

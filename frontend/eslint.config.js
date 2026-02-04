@@ -34,6 +34,7 @@ export default defineConfig([
           allowTypedFunctionExpressions: true,
         },
       ],
+      '@typescript-eslint/no-unnecessary-condition': 'off',
       'import/order': [
         'error',
         {

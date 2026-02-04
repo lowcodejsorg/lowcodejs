@@ -175,12 +175,12 @@ function TableUpdateContent({
     defaultValues: {
       name: data.name,
       description: data.description ?? '',
-      style: data.configuration.style,
-      visibility: data.configuration.visibility,
-      collaboration: data.configuration.collaboration,
+      style: data.style,
+      visibility: data.visibility,
+      collaboration: data.collaboration,
       logo: data.logo?._id ?? null,
       logoFile: [] as Array<File>,
-      administrators: data.configuration.administrators.map((admin) =>
+      administrators: data.administrators.map((admin) =>
         typeof admin === 'string' ? admin : admin._id,
       ),
     },
@@ -195,13 +195,12 @@ function TableUpdateContent({
         name: value.name || data.name,
         description: value.description || null,
         logo: value.logo || data.logo?._id || null,
-        configuration: {
-          visibility: value.visibility,
-          style: value.style,
-          collaboration: value.collaboration,
-          fields: data.configuration.fields,
-          administrators: value.administrators,
-        },
+        visibility: value.visibility,
+        style: value.style,
+        collaboration: value.collaboration,
+        fieldOrderList: data.fieldOrderList,
+        fieldOrderForm: data.fieldOrderForm,
+        administrators: value.administrators,
         methods: {
           ...data.methods,
         },

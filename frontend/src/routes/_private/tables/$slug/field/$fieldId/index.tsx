@@ -100,8 +100,7 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' &&
           mode === 'show' &&
           permission.can('UPDATE_FIELD') &&
-          (!_read.data.configuration.locked ||
-            _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
+          (!_read.data.locked || _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
             <Button
               type="button"
               className="px-2 cursor-pointer"
@@ -123,7 +122,7 @@ function RouteComponent(): React.JSX.Element {
             campos".
           </p>
         )}
-      {_read.status === 'success' && _read.data.configuration.locked && (
+      {_read.status === 'success' && _read.data.locked && (
         <p className="text-sm text-amber-600 px-2 pb-2">
           Este campo faz parte de uma predefinição e não pode ser alterado ou
           removido.
@@ -196,7 +195,7 @@ function FieldUpdateContent({
       payload: Partial<IField> & {
         trashed?: boolean;
         trashedAt?: string | null;
-        group?: string;
+        group?: { slug: string } | string | null;
       },
     ) => {
       const route = '/tables/'.concat(slug).concat('/fields/').concat(data._id);
@@ -451,30 +450,30 @@ function FieldUpdateContent({
     defaultValues: {
       name: data.name,
       type: data.type as string,
-      configuration: {
-        format: data.configuration.format ?? '',
-        defaultValue: data.configuration.defaultValue ?? '',
-        dropdown: data.configuration.dropdown.map((d) => ({
-          id: d.id,
-          label: d.label,
-          color: d.color,
-        })),
-        relationship: {
-          tableId: data.configuration.relationship?.table._id ?? '',
-          tableSlug: data.configuration.relationship?.table.slug ?? '',
-          fieldId: data.configuration.relationship?.field._id ?? '',
-          fieldSlug: data.configuration.relationship?.field.slug ?? '',
-          order: data.configuration.relationship?.order ?? '',
-        },
-        category: data.configuration.category,
-        multiple: data.configuration.multiple,
-        filter: data.configuration.filter,
-        form: data.configuration.form,
-        detail: data.configuration.detail,
-        display: data.configuration.display,
-        required: data.configuration.required,
+      format: data.format ?? '',
+      defaultValue: data.defaultValue ?? '',
+      dropdown: (data.dropdown ?? []).map((d) => ({
+        id: d.id,
+        label: d.label,
+        color: d.color,
+      })),
+      relationship: {
+        tableId: data.relationship?.table._id ?? '',
+        tableSlug: data.relationship?.table.slug ?? '',
+        fieldId: data.relationship?.field._id ?? '',
+        fieldSlug: data.relationship?.field.slug ?? '',
+        order: data.relationship?.order ?? '',
       },
+      category: data.category ?? [],
+      multiple: data.multiple,
+      showInFilter: data.showInFilter,
+      showInForm: data.showInForm,
+      showInDetail: data.showInDetail,
+      showInList: data.showInList,
+      required: data.required,
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
+      widthInForm: data.widthInForm ?? 50,
+      widthInList: data.widthInList ?? 50,
     },
     onSubmit: async ({ value }) => {
       const validation = FieldUpdateSchema.safeParse(value);
@@ -482,47 +481,45 @@ function FieldUpdateContent({
 
       if (_update.status === 'pending') return;
 
-      const config = value.configuration;
-      const hasRelationship = config.relationship.tableId !== '';
-      const hasDropdown = config.dropdown.length > 0;
-      const hasCategory = config.category.length > 0;
+      const hasRelationship = value.relationship.tableId !== '';
+      const hasDropdown = value.dropdown.length > 0;
+      const hasCategory = value.category.length > 0;
 
       await _update.mutateAsync({
         name: value.name,
         type: value.type as keyof typeof E_FIELD_TYPE,
-        configuration: {
-          required: config.required,
-          multiple: config.multiple,
-          filter: config.filter,
-          form: config.form,
-          detail: config.detail,
-          display: config.display,
-          format: config.format
-            ? (config.format as ValueOf<typeof E_FIELD_FORMAT>)
-            : null,
-          defaultValue: config.defaultValue || null,
-          dropdown: hasDropdown ? config.dropdown.map((item) => item) : [],
-          relationship: hasRelationship
-            ? {
-                table: {
-                  _id: config.relationship.tableId,
-                  slug: config.relationship.tableSlug,
-                },
-                field: {
-                  _id: config.relationship.fieldId,
-                  slug: config.relationship.fieldSlug,
-                },
-                order: (config.relationship.order || 'asc') as 'asc' | 'desc',
-              }
-            : null,
-          group: null,
-          category: hasCategory
-            ? (config.category as unknown as IField['configuration']['category'])
-            : [],
-        },
+        required: value.required,
+        multiple: value.multiple,
+        showInFilter: value.showInFilter,
+        showInForm: value.showInForm,
+        showInDetail: value.showInDetail,
+        showInList: value.showInList,
+        widthInForm: value.widthInForm,
+        widthInList: value.widthInList,
+        format: value.format
+          ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
+          : null,
+        defaultValue: value.defaultValue || null,
+        dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
+        relationship: hasRelationship
+          ? {
+              table: {
+                _id: value.relationship.tableId,
+                slug: value.relationship.tableSlug,
+              },
+              field: {
+                _id: value.relationship.fieldId,
+                slug: value.relationship.fieldSlug,
+              },
+              order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+            }
+          : null,
+        group: groupSlug ? { slug: groupSlug } : null,
+        category: hasCategory
+          ? (value.category as unknown as IField['category'])
+          : [],
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
-        group: groupSlug,
       });
     },
   });
@@ -568,7 +565,7 @@ function FieldUpdateContent({
             isPending={isPending}
             mode={mode}
             tableSlug={slug}
-            isLocked={data.configuration.locked}
+            isLocked={data.locked ?? false}
           />
         </form>
       )}

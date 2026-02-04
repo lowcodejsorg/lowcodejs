@@ -45,14 +45,13 @@ describe('Table Row Update Use Case', () => {
       slug: 'clientes',
       _schema: {},
       fields: [],
-      configuration: {
-        owner: 'owner-id',
-        administrators: [],
-        style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: { orderList: [], orderForm: [] },
-      },
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     const result = await sut.execute({

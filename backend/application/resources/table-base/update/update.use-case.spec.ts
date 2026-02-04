@@ -39,14 +39,13 @@ describe('Table Update Use Case', () => {
       slug: 'clientes',
       _schema: {},
       fields: [],
-      configuration: {
-        owner: 'owner-id',
-        administrators: [],
-        style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: { orderList: [], orderForm: [] },
-      },
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     const result = await sut.execute({
@@ -65,22 +64,18 @@ describe('Table Update Use Case', () => {
           code: null,
         },
       },
-      configuration: {
-        style: E_TABLE_STYLE.GALLERY,
-        administrators: [],
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: {
-          orderForm: [],
-          orderList: [],
-        },
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      },
+      style: E_TABLE_STYLE.GALLERY,
+      administrators: [],
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderForm: [],
+      fieldOrderList: [],
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
     });
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value.name).toBe('Clientes Atualizado');
-      expect(result.value.configuration.style).toBe(E_TABLE_STYLE.GALLERY);
+      expect(result.value.style).toBe(E_TABLE_STYLE.GALLERY);
     }
   });
 
@@ -101,16 +96,12 @@ describe('Table Update Use Case', () => {
           code: null,
         },
       },
-      configuration: {
-        style: E_TABLE_STYLE.GALLERY,
-        administrators: [],
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: {
-          orderForm: [],
-          orderList: [],
-        },
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      },
+      style: E_TABLE_STYLE.GALLERY,
+      administrators: [],
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderForm: [],
+      fieldOrderList: [],
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -126,14 +117,13 @@ describe('Table Update Use Case', () => {
       slug: 'clientes',
       _schema: {},
       fields: [],
-      configuration: {
-        owner: 'owner-id',
-        administrators: [],
-        style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: { orderList: [], orderForm: [] },
-      },
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     const result = await sut.execute({
@@ -152,16 +142,12 @@ describe('Table Update Use Case', () => {
           code: null,
         },
       },
-      configuration: {
-        style: E_TABLE_STYLE.GALLERY,
-        administrators: ['non-existent-user'],
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: {
-          orderForm: [],
-          orderList: [],
-        },
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      },
+      style: E_TABLE_STYLE.GALLERY,
+      administrators: ['non-existent-user'],
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderForm: [],
+      fieldOrderList: [],
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -192,16 +178,12 @@ describe('Table Update Use Case', () => {
           code: null,
         },
       },
-      configuration: {
-        style: E_TABLE_STYLE.GALLERY,
-        administrators: ['non-existent-user'],
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        fields: {
-          orderForm: [],
-          orderList: [],
-        },
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      },
+      style: E_TABLE_STYLE.GALLERY,
+      administrators: ['non-existent-user'],
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderForm: [],
+      fieldOrderList: [],
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
     });
 
     expect(result.isLeft()).toBe(true);

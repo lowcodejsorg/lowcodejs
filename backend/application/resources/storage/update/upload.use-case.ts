@@ -10,7 +10,7 @@ import {
   StorageContractRepository,
   type StorageCreatePayload,
 } from '@application/repositories/storage/storage-contract.repository';
-import StorageService from '@application/services/storage.service';
+import LocalStorageService from '@application/services/storage.service';
 
 type Response = Either<HTTPException, Entity[]>;
 
@@ -18,7 +18,7 @@ type Response = Either<HTTPException, Entity[]>;
 export default class StorageUploadUseCase {
   constructor(
     private readonly storageRepository: StorageContractRepository,
-    private readonly service: StorageService,
+    private readonly service: LocalStorageService,
   ) {}
 
   async execute(

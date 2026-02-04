@@ -3,8 +3,13 @@ import z from 'zod';
 import { Merge } from '@application/core/entity.core';
 
 import {
-  TableConfigurationSchema,
+  TableAdministratorsSchema,
+  TableCollaborationSchema,
+  TableFieldOrderFormSchema,
+  TableFieldOrderListSchema,
   TableMethodSchema,
+  TableStyleSchema,
+  TableVisibilitySchema,
 } from '../table-base.schema';
 
 export const TableUpdateBodyValidator = z.object({
@@ -19,7 +24,12 @@ export const TableUpdateBodyValidator = z.object({
     ),
   description: z.string().trim().nullable(),
   logo: z.string().trim().nullable(),
-  configuration: TableConfigurationSchema,
+  style: TableStyleSchema,
+  visibility: TableVisibilitySchema,
+  collaboration: TableCollaborationSchema,
+  administrators: TableAdministratorsSchema,
+  fieldOrderList: TableFieldOrderListSchema,
+  fieldOrderForm: TableFieldOrderFormSchema,
   methods: TableMethodSchema,
 });
 

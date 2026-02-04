@@ -17,7 +17,7 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
       case E_FIELD_TYPE.TEXT_LONG:
-        defaults[field.slug] = field.configuration.defaultValue ?? '';
+        defaults[field.slug] = field.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DROPDOWN:
         defaults[field.slug] = []; // Always array
@@ -70,7 +70,7 @@ export function buildPayload(
         break;
       case E_FIELD_TYPE.DROPDOWN: {
         const existing = values[field.slug];
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           const ids = Array.isArray(existing)
             ? existing
             : existing
@@ -93,7 +93,7 @@ export function buildPayload(
           files: Array<File>;
           storages: Array<IStorage>;
         };
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = fileValue.storages.map((s) => s._id);
         } else {
           // Always array, but limit to 1 item
@@ -105,7 +105,7 @@ export function buildPayload(
       }
       case E_FIELD_TYPE.RELATIONSHIP: {
         const relValue = Array.from<SearchableOption>(value ?? []);
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = relValue.map((opt) => opt.value);
         } else {
           // Always array, but limit to 1 item
@@ -119,7 +119,7 @@ export function buildPayload(
           : value
             ? [value]
             : [];
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = categoryValue;
         } else {
           // Always array, but limit to 1 item
@@ -131,7 +131,7 @@ export function buildPayload(
         // const groupValue = value as Array<Record<string, any>>;
         const groupValue = Array.from<Record<string, any>>(value ?? []);
         // Always send as array, but limit to 1 item if multiple=false
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = groupValue;
         } else {
           payload[field.slug] = groupValue.slice(0, 1);
@@ -140,7 +140,7 @@ export function buildPayload(
       }
       case E_FIELD_TYPE.USER: {
         const userValue = Array.from<SearchableOption>(value ?? []);
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           payload[field.slug] = userValue.map((opt) => opt.value);
         } else {
           // Always array, but limit to 1 item
@@ -194,6 +194,22 @@ interface RowFormFieldsProps {
   tableSlug: string;
 }
 
+// Helper to convert width percentage to grid column span
+function getWidthClass(width: number | null | undefined): string {
+  switch (width) {
+    case 25:
+      return 'col-span-1';
+    case 50:
+      return 'col-span-2';
+    case 75:
+      return 'col-span-3';
+    case 100:
+      return 'col-span-4';
+    default:
+      return 'col-span-2'; // default 50%
+  }
+}
+
 export function RowFormFields({
   form,
   fields,
@@ -201,7 +217,7 @@ export function RowFormFields({
   tableSlug,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2">
+    <section className="grid grid-cols-4 gap-4 p-2">
       {fields.map((field) => {
         // Skip non-editable field types
         if (
@@ -212,95 +228,99 @@ export function RowFormFields({
         }
 
         return (
-          <form.AppField
+          <div
             key={field._id}
-            name={field.slug}
-            validators={{
-              onChange: ({ value }: { value: any }) => {
-                return buildFieldValidator(field, value);
-              },
-            }}
+            className={getWidthClass(field.widthInForm)}
           >
-            {(formField: any) => {
-              switch (field.type) {
-                case E_FIELD_TYPE.TEXT_SHORT:
-                  return (
-                    <formField.TableRowTextField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.TEXT_LONG:
-                  if (field.configuration.format === E_FIELD_FORMAT.RICH_TEXT) {
+            <form.AppField
+              name={field.slug}
+              validators={{
+                onChange: ({ value }: { value: any }) => {
+                  return buildFieldValidator(field, value);
+                },
+              }}
+            >
+              {(formField: any) => {
+                switch (field.type) {
+                  case E_FIELD_TYPE.TEXT_SHORT:
                     return (
-                      <formField.TableRowRichTextField
+                      <formField.TableRowTextField
                         field={field}
                         disabled={disabled}
                       />
                     );
-                  }
-                  return (
-                    <formField.TableRowTextareaField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.DROPDOWN:
-                  return (
-                    <formField.TableRowDropdownField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.DATE:
-                  return (
-                    <formField.TableRowDateField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.FILE:
-                  return (
-                    <formField.TableRowFileField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.RELATIONSHIP:
-                  return (
-                    <formField.TableRowRelationshipField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.CATEGORY:
-                  return (
-                    <formField.TableRowCategoryField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.FIELD_GROUP:
-                  return (
-                    <formField.TableRowFieldGroupField
-                      field={field}
-                      disabled={disabled}
-                      tableSlug={tableSlug}
-                      form={form}
-                    />
-                  );
-                case E_FIELD_TYPE.USER:
-                  return (
-                    <formField.TableRowUserField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            }}
-          </form.AppField>
+                  case E_FIELD_TYPE.TEXT_LONG:
+                    if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
+                      return (
+                        <formField.TableRowRichTextField
+                          field={field}
+                          disabled={disabled}
+                        />
+                      );
+                    }
+                    return (
+                      <formField.TableRowTextareaField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.DROPDOWN:
+                    return (
+                      <formField.TableRowDropdownField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.DATE:
+                    return (
+                      <formField.TableRowDateField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.FILE:
+                    return (
+                      <formField.TableRowFileField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.RELATIONSHIP:
+                    return (
+                      <formField.TableRowRelationshipField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.CATEGORY:
+                    return (
+                      <formField.TableRowCategoryField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.FIELD_GROUP:
+                    return (
+                      <formField.TableRowFieldGroupField
+                        field={field}
+                        disabled={disabled}
+                        tableSlug={tableSlug}
+                        form={form}
+                      />
+                    );
+                  case E_FIELD_TYPE.USER:
+                    return (
+                      <formField.TableRowUserField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  default:
+                    return null;
+                }
+              }}
+            </form.AppField>
+          </div>
         );
       })}
     </section>

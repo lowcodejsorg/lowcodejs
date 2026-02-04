@@ -63,8 +63,6 @@ export function TableKanbanView({
   const [activeRow, setActiveRow] = React.useState<IRow | null>(null);
   const activeRowId = activeRow?._id ?? null;
   const [isAddListOpen, setIsAddListOpen] = React.useState(false);
-  const [newListLabel, setNewListLabel] = React.useState('');
-  const [newListColor, setNewListColor] = React.useState('#a3a3a3');
   const [rowsState, setRowsState] = React.useState<Array<IRow>>(data);
   const [isCreateCardOpen, setIsCreateCardOpen] = React.useState(false);
   const [createColumnId, setCreateColumnId] = React.useState<string | null>(
@@ -109,7 +107,7 @@ export function TableKanbanView({
     };
   }, [headers]);
 
-  const listOptions = fields.list?.configuration.dropdown ?? [];
+  const listOptions = fields.list?.dropdown ?? [];
   const orderField = React.useMemo(
     () =>
       headers.find(
@@ -172,7 +170,7 @@ export function TableKanbanView({
         .concat('/fields/')
         .concat(fields.list._id);
       const dropdown = [
-        ...fields.list.configuration.dropdown,
+        ...fields.list.dropdown,
         {
           id: crypto.randomUUID(),
           label: payload.label,
@@ -181,10 +179,7 @@ export function TableKanbanView({
       ];
       const response = await API.put<IField>(route, {
         ...fields.list,
-        configuration: {
-          ...fields.list.configuration,
-          dropdown,
-        },
+        dropdown,
       });
       return response.data;
     },
@@ -207,8 +202,6 @@ export function TableKanbanView({
         descriptionClassName: '!text-white',
         closeButton: true,
       });
-      setNewListLabel('');
-      setNewListColor('#a3a3a3');
       setIsAddListOpen(false);
     },
     onError() {
@@ -221,6 +214,29 @@ export function TableKanbanView({
     },
   });
 
+  const addListForm = useAppForm({
+    defaultValues: {
+      label: '',
+      color: '#a3a3a3',
+    },
+    onSubmit: async ({ value }) => {
+      const label = value.label.trim();
+      if (!label || addListOption.status === 'pending') return;
+      await addListOption.mutateAsync({
+        label,
+        color: value.color,
+      });
+    },
+  });
+
+  React.useEffect(() => {
+    if (isAddListOpen) return;
+    addListForm.reset({
+      label: '',
+      color: '#a3a3a3',
+    });
+  }, [addListForm, isAddListOpen]);
+
   const updateListOption = useMutation({
     mutationFn: async (payload: {
       optionId: string;
@@ -230,7 +246,7 @@ export function TableKanbanView({
       if (!fields.list) {
         throw new Error('Campo de lista não encontrado');
       }
-      const dropdown = fields.list.configuration.dropdown.map((opt) =>
+      const dropdown = fields.list.dropdown.map((opt) =>
         opt.id === payload.optionId
           ? { ...opt, label: payload.label, color: payload.color }
           : opt,
@@ -239,10 +255,7 @@ export function TableKanbanView({
         '/tables/'.concat(tableSlug).concat('/fields/').concat(fields.list._id),
         {
           ...fields.list,
-          configuration: {
-            ...fields.list.configuration,
-            dropdown,
-          },
+          dropdown,
         },
       );
       return response.data;
@@ -413,7 +426,7 @@ export function TableKanbanView({
     string | null
   > => {
     if (orderField?.slug) {
-      if (!orderField.configuration.locked) {
+      if (!orderField.locked) {
         try {
           const response = await API.put<IField>(
             '/tables/'
@@ -422,10 +435,7 @@ export function TableKanbanView({
               .concat(orderField._id),
             {
               ...orderField,
-              configuration: {
-                ...orderField.configuration,
-                locked: true,
-              },
+              locked: true,
             },
           );
           const updatedField = response.data;
@@ -459,21 +469,19 @@ export function TableKanbanView({
         {
           name: ORDER_FIELD_NAME,
           type: E_FIELD_TYPE.TEXT_SHORT,
-          configuration: {
-            required: false,
-            multiple: false,
-            format: E_FIELD_FORMAT.INTEGER,
-            filter: false,
-            form: false,
-            detail: false,
-            display: false,
-            defaultValue: null,
-            locked: true,
-            relationship: null,
-            dropdown: [],
-            category: [],
-            group: null,
-          },
+          required: false,
+          multiple: false,
+          format: E_FIELD_FORMAT.INTEGER,
+          showInFilter: false,
+          showInForm: false,
+          showInDetail: false,
+          showInList: false,
+          defaultValue: null,
+          locked: true,
+          relationship: null,
+          dropdown: [],
+          category: [],
+          group: null,
         },
       );
 
@@ -510,7 +518,7 @@ export function TableKanbanView({
     async (nextOrder: Array<string>) => {
       if (!fields.list) return;
       const byId = new Map(
-        fields.list.configuration.dropdown.map((opt) => [opt.id, opt] as const),
+        fields.list.dropdown.map((opt) => [opt.id, opt] as const),
       );
       const nextDropdown = nextOrder.map((id) => byId.get(id)).filter(Boolean);
       try {
@@ -521,10 +529,7 @@ export function TableKanbanView({
             .concat(fields.list._id),
           {
             ...fields.list,
-            configuration: {
-              ...fields.list.configuration,
-              dropdown: nextDropdown,
-            },
+            dropdown: nextDropdown,
           },
         );
         const updatedField = response.data;
@@ -610,7 +615,8 @@ export function TableKanbanView({
 
       const activeId = String(active.id);
       const sourceColumn = active.data.current?.columnId as string;
-      const overColumnId = over.data.current.columnId as string | undefined;
+      const overColumnId = over.data.current?.columnId;
+
       const targetColumn =
         overType === 'card'
           ? (overColumnId as string)
@@ -816,20 +822,17 @@ export function TableKanbanView({
 
           <KanbanAddListDialog
             open={isAddListOpen}
-            onOpenChange={setIsAddListOpen}
-            label={newListLabel}
-            onLabelChange={setNewListLabel}
-            color={newListColor}
-            onColorChange={setNewListColor}
-            isSubmitting={addListOption.status === 'pending'}
-            onSubmit={() => {
-              const label = newListLabel.trim();
-              if (!label || addListOption.status === 'pending') return;
-              addListOption.mutate({
-                label,
-                color: newListColor,
-              });
+            onOpenChange={(open) => {
+              setIsAddListOpen(open);
+              if (!open) {
+                addListForm.reset({
+                  label: '',
+                  color: '#a3a3a3',
+                });
+              }
             }}
+            form={addListForm}
+            isSubmitting={addListOption.status === 'pending'}
           />
 
           <KanbanCreateCardDialog

@@ -60,7 +60,7 @@ export default class TableFieldSendToTrashUseCase {
           HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
         );
 
-      if (field.configuration?.locked) {
+      if (field.locked) {
         return left(
           HTTPException.Forbidden(
             'Field is locked and cannot be trashed',
@@ -76,14 +76,11 @@ export default class TableFieldSendToTrashUseCase {
 
       const updatedField = await this.fieldRepository.update({
         _id: field._id,
-        configuration: {
-          ...field.configuration,
-          display: false,
-          form: false,
-          detail: false,
-          filter: false,
-          required: false,
-        },
+        showInList: false,
+        showInForm: false,
+        showInDetail: false,
+        showInFilter: false,
+        required: false,
         trashed: true,
         trashedAt: new Date(),
       });
@@ -98,9 +95,7 @@ export default class TableFieldSendToTrashUseCase {
         _id: table._id,
         fields: fields.flatMap((f) => f._id),
         _schema,
-        configuration: {
-          owner: table.configuration.owner._id,
-        },
+        owner: table.owner._id,
       });
 
       return right(updatedField);
@@ -127,7 +122,7 @@ export default class TableFieldSendToTrashUseCase {
     if (!field)
       return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
 
-    if (field.configuration?.locked) {
+    if (field.locked) {
       return left(
         HTTPException.Forbidden(
           'Field is locked and cannot be trashed',
@@ -143,14 +138,11 @@ export default class TableFieldSendToTrashUseCase {
 
     const updatedField = await this.fieldRepository.update({
       _id: field._id,
-      configuration: {
-        ...field.configuration,
-        display: false,
-        form: false,
-        detail: false,
-        filter: false,
-        required: false,
-      },
+      showInList: false,
+      showInForm: false,
+      showInDetail: false,
+      showInFilter: false,
+      required: false,
       trashed: true,
       trashedAt: new Date(),
     });
@@ -181,13 +173,8 @@ export default class TableFieldSendToTrashUseCase {
       _id: parentTable._id,
       _schema: parentSchema,
       groups: updatedGroups,
-      configuration: {
-        ...parentTable.configuration,
-        owner: parentTable.configuration.owner._id,
-        administrators: parentTable.configuration.administrators.flatMap(
-          (a) => a._id,
-        ),
-      },
+      owner: parentTable.owner._id,
+      administrators: parentTable.administrators.flatMap((a) => a._id),
     });
 
     return right(updatedField);

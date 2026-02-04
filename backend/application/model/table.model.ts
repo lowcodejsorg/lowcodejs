@@ -11,22 +11,6 @@ import {
 
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
-const FieldConfiguration = new mongoose.Schema(
-  {
-    orderList: {
-      type: [String],
-      default: [],
-    },
-    orderForm: {
-      type: [String],
-      default: [],
-    },
-  },
-  {
-    _id: false,
-  },
-);
-
 const GroupConfiguration = new mongoose.Schema(
   {
     slug: { type: String, required: true },
@@ -35,44 +19,6 @@ const GroupConfiguration = new mongoose.Schema(
     _schema: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
   { _id: true, timestamps: true },
-);
-
-const Configuration = new mongoose.Schema(
-  {
-    style: {
-      type: String,
-      enum: Object.values(E_TABLE_STYLE),
-      default: E_TABLE_STYLE.LIST,
-    },
-    visibility: {
-      type: String,
-      enum: Object.values(E_TABLE_VISIBILITY),
-      default: E_TABLE_VISIBILITY.RESTRICTED,
-    },
-    collaboration: {
-      type: String,
-      enum: Object.values(E_TABLE_COLLABORATION),
-      default: E_TABLE_COLLABORATION.RESTRICTED,
-    },
-    administrators: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-      },
-    ],
-    owner: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    fields: {
-      type: FieldConfiguration,
-      default: { orderList: [], orderForm: [] },
-    },
-  },
-  {
-    _id: false,
-  },
 );
 
 const Methods = new mongoose.Schema(
@@ -124,9 +70,39 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_TABLE_TYPE),
       default: E_TABLE_TYPE.TABLE,
     },
-    configuration: {
-      type: Configuration,
-      default: {},
+    style: {
+      type: String,
+      enum: Object.values(E_TABLE_STYLE),
+      default: E_TABLE_STYLE.LIST,
+    },
+    visibility: {
+      type: String,
+      enum: Object.values(E_TABLE_VISIBILITY),
+      default: E_TABLE_VISIBILITY.RESTRICTED,
+    },
+    collaboration: {
+      type: String,
+      enum: Object.values(E_TABLE_COLLABORATION),
+      default: E_TABLE_COLLABORATION.RESTRICTED,
+    },
+    administrators: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    fieldOrderList: {
+      type: [String],
+      default: [],
+    },
+    fieldOrderForm: {
+      type: [String],
+      default: [],
     },
     methods: {
       type: Methods,

@@ -142,7 +142,8 @@ function RouteComponent(): React.JSX.Element {
       await _create.mutateAsync({
         name: value.name.trim(),
         logo: value.logo,
-        configuration: value.configuration,
+        style: value.style,
+        visibility: value.visibility,
       });
     },
   });

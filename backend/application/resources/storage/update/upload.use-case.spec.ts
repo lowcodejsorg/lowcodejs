@@ -2,12 +2,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
-import StorageService from '@application/services/storage.service';
+import LocalStorageService from '@application/services/storage.service';
 
 import StorageUploadUseCase from './upload.use-case';
 
 let storageInMemoryRepository: StorageInMemoryRepository;
-let storageService: StorageService;
+let storageService: LocalStorageService;
 let sut: StorageUploadUseCase;
 
 describe('Storage Upload Use Case', () => {
@@ -15,14 +15,14 @@ describe('Storage Upload Use Case', () => {
     storageInMemoryRepository = new StorageInMemoryRepository();
     storageService = {
       upload: vi.fn().mockResolvedValue({
-        filename: 'random-name.jpg',
+        filename: 'random-name.webp',
         originalName: 'test.jpg',
-        url: '/uploads/random-name.jpg',
+        url: '/uploads/random-name.webp',
         size: 1024,
-        type: 'image/jpeg',
+        mimetype: 'image/webp',
       }),
       delete: vi.fn(),
-    } as unknown as StorageService;
+    } as unknown as LocalStorageService;
     sut = new StorageUploadUseCase(storageInMemoryRepository, storageService);
   });
 
@@ -36,7 +36,7 @@ describe('Storage Upload Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value).toHaveLength(1);
-      expect(result.value[0].filename).toBe('random-name.jpg');
+      expect(result.value[0].filename).toBe('random-name.webp');
     }
   });
 

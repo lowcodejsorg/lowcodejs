@@ -26,7 +26,7 @@ describe('E2E Storage Delete Controller', () => {
       const storage = await Storage.create({
         url: '/uploads/test.txt',
         filename: 'test.txt',
-        type: 'text/plain',
+        mimetype: 'text/plain',
         size: 100,
         originalName: 'test.txt',
       });
