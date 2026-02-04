@@ -1,4 +1,4 @@
-name: Deploy to VPS
+name: Deploy to VPS (Saneago)
 
 on:
   workflow_call:
@@ -41,6 +41,24 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Create deployment directory
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: mkdir -p /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}
+
+      - name: Copy docker-compose to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.production.yml"
+          target: "/home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}"
+
+
       - name: Copy storage files to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -64,31 +82,32 @@ jobs:
             cat > .env << EOF
             ENVIRONMENT=${{ inputs.branch }}
             NODE_ENV=production
+            API_HOST=api.admin-saneago.3ck.org
+            APP_HOST=admin-saneago.3ck.org
             PORT=3000
             DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             DB_USERNAME=${{ inputs.branch }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_NAME=${{ inputs.branch }}
-            # DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@${{ inputs.branch }}-lowcodejs-mongo-1:27017/${{ inputs.branch }}?authSource=admin
-            DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@mongo:27017/${{ inputs.branch }}?authSource=admin
-            APP_SERVER_URL=https://api.${{ inputs.branch }}.lowcodejs.org
-            APP_CLIENT_URL=https://${{ inputs.branch }}.lowcodejs.org
+            DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@${{ inputs.branch }}-lowcodejs-mongo-1:27017/${{ inputs.branch }}?authSource=admin
+            APP_SERVER_URL=https://api.admin-saneago.3ck.org
+            APP_CLIENT_URL=https://admin-saneago.3ck.org
             JWT_PRIVATE_KEY=${{ secrets.JWT_PRIVATE_KEY }}
             JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }}
             COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}
-            COOKIE_DOMAIN=${{ secrets.COOKIE_DOMAIN }}
+            COOKIE_DOMAIN=.3ck.org
             EMAIL_PROVIDER_PASSWORD=${{ secrets.EMAIL_PROVIDER_PASSWORD }}
             EMAIL_PROVIDER_USER=${{ secrets.EMAIL_PROVIDER_USER }}
             EMAIL_PROVIDER_HOST=${{ secrets.EMAIL_PROVIDER_HOST }}
             EMAIL_PROVIDER_PORT=${{ secrets.EMAIL_PROVIDER_PORT }}
-            VITE_API_BASE_URL=https://api.${{ inputs.branch }}.lowcodejs.org
+            VITE_API_BASE_URL=https://api.admin-saneago.3ck.org
             FILE_UPLOAD_MAX_SIZE=10485760
             FILE_UPLOAD_ACCEPTED=jpg;jpeg;png;pdf;doc;docx;xls;xlsx;txt;zip;rar
             FILE_UPLOAD_MAX_FILES_PER_UPLOAD=10
             LOCALE=pt-br
             PAGINATION_PER_PAGE=20
-            LOGO_SMALL_URL=https://api.${{ inputs.branch }}.lowcodejs.org/storage/small.png
-            LOGO_LARGE_URL=https://api.${{ inputs.branch }}.lowcodejs.org/storage/large.png
+            LOGO_SMALL_URL=https://api.admin-saneago.3ck.org/storage/small.png
+            LOGO_LARGE_URL=https://api.admin-saneago.3ck.org/storage/large.png
             EOF
 
             echo "Environment variables configured successfully. Deploying..."

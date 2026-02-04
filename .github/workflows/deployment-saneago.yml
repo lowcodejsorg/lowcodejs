@@ -1,0 +1,54 @@
+name: Build, Docker and Deploy to VPS (saneago)
+
+on:
+  push:
+    branches: [saneago]
+
+jobs:
+  test-backend:
+    uses: ./.github/workflows/deployment-test-backend.yml
+
+  build-backend:
+    needs: test-backend
+    uses: ./.github/workflows/deployment-build-backend.yml
+
+  build-frontend:
+    uses: ./.github/workflows/deployment-build-frontend.yml
+
+  docker-backend:
+    needs: build-backend
+    uses: ./.github/workflows/deployment-docker-backend.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  docker-frontend:
+    needs: build-frontend
+    uses: ./.github/workflows/deployment-docker-frontend.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+
+  deploy-to-vps:
+    needs: [docker-backend, docker-frontend]
+    uses: ./.github/workflows/deployment-deploy-saneago.yml
+    with:
+      branch: ${{ github.ref_name }}
+    secrets:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
+      VPS_USER: ${{ secrets.VPS_USER }}
+      VPS_SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      JWT_PRIVATE_KEY: ${{ secrets.JWT_PRIVATE_KEY }}
+      JWT_PUBLIC_KEY: ${{ secrets.JWT_PUBLIC_KEY }}
+      COOKIE_SECRET: ${{ secrets.COOKIE_SECRET }}
+      COOKIE_DOMAIN: ${{ secrets.COOKIE_DOMAIN }}
+      EMAIL_PROVIDER_PASSWORD: ${{ secrets.EMAIL_PROVIDER_PASSWORD }}
+      EMAIL_PROVIDER_USER: ${{ secrets.EMAIL_PROVIDER_USER }}
+      EMAIL_PROVIDER_HOST: ${{ secrets.EMAIL_PROVIDER_HOST }}
+      EMAIL_PROVIDER_PORT: ${{ secrets.EMAIL_PROVIDER_PORT }}
