@@ -466,17 +466,10 @@ export function FieldManagementList({
           required: field.configuration.required,
           multiple: field.configuration.multiple,
           filter:
-            visibilityKey === 'filter'
-              ? newValue
-              : field.configuration.filter,
-          form:
-            visibilityKey === 'form'
-              ? newValue
-              : field.configuration.form,
+            visibilityKey === 'filter' ? newValue : field.configuration.filter,
+          form: visibilityKey === 'form' ? newValue : field.configuration.form,
           detail:
-            visibilityKey === 'detail'
-              ? newValue
-              : field.configuration.detail,
+            visibilityKey === 'detail' ? newValue : field.configuration.detail,
           display:
             visibilityKey === 'display'
               ? newValue

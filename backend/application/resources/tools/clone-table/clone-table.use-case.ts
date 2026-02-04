@@ -381,17 +381,9 @@ if (progresso < 100 && notificado) {
       },
     });
 
-    const orderList = [
-      imageField._id,
-      titleField._id,
-      descriptionField._id,
-    ];
+    const orderList = [imageField._id, titleField._id, descriptionField._id];
 
-    const orderForm = [
-      titleField._id,
-      descriptionField._id,
-      imageField._id,
-    ];
+    const orderForm = [titleField._id, descriptionField._id, imageField._id];
 
     return {
       fields: createdFields,

@@ -142,9 +142,7 @@ function RouteComponent(): React.JSX.Element {
         <div className="inline-flex items-center space-x-2">
           {table.status === 'success' && (
             <SheetFilter
-              fields={table.data.fields.filter(
-                (f) => f.configuration.filter,
-              )}
+              fields={table.data.fields.filter((f) => f.configuration.filter)}
             />
           )}
           <TrashButton />

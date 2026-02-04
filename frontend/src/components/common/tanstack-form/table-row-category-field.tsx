@@ -66,11 +66,7 @@ export function TableRowCategoryField({
 
   const selectedLabel = React.useMemo(() => {
     const value = formField.state.value as unknown;
-    const values = Array.isArray(value)
-      ? value
-      : value
-        ? [String(value)]
-        : [];
+    const values = Array.isArray(value) ? value : value ? [String(value)] : [];
     const labels = values
       .map((id) => findCategoryLabel(id, categories))
       .filter(Boolean);
