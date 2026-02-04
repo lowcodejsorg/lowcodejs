@@ -76,6 +76,7 @@ export default class CloneTableUseCase {
         return await this.createDocumentTemplate(payload);
       }
 
+
       const baseTable = await this.tableRepository.findBy({
         _id: payload.baseTableId,
         exact: true,
@@ -272,17 +273,13 @@ if (progresso < 100 && notificado) {
       type: E_TABLE_TYPE.TABLE,
       logo: null,
       fields: fields.map((f) => f._id),
-      configuration: {
-        style: E_TABLE_STYLE.CARD,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        administrators: [],
-        owner: payload.ownerId,
-        fields: {
-          orderList,
-          orderForm,
-        },
-      },
+      style: E_TABLE_STYLE.CARD,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      administrators: [],
+      owner: payload.ownerId,
+      fieldOrderList: orderList,
+      fieldOrderForm: orderForm,
       methods: {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -309,7 +306,21 @@ if (progresso < 100 && notificado) {
       name: string;
       slug: string;
       type: IField['type'];
-      configuration: IField['configuration'];
+      required: boolean;
+      multiple: boolean;
+      format: IField['format'];
+      showInList: boolean;
+      showInForm: boolean;
+      showInDetail: boolean;
+      showInFilter: boolean;
+      defaultValue: IField['defaultValue'];
+      locked: boolean;
+      relationship: IField['relationship'];
+      dropdown: IField['dropdown'];
+      category: IField['category'];
+      group: IField['group'];
+      widthInForm: IField['widthInForm'];
+      widthInList: IField['widthInList'];
     }): Promise<IField> => {
       const field = await this.fieldRepository.create({
         ...payload,
@@ -322,63 +333,63 @@ if (progresso < 100 && notificado) {
       name: 'Título',
       slug: 'titulo',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      configuration: {
-        required: true,
-        multiple: false,
-        format: E_FIELD_FORMAT.ALPHA_NUMERIC,
-        display: true,
-        form: true,
-        detail: true,
-        filter: true,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: true,
+      multiple: false,
+      format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
     });
 
     const descriptionField = await createField({
       name: 'Descrição',
       slug: 'descricao',
       type: E_FIELD_TYPE.TEXT_LONG,
-      configuration: {
-        required: false,
-        multiple: false,
-        format: E_FIELD_FORMAT.PLAIN_TEXT,
-        display: false,
-        form: true,
-        detail: true,
-        filter: false,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.PLAIN_TEXT,
+      showInList: false,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 100,
+      widthInList: 50,
     });
 
     const imageField = await createField({
       name: 'Imagem',
       slug: 'imagem',
       type: E_FIELD_TYPE.FILE,
-      configuration: {
-        required: false,
-        multiple: false,
-        format: null,
-        display: true,
-        form: true,
-        detail: true,
-        filter: false,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: false,
+      multiple: false,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
     });
 
     const orderList = [imageField._id, titleField._id, descriptionField._id];
@@ -404,7 +415,21 @@ if (progresso < 100 && notificado) {
       name: string;
       slug: string;
       type: IField['type'];
-      configuration: IField['configuration'];
+      required: boolean;
+      multiple: boolean;
+      format: IField['format'];
+      showInList: boolean;
+      showInForm: boolean;
+      showInDetail: boolean;
+      showInFilter: boolean;
+      defaultValue: IField['defaultValue'];
+      locked: boolean;
+      relationship: IField['relationship'];
+      dropdown: IField['dropdown'];
+      category: IField['category'];
+      group: IField['group'];
+      widthInForm: IField['widthInForm'];
+      widthInList: IField['widthInList'];
     }): Promise<IField> => {
       const field = await this.fieldRepository.create({
         ...payload,
@@ -417,63 +442,63 @@ if (progresso < 100 && notificado) {
       name: 'Nota',
       slug: 'nota',
       type: E_FIELD_TYPE.EVALUATION,
-      configuration: {
-        required: false,
-        multiple: false,
-        format: null,
-        display: true,
-        form: true,
-        detail: true,
-        filter: true,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: false,
+      multiple: false,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
     });
 
     const priceField = await createField({
       name: 'Preço',
       slug: 'preco',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      configuration: {
-        required: false,
-        multiple: false,
-        format: E_FIELD_FORMAT.DECIMAL,
-        display: true,
-        form: true,
-        detail: true,
-        filter: true,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.DECIMAL,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
     });
 
     const categoriesField = await createField({
       name: 'Categorias',
       slug: 'categorias',
       type: E_FIELD_TYPE.CATEGORY,
-      configuration: {
-        required: false,
-        multiple: true,
-        format: null,
-        display: true,
-        form: true,
-        detail: true,
-        filter: true,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: false,
+      multiple: true,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 100,
+      widthInList: 100,
     });
 
     const orderList = [
@@ -518,17 +543,13 @@ if (progresso < 100 && notificado) {
       type: E_TABLE_TYPE.TABLE,
       logo: null,
       fields: fields.map((f) => f._id),
-      configuration: {
-        style: E_TABLE_STYLE.MOSAIC,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        administrators: [],
-        owner: payload.ownerId,
-        fields: {
-          orderList,
-          orderForm,
-        },
-      },
+      style: E_TABLE_STYLE.MOSAIC,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      administrators: [],
+      owner: payload.ownerId,
+      fieldOrderList: orderList,
+      fieldOrderForm: orderForm,
       methods: {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -573,17 +594,13 @@ if (progresso < 100 && notificado) {
       type: E_TABLE_TYPE.TABLE,
       logo: null,
       fields: fields.map((f) => f._id),
-      configuration: {
-        style: E_TABLE_STYLE.DOCUMENT,
-        visibility: E_TABLE_VISIBILITY.RESTRICTED,
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-        administrators: [],
-        owner: payload.ownerId,
-        fields: {
-          orderList,
-          orderForm,
-        },
-      },
+      style: E_TABLE_STYLE.DOCUMENT,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      administrators: [],
+      owner: payload.ownerId,
+      fieldOrderList: orderList,
+      fieldOrderForm: orderForm,
       methods: {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -610,7 +627,21 @@ if (progresso < 100 && notificado) {
       name: string;
       slug: string;
       type: IField['type'];
-      configuration: IField['configuration'];
+      required: boolean;
+      multiple: boolean;
+      format: IField['format'];
+      showInList: boolean;
+      showInForm: boolean;
+      showInDetail: boolean;
+      showInFilter: boolean;
+      defaultValue: IField['defaultValue'];
+      locked: boolean;
+      relationship: IField['relationship'];
+      dropdown: IField['dropdown'];
+      category: IField['category'];
+      group: IField['group'];
+      widthInForm: IField['widthInForm'];
+      widthInList: IField['widthInList'];
     }): Promise<IField> => {
       const field = await this.fieldRepository.create({
         ...payload,
@@ -623,63 +654,63 @@ if (progresso < 100 && notificado) {
       name: 'Indice',
       slug: 'indice',
       type: E_FIELD_TYPE.CATEGORY,
-      configuration: {
-        required: true,
-        multiple: false,
-        format: null,
-        display: true,
-        form: true,
-        detail: true,
-        filter: true,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: true,
+      multiple: false,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
     });
 
     const titleField = await createField({
       name: 'Título',
       slug: 'titulo',
       type: E_FIELD_TYPE.TEXT_SHORT,
-      configuration: {
-        required: true,
-        multiple: false,
-        format: E_FIELD_FORMAT.ALPHA_NUMERIC,
-        display: true,
-        form: true,
-        detail: true,
-        filter: true,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: true,
+      multiple: false,
+      format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
     });
 
     const textField = await createField({
       name: 'Texto',
       slug: 'texto',
       type: E_FIELD_TYPE.TEXT_LONG,
-      configuration: {
-        required: false,
-        multiple: false,
-        format: E_FIELD_FORMAT.RICH_TEXT,
-        display: false,
-        form: true,
-        detail: true,
-        filter: false,
-        defaultValue: null,
-        locked: false,
-        relationship: null,
-        dropdown: [],
-        category: [],
-        group: null,
-      },
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.RICH_TEXT,
+      showInList: false,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 100,
+      widthInList: 100,
     });
 
     const orderList = [indexField._id, titleField._id, textField._id];
