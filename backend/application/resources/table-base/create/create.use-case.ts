@@ -54,18 +54,13 @@ export default class TableCreateUseCase {
         slug,
         fields: [],
         type: E_TABLE_TYPE.TABLE,
-        configuration: {
-          owner: payload.owner,
-          administrators: [],
-          collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-          style: payload.configuration?.style ?? E_TABLE_STYLE.LIST,
-          visibility:
-            payload.configuration?.visibility ?? E_TABLE_VISIBILITY.RESTRICTED,
-          fields: {
-            orderForm: [],
-            orderList: [],
-          },
-        },
+        owner: payload.owner,
+        administrators: [],
+        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+        style: payload.style ?? E_TABLE_STYLE.LIST,
+        visibility: payload.visibility ?? E_TABLE_VISIBILITY.RESTRICTED,
+        fieldOrderForm: [],
+        fieldOrderList: [],
       });
 
       return right(created);

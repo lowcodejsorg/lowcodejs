@@ -67,7 +67,7 @@ export type IStorage = Merge<
   {
     url: string;
     filename: string;
-    type: string;
+    mimetype: string;
     size: number;
     originalName: string;
   }
@@ -160,21 +160,21 @@ export type IField = Merge<
     name: string;
     slug: string;
     type: ValueOf<typeof E_FIELD_TYPE>;
-    configuration: {
-      required: boolean;
-      multiple: boolean;
-      format: ValueOf<typeof E_FIELD_FORMAT> | null;
-      filter: boolean;
-      form: boolean;
-      detail: boolean;
-      display: boolean;
-      defaultValue: string | null;
-      locked?: boolean;
-      relationship: IFieldConfigurationRelationship | null;
-      dropdown: Array<IDropdown>;
-      category: Array<ICategory>;
-      group: IFieldConfigurationGroup | null;
-    };
+    required: boolean;
+    multiple: boolean;
+    format: ValueOf<typeof E_FIELD_FORMAT> | null;
+    showInFilter: boolean;
+    showInForm: boolean;
+    showInDetail: boolean;
+    showInList: boolean;
+    widthInForm: number | null;
+    widthInList: number | null;
+    defaultValue: string | null;
+    locked?: boolean;
+    relationship: IFieldConfigurationRelationship | null;
+    dropdown: Array<IDropdown>;
+    category: Array<ICategory>;
+    group: IFieldConfigurationGroup | null;
   }
 >;
 
@@ -194,18 +194,6 @@ export type IGroupConfiguration = {
   _schema: ITableSchema;
 };
 
-export type ITableConfiguration = {
-  style: ValueOf<typeof E_TABLE_STYLE>;
-  visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-  administrators: Array<IUser>;
-  owner: IUser;
-  fields: {
-    orderList: Array<string>;
-    orderForm: Array<string>;
-  };
-};
-
 export type ITableMethod = {
   onLoad: { code: string | null };
   beforeSave: { code: string | null };
@@ -222,7 +210,13 @@ export type ITable = Merge<
     slug: string;
     fields: Array<IField>;
     type: ValueOf<typeof E_TABLE_TYPE>;
-    configuration: ITableConfiguration;
+    style: ValueOf<typeof E_TABLE_STYLE>;
+    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
+    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
+    administrators: Array<IUser>;
+    owner: IUser;
+    fieldOrderList: Array<string>;
+    fieldOrderForm: Array<string>;
     methods: ITableMethod;
     groups: Array<IGroupConfiguration>;
   }

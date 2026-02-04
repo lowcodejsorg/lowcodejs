@@ -1,7 +1,8 @@
 import type { MultipartFile } from '@fastify/multipart';
 import { Service } from 'fastify-decorators';
-import { access, unlink, writeFile } from 'node:fs/promises';
+import { access, mkdir, unlink, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
+import sharp from 'sharp';
 
 import type { IStorage, Optional } from '@application/core/entity.core';
 import { Env } from '@start/env';
@@ -10,28 +11,67 @@ type Response = Optional<
   IStorage,
   '_id' | 'createdAt' | 'updatedAt' | 'trashedAt' | 'trashed'
 >;
-@Service()
-export default class StorageService {
-  private readonly storagePath = join(process.cwd(), '_storage');
 
+@Service()
+export default class LocalStorageService {
+  private readonly storagePath = join(process.cwd(), '_storage');
   private readonly baseUrl = Env.APP_SERVER_URL;
 
-  async upload(part: MultipartFile): Promise<Response> {
-    const name = Math.floor(Math.random() * 100000000)?.toString();
-    const ext = part.filename?.split('.').pop();
-    const filename = name.concat('.').concat(ext!);
+  private readonly IMAGE_MIMETYPES = [
+    'image/jpeg',
+    'image/png',
+    'image/gif',
+    'image/bmp',
+    'image/tiff',
+  ];
 
+  private isProcessableImage(mimetype: string): boolean {
+    return this.IMAGE_MIMETYPES.includes(mimetype);
+  }
+
+  async ensureStorageExists(): Promise<void> {
+    try {
+      await access(this.storagePath);
+    } catch {
+      await mkdir(this.storagePath, { recursive: true });
+    }
+  }
+
+  async upload(part: MultipartFile): Promise<Response> {
+    await this.ensureStorageExists();
+
+    const name = Math.floor(Math.random() * 100000000)?.toString();
+    const originalExt = part.filename?.split('.').pop();
+    const buffer = await part.toBuffer();
+
+    let finalBuffer: Buffer;
+    let finalExt: string;
+    let finalMimetype: string;
+
+    if (this.isProcessableImage(part.mimetype)) {
+      finalBuffer = await sharp(buffer)
+        .resize(1200, 1200, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+      finalExt = 'webp';
+      finalMimetype = 'image/webp';
+    } else {
+      finalBuffer = buffer;
+      finalExt = originalExt!;
+      finalMimetype = part.mimetype;
+    }
+
+    const filename = name.concat('.').concat(finalExt);
     const filePath = resolve(this.storagePath, filename);
 
-    const buffer = await part.toBuffer();
-    await writeFile(filePath, buffer);
+    await writeFile(filePath, finalBuffer);
 
     return {
       filename,
-      type: part.mimetype,
+      mimetype: finalMimetype,
       url: this.baseUrl.concat('/storage/').concat(filename),
       originalName: part.filename,
-      size: buffer.length ?? part.file.bytesRead,
+      size: finalBuffer.length,
     };
   }
 

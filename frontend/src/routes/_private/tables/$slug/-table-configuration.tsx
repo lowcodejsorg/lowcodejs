@@ -49,14 +49,14 @@ function FieldGroupSubMenu({
   const permission = useTablePermission(parentTable);
 
   // Busca grupo em groups da tabela pai
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+
   const group = (parentTable.groups ?? []).find(
-    (g) => g.slug === field.configuration.group?.slug,
+    (g) => g.slug === field.group?.slug,
   );
 
   const activeFields = group?.fields.filter((f) => !f.trashed) ?? [];
 
-  const groupSlug = field.configuration.group?.slug ?? field.slug;
+  const groupSlug = field.group?.slug ?? field.slug;
 
   return (
     <DropdownMenuSub>
@@ -93,7 +93,7 @@ function FieldGroupSubMenu({
               }}
             >
               <ArrowUpDownIcon className="size-4" />
-              <span>Gerenciar visibilidade</span>
+              <span>Gerenciar </span>
             </DropdownMenuItem>
           )}
 
@@ -217,8 +217,8 @@ export function TableConfigurationDropdown({
                           });
                         }}
                       >
-                        <ArrowUpDownIcon className="size-4" />
-                        <span>Gerenciar visibilidade</span>
+                        <Settings2Icon className="size-4" />
+                        <span>Gerenciar </span>
                       </DropdownMenuItem>
                       <DropdownMenuSeparator />
                     </>

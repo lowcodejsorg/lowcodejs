@@ -30,7 +30,7 @@ export function TableRowFieldGroupCell({
   tableSlug,
   table: tableProp,
 }: TableRowFieldGroupCellProps): React.JSX.Element {
-  const groupSlug = field.configuration.group?.slug;
+  const groupSlug = field.group?.slug;
 
   // Usa useReadTable como fallback quando table não é passada
   const tableQuery = useReadTable({ slug: tableSlug });

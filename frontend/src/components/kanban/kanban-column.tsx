@@ -33,7 +33,11 @@ export function KanbanColumn({
   editingColumnId: string | null;
   editingColumnLabel: string;
   editingColumnColor: string | null;
-  onEditStart: (option: { id: string; label: string }) => void;
+  onEditStart: (option: {
+    id: string;
+    label: string;
+    color?: string | null;
+  }) => void;
   onEditChange: (value: string) => void;
   onEditColorChange: (value: string) => void;
   onEditCancel: () => void;

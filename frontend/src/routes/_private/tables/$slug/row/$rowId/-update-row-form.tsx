@@ -16,7 +16,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import type { IRow, ITable } from '@/lib/interfaces';
+import type { IHTTPExeptionError, IRow, ITable } from '@/lib/interfaces';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
 
 interface UpdateRowFormProps {
@@ -47,13 +47,37 @@ export function UpdateRowForm({
   };
 
   const fields = React.useMemo(() => {
-    const order = table.configuration.fields.orderList;
+    const order = table.fieldOrderList;
     const orderedFields = table.fields
       .filter((f) => !f.trashed)
       .sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
 
     return orderedFields;
-  }, [table.fields, table.configuration.fields.orderList]);
+  }, [table.fields, table.fieldOrderList]);
+
+  const form = useAppForm({
+    defaultValues: buildUpdateRowDefaultValues(data, fields),
+    onSubmit: async ({ value }) => {
+      if (_update.status === 'pending') return;
+
+      const payload = buildRowPayload(value, fields);
+
+      await _update.mutateAsync({
+        slug,
+        rowId,
+        data: payload,
+      });
+    },
+  });
+
+  function setFieldError(field: string, message: string): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
 
   const _update = useUpdateTableRow({
     onSuccess() {
@@ -69,7 +93,9 @@ export function UpdateRowForm({
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
+        const errorData = error.response?.data as IHTTPExeptionError<
+          Record<string, string>
+        >;
 
         if (
           errorData?.code === 400 &&
@@ -81,6 +107,16 @@ export function UpdateRowForm({
             descriptionClassName: '!text-white',
             closeButton: true,
           });
+          return;
+        }
+
+        if (
+          errorData?.code === 400 &&
+          errorData?.cause === 'INVALID_PAYLOAD_FORMAT'
+        ) {
+          for (const [field, message] of Object.entries(errorData.errors)) {
+            setFieldError(field, message);
+          }
           return;
         }
 
@@ -172,21 +208,6 @@ export function UpdateRowForm({
         });
       }
       console.error(error);
-    },
-  });
-
-  const form = useAppForm({
-    defaultValues: buildUpdateRowDefaultValues(data, fields),
-    onSubmit: async ({ value }) => {
-      if (_update.status === 'pending') return;
-
-      const payload = buildRowPayload(value, fields);
-
-      await _update.mutateAsync({
-        slug,
-        rowId,
-        data: payload,
-      });
     },
   });
 

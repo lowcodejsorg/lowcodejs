@@ -27,13 +27,29 @@ interface TableGridViewProps {
 }
 
 function HeaderFilter(field: IField): boolean {
-  return field.configuration.display && !field.trashed;
+  return field.showInList && !field.trashed;
 }
 
 function HeaderSorter(order: Array<string>) {
   return function (a: IField, b: IField): number {
     return order.indexOf(a._id) - order.indexOf(b._id);
   };
+}
+
+// Helper to convert width percentage to grid column span
+function getWidthClass(width: number | null | undefined): string {
+  switch (width) {
+    case 25:
+      return 'col-span-1';
+    case 50:
+      return 'col-span-2';
+    case 75:
+      return 'col-span-3';
+    case 100:
+      return 'col-span-4';
+    default:
+      return 'col-span-2'; // default 50%
+  }
 }
 
 interface RenderGridCellProps {
@@ -184,15 +200,21 @@ export function TableGridView({
             key={row._id}
             className="overflow-hidden p-0"
           >
-            <CardContent className="p-3 space-y-3">
-              {filteredHeaders.map((field) => (
-                <RenderGridCell
-                  key={field._id}
-                  field={field}
-                  row={row}
-                  tableSlug={slug}
-                />
-              ))}
+            <CardContent className="p-3">
+              <div className="grid grid-cols-4 gap-3">
+                {filteredHeaders.map((field) => (
+                  <div
+                    key={field._id}
+                    className={getWidthClass(field.widthInList)}
+                  >
+                    <RenderGridCell
+                      field={field}
+                      row={row}
+                      tableSlug={slug}
+                    />
+                  </div>
+                ))}
+              </div>
             </CardContent>
             <CardFooter className="inline-flex justify-end p-1">
               <Button

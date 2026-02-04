@@ -12,18 +12,6 @@ import type {
   ValueOf,
 } from '@application/core/entity.core';
 
-export type TableConfigurationPayload = {
-  style?: ValueOf<typeof E_TABLE_STYLE>;
-  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
-  administrators?: string[];
-  owner: string;
-  fields?: {
-    orderList: string[];
-    orderForm: string[];
-  };
-};
-
 export type TableCreatePayload = Merge<
   Pick<ITable, 'name' | 'slug'>,
   {
@@ -32,7 +20,13 @@ export type TableCreatePayload = Merge<
     logo?: string | null;
     fields?: string[];
     type?: ValueOf<typeof E_TABLE_TYPE>;
-    configuration: TableConfigurationPayload;
+    style?: ValueOf<typeof E_TABLE_STYLE>;
+    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
+    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
+    administrators?: string[];
+    owner: string;
+    fieldOrderList?: string[];
+    fieldOrderForm?: string[];
     methods?: ITableMethod;
     groups?: IGroupConfiguration[];
   }
@@ -40,7 +34,8 @@ export type TableCreatePayload = Merge<
 
 export type TableUpdatePayload = Merge<
   Pick<ITable, '_id'>,
-  Partial<TableCreatePayload> & {
+  Partial<Omit<TableCreatePayload, 'owner'>> & {
+    owner?: string;
     trashed?: boolean;
     trashedAt?: Date | null;
     groups?: IGroupConfiguration[];
@@ -65,7 +60,11 @@ export type TableQueryPayload = {
 export type TableUpdateManyPayload = {
   _ids: string[];
   type?: ValueOf<typeof E_TABLE_TYPE>;
-  data: Partial<TableConfigurationPayload>;
+  data: {
+    style?: ValueOf<typeof E_TABLE_STYLE>;
+    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
+    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
+  };
 };
 
 export abstract class TableContractRepository {

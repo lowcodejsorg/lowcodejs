@@ -2,12 +2,7 @@ import z from 'zod';
 
 import { Merge } from '@application/core/entity.core';
 
-import { TableConfigurationSchema } from '../table-base.schema';
-
-const TableCreateConfigurationSchema = TableConfigurationSchema.pick({
-  style: true,
-  visibility: true,
-});
+import { TableStyleSchema, TableVisibilitySchema } from '../table-base.schema';
 
 export const TableCreateBodyValidator = z.object({
   name: z
@@ -20,7 +15,8 @@ export const TableCreateBodyValidator = z.object({
       'Nome pode conter apenas letras, números, espaços, hífen, underscore e ç',
     ),
   logo: z.string().trim().nullable().optional(),
-  configuration: TableCreateConfigurationSchema.optional(),
+  style: TableStyleSchema.optional(),
+  visibility: TableVisibilitySchema.optional(),
 });
 
 export type TableCreatePayload = Merge<

@@ -140,10 +140,73 @@ export const TablePaginatedSchema: FastifySchema = {
                       ],
                       description: 'Field type',
                     },
-                    configuration: {
+                    required: {
+                      type: 'boolean',
+                      description: 'Is field required',
+                    },
+                    multiple: {
+                      type: 'boolean',
+                      description: 'Allows multiple values',
+                    },
+                    format: {
+                      type: 'string',
+                      nullable: true,
+                      description: 'Field format validation',
+                    },
+                    showInList: {
+                      type: 'boolean',
+                      description: 'Show in listings',
+                    },
+                    showInForm: {
+                      type: 'boolean',
+                      description: 'Show in form view',
+                    },
+                    showInDetail: {
+                      type: 'boolean',
+                      description: 'Show in detail view',
+                    },
+                    showInFilter: {
+                      type: 'boolean',
+                      description: 'Allow filtering',
+                    },
+                    widthInForm: {
+                      type: 'number',
+                      nullable: true,
+                      description: 'Field width percentage in forms',
+                    },
+                    widthInList: {
+                      type: 'number',
+                      nullable: true,
+                      description: 'Field width percentage in list/grid views',
+                    },
+                    locked: {
+                      type: 'boolean',
+                      description: 'Field is locked and cannot be modified',
+                    },
+                    defaultValue: {
+                      type: 'string',
+                      nullable: true,
+                      description: 'Default field value',
+                    },
+                    relationship: {
                       type: 'object',
-                      description: 'Field configuration',
-                      additionalProperties: true,
+                      nullable: true,
+                      description: 'Relationship configuration',
+                    },
+                    dropdown: {
+                      type: 'array',
+                      nullable: true,
+                      description: 'Dropdown options',
+                    },
+                    category: {
+                      type: 'array',
+                      nullable: true,
+                      description: 'Category options',
+                    },
+                    group: {
+                      type: 'object',
+                      nullable: true,
+                      description: 'Field group configuration',
                     },
                     trashed: {
                       type: 'boolean',
@@ -160,70 +223,59 @@ export const TablePaginatedSchema: FastifySchema = {
                   },
                 },
               },
-              configuration: {
-                type: 'object',
-                description: 'Table configuration settings',
-                properties: {
-                  style: {
-                    type: 'string',
-                    enum: [
-                      'GALLERY',
-                      'LIST',
-                      'DOCUMENT',
-                      'CARD',
-                      'MOSAIC',
-                      'KANBAN',
-                    ],
-                    description: 'Display style',
-                  },
-                  visibility: {
-                    type: 'string',
-                    enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-                    description: 'Visibility setting',
-                  },
-                  collaboration: {
-                    type: 'string',
-                    enum: ['OPEN', 'RESTRICTED'],
-                    description: 'Collaboration setting',
-                  },
-                  administrators: {
-                    type: 'array',
-                    description: 'Administrator users (populated)',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        _id: { type: 'string', description: 'User ID' },
-                        name: {
-                          type: 'string',
-                          description: 'User name',
-                        },
-                      },
-                    },
-                  },
-                  owner: {
-                    type: 'object',
-                    description: 'Table owner (populated)',
-                    properties: {
-                      _id: { type: 'string', description: 'User ID' },
-                      name: { type: 'string', description: 'User name' },
-                    },
-                  },
-                  fields: {
-                    type: 'object',
-                    properties: {
-                      orderList: {
-                        type: 'array',
-                        items: { type: 'string' },
-                        description: 'Field order for list view',
-                      },
-                      orderForm: {
-                        type: 'array',
-                        items: { type: 'string' },
-                        description: 'Field order for form view',
-                      },
+              style: {
+                type: 'string',
+                enum: [
+                  'GALLERY',
+                  'LIST',
+                  'DOCUMENT',
+                  'CARD',
+                  'MOSAIC',
+                  'KANBAN',
+                ],
+                description: 'Display style',
+              },
+              visibility: {
+                type: 'string',
+                enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
+                description: 'Visibility setting',
+              },
+              collaboration: {
+                type: 'string',
+                enum: ['OPEN', 'RESTRICTED'],
+                description: 'Collaboration setting',
+              },
+              administrators: {
+                type: 'array',
+                description: 'Administrator users (populated)',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string', description: 'User ID' },
+                    name: {
+                      type: 'string',
+                      description: 'User name',
                     },
                   },
                 },
+              },
+              owner: {
+                type: 'object',
+                description: 'Table owner (populated)',
+                properties: {
+                  _id: { type: 'string', description: 'User ID' },
+                  name: { type: 'string', description: 'User name' },
+                },
+              },
+              fieldOrderList: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Field order for list view',
+              },
+              fieldOrderForm: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Field order for form view',
               },
               type: {
                 type: 'string',
@@ -284,10 +336,21 @@ export const TablePaginatedSchema: FastifySchema = {
                           name: { type: 'string' },
                           slug: { type: 'string' },
                           type: { type: 'string' },
-                          configuration: {
-                            type: 'object',
-                            additionalProperties: true,
-                          },
+                          required: { type: 'boolean' },
+                          multiple: { type: 'boolean' },
+                          format: { type: 'string', nullable: true },
+                          showInList: { type: 'boolean' },
+                          showInForm: { type: 'boolean' },
+                          showInDetail: { type: 'boolean' },
+                          showInFilter: { type: 'boolean' },
+                          widthInForm: { type: 'number', nullable: true },
+                          widthInList: { type: 'number', nullable: true },
+                          locked: { type: 'boolean' },
+                          defaultValue: { type: 'string', nullable: true },
+                          relationship: { type: 'object', nullable: true },
+                          dropdown: { type: 'array', nullable: true },
+                          category: { type: 'array', nullable: true },
+                          group: { type: 'object', nullable: true },
                           trashed: { type: 'boolean' },
                           trashedAt: {
                             type: 'string',

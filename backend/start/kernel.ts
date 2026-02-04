@@ -106,7 +106,11 @@ kernel.register(jwt, {
   },
 });
 
-kernel.register(multipart, {});
+kernel.register(multipart, {
+  limits: {
+    fileSize: 5 * 1024 * 1024, // 5mb
+  },
+});
 
 kernel.register(_static, {
   root: join(process.cwd(), '_storage'),

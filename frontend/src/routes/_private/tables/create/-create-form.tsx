@@ -11,40 +11,34 @@ export const TableCreateSchema = z.object({
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
-  configuration: z.object({
-    style: z.enum([
-      E_TABLE_STYLE.LIST,
-      E_TABLE_STYLE.GALLERY,
-      E_TABLE_STYLE.DOCUMENT,
-    ]),
-    visibility: z.enum([
-      E_TABLE_VISIBILITY.PUBLIC,
-      E_TABLE_VISIBILITY.RESTRICTED,
-      E_TABLE_VISIBILITY.OPEN,
-      E_TABLE_VISIBILITY.FORM,
-      E_TABLE_VISIBILITY.PRIVATE,
-    ]),
-  }),
+  style: z.enum([
+    E_TABLE_STYLE.LIST,
+    E_TABLE_STYLE.GALLERY,
+    E_TABLE_STYLE.DOCUMENT,
+  ]),
+  visibility: z.enum([
+    E_TABLE_VISIBILITY.PUBLIC,
+    E_TABLE_VISIBILITY.RESTRICTED,
+    E_TABLE_VISIBILITY.OPEN,
+    E_TABLE_VISIBILITY.FORM,
+    E_TABLE_VISIBILITY.PRIVATE,
+  ]),
 });
 
 export type TableCreateFormValues = {
   name: string;
   logo: string | null;
   logoFile: Array<File>;
-  configuration: {
-    style: (typeof E_TABLE_STYLE)[keyof typeof E_TABLE_STYLE];
-    visibility: (typeof E_TABLE_VISIBILITY)[keyof typeof E_TABLE_VISIBILITY];
-  };
+  style: (typeof E_TABLE_STYLE)[keyof typeof E_TABLE_STYLE];
+  visibility: (typeof E_TABLE_VISIBILITY)[keyof typeof E_TABLE_VISIBILITY];
 };
 
 export const tableCreateFormDefaultValues: TableCreateFormValues = {
   name: '',
   logo: null,
   logoFile: [],
-  configuration: {
-    style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  },
+  style: E_TABLE_STYLE.LIST,
+  visibility: E_TABLE_VISIBILITY.RESTRICTED,
 };
 
 export const CreateTableFormFields = withForm({
@@ -108,7 +102,7 @@ export const CreateTableFormFields = withForm({
         </form.AppField>
 
         {/* Campo Layout de Visualização */}
-        <form.AppField name="configuration.style">
+        <form.AppField name="style">
           {(field) => (
             <field.TableStyleSelectField
               label="Layout de visualização"
@@ -119,7 +113,7 @@ export const CreateTableFormFields = withForm({
         </form.AppField>
 
         {/* Campo Visibilidade */}
-        <form.AppField name="configuration.visibility">
+        <form.AppField name="visibility">
           {(field) => (
             <field.TableVisibilitySelectField
               label="Visibilidade"

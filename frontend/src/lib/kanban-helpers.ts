@@ -193,7 +193,7 @@ export function buildDefaultValuesFromRow(
         break;
       }
       case E_FIELD_TYPE.DROPDOWN: {
-        if (field.configuration.multiple) {
+        if (field.multiple) {
           defaults[field.slug] = Array.isArray(value)
             ? value
             : value

@@ -61,15 +61,13 @@ export function useTablePermission(
   const isOwner = useMemo(() => {
     if (!table || !userId) return false;
     const ownerId =
-      typeof table.configuration.owner === 'string'
-        ? table.configuration.owner
-        : table.configuration.owner._id;
+      typeof table.owner === 'string' ? table.owner : table.owner._id;
     return ownerId === userId;
   }, [table, userId]);
 
   const isAdmin = useMemo(() => {
     if (!table || !userId) return false;
-    return table.configuration.administrators.some((admin) => {
+    return table.administrators.some((admin) => {
       const adminId = typeof admin === 'string' ? admin : admin._id;
       return adminId === userId;
     });
@@ -98,8 +96,7 @@ export function useTablePermission(
 
       // Usuário não logado
       if (!userId) {
-        const visibility =
-          table?.configuration.visibility || E_TABLE_VISIBILITY.RESTRICTED;
+        const visibility = table?.visibility || E_TABLE_VISIBILITY.RESTRICTED;
         // Visitante pode ver tabelas públicas
         if (
           visibility === E_TABLE_VISIBILITY.PUBLIC &&
@@ -130,8 +127,7 @@ export function useTablePermission(
       }
 
       // Aplicar regras de visibilidade
-      const visibility =
-        table?.configuration.visibility || E_TABLE_VISIBILITY.RESTRICTED;
+      const visibility = table?.visibility || E_TABLE_VISIBILITY.RESTRICTED;
 
       switch (visibility) {
         case E_TABLE_VISIBILITY.PRIVATE:

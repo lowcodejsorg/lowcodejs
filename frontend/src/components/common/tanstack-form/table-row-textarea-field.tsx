@@ -14,8 +14,8 @@ export function TableRowTextareaField({
 }: TableRowTextareaFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
 
   return (
     <Field data-invalid={isInvalid}>

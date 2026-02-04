@@ -76,18 +76,13 @@ export function TableStyleViewDropdown({
       ...table.data,
       slug,
       fields: table.data.fields.map((f) => f._id),
-      configuration: {
-        ...table.data.configuration,
-        style,
-        administrators: table.data.configuration.administrators.flatMap(
-          (a) => a._id,
-        ),
-      },
+      style,
+      administrators: table.data.administrators.flatMap((a) => a._id),
       logo: table.data.logo?._id ?? null,
     } as any);
   };
 
-  const currentStyle = table.data?.configuration.style ?? E_TABLE_STYLE.LIST;
+  const currentStyle = table.data?.style ?? E_TABLE_STYLE.LIST;
 
   const isDisabled =
     (table.status === 'success' && table.data.fields.length === 0) ||

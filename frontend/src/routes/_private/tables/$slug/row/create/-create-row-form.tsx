@@ -13,7 +13,7 @@ import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { ITable } from '@/lib/interfaces';
+import type { IHTTPExeptionError, ITable } from '@/lib/interfaces';
 import { buildCreateRowDefaultValues, buildRowPayload } from '@/lib/table';
 
 interface CreateRowFormProps {
@@ -36,6 +36,24 @@ export function CreateRowForm({
     return table.fields.filter((f) => !f.trashed);
   }, [table.fields]);
 
+  const form = useAppForm({
+    defaultValues: buildCreateRowDefaultValues(fields),
+    onSubmit: async ({ value }) => {
+      if (_create.status === 'pending') return;
+      const _data = buildRowPayload(value, fields);
+      await _create.mutateAsync({ slug: table.slug, data: _data });
+    },
+  });
+
+  function setFieldError(field: string, message: string): void {
+    form.setFieldMeta(field, (prev) => ({
+      ...prev,
+      isTouched: true,
+      errors: [{ message }],
+      errorMap: { onSubmit: { message } },
+    }));
+  }
+
   const _create = useCreateTableRow({
     onSuccess() {
       toast('Registro criado', {
@@ -57,7 +75,9 @@ export function CreateRowForm({
     },
     onError(error) {
       if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
+        const errorData = error.response?.data as IHTTPExeptionError<
+          Record<string, string>
+        >;
 
         if (
           errorData?.code === 400 &&
@@ -69,6 +89,16 @@ export function CreateRowForm({
             descriptionClassName: '!text-white',
             closeButton: true,
           });
+          return;
+        }
+
+        if (
+          errorData?.code === 400 &&
+          errorData?.cause === 'INVALID_PAYLOAD_FORMAT'
+        ) {
+          for (const [field, message] of Object.entries(errorData.errors)) {
+            setFieldError(field, message);
+          }
           return;
         }
 
@@ -167,15 +197,6 @@ export function CreateRowForm({
     },
   });
 
-  const form = useAppForm({
-    defaultValues: buildCreateRowDefaultValues(fields),
-    onSubmit: async ({ value }) => {
-      if (_create.status === 'pending') return;
-      const _data = buildRowPayload(value, fields);
-      await _create.mutateAsync({ slug: table.slug, data: _data });
-    },
-  });
-
   const [prefillApplied, setPrefillApplied] = React.useState(false);
 
   React.useEffect(() => {
@@ -189,9 +210,7 @@ export function CreateRowForm({
 
     if (!targetField) return;
 
-    const value = targetField.configuration.multiple
-      ? [categoryId]
-      : categoryId;
+    const value = targetField.multiple ? [categoryId] : categoryId;
 
     form.setFieldValue(categorySlug, value);
     setPrefillApplied(true);

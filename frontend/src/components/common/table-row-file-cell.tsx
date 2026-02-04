@@ -26,7 +26,7 @@ export function TableRowFileCell({
   return (
     <ul className={cn('space-y-1', isGallery && 'grid grid-cols-4 gap-1')}>
       {values.map((value) => {
-        const isImage = value.type.includes('image');
+        const isImage = value.mimetype.includes('image');
 
         if ((isGallery || isCardOrMosaic) && isImage) {
           return (

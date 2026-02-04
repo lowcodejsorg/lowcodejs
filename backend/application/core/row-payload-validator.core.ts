@@ -27,10 +27,6 @@ const FORMAT_VALIDATORS: Record<string, { regex: RegExp; message: string }> = {
     regex: /^-?\d+(\.\d+)?$/,
     message: 'Deve ser um número decimal',
   },
-  [E_FIELD_FORMAT.ALPHA_NUMERIC]: {
-    regex: /^[a-zA-Z0-9\s]*$/,
-    message: 'Deve ser alfanumérico',
-  },
 };
 
 function isValidObjectId(value: unknown): boolean {
@@ -61,8 +57,8 @@ function validateFieldValue(
   field: IField,
   groups?: IGroupConfiguration[],
 ): string | null {
-  const { type, configuration } = field;
-  const isRequired = configuration?.required ?? false;
+  const { type } = field;
+  const isRequired = field.required ?? false;
 
   // Check required
   if (value === null || value === undefined || value === '') {
@@ -77,7 +73,7 @@ function validateFieldValue(
       if (typeof value !== 'string') {
         return 'Deve ser um texto';
       }
-      const formatError = validateFormat(value, configuration?.format ?? null);
+      const formatError = validateFormat(value, field.format ?? null);
       if (formatError) return formatError;
       return null;
     }
@@ -140,9 +136,7 @@ function validateFieldValue(
       }
 
       // Find the group configuration
-      const groupConfig = groups?.find(
-        (g) => g.slug === configuration?.group?.slug,
-      );
+      const groupConfig = groups?.find((g) => g.slug === field.group?.slug);
       if (!groupConfig) {
         return null; // No group config, skip validation
       }

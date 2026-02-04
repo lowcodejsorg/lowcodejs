@@ -45,6 +45,8 @@ export default [
       // A regra converte imports de classes para 'import type', removendo
       // a referência no runtime e quebrando o reflect-metadata
       '@typescript-eslint/consistent-type-imports': 'off',
+      // Permite uso de ?. e ?? mesmo quando TypeScript acha desnecessário
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
     settings: {
       'import/resolver': {

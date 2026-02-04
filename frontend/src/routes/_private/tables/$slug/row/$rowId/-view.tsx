@@ -116,15 +116,17 @@ export function RowView({
 
   return (
     <section className="space-y-4 p-2">
-      {fields.map((field) => (
-        <div
-          key={field._id}
-          className="space-y-1"
-        >
-          <p className="text-sm font-medium">{field.name}</p>
-          {renderFieldValue(field)}
-        </div>
-      ))}
+      {fields
+        .filter((f) => f.showInDetail)
+        .map((field) => (
+          <div
+            key={field._id}
+            className="space-y-1"
+          >
+            <p className="text-sm font-medium">{field.name}</p>
+            {renderFieldValue(field)}
+          </div>
+        ))}
 
       {/* Informações do registro */}
       {data.trashed && (

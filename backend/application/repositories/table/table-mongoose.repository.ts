@@ -18,8 +18,8 @@ export default class TableMongooseRepository implements TableContractRepository 
   private readonly populateOptions = [
     { path: 'logo' },
     { path: 'fields' },
-    { path: 'configuration.owner' },
-    { path: 'configuration.administrators' },
+    { path: 'owner' },
+    { path: 'administrators' },
     { path: 'groups.fields' },
   ];
 
@@ -39,7 +39,7 @@ export default class TableMongooseRepository implements TableContractRepository 
     }
 
     if (payload?.type) where.type = payload.type;
-    if (payload?.owner) where['configuration.owner'] = payload.owner;
+    if (payload?.owner) where['owner'] = payload.owner;
 
     if (payload?.search) {
       where.name = { $regex: normalize(payload.search), $options: 'i' };
@@ -128,11 +128,9 @@ export default class TableMongooseRepository implements TableContractRepository 
     if (type) where.type = type;
 
     const updateData: Record<string, unknown> = {};
-    if (data.visibility)
-      updateData['configuration.visibility'] = data.visibility;
-    if (data.style) updateData['configuration.style'] = data.style;
-    if (data.collaboration)
-      updateData['configuration.collaboration'] = data.collaboration;
+    if (data.visibility) updateData['visibility'] = data.visibility;
+    if (data.style) updateData['style'] = data.style;
+    if (data.collaboration) updateData['collaboration'] = data.collaboration;
 
     await Model.updateMany(where, { $set: updateData });
   }

@@ -24,16 +24,12 @@ describe('Clone Table Use Case', () => {
       name: 'Tabela Original',
       slug: 'tabela-original',
       type: 'TABLE',
-      configuration: {
-        owner: 'owner-id',
-        visibility: 'RESTRICTED',
-        collaboration: 'RESTRICTED',
-        style: 'LIST',
-        fields: {
-          orderList: [],
-          orderForm: [],
-        },
-      },
+      owner: 'owner-id',
+      visibility: 'RESTRICTED',
+      collaboration: 'RESTRICTED',
+      style: 'LIST',
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     const result = await sut.execute({
@@ -87,16 +83,12 @@ describe('Clone Table Use Case', () => {
       name: 'Tabela Original',
       slug: 'tabela-original',
       type: 'TABLE',
-      configuration: {
-        owner: 'old-owner-id',
-        visibility: 'RESTRICTED',
-        collaboration: 'RESTRICTED',
-        style: 'LIST',
-        fields: {
-          orderList: [],
-          orderForm: [],
-        },
-      },
+      owner: 'old-owner-id',
+      visibility: 'RESTRICTED',
+      collaboration: 'RESTRICTED',
+      style: 'LIST',
+      fieldOrderList: [],
+      fieldOrderForm: [],
     });
 
     const result = await sut.execute({
@@ -107,7 +99,7 @@ describe('Clone Table Use Case', () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.table.configuration.owner).toEqual({
+      expect(result.value.table.owner).toEqual({
         _id: 'new-owner-id',
       });
     }

@@ -33,24 +33,19 @@ export default class TableInMemoryRepository implements TableContractRepository 
         (f) => (typeof f === 'object' ? f : { _id: f }) as IField,
       ),
       type: payload.type ?? ('TABLE' as typeof E_TABLE_TYPE.TABLE),
-      configuration: {
-        style:
-          payload.configuration.style ?? ('LIST' as typeof E_TABLE_STYLE.LIST),
-        visibility:
-          payload.configuration.visibility ??
-          ('RESTRICTED' as typeof E_TABLE_VISIBILITY.RESTRICTED),
-        collaboration:
-          payload.configuration.collaboration ??
-          ('RESTRICTED' as typeof E_TABLE_COLLABORATION.RESTRICTED),
-        administrators: (payload.configuration.administrators ?? []).map(
-          (a) => ({ _id: a }) as IUser,
-        ),
-        owner: { _id: payload.configuration.owner } as IUser,
-        fields: payload.configuration.fields ?? {
-          orderList: [],
-          orderForm: [],
-        },
-      },
+      style: payload.style ?? ('LIST' as typeof E_TABLE_STYLE.LIST),
+      visibility:
+        payload.visibility ??
+        ('RESTRICTED' as typeof E_TABLE_VISIBILITY.RESTRICTED),
+      collaboration:
+        payload.collaboration ??
+        ('RESTRICTED' as typeof E_TABLE_COLLABORATION.RESTRICTED),
+      administrators: (payload.administrators ?? []).map(
+        (a) => ({ _id: a }) as IUser,
+      ),
+      owner: { _id: payload.owner } as IUser,
+      fieldOrderList: payload.fieldOrderList ?? [],
+      fieldOrderForm: payload.fieldOrderForm ?? [],
       methods: payload.methods ?? {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -106,7 +101,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
 
     if (payload?.owner) {
       filtered = filtered.filter(
-        (t) => (t.configuration.owner as IUser)?._id === payload.owner,
+        (t) => (t.owner as IUser)?._id === payload.owner,
       );
     }
 
@@ -131,30 +126,28 @@ export default class TableInMemoryRepository implements TableContractRepository 
     if (payload.fields !== undefined) {
       table.fields = payload.fields.map((f) => ({ _id: f }) as IField);
     }
-    if (payload.configuration) {
-      if (payload.configuration.administrators !== undefined) {
-        table.configuration.administrators =
-          payload.configuration.administrators.map(
-            (a) => ({ _id: a }) as IUser,
-          );
-      }
-      if (payload.configuration.owner !== undefined) {
-        table.configuration.owner = {
-          _id: payload.configuration.owner,
-        } as IUser;
-      }
-      if (payload.configuration.style !== undefined) {
-        table.configuration.style = payload.configuration.style;
-      }
-      if (payload.configuration.visibility !== undefined) {
-        table.configuration.visibility = payload.configuration.visibility;
-      }
-      if (payload.configuration.collaboration !== undefined) {
-        table.configuration.collaboration = payload.configuration.collaboration;
-      }
-      if (payload.configuration.fields !== undefined) {
-        table.configuration.fields = payload.configuration.fields;
-      }
+    if (payload.administrators !== undefined) {
+      table.administrators = payload.administrators.map(
+        (a) => ({ _id: a }) as IUser,
+      );
+    }
+    if (payload.owner !== undefined) {
+      table.owner = { _id: payload.owner } as IUser;
+    }
+    if (payload.style !== undefined) {
+      table.style = payload.style;
+    }
+    if (payload.visibility !== undefined) {
+      table.visibility = payload.visibility;
+    }
+    if (payload.collaboration !== undefined) {
+      table.collaboration = payload.collaboration;
+    }
+    if (payload.fieldOrderList !== undefined) {
+      table.fieldOrderList = payload.fieldOrderList;
+    }
+    if (payload.fieldOrderForm !== undefined) {
+      table.fieldOrderForm = payload.fieldOrderForm;
     }
     if (payload.groups !== undefined) {
       table.groups = payload.groups;
@@ -185,10 +178,9 @@ export default class TableInMemoryRepository implements TableContractRepository 
     }
 
     for (const table of filtered) {
-      if (data.visibility) table.configuration.visibility = data.visibility;
-      if (data.style) table.configuration.style = data.style;
-      if (data.collaboration)
-        table.configuration.collaboration = data.collaboration;
+      if (data.visibility) table.visibility = data.visibility;
+      if (data.style) table.style = data.style;
+      if (data.collaboration) table.collaboration = data.collaboration;
       table.updatedAt = new Date();
     }
   }

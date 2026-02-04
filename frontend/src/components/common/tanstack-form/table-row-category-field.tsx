@@ -49,12 +49,10 @@ export function TableRowCategoryField({
 }: TableRowCategoryFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<string>>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
 
-  const categories = Array.isArray(field.configuration.category)
-    ? field.configuration.category
-    : [];
+  const categories = field.category;
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedIds = React.useMemo(() => {
@@ -100,17 +98,18 @@ export function TableRowCategoryField({
             data={treeData}
             selectedIds={selectedIds}
             onSelectionChange={(ids) => {
-              if (!field.configuration.multiple) {
+              console.log(ids);
+              if (!field.multiple) {
                 const [id] = ids;
                 formField.handleChange(id ? [id] : []);
               }
 
-              if (field.configuration.multiple) {
+              if (field.multiple) {
                 formField.handleChange(ids);
               }
             }}
-            multiSelect={field.configuration.multiple}
-            showCheckboxes={field.configuration.multiple}
+            multiSelect={field.multiple}
+            showCheckboxes={field.multiple}
           />
         </PopoverContent>
       </Popover>

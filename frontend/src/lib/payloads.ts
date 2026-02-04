@@ -92,22 +92,8 @@ export type TableCreatePayload = {
   name: string;
   owner?: string;
   logo?: string | null;
-  configuration?: {
-    style?: ValueOf<typeof E_TABLE_STYLE>;
-    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-  };
-};
-
-export type TableConfigurationPayload = {
   style?: ValueOf<typeof E_TABLE_STYLE>;
   visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
-  administrators?: Array<string>;
-  owner?: string;
-  fields?: {
-    orderList: Array<string>;
-    orderForm: Array<string>;
-  };
 };
 
 export type TableMethodPayload = {
@@ -121,7 +107,12 @@ export type TableUpdatePayload = {
   name?: string;
   description?: string | null;
   logo?: string | null;
-  configuration?: TableConfigurationPayload;
+  style?: ValueOf<typeof E_TABLE_STYLE>;
+  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
+  collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
+  administrators?: Array<string>;
+  fieldOrderList?: Array<string>;
+  fieldOrderForm?: Array<string>;
   methods?: TableMethodPayload;
   fields?: Array<string>;
   groups?: Array<{
@@ -137,10 +128,12 @@ export type FieldConfigurationPayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
-  filter?: boolean;
-  form?: boolean;
-  detail?: boolean;
-  display?: boolean;
+  showInFilter?: boolean;
+  showInForm?: boolean;
+  showInDetail?: boolean;
+  showInList?: boolean;
+  widthInForm?: number | null;
+  widthInList?: number | null;
   defaultValue?: string | null;
   relationship?: {
     table: { _id: string; slug: string };
@@ -156,7 +149,24 @@ export type FieldCreatePayload = {
   slug: string;
   name: string;
   type: ValueOf<typeof E_FIELD_TYPE>;
-  configuration: FieldConfigurationPayload;
+  required?: boolean;
+  multiple?: boolean;
+  format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  showInFilter?: boolean;
+  showInForm?: boolean;
+  showInDetail?: boolean;
+  showInList?: boolean;
+  widthInForm?: number | null;
+  widthInList?: number | null;
+  defaultValue?: string | null;
+  relationship?: {
+    table: { _id: string; slug: string };
+    field: { _id: string; slug: string };
+    order: 'asc' | 'desc';
+  } | null;
+  dropdown?: Array<string>;
+  category?: Array<{ id: string; label: string; children: Array<unknown> }>;
+  group?: { _id: string; slug: string } | null;
 };
 
 export type FieldUpdatePayload = {
@@ -164,7 +174,24 @@ export type FieldUpdatePayload = {
   _id: string;
   name: string;
   type: ValueOf<typeof E_FIELD_TYPE>;
-  configuration: FieldConfigurationPayload;
+  required?: boolean;
+  multiple?: boolean;
+  format?: ValueOf<typeof E_FIELD_FORMAT> | null;
+  showInFilter?: boolean;
+  showInForm?: boolean;
+  showInDetail?: boolean;
+  showInList?: boolean;
+  widthInForm?: number | null;
+  widthInList?: number | null;
+  defaultValue?: string | null;
+  relationship?: {
+    table: { _id: string; slug: string };
+    field: { _id: string; slug: string };
+    order: 'asc' | 'desc';
+  } | null;
+  dropdown?: Array<string>;
+  category?: Array<{ id: string; label: string; children: Array<unknown> }>;
+  group?: { _id: string; slug: string } | null;
   trashed?: boolean;
   trashedAt?: string | null;
 };

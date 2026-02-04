@@ -72,7 +72,7 @@ function RouteComponent(): React.JSX.Element {
   });
 
   const table = useReadTable({ slug });
-  const tableStyle = table.data?.configuration.style;
+  const tableStyle = table.data?.style;
   const shouldDisablePagination =
     tableStyle === E_TABLE_STYLE.KANBAN ||
     tableStyle === E_TABLE_STYLE.DOCUMENT;
@@ -142,7 +142,7 @@ function RouteComponent(): React.JSX.Element {
         <div className="inline-flex items-center space-x-2">
           {table.status === 'success' && (
             <SheetFilter
-              fields={table.data.fields.filter((f) => f.configuration.filter)}
+              fields={table.data.fields.filter((f) => f.showInFilter)}
             />
           )}
           <TrashButton />
@@ -174,32 +174,28 @@ function RouteComponent(): React.JSX.Element {
         {table.status === 'pending' && <TableSkeleton />}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === E_TABLE_STYLE.LIST && (
-            <TableListViewSkeleton />
-          )}
+          table.data.style === E_TABLE_STYLE.LIST && <TableListViewSkeleton />}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === E_TABLE_STYLE.GALLERY && (
+          table.data.style === E_TABLE_STYLE.GALLERY && (
             <TableGridViewSkeleton />
           )}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === E_TABLE_STYLE.DOCUMENT && (
+          table.data.style === E_TABLE_STYLE.DOCUMENT && (
             <TableDocumentViewSkeleton />
           )}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === E_TABLE_STYLE.CARD && (
-            <TableCardViewSkeleton />
-          )}
+          table.data.style === E_TABLE_STYLE.CARD && <TableCardViewSkeleton />}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === E_TABLE_STYLE.MOSAIC && (
+          table.data.style === E_TABLE_STYLE.MOSAIC && (
             <TableMosaicViewSkeleton />
           )}
         {table.status === 'success' &&
           rows.status === 'pending' &&
-          table.data.configuration.style === E_TABLE_STYLE.KANBAN && (
+          table.data.style === E_TABLE_STYLE.KANBAN && (
             <TableKanbanViewSkeleton />
           )}
 
@@ -247,53 +243,53 @@ function RouteComponent(): React.JSX.Element {
           })()}
 
         {table.status === 'success' &&
-          table.data.configuration.style === E_TABLE_STYLE.LIST &&
+          table.data.style === E_TABLE_STYLE.LIST &&
           rows.status === 'success' && (
             <TableListView
               headers={table.data.fields}
-              order={table.data.configuration.fields.orderList}
+              order={table.data.fieldOrderList}
               data={rows.data.data}
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === E_TABLE_STYLE.GALLERY &&
+          table.data.style === E_TABLE_STYLE.GALLERY &&
           rows.status === 'success' && (
             <TableGridView
               headers={table.data.fields}
-              order={table.data.configuration.fields.orderList}
+              order={table.data.fieldOrderList}
               data={rows.data.data}
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === E_TABLE_STYLE.DOCUMENT &&
+          table.data.style === E_TABLE_STYLE.DOCUMENT &&
           rows.status === 'success' && (
             <TableDocumentView
               headers={table.data.fields}
-              order={table.data.configuration.fields.orderList}
+              order={table.data.fieldOrderList}
               data={rows.data.data}
               tableSlug={slug}
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === E_TABLE_STYLE.CARD &&
+          table.data.style === E_TABLE_STYLE.CARD &&
           rows.status === 'success' && (
             <TableCardView
               headers={table.data.fields}
-              order={table.data.configuration.fields.orderList}
+              order={table.data.fieldOrderList}
               data={rows.data.data}
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === E_TABLE_STYLE.MOSAIC &&
+          table.data.style === E_TABLE_STYLE.MOSAIC &&
           rows.status === 'success' && (
             <TableMosaicView
               headers={table.data.fields}
-              order={table.data.configuration.fields.orderList}
+              order={table.data.fieldOrderList}
               data={rows.data.data}
             />
           )}
         {table.status === 'success' &&
-          table.data.configuration.style === E_TABLE_STYLE.KANBAN &&
+          table.data.style === E_TABLE_STYLE.KANBAN &&
           rows.status === 'success' && (
             <TableKanbanView
               headers={table.data.fields}

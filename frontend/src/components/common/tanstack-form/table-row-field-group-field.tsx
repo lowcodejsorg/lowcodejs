@@ -53,11 +53,11 @@ export function TableRowFieldGroupField({
 }: TableRowFieldGroupFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<Record<string, any>>>();
   const isInvalid =
-    formField.state.meta.isTouched && !formField.state.meta.isValid;
-  const isRequired = field.configuration.required;
-  const isMultiple = field.configuration.multiple;
+    formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const isRequired = field.required;
+  const isMultiple = field.multiple;
 
-  const groupConfig = field.configuration.group;
+  const groupConfig = field.group;
 
   // Usa useReadTable como fallback quando table não é passada
   const tableQuery = useReadTable({ slug: tableSlug ?? '' });
@@ -209,7 +209,7 @@ function NestedGroupField({
 
   // Field name in format: "addresses[0].street"
   const fieldName = `${parentSlug}[${index}].${groupField.slug}`;
-  const isRequired = groupField.configuration.required;
+  const isRequired = groupField.required;
 
   return (
     <form.AppField

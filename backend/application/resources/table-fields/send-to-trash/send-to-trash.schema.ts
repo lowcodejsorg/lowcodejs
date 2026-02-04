@@ -48,71 +48,68 @@ export const TableFieldSendToTrashSchema: FastifySchema = {
           ],
           description: 'Field type',
         },
-        configuration: {
+        required: {
+          type: 'boolean',
+          enum: [false],
+          description: 'Field is no longer required when trashed',
+        },
+        multiple: {
+          type: 'boolean',
+          description: 'Field accepts multiple values',
+        },
+        showInList: {
+          type: 'boolean',
+          enum: [false],
+          description: 'Field no longer shown in list view when trashed',
+        },
+        showInForm: {
+          type: 'boolean',
+          enum: [false],
+          description: 'Field no longer shown in form view when trashed',
+        },
+        showInDetail: {
+          type: 'boolean',
+          enum: [false],
+          description: 'Field no longer shown in detail view when trashed',
+        },
+        showInFilter: {
+          type: 'boolean',
+          enum: [false],
+          description: 'Field filtering disabled when trashed',
+        },
+        locked: {
+          type: 'boolean',
+          description: 'Field is locked and cannot be modified',
+        },
+        format: {
+          type: 'string',
+          nullable: true,
+          description: 'Field format',
+        },
+        defaultValue: {
+          type: 'string',
+          nullable: true,
+          description: 'Default field value',
+        },
+        dropdown: {
+          type: 'array',
+          nullable: true,
+          description: 'Dropdown options',
+        },
+        relationship: {
           type: 'object',
-          properties: {
-            required: {
-              type: 'boolean',
-              enum: [false],
-              description: 'Field is no longer required when trashed',
-            },
-            multiple: {
-              type: 'boolean',
-              description: 'Field accepts multiple values',
-            },
-            display: {
-              type: 'boolean',
-              enum: [false],
-              description: 'Field no longer shown in list view when trashed',
-            },
-            form: {
-              type: 'boolean',
-              enum: [false],
-              description: 'Field no longer shown in form view when trashed',
-            },
-            detail: {
-              type: 'boolean',
-              enum: [false],
-              description: 'Field no longer shown in detail view when trashed',
-            },
-            filter: {
-              type: 'boolean',
-              enum: [false],
-              description: 'Field filtering disabled when trashed',
-            },
-            format: {
-              type: 'string',
-              nullable: true,
-              description: 'Field format',
-            },
-            default_value: {
-              type: 'string',
-              nullable: true,
-              description: 'Default field value',
-            },
-            dropdown: {
-              type: 'array',
-              nullable: true,
-              description: 'Dropdown options',
-            },
-            relationship: {
-              type: 'object',
-              nullable: true,
-              description: 'Relationship configuration',
-            },
-            group: {
-              type: 'object',
-              nullable: true,
-              description: 'Field group configuration',
-            },
-            category: {
-              type: 'array',
-              nullable: true,
-              description: 'Category options',
-            },
-          },
-          description:
-            'Field configuration with display, form, detail, filter, and required set to false',
+          nullable: true,
+          description: 'Relationship configuration',
+        },
+        group: {
+          type: 'object',
+          nullable: true,
+          description: 'Field group configuration',
+        },
+        category: {
+          type: 'array',
+          nullable: true,
+          description: 'Category options',
         },
         trashed: {
           type: 'boolean',

@@ -150,20 +150,29 @@ export const MenuUpdateBodySchema = z.object({
 });
 
 // ============== TABLE ==============
-const TableCreateConfigurationSchema = z.object({
-  style: z
-    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
-    .default(E_TABLE_STYLE.LIST),
-  visibility: z
-    .enum([
-      E_TABLE_VISIBILITY.PUBLIC,
-      E_TABLE_VISIBILITY.RESTRICTED,
-      E_TABLE_VISIBILITY.OPEN,
-      E_TABLE_VISIBILITY.FORM,
-      E_TABLE_VISIBILITY.PRIVATE,
-    ])
-    .default(E_TABLE_VISIBILITY.RESTRICTED),
-});
+export const TableStyleSchema = z
+  .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
+  .default(E_TABLE_STYLE.LIST);
+
+export const TableVisibilitySchema = z
+  .enum([
+    E_TABLE_VISIBILITY.PUBLIC,
+    E_TABLE_VISIBILITY.RESTRICTED,
+    E_TABLE_VISIBILITY.OPEN,
+    E_TABLE_VISIBILITY.FORM,
+    E_TABLE_VISIBILITY.PRIVATE,
+  ])
+  .default(E_TABLE_VISIBILITY.RESTRICTED);
+
+export const TableCollaborationSchema = z
+  .enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED])
+  .default(E_TABLE_COLLABORATION.OPEN);
+
+export const TableAdministratorsSchema = z.array(z.string()).default([]);
+
+export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
+
+export const TableFieldOrderFormSchema = z.array(z.string().trim()).default([]);
 
 export const TableCreateBodySchema = z.object({
   name: z
@@ -177,30 +186,8 @@ export const TableCreateBodySchema = z.object({
     ),
   owner: z.string().trim().optional(),
   logo: z.string().trim().nullable().optional(),
-  configuration: TableCreateConfigurationSchema.optional(),
-});
-
-export const TableConfigurationSchema = z.object({
-  style: z
-    .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
-    .default(E_TABLE_STYLE.LIST),
-  visibility: z
-    .enum([
-      E_TABLE_VISIBILITY.PUBLIC,
-      E_TABLE_VISIBILITY.RESTRICTED,
-      E_TABLE_VISIBILITY.OPEN,
-      E_TABLE_VISIBILITY.FORM,
-      E_TABLE_VISIBILITY.PRIVATE,
-    ])
-    .default(E_TABLE_VISIBILITY.PUBLIC),
-  collaboration: z
-    .enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED])
-    .default(E_TABLE_COLLABORATION.OPEN),
-  administrators: z.array(z.string()).default([]),
-  fields: z.object({
-    orderList: z.array(z.string().trim()).default([]),
-    orderForm: z.array(z.string().trim()).default([]),
-  }),
+  style: TableStyleSchema.optional(),
+  visibility: TableVisibilitySchema.optional(),
 });
 
 export const TableMethodSchema = z.object({
@@ -227,7 +214,12 @@ export const TableUpdateBodySchema = z.object({
     ),
   description: z.string().trim().nullable(),
   logo: z.string().trim().nullable(),
-  configuration: TableConfigurationSchema,
+  style: TableStyleSchema,
+  visibility: TableVisibilitySchema,
+  collaboration: TableCollaborationSchema,
+  administrators: TableAdministratorsSchema,
+  fieldOrderList: TableFieldOrderListSchema,
+  fieldOrderForm: TableFieldOrderFormSchema,
   methods: TableMethodSchema,
 });
 
@@ -254,7 +246,14 @@ const RelationshipSchema = z.object({
   order: z.enum(['asc', 'desc']).default('asc'),
 });
 
-export const FieldConfigurationSchema = z.object({
+const DropdownSchema = z.object({
+  id: z.string().trim(),
+  label: z.string().trim(),
+  color: z.string().nullable().optional(),
+});
+
+// Schema base para propriedades flat de campos
+export const FieldBaseSchema = z.object({
   required: z.boolean().default(false),
   multiple: z.boolean().default(false),
   format: z
@@ -264,6 +263,8 @@ export const FieldConfigurationSchema = z.object({
       E_FIELD_FORMAT.DECIMAL,
       E_FIELD_FORMAT.URL,
       E_FIELD_FORMAT.EMAIL,
+      E_FIELD_FORMAT.RICH_TEXT,
+      E_FIELD_FORMAT.PLAIN_TEXT,
       E_FIELD_FORMAT.DD_MM_YYYY,
       E_FIELD_FORMAT.MM_DD_YYYY,
       E_FIELD_FORMAT.YYYY_MM_DD,
@@ -279,61 +280,69 @@ export const FieldConfigurationSchema = z.object({
     ])
     .nullable()
     .default(null),
-  filter: z.boolean().default(false),
-  form: z.boolean().default(false),
-  detail: z.boolean().default(false),
-  display: z.boolean().default(false),
+  showInFilter: z.boolean().default(false),
+  showInForm: z.boolean().default(false),
+  showInDetail: z.boolean().default(false),
+  showInList: z.boolean().default(false),
+  widthInForm: z.number().nullable().default(50),
+  widthInList: z.number().nullable().default(50),
+  locked: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),
   relationship: RelationshipSchema.nullable().default(null),
-  dropdown: z.array(z.string().trim()).default([]),
+  dropdown: z.array(DropdownSchema).default([]),
   category: z.array(CategorySchema).default([]),
   group: z
     .object({
+      _id: z.string().trim().optional(),
       slug: z.string().trim(),
     })
     .nullable()
     .default(null),
 });
 
-export const FieldCreateBodySchema = z.object({
-  name: z.string().trim(),
-  type: z.enum([
-    E_FIELD_TYPE.TEXT_SHORT,
-    E_FIELD_TYPE.TEXT_LONG,
-    E_FIELD_TYPE.DROPDOWN,
-    E_FIELD_TYPE.DATE,
-    E_FIELD_TYPE.RELATIONSHIP,
-    E_FIELD_TYPE.FILE,
-    E_FIELD_TYPE.FIELD_GROUP,
-    E_FIELD_TYPE.REACTION,
-    E_FIELD_TYPE.EVALUATION,
-    E_FIELD_TYPE.CATEGORY,
-  ]),
-  configuration: FieldConfigurationSchema,
-});
+export const FieldCreateBodySchema = z
+  .object({
+    name: z.string().trim(),
+    type: z.enum([
+      E_FIELD_TYPE.TEXT_SHORT,
+      E_FIELD_TYPE.TEXT_LONG,
+      E_FIELD_TYPE.DROPDOWN,
+      E_FIELD_TYPE.DATE,
+      E_FIELD_TYPE.RELATIONSHIP,
+      E_FIELD_TYPE.FILE,
+      E_FIELD_TYPE.FIELD_GROUP,
+      E_FIELD_TYPE.REACTION,
+      E_FIELD_TYPE.EVALUATION,
+      E_FIELD_TYPE.CATEGORY,
+      E_FIELD_TYPE.USER,
+    ]),
+  })
+  .merge(FieldBaseSchema);
 
 export const FieldCreateParamsSchema = z.object({
   slug: z.string().trim(),
 });
 
-export const FieldUpdateBodySchema = z.object({
-  name: z.string().trim(),
-  type: z.enum([
-    E_FIELD_TYPE.TEXT_SHORT,
-    E_FIELD_TYPE.TEXT_LONG,
-    E_FIELD_TYPE.DROPDOWN,
-    E_FIELD_TYPE.DATE,
-    E_FIELD_TYPE.RELATIONSHIP,
-    E_FIELD_TYPE.FILE,
-    E_FIELD_TYPE.FIELD_GROUP,
-    E_FIELD_TYPE.REACTION,
-    E_FIELD_TYPE.EVALUATION,
-    E_FIELD_TYPE.CATEGORY,
-  ]),
-  configuration: FieldConfigurationSchema,
-  trashed: z.boolean().default(false),
-  trashedAt: z.string().nullable().default(null),
-});
+export const FieldUpdateBodySchema = z
+  .object({
+    name: z.string().trim(),
+    type: z.enum([
+      E_FIELD_TYPE.TEXT_SHORT,
+      E_FIELD_TYPE.TEXT_LONG,
+      E_FIELD_TYPE.DROPDOWN,
+      E_FIELD_TYPE.DATE,
+      E_FIELD_TYPE.RELATIONSHIP,
+      E_FIELD_TYPE.FILE,
+      E_FIELD_TYPE.FIELD_GROUP,
+      E_FIELD_TYPE.REACTION,
+      E_FIELD_TYPE.EVALUATION,
+      E_FIELD_TYPE.CATEGORY,
+      E_FIELD_TYPE.USER,
+    ]),
+    trashed: z.boolean().default(false),
+    trashedAt: z.string().nullable().default(null),
+  })
+  .merge(FieldBaseSchema);
 
 export const FieldUpdateParamsSchema = z.object({
   slug: z.string().trim(),

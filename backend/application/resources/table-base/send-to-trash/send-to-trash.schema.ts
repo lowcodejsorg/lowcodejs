@@ -69,103 +69,99 @@ export const TableSendToTrashSchema: FastifySchema = {
                 ],
                 description: 'Field type from FIELD_TYPE enum',
               },
-              configuration: {
+              required: {
+                type: 'boolean',
+                description: 'Is field required',
+              },
+              multiple: {
+                type: 'boolean',
+                description: 'Allows multiple values',
+              },
+              format: {
+                type: 'string',
+                nullable: true,
+                enum: ['email', 'phone', 'url', 'color', 'password'],
+                description: 'Field format validation',
+              },
+              showInList: {
+                type: 'boolean',
+                description: 'Show in listings',
+              },
+              showInForm: {
+                type: 'boolean',
+                description: 'Show in form view',
+              },
+              showInDetail: {
+                type: 'boolean',
+                description: 'Show in detail view',
+              },
+              showInFilter: {
+                type: 'boolean',
+                description: 'Allow filtering',
+              },
+              locked: {
+                type: 'boolean',
+                description: 'Field is locked and cannot be modified',
+              },
+              defaultValue: {
+                type: 'string',
+                nullable: true,
+                description: 'Default field value',
+              },
+              relationship: {
                 type: 'object',
+                nullable: true,
                 description:
-                  'Field configuration including required, multiple, format, etc.',
+                  'Relationship configuration for RELATIONSHIP fields',
                 properties: {
-                  required: {
-                    type: 'boolean',
-                    description: 'Is field required',
-                  },
-                  multiple: {
-                    type: 'boolean',
-                    description: 'Allows multiple values',
-                  },
-                  format: {
-                    type: 'string',
-                    nullable: true,
-                    enum: ['email', 'phone', 'url', 'color', 'password'],
-                    description: 'Field format validation',
-                  },
-                  display: {
-                    type: 'boolean',
-                    description: 'Show in listings',
-                  },
-                  form: {
-                    type: 'boolean',
-                    description: 'Show in form view',
-                  },
-                  detail: {
-                    type: 'boolean',
-                    description: 'Show in detail view',
-                  },
-                  filter: {
-                    type: 'boolean',
-                    description: 'Allow filtering',
-                  },
-                  default_value: {
-                    type: 'string',
-                    nullable: true,
-                    description: 'Default field value',
-                  },
-                  relationship: {
+                  table: {
                     type: 'object',
-                    nullable: true,
-                    description:
-                      'Relationship configuration for RELATIONSHIP fields',
                     properties: {
-                      table: {
-                        type: 'object',
-                        properties: {
-                          _id: { type: 'string' },
-                          slug: { type: 'string' },
-                        },
-                      },
-                      field: {
-                        type: 'object',
-                        properties: {
-                          _id: { type: 'string' },
-                          slug: { type: 'string' },
-                        },
-                      },
-                      order: { type: 'string', enum: ['asc', 'desc'] },
+                      _id: { type: 'string' },
+                      slug: { type: 'string' },
                     },
                   },
-                  dropdown: {
-                    type: 'array',
-                    description: 'Dropdown options for DROPDOWN fields',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        id: { type: 'string' },
-                        label: { type: 'string' },
-                      },
-                    },
-                  },
-                  category: {
-                    type: 'array',
-                    description: 'Category tree for CATEGORY fields',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        id: { type: 'string' },
-                        label: { type: 'string' },
-                        children: { type: 'array', items: {} },
-                      },
-                    },
-                  },
-                  group: {
+                  field: {
                     type: 'object',
-                    nullable: true,
-                    description: 'Field group configuration',
                     properties: {
-                      _id: { type: 'string', nullable: true },
-                      slug: { type: 'string', nullable: true },
+                      _id: { type: 'string' },
+                      slug: { type: 'string' },
                     },
+                  },
+                  order: { type: 'string', enum: ['asc', 'desc'] },
+                },
+              },
+              dropdown: {
+                type: 'array',
+                description: 'Dropdown options for DROPDOWN fields',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    label: { type: 'string' },
                   },
                 },
-                additionalProperties: false,
+              },
+              category: {
+                type: 'array',
+                description: 'Category tree for CATEGORY fields',
+                items: {
+                  type: 'object',
+                  properties: {
+                    id: { type: 'string' },
+                    label: { type: 'string' },
+                    children: { type: 'array', items: {} },
+                  },
+                },
+              },
+              group: {
+                type: 'object',
+                nullable: true,
+                description: 'Field group configuration',
+                properties: {
+                  _id: { type: 'string', nullable: true },
+                  slug: { type: 'string', nullable: true },
+                },
               },
               trashed: {
                 type: 'boolean',
@@ -182,59 +178,49 @@ export const TableSendToTrashSchema: FastifySchema = {
             },
           },
         },
-        configuration: {
-          type: 'object',
-          properties: {
-            style: {
-              type: 'string',
-              enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
-              description: 'Display style',
-            },
-            visibility: {
-              type: 'string',
-              enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
-              description: 'Visibility setting',
-            },
-            collaboration: {
-              type: 'string',
-              enum: ['OPEN', 'RESTRICTED'],
-              description: 'Collaboration setting',
-            },
-            administrators: {
-              type: 'array',
-              description: 'Administrator users (populated)',
-              items: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string', description: 'User ID' },
-                  name: { type: 'string', description: 'User name' },
-                },
-              },
-            },
-            owner: {
-              type: 'object',
-              description: 'Table owner (populated)',
-              properties: {
-                _id: { type: 'string', description: 'User ID' },
-                name: { type: 'string', description: 'User name' },
-              },
-            },
-            fields: {
-              type: 'object',
-              properties: {
-                orderList: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'Field order for list view',
-                },
-                orderForm: {
-                  type: 'array',
-                  items: { type: 'string' },
-                  description: 'Field order for form view',
-                },
-              },
+        style: {
+          type: 'string',
+          enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
+          description: 'Display style',
+        },
+        visibility: {
+          type: 'string',
+          enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
+          description: 'Visibility setting',
+        },
+        collaboration: {
+          type: 'string',
+          enum: ['OPEN', 'RESTRICTED'],
+          description: 'Collaboration setting',
+        },
+        administrators: {
+          type: 'array',
+          description: 'Administrator users (populated)',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string', description: 'User ID' },
+              name: { type: 'string', description: 'User name' },
             },
           },
+        },
+        owner: {
+          type: 'object',
+          description: 'Table owner (populated)',
+          properties: {
+            _id: { type: 'string', description: 'User ID' },
+            name: { type: 'string', description: 'User name' },
+          },
+        },
+        fieldOrderList: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Field order for list view',
+        },
+        fieldOrderForm: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Field order for form view',
         },
         type: {
           type: 'string',

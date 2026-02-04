@@ -64,8 +64,8 @@ export default class StorageInMemoryRepository implements StorageContractReposit
       );
     }
 
-    if (payload?.type) {
-      filtered = filtered.filter((s) => s.type === payload.type);
+    if (payload?.mimetype) {
+      filtered = filtered.filter((s) => s.mimetype === payload.mimetype);
     }
 
     filtered = filtered.sort((a, b) =>
