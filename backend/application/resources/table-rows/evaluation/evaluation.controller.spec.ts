@@ -64,6 +64,8 @@ describe('E2E Table Row Evaluation Controller', () => {
         name: 'Rating',
         slug: 'rating',
         type: E_FIELD_TYPE.EVALUATION,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const evaluationField = await Field.create(fieldPayload);

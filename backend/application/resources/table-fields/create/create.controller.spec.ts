@@ -52,6 +52,8 @@ describe('E2E Table Field Create Controller', () => {
         name: 'Existing Field',
         slug: 'existing-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const field = await Field.create(fieldPayload);
@@ -102,6 +104,8 @@ describe('E2E Table Field Create Controller', () => {
         name: 'My Field',
         slug: 'my-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const response = await supertest(kernel.server)

@@ -43,6 +43,8 @@ describe('Table Field Remove From Trash Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     await fieldInMemoryRepository.update({
@@ -134,6 +136,8 @@ describe('Table Field Remove From Trash Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     await tableInMemoryRepository.create({

@@ -63,6 +63,8 @@ describe('Table Field Create Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     expect(result.isRight()).toBe(true);
@@ -91,6 +93,8 @@ describe('Table Field Create Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -118,6 +122,8 @@ describe('Table Field Create Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     await tableInMemoryRepository.create({
@@ -151,6 +157,8 @@ describe('Table Field Create Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -182,6 +190,8 @@ describe('Table Field Create Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     expect(result.isLeft()).toBe(true);

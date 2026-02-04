@@ -57,6 +57,8 @@ describe('Table Field Show Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const result = await sut.execute({

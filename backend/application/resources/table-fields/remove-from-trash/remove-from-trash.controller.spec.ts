@@ -51,6 +51,8 @@ describe('E2E Table Field Remove From Trash Controller', () => {
         name: 'My Field',
         slug: 'my-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const field = await Field.create({

@@ -251,6 +251,8 @@ if (progresso < 100 && notificado) {
       dropdown: IField['dropdown'];
       category: IField['category'];
       group: IField['group'];
+      widthInForm: IField['widthInForm'];
+      widthInList: IField['widthInList'];
     }): Promise<IField> => {
       const field = await this.fieldRepository.create({
         ...payload,
@@ -276,6 +278,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const descriptionField = await createField({
@@ -295,6 +299,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const membersField = await createField({
@@ -314,6 +320,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const membersNotifiedField = await createField({
@@ -333,6 +341,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const completedNotifiedField = await createField({
@@ -352,6 +362,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const dueDateField = await createField({
@@ -371,6 +383,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const attachmentField = await createField({
@@ -390,6 +404,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const progressField = await createField({
@@ -409,6 +425,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const listField = await createField({
@@ -432,6 +450,8 @@ if (progresso < 100 && notificado) {
       ],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const labelsField = await createField({
@@ -451,6 +471,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const tasksGroupSlug = 'tarefas';
@@ -473,6 +495,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const taskDoneField = await this.fieldRepository.create({
@@ -495,6 +519,8 @@ if (progresso < 100 && notificado) {
       ],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const commentTextField = await this.fieldRepository.create({
@@ -514,6 +540,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const commentAuthorField = await this.fieldRepository.create({
@@ -533,6 +561,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const commentDateField = await this.fieldRepository.create({
@@ -552,6 +582,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     const tasksGroup: IGroupConfiguration = {
@@ -589,6 +621,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: { slug: tasksGroupSlug },
+      widthInForm: null,
+      widthInList: null,
     });
 
     const commentsGroupField = await createField({
@@ -608,6 +642,8 @@ if (progresso < 100 && notificado) {
       dropdown: [],
       category: [],
       group: { slug: commentsGroupSlug },
+      widthInForm: null,
+      widthInList: null,
     });
 
     const groups = [tasksGroup, commentsGroup];
@@ -677,6 +713,8 @@ if (progresso < 100 && notificado) {
         dropdown: field.dropdown,
         category: field.category,
         group: field.group,
+        widthInForm: field.widthInForm,
+        widthInList: field.widthInList,
       });
 
       newFieldIds.push(createdField._id);

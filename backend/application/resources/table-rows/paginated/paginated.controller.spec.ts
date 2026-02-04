@@ -62,6 +62,8 @@ describe('E2E Table Row Paginated Controller', () => {
         name: 'Name',
         slug: 'name',
         type: E_FIELD_TYPE.TEXT_SHORT,
+        widthInForm: null,
+        widthInList: null,
       };
 
       const field = await Field.create(fieldPayload);

@@ -43,6 +43,8 @@ describe('Table Field Send To Trash Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     await tableInMemoryRepository.create({
@@ -128,6 +130,8 @@ describe('Table Field Send To Trash Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
+      widthInForm: null,
+      widthInList: null,
     });
 
     await fieldInMemoryRepository.update({
