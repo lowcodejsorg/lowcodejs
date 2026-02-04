@@ -28,9 +28,23 @@ import React, { useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
+
+const WIDTH_OPTIONS = [
+  { value: '25', label: '25%' },
+  { value: '50', label: '50%' },
+  { value: '75', label: '75%' },
+  { value: '100', label: '100%' },
+];
 
 interface SortableItemProps {
   field: IField;
@@ -92,18 +106,24 @@ interface SortableManagementItemProps {
   field: IField;
   disabled?: boolean;
   visibilityKey: 'showInFilter' | 'showInForm' | 'showInDetail' | 'showInList';
+  widthKey?: 'widthInForm' | 'widthInList';
   onEdit: () => void;
   onToggleVisibility: () => void;
+  onWidthChange?: (width: number) => void;
   isTogglingVisibility?: boolean;
+  isChangingWidth?: boolean;
 }
 
 function SortableManagementItem({
   field,
   disabled,
   visibilityKey,
+  widthKey,
   onEdit,
   onToggleVisibility,
+  onWidthChange,
   isTogglingVisibility,
+  isChangingWidth,
 }: SortableManagementItemProps): React.JSX.Element {
   const {
     attributes,
@@ -121,6 +141,7 @@ function SortableManagementItem({
   };
 
   const isVisible = field[visibilityKey];
+  const currentWidth = widthKey ? (field[widthKey] ?? 50) : null;
 
   return (
     <div
@@ -130,6 +151,27 @@ function SortableManagementItem({
     >
       <span className="text-sm font-medium">{field.name}</span>
       <div className="flex items-center gap-1">
+        {widthKey && onWidthChange && (
+          <Select
+            value={String(currentWidth)}
+            onValueChange={(value) => onWidthChange(Number(value))}
+            disabled={isChangingWidth}
+          >
+            <SelectTrigger className="h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {WIDTH_OPTIONS.map((option) => (
+                <SelectItem
+                  key={option.value}
+                  value={option.value}
+                >
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -364,16 +406,18 @@ export function FieldOrderForm({
         </p>
       )}
 
-      <Button
-        className="w-full"
-        disabled={!hasChanges || update.isPending}
-        onClick={handleSave}
-      >
-        {update.isPending && (
-          <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-        )}
-        Salvar ordem
-      </Button>
+      {hasChanges && (
+        <Button
+          className="w-full"
+          disabled={!hasChanges || update.isPending}
+          onClick={handleSave}
+        >
+          {update.isPending && (
+            <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          Salvar ordem
+        </Button>
+      )}
     </div>
   );
 }
@@ -412,8 +456,20 @@ export function FieldManagementList({
   );
 
   const [fields, setFields] = useState<Array<IField>>(sorted);
+
   const [hasChanges, setHasChanges] = useState(false);
   const [togglingFieldId, setTogglingFieldId] = useState<string | null>(null);
+  const [changingWidthFieldId, setChangingWidthFieldId] = useState<
+    string | null
+  >(null);
+
+  // Map visibilityKey to widthKey (only for showInForm and showInList)
+  const widthKey: 'widthInForm' | 'widthInList' | undefined =
+    visibilityKey === 'showInForm'
+      ? 'widthInForm'
+      : visibilityKey === 'showInList'
+        ? 'widthInList'
+        : undefined;
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -468,6 +524,8 @@ export function FieldManagementList({
           visibilityKey === 'showInDetail' ? newValue : field.showInDetail,
         showInList:
           visibilityKey === 'showInList' ? newValue : field.showInList,
+        widthInForm: field.widthInForm,
+        widthInList: field.widthInList,
         format: field.format ?? null,
         defaultValue: field.defaultValue ?? null,
         dropdown: hasDropdown ? field.dropdown : [],
@@ -601,6 +659,155 @@ export function FieldManagementList({
     },
   });
 
+  const changeWidthMutation = useMutation({
+    mutationFn: async ({
+      field,
+      newWidth,
+      targetWidthKey,
+    }: {
+      field: IField;
+      newWidth: number;
+      targetWidthKey: 'widthInForm' | 'widthInList';
+    }) => {
+      const route = '/tables/'
+        .concat(table.slug)
+        .concat('/fields/')
+        .concat(field._id);
+
+      const hasRelationship = field.relationship !== null;
+      const hasDropdown = field.dropdown.length > 0;
+      const hasCategory = field.category.length > 0;
+
+      const response = await API.put<IField>(route, {
+        name: field.name,
+        type: field.type,
+        required: field.required,
+        multiple: field.multiple,
+        showInFilter: field.showInFilter,
+        showInForm: field.showInForm,
+        showInDetail: field.showInDetail,
+        showInList: field.showInList,
+        widthInForm:
+          targetWidthKey === 'widthInForm' ? newWidth : field.widthInForm,
+        widthInList:
+          targetWidthKey === 'widthInList' ? newWidth : field.widthInList,
+        format: field.format ?? null,
+        defaultValue: field.defaultValue ?? null,
+        dropdown: hasDropdown ? field.dropdown : [],
+        relationship: hasRelationship
+          ? {
+              table: {
+                _id: field.relationship!.table._id,
+                slug: field.relationship!.table.slug,
+              },
+              field: {
+                _id: field.relationship!.field._id,
+                slug: field.relationship!.field.slug,
+              },
+              order: field.relationship!.order,
+            }
+          : null,
+        group: groupSlug ? { slug: groupSlug } : null,
+        category: hasCategory ? field.category : [],
+        trashed: field.trashed,
+        trashedAt: field.trashedAt ?? null,
+      });
+      return response.data;
+    },
+    onMutate: ({ field }) => {
+      setChangingWidthFieldId(field._id);
+    },
+    onSuccess: (response) => {
+      setFields((prev) =>
+        prev.map((f) => (f._id === response._id ? response : f)),
+      );
+
+      queryClient.setQueryData<IField>(
+        [
+          '/tables/'.concat(table.slug).concat('/fields/').concat(response._id),
+          response._id,
+        ],
+        response,
+      );
+
+      queryClient.setQueryData<ITable>(
+        ['/tables/'.concat(table.slug), table.slug],
+        (old) => {
+          if (!old) return old;
+
+          if (isGroupContext && groupSlug) {
+            return {
+              ...old,
+              groups: old.groups.map((g) =>
+                g.slug === groupSlug
+                  ? {
+                      ...g,
+                      fields: g.fields.map((f) =>
+                        f._id === response._id ? response : f,
+                      ),
+                    }
+                  : g,
+              ),
+            };
+          }
+
+          return {
+            ...old,
+            fields: old.fields.map((f) =>
+              f._id === response._id ? response : f,
+            ),
+          };
+        },
+      );
+
+      queryClient.setQueryData<Paginated<ITable>>(
+        ['/tables/paginated', { page: 1, perPage: 50 }],
+        (old) => {
+          if (!old) return old;
+          return {
+            meta: old.meta,
+            data: old.data.map((t) => {
+              if (t.slug === table.slug) {
+                if (isGroupContext && groupSlug) {
+                  return {
+                    ...t,
+                    groups: t.groups.map((g) =>
+                      g.slug === groupSlug
+                        ? {
+                            ...g,
+                            fields: g.fields.map((f) =>
+                              f._id === response._id ? response : f,
+                            ),
+                          }
+                        : g,
+                    ),
+                  };
+                }
+
+                return {
+                  ...t,
+                  fields: t.fields.map((f) =>
+                    f._id === response._id ? response : f,
+                  ),
+                };
+              }
+              return t;
+            }),
+          };
+        },
+      );
+
+      toast.success(`Largura atualizada para ${response[widthKey!]}%`);
+    },
+    onError: (error) => {
+      console.error(error);
+      toast.error('Erro ao atualizar largura do campo');
+    },
+    onSettled: () => {
+      setChangingWidthFieldId(null);
+    },
+  });
+
   function handleDragEnd(event: DragEndEvent): void {
     const { active, over } = event;
 
@@ -690,6 +897,15 @@ export function FieldManagementList({
     });
   }
 
+  function handleWidthChange(field: IField, newWidth: number): void {
+    if (!widthKey) return;
+    changeWidthMutation.mutate({
+      field,
+      newWidth,
+      targetWidthKey: widthKey,
+    });
+  }
+
   return (
     <div className="space-y-4">
       <DndContext
@@ -708,9 +924,16 @@ export function FieldManagementList({
                 field={field}
                 disabled={updateTable.isPending}
                 visibilityKey={visibilityKey}
+                widthKey={widthKey}
                 onEdit={() => handleEditField(field._id)}
                 onToggleVisibility={() => handleToggleVisibility(field)}
+                onWidthChange={
+                  widthKey
+                    ? (width): void => handleWidthChange(field, width)
+                    : undefined
+                }
                 isTogglingVisibility={togglingFieldId === field._id}
+                isChangingWidth={changingWidthFieldId === field._id}
               />
             ))}
           </div>
@@ -723,16 +946,18 @@ export function FieldManagementList({
         </p>
       )}
 
-      <Button
-        className="w-full"
-        disabled={!hasChanges || updateTable.isPending}
-        onClick={handleSave}
-      >
-        {updateTable.isPending && (
-          <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
-        )}
-        Salvar ordem
-      </Button>
+      {hasChanges && (
+        <Button
+          className="w-full"
+          disabled={!hasChanges || updateTable.isPending}
+          onClick={handleSave}
+        >
+          {updateTable.isPending && (
+            <LoaderCircleIcon className="mr-2 h-4 w-4 animate-spin" />
+          )}
+          Salvar ordem
+        </Button>
+      )}
     </div>
   );
 }

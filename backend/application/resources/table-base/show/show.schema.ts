@@ -130,6 +130,16 @@ export const TableShowSchema: FastifySchema = {
                 type: 'boolean',
                 description: 'Allow filtering',
               },
+              widthInForm: {
+                type: 'number',
+                nullable: true,
+                description: 'Field width percentage in forms',
+              },
+              widthInList: {
+                type: 'number',
+                nullable: true,
+                description: 'Field width percentage in list/grid views',
+              },
               locked: {
                 type: 'boolean',
                 description: 'Field is locked and cannot be modified',
@@ -339,6 +349,8 @@ export const TableShowSchema: FastifySchema = {
                     showInForm: { type: 'boolean' },
                     showInDetail: { type: 'boolean' },
                     showInFilter: { type: 'boolean' },
+                    widthInForm: { type: 'number', nullable: true },
+                    widthInList: { type: 'number', nullable: true },
                     locked: { type: 'boolean' },
                     defaultValue: { type: 'string', nullable: true },
                     relationship: { type: 'object', nullable: true },

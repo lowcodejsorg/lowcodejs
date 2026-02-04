@@ -284,6 +284,8 @@ export const FieldBaseSchema = z.object({
   showInForm: z.boolean().default(false),
   showInDetail: z.boolean().default(false),
   showInList: z.boolean().default(false),
+  widthInForm: z.number().nullable().default(50),
+  widthInList: z.number().nullable().default(50),
   locked: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),
   relationship: RelationshipSchema.nullable().default(null),

@@ -79,6 +79,19 @@ export const TableFieldUpdateSchema: FastifySchema = {
         default: false,
         description: 'Show field in list/grid/kanban views',
       },
+      widthInForm: {
+        type: 'number',
+        nullable: true,
+        default: 50,
+        description: 'Field width percentage in forms (25, 50, 75, 100)',
+      },
+      widthInList: {
+        type: 'number',
+        nullable: true,
+        default: 50,
+        description:
+          'Field width percentage in list/grid views (25, 50, 75, 100)',
+      },
       locked: {
         type: 'boolean',
         default: false,
@@ -221,6 +234,16 @@ export const TableFieldUpdateSchema: FastifySchema = {
         showInList: {
           type: 'boolean',
           description: 'Show field in list/grid/kanban views',
+        },
+        widthInForm: {
+          type: 'number',
+          nullable: true,
+          description: 'Field width percentage in forms',
+        },
+        widthInList: {
+          type: 'number',
+          nullable: true,
+          description: 'Field width percentage in list/grid views',
         },
         locked: { type: 'boolean', description: 'Field is locked' },
         format: {

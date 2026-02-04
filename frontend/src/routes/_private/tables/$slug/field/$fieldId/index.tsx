@@ -472,6 +472,8 @@ function FieldUpdateContent({
       showInList: data.showInList,
       required: data.required,
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
+      widthInForm: data.widthInForm ?? 50,
+      widthInList: data.widthInList ?? 50,
     },
     onSubmit: async ({ value }) => {
       const validation = FieldUpdateSchema.safeParse(value);
@@ -492,6 +494,8 @@ function FieldUpdateContent({
         showInForm: value.showInForm,
         showInDetail: value.showInDetail,
         showInList: value.showInList,
+        widthInForm: value.widthInForm,
+        widthInList: value.widthInList,
         format: value.format
           ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
           : null,

@@ -18,6 +18,8 @@ export type FieldCreatePayload = Pick<
   | 'showInForm'
   | 'showInDetail'
   | 'showInList'
+  | 'widthInForm'
+  | 'widthInList'
   | 'locked'
   | 'defaultValue'
   | 'relationship'

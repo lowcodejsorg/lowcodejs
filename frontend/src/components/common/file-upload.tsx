@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
 /* eslint-disable no-shadow */
 import { useDirection } from '@radix-ui/react-direction';
 import { Slot } from '@radix-ui/react-slot';

@@ -71,6 +71,17 @@ export const TableFieldShowSchema: FastifySchema = {
           type: 'boolean',
           description: 'Allow filtering by this field',
         },
+        widthInForm: {
+          type: 'number',
+          nullable: true,
+          description: 'Field width percentage in forms (25, 50, 75, 100)',
+        },
+        widthInList: {
+          type: 'number',
+          nullable: true,
+          description:
+            'Field width percentage in list/grid views (25, 50, 75, 100)',
+        },
         locked: {
           type: 'boolean',
           description: 'Field is locked and cannot be modified',

@@ -68,6 +68,8 @@ export const TableFieldAddCategorySchema: FastifySchema = {
             showInForm: { type: 'boolean' },
             showInDetail: { type: 'boolean' },
             showInFilter: { type: 'boolean' },
+            widthInForm: { type: 'number', nullable: true },
+            widthInList: { type: 'number', nullable: true },
             locked: { type: 'boolean' },
             defaultValue: { type: 'string', nullable: true },
             relationship: { type: 'object', nullable: true },

@@ -194,6 +194,22 @@ interface RowFormFieldsProps {
   tableSlug: string;
 }
 
+// Helper to convert width percentage to grid column span
+function getWidthClass(width: number | null | undefined): string {
+  switch (width) {
+    case 25:
+      return 'col-span-1';
+    case 50:
+      return 'col-span-2';
+    case 75:
+      return 'col-span-3';
+    case 100:
+      return 'col-span-4';
+    default:
+      return 'col-span-2'; // default 50%
+  }
+}
+
 export function RowFormFields({
   form,
   fields,
@@ -201,7 +217,7 @@ export function RowFormFields({
   tableSlug,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2">
+    <section className="grid grid-cols-4 gap-4 p-2">
       {fields.map((field) => {
         // Skip non-editable field types
         if (
@@ -212,95 +228,99 @@ export function RowFormFields({
         }
 
         return (
-          <form.AppField
+          <div
             key={field._id}
-            name={field.slug}
-            validators={{
-              onChange: ({ value }: { value: any }) => {
-                return buildFieldValidator(field, value);
-              },
-            }}
+            className={getWidthClass(field.widthInForm)}
           >
-            {(formField: any) => {
-              switch (field.type) {
-                case E_FIELD_TYPE.TEXT_SHORT:
-                  return (
-                    <formField.TableRowTextField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.TEXT_LONG:
-                  if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
+            <form.AppField
+              name={field.slug}
+              validators={{
+                onChange: ({ value }: { value: any }) => {
+                  return buildFieldValidator(field, value);
+                },
+              }}
+            >
+              {(formField: any) => {
+                switch (field.type) {
+                  case E_FIELD_TYPE.TEXT_SHORT:
                     return (
-                      <formField.TableRowRichTextField
+                      <formField.TableRowTextField
                         field={field}
                         disabled={disabled}
                       />
                     );
-                  }
-                  return (
-                    <formField.TableRowTextareaField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.DROPDOWN:
-                  return (
-                    <formField.TableRowDropdownField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.DATE:
-                  return (
-                    <formField.TableRowDateField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.FILE:
-                  return (
-                    <formField.TableRowFileField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.RELATIONSHIP:
-                  return (
-                    <formField.TableRowRelationshipField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.CATEGORY:
-                  return (
-                    <formField.TableRowCategoryField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                case E_FIELD_TYPE.FIELD_GROUP:
-                  return (
-                    <formField.TableRowFieldGroupField
-                      field={field}
-                      disabled={disabled}
-                      tableSlug={tableSlug}
-                      form={form}
-                    />
-                  );
-                case E_FIELD_TYPE.USER:
-                  return (
-                    <formField.TableRowUserField
-                      field={field}
-                      disabled={disabled}
-                    />
-                  );
-                default:
-                  return null;
-              }
-            }}
-          </form.AppField>
+                  case E_FIELD_TYPE.TEXT_LONG:
+                    if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
+                      return (
+                        <formField.TableRowRichTextField
+                          field={field}
+                          disabled={disabled}
+                        />
+                      );
+                    }
+                    return (
+                      <formField.TableRowTextareaField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.DROPDOWN:
+                    return (
+                      <formField.TableRowDropdownField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.DATE:
+                    return (
+                      <formField.TableRowDateField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.FILE:
+                    return (
+                      <formField.TableRowFileField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.RELATIONSHIP:
+                    return (
+                      <formField.TableRowRelationshipField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.CATEGORY:
+                    return (
+                      <formField.TableRowCategoryField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  case E_FIELD_TYPE.FIELD_GROUP:
+                    return (
+                      <formField.TableRowFieldGroupField
+                        field={field}
+                        disabled={disabled}
+                        tableSlug={tableSlug}
+                        form={form}
+                      />
+                    );
+                  case E_FIELD_TYPE.USER:
+                    return (
+                      <formField.TableRowUserField
+                        field={field}
+                        disabled={disabled}
+                      />
+                    );
+                  default:
+                    return null;
+                }
+              }}
+            </form.AppField>
+          </div>
         );
       })}
     </section>

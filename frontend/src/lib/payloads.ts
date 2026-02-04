@@ -132,6 +132,8 @@ export type FieldConfigurationPayload = {
   showInForm?: boolean;
   showInDetail?: boolean;
   showInList?: boolean;
+  widthInForm?: number | null;
+  widthInList?: number | null;
   defaultValue?: string | null;
   relationship?: {
     table: { _id: string; slug: string };
@@ -154,6 +156,8 @@ export type FieldCreatePayload = {
   showInForm?: boolean;
   showInDetail?: boolean;
   showInList?: boolean;
+  widthInForm?: number | null;
+  widthInList?: number | null;
   defaultValue?: string | null;
   relationship?: {
     table: { _id: string; slug: string };
@@ -177,6 +181,8 @@ export type FieldUpdatePayload = {
   showInForm?: boolean;
   showInDetail?: boolean;
   showInList?: boolean;
+  widthInForm?: number | null;
+  widthInList?: number | null;
   defaultValue?: string | null;
   relationship?: {
     table: { _id: string; slug: string };

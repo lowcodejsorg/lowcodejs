@@ -37,6 +37,8 @@ export const FieldShowInFilterSchema = z.boolean().default(false);
 export const FieldShowInFormSchema = z.boolean().default(false);
 export const FieldShowInDetailSchema = z.boolean().default(false);
 export const FieldShowInListSchema = z.boolean().default(false);
+export const FieldWidthInFormSchema = z.number().nullable().default(50);
+export const FieldWidthInListSchema = z.number().nullable().default(50);
 export const FieldLockedSchema = z.boolean().default(false);
 export const FieldDefaultValueSchema = z.string().nullable().default(null);
 export const FieldRelationshipSchema = Relationship.nullable().default(null);
@@ -63,6 +65,8 @@ export const TableFieldBaseSchema = z.object({
   showInForm: FieldShowInFormSchema,
   showInDetail: FieldShowInDetailSchema,
   showInList: FieldShowInListSchema,
+  widthInForm: FieldWidthInFormSchema,
+  widthInList: FieldWidthInListSchema,
   locked: FieldLockedSchema,
   defaultValue: FieldDefaultValueSchema,
   relationship: FieldRelationshipSchema,

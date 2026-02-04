@@ -220,6 +220,8 @@ function RouteComponent(): React.JSX.Element {
         showInForm: value.showInForm,
         showInDetail: value.showInDetail,
         showInList: value.showInList,
+        widthInForm: value.widthInForm,
+        widthInList: value.widthInList,
         format: value.format
           ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
           : null,
