@@ -25,8 +25,10 @@ services:
       PORT: 3000
       DATABASE_URL: mongodb://${DB_USERNAME}:${DB_PASSWORD}@${ENVIRONMENT}-lowcodejs-mongo-1:27017/${DB_NAME}?authSource=admin
       DB_NAME: ${DB_NAME}
-      APP_SERVER_URL: https://api.${ENVIRONMENT}.lowcodejs.org
-      APP_CLIENT_URL: https://${ENVIRONMENT}.lowcodejs.org
+      # APP_SERVER_URL: https://api.${ENVIRONMENT}.lowcodejs.org
+      # APP_CLIENT_URL: https://${ENVIRONMENT}.lowcodejs.org
+      APP_SERVER_URL: ${APP_SERVER_URL:-https://api.${ENVIRONMENT}.lowcodejs.org}
+      APP_CLIENT_URL: ${APP_CLIENT_URL:-https://${ENVIRONMENT}.lowcodejs.org}
       JWT_PRIVATE_KEY: ${JWT_PRIVATE_KEY}
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
       COOKIE_SECRET: ${COOKIE_SECRET}
@@ -39,8 +41,10 @@ services:
       FILE_UPLOAD_ACCEPTED: ${FILE_UPLOAD_ACCEPTED:-jpg;jpeg;png;pdf;doc;docx;xls;xlsx;txt;zip;rar}
       FILE_UPLOAD_MAX_FILES_PER_UPLOAD: ${FILE_UPLOAD_MAX_FILES_PER_UPLOAD:-10}
       LOCALE: ${LOCALE:-pt-br}
-      LOGO_SMALL_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/small.png
-      LOGO_LARGE_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/large.png
+      # LOGO_SMALL_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/small.png
+      # LOGO_LARGE_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/large.png
+      LOGO_SMALL_URL: ${LOGO_SMALL_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/small.png}
+      LOGO_LARGE_URL: ${LOGO_LARGE_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/large.png}
       PAGINATION_PER_PAGE: ${PAGINATION_PER_PAGE:-20}
     restart: unless-stopped
     volumes:
@@ -52,11 +56,13 @@ services:
       - traefik-network
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${ENVIRONMENT}-api.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-api.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-api.rule=Host(`${API_HOST:-api.${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-api.entrypoints=websecure"
       - "traefik.http.routers.${ENVIRONMENT}-api.tls.certresolver=myresolver"
       - "traefik.http.services.${ENVIRONMENT}-api.loadbalancer.server.port=3000"
-      - "traefik.http.routers.${ENVIRONMENT}-api-http.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-api-http.rule=Host(`api.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-api-http.rule=Host(`${API_HOST:-api.${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-api-http.entrypoints=web"
       - "traefik.http.routers.${ENVIRONMENT}-api-http.middlewares=https-only@file"
 
@@ -64,7 +70,8 @@ services:
     image: ${DOCKER_USERNAME}/lowcodejs-app:${ENVIRONMENT}
     restart: unless-stopped
     environment:
-      VITE_API_BASE_URL: https://api.${ENVIRONMENT}.lowcodejs.org
+      #VITE_API_BASE_URL: https://api.${ENVIRONMENT}.lowcodejs.org
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://api.${ENVIRONMENT}.lowcodejs.org}
       NITRO_PORT: 3000
       NITRO_HOST: 0.0.0.0
     # volumes:
@@ -81,11 +88,13 @@ services:
       start_period: 60s
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${APP_HOST:-${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-app.entrypoints=websecure"
       - "traefik.http.routers.${ENVIRONMENT}-app.tls.certresolver=myresolver"
       - "traefik.http.services.${ENVIRONMENT}-app.loadbalancer.server.port=3000"
-      - "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      #- "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-app-http.rule=Host(`${APP_HOST:-${ENVIRONMENT}.lowcodejs.org}`)"
       - "traefik.http.routers.${ENVIRONMENT}-app-http.entrypoints=web"
       - "traefik.http.routers.${ENVIRONMENT}-app-http.middlewares=https-only@file"
       # Headers anti-cache para garantir que navegadores busquem sempre a versão mais recente
