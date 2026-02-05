@@ -1,15 +1,15 @@
-import { TanStackDevtools } from '@tanstack/react-devtools';
+// import { TanStackDevtools } from '@tanstack/react-devtools';
 import type { QueryClient } from '@tanstack/react-query';
 import {
   HeadContent,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
+// import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
 import React from 'react';
 import { Toaster } from 'sonner';
 
-import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
+// import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
 import appCss from '../styles.css?url';
 
 interface MyRouterContext {
@@ -55,7 +55,7 @@ function RootDocument({
         {/* <Header /> */}
         {children}
         <Toaster />
-        <TanStackDevtools
+        {/* <TanStackDevtools
           config={{
             position: 'bottom-right',
           }}
@@ -66,7 +66,7 @@ function RootDocument({
             },
             TanStackQueryDevtools,
           ]}
-        />
+        /> */}
         <Scripts />
       </body>
     </html>
