@@ -89,6 +89,9 @@ export function buildCreateRowDefaultValues(
       case E_FIELD_TYPE.FIELD_GROUP:
         defaults[field.slug] = [{}];
         break;
+      case E_FIELD_TYPE.EVALUATION:
+        defaults[field.slug] = [];
+        break;
       default:
         defaults[field.slug] = '';
     }
@@ -354,6 +357,12 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
         return options;
       }
 
+      return [];
+    }
+    case E_FIELD_TYPE.EVALUATION: {
+      if (value === null || value === '') return [];
+      const options = Array.from<string>(value as Array<string>);
+      if (options.length > 0) return options;
       return [];
     }
     default:

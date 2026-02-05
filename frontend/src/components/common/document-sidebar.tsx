@@ -166,14 +166,16 @@ export function DocumentSidebar({
 
       setAddModalOpen(false);
 
-      router.navigate({
-        to: '/tables/$slug/row/create',
-        params: { slug },
-        search: {
-          categoryId: data.node.id,
-          categorySlug: categoryField.slug,
-        },
-      });
+      window.setTimeout(() => {
+        router.navigate({
+          to: '/tables/$slug/row/create',
+          params: { slug },
+          search: {
+            categoryId: data.node.id,
+            categorySlug: categoryField.slug,
+          },
+        });
+      }, 200);
     },
     onError(error) {
       if (error instanceof AxiosError) {

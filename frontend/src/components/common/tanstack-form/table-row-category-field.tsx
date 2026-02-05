@@ -56,11 +56,15 @@ export function TableRowCategoryField({
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedIds = React.useMemo(() => {
-    return formField.state.value;
+    const value = formField.state.value as unknown;
+    if (Array.isArray(value)) return value;
+    if (value) return [String(value)];
+    return [];
   }, [formField.state.value]);
 
   const selectedLabel = React.useMemo(() => {
-    const values = formField.state.value;
+    const value = formField.state.value as unknown;
+    const values = Array.isArray(value) ? value : value ? [String(value)] : [];
     const labels = values
       .map((id) => findCategoryLabel(id, categories))
       .filter(Boolean);
@@ -97,7 +101,7 @@ export function TableRowCategoryField({
               console.log(ids);
               if (!field.multiple) {
                 const [id] = ids;
-                formField.handleChange([id]);
+                formField.handleChange(id ? [id] : []);
               }
 
               if (field.multiple) {
