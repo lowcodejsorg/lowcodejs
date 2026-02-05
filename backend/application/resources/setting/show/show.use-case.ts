@@ -10,6 +10,9 @@ import { SettingContractRepository } from '@application/repositories/setting/set
 type Response = Either<HTTPException, ISetting | Record<string, unknown>>;
 
 const KANBAN_TEMPLATE_ID = 'KANBAN_TEMPLATE';
+const CARDS_TEMPLATE_ID = 'CARDS_TEMPLATE';
+const MOSAIC_TEMPLATE_ID = 'MOSAIC_TEMPLATE';
+const DOCUMENT_TEMPLATE_ID = 'DOCUMENT_TEMPLATE';
 
 function getKanbanTemplateEntry(): Pick<
   ISetting['MODEL_CLONE_TABLES'][number],
@@ -20,6 +23,42 @@ function getKanbanTemplateEntry(): Pick<
     name: 'Kanban (Tarefas)',
     slug: 'kanban-tarefas',
     description: 'Modelo predefinido de tarefas em Kanban',
+  };
+}
+
+function getCardsTemplateEntry(): Pick<
+  ISetting['MODEL_CLONE_TABLES'][number],
+  '_id' | 'name' | 'slug' | 'description'
+> {
+  return {
+    _id: CARDS_TEMPLATE_ID,
+    name: 'Cards',
+    slug: 'cards',
+    description: 'Modelo predefinido para Cards',
+  };
+}
+
+function getMosaicTemplateEntry(): Pick<
+  ISetting['MODEL_CLONE_TABLES'][number],
+  '_id' | 'name' | 'slug' | 'description'
+> {
+  return {
+    _id: MOSAIC_TEMPLATE_ID,
+    name: 'Mosaico',
+    slug: 'mosaico',
+    description: 'Modelo predefinido para Mosaico',
+  };
+}
+
+function getDocumentTemplateEntry(): Pick<
+  ISetting['MODEL_CLONE_TABLES'][number],
+  '_id' | 'name' | 'slug' | 'description'
+> {
+  return {
+    _id: DOCUMENT_TEMPLATE_ID,
+    name: 'Documento',
+    slug: 'documento',
+    description: 'Modelo predefinido para documento por índice',
   };
 }
 
@@ -36,7 +75,12 @@ export default class SettingShowUseCase {
           ...process.env,
           FILE_UPLOAD_ACCEPTED:
             process.env.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
-          MODEL_CLONE_TABLES: [getKanbanTemplateEntry()],
+          MODEL_CLONE_TABLES: [
+            getKanbanTemplateEntry(),
+            getCardsTemplateEntry(),
+            getMosaicTemplateEntry(),
+            getDocumentTemplateEntry(),
+          ],
         });
       }
 
@@ -45,6 +89,9 @@ export default class SettingShowUseCase {
         FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
         MODEL_CLONE_TABLES: [
           getKanbanTemplateEntry(),
+          getCardsTemplateEntry(),
+          getMosaicTemplateEntry(),
+          getDocumentTemplateEntry(),
           ...(Array.isArray(setting.MODEL_CLONE_TABLES)
             ? setting.MODEL_CLONE_TABLES
             : []),

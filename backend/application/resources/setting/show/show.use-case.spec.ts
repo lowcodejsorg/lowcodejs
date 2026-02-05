@@ -15,6 +15,27 @@ describe('Setting Show Use Case', () => {
     description: 'Modelo predefinido de tarefas em Kanban',
   };
 
+  const cardsTemplate = {
+    _id: 'CARDS_TEMPLATE',
+    name: 'Cards',
+    slug: 'cards',
+    description: 'Modelo predefinido para Cards',
+  };
+
+  const mosaicTemplate = {
+    _id: 'MOSAIC_TEMPLATE',
+    name: 'Mosaico',
+    slug: 'mosaico',
+    description: 'Modelo predefinido para Mosaico',
+  };
+
+  const documentTemplate = {
+    _id: 'DOCUMENT_TEMPLATE',
+    name: 'Documento',
+    slug: 'documento',
+    description: 'Modelo predefinido para documento por índice',
+  };
+
   beforeEach(() => {
     settingInMemoryRepository = new SettingInMemoryRepository();
     sut = new SettingShowUseCase(settingInMemoryRepository);
@@ -36,6 +57,9 @@ describe('Setting Show Use Case', () => {
       expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual(['jpg', 'png']);
       expect(result.value.MODEL_CLONE_TABLES).toEqual([
         kanbanTemplate,
+        cardsTemplate,
+        mosaicTemplate,
+        documentTemplate,
         'table1',
         'table2',
       ]);
@@ -47,7 +71,12 @@ describe('Setting Show Use Case', () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.MODEL_CLONE_TABLES).toEqual([kanbanTemplate]);
+      expect(result.value.MODEL_CLONE_TABLES).toEqual([
+        kanbanTemplate,
+        cardsTemplate,
+        mosaicTemplate,
+        documentTemplate,
+      ]);
     }
   });
 

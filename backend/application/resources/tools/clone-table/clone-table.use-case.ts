@@ -38,6 +38,9 @@ type Response = Either<
 >;
 
 const KANBAN_TEMPLATE_ID = 'KANBAN_TEMPLATE';
+const CARDS_TEMPLATE_ID = 'CARDS_TEMPLATE';
+const MOSAIC_TEMPLATE_ID = 'MOSAIC_TEMPLATE';
+const DOCUMENT_TEMPLATE_ID = 'DOCUMENT_TEMPLATE';
 
 @Service()
 export default class CloneTableUseCase {
@@ -60,6 +63,19 @@ export default class CloneTableUseCase {
       if (payload.baseTableId === KANBAN_TEMPLATE_ID) {
         return await this.createKanbanTemplate(payload);
       }
+
+      if (payload.baseTableId === CARDS_TEMPLATE_ID) {
+        return await this.createCardsTemplate(payload);
+      }
+
+      if (payload.baseTableId === MOSAIC_TEMPLATE_ID) {
+        return await this.createMosaicTemplate(payload);
+      }
+
+      if (payload.baseTableId === DOCUMENT_TEMPLATE_ID) {
+        return await this.createDocumentTemplate(payload);
+      }
+
 
       const baseTable = await this.tableRepository.findBy({
         _id: payload.baseTableId,
@@ -224,6 +240,478 @@ if (progresso < 100 && notificado) {
       table: newTable,
       fieldIdMap: {},
     });
+  }
+
+  private async createCardsTemplate(
+    payload: CloneTableUseCasePayload,
+  ): Promise<Response> {
+    const newSlug = slugify(payload.name, {
+      lower: true,
+      strict: true,
+      trim: true,
+    });
+
+    const { fields, orderList, orderForm } = await this.buildCardsFields();
+
+    const _schema = buildSchema(fields);
+
+    const createPayload: TableCreatePayload = {
+      _schema,
+      name: payload.name,
+      slug: newSlug,
+      description: 'Cards',
+      type: E_TABLE_TYPE.TABLE,
+      logo: null,
+      fields: fields.map((f) => f._id),
+      style: E_TABLE_STYLE.CARD,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      administrators: [],
+      owner: payload.ownerId,
+      fieldOrderList: orderList,
+      fieldOrderForm: orderForm,
+      methods: {
+        onLoad: { code: null },
+        beforeSave: { code: null },
+        afterSave: { code: null },
+      },
+    };
+
+    const newTable = await this.tableRepository.create(createPayload);
+
+    return right({
+      table: newTable,
+      fieldIdMap: {},
+    });
+  }
+
+  private async buildSimpleMediaFields(): Promise<{
+    fields: IField[];
+    orderList: string[];
+    orderForm: string[];
+  }> {
+    const createdFields: IField[] = [];
+
+    const createField = async (payload: {
+      name: string;
+      slug: string;
+      type: IField['type'];
+      required: boolean;
+      multiple: boolean;
+      format: IField['format'];
+      showInList: boolean;
+      showInForm: boolean;
+      showInDetail: boolean;
+      showInFilter: boolean;
+      defaultValue: IField['defaultValue'];
+      locked: boolean;
+      relationship: IField['relationship'];
+      dropdown: IField['dropdown'];
+      category: IField['category'];
+      group: IField['group'];
+      widthInForm: IField['widthInForm'];
+      widthInList: IField['widthInList'];
+    }): Promise<IField> => {
+      const field = await this.fieldRepository.create({
+        ...payload,
+      });
+      createdFields.push(field);
+      return field;
+    };
+
+    const titleField = await createField({
+      name: 'Título',
+      slug: 'titulo',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      required: true,
+      multiple: false,
+      format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
+    });
+
+    const descriptionField = await createField({
+      name: 'Descrição',
+      slug: 'descricao',
+      type: E_FIELD_TYPE.TEXT_LONG,
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.PLAIN_TEXT,
+      showInList: false,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 100,
+      widthInList: 50,
+    });
+
+    const imageField = await createField({
+      name: 'Imagem',
+      slug: 'imagem',
+      type: E_FIELD_TYPE.FILE,
+      required: false,
+      multiple: false,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
+    });
+
+    const orderList = [imageField._id, titleField._id, descriptionField._id];
+
+    const orderForm = [titleField._id, descriptionField._id, imageField._id];
+
+    return {
+      fields: createdFields,
+      orderList,
+      orderForm,
+    };
+  }
+
+  private async buildCardsFields(): Promise<{
+    fields: IField[];
+    orderList: string[];
+    orderForm: string[];
+  }> {
+    const base = await this.buildSimpleMediaFields();
+    const createdFields = [...base.fields];
+
+    const createField = async (payload: {
+      name: string;
+      slug: string;
+      type: IField['type'];
+      required: boolean;
+      multiple: boolean;
+      format: IField['format'];
+      showInList: boolean;
+      showInForm: boolean;
+      showInDetail: boolean;
+      showInFilter: boolean;
+      defaultValue: IField['defaultValue'];
+      locked: boolean;
+      relationship: IField['relationship'];
+      dropdown: IField['dropdown'];
+      category: IField['category'];
+      group: IField['group'];
+      widthInForm: IField['widthInForm'];
+      widthInList: IField['widthInList'];
+    }): Promise<IField> => {
+      const field = await this.fieldRepository.create({
+        ...payload,
+      });
+      createdFields.push(field);
+      return field;
+    };
+
+    const ratingField = await createField({
+      name: 'Nota',
+      slug: 'nota',
+      type: E_FIELD_TYPE.EVALUATION,
+      required: false,
+      multiple: false,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
+    });
+
+    const priceField = await createField({
+      name: 'Preço',
+      slug: 'preco',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.DECIMAL,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
+    });
+
+    const categoriesField = await createField({
+      name: 'Categorias',
+      slug: 'categorias',
+      type: E_FIELD_TYPE.CATEGORY,
+      required: false,
+      multiple: true,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 100,
+      widthInList: 100,
+    });
+
+    const orderList = [
+      ...base.orderList,
+      priceField._id,
+      ratingField._id,
+      categoriesField._id,
+    ];
+
+    const orderForm = [
+      ...base.orderForm,
+      priceField._id,
+      ratingField._id,
+      categoriesField._id,
+    ];
+
+    return {
+      fields: createdFields,
+      orderList,
+      orderForm,
+    };
+  }
+
+  private async createMosaicTemplate(
+    payload: CloneTableUseCasePayload,
+  ): Promise<Response> {
+    const newSlug = slugify(payload.name, {
+      lower: true,
+      strict: true,
+      trim: true,
+    });
+
+    const { fields, orderList, orderForm } = await this.buildMosaicFields();
+
+    const _schema = buildSchema(fields);
+
+    const createPayload: TableCreatePayload = {
+      _schema,
+      name: payload.name,
+      slug: newSlug,
+      description: 'Mosaico',
+      type: E_TABLE_TYPE.TABLE,
+      logo: null,
+      fields: fields.map((f) => f._id),
+      style: E_TABLE_STYLE.MOSAIC,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      administrators: [],
+      owner: payload.ownerId,
+      fieldOrderList: orderList,
+      fieldOrderForm: orderForm,
+      methods: {
+        onLoad: { code: null },
+        beforeSave: { code: null },
+        afterSave: { code: null },
+      },
+    };
+
+    const newTable = await this.tableRepository.create(createPayload);
+
+    return right({
+      table: newTable,
+      fieldIdMap: {},
+    });
+  }
+
+  private async buildMosaicFields(): Promise<{
+    fields: IField[];
+    orderList: string[];
+    orderForm: string[];
+  }> {
+    return await this.buildSimpleMediaFields();
+  }
+
+  private async createDocumentTemplate(
+    payload: CloneTableUseCasePayload,
+  ): Promise<Response> {
+    const newSlug = slugify(payload.name, {
+      lower: true,
+      strict: true,
+      trim: true,
+    });
+
+    const { fields, orderList, orderForm } = await this.buildDocumentFields();
+
+    const _schema = buildSchema(fields);
+
+    const createPayload: TableCreatePayload = {
+      _schema,
+      name: payload.name,
+      slug: newSlug,
+      description: 'Documento',
+      type: E_TABLE_TYPE.TABLE,
+      logo: null,
+      fields: fields.map((f) => f._id),
+      style: E_TABLE_STYLE.DOCUMENT,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      administrators: [],
+      owner: payload.ownerId,
+      fieldOrderList: orderList,
+      fieldOrderForm: orderForm,
+      methods: {
+        onLoad: { code: null },
+        beforeSave: { code: null },
+        afterSave: { code: null },
+      },
+    };
+
+    const newTable = await this.tableRepository.create(createPayload);
+
+    return right({
+      table: newTable,
+      fieldIdMap: {},
+    });
+  }
+
+  private async buildDocumentFields(): Promise<{
+    fields: IField[];
+    orderList: string[];
+    orderForm: string[];
+  }> {
+    const createdFields: IField[] = [];
+
+    const createField = async (payload: {
+      name: string;
+      slug: string;
+      type: IField['type'];
+      required: boolean;
+      multiple: boolean;
+      format: IField['format'];
+      showInList: boolean;
+      showInForm: boolean;
+      showInDetail: boolean;
+      showInFilter: boolean;
+      defaultValue: IField['defaultValue'];
+      locked: boolean;
+      relationship: IField['relationship'];
+      dropdown: IField['dropdown'];
+      category: IField['category'];
+      group: IField['group'];
+      widthInForm: IField['widthInForm'];
+      widthInList: IField['widthInList'];
+    }): Promise<IField> => {
+      const field = await this.fieldRepository.create({
+        ...payload,
+      });
+      createdFields.push(field);
+      return field;
+    };
+
+    const indexField = await createField({
+      name: 'Indice',
+      slug: 'indice',
+      type: E_FIELD_TYPE.CATEGORY,
+      required: true,
+      multiple: false,
+      format: null,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
+    });
+
+    const titleField = await createField({
+      name: 'Título',
+      slug: 'titulo',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      required: true,
+      multiple: false,
+      format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 50,
+      widthInList: 50,
+    });
+
+    const textField = await createField({
+      name: 'Texto',
+      slug: 'texto',
+      type: E_FIELD_TYPE.TEXT_LONG,
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.RICH_TEXT,
+      showInList: false,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      defaultValue: null,
+      locked: false,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+      widthInForm: 100,
+      widthInList: 100,
+    });
+
+    const orderList = [indexField._id, titleField._id, textField._id];
+
+    const orderForm = [titleField._id, indexField._id, textField._id];
+
+    return {
+      fields: createdFields,
+      orderList,
+      orderForm,
+    };
   }
 
   private async buildKanbanFields(): Promise<{
