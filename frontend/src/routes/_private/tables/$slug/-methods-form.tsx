@@ -4,10 +4,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import type { ITable } from '@/lib/interfaces';
 
+/**
+ * Validates if code is in IIFE format: (async () => { ... })();
+ */
+function isValidIIFE(code: string): boolean {
+  const trimmed = code.trim();
+  if (!trimmed) return true; // empty is valid
+  return trimmed.startsWith('(async') && trimmed.endsWith('})();');
+}
+
+const iifeValidation = z.string().refine(isValidIIFE, {
+  message: 'O codigo deve estar no formato IIFE: (async () => { ... })();',
+});
+
 export const TableMethodsSchema = z.object({
-  onLoad: z.string().default(''),
-  beforeSave: z.string().default(''),
-  afterSave: z.string().default(''),
+  onLoad: iifeValidation.default(''),
+  beforeSave: iifeValidation.default(''),
+  afterSave: iifeValidation.default(''),
 });
 
 export type TableMethodsFormValues = z.infer<typeof TableMethodsSchema>;
@@ -66,6 +79,7 @@ export const MethodsFormFields = withForm({
                 <field.FieldCodeEditor
                   label="Ao Carregar (OnLoad)"
                   table={table ?? undefined}
+                  hook="onLoad"
                 />
               )}
             </form.AppField>
@@ -84,6 +98,7 @@ export const MethodsFormFields = withForm({
                 <field.FieldCodeEditor
                   label="Antes de Salvar (BeforeSave)"
                   table={table ?? undefined}
+                  hook="beforeSave"
                 />
               )}
             </form.AppField>
@@ -102,6 +117,7 @@ export const MethodsFormFields = withForm({
                 <field.FieldCodeEditor
                   label="Após Salvar (AfterSave)"
                   table={table ?? undefined}
+                  hook="afterSave"
                 />
               )}
             </form.AppField>

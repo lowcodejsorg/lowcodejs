@@ -1,7 +1,32 @@
-import { EditorExample } from '@/components/common/editor';
+import { Suspense, lazy } from 'react';
+
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
+
+// Lazy load do editor pesado
+const EditorExample = lazy(() =>
+  import('@/components/common/editor').then((m) => ({
+    default: m.EditorExample,
+  })),
+);
+
+function EditorSkeleton(): React.JSX.Element {
+  return (
+    <div className="border rounded-md p-4 space-y-3">
+      <div className="flex gap-2 flex-wrap border-b pb-2">
+        {Array.from({ length: 12 }).map((_, i) => (
+          <Skeleton
+            key={i}
+            className="h-6 w-6"
+          />
+        ))}
+      </div>
+      <Skeleton className="h-32 w-full" />
+    </div>
+  );
+}
 
 interface FieldEditorProps {
   label: string;
@@ -25,10 +50,12 @@ export function FieldEditor({
             isInvalid && 'border-destructive',
           )}
         >
-          <EditorExample
-            value={field.state.value || ''}
-            onChange={(value) => field.handleChange(value)}
-          />
+          <Suspense fallback={<EditorSkeleton />}>
+            <EditorExample
+              value={field.state.value || ''}
+              onChange={(value) => field.handleChange(value)}
+            />
+          </Suspense>
         </div>
       )}
       {showPreview && (
@@ -36,7 +63,7 @@ export function FieldEditor({
           <div
             className="prose prose-sm max-w-none"
             dangerouslySetInnerHTML={{
-              __html: field.state.value || '<p>Sem conteúdo</p>',
+              __html: field.state.value || '<p>Sem conteudo</p>',
             }}
           />
         </div>

@@ -140,6 +140,15 @@ function MethodsFormContent({
 
       await _update.mutateAsync({
         slug: tableSlug,
+        name: data.name,
+        description: data.description,
+        logo: data.logo?._id ?? null,
+        style: data.style,
+        visibility: data.visibility,
+        collaboration: data.collaboration,
+        administrators: data.administrators.flatMap((a) => a._id),
+        fieldOrderList: data.fieldOrderList,
+        fieldOrderForm: data.fieldOrderForm,
         methods: {
           onLoad: {
             code: value.onLoad || null,

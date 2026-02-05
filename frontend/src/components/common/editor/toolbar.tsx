@@ -21,10 +21,8 @@ import { RichTextIframe } from 'reactjs-tiptap-editor/iframe';
 import { RichTextImage } from 'reactjs-tiptap-editor/image';
 import { RichTextIndent } from 'reactjs-tiptap-editor/indent';
 import { RichTextItalic } from 'reactjs-tiptap-editor/italic';
-import { RichTextKatex } from 'reactjs-tiptap-editor/katex';
 import { RichTextLineHeight } from 'reactjs-tiptap-editor/lineheight';
 import { RichTextLink } from 'reactjs-tiptap-editor/link';
-import { RichTextMermaid } from 'reactjs-tiptap-editor/mermaid';
 import { RichTextMoreMark } from 'reactjs-tiptap-editor/moremark';
 import { RichTextOrderedList } from 'reactjs-tiptap-editor/orderedlist';
 import { RichTextSearchAndReplace } from 'reactjs-tiptap-editor/searchandreplace';
@@ -40,7 +38,6 @@ import { RichTextVideo } from 'reactjs-tiptap-editor/video';
 
 // Bubble
 
-import 'katex/dist/katex.min.css';
 import 'reactjs-tiptap-editor/style.css';
 
 export function Toolbar(): React.JSX.Element {
@@ -78,8 +75,6 @@ export function Toolbar(): React.JSX.Element {
       <RichTextExportPdf />
       <RichTextTextDirection />
       <RichTextAttachment />
-      <RichTextKatex />
-      <RichTextMermaid />
     </div>
   );
 }

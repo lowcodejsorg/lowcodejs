@@ -4,8 +4,7 @@
     "**/*.tsx",
     "eslint.config.js",
     "prettier.config.js",
-    "vite.config.js",
-    "src/components/common/-tree-editor"
+    "vite.config.js"
   ],
   //
   "compilerOptions": {

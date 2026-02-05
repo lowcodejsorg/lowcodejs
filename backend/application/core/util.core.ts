@@ -13,7 +13,26 @@ import type {
   ValueOf,
 } from './entity.core';
 import { E_FIELD_TYPE, E_SCHEMA_TYPE } from './entity.core';
-import { HandlerFunction } from './table/method.core';
+import { executeScript } from './table/handler';
+import type { FieldDefinition } from './table/types';
+
+/**
+ * Maps IField array to FieldDefinition array for sandbox execution
+ * Includes all necessary data for each field type
+ */
+function mapFieldsForSandbox(fields: IField[]): FieldDefinition[] {
+  return fields.map((f) => ({
+    slug: f.slug,
+    type: f.type,
+    name: f.name,
+    multiple: f.multiple ?? false,
+    // Condicionalmente incluir dados extras baseado no tipo
+    ...(f.relationship && { relationship: f.relationship }),
+    ...(f.group && { group: f.group }),
+    ...(f.dropdown?.length && { dropdown: f.dropdown }),
+    ...(f.category?.length && { category: f.category }),
+  }));
+}
 
 export const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
@@ -238,22 +257,26 @@ export async function buildTable(
 
   if (table?.methods?.beforeSave?.code) {
     schema.pre('save', async function (next) {
-      const result = HandlerFunction(
-        table?.methods?.beforeSave?.code!,
-        this,
-        table.slug,
-        table.fields.map((f: any) => f.slug),
-        {
-          ...(this.isNew && { userAction: 'novo_registro' }),
-          ...(!this.isNew && { userAction: 'editar_registro' }),
+      const result = await executeScript({
+        code: table?.methods?.beforeSave?.code!,
+        doc: this,
+        tableSlug: table.slug,
+        fields: mapFieldsForSandbox(table.fields as IField[]),
+        context: {
+          userAction: this.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'antes_salvar',
-          tableId: table._id?.toString(),
           userId: this.creator?.toString(),
+          isNew: this.isNew,
+          tableInfo: {
+            _id: table._id?.toString() ?? '',
+            name: table.name,
+            slug: table.slug,
+          },
         },
-      );
+      });
 
       if (!result.success) {
-        throw new Error(`Erro no beforeSave: ${result.error}`);
+        throw new Error(`Erro no beforeSave: ${result.error?.message}`);
       }
 
       next();
@@ -262,22 +285,29 @@ export async function buildTable(
 
   if (table?.methods?.afterSave?.code) {
     schema.post('save', async function (doc, next) {
-      const result = HandlerFunction(
-        table?.methods?.afterSave?.code!,
+      const result = await executeScript({
+        code: table?.methods?.afterSave?.code!,
         doc,
-        table.slug,
-        table.fields.map((f: any) => f.slug),
-        {
-          ...(doc.isNew && { userAction: 'novo_registro' }),
-          ...(!doc.isNew && { userAction: 'editar_registro' }),
+        tableSlug: table.slug,
+        fields: mapFieldsForSandbox(table.fields as IField[]),
+        context: {
+          userAction: doc.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'depois_salvar',
-          tableId: table._id?.toString(),
           userId: doc.creator?.toString(),
+          isNew: doc.isNew,
+          tableInfo: {
+            _id: table._id?.toString() ?? '',
+            name: table.name,
+            slug: table.slug,
+          },
         },
-      );
+      });
 
       if (!result.success) {
-        console.error('Erro no afterSave (não bloqueante):', result.error);
+        console.error(
+          'Erro no afterSave (não bloqueante):',
+          result.error?.message,
+        );
       }
 
       next();
@@ -288,21 +318,29 @@ export async function buildTable(
     // Para consultas individuais (findOne)
     schema.post('findOne', async function (doc, next) {
       if (doc) {
-        const result = HandlerFunction(
-          table?.methods?.onLoad?.code!,
+        const result = await executeScript({
+          code: table?.methods?.onLoad?.code!,
           doc,
-          table.slug,
-          table.fields.map((f: any) => f.slug),
-          {
+          tableSlug: table.slug,
+          fields: mapFieldsForSandbox(table.fields as IField[]),
+          context: {
             userAction: 'carregamento_formulario',
             executionMoment: 'carregamento_formulario',
-            tableId: table._id?.toString(),
             userId: doc.creator?.toString(),
+            isNew: false,
+            tableInfo: {
+              _id: table._id?.toString() ?? '',
+              name: table.name,
+              slug: table.slug,
+            },
           },
-        );
+        });
 
         if (!result.success) {
-          console.error('Erro no onLoad (não bloqueante):', result.error);
+          console.error(
+            'Erro no onLoad (não bloqueante):',
+            result.error?.message,
+          );
         }
       }
       next();
