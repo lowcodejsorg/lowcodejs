@@ -34,7 +34,11 @@ export function TableRowFileCell({
               <Link
                 to={value.url}
                 target="_blank"
-                className="flex flex-col items-center gap-1 text-center underline underline-offset-2"
+                className={cn(
+                  'flex flex-col items-center gap-1 text-center underline underline-offset-2',
+                  isCardOrMosaic &&
+                    'h-full w-full overflow-hidden no-underline justify-center',
+                )}
                 onClick={(e) => e.stopPropagation()}
               >
                 <img
@@ -42,7 +46,7 @@ export function TableRowFileCell({
                   alt={value.originalName}
                   className={cn(
                     'object-cover',
-                    isCardOrMosaic ? 'size-full h-full' : 'size-16',
+                    isCardOrMosaic ? 'size-full h-full block' : 'size-16',
                   )}
                 />
                 {!isCardOrMosaic && (
