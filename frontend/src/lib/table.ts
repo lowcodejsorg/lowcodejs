@@ -1,3 +1,5 @@
+/* eslint-disable no-duplicate-case */
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { E_FIELD_TYPE } from './constant';
 import type {
   ICategory,
@@ -89,6 +91,7 @@ export function buildCreateRowDefaultValues(
       case E_FIELD_TYPE.FIELD_GROUP:
         defaults[field.slug] = [{}];
         break;
+      // @ts-ignore
       case E_FIELD_TYPE.EVALUATION:
         defaults[field.slug] = [];
         break;

@@ -221,7 +221,6 @@ field.set('status', 'aprovado');
 const todos = field.getAll();`}</code>
                     </pre>
                   </div>
-
                 </div>
               </div>
             </TabsContent>

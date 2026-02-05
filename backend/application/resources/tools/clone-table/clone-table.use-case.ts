@@ -76,7 +76,6 @@ export default class CloneTableUseCase {
         return await this.createDocumentTemplate(payload);
       }
 
-
       const baseTable = await this.tableRepository.findBy({
         _id: payload.baseTableId,
         exact: true,

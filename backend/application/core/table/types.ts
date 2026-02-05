@@ -108,11 +108,10 @@ export interface SandboxGlobals {
   email: EmailApi;
   utils: UtilsApi;
   console: {
-    // eslint-disable-next-line no-unused-vars
     log: (...args: any[]) => void;
-    // eslint-disable-next-line no-unused-vars
+
     warn: (...args: any[]) => void;
-    // eslint-disable-next-line no-unused-vars
+
     error: (...args: any[]) => void;
   };
   // Builtins will be added dynamically
