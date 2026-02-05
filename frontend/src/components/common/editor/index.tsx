@@ -34,12 +34,10 @@ import { Iframe } from 'reactjs-tiptap-editor/iframe';
 import { Image } from 'reactjs-tiptap-editor/image';
 import { Indent } from 'reactjs-tiptap-editor/indent';
 import { Italic } from 'reactjs-tiptap-editor/italic';
-import { Katex } from 'reactjs-tiptap-editor/katex';
 import { LineHeight } from 'reactjs-tiptap-editor/lineheight';
 import { Link } from 'reactjs-tiptap-editor/link';
 import { localeActions } from 'reactjs-tiptap-editor/locale-bundle';
 import { Mention } from 'reactjs-tiptap-editor/mention';
-import { Mermaid } from 'reactjs-tiptap-editor/mermaid';
 import { MoreMark } from 'reactjs-tiptap-editor/moremark';
 import { OrderedList } from 'reactjs-tiptap-editor/orderedlist';
 import { SearchAndReplace } from 'reactjs-tiptap-editor/searchandreplace';
@@ -55,7 +53,6 @@ import { TextDirection } from 'reactjs-tiptap-editor/textdirection';
 import { TextUnderline } from 'reactjs-tiptap-editor/textunderline';
 import { Video } from 'reactjs-tiptap-editor/video';
 
-import 'katex/dist/katex.min.css';
 import 'reactjs-tiptap-editor/style.css';
 
 import { Bubble } from './buble';
@@ -147,21 +144,6 @@ const extensions = [
   Iframe,
   TextDirection,
   Attachment.configure({
-    upload: (file: any) => {
-      // fake upload return base 64
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const blob = convertBase64ToBlob(reader.result as string);
-          resolve(URL.createObjectURL(blob));
-        }, 300);
-      });
-    },
-  }),
-  Katex,
-  Mermaid.configure({
     upload: (file: any) => {
       // fake upload return base 64
       const reader = new FileReader();

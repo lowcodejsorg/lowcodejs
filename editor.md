@@ -106,18 +106,6 @@ field.set(slug: string, value: any): void
 field.getAll(): Record
 // Retorna todos os campos como objeto { slug: valor }
 // Slugs normalizados (sem hífens)
-
-field.getRelated(slug: string): Promise<Record<string, any> | null>
-// Busca o registro completo de um campo RELATIONSHIP
-// Retorna os dados do registro relacionado pelo ID armazenado no campo
-// Retorna null se o campo estiver vazio ou o registro não existir
-// Ex: const cliente = await field.getRelated('cliente');
-
-field.queryRelated(slug: string, options?: RelatedQueryOptions): Promise<RelatedQueryResult>
-// Consulta múltiplos registros da tabela relacionada ao campo
-// options: { where?, limit?, orderBy? }
-// Retorna: { data: [], total: number }
-// Ex: const result = await field.queryRelated('cliente', { where: { ativo: true }, limit: 10 });
 ```
 
 #### C) Objeto `context` — Informações do contexto
@@ -162,54 +150,6 @@ utils.now(): Date             // new Date() com horário atual
 utils.formatDate(date: Date | string, format?: string): string  // Formatação simples
 utils.sha256(text: string): string    // Hash SHA-256 hex (usa crypto nativo do Node)
 utils.uuid(): string          // UUID v4 (usa crypto.randomUUID() do Node)
-```
-
-#### F) Objeto `db` — Consulta a tabelas relacionadas
-
-Permite consultar registros de tabelas que possuem campos RELATIONSHIP apontando para a tabela atual.
-
-```typescript
-db.query(tableName: string, options?: DbQueryOptions): Promise<DbQueryResult>
-// Consulta registros de uma tabela relacionada
-// tableName: slug da tabela a consultar (deve ter RELATIONSHIP com a tabela atual)
-// options: { filter?, limit?, skip?, sort? }
-// Limite máximo: 100 registros por consulta
-
-db.findById(tableName: string, id: string): Promise<Record<string, any> | null>
-// Busca um registro específico pelo ID
-// Retorna null se não encontrado
-
-db.findOne(tableName: string, filter: Record<string, any>): Promise<Record<string, any> | null>
-// Busca o primeiro registro que corresponde ao filtro
-// Retorna null se não encontrado
-```
-
-**Restrição de segurança:** Só é possível consultar tabelas que possuem um campo RELATIONSHIP definido apontando para a tabela atual. Tentativas de consultar outras tabelas resultam em erro.
-
-**Exemplo:**
-
-```javascript
-(async () => {
-  // Buscar todos os pedidos relacionados ao cliente atual
-  const pedidos = await db.query('pedidos', {
-    filter: { cliente: field.get('_id') },
-    limit: 10,
-    sort: { data: -1 }
-  });
-
-  console.log(`Cliente tem ${pedidos.total} pedidos`);
-  for (const pedido of pedidos.data) {
-    console.log(`Pedido: ${pedido.numero} - R$ ${pedido.valor}`);
-  }
-
-  // Buscar um pedido específico
-  const pedido = await db.findById('pedidos', '507f1f77bcf86cd799439011');
-
-  // Buscar o último pedido do cliente
-  const ultimoPedido = await db.findOne('pedidos', { 
-    cliente: field.get('_id') 
-  });
-})();
 ```
 
 ### Estrutura de arquivos do backend
@@ -458,11 +398,6 @@ Cada tab (onLoad, beforeSave, afterSave) deve ter um painel de ajuda lateral ou 
   ├── utils.sha256('texto') → Hash SHA-256
   └── utils.uuid()          → UUID v4
 
-  db - Consulta a tabelas relacionadas (usar com await)
-  ├── await db.query('tabela', { filter, limit, sort })
-  ├── await db.findById('tabela', 'id')
-  └── await db.findOne('tabela', { filtro })
-
 🔹 Campos desta tabela:
   field.get('titulo')
   field.get('descricao')
@@ -614,25 +549,7 @@ Quando `beforeSave` falha, a API deve retornar um erro estruturado:
 })();
 ```
 
-### 5. Consulta a tabelas relacionadas com db (beforeSave)
-
-```javascript
-(async () => {
-  // Verificar se cliente já tem pedidos pendentes antes de criar novo
-  const pedidosPendentes = await db.query('pedidos', {
-    filter: { 
-      cliente: field.get('cliente'),
-      status: 'pendente'
-    }
-  });
-
-  if (pedidosPendentes.total >= 3) {
-    throw new Error('Cliente já possui 3 ou mais pedidos pendentes');
-  }
-})();
-```
-
-### 6. Hash e UUID (beforeSave)
+### 5. Hash e UUID (beforeSave)
 
 ```javascript
 (async () => {
@@ -642,7 +559,7 @@ Quando `beforeSave` falha, a API deve retornar um erro estruturado:
 })();
 ```
 
-### 7. Debug com console.log
+### 6. Debug com console.log
 
 ```javascript
 (async () => {
@@ -656,7 +573,7 @@ Quando `beforeSave` falha, a API deve retornar um erro estruturado:
 })();
 ```
 
-### 8. Condicional por ação do usuário (onLoad)
+### 7. Condicional por ação do usuário (onLoad)
 
 ```javascript
 (async () => {
@@ -669,7 +586,7 @@ Quando `beforeSave` falha, a API deve retornar um erro estruturado:
 })();
 ```
 
-### 9. Email com template (afterSave)
+### 8. Email com template (afterSave)
 
 ```javascript
 (async () => {
@@ -686,7 +603,7 @@ Quando `beforeSave` falha, a API deve retornar um erro estruturado:
 })();
 ```
 
-### 10. Loops e lógica complexa (beforeSave)
+### 9. Loops e lógica complexa (beforeSave)
 
 ```javascript
 (async () => {
@@ -705,7 +622,7 @@ Quando `beforeSave` falha, a API deve retornar um erro estruturado:
 })();
 ```
 
-### 11. Acessar informações da tabela
+### 10. Acessar informações da tabela
 
 ```javascript
 (async () => {
@@ -716,134 +633,6 @@ Quando `beforeSave` falha, a API deve retornar um erro estruturado:
 
   // Log com nome da tabela
   console.log('Registro salvo na tabela:', context.table.name);
-})();
-```
-
-### 12. Calcular total de pedidos do cliente (beforeSave)
-
-```javascript
-(async () => {
-  // Buscar histórico de compras do cliente e atualizar estatísticas
-  const clienteId = field.get('_id');
-  const pedidos = await db.query('pedidos', {
-    filter: { cliente: clienteId },
-    sort: { data: -1 }
-  });
-
-  let totalCompras = 0;
-  for (const pedido of pedidos.data) {
-    totalCompras += pedido.valor || 0;
-  }
-
-  field.set('total-compras', totalCompras);
-  field.set('qtd-pedidos', pedidos.total);
-  field.set('categoria', totalCompras > 10000 ? 'vip' : 'regular');
-
-  console.log(`Cliente tem ${pedidos.total} pedidos, total: R$ ${totalCompras}`);
-})();
-```
-
-### 13. Validar limite de crédito (beforeSave)
-
-```javascript
-(async () => {
-  // Verificar se novo pedido não excede limite de crédito do cliente
-  const clienteId = field.get('cliente');
-  const valorPedido = field.get('valor');
-
-  // Buscar dados do cliente
-  const cliente = await db.findById('clientes', clienteId);
-  if (!cliente) {
-    throw new Error('Cliente não encontrado');
-  }
-
-  // Buscar pedidos pendentes do cliente
-  const pendentes = await db.query('pedidos', {
-    filter: { cliente: clienteId, status: 'pendente' }
-  });
-
-  let totalPendente = valorPedido;
-  for (const p of pendentes.data) {
-    totalPendente += p.valor || 0;
-  }
-
-  if (totalPendente > cliente.limiteCredito) {
-    throw new Error(`Limite de crédito excedido. Limite: R$ ${cliente.limiteCredito}, Total pendente: R$ ${totalPendente}`);
-  }
-})();
-```
-
-### 14. Buscar dados do registro relacionado (beforeSave)
-
-```javascript
-(async () => {
-  // Buscar dados completos do cliente relacionado
-  const cliente = await field.getRelated('cliente');
-
-  if (cliente) {
-    // Copiar dados do cliente para o pedido
-    field.set('cliente-nome', cliente.nome);
-    field.set('cliente-email', cliente.email);
-    field.set('cliente-cpf', cliente.cpf);
-    
-    console.log('Cliente:', cliente.nome);
-  }
-})();
-```
-
-### 15. Usando field.queryRelated() para listar opções (onLoad)
-
-```javascript
-(async () => {
-  // Buscar todos os produtos ativos da tabela relacionada
-  const resultado = await field.queryRelated('produto', {
-    where: { ativo: true, estoque: { $gt: 0 } },
-    limit: 50,
-    orderBy: { nome: 'asc' }
-  });
-
-  console.log(`${resultado.total} produtos disponíveis`);
-
-  // Validar se produto selecionado está disponível
-  const produtoId = field.get('produto');
-  const produtoValido = resultado.data.some(p => p._id === produtoId);
-
-  if (produtoId && !produtoValido) {
-    console.warn('Produto selecionado não está mais disponível');
-  }
-})();
-```
-
-### 16. Validação com dados relacionados (beforeSave)
-
-```javascript
-(async () => {
-  // Buscar categoria do produto e aplicar regras
-  const produto = await field.getRelated('produto');
-
-  if (!produto) {
-    throw new Error('Produto não encontrado');
-  }
-
-  // Aplicar desconto baseado na categoria
-  const categoria = produto.categoria;
-  const quantidade = field.get('quantidade');
-  let desconto = 0;
-
-  if (categoria === 'promocao' && quantidade >= 10) {
-    desconto = 15;
-  } else if (quantidade >= 5) {
-    desconto = 5;
-  }
-
-  const precoBase = produto.preco * quantidade;
-  const precoFinal = precoBase * (1 - desconto / 100);
-
-  field.set('desconto', desconto);
-  field.set('preco-base', precoBase);
-  field.set('preco-final', precoFinal);
-
-  console.log(`Produto: ${produto.nome}, Desconto: ${desconto}%, Final: R$ ${precoFinal}`);
 })();
 ```
 
@@ -882,7 +671,7 @@ src/components/code-editor/
 ├── code-editor.tsx           # Componente Monaco principal
 ├── code-editor-info-modal.tsx # Modal com documentação e campos disponíveis
 ├── use-monaco-types.ts       # Hook: gera e injeta types dinâmicos no Monaco
-├── sandbox-types.ts          # Types estáticos (field, context, email, utils, db)
+├── sandbox-types.ts          # Types estáticos (field, context, email, utils)
 ├── tutorial-content.ts       # Conteúdo do tutorial por hook (onLoad, beforeSave, afterSave)
 └── field-type-mapper.ts      # Mapeia E_FIELD_TYPE → tipo TypeScript + gera overloads
 ```
