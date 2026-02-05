@@ -56,10 +56,10 @@ const config = defineConfig({
     }),
     viteReact(),
   ],
-  ssr: {
-    // Externalizar dependências pesadas do SSR para evitar OOM no Nitro
-    external: heavyExternals,
-  },
+  // ssr: {
+  //   // Externalizar dependências pesadas do SSR para evitar OOM no Nitro
+  //   external: heavyExternals,
+  // },
   build: {
     // Aumentar o limite de aviso de chunk para evitar warnings desnecessarios
     chunkSizeWarningLimit: 1000,
