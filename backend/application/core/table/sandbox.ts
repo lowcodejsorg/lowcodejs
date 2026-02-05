@@ -9,16 +9,11 @@ import {
 } from './field-resolver';
 import type {
   ContextApi,
-  DbApi,
-  DbQueryOptions,
-  DbQueryResult,
   EmailApi,
   EmailResult,
   ExecutionContext,
   FieldApi,
   FieldDefinition,
-  RelatedQueryOptions,
-  RelatedQueryResult,
   SandboxGlobals,
   UtilsApi,
 } from './types';
@@ -70,145 +65,6 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
         result[f.slug] = doc[f.slug];
       }
       return result;
-    },
-
-    async getRelated(slug: string): Promise<Record<string, any> | null> {
-      const fieldDef = findFieldDef(slug);
-
-      if (!fieldDef) {
-        throw new Error(`Campo "${slug}" não encontrado`);
-      }
-
-      if (fieldDef.type !== 'RELATIONSHIP') {
-        throw new Error(
-          `Campo "${slug}" não é do tipo RELATIONSHIP. Tipo atual: ${fieldDef.type}`,
-        );
-      }
-
-      if (!fieldDef.relationship?.table?.slug) {
-        throw new Error(
-          `Campo "${slug}" não possui uma tabela relacionada configurada`,
-        );
-      }
-
-      const fieldValue = resolveFieldValue(doc, fieldDef.slug);
-
-      if (!fieldValue) {
-        return null;
-      }
-
-      // Handle multiple values (array of IDs)
-      const ids = Array.isArray(fieldValue) ? fieldValue : [fieldValue];
-
-      if (ids.length === 0) {
-        return null;
-      }
-
-      // Get the first ID (for single relationship)
-      const id = ids[0]?.toString?.() ?? ids[0];
-
-      if (!id) {
-        return null;
-      }
-
-      try {
-        const { Table } = await import('@application/model/table.model');
-        const { buildTable } = await import('@application/core/util.core');
-
-        const relatedTableSlug = fieldDef.relationship.table.slug;
-        const relatedTable = await Table.findOne({ slug: relatedTableSlug });
-
-        if (!relatedTable) {
-          throw new Error(
-            `Tabela relacionada "${relatedTableSlug}" não encontrada`,
-          );
-        }
-
-        const model = await buildTable({
-          ...relatedTable.toJSON({ flattenObjectIds: true }),
-          _id: relatedTable._id.toString(),
-        });
-
-        const result = await model.findById(id).lean();
-
-        if (!result) {
-          return null;
-        }
-
-        return { ...result, _id: (result as any)._id.toString() };
-      } catch (error: any) {
-        throw new Error(
-          `Erro ao buscar registro relacionado: ${error.message}`,
-        );
-      }
-    },
-
-    async queryRelated(
-      slug: string,
-      options?: RelatedQueryOptions,
-    ): Promise<RelatedQueryResult> {
-      const fieldDef = findFieldDef(slug);
-
-      if (!fieldDef) {
-        throw new Error(`Campo "${slug}" não encontrado`);
-      }
-
-      if (fieldDef.type !== 'RELATIONSHIP') {
-        throw new Error(
-          `Campo "${slug}" não é do tipo RELATIONSHIP. Tipo atual: ${fieldDef.type}`,
-        );
-      }
-
-      if (!fieldDef.relationship?.table?.slug) {
-        throw new Error(
-          `Campo "${slug}" não possui uma tabela relacionada configurada`,
-        );
-      }
-
-      try {
-        const { Table } = await import('@application/model/table.model');
-        const { buildTable } = await import('@application/core/util.core');
-
-        const relatedTableSlug = fieldDef.relationship.table.slug;
-        const relatedTable = await Table.findOne({ slug: relatedTableSlug });
-
-        if (!relatedTable) {
-          throw new Error(
-            `Tabela relacionada "${relatedTableSlug}" não encontrada`,
-          );
-        }
-
-        const model = await buildTable({
-          ...relatedTable.toJSON({ flattenObjectIds: true }),
-          _id: relatedTable._id.toString(),
-        });
-
-        const where = options?.where ?? {};
-        const limit = Math.min(options?.limit ?? 100, 100);
-        const orderBy = options?.orderBy ?? {};
-
-        let query = model.find(where);
-
-        if (Object.keys(orderBy).length > 0) {
-          query = query.sort(orderBy);
-        }
-
-        query = query.limit(limit);
-
-        const [results, total] = await Promise.all([
-          query.lean(),
-          model.countDocuments(where),
-        ]);
-
-        return {
-          data: results.map((r: any) => ({ ...r, _id: r._id.toString() })),
-          total,
-        };
-      } catch (error: any) {
-        throw new Error(
-          `Erro ao consultar tabela relacionada: ${error.message}`,
-        );
-      }
     },
   };
 
@@ -351,86 +207,6 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
     },
   };
 
-  // Build db API for querying related tables
-  const allowedTables = fields
-    .filter((f) => f.relationship?.table?.slug)
-    .map((f) => f.relationship!.table.slug);
-
-  const db: DbApi = {
-    async query(
-      tableSlug: string,
-      options?: DbQueryOptions,
-    ): Promise<DbQueryResult[]> {
-      // Validate that table is related
-      if (!allowedTables.includes(tableSlug)) {
-        const available =
-          allowedTables.length > 0
-            ? allowedTables.join(', ')
-            : 'nenhuma tabela relacionada';
-        throw new Error(
-          `Tabela "${tableSlug}" não está relacionada com esta tabela. Tabelas disponíveis: ${available}`,
-        );
-      }
-
-      try {
-        const { Table } = await import('@application/model/table.model');
-        const { buildTable } = await import('@application/core/util.core');
-
-        const relatedTable = await Table.findOne({ slug: tableSlug }).populate(
-          'fields',
-        );
-        if (!relatedTable) {
-          throw new Error(`Tabela "${tableSlug}" não encontrada`);
-        }
-
-        const model = await buildTable({
-          ...relatedTable.toJSON({ flattenObjectIds: true }),
-          _id: relatedTable._id.toString(),
-        });
-
-        let query = model.find(options?.where ?? {});
-
-        if (options?.select?.length) {
-          query = query.select(options.select.join(' '));
-        }
-
-        if (options?.orderBy) {
-          query = query.sort(options.orderBy);
-        }
-
-        const limit = Math.min(options?.limit ?? 100, 100);
-        query = query.limit(limit);
-
-        const results = await query.lean();
-        return results.map((r: any) => ({ ...r, _id: r._id.toString() }));
-      } catch (error: any) {
-        throw new Error(
-          `Erro ao consultar tabela "${tableSlug}": ${error.message}`,
-        );
-      }
-    },
-
-    async findById(
-      tableSlug: string,
-      id: string,
-    ): Promise<DbQueryResult | null> {
-      if (!id) return null;
-      const results = await this.query(tableSlug, {
-        where: { _id: id },
-        limit: 1,
-      });
-      return results[0] ?? null;
-    },
-
-    async findOne(
-      tableSlug: string,
-      where: Record<string, any>,
-    ): Promise<DbQueryResult | null> {
-      const results = await this.query(tableSlug, { where, limit: 1 });
-      return results[0] ?? null;
-    },
-  };
-
   // Build console with log interception
   const interceptedConsole = {
     log: (...args: any[]): void => {
@@ -465,7 +241,6 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
     context: contextApi,
     email,
     utils,
-    db,
 
     // Console (intercepted)
     console: interceptedConsole,

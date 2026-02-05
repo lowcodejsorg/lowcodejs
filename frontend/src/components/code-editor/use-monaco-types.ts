@@ -75,21 +75,13 @@ export function useMonacoTypes(monaco: Monaco | null, table?: ITable): void {
               endColumn: position.column,
             });
 
-            // Check if we're inside field.get(' or field.set(' or db.query(' etc
+            // Check if we're inside field.get(' or field.set('
             const fieldGetSetMatch =
               /field\.(get|set|getAll)\s*\(\s*['"]([^'"]*)$/.test(
                 textUntilPosition,
               );
-            const fieldRelatedMatch =
-              /field\.(getRelated|queryRelated)\s*\(\s*['"]([^'"]*)$/.test(
-                textUntilPosition,
-              );
-            const dbQueryMatch =
-              /db\.(query|findById|findOne)\s*\(\s*['"]([^'"]*)$/.test(
-                textUntilPosition,
-              );
 
-            if (!fieldGetSetMatch && !fieldRelatedMatch && !dbQueryMatch) {
+            if (!fieldGetSetMatch) {
               return { suggestions: [] };
             }
 
@@ -137,44 +129,6 @@ export function useMonacoTypes(monaco: Monaco | null, table?: ITable): void {
                     sortText: '1' + normalized,
                   });
                 }
-              }
-            }
-
-            if (fieldRelatedMatch) {
-              // Suggest only RELATIONSHIP fields
-              const relationships = table.fields.filter(
-                (f) => f.type === 'RELATIONSHIP' && f.relationship?.table?.slug,
-              );
-              for (const f of relationships) {
-                const relatedTable = f.relationship!.table.slug;
-                suggestions.push({
-                  label: f.slug,
-                  kind: monaco.languages.CompletionItemKind.Reference,
-                  insertText: f.slug,
-                  range,
-                  detail: `Relacionamento: ${f.name}`,
-                  documentation: `Tabela relacionada: ${relatedTable}`,
-                  sortText: '0' + f.slug,
-                });
-              }
-            }
-
-            if (dbQueryMatch) {
-              // Suggest related table slugs
-              const relationships = table.fields.filter(
-                (f) => f.relationship?.table?.slug,
-              );
-              for (const f of relationships) {
-                const tableSlug = f.relationship!.table.slug;
-                suggestions.push({
-                  label: tableSlug,
-                  kind: monaco.languages.CompletionItemKind.Module,
-                  insertText: tableSlug,
-                  range,
-                  detail: `Tabela relacionada via ${f.name}`,
-                  documentation: `Acessível via campo ${f.slug}`,
-                  sortText: '0' + tableSlug,
-                });
               }
             }
 

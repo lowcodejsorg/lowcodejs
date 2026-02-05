@@ -16,8 +16,8 @@ import type { ITable } from '@/lib/interfaces';
  */
 const DEFAULT_IIFE_TEMPLATE = `(async () => {
   // Escreva seu codigo aqui
-  // Use await para operacoes assincronas (email, db, field.getRelated)
-  // Exemplo: const cliente = await field.getRelated('cliente');
+  // Use await para operacoes assincronas (email.send, email.sendTemplate)
+  // Exemplo: field.set('status', 'aprovado');
   
 })();`;
 

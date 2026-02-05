@@ -108,6 +108,8 @@ field.getAll(): Record
 // Slugs normalizados (sem hífens)
 ```
 
+> **Nota:** As APIs `field.getRelated()`, `field.queryRelated()` e o objeto `db` (query, findById, findOne) foram removidas temporariamente. Serão reintroduzidas em versão futura.
+
 #### C) Objeto `context` — Informações do contexto
 
 ```typescript
@@ -274,7 +276,7 @@ interface FieldApi {
   /** Define o valor de um campo */
   set(slug: string, value: any): void;
   /** Retorna todos os campos como objeto */
-  getAll(): Record;
+  getAll(): Record<string, any>;
 }
 
 interface ContextApi {
@@ -375,15 +377,15 @@ Cada tab (onLoad, beforeSave, afterSave) deve ter um painel de ajuda lateral ou 
 
 🔹 Objetos Disponíveis:
 
-  field - Manipulação de campos
-  ├── field.get('slug')      → Obtém valor do campo
+  field - Manipulacao de campos
+  ├── field.get('slug')      → Obtem valor do campo
   ├── field.set('slug', val) → Define valor do campo
   └── field.getAll()         → Todos os campos como objeto
 
-  context - Informações do contexto
+  context - Informacoes do contexto
   ├── context.action   → 'novo_registro' | 'editar_registro' | ...
   ├── context.moment   → 'antes_salvar' | 'depois_salvar' | ...
-  ├── context.userId   → ID do usuário logado
+  ├── context.userId   → ID do usuario logado
   ├── context.isNew    → true se registro novo
   └── context.table    → { _id, name, slug }
 
@@ -391,9 +393,9 @@ Cada tab (onLoad, beforeSave, afterSave) deve ter um painel de ajuda lateral ou 
   ├── await email.send([...], 'Assunto', 'Corpo')
   └── await email.sendTemplate([...], 'Assunto', 'Msg', { dados })
 
-  utils - Utilitários
-  ├── utils.today()         → Data sem horário
-  ├── utils.now()           → Data com horário
+  utils - Utilitarios
+  ├── utils.today()         → Data sem horario
+  ├── utils.now()           → Data com horario
   ├── utils.formatDate(d)   → Formata data
   ├── utils.sha256('texto') → Hash SHA-256
   └── utils.uuid()          → UUID v4

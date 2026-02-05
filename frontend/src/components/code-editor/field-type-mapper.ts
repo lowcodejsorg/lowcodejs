@@ -80,27 +80,6 @@ export function generateFieldSetOverloads(
 }
 
 /**
- * Generates comment showing related tables available for db.query()
- */
-export function generateRelatedTablesTypes(fields: Array<IField>): string {
-  const relationships = fields.filter((f) => f.relationship?.table?.slug);
-
-  if (relationships.length === 0) {
-    return '// Nenhuma tabela relacionada disponível para db.query()';
-  }
-
-  const tables = relationships
-    .map((f) => `'${f.relationship!.table.slug}'`)
-    .join(' | ');
-  const tablesList = relationships
-    .map((f) => f.relationship!.table.slug)
-    .join(', ');
-
-  return `// Tabelas relacionadas disponíveis para db.query(): ${tablesList}
-type RelatedTableSlug = ${tables};`;
-}
-
-/**
  * Generates a union type of all field slugs for autocomplete
  */
 export function generateFieldSlugsType(fields: Array<IField>): string {
@@ -129,7 +108,6 @@ export function generateDynamicTypes(
 ): string {
   const fieldGetOverloads = generateFieldGetOverloads(fields, tableSlug);
   const fieldSetOverloads = generateFieldSetOverloads(fields, tableSlug);
-  const relatedTables = generateRelatedTablesTypes(fields);
   const fieldSlugsType = generateFieldSlugsType(fields);
 
   // Generate field slug constants for autocomplete suggestions
@@ -157,7 +135,5 @@ ${fieldSetOverloads}
 
 // Re-declare field with dynamic overloads
 declare const field: FieldApiDynamic;
-
-${relatedTables}
 `;
 }

@@ -31,10 +31,6 @@ export function CodeEditorInfoModal({
   const tutorialContent = hook ? getTutorialContent(hook) : null;
   const apiDocs = getApiDocumentation();
 
-  // Get related tables for db.query()
-  const relatedTables =
-    table?.fields?.filter((f) => f.relationship?.table?.slug) ?? [];
-
   return (
     <Dialog>
       <DialogTrigger asChild>
@@ -207,35 +203,6 @@ export function CodeEditorInfoModal({
                 </div>
               )}
 
-              {relatedTables.length > 0 && (
-                <div>
-                  <h3 className="font-semibold mb-2 text-base">
-                    API db - Tabelas Relacionadas
-                  </h3>
-                  <p className="text-muted-foreground mb-3">
-                    Use a API <code className="bg-muted px-1 rounded">db</code>{' '}
-                    para buscar dados de tabelas relacionadas. Limite máximo de
-                    100 registros.
-                  </p>
-                  <div className="bg-muted p-3 rounded-md space-y-2">
-                    <p className="font-medium mb-2">Tabelas disponíveis:</p>
-                    {relatedTables.map((f) => (
-                      <div
-                        key={f.slug}
-                        className="flex items-center gap-2 text-sm"
-                      >
-                        <code className="bg-background px-2 py-1 rounded text-blue-600 font-mono">
-                          db.query('{f.relationship!.table.slug}')
-                        </code>
-                        <span className="text-muted-foreground">
-                          via campo {f.name}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               <div>
                 <h3 className="font-semibold mb-2 text-base">
                   Exemplos de Uso
@@ -255,24 +222,6 @@ const todos = field.getAll();`}</code>
                     </pre>
                   </div>
 
-                  {relatedTables.length > 0 && (
-                    <div className="bg-muted p-3 rounded-md">
-                      <p className="font-medium mb-1">
-                        Usando API db (tabelas relacionadas)
-                      </p>
-                      <pre className="bg-background p-2 rounded text-xs overflow-x-auto">
-                        <code>{`// Buscar por ID do relacionamento
-const id = field.get('${relatedTables[0]?.slug}');
-const registro = await db.findById('${relatedTables[0]?.relationship?.table.slug}', id);
-
-// Buscar múltiplos registros
-const registros = await db.query('${relatedTables[0]?.relationship?.table.slug}', {
-  where: { status: 'ativo' },
-  limit: 10
-});`}</code>
-                      </pre>
-                    </div>
-                  )}
                 </div>
               </div>
             </TabsContent>

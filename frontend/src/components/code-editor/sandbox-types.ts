@@ -3,23 +3,6 @@
  * These provide IntelliSense support in the Monaco editor
  */
 export const STATIC_SANDBOX_TYPES = `
-// ====== RELATED QUERY TYPES ======
-interface RelatedQueryOptions {
-  /** Filtros de busca */
-  where?: Record<string, any>;
-  /** Limite máximo de registros (max: 100) */
-  limit?: number;
-  /** Ordenação */
-  orderBy?: Record<string, 'asc' | 'desc'>;
-}
-
-interface RelatedQueryResult {
-  /** Array de registros encontrados */
-  data: Array<Record<string, any>>;
-  /** Total de registros que correspondem aos filtros */
-  total: number;
-}
-
 // ====== FIELD API ======
 interface FieldApi {
   /**
@@ -41,35 +24,6 @@ interface FieldApi {
    * @returns Object with all field slugs and values
    */
   getAll(): Record<string, any>;
-
-  /**
-   * Gets the related record for a RELATIONSHIP field
-   * @param slug - The slug of a RELATIONSHIP field
-   * @returns Promise with the related record or null if not found
-   * @example
-   * // Get the client data for a 'cliente' relationship field
-   * const cliente = await field.getRelated('cliente');
-   * if (cliente) {
-   *   console.log(cliente.nome, cliente.email);
-   * }
-   */
-  getRelated(slug: string): Promise<Record<string, any> | null>;
-
-  /**
-   * Queries records from the table related to a RELATIONSHIP field
-   * @param slug - The slug of a RELATIONSHIP field
-   * @param options - Query options (where, limit, orderBy)
-   * @returns Promise with data array and total count
-   * @example
-   * // Query all active clients from the related table
-   * const result = await field.queryRelated('cliente', {
-   *   where: { ativo: true },
-   *   limit: 10,
-   *   orderBy: { nome: 'asc' }
-   * });
-   * console.log(result.data, result.total);
-   */
-  queryRelated(slug: string, options?: RelatedQueryOptions): Promise<RelatedQueryResult>;
 }
 
 // ====== CONTEXT API ======
@@ -163,53 +117,11 @@ interface UtilsApi {
   uuid(): string;
 }
 
-// ====== DB API ======
-interface DbQueryOptions {
-  /** Filtros de busca */
-  where?: Record<string, any>;
-  /** Limite máximo de registros (max: 100) */
-  limit?: number;
-  /** Campos a retornar */
-  select?: string[];
-  /** Ordenação */
-  orderBy?: Record<string, 'asc' | 'desc'>;
-}
-
-interface DbQueryResult {
-  _id: string;
-  [key: string]: any;
-}
-
-interface DbApi {
-  /**
-   * Busca registros de uma tabela relacionada
-   * @param tableSlug - Slug da tabela (deve ter relacionamento definido)
-   * @param options - Opções de filtro, limite, seleção
-   * @returns Array de registros
-   */
-  query(tableSlug: string, options?: DbQueryOptions): Promise<DbQueryResult[]>;
-
-  /**
-   * Busca um registro por ID
-   * @param tableSlug - Slug da tabela relacionada
-   * @param id - ID do registro
-   */
-  findById(tableSlug: string, id: string): Promise<DbQueryResult | null>;
-
-  /**
-   * Busca um registro por condição
-   * @param tableSlug - Slug da tabela relacionada
-   * @param where - Condições de busca
-   */
-  findOne(tableSlug: string, where: Record<string, any>): Promise<DbQueryResult | null>;
-}
-
 // ====== GLOBAL DECLARATIONS ======
 declare const field: FieldApi;
 declare const context: ContextApi;
 declare const email: EmailApi;
 declare const utils: UtilsApi;
-declare const db: DbApi;
 
 // ====== BUILTINS ======
 // These are available in the sandbox

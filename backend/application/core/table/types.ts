@@ -63,18 +63,6 @@ export interface FieldDefinition {
   category?: Array<{ id: string; label: string; children: unknown[] }>;
 }
 
-// ====== Related Query Types ======
-export interface RelatedQueryOptions {
-  where?: Record<string, any>;
-  limit?: number; // max 100
-  orderBy?: Record<string, 'asc' | 'desc'>;
-}
-
-export interface RelatedQueryResult {
-  data: Array<Record<string, any>>;
-  total: number;
-}
-
 export interface EmailResult {
   success: boolean;
   message: string;
@@ -86,13 +74,6 @@ export interface FieldApi {
   get(slug: string): any;
   set(slug: string, value: any): void;
   getAll(): Record<string, any>;
-  // Para campos RELATIONSHIP - busca o registro relacionado completo
-  getRelated(slug: string): Promise<Record<string, any> | null>;
-  // Para campos RELATIONSHIP - busca múltiplos registros na tabela relacionada
-  queryRelated(
-    slug: string,
-    options?: RelatedQueryOptions,
-  ): Promise<RelatedQueryResult>;
 }
 
 export interface ContextApi {
@@ -121,36 +102,11 @@ export interface UtilsApi {
   uuid(): string;
 }
 
-// ====== DB API (Query related tables) ======
-export interface DbQueryOptions {
-  where?: Record<string, any>;
-  limit?: number; // max 100
-  select?: string[];
-  orderBy?: Record<string, 'asc' | 'desc'>;
-}
-
-export interface DbQueryResult {
-  _id: string;
-  [key: string]: any;
-}
-
-/* eslint-disable no-unused-vars */
-export interface DbApi {
-  query(tableSlug: string, options?: DbQueryOptions): Promise<DbQueryResult[]>;
-  findById(tableSlug: string, id: string): Promise<DbQueryResult | null>;
-  findOne(
-    tableSlug: string,
-    where: Record<string, any>,
-  ): Promise<DbQueryResult | null>;
-}
-/* eslint-enable no-unused-vars */
-
 export interface SandboxGlobals {
   field: FieldApi;
   context: ContextApi;
   email: EmailApi;
   utils: UtilsApi;
-  db: DbApi;
   console: {
     // eslint-disable-next-line no-unused-vars
     log: (...args: any[]) => void;
