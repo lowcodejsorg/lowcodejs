@@ -9,6 +9,7 @@ RUN apk add --no-cache curl
 COPY build/ ./
 COPY node_modules/ ./node_modules/
 COPY package.json ./
+COPY templates/ ./templates/
 
 # Criar diretório storage
 RUN mkdir -p ./_storage
