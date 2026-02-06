@@ -22,6 +22,7 @@ export default class NodemailerEmailService extends EmailContractService {
 
   private setupTransporter(): void {
     try {
+      console.log('EmailProviderConfig', NodemailerEmailProviderConfig);
       this.transporter = nodemailer.createTransport(
         NodemailerEmailProviderConfig,
       );

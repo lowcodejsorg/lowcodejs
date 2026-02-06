@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import { Env } from '@start/env';
 
 import {
   convertValue,
@@ -105,7 +106,7 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
           body,
           subject,
           to,
-          from: 'noreply@lowcode.com',
+          from: Env.EMAIL_PROVIDER_USER,
         });
 
         return {
@@ -149,7 +150,7 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
           body,
           subject,
           to,
-          from: 'noreply@lowcode.com',
+          from: Env.EMAIL_PROVIDER_USER,
         });
 
         return {

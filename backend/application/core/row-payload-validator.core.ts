@@ -202,7 +202,5 @@ export function validateRowPayload(
     }
   }
 
-  console.log('errors', errors);
-
   return Object.keys(errors).length > 0 ? errors : null;
 }
