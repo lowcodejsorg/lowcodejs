@@ -86,6 +86,10 @@ export function TableForumView({
     null,
   );
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
+  const pollingRef = React.useRef<{ inFlight: boolean; rowId: string | null }>({
+    inFlight: false,
+    rowId: null,
+  });
   const [focusTick, setFocusTick] = React.useState(0);
 
   const bumpFocus = React.useCallback(() => {
@@ -458,6 +462,49 @@ export function TableForumView({
     [channelDescriptionField],
   );
 
+  const refreshRowById = React.useCallback(
+    async (rowId: string) => {
+      if (!rowId) return;
+      if (pollingRef.current.inFlight && pollingRef.current.rowId === rowId) {
+        return;
+      }
+      pollingRef.current.inFlight = true;
+      pollingRef.current.rowId = rowId;
+      try {
+        const response = await API.get<IRow>(
+          `/tables/${tableSlug}/rows/${rowId}`,
+        );
+        const row = response.data;
+        if (!row || row._id !== rowId) return;
+        setRowsState((prev) =>
+          prev.map((item) => (item._id === rowId ? row : item)),
+        );
+      } finally {
+        pollingRef.current.inFlight = false;
+        pollingRef.current.rowId = null;
+      }
+    },
+    [tableSlug],
+  );
+
+  React.useEffect(() => {
+    if (!activeRowId) return;
+    if (typeof window === 'undefined') return;
+    refreshRowById(activeRowId);
+    const interval = window.setInterval(() => {
+      refreshRowById(activeRowId);
+    }, 5000);
+    return (): void => window.clearInterval(interval);
+  }, [activeRowId, refreshRowById]);
+
+  const handleSelectRow = React.useCallback(
+    (rowId: string) => {
+      setActiveRowId(rowId);
+      refreshRowById(rowId);
+    },
+    [refreshRowById],
+  );
+
   const handleChannelEdit = React.useCallback(
     (row: IRow) => {
       const label = resolveChannelLabel(row);
@@ -726,7 +773,7 @@ export function TableForumView({
         isOpen={isSidebarOpen}
         onToggleOpen={() => setIsSidebarOpen((value) => !value)}
         onAddChannel={() => setIsAddChannelOpen(true)}
-        onSelectRow={setActiveRowId}
+        onSelectRow={handleSelectRow}
         onEditRow={handleChannelEdit}
         onDeleteRow={(row) => setDeleteChannelId(row._id)}
       />
