@@ -159,6 +159,30 @@ code {
   background-color: var(--kanban-scroll-thumb-hover, rgba(148, 163, 184, 0.55));
 }
 
+.editor-compact .tiptap.ProseMirror,
+.editor-compact .ProseMirror {
+  padding: 4px 6px 4px 6px !important;
+  min-height: 88px;
+}
+
+.editor-compact .tiptap.ProseMirror {
+  min-height: 100px !important;
+}
+
+.editor-compact .tiptap.ProseMirror p,
+.editor-compact .ProseMirror p {
+  margin: 6px;
+}
+
+.editor-compact .tiptap.ProseMirror-focused {
+  border: none !important;
+  outline: none !important;
+}
+
+.editor-compact .tiptap.ProseMirror > * {
+  margin-left: 6px;
+}
+
 .print-only {
   display: none;
 }

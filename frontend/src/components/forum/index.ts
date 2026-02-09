@@ -1,0 +1,11 @@
+export { ForumAddChannelDialog } from './forum-add-channel-dialog';
+export { ForumComposer } from './forum-composer';
+export { ForumDeleteChannelDialog } from './forum-delete-channel-dialog';
+export { ForumDeleteMessageDialog } from './forum-delete-message-dialog';
+export { ForumDocuments } from './forum-documents';
+export { ForumEditChannelDialog } from './forum-edit-channel-dialog';
+export { ForumHeader } from './forum-header';
+export { ForumMessagesList } from './forum-messages-list';
+export { ForumSidebar } from './forum-sidebar';
+export { ForumUserMultiSelect } from './forum-user-multi-select';
+export type { ForumDocument, ForumMessage } from './forum-types';

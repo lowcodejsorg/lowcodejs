@@ -81,6 +81,7 @@ export const E_TABLE_STYLE = {
   CARD: 'CARD',
   MOSAIC: 'MOSAIC',
   KANBAN: 'KANBAN',
+  FORUM: 'FORUM',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -226,6 +227,7 @@ export const TABLE_STYLE_OPTIONS = [
   { label: 'Card', value: E_TABLE_STYLE.CARD },
   { label: 'Mosaico', value: E_TABLE_STYLE.MOSAIC },
   { label: 'Kanban', value: E_TABLE_STYLE.KANBAN },
+  { label: 'Forum', value: E_TABLE_STYLE.FORUM },
 ] as const;
 
 export const USER_GROUP_MAPPER = {

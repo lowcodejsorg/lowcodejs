@@ -554,6 +554,13 @@ export async function buildPopulate(
             select: 'name email _id',
           });
         }
+
+        if (groupField.type === E_FIELD_TYPE.FILE) {
+          populate.push({
+            path: `${field.slug}.${groupField.slug}`,
+            model: 'Storage',
+          });
+        }
       }
     }
   }

@@ -367,12 +367,6 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
 
       return [];
     }
-    case E_FIELD_TYPE.EVALUATION: {
-      if (value === null || value === '') return [];
-      const options = Array.from<string>(value as Array<string>);
-      if (options.length > 0) return options;
-      return [];
-    }
     default:
       return value !== null ? (value as string) : null;
   }

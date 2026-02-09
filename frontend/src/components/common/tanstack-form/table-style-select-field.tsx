@@ -16,6 +16,7 @@ interface TableStyleSelectFieldProps {
   placeholder?: string;
   disabled?: boolean;
   required?: boolean;
+  allowedStyles?: Array<ValueOf<typeof E_TABLE_STYLE>>;
 }
 
 export function TableStyleSelectField({
@@ -23,9 +24,19 @@ export function TableStyleSelectField({
   placeholder = 'Selecione o estilo de visualização',
   disabled,
   required,
+  allowedStyles,
 }: TableStyleSelectFieldProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+  const allowedValues =
+    allowedStyles ??
+    TABLE_STYLE_OPTIONS.filter(
+      (option) =>
+        option.value !== E_TABLE_STYLE.MOSAIC &&
+        option.value !== E_TABLE_STYLE.CARD &&
+        option.value !== E_TABLE_STYLE.KANBAN &&
+        option.value !== E_TABLE_STYLE.FORUM,
+    ).map((option) => option.value);
 
   return (
     <Field data-invalid={isInvalid}>
@@ -45,13 +56,7 @@ export function TableStyleSelectField({
         </SelectTrigger>
         <SelectContent>
           {TABLE_STYLE_OPTIONS.map((option) => {
-            if (
-              option.value === E_TABLE_STYLE.MOSAIC ||
-              option.value === E_TABLE_STYLE.CARD ||
-              option.value === E_TABLE_STYLE.KANBAN
-            ) {
-              return null;
-            }
+            if (!allowedValues.includes(option.value)) return null;
             return (
               <SelectItem
                 key={option.value}

@@ -13,6 +13,7 @@ const KANBAN_TEMPLATE_ID = 'KANBAN_TEMPLATE';
 const CARDS_TEMPLATE_ID = 'CARDS_TEMPLATE';
 const MOSAIC_TEMPLATE_ID = 'MOSAIC_TEMPLATE';
 const DOCUMENT_TEMPLATE_ID = 'DOCUMENT_TEMPLATE';
+const FORUM_TEMPLATE_ID = 'FORUM_TEMPLATE';
 
 function getKanbanTemplateEntry(): Pick<
   ISetting['MODEL_CLONE_TABLES'][number],
@@ -62,6 +63,18 @@ function getDocumentTemplateEntry(): Pick<
   };
 }
 
+function getForumTemplateEntry(): Pick<
+  ISetting['MODEL_CLONE_TABLES'][number],
+  '_id' | 'name' | 'slug' | 'description'
+> {
+  return {
+    _id: FORUM_TEMPLATE_ID,
+    name: 'Forum',
+    slug: 'chat-forum',
+    description: 'Modelo predefinido para canais e mensagens em forum',
+  };
+}
+
 @Service()
 export default class SettingShowUseCase {
   constructor(private readonly settingRepository: SettingContractRepository) {}
@@ -80,6 +93,7 @@ export default class SettingShowUseCase {
             getCardsTemplateEntry(),
             getMosaicTemplateEntry(),
             getDocumentTemplateEntry(),
+            getForumTemplateEntry(),
           ],
         });
       }
@@ -92,6 +106,7 @@ export default class SettingShowUseCase {
           getCardsTemplateEntry(),
           getMosaicTemplateEntry(),
           getDocumentTemplateEntry(),
+          getForumTemplateEntry(),
           ...(Array.isArray(setting.MODEL_CLONE_TABLES)
             ? setting.MODEL_CLONE_TABLES
             : []),

@@ -44,6 +44,9 @@ export function TableRowUserField({
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
+  const [selectedCache, setSelectedCache] = React.useState<Map<string, IUser>>(
+    () => new Map(),
+  );
 
   // Debounce search query
   React.useEffect(() => {
@@ -64,25 +67,73 @@ export function TableRowUserField({
     return data.data.filter((user) => user.status === E_USER_STATUS.ACTIVE);
   }, [data?.data]);
 
-  // Map selected options to IUser objects for the combobox
-  const values = formField.state.value ?? [];
+  React.useEffect(() => {
+    if (!users.length) return;
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      users.forEach((user) => next.set(user._id, user));
+      return next;
+    });
+  }, [users]);
+
+  React.useEffect(() => {
+    if (!formField.state.value.length) return;
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      formField.state.value.forEach((opt) => {
+        if (next.has(opt.value)) return;
+        next.set(opt.value, {
+          _id: opt.value,
+          name: opt.label,
+          email: '',
+          password: '',
+          status: E_USER_STATUS.ACTIVE,
+          group: null as unknown as IUser['group'],
+        });
+      });
+      return next;
+    });
+  }, [formField.state.value]);
+
   const selectedUsers = React.useMemo(() => {
-    return values
-      .map((opt) => users.find((user) => user._id === opt.value))
-      .filter((user): user is IUser => user !== undefined);
-  }, [values, users]);
+    return formField.state.value.map((opt) => {
+      const cached = selectedCache.get(opt.value);
+      const fromList = users.find((user) => user._id === opt.value);
+      if (cached) return cached;
+      if (fromList) return fromList;
+      return {
+        _id: opt.value,
+        name: opt.label,
+        email: '',
+        password: '',
+        status: E_USER_STATUS.ACTIVE,
+        group: null as unknown as IUser['group'],
+      };
+    });
+  }, [formField.state.value, selectedCache, users]);
+
+  const items = React.useMemo(() => {
+    const cachedUsers = users.map(
+      (user) => selectedCache.get(user._id) ?? user,
+    );
+    const userIds = new Set(cachedUsers.map((user) => user._id));
+    const extras = selectedUsers.filter((user) => !userIds.has(user._id));
+    return extras.length ? [...cachedUsers, ...extras] : cachedUsers;
+  }, [selectedUsers, selectedCache, users]);
 
   const handleValueChange = (newValue: IUser | Array<IUser> | null): void => {
     if (isMultiple) {
-      const items = newValue as Array<IUser>;
-      const newValues = items.map((user) => ({
-        value: user._id,
-        label: user.name,
-      }));
-      formField.handleChange(newValues);
+      // Multi-select selection is handled manually via item click to avoid
+      // combobox internal state dropping previous selections during search.
+      return;
     } else {
       const user = newValue as IUser | null;
       if (user) {
+        setSelectedCache((prev) => {
+          const next = new Map(prev);
+          next.set(user._id, user);
+          return next;
+        });
         formField.handleChange([
           {
             value: user._id,
@@ -95,6 +146,34 @@ export function TableRowUserField({
     }
   };
 
+  const handleToggleUser = (user: IUser): void => {
+    const prevIds = formField.state.value.map((opt) => opt.value);
+    const nextIds = prevIds.includes(user._id)
+      ? prevIds.filter((id) => id !== user._id)
+      : [...prevIds, user._id];
+
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      next.set(user._id, user);
+      return next;
+    });
+
+    const newValues = nextIds.map((id) => {
+      const cached = selectedCache.get(id);
+      const fallback = formField.state.value.find((opt) => opt.value === id);
+      return {
+        value: id,
+        label: cached?.name ?? fallback?.label ?? id,
+      };
+    });
+    formField.handleChange(newValues);
+
+    if (searchQuery.trim().length > 0) {
+      setSearchQuery('');
+      setDebouncedQuery('');
+    }
+  };
+
   if (isMultiple) {
     return (
       <Field data-invalid={isInvalid}>
@@ -104,7 +183,7 @@ export function TableRowUserField({
         </FieldLabel>
         <div className="relative">
           <Combobox
-            items={users}
+            items={items}
             multiple
             value={selectedUsers}
             onValueChange={handleValueChange}
@@ -157,6 +236,7 @@ export function TableRowUserField({
                     <ComboboxItem
                       key={user._id}
                       value={user}
+                      onClick={() => handleToggleUser(user)}
                     >
                       <div className="flex flex-1 flex-col">
                         <span className="font-medium">{user.name}</span>
@@ -189,7 +269,7 @@ export function TableRowUserField({
       </FieldLabel>
       <div className="relative">
         <Combobox
-          items={users}
+          items={items}
           value={selectedUsers[0] ?? null}
           onValueChange={handleValueChange}
           inputValue={searchQuery}

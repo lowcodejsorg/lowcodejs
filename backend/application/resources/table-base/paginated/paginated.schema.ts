@@ -236,6 +236,7 @@ export const TablePaginatedSchema: FastifySchema = {
                   'CARD',
                   'MOSAIC',
                   'KANBAN',
+                  'FORUM',
                 ],
                 description: 'Display style',
               },

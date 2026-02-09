@@ -15,6 +15,8 @@ import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
 import { TableDocumentView } from './-table-document-view';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
+import { TableForumView } from './-table-forum-view';
+import { TableForumViewSkeleton } from './-table-forum-view-skeleton';
 import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableKanbanView } from './-table-kanban-view';
@@ -75,18 +77,23 @@ function RouteComponent(): React.JSX.Element {
   const tableStyle = table.data?.style;
   const shouldDisablePagination =
     tableStyle === E_TABLE_STYLE.KANBAN ||
-    tableStyle === E_TABLE_STYLE.DOCUMENT;
-  const rowsSearch = React.useMemo(
-    () =>
-      shouldDisablePagination
-        ? {
-            ...search,
-            page: 1,
-            perPage: 100,
-          }
-        : search,
-    [search, shouldDisablePagination],
-  );
+    tableStyle === E_TABLE_STYLE.DOCUMENT ||
+    tableStyle === E_TABLE_STYLE.FORUM;
+  const rowsSearch = React.useMemo(() => {
+    const base = shouldDisablePagination
+      ? {
+          ...search,
+          page: 1,
+          perPage: 100,
+        }
+      : search;
+
+    return {
+      ...base,
+      // Force refetch when switching view styles (forum requires populated data).
+      viewStyle: tableStyle ?? E_TABLE_STYLE.LIST,
+    };
+  }, [search, shouldDisablePagination, tableStyle]);
   const rows = useReadTableRowPaginated({ slug, search: rowsSearch });
   const permission = useTablePermission(table.data);
 
@@ -199,6 +206,11 @@ function RouteComponent(): React.JSX.Element {
           table.data.style === E_TABLE_STYLE.KANBAN && (
             <TableKanbanViewSkeleton />
           )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.style === E_TABLE_STYLE.FORUM && (
+            <TableForumViewSkeleton />
+          )}
 
         {rows.status === 'error' &&
           ((): React.JSX.Element => {
@@ -293,6 +305,16 @@ function RouteComponent(): React.JSX.Element {
           table.data.style === E_TABLE_STYLE.KANBAN &&
           rows.status === 'success' && (
             <TableKanbanView
+              headers={table.data.fields}
+              data={rows.data.data}
+              tableSlug={slug}
+              table={table.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.style === E_TABLE_STYLE.FORUM &&
+          rows.status === 'success' && (
+            <TableForumView
               headers={table.data.fields}
               data={rows.data.data}
               tableSlug={slug}

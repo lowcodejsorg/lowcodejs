@@ -4,6 +4,7 @@ import {
   LayoutListIcon,
   LayoutPanelLeft,
   ListTreeIcon,
+  MessageCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -17,13 +18,13 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { E_FIELD_TYPE, E_TABLE_STYLE } from '@/lib/constant';
-import type { ValueOf } from '@/lib/interfaces';
+import { E_TABLE_STYLE } from '@/lib/constant';
+import type { ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { getAllowedTableStyles } from '@/lib/table-style';
 import { cn } from '@/lib/utils';
 
 interface TableStyleViewDropdownProps {
@@ -39,13 +40,27 @@ export function TableStyleViewDropdown({
   // Hook deve ser chamado antes de qualquer return condicional
   const update = useUpdateTable({
     onSuccess(data) {
-      QueryClient.invalidateQueries({
-        queryKey: queryKeys.tables.detail(data.slug),
-      });
+      QueryClient.setQueryData<ITable>(
+        ['/tables/'.concat(data.slug), data.slug],
+        data,
+      );
 
-      QueryClient.invalidateQueries({
-        queryKey: queryKeys.tables.lists(),
-      });
+      QueryClient.setQueryData<Paginated<ITable>>(
+        ['/tables/paginated'],
+        (old) => {
+          if (!old) return old;
+
+          return {
+            meta: old.meta,
+            data: old.data.map((item) => {
+              if (item._id === data._id) {
+                return data;
+              }
+              return item;
+            }),
+          };
+        },
+      );
     },
     onError(error) {
       console.error(error);
@@ -76,42 +91,12 @@ export function TableStyleViewDropdown({
     table.status === 'pending' ||
     update.status === 'pending';
 
-  const existFieldCategory =
-    table.status === 'success' &&
-    table.data.fields.some(
-      (f) => !f.trashed && f.type === E_FIELD_TYPE.CATEGORY,
-    );
-
-  const existFieldTextShort =
-    table.status === 'success' &&
-    table.data.fields.some(
-      (f) => !f.trashed && f.type === E_FIELD_TYPE.TEXT_SHORT,
-    );
-
-  const existFieldTextLong =
-    table.status === 'success' &&
-    table.data.fields.some(
-      (f) => !f.trashed && f.type === E_FIELD_TYPE.TEXT_LONG,
-    );
-
-  const existFieldFile =
-    table.status === 'success' &&
-    table.data.fields.some((f) => !f.trashed && f.type === E_FIELD_TYPE.FILE);
-
-  const existFieldDropdown =
-    table.status === 'success' &&
-    table.data.fields.some(
-      (f) => !f.trashed && f.type === E_FIELD_TYPE.DROPDOWN,
-    );
-
-  const canShowDocument =
-    table.status === 'success' && existFieldCategory && existFieldTextLong;
-
-  const canShowCard =
-    existFieldFile && existFieldTextLong && existFieldTextShort;
-  const canShowMosaic =
-    existFieldFile && existFieldTextLong && existFieldTextShort;
-  const canShowKanban = existFieldDropdown;
+  const allowedStyles = getAllowedTableStyles(table.data);
+  const canShowDocument = allowedStyles.includes(E_TABLE_STYLE.DOCUMENT);
+  const canShowCard = allowedStyles.includes(E_TABLE_STYLE.CARD);
+  const canShowMosaic = allowedStyles.includes(E_TABLE_STYLE.MOSAIC);
+  const canShowKanban = allowedStyles.includes(E_TABLE_STYLE.KANBAN);
+  const canShowForum = allowedStyles.includes(E_TABLE_STYLE.FORUM);
 
   return (
     <DropdownMenu
@@ -145,6 +130,10 @@ export function TableStyleViewDropdown({
           {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.KANBAN && (
               <LayoutDashboard className="size-4" />
+            )}
+          {table.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.FORUM && (
+              <MessageCircle className="size-4" />
             )}
 
           <span>Exibição</span>
@@ -212,6 +201,17 @@ export function TableStyleViewDropdown({
               >
                 <LayoutDashboard className="size-4" />
                 <span>Kanban</span>
+              </DropdownMenuRadioItem>
+            )}
+
+            {canShowForum && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value={E_TABLE_STYLE.FORUM}
+                onClick={() => handleStyleChange(E_TABLE_STYLE.FORUM)}
+              >
+                <MessageCircle className="size-4" />
+                <span>Forum</span>
               </DropdownMenuRadioItem>
             )}
           </DropdownMenuRadioGroup>

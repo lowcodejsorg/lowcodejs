@@ -108,6 +108,11 @@ export const CreateTableFormFields = withForm({
               label="Layout de visualização"
               placeholder="Selecione o estilo de visualização"
               disabled={isPending}
+              allowedStyles={[
+                E_TABLE_STYLE.LIST,
+                E_TABLE_STYLE.GALLERY,
+                E_TABLE_STYLE.DOCUMENT,
+              ]}
             />
           )}
         </form.AppField>

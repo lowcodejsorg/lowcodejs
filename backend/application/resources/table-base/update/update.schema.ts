@@ -38,7 +38,15 @@ export const TableUpdateSchema: FastifySchema = {
       },
       style: {
         type: 'string',
-        enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
+        enum: [
+          'GALLERY',
+          'LIST',
+          'DOCUMENT',
+          'CARD',
+          'MOSAIC',
+          'KANBAN',
+          'FORUM',
+        ],
         default: 'LIST',
         description: 'Display style',
       },
@@ -205,7 +213,15 @@ export const TableUpdateSchema: FastifySchema = {
         },
         style: {
           type: 'string',
-          enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
+          enum: [
+            'GALLERY',
+            'LIST',
+            'DOCUMENT',
+            'CARD',
+            'MOSAIC',
+            'KANBAN',
+            'FORUM',
+          ],
           description: 'Display style',
         },
         visibility: {

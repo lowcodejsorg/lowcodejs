@@ -58,6 +58,8 @@ import 'reactjs-tiptap-editor/style.css';
 import { Bubble } from './buble';
 import { Toolbar } from './toolbar';
 
+import { cn } from '@/lib/utils';
+
 function convertBase64ToBlob(base64: string): Blob {
   const arr = base64.split(',');
   const mime = arr[0].match(/:(.*?);/)![1];
@@ -179,11 +181,23 @@ function debounce(
 interface EditorExampleProps {
   value?: string;
   onChange?: (value: string) => void;
+  variant?: 'default' | 'compact';
+  className?: string;
+  toolbarVariant?: 'default' | 'minimal';
+  showBubble?: boolean;
+  autoFocus?: boolean;
+  focusKey?: string | number;
 }
 
 export function EditorExample({
   value,
   onChange,
+  variant = 'default',
+  className,
+  toolbarVariant = 'default',
+  showBubble = true,
+  autoFocus = false,
+  focusKey,
 }: EditorExampleProps = {}): React.JSX.Element | null {
   const isControlled = value !== undefined && onChange !== undefined;
   const content = isControlled ? value : '<p>Escreva algo...</p>';
@@ -233,15 +247,43 @@ export function EditorExample({
     }
   }, [content, ed, isControlled]);
 
+  const lastFocusKeyRef = React.useRef<typeof focusKey>(focusKey);
+  React.useEffect(() => {
+    if (!ed || !isControlled) return;
+    if (focusKey === undefined) return;
+    if (lastFocusKeyRef.current === focusKey) return;
+    lastFocusKeyRef.current = focusKey;
+    ed.commands.setContent(content, false);
+  }, [content, ed, focusKey, isControlled]);
+
+  React.useEffect(() => {
+    if (!ed || !autoFocus) return;
+    ed.commands.focus('end');
+  }, [autoFocus, ed, focusKey]);
+
   if (!ed) return null;
 
   return (
-    <div className="p-6 flex flex-col w-full gap-6 mx-auto my-0 overflow-y-auto">
+    <div
+      className={cn(
+        'flex w-full flex-col mx-auto my-0',
+        variant === 'compact' ? 'p-2 gap-2 editor-compact' : 'p-6 gap-6',
+        className,
+      )}
+    >
       <RichTextProvider editor={ed}>
         <div className="flex max-h-full w-full flex-col">
-          <Toolbar />
-          <EditorContent editor={ed} />
-          <Bubble />
+          <Toolbar variant={toolbarVariant} />
+          <EditorContent
+            editor={ed}
+            className={cn(
+              'w-full',
+              variant === 'compact'
+                ? 'min-h-[100px] max-h-[140px] overflow-y-auto rounded-md border bg-background p-0 text-sm leading-5'
+                : 'min-h-[200px]',
+            )}
+          />
+          {showBubble && <Bubble />}
           <SlashCommandList />
         </div>
       </RichTextProvider>

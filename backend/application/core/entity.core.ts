@@ -102,6 +102,7 @@ export const E_TABLE_STYLE = {
   CARD: 'CARD',
   MOSAIC: 'MOSAIC',
   KANBAN: 'KANBAN',
+  FORUM: 'FORUM',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
