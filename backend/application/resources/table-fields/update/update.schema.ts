@@ -246,6 +246,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
           description: 'Field width percentage in list/grid views',
         },
         locked: { type: 'boolean', description: 'Field is locked' },
+        native: { type: 'boolean', description: 'Field is native' },
         format: {
           type: 'string',
           nullable: true,

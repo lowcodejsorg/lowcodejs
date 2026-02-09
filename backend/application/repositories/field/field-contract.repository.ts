@@ -21,6 +21,7 @@ export type FieldCreatePayload = Pick<
   | 'widthInForm'
   | 'widthInList'
   | 'locked'
+  | 'native'
   | 'defaultValue'
   | 'relationship'
   | 'dropdown'
@@ -51,6 +52,7 @@ export type FieldQueryPayload = {
 
 export abstract class FieldContractRepository {
   abstract create(payload: FieldCreatePayload): Promise<IField>;
+  abstract createMany(payloads: FieldCreatePayload[]): Promise<IField[]>;
   abstract findBy(payload: FieldFindByPayload): Promise<IField | null>;
   abstract findMany(payload?: FieldQueryPayload): Promise<IField[]>;
   abstract update(payload: FieldUpdatePayload): Promise<IField>;

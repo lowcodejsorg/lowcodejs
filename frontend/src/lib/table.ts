@@ -68,6 +68,7 @@ export function buildCreateRowDefaultValues(
     ) {
       continue;
     }
+    if (field.native) continue;
 
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
@@ -127,6 +128,7 @@ export function buildUpdateRowDefaultValues(
     ) {
       continue;
     }
+    if (field.native) continue;
 
     const value = data[field.slug];
 
@@ -215,6 +217,7 @@ export function buildRowPayload(
     ) {
       continue;
     }
+    if (field.native) continue;
     const value = values[field.slug];
     payload[field.slug] = mountRowValue(value, field);
   }

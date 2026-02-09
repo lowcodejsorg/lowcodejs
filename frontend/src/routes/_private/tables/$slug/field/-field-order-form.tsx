@@ -132,7 +132,7 @@ function SortableManagementItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: field._id, disabled });
+  } = useSortable({ id: field._id, disabled: disabled || !!field.native });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -142,6 +142,7 @@ function SortableManagementItem({
 
   const isVisible = field[visibilityKey];
   const currentWidth = widthKey ? (field[widthKey] ?? 50) : null;
+  const isNative = !!field.native;
 
   return (
     <div
@@ -151,7 +152,7 @@ function SortableManagementItem({
     >
       <span className="text-sm font-medium">{field.name}</span>
       <div className="flex items-center gap-1">
-        {widthKey && onWidthChange && (
+        {!isNative && widthKey && onWidthChange && (
           <Select
             value={String(currentWidth)}
             onValueChange={(value) => onWidthChange(Number(value))}
@@ -186,23 +187,27 @@ function SortableManagementItem({
             <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
           )}
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={onEdit}
-        >
-          <PencilIcon className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 cursor-grab active:cursor-grabbing"
-          {...attributes}
-          {...listeners}
-        >
-          <GripVerticalIcon className="h-4 w-4" />
-        </Button>
+        {!isNative && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8"
+            onClick={onEdit}
+          >
+            <PencilIcon className="h-4 w-4" />
+          </Button>
+        )}
+        {!isNative && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 cursor-grab active:cursor-grabbing"
+            {...attributes}
+            {...listeners}
+          >
+            <GripVerticalIcon className="h-4 w-4" />
+          </Button>
+        )}
       </div>
     </div>
   );
@@ -429,6 +434,8 @@ interface FieldManagementListProps {
   groupSlug?: string;
   /** Campos do grupo (quando em contexto de grupo) */
   groupFields?: Array<IField>;
+  /** Exclude native fields from the list */
+  excludeNative?: boolean;
 }
 
 export function FieldManagementList({
@@ -436,6 +443,7 @@ export function FieldManagementList({
   visibilityKey,
   groupSlug,
   groupFields,
+  excludeNative,
 }: FieldManagementListProps): React.JSX.Element {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -449,9 +457,16 @@ export function FieldManagementList({
     : table.fieldOrderList;
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
-  const activeFields = sourceFields.filter((f) => !f.trashed);
+  const activeFields = sourceFields.filter(
+    (f) => !f.trashed && !(excludeNative && f.native),
+  );
 
-  const sorted = [...activeFields].sort(
+  const nativeFields = excludeNative
+    ? []
+    : activeFields.filter((f) => f.native);
+  const nonNativeFields = activeFields.filter((f) => !f.native);
+
+  const sorted = [...nonNativeFields].sort(
     (a, b) => order.indexOf(a._id) - order.indexOf(b._id),
   );
 
@@ -908,6 +923,29 @@ export function FieldManagementList({
 
   return (
     <div className="space-y-4">
+      {nativeFields.length > 0 && (
+        <div className="space-y-2">
+          {nativeFields.map((field) => (
+            <SortableManagementItem
+              key={field._id}
+              field={field}
+              disabled
+              visibilityKey={visibilityKey}
+              widthKey={widthKey}
+              onEdit={() => {}}
+              onToggleVisibility={() => handleToggleVisibility(field)}
+              onWidthChange={
+                widthKey
+                  ? (width): void => handleWidthChange(field, width)
+                  : undefined
+              }
+              isTogglingVisibility={togglingFieldId === field._id}
+              isChangingWidth={changingWidthFieldId === field._id}
+            />
+          ))}
+        </div>
+      )}
+
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -940,7 +978,7 @@ export function FieldManagementList({
         </SortableContext>
       </DndContext>
 
-      {fields.length === 0 && (
+      {fields.length === 0 && nativeFields.length === 0 && (
         <p className="text-center text-sm text-muted-foreground py-4">
           Nenhum campo cadastrado
         </p>
@@ -968,18 +1006,23 @@ interface TrashedFieldsListProps {
   groupSlug?: string;
   /** Campos do grupo (quando em contexto de grupo) */
   groupFields?: Array<IField>;
+  /** Exclude native fields from the list */
+  excludeNative?: boolean;
 }
 
 export function TrashedFieldsList({
   table,
   groupSlug,
   groupFields,
+  excludeNative,
 }: TrashedFieldsListProps): React.JSX.Element | null {
   const router = useRouter();
 
   const isGroupContext = !!groupSlug && !!groupFields;
   const sourceFields = isGroupContext ? groupFields : table.fields;
-  const trashedFields = sourceFields.filter((f) => f.trashed);
+  const trashedFields = sourceFields.filter(
+    (f) => f.trashed && !(excludeNative && f.native),
+  );
 
   if (trashedFields.length === 0) {
     return null;

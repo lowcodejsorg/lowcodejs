@@ -190,6 +190,8 @@ export function validateRowPayload(
       continue;
     }
 
+    if (field.native) continue;
+
     if (options.skipMissing && !(field.slug in payload)) {
       continue;
     }

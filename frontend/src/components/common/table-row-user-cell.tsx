@@ -11,7 +11,12 @@ export function TableRowUserCell({
   field,
   row,
 }: TableRowUserCellProps): React.JSX.Element {
-  const rawValues = Array.from(row[field.slug] ?? []);
+  const rawValue = row[field.slug];
+  const rawValues = Array.isArray(rawValue)
+    ? rawValue
+    : rawValue
+      ? [rawValue]
+      : [];
 
   const values = rawValues.map<string>((item) => {
     if (typeof item === 'object' && item !== null) {

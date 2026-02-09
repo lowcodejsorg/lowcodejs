@@ -73,7 +73,7 @@ export function TableRowRelationshipField({
 
   // Map selected options to IRow objects for the combobox
   const selectedItems = React.useMemo(() => {
-    return formField.state.value
+    return (formField.state.value ?? [])
       .map((opt) => allItems.find((row) => row._id === opt.value))
       .filter((row): row is IRow => row !== undefined);
   }, [formField.state.value, allItems]);
@@ -208,10 +208,10 @@ export function TableRowRelationshipField({
         >
           <ComboboxInput
             placeholder={
-              formField.state.value[0]?.label ||
+              (formField.state.value ?? [])[0]?.label ||
               `Selecione ${field.name.toLowerCase()}`
             }
-            showClear={formField.state.value.length > 0}
+            showClear={(formField.state.value ?? []).length > 0}
             className={cn(isInvalid && 'border-destructive')}
           />
           <ComboboxContent>

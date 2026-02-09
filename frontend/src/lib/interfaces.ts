@@ -171,6 +171,7 @@ export type IField = Merge<
     widthInList: number | null;
     defaultValue: string | null;
     locked?: boolean;
+    native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
     category: Array<ICategory>;

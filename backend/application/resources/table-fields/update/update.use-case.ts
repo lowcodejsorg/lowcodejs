@@ -63,11 +63,33 @@ export default class TableFieldUpdateUseCase {
           HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
         );
 
-      if (field.locked && !this.canUpdateLockedField(payload, field)) {
+      if (field.native && payload.trashed) {
+        return left(
+          HTTPException.Forbidden(
+            'Native fields cannot be trashed',
+            'NATIVE_FIELD_CANNOT_BE_TRASHED',
+          ),
+        );
+      }
+
+      if (
+        field.locked &&
+        !field.native &&
+        !this.canUpdateLockedField(payload, field)
+      ) {
         return left(
           HTTPException.Forbidden(
             'Field is locked and cannot be updated',
             'FIELD_LOCKED',
+          ),
+        );
+      }
+
+      if (field.native && !this.canUpdateNativeField(payload, field)) {
+        return left(
+          HTTPException.Forbidden(
+            'Native fields can only have visibility and width updated',
+            'NATIVE_FIELD_RESTRICTED',
           ),
         );
       }
@@ -255,6 +277,28 @@ export default class TableFieldUpdateUseCase {
     });
 
     return right(updatedField);
+  }
+
+  private canUpdateNativeField(payload: Payload, field: IField): boolean {
+    // Native fields only allow visibility and width changes
+    if (payload.name !== field.name) return false;
+    if (payload.type !== field.type) return false;
+    if (payload.trashed || payload.trashedAt) return false;
+    if (payload.required !== field.required) return false;
+    if (payload.multiple !== field.multiple) return false;
+    if (payload.format !== field.format) return false;
+    if (payload.defaultValue !== field.defaultValue) return false;
+    if (
+      JSON.stringify(payload.relationship ?? null) !==
+      JSON.stringify(field.relationship ?? null)
+    )
+      return false;
+    if (
+      JSON.stringify(payload.group ?? null) !==
+      JSON.stringify(field.group ?? null)
+    )
+      return false;
+    return true;
   }
 
   private canUpdateLockedField(payload: Payload, field: IField): boolean {

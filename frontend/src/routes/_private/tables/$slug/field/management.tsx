@@ -74,7 +74,8 @@ function RouteComponent(): React.JSX.Element {
       ? targetGroup.fields
       : (table.data?.fields ?? []);
 
-  const trashedCount = fields.filter((f) => f.trashed).length;
+  const nonNativeFields = fields.filter((f) => !f.native);
+  const trashedCount = nonNativeFields.filter((f) => f.trashed).length;
 
   const handleBack = (): void => {
     sidebar.setOpen(true);
@@ -116,7 +117,7 @@ function RouteComponent(): React.JSX.Element {
             className="w-full max-w-6xl mx-auto"
           >
             <TabsList className="grid w-full grid-cols-5 mb-4">
-              <TabsTrigger value="display">Lista / Grid</TabsTrigger>
+              <TabsTrigger value="display">Lista</TabsTrigger>
               <TabsTrigger value="filter">Filtros</TabsTrigger>
               <TabsTrigger value="form">Formulários</TabsTrigger>
               <TabsTrigger value="detail">Detalhes</TabsTrigger>
@@ -158,6 +159,7 @@ function RouteComponent(): React.JSX.Element {
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined
                 }
+                excludeNative
               />
             </TabsContent>
 
@@ -177,8 +179,11 @@ function RouteComponent(): React.JSX.Element {
                 table={table.data}
                 groupSlug={groupSlug}
                 groupFields={
-                  isGroupContext && targetGroup ? targetGroup.fields : undefined
+                  isGroupContext && targetGroup
+                    ? targetGroup.fields.filter((f) => !f.native)
+                    : undefined
                 }
+                excludeNative
               />
             </TabsContent>
           </Tabs>

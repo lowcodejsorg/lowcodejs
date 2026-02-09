@@ -86,6 +86,7 @@ export const TableFieldShowSchema: FastifySchema = {
           type: 'boolean',
           description: 'Field is locked and cannot be modified',
         },
+        native: { type: 'boolean', description: 'Field is native' },
         format: {
           type: 'string',
           nullable: true,

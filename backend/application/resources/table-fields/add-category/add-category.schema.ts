@@ -71,6 +71,7 @@ export const TableFieldAddCategorySchema: FastifySchema = {
             widthInForm: { type: 'number', nullable: true },
             widthInList: { type: 'number', nullable: true },
             locked: { type: 'boolean' },
+            native: { type: 'boolean' },
             defaultValue: { type: 'string', nullable: true },
             relationship: { type: 'object', nullable: true },
             dropdown: { type: 'array', nullable: true },

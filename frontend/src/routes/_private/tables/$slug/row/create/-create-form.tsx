@@ -219,6 +219,9 @@ export function RowFormFields({
   return (
     <section className="grid grid-cols-4 gap-4 p-2">
       {fields.map((field) => {
+        // Skip native fields (_id, creator, createdAt)
+        if (field.native) return null;
+
         // Skip non-editable field types
         if (
           field.type === E_FIELD_TYPE.REACTION ||

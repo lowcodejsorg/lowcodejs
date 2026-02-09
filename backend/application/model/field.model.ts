@@ -152,6 +152,10 @@ export const Schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    native: {
+      type: Boolean,
+      default: false,
+    },
     defaultValue: {
       type: String,
       default: null,

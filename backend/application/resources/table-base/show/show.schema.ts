@@ -144,6 +144,10 @@ export const TableShowSchema: FastifySchema = {
                 type: 'boolean',
                 description: 'Field is locked and cannot be modified',
               },
+              native: {
+                type: 'boolean',
+                description: 'Field is native',
+              },
               defaultValue: {
                 type: 'string',
                 nullable: true,
@@ -352,6 +356,7 @@ export const TableShowSchema: FastifySchema = {
                     widthInForm: { type: 'number', nullable: true },
                     widthInList: { type: 'number', nullable: true },
                     locked: { type: 'boolean' },
+                    native: { type: 'boolean' },
                     defaultValue: { type: 'string', nullable: true },
                     relationship: { type: 'object', nullable: true },
                     dropdown: { type: 'array', nullable: true },

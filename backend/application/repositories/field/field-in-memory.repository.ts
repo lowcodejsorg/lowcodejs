@@ -24,6 +24,19 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
     return field;
   }
 
+  async createMany(payloads: FieldCreatePayload[]): Promise<IField[]> {
+    const fields = payloads.map((payload) => ({
+      ...payload,
+      _id: crypto.randomUUID(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      trashedAt: null,
+      trashed: false,
+    }));
+    this.items.push(...fields);
+    return fields;
+  }
+
   async findBy({
     _id,
     slug,

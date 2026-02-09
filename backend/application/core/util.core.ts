@@ -194,7 +194,7 @@ export function buildSchema(
     },
   };
 
-  for (const field of fields) {
+  for (const field of fields.filter((f) => !f.native)) {
     Object.assign(schema, mapperSchema(field, groups));
   }
 
@@ -380,7 +380,7 @@ export async function buildPopulate(
   fields?: IField[],
   groups?: IGroupConfiguration[],
 ): Promise<{ path: string; model?: string; select?: string }[]> {
-  const relacionamentos = getRelationship(fields);
+  const relacionamentos = getRelationship(fields).filter((f) => !f.native);
   const populate = [];
 
   for await (const field of relacionamentos) {
@@ -618,7 +618,7 @@ export async function buildQuery(
     const searchQuery: Query[] = [];
 
     for (const field of fields.filter(
-      (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP,
+      (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.native,
     )) {
       if (
         field?.type === E_FIELD_TYPE.TEXT_LONG ||

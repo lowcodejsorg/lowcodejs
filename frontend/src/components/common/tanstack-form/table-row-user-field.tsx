@@ -65,11 +65,12 @@ export function TableRowUserField({
   }, [data?.data]);
 
   // Map selected options to IUser objects for the combobox
+  const values = formField.state.value ?? [];
   const selectedUsers = React.useMemo(() => {
-    return formField.state.value
+    return values
       .map((opt) => users.find((user) => user._id === opt.value))
       .filter((user): user is IUser => user !== undefined);
-  }, [formField.state.value, users]);
+  }, [values, users]);
 
   const handleValueChange = (newValue: IUser | Array<IUser> | null): void => {
     if (isMultiple) {
@@ -117,9 +118,9 @@ export function TableRowUserField({
               className={cn(isInvalid && 'border-destructive')}
             >
               <ComboboxValue>
-                {(values: Array<IUser>): React.ReactNode => (
+                {(selectedValues: Array<IUser>): React.ReactNode => (
                   <React.Fragment>
-                    {values.slice(0, 2).map((user) => (
+                    {selectedValues.slice(0, 2).map((user) => (
                       <ComboboxChip
                         key={user._id}
                         aria-label={user.name}
@@ -127,14 +128,14 @@ export function TableRowUserField({
                         {user.name}
                       </ComboboxChip>
                     ))}
-                    {values.length > 2 && (
+                    {selectedValues.length > 2 && (
                       <span className="text-muted-foreground text-xs">
-                        +{values.length - 2}
+                        +{selectedValues.length - 2}
                       </span>
                     )}
                     <ComboboxChipsInput
                       placeholder={
-                        values.length > 0
+                        selectedValues.length > 0
                           ? ''
                           : `Selecione ${field.name.toLowerCase()}`
                       }
@@ -198,10 +199,10 @@ export function TableRowUserField({
         >
           <ComboboxInput
             placeholder={
-              formField.state.value[0]?.label ||
+              (formField.state.value ?? [])[0]?.label ||
               `Selecione ${field.name.toLowerCase()}`
             }
-            showClear={formField.state.value.length > 0}
+            showClear={(formField.state.value ?? []).length > 0}
             className={cn(isInvalid && 'border-destructive')}
           />
           <ComboboxContent>
