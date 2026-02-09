@@ -197,38 +197,38 @@ const PrivateTablesSlugFieldFieldIdIndexRoute =
   } as any);
 
 export interface FileRoutesByFullPath {
-  '/pages/$slug': typeof PrivatePagesSlugRoute;
   '/': typeof AuthenticationSignInIndexRoute;
-  '/sign-up': typeof AuthenticationSignUpIndexRoute;
-  '/dashboard': typeof PrivateDashboardIndexRoute;
-  '/groups': typeof PrivateGroupsIndexRoute;
-  '/menus': typeof PrivateMenusIndexRoute;
-  '/profile': typeof PrivateProfileIndexRoute;
-  '/settings': typeof PrivateSettingsIndexRoute;
-  '/tables': typeof PrivateTablesIndexRoute;
-  '/tools': typeof PrivateToolsIndexRoute;
-  '/users': typeof PrivateUsersIndexRoute;
+  '/pages/$slug': typeof PrivatePagesSlugRoute;
+  '/sign-up/': typeof AuthenticationSignUpIndexRoute;
+  '/dashboard/': typeof PrivateDashboardIndexRoute;
+  '/groups/': typeof PrivateGroupsIndexRoute;
+  '/menus/': typeof PrivateMenusIndexRoute;
+  '/profile/': typeof PrivateProfileIndexRoute;
+  '/settings/': typeof PrivateSettingsIndexRoute;
+  '/tables/': typeof PrivateTablesIndexRoute;
+  '/tools/': typeof PrivateToolsIndexRoute;
+  '/users/': typeof PrivateUsersIndexRoute;
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute;
-  '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute;
-  '/groups/create': typeof PrivateGroupsCreateIndexRoute;
-  '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute;
-  '/menus/create': typeof PrivateMenusCreateIndexRoute;
-  '/tables/$slug': typeof PrivateTablesSlugIndexRoute;
-  '/tables/clone': typeof PrivateTablesCloneIndexRoute;
-  '/tables/create': typeof PrivateTablesCreateIndexRoute;
-  '/tables/new': typeof PrivateTablesNewIndexRoute;
-  '/users/$userId': typeof PrivateUsersUserIdIndexRoute;
-  '/users/create': typeof PrivateUsersCreateIndexRoute;
+  '/groups/$groupId/': typeof PrivateGroupsGroupIdIndexRoute;
+  '/groups/create/': typeof PrivateGroupsCreateIndexRoute;
+  '/menus/$menuId/': typeof PrivateMenusMenuIdIndexRoute;
+  '/menus/create/': typeof PrivateMenusCreateIndexRoute;
+  '/tables/$slug/': typeof PrivateTablesSlugIndexRoute;
+  '/tables/clone/': typeof PrivateTablesCloneIndexRoute;
+  '/tables/create/': typeof PrivateTablesCreateIndexRoute;
+  '/tables/new/': typeof PrivateTablesNewIndexRoute;
+  '/users/$userId/': typeof PrivateUsersUserIdIndexRoute;
+  '/users/create/': typeof PrivateUsersCreateIndexRoute;
   '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute;
-  '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute;
-  '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
-  '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute;
-  '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute;
-  '/tables/$slug/row/create': typeof PrivateTablesSlugRowCreateIndexRoute;
+  '/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute;
+  '/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
+  '/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute;
+  '/tables/$slug/row/$rowId/': typeof PrivateTablesSlugRowRowIdIndexRoute;
+  '/tables/$slug/row/create/': typeof PrivateTablesSlugRowCreateIndexRoute;
 }
 export interface FileRoutesByTo {
-  '/pages/$slug': typeof PrivatePagesSlugRoute;
   '/': typeof AuthenticationSignInIndexRoute;
+  '/pages/$slug': typeof PrivatePagesSlugRoute;
   '/sign-up': typeof AuthenticationSignUpIndexRoute;
   '/dashboard': typeof PrivateDashboardIndexRoute;
   '/groups': typeof PrivateGroupsIndexRoute;
@@ -291,38 +291,38 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/pages/$slug'
     | '/'
-    | '/sign-up'
-    | '/dashboard'
-    | '/groups'
-    | '/menus'
-    | '/profile'
-    | '/settings'
-    | '/tables'
-    | '/tools'
-    | '/users'
+    | '/pages/$slug'
+    | '/sign-up/'
+    | '/dashboard/'
+    | '/groups/'
+    | '/menus/'
+    | '/profile/'
+    | '/settings/'
+    | '/tables/'
+    | '/tools/'
+    | '/users/'
     | '/tables/$slug/methods'
-    | '/groups/$groupId'
-    | '/groups/create'
-    | '/menus/$menuId'
-    | '/menus/create'
-    | '/tables/$slug'
-    | '/tables/clone'
-    | '/tables/create'
-    | '/tables/new'
-    | '/users/$userId'
-    | '/users/create'
+    | '/groups/$groupId/'
+    | '/groups/create/'
+    | '/menus/$menuId/'
+    | '/menus/create/'
+    | '/tables/$slug/'
+    | '/tables/clone/'
+    | '/tables/create/'
+    | '/tables/new/'
+    | '/users/$userId/'
+    | '/users/create/'
     | '/tables/$slug/field/management'
-    | '/tables/$slug/detail'
-    | '/tables/$slug/field/$fieldId'
-    | '/tables/$slug/field/create'
-    | '/tables/$slug/row/$rowId'
-    | '/tables/$slug/row/create';
+    | '/tables/$slug/detail/'
+    | '/tables/$slug/field/$fieldId/'
+    | '/tables/$slug/field/create/'
+    | '/tables/$slug/row/$rowId/'
+    | '/tables/$slug/row/create/';
   fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/pages/$slug'
     | '/'
+    | '/pages/$slug'
     | '/sign-up'
     | '/dashboard'
     | '/groups'
@@ -393,70 +393,70 @@ declare module '@tanstack/react-router' {
     '/_private': {
       id: '/_private';
       path: '';
-      fullPath: '';
+      fullPath: '/';
       preLoaderRoute: typeof PrivateLayoutRouteImport;
       parentRoute: typeof rootRouteImport;
     };
     '/_private/users/': {
       id: '/_private/users/';
       path: '/users';
-      fullPath: '/users';
+      fullPath: '/users/';
       preLoaderRoute: typeof PrivateUsersIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tools/': {
       id: '/_private/tools/';
       path: '/tools';
-      fullPath: '/tools';
+      fullPath: '/tools/';
       preLoaderRoute: typeof PrivateToolsIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/': {
       id: '/_private/tables/';
       path: '/tables';
-      fullPath: '/tables';
+      fullPath: '/tables/';
       preLoaderRoute: typeof PrivateTablesIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/settings/': {
       id: '/_private/settings/';
       path: '/settings';
-      fullPath: '/settings';
+      fullPath: '/settings/';
       preLoaderRoute: typeof PrivateSettingsIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/profile/': {
       id: '/_private/profile/';
       path: '/profile';
-      fullPath: '/profile';
+      fullPath: '/profile/';
       preLoaderRoute: typeof PrivateProfileIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/menus/': {
       id: '/_private/menus/';
       path: '/menus';
-      fullPath: '/menus';
+      fullPath: '/menus/';
       preLoaderRoute: typeof PrivateMenusIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/groups/': {
       id: '/_private/groups/';
       path: '/groups';
-      fullPath: '/groups';
+      fullPath: '/groups/';
       preLoaderRoute: typeof PrivateGroupsIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/dashboard/': {
       id: '/_private/dashboard/';
       path: '/dashboard';
-      fullPath: '/dashboard';
+      fullPath: '/dashboard/';
       preLoaderRoute: typeof PrivateDashboardIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_authentication/sign-up/': {
       id: '/_authentication/sign-up/';
       path: '/sign-up';
-      fullPath: '/sign-up';
+      fullPath: '/sign-up/';
       preLoaderRoute: typeof AuthenticationSignUpIndexRouteImport;
       parentRoute: typeof rootRouteImport;
     };
@@ -477,70 +477,70 @@ declare module '@tanstack/react-router' {
     '/_private/users/create/': {
       id: '/_private/users/create/';
       path: '/users/create';
-      fullPath: '/users/create';
+      fullPath: '/users/create/';
       preLoaderRoute: typeof PrivateUsersCreateIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/users/$userId/': {
       id: '/_private/users/$userId/';
       path: '/users/$userId';
-      fullPath: '/users/$userId';
+      fullPath: '/users/$userId/';
       preLoaderRoute: typeof PrivateUsersUserIdIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/new/': {
       id: '/_private/tables/new/';
       path: '/tables/new';
-      fullPath: '/tables/new';
+      fullPath: '/tables/new/';
       preLoaderRoute: typeof PrivateTablesNewIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/create/': {
       id: '/_private/tables/create/';
       path: '/tables/create';
-      fullPath: '/tables/create';
+      fullPath: '/tables/create/';
       preLoaderRoute: typeof PrivateTablesCreateIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/clone/': {
       id: '/_private/tables/clone/';
       path: '/tables/clone';
-      fullPath: '/tables/clone';
+      fullPath: '/tables/clone/';
       preLoaderRoute: typeof PrivateTablesCloneIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/$slug/': {
       id: '/_private/tables/$slug/';
       path: '/tables/$slug';
-      fullPath: '/tables/$slug';
+      fullPath: '/tables/$slug/';
       preLoaderRoute: typeof PrivateTablesSlugIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/menus/create/': {
       id: '/_private/menus/create/';
       path: '/menus/create';
-      fullPath: '/menus/create';
+      fullPath: '/menus/create/';
       preLoaderRoute: typeof PrivateMenusCreateIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/menus/$menuId/': {
       id: '/_private/menus/$menuId/';
       path: '/menus/$menuId';
-      fullPath: '/menus/$menuId';
+      fullPath: '/menus/$menuId/';
       preLoaderRoute: typeof PrivateMenusMenuIdIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/groups/create/': {
       id: '/_private/groups/create/';
       path: '/groups/create';
-      fullPath: '/groups/create';
+      fullPath: '/groups/create/';
       preLoaderRoute: typeof PrivateGroupsCreateIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/groups/$groupId/': {
       id: '/_private/groups/$groupId/';
       path: '/groups/$groupId';
-      fullPath: '/groups/$groupId';
+      fullPath: '/groups/$groupId/';
       preLoaderRoute: typeof PrivateGroupsGroupIdIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
@@ -554,7 +554,7 @@ declare module '@tanstack/react-router' {
     '/_private/tables/$slug/detail/': {
       id: '/_private/tables/$slug/detail/';
       path: '/tables/$slug/detail';
-      fullPath: '/tables/$slug/detail';
+      fullPath: '/tables/$slug/detail/';
       preLoaderRoute: typeof PrivateTablesSlugDetailIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
@@ -568,28 +568,28 @@ declare module '@tanstack/react-router' {
     '/_private/tables/$slug/row/create/': {
       id: '/_private/tables/$slug/row/create/';
       path: '/tables/$slug/row/create';
-      fullPath: '/tables/$slug/row/create';
+      fullPath: '/tables/$slug/row/create/';
       preLoaderRoute: typeof PrivateTablesSlugRowCreateIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/$slug/row/$rowId/': {
       id: '/_private/tables/$slug/row/$rowId/';
       path: '/tables/$slug/row/$rowId';
-      fullPath: '/tables/$slug/row/$rowId';
+      fullPath: '/tables/$slug/row/$rowId/';
       preLoaderRoute: typeof PrivateTablesSlugRowRowIdIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/$slug/field/create/': {
       id: '/_private/tables/$slug/field/create/';
       path: '/tables/$slug/field/create';
-      fullPath: '/tables/$slug/field/create';
+      fullPath: '/tables/$slug/field/create/';
       preLoaderRoute: typeof PrivateTablesSlugFieldCreateIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/tables/$slug/field/$fieldId/': {
       id: '/_private/tables/$slug/field/$fieldId/';
       path: '/tables/$slug/field/$fieldId';
-      fullPath: '/tables/$slug/field/$fieldId';
+      fullPath: '/tables/$slug/field/$fieldId/';
       preLoaderRoute: typeof PrivateTablesSlugFieldFieldIdIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };

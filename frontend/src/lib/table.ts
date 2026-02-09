@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { E_FIELD_TYPE } from './constant';
 import type {
   ICategory,
@@ -66,6 +67,7 @@ export function buildCreateRowDefaultValues(
     ) {
       continue;
     }
+    if (field.native) continue;
 
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
@@ -88,6 +90,10 @@ export function buildCreateRowDefaultValues(
         break;
       case E_FIELD_TYPE.FIELD_GROUP:
         defaults[field.slug] = [{}];
+        break;
+      // @ts-ignore
+      case E_FIELD_TYPE.EVALUATION:
+        defaults[field.slug] = [];
         break;
       default:
         defaults[field.slug] = '';
@@ -121,6 +127,7 @@ export function buildUpdateRowDefaultValues(
     ) {
       continue;
     }
+    if (field.native) continue;
 
     const value = data[field.slug];
 
@@ -209,6 +216,7 @@ export function buildRowPayload(
     ) {
       continue;
     }
+    if (field.native) continue;
     const value = values[field.slug];
     payload[field.slug] = mountRowValue(value, field);
   }
