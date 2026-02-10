@@ -42,13 +42,14 @@ export default class TableRowPaginatedUseCase {
 
       const c = await buildTable(table);
 
-      const query = await buildQuery(payload, table.fields as IField[]);
+      const query = await buildQuery(payload, table.fields as IField[], table.groups, table.slug);
 
       const order = buildOrder(payload, table.fields as IField[]);
 
       const populate = await buildPopulate(
         table.fields as IField[],
         table.groups,
+        table.slug,
       );
 
       const rows = await c

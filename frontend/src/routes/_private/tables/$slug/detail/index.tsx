@@ -71,12 +71,8 @@ function RouteComponent(): React.JSX.Element {
           mode === 'show' &&
           permission.can('UPDATE_TABLE') && (
             <div className="inline-flex items-center gap-2">
-              {!_read.data.trashed && (
-                <TableSendToTrashDialog slug={slug} />
-              )}
-              {_read.data.trashed && (
-                <TableRemoveFromTrashDialog slug={slug} />
-              )}
+              {!_read.data.trashed && <TableSendToTrashDialog slug={slug} />}
+              {_read.data.trashed && <TableRemoveFromTrashDialog slug={slug} />}
               <Button
                 type="button"
                 className="px-2 cursor-pointer max-w-40 w-full"

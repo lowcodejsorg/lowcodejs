@@ -38,6 +38,7 @@ export default class TableRowShowUseCase {
       const populate = await buildPopulate(
         table.fields as IField[],
         table.groups,
+        table.slug,
       );
 
       const row = await c.findOne({

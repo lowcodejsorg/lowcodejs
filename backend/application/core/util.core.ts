@@ -1,6 +1,7 @@
 import type { RootFilterQuery, SortOrder } from 'mongoose';
 import mongoose from 'mongoose';
 
+import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
 
 import type {
@@ -250,6 +251,59 @@ interface Entity
   _id: mongoose.Types.ObjectId;
 }
 
+interface IReverseRelationship {
+  sourceTableSlug: string; // tabela que TEM o campo RELATIONSHIP (ex: "usuarios")
+  fieldSlug: string; // slug do campo na tabela source (ex: "contatos")
+  virtualName: string; // nome do virtual que sera registrado no schema
+}
+
+export async function findReverseRelationships(
+  tableSlug: string,
+): Promise<IReverseRelationship[]> {
+  // Buscar campos RELATIONSHIP que apontam para esta tabela
+  const reverseFields = await Field.find({
+    type: E_FIELD_TYPE.RELATIONSHIP,
+    'relationship.table.slug': tableSlug,
+    trashed: { $ne: true },
+  }).select('_id slug');
+
+  if (reverseFields.length === 0) return [];
+
+  // Encontrar as tabelas que contem esses campos
+  const fieldIds = reverseFields.flatMap((f) => f._id);
+  const tables = await Table.find({
+    fields: { $in: fieldIds },
+    trashed: { $ne: true },
+  }).select('slug fields');
+
+  // Mapear: para cada tabela, quais campos dela apontam para nos
+  const result: IReverseRelationship[] = [];
+
+  for (const table of tables) {
+    const matchingFields = reverseFields.filter((rf) =>
+      table.fields.some((fId: any) => fId.toString() === rf._id.toString()),
+    );
+
+    for (const field of matchingFields) {
+      // Colisao: mesma tabela com 2+ campos apontando -> nome composto
+
+      let virtualName = table.slug;
+
+      if (matchingFields.length > 1) {
+        virtualName = table.slug.concat('-').concat(field.slug);
+      }
+
+      result.push({
+        sourceTableSlug: table.slug,
+        fieldSlug: field.slug,
+        virtualName,
+      });
+    }
+  }
+
+  return result;
+}
+
 export async function buildTable(
   table: Optional<
     import('@application/core/entity.core').ITable,
@@ -292,6 +346,16 @@ export async function buildTable(
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
   });
+
+  // === VIRTUAL POPULATE (Relacionamentos Reversos) ===
+  const reverseRelationships = await findReverseRelationships(table.slug);
+  for (const rel of reverseRelationships) {
+    schema.virtual(rel.virtualName, {
+      ref: rel.sourceTableSlug, // modelo de onde vem os dados
+      localField: '_id', // campo local (nesta tabela)
+      foreignField: rel.fieldSlug, // campo na tabela source que referencia esta
+    });
+  }
 
   // ===== ADICIONA OS MIDDLEWARES AQUI =====
 
@@ -385,6 +449,7 @@ export function getRelationship(fields: IField[] = []): IField[] {
 export async function buildPopulate(
   fields?: IField[],
   groups?: IGroupConfiguration[],
+  tableSlug?: string,
 ): Promise<{ path: string; model?: string; select?: string }[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
@@ -493,6 +558,48 @@ export async function buildPopulate(
     }
   }
 
+  // === VIRTUAL POPULATE (Relacionamentos Reversos) ===
+  if (tableSlug) {
+    const reverseRelationships = await findReverseRelationships(tableSlug);
+
+    for (const rel of reverseRelationships) {
+      const sourceTable = await Table.findOne({
+        slug: rel.sourceTableSlug,
+        trashed: { $ne: true },
+      }).populate('fields');
+
+      if (sourceTable) {
+        // Registrar modelo source no Mongoose (necessario para populate funcionar)
+        await buildTable({
+          ...sourceTable.toJSON({ flattenObjectIds: true }),
+          _id: sourceTable._id.toString(),
+        });
+
+        // Excluir campos RELATIONSHIP do select para evitar dados circulares
+        const relationshipSlugs = (sourceTable.fields as IField[])
+          .filter(
+            (f) =>
+              f.type === E_FIELD_TYPE.RELATIONSHIP && f.slug !== rel.fieldSlug,
+          )
+          .map((f) => `-${f.slug}`);
+
+        populate.push({
+          path: rel.virtualName,
+          ...(relationshipSlugs.length > 0 && {
+            select: relationshipSlugs.join(' '),
+          }),
+          // foreignField precisa estar no select pro match, mas nao deve aparecer no output
+          transform: (doc: any) => {
+            if (!doc) return doc;
+            const obj = doc.toObject ? doc.toObject() : { ...doc };
+            delete obj[rel.fieldSlug];
+            return obj;
+          },
+        });
+      }
+    }
+  }
+
   return [...populate];
 }
 
@@ -502,6 +609,7 @@ export async function buildQuery(
   { search, trashed, ...payload }: Partial<Query>,
   fields: IField[] = [],
   groups?: IGroupConfiguration[],
+  tableSlug?: string,
 ): Promise<Query> {
   let query: Query = {
     ...(trashed && { trashed: trashed === 'true' }),
@@ -675,6 +783,58 @@ export async function buildQuery(
       query = {
         $and: [{ ...query }, { $or: searchQuery }],
       };
+    }
+  }
+
+  // === FILTRO EM VIRTUAL RELATIONSHIPS (Reverse Lookup) ===
+  if (tableSlug) {
+    const reverseRelationships = await findReverseRelationships(tableSlug);
+
+    for (const rel of reverseRelationships) {
+      if (!payload[rel.virtualName]) continue;
+
+      const filterIds = payload[rel.virtualName].toString().split(',');
+
+      const db = mongoose.connection.db!;
+      const sourceCollection = db.collection(rel.sourceTableSlug);
+
+      const sourceRecords = await sourceCollection
+        .find(
+          {
+            _id: {
+              $in: filterIds.map(
+                (id: string) => new mongoose.Types.ObjectId(id),
+              ),
+            },
+          },
+          { projection: { [rel.fieldSlug]: 1 } },
+        )
+        .toArray();
+
+      const matchingIds = new Set<string>();
+      for (const record of sourceRecords) {
+        const fieldValue = record[rel.fieldSlug];
+        if (Array.isArray(fieldValue)) {
+          fieldValue.forEach((id) => matchingIds.add(id.toString()));
+        } else if (fieldValue) {
+          matchingIds.add(fieldValue.toString());
+        }
+      }
+
+      const idCondition =
+        matchingIds.size > 0
+          ? {
+              _id: {
+                $in: [...matchingIds].map(
+                  (id) => new mongoose.Types.ObjectId(id),
+                ),
+              },
+            }
+          : { _id: { $in: [] } };
+
+      query = query.$and
+        ? { $and: [...query.$and, idCondition] }
+        : { $and: [query, idCondition] };
     }
   }
 
