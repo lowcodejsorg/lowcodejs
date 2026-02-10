@@ -215,24 +215,25 @@ export function TableGridView({
           </Card>
         ))}
 
-        {canCreateRow && (
-          <Card className="overflow-hidden border-dashed flex items-center justify-center min-h-32">
-            <Button
-              variant="ghost"
-              className="flex flex-col gap-2 h-full w-full"
-              onClick={() => {
-                router.navigate({
-                  to: '/tables/$slug/row/create',
-                  replace: true,
-                  params: { slug },
-                });
-              }}
-            >
-              <PlusIcon className="size-8 text-muted-foreground" />
-              <span className="text-muted-foreground">Novo registro</span>
-            </Button>
-          </Card>
-        )}
+        {canCreateRow &&
+          (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) > 0 && (
+            <Card className="overflow-hidden border-dashed flex items-center justify-center min-h-32">
+              <Button
+                variant="ghost"
+                className="flex flex-col gap-2 h-full w-full"
+                onClick={() => {
+                  router.navigate({
+                    to: '/tables/$slug/row/create',
+                    replace: true,
+                    params: { slug },
+                  });
+                }}
+              >
+                <PlusIcon className="size-8 text-muted-foreground" />
+                <span className="text-muted-foreground">Registro</span>
+              </Button>
+            </Card>
+          )}
       </div>
     </div>
   );

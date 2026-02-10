@@ -150,23 +150,24 @@ function RouteComponent(): React.JSX.Element {
           <TableStyleViewDropdown slug={slug} />
           <TableConfigurationDropdown tableSlug={slug} />
 
-          {permission.can('CREATE_ROW') && (
-            <Button
-              disabled={rows.status === 'pending' || rows.status === 'error'}
-              className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
-              onClick={() => {
-                sidebar.setOpen(false);
-                router.navigate({
-                  to: '/tables/$slug/row/create',
-                  replace: true,
-                  params: { slug },
-                });
-              }}
-            >
-              <PlusIcon />
-              <span>Registro</span>
-            </Button>
-          )}
+          {permission.can('CREATE_ROW') &&
+            (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) > 0 && (
+              <Button
+                disabled={rows.status === 'pending' || rows.status === 'error'}
+                className="disabled:cursor-not-allowed shadow-none p-1 h-auto"
+                onClick={() => {
+                  sidebar.setOpen(false);
+                  router.navigate({
+                    to: '/tables/$slug/row/create',
+                    replace: true,
+                    params: { slug },
+                  });
+                }}
+              >
+                <PlusIcon />
+                <span>Registro</span>
+              </Button>
+            )}
         </div>
       </div>
 
