@@ -97,6 +97,17 @@ jobs:
             docker image prune -f || true
             docker compose -f docker-compose.production.yml up -d --force-recreate
 
+            # LOGICA PARA O NET-LABIC
+            if [ "${{ inputs.branch }}" = "develop" ]; then
+              echo "Branch develop detectada. Atualizando net-labic..."
+              cd /home/${{ secrets.VPS_USER }}/deployments/net-labic
+              
+              # o pull vai baixar a imagem (develop) que acabou de buildar
+              docker compose -f docker-compose.production.yml pull
+              docker compose -f docker-compose.production.yml up -d --force-recreate
+              echo "net-labic atualizado com sucesso!"
+            fi
+
             # Aguardar container da API estar pronto
             sleep 5
 
