@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+  E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
@@ -18,7 +19,10 @@ describe('Table Create Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
-    sut = new TableCreateUseCase(tableInMemoryRepository, fieldInMemoryRepository);
+    sut = new TableCreateUseCase(
+      tableInMemoryRepository,
+      fieldInMemoryRepository,
+    );
   });
 
   it('deve criar tabela com sucesso', async () => {
@@ -31,6 +35,41 @@ describe('Table Create Use Case', () => {
     if (result.isRight()) {
       expect(result.value.name).toBe('Clientes');
       expect(result.value.slug).toBe('clientes');
+
+      // Deve criar 5 campos nativos com tipos corretos
+      const fields = result.value.fields;
+      expect(fields).toHaveLength(5);
+
+      const idField = fields.find((f) => f.slug === '_id');
+      expect(idField).toBeDefined();
+      expect(idField!.type).toBe(E_FIELD_TYPE.IDENTIFIER);
+      expect(idField!.native).toBe(true);
+      expect(idField!.locked).toBe(true);
+
+      const creatorField = fields.find((f) => f.slug === 'creator');
+      expect(creatorField).toBeDefined();
+      expect(creatorField!.type).toBe(E_FIELD_TYPE.CREATOR);
+      expect(creatorField!.native).toBe(true);
+      expect(creatorField!.locked).toBe(true);
+
+      const createdAtField = fields.find((f) => f.slug === 'createdAt');
+      expect(createdAtField).toBeDefined();
+      expect(createdAtField!.type).toBe(E_FIELD_TYPE.CREATED_AT);
+      expect(createdAtField!.native).toBe(true);
+      expect(createdAtField!.locked).toBe(true);
+
+      const trashedField = fields.find((f) => f.slug === 'trashed');
+      expect(trashedField).toBeDefined();
+      expect(trashedField!.type).toBe(E_FIELD_TYPE.TRASHED);
+      expect(trashedField!.native).toBe(true);
+      expect(trashedField!.locked).toBe(true);
+
+      const trashedAtField = fields.find((f) => f.slug === 'trashedAt');
+      expect(trashedAtField).toBeDefined();
+      expect(trashedAtField!.type).toBe(E_FIELD_TYPE.TRASHED_AT);
+      expect(trashedAtField!.native).toBe(true);
+      expect(trashedAtField!.locked).toBe(true);
+
     }
   });
 

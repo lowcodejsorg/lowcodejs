@@ -60,6 +60,15 @@ export default class TableFieldSendToTrashUseCase {
           HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
         );
 
+      if (field.native) {
+        return left(
+          HTTPException.Forbidden(
+            'Native fields cannot be trashed',
+            'NATIVE_FIELD_CANNOT_BE_TRASHED',
+          ),
+        );
+      }
+
       if (field.locked) {
         return left(
           HTTPException.Forbidden(
@@ -121,6 +130,15 @@ export default class TableFieldSendToTrashUseCase {
 
     if (!field)
       return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
+
+    if (field.native) {
+      return left(
+        HTTPException.Forbidden(
+          'Native fields cannot be trashed',
+          'NATIVE_FIELD_CANNOT_BE_TRASHED',
+        ),
+      );
+    }
 
     if (field.locked) {
       return left(

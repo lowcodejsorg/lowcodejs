@@ -212,6 +212,15 @@ export default class TableFieldUpdateUseCase {
     if (!field)
       return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
 
+    if (field.native && !this.canUpdateNativeField(payload, field)) {
+      return left(
+        HTTPException.Forbidden(
+          'Native fields can only have visibility and width updated',
+          'NATIVE_FIELD_RESTRICTED',
+        ),
+      );
+    }
+
     if (field.locked && !this.canUpdateLockedField(payload, field)) {
       return left(
         HTTPException.Forbidden(
@@ -288,6 +297,8 @@ export default class TableFieldUpdateUseCase {
     if (payload.multiple !== field.multiple) return false;
     if (payload.format !== field.format) return false;
     if (payload.defaultValue !== field.defaultValue) return false;
+    if (payload.showInFilter !== field.showInFilter) return false;
+    if (payload.showInForm !== field.showInForm) return false;
     if (
       JSON.stringify(payload.relationship ?? null) !==
       JSON.stringify(field.relationship ?? null)
@@ -296,6 +307,16 @@ export default class TableFieldUpdateUseCase {
     if (
       JSON.stringify(payload.group ?? null) !==
       JSON.stringify(field.group ?? null)
+    )
+      return false;
+    if (
+      JSON.stringify(payload.dropdown ?? []) !==
+      JSON.stringify(field.dropdown ?? [])
+    )
+      return false;
+    if (
+      JSON.stringify(payload.category ?? []) !==
+      JSON.stringify(field.category ?? [])
     )
       return false;
     return true;

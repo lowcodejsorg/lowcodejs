@@ -68,6 +68,7 @@ export function buildCreateRowDefaultValues(
     ) {
       continue;
     }
+
     if (field.native) continue;
 
     switch (field.type) {
@@ -128,6 +129,7 @@ export function buildUpdateRowDefaultValues(
     ) {
       continue;
     }
+
     if (field.native) continue;
 
     const value = data[field.slug];

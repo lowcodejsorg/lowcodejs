@@ -52,6 +52,13 @@ const FieldTypeMapper: Record<
   [E_FIELD_TYPE.REACTION]: E_SCHEMA_TYPE.OBJECT_ID,
   [E_FIELD_TYPE.CATEGORY]: E_SCHEMA_TYPE.STRING,
   [E_FIELD_TYPE.USER]: E_SCHEMA_TYPE.OBJECT_ID,
+
+  // NATIVE
+  [E_FIELD_TYPE.IDENTIFIER]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.CREATOR]: E_SCHEMA_TYPE.OBJECT_ID,
+  [E_FIELD_TYPE.CREATED_AT]: E_SCHEMA_TYPE.DATE,
+  [E_FIELD_TYPE.TRASHED]: E_SCHEMA_TYPE.BOOLEAN,
+  [E_FIELD_TYPE.TRASHED_AT]: E_SCHEMA_TYPE.DATE,
 };
 
 function mapperSchema(
@@ -116,6 +123,13 @@ function mapperSchema(
       };
     })(),
 
+    [E_FIELD_TYPE.DATE]: {
+      [field.slug]: {
+        type: FieldTypeMapper[field.type] || 'Date',
+        required: Boolean(field.required || false),
+      },
+    },
+
     [E_FIELD_TYPE.CATEGORY]: {
       [field.slug]: [
         {
@@ -154,6 +168,45 @@ function mapperSchema(
         },
       ],
     },
+
+    // NATIVE
+    [E_FIELD_TYPE.IDENTIFIER]: {
+      [field.slug]: {
+        type: FieldTypeMapper[field.type] || 'String',
+        required: Boolean(field.required || false),
+      },
+    },
+
+    [E_FIELD_TYPE.CREATOR]: {
+      [field.slug]: {
+        type: FieldTypeMapper[field.type] || 'String',
+        required: Boolean(field.required || false),
+        ref: 'User',
+      },
+    },
+
+    [E_FIELD_TYPE.CREATED_AT]: {
+      [field.slug]: {
+        type: FieldTypeMapper[field.type] || 'Date',
+        required: Boolean(field.required || false),
+      },
+    },
+
+    [E_FIELD_TYPE.TRASHED]: {
+      [field.slug]: {
+        type: FieldTypeMapper[field.type] || 'Boolean',
+        required: Boolean(field.required || false),
+        default: false,
+      },
+    },
+
+    [E_FIELD_TYPE.TRASHED_AT]: {
+      [field.slug]: {
+        type: FieldTypeMapper[field.type] || 'Date',
+        required: Boolean(field.required || false),
+        default: null,
+      },
+    },
   };
 
   if (!(field.type in mapper) && !field?.multiple) {
@@ -183,18 +236,9 @@ export function buildSchema(
   fields: IField[],
   groups?: IGroupConfiguration[],
 ): ITableSchema {
-  const schema: ITableSchema = {
-    trashedAt: {
-      type: 'Date',
-      default: null,
-    },
-    trashed: {
-      type: 'Boolean',
-      default: false,
-    },
-  };
+  const schema: ITableSchema = {};
 
-  for (const field of fields.filter((f) => !f.native)) {
+  for (const field of fields) {
     Object.assign(schema, mapperSchema(field, groups));
   }
 
@@ -219,14 +263,7 @@ export async function buildTable(
   if (mongoose.models[table.slug]) delete mongoose.models[table.slug];
 
   // Processa _schema para converter campos Embedded em subdocument schemas
-  const schemaDefinition: Record<string, any> = {
-    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-    creator: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: false,
-    },
-  };
+  const schemaDefinition: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(table._schema)) {
     if (Array.isArray(value) && value[0]?.type === 'Embedded') {
@@ -246,6 +283,9 @@ export async function buildTable(
       schemaDefinition[key] = value;
     }
   }
+
+  delete schemaDefinition['_id'];
+  delete schemaDefinition['createdAt'];
 
   const schema = new mongoose.Schema(schemaDefinition, {
     timestamps: true,
@@ -314,41 +354,6 @@ export async function buildTable(
     });
   }
 
-  if (table?.methods?.onLoad?.code) {
-    // Para consultas individuais (findOne)
-    schema.post('findOne', async function (doc, next) {
-      if (doc) {
-        const result = await executeScript({
-          code: table?.methods?.onLoad?.code!,
-          doc,
-          tableSlug: table.slug,
-          fields: mapFieldsForSandbox(table.fields as IField[]),
-          context: {
-            userAction: 'carregamento_formulario',
-            executionMoment: 'carregamento_formulario',
-            userId: doc.creator?.toString(),
-            isNew: false,
-            tableInfo: {
-              _id: table._id?.toString() ?? '',
-              name: table.name,
-              slug: table.slug,
-            },
-          },
-        });
-
-        if (!result.success) {
-          console.error(
-            'Erro no onLoad (não bloqueante):',
-            result.error?.message,
-          );
-        }
-      }
-      next();
-    });
-  }
-
-  // ===== FIM DOS MIDDLEWARES =====
-
   const model = (mongoose.models[table?.slug] ||
     mongoose.model<Entity>(
       table?.slug,
@@ -369,6 +374,7 @@ export function getRelationship(fields: IField[] = []): IField[] {
     E_FIELD_TYPE.REACTION,
     E_FIELD_TYPE.EVALUATION,
     E_FIELD_TYPE.USER,
+    E_FIELD_TYPE.CREATOR,
   ];
 
   return fields.filter(
@@ -380,7 +386,7 @@ export async function buildPopulate(
   fields?: IField[],
   groups?: IGroupConfiguration[],
 ): Promise<{ path: string; model?: string; select?: string }[]> {
-  const relacionamentos = getRelationship(fields).filter((f) => !f.native);
+  const relacionamentos = getRelationship(fields);
   const populate = [];
 
   for await (const field of relacionamentos) {
@@ -389,7 +395,8 @@ export async function buildPopulate(
       field.type !== E_FIELD_TYPE.REACTION &&
       field.type !== E_FIELD_TYPE.EVALUATION &&
       field.type !== E_FIELD_TYPE.RELATIONSHIP &&
-      field.type !== E_FIELD_TYPE.USER
+      field.type !== E_FIELD_TYPE.USER &&
+      field.type !== E_FIELD_TYPE.CREATOR
     ) {
       populate.push({
         path: field.slug,
@@ -397,6 +404,14 @@ export async function buildPopulate(
     }
 
     if (field.type === E_FIELD_TYPE.USER) {
+      populate.push({
+        path: field.slug,
+        model: 'User',
+        select: 'name email _id',
+      });
+    }
+
+    if (field.type === E_FIELD_TYPE.CREATOR) {
       populate.push({
         path: field.slug,
         model: 'User',
@@ -478,14 +493,7 @@ export async function buildPopulate(
     }
   }
 
-  return [
-    ...populate,
-    {
-      path: 'creator',
-      model: 'User',
-      select: 'name email _id',
-    },
-  ];
+  return [...populate];
 }
 
 type Query = Record<string, any>;
@@ -519,7 +527,8 @@ export async function buildQuery(
       (field.type === E_FIELD_TYPE.RELATIONSHIP ||
         field.type === E_FIELD_TYPE.DROPDOWN ||
         field.type === E_FIELD_TYPE.CATEGORY ||
-        field.type === E_FIELD_TYPE.USER) &&
+        field.type === E_FIELD_TYPE.USER ||
+        field.type === E_FIELD_TYPE.CREATOR) &&
       payload[slug]
     ) {
       query[slug] = {
@@ -583,7 +592,8 @@ export async function buildQuery(
           groupField.type === E_FIELD_TYPE.RELATIONSHIP ||
           groupField.type === E_FIELD_TYPE.DROPDOWN ||
           groupField.type === E_FIELD_TYPE.CATEGORY ||
-          groupField.type === E_FIELD_TYPE.USER
+          groupField.type === E_FIELD_TYPE.USER ||
+          groupField.type === E_FIELD_TYPE.CREATOR
         ) {
           query[embeddedPath] = {
             $in: payload[payloadKey]?.toString().split(','),

@@ -132,7 +132,7 @@ function SortableManagementItem({
     transform,
     transition,
     isDragging,
-  } = useSortable({ id: field._id, disabled: disabled || !!field.native });
+  } = useSortable({ id: field._id, disabled });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -152,7 +152,7 @@ function SortableManagementItem({
     >
       <span className="text-sm font-medium">{field.name}</span>
       <div className="flex items-center gap-1">
-        {!isNative && widthKey && onWidthChange && (
+        {widthKey && onWidthChange && (
           <Select
             value={String(currentWidth)}
             onValueChange={(value) => onWidthChange(Number(value))}
@@ -197,17 +197,15 @@ function SortableManagementItem({
             <PencilIcon className="h-4 w-4" />
           </Button>
         )}
-        {!isNative && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 cursor-grab active:cursor-grabbing"
-            {...attributes}
-            {...listeners}
-          >
-            <GripVerticalIcon className="h-4 w-4" />
-          </Button>
-        )}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 cursor-grab active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVerticalIcon className="h-4 w-4" />
+        </Button>
       </div>
     </div>
   );
@@ -461,12 +459,7 @@ export function FieldManagementList({
     (f) => !f.trashed && !(excludeNative && f.native),
   );
 
-  const nativeFields = excludeNative
-    ? []
-    : activeFields.filter((f) => f.native);
-  const nonNativeFields = activeFields.filter((f) => !f.native);
-
-  const sorted = [...nonNativeFields].sort(
+  const sorted = [...activeFields].sort(
     (a, b) => order.indexOf(a._id) - order.indexOf(b._id),
   );
 
@@ -923,29 +916,6 @@ export function FieldManagementList({
 
   return (
     <div className="space-y-4">
-      {nativeFields.length > 0 && (
-        <div className="space-y-2">
-          {nativeFields.map((field) => (
-            <SortableManagementItem
-              key={field._id}
-              field={field}
-              disabled
-              visibilityKey={visibilityKey}
-              widthKey={widthKey}
-              onEdit={() => {}}
-              onToggleVisibility={() => handleToggleVisibility(field)}
-              onWidthChange={
-                widthKey
-                  ? (width): void => handleWidthChange(field, width)
-                  : undefined
-              }
-              isTogglingVisibility={togglingFieldId === field._id}
-              isChangingWidth={changingWidthFieldId === field._id}
-            />
-          ))}
-        </div>
-      )}
-
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -978,7 +948,7 @@ export function FieldManagementList({
         </SortableContext>
       </DndContext>
 
-      {fields.length === 0 && nativeFields.length === 0 && (
+      {fields.length === 0 && (
         <p className="text-center text-sm text-muted-foreground py-4">
           Nenhum campo cadastrado
         </p>

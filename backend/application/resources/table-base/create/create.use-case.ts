@@ -5,12 +5,11 @@ import slugify from 'slugify';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
-  E_FIELD_FORMAT,
-  E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  FIELD_NATIVE_LIST,
   type ITable as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -52,7 +51,12 @@ export default class TableCreateUseCase {
           ),
         );
 
-      const _schema = buildSchema([]);
+      const nativeFields =
+        await this.fieldRepository.createMany(FIELD_NATIVE_LIST);
+
+      const nativeFieldIds = nativeFields.flatMap((f) => f._id);
+
+      const _schema = buildSchema(nativeFields);
 
       const created = await this.tableRepository.create({
         ...payload,
@@ -69,75 +73,11 @@ export default class TableCreateUseCase {
         fieldOrderList: [],
       });
 
-      const nativeFields = await this.fieldRepository.createMany([
-        {
-          name: 'ID',
-          slug: '_id',
-          type: E_FIELD_TYPE.TEXT_SHORT,
-          native: true,
-          locked: true,
-          required: false,
-          multiple: false,
-          format: null,
-          showInList: true,
-          showInFilter: false,
-          showInForm: false,
-          showInDetail: false,
-          widthInForm: null,
-          widthInList: 50,
-          defaultValue: null,
-          relationship: null,
-          dropdown: [],
-          category: [],
-          group: null,
-        },
-        {
-          name: 'Criador',
-          slug: 'creator',
-          type: E_FIELD_TYPE.USER,
-          native: true,
-          locked: true,
-          required: false,
-          multiple: false,
-          format: null,
-          showInList: true,
-          showInFilter: false,
-          showInForm: false,
-          showInDetail: false,
-          widthInForm: null,
-          widthInList: 50,
-          defaultValue: null,
-          relationship: null,
-          dropdown: [],
-          category: [],
-          group: null,
-        },
-        {
-          name: 'Criado em',
-          slug: 'createdAt',
-          type: E_FIELD_TYPE.DATE,
-          native: true,
-          locked: true,
-          required: false,
-          multiple: false,
-          format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
-          showInList: true,
-          showInFilter: false,
-          showInForm: false,
-          showInDetail: false,
-          widthInForm: null,
-          widthInList: 50,
-          defaultValue: null,
-          relationship: null,
-          dropdown: [],
-          category: [],
-          group: null,
-        },
-      ]);
-
       await this.tableRepository.update({
         _id: created._id,
-        fields: nativeFields.map((f) => f._id),
+        fields: nativeFieldIds,
+        fieldOrderList: nativeFieldIds,
+        fieldOrderForm: nativeFieldIds,
       });
 
       return right({

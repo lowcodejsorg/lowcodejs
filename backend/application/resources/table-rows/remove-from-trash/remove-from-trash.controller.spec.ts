@@ -79,12 +79,16 @@ describe('E2E Table Row Remove From Trash Controller', () => {
         name: 'Products',
         slug: 'products',
         fields: [field._id.toString()],
-        _schema: buildSchema([
-          {
-            ...field.toJSON(),
-            _id: field._id.toString(),
-          },
-        ]),
+        _schema: {
+          ...buildSchema([
+            {
+              ...field.toJSON(),
+              _id: field._id.toString(),
+            },
+          ]),
+          trashed: { type: 'Boolean', required: false, default: false },
+          trashedAt: { type: 'Date', required: false, default: null },
+        },
         description: 'Products table',
         logo: null,
         methods: {

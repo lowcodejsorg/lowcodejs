@@ -99,7 +99,7 @@ export function TableListViewHeader({
   return (
     <TableHead
       key={field._id}
-      style={{ width: `${field.widthInList ?? 50}%` }}
+      // style={{ width: `${field.widthInList ?? 50}%` }}
     >
       <div className="inline-flex items-center">
         <Button
@@ -269,6 +269,35 @@ function RenderCell({
     case E_FIELD_TYPE.USER:
       return (
         <TableRowUserCell
+          field={field}
+          row={row}
+        />
+      );
+    case E_FIELD_TYPE.IDENTIFIER:
+      return (
+        <TableRowTextShortCell
+          field={field}
+          row={row}
+        />
+      );
+    case E_FIELD_TYPE.CREATOR:
+      return (
+        <TableRowUserCell
+          field={field}
+          row={row}
+        />
+      );
+    case E_FIELD_TYPE.CREATED_AT:
+    case E_FIELD_TYPE.TRASHED_AT:
+      return (
+        <TableRowDateCell
+          field={field}
+          row={row}
+        />
+      );
+    case E_FIELD_TYPE.TRASHED:
+      return (
+        <TableRowTextShortCell
           field={field}
           row={row}
         />

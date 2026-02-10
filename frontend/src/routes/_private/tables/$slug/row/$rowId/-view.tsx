@@ -105,10 +105,39 @@ export function RowView({
             field={field}
           />
         );
+      case E_FIELD_TYPE.IDENTIFIER:
+        return (
+          <TableRowTextShortCell
+            row={data}
+            field={field}
+          />
+        );
+      case E_FIELD_TYPE.CREATOR:
+        return (
+          <TableRowUserCell
+            row={data}
+            field={field}
+          />
+        );
+      case E_FIELD_TYPE.CREATED_AT:
+      case E_FIELD_TYPE.TRASHED_AT:
+        return (
+          <TableRowDateCell
+            row={data}
+            field={field}
+          />
+        );
+      case E_FIELD_TYPE.TRASHED:
+        return (
+          <TableRowTextShortCell
+            row={data}
+            field={field}
+          />
+        );
       default:
         return (
           <p className="text-sm text-muted-foreground">
-            {data[field.slug] ?? '-'}
+            {String(data[field.slug] ?? '-')}
           </p>
         );
     }

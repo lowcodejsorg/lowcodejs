@@ -127,6 +127,35 @@ function RenderMosaicCell({
             row={row}
           />
         );
+      case E_FIELD_TYPE.IDENTIFIER:
+        return (
+          <TableRowTextShortCell
+            field={field}
+            row={row}
+          />
+        );
+      case E_FIELD_TYPE.CREATOR:
+        return (
+          <TableRowUserCell
+            field={field}
+            row={row}
+          />
+        );
+      case E_FIELD_TYPE.CREATED_AT:
+      case E_FIELD_TYPE.TRASHED_AT:
+        return (
+          <TableRowDateCell
+            field={field}
+            row={row}
+          />
+        );
+      case E_FIELD_TYPE.TRASHED:
+        return (
+          <TableRowTextShortCell
+            field={field}
+            row={row}
+          />
+        );
       default:
         return <span className="text-muted-foreground text-sm">-</span>;
     }

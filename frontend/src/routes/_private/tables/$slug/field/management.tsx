@@ -148,6 +148,7 @@ function RouteComponent(): React.JSX.Element {
                 groupFields={
                   isGroupContext && targetGroup ? targetGroup.fields : undefined
                 }
+                excludeNative
               />
             </TabsContent>
 

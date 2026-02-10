@@ -46,7 +46,7 @@ export default class FieldMongooseRepository implements FieldContractRepository 
 
   async createMany(payloads: FieldCreatePayload[]): Promise<IField[]> {
     const created = await Model.insertMany(payloads);
-    return created.map((item) => this.transform(item));
+    return created.map(this.transform);
   }
 
   async findBy({
