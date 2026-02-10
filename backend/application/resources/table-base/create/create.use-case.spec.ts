@@ -69,7 +69,6 @@ describe('Table Create Use Case', () => {
       expect(trashedAtField!.type).toBe(E_FIELD_TYPE.TRASHED_AT);
       expect(trashedAtField!.native).toBe(true);
       expect(trashedAtField!.locked).toBe(true);
-
     }
   });
 
