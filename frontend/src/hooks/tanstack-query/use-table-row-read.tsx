@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
 
+import { queryKeys } from './_query-keys';
+
 export function useReadTableRow(payload: {
   slug: string;
   rowId: string;
@@ -14,7 +16,7 @@ export function useReadTableRow(payload: {
     .concat(payload.rowId);
 
   return useQuery({
-    queryKey: [route, payload.rowId],
+    queryKey: queryKeys.rows.detail(payload.slug, payload.rowId),
     queryFn: async function () {
       const response = await API.get<IRow>(route);
       return response.data;

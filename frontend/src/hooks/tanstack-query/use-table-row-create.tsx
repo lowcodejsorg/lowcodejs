@@ -6,6 +6,8 @@ import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
 import type { RowCreatePayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 type UseTableRowCreateProps = Pick<
   Omit<
     UseMutationOptions<IRow, AxiosError | Error, RowCreatePayload, unknown>,
@@ -29,7 +31,7 @@ export function useCreateTableRow(
     },
     onSuccess(data, variables) {
       queryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(variables.slug).concat('/rows/paginated')],
+        queryKey: queryKeys.rows.lists(variables.slug),
       });
       props.onSuccess?.(data, variables);
     },

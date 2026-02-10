@@ -2,24 +2,30 @@ import type {
   UseMutationOptions,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
 import type { RowEvaluationPayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 type UseRowUpdateEvaluationProps = Pick<
   Omit<
     UseMutationOptions<IRow, AxiosError | Error, RowEvaluationPayload, unknown>,
-    'mutationFn'
+    'mutationFn' | 'onSuccess'
   >,
-  'onSuccess' | 'onError'
->;
+  'onError'
+> & {
+  onSuccess?: (data: IRow, variables: RowEvaluationPayload) => void;
+};
 
 export function useRowUpdateEvaluation(
   props: UseRowUpdateEvaluationProps,
 ): UseMutationResult<IRow, AxiosError | Error, RowEvaluationPayload, unknown> {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async function (payload: RowEvaluationPayload) {
       const route = '/tables/'
@@ -33,6 +39,10 @@ export function useRowUpdateEvaluation(
       });
       return response.data;
     },
-    ...props,
+    onSuccess(data, variables) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.rows.lists(variables.tableSlug) });
+      props.onSuccess?.(data, variables);
+    },
+    onError: props.onError,
   });
 }

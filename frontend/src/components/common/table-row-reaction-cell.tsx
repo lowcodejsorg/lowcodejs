@@ -1,14 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
-import { useSearch } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { API } from '@/lib/api';
 import { E_REACTION_TYPE } from '@/lib/constant';
-import type { IField, IRow, Paginated, ValueOf } from '@/lib/interfaces';
+import type { IField, IRow, ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 
@@ -49,10 +49,6 @@ export function TableRowReactionCell({
       d.user?._id.toString() === user?._id.toString(),
   );
 
-  const search = useSearch({
-    strict: false,
-  });
-
   const reaction = useMutation({
     mutationFn: async function (payload: {
       user: string;
@@ -67,23 +63,10 @@ export function TableRowReactionCell({
       const response = await API.post<IRow>(route, payload);
       return response.data;
     },
-    onSuccess(response) {
-      QueryClient.setQueryData<Paginated<IRow>>(
-        [
-          '/tables/'.concat(tableSlug).concat('/rows/paginated'),
-          tableSlug,
-          search,
-        ],
-        (old) => {
-          if (!old) return old;
-          return {
-            meta: old.meta,
-            data: old.data.map((item) =>
-              item._id === response._id ? response : item,
-            ),
-          };
-        },
-      );
+    onSuccess() {
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(tableSlug),
+      });
     },
     onError(error) {
       if (error instanceof AxiosError) {

@@ -4,6 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { API } from '@/lib/api';
 import type { IRow, Paginated } from '@/lib/interfaces';
 
+import { queryKeys } from './_query-keys';
+
 type Params = {
   tableSlug: string;
   fieldSlug: string;
@@ -26,7 +28,7 @@ export function useRelationshipRowsReadPaginated(
   } = params;
 
   return useQuery({
-    queryKey: ['relationship', fieldSlug, tableSlug, search],
+    queryKey: queryKeys.relationships.rows(fieldSlug, tableSlug, search),
     queryFn: async () => {
       const response = await API.get<Paginated<IRow>>(
         `/tables/${tableSlug}/rows/paginated`,

@@ -17,6 +17,7 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { ITable } from '@/lib/interfaces';
 
@@ -106,7 +107,7 @@ function MethodsFormContent({
   const _update = useUpdateTable({
     onSuccess(response) {
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(tableSlug), tableSlug],
+        queryKeys.tables.detail(tableSlug),
         response,
       );
 

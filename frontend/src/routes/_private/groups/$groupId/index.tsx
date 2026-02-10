@@ -16,9 +16,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadGroup } from '@/hooks/tanstack-query/use-group-read';
 import { useUpdateGroup } from '@/hooks/tanstack-query/use-group-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import type { IGroup, IHTTPExeptionError, Paginated } from '@/lib/interfaces';
+import type { IGroup, IHTTPExeptionError } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/groups/$groupId/')({
   component: RouteComponent,
@@ -114,8 +112,6 @@ function GroupUpdateContent({
     });
   };
 
-  const { queryClient } = getContext();
-
   function setFieldError(
     field: 'name' | 'description' | 'permissions',
     message: string,
@@ -129,36 +125,7 @@ function GroupUpdateContent({
   }
 
   const _update = useUpdateGroup({
-    onSuccess(updatedData) {
-      queryClient.setQueryData<IGroup>(
-        ['/user-group/'.concat(updatedData._id), updatedData._id],
-        updatedData,
-      );
-      queryClient.setQueryData<Paginated<IGroup>>(
-        ['/user-group/paginated', { page: 1, perPage: 50 }],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [updatedData],
-            };
-          }
-
-          return {
-            meta: cached.meta,
-            data: cached.data.map((item) => {
-              if (item._id === updatedData._id)
-                return {
-                  ...item,
-                  ...updatedData,
-                };
-
-              return item;
-            }),
-          };
-        },
-      );
-
+    onSuccess() {
       toast('Grupo atualizado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'Os dados do grupo foram atualizados com sucesso',

@@ -2,30 +2,40 @@ import type {
   UseMutationOptions,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
 import type { UserCreatePayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 type UseUserCreateProps = Pick<
   Omit<
     UseMutationOptions<IUser, AxiosError | Error, UserCreatePayload, unknown>,
-    'mutationFn'
+    'mutationFn' | 'onSuccess'
   >,
-  'onSuccess' | 'onError'
->;
+  'onError'
+> & {
+  onSuccess?: (data: IUser, variables: UserCreatePayload) => void;
+};
 
 export function useCreateUser(
   props: UseUserCreateProps,
 ): UseMutationResult<IUser, AxiosError | Error, UserCreatePayload, unknown> {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async function (payload: UserCreatePayload) {
       const route = '/users';
       const response = await API.post<IUser>(route, payload);
       return response.data;
     },
-    ...props,
+    onSuccess(data, variables) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
+      props.onSuccess?.(data, variables);
+    },
+    onError: props.onError,
   });
 }

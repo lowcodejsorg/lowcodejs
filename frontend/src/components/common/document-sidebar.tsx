@@ -42,6 +42,7 @@ import {
 } from '@/components/common/document-sidebar-helpers';
 import type { DropMode } from '@/components/common/document-sidebar-helpers';
 import { DocumentSidebarTree } from '@/components/common/document-sidebar-tree';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -154,7 +155,7 @@ export function DocumentSidebar({
     },
     onSuccess(data) {
       queryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(slug), slug],
+        queryKey: queryKeys.tables.detail(slug),
       });
 
       toast('Seção criada', {
@@ -244,7 +245,7 @@ export function DocumentSidebar({
     },
     onSuccess() {
       queryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(slug), slug],
+        queryKey: queryKeys.tables.detail(slug),
       });
     },
     onError(error) {

@@ -19,13 +19,9 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import { MetaDefault } from '@/lib/constant';
 import type {
   IHTTPExeptionError,
-  IMenu,
-  Paginated,
   ValueOf,
 } from '@/lib/interfaces';
 
@@ -34,7 +30,6 @@ export const Route = createFileRoute('/_private/menus/create/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const { queryClient } = getContext();
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate();
@@ -52,27 +47,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   const _create = useCreateMenu({
-    onSuccess(data) {
-      queryClient.setQueryData<Paginated<IMenu>>(
-        ['/menu/paginated', { page: 1, perPage: 50 }],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [data],
-            };
-          }
-
-          return {
-            meta: {
-              ...cached.meta,
-              total: cached.meta.total + 1,
-            },
-            data: [data, ...cached.data],
-          };
-        },
-      );
-
+    onSuccess() {
       toast('Menu criado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'O menu foi criado com sucesso',

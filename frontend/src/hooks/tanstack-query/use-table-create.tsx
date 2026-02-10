@@ -2,30 +2,40 @@ import type {
   UseMutationOptions,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import type { TableCreatePayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 type UseTableCreateProps = Pick<
   Omit<
     UseMutationOptions<ITable, AxiosError | Error, TableCreatePayload, unknown>,
-    'mutationFn'
+    'mutationFn' | 'onSuccess'
   >,
-  'onSuccess' | 'onError'
->;
+  'onError'
+> & {
+  onSuccess?: (data: ITable, variables: TableCreatePayload) => void;
+};
 
 export function useCreateTable(
   props: UseTableCreateProps,
 ): UseMutationResult<ITable, AxiosError | Error, TableCreatePayload, unknown> {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async function (payload: TableCreatePayload) {
       const route = '/tables';
       const response = await API.post<ITable>(route, payload);
       return response.data;
     },
-    ...props,
+    onSuccess(data, variables) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
+      props.onSuccess?.(data, variables);
+    },
+    onError: props.onError,
   });
 }

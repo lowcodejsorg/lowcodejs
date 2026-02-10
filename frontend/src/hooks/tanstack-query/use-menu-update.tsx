@@ -2,30 +2,41 @@ import type {
   UseMutationOptions,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { IMenu } from '@/lib/interfaces';
 import type { MenuUpdatePayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 type UseMenuUpdateProps = Pick<
   Omit<
     UseMutationOptions<IMenu, AxiosError | Error, MenuUpdatePayload, unknown>,
-    'mutationFn'
+    'mutationFn' | 'onSuccess'
   >,
-  'onSuccess' | 'onError'
->;
+  'onError'
+> & {
+  onSuccess?: (data: IMenu, variables: MenuUpdatePayload) => void;
+};
 
 export function useUpdateMenu(
   props: UseMenuUpdateProps,
 ): UseMutationResult<IMenu, AxiosError | Error, MenuUpdatePayload, unknown> {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async function ({ _id, ...payload }: MenuUpdatePayload) {
       const route = '/menu/'.concat(_id);
       const response = await API.patch<IMenu>(route, payload);
       return response.data;
     },
-    ...props,
+    onSuccess(data, variables) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.detail(variables._id) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
+      props.onSuccess?.(data, variables);
+    },
+    onError: props.onError,
   });
 }

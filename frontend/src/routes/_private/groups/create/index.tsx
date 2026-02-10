@@ -18,16 +18,13 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useCreateGroup } from '@/hooks/tanstack-query/use-group-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import type { IGroup, IHTTPExeptionError, Paginated } from '@/lib/interfaces';
+import type { IHTTPExeptionError } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/groups/create/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
-  const { queryClient } = getContext();
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate();
@@ -45,27 +42,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   const _create = useCreateGroup({
-    onSuccess(data) {
-      queryClient.setQueryData<Paginated<IGroup>>(
-        ['/user-group/paginated', { page: 1, perPage: 50 }],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [data],
-            };
-          }
-
-          return {
-            meta: {
-              ...cached.meta,
-              total: cached.meta.total + 1,
-            },
-            data: [data, ...cached.data],
-          };
-        },
-      );
-
+    onSuccess() {
       toast('Grupo criado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'O grupo foi criado com sucesso',

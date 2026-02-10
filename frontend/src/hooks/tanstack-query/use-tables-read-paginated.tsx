@@ -5,13 +5,15 @@ import { API } from '@/lib/api';
 import type { ITable, Paginated } from '@/lib/interfaces';
 import type { TableQueryPayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 export function useTablesReadPaginated(
   params?: TableQueryPayload,
 ): UseQueryResult<Paginated<ITable>, Error> {
   const search = params ?? { page: 1, perPage: 50 };
 
   return useQuery({
-    queryKey: ['/tables/paginated', search],
+    queryKey: queryKeys.tables.list(search),
     queryFn: async () => {
       const response = await API.get<Paginated<ITable>>('/tables/paginated', {
         params: search,

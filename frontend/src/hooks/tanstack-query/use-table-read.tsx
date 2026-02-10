@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 
+import { queryKeys } from './_query-keys';
+
 export function useReadTable(payload: {
   slug: string;
 }): UseQueryResult<ITable, Error> {
   return useQuery({
-    queryKey: ['/tables/'.concat(payload.slug), payload.slug],
+    queryKey: queryKeys.tables.detail(payload.slug),
     queryFn: async function () {
       const route = '/tables/'.concat(payload.slug);
       const response = await API.get<ITable>(route);
@@ -35,7 +37,7 @@ export function useReadTables(payload?: {
   const perPage = payload?.perPage ?? 50;
 
   return useQuery({
-    queryKey: ['/tables/paginated', page, perPage],
+    queryKey: queryKeys.tables.list({ page, perPage }),
     queryFn: async () => {
       const response = await API.get<PaginatedTablesResponse>(
         '/tables/paginated',

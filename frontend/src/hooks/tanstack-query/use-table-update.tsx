@@ -2,30 +2,41 @@ import type {
   UseMutationOptions,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import type { TableUpdatePayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 type UseTableUpdateProps = Pick<
   Omit<
     UseMutationOptions<ITable, AxiosError | Error, TableUpdatePayload, unknown>,
-    'mutationFn'
+    'mutationFn' | 'onSuccess'
   >,
-  'onSuccess' | 'onError'
->;
+  'onError'
+> & {
+  onSuccess?: (data: ITable, variables: TableUpdatePayload) => void;
+};
 
 export function useUpdateTable(
   props: UseTableUpdateProps,
 ): UseMutationResult<ITable, AxiosError | Error, TableUpdatePayload, unknown> {
+  const queryClient = useQueryClient();
+
   return useMutation({
     mutationFn: async function (payload: TableUpdatePayload) {
       const route = '/tables/'.concat(payload.slug);
       const response = await API.put<ITable>(route, payload);
       return response.data;
     },
-    ...props,
+    onSuccess(data, variables) {
+      queryClient.invalidateQueries({ queryKey: queryKeys.tables.detail(variables.slug) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
+      props.onSuccess?.(data, variables);
+    },
+    onError: props.onError,
   });
 }

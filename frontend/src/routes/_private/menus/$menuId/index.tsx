@@ -17,13 +17,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadMenu } from '@/hooks/tanstack-query/use-menu-read';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import { MetaDefault } from '@/lib/constant';
 import type {
   IHTTPExeptionError,
   IMenu,
-  Paginated,
   ValueOf,
 } from '@/lib/interfaces';
 
@@ -121,8 +118,6 @@ function MenuUpdateContent({
     });
   };
 
-  const { queryClient } = getContext();
-
   function setFieldError(
     field: 'name' | 'type' | 'table' | 'parent' | 'html' | 'url',
     message: string,
@@ -136,40 +131,7 @@ function MenuUpdateContent({
   }
 
   const _update = useUpdateMenu({
-    onSuccess(updatedData) {
-      queryClient.setQueryData<IMenu>(
-        ['/menu/'.concat(updatedData._id), updatedData._id],
-        updatedData,
-      );
-      queryClient.setQueryData<Paginated<IMenu>>(
-        ['/menu/paginated', { page: 1, perPage: 50 }],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [updatedData],
-            };
-          }
-
-          return {
-            meta: cached.meta,
-            data: cached.data.map((item) => {
-              if (item._id === updatedData._id)
-                return {
-                  ...item,
-                  ...updatedData,
-                };
-
-              return item;
-            }),
-          };
-        },
-      );
-
-      queryClient.invalidateQueries({
-        queryKey: ['/menu'],
-      });
-
+    onSuccess() {
       toast('Menu atualizado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'Os dados do menu foram atualizados com sucesso',

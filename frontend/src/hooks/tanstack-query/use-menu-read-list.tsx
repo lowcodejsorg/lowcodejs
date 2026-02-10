@@ -5,6 +5,8 @@ import { API } from '@/lib/api';
 import type { IMenu } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
 
+import { queryKeys } from './_query-keys';
+
 interface UseMenuReadListOptions {
   enabled?: boolean;
 }
@@ -16,7 +18,7 @@ export function useMenuReadList(
   const isAuthenticated = Boolean(authentication.authenticated?.sub);
 
   return useQuery({
-    queryKey: ['/menu'],
+    queryKey: queryKeys.menus.all,
     queryFn: async function () {
       const route = '/menu';
       const response = await API.get<Array<IMenu>>(route);

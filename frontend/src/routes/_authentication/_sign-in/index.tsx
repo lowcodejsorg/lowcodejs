@@ -22,9 +22,7 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
-import { TANSTACK_QUERY_KEY_PREFIXES } from '@/hooks/tanstack-query/_query-keys';
 import { useAuthenticationSignIn } from '@/hooks/tanstack-query/use-authentication-sign-in';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IHTTPExeptionError } from '@/lib/interfaces';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
 import type { Authenticated } from '@/stores/authentication';
@@ -44,7 +42,6 @@ const FormSignInSchema = z.object({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const { queryClient } = getContext();
   const router = useRouter();
   const authentication = useAuthenticationStore();
   const [showPassword, setShowPassword] = useState(false);
@@ -52,7 +49,6 @@ function RouteComponent(): React.JSX.Element {
   const signInMutation = useAuthenticationSignIn({
     onSuccess(response) {
       const role = response.group.slug.toUpperCase() as Authenticated['role'];
-      const sub = response._id.toString();
 
       authentication.setAuthenticated({
         name: response.name,
@@ -60,11 +56,6 @@ function RouteComponent(): React.JSX.Element {
         role,
         sub: response._id.toString(),
       });
-
-      queryClient.setQueryData(
-        [TANSTACK_QUERY_KEY_PREFIXES.PROFILE, sub],
-        response,
-      );
 
       const route = ROLE_DEFAULT_ROUTE[role];
 

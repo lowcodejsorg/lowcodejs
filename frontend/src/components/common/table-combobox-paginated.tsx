@@ -1,6 +1,8 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import * as React from 'react';
 
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+
 import { Button } from '@/components/ui/button';
 import {
   Combobox,
@@ -35,7 +37,7 @@ export function TableComboboxPaginated({
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage, status } =
     useInfiniteQuery({
-      queryKey: ['/tables/paginated', { search: debouncedSearch }],
+      queryKey: queryKeys.tables.list({ search: debouncedSearch }),
       queryFn: async ({ pageParam }) => {
         const response = await API.get<Paginated<ITable>>('/tables/paginated', {
           params: {

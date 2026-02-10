@@ -17,6 +17,7 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useSidebar } from '@/components/ui/sidebar';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
@@ -48,11 +49,11 @@ export function RowSendToTrashDialog({
       setOpen(false);
 
       QueryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(slug).concat('/rows/').concat(rowId)],
+        queryKey: queryKeys.rows.detail(slug, rowId),
       });
 
       QueryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(slug).concat('/rows/paginated')],
+        queryKey: queryKeys.rows.lists(slug),
       });
 
       toast('Linha enviada para lixeira!', {

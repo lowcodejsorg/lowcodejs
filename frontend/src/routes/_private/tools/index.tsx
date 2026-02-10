@@ -20,7 +20,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IHTTPExeptionError } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tools/')({
@@ -38,7 +37,6 @@ function ToolsSkeleton(): React.JSX.Element {
 
 function RouteComponent(): React.JSX.Element {
   const router = useRouter();
-  const { queryClient } = getContext();
   const permission = usePermission();
 
   const [model, setModel] = React.useState<string>('');
@@ -46,14 +44,6 @@ function RouteComponent(): React.JSX.Element {
 
   const _clone = useCloneTable({
     onSuccess(data) {
-      queryClient.invalidateQueries({
-        queryKey: ['/tables'],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['/tables/paginated'],
-      });
-
       toast('Tabela clonada', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'A tabela foi clonada com sucesso',

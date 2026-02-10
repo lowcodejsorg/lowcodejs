@@ -16,10 +16,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadUser } from '@/hooks/tanstack-query/use-user-read';
 import { useUpdateUser } from '@/hooks/tanstack-query/use-user-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import type { IHTTPExeptionError, IUser, Paginated } from '@/lib/interfaces';
-import { useAuthenticationStore } from '@/stores/authentication';
+import type { IHTTPExeptionError, IUser } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/users/$userId/')({
   component: RouteComponent,
@@ -115,10 +112,6 @@ function UserUpdateContent({
     });
   };
 
-  const authentication = useAuthenticationStore();
-
-  const { queryClient } = getContext();
-
   const form = useAppForm({
     defaultValues: {
       name: data.name,
@@ -153,43 +146,7 @@ function UserUpdateContent({
   }
 
   const _update = useUpdateUser({
-    onSuccess(updatedData) {
-      queryClient.setQueryData<IUser>(
-        ['/users/'.concat(updatedData._id), updatedData._id],
-        updatedData,
-      );
-      queryClient.setQueryData<Paginated<IUser>>(
-        [
-          '/users/paginated',
-          {
-            page: 1,
-            perPage: 50,
-            authenticated: authentication.authenticated?.sub,
-          },
-        ],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [updatedData],
-            };
-          }
-
-          return {
-            meta: cached.meta,
-            data: cached.data.map((item) => {
-              if (item._id === updatedData._id)
-                return {
-                  ...item,
-                  ...updatedData,
-                };
-
-              return item;
-            }),
-          };
-        },
-      );
-
+    onSuccess() {
       toast('Usuário atualizado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'Os dados do usuário foram atualizados com sucesso',

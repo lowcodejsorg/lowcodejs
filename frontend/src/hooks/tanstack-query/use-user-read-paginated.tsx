@@ -5,13 +5,15 @@ import { API } from '@/lib/api';
 import type { IUser, Paginated } from '@/lib/interfaces';
 import type { BaseQueryPayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 export function useUserReadPaginated(
   params?: BaseQueryPayload,
 ): UseQueryResult<Paginated<IUser>, Error> {
   const search = params ?? { page: 1, perPage: 50 };
 
   return useQuery({
-    queryKey: ['/users/paginated', search],
+    queryKey: queryKeys.users.list(search),
     queryFn: async () => {
       const response = await API.get<Paginated<IUser>>('/users/paginated', {
         params: search,

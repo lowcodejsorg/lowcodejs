@@ -17,7 +17,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IHTTPExeptionError } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/clone/')({
@@ -34,21 +33,12 @@ function CloneFormSkeleton(): React.JSX.Element {
 }
 
 function RouteComponent(): React.JSX.Element {
-  const { queryClient } = getContext();
   const sidebar = useSidebar();
   const router = useRouter();
   const permission = usePermission();
 
   const _clone = useCloneTable({
     onSuccess(data) {
-      queryClient.invalidateQueries({
-        queryKey: ['/tables'],
-      });
-
-      queryClient.invalidateQueries({
-        queryKey: ['/tables/paginated'],
-      });
-
       toast('Tabela clonada', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'A tabela foi clonada com sucesso',

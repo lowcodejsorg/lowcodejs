@@ -51,6 +51,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
@@ -390,7 +391,7 @@ export function TableListView({
       clearSelection();
 
       QueryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(slug).concat('/rows/paginated')],
+        queryKey: queryKeys.rows.lists(slug),
       });
 
       toast(
@@ -429,7 +430,7 @@ export function TableListView({
       clearSelection();
 
       QueryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(slug).concat('/rows/paginated')],
+        queryKey: queryKeys.rows.lists(slug),
       });
 
       toast(

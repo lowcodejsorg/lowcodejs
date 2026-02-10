@@ -1,14 +1,14 @@
 import { useMutation } from '@tanstack/react-query';
-import { useSearch } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { Star } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { API } from '@/lib/api';
-import type { IField, IRow, Paginated } from '@/lib/interfaces';
+import type { IField, IRow } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 
@@ -54,10 +54,6 @@ export function TableRowEvaluationCell({
 
   const [hoverRating, setHoverRating] = React.useState(0);
 
-  const search = useSearch({
-    strict: false,
-  });
-
   const evaluation = useMutation({
     mutationFn: async function (payload: {
       user: string;
@@ -72,24 +68,10 @@ export function TableRowEvaluationCell({
       const response = await API.post<IRow>(route, payload);
       return response.data;
     },
-    onSuccess(response) {
-      QueryClient.setQueryData<Paginated<IRow>>(
-        [
-          '/tables/'.concat(tableSlug).concat('/rows/paginated'),
-          tableSlug,
-          search,
-        ],
-        (old) => {
-          if (!old) return old;
-
-          return {
-            meta: old.meta,
-            data: old.data.map((item) =>
-              item._id === response._id ? response : item,
-            ),
-          };
-        },
-      );
+    onSuccess() {
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(tableSlug),
+      });
     },
     onError(error) {
       if (error instanceof AxiosError) {

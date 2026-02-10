@@ -4,11 +4,13 @@ import { useQuery } from '@tanstack/react-query';
 import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
 
+import { queryKeys } from './_query-keys';
+
 export function useReadUser(payload: {
   userId: string;
 }): UseQueryResult<IUser> {
   return useQuery({
-    queryKey: ['/users/'.concat(payload.userId), payload.userId],
+    queryKey: queryKeys.users.detail(payload.userId),
     queryFn: async function () {
       const route = '/users/'.concat(payload.userId);
       const response = await API.get<IUser>(route);

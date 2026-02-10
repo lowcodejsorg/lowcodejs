@@ -6,6 +6,8 @@ import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
 import type { RowUpdatePayload } from '@/lib/payloads';
 
+import { queryKeys } from './_query-keys';
+
 type UseTableRowUpdateProps = Pick<
   Omit<
     UseMutationOptions<IRow, AxiosError | Error, RowUpdatePayload, unknown>,
@@ -31,14 +33,11 @@ export function useUpdateTableRow(
       return response.data;
     },
     onSuccess(data, variables) {
-      const route = '/tables/'
-        .concat(variables.slug)
-        .concat('/rows/')
-        .concat(variables.rowId);
-      queryClient.setQueryData([route, variables.rowId], data);
-
       queryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(variables.slug).concat('/rows/paginated')],
+        queryKey: queryKeys.rows.detail(variables.slug, variables.rowId),
+      });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(variables.slug),
       });
 
       props.onSuccess?.(data, variables);

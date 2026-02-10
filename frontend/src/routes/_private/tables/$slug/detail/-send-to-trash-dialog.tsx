@@ -16,6 +16,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
@@ -40,11 +41,11 @@ export function TableSendToTrashDialog({
       setOpen(false);
 
       QueryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(slug)],
+        queryKey: queryKeys.tables.detail(slug),
       });
 
       QueryClient.invalidateQueries({
-        queryKey: ['/tables/paginated'],
+        queryKey: queryKeys.tables.lists(),
       });
 
       toast('Tabela enviada para lixeira!', {

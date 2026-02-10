@@ -17,11 +17,12 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE, E_TABLE_STYLE } from '@/lib/constant';
-import type { ITable, Paginated, ValueOf } from '@/lib/interfaces';
+import type { ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 
@@ -38,27 +39,13 @@ export function TableStyleViewDropdown({
   // Hook deve ser chamado antes de qualquer return condicional
   const update = useUpdateTable({
     onSuccess(data) {
-      QueryClient.setQueryData<ITable>(
-        ['/tables/'.concat(data.slug), data.slug],
-        data,
-      );
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(data.slug),
+      });
 
-      QueryClient.setQueryData<Paginated<ITable>>(
-        ['/tables/paginated'],
-        (old) => {
-          if (!old) return old;
-
-          return {
-            meta: old.meta,
-            data: old.data.map((item) => {
-              if (item._id === data._id) {
-                return data;
-              }
-              return item;
-            }),
-          };
-        },
-      );
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.tables.lists(),
+      });
     },
     onError(error) {
       console.error(error);

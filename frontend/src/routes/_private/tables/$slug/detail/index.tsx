@@ -19,9 +19,7 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import type { ITable, Paginated } from '@/lib/interfaces';
+import type { ITable } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/tables/$slug/detail/')({
   component: RouteComponent,
@@ -117,40 +115,8 @@ function TableUpdateContent({
   mode,
   setMode,
 }: TableUpdateContentProps): React.JSX.Element {
-  const { queryClient } = getContext();
-
   const _update = useUpdateTable({
-    onSuccess(updatedData) {
-      queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(updatedData.slug), updatedData.slug],
-        updatedData,
-      );
-      queryClient.setQueryData<Paginated<ITable>>(
-        ['/tables/paginated', { page: 1, perPage: 50 }],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [updatedData],
-            };
-          }
-
-          return {
-            meta: cached.meta,
-            data: cached.data.map((item) => {
-              if (item._id === updatedData._id) {
-                return {
-                  ...item,
-                  ...updatedData,
-                };
-              }
-
-              return item;
-            }),
-          };
-        },
-      );
-
+    onSuccess() {
       toast('Tabela atualizada', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'Os dados da tabela foram atualizados com sucesso',

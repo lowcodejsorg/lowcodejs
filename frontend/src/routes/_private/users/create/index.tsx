@@ -18,19 +18,13 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useCreateUser } from '@/hooks/tanstack-query/use-user-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { MetaDefault } from '@/lib/constant';
-import type { IHTTPExeptionError, IUser, Paginated } from '@/lib/interfaces';
-import { useAuthenticationStore } from '@/stores/authentication';
+import type { IHTTPExeptionError } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/users/create/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
-  const authentication = useAuthenticationStore();
-
-  const { queryClient } = getContext();
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate();
@@ -59,34 +53,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   const _create = useCreateUser({
-    onSuccess(data) {
-      queryClient.setQueryData<Paginated<IUser>>(
-        [
-          '/users/paginated',
-          {
-            page: 1,
-            perPage: 50,
-            authenticated: authentication.authenticated?.sub,
-          },
-        ],
-        (cached) => {
-          if (!cached) {
-            return {
-              meta: MetaDefault,
-              data: [data],
-            };
-          }
-
-          return {
-            meta: {
-              ...cached.meta,
-              total: cached.meta.total + 1,
-            },
-            data: [data, ...cached.data],
-          };
-        },
-      );
-
+    onSuccess() {
       toast('Usuário criado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'O usuário foi criado com sucesso',

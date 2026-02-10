@@ -25,6 +25,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
@@ -87,7 +88,7 @@ function RouteComponent(): React.JSX.Element {
     },
     onSuccess(response) {
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(slug), slug],
+        queryKeys.tables.detail(slug),
         (old) => {
           if (!old) return old;
 
@@ -114,7 +115,7 @@ function RouteComponent(): React.JSX.Element {
       );
 
       queryClient.setQueryData<Paginated<ITable>>(
-        ['/tables/paginated', { page: 1, perPage: 50 }],
+        queryKeys.tables.list({ page: 1, perPage: 50 }),
         (old) => {
           if (!old) return old;
           return {
@@ -149,11 +150,7 @@ function RouteComponent(): React.JSX.Element {
       // Não atualiza rows quando em contexto de grupo (campos ficam embedded)
       if (!isGroupContext) {
         queryClient.setQueryData<Paginated<IRow>>(
-          [
-            '/tables/'.concat(slug).concat('/rows/paginated'),
-            slug,
-            { page: 1, perPage: 50 },
-          ],
+          queryKeys.rows.list(slug, { page: 1, perPage: 50 }),
           (old) => {
             if (!old) return old;
             return {

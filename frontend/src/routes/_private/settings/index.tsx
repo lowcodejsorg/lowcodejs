@@ -14,7 +14,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useUpdateSetting } from '@/hooks/tanstack-query/use-setting-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IHTTPExeptionError, ISetting } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/settings/')({
@@ -87,8 +86,6 @@ function SettingUpdateContent({
     });
   };
 
-  const { queryClient } = getContext();
-
   function setFieldError(
     field:
       | 'LOCALE'
@@ -114,9 +111,7 @@ function SettingUpdateContent({
   }
 
   const _update = useUpdateSetting({
-    onSuccess(updatedData) {
-      queryClient.setQueryData<ISetting>(['/setting'], updatedData);
-
+    onSuccess() {
       toast('Configurações atualizadas', {
         className: '!bg-green-600 !text-white !border-green-600',
         description:

@@ -5,12 +5,14 @@ import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
 
+import { queryKeys } from './_query-keys';
+
 export function useProfileRead(): UseQueryResult<IUser> {
   const authentication = useAuthenticationStore();
   const isAuthenticated = Boolean(authentication.authenticated?.sub);
 
   return useQuery({
-    queryKey: ['/profile', authentication.authenticated?.sub],
+    queryKey: queryKeys.profile.detail(authentication.authenticated?.sub),
     queryFn: async function () {
       const route = '/profile';
       const response = await API.get<IUser>(route);

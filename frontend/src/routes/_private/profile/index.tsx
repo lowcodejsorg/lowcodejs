@@ -15,9 +15,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import type { IUser } from '@/lib/interfaces';
-import { useAuthenticationStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/profile/')({
   component: RouteComponent,
@@ -89,18 +87,10 @@ function ProfileUpdateContent({
     });
   };
 
-  const { queryClient } = getContext();
-  const authentication = useAuthenticationStore();
-
   const [allowPasswordChange, setAllowPasswordChange] = React.useState(false);
 
   const _update = useUpdateProfile({
-    onSuccess(updatedData) {
-      queryClient.setQueryData<IUser>(
-        ['/profile', authentication.authenticated?.sub],
-        updatedData,
-      );
-
+    onSuccess() {
       toast('Perfil atualizado', {
         className: '!bg-green-600 !text-white !border-green-600',
         description: 'Os dados do perfil foram atualizados com sucesso',

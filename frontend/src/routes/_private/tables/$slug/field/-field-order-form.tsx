@@ -35,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
@@ -282,7 +283,7 @@ export function FieldOrderForm({
   const update = useUpdateTable({
     onSuccess: (data) => {
       queryClient.setQueryData(
-        ['/tables/'.concat(table.slug), table.slug],
+        queryKeys.tables.detail(table.slug),
         data,
       );
       toast.success('Ordem atualizada com sucesso');
@@ -489,7 +490,7 @@ export function FieldManagementList({
   const updateTable = useUpdateTable({
     onSuccess: (data) => {
       queryClient.setQueryData(
-        ['/tables/'.concat(table.slug), table.slug],
+        queryKeys.tables.detail(table.slug),
         data,
       );
       toast.success('Ordem atualizada com sucesso');
@@ -568,16 +569,13 @@ export function FieldManagementList({
 
       // Update query cache for field
       queryClient.setQueryData<IField>(
-        [
-          '/tables/'.concat(table.slug).concat('/fields/').concat(response._id),
-          response._id,
-        ],
+        queryKeys.fields.detail(table.slug, response._id),
         response,
       );
 
       // Update table cache
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(table.slug), table.slug],
+        queryKeys.tables.detail(table.slug),
         (old) => {
           if (!old) return old;
 
@@ -609,7 +607,7 @@ export function FieldManagementList({
 
       // Update paginated table cache
       queryClient.setQueryData<Paginated<ITable>>(
-        ['/tables/paginated', { page: 1, perPage: 50 }],
+        queryKeys.tables.list({ page: 1, perPage: 50 }),
         (old) => {
           if (!old) return old;
           return {
@@ -731,15 +729,12 @@ export function FieldManagementList({
       );
 
       queryClient.setQueryData<IField>(
-        [
-          '/tables/'.concat(table.slug).concat('/fields/').concat(response._id),
-          response._id,
-        ],
+        queryKeys.fields.detail(table.slug, response._id),
         response,
       );
 
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(table.slug), table.slug],
+        queryKeys.tables.detail(table.slug),
         (old) => {
           if (!old) return old;
 
@@ -769,7 +764,7 @@ export function FieldManagementList({
       );
 
       queryClient.setQueryData<Paginated<ITable>>(
-        ['/tables/paginated', { page: 1, perPage: 50 }],
+        queryKeys.tables.list({ page: 1, perPage: 50 }),
         (old) => {
           if (!old) return old;
           return {

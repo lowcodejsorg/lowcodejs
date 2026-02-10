@@ -31,6 +31,7 @@ import { KanbanCreateCardDialog } from '@/components/kanban/kanban-create-card-d
 import { KanbanRowDialog } from '@/components/kanban/kanban-row-dialog';
 import { KanbanUnassignedColumn } from '@/components/kanban/kanban-unassigned-column';
 import { Button } from '@/components/ui/button';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { API } from '@/lib/api';
@@ -185,7 +186,7 @@ export function TableKanbanView({
     },
     onSuccess(updatedField) {
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(tableSlug), tableSlug],
+        queryKeys.tables.detail(tableSlug),
         (old) => {
           if (!old) return old;
           return {
@@ -262,7 +263,7 @@ export function TableKanbanView({
     },
     onSuccess(updatedField) {
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(tableSlug), tableSlug],
+        queryKeys.tables.detail(tableSlug),
         (old) => {
           if (!old) return old;
           return {
@@ -397,7 +398,7 @@ export function TableKanbanView({
       setRowsState((prev) => [...prev, createdRow]);
       setActiveRow(createdRow);
       queryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(tableSlug).concat('/rows/paginated')],
+        queryKey: queryKeys.rows.lists(tableSlug),
       });
     },
     [queryClient, tableSlug],
@@ -408,7 +409,7 @@ export function TableKanbanView({
       setRowsState((prev) => prev.filter((row) => row._id !== rowId));
       setActiveRow((prev) => (prev && prev._id === rowId ? null : prev));
       queryClient.invalidateQueries({
-        queryKey: ['/tables/'.concat(tableSlug).concat('/rows/paginated')],
+        queryKey: queryKeys.rows.lists(tableSlug),
       });
     },
     [queryClient, tableSlug],
@@ -440,7 +441,7 @@ export function TableKanbanView({
           );
           const updatedField = response.data;
           queryClient.setQueryData<ITable>(
-            ['/tables/'.concat(tableSlug), tableSlug],
+            queryKeys.tables.detail(tableSlug),
             (old) => {
               if (!old) return old;
               return {
@@ -488,7 +489,7 @@ export function TableKanbanView({
       const createdField = response.data;
       setOrderFieldSlug(createdField.slug);
       queryClient.setQueryData<ITable>(
-        ['/tables/'.concat(tableSlug), tableSlug],
+        queryKeys.tables.detail(tableSlug),
         (old) => {
           if (!old) return old;
           return {
@@ -534,7 +535,7 @@ export function TableKanbanView({
         );
         const updatedField = response.data;
         queryClient.setQueryData<ITable>(
-          ['/tables/'.concat(tableSlug), tableSlug],
+          queryKeys.tables.detail(tableSlug),
           (old) => {
             if (!old) return old;
             return {
@@ -574,7 +575,7 @@ export function TableKanbanView({
           ),
         );
         queryClient.invalidateQueries({
-          queryKey: ['/tables/'.concat(tableSlug).concat('/rows/paginated')],
+          queryKey: queryKeys.rows.lists(tableSlug),
         });
       } catch (error) {
         toast('Erro ao reordenar cards', {
