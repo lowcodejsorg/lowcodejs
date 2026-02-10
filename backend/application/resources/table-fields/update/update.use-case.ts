@@ -107,7 +107,9 @@ export default class TableFieldUpdateUseCase {
       }
 
       const oldSlug = field.slug;
-      const slug = slugify(payload.name, { lower: true, trim: true });
+      const slug = field.native
+        ? field.slug
+        : slugify(payload.name, { lower: true, trim: true });
 
       // Normalize group: if it's a string, convert to object format
       const normalizedGroup =
@@ -231,7 +233,9 @@ export default class TableFieldUpdateUseCase {
     }
 
     const oldSlug = field.slug;
-    const slug = slugify(payload.name, { lower: true, trim: true });
+    const slug = field.native
+      ? field.slug
+      : slugify(payload.name, { lower: true, trim: true });
 
     // Normalize group: if it's a string, convert to object format
     const normalizedGroup =
