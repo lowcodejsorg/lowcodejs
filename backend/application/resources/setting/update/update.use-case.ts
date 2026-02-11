@@ -27,11 +27,12 @@ export default class SettingUpdateUseCase {
     try {
       if (Array.isArray(payload.MODEL_CLONE_TABLES)) {
         payload.MODEL_CLONE_TABLES = payload.MODEL_CLONE_TABLES.filter(
-          (id) => !BUILTIN_TEMPLATE_IDS.has(id) && mongoose.Types.ObjectId.isValid(id),
+          (id) =>
+            !BUILTIN_TEMPLATE_IDS.has(id) &&
+            mongoose.Types.ObjectId.isValid(id),
         );
       }
 
-      console.log(JSON.stringify(payload, null, 2));
       const updated = await this.settingRepository.update(payload);
 
       for (const [key, value] of Object.entries(payload)) {

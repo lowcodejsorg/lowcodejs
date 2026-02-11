@@ -18,7 +18,7 @@ describe('Setting Update Use Case', () => {
       LOCALE: 'en-us',
       FILE_UPLOAD_MAX_SIZE: 5242880,
       FILE_UPLOAD_ACCEPTED: 'jpg;png;pdf',
-      MODEL_CLONE_TABLES: ['table1', 'table2'],
+      MODEL_CLONE_TABLES: ['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012'],
     });
 
     expect(result.isRight()).toBe(true);
@@ -26,7 +26,7 @@ describe('Setting Update Use Case', () => {
       expect(result.value.LOCALE).toBe('en-us');
       expect(result.value.FILE_UPLOAD_MAX_SIZE).toBe(5242880);
       expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual(['jpg', 'png', 'pdf']);
-      expect(result.value.MODEL_CLONE_TABLES).toEqual(['table1', 'table2']);
+      expect(result.value.MODEL_CLONE_TABLES).toEqual(['507f1f77bcf86cd799439011', '507f1f77bcf86cd799439012']);
     }
   });
 
