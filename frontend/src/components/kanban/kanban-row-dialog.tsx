@@ -602,6 +602,7 @@ export function KanbanRowDialog({
   };
   return (
     <Dialog
+      modal={false}
       open={!!row}
       onOpenChange={(open) => {
         if (!open) onClose();
@@ -669,6 +670,34 @@ export function KanbanRowDialog({
               setEditTarget={setEditTarget}
               quickForm={quickForm}
             />
+
+            {(fields.labels || fields.dueDate) && (
+              <section className="mt-4 grid gap-3 md:grid-cols-2">
+                {fields.labels && editTarget !== 'labels' && (
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Rótulos
+                    </p>
+                    <TableRowDropdownCell
+                      row={row}
+                      field={fields.labels}
+                    />
+                  </div>
+                )}
+
+                {fields.dueDate && editTarget !== 'due' && (
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Data de vencimento
+                    </p>
+                    <TableRowDateCell
+                      row={row}
+                      field={fields.dueDate}
+                    />
+                  </div>
+                )}
+              </section>
+            )}
 
             {descriptionField && (
               <KanbanRowDescriptionSection
@@ -808,18 +837,6 @@ export function KanbanRowDialog({
                 <TableRowDropdownCell
                   row={row}
                   field={fields.list}
-                />
-              </div>
-            )}
-
-            {fields.dueDate && (
-              <div className="space-y-2">
-                <p className="text-xs uppercase text-muted-foreground">
-                  Vencimento
-                </p>
-                <TableRowDateCell
-                  row={row}
-                  field={fields.dueDate}
                 />
               </div>
             )}
