@@ -33,9 +33,7 @@ export const Route = createFileRoute('/_authentication/_sign-in/')({
 });
 
 const FormSignInSchema = z.object({
-  email: z
-    .string({ message: 'O email é obrigatório' })
-    .email('Digite um email válido'),
+  email: z.email('Digite um email válido'),
   password: z
     .string({ message: 'A senha é obrigatória' })
     .min(1, 'A senha é obrigatória'),
@@ -179,9 +177,11 @@ function RouteComponent(): React.JSX.Element {
                           id={field.name}
                           name={field.name}
                           placeholder="exemplo@mail.com"
-                          value={field.state.value}
+                          value={field.state.value.trim()}
                           onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
+                          onChange={(e) =>
+                            field.handleChange(e.target.value.trim())
+                          }
                           aria-invalid={isInvalid}
                         />
                         <InputGroupAddon>
