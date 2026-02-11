@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 import slugify from 'slugify';
 
 import { left, right } from '@application/core/either.core';
-import type { IField } from '@application/core/entity.core';
+import { FIELD_NATIVE_LIST, type IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
@@ -99,26 +99,43 @@ export default class CloneTableUseCase {
         trim: true,
       });
 
-      const { newFieldIds, fieldIdMap, clonedFields } = await this.cloneFields(
-        baseTable.fields,
-      );
+      const { nativeFields, nativeFieldIds } = await this.createNativeFields();
+
+      const nativeIdMap: Record<string, string> = {};
+      const baseNativeFields = baseTable.fields.filter((f) => f.native);
+      for (const baseNative of baseNativeFields) {
+        const matched = nativeFields.find((nf) => nf.slug === baseNative.slug);
+        if (matched) {
+          nativeIdMap[baseNative._id] = matched._id;
+        }
+      }
+
+      const nonNativeFields = baseTable.fields.filter((f) => !f.native);
+
+      const { newFieldIds, fieldIdMap, clonedFields } =
+        await this.cloneFields(nonNativeFields);
+
+      const combinedFieldIdMap = { ...nativeIdMap, ...fieldIdMap };
 
       const clonedGroups = await this.cloneGroups(
         baseTable.groups,
         clonedFields,
-        fieldIdMap,
+        combinedFieldIdMap,
       );
 
-      const _schema = buildSchema(clonedFields, clonedGroups);
+      const _schema = buildSchema(
+        [...nativeFields, ...clonedFields],
+        clonedGroups,
+      );
 
       const orderList = this.remapFieldIds(
         baseTable.fieldOrderList,
-        fieldIdMap,
+        combinedFieldIdMap,
       );
 
       const orderForm = this.remapFieldIds(
         baseTable.fieldOrderForm,
-        fieldIdMap,
+        combinedFieldIdMap,
       );
 
       const createPayload: TableCreatePayload = {
@@ -128,7 +145,7 @@ export default class CloneTableUseCase {
         description: baseTable.description ?? null,
         type: baseTable.type,
         logo: baseTable.logo?._id ?? null,
-        fields: newFieldIds,
+        fields: [...nativeFieldIds, ...newFieldIds],
         style: baseTable.style,
         visibility: baseTable.visibility,
         collaboration: baseTable.collaboration,
@@ -144,7 +161,7 @@ export default class CloneTableUseCase {
 
       return right({
         table: newTable,
-        fieldIdMap,
+        fieldIdMap: combinedFieldIdMap,
       });
     } catch (_error) {
       return left(
@@ -197,6 +214,16 @@ export default class CloneTableUseCase {
     }
 
     return { newFieldIds, fieldIdMap, clonedFields };
+  }
+
+  private async createNativeFields(): Promise<{
+    nativeFields: IField[];
+    nativeFieldIds: string[];
+  }> {
+    const nativeFields =
+      await this.fieldRepository.createMany(FIELD_NATIVE_LIST);
+    const nativeFieldIds = nativeFields.flatMap((f) => f._id);
+    return { nativeFields, nativeFieldIds };
   }
 
   private remapFieldIds(

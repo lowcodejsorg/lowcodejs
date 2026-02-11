@@ -8,6 +8,7 @@ import {
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  FIELD_NATIVE_LIST,
   type IField,
 } from '@application/core/entity.core';
 import { buildSchema } from '@application/core/util.core';
@@ -33,8 +34,10 @@ export async function createDocumentTemplate(
   const { fields, orderList, orderForm } = await buildDocumentFields(
     deps.fieldRepository,
   );
+  const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
+  const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = buildSchema(fields);
+  const _schema = buildSchema([...nativeFields, ...fields]);
 
   const createPayload: TableCreatePayload = {
     _schema,
@@ -43,14 +46,14 @@ export async function createDocumentTemplate(
     description: 'Documento',
     type: E_TABLE_TYPE.TABLE,
     logo: null,
-    fields: fields.map((f) => f._id),
+    fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
     style: E_TABLE_STYLE.DOCUMENT,
     visibility: E_TABLE_VISIBILITY.RESTRICTED,
     collaboration: E_TABLE_COLLABORATION.RESTRICTED,
     administrators: [],
     owner: payload.ownerId,
-    fieldOrderList: orderList,
-    fieldOrderForm: orderForm,
+    fieldOrderList: [...nativeFieldIds, ...orderList],
+    fieldOrderForm: [...nativeFieldIds, ...orderForm],
     methods: {
       onLoad: { code: null },
       beforeSave: { code: null },

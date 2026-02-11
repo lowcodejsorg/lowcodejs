@@ -150,7 +150,7 @@ export function buildPayloadFromRow(
   const payload: Record<string, any> = {};
 
   for (const field of fields) {
-    if (field.trashed) continue;
+    if (field.trashed || field.native) continue;
     const value = row[field.slug];
 
     switch (field.type) {

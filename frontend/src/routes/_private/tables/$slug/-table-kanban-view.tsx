@@ -152,7 +152,7 @@ export function TableKanbanView({
   }, [columnOrder, listOptions]);
 
   const activeFields = React.useMemo(
-    () => headers.filter((field) => !field.trashed),
+    () => headers.filter((field) => !field.trashed && !field.native),
     [headers],
   );
 

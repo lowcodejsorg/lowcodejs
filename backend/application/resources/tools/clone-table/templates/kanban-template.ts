@@ -8,6 +8,7 @@ import {
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  FIELD_NATIVE_LIST,
   type IField,
   type IGroupConfiguration,
 } from '@application/core/entity.core';
@@ -34,8 +35,10 @@ export async function createKanbanTemplate(
   const { fields, groups, orderList, orderForm } = await buildKanbanFields(
     deps.fieldRepository,
   );
+  const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
+  const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = buildSchema(fields, groups);
+  const _schema = buildSchema([...nativeFields, ...fields], groups);
 
   const createPayload: TableCreatePayload = {
     _schema,
@@ -44,14 +47,14 @@ export async function createKanbanTemplate(
     description: 'Kanban de tarefas',
     type: E_TABLE_TYPE.TABLE,
     logo: null,
-    fields: fields.map((f) => f._id),
+    fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
     style: E_TABLE_STYLE.KANBAN,
     visibility: E_TABLE_VISIBILITY.RESTRICTED,
     collaboration: E_TABLE_COLLABORATION.RESTRICTED,
     administrators: [],
     owner: payload.ownerId,
-    fieldOrderList: orderList,
-    fieldOrderForm: orderForm,
+    fieldOrderList: [...nativeFieldIds, ...orderList],
+    fieldOrderForm: [...nativeFieldIds, ...orderForm],
     methods: {
       onLoad: { code: null },
       beforeSave: {
