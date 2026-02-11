@@ -17,6 +17,7 @@ export const Schema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    id: false,
   },
 );
 

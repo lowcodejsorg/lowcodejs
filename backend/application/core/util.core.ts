@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { RootFilterQuery, SortOrder } from 'mongoose';
 import mongoose from 'mongoose';
 
@@ -240,6 +241,12 @@ export function buildSchema(
   const schema: ITableSchema = {};
 
   for (const field of fields) {
+    if (
+      field.type === E_FIELD_TYPE.IDENTIFIER ||
+      field.type === E_FIELD_TYPE.CREATED_AT
+    ) {
+      continue;
+    }
     Object.assign(schema, mapperSchema(field, groups));
   }
 
@@ -345,6 +352,7 @@ export async function buildTable(
     timestamps: true,
     toJSON: { virtuals: true },
     toObject: { virtuals: true },
+    id: false,
   });
 
   // === VIRTUAL POPULATE (Relacionamentos Reversos) ===
@@ -613,13 +621,21 @@ export async function buildPopulate(
 type Query = Record<string, any>;
 
 export async function buildQuery(
-  { search, trashed, ...payload }: Partial<Query>,
+  {
+    search,
+    trashed,
+    page: _page,
+    perPage: _perPage,
+    slug: _slug,
+    public: _public,
+    ...payload
+  }: Partial<Query>,
   fields: IField[] = [],
   groups?: IGroupConfiguration[],
   tableSlug?: string,
 ): Promise<Query> {
   let query: Query = {
-    ...(trashed && { trashed: trashed === 'true' }),
+    trashed: trashed === 'true' ? true : { $ne: true },
   };
 
   for (const field of fields.filter(

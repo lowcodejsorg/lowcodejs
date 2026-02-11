@@ -79,25 +79,12 @@ export default class TableRowCreateUseCase {
         table.groups,
       );
 
-      console.log(
-        JSON.stringify(
-          {
-            ...payload,
-            creator: payload.creator ?? null,
-          },
-          null,
-          2,
-        ),
-      );
-
       const created = await build.create({
         ...payload,
         creator: payload.creator ?? null,
       });
 
       const row = await created.populate(populate);
-
-      console.log(JSON.stringify(row, null, 2));
 
       return right({
         ...row?.toJSON({

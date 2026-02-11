@@ -23,7 +23,7 @@ const Schema = new mongoose.Schema(
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },
-  { timestamps: true },
+  { timestamps: true, id: false },
 );
 
 export const Setting = (mongoose?.models?.Setting ||

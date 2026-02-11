@@ -18,7 +18,7 @@ const GroupConfiguration = new mongoose.Schema(
     fields: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Field' }],
     _schema: { type: mongoose.Schema.Types.Mixed, default: {} },
   },
-  { _id: true, timestamps: true },
+  { _id: true, timestamps: true, id: false },
 );
 
 const Methods = new mongoose.Schema(
@@ -122,6 +122,7 @@ export const Schema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    id: false,
   },
 );
 
