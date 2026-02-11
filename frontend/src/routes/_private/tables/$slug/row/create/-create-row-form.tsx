@@ -33,7 +33,7 @@ export function CreateRowForm({
   const navigate = useNavigate();
 
   const fields = React.useMemo(() => {
-    return table.fields.filter((f) => !f.trashed);
+    return table.fields.filter((f) => !f.trashed && f.showInForm);
   }, [table.fields]);
 
   const form = useAppForm({

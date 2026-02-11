@@ -8,6 +8,7 @@ import {
   E_TABLE_VISIBILITY,
 } from '@/lib/constant';
 import type { ITable, ValueOf } from '@/lib/interfaces';
+import { getAllowedTableStyles } from '@/lib/table-style';
 
 // Schema estendido com campos de UI (logoFile)
 export const TableUpdateSchema = z.object({
@@ -23,6 +24,7 @@ export const TableUpdateSchema = z.object({
     E_TABLE_STYLE.CARD,
     E_TABLE_STYLE.MOSAIC,
     E_TABLE_STYLE.KANBAN,
+    E_TABLE_STYLE.FORUM,
   ]),
   visibility: z.enum([
     E_TABLE_VISIBILITY.PUBLIC,
@@ -148,6 +150,7 @@ export const UpdateTableFormFields = withForm({
               label="Layout de visualização"
               placeholder="Selecione o estilo de visualização"
               disabled={isDisabled}
+              allowedStyles={getAllowedTableStyles(tableData)}
             />
           )}
         </form.AppField>

@@ -33,6 +33,9 @@ export function UserMultiSelect({
 }: UserMultiSelectProps): React.JSX.Element {
   const [search, setSearch] = React.useState('');
   const anchorRef = useComboboxAnchor();
+  const [selectedCache, setSelectedCache] = React.useState<Map<string, IUser>>(
+    () => new Map(),
+  );
 
   const { data: usersData, status } = useUserReadPaginated({
     page: 1,
@@ -47,19 +50,63 @@ export function UserMultiSelect({
     );
   }, [usersData?.data]);
 
-  // Map selected IDs to user objects
+  React.useEffect(() => {
+    if (!users.length) return;
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      users.forEach((user) => next.set(user._id, user));
+      return next;
+    });
+  }, [users]);
+
+  // Map selected IDs to user objects (fallback to label stub)
   const selectedUsers = React.useMemo(() => {
-    return users.filter((user) => value.includes(user._id));
-  }, [users, value]);
+    return value.map((id) => {
+      const cached = selectedCache.get(id);
+      const fromList = users.find((user) => user._id === id);
+      if (cached) return cached;
+      if (fromList) return fromList;
+      return {
+        _id: id,
+        name: id,
+        email: '',
+        password: '',
+        status: E_USER_STATUS.ACTIVE,
+        group: null as unknown as IUser['group'],
+      };
+    });
+  }, [selectedCache, users, value]);
+
+  const items = React.useMemo(() => {
+    const cachedUsers = users.map(
+      (user) => selectedCache.get(user._id) ?? user,
+    );
+    const userIds = new Set(cachedUsers.map((user) => user._id));
+    const extras = selectedUsers.filter((user) => !userIds.has(user._id));
+    return extras.length ? [...cachedUsers, ...extras] : cachedUsers;
+  }, [selectedCache, selectedUsers, users]);
+
+  const handleToggleUser = (user: IUser): void => {
+    const nextIds = value.includes(user._id)
+      ? value.filter((id) => id !== user._id)
+      : [...value, user._id];
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      next.set(user._id, user);
+      return next;
+    });
+    onValueChange?.(nextIds);
+    if (search.trim().length > 0) {
+      setSearch('');
+    }
+  };
 
   return (
     <Combobox
-      items={users}
+      items={items}
       multiple
-      value={selectedUsers}
-      onValueChange={(newUsers: Array<IUser>) => {
-        onValueChange?.(newUsers.map((u) => u._id));
-      }}
+      value={selectedUsers as Array<IUser>}
+      onValueChange={() => null}
       inputValue={search}
       onInputValueChange={setSearch}
       itemToStringLabel={(user: IUser) => user.name}
@@ -99,6 +146,7 @@ export function UserMultiSelect({
               <ComboboxItem
                 key={user._id}
                 value={user}
+                onClick={() => handleToggleUser(user)}
               >
                 <div className="flex flex-1 flex-col">
                   <span className="font-medium">{user.name}</span>

@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
-import { Upload, X } from 'lucide-react';
+import { Paperclip, Upload, X } from 'lucide-react';
 import * as React from 'react';
 import { toast } from 'sonner';
 
@@ -19,6 +19,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
 import type { IStorage } from '@/lib/interfaces';
+import { cn } from '@/lib/utils';
 
 interface FileUploadWithStorageProps {
   value: Array<File>;
@@ -32,6 +33,8 @@ interface FileUploadWithStorageProps {
   placeholder?: string;
   defaultValue?: Array<File>;
   shouldDeleteFromStorage?: boolean;
+  compact?: boolean;
+  showHint?: boolean;
 }
 
 export function FileUploadWithStorage({
@@ -46,6 +49,8 @@ export function FileUploadWithStorage({
   placeholder = 'Arraste e solte ou escolha o arquivo',
   defaultValue,
   shouldDeleteFromStorage = true,
+  compact = false,
+  showHint = true,
 }: FileUploadWithStorageProps): React.JSX.Element {
   const [storageFiles, setStorageFiles] = React.useState<Map<File, IStorage>>(
     new Map(),
@@ -257,24 +262,32 @@ export function FileUploadWithStorage({
       multiple={maxFiles > 1}
       defaultValue={defaultValue}
     >
-      <FileUploadDropzone className="flex-row flex-wrap border-dotted text-center">
-        <Upload className="size-4" />
-        {placeholder}
+      <FileUploadDropzone
+        className={cn(
+          'flex-row flex-wrap border-dotted text-center',
+          compact ? 'gap-1 py-2 text-xs' : 'gap-2',
+        )}
+      >
+        <Upload className={compact ? 'size-3' : 'size-4'} />
+        {!compact && placeholder}
         <FileUploadTrigger
           asChild
           disabled={isPending}
         >
           <Button
             variant="link"
-            size="sm"
-            className="p-0"
+            size={compact ? 'icon-sm' : 'sm'}
+            className={cn('p-0 cursor-pointer', compact && 'h-6 w-6')}
+            aria-label="Anexar arquivo"
           >
-            escolha o arquivo
+            {compact ? <Paperclip className="size-3.5" /> : 'escolha o arquivo'}
           </Button>
         </FileUploadTrigger>
-        <span className="w-full text-xs text-muted-foreground">
-          Tamanho máximo: {Math.round(maxSize / (1024 * 1024))}MB
-        </span>
+        {showHint && !compact && (
+          <span className="w-full text-xs text-muted-foreground">
+            Tamanho máximo: {Math.round(maxSize / (1024 * 1024))}MB
+          </span>
+        )}
       </FileUploadDropzone>
       <FileUploadList>
         {value.map((file, index) => (

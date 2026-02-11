@@ -21,15 +21,15 @@ import { toast } from 'sonner';
 
 import { buildDefaultValues, buildPayload } from './row/create/-create-form';
 
-import { KanbanAddListDialog } from '@/components/kanban/kanban-add-list-dialog';
 import {
+  KanbanAddListDialog,
   KanbanCard,
+  KanbanColumn,
+  KanbanCreateCardDialog,
+  KanbanRowDialog,
   KanbanSortableCard,
-} from '@/components/kanban/kanban-card';
-import { KanbanColumn } from '@/components/kanban/kanban-column';
-import { KanbanCreateCardDialog } from '@/components/kanban/kanban-create-card-dialog';
-import { KanbanRowDialog } from '@/components/kanban/kanban-row-dialog';
-import { KanbanUnassignedColumn } from '@/components/kanban/kanban-unassigned-column';
+  KanbanUnassignedColumn,
+} from '@/components/kanban';
 import { Button } from '@/components/ui/button';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
@@ -152,7 +152,7 @@ export function TableKanbanView({
   }, [columnOrder, listOptions]);
 
   const activeFields = React.useMemo(
-    () => headers.filter((field) => !field.trashed),
+    () => headers.filter((field) => !field.trashed && !field.native),
     [headers],
   );
 

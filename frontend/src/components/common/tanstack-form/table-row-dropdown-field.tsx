@@ -29,6 +29,22 @@ interface DropdownOption {
   color?: string | null;
 }
 
+function normalizeDropdownValues(
+  value: DropdownOption | Array<DropdownOption> | string | Array<string> | null,
+): Array<string> {
+  if (!value) return [];
+  const values = Array.isArray(value) ? value : [value];
+  return values
+    .map((item) => {
+      if (typeof item === 'string') return item;
+      if (item && typeof item === 'object' && 'value' in item) {
+        return String(item.value);
+      }
+      return null;
+    })
+    .filter((item): item is string => Boolean(item));
+}
+
 export function TableRowDropdownField({
   field,
   disabled,
@@ -49,23 +65,33 @@ export function TableRowDropdownField({
   }, [field.dropdown]);
 
   const selectedIds = React.useMemo(() => {
-    return formField.state.value;
+    return normalizeDropdownValues(formField.state.value as any);
   }, [formField.state.value]);
+
+  React.useEffect(() => {
+    if (!isMultiple) return;
+    if (Array.isArray(formField.state.value)) return;
+    formField.handleChange(selectedIds);
+  }, [formField, isMultiple, selectedIds]);
 
   const selectedOptions = React.useMemo(() => {
     return items.filter((item) => selectedIds.includes(item.value));
   }, [items, selectedIds]);
 
   const handleValueChange = (
-    value: DropdownOption | Array<DropdownOption> | null,
+    value:
+      | DropdownOption
+      | Array<DropdownOption>
+      | string
+      | Array<string>
+      | null,
   ): void => {
-    if (!value) {
+    const nextValues = normalizeDropdownValues(value);
+    if (nextValues.length === 0) {
       formField.handleChange([]);
       return;
     }
-
-    const options = Array.isArray(value) ? value : [value];
-    formField.handleChange(options.map((v) => v.value));
+    formField.handleChange(nextValues);
   };
 
   if (isMultiple) {
@@ -138,7 +164,7 @@ export function TableRowDropdownField({
 
       <Combobox
         items={items}
-        value={selectedOptions[0] ?? []}
+        value={selectedOptions[0] ?? null}
         onValueChange={handleValueChange}
         itemToStringLabel={(opt: DropdownOption) => opt.label}
         disabled={disabled}

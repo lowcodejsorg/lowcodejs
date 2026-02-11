@@ -36,6 +36,13 @@ describe('Setting Show Use Case', () => {
     description: 'Modelo predefinido para documento por índice',
   };
 
+  const forumTemplate = {
+    _id: 'FORUM_TEMPLATE',
+    name: 'Forum',
+    slug: 'chat-forum',
+    description: 'Modelo predefinido para canais e mensagens em forum',
+  };
+
   beforeEach(() => {
     settingInMemoryRepository = new SettingInMemoryRepository();
     sut = new SettingShowUseCase(settingInMemoryRepository);
@@ -60,6 +67,7 @@ describe('Setting Show Use Case', () => {
         cardsTemplate,
         mosaicTemplate,
         documentTemplate,
+        forumTemplate,
         'table1',
         'table2',
       ]);
@@ -76,6 +84,7 @@ describe('Setting Show Use Case', () => {
         cardsTemplate,
         mosaicTemplate,
         documentTemplate,
+        forumTemplate,
       ]);
     }
   });

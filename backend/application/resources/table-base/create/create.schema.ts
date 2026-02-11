@@ -21,7 +21,15 @@ export const TableCreateSchema: FastifySchema = {
       },
       style: {
         type: 'string',
-        enum: ['GALLERY', 'LIST', 'DOCUMENT'],
+        enum: [
+          'GALLERY',
+          'LIST',
+          'DOCUMENT',
+          'CARD',
+          'MOSAIC',
+          'KANBAN',
+          'FORUM',
+        ],
         default: 'LIST',
         description: 'Table display style',
       },
@@ -30,6 +38,27 @@ export const TableCreateSchema: FastifySchema = {
         enum: ['PUBLIC', 'RESTRICTED', 'OPEN', 'FORM', 'PRIVATE'],
         default: 'RESTRICTED',
         description: 'Table visibility level',
+      },
+      collaboration: {
+        type: 'string',
+        enum: ['OPEN', 'RESTRICTED'],
+        default: 'RESTRICTED',
+        description: 'Table collaboration setting',
+      },
+      administrators: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Administrator user IDs',
+      },
+      fieldOrderList: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Field order for list view',
+      },
+      fieldOrderForm: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Field order for form view',
       },
     },
   },
@@ -156,7 +185,15 @@ export const TableCreateSchema: FastifySchema = {
         },
         style: {
           type: 'string',
-          enum: ['GALLERY', 'LIST', 'DOCUMENT', 'CARD', 'MOSAIC', 'KANBAN'],
+          enum: [
+            'GALLERY',
+            'LIST',
+            'DOCUMENT',
+            'CARD',
+            'MOSAIC',
+            'KANBAN',
+            'FORUM',
+          ],
           description: 'Table display style',
         },
         visibility: {
@@ -187,16 +224,6 @@ export const TableCreateSchema: FastifySchema = {
             _id: { type: 'string', description: 'User ID' },
             name: { type: 'string', description: 'User name' },
           },
-        },
-        fieldOrderList: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Field order for list view',
-        },
-        fieldOrderForm: {
-          type: 'array',
-          items: { type: 'string' },
-          description: 'Field order for form view',
         },
         type: {
           type: 'string',

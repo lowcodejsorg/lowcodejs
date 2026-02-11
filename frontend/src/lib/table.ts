@@ -1,4 +1,3 @@
-/* eslint-disable no-duplicate-case */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { E_FIELD_TYPE } from './constant';
 import type {
@@ -68,7 +67,6 @@ export function buildCreateRowDefaultValues(
     ) {
       continue;
     }
-
     if (field.native) continue;
 
     switch (field.type) {
@@ -129,7 +127,6 @@ export function buildUpdateRowDefaultValues(
     ) {
       continue;
     }
-
     if (field.native) continue;
 
     const value = data[field.slug];
@@ -365,12 +362,6 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
         return options;
       }
 
-      return [];
-    }
-    case E_FIELD_TYPE.EVALUATION: {
-      if (value === null || value === '') return [];
-      const options = Array.from<string>(value as Array<string>);
-      if (options.length > 0) return options;
       return [];
     }
     default:

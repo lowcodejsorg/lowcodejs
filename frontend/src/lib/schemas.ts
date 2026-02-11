@@ -151,7 +151,15 @@ export const MenuUpdateBodySchema = z.object({
 
 // ============== TABLE ==============
 export const TableStyleSchema = z
-  .enum([E_TABLE_STYLE.GALLERY, E_TABLE_STYLE.LIST, E_TABLE_STYLE.DOCUMENT])
+  .enum([
+    E_TABLE_STYLE.GALLERY,
+    E_TABLE_STYLE.LIST,
+    E_TABLE_STYLE.DOCUMENT,
+    E_TABLE_STYLE.CARD,
+    E_TABLE_STYLE.MOSAIC,
+    E_TABLE_STYLE.KANBAN,
+    E_TABLE_STYLE.FORUM,
+  ])
   .default(E_TABLE_STYLE.LIST);
 
 export const TableVisibilitySchema = z
@@ -188,6 +196,10 @@ export const TableCreateBodySchema = z.object({
   logo: z.string().trim().nullable().optional(),
   style: TableStyleSchema.optional(),
   visibility: TableVisibilitySchema.optional(),
+  collaboration: TableCollaborationSchema.optional(),
+  administrators: TableAdministratorsSchema.optional(),
+  fieldOrderList: TableFieldOrderListSchema.optional(),
+  fieldOrderForm: TableFieldOrderFormSchema.optional(),
 });
 
 export const TableMethodSchema = z.object({

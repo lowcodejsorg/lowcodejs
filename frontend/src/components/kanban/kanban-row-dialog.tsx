@@ -94,6 +94,7 @@ export function KanbanRowDialog({
   const extraFields = table.fields.filter(
     (field) =>
       !field.trashed &&
+      !field.native &&
       !TEMPLATE_FIELD_SLUGS.has(field.slug) &&
       field.slug !== ORDER_FIELD_SLUG,
   );
@@ -265,6 +266,10 @@ export function KanbanRowDialog({
   const title = getTitleValue(row, fields.title);
   const members = getMembersFromRow(row, fields.members);
   const progress = getProgressValue(row, fields.progress);
+  const creatorName =
+    (typeof row.creator === 'object' && row.creator !== null
+      ? (row.creator as any).name || (row.creator as any).email
+      : null) || 'Sem criador';
   const tasks = Array.isArray(row[fields.tasks?.slug ?? ''])
     ? (row[fields.tasks?.slug ?? ''] as Array<Record<string, any>>)
     : [];
@@ -597,6 +602,7 @@ export function KanbanRowDialog({
   };
   return (
     <Dialog
+      modal={false}
       open={!!row}
       onOpenChange={(open) => {
         if (!open) onClose();
@@ -664,6 +670,34 @@ export function KanbanRowDialog({
               setEditTarget={setEditTarget}
               quickForm={quickForm}
             />
+
+            {(fields.labels || fields.dueDate) && (
+              <section className="mt-4 grid gap-3 md:grid-cols-2">
+                {fields.labels && editTarget !== 'labels' && (
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Rótulos
+                    </p>
+                    <TableRowDropdownCell
+                      row={row}
+                      field={fields.labels}
+                    />
+                  </div>
+                )}
+
+                {fields.dueDate && editTarget !== 'due' && (
+                  <div className="space-y-1">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Data de vencimento
+                    </p>
+                    <TableRowDateCell
+                      row={row}
+                      field={fields.dueDate}
+                    />
+                  </div>
+                )}
+              </section>
+            )}
 
             {descriptionField && (
               <KanbanRowDescriptionSection
@@ -807,18 +841,6 @@ export function KanbanRowDialog({
               </div>
             )}
 
-            {fields.dueDate && (
-              <div className="space-y-2">
-                <p className="text-xs uppercase text-muted-foreground">
-                  Vencimento
-                </p>
-                <TableRowDateCell
-                  row={row}
-                  field={fields.dueDate}
-                />
-              </div>
-            )}
-
             <div className="space-y-2">
               <p className="text-xs uppercase text-muted-foreground">
                 Progresso
@@ -832,6 +854,11 @@ export function KanbanRowDialog({
                   />
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs uppercase text-muted-foreground">Criador</p>
+              <Badge variant="outline">{creatorName}</Badge>
             </div>
           </aside>
         </div>

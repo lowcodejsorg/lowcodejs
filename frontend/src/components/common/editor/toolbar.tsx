@@ -40,7 +40,29 @@ import { RichTextVideo } from 'reactjs-tiptap-editor/video';
 
 import 'reactjs-tiptap-editor/style.css';
 
-export function Toolbar(): React.JSX.Element {
+interface ToolbarProps {
+  variant?: 'default' | 'minimal';
+}
+
+export function Toolbar({
+  variant = 'default',
+}: ToolbarProps): React.JSX.Element {
+  if (variant === 'minimal') {
+    return (
+      <div className="flex items-center gap-1 flex-wrap border-b! border-solid! border-[#a5a4a4]! p-1!">
+        <RichTextUndo />
+        <RichTextRedo />
+        <RichTextBold />
+        <RichTextItalic />
+        <RichTextUnderline />
+        <RichTextBulletList />
+        <RichTextOrderedList />
+        <RichTextLink />
+        <RichTextEmoji />
+      </div>
+    );
+  }
+
   return (
     <div className="flex items-center p-1! gap-2 flex-wrap border-b! border-solid! border-[#a5a4a4]!">
       <RichTextUndo />
