@@ -51,8 +51,7 @@ export const queryKeys = {
     list: (params: Record<string, unknown>) =>
       [...queryKeys.menus.lists(), params] as const,
     details: () => [...queryKeys.menus.all, 'detail'] as const,
-    detail: (menuId: string) =>
-      [...queryKeys.menus.details(), menuId] as const,
+    detail: (menuId: string) => [...queryKeys.menus.details(), menuId] as const,
   },
   profile: {
     all: ['profile'] as const,

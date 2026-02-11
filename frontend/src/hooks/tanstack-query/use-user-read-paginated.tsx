@@ -1,11 +1,11 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IUser, Paginated } from '@/lib/interfaces';
 import type { BaseQueryPayload } from '@/lib/payloads';
-
-import { queryKeys } from './_query-keys';
 
 export function useUserReadPaginated(
   params?: BaseQueryPayload,

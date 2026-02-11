@@ -5,11 +5,11 @@ import type {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IMenu } from '@/lib/interfaces';
 import type { MenuUpdatePayload } from '@/lib/payloads';
-
-import { queryKeys } from './_query-keys';
 
 type UseMenuUpdateProps = Pick<
   Omit<
@@ -33,7 +33,9 @@ export function useUpdateMenu(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.menus.detail(variables._id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.menus.detail(variables._id),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
       props.onSuccess?.(data, variables);
     },

@@ -16,7 +16,7 @@
 
 - **93 arquivos de rota** em `src/routes/`
 - **40 hooks** de TanStack Query em `src/hooks/tanstack-query/`
-- **1 único prefixo** de query key (`PROFILE`) em `_query-keys.ts`
+- **Query Key Factory Pattern** completo em `_query-keys.ts` com 11 domínios (`tables`, `rows`, `relationships`, `fields`, `users`, `groups`, `menus`, `profile`, `pages`, `permissions`, `settings`) ✅
 - **Axios como único cliente HTTP** — nenhuma server function utilizada
 - **Auth 100% client-side** via Zustand + localStorage
 - **Nenhum `beforeLoad`**, `errorComponent`, `pendingComponent` ou `loader` em uso
@@ -31,7 +31,7 @@
 | 1 | Server Functions (`createServerFn`) | Alta | Alto | Alto |
 | 2 | Route Guards com `beforeLoad` | Alta | Baixo | Alto |
 | 3 | Error Handling por Rota (`errorComponent`) | Alta | Médio | Alto |
-| 4 | Query Key Factory Pattern | Alta | Baixo | Médio |
+| 4 | ~~Query Key Factory Pattern~~ ✅ | ~~Alta~~ | ~~Baixo~~ | ~~Médio~~ |
 | 5 | SEO e Meta Tags Dinâmicas | Alta | Baixo | Médio |
 | 6 | Middleware de Autenticação | Alta | Médio | Alto |
 | 7 | Streaming e Deferred Data | Média | Médio | Médio |
@@ -250,137 +250,136 @@ export const Route = createFileRoute('/_private')({
 
 ---
 
-### 4. Query Key Factory Pattern
+### 4. ~~Query Key Factory Pattern~~ ✅ IMPLEMENTADO
 
-**Estado Atual:** `src/hooks/tanstack-query/_query-keys.ts` contém apenas:
+**Estado Anterior:** `src/hooks/tanstack-query/_query-keys.ts` continha apenas:
 ```ts
 export const TANSTACK_QUERY_KEY_PREFIXES = {
   PROFILE: '/profile',
 };
 ```
 
-Cada hook constrói suas query keys inline de forma inconsistente:
-- `use-table-read.tsx`: `['/tables/'.concat(payload.slug), payload.slug]`
-- `use-tables-read-paginated.tsx`: `['/tables/paginated', page, perPage]`
-- `use-profile-read.tsx`: `['/profile', authentication.authenticated?.sub]`
-- `use-user-read-paginated.tsx`: `['/users/paginated', search]`
-- `use-table-row-read-paginated.tsx`: `[route, payload.slug, payload.search]`
+Cada hook construía suas query keys inline de forma inconsistente.
 
-**Problema:** Invalidação de cache é difícil e propensa a erros. Não há hierarquia entre keys.
+**Problema:** Invalidação de cache era difícil e propensa a erros. Não havia hierarquia entre keys.
 
-**DEPOIS** — `src/hooks/tanstack-query/_query-keys.ts` (expandido):
+**Implementação Real** — `src/hooks/tanstack-query/_query-keys.ts`:
 ```ts
 export const queryKeys = {
   tables: {
     all: ['tables'] as const,
     lists: () => [...queryKeys.tables.all, 'list'] as const,
-    list: (params: { page?: number; perPage?: number }) =>
+    list: (params: Record<string, unknown>) =>
       [...queryKeys.tables.lists(), params] as const,
     details: () => [...queryKeys.tables.all, 'detail'] as const,
     detail: (slug: string) => [...queryKeys.tables.details(), slug] as const,
   },
-
   rows: {
     all: (tableSlug: string) => ['tables', tableSlug, 'rows'] as const,
+    lists: (tableSlug: string) =>
+      [...queryKeys.rows.all(tableSlug), 'list'] as const,
     list: (tableSlug: string, params: Record<string, unknown>) =>
-      [...queryKeys.rows.all(tableSlug), 'list', params] as const,
+      [...queryKeys.rows.lists(tableSlug), params] as const,
+    details: (tableSlug: string) =>
+      [...queryKeys.rows.all(tableSlug), 'detail'] as const,
     detail: (tableSlug: string, rowId: string) =>
-      [...queryKeys.rows.all(tableSlug), 'detail', rowId] as const,
+      [...queryKeys.rows.details(tableSlug), rowId] as const,
   },
-
+  relationships: {
+    all: ['relationships'] as const,
+    rows: (fieldSlug: string, tableSlug: string, search?: string) =>
+      [...queryKeys.relationships.all, fieldSlug, tableSlug, search] as const,
+  },
+  fields: {
+    all: (tableSlug: string) => ['tables', tableSlug, 'fields'] as const,
+    detail: (tableSlug: string, fieldId: string, groupSlug?: string) =>
+      [...queryKeys.fields.all(tableSlug), fieldId, groupSlug] as const,
+  },
   users: {
     all: ['users'] as const,
     lists: () => [...queryKeys.users.all, 'list'] as const,
-    list: (params?: Record<string, unknown>) =>
+    list: (params: Record<string, unknown>) =>
       [...queryKeys.users.lists(), params] as const,
     details: () => [...queryKeys.users.all, 'detail'] as const,
     detail: (userId: string) => [...queryKeys.users.details(), userId] as const,
   },
-
-  menus: {
-    all: ['menus'] as const,
-    lists: () => [...queryKeys.menus.all, 'list'] as const,
-    list: (params?: Record<string, unknown>) =>
-      [...queryKeys.menus.lists(), params] as const,
-    details: () => [...queryKeys.menus.all, 'detail'] as const,
-    detail: (menuId: string) => [...queryKeys.menus.details(), menuId] as const,
-    dynamic: () => [...queryKeys.menus.all, 'dynamic'] as const,
-  },
-
   groups: {
     all: ['groups'] as const,
     lists: () => [...queryKeys.groups.all, 'list'] as const,
-    list: (params?: Record<string, unknown>) =>
+    list: (params: Record<string, unknown>) =>
       [...queryKeys.groups.lists(), params] as const,
     details: () => [...queryKeys.groups.all, 'detail'] as const,
     detail: (groupId: string) =>
       [...queryKeys.groups.details(), groupId] as const,
   },
-
+  menus: {
+    all: ['menus'] as const,
+    lists: () => [...queryKeys.menus.all, 'list'] as const,
+    list: (params: Record<string, unknown>) =>
+      [...queryKeys.menus.lists(), params] as const,
+    details: () => [...queryKeys.menus.all, 'detail'] as const,
+    detail: (menuId: string) => [...queryKeys.menus.details(), menuId] as const,
+  },
   profile: {
     all: ['profile'] as const,
     detail: (sub?: string) => [...queryKeys.profile.all, sub] as const,
   },
-
-  settings: {
-    all: ['settings'] as const,
-    detail: () => [...queryKeys.settings.all, 'detail'] as const,
-  },
-
-  fields: {
-    all: (tableSlug: string) => ['tables', tableSlug, 'fields'] as const,
-    detail: (tableSlug: string, fieldId: string) =>
-      [...queryKeys.fields.all(tableSlug), fieldId] as const,
-  },
-
-  permissions: {
-    all: ['permissions'] as const,
-    detail: (id: string) => [...queryKeys.permissions.all, id] as const,
-  },
-
   pages: {
     all: ['pages'] as const,
     detail: (slug: string) => [...queryKeys.pages.all, slug] as const,
   },
+  permissions: {
+    all: ['permissions'] as const,
+  },
+  settings: {
+    all: ['settings'] as const,
+  },
 } as const;
 ```
 
-**Uso nos hooks (exemplo `use-table-read.tsx`):**
+> **Nota:** Difere do proposto original — inclui domínio `relationships`, `fields.detail` aceita `groupSlug` opcional, e `permissions`/`settings` possuem apenas `all` (sem `detail`).
+
+**Uso real nos hooks (exemplo `use-table-read.tsx`):**
 ```tsx
 import { queryKeys } from './_query-keys';
 
 export function useReadTable(payload: { slug: string }) {
   return useQuery({
     queryKey: queryKeys.tables.detail(payload.slug),
-    // ...
+    queryFn: async function () {
+      const route = '/tables/'.concat(payload.slug);
+      const response = await API.get<ITable>(route);
+      return response.data;
+    },
+    enabled: Boolean(payload.slug),
   });
 }
 ```
 
-**Invalidação hierárquica (exemplo em mutation):**
+**Invalidação hierárquica real (exemplos das mutations implementadas):**
 ```tsx
-// Invalida TODAS as queries de tabelas (lista + detalhes):
-queryClient.invalidateQueries({ queryKey: queryKeys.tables.all });
-
-// Invalida apenas listas de tabelas:
+// use-table-create.tsx — Invalida listas de tabelas após criar:
 queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
 
-// Invalida uma tabela específica:
-queryClient.invalidateQueries({ queryKey: queryKeys.tables.detail('minha-tabela') });
+// use-table-update.tsx — Invalida detalhe + listas após atualizar:
+queryClient.invalidateQueries({ queryKey: queryKeys.tables.detail(variables.slug) });
+queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
 
 // Invalida todas as rows de uma tabela específica:
 queryClient.invalidateQueries({ queryKey: queryKeys.rows.all('minha-tabela') });
 ```
 
-**Benefícios:**
+**Benefícios alcançados:**
 - Invalidação hierárquica precisa
 - Autocompletar TypeScript em todas as keys
 - Zero risco de typo em query keys
-- Facilita otimistic updates
+- Facilita optimistic updates
 
-**Arquivos Afetados:**
-- `src/hooks/tanstack-query/_query-keys.ts` (reescrever)
-- Todos os 40 hooks em `src/hooks/tanstack-query/` (atualizar queryKey)
+**Arquivos Atualizados (41 no total):**
+- `src/hooks/tanstack-query/_query-keys.ts` — reescrito com factory pattern
+- Todos os hooks em `src/hooks/tanstack-query/` — queryKey atualizado
+- `src/components/common/table-combobox-paginated.tsx` — queryKey atualizado
+- Arquivos de rota que referenciavam query keys diretamente
 
 ---
 
@@ -881,10 +880,10 @@ export const Env = createEnv({
 ### Fase 1 — Fundação (Semana 1-2)
 **Objetivo:** Preparar a base sem quebrar funcionalidade existente.
 
-1. **Query Key Factory** (melhoria #4)
-   - Reescrever `_query-keys.ts` com factory pattern
-   - Atualizar todos os 40 hooks para usar novas keys
-   - Validar que invalidações existentes continuam funcionando
+1. **~~Query Key Factory~~ ✅** (melhoria #4)
+   - ✅ Reescrever `_query-keys.ts` com factory pattern
+   - ✅ Atualizar todos os hooks para usar novas keys (41 arquivos)
+   - ✅ Validar que invalidações existentes continuam funcionando
 
 2. **`beforeLoad` no layout privado** (melhoria #2)
    - Adicionar `beforeLoad` em `_private/layout.tsx`
@@ -960,7 +959,7 @@ export const Env = createEnv({
 
 | Arquivo | Melhorias | Tipo |
 |---------|-----------|------|
-| `src/hooks/tanstack-query/_query-keys.ts` | #4 | Reescrever |
+| `src/hooks/tanstack-query/_query-keys.ts` | #4 | ✅ Reescrito |
 | `src/routes/_private/layout.tsx` | #2, #3, #9 | Modificar |
 | `src/routes/__root.tsx` | #2, #5 | Modificar |
 | `src/router.tsx` | #9 | Modificar |
@@ -974,14 +973,15 @@ export const Env = createEnv({
 | `src/server/functions/groups.ts` | #1 | Novo |
 | `src/server/middleware/auth.ts` | #6 | Novo |
 | `src/server/middleware/telemetry.ts` | #14 | Novo |
-| `src/hooks/tanstack-query/use-table-read.tsx` | #1, #4 | Modificar |
-| `src/hooks/tanstack-query/use-tables-read-paginated.tsx` | #1, #4 | Modificar |
-| `src/hooks/tanstack-query/use-profile-read.tsx` | #1, #4, #8 | Modificar |
-| `src/hooks/tanstack-query/use-user-read-paginated.tsx` | #1, #4 | Modificar |
-| `src/hooks/tanstack-query/use-table-row-read-paginated.tsx` | #1, #4 | Modificar |
-| `src/hooks/tanstack-query/use-menu-dynamic.tsx` | #1, #4 | Modificar |
+| `src/components/common/table-combobox-paginated.tsx` | #4 | ✅ queryKey atualizado |
+| `src/hooks/tanstack-query/use-table-read.tsx` | #1, #4 | #4 ✅ queryKey atualizado |
+| `src/hooks/tanstack-query/use-tables-read-paginated.tsx` | #1, #4 | #4 ✅ queryKey atualizado |
+| `src/hooks/tanstack-query/use-profile-read.tsx` | #1, #4, #8 | #4 ✅ queryKey atualizado |
+| `src/hooks/tanstack-query/use-user-read-paginated.tsx` | #1, #4 | #4 ✅ queryKey atualizado |
+| `src/hooks/tanstack-query/use-table-row-read-paginated.tsx` | #1, #4 | #4 ✅ queryKey atualizado |
+| `src/hooks/tanstack-query/use-menu-dynamic.tsx` | #1, #4 | #4 ✅ queryKey atualizado |
 | `src/hooks/tanstack-query/use-authentication-sign-in.tsx` | #1, #8 | Modificar |
-| Demais hooks em `src/hooks/tanstack-query/` (~20 arquivos) | #1, #4 | Modificar |
+| Demais hooks em `src/hooks/tanstack-query/` (~20 arquivos) | #1, #4 | #4 ✅ queryKey atualizado |
 | `src/routes/_private/dashboard/index.tsx` | #5, #7, #10, #13 | Modificar |
 | `src/routes/_private/tables/$slug/index.tsx` | #3, #5, #10 | Modificar |
 | `src/routes/_private/tables/$slug/row/$rowId/index.tsx` | #3, #5, #10 | Modificar |

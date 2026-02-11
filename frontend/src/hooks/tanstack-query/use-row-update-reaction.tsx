@@ -5,11 +5,11 @@ import type {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
 import type { RowReactionPayload } from '@/lib/payloads';
-
-import { queryKeys } from './_query-keys';
 
 type UseRowUpdateReactionProps = Pick<
   Omit<
@@ -40,7 +40,9 @@ export function useRowUpdateReaction(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.rows.lists(variables.tableSlug) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(variables.tableSlug),
+      });
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,

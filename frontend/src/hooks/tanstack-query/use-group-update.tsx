@@ -5,11 +5,11 @@ import type {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IGroup } from '@/lib/interfaces';
 import type { UserGroupUpdatePayload } from '@/lib/payloads';
-
-import { queryKeys } from './_query-keys';
 
 type UseGroupUpdateProps = Pick<
   Omit<
@@ -43,7 +43,9 @@ export function useUpdateGroup(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.groups.detail(variables._id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.groups.detail(variables._id),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
       props.onSuccess?.(data, variables);
     },

@@ -1,10 +1,10 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IField } from '@/lib/interfaces';
-
-import { queryKeys } from './_query-keys';
 
 interface UseFieldReadParams {
   tableSlug: string;
@@ -16,7 +16,11 @@ export function useFieldRead(
   params: UseFieldReadParams,
 ): UseQueryResult<IField, Error> {
   return useQuery({
-    queryKey: queryKeys.fields.detail(params.tableSlug, params.fieldId, params.groupSlug),
+    queryKey: queryKeys.fields.detail(
+      params.tableSlug,
+      params.fieldId,
+      params.groupSlug,
+    ),
     queryFn: async function () {
       let route = `/tables/${params.tableSlug}/fields/${params.fieldId}`;
       if (params.groupSlug) {

@@ -20,10 +20,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import type {
-  IHTTPExeptionError,
-  ValueOf,
-} from '@/lib/interfaces';
+import type { IHTTPExeptionError, ValueOf } from '@/lib/interfaces';
 
 export const Route = createFileRoute('/_private/menus/create/')({
   component: RouteComponent,

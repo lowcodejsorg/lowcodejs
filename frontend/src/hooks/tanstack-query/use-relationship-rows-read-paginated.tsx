@@ -1,10 +1,10 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IRow, Paginated } from '@/lib/interfaces';
-
-import { queryKeys } from './_query-keys';
 
 type Params = {
   tableSlug: string;

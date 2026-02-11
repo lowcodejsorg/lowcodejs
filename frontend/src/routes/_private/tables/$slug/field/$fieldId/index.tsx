@@ -20,11 +20,11 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
@@ -209,39 +209,36 @@ function FieldUpdateContent({
         response,
       );
 
-      queryClient.setQueryData<ITable>(
-        queryKeys.tables.detail(slug),
-        (old) => {
-          if (!old) return old;
+      queryClient.setQueryData<ITable>(queryKeys.tables.detail(slug), (old) => {
+        if (!old) return old;
 
-          // Se for contexto de grupo, atualiza groups
-          if (isGroupContext && groupSlug) {
-            return {
-              ...old,
-              groups: old.groups.map((g) =>
-                g.slug === groupSlug
-                  ? {
-                      ...g,
-                      fields: g.fields.map((f) =>
-                        f._id === response._id ? response : f,
-                      ),
-                    }
-                  : g,
-              ),
-            };
-          }
-
+        // Se for contexto de grupo, atualiza groups
+        if (isGroupContext && groupSlug) {
           return {
             ...old,
-            fields: old.fields.map((f) => {
-              if (f._id === response._id) {
-                return response;
-              }
-              return f;
-            }),
+            groups: old.groups.map((g) =>
+              g.slug === groupSlug
+                ? {
+                    ...g,
+                    fields: g.fields.map((f) =>
+                      f._id === response._id ? response : f,
+                    ),
+                  }
+                : g,
+            ),
           };
-        },
-      );
+        }
+
+        return {
+          ...old,
+          fields: old.fields.map((f) => {
+            if (f._id === response._id) {
+              return response;
+            }
+            return f;
+          }),
+        };
+      });
 
       queryClient.setQueryData<Paginated<ITable>>(
         queryKeys.tables.list({ page: 1, perPage: 50 }),

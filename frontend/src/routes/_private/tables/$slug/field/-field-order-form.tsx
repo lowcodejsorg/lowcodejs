@@ -282,10 +282,7 @@ export function FieldOrderForm({
 
   const update = useUpdateTable({
     onSuccess: (data) => {
-      queryClient.setQueryData(
-        queryKeys.tables.detail(table.slug),
-        data,
-      );
+      queryClient.setQueryData(queryKeys.tables.detail(table.slug), data);
       toast.success('Ordem atualizada com sucesso');
       setHasChanges(false);
       onSuccess?.();
@@ -489,10 +486,7 @@ export function FieldManagementList({
 
   const updateTable = useUpdateTable({
     onSuccess: (data) => {
-      queryClient.setQueryData(
-        queryKeys.tables.detail(table.slug),
-        data,
-      );
+      queryClient.setQueryData(queryKeys.tables.detail(table.slug), data);
       toast.success('Ordem atualizada com sucesso');
       setHasChanges(false);
     },

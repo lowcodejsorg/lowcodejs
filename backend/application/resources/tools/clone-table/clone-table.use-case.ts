@@ -11,6 +11,7 @@ import {
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  FIELD_NATIVE_LIST,
   type IField,
   type IGroupConfiguration,
   type ITable,
@@ -96,20 +97,34 @@ export default class CloneTableUseCase {
         trim: true,
       });
 
-      const { newFieldIds, fieldIdMap, clonedFields } = await this.cloneFields(
-        baseTable.fields,
-      );
+      const { nativeFields, nativeFieldIds } = await this.createNativeFields();
 
-      const _schema = buildSchema(clonedFields);
+      const nativeIdMap: Record<string, string> = {};
+      const baseNativeFields = baseTable.fields.filter((f) => f.native);
+      for (const baseNative of baseNativeFields) {
+        const matched = nativeFields.find((nf) => nf.slug === baseNative.slug);
+        if (matched) {
+          nativeIdMap[baseNative._id] = matched._id;
+        }
+      }
+
+      const nonNativeFields = baseTable.fields.filter((f) => !f.native);
+
+      const { newFieldIds, fieldIdMap, clonedFields } =
+        await this.cloneFields(nonNativeFields);
+
+      const combinedFieldIdMap = { ...nativeIdMap, ...fieldIdMap };
+
+      const _schema = buildSchema([...nativeFields, ...clonedFields]);
 
       const orderList = this.remapFieldIds(
         baseTable.fieldOrderList,
-        fieldIdMap,
+        combinedFieldIdMap,
       );
 
       const orderForm = this.remapFieldIds(
         baseTable.fieldOrderForm,
-        fieldIdMap,
+        combinedFieldIdMap,
       );
 
       const createPayload: TableCreatePayload = {
@@ -119,7 +134,7 @@ export default class CloneTableUseCase {
         description: baseTable.description ?? null,
         type: baseTable.type,
         logo: baseTable.logo?._id ?? null,
-        fields: newFieldIds,
+        fields: [...nativeFieldIds, ...newFieldIds],
         style: baseTable.style,
         visibility: baseTable.visibility,
         collaboration: baseTable.collaboration,
@@ -134,7 +149,7 @@ export default class CloneTableUseCase {
 
       return right({
         table: newTable,
-        fieldIdMap,
+        fieldIdMap: combinedFieldIdMap,
       });
     } catch (_error) {
       return left(
@@ -155,10 +170,12 @@ export default class CloneTableUseCase {
       trim: true,
     });
 
+    const { nativeFields, nativeFieldIds } = await this.createNativeFields();
+
     const { fields, groups, orderList, orderForm } =
       await this.buildKanbanFields();
 
-    const _schema = buildSchema(fields, groups);
+    const _schema = buildSchema([...nativeFields, ...fields], groups);
 
     const createPayload: TableCreatePayload = {
       _schema,
@@ -167,14 +184,14 @@ export default class CloneTableUseCase {
       description: 'Kanban de tarefas',
       type: E_TABLE_TYPE.TABLE,
       logo: null,
-      fields: fields.map((f) => f._id),
+      fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
       style: E_TABLE_STYLE.KANBAN,
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       administrators: [],
       owner: payload.ownerId,
-      fieldOrderList: orderList,
-      fieldOrderForm: orderForm,
+      fieldOrderList: [...nativeFieldIds, ...orderList],
+      fieldOrderForm: [...nativeFieldIds, ...orderForm],
       methods: {
         onLoad: { code: null },
         beforeSave: {
@@ -250,9 +267,11 @@ if (progresso < 100 && notificado) {
       trim: true,
     });
 
+    const { nativeFields, nativeFieldIds } = await this.createNativeFields();
+
     const { fields, orderList, orderForm } = await this.buildCardsFields();
 
-    const _schema = buildSchema(fields);
+    const _schema = buildSchema([...nativeFields, ...fields]);
 
     const createPayload: TableCreatePayload = {
       _schema,
@@ -261,14 +280,14 @@ if (progresso < 100 && notificado) {
       description: 'Cards',
       type: E_TABLE_TYPE.TABLE,
       logo: null,
-      fields: fields.map((f) => f._id),
+      fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
       style: E_TABLE_STYLE.CARD,
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       administrators: [],
       owner: payload.ownerId,
-      fieldOrderList: orderList,
-      fieldOrderForm: orderForm,
+      fieldOrderList: [...nativeFieldIds, ...orderList],
+      fieldOrderForm: [...nativeFieldIds, ...orderForm],
       methods: {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -520,9 +539,11 @@ if (progresso < 100 && notificado) {
       trim: true,
     });
 
+    const { nativeFields, nativeFieldIds } = await this.createNativeFields();
+
     const { fields, orderList, orderForm } = await this.buildMosaicFields();
 
-    const _schema = buildSchema(fields);
+    const _schema = buildSchema([...nativeFields, ...fields]);
 
     const createPayload: TableCreatePayload = {
       _schema,
@@ -531,14 +552,14 @@ if (progresso < 100 && notificado) {
       description: 'Mosaico',
       type: E_TABLE_TYPE.TABLE,
       logo: null,
-      fields: fields.map((f) => f._id),
+      fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
       style: E_TABLE_STYLE.MOSAIC,
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       administrators: [],
       owner: payload.ownerId,
-      fieldOrderList: orderList,
-      fieldOrderForm: orderForm,
+      fieldOrderList: [...nativeFieldIds, ...orderList],
+      fieldOrderForm: [...nativeFieldIds, ...orderForm],
       methods: {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -571,9 +592,11 @@ if (progresso < 100 && notificado) {
       trim: true,
     });
 
+    const { nativeFields, nativeFieldIds } = await this.createNativeFields();
+
     const { fields, orderList, orderForm } = await this.buildDocumentFields();
 
-    const _schema = buildSchema(fields);
+    const _schema = buildSchema([...nativeFields, ...fields]);
 
     const createPayload: TableCreatePayload = {
       _schema,
@@ -582,14 +605,14 @@ if (progresso < 100 && notificado) {
       description: 'Documento',
       type: E_TABLE_TYPE.TABLE,
       logo: null,
-      fields: fields.map((f) => f._id),
+      fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
       style: E_TABLE_STYLE.DOCUMENT,
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       administrators: [],
       owner: payload.ownerId,
-      fieldOrderList: orderList,
-      fieldOrderForm: orderForm,
+      fieldOrderList: [...nativeFieldIds, ...orderList],
+      fieldOrderForm: [...nativeFieldIds, ...orderForm],
       methods: {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -1167,6 +1190,16 @@ if (progresso < 100 && notificado) {
       orderList,
       orderForm,
     };
+  }
+
+  private async createNativeFields(): Promise<{
+    nativeFields: IField[];
+    nativeFieldIds: string[];
+  }> {
+    const nativeFields =
+      await this.fieldRepository.createMany(FIELD_NATIVE_LIST);
+    const nativeFieldIds = nativeFields.flatMap((f) => f._id);
+    return { nativeFields, nativeFieldIds };
   }
 
   private async cloneFields(fields: IField[]): Promise<{

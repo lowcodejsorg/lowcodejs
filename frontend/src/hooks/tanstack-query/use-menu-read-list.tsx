@@ -1,11 +1,11 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IMenu } from '@/lib/interfaces';
 import { useAuthenticationStore } from '@/stores/authentication';
-
-import { queryKeys } from './_query-keys';
 
 interface UseMenuReadListOptions {
   enabled?: boolean;

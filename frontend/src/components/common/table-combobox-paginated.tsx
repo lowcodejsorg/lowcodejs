@@ -1,8 +1,6 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import * as React from 'react';
 
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
-
 import { Button } from '@/components/ui/button';
 import {
   Combobox,
@@ -13,6 +11,7 @@ import {
   ComboboxList,
 } from '@/components/ui/combobox';
 import { Spinner } from '@/components/ui/spinner';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useDebouncedValue } from '@/hooks/use-debounced-value';
 import { API } from '@/lib/api';
 import type { ITable, Paginated } from '@/lib/interfaces';

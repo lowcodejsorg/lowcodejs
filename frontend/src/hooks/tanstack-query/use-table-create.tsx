@@ -5,11 +5,11 @@ import type {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import type { TableCreatePayload } from '@/lib/payloads';
-
-import { queryKeys } from './_query-keys';
 
 type UseTableCreateProps = Pick<
   Omit<

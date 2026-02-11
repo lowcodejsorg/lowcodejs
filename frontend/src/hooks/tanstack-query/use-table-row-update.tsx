@@ -2,11 +2,11 @@ import type { UseMutationOptions } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
 import type { RowUpdatePayload } from '@/lib/payloads';
-
-import { queryKeys } from './_query-keys';
 
 type UseTableRowUpdateProps = Pick<
   Omit<

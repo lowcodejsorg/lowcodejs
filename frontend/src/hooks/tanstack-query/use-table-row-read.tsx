@@ -1,10 +1,10 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
-
-import { queryKeys } from './_query-keys';
 
 export function useReadTableRow(payload: {
   slug: string;

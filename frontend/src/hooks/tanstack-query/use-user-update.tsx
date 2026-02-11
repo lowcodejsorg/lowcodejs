@@ -5,11 +5,11 @@ import type {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 
+import { queryKeys } from './_query-keys';
+
 import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
 import type { UserUpdatePayload } from '@/lib/payloads';
-
-import { queryKeys } from './_query-keys';
 
 type UseUserUpdateProps = Pick<
   Omit<
@@ -33,7 +33,9 @@ export function useUpdateUser(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.users.detail(variables._id) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.users.detail(variables._id),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
       props.onSuccess?.(data, variables);
     },
