@@ -196,53 +196,55 @@ export default class CloneTableUseCase {
         onLoad: { code: null },
         beforeSave: {
           code: `
-const membros = getFieldValue('membros') || [];
-const emails = Array.isArray(membros)
-  ? membros
-      .map((m) => {
-        if (m && typeof m === 'object') return m.email || null;
-        if (typeof m === 'string' && m.includes('@')) return m;
-        return null;
-      })
-      .filter(Boolean)
-  : [];
+(async () => {
+  const membros = field.get('membros') || [];
+  const emails = Array.isArray(membros)
+    ? membros
+        .map((m) => {
+          if (m && typeof m === 'object') return m.email || null;
+          if (typeof m === 'string' && m.includes('@')) return m;
+          return null;
+        })
+        .filter(Boolean)
+    : [];
 
-const prevRaw = getFieldValue('membros-notificados') || '[]';
-let prev = [];
-try {
-  prev = Array.isArray(prevRaw) ? prevRaw : JSON.parse(prevRaw);
-} catch (e) {
-  prev = [];
-}
-const prevSet = new Set(prev.filter(Boolean));
-const newEmails = emails.filter((e) => !prevSet.has(e));
-if (newEmails.length > 0) {
-  sendEmail(
-    newEmails,
-    'Você foi adicionado a uma tarefa',
-    'Você foi adicionado como membro em uma tarefa do kanban.'
-  );
-  setFieldValue(
-    'membros-notificados',
-    JSON.stringify([...prevSet, ...newEmails])
-  );
-}
-
-const progresso = Number(getFieldValue('porcentagem-concluida') || 0);
-const notificado = getFieldValue('concluido-notificado') === 'true';
-if (progresso >= 100 && !notificado) {
-  if (emails.length > 0) {
-    sendEmail(
-      emails,
-      'Tarefa concluída',
-      'A tarefa foi concluída (100%).'
+  const prevRaw = field.get('membros-notificados') || '[]';
+  let prev = [];
+  try {
+    prev = Array.isArray(prevRaw) ? prevRaw : JSON.parse(prevRaw);
+  } catch (e) {
+    prev = [];
+  }
+  const prevSet = new Set(prev.filter(Boolean));
+  const newEmails = emails.filter((e) => !prevSet.has(e));
+  if (newEmails.length > 0) {
+    await email.send(
+      newEmails,
+      'Você foi adicionado a uma tarefa',
+      'Você foi adicionado como membro em uma tarefa do kanban.'
+    );
+    field.set(
+      'membros-notificados',
+      JSON.stringify([...prevSet, ...newEmails])
     );
   }
-  setFieldValue('concluido-notificado', 'true');
-}
-if (progresso < 100 && notificado) {
-  setFieldValue('concluido-notificado', 'false');
-}
+
+  const progresso = Number(field.get('porcentagem-concluida') || 0);
+  const notificado = field.get('concluido-notificado') === 'true';
+  if (progresso >= 100 && !notificado) {
+    if (emails.length > 0) {
+      await email.send(
+        emails,
+        'Tarefa concluída',
+        'A tarefa foi concluída (100%).'
+      );
+    }
+    field.set('concluido-notificado', 'true');
+  }
+  if (progresso < 100 && notificado) {
+    field.set('concluido-notificado', 'false');
+  }
+})();
           `.trim(),
         },
         afterSave: { code: null },
@@ -834,7 +836,7 @@ if (progresso < 100 && notificado) {
       widthInList: null,
     });
 
-    const membersNotifiedField = await createField({
+    const _membersNotifiedField = await createField({
       name: 'Membros notificados',
       slug: 'membros-notificados',
       type: E_FIELD_TYPE.TEXT_LONG,
@@ -855,7 +857,7 @@ if (progresso < 100 && notificado) {
       widthInList: null,
     });
 
-    const completedNotifiedField = await createField({
+    const _completedNotifiedField = await createField({
       name: 'Conclusão notificada',
       slug: 'concluido-notificado',
       type: E_FIELD_TYPE.TEXT_SHORT,

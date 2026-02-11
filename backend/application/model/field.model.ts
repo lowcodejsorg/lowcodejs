@@ -191,6 +191,7 @@ export const Schema = new mongoose.Schema(
   },
   {
     timestamps: true,
+    id: false,
     toJSON: {
       transform: function (_doc, ret: any) {
         // Garantir valores padrão para dropdown e category
