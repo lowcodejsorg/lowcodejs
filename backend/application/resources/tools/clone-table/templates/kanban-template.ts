@@ -56,7 +56,8 @@ export async function createKanbanTemplate(
       onLoad: { code: null },
       beforeSave: {
         code: `
-const membros = getFieldValue('membros') || [];
+(async () => {
+const membros = field.get('membros') || [];
 const emails = Array.isArray(membros)
   ? membros
       .map((m) => {
@@ -67,7 +68,7 @@ const emails = Array.isArray(membros)
       .filter(Boolean)
   : [];
 
-const prevRaw = getFieldValue('membros-notificados') || '[]';
+const prevRaw = field.get('membros-notificados') || '[]';
 let prev = [];
 try {
   prev = Array.isArray(prevRaw) ? prevRaw : JSON.parse(prevRaw);
@@ -77,32 +78,33 @@ try {
 const prevSet = new Set(prev.filter(Boolean));
 const newEmails = emails.filter((e) => !prevSet.has(e));
 if (newEmails.length > 0) {
-  sendEmail(
+  await email.send(
     newEmails,
     'Você foi adicionado a uma tarefa',
     'Você foi adicionado como membro em uma tarefa do kanban.'
   );
-  setFieldValue(
+  field.set(
     'membros-notificados',
     JSON.stringify([...prevSet, ...newEmails])
   );
 }
 
-const progresso = Number(getFieldValue('porcentagem-concluida') || 0);
-const notificado = getFieldValue('concluido-notificado') === 'true';
+const progresso = Number(field.get('porcentagem-concluida') || 0);
+const notificado = field.get('concluido-notificado') === 'true';
 if (progresso >= 100 && !notificado) {
   if (emails.length > 0) {
-    sendEmail(
+    await email.send(
       emails,
       'Tarefa concluída',
       'A tarefa foi concluída (100%).'
     );
   }
-  setFieldValue('concluido-notificado', 'true');
+  field.set('concluido-notificado', 'true');
 }
 if (progresso < 100 && notificado) {
-  setFieldValue('concluido-notificado', 'false');
+  field.set('concluido-notificado', 'false');
 }
+})();
         `.trim(),
       },
       afterSave: { code: null },
