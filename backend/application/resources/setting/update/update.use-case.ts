@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
+import mongoose from 'mongoose';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -9,6 +10,13 @@ import {
   SettingUpdatePayload,
 } from '@application/repositories/setting/setting-contract.repository';
 
+const BUILTIN_TEMPLATE_IDS = new Set([
+  'KANBAN_TEMPLATE',
+  'CARDS_TEMPLATE',
+  'MOSAIC_TEMPLATE',
+  'DOCUMENT_TEMPLATE',
+]);
+
 type Response = Either<HTTPException, Record<string, unknown>>;
 
 @Service()
@@ -17,6 +25,13 @@ export default class SettingUpdateUseCase {
 
   async execute(payload: SettingUpdatePayload): Promise<Response> {
     try {
+      if (Array.isArray(payload.MODEL_CLONE_TABLES)) {
+        payload.MODEL_CLONE_TABLES = payload.MODEL_CLONE_TABLES.filter(
+          (id) => !BUILTIN_TEMPLATE_IDS.has(id) && mongoose.Types.ObjectId.isValid(id),
+        );
+      }
+
+      console.log(JSON.stringify(payload, null, 2));
       const updated = await this.settingRepository.update(payload);
 
       for (const [key, value] of Object.entries(payload)) {
@@ -29,6 +44,7 @@ export default class SettingUpdateUseCase {
         // MODEL_CLONE_TABLES já vem populado do repository
       });
     } catch (_error) {
+      console.log(_error);
       return left(
         HTTPException.InternalServerError(
           'Erro ao atualizar configurações',
