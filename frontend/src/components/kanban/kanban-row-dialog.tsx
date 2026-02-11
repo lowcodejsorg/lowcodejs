@@ -269,8 +269,7 @@ export function KanbanRowDialog({
   const creatorName =
     (typeof row.creator === 'object' && row.creator !== null
       ? (row.creator as any).name || (row.creator as any).email
-      : null) ||
-    'Sem criador';
+      : null) || 'Sem criador';
   const tasks = Array.isArray(row[fields.tasks?.slug ?? ''])
     ? (row[fields.tasks?.slug ?? ''] as Array<Record<string, any>>)
     : [];
@@ -841,9 +840,7 @@ export function KanbanRowDialog({
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs uppercase text-muted-foreground">
-                Criador
-              </p>
+              <p className="text-xs uppercase text-muted-foreground">Criador</p>
               <Badge variant="outline">{creatorName}</Badge>
             </div>
           </aside>
