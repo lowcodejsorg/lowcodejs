@@ -1,5 +1,5 @@
-import React from 'react';
 import { PlusIcon, TrashIcon } from 'lucide-react';
+import React from 'react';
 
 import { badgeStyleFromColor } from '@/components/common/table-row-badge-list';
 import { Badge } from '@/components/ui/badge';
@@ -73,7 +73,7 @@ export function KanbanCreateCardDialog({
                   <>
                     {fields.description?.format === E_FIELD_FORMAT.RICH_TEXT ? (
                       <formField.TableRowRichTextField
-                        field={fields.description!}
+                        field={fields.description}
                         compact
                       />
                     ) : (
@@ -116,51 +116,61 @@ export function KanbanCreateCardDialog({
                         <section className="space-y-3">
                           <h3 className="text-sm font-semibold">Tarefas</h3>
                           <div className="space-y-2">
-                            {tasks.map((task: Record<string, unknown>, index: number) => (
-                              <div
-                                key={`${index}-${String(task.titulo ?? '')}`}
-                                className="flex items-center gap-2 rounded-lg border bg-background p-2"
-                              >
-                                <Checkbox
-                                  checked={
-                                    Array.isArray(task.realizado) &&
-                                    task.realizado.includes('sim')
-                                  }
-                                  onCheckedChange={(checked) => {
-                                    const updated = tasks.map(
-                                      (
-                                        item: Record<string, unknown>,
-                                        itemIndex: number,
-                                      ) =>
-                                        itemIndex === index
-                                          ? {
-                                              ...item,
-                                              realizado: [checked ? 'sim' : 'nao'],
-                                            }
-                                          : item,
-                                    );
-                                    tasksField.handleChange(updated);
-                                  }}
-                                />
-                                <span className="flex-1 text-sm">
-                                  {String(task.titulo ?? '-')}
-                                </span>
-                                <Button
-                                  type="button"
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-destructive"
-                                  onClick={() => {
-                                    tasksField.handleChange(
-                                      tasks.filter((_: unknown, i: number) => i !== index),
-                                    );
-                                  }}
-                                  aria-label="Excluir tarefa"
+                            {tasks.map(
+                              (
+                                task: Record<string, unknown>,
+                                index: number,
+                              ) => (
+                                <div
+                                  key={`${index}-${String(task.titulo ?? '')}`}
+                                  className="flex items-center gap-2 rounded-lg border bg-background p-2"
                                 >
-                                  <TrashIcon className="size-4" />
-                                </Button>
-                              </div>
-                            ))}
+                                  <Checkbox
+                                    checked={
+                                      Array.isArray(task.realizado) &&
+                                      task.realizado.includes('sim')
+                                    }
+                                    onCheckedChange={(checked) => {
+                                      const updated = tasks.map(
+                                        (
+                                          item: Record<string, unknown>,
+                                          itemIndex: number,
+                                        ) =>
+                                          itemIndex === index
+                                            ? {
+                                                ...item,
+                                                realizado: [
+                                                  checked ? 'sim' : 'nao',
+                                                ],
+                                              }
+                                            : item,
+                                      );
+                                      tasksField.handleChange(updated);
+                                    }}
+                                  />
+                                  <span className="flex-1 text-sm">
+                                    {String(task.titulo ?? '-')}
+                                  </span>
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-destructive"
+                                    onClick={() => {
+                                      tasksField.handleChange(
+                                        tasks.filter(
+                                          (_: unknown, i: number) =>
+                                            i !== index,
+                                        ),
+                                      );
+                                    }}
+                                    aria-label="Excluir tarefa"
+                                  >
+                                    <TrashIcon className="size-4" />
+                                  </Button>
+                                </div>
+                              ),
+                            )}
                           </div>
 
                           <div className="flex gap-2">

@@ -500,5 +500,4 @@ export default class ForumMessageUseCase {
 
     return plainText.length > 0 || attachments.length > 0;
   }
-
 }

@@ -34,7 +34,9 @@ export function KanbanRowExtraFieldsSection({
           key={field._id}
           className="space-y-1"
         >
-          {!(editingFieldSlug === field.slug && isExtraFieldEditable(field)) && (
+          {!(
+            editingFieldSlug === field.slug && isExtraFieldEditable(field)
+          ) && (
             <div className="text-xs text-muted-foreground">{field.name}</div>
           )}
           {editingFieldSlug === field.slug && isExtraFieldEditable(field) ? (
@@ -45,7 +47,9 @@ export function KanbanRowExtraFieldsSection({
                 onSubmit();
               }}
             >
-              <div className="flex-1 min-w-0">{renderExtraFieldEditor(field)}</div>
+              <div className="flex-1 min-w-0">
+                {renderExtraFieldEditor(field)}
+              </div>
               <div className="flex gap-2 shrink-0 pb-0.5">
                 <Button
                   type="button"
