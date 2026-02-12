@@ -67,12 +67,16 @@ export async function createForumTemplate(
 
   const channelField = fields.find((field) => field.slug === 'canal');
   const descriptionField = fields.find((field) => field.slug === 'descricao');
+  const membersField = fields.find((field) => field.slug === 'membros');
   if (channelField) {
     const model = await buildTable(newTable);
     await model.create({
       [channelField.slug]: 'Bem-vindos',
       ...(descriptionField && {
         [descriptionField.slug]: 'Canal inicial',
+      }),
+      ...(membersField && {
+        [membersField.slug]: [payload.ownerId],
       }),
       creator: payload.ownerId,
     });
@@ -153,6 +157,27 @@ export async function buildForumFields(
     showInForm: true,
     showInDetail: true,
     showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: 100,
+    widthInList: 100,
+  });
+
+  const channelMembersField = await createField({
+    name: 'Membros',
+    slug: 'membros',
+    type: E_FIELD_TYPE.USER,
+    required: false,
+    multiple: true,
+    format: null,
+    showInList: false,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: true,
     defaultValue: null,
     locked: true,
     relationship: null,
@@ -384,11 +409,13 @@ export async function buildForumFields(
   const orderList = [
     channelField._id,
     channelDescriptionField._id,
+    channelMembersField._id,
     messagesGroupField._id,
   ];
   const orderForm = [
     channelField._id,
     channelDescriptionField._id,
+    channelMembersField._id,
     messagesGroupField._id,
   ];
 

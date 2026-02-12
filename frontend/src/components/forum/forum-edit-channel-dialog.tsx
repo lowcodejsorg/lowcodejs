@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { ForumUserMultiSelect } from './forum-user-multi-select';
+
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -22,6 +24,7 @@ interface ForumEditChannelDialogProps {
   form: EditChannelForm;
   isPending: boolean;
   labelValue: string;
+  requiresMembers: boolean;
   onCancel: () => void;
 }
 
@@ -31,12 +34,14 @@ export function ForumEditChannelDialog({
   form,
   isPending,
   labelValue,
+  requiresMembers,
   onCancel,
 }: ForumEditChannelDialogProps): React.JSX.Element {
   return (
     <Dialog
       open={open}
       onOpenChange={onOpenChange}
+      modal={false}
     >
       <DialogContent className="sm:max-w-md">
         <form
@@ -74,6 +79,20 @@ export function ForumEditChannelDialog({
                 />
               )}
             </form.AppField>
+            {requiresMembers && (
+              <form.AppField name="members">
+                {(field: any) => (
+                  <ForumUserMultiSelect
+                    value={
+                      Array.isArray(field.state.value) ? field.state.value : []
+                    }
+                    onChange={(value) => field.handleChange(value)}
+                    disabled={isPending}
+                    placeholder="Selecione membros"
+                  />
+                )}
+              </form.AppField>
+            )}
           </div>
           <DialogFooter className="mt-3 flex gap-2 sm:justify-end">
             <Button

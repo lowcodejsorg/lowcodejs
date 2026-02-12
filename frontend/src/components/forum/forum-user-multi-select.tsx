@@ -20,12 +20,14 @@ interface ForumUserMultiSelectProps {
   value: Array<string>;
   onChange: (value: Array<string>) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
 export function ForumUserMultiSelect({
   value,
   onChange,
   disabled,
+  placeholder,
 }: ForumUserMultiSelectProps): React.JSX.Element {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
@@ -109,7 +111,9 @@ export function ForumUserMultiSelect({
                 </span>
               )}
               <ComboboxChipsInput
-                placeholder={values.length > 0 ? '' : 'Mencionar usuários'}
+                placeholder={
+                  values.length > 0 ? '' : (placeholder ?? 'Mencionar usuarios')
+                }
               />
             </React.Fragment>
           )}
