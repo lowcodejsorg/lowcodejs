@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { RowFormFields } from '../create/-create-form';
 
+import { RowDeleteDialog } from './-delete-dialog';
 import { RowRemoveFromTrashDialog } from './-remove-from-trash-dialog';
 import { RowSendToTrashDialog } from './-send-to-trash-dialog';
 import { RowView } from './-view';
@@ -225,6 +226,13 @@ export function UpdateRowForm({
 
         {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
           <RowRemoveFromTrashDialog
+            rowId={rowId}
+            slug={slug}
+          />
+        )}
+
+        {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
+          <RowDeleteDialog
             rowId={rowId}
             slug={slug}
           />

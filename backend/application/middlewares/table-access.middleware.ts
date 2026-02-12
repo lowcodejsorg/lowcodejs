@@ -93,15 +93,9 @@ export function TableAccessMiddleware(options: AccessOptions) {
 
     if (slug && requiredPermission !== E_TABLE_PERMISSION.CREATE_TABLE) {
       if (!table) {
-        // Para operações de restore, buscar tabelas na lixeira
-        const isRestoreOperation = request.url.endsWith('/restore');
-        const query: { slug: string; trashed?: boolean } = { slug };
-
-        if (!isRestoreOperation) {
-          query.trashed = false;
-        }
-
-        table = (await TableModel.findOne(query).lean()) as unknown as ITable;
+        table = (await TableModel.findOne({
+          slug,
+        }).lean()) as unknown as ITable;
 
         if (!table) {
           throw HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND');

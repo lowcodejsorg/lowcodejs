@@ -4,8 +4,6 @@ import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { TableRemoveFromTrashDialog } from './-remove-from-trash-dialog';
-import { TableSendToTrashDialog } from './-send-to-trash-dialog';
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 import { TableView } from './-view';
@@ -65,12 +63,9 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes da tabela</h1>
         </div>
-        {_read.status === 'success' &&
-          mode === 'show' &&
-          permission.can('UPDATE_TABLE') && (
-            <div className="inline-flex items-center gap-2">
-              {!_read.data.trashed && <TableSendToTrashDialog slug={slug} />}
-              {_read.data.trashed && <TableRemoveFromTrashDialog slug={slug} />}
+        {_read.status === 'success' && mode === 'show' && (
+          <div className="inline-flex items-center gap-2">
+            {permission.can('UPDATE_TABLE') && (
               <Button
                 type="button"
                 className="px-2 cursor-pointer max-w-40 w-full"
@@ -80,8 +75,9 @@ function RouteComponent(): React.JSX.Element {
                 <PencilIcon className="size-4 mr-1" />
                 <span>Editar</span>
               </Button>
-            </div>
-          )}
+            )}
+          </div>
+        )}
       </div>
 
       {/* Content */}

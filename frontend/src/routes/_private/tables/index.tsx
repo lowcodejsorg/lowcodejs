@@ -7,6 +7,7 @@ import { TableTablesSkeleton } from './-table-tables-skeleton';
 import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { SheetFilter } from '@/components/common/sheet-filter';
+import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
@@ -21,6 +22,7 @@ export const Route = createFileRoute('/_private/tables/')({
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
     name: z.string().optional(),
+    trashed: z.coerce.boolean().optional(),
   }),
 });
 
@@ -60,6 +62,9 @@ function RouteComponent(): React.JSX.Element {
       relationship: null,
       required: false,
       locked: false,
+      widthInForm: null,
+      widthInList: null,
+      native: false,
     },
   ];
 
@@ -69,6 +74,7 @@ function RouteComponent(): React.JSX.Element {
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
+          <TrashButton />
           <SheetFilter fields={fieldFilters} />
           {permission.can('CREATE_TABLE') && (
             <Button
