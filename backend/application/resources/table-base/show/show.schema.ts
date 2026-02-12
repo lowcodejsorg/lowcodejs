@@ -133,12 +133,13 @@ export const TableShowSchema: FastifySchema = {
               widthInForm: {
                 type: 'number',
                 nullable: true,
-                description: 'Field width percentage in forms',
+                description: 'Field width in forms, integer 0-100 (%)',
               },
               widthInList: {
                 type: 'number',
                 nullable: true,
-                description: 'Field width percentage in list/grid views',
+                description:
+                  'Field width in list/grid views, integer 0-100 (px)',
               },
               locked: {
                 type: 'boolean',

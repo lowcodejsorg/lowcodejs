@@ -54,7 +54,8 @@ function FieldGroupSubMenu({
     (g) => g.slug === field.group?.slug,
   );
 
-  const activeFields = group?.fields.filter((f) => !f.trashed) ?? [];
+  const activeFields =
+    group?.fields.filter((f) => !f.trashed && !f.native) ?? [];
 
   const groupSlug = field.group?.slug ?? field.slug;
 
@@ -144,7 +145,7 @@ export function TableConfigurationDropdown({
 
   const activeFields =
     table.data?.fields.filter(
-      (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+      (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
     ) ?? [];
 
   const fieldGroups =

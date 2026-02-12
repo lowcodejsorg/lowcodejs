@@ -146,7 +146,7 @@ export const Schema = new mongoose.Schema(
     },
     widthInList: {
       type: Number,
-      default: 50,
+      default: 10,
     },
     locked: {
       type: Boolean,

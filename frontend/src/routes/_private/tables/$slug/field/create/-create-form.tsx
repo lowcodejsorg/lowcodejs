@@ -33,7 +33,7 @@ export const FieldCreateSchema = z.object({
   showInList: z.boolean().default(true),
   required: z.boolean().default(false),
   widthInForm: z.number().default(50),
-  widthInList: z.number().default(50),
+  widthInList: z.number().default(10),
 });
 
 export type FieldCreateFormValues = z.infer<typeof FieldCreateSchema>;
@@ -59,7 +59,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   showInList: true,
   required: false,
   widthInForm: 50,
-  widthInList: 50,
+  widthInList: 10,
 };
 
 export const CreateFieldFormFields = withForm({

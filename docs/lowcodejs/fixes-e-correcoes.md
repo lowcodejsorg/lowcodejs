@@ -23,13 +23,13 @@
 
 | Tipo | Quantidade |
 |---|:---:|
-| ❌ Erro | 11 |
+| ❌ Erro | 9 |
 | 🔧 Ajuste | 4 |
-| 🔄 Correção e retestar | 1 |
+| 🔄 Correção e retestar | 5 |
 | 🆕 Melhoria | 11 |
-| ✅ Passou no teste | 10 |
+| ✅ Passou no teste | 12 |
 | 🚫 Descartado | 0 |
-| **Total** | **37** |
+| **Total** | **41** |
 
 ---
 
@@ -63,14 +63,16 @@
 | 4 | Erro no modelo kanban (campos nativos) | ✅ Passou no teste |
 | 5 | Botão salvar não reativa após validação de campo obrigatório | ❌ Erro |
 | 6 | Erro ao criar novo campo (com sub-itens de 11/02) | ❌ Erro |
-| 7 | Erro de validação no formulário (campos e settings) | ❌ Erro |
+| 7 | Erro de validação no formulário (campos e settings) | ✅ Passou no teste |
 | 8 | Configuração de campos especiais usados nos layouts | 🆕 Melhoria |
 | 9 | Formato Password para campo texto | 🆕 Melhoria |
 | 10 | Suporte a Markdown | 🆕 Melhoria |
 | 11 | Campos nativos para documentos embutidos | ✅ Passou no teste |
-| 35 | Dropdown no grupo de campos com erro | ❌ Erro |
-| 36 | Erro na tabela Início com todos os campos criados | ❌ Erro |
+| 35 | Dropdown no grupo de campos com erro | 🔄 Correção e retestar |
+| 36 | Erro na tabela Início com todos os campos criados | 🔄 Correção e retestar |
 | 37 | Melhorar mensagem ao salvar campo com mesmo nome | 🔧 Ajuste |
+| 38 | Não está salvando o arquivo do campo arquivo | 🔄 Correção e retestar |
+| 39 | Esconder campos nativos no gerenciar campos | 🔄 Correção e retestar |
 
 ### 2. Campos nativos aparecendo e com controle de visibilidade/ordenação
 
@@ -190,14 +192,27 @@
 - **Arquivos relacionados:**
   - `frontend/src/routes/_private/tables/$slug/field/management.tsx`
 
+### 38. Não está salvando o arquivo do campo arquivo
+
+- **Data:** 12/02/2026
+- **Descrição:** O campo do tipo arquivo não salva o upload no primeiro envio. Somente após salvar o registro e em seguida editar novamente, enviando o arquivo, ele salva corretamente.
+
+### 39. Esconder campos nativos no gerenciar campos
+
+- **Data:** 12/02/2026
+- **Descrição:** Campos nativos (`_id`, `createdAt`, `trashed`, etc.) estão aparecendo no dropdown "Gerenciar campos" da configuração da tabela. Apenas campos configurados pelo gestor da tabela devem ser exibidos.
+- **Report:** [report][12 fev 2026] Jhollyfer: Campos nativos removidos da visualização, deve ser possível visualizar apenas campos que foram configurados pelo gestor da tabela.
+- **Arquivos relacionados:**
+  - `frontend/src/routes/_private/tables/$slug/-table-configuration.tsx`
+
 ---
 
 ## Autenticação & Login
 
 | # | Item | Tipo |
 |---|---|---|
-| 12 | Erro ao logar com espaço extra no email | 🔄 Correção e retestar |
-| 13 | Erro ao logar pelo Chrome | ❌ Erro |
+| 12 | Erro ao logar com espaço extra no email | ✅ Passou no teste |
+| 13 | Erro ao logar pelo Chrome | 🔄 Correção e retestar |
 
 ### 12. Erro ao logar com espaço extra no email
 
@@ -213,6 +228,7 @@
 
 - **Data:** Reportado
 - **Descrição:** Erro específico ao tentar realizar login utilizando o navegador Google Chrome. O sistema utiliza cookies com `withCredentials: true` via Axios, o que pode causar problemas com políticas de CORS/SameSite em diferentes navegadores.
+- **Report:** [report][12 fev 2026] Jhollyfer: Cache utilizava cookies anteriores e não permitia a autenticação correta do usuário, foi criada uma camada de verificação extra no backend para lidar com o cache de cookies.
 - **Arquivos relacionados:**
   - `frontend/src/lib/api.ts` (Axios instance com `withCredentials`)
   - `frontend/src/routes/_authentication/_sign-in/index.tsx`
@@ -357,6 +373,8 @@
 | 27 | Colocar filtros abrindo em barra na esquerda | 🆕 Melhoria |
 | 28 | Perfil do usuario logado não aparece na listagem | ❌ Erro |
 | 29 | Ajustes no design conforme especificação | ✅ Passou no teste |
+| 40 | O valor default para tamanho do campo na lista deve ser 10% | ❌ Erro |
+| 41 | Retirar dropdown do tamanho e permitir digitar número inteiro | ❌ Erro |
 
 ### 25. Ocultar lixeira em listas públicas
 
@@ -400,6 +418,16 @@
 - **Arquivos relacionados:**
   - `frontend/src/routes/_private/tables/$slug/-table-list-view.tsx`
   - `frontend/src/routes/_private/tables/$slug/field/management.tsx`
+
+### 40. O valor default para tamanho do campo na lista deve ser 10%
+
+- **Data:** 12/02/2026
+- **Descrição:** O valor default para o tamanho do campo na visualização de lista deve ser 10% (no formulário é 50%).
+
+### 41. Retirar dropdown do tamanho e permitir digitar número inteiro
+
+- **Data:** 12/02/2026
+- **Descrição:** Retirar o dropdown de seleção de tamanho do campo e permitir que o usuário digite um número inteiro de 0 a 100.
 
 ---
 

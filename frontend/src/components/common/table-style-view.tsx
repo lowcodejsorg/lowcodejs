@@ -135,6 +135,14 @@ export function TableStyleViewDropdown({
             currentStyle === E_TABLE_STYLE.FORUM && (
               <MessageCircle className="size-4" />
             )}
+          {table.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.CARD && (
+              <LayoutPanelLeft className="size-4" />
+            )}
+          {table.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.MOSAIC && (
+              <LayoutDashboard className="size-4" />
+            )}
 
           <span>Exibição</span>
         </Button>

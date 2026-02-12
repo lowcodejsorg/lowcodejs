@@ -24,28 +24,15 @@ import {
   LoaderCircleIcon,
   PencilIcon,
 } from 'lucide-react';
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
-
-const WIDTH_OPTIONS = [
-  { value: '25', label: '25%' },
-  { value: '50', label: '50%' },
-  { value: '75', label: '75%' },
-  { value: '100', label: '100%' },
-];
 
 interface SortableItemProps {
   field: IField;
@@ -145,6 +132,23 @@ function SortableManagementItem({
   const currentWidth = widthKey ? (field[widthKey] ?? 50) : null;
   const isNative = !!field.native;
 
+  const [localWidth, setLocalWidth] = useState<string>(
+    String(currentWidth ?? 0),
+  );
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Sync local state when the field value changes externally (e.g. after API response)
+  useEffect(() => {
+    setLocalWidth(String(currentWidth ?? 0));
+  }, [currentWidth]);
+
+  // Cleanup debounce on unmount
+  useEffect(() => {
+    return (): void => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
+
   return (
     <div
       ref={setNodeRef}
@@ -154,25 +158,23 @@ function SortableManagementItem({
       <span className="text-sm font-medium">{field.name}</span>
       <div className="flex items-center gap-1">
         {widthKey && onWidthChange && (
-          <Select
-            value={String(currentWidth)}
-            onValueChange={(value) => onWidthChange(Number(value))}
+          <Input
+            inputMode="numeric"
+            pattern="[0-9]*"
+            value={localWidth}
+            onChange={(e) => {
+              const raw = e.target.value.replace(/\D/g, '');
+              setLocalWidth(raw);
+              if (raw === '') return;
+              const val = Math.min(100, Math.max(0, Number(raw)));
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              debounceRef.current = setTimeout(() => {
+                onWidthChange(val);
+              }, 500);
+            }}
             disabled={isChangingWidth}
-          >
-            <SelectTrigger className="h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {WIDTH_OPTIONS.map((option) => (
-                <SelectItem
-                  key={option.value}
-                  value={option.value}
-                >
-                  {option.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            className="h-8 w-20"
+          />
         )}
         <Button
           variant="ghost"
@@ -794,7 +796,9 @@ export function FieldManagementList({
         },
       );
 
-      toast.success(`Largura atualizada para ${response[widthKey!]}%`);
+      toast.success(
+        `Largura atualizada para ${response[widthKey!]}${widthKey === 'widthInList' ? 'px' : '%'}`,
+      );
     },
     onError: (error) => {
       console.error(error);

@@ -34,7 +34,7 @@ export const FieldUpdateSchema = z.object({
   required: z.boolean().default(false),
   trashed: z.boolean().default(false),
   widthInForm: z.number().default(50),
-  widthInList: z.number().default(50),
+  widthInList: z.number().default(10),
 });
 
 export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
@@ -61,7 +61,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   required: false,
   trashed: false,
   widthInForm: 50,
-  widthInList: 50,
+  widthInList: 10,
 };
 
 export const UpdateFieldFormFields = withForm({

@@ -194,22 +194,6 @@ interface RowFormFieldsProps {
   tableSlug: string;
 }
 
-// Helper to convert width percentage to grid column span
-function getWidthClass(width: number | null | undefined): string {
-  switch (width) {
-    case 25:
-      return 'col-span-1';
-    case 50:
-      return 'col-span-2';
-    case 75:
-      return 'col-span-3';
-    case 100:
-      return 'col-span-4';
-    default:
-      return 'col-span-2'; // default 50%
-  }
-}
-
 export function RowFormFields({
   form,
   fields,
@@ -217,7 +201,7 @@ export function RowFormFields({
   tableSlug,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
-    <section className="grid grid-cols-4 gap-4 p-2">
+    <section className="flex flex-wrap gap-4 p-2">
       {fields.map((field) => {
         // Skip native fields (_id, creator, createdAt)
         if (field.native) return null;
@@ -233,7 +217,8 @@ export function RowFormFields({
         return (
           <div
             key={field._id}
-            className={getWidthClass(field.widthInForm)}
+            className="min-w-[200px]"
+            style={{ width: `calc(${field.widthInForm ?? 50}% - 1rem)` }}
           >
             <form.AppField
               name={field.slug}

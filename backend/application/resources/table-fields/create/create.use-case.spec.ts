@@ -63,8 +63,8 @@ describe('Table Field Create Use Case', () => {
       group: null,
       multiple: false,
       relationship: null,
-      widthInForm: null,
-      widthInList: null,
+      widthInForm: 50,
+      widthInList: 10,
     });
 
     expect(result.isRight()).toBe(true);

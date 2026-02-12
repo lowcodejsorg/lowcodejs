@@ -88,14 +88,13 @@ export const TableFieldUpdateSchema: FastifySchema = {
         type: 'number',
         nullable: true,
         default: 50,
-        description: 'Field width percentage in forms (25, 50, 75, 100)',
+        description: 'Field width in forms, integer 0-100 (%)',
       },
       widthInList: {
         type: 'number',
         nullable: true,
-        default: 50,
-        description:
-          'Field width percentage in list/grid views (25, 50, 75, 100)',
+        default: 10,
+        description: 'Field width in list/grid views, integer 0-100 (px)',
       },
       locked: {
         type: 'boolean',
@@ -248,12 +247,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
         widthInForm: {
           type: 'number',
           nullable: true,
-          description: 'Field width percentage in forms',
+          description: 'Field width in forms, integer 0-100 (%)',
         },
         widthInList: {
           type: 'number',
           nullable: true,
-          description: 'Field width percentage in list/grid views',
+          description: 'Field width in list/grid views, integer 0-100 (px)',
         },
         locked: { type: 'boolean', description: 'Field is locked' },
         native: { type: 'boolean', description: 'Field is native' },
