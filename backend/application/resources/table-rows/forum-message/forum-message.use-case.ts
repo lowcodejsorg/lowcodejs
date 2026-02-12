@@ -8,6 +8,7 @@ import {
   E_FIELD_TYPE,
   E_TABLE_STYLE,
   type IField,
+  type IRow,
   type ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -121,8 +122,14 @@ export default class ForumMessageUseCase {
 
       await row.set(config.messagesSlug, nextMessages).save();
       await row.populate(populate);
+      const rowJson = row.toJSON({
+        flattenObjectIds: true,
+      }) as unknown as IRow;
 
-      return right(this.toRowJson(row));
+      return right({
+        ...rowJson,
+        _id: row._id?.toString() ?? '',
+      });
     } catch {
       return left(
         HTTPException.InternalServerError(
@@ -244,8 +251,14 @@ export default class ForumMessageUseCase {
 
       await row.set(config.messagesSlug, nextMessages).save();
       await row.populate(populate);
+      const rowJson = row.toJSON({
+        flattenObjectIds: true,
+      }) as unknown as IRow;
 
-      return right(this.toRowJson(row));
+      return right({
+        ...rowJson,
+        _id: row._id?.toString() ?? '',
+      });
     } catch {
       return left(
         HTTPException.InternalServerError(
@@ -334,8 +347,14 @@ export default class ForumMessageUseCase {
       nextMessages.splice(messageIndex, 1);
       await row.set(config.messagesSlug, nextMessages).save();
       await row.populate(populate);
+      const rowJson = row.toJSON({
+        flattenObjectIds: true,
+      }) as unknown as IRow;
 
-      return right(this.toRowJson(row));
+      return right({
+        ...rowJson,
+        _id: row._id?.toString() ?? '',
+      });
     } catch {
       return left(
         HTTPException.InternalServerError(
@@ -482,19 +501,4 @@ export default class ForumMessageUseCase {
     return plainText.length > 0 || attachments.length > 0;
   }
 
-  private toRowJson(
-    row: Record<string, any> & {
-      _id?: { toString: () => string };
-      toJSON: (opts?: {
-        flattenObjectIds?: boolean;
-      }) => Record<string, unknown>;
-    },
-  ): import('@application/core/entity.core').IRow {
-    return {
-      ...row.toJSON({
-        flattenObjectIds: true,
-      }),
-      _id: row._id?.toString() ?? '',
-    };
-  }
 }

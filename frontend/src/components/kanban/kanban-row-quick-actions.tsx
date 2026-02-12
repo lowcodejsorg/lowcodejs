@@ -45,7 +45,7 @@ export function KanbanRowQuickActions({
           variant="outline"
           size="sm"
           onClick={() => setEditTarget('members')}
-          className="cursor-pointer"
+          className="!cursor-pointer"
         >
           <UserPlusIcon className="size-4" />
           <span>Membros</span>
@@ -56,7 +56,7 @@ export function KanbanRowQuickActions({
             variant="outline"
             size="sm"
             onClick={() => setEditTarget('due')}
-            className="cursor-pointer"
+            className="!cursor-pointer"
           >
             <CalendarIcon className="size-4" />
             <span>Data de vencimento</span>
@@ -68,7 +68,7 @@ export function KanbanRowQuickActions({
             variant="outline"
             size="sm"
             onClick={() => setEditTarget('labels')}
-            className="cursor-pointer"
+            className="!cursor-pointer"
           >
             <span>Rótulos</span>
           </Button>
@@ -77,42 +77,52 @@ export function KanbanRowQuickActions({
 
       {editTarget && (
         <form
-          className="mt-4 rounded-md border bg-muted/30 p-4 space-y-3"
+          className="mt-4 rounded-md border bg-muted/30 p-4"
           onSubmit={(event) => {
             event.preventDefault();
             quickForm.handleSubmit();
           }}
         >
-          {editTarget === 'members' && fields.members && (
-            <quickForm.AppField name={fields.members.slug}>
-              {(formField: any) => (
-                <formField.TableRowUserField field={fields.members!} />
+          <div className="flex items-end gap-2">
+            <div className="flex-1 min-w-0">
+              {editTarget === 'members' && fields.members && (
+                <quickForm.AppField name={fields.members.slug}>
+                  {(formField: any) => (
+                    <formField.TableRowUserField field={fields.members!} />
+                  )}
+                </quickForm.AppField>
               )}
-            </quickForm.AppField>
-          )}
-          {editTarget === 'due' && fields.dueDate && (
-            <quickForm.AppField name={fields.dueDate.slug}>
-              {(formField: any) => (
-                <formField.TableRowDateField field={fields.dueDate!} />
+              {editTarget === 'due' && fields.dueDate && (
+                <quickForm.AppField name={fields.dueDate.slug}>
+                  {(formField: any) => (
+                    <formField.TableRowDateField field={fields.dueDate!} />
+                  )}
+                </quickForm.AppField>
               )}
-            </quickForm.AppField>
-          )}
-          {editTarget === 'labels' && fields.labels && (
-            <quickForm.AppField name={fields.labels.slug}>
-              {(formField: any) => (
-                <formField.TableRowDropdownField field={fields.labels!} />
+              {editTarget === 'labels' && fields.labels && (
+                <quickForm.AppField name={fields.labels.slug}>
+                  {(formField: any) => (
+                    <formField.TableRowDropdownField field={fields.labels!} />
+                  )}
+                </quickForm.AppField>
               )}
-            </quickForm.AppField>
-          )}
-          <div className="flex gap-2 justify-end">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setEditTarget(null)}
-            >
-              Cancelar
-            </Button>
-            <Button type="submit">Salvar</Button>
+            </div>
+            <div className="flex gap-2 shrink-0 pb-0.5">
+              <Button
+                type="button"
+                variant="ghost"
+                className="cursor-pointer"
+                onClick={() => setEditTarget(null)}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                className="cursor-pointer"
+              >
+                Salvar
+              </Button>
+            </div>
           </div>
         </form>
       )}

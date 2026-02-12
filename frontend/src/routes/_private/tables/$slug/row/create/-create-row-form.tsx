@@ -210,9 +210,9 @@ export function CreateRowForm({
 
     if (!targetField) return;
 
-    const value = targetField.multiple ? [categoryId] : categoryId;
-
-    form.setFieldValue(categorySlug, value);
+    // CATEGORY form value is always an array (single or multiple),
+    // and payload normalization handles limiting when multiple=false.
+    form.setFieldValue(categorySlug, [categoryId]);
     setPrefillApplied(true);
   }, [fields, categoryId, categorySlug, form, prefillApplied]);
 
