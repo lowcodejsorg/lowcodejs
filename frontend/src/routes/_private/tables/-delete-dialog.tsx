@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { LoaderCircleIcon, Trash2Icon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -20,12 +20,13 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
 import { QueryClient } from '@/lib/query-client';
 
-interface TableDeleteDialogProps {
+type TableDeleteDialogProps = React.ComponentProps<typeof DialogTrigger> & {
   slug: string;
-}
+};
 
 export function TableDeleteDialog({
   slug,
+  ...props
 }: TableDeleteDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
@@ -90,15 +91,7 @@ export function TableDeleteDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="destructive"
-          size="sm"
-        >
-          <Trash2Icon className="size-4" />
-          <span>Excluir permanentemente</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger {...props} />
       <DialogContent className="py-4 px-6">
         <DialogHeader>
           <DialogTitle>Excluir tabela permanentemente</DialogTitle>

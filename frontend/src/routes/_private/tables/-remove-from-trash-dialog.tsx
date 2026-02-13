@@ -1,7 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { LoaderCircleIcon, Trash2Icon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -21,19 +20,21 @@ import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 
-interface TableSendToTrashDialogProps {
+type TableRemoveFromTrashDialogProps = React.ComponentProps<
+  typeof DialogTrigger
+> & {
   slug: string;
-}
+};
 
-export function TableSendToTrashDialog({
+export function TableRemoveFromTrashDialog({
   slug,
-}: TableSendToTrashDialogProps): React.JSX.Element {
+  ...props
+}: TableRemoveFromTrashDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
-  const navigate = useNavigate();
 
-  const sendToTrash = useMutation({
+  const removeFromTrash = useMutation({
     mutationFn: async function () {
-      const route = '/tables/'.concat(slug).concat('/trash');
+      const route = '/tables/'.concat(slug).concat('/restore');
       const response = await API.patch<ITable>(route);
       return response.data;
     },
@@ -48,17 +49,11 @@ export function TableSendToTrashDialog({
         queryKey: queryKeys.tables.lists(),
       });
 
-      toast('Tabela enviada para lixeira!', {
+      toast('Tabela restaurada!', {
         className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi movida para a lixeira',
+        description: 'A tabela foi restaurada da lixeira',
         descriptionClassName: '!text-white',
         closeButton: true,
-      });
-
-      navigate({
-        to: '/tables',
-        replace: true,
-        search: { page: 1, perPage: 50 },
       });
     },
     onError(error) {
@@ -73,8 +68,8 @@ export function TableSendToTrashDialog({
           toast.error(data?.message ?? 'Tabela não encontrada');
         }
 
-        if (data?.code === 409 && data?.cause === 'ALREADY_TRASHED') {
-          toast.error(data?.message ?? 'Tabela já está na lixeira');
+        if (data?.code === 409 && data?.cause === 'NOT_TRASHED') {
+          toast.error(data?.message ?? 'Tabela não está na lixeira');
         }
 
         if (data?.code === 500) {
@@ -92,20 +87,12 @@ export function TableSendToTrashDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-        >
-          <Trash2Icon className="size-4" />
-          <span>Enviar para lixeira</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger {...props} />
       <DialogContent className="py-4 px-6">
         <DialogHeader>
-          <DialogTitle>Enviar tabela para a lixeira</DialogTitle>
+          <DialogTitle>Restaurar tabela da lixeira</DialogTitle>
           <DialogDescription>
-            Ao confirmar essa ação, a tabela será enviada para a lixeira
+            Ao confirmar essa ação, a tabela será restaurada da lixeira
           </DialogDescription>
         </DialogHeader>
         <section>
@@ -118,15 +105,17 @@ export function TableSendToTrashDialog({
               </DialogClose>
               <Button
                 type="button"
-                disabled={sendToTrash.status === 'pending'}
+                disabled={removeFromTrash.status === 'pending'}
                 onClick={() => {
-                  sendToTrash.mutateAsync();
+                  removeFromTrash.mutateAsync();
                 }}
               >
-                {sendToTrash.status === 'pending' && (
+                {removeFromTrash.status === 'pending' && (
                   <LoaderCircleIcon className="size-4 animate-spin" />
                 )}
-                {!(sendToTrash.status === 'pending') && <span>Confirmar</span>}
+                {!(removeFromTrash.status === 'pending') && (
+                  <span>Confirmar</span>
+                )}
               </Button>
             </DialogFooter>
           </form>

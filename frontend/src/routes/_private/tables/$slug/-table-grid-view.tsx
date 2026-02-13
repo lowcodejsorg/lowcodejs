@@ -166,9 +166,7 @@ export function TableGridView({
 
   const canCreateRow = permission.can('CREATE_ROW');
 
-  const visibleHeaders = headers
-    .filter(HeaderFilter)
-    .sort(HeaderSorter(order));
+  const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
   const thumbField = visibleHeaders.find((f) => f.type === E_FIELD_TYPE.FILE);
   const filteredHeaders = visibleHeaders.filter(

@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { ArchiveRestoreIcon, LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -20,18 +21,22 @@ import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 
-interface TableRemoveFromTrashDialogProps {
+type TableSendToTrashDialogProps = React.ComponentProps<
+  typeof DialogTrigger
+> & {
   slug: string;
-}
+};
 
-export function TableRemoveFromTrashDialog({
+export function TableSendToTrashDialog({
   slug,
-}: TableRemoveFromTrashDialogProps): React.JSX.Element {
+  ...props
+}: TableSendToTrashDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
-  const removeFromTrash = useMutation({
+  const sendToTrash = useMutation({
     mutationFn: async function () {
-      const route = '/tables/'.concat(slug).concat('/restore');
+      const route = '/tables/'.concat(slug).concat('/trash');
       const response = await API.patch<ITable>(route);
       return response.data;
     },
@@ -46,11 +51,17 @@ export function TableRemoveFromTrashDialog({
         queryKey: queryKeys.tables.lists(),
       });
 
-      toast('Tabela restaurada!', {
+      toast('Tabela enviada para lixeira!', {
         className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi restaurada da lixeira',
+        description: 'A tabela foi movida para a lixeira',
         descriptionClassName: '!text-white',
         closeButton: true,
+      });
+
+      navigate({
+        to: '/tables',
+        replace: true,
+        search: { page: 1, perPage: 50 },
       });
     },
     onError(error) {
@@ -65,8 +76,8 @@ export function TableRemoveFromTrashDialog({
           toast.error(data?.message ?? 'Tabela não encontrada');
         }
 
-        if (data?.code === 409 && data?.cause === 'NOT_TRASHED') {
-          toast.error(data?.message ?? 'Tabela não está na lixeira');
+        if (data?.code === 409 && data?.cause === 'ALREADY_TRASHED') {
+          toast.error(data?.message ?? 'Tabela já está na lixeira');
         }
 
         if (data?.code === 500) {
@@ -84,20 +95,12 @@ export function TableRemoveFromTrashDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-        >
-          <ArchiveRestoreIcon className="size-4" />
-          <span>Restaurar da lixeira</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger {...props} />
       <DialogContent className="py-4 px-6">
         <DialogHeader>
-          <DialogTitle>Restaurar tabela da lixeira</DialogTitle>
+          <DialogTitle>Enviar tabela para a lixeira</DialogTitle>
           <DialogDescription>
-            Ao confirmar essa ação, a tabela será restaurada da lixeira
+            Ao confirmar essa ação, a tabela será enviada para a lixeira
           </DialogDescription>
         </DialogHeader>
         <section>
@@ -110,17 +113,15 @@ export function TableRemoveFromTrashDialog({
               </DialogClose>
               <Button
                 type="button"
-                disabled={removeFromTrash.status === 'pending'}
+                disabled={sendToTrash.status === 'pending'}
                 onClick={() => {
-                  removeFromTrash.mutateAsync();
+                  sendToTrash.mutateAsync();
                 }}
               >
-                {removeFromTrash.status === 'pending' && (
+                {sendToTrash.status === 'pending' && (
                   <LoaderCircleIcon className="size-4 animate-spin" />
                 )}
-                {!(removeFromTrash.status === 'pending') && (
-                  <span>Confirmar</span>
-                )}
+                {!(sendToTrash.status === 'pending') && <span>Confirmar</span>}
               </Button>
             </DialogFooter>
           </form>

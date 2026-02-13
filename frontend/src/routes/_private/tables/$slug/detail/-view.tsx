@@ -1,11 +1,6 @@
 import React from 'react';
 
-import { TableDeleteDialog } from './-delete-dialog';
-import { TableRemoveFromTrashDialog } from './-remove-from-trash-dialog';
-import { TableSendToTrashDialog } from './-send-to-trash-dialog';
-
 import { Badge } from '@/components/ui/badge';
-import { useTablePermission } from '@/hooks/use-table-permission';
 import {
   TABLE_COLLABORATION_OPTIONS,
   TABLE_STYLE_OPTIONS,
@@ -18,7 +13,7 @@ interface TableViewProps {
 }
 
 export function TableView({ data }: TableViewProps): React.JSX.Element {
-  const permission = useTablePermission(data);
+  // const permission = useTablePermission(data);
   const styleLabel =
     TABLE_STYLE_OPTIONS.find((opt) => opt.value === data.style)?.label ||
     data.style;
@@ -33,7 +28,7 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
 
   return (
     <React.Fragment>
-      <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
+      {/* <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
         {permission.can('UPDATE_TABLE') && !data.trashed && (
           <TableSendToTrashDialog slug={data.slug} />
         )}
@@ -43,7 +38,7 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
         {permission.can('REMOVE_TABLE') && data.trashed && (
           <TableDeleteDialog slug={data.slug} />
         )}
-      </div>
+      </div> */}
 
       <section className="space-y-4 p-2">
         {/* Logo */}
