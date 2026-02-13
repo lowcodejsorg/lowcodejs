@@ -1,4 +1,4 @@
-import { useRouter } from '@tanstack/react-router';
+import { useLocation, useRouter } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -60,6 +60,10 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
+  const location = useLocation();
+
+  console.log(location);
+
   const tableDeleteButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const tableRemoveFromTrashButtonRef = React.useRef<HTMLButtonElement | null>(
     null,
@@ -70,21 +74,25 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
 
   const permission = useTablePermission(table);
 
+  function navigateToTable(): void {
+    sidebar.setOpen(false);
+    router.navigate({
+      to: '/tables/$slug',
+      params: {
+        slug: table.slug,
+      },
+    });
+  }
+
   return (
     <TableRow
       key={table._id}
       className="cursor-pointer"
-      // onClick={() => {
-      //   sidebar.setOpen(false);
-      //   router.navigate({
-      //     to: '/tables/$slug',
-      //     params: {
-      //       slug: table.slug,
-      //     },
-      //   });
-      // }}
     >
-      <TableCell className="flex items-center space-x-2">
+      <TableCell
+        className="flex items-center space-x-2"
+        onClick={navigateToTable}
+      >
         <Avatar className="size-10 rounded-md border">
           <AvatarImage
             src={table.logo?.url}
@@ -98,17 +106,20 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
 
         <span className="truncate font-medium">{table.name}</span>
       </TableCell>
-      <TableCell>
+      <TableCell onClick={navigateToTable}>
         <code className="text-sm text-muted-foreground">/{table.slug}</code>
       </TableCell>
 
-      <TableCell>
+      <TableCell onClick={navigateToTable}>
         <Badge variant={VISIBILITY_CONFIG[table.visibility].variant}>
           {VISIBILITY_CONFIG[table.visibility].label}
         </Badge>
       </TableCell>
 
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell
+        onClick={navigateToTable}
+        className="text-sm text-muted-foreground"
+      >
         {table.createdAt
           ? format(
               new Date(table.createdAt),
@@ -137,7 +148,7 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
             <DropdownMenuItem
               className={cn(
                 'inline-flex space-x-1 w-full cursor-pointer',
-                table.trashed && 'hidden',
+                !table.trashed && 'hidden',
                 !permission.can('REMOVE_TABLE') && 'hidden',
               )}
               onClick={() => {
@@ -165,7 +176,7 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
             <DropdownMenuItem
               className={cn(
                 'inline-flex space-x-1 w-full cursor-pointer',
-                !table.trashed && 'hidden',
+                table.trashed && 'hidden',
                 !permission.can('REMOVE_TABLE') && 'hidden',
               )}
               onClick={() => {
