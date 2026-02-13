@@ -26,6 +26,7 @@ interface ForumComposerProps {
   onSend: () => void;
   isEditing: boolean;
   onCancelEdit: () => void;
+  onUploadingChange?: (isUploading: boolean) => void;
 }
 
 export function ForumComposer({
@@ -45,7 +46,17 @@ export function ForumComposer({
   onSend,
   isEditing,
   onCancelEdit,
+  onUploadingChange,
 }: ForumComposerProps): React.JSX.Element {
+  const [isFileUploading, setIsFileUploading] = React.useState(false);
+
+  const handleUploadingChange = React.useCallback(
+    (uploading: boolean) => {
+      setIsFileUploading(uploading);
+      onUploadingChange?.(uploading);
+    },
+    [onUploadingChange],
+  );
   return (
     <div
       className={cn(
@@ -126,6 +137,7 @@ export function ForumComposer({
           value={composerFiles}
           onValueChange={onFilesChange}
           onStorageChange={onStoragesChange}
+          onUploadingChange={handleUploadingChange}
           maxFiles={5}
           compact={true}
           showHint={composerLayout === 'side'}
@@ -134,6 +146,7 @@ export function ForumComposer({
           type="button"
           onClick={onSend}
           className="cursor-pointer w-full"
+          disabled={isFileUploading}
         >
           <SendIcon className="size-4" />
           {isEditing ? 'Salvar' : 'Enviar'}

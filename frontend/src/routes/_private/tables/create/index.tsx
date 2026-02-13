@@ -14,6 +14,10 @@ import {
 } from './-create-form';
 
 import { AccessDenied } from '@/components/common/access-denied';
+import {
+  UploadingProvider,
+  useIsUploading,
+} from '@/components/common/uploading-context';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -37,10 +41,19 @@ function CreateFormSkeleton(): React.JSX.Element {
 }
 
 function RouteComponent(): React.JSX.Element {
+  return (
+    <UploadingProvider>
+      <RouteComponentContent />
+    </UploadingProvider>
+  );
+}
+
+function RouteComponentContent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate();
   const permission = usePermission();
+  const isUploading = useIsUploading();
 
   function setFieldError(field: 'name', message: string): void {
     form.setFieldMeta(field, (prev) => ({
@@ -192,7 +205,7 @@ function RouteComponent(): React.JSX.Element {
                 <Button
                   type="button"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isUploading}
                   onClick={() => form.handleSubmit()}
                 >
                   {isSubmitting && <Spinner />}

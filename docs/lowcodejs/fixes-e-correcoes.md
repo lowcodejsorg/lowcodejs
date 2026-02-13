@@ -2,7 +2,7 @@
 
 > Documento de rastreamento de bugs, correções, melhorias e features pendentes da plataforma LowCodeJS.
 >
-> **Última atualização:** 12/02/2026
+> **Última atualização:** 13/02/2026
 
 ---
 
@@ -25,11 +25,11 @@
 |---|:---:|
 | ❌ Erro | 9 |
 | 🔧 Ajuste | 4 |
-| 🔄 Correção e retestar | 5 |
-| 🆕 Melhoria | 11 |
+| 🔄 Correção e retestar | 9 |
+| 🆕 Melhoria | 10 |
 | ✅ Passou no teste | 12 |
 | 🚫 Descartado | 0 |
-| **Total** | **41** |
+| **Total** | **44** |
 
 ---
 
@@ -73,6 +73,8 @@
 | 37 | Melhorar mensagem ao salvar campo com mesmo nome | 🔧 Ajuste |
 | 38 | Não está salvando o arquivo do campo arquivo | 🔄 Correção e retestar |
 | 39 | Esconder campos nativos no gerenciar campos | 🔄 Correção e retestar |
+| 42 | Validação não desaparece mesmo depois de atender o requisito | ❌ Erro |
+| 43 | Campo dropdown é salvo sem opções | ❌ Erro |
 
 ### 2. Campos nativos aparecendo e com controle de visibilidade/ordenação
 
@@ -205,6 +207,16 @@
 - **Arquivos relacionados:**
   - `frontend/src/routes/_private/tables/$slug/-table-configuration.tsx`
 
+### 42. Validação não desaparece mesmo depois de atender o requisito
+
+- **Data:** 13/02/2026
+- **Descrição:** Após o campo obrigatório ser preenchido corretamente, a mensagem de validação permanece visível e não desaparece automaticamente.
+
+### 43. Campo dropdown é salvo sem opções
+
+- **Data:** 13/02/2026
+- **Descrição:** É possível salvar um campo do tipo dropdown sem nenhuma opção configurada, o que não deveria ser permitido.
+
 ---
 
 ## Autenticação & Login
@@ -244,7 +256,7 @@
 | 15 | Edição do registro em branco | ❌ Erro |
 | 16 | Erro ao deletar registro | ❌ Erro |
 | 17 | Ajustar modelo de cards para campos essenciais | 🔧 Ajuste |
-| 18 | Botão para Master excluir definitivamente tabelas | 🆕 Melhoria |
+| 18 | Botão para Master excluir definitivamente tabelas | 🔄 Correção e retestar |
 | 19 | Restrição na criação de tabela Kanban | 🔧 Ajuste |
 | 20 | Relacionamento bidirecional | ✅ Passou no teste |
 | 21 | Erro ao salvar método dentro de tabela | ✅ Passou no teste |
@@ -288,6 +300,7 @@
 
 - **Data:** 12/02/2026
 - **Descrição:** Implementar botão exclusivo para usuário Master que permita excluir definitivamente tabelas do sistema.
+- **Report:** [report][12 fev 2026] Jhollyfer: Botões de ações adicionados na tabela. [13 fev 2026] Jhollyfer: Botões movidos para a listagem principal.
 
 ### 19. Restrição na criação de tabela Kanban
 
@@ -373,8 +386,9 @@
 | 27 | Colocar filtros abrindo em barra na esquerda | 🆕 Melhoria |
 | 28 | Perfil do usuario logado não aparece na listagem | ❌ Erro |
 | 29 | Ajustes no design conforme especificação | ✅ Passou no teste |
-| 40 | O valor default para tamanho do campo na lista deve ser 10% | ❌ Erro |
-| 41 | Retirar dropdown do tamanho e permitir digitar número inteiro | ❌ Erro |
+| 40 | O valor default para tamanho do campo na lista deve ser 10% | 🔄 Correção e retestar |
+| 41 | Retirar dropdown do tamanho e permitir digitar número inteiro | 🔄 Correção e retestar |
+| 44 | No layout galeria, mostrar imagem acima dos campos e 2 campos por linha | 🔄 Correção e retestar |
 
 ### 25. Ocultar lixeira em listas públicas
 
@@ -423,11 +437,19 @@
 
 - **Data:** 12/02/2026
 - **Descrição:** O valor default para o tamanho do campo na visualização de lista deve ser 10% (no formulário é 50%).
+- **Report:** [report][12 fev 2026] Jhollyfer: Definido valor padrão largura célula 10, formulário 50.
 
 ### 41. Retirar dropdown do tamanho e permitir digitar número inteiro
 
 - **Data:** 12/02/2026
 - **Descrição:** Retirar o dropdown de seleção de tamanho do campo e permitir que o usuário digite um número inteiro de 0 a 100.
+- **Report:** [report][12 fev 2026] Jhollyfer: Adicionado campo para aceitar valores de 0 a 100.
+
+### 44. No layout galeria, mostrar imagem acima dos campos e 2 campos por linha
+
+- **Data:** 13/02/2026
+- **Descrição:** No layout galeria/grid, a imagem deve ser exibida acima dos campos e os campos devem ser organizados em 2 colunas por linha.
+- **Report:** [report][13 fev 2026] Jhollyfer: Adicionado destaque da imagem com campos abaixo separado em duas colunas.
 
 ---
 
