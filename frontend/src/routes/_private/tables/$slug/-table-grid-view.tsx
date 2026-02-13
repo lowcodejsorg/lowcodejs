@@ -19,6 +19,7 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
+import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
 
 interface TableGridViewProps {
   data: Array<IRow>;
@@ -26,26 +27,18 @@ interface TableGridViewProps {
   order: Array<string>;
 }
 
-function HeaderFilter(field: IField): boolean {
-  return field.showInList && !field.trashed;
-}
-
-function HeaderSorter(order: Array<string>) {
-  return function (a: IField, b: IField): number {
-    return order.indexOf(a._id) - order.indexOf(b._id);
-  };
-}
-
 interface RenderGridCellProps {
   field: IField;
   row: IRow;
   tableSlug: string;
+  isThumb?: boolean;
 }
 
 function RenderGridCell({
   field,
   row,
   tableSlug,
+  isThumb = false,
 }: RenderGridCellProps): React.JSX.Element {
   if (!(field.slug in row)) {
     return (
@@ -107,7 +100,8 @@ function RenderGridCell({
           <TableRowFileCell
             field={field}
             row={row}
-            isGallery
+            isGallery={!isThumb}
+            isCardOrMosaic={isThumb}
           />
         );
       case E_FIELD_TYPE.FIELD_GROUP:
@@ -172,9 +166,14 @@ export function TableGridView({
 
   const canCreateRow = permission.can('CREATE_ROW');
 
-  const filteredHeaders = headers
+  const visibleHeaders = headers
     .filter(HeaderFilter)
     .sort(HeaderSorter(order));
+
+  const thumbField = visibleHeaders.find((f) => f.type === E_FIELD_TYPE.FILE);
+  const filteredHeaders = visibleHeaders.filter(
+    (f) => f._id !== thumbField?._id,
+  );
 
   return (
     <div className="p-4">
@@ -184,8 +183,22 @@ export function TableGridView({
             key={row._id}
             className="overflow-hidden p-0"
           >
+            <div className="w-full bg-muted aspect-4/3 overflow-hidden">
+              {thumbField ? (
+                <RenderGridCell
+                  field={thumbField}
+                  row={row}
+                  tableSlug={slug}
+                  isThumb
+                />
+              ) : (
+                <div className="w-full aspect-4/3 flex items-center justify-center text-xs text-muted-foreground">
+                  sem imagem
+                </div>
+              )}
+            </div>
             <CardContent className="p-3">
-              <div className="grid grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 gap-3">
                 {filteredHeaders.map((field) => (
                   <div key={field._id}>
                     <RenderGridCell

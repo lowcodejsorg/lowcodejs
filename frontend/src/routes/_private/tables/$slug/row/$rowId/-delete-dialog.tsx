@@ -36,10 +36,7 @@ export function RowDeleteDialog({
 
   const deleteRow = useMutation({
     mutationFn: async function () {
-      const route = '/tables/'
-        .concat(slug)
-        .concat('/rows/')
-        .concat(rowId);
+      const route = '/tables/'.concat(slug).concat('/rows/').concat(rowId);
       await API.delete(route);
     },
     onSuccess() {
