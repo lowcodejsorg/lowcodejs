@@ -112,6 +112,12 @@ type UpdateRowDefaultValue =
 // Valor de UM campo individual (inclui FIELD_GROUP)
 type FieldValue = RowFieldValue | Array<Record<string, RowFieldValue>> | null;
 
+function toArray<T>(value: unknown): Array<T> {
+  if (Array.isArray(value)) return value as Array<T>;
+  if (value === null || value === undefined) return [];
+  return [value as T];
+}
+
 export function buildUpdateRowDefaultValues(
   data: IRow,
   fields: Array<IField>,
@@ -138,7 +144,7 @@ export function buildUpdateRowDefaultValues(
         else defaults[field.slug] = field.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DROPDOWN: {
-        const options = Array.from<string>(value);
+        const options = toArray<string>(value);
         defaults[field.slug] = options;
         break;
       }
@@ -146,7 +152,7 @@ export function buildUpdateRowDefaultValues(
         defaults[field.slug] = value ?? '';
         break;
       case E_FIELD_TYPE.FILE: {
-        const storages = Array.from<IStorage>(value);
+        const storages = toArray<IStorage>(value);
 
         defaults[field.slug] = {
           files: [],
@@ -155,7 +161,7 @@ export function buildUpdateRowDefaultValues(
         break;
       }
       case E_FIELD_TYPE.RELATIONSHIP: {
-        const rows = Array.from<IRow>(value);
+        const rows = toArray<IRow>(value);
         const relConfig = field.relationship;
         const labelField = relConfig?.field.slug ?? '_id';
 
@@ -166,15 +172,19 @@ export function buildUpdateRowDefaultValues(
         break;
       }
       case E_FIELD_TYPE.CATEGORY: {
-        const options = Array.from<string>(value);
+        const options = toArray<string>(value);
         defaults[field.slug] = options;
         break;
       }
       case E_FIELD_TYPE.USER: {
-        const users = Array.from<IUser>(value);
+        const users = toArray<IUser>(value);
         defaults[field.slug] = users.map((user) => ({
-          value: user._id,
-          label: user.name,
+          value:
+            typeof user === 'object' && user !== null ? user._id : String(user),
+          label:
+            typeof user === 'object' && user !== null
+              ? user.name
+              : String(user),
         }));
         break;
       }

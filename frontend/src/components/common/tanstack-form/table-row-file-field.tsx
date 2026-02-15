@@ -38,7 +38,14 @@ export function TableRowFileField({
     formField.state.meta.isDirty && !formField.state.meta.isValid;
   const isRequired = field.required;
 
-  const value = formField.state.value;
+  const rawValue = formField.state.value;
+  const value: FileValue =
+    rawValue &&
+    typeof rawValue === 'object' &&
+    'files' in rawValue &&
+    'storages' in rawValue
+      ? rawValue
+      : { files: [], storages: [] };
 
   const [isLoadingFiles, setIsLoadingFiles] = React.useState(false);
   const [initialStorages] = React.useState<Array<IStorage>>(

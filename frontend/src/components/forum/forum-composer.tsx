@@ -20,6 +20,7 @@ interface ForumComposerProps {
   onRemoveStorage: (storageId: string) => void;
   composerMentions: Array<string>;
   onMentionsChange: (value: Array<string>) => void;
+  onMentionUsersChange?: (users: Array<IUser>) => void;
   composerFiles: Array<File>;
   onFilesChange: (value: Array<File>) => void;
   onStoragesChange: (storages: Array<IStorage>) => void;
@@ -40,6 +41,7 @@ export function ForumComposer({
   onRemoveStorage,
   composerMentions,
   onMentionsChange,
+  onMentionUsersChange,
   composerFiles,
   onFilesChange,
   onStoragesChange,
@@ -131,6 +133,7 @@ export function ForumComposer({
           <ForumUserMultiSelect
             value={composerMentions}
             onChange={onMentionsChange}
+            onSelectedUsersChange={onMentionUsersChange}
           />
         </div>
         <FileUploadWithStorage

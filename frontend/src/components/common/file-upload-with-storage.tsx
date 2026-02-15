@@ -26,6 +26,7 @@ interface FileUploadWithStorageProps {
   value: Array<File>;
   onValueChange: (files: Array<File>) => void;
   onStorageChange: (storages: Array<IStorage>) => void;
+  initialStorages?: Array<IStorage>;
   onUploadingChange?: (isUploading: boolean) => void;
   accept?: string;
   maxFiles?: number;
@@ -38,10 +39,20 @@ interface FileUploadWithStorageProps {
   showHint?: boolean;
 }
 
+function dedupeStorages(storages: Array<IStorage>): Array<IStorage> {
+  const map = new Map<string, IStorage>();
+  storages.forEach((storage) => {
+    if (!storage?._id) return;
+    if (!map.has(storage._id)) map.set(storage._id, storage);
+  });
+  return Array.from(map.values());
+}
+
 export function FileUploadWithStorage({
   value,
   onValueChange,
   onStorageChange,
+  initialStorages = [],
   onUploadingChange,
   accept,
   maxFiles = 1,
@@ -57,6 +68,7 @@ export function FileUploadWithStorage({
     new Map(),
   );
   const [isProcessing, setIsProcessing] = React.useState(false);
+  const seededInitialStoragesRef = React.useRef(false);
 
   const upload = useMutation({
     mutationFn: async function (files: Array<File>) {
@@ -98,11 +110,11 @@ export function FileUploadWithStorage({
           }
         }
 
+        // Keep existing storages and append new uploaded files.
+        onStorageChange(dedupeStorages(Array.from(newStorageFiles.values())));
+
         return newStorageFiles;
       });
-
-      // Retornar objetos IStorage completos
-      onStorageChange(response);
     },
   });
 
@@ -165,7 +177,7 @@ export function FileUploadWithStorage({
       const remainingStorages = Array.from(storageFiles.values()).filter(
         (storage) => storage._id !== deletedStorage._id,
       );
-      onStorageChange(remainingStorages);
+      onStorageChange(dedupeStorages(remainingStorages));
     },
   });
 
@@ -192,6 +204,30 @@ export function FileUploadWithStorage({
   React.useEffect(() => {
     onUploadingChange?.(isPending);
   }, [isPending, onUploadingChange]);
+
+  React.useEffect(() => {
+    if (seededInitialStoragesRef.current) return;
+    if (initialStorages.length === 0 || value.length === 0) return;
+
+    setStorageFiles((prevStorageFiles) => {
+      const nextStorageFiles = new Map(prevStorageFiles);
+      const uploadedFiles = value.filter(
+        (file) =>
+          'isUploaded' in file &&
+          (file as File & { isUploaded?: boolean }).isUploaded,
+      );
+
+      initialStorages.forEach((storage, index) => {
+        const file = uploadedFiles[index];
+        if (!file) return;
+        if (nextStorageFiles.has(file)) return;
+        nextStorageFiles.set(file, storage);
+      });
+
+      return nextStorageFiles;
+    });
+    seededInitialStoragesRef.current = true;
+  }, [initialStorages, value]);
 
   const onUpload: NonNullable<FileUploadProps['onUpload']> = React.useCallback(
     async (files, { onProgress, onSuccess, onError }) => {

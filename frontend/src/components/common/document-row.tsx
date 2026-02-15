@@ -1,5 +1,5 @@
 import { useParams, useRouter } from '@tanstack/react-router';
-import { PencilIcon, PlusIcon } from 'lucide-react';
+import { PencilIcon } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../ui/button';
@@ -51,35 +51,36 @@ export function DocumentRow({
     >
       <div className="space-y-4">
         {showHeading && leafLabel ? (
-          <DocumentHeadingRow
-            id={`sec-${leafId}`}
-            level={headingLevel ?? 2}
-            // icon={leafIcon}
-            actions={
-              permission.can('CREATE_ROW') && leafId ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  className="p-1 cursor-pointer"
-                  aria-label="Adicionar registro nesta seção"
-                  onClick={() => {
-                    router.navigate({
-                      to: '/tables/$slug/row/create',
-                      params: { slug },
-                      search: {
-                        categoryId: leafId,
-                        categorySlug,
-                      },
-                    });
-                  }}
-                >
-                  <PlusIcon className="size-4" />
-                </Button>
-              ) : null
-            }
-          >
-            {leafLabel}
-          </DocumentHeadingRow>
+          <div className="space-y-2">
+            <DocumentHeadingRow
+              id={`sec-${leafId}`}
+              level={headingLevel ?? 2}
+              // icon={leafIcon}
+            >
+              {leafLabel}
+            </DocumentHeadingRow>
+            {permission.can('CREATE_ROW') && leafId ? (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 gap-1 px-2 cursor-pointer opacity-60 hover:opacity-100"
+                aria-label="Adicionar registro nesta seção"
+                onClick={() => {
+                  router.navigate({
+                    to: '/tables/$slug/row/create',
+                    params: { slug },
+                    search: {
+                      categoryId: leafId,
+                      categorySlug,
+                    },
+                  });
+                }}
+              >
+                <span>Adicionar conteúdo</span>
+              </Button>
+            ) : null}
+          </div>
         ) : null}
         <div className="relative pr-8">
           {permission.can('UPDATE_ROW') && (

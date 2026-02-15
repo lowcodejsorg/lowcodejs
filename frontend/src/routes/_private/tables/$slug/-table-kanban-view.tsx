@@ -40,6 +40,7 @@ import type { IField, IRow, ITable } from '@/lib/interfaces';
 import {
   ORDER_FIELD_NAME,
   ORDER_FIELD_SLUG,
+  TEMPLATE_FIELD_SLUGS,
   getFieldBySlug,
   getFirstFieldByType,
   normalizeRowValue,
@@ -79,6 +80,7 @@ export function TableKanbanView({
   const [editingColumnColor, setEditingColumnColor] = React.useState<
     string | null
   >(null);
+  const startDateEnsureAttemptedRef = React.useRef(false);
 
   const fields = React.useMemo<FieldMap>(() => {
     const listField =
@@ -91,6 +93,7 @@ export function TableKanbanView({
         getFirstFieldByType(headers, E_FIELD_TYPE.TEXT_SHORT),
       description: getFieldBySlug(headers, 'descricao', E_FIELD_TYPE.TEXT_LONG),
       members: getFieldBySlug(headers, 'membros', E_FIELD_TYPE.USER),
+      startDate: getFieldBySlug(headers, 'data-de-inicio', E_FIELD_TYPE.DATE),
       dueDate: getFieldBySlug(headers, 'data-de-vencimento', E_FIELD_TYPE.DATE),
       progress: getFieldBySlug(
         headers,
@@ -98,7 +101,11 @@ export function TableKanbanView({
         E_FIELD_TYPE.TEXT_SHORT,
       ),
       list: listField,
-      labels: getFieldBySlug(headers, 'etiquetas', E_FIELD_TYPE.DROPDOWN),
+      // Hide labels until dedicated "etiqueta" field type is available.
+      labels: undefined,
+      attachments:
+        getFieldBySlug(headers, 'anexos', E_FIELD_TYPE.FIELD_GROUP) ||
+        getFieldBySlug(headers, 'anexo', E_FIELD_TYPE.FILE),
       tasks: getFieldBySlug(headers, 'tarefas', E_FIELD_TYPE.FIELD_GROUP),
       comments: getFieldBySlug(
         headers,
@@ -155,6 +162,17 @@ export function TableKanbanView({
     () => headers.filter((field) => !field.trashed && !field.native),
     [headers],
   );
+  const createDialogExtraFields = React.useMemo(() => {
+    return table.fields.filter(
+      (field) =>
+        !field.trashed &&
+        !field.native &&
+        !TEMPLATE_FIELD_SLUGS.has(field.slug) &&
+        field.slug !== fields.attachments?.slug &&
+        field.slug !== ORDER_FIELD_SLUG &&
+        ![E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION].includes(field.type),
+    );
+  }, [fields, table.fields]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -366,6 +384,58 @@ export function TableKanbanView({
       });
     },
   });
+
+  React.useEffect(() => {
+    if (fields.startDate) return;
+    if (startDateEnsureAttemptedRef.current) return;
+    startDateEnsureAttemptedRef.current = true;
+
+    void API.post<IField>('/tables/'.concat(tableSlug).concat('/fields'), {
+      name: 'Data de início',
+      type: E_FIELD_TYPE.DATE,
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.DD_MM_YYYY,
+      showInFilter: true,
+      showInForm: true,
+      showInDetail: true,
+      showInList: true,
+      defaultValue: null,
+      locked: true,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+    })
+      .then((createdField) => {
+        queryClient.setQueryData<ITable>(
+          queryKeys.tables.detail(tableSlug),
+          (old) => {
+            if (!old) return old;
+            if (old.fields.some((field) => field._id === createdField.data._id))
+              return old;
+            return {
+              ...old,
+              fields: [...old.fields, createdField.data],
+            };
+          },
+        );
+        toast('Campo Data de início criado', {
+          className: '!bg-green-600 !text-white !border-green-600',
+          description: 'Kanban atualizado com o novo campo de início',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      })
+      .catch(() => {
+        toast('Erro ao criar Data de início', {
+          className: '!bg-destructive !text-white !border-destructive',
+          description: 'Nao foi possivel adicionar o campo no Kanban',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      });
+  }, [fields.startDate, queryClient, tableSlug]);
 
   const createForm = useAppForm({
     defaultValues: buildDefaultValues(activeFields),
@@ -844,6 +914,8 @@ export function TableKanbanView({
             }}
             createForm={createForm}
             fields={fields}
+            extraFields={createDialogExtraFields}
+            tableSlug={tableSlug}
             createColumnOption={createColumnOption}
             isSubmitting={createRow.status === 'pending'}
             onCancel={() => setIsCreateCardOpen(false)}

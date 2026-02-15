@@ -37,14 +37,34 @@ export function KanbanCard({
 
       <div className="mt-2 flex items-center justify-between">
         <div className="text-xs text-muted-foreground">
-          {fields.dueDate ? (
-            <TableRowDateCell
-              row={row}
-              field={fields.dueDate}
-            />
-          ) : (
-            <span>-</span>
-          )}
+          <div
+            className={cn(
+              'gap-2',
+              fields.startDate && fields.dueDate
+                ? 'grid grid-cols-2'
+                : 'flex flex-col gap-1',
+            )}
+          >
+            {fields.startDate && (
+              <div className="min-w-0">
+                <span className="mr-1">Início:</span>
+                <TableRowDateCell
+                  row={row}
+                  field={fields.startDate}
+                />
+              </div>
+            )}
+            {fields.dueDate && (
+              <div className="min-w-0">
+                <span className="mr-1">Venc.:</span>
+                <TableRowDateCell
+                  row={row}
+                  field={fields.dueDate}
+                />
+              </div>
+            )}
+            {!fields.startDate && !fields.dueDate && <span>-</span>}
+          </div>
         </div>
         <div className="flex -space-x-2">
           {members.slice(0, 3).map((member, index) => (
