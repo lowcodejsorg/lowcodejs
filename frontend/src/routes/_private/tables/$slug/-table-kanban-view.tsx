@@ -79,6 +79,7 @@ export function TableKanbanView({
   const [editingColumnColor, setEditingColumnColor] = React.useState<
     string | null
   >(null);
+  const startDateEnsureAttemptedRef = React.useRef(false);
 
   const fields = React.useMemo<FieldMap>(() => {
     const listField =
@@ -371,6 +372,58 @@ export function TableKanbanView({
       });
     },
   });
+
+  React.useEffect(() => {
+    if (fields.startDate) return;
+    if (startDateEnsureAttemptedRef.current) return;
+    startDateEnsureAttemptedRef.current = true;
+
+    void API.post<IField>('/tables/'.concat(tableSlug).concat('/fields'), {
+      name: 'Data de início',
+      type: E_FIELD_TYPE.DATE,
+      required: false,
+      multiple: false,
+      format: E_FIELD_FORMAT.DD_MM_YYYY,
+      showInFilter: true,
+      showInForm: true,
+      showInDetail: true,
+      showInList: true,
+      defaultValue: null,
+      locked: true,
+      relationship: null,
+      dropdown: [],
+      category: [],
+      group: null,
+    })
+      .then((createdField) => {
+        queryClient.setQueryData<ITable>(
+          queryKeys.tables.detail(tableSlug),
+          (old) => {
+            if (!old) return old;
+            if (old.fields.some((field) => field._id === createdField.data._id))
+              return old;
+            return {
+              ...old,
+              fields: [...old.fields, createdField.data],
+            };
+          },
+        );
+        toast('Campo Data de início criado', {
+          className: '!bg-green-600 !text-white !border-green-600',
+          description: 'Kanban atualizado com o novo campo de início',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      })
+      .catch(() => {
+        toast('Erro ao criar Data de início', {
+          className: '!bg-destructive !text-white !border-destructive',
+          description: 'Nao foi possivel adicionar o campo no Kanban',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      });
+  }, [fields.startDate, queryClient, tableSlug]);
 
   const createForm = useAppForm({
     defaultValues: buildDefaultValues(activeFields),
@@ -849,6 +902,7 @@ export function TableKanbanView({
             }}
             createForm={createForm}
             fields={fields}
+            tableSlug={tableSlug}
             createColumnOption={createColumnOption}
             isSubmitting={createRow.status === 'pending'}
             onCancel={() => setIsCreateCardOpen(false)}

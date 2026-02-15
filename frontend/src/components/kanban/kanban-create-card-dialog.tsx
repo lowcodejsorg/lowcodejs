@@ -13,7 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { E_FIELD_FORMAT } from '@/lib/constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { FieldMap } from '@/lib/kanban-types';
 
 export function KanbanCreateCardDialog({
@@ -21,6 +21,7 @@ export function KanbanCreateCardDialog({
   onOpenChange,
   createForm,
   fields,
+  tableSlug,
   createColumnOption,
   isSubmitting,
   onCancel,
@@ -29,6 +30,7 @@ export function KanbanCreateCardDialog({
   onOpenChange: (open: boolean) => void;
   createForm: any;
   fields: FieldMap;
+  tableSlug: string;
   createColumnOption?: { id: string; label: string; color?: string | null };
   isSubmitting: boolean;
   onCancel: () => void;
@@ -65,6 +67,40 @@ export function KanbanCreateCardDialog({
                   <formField.TableRowTextField field={fields.title!} />
                 )}
               </createForm.AppField>
+            )}
+
+            {(fields.members || fields.startDate || fields.dueDate) && (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
+                {fields.members && (
+                  <div className="md:col-span-2">
+                    <createForm.AppField name={fields.members.slug}>
+                      {(formField: any) => (
+                        <formField.TableRowUserField field={fields.members!} />
+                      )}
+                    </createForm.AppField>
+                  </div>
+                )}
+                {fields.startDate && (
+                  <div className="md:col-span-1">
+                    <createForm.AppField name={fields.startDate.slug}>
+                      {(formField: any) => (
+                        <formField.TableRowDateField
+                          field={fields.startDate!}
+                        />
+                      )}
+                    </createForm.AppField>
+                  </div>
+                )}
+                {fields.dueDate && (
+                  <div className="md:col-span-1">
+                    <createForm.AppField name={fields.dueDate.slug}>
+                      {(formField: any) => (
+                        <formField.TableRowDateField field={fields.dueDate!} />
+                      )}
+                    </createForm.AppField>
+                  </div>
+                )}
+              </div>
             )}
 
             {fields.description && (
@@ -202,30 +238,28 @@ export function KanbanCreateCardDialog({
               </createForm.AppField>
             )}
 
-            {(fields.members || fields.startDate || fields.dueDate) && (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                {fields.members && (
-                  <createForm.AppField name={fields.members.slug}>
-                    {(formField: any) => (
-                      <formField.TableRowUserField field={fields.members!} />
-                    )}
-                  </createForm.AppField>
+            {fields.attachments && (
+              <createForm.AppField name={fields.attachments.slug}>
+                {(formField: any) => (
+                  <>
+                    {((): React.JSX.Element => {
+                      const attachmentsField = {
+                        ...fields.attachments!,
+                        name: 'Anexos',
+                      };
+                      return fields.attachments?.type ===
+                        E_FIELD_TYPE.FIELD_GROUP ? (
+                        <formField.TableRowFieldGroupField
+                          field={attachmentsField}
+                          tableSlug={tableSlug}
+                        />
+                      ) : (
+                        <formField.TableRowFileField field={attachmentsField} />
+                      );
+                    })()}
+                  </>
                 )}
-                {fields.startDate && (
-                  <createForm.AppField name={fields.startDate.slug}>
-                    {(formField: any) => (
-                      <formField.TableRowDateField field={fields.startDate!} />
-                    )}
-                  </createForm.AppField>
-                )}
-                {fields.dueDate && (
-                  <createForm.AppField name={fields.dueDate.slug}>
-                    {(formField: any) => (
-                      <formField.TableRowDateField field={fields.dueDate!} />
-                    )}
-                  </createForm.AppField>
-                )}
-              </div>
+              </createForm.AppField>
             )}
           </div>
 
