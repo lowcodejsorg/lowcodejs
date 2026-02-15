@@ -40,6 +40,7 @@ import type { IField, IRow, ITable } from '@/lib/interfaces';
 import {
   ORDER_FIELD_NAME,
   ORDER_FIELD_SLUG,
+  TEMPLATE_FIELD_SLUGS,
   getFieldBySlug,
   getFirstFieldByType,
   normalizeRowValue,
@@ -161,6 +162,17 @@ export function TableKanbanView({
     () => headers.filter((field) => !field.trashed && !field.native),
     [headers],
   );
+  const createDialogExtraFields = React.useMemo(() => {
+    return table.fields.filter(
+      (field) =>
+        !field.trashed &&
+        !field.native &&
+        !TEMPLATE_FIELD_SLUGS.has(field.slug) &&
+        field.slug !== fields.attachments?.slug &&
+        field.slug !== ORDER_FIELD_SLUG &&
+        ![E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION].includes(field.type),
+    );
+  }, [fields, table.fields]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -902,6 +914,7 @@ export function TableKanbanView({
             }}
             createForm={createForm}
             fields={fields}
+            extraFields={createDialogExtraFields}
             tableSlug={tableSlug}
             createColumnOption={createColumnOption}
             isSubmitting={createRow.status === 'pending'}

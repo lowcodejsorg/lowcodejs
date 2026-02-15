@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import type { IField } from '@/lib/interfaces';
 import type { FieldMap } from '@/lib/kanban-types';
 
 export function KanbanCreateCardDialog({
@@ -21,6 +22,7 @@ export function KanbanCreateCardDialog({
   onOpenChange,
   createForm,
   fields,
+  extraFields,
   tableSlug,
   createColumnOption,
   isSubmitting,
@@ -30,6 +32,7 @@ export function KanbanCreateCardDialog({
   onOpenChange: (open: boolean) => void;
   createForm: any;
   fields: FieldMap;
+  extraFields: Array<IField>;
   tableSlug: string;
   createColumnOption?: { id: string; label: string; color?: string | null };
   isSubmitting: boolean;
@@ -260,6 +263,63 @@ export function KanbanCreateCardDialog({
                   </>
                 )}
               </createForm.AppField>
+            )}
+
+            {extraFields.length > 0 && (
+              <section className="space-y-3">
+                <h3 className="text-sm font-semibold">Campos adicionais</h3>
+                {extraFields.map((field) => (
+                  <createForm.AppField
+                    key={field._id}
+                    name={field.slug}
+                  >
+                    {(formField: any) => {
+                      switch (field.type) {
+                        case E_FIELD_TYPE.TEXT_SHORT:
+                          return <formField.TableRowTextField field={field} />;
+                        case E_FIELD_TYPE.TEXT_LONG:
+                          if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
+                            return (
+                              <formField.TableRowRichTextField field={field} />
+                            );
+                          }
+                          return (
+                            <formField.TableRowTextareaField field={field} />
+                          );
+                        case E_FIELD_TYPE.DROPDOWN:
+                          return (
+                            <formField.TableRowDropdownField field={field} />
+                          );
+                        case E_FIELD_TYPE.DATE:
+                          return <formField.TableRowDateField field={field} />;
+                        case E_FIELD_TYPE.FILE:
+                          return <formField.TableRowFileField field={field} />;
+                        case E_FIELD_TYPE.RELATIONSHIP:
+                          return (
+                            <formField.TableRowRelationshipField
+                              field={field}
+                            />
+                          );
+                        case E_FIELD_TYPE.CATEGORY:
+                          return (
+                            <formField.TableRowCategoryField field={field} />
+                          );
+                        case E_FIELD_TYPE.FIELD_GROUP:
+                          return (
+                            <formField.TableRowFieldGroupField
+                              field={field}
+                              tableSlug={tableSlug}
+                            />
+                          );
+                        case E_FIELD_TYPE.USER:
+                          return <formField.TableRowUserField field={field} />;
+                        default:
+                          return null;
+                      }
+                    }}
+                  </createForm.AppField>
+                ))}
+              </section>
             )}
           </div>
 
