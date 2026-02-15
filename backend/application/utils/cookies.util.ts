@@ -4,6 +4,21 @@ import { Env } from '@start/env';
 
 import type { TokenPair } from './jwt.util';
 
+export const clearCookieTokens = (response: FastifyReply): void => {
+  const cookieOptions = {
+    path: '/',
+    secure: Env.NODE_ENV === 'production',
+    sameSite:
+      Env.NODE_ENV === 'production' ? ('none' as const) : ('lax' as const),
+    httpOnly: true,
+    ...(Env.COOKIE_DOMAIN && { domain: Env.COOKIE_DOMAIN }),
+  };
+
+  response
+    .clearCookie('accessToken', cookieOptions)
+    .clearCookie('refreshToken', cookieOptions);
+};
+
 export const setCookieTokens = (
   response: FastifyReply,
   tokens: TokenPair,

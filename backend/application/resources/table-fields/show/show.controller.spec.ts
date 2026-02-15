@@ -51,8 +51,8 @@ describe('E2E Table Field Show Controller', () => {
         name: 'My Field',
         slug: 'my-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
-        widthInForm: null,
-        widthInList: null,
+        widthInForm: 50,
+        widthInList: 10,
       };
 
       const field = await Field.create(fieldPayload);
@@ -93,6 +93,8 @@ describe('E2E Table Field Show Controller', () => {
       expect(response.statusCode).toBe(200);
       expect(response.body.name).toBe('My Field');
       expect(response.body.type).toBe(E_FIELD_TYPE.TEXT_SHORT);
+      expect(response.body.widthInForm).toBe(50);
+      expect(response.body.widthInList).toBe(10);
     });
   });
 });

@@ -16,6 +16,7 @@ import {
   FileUploadList,
   FileUploadTrigger,
 } from '@/components/common/file-upload';
+import { useUploadingContext } from '@/components/common/uploading-context';
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
 import type { IStorage } from '@/lib/interfaces';
@@ -108,7 +109,7 @@ export function FileUploadWithStorage({
   const remove = useMutation({
     mutationFn: async function ({ storage }: { storage: IStorage }) {
       if (shouldDeleteFromStorage) {
-        const route = '/storage/'.concat(storage.id);
+        const route = '/storage/'.concat(storage._id);
         await API.delete(route);
       }
       return storage;
@@ -143,7 +144,7 @@ export function FileUploadWithStorage({
       let fileToRemove: File | null = null;
 
       for (const [file, storage] of storageFiles.entries()) {
-        if (storage.id === deletedStorage.id) {
+        if (storage._id === deletedStorage._id) {
           fileToRemove = file;
           break;
         }
@@ -162,7 +163,7 @@ export function FileUploadWithStorage({
 
       // Atualizar lista de storages retornando objetos completos
       const remainingStorages = Array.from(storageFiles.values()).filter(
-        (storage) => storage.id !== deletedStorage.id,
+        (storage) => storage._id !== deletedStorage._id,
       );
       onStorageChange(remainingStorages);
     },
@@ -170,6 +171,23 @@ export function FileUploadWithStorage({
 
   const isPending =
     isProcessing || upload.status === 'pending' || remove.status === 'pending';
+
+  const uploadingCtx = useUploadingContext();
+  const uploadId = React.useId();
+
+  React.useEffect(() => {
+    if (!uploadingCtx) return;
+
+    if (isPending) {
+      uploadingCtx.registerUpload(uploadId);
+    } else {
+      uploadingCtx.unregisterUpload(uploadId);
+    }
+
+    return (): void => {
+      uploadingCtx.unregisterUpload(uploadId);
+    };
+  }, [isPending, uploadingCtx, uploadId]);
 
   React.useEffect(() => {
     onUploadingChange?.(isPending);
@@ -179,33 +197,41 @@ export function FileUploadWithStorage({
     async (files, { onProgress, onSuccess, onError }) => {
       setIsProcessing(true);
       try {
-        const uploadPromises = files.map(async (file) => {
-          try {
-            const totalChunks = 10;
-            let uploadedChunks = 0;
-
-            for (let i = 0; i < totalChunks; i++) {
-              await new Promise((resolve) =>
-                setTimeout(resolve, Math.random() * 200 + 100),
-              );
-
-              uploadedChunks++;
-              const progress = (uploadedChunks / totalChunks) * 100;
+        // Simulate progress up to 80% while waiting for actual upload
+        const progressIntervals = files.map((file) => {
+          let progress = 0;
+          const interval = setInterval(
+            () => {
+              progress = Math.min(progress + Math.random() * 15 + 5, 80);
               onProgress(file, progress);
-            }
+            },
+            Math.random() * 200 + 100,
+          );
+          return interval;
+        });
 
-            await new Promise((resolve) => setTimeout(resolve, 500));
+        try {
+          await upload.mutateAsync(files);
+
+          // Upload succeeded: complete progress and mark success
+          for (const interval of progressIntervals) {
+            clearInterval(interval);
+          }
+          for (const file of files) {
+            onProgress(file, 100);
             onSuccess(file);
-          } catch (error) {
+          }
+        } catch (error) {
+          for (const interval of progressIntervals) {
+            clearInterval(interval);
+          }
+          for (const file of files) {
             onError(
               file,
               error instanceof Error ? error : new Error('Upload failed'),
             );
           }
-        });
-
-        await Promise.all(uploadPromises);
-        await upload.mutateAsync(files);
+        }
       } catch (error) {
         console.error('Unexpected error during upload:', error);
       } finally {

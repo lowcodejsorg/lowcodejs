@@ -186,13 +186,9 @@ export default class TableInMemoryRepository implements TableContractRepository 
   }
 
   async delete(_id: string): Promise<void> {
-    const table = this.items.find((t) => t._id === _id);
-    if (!table) throw new Error('Table not found');
-    Object.assign(table, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((t) => t._id === _id);
+    if (index === -1) throw new Error('Table not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: TableQueryPayload): Promise<number> {

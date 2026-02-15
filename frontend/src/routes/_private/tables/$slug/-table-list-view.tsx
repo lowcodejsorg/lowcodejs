@@ -541,7 +541,7 @@ export function TableListView({
                 .map((field) => (
                   <TableCell
                     key={field._id.concat('-').concat(row._id)}
-                    style={{ width: `${field.widthInList ?? 50}%` }}
+                    style={{ width: `${field.widthInList ?? 10}px` }}
                   >
                     <RenderCell
                       field={field}

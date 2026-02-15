@@ -9,6 +9,10 @@ import { UpdateSettingFormSkeleton } from './-update-form-skeleton';
 import { SettingView } from './-view';
 
 import { LoadError } from '@/components/common/load-error';
+import {
+  UploadingProvider,
+  useIsUploading,
+} from '@/components/common/uploading-context';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
@@ -55,11 +59,13 @@ function RouteComponent(): React.JSX.Element {
         )}
         {_read.status === 'pending' && <UpdateSettingFormSkeleton />}
         {_read.status === 'success' && (
-          <SettingUpdateContent
-            data={_read.data}
-            mode={mode}
-            setMode={setMode}
-          />
+          <UploadingProvider>
+            <SettingUpdateContent
+              data={_read.data}
+              mode={mode}
+              setMode={setMode}
+            />
+          </UploadingProvider>
         )}
       </div>
     </div>
@@ -78,6 +84,7 @@ function SettingUpdateContent({
   setMode,
 }: SettingUpdateContentProps): React.JSX.Element {
   const router = useRouter();
+  const isUploading = useIsUploading();
 
   const goBack = (): void => {
     router.navigate({
@@ -341,7 +348,7 @@ function SettingUpdateContent({
                   type="button"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isUploading}
                   onClick={() => form.handleSubmit()}
                 >
                   {isSubmitting && <Spinner />}

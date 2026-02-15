@@ -2,7 +2,10 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
-import { setCookieTokens } from '@application/utils/cookies.util';
+import {
+  clearCookieTokens,
+  setCookieTokens,
+} from '@application/utils/cookies.util';
 import { createTokens } from '@application/utils/jwt.util';
 
 import { SignInSchema } from './sign-in.schema';
@@ -39,6 +42,7 @@ export default class {
 
     const tokens = await createTokens(result.value, response);
 
+    clearCookieTokens(response);
     setCookieTokens(response, { ...tokens });
 
     return response.status(200).send();

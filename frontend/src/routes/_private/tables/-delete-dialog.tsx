@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
-import { ArchiveRestoreIcon, LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -17,23 +18,23 @@ import {
 } from '@/components/ui/dialog';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
-import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 
-interface TableRemoveFromTrashDialogProps {
+type TableDeleteDialogProps = React.ComponentProps<typeof DialogTrigger> & {
   slug: string;
-}
+};
 
-export function TableRemoveFromTrashDialog({
+export function TableDeleteDialog({
   slug,
-}: TableRemoveFromTrashDialogProps): React.JSX.Element {
+  ...props
+}: TableDeleteDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
-  const removeFromTrash = useMutation({
+  const deleteTable = useMutation({
     mutationFn: async function () {
-      const route = '/tables/'.concat(slug).concat('/restore');
-      const response = await API.patch<ITable>(route);
-      return response.data;
+      const route = '/tables/'.concat(slug);
+      await API.delete(route);
     },
     onSuccess() {
       setOpen(false);
@@ -46,11 +47,17 @@ export function TableRemoveFromTrashDialog({
         queryKey: queryKeys.tables.lists(),
       });
 
-      toast('Tabela restaurada!', {
+      toast('Tabela excluída permanentemente!', {
         className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi restaurada da lixeira',
+        description: 'A tabela foi excluída permanentemente',
         descriptionClassName: '!text-white',
         closeButton: true,
+      });
+
+      navigate({
+        to: '/tables',
+        replace: true,
+        search: { page: 1, perPage: 50 },
       });
     },
     onError(error) {
@@ -65,11 +72,11 @@ export function TableRemoveFromTrashDialog({
           toast.error(data?.message ?? 'Tabela não encontrada');
         }
 
-        if (data?.code === 409 && data?.cause === 'NOT_TRASHED') {
-          toast.error(data?.message ?? 'Tabela não está na lixeira');
+        if (data?.code === 500 && data?.cause === 'DELETE_TABLE_ERROR') {
+          toast.error(data?.message ?? 'Erro ao excluir tabela');
         }
 
-        if (data?.code === 500) {
+        if (data?.code === 500 && data?.cause !== 'DELETE_TABLE_ERROR') {
           toast.error(data?.message ?? 'Erro interno do servidor');
         }
       }
@@ -84,20 +91,13 @@ export function TableRemoveFromTrashDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-        >
-          <ArchiveRestoreIcon className="size-4" />
-          <span>Restaurar da lixeira</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger {...props} />
       <DialogContent className="py-4 px-6">
         <DialogHeader>
-          <DialogTitle>Restaurar tabela da lixeira</DialogTitle>
+          <DialogTitle>Excluir tabela permanentemente</DialogTitle>
           <DialogDescription>
-            Ao confirmar essa ação, a tabela será restaurada da lixeira
+            Essa ação é irreversível. A tabela será excluída permanentemente e
+            não poderá ser recuperada.
           </DialogDescription>
         </DialogHeader>
         <section>
@@ -110,17 +110,15 @@ export function TableRemoveFromTrashDialog({
               </DialogClose>
               <Button
                 type="button"
-                disabled={removeFromTrash.status === 'pending'}
+                disabled={deleteTable.status === 'pending'}
                 onClick={() => {
-                  removeFromTrash.mutateAsync();
+                  deleteTable.mutateAsync();
                 }}
               >
-                {removeFromTrash.status === 'pending' && (
+                {deleteTable.status === 'pending' && (
                   <LoaderCircleIcon className="size-4 animate-spin" />
                 )}
-                {!(removeFromTrash.status === 'pending') && (
-                  <span>Confirmar</span>
-                )}
+                {!(deleteTable.status === 'pending') && <span>Confirmar</span>}
               </Button>
             </DialogFooter>
           </form>

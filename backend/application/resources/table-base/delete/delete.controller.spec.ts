@@ -93,8 +93,7 @@ describe('E2E Table Delete Controller', () => {
       expect(response.statusCode).toBe(200);
 
       const deletedTable = await Table.findOne({ slug: table.slug });
-      expect(deletedTable?.trashed).toBe(true);
-      expect(deletedTable?.trashedAt).toBeDefined();
+      expect(deletedTable).toBeNull();
     });
   });
 });

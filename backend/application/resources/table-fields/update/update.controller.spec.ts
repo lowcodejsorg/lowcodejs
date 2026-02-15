@@ -104,8 +104,8 @@ describe('E2E Table Field Update Controller', () => {
         name: 'Updated Field',
         slug: 'updated-field',
         type: E_FIELD_TYPE.TEXT_SHORT,
-        widthInForm: null,
-        widthInList: null,
+        widthInForm: 75,
+        widthInList: 30,
       };
 
       const response = await supertest(kernel.server)
@@ -117,6 +117,8 @@ describe('E2E Table Field Update Controller', () => {
       expect(response.body.name).toBe('Updated Field');
       expect(response.body.required).toBe(true);
       expect(response.body.showInFilter).toBe(true);
+      expect(response.body.widthInForm).toBe(75);
+      expect(response.body.widthInList).toBe(30);
     });
   });
 });

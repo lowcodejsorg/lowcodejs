@@ -74,13 +74,12 @@ export const TableFieldShowSchema: FastifySchema = {
         widthInForm: {
           type: 'number',
           nullable: true,
-          description: 'Field width percentage in forms (25, 50, 75, 100)',
+          description: 'Field width in forms, integer 0-100 (%)',
         },
         widthInList: {
           type: 'number',
           nullable: true,
-          description:
-            'Field width percentage in list/grid views (25, 50, 75, 100)',
+          description: 'Field width in list/grid views, integer 0-100 (px)',
         },
         locked: {
           type: 'boolean',

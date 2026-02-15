@@ -6,10 +6,15 @@ import { toast } from 'sonner';
 
 import { RowFormFields } from '../create/-create-form';
 
+import { RowDeleteDialog } from './-delete-dialog';
 import { RowRemoveFromTrashDialog } from './-remove-from-trash-dialog';
 import { RowSendToTrashDialog } from './-send-to-trash-dialog';
 import { RowView } from './-view';
 
+import {
+  UploadingProvider,
+  useIsUploading,
+} from '@/components/common/uploading-context';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
@@ -24,11 +29,20 @@ interface UpdateRowFormProps {
   data: IRow;
 }
 
-export function UpdateRowForm({
+export function UpdateRowForm(props: UpdateRowFormProps): React.JSX.Element {
+  return (
+    <UploadingProvider>
+      <UpdateRowFormContent {...props} />
+    </UploadingProvider>
+  );
+}
+
+function UpdateRowFormContent({
   table,
   data,
 }: UpdateRowFormProps): React.JSX.Element {
   const sidebar = useSidebar();
+  const isUploading = useIsUploading();
   const router = useRouter();
   const permission = useTablePermission(table);
 
@@ -230,6 +244,13 @@ export function UpdateRowForm({
           />
         )}
 
+        {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
+          <RowDeleteDialog
+            rowId={rowId}
+            slug={slug}
+          />
+        )}
+
         {mode === 'show' && permission.can('UPDATE_ROW') && (
           <Button
             type="button"
@@ -311,7 +332,7 @@ export function UpdateRowForm({
                   type="button"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={!canSubmit}
+                  disabled={!canSubmit || isUploading}
                   onClick={() => form.handleSubmit()}
                 >
                   {isSubmitting && <Spinner />}

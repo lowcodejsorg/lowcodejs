@@ -90,14 +90,15 @@ describe('Table Field Update Use Case', () => {
       relationship: null,
       trashed: false,
       trashedAt: null,
-      widthInForm: null,
-      widthInList: null,
+      widthInForm: 75,
+      widthInList: 30,
     });
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
       expect(result.value.name).toBe('Nome Atualizado');
       expect(result.value.required).toBe(false);
+      expect(result.value.widthInForm).toBe(75);
     }
   });
 

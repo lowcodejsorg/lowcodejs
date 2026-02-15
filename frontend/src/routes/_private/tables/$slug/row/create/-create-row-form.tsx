@@ -6,6 +6,10 @@ import { toast } from 'sonner';
 import { RowFormFields } from './-create-form';
 
 import { AccessDenied } from '@/components/common/access-denied';
+import {
+  UploadingProvider,
+  useIsUploading,
+} from '@/components/common/uploading-context';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
@@ -20,10 +24,19 @@ interface CreateRowFormProps {
   table: ITable;
 }
 
-export function CreateRowForm({
+export function CreateRowForm(props: CreateRowFormProps): React.JSX.Element {
+  return (
+    <UploadingProvider>
+      <CreateRowFormContent {...props} />
+    </UploadingProvider>
+  );
+}
+
+function CreateRowFormContent({
   table,
 }: CreateRowFormProps): React.JSX.Element {
   const permissions = useTablePermission(table);
+  const isUploading = useIsUploading();
 
   const { categoryId, categorySlug } = useSearch({
     from: '/_private/tables/$slug/row/create/',
@@ -259,7 +272,7 @@ export function CreateRowForm({
               <Button
                 type="button"
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                disabled={!canSubmit}
+                disabled={!canSubmit || isUploading}
                 onClick={() => form.handleSubmit()}
               >
                 {isSubmitting && <Spinner />}
