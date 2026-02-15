@@ -74,7 +74,7 @@ export function KanbanRowDialog({
   const { data: profile } = useProfileRead();
   const currentUserId = auth?.sub ?? '';
   const [editTarget, setEditTarget] = React.useState<
-    'members' | 'labels' | 'due' | null
+    'members' | 'start' | 'due' | null
   >(null);
   const [taskTitle, setTaskTitle] = React.useState('');
   const [editingTaskIndex, setEditingTaskIndex] = React.useState<number | null>(
@@ -104,7 +104,7 @@ export function KanbanRowDialog({
     ...extraFields,
   ].filter(Boolean) as Array<IField>;
 
-  const quickFields = [fields.members, fields.labels, fields.dueDate].filter(
+  const quickFields = [fields.members, fields.startDate, fields.dueDate].filter(
     Boolean,
   ) as Array<IField>;
 
@@ -663,28 +663,27 @@ export function KanbanRowDialog({
               members={members}
               fields={{
                 members: fields.members,
+                startDate: fields.startDate,
                 dueDate: fields.dueDate,
-                labels: fields.labels,
               }}
               editTarget={editTarget}
               setEditTarget={setEditTarget}
               quickForm={quickForm}
             />
 
-            {(fields.labels || fields.dueDate) && (
+            {(fields.startDate || fields.dueDate) && (
               <section className="mt-4 grid gap-3 md:grid-cols-2">
-                {fields.labels && editTarget !== 'labels' && (
+                {fields.startDate && editTarget !== 'start' && (
                   <div className="space-y-1">
                     <p className="text-xs uppercase text-muted-foreground">
-                      Rótulos
+                      Data de início
                     </p>
-                    <TableRowDropdownCell
+                    <TableRowDateCell
                       row={row}
-                      field={fields.labels}
+                      field={fields.startDate}
                     />
                   </div>
                 )}
-
                 {fields.dueDate && editTarget !== 'due' && (
                   <div className="space-y-1">
                     <p className="text-xs uppercase text-muted-foreground">
@@ -780,10 +779,10 @@ export function KanbanRowDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setEditTarget('labels')}
+                onClick={() => setEditTarget('start')}
                 className="cursor-pointer"
               >
-                Rotulos
+                Data de início
               </Button>
               <Button
                 type="button"

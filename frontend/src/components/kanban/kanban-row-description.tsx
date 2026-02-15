@@ -23,10 +23,12 @@ export function KanbanRowDescriptionSection({
   onSubmit: () => void;
   isSaving: boolean;
 }): React.JSX.Element {
+  const isEditing = editingFieldSlug === descriptionField.slug;
+
   return (
     <section className="mt-6 space-y-2">
-      <h3 className="text-sm font-semibold">Descrição</h3>
-      {editingFieldSlug === descriptionField.slug ? (
+      {!isEditing && <h3 className="text-sm font-semibold">Descrição</h3>}
+      {isEditing ? (
         <form
           className="space-y-2"
           onSubmit={(event) => {

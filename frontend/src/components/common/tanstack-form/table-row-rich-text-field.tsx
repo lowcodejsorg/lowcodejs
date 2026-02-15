@@ -32,11 +32,13 @@ function EditorSkeleton(): React.JSX.Element {
 interface TableRowRichTextFieldProps {
   field: IField;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 export function TableRowRichTextField({
   field,
   disabled,
+  compact = false,
 }: TableRowRichTextFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
@@ -76,6 +78,9 @@ export function TableRowRichTextField({
           <EditorExample
             value={formField.state.value || ''}
             onChange={(value) => formField.handleChange(value)}
+            variant={compact ? 'compact' : 'default'}
+            toolbarVariant={compact ? 'minimal' : 'default'}
+            showBubble={!compact}
           />
         </Suspense>
       </div>

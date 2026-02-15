@@ -286,17 +286,17 @@ export async function buildKanbanFields(
     widthInList: null,
   });
 
-  const attachmentField = await createField({
-    name: 'Anexo',
-    slug: 'anexo',
-    type: E_FIELD_TYPE.FILE,
+  const startDateField = await createField({
+    name: 'Data de início',
+    slug: 'data-de-inicio',
+    type: E_FIELD_TYPE.DATE,
     required: false,
-    multiple: true,
-    format: null,
-    showInList: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.DD_MM_YYYY,
+    showInList: true,
     showInForm: true,
     showInDetail: true,
-    showInFilter: false,
+    showInFilter: true,
     defaultValue: null,
     locked: true,
     relationship: null,
@@ -353,17 +353,21 @@ export async function buildKanbanFields(
     widthInList: null,
   });
 
-  const labelsField = await createField({
-    name: 'Etiquetas',
-    slug: 'etiquetas',
-    type: E_FIELD_TYPE.DROPDOWN,
+  const attachmentsGroupSlug = 'anexos';
+  const tasksGroupSlug = 'tarefas';
+  const commentsGroupSlug = 'comentarios';
+
+  const attachmentFileField = await fieldRepository.create({
+    name: 'Arquivos',
+    slug: 'arquivos',
+    type: E_FIELD_TYPE.FILE,
     required: false,
     multiple: true,
     format: null,
     showInList: false,
     showInForm: true,
     showInDetail: true,
-    showInFilter: true,
+    showInFilter: false,
     defaultValue: null,
     locked: true,
     relationship: null,
@@ -373,9 +377,6 @@ export async function buildKanbanFields(
     widthInForm: null,
     widthInList: null,
   });
-
-  const tasksGroupSlug = 'tarefas';
-  const commentsGroupSlug = 'comentarios';
 
   const taskTitleField = await fieldRepository.create({
     name: 'Título',
@@ -485,6 +486,13 @@ export async function buildKanbanFields(
     widthInList: null,
   });
 
+  const attachmentsGroup: IGroupConfiguration = {
+    slug: attachmentsGroupSlug,
+    name: 'Anexos',
+    fields: [attachmentFileField],
+    _schema: buildSchema([attachmentFileField]),
+  };
+
   const tasksGroup: IGroupConfiguration = {
     slug: tasksGroupSlug,
     name: 'Tarefas',
@@ -502,6 +510,27 @@ export async function buildKanbanFields(
       commentDateField,
     ]),
   };
+
+  const attachmentsGroupField = await createField({
+    name: 'Anexos',
+    slug: attachmentsGroupSlug,
+    type: E_FIELD_TYPE.FIELD_GROUP,
+    required: false,
+    multiple: true,
+    format: null,
+    showInList: false,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: { slug: attachmentsGroupSlug },
+    widthInForm: null,
+    widthInList: null,
+  });
 
   const tasksGroupField = await createField({
     name: 'Tarefas',
@@ -545,16 +574,16 @@ export async function buildKanbanFields(
     widthInList: null,
   });
 
-  const groups = [tasksGroup, commentsGroup];
+  const groups = [attachmentsGroup, tasksGroup, commentsGroup];
 
   const orderList = [
     titleField._id,
     listField._id,
     progressField._id,
+    startDateField._id,
     dueDateField._id,
     membersField._id,
-    labelsField._id,
-    attachmentField._id,
+    attachmentsGroupField._id,
     tasksGroupField._id,
     commentsGroupField._id,
     descriptionField._id,
@@ -564,11 +593,11 @@ export async function buildKanbanFields(
     titleField._id,
     descriptionField._id,
     listField._id,
-    labelsField._id,
     membersField._id,
+    startDateField._id,
     dueDateField._id,
     progressField._id,
-    attachmentField._id,
+    attachmentsGroupField._id,
     tasksGroupField._id,
     commentsGroupField._id,
   ];

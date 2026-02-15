@@ -2,8 +2,6 @@ import slugify from 'slugify';
 
 import { right } from '@application/core/either.core';
 import {
-  E_FIELD_FORMAT,
-  E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
@@ -79,115 +77,9 @@ export async function buildCardsFields(
   orderForm: string[];
 }> {
   const base = await buildSimpleMediaFields(fieldRepository);
-  const createdFields = [...base.fields];
-
-  const createField = async (payload: {
-    name: string;
-    slug: string;
-    type: IField['type'];
-    required: boolean;
-    multiple: boolean;
-    format: IField['format'];
-    showInList: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInFilter: boolean;
-    defaultValue: IField['defaultValue'];
-    locked: boolean;
-    relationship: IField['relationship'];
-    dropdown: IField['dropdown'];
-    category: IField['category'];
-    group: IField['group'];
-    widthInForm: IField['widthInForm'];
-    widthInList: IField['widthInList'];
-  }): Promise<IField> => {
-    const field = await fieldRepository.create({
-      ...payload,
-    });
-    createdFields.push(field);
-    return field;
-  };
-
-  const ratingField = await createField({
-    name: 'Nota',
-    slug: 'nota',
-    type: E_FIELD_TYPE.EVALUATION,
-    required: false,
-    multiple: false,
-    format: null,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: true,
-    defaultValue: null,
-    locked: false,
-    relationship: null,
-    dropdown: [],
-    category: [],
-    group: null,
-    widthInForm: 50,
-    widthInList: 50,
-  });
-
-  const priceField = await createField({
-    name: 'Preço',
-    slug: 'preco',
-    type: E_FIELD_TYPE.TEXT_SHORT,
-    required: false,
-    multiple: false,
-    format: E_FIELD_FORMAT.DECIMAL,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: true,
-    defaultValue: null,
-    locked: false,
-    relationship: null,
-    dropdown: [],
-    category: [],
-    group: null,
-    widthInForm: 50,
-    widthInList: 50,
-  });
-
-  const categoriesField = await createField({
-    name: 'Categorias',
-    slug: 'categorias',
-    type: E_FIELD_TYPE.CATEGORY,
-    required: false,
-    multiple: true,
-    format: null,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: true,
-    defaultValue: null,
-    locked: false,
-    relationship: null,
-    dropdown: [],
-    category: [],
-    group: null,
-    widthInForm: 100,
-    widthInList: 100,
-  });
-
-  const orderList = [
-    ...base.orderList,
-    priceField._id,
-    ratingField._id,
-    categoriesField._id,
-  ];
-
-  const orderForm = [
-    ...base.orderForm,
-    priceField._id,
-    ratingField._id,
-    categoriesField._id,
-  ];
-
   return {
-    fields: createdFields,
-    orderList,
-    orderForm,
+    fields: [...base.fields],
+    orderList: [...base.orderList],
+    orderForm: [...base.orderForm],
   };
 }

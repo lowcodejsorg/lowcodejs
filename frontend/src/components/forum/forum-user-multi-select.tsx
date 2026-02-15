@@ -19,13 +19,17 @@ import type { IUser } from '@/lib/interfaces';
 interface ForumUserMultiSelectProps {
   value: Array<string>;
   onChange: (value: Array<string>) => void;
+  onSelectedUsersChange?: (users: Array<IUser>) => void;
   disabled?: boolean;
+  placeholder?: string;
 }
 
 export function ForumUserMultiSelect({
   value,
   onChange,
+  onSelectedUsersChange,
   disabled,
+  placeholder,
 }: ForumUserMultiSelectProps): React.JSX.Element {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
@@ -85,6 +89,7 @@ export function ForumUserMultiSelect({
           return next;
         });
         onChange(selected.map((user) => user._id));
+        onSelectedUsersChange?.(selected);
       }}
       inputValue={searchQuery}
       onInputValueChange={setSearchQuery}
@@ -109,7 +114,9 @@ export function ForumUserMultiSelect({
                 </span>
               )}
               <ComboboxChipsInput
-                placeholder={values.length > 0 ? '' : 'Mencionar usuários'}
+                placeholder={
+                  values.length > 0 ? '' : (placeholder ?? 'Mencionar usuarios')
+                }
               />
             </React.Fragment>
           )}

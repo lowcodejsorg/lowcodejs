@@ -91,6 +91,7 @@ export function TableKanbanView({
         getFirstFieldByType(headers, E_FIELD_TYPE.TEXT_SHORT),
       description: getFieldBySlug(headers, 'descricao', E_FIELD_TYPE.TEXT_LONG),
       members: getFieldBySlug(headers, 'membros', E_FIELD_TYPE.USER),
+      startDate: getFieldBySlug(headers, 'data-de-inicio', E_FIELD_TYPE.DATE),
       dueDate: getFieldBySlug(headers, 'data-de-vencimento', E_FIELD_TYPE.DATE),
       progress: getFieldBySlug(
         headers,
@@ -98,7 +99,11 @@ export function TableKanbanView({
         E_FIELD_TYPE.TEXT_SHORT,
       ),
       list: listField,
-      labels: getFieldBySlug(headers, 'etiquetas', E_FIELD_TYPE.DROPDOWN),
+      // Hide labels until dedicated "etiqueta" field type is available.
+      labels: undefined,
+      attachments:
+        getFieldBySlug(headers, 'anexos', E_FIELD_TYPE.FIELD_GROUP) ||
+        getFieldBySlug(headers, 'anexo', E_FIELD_TYPE.FILE),
       tasks: getFieldBySlug(headers, 'tarefas', E_FIELD_TYPE.FIELD_GROUP),
       comments: getFieldBySlug(
         headers,
