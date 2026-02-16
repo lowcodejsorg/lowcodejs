@@ -487,10 +487,11 @@ export function TableForumView({
         payload[channelDescriptionField.slug] = description;
       }
       if (channelPrivacyField) {
-        payload[channelPrivacyField.slug] =
-          value.privacy === 'privado' ? 'privado' : 'publico';
+        payload[channelPrivacyField.slug] = [
+          value.privacy === 'privado' ? 'privado' : 'publico',
+        ];
       }
-      if (channelMembersField) {
+      if (channelMembersField && value.privacy === 'privado') {
         payload[channelMembersField.slug] = members;
       }
 
@@ -542,10 +543,11 @@ export function TableForumView({
         payload[channelDescriptionField.slug] = description || '';
       }
       if (channelPrivacyField) {
-        payload[channelPrivacyField.slug] =
-          value.privacy === 'privado' ? 'privado' : 'publico';
+        payload[channelPrivacyField.slug] = [
+          value.privacy === 'privado' ? 'privado' : 'publico',
+        ];
       }
-      if (channelMembersField) {
+      if (channelMembersField && value.privacy === 'privado') {
         payload[channelMembersField.slug] = members;
       }
 
@@ -716,7 +718,9 @@ export function TableForumView({
       const label = resolveChannelLabel(row);
       const description = resolveChannelDescription(row);
       const privacy = channelPrivacyField
-        ? String(row[channelPrivacyField.slug] ?? 'publico')
+        ? Array.isArray(row[channelPrivacyField.slug])
+          ? String(row[channelPrivacyField.slug]?.[0] ?? 'publico')
+          : String(row[channelPrivacyField.slug] ?? 'publico')
         : 'publico';
       const members = channelMembersField
         ? normalizeIdList(row[channelMembersField.slug])
