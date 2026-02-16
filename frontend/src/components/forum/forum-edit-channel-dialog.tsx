@@ -1,3 +1,4 @@
+import { useStore } from '@tanstack/react-store';
 import React from 'react';
 
 import { ForumUserMultiSelect } from './forum-user-multi-select';
@@ -43,6 +44,15 @@ export function ForumEditChannelDialog({
   requiresPrivacy,
   onCancel,
 }: ForumEditChannelDialogProps): React.JSX.Element {
+  const privacyValue = useStore(
+    form.store,
+    (state: any) => state.values.privacy,
+  );
+  const normalizedPrivacy =
+    typeof privacyValue === 'string' ? privacyValue : 'publico';
+  const shouldShowMembers =
+    requiresMembers && (!requiresPrivacy || normalizedPrivacy === 'privado');
+
   return (
     <Dialog
       open={open}
@@ -85,44 +95,63 @@ export function ForumEditChannelDialog({
                 />
               )}
             </form.AppField>
-            {requiresPrivacy && (
-              <form.AppField name="privacy">
-                {(field: any) => (
-                  <Select
-                    value={
-                      typeof field.state.value === 'string'
-                        ? field.state.value
-                        : 'publico'
+            {(requiresPrivacy || shouldShowMembers) && (
+              <div className="flex flex-col gap-2 sm:flex-row">
+                {requiresPrivacy && (
+                  <div
+                    className={
+                      shouldShowMembers
+                        ? 'sm:basis-1/4 sm:grow-0 sm:shrink-0'
+                        : 'w-full'
                     }
-                    onValueChange={(value) => {
-                      field.handleChange(value);
-                      field.handleBlur();
-                    }}
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Privacidade do canal" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="publico">Público</SelectItem>
-                      <SelectItem value="privado">Privado</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    <form.AppField name="privacy">
+                      {(field: any) => (
+                        <Select
+                          value={
+                            typeof field.state.value === 'string'
+                              ? field.state.value
+                              : 'publico'
+                          }
+                          onValueChange={(value) => {
+                            field.handleChange(value);
+                            if (value !== 'privado') {
+                              form.setFieldValue('members', []);
+                            }
+                            field.handleBlur();
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Privacidade do canal" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="publico">Público</SelectItem>
+                            <SelectItem value="privado">Privado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </form.AppField>
+                  </div>
                 )}
-              </form.AppField>
-            )}
-            {requiresMembers && (
-              <form.AppField name="members">
-                {(field: any) => (
-                  <ForumUserMultiSelect
-                    value={
-                      Array.isArray(field.state.value) ? field.state.value : []
-                    }
-                    onChange={(value) => field.handleChange(value)}
-                    disabled={isPending}
-                    placeholder="Selecione membros"
-                  />
+                {shouldShowMembers && (
+                  <div className="sm:basis-3/4 sm:grow-0 sm:shrink-0">
+                    <form.AppField name="members">
+                      {(field: any) => (
+                        <ForumUserMultiSelect
+                          value={
+                            Array.isArray(field.state.value)
+                              ? field.state.value
+                              : []
+                          }
+                          onChange={(value) => field.handleChange(value)}
+                          disabled={isPending}
+                          placeholder="Selecione membros"
+                        />
+                      )}
+                    </form.AppField>
+                  </div>
                 )}
-              </form.AppField>
+              </div>
             )}
           </div>
           <DialogFooter className="mt-3 flex gap-2 sm:justify-end">
