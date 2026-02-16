@@ -1,4 +1,4 @@
-import { CopyIcon, TrashIcon } from 'lucide-react';
+import { CopyIcon, FileTextIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -8,6 +8,7 @@ import { KanbanRowExtraFieldsSection } from './kanban-row-extra-fields';
 import { KanbanRowQuickActions } from './kanban-row-quick-actions';
 import { KanbanRowTasksSection } from './kanban-row-tasks';
 
+import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
 import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
@@ -34,7 +35,7 @@ import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow, ITable } from '@/lib/interfaces';
+import type { IField, IRow, IStorage, ITable } from '@/lib/interfaces';
 import {
   ORDER_FIELD_SLUG,
   TEMPLATE_FIELD_SLUGS,
@@ -74,7 +75,7 @@ export function KanbanRowDialog({
   const { data: profile } = useProfileRead();
   const currentUserId = auth?.sub ?? '';
   const [editTarget, setEditTarget] = React.useState<
-    'members' | 'labels' | 'due' | null
+    'members' | 'start' | 'due' | null
   >(null);
   const [taskTitle, setTaskTitle] = React.useState('');
   const [editingTaskIndex, setEditingTaskIndex] = React.useState<number | null>(
@@ -89,6 +90,14 @@ export function KanbanRowDialog({
   const [editingFieldSlug, setEditingFieldSlug] = React.useState<string | null>(
     null,
   );
+  const [isAddingAttachments, setIsAddingAttachments] = React.useState(false);
+  const [attachmentUploadFiles, setAttachmentUploadFiles] = React.useState<
+    Array<File>
+  >([]);
+  const [attachmentUploadStorages, setAttachmentUploadStorages] =
+    React.useState<Array<IStorage>>([]);
+  const [isAttachmentUploading, setIsAttachmentUploading] =
+    React.useState(false);
 
   const descriptionField = fields.description;
   const extraFields = table.fields.filter(
@@ -96,15 +105,17 @@ export function KanbanRowDialog({
       !field.trashed &&
       !field.native &&
       !TEMPLATE_FIELD_SLUGS.has(field.slug) &&
+      field.slug !== fields.attachments?.slug &&
       field.slug !== ORDER_FIELD_SLUG,
   );
   const editableFields = [
     fields.title,
     descriptionField,
+    fields.attachments,
     ...extraFields,
   ].filter(Boolean) as Array<IField>;
 
-  const quickFields = [fields.members, fields.labels, fields.dueDate].filter(
+  const quickFields = [fields.members, fields.startDate, fields.dueDate].filter(
     Boolean,
   ) as Array<IField>;
 
@@ -244,6 +255,13 @@ export function KanbanRowDialog({
     setEditingFieldSlug(null);
   }, [rowId, editableFields.length]);
 
+  React.useEffect(() => {
+    setIsAddingAttachments(false);
+    setAttachmentUploadFiles([]);
+    setAttachmentUploadStorages([]);
+    setIsAttachmentUploading(false);
+  }, [rowId]);
+
   const normalizeCommentPayload = React.useCallback(
     (comment: Record<string, any>) => ({
       ...comment,
@@ -276,6 +294,57 @@ export function KanbanRowDialog({
   const comments = Array.isArray(row[fields.comments?.slug ?? ''])
     ? (row[fields.comments?.slug ?? ''] as Array<Record<string, any>>)
     : [];
+  const attachmentStorages =
+    fields.attachments?.type === E_FIELD_TYPE.FILE &&
+    Array.isArray(row[fields.attachments.slug])
+      ? (row[fields.attachments.slug] as Array<unknown>).filter(
+          (value): value is IStorage =>
+            typeof value === 'object' &&
+            value !== null &&
+            '_id' in value &&
+            'url' in value &&
+            'originalName' in value,
+        )
+      : [];
+  const attachmentGroupRows =
+    fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP &&
+    Array.isArray(row[fields.attachments.slug])
+      ? (row[fields.attachments.slug] as Array<Record<string, any>>)
+      : [];
+  const attachmentGroupFileFieldSlug =
+    fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP
+      ? (fields.attachments.groups?.fields ?? []).find(
+          (groupField) => groupField.type === E_FIELD_TYPE.FILE,
+        )?.slug
+      : null;
+  const attachmentItems =
+    fields.attachments?.type === E_FIELD_TYPE.FILE
+      ? attachmentStorages.map((storage) => ({ storage }))
+      : fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP &&
+          attachmentGroupFileFieldSlug
+        ? attachmentGroupRows.flatMap((groupRow) => {
+            const rawFiles = groupRow[attachmentGroupFileFieldSlug];
+            const files = Array.isArray(rawFiles)
+              ? rawFiles
+              : rawFiles
+                ? [rawFiles]
+                : [];
+            return files
+              .filter(
+                (value): value is IStorage =>
+                  typeof value === 'object' &&
+                  value !== null &&
+                  '_id' in value &&
+                  'url' in value &&
+                  'originalName' in value,
+              )
+              .map((storage) => ({ storage }));
+          })
+        : [];
+  const supportsInlineAttachmentManager =
+    fields.attachments?.type === E_FIELD_TYPE.FILE ||
+    (fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP &&
+      Boolean(attachmentGroupFileFieldSlug));
 
   const isMember = members.some((member) => {
     if (typeof member === 'string') return member === currentUserId;
@@ -472,6 +541,117 @@ export function KanbanRowDialog({
     });
   };
 
+  const handleAttachmentDelete = async (storageId: string): Promise<void> => {
+    if (!fields.attachments) {
+      return;
+    }
+    if (fields.attachments.type === E_FIELD_TYPE.FILE) {
+      const nextAttachmentIds = attachmentStorages
+        .filter((storage) => storage._id !== storageId)
+        .map((storage) => storage._id);
+      await updateRow.mutateAsync({
+        slug: tableSlug,
+        rowId: row._id,
+        data: {
+          [fields.attachments.slug]: nextAttachmentIds,
+        },
+      });
+      return;
+    }
+    if (
+      fields.attachments.type === E_FIELD_TYPE.FIELD_GROUP &&
+      attachmentGroupFileFieldSlug
+    ) {
+      const nextAttachmentGroups = attachmentGroupRows
+        .map((groupRow) => {
+          const currentIds = normalizeIdList(
+            groupRow[attachmentGroupFileFieldSlug],
+          ).filter((id) => id !== storageId);
+          if (currentIds.length === 0) return null;
+          return {
+            ...groupRow,
+            [attachmentGroupFileFieldSlug]: currentIds,
+          };
+        })
+        .filter(Boolean);
+      await updateRow.mutateAsync({
+        slug: tableSlug,
+        rowId: row._id,
+        data: {
+          [fields.attachments.slug]: nextAttachmentGroups,
+        },
+      });
+    }
+  };
+
+  const handleAttachmentAddCancel = (): void => {
+    setIsAddingAttachments(false);
+    setAttachmentUploadFiles([]);
+    setAttachmentUploadStorages([]);
+    setIsAttachmentUploading(false);
+  };
+
+  const handleAttachmentAddSave = async (): Promise<void> => {
+    if (!fields.attachments) {
+      return;
+    }
+    if (attachmentUploadStorages.length === 0 || updateRow.status === 'pending')
+      return;
+    if (fields.attachments.type === E_FIELD_TYPE.FILE) {
+      const nextAttachmentIds = Array.from(
+        new Set([
+          ...attachmentStorages.map((storage) => storage._id),
+          ...attachmentUploadStorages.map((storage) => storage._id),
+        ]),
+      );
+      await updateRow.mutateAsync({
+        slug: tableSlug,
+        rowId: row._id,
+        data: {
+          [fields.attachments.slug]: nextAttachmentIds,
+        },
+      });
+      handleAttachmentAddCancel();
+      return;
+    }
+    if (
+      fields.attachments.type === E_FIELD_TYPE.FIELD_GROUP &&
+      attachmentGroupFileFieldSlug
+    ) {
+      const normalizedGroups = attachmentGroupRows
+        .map((groupRow) => {
+          const currentIds = normalizeIdList(
+            groupRow[attachmentGroupFileFieldSlug],
+          );
+          if (currentIds.length === 0) return null;
+          return {
+            ...groupRow,
+            [attachmentGroupFileFieldSlug]: currentIds,
+          };
+        })
+        .filter(Boolean);
+      const nextAttachmentGroups = [
+        ...normalizedGroups,
+        {
+          [attachmentGroupFileFieldSlug]: attachmentUploadStorages.map(
+            (storage) => storage._id,
+          ),
+        },
+      ];
+      await updateRow.mutateAsync({
+        slug: tableSlug,
+        rowId: row._id,
+        data: {
+          [fields.attachments.slug]: nextAttachmentGroups,
+        },
+      });
+      handleAttachmentAddCancel();
+      return;
+    }
+
+    handleAttachmentAddCancel();
+  };
+
   const isExtraFieldEditable = (field: IField): boolean =>
     ![E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION].includes(field.type);
 
@@ -663,30 +843,40 @@ export function KanbanRowDialog({
               members={members}
               fields={{
                 members: fields.members,
+                startDate: fields.startDate,
                 dueDate: fields.dueDate,
-                labels: fields.labels,
               }}
               editTarget={editTarget}
               setEditTarget={setEditTarget}
               quickForm={quickForm}
             />
 
-            {(fields.labels || fields.dueDate) && (
-              <section className="mt-4 grid gap-3 md:grid-cols-2">
-                {fields.labels && editTarget !== 'labels' && (
-                  <div className="space-y-1">
+            {(fields.members || fields.startDate || fields.dueDate) && (
+              <section className="mt-4 grid gap-3 md:grid-cols-4">
+                {fields.members && editTarget !== 'members' && (
+                  <div className="space-y-1 md:col-span-2">
                     <p className="text-xs uppercase text-muted-foreground">
-                      Rótulos
+                      Membros
                     </p>
-                    <TableRowDropdownCell
+                    <TableRowUserCell
                       row={row}
-                      field={fields.labels}
+                      field={fields.members}
                     />
                   </div>
                 )}
-
+                {fields.startDate && editTarget !== 'start' && (
+                  <div className="space-y-1 md:col-span-1">
+                    <p className="text-xs uppercase text-muted-foreground">
+                      Data de início
+                    </p>
+                    <TableRowDateCell
+                      row={row}
+                      field={fields.startDate}
+                    />
+                  </div>
+                )}
                 {fields.dueDate && editTarget !== 'due' && (
-                  <div className="space-y-1">
+                  <div className="space-y-1 md:col-span-1">
                     <p className="text-xs uppercase text-muted-foreground">
                       Data de vencimento
                     </p>
@@ -727,6 +917,174 @@ export function KanbanRowDialog({
                 onTaskEditSave={handleTaskEditSave}
                 onTaskAdd={handleTaskAdd}
               />
+            )}
+
+            {fields.attachments && (
+              <section className="mt-4 space-y-2">
+                {supportsInlineAttachmentManager ? (
+                  <>
+                    <div className="flex items-center justify-between gap-2">
+                      <h3 className="text-sm font-semibold">Anexos</h3>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className="cursor-pointer"
+                        onClick={() => setIsAddingAttachments(true)}
+                        disabled={updateRow.status === 'pending'}
+                      >
+                        Adicionar
+                      </Button>
+                    </div>
+                    <div className="space-y-2 rounded-md border px-3 py-2">
+                      {attachmentItems.length > 0 ? (
+                        <ul className="space-y-1">
+                          {attachmentItems.map(({ storage: attachment }) => (
+                            <li
+                              key={attachment._id}
+                              className="flex items-center justify-between gap-2"
+                            >
+                              <div className="flex min-w-0 items-center gap-2">
+                                {attachment.mimetype?.includes('image') ? (
+                                  <a
+                                    href={attachment.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="shrink-0"
+                                  >
+                                    <img
+                                      src={attachment.url}
+                                      alt={attachment.originalName}
+                                      className="size-9 rounded object-cover border"
+                                    />
+                                  </a>
+                                ) : attachment.mimetype ===
+                                  'application/pdf' ? (
+                                  <a
+                                    href={attachment.url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="shrink-0"
+                                  >
+                                    <div className="size-9 rounded border bg-muted flex items-center justify-center">
+                                      <FileTextIcon className="size-4 text-muted-foreground" />
+                                    </div>
+                                  </a>
+                                ) : null}
+                                <a
+                                  href={attachment.url}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-sm text-primary underline underline-offset-2 truncate"
+                                >
+                                  {attachment.originalName}
+                                </a>
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-sm"
+                                className="cursor-pointer text-destructive"
+                                disabled={updateRow.status === 'pending'}
+                                onClick={() =>
+                                  handleAttachmentDelete(attachment._id)
+                                }
+                              >
+                                <TrashIcon className="size-3.5" />
+                              </Button>
+                            </li>
+                          ))}
+                        </ul>
+                      ) : (
+                        <span className="text-sm text-muted-foreground">-</span>
+                      )}
+
+                      {isAddingAttachments && (
+                        <div className="space-y-2 border-t pt-2">
+                          <FileUploadWithStorage
+                            value={attachmentUploadFiles}
+                            onValueChange={setAttachmentUploadFiles}
+                            onStorageChange={setAttachmentUploadStorages}
+                            maxFiles={10}
+                            onUploadingChange={setIsAttachmentUploading}
+                          />
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="cursor-pointer"
+                              onClick={handleAttachmentAddCancel}
+                              disabled={updateRow.status === 'pending'}
+                            >
+                              Cancelar
+                            </Button>
+                            <Button
+                              type="button"
+                              className="cursor-pointer"
+                              onClick={handleAttachmentAddSave}
+                              disabled={
+                                updateRow.status === 'pending' ||
+                                isAttachmentUploading ||
+                                attachmentUploadStorages.length === 0
+                              }
+                            >
+                              Adicionar
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-sm font-semibold">Anexos</h3>
+                    <div
+                      role="button"
+                      tabIndex={0}
+                      className="w-full text-left rounded-md border border-transparent px-2 py-1 -ml-2 hover:border-muted-foreground/30 hover:bg-muted/30 cursor-pointer"
+                      onClick={() =>
+                        handleStartEditingField(fields.attachments!.slug)
+                      }
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault();
+                          handleStartEditingField(fields.attachments!.slug);
+                        }
+                      }}
+                    >
+                      {renderExtraField(fields.attachments)}
+                    </div>
+                    {editingFieldSlug === fields.attachments.slug && (
+                      <form
+                        className="space-y-2"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          extraForm.handleSubmit();
+                        }}
+                      >
+                        {renderExtraFieldEditor(fields.attachments)}
+                        <div className="flex justify-end gap-2">
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            className="cursor-pointer"
+                            onClick={() => setEditingFieldSlug(null)}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            type="submit"
+                            className="cursor-pointer"
+                            disabled={updateRow.status === 'pending'}
+                          >
+                            Salvar
+                          </Button>
+                        </div>
+                      </form>
+                    )}
+                  </>
+                )}
+              </section>
             )}
 
             {fields.comments && (
@@ -780,10 +1138,10 @@ export function KanbanRowDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => setEditTarget('labels')}
+                onClick={() => setEditTarget('start')}
                 className="cursor-pointer"
               >
-                Rotulos
+                Data de início
               </Button>
               <Button
                 type="button"

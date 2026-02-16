@@ -26,16 +26,52 @@ import { E_FIELD_TYPE } from '@/lib/constant';
 import {
   normalizeGroupFieldValue,
   normalizeId,
+  normalizeIdList,
   normalizeStorageList,
   normalizeUserList,
   parseReactions,
   serializeReactions,
   stripHtml,
 } from '@/lib/forum-helpers';
-import type { IField, IRow, IStorage, ITable } from '@/lib/interfaces';
+import type {
+  IField,
+  IRow,
+  IStorage,
+  ITable,
+  Paginated,
+} from '@/lib/interfaces';
 import { getFieldBySlug, getFirstFieldByType } from '@/lib/kanban-helpers';
 import { cn } from '@/lib/utils';
 import { useAuthenticationStore } from '@/stores/authentication';
+
+const FORUM_SYNC_INTERVAL_MS = 5000;
+
+type ForumRealtimeSubscriptionArgs = {
+  enabled: boolean;
+  intervalMs: number;
+  onSync: () => void;
+};
+
+type ForumRealtimeStrategy = {
+  subscribeChannels: (args: ForumRealtimeSubscriptionArgs) => () => void;
+  subscribeActiveChannel: (args: ForumRealtimeSubscriptionArgs) => () => void;
+};
+
+// Keep realtime sync behind a strategy so polling can be replaced by websocket later.
+const forumPollingStrategy: ForumRealtimeStrategy = {
+  subscribeChannels({ enabled, intervalMs, onSync }): () => void {
+    if (!enabled || typeof window === 'undefined') return () => {};
+    onSync();
+    const interval = window.setInterval(onSync, intervalMs);
+    return (): void => window.clearInterval(interval);
+  },
+  subscribeActiveChannel({ enabled, intervalMs, onSync }): () => void {
+    if (!enabled || typeof window === 'undefined') return () => {};
+    onSync();
+    const interval = window.setInterval(onSync, intervalMs);
+    return (): void => window.clearInterval(interval);
+  },
+};
 
 interface Props {
   data: Array<IRow>;
@@ -90,6 +126,9 @@ export function TableForumView({
     inFlight: false,
     rowId: null,
   });
+  const channelsPollingRef = React.useRef<{ inFlight: boolean }>({
+    inFlight: false,
+  });
   const [focusTick, setFocusTick] = React.useState(0);
 
   const bumpFocus = React.useCallback(() => {
@@ -127,12 +166,98 @@ export function TableForumView({
   const channelDescriptionField =
     getFieldBySlug(headers, 'descricao', E_FIELD_TYPE.TEXT_LONG) ||
     getFirstFieldByType(headers, E_FIELD_TYPE.TEXT_LONG);
+  const channelPrivacyField = getFieldBySlug(
+    headers,
+    'privacidade',
+    E_FIELD_TYPE.DROPDOWN,
+  );
+  const channelMembersField = getFieldBySlug(
+    headers,
+    'membros',
+    E_FIELD_TYPE.USER,
+  );
 
   const messagesField =
     getFieldBySlug(headers, 'mensagens', E_FIELD_TYPE.FIELD_GROUP) ||
     getFirstFieldByType(headers, E_FIELD_TYPE.FIELD_GROUP);
 
   const activeRow = rowsState.find((row) => row._id === activeRowId) ?? null;
+
+  const getChannelCreatorId = React.useCallback((row: IRow): string | null => {
+    return normalizeId(row.creator) ?? normalizeId(row['creator']);
+  }, []);
+
+  const isCreatorOfChannel = React.useCallback(
+    (row: IRow): boolean => {
+      if (!currentUserId) return false;
+      return getChannelCreatorId(row) === currentUserId;
+    },
+    [currentUserId, getChannelCreatorId],
+  );
+
+  const isMemberOfChannel = React.useCallback(
+    (row: IRow): boolean => {
+      if (!currentUserId) return false;
+      if (!channelMembersField) return true;
+      const memberIds = normalizeIdList(row[channelMembersField.slug]);
+      return memberIds.includes(currentUserId);
+    },
+    [channelMembersField, currentUserId],
+  );
+
+  const isPrivateChannel = React.useCallback(
+    (row: IRow): boolean => {
+      if (channelPrivacyField) {
+        const raw = row[channelPrivacyField.slug];
+        const value = Array.isArray(raw) ? raw[0] : raw;
+        return (
+          String(value ?? '')
+            .trim()
+            .toLowerCase() === 'privado'
+        );
+      }
+      return Boolean(channelMembersField);
+    },
+    [channelMembersField, channelPrivacyField],
+  );
+
+  const canAccessChannel = React.useCallback(
+    (row: IRow): boolean => {
+      if (isCreatorOfChannel(row)) return true;
+      if (!isPrivateChannel(row)) return true;
+      return isMemberOfChannel(row);
+    },
+    [isCreatorOfChannel, isMemberOfChannel, isPrivateChannel],
+  );
+
+  const canManageChannel = React.useCallback(
+    (row: IRow): boolean => isCreatorOfChannel(row),
+    [isCreatorOfChannel],
+  );
+  const canAddChannel = React.useMemo(() => {
+    if (!currentUserId) return false;
+    const ownerId = normalizeId(table.owner);
+    if (ownerId && ownerId === currentUserId) return true;
+    const adminIds = Array.isArray(table.administrators)
+      ? table.administrators
+          .map((admin) => normalizeId(admin))
+          .filter((id): id is string => Boolean(id))
+      : [];
+    return adminIds.includes(currentUserId);
+  }, [currentUserId, table.administrators, table.owner]);
+
+  React.useEffect(() => {
+    if (rowsState.length === 0) {
+      setActiveRowId(null);
+      return;
+    }
+    if (activeRowId) {
+      const selectedRow = rowsState.find((row) => row._id === activeRowId);
+      if (selectedRow && canAccessChannel(selectedRow)) return;
+    }
+    const firstAccessibleRow = rowsState.find((row) => canAccessChannel(row));
+    setActiveRowId(firstAccessibleRow?._id ?? null);
+  }, [activeRowId, canAccessChannel, rowsState]);
 
   const messagesGroup = React.useMemo(() => {
     if (!messagesField?.group?.slug) return null;
@@ -345,11 +470,14 @@ export function TableForumView({
     defaultValues: {
       label: '',
       description: '',
+      privacy: 'publico',
+      members: [] as Array<string>,
     },
     onSubmit: async ({ value }) => {
       if (!channelField) return;
       const label = value.label.trim();
       if (!label || createRow.status === 'pending') return;
+      const members = Array.from(new Set(value.members.filter(Boolean)));
 
       const description = value.description.trim();
       const payload: Record<string, unknown> = {
@@ -357,6 +485,13 @@ export function TableForumView({
       };
       if (channelDescriptionField && description) {
         payload[channelDescriptionField.slug] = description;
+      }
+      if (channelPrivacyField) {
+        payload[channelPrivacyField.slug] =
+          value.privacy === 'privado' ? 'privado' : 'publico';
+      }
+      if (channelMembersField) {
+        payload[channelMembersField.slug] = members;
       }
 
       await createRow.mutateAsync({
@@ -368,7 +503,12 @@ export function TableForumView({
 
   React.useEffect(() => {
     if (!isAddChannelOpen) {
-      addChannelForm.reset({ label: '', description: '' });
+      addChannelForm.reset({
+        label: '',
+        description: '',
+        privacy: 'publico',
+        members: [],
+      });
     }
   }, [addChannelForm, isAddChannelOpen]);
 
@@ -381,11 +521,18 @@ export function TableForumView({
     defaultValues: {
       label: '',
       description: '',
+      privacy: 'publico',
+      members: [] as Array<string>,
     },
     onSubmit: async ({ value }) => {
       if (!channelField || !editingChannelId) return;
       const label = value.label.trim();
       if (!label || updateRow.status === 'pending') return;
+      if (!editingChannelRow || !canManageChannel(editingChannelRow)) {
+        toast('Apenas o criador pode editar este canal');
+        return;
+      }
+      const members = Array.from(new Set(value.members.filter(Boolean)));
 
       const description = value.description.trim();
       const payload: Record<string, unknown> = {
@@ -393,6 +540,13 @@ export function TableForumView({
       };
       if (channelDescriptionField) {
         payload[channelDescriptionField.slug] = description || '';
+      }
+      if (channelPrivacyField) {
+        payload[channelPrivacyField.slug] =
+          value.privacy === 'privado' ? 'privado' : 'publico';
+      }
+      if (channelMembersField) {
+        payload[channelMembersField.slug] = members;
       }
 
       await updateRow.mutateAsync({
@@ -413,7 +567,12 @@ export function TableForumView({
 
   React.useEffect(() => {
     if (!isEditChannelOpen) {
-      editChannelForm.reset({ label: '', description: '' });
+      editChannelForm.reset({
+        label: '',
+        description: '',
+        privacy: 'publico',
+        members: [],
+      });
       setEditingChannelRow(null);
     }
   }, [editChannelForm, isEditChannelOpen]);
@@ -462,6 +621,29 @@ export function TableForumView({
     [channelDescriptionField],
   );
 
+  const refreshChannels = React.useCallback(async () => {
+    if (channelsPollingRef.current.inFlight) return;
+    channelsPollingRef.current.inFlight = true;
+    try {
+      const response = await API.get<Paginated<IRow>>(
+        `/tables/${tableSlug}/rows/paginated`,
+        {
+          params: {
+            page: 1,
+            perPage: 100,
+            trashed: false,
+          },
+        },
+      );
+      const nextRows = Array.isArray(response.data?.data)
+        ? response.data.data
+        : [];
+      setRowsState(nextRows);
+    } finally {
+      channelsPollingRef.current.inFlight = false;
+    }
+  }, [tableSlug]);
+
   const refreshRowById = React.useCallback(
     async (rowId: string) => {
       if (!rowId) return;
@@ -488,42 +670,87 @@ export function TableForumView({
   );
 
   React.useEffect(() => {
-    if (!activeRowId) return;
-    if (typeof window === 'undefined') return;
-    refreshRowById(activeRowId);
-    const interval = window.setInterval(() => {
-      refreshRowById(activeRowId);
-    }, 5000);
-    return (): void => window.clearInterval(interval);
+    return forumPollingStrategy.subscribeChannels({
+      enabled: true,
+      intervalMs: FORUM_SYNC_INTERVAL_MS,
+      onSync: () => {
+        void refreshChannels();
+      },
+    });
+  }, [refreshChannels]);
+
+  React.useEffect(() => {
+    return forumPollingStrategy.subscribeActiveChannel({
+      enabled: Boolean(activeRowId),
+      intervalMs: FORUM_SYNC_INTERVAL_MS,
+      onSync: () => {
+        if (!activeRowId) return;
+        void refreshRowById(activeRowId);
+      },
+    });
   }, [activeRowId, refreshRowById]);
 
   const handleSelectRow = React.useCallback(
     (rowId: string) => {
+      const row = rowsState.find((item) => item._id === rowId);
+      if (!row) return;
+      if (!canAccessChannel(row)) {
+        toast('Canal privado', {
+          description: 'Apenas membros deste canal podem acessar as mensagens',
+          closeButton: true,
+        });
+        return;
+      }
       setActiveRowId(rowId);
       refreshRowById(rowId);
     },
-    [refreshRowById],
+    [canAccessChannel, refreshRowById, rowsState],
   );
 
   const handleChannelEdit = React.useCallback(
     (row: IRow) => {
+      if (!canManageChannel(row)) {
+        toast('Apenas o criador pode editar este canal');
+        return;
+      }
       const label = resolveChannelLabel(row);
       const description = resolveChannelDescription(row);
-      editChannelForm.reset({ label, description });
+      const privacy = channelPrivacyField
+        ? String(row[channelPrivacyField.slug] ?? 'publico')
+        : 'publico';
+      const members = channelMembersField
+        ? normalizeIdList(row[channelMembersField.slug])
+        : [];
+      editChannelForm.reset({ label, description, privacy, members });
       editChannelForm.setFieldValue('label', label);
       editChannelForm.setFieldValue('description', description);
+      editChannelForm.setFieldValue('privacy', privacy);
+      editChannelForm.setFieldValue('members', members);
       setEditingChannelId(row._id);
       setEditingChannelRow(row);
       setIsEditChannelOpen(true);
     },
-    [editChannelForm, resolveChannelDescription, resolveChannelLabel],
+    [
+      canManageChannel,
+      channelMembersField,
+      channelPrivacyField,
+      editChannelForm,
+      resolveChannelDescription,
+      resolveChannelLabel,
+    ],
   );
 
   const handleChannelDelete = React.useCallback(
     async (rowId: string) => {
+      const row = rowsState.find((item) => item._id === rowId);
+      if (!row || !canManageChannel(row)) {
+        toast('Apenas o criador pode editar este canal');
+        setDeleteChannelId(null);
+        return;
+      }
       await API.delete(`/tables/${tableSlug}/rows/${rowId}`);
       setRowsState((prev) => {
-        const nextRows = prev.filter((row) => row._id !== rowId);
+        const nextRows = prev.filter((channelRow) => channelRow._id !== rowId);
         setActiveRowId((current) => {
           if (current !== rowId) return current;
           return nextRows[0]?._id ?? null;
@@ -532,7 +759,7 @@ export function TableForumView({
       });
       setDeleteChannelId(null);
     },
-    [tableSlug],
+    [canManageChannel, rowsState, tableSlug],
   );
 
   const buildMessagesPayload = React.useCallback(
@@ -599,6 +826,10 @@ export function TableForumView({
 
   const handleSend = React.useCallback(async () => {
     if (!activeRow || !messagesField) return;
+    if (!canAccessChannel(activeRow)) {
+      toast('Apenas membros deste canal podem enviar mensagens');
+      return;
+    }
     if (!currentUserId) {
       toast('Usuario nao identificado');
       return;
@@ -614,85 +845,77 @@ export function TableForumView({
       return;
     }
 
-    const nextMessages = [...rawMessages];
-    const base =
-      editingIndex !== null && rawMessages[editingIndex]
-        ? { ...(rawMessages[editingIndex] as Record<string, unknown>) }
-        : {};
+    try {
+      const attachments = composerStorages.map((storage) => storage._id);
+      const payload = {
+        text: formText || '',
+        mentions: formMentions,
+        attachments,
+        replyTo: replyToId ?? null,
+      };
 
-    if (messageIdField) {
-      const existingId = normalizeId(base[messageIdField.slug]);
-      base[messageIdField.slug] = existingId ?? crypto.randomUUID();
+      if (editingIndex !== null) {
+        const editingMessage = messages[editingIndex];
+        if (!editingMessage) return;
+        await API.put(
+          `/tables/${tableSlug}/rows/${activeRow._id}/forum/messages/${editingMessage.id}`,
+          payload,
+        );
+      } else {
+        await API.post(
+          `/tables/${tableSlug}/rows/${activeRow._id}/forum/messages`,
+          payload,
+        );
+      }
+
+      await refreshRowById(activeRow._id);
+      resetComposer();
+      bumpFocus();
+    } catch {
+      toast('Erro ao enviar mensagem', {
+        className: '!bg-destructive !text-white !border-destructive',
+        description: 'Nao foi possivel salvar a mensagem neste canal',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
     }
-
-    if (messageTextField) {
-      base[messageTextField.slug] = formText || '';
-    }
-
-    if (editingIndex === null && messageAuthorField) {
-      base[messageAuthorField.slug] = [currentUserId];
-    }
-
-    if (editingIndex === null && messageDateField) {
-      base[messageDateField.slug] =
-        base[messageDateField.slug] ?? new Date().toISOString();
-    }
-
-    if (messageAttachmentsField) {
-      base[messageAttachmentsField.slug] = composerStorages.map(
-        (storage) => storage._id,
-      );
-    }
-
-    if (messageMentionsField) {
-      base[messageMentionsField.slug] = formMentions;
-    }
-
-    if (messageReplyField) {
-      base[messageReplyField.slug] = replyToId ?? null;
-    }
-
-    if (messageReactionsField && !base[messageReactionsField.slug]) {
-      base[messageReactionsField.slug] = serializeReactions([]);
-    }
-
-    if (editingIndex !== null) {
-      nextMessages[editingIndex] = base;
-    } else {
-      nextMessages.push(base);
-    }
-
-    await applyMessagesUpdate(nextMessages);
-    resetComposer();
-    bumpFocus();
   }, [
     activeRow,
-    applyMessagesUpdate,
     composerForm.state.values,
     composerStorages,
     currentUserId,
     editingIndex,
-    messageAttachmentsField,
-    messageAuthorField,
-    messageDateField,
-    messageIdField,
-    messageMentionsField,
-    messageReactionsField,
-    messageReplyField,
-    messageTextField,
+    messages,
     messagesField,
-    rawMessages,
+    refreshRowById,
     replyToId,
     resetComposer,
     bumpFocus,
+    canAccessChannel,
+    tableSlug,
   ]);
 
   const handleDelete = React.useCallback(
     async (index: number) => {
-      const nextMessages = rawMessages.filter((_, i) => i !== index);
-      await applyMessagesUpdate(nextMessages);
+      if (!activeRow) return;
+      const message = messages[index];
+      if (!message) return;
+
+      try {
+        await API.delete(
+          `/tables/${tableSlug}/rows/${activeRow._id}/forum/messages/${message.id}`,
+        );
+        await refreshRowById(activeRow._id);
+      } catch {
+        toast('Erro ao excluir mensagem', {
+          className: '!bg-destructive !text-white !border-destructive',
+          description: 'Voce so pode excluir mensagens enviadas por voce',
+          descriptionClassName: '!text-white',
+          closeButton: true,
+        });
+      }
     },
-    [applyMessagesUpdate, rawMessages],
+    [activeRow, messages, refreshRowById, tableSlug],
   );
 
   const handleStartEdit = React.useCallback(
@@ -770,10 +993,13 @@ export function TableForumView({
         rows={rowsState}
         activeRowId={activeRowId}
         channelField={channelField}
+        canAddChannel={canAddChannel}
         isOpen={isSidebarOpen}
         onToggleOpen={() => setIsSidebarOpen((value) => !value)}
         onAddChannel={() => setIsAddChannelOpen(true)}
         onSelectRow={handleSelectRow}
+        canAccessRow={canAccessChannel}
+        canManageRow={canManageChannel}
         onEditRow={handleChannelEdit}
         onDeleteRow={(row) => setDeleteChannelId(row._id)}
       />
@@ -784,6 +1010,8 @@ export function TableForumView({
         form={addChannelForm}
         isPending={createRow.status === 'pending'}
         labelValue={addChannelLabel}
+        requiresMembers={Boolean(channelMembersField)}
+        requiresPrivacy={Boolean(channelPrivacyField)}
         onCancel={() => setIsAddChannelOpen(false)}
       />
 
@@ -794,6 +1022,8 @@ export function TableForumView({
         form={editChannelForm}
         isPending={updateRow.status === 'pending'}
         labelValue={editChannelLabel}
+        requiresMembers={Boolean(channelMembersField)}
+        requiresPrivacy={Boolean(channelPrivacyField)}
         onCancel={() => setIsEditChannelOpen(false)}
       />
 

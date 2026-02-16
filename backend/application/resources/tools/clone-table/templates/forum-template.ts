@@ -57,7 +57,52 @@ export async function createForumTemplate(
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
     methods: {
       onLoad: { code: null },
-      beforeSave: { code: null },
+      beforeSave: {
+        code: `
+(async () => {
+  const messages = field.get('mensagens');
+  if (!Array.isArray(messages) || messages.length === 0) return;
+
+  const nextMessages = await Promise.all(
+    messages.map(async (message) => {
+      if (!message || typeof message !== 'object') return message;
+
+      const mentionEmails = Array.isArray(message['mencoes-emails'])
+        ? message['mencoes-emails']
+            .map((item) => String(item || '').trim().toLowerCase())
+            .filter(Boolean)
+        : [];
+
+      const alreadyNotified = Array.isArray(message['mencoes-notificadas'])
+        ? message['mencoes-notificadas']
+            .map((item) => String(item || '').trim().toLowerCase())
+            .filter(Boolean)
+        : [];
+
+      const notifiedSet = new Set(alreadyNotified);
+      const newRecipients = mentionEmails.filter((email) => !notifiedSet.has(email));
+
+      if (newRecipients.length > 0) {
+        await email.send(
+          newRecipients,
+          'Você foi mencionado em um canal',
+          'Você recebeu uma menção em uma mensagem do fórum.'
+        );
+      }
+
+      return {
+        ...message,
+        'mencoes-notificadas': Array.from(
+          new Set([...alreadyNotified, ...newRecipients])
+        ),
+      };
+    })
+  );
+
+  field.set('mensagens', nextMessages);
+})();
+        `.trim(),
+      },
       afterSave: { code: null },
     },
     groups,
@@ -67,12 +112,20 @@ export async function createForumTemplate(
 
   const channelField = fields.find((field) => field.slug === 'canal');
   const descriptionField = fields.find((field) => field.slug === 'descricao');
+  const privacyField = fields.find((field) => field.slug === 'privacidade');
+  const membersField = fields.find((field) => field.slug === 'membros');
   if (channelField) {
     const model = await buildTable(newTable);
     await model.create({
       [channelField.slug]: 'Bem-vindos',
       ...(descriptionField && {
         [descriptionField.slug]: 'Canal inicial',
+      }),
+      ...(privacyField && {
+        [privacyField.slug]: 'publico',
+      }),
+      ...(membersField && {
+        [membersField.slug]: [],
       }),
       creator: payload.ownerId,
     });
@@ -153,6 +206,51 @@ export async function buildForumFields(
     showInForm: true,
     showInDetail: true,
     showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: 100,
+    widthInList: 100,
+  });
+
+  const channelPrivacyField = await createField({
+    name: 'Privacidade',
+    slug: 'privacidade',
+    type: E_FIELD_TYPE.DROPDOWN,
+    required: true,
+    multiple: false,
+    format: null,
+    showInList: true,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: true,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [
+      { id: 'publico', label: 'Público', color: '#22c55e' },
+      { id: 'privado', label: 'Privado', color: '#ef4444' },
+    ],
+    category: [],
+    group: null,
+    widthInForm: 50,
+    widthInList: 50,
+  });
+
+  const channelMembersField = await createField({
+    name: 'Membros',
+    slug: 'membros',
+    type: E_FIELD_TYPE.USER,
+    required: false,
+    multiple: true,
+    format: null,
+    showInList: false,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: true,
     defaultValue: null,
     locked: true,
     relationship: null,
@@ -291,6 +389,48 @@ export async function buildForumFields(
     widthInList: null,
   });
 
+  const messageMentionEmailsField = await fieldRepository.create({
+    name: 'Menções (emails)',
+    slug: 'mencoes-emails',
+    type: E_FIELD_TYPE.TEXT_LONG,
+    required: false,
+    multiple: true,
+    format: E_FIELD_FORMAT.PLAIN_TEXT,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: null,
+    widthInList: null,
+  });
+
+  const messageMentionNotifiedField = await fieldRepository.create({
+    name: 'Menções notificadas',
+    slug: 'mencoes-notificadas',
+    type: E_FIELD_TYPE.TEXT_LONG,
+    required: false,
+    multiple: true,
+    format: E_FIELD_FORMAT.PLAIN_TEXT,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: null,
+    widthInList: null,
+  });
+
   const messageReplyField = await fieldRepository.create({
     name: 'Resposta',
     slug: 'resposta',
@@ -343,6 +483,8 @@ export async function buildForumFields(
       messageDateField,
       messageAttachmentsField,
       messageMentionsField,
+      messageMentionEmailsField,
+      messageMentionNotifiedField,
       messageReplyField,
       messageReactionsField,
     ],
@@ -353,6 +495,8 @@ export async function buildForumFields(
       messageDateField,
       messageAttachmentsField,
       messageMentionsField,
+      messageMentionEmailsField,
+      messageMentionNotifiedField,
       messageReplyField,
       messageReactionsField,
     ]),
@@ -384,11 +528,15 @@ export async function buildForumFields(
   const orderList = [
     channelField._id,
     channelDescriptionField._id,
+    channelPrivacyField._id,
+    channelMembersField._id,
     messagesGroupField._id,
   ];
   const orderForm = [
     channelField._id,
     channelDescriptionField._id,
+    channelPrivacyField._id,
+    channelMembersField._id,
     messagesGroupField._id,
   ];
 

@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils';
 interface ForumMessagesListProps {
   messages: Array<ForumMessage>;
   currentUserId: string;
-  endRef: React.RefObject<HTMLDivElement>;
+  endRef: React.RefObject<HTMLDivElement | null>;
   onReply: (messageId: string) => void;
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;

@@ -1,4 +1,5 @@
 import {
+  LockIcon,
   MessageCircle,
   PanelLeftCloseIcon,
   PanelLeftOpenIcon,
@@ -15,10 +16,13 @@ interface ForumSidebarProps {
   rows: Array<IRow>;
   activeRowId: string | null;
   channelField?: IField | null;
+  canAddChannel: boolean;
   isOpen: boolean;
   onToggleOpen: () => void;
   onAddChannel: () => void;
   onSelectRow: (rowId: string) => void;
+  canAccessRow: (row: IRow) => boolean;
+  canManageRow: (row: IRow) => boolean;
   onEditRow: (row: IRow) => void;
   onDeleteRow: (row: IRow) => void;
 }
@@ -27,10 +31,13 @@ export function ForumSidebar({
   rows,
   activeRowId,
   channelField,
+  canAddChannel,
   isOpen,
   onToggleOpen,
   onAddChannel,
   onSelectRow,
+  canAccessRow,
+  canManageRow,
   onEditRow,
   onDeleteRow,
 }: ForumSidebarProps): React.JSX.Element {
@@ -55,14 +62,16 @@ export function ForumSidebar({
               <span>Canais</span>
             </div>
             <div className="flex items-center gap-1">
-              <button
-                type="button"
-                className="p-1 rounded hover:bg-muted/60 cursor-pointer"
-                onClick={onAddChannel}
-                aria-label="Adicionar canal"
-              >
-                <PlusIcon className="size-4" />
-              </button>
+              {canAddChannel && (
+                <button
+                  type="button"
+                  className="p-1 rounded hover:bg-muted/60 cursor-pointer"
+                  onClick={onAddChannel}
+                  aria-label="Adicionar canal"
+                >
+                  <PlusIcon className="size-4" />
+                </button>
+              )}
               <button
                 onClick={onToggleOpen}
                 className="p-1 rounded hover:bg-muted/60 cursor-pointer"
@@ -90,6 +99,8 @@ export function ForumSidebar({
               ? String(row[channelField.slug] ?? 'Canal sem nome')
               : row._id;
             const isActive = row._id === activeRowId;
+            const canAccess = canAccessRow(row);
+            const canManage = canManageRow(row);
             return (
               <button
                 key={row._id}
@@ -102,32 +113,38 @@ export function ForumSidebar({
                 )}
                 onClick={() => onSelectRow(row._id)}
               >
-                <span className="font-medium">#</span>
+                {canAccess ? (
+                  <span className="font-medium">#</span>
+                ) : (
+                  <LockIcon className="size-3.5" />
+                )}
                 <span className="truncate">{label}</span>
-                <span className="ml-auto flex items-center gap-1 opacity-0 transition pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-muted/60 cursor-pointer"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onEditRow(row);
-                    }}
-                    aria-label="Editar canal"
-                  >
-                    <PencilIcon className="size-3" />
-                  </button>
-                  <button
-                    type="button"
-                    className="p-1 rounded hover:bg-muted/60 cursor-pointer"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      onDeleteRow(row);
-                    }}
-                    aria-label="Excluir canal"
-                  >
-                    <TrashIcon className="size-3" />
-                  </button>
-                </span>
+                {canManage && (
+                  <span className="ml-auto flex items-center gap-1 opacity-0 transition pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
+                    <button
+                      type="button"
+                      className="p-1 rounded hover:bg-muted/60 cursor-pointer"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onEditRow(row);
+                      }}
+                      aria-label="Editar canal"
+                    >
+                      <PencilIcon className="size-3" />
+                    </button>
+                    <button
+                      type="button"
+                      className="p-1 rounded hover:bg-muted/60 cursor-pointer"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onDeleteRow(row);
+                      }}
+                      aria-label="Excluir canal"
+                    >
+                      <TrashIcon className="size-3" />
+                    </button>
+                  </span>
+                )}
               </button>
             );
           })}

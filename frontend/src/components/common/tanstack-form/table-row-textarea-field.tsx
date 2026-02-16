@@ -6,11 +6,13 @@ import type { IField } from '@/lib/interfaces';
 interface TableRowTextareaFieldProps {
   field: IField;
   disabled?: boolean;
+  compact?: boolean;
 }
 
 export function TableRowTextareaField({
   field,
   disabled,
+  compact = false,
 }: TableRowTextareaFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
@@ -31,7 +33,8 @@ export function TableRowTextareaField({
         value={formField.state.value || ''}
         onBlur={formField.handleBlur}
         onChange={(e) => formField.handleChange(e.target.value)}
-        rows={3}
+        rows={compact ? 2 : 3}
+        className={compact ? 'max-h-24 min-h-20' : undefined}
         aria-invalid={isInvalid}
       />
       {isInvalid && <FieldError errors={formField.state.meta.errors} />}
