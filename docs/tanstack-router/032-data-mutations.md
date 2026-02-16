@@ -2,18 +2,18 @@
 title: Data Mutations
 ---
 
-Since TanStack router does not store or cache data, it's role in data mutation is slim to none outside of reacting to potential URL side-effects from external mutation events. That said, we've compiled a list of mutation-related features you might find useful and libraries that implement them.
+Como o TanStack Router não armazena nem faz cache de dados, seu papel em mutations de dados é mínimo ou nenhum, além de reagir a possíveis efeitos colaterais na URL vindos de eventos de mutation externos. Dito isso, compilamos uma lista de funcionalidades relacionadas a mutations que você pode achar úteis e bibliotecas que as implementam.
 
-Look for and use mutation utilities that support:
+Procure e use utilitários de mutation que suportem:
 
-- Handling and caching submission state
-- Providing both local and global optimistic UI support
-- Built-in hooks to wire up invalidation (or automatically support it)
-- Handling multiple in-flight mutations at once
-- Organizing mutation state as a globally accessible resource
-- Submission state history and garbage collection
+- Gerenciamento e cache do state de submissão
+- Suporte a UI otimista tanto local quanto global
+- Hooks integrados para conectar invalidação (ou suporte automático a ela)
+- Gerenciamento de múltiplas mutations em andamento simultaneamente
+- Organização do state de mutation como um recurso acessível globalmente
+- Histórico de state de submissão e coleta de lixo
 
-Some suggested libraries:
+Algumas bibliotecas sugeridas:
 
 - [TanStack Query](https://tanstack.com/query/latest/docs/react/guides/mutations)
 - [SWR](https://swr.vercel.app/)
@@ -22,22 +22,22 @@ Some suggested libraries:
 - [Relay](https://relay.dev/)
 - [Apollo](https://www.apollographql.com/docs/react/)
 
-Or, even...
+Ou, até mesmo...
 
 - [Zustand](https://zustand-demo.pmnd.rs/)
 - [Jotai](https://jotai.org/)
 - [Recoil](https://recoiljs.org/)
 - [Redux](https://redux.js.org/)
 
-Similar to data fetching, mutation state isn't a one-size-fits-all solution, so you'll need to pick a solution that fits your needs and your team's needs. We recommend trying out a few different solutions and seeing what works best for you.
+Assim como o data fetching, o state de mutation não é uma solução única para todos os casos, então você precisará escolher uma solução que atenda às suas necessidades e às da sua equipe. Recomendamos experimentar algumas soluções diferentes e ver o que funciona melhor para você.
 
-> ⚠️ Still here? Submission state is an interesting topic when it comes to persistence. Do you keep every mutation around forever? How do you know when to get rid of it? What if the user navigates away from the screen and then back? Let's dig in!
+> ⚠️ Ainda aqui? O state de submissão é um tópico interessante quando se trata de persistência. Você mantém cada mutation para sempre? Como saber quando se livrar dela? E se o usuário navegar para outra tela e depois voltar? Vamos investigar!
 
-## Invalidating TanStack Router after a mutation
+## Invalidando o TanStack Router após uma mutation
 
-TanStack Router comes with short-term caching built-in. So even though we're not storing any data after a route match is unmounted, there is a high probability that if any mutations are made related to the data stored in the Router, the current route matches' data could become stale.
+O TanStack Router vem com cache de curto prazo integrado. Então, mesmo que não estejamos armazenando nenhum dado após um route match ser desmontado, há uma alta probabilidade de que, se alguma mutation for feita relacionada aos dados armazenados no Router, os dados dos route matches atuais possam ficar stale.
 
-When mutations related to loader data are made, we can use `router.invalidate` to force the router to reload all of the current route matches:
+Quando mutations relacionadas a dados do loader são feitas, podemos usar `router.invalidate` para forçar o router a recarregar todos os route matches atuais:
 
 ```tsx
 const router = useRouter();
@@ -52,9 +52,9 @@ const addTodo = async (todo: Todo) => {
 };
 ```
 
-Invalidating all of the current route matches happens in the background, so existing data will continue to be served until the new data is ready, just as if you were navigating to a new route.
+A invalidação de todos os route matches atuais acontece em segundo plano, então os dados existentes continuarão sendo servidos até que os novos dados estejam prontos, como se você estivesse navegando para uma nova route.
 
-If you want to await the invalidation until all loaders have finished, pass `{sync: true}` into `router.invalidate`:
+Se você quiser aguardar a invalidação até que todos os loaders tenham terminado, passe `{sync: true}` em `router.invalidate`:
 
 ```tsx
 const router = useRouter();
@@ -69,22 +69,22 @@ const addTodo = async (todo: Todo) => {
 };
 ```
 
-## Long-term mutation State
+## State de Mutation de Longo Prazo
 
-Regardless of the mutation library used, mutations often create state related to their submission. While most mutations are set-and-forget, some mutation states are more long-lived, either to support optimistic UI or to provide feedback to the user about the status of their submissions. Most state managers will correctly keep this submission state around and expose it to make it possible to show UI elements like loading spinners, success messages, error messages, etc.
+Independentemente da biblioteca de mutation usada, mutations frequentemente criam state relacionado à sua submissão. Embora a maioria das mutations sejam do tipo "dispare e esqueça", alguns states de mutation são mais duradouros, seja para suportar UI otimista ou para fornecer feedback ao usuário sobre o status de suas submissões. A maioria dos gerenciadores de state manterá corretamente esse state de submissão e o exporá para tornar possível mostrar elementos de UI como spinners de carregamento, mensagens de sucesso, mensagens de erro, etc.
 
-Let's consider the following interactions:
+Vamos considerar as seguintes interações:
 
-- User navigates to the `/posts/123/edit` screen to edit a post
-- User edits the `123` post and upon success, sees a success message below the editor that the post was updated
-- User navigates to the `/posts` screen
-- User navigates back to the `/posts/123/edit` screen again
+- O usuário navega para a tela `/posts/123/edit` para editar um post
+- O usuário edita o post `123` e, após o sucesso, vê uma mensagem de sucesso abaixo do editor informando que o post foi atualizado
+- O usuário navega para a tela `/posts`
+- O usuário navega de volta para a tela `/posts/123/edit` novamente
 
-Without notifying your mutation management library about the route change, it's possible that your submission state could still be around and your user would still see the **"Post updated successfully"** message when they return to the previous screen. This is not ideal. Obviously, our intent wasn't to keep this mutation state around forever, right?!
+Sem notificar sua biblioteca de gerenciamento de mutations sobre a mudança de route, é possível que o state de submissão ainda esteja presente e o usuário ainda veja a mensagem **"Post updated successfully"** quando retornar à tela anterior. Isso não é ideal. Obviamente, nossa intenção não era manter esse state de mutation para sempre, certo?!
 
-## Using mutation keys
+## Usando chaves de mutation
 
-Hopefully and hypothetically, the easiest way is for your mutation library to support a keying mechanism that will allow your mutations's state to be reset when the key changes:
+Esperançosamente e hipoteticamente, a maneira mais fácil é que sua biblioteca de mutation suporte um mecanismo de chaves que permita que o state das suas mutations seja resetado quando a chave mudar:
 
 ```tsx
 const routeApi = getRouteApi("/room/$roomId/chat");
@@ -121,13 +121,13 @@ function ChatRoom() {
 }
 ```
 
-## Using the `router.subscribe` method
+## Usando o método `router.subscribe`
 
-For libraries that don't have a keying mechanism, we'll likely need to manually reset the mutation state when the user navigates away from the screen. To solve this, we can use TanStack Router's `invalidate` and `subscribe` method to clear mutation states when the user is no longer in need of them.
+Para bibliotecas que não possuem um mecanismo de chaves, provavelmente precisaremos resetar manualmente o state de mutation quando o usuário navegar para fora da tela. Para resolver isso, podemos usar os métodos `invalidate` e `subscribe` do TanStack Router para limpar os states de mutation quando o usuário não precisar mais deles.
 
-The `router.subscribe` method is a function that subscribes a callback to various router events. The event in particular that we'll use here is the `onResolved` event. It's important to understand that this event is fired when the location path is _changed (not just reloaded) and has finally resolved_.
+O método `router.subscribe` é uma função que inscreve um callback em vários eventos do router. O evento em particular que usaremos aqui é o evento `onResolved`. É importante entender que esse evento é disparado quando o caminho da localização é _alterado (não apenas recarregado) e finalmente resolvido_.
 
-This is a great place to reset your old mutation states. Here's an example:
+Este é um ótimo lugar para resetar seus states de mutation antigos. Aqui está um exemplo:
 
 ```tsx
 const router = createRouter();

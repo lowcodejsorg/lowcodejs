@@ -3,8 +3,8 @@ id: installation
 title: Installation
 ---
 
-You can install React Query via [NPM](https://npmjs.com/),
-or a good ol' `<script>` via
+Você pode instalar o React Query via [NPM](https://npmjs.com/),
+ou um bom e velho `<script>` via
 [ESM.sh](https://esm.sh/).
 
 ### NPM
@@ -13,31 +13,31 @@ or a good ol' `<script>` via
 npm i @tanstack/react-query
 ```
 
-or
+ou
 
 ```bash
 pnpm add @tanstack/react-query
 ```
 
-or
+ou
 
 ```bash
 yarn add @tanstack/react-query
 ```
 
-or
+ou
 
 ```bash
 bun add @tanstack/react-query
 ```
 
-React Query is compatible with React v18+ and works with ReactDOM and React Native.
+React Query é compatível com React v18+ e funciona com ReactDOM e React Native.
 
-> Wanna give it a spin before you download? Try out the [simple](./examples/simple) or [basic](./examples/basic) examples!
+> Quer dar uma volta antes de baixar? Experimente os exemplos [simple](./examples/simple) ou [basic](./examples/basic)!
 
 ### CDN
 
-If you're not using a module bundler or package manager, you can also use this library via an ESM-compatible CDN such as [ESM.sh](https://esm.sh/). Simply add a `<script type="module">` tag to the bottom of your HTML file:
+Se você não está usando um bundler de módulos ou gerenciador de pacotes, você também pode usar esta biblioteca via um CDN compatível com ESM como o [ESM.sh](https://esm.sh/). Basta adicionar uma tag `<script type="module">` no final do seu arquivo HTML:
 
 ```html
 <script type="module">
@@ -47,11 +47,11 @@ If you're not using a module bundler or package manager, you can also use this l
 </script>
 ```
 
-> You can find instructions on how to use React without JSX [here](https://react.dev/reference/react/createElement#creating-an-element-without-jsx).
+> Você pode encontrar instruções sobre como usar React sem JSX [aqui](https://react.dev/reference/react/createElement#creating-an-element-without-jsx).
 
-### Requirements
+### Requisitos
 
-React Query is optimized for modern browsers. It is compatible with the following browsers config
+React Query é otimizado para navegadores modernos. Ele é compatível com a seguinte configuração de navegadores
 
 ```
 Chrome >= 91
@@ -62,29 +62,29 @@ iOS >= 15
 Opera >= 77
 ```
 
-> Depending on your environment, you might need to add polyfills. If you want to support older browsers, you need to transpile the library from `node_modules` yourselves.
+> Dependendo do seu ambiente, você pode precisar adicionar polyfills. Se você quiser dar suporte a navegadores mais antigos, você precisa transpilar a biblioteca a partir do `node_modules` por conta própria.
 
-### Recommendations
+### Recomendacoes
 
-It is recommended to also use our [ESLint Plugin Query](../../eslint/eslint-plugin-query.md) to help you catch bugs and inconsistencies while you code. You can install it via:
+Recomendamos que você também use nosso [ESLint Plugin Query](../../eslint/eslint-plugin-query.md) para ajudar a capturar bugs e inconsistencias enquanto você programa. Voce pode instala-lo via:
 
 ```bash
 npm i -D @tanstack/eslint-plugin-query
 ```
 
-or
+ou
 
 ```bash
 pnpm add -D @tanstack/eslint-plugin-query
 ```
 
-or
+ou
 
 ```bash
 yarn add -D @tanstack/eslint-plugin-query
 ```
 
-or
+ou
 
 ```bash
 bun add -D @tanstack/eslint-plugin-query

@@ -3,16 +3,16 @@ id: queries
 title: Queries
 ---
 
-## Query Basics
+## Fundamentos de Queries
 
-A query is a declarative dependency on an asynchronous source of data that is tied to a **unique key**. A query can be used with any Promise based method (including GET and POST methods) to fetch data from a server. If your method modifies data on the server, we recommend using [Mutations](./mutations.md) instead.
+Uma query é uma dependência declarativa de uma fonte assíncrona de dados que está vinculada a uma **chave única**. Uma query pode ser usada com qualquer método baseado em Promise (incluindo métodos GET e POST) para buscar dados de um servidor. Se o seu método modifica dados no servidor, recomendamos usar [Mutations](./mutations.md) em vez disso.
 
-To subscribe to a query in your components or custom hooks, call the `useQuery` hook with at least:
+Para se inscrever em uma query nos seus components ou hooks customizados, chame o hook `useQuery` com pelo menos:
 
-- A **unique key for the query**
-- A function that returns a promise that:
-  - Resolves the data, or
-  - Throws an error
+- Uma **chave única para a query**
+- Uma função que retorna uma promise que:
+  - Resolve os dados, ou
+  - Lança um erro
 
 [//]: # "Example"
 
@@ -26,9 +26,9 @@ function App() {
 
 [//]: # "Example"
 
-The **unique key** you provide is used internally for refetching, caching, and sharing your queries throughout your application.
+A **chave única** que você fornece é usada internamente para refetching, caching e compartilhamento das suas queries por toda a sua aplicação.
 
-The query result returned by `useQuery` contains all of the information about the query that you'll need for templating and any other usage of the data:
+O resultado da query retornado pelo `useQuery` contém todas as informações sobre a query que você vai precisar para fazer o template e qualquer outro uso dos dados:
 
 [//]: # "Example2"
 
@@ -38,19 +38,19 @@ const result = useQuery({ queryKey: ["todos"], queryFn: fetchTodoList });
 
 [//]: # "Example2"
 
-The `result` object contains a few very important states you'll need to be aware of to be productive. A query can only be in one of the following states at any given moment:
+O objeto `result` contém alguns states muito importantes que você precisa conhecer para ser produtivo. Uma query pode estar em apenas um dos seguintes states em qualquer momento:
 
-- `isPending` or `status === 'pending'` - The query has no data yet
-- `isError` or `status === 'error'` - The query encountered an error
-- `isSuccess` or `status === 'success'` - The query was successful and data is available
+- `isPending` ou `status === 'pending'` - A query ainda não tem dados
+- `isError` ou `status === 'error'` - A query encontrou um erro
+- `isSuccess` ou `status === 'success'` - A query foi bem-sucedida e os dados estão disponíveis
 
-Beyond those primary states, more information is available depending on the state of the query:
+Além desses states primários, mais informações estão disponíveis dependendo do state da query:
 
-- `error` - If the query is in an `isError` state, the error is available via the `error` property.
-- `data` - If the query is in an `isSuccess` state, the data is available via the `data` property.
-- `isFetching` - In any state, if the query is fetching at any time (including background refetching) `isFetching` will be `true`.
+- `error` - Se a query está em um state `isError`, o erro está disponível através da propriedade `error`.
+- `data` - Se a query está em um state `isSuccess`, os dados estão disponíveis através da propriedade `data`.
+- `isFetching` - Em qualquer state, se a query está fazendo fetching a qualquer momento (incluindo refetching em segundo plano) `isFetching` será `true`.
 
-For **most** queries, it's usually sufficient to check for the `isPending` state, then the `isError` state, then finally, assume that the data is available and render the successful state:
+Para a **maioria** das queries, geralmente é suficiente verificar o state `isPending`, depois o state `isError` e, finalmente, assumir que os dados estão disponíveis e renderizar o state de sucesso:
 
 [//]: # "Example3"
 
@@ -82,7 +82,7 @@ function Todos() {
 
 [//]: # "Example3"
 
-If booleans aren't your thing, you can always use the `status` state as well:
+Se booleanos não são a sua praia, você sempre pode usar o state `status` também:
 
 [//]: # "Example4"
 
@@ -114,32 +114,32 @@ function Todos() {
 
 [//]: # "Example4"
 
-TypeScript will also narrow the type of `data` correctly if you've checked for `pending` and `error` before accessing it.
+O TypeScript também vai fazer o narrowing do tipo de `data` corretamente se você verificar `pending` e `error` antes de acessá-lo.
 
 ### FetchStatus
 
-In addition to the `status` field, you will also get an additional `fetchStatus` property with the following options:
+Além do campo `status`, você também terá uma propriedade adicional `fetchStatus` com as seguintes opções:
 
-- `fetchStatus === 'fetching'` - The query is currently fetching.
-- `fetchStatus === 'paused'` - The query wanted to fetch, but it is paused. Read more about this in the [Network Mode](./network-mode.md) guide.
-- `fetchStatus === 'idle'` - The query is not doing anything at the moment.
+- `fetchStatus === 'fetching'` - A query está fazendo fetching no momento.
+- `fetchStatus === 'paused'` - A query queria fazer fetch, mas está pausada. Leia mais sobre isso no guia [Network Mode](./network-mode.md).
+- `fetchStatus === 'idle'` - A query não está fazendo nada no momento.
 
-### Why two different states?
+### Por que dois states diferentes?
 
-Background refetches and stale-while-revalidate logic make all combinations for `status` and `fetchStatus` possible. For example:
+Refetches em segundo plano e a lógica de stale-while-revalidate tornam todas as combinações de `status` e `fetchStatus` possíveis. Por exemplo:
 
-- a query in `success` status will usually be in `idle` fetchStatus, but it could also be in `fetching` if a background refetch is happening.
-- a query that mounts and has no data will usually be in `pending` status and `fetching` fetchStatus, but it could also be `paused` if there is no network connection.
+- uma query com status `success` geralmente estará no fetchStatus `idle`, mas também poderia estar em `fetching` se um refetch em segundo plano estiver acontecendo.
+- uma query que é montada e não tem dados geralmente estará no status `pending` e fetchStatus `fetching`, mas também poderia estar `paused` se não houver conexão de rede.
 
-So keep in mind that a query can be in `pending` state without actually fetching data. As a rule of thumb:
+Então tenha em mente que uma query pode estar no state `pending` sem estar realmente fazendo fetching de dados. Como regra geral:
 
-- The `status` gives information about the `data`: Do we have any or not?
-- The `fetchStatus` gives information about the `queryFn`: Is it running or not?
+- O `status` dá informações sobre os `data`: Temos algum dado ou não?
+- O `fetchStatus` dá informações sobre a `queryFn`: Ela está executando ou não?
 
 [//]: # "Materials"
 
-## Further Reading
+## Leitura Complementar
 
-For an alternative way of performing status checks, have a look at [this article by TkDodo](https://tkdodo.eu/blog/status-checks-in-react-query).
+Para uma forma alternativa de realizar verificações de status, dê uma olhada [neste artigo do TkDodo](https://tkdodo.eu/blog/status-checks-in-react-query).
 
 [//]: # "Materials"

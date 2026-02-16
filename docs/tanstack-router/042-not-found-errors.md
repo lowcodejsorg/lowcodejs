@@ -2,83 +2,83 @@
 title: Not Found Errors
 ---
 
-> ⚠️ This page covers the newer `notFound` function and `notFoundComponent` API for handling not found errors. The `NotFoundRoute` route is deprecated and will be removed in a future release. See [Migrating from `NotFoundRoute`](#migrating-from-notfoundroute) for more information.
+> ⚠️ Esta pagina cobre a função `notFound` mais recente e a API `notFoundComponent` para tratar erros de "não encontrado". O route `NotFoundRoute` está depreciado e será removido em uma versão futura. Veja [Migrando do `NotFoundRoute`](#migrating-from-notfoundroute) para mais informações.
 
-## Overview
+## Visão Geral
 
-There are 2 uses for not-found errors in TanStack Router:
+Existem 2 usos para erros de "não encontrado" no TanStack Router:
 
-- **Non-matching route paths**: When a path does not match any known route matching pattern **OR** when it partially matches a route, but with extra path segments
-  - The **router** will automatically throw a not-found error when a path does not match any known route matching pattern
-  - If the router's `notFoundMode` is set to `fuzzy`, the nearest parent route with a `notFoundComponent` will handle the error. If the router's `notFoundMode` is set to `root`, the root route will handle the error.
-  - Examples:
-    - Attempting to access `/users` when there is no `/users` route
-    - Attempting to access `/posts/1/edit` when the route tree only handles `/posts/$postId`
-- **Missing resources**: When a resource cannot be found, such as a post with a given ID or any asynchronous data that is not available or does not exist
-  - **You, the developer** must throw a not-found error when a resource cannot be found. This can be done in the `beforeLoad` or `loader` functions using the `notFound` utility.
-  - Will be handled by the nearest parent route with a `notFoundComponent` (when `notFound` is called within `loader`) or the root route.
-  - Examples:
-    - Attempting to access `/posts/1` when the post with ID 1 does not exist
-    - Attempting to access `/docs/path/to/document` when the document does not exist
+- **Caminhos de route que não correspondem**: Quando um caminho não corresponde a nenhum padrão de correspondência de route conhecido **OU** quando corresponde parcialmente a um route, mas com segmentos de caminho extras
+  - O **router** vai automaticamente lançar um erro de "não encontrado" quando um caminho não corresponde a nenhum padrão de correspondência de route conhecido
+  - Se o `notFoundMode` do router estiver definido como `fuzzy`, o route pai mais próximo com um `notFoundComponent` vai tratar o erro. Se o `notFoundMode` do router estiver definido como `root`, o route raiz vai tratar o erro.
+  - Exemplos:
+    - Tentar acessar `/users` quando não existe um route `/users`
+    - Tentar acessar `/posts/1/edit` quando a árvore de routes só trata `/posts/$postId`
+- **Recursos ausentes**: Quando um recurso não pode ser encontrado, como um post com um determinado ID ou qualquer dado assíncrono que não está disponível ou não existe
+  - **Você, o desenvolvedor** deve lançar um erro de "não encontrado" quando um recurso não pode ser encontrado. Isso pode ser feito nas funções `beforeLoad` ou `loader` usando o utilitário `notFound`.
+  - Será tratado pelo route pai mais próximo com um `notFoundComponent` (quando `notFound` é chamado dentro do `loader`) ou pelo route raiz.
+  - Exemplos:
+    - Tentar acessar `/posts/1` quando o post com ID 1 não existe
+    - Tentar acessar `/docs/path/to/document` quando o documento não existe
 
-Under the hood, both of these cases are implemented using the same `notFound` function and `notFoundComponent` API.
+Por baixo dos panos, ambos os casos são implementados usando a mesma função `notFound` e a API `notFoundComponent`.
 
-## The `notFoundMode` option
+## A opção `notFoundMode`
 
-When TanStack Router encounters a **pathname** that doesn't match any known route pattern **OR** partially matches a route pattern but with extra trailing pathname segments, it will automatically throw a not-found error.
+Quando o TanStack Router encontra um **pathname** que não corresponde a nenhum padrão de route conhecido **OU** corresponde parcialmente a um padrão de route mas com segmentos extras de pathname ao final, ele automaticamente lança um erro de "não encontrado".
 
-Depending on the `notFoundMode` option, the router will handle these automatic errors differently::
+Dependendo da opção `notFoundMode`, o router vai tratar esses erros automáticos de forma diferente:
 
-- ["fuzzy" mode](#notfoundmode-fuzzy) (default): The router will intelligently find the closest matching suitable route and display the `notFoundComponent`.
-- ["root" mode](#notfoundmode-root): All not-found errors will be handled by the root route's `notFoundComponent`, regardless of the nearest matching route.
+- [Modo "fuzzy"](#notfoundmode-fuzzy) (padrão): O router vai encontrar de forma inteligente o route correspondente mais próximo adequado e exibir o `notFoundComponent`.
+- [Modo "root"](#notfoundmode-root): Todos os erros de "não encontrado" serão tratados pelo `notFoundComponent` do route raiz, independentemente do route correspondente mais próximo.
 
 ### `notFoundMode: 'fuzzy'`
 
-By default, the router's `notFoundMode` is set to `fuzzy`, which indicates that if a pathname doesn't match any known route, the router will attempt to use the closest matching route with children/(an outlet) and a configured not found component.
+Por padrão, o `notFoundMode` do router é definido como `fuzzy`, o que indica que se um pathname não corresponder a nenhum route conhecido, o router vai tentar usar o route correspondente mais próximo que tenha filhos/(um outlet) e um component de "não encontrado" configurado.
 
-> **❓ Why is this the default?** Fuzzy matching to preserve as much parent layout as possible for the user gives them more context to navigate to a useful location based on where they thought they would arrive.
+> **❓ Por que esse é o padrão?** A correspondência fuzzy preserva o máximo possível do layout pai para o usuário, dando a ele mais contexto para navegar até um local útil com base em onde ele achava que iria chegar.
 
-The nearest suitable route is found using the following criteria:
+O route adequado mais próximo é encontrado usando os seguintes critérios:
 
-- The route must have children and therefore an `Outlet` to render the `notFoundComponent`
-- The route must have a `notFoundComponent` configured or the router must have a `defaultNotFoundComponent` configured
+- O route deve ter filhos e, portanto, um `Outlet` para renderizar o `notFoundComponent`
+- O route deve ter um `notFoundComponent` configurado ou o router deve ter um `defaultNotFoundComponent` configurado
 
-For example, consider the following route tree:
+Por exemplo, considere a seguinte árvore de routes:
 
-- `__root__` (has a `notFoundComponent` configured)
-  - `posts` (has a `notFoundComponent` configured)
-    - `$postId` (has a `notFoundComponent` configured)
+- `__root__` (tem um `notFoundComponent` configurado)
+  - `posts` (tem um `notFoundComponent` configurado)
+    - `$postId` (tem um `notFoundComponent` configurado)
 
-If provided the path of `/posts/1/edit`, the following component structure will be rendered:
+Se for fornecido o caminho `/posts/1/edit`, a seguinte estrutura de components será renderizada:
 
 - `<Root>`
   - `<Posts>`
     - `<Posts.notFoundComponent>`
 
-The `notFoundComponent` of the `posts` route will be rendered because it is the **nearest suitable parent route with children (and therefore an outlet) and a `notFoundComponent` configured**.
+O `notFoundComponent` do route `posts` será renderizado porque é o **route pai adequado mais próximo com filhos (e, portanto, um outlet) e um `notFoundComponent` configurado**.
 
 ### `notFoundMode: 'root'`
 
-When `notFoundMode` is set to `root`, all not-found errors will be handled by the root route's `notFoundComponent` instead of bubbling up from the nearest fuzzy-matched route.
+Quando `notFoundMode` está definido como `root`, todos os erros de "não encontrado" serão tratados pelo `notFoundComponent` do route raiz em vez de propagar a partir do route mais próximo com correspondência fuzzy.
 
-For example, consider the following route tree:
+Por exemplo, considere a seguinte árvore de routes:
 
-- `__root__` (has a `notFoundComponent` configured)
-  - `posts` (has a `notFoundComponent` configured)
-    - `$postId` (has a `notFoundComponent` configured)
+- `__root__` (tem um `notFoundComponent` configurado)
+  - `posts` (tem um `notFoundComponent` configurado)
+    - `$postId` (tem um `notFoundComponent` configurado)
 
-If provided the path of `/posts/1/edit`, the following component structure will be rendered:
+Se for fornecido o caminho `/posts/1/edit`, a seguinte estrutura de components será renderizada:
 
 - `<Root>`
   - `<Root.notFoundComponent>`
 
-The `notFoundComponent` of the `__root__` route will be rendered because the `notFoundMode` is set to `root`.
+O `notFoundComponent` do route `__root__` será renderizado porque o `notFoundMode` está definido como `root`.
 
-## Configuring a route's `notFoundComponent`
+## Configurando o `notFoundComponent` de um route
 
-To handle both types of not-found errors, you can attach a `notFoundComponent` to a route. This component will be rendered when a not-found error is thrown.
+Para tratar ambos os tipos de erros de "não encontrado", você pode anexar um `notFoundComponent` a um route. Esse component será renderizado quando um erro de "não encontrado" for lançado.
 
-For example, configuring a `notFoundComponent` for a `/settings` route to handle non-existing settings pages:
+Por exemplo, configurando um `notFoundComponent` para um route `/settings` para tratar páginas de configuração inexistentes:
 
 ```tsx
 export const Route = createFileRoute("/settings")({
@@ -96,7 +96,7 @@ export const Route = createFileRoute("/settings")({
 });
 ```
 
-Or configuring a `notFoundComponent` for a `/posts/$postId` route to handle posts that don't exist:
+Ou configurando um `notFoundComponent` para um route `/posts/$postId` para tratar posts que não existem:
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId")({
@@ -119,13 +119,13 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-## Default Router-Wide Not Found Handling
+## Tratamento Padrão de "Não Encontrado" em Todo o Router
 
-You may want to provide a default not-found component for every route in your app with child routes.
+Você pode querer fornecer um component padrão de "não encontrado" para cada route no seu app que tenha routes filhos.
 
-> Why only routes with children? **Leaf-node routes (routes without children) will never render an `Outlet` and therefore are not able to handle not-found errors.**
+> Por que apenas routes com filhos? **Routes folha (routes sem filhos) nunca renderizarão um `Outlet` e, portanto, não são capazes de tratar erros de "não encontrado".**
 
-To do this, pass a `defaultNotFoundComponent` to the `createRouter` function:
+Para fazer isso, passe um `defaultNotFoundComponent` para a função `createRouter`:
 
 ```tsx
 const router = createRouter({
@@ -140,11 +140,11 @@ const router = createRouter({
 });
 ```
 
-## Throwing your own `notFound` errors
+## Lançando seus próprios erros `notFound`
 
-You can manually throw not-found errors in loader methods and components using the `notFound` function. This is useful when you need to signal that a resource cannot be found.
+Você pode lançar manualmente erros de "não encontrado" em métodos de loader e components usando a função `notFound`. Isso é útil quando você precisa sinalizar que um recurso não pode ser encontrado.
 
-The `notFound` function works in a similar fashion to the `redirect` function. To cause a not-found error, you can **throw a `notFound()`**.
+A função `notFound` funciona de maneira semelhante à função `redirect`. Para causar um erro de "não encontrado", você pode **lançar um `notFound()`**.
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId")({
@@ -162,15 +162,15 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-The not-found error above will be handled by the same route or nearest parent route that has either a `notFoundComponent` route option or the `defaultNotFoundComponent` router option configured.
+O erro de "não encontrado" acima será tratado pelo mesmo route ou pelo route pai mais próximo que tenha a opção de route `notFoundComponent` ou a opção de router `defaultNotFoundComponent` configurada.
 
-If neither the route nor any suitable parent route is found to handle the error, the root route will handle it using TanStack Router's **extremely basic (and purposefully undesirable)** default not-found component that simply renders `<p>Not Found</p>`. It's highly recommended to either attach at least one `notFoundComponent` to the root route or configure a router-wide `defaultNotFoundComponent` to handle not-found errors.
+Se nem o route nem nenhum route pai adequado for encontrado para tratar o erro, o route raiz vai tratá-lo usando o component padrão de "não encontrado" **extremamente básico (e propositalmente indesejável)** do TanStack Router que simplesmente renderiza `<p>Not Found</p>`. É altamente recomendado anexar pelo menos um `notFoundComponent` ao route raiz ou configurar um `defaultNotFoundComponent` em nível de router para tratar erros de "não encontrado".
 
-> ⚠️ Throwing a notFound error in a beforeLoad method will always trigger the \_\_root notFoundComponent. Since beforeLoad methods are run prior to the route loader methods, there is no guarantee that any required data for layouts have successfully loaded before the error is thrown.
+> ⚠️ Lançar um erro notFound em um método beforeLoad sempre vai acionar o notFoundComponent do \_\_root. Como os métodos beforeLoad são executados antes dos métodos loader do route, não há garantia de que os dados necessários para layouts tenham sido carregados com sucesso antes do erro ser lançado.
 
-## Specifying Which Routes Handle Not Found Errors
+## Especificando Quais Routes Tratam Erros de "Não Encontrado"
 
-Sometimes you may want to trigger a not-found on a specific parent route and bypass the normal not-found component propagation. To do this, pass in a route id to the `route` option in the `notFound` function.
+Às vezes você pode querer acionar um "não encontrado" em um route pai específico e contornar a propagação normal do component de "não encontrado". Para fazer isso, passe um id de route para a opção `route` na função `notFound`.
 
 ```tsx
 // _pathlessLayout.tsx
@@ -203,9 +203,9 @@ export const Route = createFileRoute("/_pathless/route-a")({
 });
 ```
 
-### Manually targeting the root route
+### Direcionando manualmente o route raiz
 
-You can also target the root route by passing the exported `rootRouteId` variable to the `notFound` function's `route` property:
+Você também pode direcionar o route raiz passando a variável exportada `rootRouteId` para a propriedade `route` da função `notFound`:
 
 ```tsx
 import { rootRouteId } from "@tanstack/react-router";
@@ -219,17 +219,17 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-### Throwing Not Found Errors in Components
+### Lançando Erros de "Não Encontrado" em Components
 
-You can also throw not-found errors in components. However, **it is recommended to throw not-found errors in loader methods instead of components in order to correctly type loader data and prevent flickering.**
+Você também pode lançar erros de "não encontrado" em components. No entanto, **é recomendado lançar erros de "não encontrado" em métodos loader em vez de components para tipar corretamente os dados do loader e prevenir flickering.**
 
-TanStack Router exposes a `CatchNotFound` component similar to `CatchBoundary` that can be used to catch not-found errors in components and display UI accordingly.
+O TanStack Router expõe um component `CatchNotFound` similar ao `CatchBoundary` que pode ser usado para capturar erros de "não encontrado" em components e exibir a UI correspondente.
 
-### Data Loading Inside `notFoundComponent`
+### Carregamento de Dados Dentro do `notFoundComponent`
 
-`notFoundComponent` is a special case when it comes to data loading. **`SomeRoute.useLoaderData` may not be defined depending on which route you are trying to access and where the not-found error gets thrown**. However, `Route.useParams`, `Route.useSearch`, `Route.useRouteContext`, etc. will return a defined value.
+`notFoundComponent` é um caso especial quando se trata de carregamento de dados. **`SomeRoute.useLoaderData` pode não estar definido dependendo de qual route você está tentando acessar e onde o erro de "não encontrado" é lançado**. No entanto, `Route.useParams`, `Route.useSearch`, `Route.useRouteContext`, etc. retornarão um valor definido.
 
-**If you need to pass incomplete loader data to `notFoundComponent`,** pass the data via the `data` option in the `notFound` function and validate it in `notFoundComponent`.
+**Se você precisa passar dados incompletos do loader para o `notFoundComponent`,** passe os dados pela opção `data` na função `notFound` e valide-os no `notFoundComponent`.
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId")({
@@ -256,23 +256,23 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-## Usage With SSR
+## Uso Com SSR
 
-See [SSR guide](./ssr.md) for more information.
+Veja o [guia de SSR](./ssr.md) para mais informações.
 
-## Migrating from `NotFoundRoute`
+## Migrando do `NotFoundRoute`
 
-The `NotFoundRoute` API is deprecated in favor of `notFoundComponent`. The `NotFoundRoute` API will be removed in a future release.
+A API `NotFoundRoute` está depreciada em favor de `notFoundComponent`. A API `NotFoundRoute` será removida em uma versão futura.
 
-**The `notFound` function and `notFoundComponent` will not work when using `NotFoundRoute`.**
+**A função `notFound` e o `notFoundComponent` não funcionarão ao usar `NotFoundRoute`.**
 
-The main differences are:
+As principais diferenças são:
 
-- `NotFoundRoute` is a route that requires an `<Outlet>` on its parent route to render. `notFoundComponent` is a component that can be attached to any route.
-- When using `NotFoundRoute`, you can't use layouts. `notFoundComponent` can be used with layouts.
-- When using `notFoundComponent`, path matching is strict. This means that if you have a route at `/post/$postId`, a not-found error will be thrown if you try to access `/post/1/2/3`. With `NotFoundRoute`, `/post/1/2/3` would match the `NotFoundRoute` and only render it if there is an `<Outlet>`.
+- `NotFoundRoute` é um route que requer um `<Outlet>` no seu route pai para renderizar. `notFoundComponent` é um component que pode ser anexado a qualquer route.
+- Ao usar `NotFoundRoute`, você não pode usar layouts. `notFoundComponent` pode ser usado com layouts.
+- Ao usar `notFoundComponent`, a correspondência de caminho é estrita. Isso significa que se você tem um route em `/post/$postId`, um erro de "não encontrado" será lançado se você tentar acessar `/post/1/2/3`. Com `NotFoundRoute`, `/post/1/2/3` corresponderia ao `NotFoundRoute` e só o renderizaria se houver um `<Outlet>`.
 
-To migrate from `NotFoundRoute` to `notFoundComponent`, you'll just need to make a few changes:
+Para migrar do `NotFoundRoute` para o `notFoundComponent`, você só precisa fazer algumas alterações:
 
 ```tsx
 // router.tsx
@@ -296,8 +296,8 @@ export const Route = createRootRoute({
 })
 ```
 
-Important changes:
+Alterações importantes:
 
-- A `notFoundComponent` is added to the root route for global not-found handling.
-  - You can also add a `notFoundComponent` to any other route in your route tree to handle not-found errors for that specific route.
-- The `notFoundComponent` does not support rendering an `<Outlet>`.
+- Um `notFoundComponent` é adicionado ao route raiz para tratamento global de "não encontrado".
+  - Você também pode adicionar um `notFoundComponent` a qualquer outro route na sua árvore de routes para tratar erros de "não encontrado" para aquele route específico.
+- O `notFoundComponent` não suporta renderizar um `<Outlet>`.

@@ -3,7 +3,7 @@ id: router
 title: Router API
 ---
 
-- Functions
+- Funções
   - [`createFileRoute`](./router/createFileRouteFunction.md)
   - [`createLazyFileRoute`](./router/createLazyFileRouteFunction.md)
   - [`createRootRoute`](./router/createRootRouteFunction.md)
@@ -53,7 +53,7 @@ title: Router API
   - [`useRouter`](./router/useRouterHook.md)
   - [`useRouterState`](./router/useRouterStateHook.md)
   - [`useSearch`](./router/useSearchHook.md)
-- Types
+- Tipos
   - [`ActiveLinkOptions Type`](./router/ActiveLinkOptionsType.md)
   - [`AsyncRouteComponent Type`](./router/AsyncRouteComponentType.md)
   - [`HistoryState Interface`](./router/historyStateInterface.md)
@@ -79,7 +79,7 @@ title: Router API
   - [`ToOptions Type`](./router/ToOptionsType.md)
   - [`UseMatchRouteOptions Type`](./router/UseMatchRouteOptionsType.md)
   - [`ViewTransitionOptions Type`](./router/ViewTransitionOptionsType.md)
-- ⚠️ Deprecated
+- Descontinuados
   - [`FileRoute Class`](./router/FileRouteClass.md)
   - [`Route Class`](./router/RouteClass.md)
   - [`Router Class`](./router/RouterClass.md)

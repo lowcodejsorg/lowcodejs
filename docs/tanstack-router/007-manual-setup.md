@@ -2,11 +2,11 @@
 title: Manual Setup
 ---
 
-To set up TanStack Router manually in a React project, follow the steps below. This gives you a bare minimum setup to get going with TanStack Router using both file-based route generation and code-based route configuration:
+Para configurar o TanStack Router manualmente em um projeto React, siga os passos abaixo. Isso oferece a configuração mínima necessária para começar com o TanStack Router usando tanto a geração de route baseada em arquivos quanto a configuração de route baseada em código:
 
-## Using File-Based Route Generation
+## Usando Geração de Route Baseada em Arquivos
 
-#### Install TanStack Router, Vite Plugin, and the Router Devtools
+#### Instale o TanStack Router, o Plugin do Vite e os Devtools do Router
 
 ```sh
 npm install @tanstack/react-router @tanstack/react-router-devtools
@@ -24,7 +24,7 @@ bun add -D @tanstack/router-plugin
 deno add npm:@tanstack/react-router npm:@tanstack/router-plugin npm:@tanstack/react-router-devtools
 ```
 
-#### Configure the Vite Plugin
+#### Configure o Plugin do Vite
 
 ```tsx
 // vite.config.ts
@@ -47,11 +47,11 @@ export default defineConfig({
 ```
 
 > [!TIP]
-> If you are not using Vite, or any of the supported bundlers, you can check out the [TanStack Router CLI](./with-router-cli) guide for more info.
+> Se você não está usando o Vite, ou qualquer um dos bundlers suportados, confira o guia [TanStack Router CLI](./with-router-cli) para mais informações.
 
-Create the following files:
+Crie os seguintes arquivos:
 
-- `src/routes/__root.tsx` (with two '`_`' characters)
+- `src/routes/__root.tsx` (com dois caracteres '`_`')
 - `src/routes/index.tsx`
 - `src/routes/about.tsx`
 - `src/main.tsx`
@@ -115,9 +115,9 @@ function About() {
 
 #### `src/main.tsx`
 
-Regardless of whether you are using the `@tanstack/router-plugin` package and running the `npm run dev`/`npm run build` scripts, or manually running the `tsr watch`/`tsr generate` commands from your package scripts, the route tree file will be generated at `src/routeTree.gen.ts`.
+Independentemente de você estar usando o pacote `@tanstack/router-plugin` e executando os scripts `npm run dev`/`npm run build`, ou executando manualmente os comandos `tsr watch`/`tsr generate` dos seus scripts do package, o arquivo da route tree será gerado em `src/routeTree.gen.ts`.
 
-Import the generated route tree and create a new router instance:
+Importe a route tree gerada e crie uma nova instância do router:
 
 ```tsx
 import { StrictMode } from "react";
@@ -149,12 +149,12 @@ if (!rootElement.innerHTML) {
 }
 ```
 
-If you are working with this pattern you should change the `id` of the root `<div>` on your `index.html` file to `<div id='root'></div>`
+Se você está trabalhando com esse padrão, deve alterar o `id` da `<div>` raiz no seu arquivo `index.html` para `<div id='root'></div>`
 
-## Using Code-Based Route Configuration
+## Usando Configuração de Route Baseada em Código
 
 > [!IMPORTANT]
-> The following example shows how to configure routes using code, and for simplicity's sake is in a single file for this demo. While code-based generation allows you to declare many routes and even the router instance in a single file, we recommend splitting your routes into separate files for better organization and performance as your application grows.
+> O exemplo a seguir mostra como configurar routes usando código e, por questão de simplicidade, está em um único arquivo para esta demonstração. Embora a geração baseada em código permita declarar muitas routes e até a instância do router em um único arquivo, recomendamos dividir suas routes em arquivos separados para melhor organização e performance à medida que sua aplicação cresce.
 
 ```tsx
 import { StrictMode } from "react";
@@ -228,4 +228,4 @@ if (!rootElement.innerHTML) {
 }
 ```
 
-If you glossed over these examples or didn't understand something, we don't blame you, because there's so much more to learn to really take advantage of TanStack Router! Let's move on.
+Se você passou por cima desses exemplos ou não entendeu algo, não te culpamos, porque há muito mais para aprender para realmente aproveitar o TanStack Router! Vamos seguir em frente.

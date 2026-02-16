@@ -3,15 +3,15 @@ id: deferred-data-loading
 title: Deferred Data Loading
 ---
 
-TanStack Router is designed to run loaders in parallel and wait for all of them to resolve before rendering the next route. This is great most of the time, but occasionally, you may want to show the user something sooner while the rest of the data loads in the background.
+O TanStack Router foi projetado para executar loaders em paralelo e aguardar que todos sejam resolvidos antes de renderizar a próxima route. Isso é ótimo na maioria das vezes, mas ocasionalmente você pode querer mostrar algo ao usuário mais cedo enquanto o restante dos dados carrega em segundo plano.
 
-Deferred data loading is a pattern that allows the router to render the next location's critical data/markup while slower, non-critical route data is resolved in the background. This process works on both the client and server (via streaming) and is a great way to improve the perceived performance of your application.
+O deferred data loading é um padrão que permite ao router renderizar os dados/markup críticos da próxima localização enquanto dados mais lentos e não críticos da route são resolvidos em segundo plano. Esse processo funciona tanto no client quanto no servidor (via streaming) e é uma ótima maneira de melhorar a performance percebida da sua aplicação.
 
-If you are using a library like [TanStack Query](https://tanstack.com/query/latest) or any other data fetching library, then deferred data loading works a bit differently. Skip ahead to the [Deferred Data Loading with External Libraries](#deferred-data-loading-with-external-libraries) section for more information.
+Se você estiver usando uma biblioteca como [TanStack Query](https://tanstack.com/query/latest) ou qualquer outra biblioteca de data fetching, o deferred data loading funciona de forma um pouco diferente. Pule para a seção [Deferred Data Loading com Bibliotecas Externas](#deferred-data-loading-with-external-libraries) para mais informações.
 
-## Deferred Data Loading with `Await`
+## Deferred Data Loading com `Await`
 
-To defer slow or non-critical data, return an **unawaited/unresolved** promise anywhere in your loader response:
+Para adiar dados lentos ou não críticos, retorne uma promise **não aguardada/não resolvida** em qualquer lugar na resposta do seu loader:
 
 ```tsx
 // src/routes/posts.$postId.tsx
@@ -33,9 +33,9 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-As soon as any awaited promises are resolved, the next route will begin rendering while the deferred promises continue to resolve.
+Assim que quaisquer promises aguardadas forem resolvidas, a próxima route começará a renderizar enquanto as promises adiadas continuam sendo resolvidas.
 
-In the component, deferred promises can be resolved and utilized using the `Await` component:
+No component, promises adiadas podem ser resolvidas e utilizadas usando o component `Await`:
 
 ```tsx
 // src/routes/posts.$postId.tsx
@@ -62,24 +62,24 @@ function PostIdComponent() {
 ```
 
 > [!TIP]
-> If your component is code-split, you can use the [getRouteApi function](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) to avoid having to import the `Route` configuration to get access to the typed `useLoaderData()` hook.
+> Se o seu component usa code splitting, você pode usar a [função getRouteApi](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) para evitar ter que importar a configuração do `Route` para acessar o hook tipado `useLoaderData()`.
 
-The `Await` component resolves the promise by triggering the nearest suspense boundary until it is resolved, after which it renders the component's `children` as a function with the resolved data.
+O component `Await` resolve a promise acionando o suspense boundary mais próximo até que ela seja resolvida, e então renderiza os `children` do component como uma função com os dados resolvidos.
 
-If the promise is rejected, the `Await` component will throw the serialized error, which can be caught by the nearest error boundary.
+Se a promise for rejeitada, o component `Await` lançará o erro serializado, que pode ser capturado pelo error boundary mais próximo.
 
 [//]: # "DeferredWithAwaitFinalTip"
 
 > [!TIP]
-> In React 19, you can use the `use()` hook instead of `Await`
+> No React 19, você pode usar o hook `use()` em vez do `Await`
 
 [//]: # "DeferredWithAwaitFinalTip"
 
-## Deferred Data Loading with External libraries
+## Deferred Data Loading com Bibliotecas Externas
 
-When your strategy for fetching information for the route relies on [External Data Loading](./external-data-loading.md) with an external library like [TanStack Query](https://tanstack.com/query), deferred data loading works a bit differently, as the library handles the data fetching and caching for you outside of TanStack Router.
+Quando sua estratégia para buscar informações para a route depende de [External Data Loading](./external-data-loading.md) com uma biblioteca externa como [TanStack Query](https://tanstack.com/query), o deferred data loading funciona de forma um pouco diferente, pois a biblioteca lida com o data fetching e cache para você fora do TanStack Router.
 
-So, instead of using `defer` and `Await`, you'll instead want to use the Route's `loader` to kick off the data fetching and then use the library's hooks to access the data in your components.
+Então, em vez de usar `defer` e `Await`, você vai querer usar o `loader` da Route para iniciar o data fetching e depois usar os hooks da biblioteca para acessar os dados nos seus components.
 
 ```tsx
 // src/routes/posts.$postId.tsx
@@ -97,7 +97,7 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-Then in your component, you can use the library's hooks to access the data:
+Depois, no seu component, você pode usar os hooks da biblioteca para acessar os dados:
 
 ```tsx
 // src/routes/posts.$postId.tsx
@@ -129,34 +129,34 @@ function SlowDataComponent() {
 }
 ```
 
-## Caching and Invalidation
+## Cache e Invalidação
 
-Streamed promises follow the same lifecycle as the loader data they are associated with. They can even be preloaded!
+Promises transmitidas via streaming seguem o mesmo ciclo de vida dos dados do loader aos quais estão associadas. Elas podem até ser pré-carregadas!
 
 [//]: # "SSRContent"
 
-## SSR & Streaming Deferred Data
+## SSR e Streaming de Dados Adiados
 
-**Streaming requires a server that supports it and for TanStack Router to be configured to use it properly.**
+**O streaming requer um servidor que o suporte e que o TanStack Router esteja configurado para usá-lo corretamente.**
 
-Please read the entire [Streaming SSR Guide](./ssr.md#streaming-ssr) for step by step instructions on how to set up your server for streaming.
+Por favor, leia o [Guia de Streaming SSR](./ssr.md#streaming-ssr) completo para instruções passo a passo sobre como configurar seu servidor para streaming.
 
-## SSR Streaming Lifecycle
+## Ciclo de Vida do Streaming SSR
 
-The following is a high-level overview of how deferred data streaming works with TanStack Router:
+A seguir está uma visão geral de alto nível de como o streaming de dados adiados funciona com o TanStack Router:
 
-- Server
-  - Promises are marked and tracked as they are returned from route loaders
-  - All loaders resolve and any deferred promises are serialized and embedded into the html
-  - The route begins to render
-  - Deferred promises rendered with the `<Await>` component trigger suspense boundaries, allowing the server to stream html up to that point
+- Servidor
+  - Promises são marcadas e rastreadas conforme são retornadas dos loaders das routes
+  - Todos os loaders resolvem e quaisquer promises adiadas são serializadas e incorporadas no HTML
+  - A route começa a renderizar
+  - Promises adiadas renderizadas com o component `<Await>` acionam suspense boundaries, permitindo que o servidor transmita o HTML até aquele ponto via streaming
 - Client
-  - The client receives the initial html from the server
-  - `<Await>` components suspend with placeholder promises while they wait for their data to resolve on the server
-- Server
-  - As deferred promises resolve, their results (or errors) are serialized and streamed to the client via an inline script tag
-  - The resolved `<Await>` components and their suspense boundaries are resolved and their resulting HTML is streamed to the client along with their dehydrated data
+  - O client recebe o HTML inicial do servidor
+  - Components `<Await>` suspendem com promises placeholder enquanto aguardam seus dados serem resolvidos no servidor
+- Servidor
+  - Conforme as promises adiadas resolvem, seus resultados (ou erros) são serializados e transmitidos ao client via streaming através de uma tag script inline
+  - Os components `<Await>` resolvidos e seus suspense boundaries são resolvidos e o HTML resultante é transmitido ao client via streaming junto com seus dados desidratados
 - Client
-  - The suspended placeholder promises within `<Await>` are resolved with the streamed data/error responses and either render the result or throw the error to the nearest error boundary
+  - As promises placeholder suspensas dentro de `<Await>` são resolvidas com as respostas de dados/erros transmitidas via streaming e renderizam o resultado ou lançam o erro para o error boundary mais próximo
 
 [//]: # "SSRContent"

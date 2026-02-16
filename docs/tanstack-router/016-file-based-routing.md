@@ -2,28 +2,28 @@
 title: File-Based Routing
 ---
 
-Most of the TanStack Router documentation is written for file-based routing and is intended to help you understand in more detail how to configure file-based routing and the technical details behind how it works. While file-based routing is the preferred and recommended way to configure TanStack Router, you can also use [code-based routing](./code-based-routing.md) if you prefer.
+A maior parte da documentação do TanStack Router é escrita para file-based routing e tem como objetivo ajudar você a entender em mais detalhes como configurar o file-based routing e os detalhes técnicos por trás de como ele funciona. Embora o file-based routing seja a forma preferida e recomendada de configurar o TanStack Router, você também pode usar [code-based routing](./code-based-routing.md) se preferir.
 
-## What is File-Based Routing?
+## O que é File-Based Routing?
 
-File-based routing is a way to configure your routes using the filesystem. Instead of defining your route structure via code, you can define your routes using a series of files and directories that represent the route hierarchy of your application. This brings a number of benefits:
+File-based routing é uma forma de configurar suas routes usando o sistema de arquivos. Em vez de definir a estrutura de routes via código, você pode definir suas routes usando uma série de arquivos e diretórios que representam a hierarquia de routes da sua aplicação. Isso traz uma série de benefícios:
 
-- **Simplicity**: File-based routing is visually intuitive and easy to understand for both new and experienced developers.
-- **Organization**: Routes are organized in a way that mirrors the URL structure of your application.
-- **Scalability**: As your application grows, file-based routing makes it easy to add new routes and maintain existing ones.
-- **Code-Splitting**: File-based routing allows TanStack Router to automatically code-split your routes for better performance.
-- **Type-Safety**: File-based routing raises the ceiling on type-safety by generating managing type linkages for your routes, which can otherwise be a tedious process via code-based routing.
-- **Consistency**: File-based routing enforces a consistent structure for your routes, making it easier to maintain and update your application and move from one project to another.
+- **Simplicidade**: O file-based routing é visualmente intuitivo e fácil de entender tanto para desenvolvedores novos quanto experientes.
+- **Organização**: As routes são organizadas de uma forma que espelha a estrutura de URL da sua aplicação.
+- **Escalabilidade**: Conforme sua aplicação cresce, o file-based routing facilita adicionar novas routes e manter as existentes.
+- **Code-Splitting**: O file-based routing permite que o TanStack Router faça code splitting automático das suas routes para melhor performance.
+- **Type-Safety**: O file-based routing eleva o nível de type-safety gerando e gerenciando as ligações de tipos para suas routes, o que de outra forma pode ser um processo tedioso via code-based routing.
+- **Consistência**: O file-based routing impõe uma estrutura consistente para suas routes, facilitando a manutenção e atualização da sua aplicação e a migração de um projeto para outro.
 
-## `/`s or `.`s?
+## `/`s ou `.`s?
 
-While directories have long been used to represent route hierarchy, file-based routing introduces an additional concept of using the `.` character in the file-name to denote a route nesting. This allows you to avoid creating directories for few deeply nested routes and continue to use directories for wider route hierarchies. Let's take a look at some examples!
+Embora diretórios há muito tempo sejam usados para representar a hierarquia de routes, o file-based routing introduz um conceito adicional de usar o caractere `.` no nome do arquivo para denotar aninhamento de route. Isso permite que você evite criar diretórios para poucas routes profundamente aninhadas e continue usando diretórios para hierarquias de routes mais amplas. Vamos ver alguns exemplos!
 
-## Directory Routes
+## Routes por Diretório
 
-Directories can be used to denote route hierarchy, which can be useful for organizing multiple routes into logical groups and also cutting down on the filename length for large groups of deeply nested routes.
+Diretórios podem ser usados para denotar hierarquia de routes, o que pode ser útil para organizar múltiplas routes em grupos lógicos e também reduzir o comprimento do nome do arquivo para grandes grupos de routes profundamente aninhadas.
 
-See the example below:
+Veja o exemplo abaixo:
 
 | Filename                | Route Path                | Component Output                  |
 | ----------------------- | ------------------------- | --------------------------------- |
@@ -53,11 +53,11 @@ See the example below:
 
 ## Flat Routes
 
-Flat routing gives you the ability to use `.`s to denote route nesting levels.
+O flat routing dá a você a capacidade de usar `.`s para denotar níveis de aninhamento de route.
 
-This can be useful when you have a large number of uniquely deeply nested routes and want to avoid creating directories for each one:
+Isso pode ser útil quando você tem um grande número de routes profundamente aninhadas de forma única e quer evitar criar diretórios para cada uma:
 
-See the example below:
+Veja o exemplo abaixo:
 
 | Filename                        | Route Path                | Component Output                  |
 | ------------------------------- | ------------------------- | --------------------------------- |
@@ -78,11 +78,11 @@ See the example below:
 | ʦ `account.tsx`                 | `/account`                | `<Root><Account>`                 |
 | ʦ `account.overview.tsx`        | `/account/overview`       | `<Root><Account><Overview>`       |
 
-## Mixed Flat and Directory Routes
+## Routes Flat e por Diretório Combinadas
 
-It's extremely likely that a 100% directory or flat route structure won't be the best fit for your project, which is why TanStack Router allows you to mix both flat and directory routes together to create a route tree that uses the best of both worlds where it makes sense:
+É extremamente provável que uma estrutura 100% por diretório ou flat não seja a melhor opção para o seu projeto, e é por isso que o TanStack Router permite que você combine routes flat e por diretório para criar uma árvore de routes que usa o melhor dos dois mundos onde fizer sentido:
 
-See the example below:
+Veja o exemplo abaixo:
 
 | Filename                       | Route Path                | Component Output                  |
 | ------------------------------ | ------------------------- | --------------------------------- |
@@ -100,26 +100,26 @@ See the example below:
 | ʦ `account.tsx`                | `/account`                | `<Root><Account>`                 |
 | ʦ `account.overview.tsx`       | `/account/overview`       | `<Root><Account><Overview>`       |
 
-Both flat and directory routes can be mixed together to create a route tree that uses the best of both worlds where it makes sense.
+Routes flat e por diretório podem ser combinadas para criar uma árvore de routes que usa o melhor dos dois mundos onde fizer sentido.
 
 > [!TIP]
-> If you find that the default file-based routing structure doesn't fit your needs, you can always use [Virtual File Routes](./virtual-file-routes.md) to control the source of your routes whilst still getting the awesome performance benefits of file-based routing.
+> Se você achar que a estrutura padrão de file-based routing não atende suas necessidades, você sempre pode usar [Virtual File Routes](./virtual-file-routes.md) para controlar a origem das suas routes enquanto ainda aproveita os incríveis benefícios de performance do file-based routing.
 
-## Getting started with File-Based Routing
+## Começando com File-Based Routing
 
-To get started with file-based routing, you'll need to configure your project's bundler to use the TanStack Router Plugin or the TanStack Router CLI.
+Para começar com o file-based routing, você precisará configurar o bundler do seu projeto para usar o TanStack Router Plugin ou o TanStack Router CLI.
 
-To enable file-based routing, you'll need to be using React with a supported bundler. See if your bundler is listed in the configuration guides below.
-
-[//]: # "SupportedBundlersList"
-
-- [Installation with Vite](../installation/with-vite)
-- [Installation with Rspack/Rsbuild](../installation/with-rspack)
-- [Installation with Webpack](../installation/with-webpack)
-- [Installation with Esbuild](../installation/with-esbuild)
+Para habilitar o file-based routing, você precisará estar usando React com um bundler suportado. Veja se o seu bundler está listado nos guias de configuração abaixo.
 
 [//]: # "SupportedBundlersList"
 
-When using TanStack Router's file-based routing through one of the supported bundlers, our plugin will **automatically generate your route configuration through your bundler's dev and build processes**. It is the easiest way to use TanStack Router's route generation features.
+- [Instalação com Vite](../installation/with-vite)
+- [Instalação com Rspack/Rsbuild](../installation/with-rspack)
+- [Instalação com Webpack](../installation/with-webpack)
+- [Instalação com Esbuild](../installation/with-esbuild)
 
-If your bundler is not yet supported, you can reach out to us on Discord or GitHub to let us know.
+[//]: # "SupportedBundlersList"
+
+Ao usar o file-based routing do TanStack Router através de um dos bundlers suportados, nosso plugin irá **gerar automaticamente a configuração das suas routes através dos processos de dev e build do seu bundler**. É a forma mais fácil de usar os recursos de geração de routes do TanStack Router.
+
+Se o seu bundler ainda não é suportado, você pode entrar em contato conosco no Discord ou GitHub para nos informar.

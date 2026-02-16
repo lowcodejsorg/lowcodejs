@@ -2,9 +2,9 @@
 title: Automatic Code Splitting
 ---
 
-The automatic code splitting feature in TanStack Router allows you to optimize your application's bundle size by lazily loading route components and their associated data. This is particularly useful for large applications where you want to minimize the initial load time by only loading the necessary code for the current route.
+O recurso de automatic code splitting no TanStack Router permite que você otimize o tamanho do bundle da sua aplicação carregando de forma lazy os route components e seus dados associados. Isso é particularmente útil para aplicações grandes onde você quer minimizar o tempo de carregamento inicial carregando apenas o código necessário para a route atual.
 
-To turn this feature on, simply set the `autoCodeSplitting` option to `true` in your bundler plugin configuration. This enables the router to automatically handle code splitting for your routes without requiring any additional setup.
+Para ativar esse recurso, simplesmente defina a opção `autoCodeSplitting` como `true` na configuração do seu bundler plugin. Isso habilita o router a lidar automaticamente com o code splitting das suas routes sem exigir nenhuma configuração adicional.
 
 ```ts
 // vite.config.ts
@@ -20,37 +20,37 @@ export default defineConfig({
 });
 ```
 
-But that's just the beginning! TanStack Router's automatic code splitting is not only easy to enable, but it also provides powerful customization options to tailor how your routes are split into chunks. This allows you to optimize your application's performance based on your specific needs and usage patterns.
+Mas isso é apenas o começo! O automatic code splitting do TanStack Router não é apenas fácil de habilitar, mas também fornece opções poderosas de personalização para ajustar como suas routes são divididas em chunks. Isso permite que você otimize a performance da sua aplicação com base nas suas necessidades e padrões de uso específicos.
 
-## How does it work?
+## Como funciona?
 
-TanStack Router's automatic code splitting works by transforming your route files both during 'development' and at 'build' time. It rewrites the route definitions to use lazy-loading wrappers for components and loaders, which allows the bundler to group these properties into separate chunks.
+O automatic code splitting do TanStack Router funciona transformando seus arquivos de route tanto durante o 'development' quanto no momento do 'build'. Ele reescreve as definições de route para usar wrappers de lazy-loading para components e loaders, o que permite ao bundler agrupar essas propriedades em chunks separados.
 
 > [!TIP]
-> A **chunk** is a file that contains a portion of your application's code, which can be loaded on demand. This helps reduce the initial load time of your application by only loading the code that is needed for the current route.
+> Um **chunk** é um arquivo que contém uma porção do código da sua aplicação, que pode ser carregado sob demanda. Isso ajuda a reduzir o tempo de carregamento inicial da sua aplicação carregando apenas o código necessário para a route atual.
 
-So when your application loads, it doesn't include all the code for every route. Instead, it only includes the code for the routes that are initially needed. As users navigate through your application, additional chunks are loaded on demand.
+Então, quando sua aplicação carrega, ela não inclui todo o código de cada route. Em vez disso, inclui apenas o código das routes que são inicialmente necessárias. Conforme os usuários navegam pela sua aplicação, chunks adicionais são carregados sob demanda.
 
-This happens seamlessly, without requiring you to manually split your code or manage lazy loading. The TanStack Router bundler plugin takes care of everything, ensuring that your routes are optimized for performance right out of the box.
+Isso acontece de forma transparente, sem exigir que você divida manualmente seu código ou gerencie o lazy loading. O TanStack Router bundler plugin cuida de tudo, garantindo que suas routes sejam otimizadas para performance desde o início.
 
-### The transformation process
+### O processo de transformação
 
-When you enable automatic code splitting, the bundler plugin does this by using static code analysis look at your the code in your route files to transform them into optimized outputs.
+Quando você habilita o automatic code splitting, o bundler plugin faz isso usando análise estática de código para examinar o código nos seus arquivos de route e transformá-los em saídas otimizadas.
 
-This transformation process produces two key outputs when each of your route files are processed:
+Esse processo de transformação produz duas saídas principais quando cada um dos seus arquivos de route é processado:
 
-1. **Reference File**: The bundler plugin takes your original route file (e.g., `posts.route.tsx`) and modifies the values for properties like `component` or `pendingComponent` to use special lazy-loading wrappers that'll fetch the actual code later. These wrappers point to a "virtual" file that the bundler will resolve later on.
-2. **Virtual File**: When the bundler sees a request for one of these virtual files (e.g., `posts.route.tsx?tsr-split=component`), it intercepts it to generate a new, minimal on-the-fly file that _only_ contains the code for the requested properties (e.g., just the `PostsComponent`).
+1. **Arquivo de Referência**: O bundler plugin pega o seu arquivo de route original (ex.: `posts.route.tsx`) e modifica os valores de propriedades como `component` ou `pendingComponent` para usar wrappers especiais de lazy-loading que vão buscar o código real depois. Esses wrappers apontam para um arquivo "virtual" que o bundler vai resolver posteriormente.
+2. **Arquivo Virtual**: Quando o bundler vê uma requisição para um desses arquivos virtuais (ex.: `posts.route.tsx?tsr-split=component`), ele a intercepta para gerar um novo arquivo mínimo on-the-fly que _apenas_ contém o código das propriedades solicitadas (ex.: apenas o `PostsComponent`).
 
-This process ensures that your original code remains clean and readable, while the actual bundled output is optimized for initial bundle size.
+Esse processo garante que seu código original permaneça limpo e legível, enquanto a saída bundled real é otimizada para o tamanho inicial do bundle.
 
-### What gets code split?
+### O que sofre code splitting?
 
-The decision of what to split into separate chunks is crucial for optimizing your application's performance. TanStack Router uses a concept called "**Split Groupings**" to determine how different parts of your route should be bundled together.
+A decisão do que separar em chunks distintos é crucial para otimizar a performance da sua aplicação. O TanStack Router usa um conceito chamado "**Split Groupings**" para determinar como diferentes partes da sua route devem ser agrupadas.
 
-Split groupings are arrays of properties that tell TanStack Router how to bundle different parts of your route together. Each grouping is an list of property names that you want to bundle together into a single lazy-loaded chunk.
+Split groupings são arrays de propriedades que dizem ao TanStack Router como agrupar diferentes partes da sua route. Cada agrupamento é uma lista de nomes de propriedades que você quer agrupar em um único chunk carregado de forma lazy.
 
-The available properties to split are:
+As propriedades disponíveis para separar são:
 
 - `component`
 - `errorComponent`
@@ -58,7 +58,7 @@ The available properties to split are:
 - `notFoundComponent`
 - `loader`
 
-By default, TanStack Router uses the following split groupings:
+Por padrão, o TanStack Router usa os seguintes split groupings:
 
 ```sh
 [
@@ -68,19 +68,19 @@ By default, TanStack Router uses the following split groupings:
 ]
 ```
 
-This means that it creates three separate lazy-loaded chunks for each route. Resulting in:
+Isso significa que ele cria três chunks separados carregados de forma lazy para cada route. Resultando em:
 
-- One for the main component
-- One for the error component
-- And one for the not-found component.
+- Um para o component principal
+- Um para o error component
+- E um para o not-found component.
 
-### Rules of Splitting
+### Regras do Splitting
 
-For automatic code splitting to work, there are some rules in-place to make sure that this process can reliably and predictably happen.
+Para que o automatic code splitting funcione, existem algumas regras em vigor para garantir que esse processo possa acontecer de forma confiável e previsível.
 
-#### Do not export route properties
+#### Não exporte propriedades de route
 
-Route properties like `component`, `loader`, etc., should not be exported from the route file. Exporting these properties results in them being bundled into the main application bundle, which means that they will not be code-split.
+Propriedades de route como `component`, `loader`, etc., não devem ser exportadas do arquivo de route. Exportar essas propriedades faz com que sejam incluídas no bundle principal da aplicação, o que significa que não sofrerão code splitting.
 
 ```tsx
 import { createRoute } from "@tanstack/react-router";
@@ -104,17 +104,17 @@ function PostsNotFoundComponent() {
 }
 ```
 
-**That's it!** There are no other restrictions. You can use any other JavaScript or TypeScript features in your route files as you normally would. If you run into any issues, please [open an issue](https://github.com/tanstack/router/issues) on GitHub.
+**Pronto!** Não há outras restrições. Você pode usar quaisquer outros recursos de JavaScript ou TypeScript nos seus arquivos de route como faria normalmente. Se encontrar algum problema, por favor [abra uma issue](https://github.com/tanstack/router/issues) no GitHub.
 
-## Granular control
+## Controle granular
 
-For most applications, the default behavior of using `autoCodeSplitting: true` is sufficient. However, TanStack Router provides several options to customize how your routes are split into chunks, allowing you to optimize for specific use cases or performance needs.
+Para a maioria das aplicações, o comportamento padrão de usar `autoCodeSplitting: true` é suficiente. No entanto, o TanStack Router fornece várias opções para personalizar como suas routes são divididas em chunks, permitindo que você otimize para casos de uso ou necessidades de performance específicos.
 
-### Global code splitting behavior (`defaultBehavior`)
+### Comportamento global de code splitting (`defaultBehavior`)
 
-You can change how TanStack Router splits your routes by changing the `defaultBehavior` option in your bundler plugin configuration. This allows you to define how different properties of your routes should be bundled together.
+Você pode mudar como o TanStack Router divide suas routes alterando a opção `defaultBehavior` na configuração do seu bundler plugin. Isso permite que você defina como diferentes propriedades das suas routes devem ser agrupadas.
 
-For example, to bundle all UI-related components into a single chunk, you could configure it like this:
+Por exemplo, para agrupar todos os components relacionados à UI em um único chunk, você poderia configurar assim:
 
 ```ts
 // vite.config.ts
@@ -140,9 +140,9 @@ export default defineConfig({
 });
 ```
 
-### Advanced programmatic control (`splitBehavior`)
+### Controle programático avançado (`splitBehavior`)
 
-For complex rulesets, you can use the `splitBehavior` function in your vite config to programmatically define how routes should be split into chunks based on their `routeId`. This function allows you to implement custom logic for grouping properties together, giving you fine-grained control over the code splitting behavior.
+Para conjuntos de regras complexos, você pode usar a função `splitBehavior` na sua config do vite para definir programaticamente como as routes devem ser divididas em chunks com base no seu `routeId`. Essa função permite que você implemente lógica customizada para agrupar propriedades, dando controle refinado sobre o comportamento de code splitting.
 
 ```ts
 // vite.config.ts
@@ -167,9 +167,9 @@ export default defineConfig({
 });
 ```
 
-### Per-route overrides (`codeSplitGroupings`)
+### Overrides por route (`codeSplitGroupings`)
 
-For ultimate control, you can override the global configuration directly inside a route file by adding a `codeSplitGroupings` property. This is useful for routes that have unique optimization needs.
+Para controle total, você pode sobrescrever a configuração global diretamente dentro de um arquivo de route adicionando a propriedade `codeSplitGroupings`. Isso é útil para routes que têm necessidades de otimização únicas.
 
 ```tsx
 // src/routes/posts.route.tsx
@@ -188,25 +188,25 @@ function PostsComponent() {
 }
 ```
 
-This will create a single chunk that includes both the `loader` and the `component` for this specific route, overriding both the default behavior and any programmatic split behavior defined in your bundler config.
+Isso vai criar um único chunk que inclui tanto o `loader` quanto o `component` para essa route específica, sobrescrevendo tanto o comportamento padrão quanto qualquer comportamento de split programático definido na config do seu bundler.
 
-### Configuration order matters
+### A ordem de configuração importa
 
-This guide has so far describe three different ways to configure how TanStack Router splits your routes into chunks.
+Este guia descreveu até agora três formas diferentes de configurar como o TanStack Router divide suas routes em chunks.
 
-To make sure that the different configurations do not conflict with each other, TanStack Router uses the following order of precedence:
+Para garantir que as diferentes configurações não entrem em conflito entre si, o TanStack Router usa a seguinte ordem de precedência:
 
-1. **Per-route overrides**: The `codeSplitGroupings` property inside a route file takes the highest precedence. This allows you to define specific split groupings for individual routes.
-2. **Programmatic split behavior**: The `splitBehavior` function in your bundler config allows you to define custom logic for how routes should be split based on their `routeId`.
-3. **Default behavior**: The `defaultBehavior` option in your bundler config serves as the fallback for any routes that do not have specific overrides or custom logic defined. This is the base configuration that applies to all routes unless overridden.
+1. **Overrides por route**: A propriedade `codeSplitGroupings` dentro de um arquivo de route tem a maior precedência. Isso permite que você defina split groupings específicos para routes individuais.
+2. **Comportamento de split programático**: A função `splitBehavior` na config do seu bundler permite que você defina lógica customizada para como as routes devem ser divididas com base no seu `routeId`.
+3. **Comportamento padrão**: A opção `defaultBehavior` na config do seu bundler serve como fallback para qualquer route que não tenha overrides específicos ou lógica customizada definida. Esta é a configuração base que se aplica a todas as routes, a menos que seja sobrescrita.
 
-### Splitting the Data Loader
+### Separando o Data Loader
 
-The `loader` function is responsible for fetching data needed by the route. By default, it is bundled with into your "reference file" and loaded in the initial bundle. However, you can also split the `loader` into its own chunk if you want to optimize further.
+A função `loader` é responsável por buscar os dados necessários pela route. Por padrão, ela é agrupada no seu "arquivo de referência" e carregada no bundle inicial. No entanto, você também pode separar o `loader` em seu próprio chunk se quiser otimizar ainda mais.
 
 > [!CAUTION]
-> Moving the `loader` into its own chunk is a **performance trade-off**. It introduces an additional trip to the server before the data can be fetched, which can lead to slower initial page loads. This is because the `loader` **must** be fetched and executed before the route can render its component.
-> Therefore, we recommend keeping the `loader` in the initial bundle unless you have a specific reason to split it.
+> Mover o `loader` para seu próprio chunk é um **trade-off de performance**. Isso introduz uma viagem adicional ao servidor antes que os dados possam ser buscados, o que pode levar a carregamentos iniciais de página mais lentos. Isso porque o `loader` **precisa** ser buscado e executado antes que a route possa renderizar seu component.
+> Portanto, recomendamos manter o `loader` no bundle inicial, a menos que você tenha um motivo específico para separá-lo.
 
 ```ts
 // vite.config.ts
@@ -229,4 +229,4 @@ export default defineConfig({
 });
 ```
 
-We highly discourage splitting the `loader` unless you have a specific use case that requires it. In most cases, not splitting off the `loader` and keep it in the main bundle is the best choice for performance.
+Nós desencorajamos fortemente separar o `loader` a menos que você tenha um caso de uso específico que exija isso. Na maioria dos casos, não separar o `loader` e mantê-lo no bundle principal é a melhor escolha para performance.

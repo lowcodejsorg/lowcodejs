@@ -3,25 +3,25 @@ id: react-native
 title: React Native
 ---
 
-React Query is designed to work out of the box with React Native.
+O React Query foi projetado para funcionar imediatamente com React Native, sem configuração adicional.
 
-## DevTools Support
+## Suporte a DevTools
 
-There are several options available for React Native DevTools integration:
+Existem várias opções disponíveis para integração com DevTools no React Native:
 
-1. **Native macOS App**: A 3rd party app for debugging React Query in any js-based application:
+1. **App nativo para macOS**: Um app de terceiros para depuração do React Query em qualquer aplicação baseada em JavaScript:
    https://github.com/LovesWorking/rn-better-dev-tools
 
-2. **Flipper Plugin**: A 3rd party plugin for Flipper users:
+2. **Plugin para Flipper**: Um plugin de terceiros para usuários do Flipper:
    https://github.com/bgaleotti/react-query-native-devtools
 
-3. **Reactotron Plugin**: A 3rd party plugin for Reactotron users:
+3. **Plugin para Reactotron**: Um plugin de terceiros para usuários do Reactotron:
    https://github.com/hsndmr/reactotron-react-query
 
-## Online status management
+## Gerenciamento de status online
 
-React Query already supports auto refetch on reconnect in web browser.
-To add this behavior in React Native you have to use React Query `onlineManager` as in the example below:
+O React Query já suporta refetch automático ao reconectar no navegador web.
+Para adicionar esse comportamento no React Native, você precisa usar o `onlineManager` do React Query como no exemplo abaixo:
 
 ```tsx
 import NetInfo from "@react-native-community/netinfo";
@@ -34,7 +34,7 @@ onlineManager.setEventListener((setOnline) => {
 });
 ```
 
-or
+ou
 
 ```tsx
 import { onlineManager } from "@tanstack/react-query";
@@ -48,9 +48,9 @@ onlineManager.setEventListener((setOnline) => {
 });
 ```
 
-## Refetch on App focus
+## Refetch ao focar no App
 
-Instead of event listeners on `window`, React Native provides focus information through the [`AppState` module](https://reactnative.dev/docs/appstate#app-states). You can use the `AppState` "change" event to trigger an update when the app state changes to "active":
+Em vez de event listeners no `window`, o React Native fornece informações de foco através do [módulo `AppState`](https://reactnative.dev/docs/appstate#app-states). Você pode usar o evento "change" do `AppState` para disparar uma atualização quando o state do app mudar para "active":
 
 ```tsx
 import { useEffect } from "react";
@@ -71,10 +71,10 @@ useEffect(() => {
 }, []);
 ```
 
-## Refresh on Screen focus
+## Atualização ao focar na tela
 
-In some situations, you may want to refetch the query when a React Native Screen is focused again.
-This custom hook will refetch **all active stale queries** when the screen is focused again.
+Em algumas situações, você pode querer refazer o fetch da query quando uma tela do React Native receber foco novamente.
+Esse hook customizado vai refazer o fetch de **todas as queries stale ativas** quando a tela receber foco novamente.
 
 ```tsx
 import React from "react";
@@ -103,13 +103,13 @@ export function useRefreshOnFocus() {
 }
 ```
 
-In the above code, the first focus (when the screen is initially mounted) is skipped because `useFocusEffect` calls our callback on mount in addition to screen focus.
+No código acima, o primeiro foco (quando a tela é montada inicialmente) é ignorado porque o `useFocusEffect` chama nosso callback na montagem, além de quando a tela recebe foco.
 
-## Disable queries on out of focus screens
+## Desabilitar queries em telas fora de foco
 
-If you don’t want certain queries to remain “live” while a screen is out of focus, you can use the subscribed prop on useQuery. This prop lets you control whether a query stays subscribed to updates. Combined with React Navigation’s useIsFocused, it allows you to seamlessly unsubscribe from queries when a screen isn’t in focus:
+Se você não quer que certas queries continuem "ativas" enquanto uma tela está fora de foco, você pode usar a prop subscribed no useQuery. Essa prop permite controlar se uma query permanece inscrita para atualizações. Combinada com o useIsFocused do React Navigation, ela permite que você cancele a inscrição de queries de forma transparente quando uma tela não está em foco:
 
-Example usage:
+Exemplo de uso:
 
 ```tsx
 import React from 'react'
@@ -130,4 +130,4 @@ function MyComponent() {
 }
 ```
 
-When subscribed is false, the query unsubscribes from updates and won’t trigger re-renders or fetch new data for that screen. Once it becomes true again (e.g., when the screen regains focus), the query re-subscribes and stays up to date.
+Quando subscribed é false, a query cancela a inscrição das atualizações e não vai disparar re-renders nem buscar novos dados para aquela tela. Uma vez que se torne true novamente (por exemplo, quando a tela recuperar o foco), a query se reinscreve e permanece atualizada.

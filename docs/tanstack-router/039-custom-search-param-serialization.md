@@ -2,9 +2,9 @@
 title: Custom Search Param Serialization
 ---
 
-By default, TanStack Router parses and serializes your URL Search Params automatically using `JSON.stringify` and `JSON.parse`. This process involves escaping and unescaping the search string, which is a common practice for URL search params, in addition to the serialization and deserialization of the search object.
+Por padrão, o TanStack Router analisa e serializa seus URL Search Params automaticamente usando `JSON.stringify` e `JSON.parse`. Esse processo envolve escapar e desescapar a string de busca, que é uma prática comum para search params de URL, além da serialização e desserialização do objeto de busca.
 
-For instance, using the default configuration, if you have the following search object:
+Por exemplo, usando a configuração padrão, se você tiver o seguinte objeto de busca:
 
 ```tsx
 const search = {
@@ -14,13 +14,13 @@ const search = {
 };
 ```
 
-It would be serialized and escaped into the following search string:
+Ele seria serializado e escapado na seguinte string de busca:
 
 ```txt
 ?page=1&sort=asc&filters=%7B%22author%22%3A%22tanner%22%2C%22min_words%22%3A800%7D
 ```
 
-We can implement the default behavior with the following code:
+Podemos implementar o comportamento padrão com o seguinte código:
 
 ```tsx
 import {
@@ -36,20 +36,20 @@ const router = createRouter({
 });
 ```
 
-However, this default behavior may not be suitable for all use cases. For example, you may want to use a different serialization format, such as base64 encoding, or you may want to use a purpose-built serialization/deserialization library, like [query-string](https://github.com/sindresorhus/query-string), [JSURL2](https://github.com/wmertens/jsurl2), or [Zipson](https://jgranstrom.github.io/zipson/).
+No entanto, esse comportamento padrão pode não ser adequado para todos os casos de uso. Por exemplo, você pode querer usar um formato de serialização diferente, como codificação base64, ou pode querer usar uma biblioteca de serialização/desserialização dedicada, como [query-string](https://github.com/sindresorhus/query-string), [JSURL2](https://github.com/wmertens/jsurl2) ou [Zipson](https://jgranstrom.github.io/zipson/).
 
-This can be achieved by providing your own serialization and deserialization functions to the `parseSearch` and `stringifySearch` options in the [`Router`](../api/router/RouterOptionsType.md#stringifysearch-method) configuration. When doing this, you can utilize TanStack Router's built-in helper functions, `parseSearchWith` and `stringifySearchWith`, to simplify the process.
+Isso pode ser alcançado fornecendo suas próprias funções de serialização e desserialização para as opções `parseSearch` e `stringifySearch` na configuração do [`Router`](../api/router/RouterOptionsType.md#stringifysearch-method). Ao fazer isso, você pode utilizar as funções auxiliares integradas do TanStack Router, `parseSearchWith` e `stringifySearchWith`, para simplificar o processo.
 
 > [!TIP]
-> An important aspect of serialization and deserialization, is that you are able to get the same object back after deserialization. This is important because if the serialization and deserialization process is not done correctly, you may lose some information. For example, if you are using a library that does not support nested objects, you may lose the nested object when deserializing the search string.
+> Um aspecto importante da serialização e desserialização é que você consiga obter o mesmo objeto de volta após a desserialização. Isso é importante porque se o processo de serialização e desserialização não for feito corretamente, você pode perder algumas informações. Por exemplo, se você estiver usando uma biblioteca que não suporta objetos aninhados, poderá perder o objeto aninhado ao desserializar a string de busca.
 
-![Diagram showing idempotent nature of URL search param serialization and deserialization](https://raw.githubusercontent.com/TanStack/router/main/docs/router/assets/search-serialization-deserialization-idempotency.jpg)
+![Diagrama mostrando a natureza idempotente da serialização e desserialização de URL search params](https://raw.githubusercontent.com/TanStack/router/main/docs/router/assets/search-serialization-deserialization-idempotency.jpg)
 
-Here are some examples of how you can customize the search param serialization in TanStack Router:
+Aqui estão alguns exemplos de como você pode personalizar a serialização de search params no TanStack Router:
 
-## Using Base64
+## Usando Base64
 
-It's common to base64 encode your search params to achieve maximum compatibility across browsers and URL unfurlers, etc. This can be done with the following code:
+É comum codificar seus search params em base64 para alcançar máxima compatibilidade entre navegadores e desdobradores de URL, etc. Isso pode ser feito com o seguinte código:
 
 ```tsx
 import {
@@ -84,20 +84,20 @@ function encodeToBinary(str: string): string {
 }
 ```
 
-> [⚠️ Why does this snippet not use atob/btoa?](#safe-binary-encodingdecoding)
+> [⚠️ Por que este trecho não usa atob/btoa?](#codificaçãodecodificação-binária-segura)
 
-So, if we were to turn the previous object into a search string using this configuration, it would look like this:
+Então, se fôssemos transformar o objeto anterior em uma string de busca usando essa configuração, ficaria assim:
 
 ```txt
 ?page=1&sort=asc&filters=eyJhdXRob3IiOiJ0YW5uZXIiLCJtaW5fd29yZHMiOjgwMH0%3D
 ```
 
 > [!WARNING]
-> If you are serializing user input into Base64, you run the risk of causing a collision with the URL deserialization. This can lead to unexpected behavior, such as the URL not being parsed correctly or being interpreted as a different value. To avoid this, you should encode the search params using a safe binary encoding/decoding method (see below).
+> Se você estiver serializando entrada do usuário em Base64, corre o risco de causar uma colisão com a desserialização da URL. Isso pode levar a comportamento inesperado, como a URL não ser analisada corretamente ou ser interpretada como um valor diferente. Para evitar isso, você deve codificar os search params usando um método seguro de codificação/decodificação binária (veja abaixo).
 
-## Using the query-string library
+## Usando a biblioteca query-string
 
-The [query-string](https://github.com/sindresorhus/query-string) library is a popular for being able to reliably parse and stringify query strings. You can use it to customize the serialization format of your search params. This can be done with the following code:
+A biblioteca [query-string](https://github.com/sindresorhus/query-string) é popular por ser capaz de analisar e serializar query strings de forma confiável. Você pode usá-la para personalizar o formato de serialização dos seus search params. Isso pode ser feito com o seguinte código:
 
 ```tsx
 import { createRouter } from "@tanstack/react-router";
@@ -118,15 +118,15 @@ const router = createRouter({
 });
 ```
 
-So, if we were to turn the previous object into a search string using this configuration, it would look like this:
+Então, se fôssemos transformar o objeto anterior em uma string de busca usando essa configuração, ficaria assim:
 
 ```txt
 ?page=1&sort=asc&filters=author%3Dtanner%26min_words%3D800
 ```
 
-## Using the JSURL2 library
+## Usando a biblioteca JSURL2
 
-[JSURL2](https://github.com/wmertens/jsurl2) is a non-standard library that can compress URLs while still maintaining readability. This can be done with the following code:
+[JSURL2](https://github.com/wmertens/jsurl2) é uma biblioteca não padrão que pode comprimir URLs mantendo a legibilidade. Isso pode ser feito com o seguinte código:
 
 ```tsx
 import {
@@ -143,15 +143,15 @@ const router = createRouter({
 });
 ```
 
-So, if we were to turn the previous object into a search string using this configuration, it would look like this:
+Então, se fôssemos transformar o objeto anterior em uma string de busca usando essa configuração, ficaria assim:
 
 ```txt
 ?page=1&sort=asc&filters=(author~tanner~min*_words~800)~
 ```
 
-## Using the Zipson library
+## Usando a biblioteca Zipson
 
-[Zipson](https://jgranstrom.github.io/zipson/) is a very user-friendly and performant JSON compression library (both in runtime performance and the resulting compression performance). To compress your search params with it (which requires escaping/unescaping and base64 encoding/decoding them as well), you can use the following code:
+[Zipson](https://jgranstrom.github.io/zipson/) é uma biblioteca de compressão JSON muito amigável e performática (tanto em performance de runtime quanto na performance de compressão resultante). Para comprimir seus search params com ela (o que requer escapar/desescapar e codificar/decodificar em base64 também), você pode usar o seguinte código:
 
 ```tsx
 import {
@@ -187,9 +187,9 @@ function encodeToBinary(str: string): string {
 }
 ```
 
-> [⚠️ Why does this snippet not use atob/btoa?](#safe-binary-encodingdecoding)
+> [⚠️ Por que este trecho não usa atob/btoa?](#codificaçãodecodificação-binária-segura)
 
-So, if we were to turn the previous object into a search string using this configuration, it would look like this:
+Então, se fôssemos transformar o objeto anterior em uma string de busca usando essa configuração, ficaria assim:
 
 ```txt
 ?page=1&sort=asc&filters=JTdCJUMyJUE4YXV0aG9yJUMyJUE4JUMyJUE4dGFubmVyJUMyJUE4JUMyJUE4bWluX3dvcmRzJUMyJUE4JUMyJUEyQ3UlN0Q%3D
@@ -197,11 +197,11 @@ So, if we were to turn the previous object into a search string using this confi
 
 <hr>
 
-### Safe Binary Encoding/Decoding
+### Codificação/Decodificação Binária Segura
 
-In the browser, the `atob` and `btoa` functions are not guaranteed to work properly with non-UTF8 characters. We recommend using these encoding/decoding utilities instead:
+No navegador, as funções `atob` e `btoa` não são garantidas de funcionar corretamente com caracteres não-UTF8. Recomendamos usar estes utilitários de codificação/decodificação em vez disso:
 
-To encode from a string to a binary string:
+Para codificar de uma string para uma string binária:
 
 ```typescript
 export function encodeToBinary(str: string): string {
@@ -213,7 +213,7 @@ export function encodeToBinary(str: string): string {
 }
 ```
 
-To decode from a binary string to a string:
+Para decodificar de uma string binária para uma string:
 
 ```typescript
 export function decodeFromBinary(str: string): string {

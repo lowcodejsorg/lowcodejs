@@ -3,7 +3,7 @@ id: query-options
 title: Query Options
 ---
 
-One of the best ways to share `queryKey` and `queryFn` between multiple places, yet keep them co-located to one another, is to use the `queryOptions` helper. At runtime, this helper just returns whatever you pass into it, but it has a lot of advantages when using it [with TypeScript](../typescript.md#typing-query-options). You can define all possible options for a query in one place, and you'll also get type inference and type safety for all of them.
+Uma das melhores formas de compartilhar `queryKey` e `queryFn` entre múltiplos lugares, mantendo-os co-localizados, é usar o helper `queryOptions`. Em tempo de execução, esse helper apenas retorna o que você passar para ele, mas tem muitas vantagens quando usado [com TypeScript](../typescript.md#typing-query-options). Você pode definir todas as opções possíveis para uma query em um único lugar, e também terá inferência de tipos e segurança de tipos para todas elas.
 
 [//]: # "Example1"
 
@@ -31,9 +31,9 @@ queryClient.setQueryData(groupOptions(42).queryKey, newGroups);
 
 [//]: # "Example1"
 
-For Infinite Queries, a separate [`infiniteQueryOptions`](../reference/infiniteQueryOptions.md) helper is available.
+Para Queries Infinitas, um helper separado [`infiniteQueryOptions`](../reference/infiniteQueryOptions.md) está disponível.
 
-You can still override some options at the component level. A very common and useful pattern is to create per-component [`select`](./render-optimizations.md#select) functions:
+Você ainda pode sobrescrever algumas opções no nível do component. Um padrão muito comum e útil é criar funções [`select`](./render-optimizations.md#select) por component:
 
 [//]: # "Example2"
 

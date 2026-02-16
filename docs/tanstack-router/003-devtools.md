@@ -2,55 +2,55 @@
 title: Devtools
 ---
 
-> Link, take this sword... I mean Devtools!... to help you on your way!
+> Link, pegue esta espada... quer dizer, Devtools!... para ajudá-lo na sua jornada!
 
-Wave your hands in the air and shout hooray because TanStack Router comes with dedicated devtools! 🥳
+Acene com as mãos no ar e comemore porque o TanStack Router vem com devtools dedicadas!
 
-When you begin your TanStack Router journey, you'll want these devtools by your side. They help visualize all of the inner workings of TanStack Router and will likely save you hours of debugging if you find yourself in a pinch!
+Quando você começar sua jornada com o TanStack Router, vai querer essas devtools ao seu lado. Elas ajudam a visualizar todo o funcionamento interno do TanStack Router e provavelmente vão te economizar horas de debugging se você se encontrar em apuros!
 
-## Installation
+## Instalação
 
-The devtools are a separate package that you need to install:
+As devtools são um pacote separado que você precisa instalar:
 
 ```sh
 npm install @tanstack/react-router-devtools
 ```
 
-or
+ou
 
 ```sh
 pnpm add @tanstack/react-router-devtools
 ```
 
-or
+ou
 
 ```sh
 yarn add @tanstack/react-router-devtools
 ```
 
-or
+ou
 
 ```sh
 bun add @tanstack/react-router-devtools
 ```
 
-## Import the Devtools
+## Importar as Devtools
 
 ```js
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 ```
 
-## Using Devtools in production
+## Usando Devtools em produção
 
-The Devtools, if imported as `TanStackRouterDevtools` will not be shown in production. If you want to have devtools in an environment with `process.env.NODE_ENV === 'production'`, use instead `TanStackRouterDevtoolsInProd`, which has all the same options:
+As Devtools, se importadas como `TanStackRouterDevtools`, não serão exibidas em produção. Se você quiser ter devtools em um ambiente com `process.env.NODE_ENV === 'production'`, use em vez disso `TanStackRouterDevtoolsInProd`, que tem todas as mesmas opções:
 
 ```tsx
 import { TanStackRouterDevtoolsInProd } from "@tanstack/react-router-devtools";
 ```
 
-## Using inside of the `RouterProvider`
+## Usando dentro do `RouterProvider`
 
-The easiest way for the devtools to work is to render them inside of your root route (or any other route). This will automatically connect the devtools to the router instance.
+A maneira mais fácil para as devtools funcionarem é renderizá-las dentro do seu root route (ou qualquer outro route). Isso conectará automaticamente as devtools à instância do router.
 
 ```tsx
 const rootRoute = createRootRoute({
@@ -75,9 +75,9 @@ function App() {
 }
 ```
 
-## Manually passing the Router Instance
+## Passando a Instância do Router Manualmente
 
-If rendering the devtools inside of the `RouterProvider` isn't your cup of tea, a `router` prop for the devtools accepts the same `router` instance you pass to the `Router` component. This makes it possible to place the devtools anywhere on the page, not just inside the provider:
+Se renderizar as devtools dentro do `RouterProvider` não é do seu agrado, uma prop `router` nas devtools aceita a mesma instância `router` que você passa ao component `Router`. Isso torna possível posicionar as devtools em qualquer lugar da página, não apenas dentro do provider:
 
 ```tsx
 function App() {
@@ -90,11 +90,11 @@ function App() {
 }
 ```
 
-## Floating Mode
+## Modo Flutuante
 
-Floating Mode will mount the devtools as a fixed, floating element in your app and provide a toggle in the corner of the screen to show and hide the devtools. This toggle state will be stored and remembered in localStorage across reloads.
+O Modo Flutuante montará as devtools como um elemento fixo e flutuante na sua aplicação e fornecerá um botão no canto da tela para mostrar e ocultar as devtools. Esse estado do botão será armazenado e lembrado no localStorage entre recarregamentos.
 
-Place the following code as high in your React app as you can. The closer it is to the root of the page, the better it will work!
+Coloque o seguinte código o mais alto possível na sua aplicação React. Quanto mais próximo da raiz da página, melhor funcionará!
 
 ```js
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
@@ -109,38 +109,38 @@ function App() {
 }
 ```
 
-### Devtools Options
+### Opções das Devtools
 
 - `router: Router`
-  - The router instance to connect to.
+  - A instância do router para se conectar.
 - `initialIsOpen: Boolean`
-  - Set this `true` if you want the devtools to default to being open.
+  - Defina como `true` se quiser que as devtools comecem abertas por padrão.
 - `panelProps: PropsObject`
-  - Use this to add props to the panel. For example, you can add `className`, `style` (merge and override default style), etc.
+  - Use isto para adicionar props ao painel. Por exemplo, você pode adicionar `className`, `style` (mesclar e sobrescrever estilo padrão), etc.
 - `closeButtonProps: PropsObject`
-  - Use this to add props to the close button. For example, you can add `className`, `style` (merge and override default style), `onClick` (extend default handler), etc.
+  - Use isto para adicionar props ao botão de fechar. Por exemplo, você pode adicionar `className`, `style` (mesclar e sobrescrever estilo padrão), `onClick` (estender o handler padrão), etc.
 - `toggleButtonProps: PropsObject`
-  - Use this to add props to the toggle button. For example, you can add `className`, `style` (merge and override default style), `onClick` (extend default handler), etc.
+  - Use isto para adicionar props ao botão de alternância. Por exemplo, você pode adicionar `className`, `style` (mesclar e sobrescrever estilo padrão), `onClick` (estender o handler padrão), etc.
 - `position?: "top-left" | "top-right" | "bottom-left" | "bottom-right"`
-  - Defaults to `bottom-left`.
-  - The position of the TanStack Router logo to open and close the devtools panel.
+  - O padrão é `bottom-left`.
+  - A posição do logo do TanStack Router para abrir e fechar o painel das devtools.
 - `shadowDOMTarget?: ShadowRoot`
-  - Specifies a Shadow DOM target for the devtools.
-  - By default, devtool styles are applied to the `<head>` tag of the main document (light DOM). When a `shadowDOMTarget` is provided, styles will be applied within this Shadow DOM instead.
+  - Especifica um alvo de Shadow DOM para as devtools.
+  - Por padrão, os estilos das devtools são aplicados à tag `<head>` do documento principal (light DOM). Quando um `shadowDOMTarget` é fornecido, os estilos serão aplicados dentro desse Shadow DOM em vez disso.
 - `containerElement?: string | any`
-  - Use this to render the devtools inside a different type of container element for ally purposes.
-  - Any string which corresponds to a valid intrinsic JSX element is allowed.
-  - Defaults to 'footer'.
+  - Use isto para renderizar as devtools dentro de um tipo diferente de elemento container para fins de acessibilidade.
+  - Qualquer string que corresponda a um elemento JSX intrínseco válido é permitida.
+  - O padrão é 'footer'.
 
-## Fixed Mode
+## Modo Fixo
 
-To control the position of the devtools, import the `TanStackRouterDevtoolsPanel`:
+Para controlar a posição das devtools, importe o `TanStackRouterDevtoolsPanel`:
 
 ```js
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 ```
 
-It can then be attached to provided shadow DOM target:
+Ele pode então ser anexado a um alvo de Shadow DOM fornecido:
 
 ```js
 <TanStackRouterDevtoolsPanel
@@ -149,11 +149,11 @@ It can then be attached to provided shadow DOM target:
 />
 ```
 
-Click [here](https://tanstack.com/router/latest/docs/framework/react/examples/basic-devtools-panel) to see a live example of this in StackBlitz.
+Clique [aqui](https://tanstack.com/router/latest/docs/framework/react/examples/basic-devtools-panel) para ver um exemplo ao vivo disso no StackBlitz.
 
-## Embedded Mode
+## Modo Embutido
 
-Embedded Mode will embed the devtools as a regular component in your application. You can style it however you'd like after that!
+O Modo Embutido incorporará as devtools como um component regular na sua aplicação. Você pode estilizá-lo como quiser depois disso!
 
 ```js
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
@@ -172,20 +172,20 @@ function App() {
 }
 ```
 
-### DevtoolsPanel Options
+### Opções do DevtoolsPanel
 
 - `router: Router`
-  - The router instance to connect to.
+  - A instância do router para se conectar.
 - `style: StyleObject`
-  - The standard React style object used to style a component with inline styles.
+  - O objeto de estilo React padrão usado para estilizar um component com estilos inline.
 - `className: string`
-  - The standard React className property used to style a component with classes.
+  - A propriedade className padrão do React usada para estilizar um component com classes.
 - `isOpen?: boolean`
-  - A boolean variable indicating whether the panel is open or closed.
+  - Uma variável booleana indicando se o painel está aberto ou fechado.
 - `setIsOpen?: (isOpen: boolean) => void`
-  - A function that toggles the open and close state of the panel.
+  - Uma função que alterna o estado aberto e fechado do painel.
 - `handleDragStart?: (e: any) => void`
-  - Handles the opening and closing the devtools panel.
+  - Controla a abertura e o fechamento do painel das devtools.
 - `shadowDOMTarget?: ShadowRoot`
-  - Specifies a Shadow DOM target for the devtools.
-  - By default, devtool styles are applied to the `<head>` tag of the main document (light DOM). When a `shadowDOMTarget` is provided, styles will be applied within this Shadow DOM instead.
+  - Especifica um alvo de Shadow DOM para as devtools.
+  - Por padrão, os estilos das devtools são aplicados à tag `<head>` do documento principal (light DOM). Quando um `shadowDOMTarget` é fornecido, os estilos serão aplicados dentro desse Shadow DOM em vez disso.

@@ -3,9 +3,9 @@ id: quick-start
 title: Quick Start
 ---
 
-## Impatient?
+## Impaciente?
 
-The fastest way to get started with TanStack Router is to scaffold a new project. Just run:
+A maneira mais rápida de começar com o TanStack Router é criar um novo projeto. Basta executar:
 
 [//]: # "createAppCommand"
 
@@ -15,19 +15,19 @@ npx create-tsrouter-app@latest
 
 [//]: # "createAppCommand"
 
-The CLI will guide you through a short series of prompts to customize your setup, including options for:
+O CLI vai guiá-lo por uma curta série de perguntas para customizar sua configuração, incluindo opções para:
 
 [//]: # "CLIPrompts"
 
-- File-based or code-based route configuration
-- TypeScript support
-- Tailwind CSS integration
-- Toolchain setup
-- Git initialization
+- Configuração de route baseada em arquivo ou em código
+- Suporte a TypeScript
+- Integração com Tailwind CSS
+- Configuração de toolchain
+- Inicialização do Git
 
 [//]: # "CLIPrompts"
 
-Once complete, a new React project will be generated with TanStack Router installed and ready to use:
+Uma vez concluído, um novo projeto React será gerado com o TanStack Router instalado e pronto para uso:
 
 ```sh
 cd your-project-name
@@ -35,15 +35,15 @@ npm run dev
 ```
 
 > [!TIP]
-> For full details on available options and templates, visit the [`create-tsrouter-app` documentation](https://github.com/TanStack/create-tsrouter-app/tree/main/cli/create-tsrouter-app).
+> Para detalhes completos sobre opções e templates disponíveis, visite a [documentação do `create-tsrouter-app`](https://github.com/TanStack/create-tsrouter-app/tree/main/cli/create-tsrouter-app).
 
-## Routing Options
+## Opções de Routing
 
-TanStack Router supports both file-based and code-based route configurations. You can specify your preference during the CLI setup, or use these commands directly:
+O TanStack Router suporta tanto configurações de route baseadas em arquivo quanto baseadas em código. Você pode especificar sua preferência durante a configuração pelo CLI, ou usar estes comandos diretamente:
 
-### File-Based Route Generation
+### Geração de Route Baseada em Arquivo
 
-The file-based approach is the recommended option for most projects. It automatically creates routes based on your file structure, giving you the best mix of performance, simplicity, and developer experience.
+A abordagem baseada em arquivo é a opção recomendada para a maioria dos projetos. Ela cria routes automaticamente com base na estrutura dos seus arquivos, oferecendo a melhor combinação de performance, simplicidade e experiência de desenvolvedor.
 
 [//]: # "createAppCommandFileBased"
 
@@ -53,9 +53,9 @@ npx create-tsrouter-app@latest my-app --template file-router
 
 [//]: # "createAppCommandFileBased"
 
-### Code-Based Route Configuration
+### Configuração de Route Baseada em Código
 
-If you prefer to define routes programmatically, you can use the code-based route configuration. This approach gives you full control over routing logic.
+Se você prefere definir routes programaticamente, pode usar a configuração de route baseada em código. Essa abordagem dá a você controle total sobre a lógica de routing.
 
 [//]: # "createAppCommandCodeBased"
 
@@ -65,36 +65,36 @@ npx create-tsrouter-app@latest my-app
 
 [//]: # "createAppCommandCodeBased"
 
-With either approach, navigate to your project directory and start the development server:
+Com qualquer uma das abordagens, navegue até o diretório do seu projeto e inicie o servidor de desenvolvimento:
 
 ```sh
 cd my-app
 npm run dev
 ```
 
-## Existing Project
+## Projeto Existente
 
-If you have an existing React project and want to add TanStack Router to it, you can install it manually.
+Se você tem um projeto React existente e quer adicionar o TanStack Router a ele, pode instalá-lo manualmente.
 
-### Requirements
+### Requisitos
 
-Before installing TanStack Router, please ensure your project meets the following requirements:
+Antes de instalar o TanStack Router, certifique-se de que seu projeto atende aos seguintes requisitos:
 
 [//]: # "Requirements"
 
-- `react` v18 or later with `createRoot` support.
-- `react-dom` v18 or later.
+- `react` v18 ou posterior com suporte a `createRoot`.
+- `react-dom` v18 ou posterior.
 
 [//]: # "Requirements"
 
 > [!NOTE]
-> Using TypeScript (`v5.3.x or higher`) is recommended for the best development experience, though not strictly required. We aim to support the last 5 minor versions of TypeScript, but using the latest version will help avoid potential issues.
+> Usar TypeScript (`v5.3.x ou superior`) é recomendado para a melhor experiência de desenvolvimento, embora não seja estritamente obrigatório. Nosso objetivo é suportar as últimas 5 versões minor do TypeScript, mas usar a versão mais recente ajudará a evitar problemas potenciais.
 
-TanStack Router is currently only compatible with React (with ReactDOM) and Solid. If you're interested in contributing to support other frameworks, such as React Native, Angular, or Vue, please reach out to us on [Discord](https://tlinz.com/discord).
+O TanStack Router atualmente é compatível apenas com React (com ReactDOM) e Solid. Se você tem interesse em contribuir para suportar outros frameworks, como React Native, Angular ou Vue, entre em contato conosco no [Discord](https://tlinz.com/discord).
 
-### Installation
+### Instalação
 
-To install TanStack Router in your project, run the following command using your preferred package manager:
+Para instalar o TanStack Router no seu projeto, execute o seguinte comando usando seu gerenciador de pacotes preferido:
 
 [//]: # "installCommand"
 
@@ -112,7 +112,7 @@ deno add npm:@tanstack/react-router
 
 [//]: # "installCommand"
 
-Once installed, you can verify the installation by checking your `package.json` file for the dependency.
+Uma vez instalado, você pode verificar a instalação checando o arquivo `package.json` para a dependência.
 
 [//]: # "packageJson"
 

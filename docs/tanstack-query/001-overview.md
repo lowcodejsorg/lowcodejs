@@ -3,50 +3,50 @@ id: overview
 title: Overview
 ---
 
-TanStack Query (formerly known as React Query) is often described as the missing data-fetching library for web applications, but in more technical terms, it makes **fetching, caching, synchronizing and updating server state** in your web applications a breeze.
+TanStack Query (anteriormente conhecido como React Query) é frequentemente descrito como a biblioteca de fetching de dados que faltava para aplicações web, mas em termos mais técnicos, ele torna o **fetching, caching, sincronização e atualização do state do servidor** nas suas aplicações web algo extremamente simples.
 
-## Motivation
+## Motivação
 
-Most core web frameworks **do not** come with an opinionated way of fetching or updating data in a holistic way. Because of this developers end up building either meta-frameworks which encapsulate strict opinions about data-fetching, or they invent their own ways of fetching data. This usually means cobbling together component-based state and side-effects, or using more general purpose state management libraries to store and provide asynchronous data throughout their apps.
+A maioria dos frameworks web principais **não** vem com uma forma opinativa de fazer fetching ou atualizar dados de maneira holística. Por causa disso, os desenvolvedores acabam construindo meta-frameworks que encapsulam opiniões rígidas sobre fetching de dados, ou inventam suas próprias formas de buscar dados. Isso geralmente significa juntar state baseado em components e efeitos colaterais, ou usar bibliotecas de gerenciamento de state mais genéricas para armazenar e fornecer dados assíncronos em suas aplicações.
 
-While most traditional state management libraries are great for working with client state, they are **not so great at working with async or server state**. This is because **server state is totally different**. For starters, server state:
+Embora a maioria das bibliotecas tradicionais de gerenciamento de state sejam ótimas para trabalhar com state do cliente, elas **não são tão boas para trabalhar com state assíncrono ou do servidor**. Isso porque o **state do servidor é totalmente diferente**. Para começar, o state do servidor:
 
-- Is persisted remotely in a location you may not control or own
-- Requires asynchronous APIs for fetching and updating
-- Implies shared ownership and can be changed by other people without your knowledge
-- Can potentially become "out of date" in your applications if you're not careful
+- É persistido remotamente em um local que você pode não controlar ou possuir
+- Requer APIs assíncronas para fetching e atualização
+- Implica propriedade compartilhada e pode ser alterado por outras pessoas sem o seu conhecimento
+- Pode potencialmente ficar "desatualizado" nas suas aplicações se você não tiver cuidado
 
-Once you grasp the nature of server state in your application, **even more challenges will arise** as you go, for example:
+Uma vez que você compreende a natureza do state do servidor na sua aplicação, **ainda mais desafios surgirão** conforme você avança, por exemplo:
 
-- Caching... (possibly the hardest thing to do in programming)
-- Deduping multiple requests for the same data into a single request
-- Updating "out of date" data in the background
-- Knowing when data is "out of date"
-- Reflecting updates to data as quickly as possible
-- Performance optimizations like pagination and lazy loading data
-- Managing memory and garbage collection of server state
-- Memoizing query results with structural sharing
+- Caching... (possivelmente a coisa mais difícil de fazer em programação)
+- Deduplicação de múltiplas requisições para os mesmos dados em uma única requisição
+- Atualização de dados "desatualizados" em segundo plano
+- Saber quando os dados estão "desatualizados"
+- Refletir atualizações nos dados o mais rápido possível
+- Otimizações de performance como paginação e carregamento lazy de dados
+- Gerenciamento de memória e garbage collection do state do servidor
+- Memoização de resultados de queries com compartilhamento estrutural
 
-If you're not overwhelmed by that list, then that must mean that you've probably solved all of your server state problems already and deserve an award. However, if you are like a vast majority of people, you either have yet to tackle all or most of these challenges and we're only scratching the surface!
+Se você não ficou sobrecarregado com essa lista, então isso deve significar que você provavelmente já resolveu todos os seus problemas de state do servidor e merece um prêmio. Porém, se você é como a grande maioria das pessoas, ou ainda não enfrentou todos ou a maioria desses desafios e nós estamos apenas arranhando a superfície!
 
-TanStack Query is hands down one of the _best_ libraries for managing server state. It works amazingly well **out-of-the-box, with zero-config, and can be customized** to your liking as your application grows.
+TanStack Query é sem dúvida uma das _melhores_ bibliotecas para gerenciar state do servidor. Ele funciona incrivelmente bem **direto da caixa, com zero configuração, e pode ser customizado** ao seu gosto conforme sua aplicação cresce.
 
-TanStack Query allows you to defeat and overcome the tricky challenges and hurdles of _server state_ and control your app data before it starts to control you.
+TanStack Query permite que você vença e supere os desafios e obstáculos complicados do _state do servidor_ e controle os dados da sua aplicação antes que eles comecem a controlar você.
 
-On a more technical note, TanStack Query will likely:
+Em uma nota mais técnica, TanStack Query provavelmente vai:
 
-- Help you remove **many** lines of complicated and misunderstood code from your application and replace with just a handful of lines of TanStack Query logic
-- Make your application more maintainable and easier to build new features without worrying about wiring up new server state data sources
-- Have a direct impact on your end-users by making your application feel faster and more responsive than ever before
-- Potentially help you save on bandwidth and increase memory performance
+- Ajudar você a remover **muitas** linhas de código complicado e mal compreendido da sua aplicação e substituir por apenas algumas linhas de lógica do TanStack Query
+- Tornar sua aplicação mais fácil de manter e mais fácil de construir novas funcionalidades sem se preocupar em conectar novas fontes de dados do state do servidor
+- Ter um impacto direto nos seus usuários finais, fazendo sua aplicação parecer mais rápida e responsiva do que nunca
+- Potencialmente ajudar você a economizar largura de banda e aumentar a performance de memória
 
 [//]: # "Example"
 
-## Enough talk, show me some code already!
+## Chega de conversa, me mostre código!
 
-In the example below, you can see TanStack Query in its most basic and simple form being used to fetch the GitHub stats for the TanStack Query GitHub project itself:
+No exemplo abaixo, você pode ver o TanStack Query na sua forma mais básica e simples sendo usado para buscar as estatísticas do GitHub para o próprio projeto TanStack Query no GitHub:
 
-[Open in StackBlitz](https://stackblitz.com/github/TanStack/query/tree/main/examples/react/simple)
+[Abrir no StackBlitz](https://stackblitz.com/github/TanStack/query/tree/main/examples/react/simple)
 
 ```tsx
 import {
@@ -93,10 +93,10 @@ function Example() {
 [//]: # "Example"
 [//]: # "Materials"
 
-## You talked me into it, so what now?
+## Você está convencido, e agora?
 
-- Consider taking the official [TanStack Query Course](https://query.gg?s=tanstack) (or buying it for your whole team!)
-- Learn TanStack Query at your own pace with our amazingly thorough [Walkthrough Guide](./installation.md) and [API Reference](./reference/useQuery.md)
-- See the Article [Why You Want React Query](https://tkdodo.eu/blog/why-you-want-react-query).
+- Considere fazer o curso oficial [TanStack Query Course](https://query.gg?s=tanstack) (ou comprar para toda a sua equipe!)
+- Aprenda TanStack Query no seu próprio ritmo com nosso incrível e detalhado [Guia Passo a Passo](./installation.md) e [Referência da API](./reference/useQuery.md)
+- Veja o artigo [Por que Você Quer React Query](https://tkdodo.eu/blog/why-you-want-react-query).
 
 [//]: # "Materials"

@@ -2,15 +2,15 @@
 title: History Types
 ---
 
-While it's not required to know the `@tanstack/history` API itself to use TanStack Router, it's a good idea to understand how it works. Under the hood, TanStack Router requires and uses a `history` abstraction to manage the routing history.
+Embora não seja necessário conhecer a API `@tanstack/history` em si para usar o TanStack Router, é uma boa ideia entender como ela funciona. Internamente, o TanStack Router requer e usa uma abstração de `history` para gerenciar o histórico de roteamento.
 
-If you don't create a history instance, a browser-oriented instance of this API is created for you when the router is initialized. If you need a special history API type, You can use the `@tanstack/history` package to create your own:
+Se você não criar uma instância de history, uma instância orientada ao navegador dessa API é criada para você quando o router é inicializado. Se você precisar de um tipo especial de API de history, pode usar o pacote `@tanstack/history` para criar a sua própria:
 
-- `createBrowserHistory`: The default history type.
-- `createHashHistory`: A history type that uses a hash to track history.
-- `createMemoryHistory`: A history type that keeps the history in memory.
+- `createBrowserHistory`: O tipo de history padrão.
+- `createHashHistory`: Um tipo de history que usa um hash para rastrear o histórico.
+- `createMemoryHistory`: Um tipo de history que mantém o histórico na memória.
 
-Once you have a history instance, you can pass it to the `Router` constructor:
+Uma vez que você tenha uma instância de history, pode passá-la para o construtor do `Router`:
 
 ```ts
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
@@ -22,13 +22,13 @@ const memoryHistory = createMemoryHistory({
 const router = createRouter({ routeTree, history: memoryHistory });
 ```
 
-## Browser Routing
+## Roteamento pelo Navegador
 
-The `createBrowserHistory` is the default history type. It uses the browser's history API to manage the browser history.
+O `createBrowserHistory` é o tipo de history padrão. Ele usa a API de histórico do navegador para gerenciar o histórico do navegador.
 
-## Hash Routing
+## Roteamento por Hash
 
-Hash routing can be helpful if your server doesn't support rewrites to index.html for HTTP requests (among other environments that don't have a server).
+O roteamento por hash pode ser útil se o seu servidor não suporta reescritas para index.html em requisições HTTP (entre outros ambientes que não possuem um servidor).
 
 ```ts
 import { createHashHistory, createRouter } from "@tanstack/react-router";
@@ -38,9 +38,9 @@ const hashHistory = createHashHistory();
 const router = createRouter({ routeTree, history: hashHistory });
 ```
 
-## Memory Routing
+## Roteamento em Memória
 
-Memory routing is useful in environments that are not a browser or when you do not want components to interact with the URL.
+O roteamento em memória é útil em ambientes que não são um navegador ou quando você não quer que os components interajam com a URL.
 
 ```ts
 import { createMemoryHistory, createRouter } from "@tanstack/react-router";
@@ -52,4 +52,4 @@ const memoryHistory = createMemoryHistory({
 const router = createRouter({ routeTree, history: memoryHistory });
 ```
 
-Refer to the [SSR Guide](./ssr.md#server-history) for usage on the server for server-side rendering.
+Consulte o [Guia de SSR](./ssr.md#server-history) para uso no servidor para renderização do lado do servidor.

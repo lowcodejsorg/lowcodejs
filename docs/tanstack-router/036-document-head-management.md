@@ -2,22 +2,22 @@
 title: Document Head Management
 ---
 
-Document head management is the process of managing the head, title, meta, link, and script tags of a document and TanStack Router provides a robust way to manage the document head for full-stack applications that use Start and for single-page applications that use `@tanstack/react-router`. It provides:
+O gerenciamento do head do documento é o processo de gerenciar as tags head, title, meta, link e script de um documento, e o TanStack Router fornece uma forma robusta de gerenciar o head do documento tanto para aplicações full-stack que usam Start quanto para aplicações de página única que usam `@tanstack/react-router`. Ele oferece:
 
-- Automatic deduping of `title` and `meta` tags
-- Automatic loading/unloading of tags based on route visibility
-- A composable way to merge `title` and `meta` tags from nested routes
+- Deduplicação automática de tags `title` e `meta`
+- Carregamento/descarregamento automático de tags baseado na visibilidade da route
+- Uma forma composável de mesclar tags `title` e `meta` de routes aninhadas
 
-For full-stack applications that use Start, and even for single-page applications that use `@tanstack/react-router`, managing the document head is a crucial part of any application for the following reasons:
+Para aplicações full-stack que usam Start, e até para aplicações de página única que usam `@tanstack/react-router`, gerenciar o head do documento é uma parte crucial de qualquer aplicação pelos seguintes motivos:
 
 - SEO
-- Social media sharing
+- Compartilhamento em redes sociais
 - Analytics
-- CSS and JS loading/unloading
+- Carregamento/descarregamento de CSS e JS
 
-To manage the document head, it's required that you render both the `<HeadContent />` and `<Scripts />` components and use the `routeOptions.head` property to manage the head of a route, which returns an object with `title`, `meta`, `links`, `styles`, and `scripts` properties.
+Para gerenciar o head do documento, é necessário que você renderize tanto o component `<HeadContent />` quanto o component `<Scripts />` e use a propriedade `routeOptions.head` para gerenciar o head de uma route, que retorna um objeto com as propriedades `title`, `meta`, `links`, `styles` e `scripts`.
 
-## Managing the Document Head
+## Gerenciando o Head do Documento
 
 ```tsx
 export const Route = createRootRoute({
@@ -41,9 +41,9 @@ export const Route = createRootRoute({
       {
         media: "all and (max-width: 500px)",
         children: `p {
-                  color: blue;
-                  background-color: yellow;
-                }`,
+                color: blue;
+                background-color: yellow;
+              }`,
       },
     ],
     scripts: [
@@ -55,20 +55,20 @@ export const Route = createRootRoute({
 });
 ```
 
-### Deduping
+### Deduplicação
 
-Out of the box, TanStack Router will dedupe `title` and `meta` tags, preferring the **last** occurrence of each tag found in nested routes.
+Por padrão, o TanStack Router deduplica tags `title` e `meta`, preferindo a **última** ocorrência de cada tag encontrada em routes aninhadas.
 
-- `title` tags defined in nested routes will override a `title` tag defined in a parent route (but you can compose them together, which is covered in a future section of this guide)
-- `meta` tags with the same `name` or `property` will be overridden by the last occurrence of that tag found in nested routes
+- Tags `title` definidas em routes aninhadas sobrescrevem uma tag `title` definida em uma route pai (mas você pode compô-las juntas, o que é abordado em uma seção futura deste guia)
+- Tags `meta` com o mesmo `name` ou `property` serão sobrescritas pela última ocorrência dessa tag encontrada em routes aninhadas
 
 ### `<HeadContent />`
 
-The `<HeadContent />` component is **required** to render the head, title, meta, link, and head-related script tags of a document.
+O component `<HeadContent />` é **obrigatório** para renderizar as tags head, title, meta, link e script relacionadas ao head de um documento.
 
-It should be **rendered either in the `<head>` tag of your root layout or as high up in the component tree as possible** if your application doesn't or can't manage the `<head>` tag.
+Ele deve ser **renderizado dentro da tag `<head>` do seu layout raiz ou o mais alto possível na árvore de components** se sua aplicação não gerencia ou não pode gerenciar a tag `<head>`.
 
-### Start/Full-Stack Applications
+### Aplicações Start/Full-Stack
 
 ```tsx
 import { HeadContent } from "@tanstack/react-router";
@@ -87,9 +87,9 @@ export const Route = createRootRoute({
 });
 ```
 
-### Single-Page Applications
+### Aplicações de Página Única
 
-First, remove the `<title>` tag from the index.html if you have set any.
+Primeiro, remova a tag `<title>` do index.html se você tiver definido alguma.
 
 ```tsx
 import { HeadContent } from "@tanstack/react-router";
@@ -104,14 +104,14 @@ const rootRoute = createRootRoute({
 });
 ```
 
-## Managing Body Scripts
+## Gerenciando Scripts do Body
 
-In addition to scripts that can be rendered in the `<head>` tag, you can also render scripts in the `<body>` tag using the `routeOptions.scripts` property. This is useful for loading scripts (even inline scripts) that require the DOM to be loaded, but before the main entry point of your application (which includes hydration if you're using Start or a full-stack implementation of TanStack Router).
+Além de scripts que podem ser renderizados na tag `<head>`, você também pode renderizar scripts na tag `<body>` usando a propriedade `routeOptions.scripts`. Isso é útil para carregar scripts (inclusive scripts inline) que requerem que o DOM esteja carregado, mas antes do ponto de entrada principal da sua aplicação (que inclui hydration se você estiver usando Start ou uma implementação full-stack do TanStack Router).
 
-To do this, you must:
+Para fazer isso, você deve:
 
-- Use the `scripts` property of the `routeOptions` object
-- [Render the `<Scripts />` component](#scripts)
+- Usar a propriedade `scripts` do objeto `routeOptions`
+- [Renderizar o component `<Scripts />`](#scripts)
 
 ```tsx
 export const Route = createRootRoute({
@@ -125,9 +125,9 @@ export const Route = createRootRoute({
 
 ### `<Scripts />`
 
-The `<Scripts />` component is **required** to render the body scripts of a document. It should be rendered either in the `<body>` tag of your root layout or as high up in the component tree as possible if your application doesn't or can't manage the `<body>` tag.
+O component `<Scripts />` é **obrigatório** para renderizar os scripts do body de um documento. Ele deve ser renderizado dentro da tag `<body>` do seu layout raiz ou o mais alto possível na árvore de components se sua aplicação não gerencia ou não pode gerenciar a tag `<body>`.
 
-### Example
+### Exemplo
 
 ```tsx
 import { createFileRoute, Scripts } from "@tanstack/react-router";
@@ -157,9 +157,9 @@ export const Route = createRootRoute({
 });
 ```
 
-## Inline Scripts with ScriptOnce
+## Scripts Inline com ScriptOnce
 
-For scripts that must run before React hydrates (like theme detection), use `ScriptOnce`. This is particularly useful for avoiding flash of unstyled content (FOUC) or theme flicker.
+Para scripts que devem ser executados antes do React fazer hydration (como detecção de tema), use `ScriptOnce`. Isso é particularmente útil para evitar flash de conteúdo sem estilo (FOUC) ou oscilação de tema.
 
 ```tsx
 import { ScriptOnce } from "@tanstack/react-router";
@@ -184,16 +184,16 @@ function ThemeProvider({ children }) {
 }
 ```
 
-### How ScriptOnce Works
+### Como o ScriptOnce Funciona
 
-1. During SSR, renders a `<script>` tag with the provided code
-2. The script executes immediately when the browser parses the HTML (before React hydrates)
-3. After execution, the script removes itself from the DOM
-4. On client-side navigation, nothing is rendered (prevents duplicate execution)
+1. Durante o SSR, renderiza uma tag `<script>` com o código fornecido
+2. O script é executado imediatamente quando o navegador analisa o HTML (antes do React fazer hydration)
+3. Após a execução, o script se remove do DOM
+4. Na navegação do lado do cliente, nada é renderizado (previne execução duplicada)
 
-### Preventing Hydration Warnings
+### Prevenindo Avisos de Hydration
 
-If your script modifies the DOM before hydration (like adding a class to `<html>`), use `suppressHydrationWarning` to prevent React warnings:
+Se o seu script modifica o DOM antes da hydration (como adicionar uma classe ao `<html>`), use `suppressHydrationWarning` para prevenir avisos do React:
 
 ```tsx
 export const Route = createRootRoute({
@@ -213,9 +213,9 @@ export const Route = createRootRoute({
 });
 ```
 
-### Common Use Cases
+### Casos de Uso Comuns
 
-- **Theme/dark mode detection** - Apply theme class before hydration to prevent flash
-- **Feature detection** - Check browser capabilities before rendering
-- **Analytics initialization** - Initialize tracking before user interaction
-- **Critical path setup** - Any JavaScript that must run before hydration
+- **Detecção de tema/modo escuro** - Aplicar classe de tema antes da hydration para prevenir flash
+- **Detecção de funcionalidades** - Verificar capacidades do navegador antes de renderizar
+- **Inicialização de analytics** - Inicializar rastreamento antes da interação do usuário
+- **Configuração de caminho crítico** - Qualquer JavaScript que precisa executar antes da hydration

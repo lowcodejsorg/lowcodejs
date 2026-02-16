@@ -3,7 +3,7 @@ id: quick-start
 title: Quick Start
 ---
 
-This code snippet very briefly illustrates the 3 core concepts of React Query:
+Este trecho de codigo ilustra brevemente os 3 conceitos principais do React Query:
 
 - [Queries](./guides/queries.md)
 - [Mutations](./guides/mutations.md)
@@ -11,7 +11,7 @@ This code snippet very briefly illustrates the 3 core concepts of React Query:
 
 [//]: # "Example"
 
-If you're looking for a fully functioning example, please have a look at our [simple StackBlitz example](./examples/simple)
+Se voce esta procurando um exemplo totalmente funcional, de uma olhada no nosso [exemplo simples no StackBlitz](./examples/simple)
 
 ```tsx
 import {
@@ -78,4 +78,4 @@ render(<App />, document.getElementById("root"));
 
 [//]: # "Example"
 
-These three concepts make up most of the core functionality of React Query. The next sections of the documentation will go over each of these core concepts in great detail.
+Esses tres conceitos compreendem a maior parte da funcionalidade principal do React Query. As proximas secoes da documentacao vao cobrir cada um desses conceitos principais em grande detalhe.

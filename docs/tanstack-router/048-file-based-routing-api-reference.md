@@ -2,14 +2,14 @@
 title: File-Based Routing API Reference
 ---
 
-TanStack Router's file-based routing is quite flexible and can be configured to suit your project's needs.
+O file-based routing do TanStack Router é bastante flexível e pode ser configurado para atender às necessidades do seu projeto.
 
-## Configuration options
+## Opções de configuração
 
-The following options are available for configuring the file-based routing:
+As seguintes opções estão disponíveis para configurar o file-based routing:
 
-- [`routesDirectory` (required)](#routesdirectory-required)
-- [`generatedRouteTree` (required)](#generatedroutetree-required)
+- [`routesDirectory` (obrigatório)](#routesdirectory-required)
+- [`generatedRouteTree` (obrigatório)](#generatedroutetree-required)
 - [`virtualRouteConfig`](#virtualrouteconfig)
 - [`routeFilePrefix`](#routefileprefix)
 - [`routeFileIgnorePrefix`](#routefileignoreprefix)
@@ -28,49 +28,49 @@ The following options are available for configuring the file-based routing:
 - [`tmpDir`](#tmpdir)
 
 > [!WARNING]
-> Do not set the `routeFilePrefix`, `routeFileIgnorePrefix`, or `routeFileIgnorePattern` options, to match any of the tokens used in the **File Naming Conventions** guide, or you may run into unexpected behavior.
+> Não defina as opções `routeFilePrefix`, `routeFileIgnorePrefix` ou `routeFileIgnorePattern` para corresponder a qualquer um dos tokens usados no guia de **Convenções de Nomenclatura de Arquivos**, ou você pode encontrar comportamentos inesperados.
 
-### `routesDirectory` (required)
+### `routesDirectory` (obrigatório)
 
-This is the path to the directory where the route files are located, relative to the cwd (current working directory).
+Este é o caminho para o diretório onde os arquivos de route estão localizados, relativo ao cwd (diretório de trabalho atual).
 
-By default, the value is set to the following and cannot be set to an empty `string` or `undefined`.
+Por padrão, o valor é definido como o seguinte e não pode ser definido como uma `string` vazia ou `undefined`.
 
 ```txt
 ./src/routes
 ```
 
-### `generatedRouteTree` (required)
+### `generatedRouteTree` (obrigatório)
 
-This is the path to the file where the generated route tree will be saved, relative to the cwd (current working directory).
+Este é o caminho para o arquivo onde a route tree gerada será salva, relativo ao cwd (diretório de trabalho atual).
 
-By default, the value is set to the following and cannot be set to an empty `string` or `undefined`.
+Por padrão, o valor é definido como o seguinte e não pode ser definido como uma `string` vazia ou `undefined`.
 
 ```txt
 ./src/routeTree.gen.ts
 ```
 
-If the [`disableTypes`](#disabletypes) is set to `true`, the generated route tree will be saved with the `.js` extension instead of `.ts`.
+Se o [`disableTypes`](#disabletypes) estiver definido como `true`, a route tree gerada será salva com a extensão `.js` em vez de `.ts`.
 
 ### `virtualRouteConfig`
 
-This option is used to configure the Virtual File Routes feature. See the "Virtual File Routes" guide for more information.
+Esta opção é usada para configurar o recurso de Virtual File Routes. Consulte o guia "Virtual File Routes" para mais informações.
 
-By default, this value is set to `undefined`.
+Por padrão, este valor é definido como `undefined`.
 
 ### `routeFilePrefix`
 
-This option is used to identify route files in the route directory. This means that only files that start with this prefix will be considered for routing.
+Esta opção é usada para identificar arquivos de route no diretório de routes. Isso significa que apenas arquivos que começam com este prefixo serão considerados para roteamento.
 
-By default, this value is set to `` and as such all files in the route directory will be considered for routing.
+Por padrão, este valor é definido como `` e, portanto, todos os arquivos no diretório de routes serão considerados para roteamento.
 
 ### `routeFileIgnorePrefix`
 
-This option is used to ignore specific files and directories in the route directory. This can be useful if you want to "opt-in" certain files or directories that you do not want to be considered for routing.
+Esta opção é usada para ignorar arquivos e diretórios específicos no diretório de routes. Isso pode ser útil se você quiser "excluir" certos arquivos ou diretórios que não deseja que sejam considerados para roteamento.
 
-By default, this value is set to `-`.
+Por padrão, este valor é definido como `-`.
 
-When using this option, it allows you have structures like this where it let's you co-located related files that are not route files:
+Ao usar esta opção, você pode ter estruturas como esta, onde é possível co-localizar arquivos relacionados que não são arquivos de route:
 
 ```txt
 src/routes
@@ -83,17 +83,17 @@ src/routes
 
 ### `routeFileIgnorePattern`
 
-This option is used to ignore specific files and directories in the route directory. It can be used in regular expression format. For example, `.((css|const).ts)|test-page` will ignore files / directories with names containing `.css.ts`, `.const.ts` or `test-page`.
+Esta opção é usada para ignorar arquivos e diretórios específicos no diretório de routes. Pode ser usada no formato de expressão regular. Por exemplo, `.((css|const).ts)|test-page` irá ignorar arquivos/diretórios com nomes contendo `.css.ts`, `.const.ts` ou `test-page`.
 
-By default, this value is set to `undefined`.
+Por padrão, este valor é definido como `undefined`.
 
 ### `routeToken`
 
-As mentioned in the Routing Concepts guide, a layout route is rendered at the specified path, and the child routes are rendered within the layout route. The `routeToken` is used to identify the layout route file in the route directory.
+Como mencionado no guia de Conceitos de Roteamento, um layout route é renderizado no caminho especificado, e os child routes são renderizados dentro do layout route. O `routeToken` é usado para identificar o arquivo de layout route no diretório de routes.
 
-By default, this value is set to `route`.
+Por padrão, este valor é definido como `route`.
 
-> 🧠 the following filenames would equal the same runtime URL:
+> 🧠 os seguintes nomes de arquivo resultariam na mesma URL em tempo de execução:
 
 ```txt
 src/routes/posts.tsx -> /posts
@@ -101,11 +101,11 @@ src/routes/posts.route.tsx -> /posts
 src/routes/posts/route.tsx -> /posts
 ```
 
-#### Using regex patterns for `routeToken`
+#### Usando padrões regex para `routeToken`
 
-You can use a regular expression pattern instead of a literal string to match multiple layout route naming conventions. This is useful when you want more flexibility in your file naming.
+Você pode usar um padrão de expressão regular em vez de uma string literal para corresponder a múltiplas convenções de nomenclatura de layout route. Isso é útil quando você deseja mais flexibilidade na nomenclatura dos seus arquivos.
 
-**In `tsr.config.json`** (JSON config), use an object with `regex` and optional `flags` properties:
+**No `tsr.config.json`** (configuração JSON), use um objeto com as propriedades `regex` e opcionalmente `flags`:
 
 ```json
 {
@@ -113,7 +113,7 @@ You can use a regular expression pattern instead of a literal string to match mu
 }
 ```
 
-**In code** (inline config), you can use a native `RegExp`:
+**No código** (configuração inline), você pode usar um `RegExp` nativo:
 
 ```ts
 {
@@ -121,32 +121,32 @@ You can use a regular expression pattern instead of a literal string to match mu
 }
 ```
 
-With the regex pattern `[a-z]+-layout`, filenames like `dashboard.main-layout.tsx`, `posts.protected-layout.tsx`, or `admin.settings-layout.tsx` would all be recognized as layout routes.
+Com o padrão regex `[a-z]+-layout`, nomes de arquivo como `dashboard.main-layout.tsx`, `posts.protected-layout.tsx` ou `admin.settings-layout.tsx` seriam todos reconhecidos como layout routes.
 
 > [!NOTE]
-> The regex is matched against the **entire** final segment of the route path. For example, with `routeToken: { "regex": "[a-z]+-layout" }`:
+> O regex é correspondido contra o segmento final **inteiro** do caminho do route. Por exemplo, com `routeToken: { "regex": "[a-z]+-layout" }`:
 >
-> - `dashboard.main-layout.tsx` matches (`main-layout` is the full segment)
-> - `dashboard.my-layout-extra.tsx` does NOT match (the segment is `my-layout-extra`, not just `my-layout`)
+> - `dashboard.main-layout.tsx` corresponde (`main-layout` é o segmento completo)
+> - `dashboard.my-layout-extra.tsx` NÃO corresponde (o segmento é `my-layout-extra`, não apenas `my-layout`)
 
 ### `indexToken`
 
-As mentioned in the Routing Concepts guide, an index route is a route that is matched when the URL path is exactly the same as the parent route. The `indexToken` is used to identify the index route file in the route directory.
+Como mencionado no guia de Conceitos de Roteamento, um index route é um route que é correspondido quando o caminho da URL é exatamente o mesmo que o route pai. O `indexToken` é usado para identificar o arquivo de index route no diretório de routes.
 
-By default, this value is set to `index`.
+Por padrão, este valor é definido como `index`.
 
-> 🧠 the following filenames would equal the same runtime URL:
+> 🧠 os seguintes nomes de arquivo resultariam na mesma URL em tempo de execução:
 
 ```txt
 src/routes/posts.index.tsx -> /posts/
 src/routes/posts/index.tsx -> /posts/
 ```
 
-#### Using regex patterns for `indexToken`
+#### Usando padrões regex para `indexToken`
 
-Similar to `routeToken`, you can use a regular expression pattern for `indexToken` to match multiple index route naming conventions.
+Similar ao `routeToken`, você pode usar um padrão de expressão regular para o `indexToken` para corresponder a múltiplas convenções de nomenclatura de index route.
 
-**In `tsr.config.json`** (JSON config):
+**No `tsr.config.json`** (configuração JSON):
 
 ```json
 {
@@ -154,7 +154,7 @@ Similar to `routeToken`, you can use a regular expression pattern for `indexToke
 }
 ```
 
-**In code** (inline config):
+**No código** (configuração inline):
 
 ```ts
 {
@@ -162,66 +162,66 @@ Similar to `routeToken`, you can use a regular expression pattern for `indexToke
 }
 ```
 
-With the regex pattern `[a-z]+-page`, filenames like `home-page.tsx`, `posts.list-page.tsx`, or `dashboard.overview-page.tsx` would all be recognized as index routes.
+Com o padrão regex `[a-z]+-page`, nomes de arquivo como `home-page.tsx`, `posts.list-page.tsx` ou `dashboard.overview-page.tsx` seriam todos reconhecidos como index routes.
 
-#### Escaping regex tokens
+#### Escapando tokens regex
 
-When using regex tokens, you can still escape a segment to prevent it from being treated as a token by wrapping it in square brackets. For example, if your `indexToken` is `{ "regex": "[a-z]+-page" }` and you want a literal route segment called `home-page`, name your file `[home-page].tsx`.
+Ao usar tokens regex, você ainda pode escapar um segmento para impedir que ele seja tratado como um token, envolvendo-o em colchetes. Por exemplo, se seu `indexToken` é `{ "regex": "[a-z]+-page" }` e você quer um segmento de route literal chamado `home-page`, nomeie seu arquivo como `[home-page].tsx`.
 
 ### `quoteStyle`
 
-When your generated route tree is generated and when you first create a new route, those files will be formatted with the quote style you specify here.
+Quando sua route tree gerada é criada e quando você cria um novo route pela primeira vez, esses arquivos serão formatados com o estilo de aspas que você especificar aqui.
 
-By default, this value is set to `single`.
+Por padrão, este valor é definido como `single`.
 
 > [!TIP]
-> You should ignore the path of your generated route tree file from your linter and formatter to avoid conflicts.
+> Você deve ignorar o caminho do arquivo da route tree gerada no seu linter e formatador para evitar conflitos.
 
 ### `semicolons`
 
-When your generated route tree is generated and when you first create a new route, those files will be formatted with semicolons if this option is set to `true`.
+Quando sua route tree gerada é criada e quando você cria um novo route pela primeira vez, esses arquivos serão formatados com ponto e vírgula se esta opção estiver definida como `true`.
 
-By default, this value is set to `false`.
+Por padrão, este valor é definido como `false`.
 
 > [!TIP]
-> You should ignore the path of your generated route tree file from your linter and formatter to avoid conflicts.
+> Você deve ignorar o caminho do arquivo da route tree gerada no seu linter e formatador para evitar conflitos.
 
 ### `autoCodeSplitting`
 
-This feature is only available if you are using the TanStack Router Bundler Plugin.
+Este recurso está disponível apenas se você estiver usando o TanStack Router Bundler Plugin.
 
-This option is used to enable automatic code-splitting for non-critical route configuration items. See the "Automatic Code-Splitting" guide for more information.
+Esta opção é usada para habilitar code splitting automático para itens de configuração de route não críticos. Consulte o guia "Code Splitting Automático" para mais informações.
 
-By default, this value is set to `false`.
+Por padrão, este valor é definido como `false`.
 
 > [!IMPORTANT]
-> The next major release of TanStack Router (i.e. v2), will have this value defaulted to `true`.
+> A próxima versão major do TanStack Router (ou seja, v2) terá este valor como `true` por padrão.
 
 ### `disableTypes`
 
-This option is used to disable generating types for the route tree.
+Esta opção é usada para desabilitar a geração de tipos para a route tree.
 
-If set to `true`, the generated route tree will not include any types and will be written as a `.js` file instead of a `.ts` file.
+Se definido como `true`, a route tree gerada não incluirá nenhum tipo e será escrita como um arquivo `.js` em vez de um arquivo `.ts`.
 
-By default, this value is set to `false`.
+Por padrão, este valor é definido como `false`.
 
 ### `addExtensions`
 
-This option adds file extensions to the route names in the generated route tree.
+Esta opção adiciona extensões de arquivo aos nomes de route na route tree gerada.
 
-By default, this value is set to `false`.
+Por padrão, este valor é definido como `false`.
 
 ### `disableLogging`
 
-This option turns off the console logging for the route generation process.
+Esta opção desativa o log no console para o processo de geração de routes.
 
-By default, this value is set to `false`.
+Por padrão, este valor é definido como `false`.
 
 ### `routeTreeFileHeader`
 
-This option let's you prepend content to the start of the generated route tree file.
+Esta opção permite que você adicione conteúdo no início do arquivo da route tree gerada.
 
-By default, this value is set to:
+Por padrão, este valor é definido como:
 
 ```json
 [
@@ -233,9 +233,9 @@ By default, this value is set to:
 
 ### `routeTreeFileFooter`
 
-This option let's you append content to the end of the generated route tree file.
+Esta opção permite que você adicione conteúdo ao final do arquivo da route tree gerada.
 
-By default, this value is set to:
+Por padrão, este valor é definido como:
 
 ```json
 []
@@ -243,15 +243,15 @@ By default, this value is set to:
 
 ### `enableRouteTreeFormatting`
 
-This option turns on the formatting function on the generated route tree file, which can be time-consuming for large projects.
+Esta opção ativa a função de formatação no arquivo da route tree gerada, o que pode ser demorado para projetos grandes.
 
-By default, this value is set to `true`.
+Por padrão, este valor é definido como `true`.
 
 ### `tmpDir`
 
-Atomic file writes (route files and the generated route tree file) are implemented by creating a temporary file first and then renaming it to their actual location.
+Escritas atômicas de arquivos (arquivos de route e o arquivo da route tree gerada) são implementadas criando um arquivo temporário primeiro e depois renomeando-o para sua localização real.
 
-This config option allows to configure the path of the temp directory that will be used for creating those temporary files.
-If it is a relative path, it will be resolved to the current working directory.
-If this value is not set, `process.env.TSR_TMP_DIR` will be used.
-If `process.env.TSR_TMP_DIR` is not set, it will default to `.tanstack/tmp` relative to the current working directory.
+Esta opção de configuração permite configurar o caminho do diretório temporário que será usado para criar esses arquivos temporários.
+Se for um caminho relativo, ele será resolvido em relação ao diretório de trabalho atual.
+Se este valor não for definido, `process.env.TSR_TMP_DIR` será usado.
+Se `process.env.TSR_TMP_DIR` não estiver definido, o padrão será `.tanstack/tmp` relativo ao diretório de trabalho atual.

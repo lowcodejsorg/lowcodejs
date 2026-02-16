@@ -2,24 +2,24 @@
 title: Navigation
 ---
 
-## Everything is Relative
+## Tudo é Relativo
 
-Believe it or not, every navigation within an app is **relative**, even if you aren't using explicit relative path syntax (`../../somewhere`). Any time a link is clicked or an imperative navigation call is made, you will always have an **origin** path and a **destination** path which means you are navigating **from** one route **to** another route.
+Acredite ou não, toda navegação dentro de um app é **relativa**, mesmo que você não esteja usando sintaxe explícita de caminho relativo (`../../somewhere`). Toda vez que um link é clicado ou uma chamada de navegação imperativa é feita, você sempre terá um caminho de **origem** e um caminho de **destino**, o que significa que você está navegando **de** uma route **para** outra route.
 
-TanStack Router keeps this constant concept of relative navigation in mind for every navigation, so you'll constantly see two properties in the API:
+O TanStack Router mantém esse conceito constante de navegação relativa em mente para cada navegação, então você verá constantemente duas propriedades na API:
 
-- `from` - The origin route path
-- `to` - The destination route path
+- `from` - O caminho da route de origem
+- `to` - O caminho da route de destino
 
-> ⚠️ If a `from` route path isn't provided the router will assume you are navigating from the root `/` route and only auto-complete absolute paths. After all, you need to know where you are from in order to know where you're going 😉.
+> ⚠️ Se um caminho de route `from` não for fornecido, o router assumirá que você está navegando a partir da route raiz `/` e só fará autocomplete de caminhos absolutos. Afinal, você precisa saber de onde está vindo para saber para onde está indo 😉.
 
-## Shared Navigation API
+## API de Navegação Compartilhada
 
-Every navigation and route matching API in TanStack Router uses the same core interface with minor differences depending on the API. This means that you can learn navigation and route matching once and use the same syntax and concepts across the library.
+Toda API de navegação e correspondência de routes no TanStack Router usa a mesma interface central com pequenas diferenças dependendo da API. Isso significa que você pode aprender navegação e correspondência de routes uma vez e usar a mesma sintaxe e conceitos em toda a biblioteca.
 
-### `ToOptions` Interface
+### Interface `ToOptions`
 
-This is the core `ToOptions` interface that is used in every navigation and route matching API:
+Esta é a interface central `ToOptions` que é usada em toda API de navegação e correspondência de routes:
 
 ```ts
 type ToOptions<
@@ -48,7 +48,7 @@ type ToOptions<
 };
 ```
 
-> 🧠 Every route object has a `to` property, which can be used as the `to` for any navigation or route matching API. Where possible, this will allow you to avoid plain strings and use type-safe route references instead:
+> 🧠 Todo objeto de route tem uma propriedade `to`, que pode ser usada como o `to` para qualquer API de navegação ou correspondência de route. Quando possível, isso permitirá que você evite strings simples e use referências de route com type safety em vez disso:
 
 ```tsx
 import { Route as aboutRoute } from "./routes/about.tsx";
@@ -58,9 +58,9 @@ function Comp() {
 }
 ```
 
-### `NavigateOptions` Interface
+### Interface `NavigateOptions`
 
-This is the core `NavigateOptions` interface that extends `ToOptions`. Any API that is actually performing a navigation will use this interface:
+Esta é a interface central `NavigateOptions` que estende `ToOptions`. Qualquer API que esteja realmente realizando uma navegação usará esta interface:
 
 ```ts
 export type NavigateOptions<
@@ -85,9 +85,9 @@ export type NavigateOptions<
 };
 ```
 
-### `LinkOptions` Interface
+### Interface `LinkOptions`
 
-Anywhere an actual `<a>` tag the `LinkOptions` interface which extends `NavigateOptions` will be available:
+Em qualquer lugar onde uma tag `<a>` real for usada, a interface `LinkOptions` que estende `NavigateOptions` estará disponível:
 
 ```tsx
 export type LinkOptions<
@@ -113,26 +113,26 @@ export type LinkOptions<
 };
 ```
 
-## Navigation API
+## API de Navegação
 
-With relative navigation and all of the interfaces in mind now, let's talk about the different flavors of navigation API at your disposal:
+Com a navegação relativa e todas as interfaces em mente agora, vamos falar sobre os diferentes sabores de API de navegação à sua disposição:
 
-- The `<Link>` component
-  - Generates an actual `<a>` tag with a valid `href` which can be click or even cmd/ctrl + clicked to open in a new tab
-- The `useNavigate()` hook
-  - When possible, `Link` component should be used for navigation, but sometimes you need to navigate imperatively as a result of a side-effect. `useNavigate` returns a function that can be called to perform an immediate client-side navigation.
-- The `<Navigate>` component
-  - Renders nothing and performs an immediate client-side navigation.
-- The `Router.navigate()` method
-  - This is the most powerful navigation API in TanStack Router. Similar to `useNavigate`, it imperatively navigates, but is available everywhere you have access to your router.
+- O component `<Link>`
+  - Gera uma tag `<a>` real com um `href` válido que pode ser clicado ou até mesmo cmd/ctrl + clicado para abrir em uma nova aba
+- O hook `useNavigate()`
+  - Quando possível, o component `Link` deve ser usado para navegação, mas às vezes você precisa navegar imperativamente como resultado de um efeito colateral. `useNavigate` retorna uma função que pode ser chamada para realizar uma navegação imediata no lado do cliente.
+- O component `<Navigate>`
+  - Não renderiza nada e realiza uma navegação imediata no lado do cliente.
+- O método `Router.navigate()`
+  - Esta é a API de navegação mais poderosa do TanStack Router. Similar ao `useNavigate`, ele navega imperativamente, mas está disponível em qualquer lugar onde você tenha acesso à sua instância do router.
 
-⚠️ None of these APIs are a replacement for server-side redirects. If you need to redirect a user immediately from one route to another before mounting your application, use a server-side redirect instead of a client-side navigation.
+⚠️ Nenhuma dessas APIs substitui redirecionamentos no lado do servidor. Se você precisar redirecionar um usuário imediatamente de uma route para outra antes de montar sua aplicação, use um redirecionamento no lado do servidor em vez de uma navegação no lado do cliente.
 
-## `<Link>` Component
+## Component `<Link>`
 
-The `Link` component is the most common way to navigate within an app. It renders an actual `<a>` tag with a valid `href` attribute which can be clicked or even cmd/ctrl + clicked to open in a new tab. It also supports any normal `<a>` attributes including `target` to open links in new windows, etc.
+O component `Link` é a forma mais comum de navegar dentro de um app. Ele renderiza uma tag `<a>` real com um atributo `href` válido que pode ser clicado ou até mesmo cmd/ctrl + clicado para abrir em uma nova aba. Ele também suporta quaisquer atributos normais de `<a>`, incluindo `target` para abrir links em novas janelas, etc.
 
-In addition to the [`LinkOptions`](#linkoptions-interface) interface, the `Link` component also supports the following props:
+Além da interface [`LinkOptions`](#interface-linkoptions), o component `Link` também suporta as seguintes props:
 
 ```tsx
 export type LinkProps<
@@ -150,9 +150,9 @@ export type LinkProps<
 };
 ```
 
-### Absolute Links
+### Links Absolutos
 
-Let's make a simple static link!
+Vamos criar um link estático simples!
 
 ```tsx
 import { Link } from "@tanstack/react-router";
@@ -160,9 +160,9 @@ import { Link } from "@tanstack/react-router";
 const link = <Link to="/about">About</Link>;
 ```
 
-### Dynamic Links
+### Links Dinâmicos
 
-Dynamic links are links that have dynamic segments in them. For example, a link to a blog post might look like this:
+Links dinâmicos são links que possuem segmentos dinâmicos neles. Por exemplo, um link para um post de blog pode ser assim:
 
 ```tsx
 const link = (
@@ -177,18 +177,18 @@ const link = (
 );
 ```
 
-Keep in mind that normally dynamic segment params are `string` values, but they can also be any other type that you parse them to in your route options. Either way, the type will be checked at compile time to ensure that you are passing the correct type.
+Tenha em mente que normalmente os params de segmentos dinâmicos são valores `string`, mas eles também podem ser qualquer outro tipo para o qual você os faça parse nas opções da sua route. De qualquer forma, o tipo será verificado em tempo de compilação para garantir que você está passando o tipo correto.
 
-### Relative Links
+### Links Relativos
 
-By default, all links are absolute unless a `from` route path is provided. This means that the above link will always navigate to the `/about` route regardless of what route you are currently on.
+Por padrão, todos os links são absolutos, a menos que um caminho de route `from` seja fornecido. Isso significa que o link acima sempre navegará para a route `/about`, independentemente de qual route você está atualmente.
 
-Relative links can be combined with a `from` route path. If a from route path isn't provided, relative paths default to the current active location.
+Links relativos podem ser combinados com um caminho de route `from`. Se um caminho de route `from` não for fornecido, caminhos relativos usarão por padrão a localização ativa atual.
 
 > [!NOTE]
-> Keep in mind that when calling useNavigate as a method on the route, for example `Route.useNavigate`, then the `from` location is predefined to be the route it's called on.
+> Tenha em mente que ao chamar useNavigate como um método na route, por exemplo `Route.useNavigate`, a localização `from` é predefinida como a route na qual ele é chamado.
 >
-> Another common pitfall is when using this in a pathless layout route, since the pathless layout route does not have an actual path, the `from` location is regarded as the parent of the pathless layout route. Hence relative routing will be resolved from this parent.
+> Outra armadilha comum é quando se usa isso em uma layout route sem caminho (pathless), já que a layout route sem caminho não tem um caminho real, a localização `from` é considerada como o pai da layout route sem caminho. Portanto, o roteamento relativo será resolvido a partir desse pai.
 
 ```tsx
 const postIdRoute = createRoute({
@@ -202,13 +202,13 @@ const link = (
 );
 ```
 
-As seen above, it's common to provide the `route.fullPath` as the `from` route path. This is because the `route.fullPath` is a reference that will update if you refactor your application. However, sometimes it's not possible to import the route directly, in which case it's fine to provide the route path directly as a string. It will still get type-checked as per usual!
+Como visto acima, é comum fornecer o `route.fullPath` como o caminho de route `from`. Isso porque o `route.fullPath` é uma referência que será atualizada se você refatorar sua aplicação. No entanto, às vezes não é possível importar a route diretamente, nesse caso é perfeitamente aceitável fornecer o caminho da route diretamente como uma string. Ele ainda será verificado por tipos como de costume!
 
-### Special relative paths: `"."` and `".."`
+### Caminhos relativos especiais: `"."` e `".."`
 
-Quite often you might want to reload the current location or another `from` path, for example, to rerun the loaders on the current and/or parent routes, or maybe navigate back to a parent route. This can be achieved by specifying a `to` route path of `"."` which will reload the current location or provided `from` path.
+Com bastante frequência você pode querer recarregar a localização atual ou outro caminho `from`, por exemplo, para re-executar os loaders na route atual e/ou nas routes pai, ou talvez navegar de volta para uma route pai. Isso pode ser alcançado especificando um caminho de route `to` de `"."` que recarregará a localização atual ou o caminho `from` fornecido.
 
-Another common need is to navigate one route back relative to the current location or another path. By specifying a `to` route path of `".."` navigation will be resolved to the first parent route preceding the current location.
+Outra necessidade comum é navegar uma route para trás em relação à localização atual ou outro caminho. Especificando um caminho de route `to` de `".."`, a navegação será resolvida para a primeira route pai que precede a localização atual.
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId")({
@@ -235,9 +235,9 @@ function PostComponent() {
 }
 ```
 
-### Search Param Links
+### Links com Search Params
 
-Search params are a great way to provide additional context to a route. For example, you might want to provide a search query to a search page:
+Search params são uma ótima forma de fornecer contexto adicional a uma route. Por exemplo, você pode querer fornecer uma consulta de busca para uma página de pesquisa:
 
 ```tsx
 const link = (
@@ -252,7 +252,7 @@ const link = (
 );
 ```
 
-It's also common to want to update a single search param without supplying any other information about the existing route. For example, you might want to update the page number of a search result:
+Também é comum querer atualizar um único search param sem fornecer nenhuma outra informação sobre a route existente. Por exemplo, você pode querer atualizar o número da página de um resultado de busca:
 
 ```tsx
 const link = (
@@ -268,13 +268,13 @@ const link = (
 );
 ```
 
-### Search Param Type Safety
+### Type Safety de Search Params
 
-Search params are a highly dynamic state management mechanism, so it's important to ensure that you are passing the correct types to your search params. We'll see in a later section in detail how to validate and ensure search params typesafety, among other great features!
+Search params são um mecanismo de gerenciamento de state altamente dinâmico, então é importante garantir que você está passando os tipos corretos para seus search params. Veremos em uma seção posterior em detalhes como validar e garantir a type safety de search params, entre outras ótimas funcionalidades!
 
-### Hash Links
+### Links com Hash
 
-Hash links are a great way to link to a specific section of a page. For example, you might want to link to a specific section of a blog post:
+Links com hash são uma ótima forma de vincular a uma seção específica de uma página. Por exemplo, você pode querer vincular a uma seção específica de um post de blog:
 
 ```tsx
 const link = (
@@ -290,26 +290,26 @@ const link = (
 );
 ```
 
-> ⚠️ When directly navigating to a URL with a hash fragment, the fragment is only available on the client; the browser does not send the fragment to the server as part of the request URL.
+> ⚠️ Ao navegar diretamente para uma URL com um fragmento de hash, o fragmento está disponível apenas no cliente; o navegador não envia o fragmento para o servidor como parte da URL da requisição.
 >
-> This means that if you are using a server-side rendering approach, the hash fragment will not be available on the server-side, and hydration mismatches can occur when using the hash for rendering markup.
+> Isso significa que se você está usando uma abordagem de rendering no lado do servidor, o fragmento de hash não estará disponível no lado do servidor, e erros de hydration podem ocorrer ao usar o hash para renderizar marcação.
 >
-> Examples of this would be:
+> Exemplos disso seriam:
 >
-> - returning the hash value in the markup,
-> - conditional rendering based on the hash value, or
-> - setting the Link as active based on the hash value.
+> - retornar o valor do hash na marcação,
+> - rendering condicional baseado no valor do hash, ou
+> - definir o Link como ativo baseado no valor do hash.
 
-### Navigating with Optional Parameters
+### Navegando com Parâmetros Opcionais
 
-Optional path parameters provide flexible navigation patterns where you can include or omit parameters as needed. Optional parameters use the `{-$paramName}` syntax and offer fine-grained control over URL structure.
+Parâmetros de caminho opcionais fornecem padrões de navegação flexíveis onde você pode incluir ou omitir parâmetros conforme necessário. Parâmetros opcionais usam a sintaxe `{-$paramName}` e oferecem controle granular sobre a estrutura da URL.
 
-#### Parameter Inheritance vs Removal
+#### Herança de Parâmetros vs Remoção
 
-When navigating with optional parameters, you have two main strategies:
+Ao navegar com parâmetros opcionais, você tem duas estratégias principais:
 
-**Inheriting Current Parameters**
-Use `params: {}` to inherit all current route parameters:
+**Herdando os Parâmetros Atuais**
+Use `params: {}` para herdar todos os parâmetros da route atual:
 
 ```tsx
 // Inherits current route parameters
@@ -318,8 +318,8 @@ Use `params: {}` to inherit all current route parameters:
 </Link>
 ```
 
-**Removing Parameters**  
-Set parameters to `undefined` to explicitly remove them:
+**Removendo Parâmetros**
+Defina os parâmetros como `undefined` para removê-los explicitamente:
 
 ```tsx
 // Removes the category parameter
@@ -328,7 +328,7 @@ Set parameters to `undefined` to explicitly remove them:
 </Link>
 ```
 
-#### Basic Optional Parameter Navigation
+#### Navegação Básica com Parâmetro Opcional
 
 ```tsx
 // Navigate with optional parameter
@@ -356,9 +356,9 @@ Set parameters to `undefined` to explicitly remove them:
 </Link>
 ```
 
-#### Function-Style Parameter Updates
+#### Atualizações de Parâmetros com Estilo de Função
 
-Function-style parameter updates are particularly useful with optional parameters:
+Atualizações de parâmetros com estilo de função são particularmente úteis com parâmetros opcionais:
 
 ```tsx
 // Remove a parameter using function syntax
@@ -389,9 +389,9 @@ Function-style parameter updates are particularly useful with optional parameter
 </Link>
 ```
 
-#### Multiple Optional Parameters
+#### Múltiplos Parâmetros Opcionais
 
-When working with multiple optional parameters, you can mix and match which ones to include:
+Ao trabalhar com múltiplos parâmetros opcionais, você pode misturar e combinar quais incluir:
 
 ```tsx
 // Navigate with some optional parameters
@@ -419,9 +419,9 @@ When working with multiple optional parameters, you can mix and match which ones
 </Link>
 ```
 
-#### Mixed Required and Optional Parameters
+#### Parâmetros Obrigatórios e Opcionais Misturados
 
-Optional parameters work seamlessly with required parameters:
+Parâmetros opcionais funcionam perfeitamente com parâmetros obrigatórios:
 
 ```tsx
 // Required 'id', optional 'tab'
@@ -449,10 +449,10 @@ Optional parameters work seamlessly with required parameters:
 </Link>
 ```
 
-#### Advanced Optional Parameter Patterns
+#### Padrões Avançados de Parâmetros Opcionais
 
-**Prefix and Suffix Parameters**
-Optional parameters with prefix/suffix work with navigation:
+**Parâmetros com Prefixo e Sufixo**
+Parâmetros opcionais com prefixo/sufixo funcionam com navegação:
 
 ```tsx
 // Navigate to file with optional name
@@ -472,8 +472,8 @@ Optional parameters with prefix/suffix work with navigation:
 </Link>
 ```
 
-**All Optional Parameters**
-Routes where all parameters are optional:
+**Todos os Parâmetros Opcionais**
+Routes onde todos os parâmetros são opcionais:
 
 ```tsx
 // Navigate to specific date
@@ -501,9 +501,9 @@ Routes where all parameters are optional:
 </Link>
 ```
 
-#### Navigation with Search Params and Optional Parameters
+#### Navegação com Search Params e Parâmetros Opcionais
 
-Optional parameters work great in combination with search params:
+Parâmetros opcionais funcionam muito bem em combinação com search params:
 
 ```tsx
 // Combine optional path params with search params
@@ -525,9 +525,9 @@ Optional parameters work great in combination with search params:
 </Link>
 ```
 
-#### Imperative Navigation with Optional Parameters
+#### Navegação Imperativa com Parâmetros Opcionais
 
-All the same patterns work with imperative navigation:
+Todos os mesmos padrões funcionam com navegação imperativa:
 
 ```tsx
 function Component() {
@@ -556,11 +556,11 @@ function Component() {
 }
 ```
 
-### Active & Inactive Props
+### Props Active e Inactive
 
-The `Link` component supports two additional props: `activeProps` and `inactiveProps`. These props are functions that return additional props for the `active` and `inactive` states of the link. All props other than styles and classes passed here will override the original props passed to `Link`. Any styles or classes passed are merged together.
+O component `Link` suporta duas props adicionais: `activeProps` e `inactiveProps`. Essas props são funções que retornam props adicionais para os states `active` e `inactive` do link. Todas as props, exceto estilos e classes passados aqui, substituirão as props originais passadas ao `Link`. Quaisquer estilos ou classes passados são mesclados juntos.
 
-Here's an example:
+Aqui está um exemplo:
 
 ```tsx
 const link = (
@@ -580,13 +580,13 @@ const link = (
 );
 ```
 
-### The `data-status` attribute
+### O atributo `data-status`
 
-In addition to the `activeProps` and `inactiveProps` props, the `Link` component also adds a `data-status` attribute to the rendered element when it is in an active state. This attribute will be `active` or `undefined` depending on the current state of the link. This can come in handy if you prefer to use data-attributes to style your links instead of props.
+Além das props `activeProps` e `inactiveProps`, o component `Link` também adiciona um atributo `data-status` ao elemento renderizado quando está em state ativo. Este atributo será `active` ou `undefined` dependendo do state atual do link. Isso pode ser útil se você preferir usar data-attributes para estilizar seus links em vez de props.
 
-### Active Options
+### Opções de Active
 
-The `Link` component comes with an `activeOptions` property that offers a few options of determining if a link is active or not. The following interface describes those options:
+O component `Link` possui uma propriedade `activeOptions` que oferece algumas opções para determinar se um link está ativo ou não. A seguinte interface descreve essas opções:
 
 ```tsx
 export interface ActiveOptions {
@@ -606,9 +606,9 @@ export interface ActiveOptions {
 }
 ```
 
-By default, it will check if the resulting **pathname** is a prefix of the current route. If any search params are provided, it will check that they _inclusively_ match those in the current location. Hashes are not checked by default.
+Por padrão, ele verificará se o **pathname** resultante é um prefixo da route atual. Se algum search param for fornecido, ele verificará que eles correspondem _inclusivamente_ aos da localização atual. Hashes não são verificados por padrão.
 
-For example, if you are on the `/blog/post/my-first-blog-post` route, the following links will be active:
+Por exemplo, se você estiver na route `/blog/post/my-first-blog-post`, os seguintes links estarão ativos:
 
 ```tsx
 const link1 = (
@@ -620,7 +620,7 @@ const link2 = <Link to="/blog/post">Blog Post</Link>;
 const link3 = <Link to="/blog">Blog Post</Link>;
 ```
 
-However, the following links will not be active:
+No entanto, os seguintes links não estarão ativos:
 
 ```tsx
 const link4 = (
@@ -630,7 +630,7 @@ const link4 = (
 );
 ```
 
-It's common for some links to only be active if they are an exact match. A good example of this would be a link to the home page. In scenarios like these, you can pass the `exact: true` option:
+É comum que alguns links só estejam ativos se forem uma correspondência exata. Um bom exemplo disso seria um link para a página inicial. Em cenários como esses, você pode passar a opção `exact: true`:
 
 ```tsx
 const link = (
@@ -640,16 +640,16 @@ const link = (
 );
 ```
 
-This will ensure that the link is not active when you are a child route.
+Isso garantirá que o link não fique ativo quando você estiver em uma route filha.
 
-A few more options to be aware of:
+Mais algumas opções para estar ciente:
 
-- If you want to include the hash in your matching, you can pass the `includeHash: true` option
-- If you do **not** want to include the search params in your matching, you can pass the `includeSearch: false` option
+- Se você quiser incluir o hash na sua correspondência, pode passar a opção `includeHash: true`
+- Se você **não** quiser incluir os search params na sua correspondência, pode passar a opção `includeSearch: false`
 
-### Passing `isActive` to children
+### Passando `isActive` para filhos
 
-The `Link` component accepts a function for its children, allowing you to propagate its `isActive` property to children. For example, you could style a child component based on whether the parent link is active:
+O component `Link` aceita uma função como seus filhos, permitindo que você propague sua propriedade `isActive` para os filhos. Por exemplo, você poderia estilizar um component filho com base em se o link pai está ativo:
 
 ```tsx
 const link = (
@@ -666,9 +666,9 @@ const link = (
 );
 ```
 
-### Link Preloading
+### Preloading de Link
 
-The `Link` component supports automatically preloading routes on intent (hovering or touchstart for now). This can be configured as a default in the router options (which we'll talk more about soon) or by passing a `preload='intent'` prop to the `Link` component. Here's an example:
+O component `Link` suporta preloading automático de routes por intenção (hover ou touchstart por enquanto). Isso pode ser configurado como padrão nas opções do router (sobre o qual falaremos mais em breve) ou passando uma prop `preload='intent'` para o component `Link`. Aqui está um exemplo:
 
 ```tsx
 const link = (
@@ -678,13 +678,13 @@ const link = (
 );
 ```
 
-With preloading enabled and relatively quick asynchronous route dependencies (if any), this simple trick can increase the perceived performance of your application with very little effort.
+Com preloading habilitado e dependências assíncronas relativamente rápidas na route (se houver), esse truque simples pode aumentar a performance percebida da sua aplicação com muito pouco esforço.
 
-What's even better is that by using a cache-first library like `@tanstack/query`, preloaded routes will stick around and be ready for a stale-while-revalidate experience if the user decides to navigate to the route later on.
+O que é ainda melhor é que usando uma biblioteca cache-first como `@tanstack/query`, routes pré-carregadas permanecerão disponíveis e prontas para uma experiência stale-while-revalidate se o usuário decidir navegar para a route mais tarde.
 
-### Link Preloading Delay
+### Atraso de Preloading do Link
 
-Along with preloading is a configurable delay which determines how long a user must hover over a link to trigger the intent-based preloading. The default delay is 50 milliseconds, but you can change this by passing a `preloadDelay` prop to the `Link` component with the number of milliseconds you'd like to wait:
+Junto com o preloading há um atraso configurável que determina quanto tempo um usuário deve passar o mouse sobre um link para acionar o preloading baseado em intenção. O atraso padrão é de 50 milissegundos, mas você pode alterá-lo passando uma prop `preloadDelay` para o component `Link` com o número de milissegundos que deseja esperar:
 
 ```tsx
 const link = (
@@ -696,9 +696,9 @@ const link = (
 
 ## `useNavigate`
 
-> ⚠️ Because of the `Link` component's built-in affordances around `href`, cmd/ctrl + click-ability, and active/inactive capabilities, it's recommended to use the `Link` component instead of `useNavigate` for anything the user can interact with (e.g. links, buttons). However, there are some cases where `useNavigate` is necessary to handle side-effect navigations (e.g. a successful async action that results in a navigation).
+> ⚠️ Por causa das facilidades integradas do component `Link` em torno de `href`, capacidade de cmd/ctrl + click, e capacidades de active/inactive, é recomendado usar o component `Link` em vez de `useNavigate` para qualquer coisa com a qual o usuário possa interagir (por exemplo, links, botões). No entanto, existem alguns casos onde `useNavigate` é necessário para lidar com navegações de efeito colateral (por exemplo, uma ação assíncrona bem-sucedida que resulta em uma navegação).
 
-The `useNavigate` hook returns a `navigate` function that can be called to imperatively navigate. It's a great way to navigate to a route from a side-effect (e.g. a successful async action). Here's an example:
+O hook `useNavigate` retorna uma função `navigate` que pode ser chamada para navegar imperativamente. É uma ótima forma de navegar para uma route a partir de um efeito colateral (por exemplo, uma ação assíncrona bem-sucedida). Aqui está um exemplo:
 
 ```tsx
 function Component() {
@@ -721,15 +721,15 @@ function Component() {
 }
 ```
 
-> 🧠 As shown above, you can pass the `from` option to specify the route to navigate from in the hook call. While this is also possible to pass in the resulting `navigate` function each time you call it, it's recommended to pass it here to reduce on potential error and also not type as much!
+> 🧠 Como mostrado acima, você pode passar a opção `from` para especificar a route de onde navegar na chamada do hook. Embora isso também seja possível passar na função `navigate` resultante cada vez que você a chamar, é recomendado passar aqui para reduzir potenciais erros e também digitar menos!
 
-### `navigate` Options
+### Opções do `navigate`
 
-The `navigate` function returned by `useNavigate` accepts the [`NavigateOptions` interface](#navigateoptions-interface)
+A função `navigate` retornada por `useNavigate` aceita a [interface `NavigateOptions`](#interface-navigateoptions)
 
-## `Navigate` Component
+## Component `Navigate`
 
-Occasionally, you may find yourself needing to navigate immediately when a component mounts. Your first instinct might be to reach for `useNavigate` and an immediate side-effect (e.g. useEffect), but this is unnecessary. Instead, you can render the `Navigate` component to achieve the same result:
+Ocasionalmente, você pode se encontrar precisando navegar imediatamente quando um component é montado. Seu primeiro instinto pode ser usar `useNavigate` e um efeito colateral imediato (por exemplo, useEffect), mas isso é desnecessário. Em vez disso, você pode renderizar o component `Navigate` para alcançar o mesmo resultado:
 
 ```tsx
 function Component() {
@@ -737,15 +737,15 @@ function Component() {
 }
 ```
 
-Think of the `Navigate` component as a way to navigate to a route immediately when a component mounts. It's a great way to handle client-only redirects. It is _definitely not_ a substitute for handling server-aware redirects responsibly on the server.
+Pense no component `Navigate` como uma forma de navegar para uma route imediatamente quando um component é montado. É uma ótima forma de lidar com redirecionamentos apenas no cliente. Ele _definitivamente não é_ um substituto para lidar com redirecionamentos conscientes do servidor de forma responsável no servidor.
 
 ## `router.navigate`
 
-The `router.navigate` method is the same as the `navigate` function returned by `useNavigate` and accepts the same [`NavigateOptions` interface](#navigateoptions-interface). Unlike the `useNavigate` hook, it is available anywhere your `router` instance is available and is thus a great way to navigate imperatively from anywhere in your application, including outside of your framework.
+O método `router.navigate` é o mesmo que a função `navigate` retornada por `useNavigate` e aceita a mesma [interface `NavigateOptions`](#interface-navigateoptions). Diferente do hook `useNavigate`, ele está disponível em qualquer lugar onde sua instância do `router` estiver disponível e é, portanto, uma ótima forma de navegar imperativamente de qualquer lugar na sua aplicação, incluindo fora do seu framework.
 
-## `useMatchRoute` and `<MatchRoute>`
+## `useMatchRoute` e `<MatchRoute>`
 
-The `useMatchRoute` hook and `<MatchRoute>` component are the same thing, but the hook is a bit more flexible. They both accept the standard navigation `ToOptions` interface either as options or props and return `true/false` if that route is currently matched. It also has a handy `pending` option that will return `true` if the route is currently pending (e.g. a route is currently transitioning to that route). This can be extremely useful for showing optimistic UI around where a user is navigating:
+O hook `useMatchRoute` e o component `<MatchRoute>` são a mesma coisa, mas o hook é um pouco mais flexível. Ambos aceitam a interface padrão de navegação `ToOptions` como opções ou props e retornam `true/false` se aquela route está atualmente correspondida. Ele também possui uma opção `pending` muito útil que retornará `true` se a route estiver atualmente pendente (por exemplo, uma route está atualmente em transição para aquela route). Isso pode ser extremamente útil para mostrar UI otimista em torno de para onde um usuário está navegando:
 
 ```tsx
 function Component() {
@@ -762,7 +762,7 @@ function Component() {
 }
 ```
 
-The component version `<MatchRoute>` can also be used with a function as children to render something when the route is matched:
+A versão component `<MatchRoute>` também pode ser usada com uma função como filhos para renderizar algo quando a route é correspondida:
 
 ```tsx
 function Component() {
@@ -781,7 +781,7 @@ function Component() {
 }
 ```
 
-The hook version `useMatchRoute` returns a function that can be called programmatically to check if a route is matched:
+A versão hook `useMatchRoute` retorna uma função que pode ser chamada programaticamente para verificar se uma route é correspondida:
 
 ```tsx
 function Component() {
@@ -803,4 +803,4 @@ function Component() {
 
 ---
 
-Phew! That's a lot of navigating! That said, hopefully you're feeling pretty good about getting around your application now. Let's move on!
+Ufa! Isso foi muita navegação! Dito isso, esperamos que você esteja se sentindo bem confiante sobre como se locomover pela sua aplicação agora. Vamos em frente!

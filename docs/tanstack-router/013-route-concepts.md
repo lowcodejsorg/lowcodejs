@@ -2,13 +2,13 @@
 title: Routing Concepts
 ---
 
-TanStack Router supports a number of powerful routing concepts that allow you to build complex and dynamic routing systems with ease.
+O TanStack Router suporta diversos conceitos poderosos de roteamento que permitem construir sistemas de roteamento complexos e dinâmicos com facilidade.
 
-Each of these concepts is useful and powerful, and we'll dive into each of them in the following sections.
+Cada um desses conceitos é útil e poderoso, e vamos nos aprofundar em cada um deles nas seções seguintes.
 
-## Anatomy of a Route
+## Anatomia de uma Route
 
-All other routes, other than the [Root Route](#the-root-route), are configured using the `createFileRoute` function, which provides type safety when using file-based routing:
+Todas as outras routes, exceto a [Root Route](#a-root-route), são configuradas usando a função `createFileRoute`, que fornece segurança de tipos ao usar roteamento baseado em arquivos:
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -18,30 +18,30 @@ export const Route = createFileRoute("/")({
 });
 ```
 
-The `createFileRoute` function takes a single argument, the file-route's path as a string.
+A função `createFileRoute` recebe um único argumento, o caminho da route do arquivo como uma string.
 
-**❓❓❓ "Wait, you're making me pass the path of the route file to `createFileRoute`?"**
+**"Espera, você está me fazendo passar o caminho do arquivo da route para `createFileRoute`?"**
 
-Yes! But don't worry, this path is **automatically written and managed by the router for you via the TanStack Router Bundler Plugin or Router CLI.** So, as you create new routes, move routes around or rename routes, the path will be updated for you automatically.
+Sim! Mas não se preocupe, esse caminho é **automaticamente escrito e gerenciado pelo router para você através do Plugin de Bundler do TanStack Router ou do Router CLI.** Então, à medida que você cria novas routes, move routes ou renomeia routes, o caminho será atualizado para você automaticamente.
 
-The reason for this pathname has everything to do with the magical type safety of TanStack Router. Without this pathname, TypeScript would have no idea what file we're in! (We wish TypeScript had a built-in for this, but they don't yet 🤷‍♂️)
+A razão para esse pathname tem tudo a ver com a segurança de tipos mágica do TanStack Router. Sem esse pathname, o TypeScript não teria ideia em qual arquivo estamos! (Gostaríamos que o TypeScript tivesse algo nativo para isso, mas ainda não tem)
 
-## The Root Route
+## A Root Route
 
-The root route is the top-most route in the entire tree and encapsulates all other routes as children.
+A root route é a route mais alta em toda a árvore e encapsula todas as outras routes como filhas.
 
-- It has no path
-- It is **always** matched
-- Its `component` is **always** rendered
+- Ela não tem caminho
+- Ela é **sempre** correspondida
+- Seu `component` é **sempre** renderizado
 
-Even though it doesn't have a path, the root route has access to all of the same functionality as other routes including:
+Mesmo sem ter um caminho, a root route tem acesso a todas as mesmas funcionalidades que outras routes, incluindo:
 
 - components
 - loaders
-- search param validation
+- validação de search params
 - etc.
 
-To create a root route, call the `createRootRoute()` function and export it as the `Route` variable in your route file:
+Para criar uma root route, chame a função `createRootRoute()` e exporte-a como a variável `Route` no seu arquivo de route:
 
 ```tsx
 // Standard root route
@@ -59,13 +59,13 @@ export interface MyRouterContext {
 export const Route = createRootRouteWithContext<MyRouterContext>();
 ```
 
-To learn more about Context in TanStack Router, see the [Router Context](../guide/router-context.md) guide.
+Para saber mais sobre Context no TanStack Router, veja o guia de [Router Context](../guide/router-context.md).
 
-## Basic Routes
+## Routes Básicas
 
-Basic routes match a specific path, for example `/about`, `/settings`, `/settings/notifications` are all basic routes, as they match the path exactly.
+Routes básicas correspondem a um caminho específico, por exemplo `/about`, `/settings`, `/settings/notifications` são todas routes básicas, pois correspondem ao caminho exatamente.
 
-Let's take a look at an `/about` route:
+Vamos dar uma olhada em uma route `/about`:
 
 ```tsx
 // about.tsx
@@ -80,13 +80,13 @@ function AboutComponent() {
 }
 ```
 
-Basic routes are simple and straightforward. They match the path exactly and render the provided component.
+Routes básicas são simples e diretas. Elas correspondem ao caminho exatamente e renderizam o component fornecido.
 
 ## Index Routes
 
-Index routes specifically target their parent route when it is **matched exactly and no child route is matched**.
+Index routes visam especificamente sua route pai quando ela é **correspondida exatamente e nenhuma route filha é correspondida**.
 
-Let's take a look at an index route for a `/posts` URL:
+Vamos dar uma olhada em uma index route para a URL `/posts`:
 
 ```tsx
 // posts.index.tsx
@@ -102,13 +102,13 @@ function PostsIndexComponent() {
 }
 ```
 
-This route will be matched when the URL is `/posts` exactly.
+Essa route será correspondida quando a URL for exatamente `/posts`.
 
-## Dynamic Route Segments
+## Segmentos Dinâmicos de Route
 
-Route path segments that start with a `$` followed by a label are dynamic and capture that section of the URL into the `params` object for use in your application. For example, a pathname of `/posts/123` would match the `/posts/$postId` route, and the `params` object would be `{ postId: '123' }`.
+Segmentos de caminho de route que começam com um `$` seguido de um rótulo são dinâmicos e capturam aquela seção da URL no objeto `params` para uso na sua aplicação. Por exemplo, um pathname de `/posts/123` corresponderia à route `/posts/$postId`, e o objeto `params` seria `{ postId: '123' }`.
 
-These params are then usable in your route's configuration and components! Let's look at a `posts.$postId.tsx` route:
+Esses params são então utilizáveis na configuração da sua route e nos components! Vamos ver uma route `posts.$postId.tsx`:
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -127,13 +127,13 @@ function PostComponent() {
 }
 ```
 
-> 🧠 Dynamic segments work at **each** segment of the path. For example, you could have a route with the path of `/posts/$postId/$revisionId` and each `$` segment would be captured into the `params` object.
+> Segmentos dinâmicos funcionam em **cada** segmento do caminho. Por exemplo, você poderia ter uma route com o caminho `/posts/$postId/$revisionId` e cada segmento `$` seria capturado no objeto `params`.
 
-## Splat / Catch-All Routes
+## Routes Splat / Catch-All
 
-A route with a path of only `$` is called a "splat" route because it _always_ captures _any_ remaining section of the URL pathname from the `$` to the end. The captured pathname is then available in the `params` object under the special `_splat` property.
+Uma route com um caminho contendo apenas `$` é chamada de route "splat" porque ela _sempre_ captura _qualquer_ seção restante do pathname da URL do `$` até o final. O pathname capturado fica então disponível no objeto `params` sob a propriedade especial `_splat`.
 
-For example, a route targeting the `files/$` path is a splat route. If the URL pathname is `/files/documents/hello-world`, the `params` object would contain `documents/hello-world` under the special `_splat` property:
+Por exemplo, uma route direcionada ao caminho `files/$` é uma route splat. Se o pathname da URL for `/files/documents/hello-world`, o objeto `params` conteria `documents/hello-world` sob a propriedade especial `_splat`:
 
 ```js
 {
@@ -141,13 +141,13 @@ For example, a route targeting the `files/$` path is a splat route. If the URL p
 }
 ```
 
-> ⚠️ In v1 of the router, splat routes are also denoted with a `*` instead of a `_splat` key for backwards compatibility. This will be removed in v2.
+> Na v1 do router, routes splat também são denotadas com uma chave `*` em vez de `_splat` para compatibilidade retroativa. Isso será removido na v2.
 
-> 🧠 Why use `$`? Thanks to tools like Remix, we know that despite `*`s being the most common character to represent a wildcard, they do not play nice with filenames or CLI tools, so just like them, we decided to use `$` instead.
+> Por que usar `$`? Graças a ferramentas como o Remix, sabemos que apesar de `*` ser o caractere mais comum para representar um curinga, ele não funciona bem com nomes de arquivos ou ferramentas CLI, então assim como eles, decidimos usar `$` em vez disso.
 
-## Optional Path Parameters
+## Parâmetros de Caminho Opcionais
 
-Optional path parameters allow you to define route segments that may or may not be present in the URL. They use the `{-$paramName}` syntax and provide flexible routing patterns where certain parameters are optional.
+Parâmetros de caminho opcionais permitem definir segmentos de route que podem ou não estar presentes na URL. Eles usam a sintaxe `{-$paramName}` e fornecem padrões de roteamento flexíveis onde certos parâmetros são opcionais.
 
 ```tsx
 // posts.{-$category}.tsx - Optional category parameter
@@ -164,9 +164,9 @@ function PostsComponent() {
 }
 ```
 
-This route will match both `/posts` (category is `undefined`) and `/posts/tech` (category is `"tech"`).
+Essa route corresponderá tanto a `/posts` (category é `undefined`) quanto a `/posts/tech` (category é `"tech"`).
 
-You can also define multiple optional parameters in a single route:
+Você também pode definir múltiplos parâmetros opcionais em uma única route:
 
 ```tsx
 // posts.{-$category}.{-$slug}.tsx
@@ -175,22 +175,22 @@ export const Route = createFileRoute("/posts/{-$category}/{-$slug}")({
 });
 ```
 
-This route matches `/posts`, `/posts/tech`, and `/posts/tech/hello-world`.
+Essa route corresponde a `/posts`, `/posts/tech` e `/posts/tech/hello-world`.
 
-> 🧠 Routes with optional parameters are ranked lower in priority than exact matches, ensuring that more specific routes like `/posts/featured` are matched before `/posts/{-$category}`.
+> Routes com parâmetros opcionais têm prioridade menor que correspondências exatas, garantindo que routes mais específicas como `/posts/featured` sejam correspondidas antes de `/posts/{-$category}`.
 
 ## Layout Routes
 
-Layout routes are used to wrap child routes with additional components and logic. They are useful for:
+Layout routes são usadas para envolver routes filhas com components e lógica adicionais. Elas são úteis para:
 
-- Wrapping child routes with a layout component
-- Enforcing a `loader` requirement before displaying any child routes
-- Validating and providing search params to child routes
-- Providing fallbacks for error components or pending elements to child routes
-- Providing shared context to all child routes
-- And more!
+- Envolver routes filhas com um layout component
+- Impor um requisito de `loader` antes de exibir qualquer route filha
+- Validar e fornecer search params para routes filhas
+- Fornecer fallbacks para components de erro ou elementos pendentes para routes filhas
+- Fornecer context compartilhado para todas as routes filhas
+- E muito mais!
 
-Let's take a look at an example layout route called `app.tsx`:
+Vamos dar uma olhada em um exemplo de layout route chamada `app.tsx`:
 
 ```
 routes/
@@ -199,9 +199,9 @@ routes/
 ├── app.settings.tsx
 ```
 
-In the tree above, `app.tsx` is a layout route that wraps two child routes, `app.dashboard.tsx` and `app.settings.tsx`.
+Na árvore acima, `app.tsx` é uma layout route que envolve duas routes filhas, `app.dashboard.tsx` e `app.settings.tsx`.
 
-This tree structure is used to wrap the child routes with a layout component:
+Essa estrutura de árvore é usada para envolver as routes filhas com um layout component:
 
 ```tsx
 import { Outlet, createFileRoute } from "@tanstack/react-router";
@@ -220,15 +220,15 @@ function AppLayoutComponent() {
 }
 ```
 
-The following table shows which component(s) will be rendered based on the URL:
+A tabela a seguir mostra qual(is) component(s) será(ão) renderizado(s) com base na URL:
 
-| URL Path         | Component                |
+| Caminho da URL   | Component                |
 | ---------------- | ------------------------ |
 | `/app`           | `<AppLayout>`            |
 | `/app/dashboard` | `<AppLayout><Dashboard>` |
 | `/app/settings`  | `<AppLayout><Settings>`  |
 
-Since TanStack Router supports mixed flat and directory routes, you can also express your application's routing using layout routes within directories:
+Como o TanStack Router suporta routes mistas (flat e diretório), você também pode expressar o roteamento da sua aplicação usando layout routes dentro de diretórios:
 
 ```
 routes/
@@ -238,9 +238,9 @@ routes/
 │   ├── settings.tsx
 ```
 
-In this nested tree, the `app/route.tsx` file is a configuration for the layout route that wraps two child routes, `app/dashboard.tsx` and `app/settings.tsx`.
+Nessa árvore aninhada, o arquivo `app/route.tsx` é a configuração da layout route que envolve duas routes filhas, `app/dashboard.tsx` e `app/settings.tsx`.
 
-Layout Routes also let you enforce component and loader logic for Dynamic Route Segments:
+Layout Routes também permitem impor lógica de component e loader para Segmentos Dinâmicos de Route:
 
 ```
 routes/
@@ -253,13 +253,13 @@ routes/
 
 ## Pathless Layout Routes
 
-Like [Layout Routes](#layout-routes), Pathless Layout Routes are used to wrap child routes with additional components and logic. However, pathless layout routes do not require a matching `path` in the URL and are used to wrap child routes with additional components and logic without requiring a matching `path` in the URL.
+Assim como as [Layout Routes](#layout-routes), Pathless Layout Routes são usadas para envolver routes filhas com components e lógica adicionais. No entanto, pathless layout routes não requerem um `path` correspondente na URL e são usadas para envolver routes filhas com components e lógica adicionais sem exigir um `path` correspondente na URL.
 
-Pathless Layout Routes are prefixed with an underscore (`_`) to denote that they are "pathless".
+Pathless Layout Routes são prefixadas com um underscore (`_`) para denotar que são "pathless".
 
-> 🧠 The part of the path after the `_` prefix is used as the route's ID and is required because every route must be uniquely identifiable, especially when using TypeScript so as to avoid type errors and accomplish autocomplete effectively.
+> A parte do caminho após o prefixo `_` é usada como o ID da route e é obrigatória porque cada route deve ser identificável de forma única, especialmente ao usar TypeScript para evitar erros de tipo e obter autocomplete de forma eficaz.
 
-Let's take a look at an example route called `_pathlessLayout.tsx`:
+Vamos dar uma olhada em um exemplo de route chamada `_pathlessLayout.tsx`:
 
 ```
 
@@ -270,9 +270,9 @@ routes/
 
 ```
 
-In the tree above, `_pathlessLayout.tsx` is a pathless layout route that wraps two child routes, `_pathlessLayout.a.tsx` and `_pathlessLayout.b.tsx`.
+Na árvore acima, `_pathlessLayout.tsx` é uma pathless layout route que envolve duas routes filhas, `_pathlessLayout.a.tsx` e `_pathlessLayout.b.tsx`.
 
-The `_pathlessLayout.tsx` route is used to wrap the child routes with a Pathless layout component:
+A route `_pathlessLayout.tsx` é usada para envolver as routes filhas com um pathless layout component:
 
 ```tsx
 import { Outlet, createFileRoute } from "@tanstack/react-router";
@@ -291,15 +291,15 @@ function PathlessLayoutComponent() {
 }
 ```
 
-The following table shows which component will be rendered based on the URL:
+A tabela a seguir mostra qual component será renderizado com base na URL:
 
-| URL Path | Component             |
-| -------- | --------------------- |
-| `/`      | `<Index>`             |
-| `/a`     | `<PathlessLayout><A>` |
-| `/b`     | `<PathlessLayout><B>` |
+| Caminho da URL | Component             |
+| -------------- | --------------------- |
+| `/`            | `<Index>`             |
+| `/a`           | `<PathlessLayout><A>` |
+| `/b`           | `<PathlessLayout><B>` |
 
-Since TanStack Router supports mixed flat and directory routes, you can also express your application's routing using pathless layout routes within directories:
+Como o TanStack Router suporta routes mistas (flat e diretório), você também pode expressar o roteamento da sua aplicação usando pathless layout routes dentro de diretórios:
 
 ```
 routes/
@@ -309,9 +309,9 @@ routes/
 │   ├── b.tsx
 ```
 
-However, unlike Layout Routes, since Pathless Layout Routes do not match based on URL path segments, this means that these routes do not support [Dynamic Route Segments](#dynamic-route-segments) as part of their path and therefore cannot be matched in the URL.
+No entanto, diferente das Layout Routes, como as Pathless Layout Routes não correspondem com base em segmentos de caminho da URL, isso significa que essas routes não suportam [Segmentos Dinâmicos de Route](#segmentos-dinâmicos-de-route) como parte do seu caminho e, portanto, não podem ser correspondidas na URL.
 
-This means that you cannot do this:
+Isso significa que você não pode fazer isso:
 
 ```
 routes/
@@ -319,7 +319,7 @@ routes/
 │   ├── ...
 ```
 
-Rather, you'd have to do this:
+Em vez disso, você teria que fazer isso:
 
 ```
 routes/
@@ -328,11 +328,11 @@ routes/
 │   ├── ...
 ```
 
-## Non-Nested Routes
+## Routes Não-Aninhadas
 
-Non-nested routes can be created by suffixing a parent file route segment with a `_` and are used to **un-nest** a route from its parents and render its own component tree.
+Routes não-aninhadas podem ser criadas adicionando um sufixo `_` a um segmento de route pai e são usadas para **desaninhar** uma route dos seus pais e renderizar sua própria árvore de components.
 
-Consider the following flat route tree:
+Considere a seguinte árvore de routes flat:
 
 ```
 routes/
@@ -341,34 +341,34 @@ routes/
 ├── posts_.$postId.edit.tsx
 ```
 
-The following table shows which component will be rendered based on the URL:
+A tabela a seguir mostra qual component será renderizado com base na URL:
 
-| URL Path          | Component                    |
+| Caminho da URL    | Component                    |
 | ----------------- | ---------------------------- |
 | `/posts`          | `<Posts>`                    |
 | `/posts/123`      | `<Posts><Post postId="123">` |
 | `/posts/123/edit` | `<PostEditor postId="123">`  |
 
-- The `posts.$postId.tsx` route is nested as normal under the `posts.tsx` route and will render `<Posts><Post>`.
-- The `posts_.$postId.edit.tsx` route **does not share** the same `posts` prefix as the other routes and therefore will be treated as if it is a top-level route and will render `<PostEditor>`.
+- A route `posts.$postId.tsx` é aninhada normalmente sob a route `posts.tsx` e renderizará `<Posts><Post>`.
+- A route `posts_.$postId.edit.tsx` **não compartilha** o mesmo prefixo `posts` que as outras routes e, portanto, será tratada como se fosse uma route de nível superior e renderizará `<PostEditor>`.
 
-## Excluding Files and Folders from Routes
+## Excluindo Arquivos e Pastas das Routes
 
-Files and folders can be excluded from route generation with a `-` prefix attached to the file name. This gives you the ability to colocate logic in the route directories.
+Arquivos e pastas podem ser excluídos da geração de routes com um prefixo `-` anexado ao nome do arquivo. Isso oferece a capacidade de colocar lógica nos diretórios de route.
 
-Consider the following route tree:
+Considere a seguinte árvore de routes:
 
 ```
 routes/
 ├── posts.tsx
-├── -posts-table.tsx // 👈🏼 ignored
-├── -components/ // 👈🏼 ignored
-│   ├── header.tsx // 👈🏼 ignored
-│   ├── footer.tsx // 👈🏼 ignored
+├── -posts-table.tsx // 👈🏼 ignorado
+├── -components/ // 👈🏼 ignorado
+│   ├── header.tsx // 👈🏼 ignorado
+│   ├── footer.tsx // 👈🏼 ignorado
 │   ├── ...
 ```
 
-We can import from the excluded files into our posts route
+Podemos importar dos arquivos excluídos na nossa route de posts
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -394,11 +394,11 @@ function PostComponent() {
 }
 ```
 
-The excluded files will not be added to `routeTree.gen.ts`.
+Os arquivos excluídos não serão adicionados ao `routeTree.gen.ts`.
 
-## Pathless Route Group Directories
+## Diretórios de Grupo de Routes sem Caminho
 
-Pathless route group directories use `()` as a way to group routes files together regardless of their path. They are purely organizational and do not affect the route tree or component tree in any way.
+Diretórios de grupo de routes sem caminho usam `()` como uma forma de agrupar arquivos de routes independentemente do seu caminho. Eles são puramente organizacionais e não afetam a route tree ou a árvore de components de nenhuma forma.
 
 ```
 routes/
@@ -412,17 +412,17 @@ routes/
 │   ├── register.tsx
 ```
 
-In the example above, the `app` and `auth` directories are purely organizational and do not affect the route tree or component tree in any way. They are used to group related routes together for easier navigation and organization.
+No exemplo acima, os diretórios `app` e `auth` são puramente organizacionais e não afetam a route tree ou a árvore de components de nenhuma forma. Eles são usados para agrupar routes relacionadas para facilitar a navegação e organização.
 
-The following table shows which component will be rendered based on the URL:
+A tabela a seguir mostra qual component será renderizado com base na URL:
 
-| URL Path     | Component     |
-| ------------ | ------------- |
-| `/`          | `<Index>`     |
-| `/dashboard` | `<Dashboard>` |
-| `/settings`  | `<Settings>`  |
-| `/users`     | `<Users>`     |
-| `/login`     | `<Login>`     |
-| `/register`  | `<Register>`  |
+| Caminho da URL | Component     |
+| -------------- | ------------- |
+| `/`            | `<Index>`     |
+| `/dashboard`   | `<Dashboard>` |
+| `/settings`    | `<Settings>`  |
+| `/users`       | `<Users>`     |
+| `/login`       | `<Login>`     |
+| `/register`    | `<Register>`  |
 
-As you can see, the `app` and `auth` directories are purely organizational and do not affect the route tree or component tree in any way.
+Como você pode ver, os diretórios `app` e `auth` são puramente organizacionais e não afetam a route tree ou a árvore de components de nenhuma forma.

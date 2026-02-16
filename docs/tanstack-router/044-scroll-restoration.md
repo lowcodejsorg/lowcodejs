@@ -3,13 +3,13 @@ id: scroll-restoration
 title: Scroll Restoration
 ---
 
-## Hash/Top-of-Page Scrolling
+## Rolagem por Hash/Topo da Página
 
-Out of the box, TanStack Router supports both **hash scrolling** and **top-of-page scrolling** without any additional configuration.
+Por padrão, o TanStack Router suporta tanto **rolagem por hash** quanto **rolagem para o topo da página** sem nenhuma configuração adicional.
 
-## Scroll-to-top & Nested Scrollable Areas
+## Rolagem para o Topo e Áreas Roláveis Aninhadas
 
-By default, scroll-to-top mimics the behavior of the browser, which means only the `window` itself is scrolled to the top after successful navigation. For many apps however, it's common for the main scrollable area to be a nested div or similar because of advanced layouts. If you would like TanStack Router to also scroll these main scrollable areas for you, you can add selectors to target them using the `routerOptions.scrollToTopSelectors`:
+Por padrão, a rolagem para o topo imita o comportamento do navegador, o que significa que apenas a própria `window` é rolada para o topo após uma navegação bem-sucedida. Para muitos apps, no entanto, é comum que a área rolável principal seja uma div aninhada ou similar por causa de layouts avançados. Se você quiser que o TanStack Router também role essas áreas roláveis principais para você, pode adicionar seletores para direcioná-las usando `routerOptions.scrollToTopSelectors`:
 
 ```tsx
 const router = createRouter({
@@ -17,7 +17,7 @@ const router = createRouter({
 });
 ```
 
-For complex selectors that cannot be simply resolved using `document.querySelector(selector)`, you can pass functions that return HTML elements to `routerOptions.scrollToTopSelectors`:
+Para seletores complexos que não podem ser simplesmente resolvidos usando `document.querySelector(selector)`, você pode passar funções que retornam elementos HTML para `routerOptions.scrollToTopSelectors`:
 
 ```tsx
 const selector = () =>
@@ -30,29 +30,29 @@ const router = createRouter({
 });
 ```
 
-These selectors are handled **in addition to `window`** which cannot be disabled currently.
+Esses seletores são tratados **além da `window`**, que não pode ser desativada atualmente.
 
 ## Scroll Restoration
 
-Scroll restoration is the process of restoring the scroll position of a page when the user navigates back to it. This is normally a built-in feature for standard HTML based websites, but can be difficult to replicate for SPA applications because:
+Scroll restoration é o processo de restaurar a posição de rolagem de uma página quando o usuário navega de volta para ela. Isso normalmente é um recurso nativo para sites HTML padrão, mas pode ser difícil de replicar para aplicações SPA porque:
 
-- SPAs typically use the `history.pushState` API for navigation, so the browser doesn't know to restore the scroll position natively
-- SPAs sometimes render content asynchronously, so the browser doesn't know the height of the page until after it's rendered
-- SPAs can sometimes use nested scrollable containers to force specific layouts and features.
+- SPAs tipicamente usam a API `history.pushState` para navegação, então o navegador não sabe restaurar a posição de rolagem nativamente
+- SPAs às vezes renderizam conteúdo de forma assíncrona, então o navegador não sabe a altura da página até que ela seja renderizada
+- SPAs podem às vezes usar containers roláveis aninhados para forçar layouts e recursos específicos.
 
-Not only that, but it's very common for applications to have multiple scrollable areas within an app, not just the body. For example, a chat application might have a scrollable sidebar and a scrollable chat area. In this case, you would want to restore the scroll position of both areas independently.
+Além disso, é muito comum que aplicações tenham múltiplas áreas roláveis dentro de um app, não apenas o body. Por exemplo, uma aplicação de chat pode ter uma barra lateral rolável e uma área de chat rolável. Nesse caso, você gostaria de restaurar a posição de rolagem de ambas as áreas independentemente.
 
-To alleviate this problem, TanStack Router provides a scroll restoration component and hook that handle the process of monitoring, caching and restoring scroll positions for you.
+Para aliviar esse problema, o TanStack Router fornece um component e hook de scroll restoration que cuidam do processo de monitorar, armazenar em cache e restaurar posições de rolagem para você.
 
-It does this by:
+Ele faz isso ao:
 
-- Monitoring the DOM for scroll events
-- Registering scrollable areas with the scroll restoration cache
-- Listening to the proper router events to know when to cache and restore scroll positions
-- Storing scroll positions for each scrollable area in the cache (including `window` and `body`)
-- Restoring scroll positions after successful navigations before DOM paint
+- Monitorar o DOM por eventos de rolagem
+- Registrar áreas roláveis no cache de scroll restoration
+- Escutar os eventos apropriados do router para saber quando armazenar em cache e restaurar posições de rolagem
+- Armazenar posições de rolagem para cada área rolável no cache (incluindo `window` e `body`)
+- Restaurar posições de rolagem após navegações bem-sucedidas antes da pintura do DOM
 
-That may sound like a lot, but for you, it's as simple as this:
+Pode parecer muita coisa, mas para você é tão simples quanto:
 
 ```tsx
 import { createRouter } from "@tanstack/react-router";
@@ -63,21 +63,21 @@ const router = createRouter({
 ```
 
 > [!NOTE]
-> The `<ScrollRestoration />` component still works, but has been deprecated.
+> O component `<ScrollRestoration />` ainda funciona, mas está depreciado.
 
-## Custom Cache Keys
+## Chaves de Cache Personalizadas
 
-Falling in behind Remix's own Scroll Restoration APIs, you can also customize the key used to cache scroll positions for a given scrollable area using the `getKey` option. This could be used, for example, to force the same scroll position to be used regardless of the users browser history.
+Seguindo a mesma linha das APIs de Scroll Restoration do Remix, você também pode personalizar a chave usada para armazenar em cache as posições de rolagem para uma determinada área rolável usando a opção `getKey`. Isso poderia ser usado, por exemplo, para forçar a mesma posição de rolagem a ser usada independentemente do histórico do navegador do usuário.
 
-The `getKey` option receives the relevant `Location` state from TanStack Router and expects you to return a string to uniquely identify the scrollable measurements for that state.
+A opção `getKey` recebe o state `Location` relevante do TanStack Router e espera que você retorne uma string para identificar de forma única as medições de rolagem para aquele state.
 
-The default `getKey` is `(location) => location.state.__TSR_key!`, where `__TSR_key` is the unique key generated for each entry in the history.
+O `getKey` padrão é `(location) => location.state.__TSR_key!`, onde `__TSR_key` é a chave única gerada para cada entrada no histórico.
 
-> Older versions, prior to `v1.121.34`, used `state.key` as the default key, but this has been deprecated in favor of `state.__TSR_key`. For now, `location.state.key` will still be available for compatibility, but it will be removed in the next major version.
+> Versões anteriores, anteriores à `v1.121.34`, usavam `state.key` como a chave padrão, mas isso foi depreciado em favor de `state.__TSR_key`. Por enquanto, `location.state.key` ainda estará disponível para compatibilidade, mas será removido na próxima versão major.
 
-## Examples
+## Exemplos
 
-You could sync scrolling to the pathname:
+Você poderia sincronizar a rolagem com o pathname:
 
 ```tsx
 import { createRouter } from "@tanstack/react-router";
@@ -87,7 +87,7 @@ const router = createRouter({
 });
 ```
 
-You can conditionally sync only some paths, then use the key for the rest:
+Você pode sincronizar condicionalmente apenas alguns caminhos, e usar a chave para o restante:
 
 ```tsx
 import { createRouter } from "@tanstack/react-router";
@@ -102,21 +102,21 @@ const router = createRouter({
 });
 ```
 
-## Preventing Scroll Restoration
+## Prevenindo Scroll Restoration
 
-Sometimes you may want to prevent scroll restoration from happening. To do this you can utilize the `resetScroll` option available on the following APIs:
+Às vezes você pode querer impedir que a scroll restoration aconteça. Para isso, você pode utilizar a opção `resetScroll` disponível nas seguintes APIs:
 
 - `<Link resetScroll={false}>`
 - `navigate({ resetScroll: false })`
 - `redirect({ resetScroll: false })`
 
-When `resetScroll` is set to `false`, the scroll position for the next navigation will not be restored (if navigating to an existing history event in the stack) or reset to the top (if it's a new history event in the stack).
+Quando `resetScroll` é definido como `false`, a posição de rolagem para a próxima navegação não será restaurada (se estiver navegando para um evento de histórico existente na pilha) nem resetada para o topo (se for um novo evento de histórico na pilha).
 
-## Manual Scroll Restoration
+## Scroll Restoration Manual
 
-Most of the time, you won't need to do anything special to get scroll restoration to work. However, there are some cases where you may need to manually control scroll restoration. The most common example is **virtualized lists**.
+Na maioria das vezes, você não precisará fazer nada especial para que a scroll restoration funcione. No entanto, existem alguns casos em que você pode precisar controlar manualmente a scroll restoration. O exemplo mais comum são **listas virtualizadas**.
 
-To manually control scroll restoration for virtualized lists within the whole browser window:
+Para controlar manualmente a scroll restoration para listas virtualizadas dentro de toda a janela do navegador:
 
 [//]: # "VirtualizedWindowScrollRestorationExample"
 
@@ -147,7 +147,7 @@ function Component() {
 
 [//]: # "VirtualizedWindowScrollRestorationExample"
 
-To manually control scroll restoration for a specific element, you can use the `useElementScrollRestoration` hook and the `data-scroll-restoration-id` DOM attribute:
+Para controlar manualmente a scroll restoration para um elemento específico, você pode usar o hook `useElementScrollRestoration` e o atributo DOM `data-scroll-restoration-id`:
 
 [//]: # "ManualRestorationExample"
 
@@ -190,9 +190,9 @@ function Component() {
 
 [//]: # "ManualRestorationExample"
 
-## Scroll Behavior
+## Comportamento de Rolagem
 
-To control the scroll behavior when navigating between pages, you can use the `scrollRestorationBehavior` option. This allows you to make the transition between pages instant instead of a smooth scroll. The global configuration of scroll restoration behavior has the same options as those supported by the browser, which are `smooth`, `instant`, and `auto` (see [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#behavior) for more information).
+Para controlar o comportamento de rolagem ao navegar entre páginas, você pode usar a opção `scrollRestorationBehavior`. Isso permite que você torne a transição entre páginas instantânea em vez de uma rolagem suave. A configuração global do comportamento de scroll restoration tem as mesmas opções suportadas pelo navegador, que são `smooth`, `instant` e `auto` (veja [MDN](https://developer.mozilla.org/en-US/docs/Web/API/Element/scrollIntoView#behavior) para mais informações).
 
 ```tsx
 import { createRouter } from "@tanstack/react-router";

@@ -2,32 +2,32 @@
 title: Render Optimizations
 ---
 
-TanStack Router includes several optimizations to ensure your components only re-render when necessary. These optimizations include:
+O TanStack Router inclui várias otimizações para garantir que seus components só façam re-render quando necessário. Essas otimizações incluem:
 
 ## structural sharing
 
-TanStack Router uses a technique called "structural sharing" to preserve as many references as possible between re-renders, which is particularly useful for state stored in the URL, such as search parameters.
+O TanStack Router usa uma técnica chamada "structural sharing" para preservar o máximo de referências possível entre re-renders, o que é particularmente útil para state armazenado na URL, como search params.
 
-For example, consider a `details` route with two search parameters, `foo` and `bar`, accessed like this:
+Por exemplo, considere uma route `details` com dois search params, `foo` e `bar`, acessados assim:
 
 ```tsx
 const search = Route.useSearch();
 ```
 
-When only `bar` is changed by navigating from `/details?foo=f1&bar=b1` to `/details?foo=f1&bar=b2`, `search.foo` will be referentially stable and only `search.bar` will be replaced.
+Quando apenas `bar` é alterado ao navegar de `/details?foo=f1&bar=b1` para `/details?foo=f1&bar=b2`, `search.foo` será referencialmente estável e apenas `search.bar` será substituído.
 
-## fine-grained selectors
+## Seletores refinados
 
-You can access and subscribe to the router state using various hooks like `useRouterState`, `useSearch`, and others. If you only want a specific component to re-render when a particular subset of the router state such as a subset of the search parameters changes, you can use partial subscriptions with the `select` property.
+Você pode acessar e se inscrever no state do router usando vários hooks como `useRouterState`, `useSearch` e outros. Se você quiser que um component específico faça re-render apenas quando um subconjunto particular do state do router, como um subconjunto dos search params, mudar, pode usar assinaturas parciais com a propriedade `select`.
 
 ```tsx
 // component won't re-render when `bar` changes
 const foo = Route.useSearch({ select: ({ foo }) => foo });
 ```
 
-### structural sharing with fine-grained selectors
+### structural sharing com seletores refinados
 
-The `select` function can perform various calculations on the router state, allowing you to return different types of values, such as objects. For example:
+A função `select` pode realizar vários cálculos no state do router, permitindo que você retorne diferentes tipos de valores, como objetos. Por exemplo:
 
 ```tsx
 const result = Route.useSearch({
@@ -40,13 +40,13 @@ const result = Route.useSearch({
 });
 ```
 
-Although this works, it will cause your component to re-render each time, since `select` is now returning a new object each time it’s called.
+Embora isso funcione, fará com que seu component faça re-render toda vez, pois `select` agora está retornando um novo objeto cada vez que é chamado.
 
-You can avoid this re-rendering issue by using "structural sharing" as described above. By default, structural sharing is turned off to maintain backward compatibility, but this may change in v2.
+Você pode evitar esse problema de re-render usando "structural sharing" como descrito acima. Por padrão, o structural sharing está desativado para manter a compatibilidade retroativa, mas isso pode mudar na v2.
 
-To enable structural sharing for fine grained selectors, you have two options:
+Para habilitar o structural sharing para seletores refinados, você tem duas opções:
 
-#### Enable it by default in the router options:
+#### Habilitar por padrão nas opções do router:
 
 ```tsx
 const router = createRouter({
@@ -55,7 +55,7 @@ const router = createRouter({
 });
 ```
 
-#### Enable it per hook usage as shown here:
+#### Habilitar por uso de hook conforme mostrado aqui:
 
 ```tsx
 const result = Route.useSearch({
@@ -70,9 +70,9 @@ const result = Route.useSearch({
 ```
 
 > [!IMPORTANT]
-> Structural sharing only works with JSON-compatible data. This means you cannot use `select` to return items like class instances if structural sharing is enabled.
+> O structural sharing funciona apenas com dados compatíveis com JSON. Isso significa que você não pode usar `select` para retornar itens como instâncias de classe se o structural sharing estiver habilitado.
 
-In line with TanStack Router's type-safe design, TypeScript will raise an error if you attempt the following:
+Em linha com o design type-safe do TanStack Router, o TypeScript levantará um erro se você tentar o seguinte:
 
 ```tsx
 const result = Route.useSearch({
@@ -85,4 +85,4 @@ const result = Route.useSearch({
 });
 ```
 
-If structural sharing is enabled by default in the router options, you can prevent this error by setting `structuralSharing: false`.
+Se o structural sharing estiver habilitado por padrão nas opções do router, você pode evitar esse erro definindo `structuralSharing: false`.

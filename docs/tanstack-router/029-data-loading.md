@@ -3,61 +3,61 @@ id: data-loading
 title: Data Loading
 ---
 
-Data loading is a common concern for web applications and is related to routing. When loading a page for your app, it's ideal if all of the page's async requirements are fetched and fulfilled as early as possible, in parallel. The router is the best place to coordinate these async dependencies as it's usually the only place in your app that knows where users are headed before content is rendered.
+O carregamento de dados é uma preocupação comum em aplicações web e está relacionado ao roteamento. Ao carregar uma página da sua aplicação, o ideal é que todos os requisitos assíncronos da página sejam buscados e resolvidos o mais cedo possível, em paralelo. O router é o melhor lugar para coordenar essas dependências assíncronas, pois geralmente é o único lugar na sua aplicação que sabe para onde os usuários estão indo antes do conteúdo ser renderizado.
 
-You may be familiar with `getServerSideProps` from Next.js or `loader`s from Remix/React-Router. TanStack Router has similar functionality to preload/load assets on a per-route basis in parallel allowing it to render as quickly as possible as it fetches via suspense.
+Você pode estar familiarizado com `getServerSideProps` do Next.js ou `loader`s do Remix/React-Router. O TanStack Router tem funcionalidade similar para pré-carregar/carregar assets por route em paralelo, permitindo que renderize o mais rápido possível enquanto busca via suspense.
 
-Beyond these normal expectations of a router, TanStack Router goes above and beyond and provides **built-in SWR Caching**, a long-term in-memory caching layer for route loaders. This means that you can use TanStack Router to both preload data for your routes so they load instantaneously or temporarily cache route data for previously visited routes to use again later.
+Além dessas expectativas normais de um router, o TanStack Router vai além e fornece **cache SWR integrado**, uma camada de cache de longo prazo em memória para loaders de route. Isso significa que você pode usar o TanStack Router tanto para pré-carregar dados para suas routes para que carreguem instantaneamente, quanto para cachear temporariamente dados de routes previamente visitadas para usar novamente mais tarde.
 
-## The route loading lifecycle
+## O ciclo de vida de carregamento da route
 
-Every time a URL/history update is detected, the router executes the following sequence:
+Toda vez que uma atualização de URL/histórico é detectada, o router executa a seguinte sequência:
 
-- Route Matching (Top-Down)
+- Correspondência de Route (De Cima para Baixo)
   - `route.params.parse`
   - `route.validateSearch`
-- Route Pre-Loading (Serial)
+- Pré-Carregamento da Route (Serial)
   - `route.beforeLoad`
   - `route.onError`
     - `route.errorComponent` / `parentRoute.errorComponent` / `router.defaultErrorComponent`
-- Route Loading (Parallel)
+- Carregamento da Route (Paralelo)
   - `route.component.preload?`
   - `route.loader`
-    - `route.pendingComponent` (Optional)
+    - `route.pendingComponent` (Opcional)
     - `route.component`
   - `route.onError`
     - `route.errorComponent` / `parentRoute.errorComponent` / `router.defaultErrorComponent`
 
-## To Router Cache or not to Router Cache?
+## Usar o Cache do Router ou não?
 
-There is a high possibility that TanStack's router cache will be a good fit for most smaller to medium size applications, but it's important to understand the tradeoffs of using it vs a more robust caching solution like TanStack Query:
+Há uma grande possibilidade de que o cache do router do TanStack seja uma boa opção para a maioria das aplicações de pequeno a médio porte, mas é importante entender os trade-offs de usá-lo versus uma solução de cache mais robusta como o TanStack Query:
 
-TanStack Router Cache Pros:
+Prós do Cache do TanStack Router:
 
-- Built-in, easy to use, no extra dependencies
-- Handles deduping, preloading, loading, stale-while-revalidate, background refetching on a per-route basis
-- Coarse invalidation (invalidate all routes and cache at once)
-- Automatic garbage collection
-- Works great for apps that share little data between routes
-- "Just works" for SSR
+- Integrado, fácil de usar, sem dependências extras
+- Lida com deduplicação, preloading, carregamento, stale-while-revalidate, refetching em segundo plano por route
+- Invalidação grosseira (invalida todas as routes e cache de uma vez)
+- Garbage collection automático
+- Funciona muito bem para aplicações que compartilham poucos dados entre routes
+- "Simplesmente funciona" para SSR
 
-TanStack Router Cache Cons:
+Contras do Cache do TanStack Router:
 
-- No persistence adapters/model
-- No shared caching/deduping between routes
-- No built-in mutation APIs (a basic `useMutation` hook is provided in many examples that may be sufficient for many use cases)
-- No built-in cache-level optimistic update APIs (you can still use ephemeral state from something like a `useMutation` hook to achieve this at the component level)
+- Sem adapters/modelo de persistência
+- Sem cache compartilhado/deduplicação entre routes
+- Sem APIs de mutation integradas (um hook básico `useMutation` é fornecido em muitos exemplos que pode ser suficiente para muitos casos de uso)
+- Sem APIs de atualização otimista em nível de cache integradas (você ainda pode usar state efêmero de algo como um hook `useMutation` para alcançar isso no nível do component)
 
 > [!TIP]
-> If you know right away that you'd like to or need to use something more robust like TanStack Query, skip to the [External Data Loading](./external-data-loading.md) guide.
+> Se você já sabe que gostaria de ou precisa usar algo mais robusto como o TanStack Query, pule para o guia de [Carregamento de Dados Externo](./external-data-loading.md).
 
-## Using the Router Cache
+## Usando o Cache do Router
 
-The router cache is built-in and is as easy as returning data from any route's `loader` function. Let's learn how!
+O cache do router é integrado e é tão fácil quanto retornar dados da função `loader` de qualquer route. Vamos aprender como!
 
-## Route `loader`s
+## `loader`s de Route
 
-Route `loader` functions are called when a route match is loaded. They are called with a single parameter which is an object containing many helpful properties. We'll go over those in a bit, but first, let's look at an example of a route `loader` function:
+Funções `loader` de route são chamadas quando um route match é carregado. Elas são chamadas com um único parâmetro que é um objeto contendo muitas propriedades úteis. Vamos ver essas propriedades em breve, mas primeiro, vamos olhar um exemplo de uma função `loader` de route:
 
 ```tsx
 // routes/posts.tsx
@@ -66,36 +66,36 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-## `loader` Parameters
+## Parâmetros do `loader`
 
-The `loader` function receives a single object with the following properties:
+A função `loader` recebe um único objeto com as seguintes propriedades:
 
-- `abortController` - The route's abortController. Its signal is cancelled when the route is unloaded or when the Route is no longer relevant and the current invocation of the `loader` function becomes outdated.
-- `cause` - The cause of the current route match. Can be either one of the following:
-  - `enter` - When the route is matched and loaded after not being matched in the previous location.
-  - `preload` - When the route is being preloaded.
-  - `stay` - When the route is matched and loaded after being matched in the previous location.
-- `context` - The route's context object, which is a merged union of:
-  - Parent route context
-  - This route's context as provided by the `beforeLoad` option
-- `deps` - The object value returned from the `Route.loaderDeps` function. If `Route.loaderDeps` is not defined, an empty object will be provided instead.
-- `location` - The current location
-- `params` - The route's path params
-- `parentMatchPromise` - `Promise<RouteMatch>` (`undefined` for the root route)
-- `preload` - Boolean which is `true` when the route is being preloaded instead of loaded
-- `route` - The route itself
+- `abortController` - O abortController da route. Seu signal é cancelado quando a route é descarregada ou quando a Route não é mais relevante e a invocação atual da função `loader` se torna desatualizada.
+- `cause` - A causa do route match atual. Pode ser uma das seguintes:
+  - `enter` - Quando a route é correspondida e carregada após não ser correspondida na localização anterior.
+  - `preload` - Quando a route está sendo pré-carregada.
+  - `stay` - Quando a route é correspondida e carregada após ser correspondida na localização anterior.
+- `context` - O objeto de context da route, que é uma união mesclada de:
+  - Context da route pai
+  - Context desta route conforme fornecido pela opção `beforeLoad`
+- `deps` - O valor do objeto retornado pela função `Route.loaderDeps`. Se `Route.loaderDeps` não está definido, um objeto vazio será fornecido.
+- `location` - A localização atual
+- `params` - Os path params da route
+- `parentMatchPromise` - `Promise<RouteMatch>` (`undefined` para a route raiz)
+- `preload` - Booleano que é `true` quando a route está sendo pré-carregada em vez de carregada
+- `route` - A própria route
 
-Using these parameters, we can do a lot of cool things, but first, let's take a look at how we can control it and when the `loader` function is called.
+Usando esses parâmetros, podemos fazer muitas coisas legais, mas primeiro, vamos ver como podemos controlar quando a função `loader` é chamada.
 
-## Consuming data from `loader`s
+## Consumindo dados dos `loader`s
 
-To consume data from a `loader`, use the `useLoaderData` hook defined on your Route object.
+Para consumir dados de um `loader`, use o hook `useLoaderData` definido no seu objeto Route.
 
 ```tsx
 const posts = Route.useLoaderData();
 ```
 
-If you don't have ready access to your route object (i.e. you're deep in the component tree for the current route), you can use `getRouteApi` to access the same hook (as well as the other hooks on the Route object). This should be preferred over importing the Route object, which is likely to create circular dependencies.
+Se você não tem acesso fácil ao seu objeto route (ou seja, você está profundo na árvore de components da route atual), pode usar `getRouteApi` para acessar o mesmo hook (assim como os outros hooks no objeto Route). Isso deve ser preferido em vez de importar o objeto Route, o que provavelmente criaria dependências circulares.
 
 ```tsx
 import { getRouteApi } from "@tanstack/react-router";
@@ -106,47 +106,47 @@ const routeApi = getRouteApi("/posts");
 const data = routeApi.useLoaderData();
 ```
 
-## Dependency-based Stale-While-Revalidate Caching
+## Cache Stale-While-Revalidate Baseado em Dependências
 
-TanStack Router provides a built-in Stale-While-Revalidate caching layer for route loaders that is keyed on the dependencies of a route:
+O TanStack Router fornece uma camada de cache Stale-While-Revalidate integrada para loaders de route que é chaveada nas dependências de uma route:
 
-- The route's fully parsed pathname
-  - e.g. `/posts/1` vs `/posts/2`
-- Any additional dependencies provided by the `loaderDeps` option
-  - e.g. `loaderDeps: ({ search: { pageIndex, pageSize } }) => ({ pageIndex, pageSize })`
+- O pathname totalmente analisado da route
+  - ex.: `/posts/1` vs `/posts/2`
+- Quaisquer dependências adicionais fornecidas pela opção `loaderDeps`
+  - ex.: `loaderDeps: ({ search: { pageIndex, pageSize } }) => ({ pageIndex, pageSize })`
 
-Using these dependencies as keys, TanStack Router will cache the data returned from a route's `loader` function and use it to fulfill subsequent requests for the same route match. This means that if a route's data is already in the cache, it will be returned immediately, then **potentially** be refetched in the background depending on the "freshness" of the data.
+Usando essas dependências como chaves, o TanStack Router irá cachear os dados retornados pela função `loader` de uma route e usá-los para atender requisições subsequentes para o mesmo route match. Isso significa que se os dados de uma route já estão no cache, eles serão retornados imediatamente, e então **potencialmente** serão rebuscados em segundo plano dependendo do "frescor" dos dados.
 
-### Key options
+### Opções principais
 
-To control router dependencies and "freshness", TanStack Router provides a plethora of options to control the keying and caching behavior of your route loaders. Let's take a look at them in the order that you are most likely to use them:
+Para controlar dependências do router e "frescor", o TanStack Router fornece uma infinidade de opções para controlar o comportamento de chaveamento e cache dos seus loaders de route. Vamos olhá-las na ordem em que você mais provavelmente as usará:
 
 - `routeOptions.loaderDeps`
-  - A function that supplies you the search params for a router and returns an object of dependencies for use in your `loader` function. When these deps changed from navigation to navigation, it will cause the route to reload regardless of `staleTime`s. The deps are compared using a deep equality check.
+  - Uma função que fornece os search params de um router e retorna um objeto de dependências para uso na sua função `loader`. Quando essas deps mudam de navegação para navegação, isso causará o recarregamento da route independentemente dos `staleTime`s. As deps são comparadas usando uma verificação de igualdade profunda.
 - `routeOptions.staleTime`
 - `routerOptions.defaultStaleTime`
-  - The number of milliseconds that a route's data should be considered fresh when attempting to load.
+  - O número de milissegundos que os dados de uma route devem ser considerados frescos ao tentar carregar.
 - `routeOptions.preloadStaleTime`
 - `routerOptions.defaultPreloadStaleTime`
-  - The number of milliseconds that a route's data should be considered fresh attempting to preload.
+  - O número de milissegundos que os dados de uma route devem ser considerados frescos ao tentar pré-carregar.
 - `routeOptions.gcTime`
 - `routerOptions.defaultGcTime`
-  - The number of milliseconds that a route's data should be kept in the cache before being garbage collected.
+  - O número de milissegundos que os dados de uma route devem ser mantidos no cache antes de serem coletados pelo garbage collector.
 - `routeOptions.shouldReload`
-  - A function that receives the same `beforeLoad` and `loaderContext` parameters and returns a boolean indicating if the route should reload. This offers one more level of control over when a route should reload beyond `staleTime` and `loaderDeps` and can be used to implement patterns similar to Remix's `shouldLoad` option.
+  - Uma função que recebe os mesmos parâmetros de `beforeLoad` e `loaderContext` e retorna um booleano indicando se a route deve recarregar. Isso oferece mais um nível de controle sobre quando uma route deve recarregar além de `staleTime` e `loaderDeps` e pode ser usado para implementar padrões similares à opção `shouldLoad` do Remix.
 
-### ⚠️ Some Important Defaults
+### Alguns Padrões Importantes
 
-- By default, the `staleTime` is set to `0`, meaning that the route's data will always be considered stale and will always be reloaded in the background when the route is rematched.
-- By default, a previously preloaded route is considered fresh for **30 seconds**. This means if a route is preloaded, then preloaded again within 30 seconds, the second preload will be ignored. This prevents unnecessary preloads from happening too frequently. **When a route is loaded normally, the standard `staleTime` is used.**
-- By default, the `gcTime` is set to **30 minutes**, meaning that any route data that has not been accessed in 30 minutes will be garbage collected and removed from the cache.
-- `router.invalidate()` will force all active routes to reload their loaders immediately and mark every cached route's data as stale.
+- Por padrão, o `staleTime` é definido como `0`, o que significa que os dados da route serão sempre considerados stale e sempre serão recarregados em segundo plano quando a route for re-correspondida.
+- Por padrão, uma route previamente pré-carregada é considerada fresh por **30 segundos**. Isso significa que se uma route é pré-carregada e depois pré-carregada novamente dentro de 30 segundos, o segundo pré-carregamento será ignorado. Isso previne pré-carregamentos desnecessários de acontecerem com muita frequência. **Quando uma route é carregada normalmente, o `staleTime` padrão é usado.**
+- Por padrão, o `gcTime` é definido como **30 minutos**, o que significa que quaisquer dados de route que não foram acessados em 30 minutos serão coletados pelo garbage collector e removidos do cache.
+- `router.invalidate()` forçará todas as routes ativas a recarregarem seus loaders imediatamente e marcará os dados de cada route no cache como stale.
 
-### Using `loaderDeps` to access search params
+### Usando `loaderDeps` para acessar search params
 
-Imagine a `/posts` route supports some pagination via search params `offset` and `limit`. For the cache to uniquely store this data, we need to access these search params via the `loaderDeps` function. By explicitly identifying them, each route match for `/posts` with different `offset` and `limit` won't get mixed up!
+Imagine uma route `/posts` que suporta paginação via search params `offset` e `limit`. Para que o cache armazene esses dados de forma única, precisamos acessar esses search params via a função `loaderDeps`. Ao identificá-los explicitamente, cada route match para `/posts` com `offset` e `limit` diferentes não será confundido!
 
-Once we have these deps in place, the route will always reload when the deps change.
+Uma vez que temos essas deps configuradas, a route sempre recarregará quando as deps mudarem.
 
 ```tsx
 // /routes/posts.tsx
@@ -161,9 +161,9 @@ export const Route = createFileRoute("/posts")({
 ```
 
 > [!WARNING]
-> **Only include dependencies you actually use in the loader.**
+> **Inclua apenas dependências que você realmente usa no loader.**
 >
-> A common mistake is returning the entire `search` object:
+> Um erro comum é retornar o objeto `search` inteiro:
 >
 > ```tsx
 > // ❌ Don't do this - causes unnecessary cache invalidation
@@ -171,7 +171,7 @@ export const Route = createFileRoute("/posts")({
 > loader: ({ deps }) => fetchPosts({ page: deps.page }), // only uses page!
 > ```
 >
-> This causes the route to reload whenever ANY search param changes, even params not used in the loader (like `viewMode` or `sortDirection`). Instead, extract only what you need:
+> Isso faz com que a route recarregue sempre que QUALQUER search param muda, mesmo params não usados no loader (como `viewMode` ou `sortDirection`). Em vez disso, extraia apenas o que você precisa:
 >
 > ```tsx
 > // ✅ Do this - only reload when used params change
@@ -182,11 +182,11 @@ export const Route = createFileRoute("/posts")({
 > loader: ({ deps }) => fetchPosts(deps),
 > ```
 
-### Using `staleTime` to control how long data is considered fresh
+### Usando `staleTime` para controlar quanto tempo os dados são considerados frescos
 
-By default, `staleTime` for navigations is set to `0`ms (and 30 seconds for preloads) which means that the route's data will always be considered stale and will always be reloaded in the background when the route is matched and navigated to.
+Por padrão, o `staleTime` para navegações é definido como `0`ms (e 30 segundos para preloads), o que significa que os dados da route serão sempre considerados stale e sempre serão recarregados em segundo plano quando a route for correspondida e navegada.
 
-**This is a good default for most use cases, but you may find that some route data is more static or potentially expensive to load.** In these cases, you can use the `staleTime` option to control how long the route's data is considered fresh for navigations. Let's take a look at an example:
+**Esse é um bom padrão para a maioria dos casos de uso, mas você pode achar que alguns dados de route são mais estáticos ou potencialmente caros de carregar.** Nesses casos, você pode usar a opção `staleTime` para controlar quanto tempo os dados da route são considerados frescos para navegações. Vamos ver um exemplo:
 
 ```tsx
 // /routes/posts.tsx
@@ -197,11 +197,11 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-By passing `10_000` to the `staleTime` option, we are telling the router to consider the route's data fresh for 10 seconds. This means that if the user navigates to `/posts` from `/about` within 10 seconds of the last loader result, the route's data will not be reloaded. If the user then navigates to `/posts` from `/about` after 10 seconds, the route's data will be reloaded **in the background**.
+Ao passar `10_000` para a opção `staleTime`, estamos dizendo ao router para considerar os dados da route frescos por 10 segundos. Isso significa que se o usuário navegar para `/posts` a partir de `/about` dentro de 10 segundos do último resultado do loader, os dados da route não serão recarregados. Se o usuário então navegar para `/posts` a partir de `/about` após 10 segundos, os dados da route serão recarregados **em segundo plano**.
 
-## Turning off stale-while-revalidate caching
+## Desativando o cache stale-while-revalidate
 
-To disable stale-while-revalidate caching for a route, set the `staleTime` option to `Infinity`:
+Para desativar o cache stale-while-revalidate para uma route, defina a opção `staleTime` como `Infinity`:
 
 ```tsx
 // /routes/posts.tsx
@@ -211,7 +211,7 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-You can even turn this off for all routes by setting the `defaultStaleTime` option on the router:
+Você pode até desativar isso para todas as routes definindo a opção `defaultStaleTime` no router:
 
 ```tsx
 const router = createRouter({
@@ -220,9 +220,9 @@ const router = createRouter({
 });
 ```
 
-## Using `shouldReload` and `gcTime` to opt-out of caching
+## Usando `shouldReload` e `gcTime` para desativar o cache
 
-Similar to Remix's default functionality, you may want to configure a route to only load on entry or when critical loader deps change. You can do this by using the `gcTime` option combined with the `shouldReload` option, which accepts either a `boolean` or a function that receives the same `beforeLoad` and `loaderContext` parameters and returns a boolean indicating if the route should reload.
+Similar à funcionalidade padrão do Remix, você pode querer configurar uma route para carregar apenas na entrada ou quando dependências críticas do loader mudam. Você pode fazer isso usando a opção `gcTime` combinada com a opção `shouldReload`, que aceita um `boolean` ou uma função que recebe os mesmos parâmetros de `beforeLoad` e `loaderContext` e retorna um booleano indicando se a route deve recarregar.
 
 ```tsx
 // /routes/posts.tsx
@@ -236,15 +236,15 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-### Opting out of caching while still preloading
+### Desativando o cache enquanto ainda mantém o preloading
 
-Even though you may opt-out of short-term caching for your route data, you can still get the benefits of preloading! With the above configuration, preloading will still "just work" with the default `preloadGcTime`. This means that if a route is preloaded, then navigated to, the route's data will be considered fresh and will not be reloaded.
+Mesmo que você desative o cache de curto prazo para os dados da sua route, ainda pode obter os benefícios do preloading! Com a configuração acima, o preloading ainda "simplesmente funcionará" com o `preloadGcTime` padrão. Isso significa que se uma route é pré-carregada e depois navegada, os dados da route serão considerados frescos e não serão recarregados.
 
-To opt out of preloading, don't turn it on via the `routerOptions.defaultPreload` or `routeOptions.preload` options.
+Para desativar o preloading, não o ative via as opções `routerOptions.defaultPreload` ou `routeOptions.preload`.
 
-## Passing all loader events to an external cache
+## Passando todos os eventos do loader para um cache externo
 
-We break down this use case in the [External Data Loading](./external-data-loading.md) page, but if you'd like to use an external cache like TanStack Query, you can do so by passing all loader events to your external cache. As long as you are using the defaults, the only change you'll need to make is to set the `defaultPreloadStaleTime` option on the router to `0`:
+Detalhamos esse caso de uso na página de [Carregamento de Dados Externo](./external-data-loading.md), mas se você quiser usar um cache externo como o TanStack Query, pode fazer isso passando todos os eventos do loader para seu cache externo. Desde que você esteja usando os padrões, a única mudança que precisará fazer é definir a opção `defaultPreloadStaleTime` no router para `0`:
 
 ```tsx
 const router = createRouter({
@@ -253,20 +253,20 @@ const router = createRouter({
 });
 ```
 
-This will ensure that every preload, load, and reload event will trigger your `loader` functions, which can then be handled and deduped by your external cache.
+Isso garantirá que cada evento de preload, carregamento e recarregamento acionará suas funções `loader`, que podem então ser tratadas e deduplicadas pelo seu cache externo.
 
-## Using Router Context
+## Usando Router Context
 
-The `context` argument passed to the `loader` function is an object containing a merged union of:
+O argumento `context` passado para a função `loader` é um objeto contendo uma união mesclada de:
 
-- Parent route context
-- This route's context as provided by the `beforeLoad` option
+- Context da route pai
+- Context desta route conforme fornecido pela opção `beforeLoad`
 
-Starting at the very top of the router, you can pass an initial context to the router via the `context` option. This context will be available to all routes in the router and get copied and extended by each route as they are matched. This happens by passing a context to a route via the `beforeLoad` option. This context will be available to all the route's child routes. The resulting context will be available to the route's `loader` function.
+Começando bem no topo do router, você pode passar um context inicial para o router via a opção `context`. Esse context estará disponível para todas as routes no router e será copiado e estendido por cada route conforme são correspondidas. Isso acontece passando um context para uma route via a opção `beforeLoad`. Esse context estará disponível para todas as routes filhas da route. O context resultante estará disponível para a função `loader` da route.
 
-In this example, we'll create a function in our route context to fetch posts, then use it in our `loader` function.
+Neste exemplo, criaremos uma função no context da nossa route para buscar posts, e então a usaremos na nossa função `loader`.
 
-> 🧠 Context is a powerful tool for dependency injection. You can use it to inject services, hooks, and other objects into your router and routes. You can also additively pass data down the route tree at every route using a route's `beforeLoad` option.
+> 🧠 Context é uma ferramenta poderosa para injeção de dependências. Você pode usá-lo para injetar serviços, hooks e outros objetos no seu router e routes. Você também pode passar dados aditivamente pela árvore de routes em cada route usando a opção `beforeLoad` da route.
 
 - `/utils/fetchPosts.tsx`
 
@@ -318,9 +318,9 @@ const router = createRouter({
 });
 ```
 
-## Using Path Params
+## Usando Path Params
 
-To use path params in your `loader` function, access them via the `params` property on the function's parameters. Here's an example:
+Para usar path params na sua função `loader`, acesse-os via a propriedade `params` nos parâmetros da função. Aqui está um exemplo:
 
 ```tsx
 // routes/posts.$postId.tsx
@@ -329,9 +329,9 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-## Using Route Context
+## Usando Route Context
 
-Passing down global context to your router is great, but what if you want to provide context that is specific to a route? This is where the `beforeLoad` option comes in. The `beforeLoad` option is a function that runs right before attempting to load a route and receives the same parameters as `loader`. Beyond its ability to redirect potential matches, block loader requests, etc, it can also return an object that will be merged into the route's context. Let's take a look at an example where we inject some data into our route context via the `beforeLoad` option:
+Passar context global para o seu router é ótimo, mas e se você quiser fornecer context que é específico de uma route? É aí que a opção `beforeLoad` entra. A opção `beforeLoad` é uma função que executa logo antes de tentar carregar uma route e recebe os mesmos parâmetros que `loader`. Além da sua capacidade de redirecionar correspondências potenciais, bloquear requisições de loader, etc., ela também pode retornar um objeto que será mesclado no context da route. Vamos ver um exemplo onde injetamos alguns dados no context da nossa route via a opção `beforeLoad`:
 
 ```tsx
 // /routes/posts.tsx
@@ -350,15 +350,15 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-## Using Search Params in Loaders
+## Usando Search Params em Loaders
 
-> ❓ But wait Tanner... where the heck are my search params?!
+> Mas espera Tanner... onde diabos estão meus search params?!
 
-You might be here wondering why `search` isn't directly available in the `loader` function's parameters. We've purposefully designed it this way to help you succeed. Let's take a look at why:
+Você pode estar aqui se perguntando por que `search` não está diretamente disponível nos parâmetros da função `loader`. Projetamos assim propositalmente para ajudá-lo a ter sucesso. Vamos ver o porquê:
 
-- Search Parameters being used in a loader function are a very good indicator that those search params should also be used to uniquely identify the data being loaded. For example, you may have a route that uses a search param like `pageIndex` that uniquely identifies the data held inside of the route match. Or, imagine a `/users/user` route that uses the search param `userId` to identify a specific user in your application, you might model your url like this: `/users/user?userId=123`. This means that your `user` route would need some extra help to identify a specific user.
-- Directly accessing search params in a loader function can lead to bugs in caching and preloading where the data being loaded is not unique to the current URL pathname and search params. For example, you might ask your `/posts` route to preload page 2's results, but without the distinction of pages in your route configuration, you will end up fetching, storing and displaying page 2's data on your `/posts` or `?page=1` screen instead of it preloading in the background!
-- Placing a threshold between search parameters and the loader function allows the router to understand your dependencies and reactivity.
+- Search params sendo usados em uma função de loader são um indicador muito bom de que esses search params também devem ser usados para identificar unicamente os dados sendo carregados. Por exemplo, você pode ter uma route que usa um search param como `pageIndex` que identifica unicamente os dados mantidos dentro do route match. Ou, imagine uma route `/users/user` que usa o search param `userId` para identificar um usuário específico na sua aplicação, você poderia modelar sua url assim: `/users/user?userId=123`. Isso significa que sua route `user` precisaria de alguma ajuda extra para identificar um usuário específico.
+- Acessar search params diretamente em uma função de loader pode levar a bugs no cache e preloading onde os dados sendo carregados não são únicos para o pathname da URL atual e search params. Por exemplo, você pode pedir à sua route `/posts` para pré-carregar os resultados da página 2, mas sem a distinção de páginas na configuração da sua route, você acabará buscando, armazenando e exibindo os dados da página 2 na tela `/posts` ou `?page=1` em vez de pré-carregar em segundo plano!
+- Colocar um limiar entre search params e a função de loader permite que o router entenda suas dependências e reatividade.
 
 ```tsx
 // /routes/users.user.tsx
@@ -374,7 +374,7 @@ export const Route = createFileRoute("/users/user")({
 });
 ```
 
-### Accessing Search Params via `routeOptions.loaderDeps`
+### Acessando Search Params via `routeOptions.loaderDeps`
 
 ```tsx
 // /routes/posts.tsx
@@ -393,9 +393,9 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-## Using the Abort Signal
+## Usando o Abort Signal
 
-The `abortController` property of the `loader` function is an [AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController). Its signal is cancelled when the route is unloaded or when the `loader` call becomes outdated. This is useful for cancelling network requests when the route is unloaded or when the route's params change. Here is an example using it with a fetch call:
+A propriedade `abortController` da função `loader` é um [AbortController](https://developer.mozilla.org/en-US/docs/Web/API/AbortController). Seu signal é cancelado quando a route é descarregada ou quando a chamada do `loader` se torna desatualizada. Isso é útil para cancelar requisições de rede quando a route é descarregada ou quando os params da route mudam. Aqui está um exemplo usando-o com uma chamada fetch:
 
 ```tsx
 // routes/posts.tsx
@@ -408,9 +408,9 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-## Using the `preload` flag
+## Usando a flag `preload`
 
-The `preload` property of the `loader` function is a boolean which is `true` when the route is being preloaded instead of loaded. Some data loading libraries may handle preloading differently than a standard fetch, so you may want to pass `preload` to your data loading library, or use it to execute the appropriate data loading logic:
+A propriedade `preload` da função `loader` é um booleano que é `true` quando a route está sendo pré-carregada em vez de carregada. Algumas bibliotecas de carregamento de dados podem lidar com preloading de forma diferente de um fetch padrão, então você pode querer passar `preload` para sua biblioteca de carregamento de dados, ou usá-lo para executar a lógica de carregamento de dados apropriada:
 
 ```tsx
 // routes/posts.tsx
@@ -422,36 +422,36 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-## Handling Slow Loaders
+## Lidando com Loaders Lentos
 
-Ideally most route loaders can resolve their data within a short moment, removing the need to render a placeholder spinner and simply rely on suspense to render the next route when it's completely ready. When critical data that is required to render a route's component is slow though, you have 2 options:
+Idealmente, a maioria dos loaders de route pode resolver seus dados em um curto momento, removendo a necessidade de renderizar um spinner de placeholder e simplesmente confiando no suspense para renderizar a próxima route quando estiver completamente pronta. Quando dados críticos necessários para renderizar o component de uma route são lentos, no entanto, você tem 2 opções:
 
-- Split up your fast and slow data into separate promises and `defer` the slow data until after the fast data is loaded (see the [Deferred Data Loading](./deferred-data-loading.md) guide).
-- Show a pending component after an optimistic suspense threshold until all of the data is ready (See below).
+- Dividir seus dados rápidos e lentos em promises separadas e `defer` (adiar) os dados lentos até que os dados rápidos sejam carregados (veja o guia de [Carregamento de Dados Adiado](./deferred-data-loading.md)).
+- Mostrar um component pendente após um limiar otimista de suspense até que todos os dados estejam prontos (veja abaixo).
 
-## Showing a pending component
+## Mostrando um component pendente
 
-**By default, TanStack Router will show a pending component for loaders that take longer than 1 second to resolve.** This is an optimistic threshold that can be configured via:
+**Por padrão, o TanStack Router mostrará um component pendente para loaders que levam mais de 1 segundo para resolver.** Esse é um limiar otimista que pode ser configurado via:
 
-- `routeOptions.pendingMs` or
+- `routeOptions.pendingMs` ou
 - `routerOptions.defaultPendingMs`
 
-When the pending time threshold is exceeded, the router will render the `pendingComponent` option of the route, if configured.
+Quando o limiar de tempo pendente é excedido, o router renderizará a opção `pendingComponent` da route, se configurada.
 
-## Avoiding Pending Component Flash
+## Evitando Flash do Component Pendente
 
-If you're using a pending component, the last thing you want is for your pending time threshold to be met, then have your data resolve immediately after, resulting in a jarring flash of your pending component. To avoid this, **TanStack Router by default will show your pending component for at least 500ms**. This is an optimistic threshold that can be configured via:
+Se você está usando um component pendente, a última coisa que você quer é que o limiar de tempo pendente seja atingido e depois seus dados resolverem imediatamente após, resultando em um flash brusco do seu component pendente. Para evitar isso, **o TanStack Router por padrão mostrará seu component pendente por pelo menos 500ms**. Esse é um limiar otimista que pode ser configurado via:
 
-- `routeOptions.pendingMinMs` or
+- `routeOptions.pendingMinMs` ou
 - `routerOptions.defaultPendingMinMs`
 
-## Handling Errors
+## Lidando com Erros
 
-TanStack Router provides a few ways to handle errors that occur during the route loading lifecycle. Let's take a look at them.
+O TanStack Router fornece algumas formas de lidar com erros que ocorrem durante o ciclo de vida de carregamento da route. Vamos ver.
 
-### Handling Errors with `routeOptions.onError`
+### Lidando com Erros com `routeOptions.onError`
 
-The `routeOptions.onError` option is a function that is called when an error occurs during the route loading.
+A opção `routeOptions.onError` é uma função que é chamada quando um erro ocorre durante o carregamento da route.
 
 ```tsx
 // routes/posts.tsx
@@ -464,9 +464,9 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-### Handling Errors with `routeOptions.onCatch`
+### Lidando com Erros com `routeOptions.onCatch`
 
-The `routeOptions.onCatch` option is a function that is called whenever an error was caught by the router's CatchBoundary.
+A opção `routeOptions.onCatch` é uma função que é chamada sempre que um erro é capturado pelo CatchBoundary do router.
 
 ```tsx
 // routes/posts.tsx
@@ -478,12 +478,12 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-### Handling Errors with `routeOptions.errorComponent`
+### Lidando com Erros com `routeOptions.errorComponent`
 
-The `routeOptions.errorComponent` option is a component that is rendered when an error occurs during the route loading or rendering lifecycle. It is rendered with the following props:
+A opção `routeOptions.errorComponent` é um component que é renderizado quando um erro ocorre durante o ciclo de vida de carregamento ou rendering da route. Ele é renderizado com as seguintes props:
 
-- `error` - The error that occurred
-- `reset` - A function to reset the internal `CatchBoundary`
+- `error` - O erro que ocorreu
+- `reset` - Uma função para resetar o `CatchBoundary` interno
 
 ```tsx
 // routes/posts.tsx
@@ -496,7 +496,7 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-The `reset` function can be used to allow the user to retry rendering the error boundaries normal children:
+A função `reset` pode ser usada para permitir que o usuário tente novamente renderizar os filhos normais do error boundary:
 
 ```tsx
 // routes/posts.tsx
@@ -520,7 +520,7 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-If the error was the result of a route load, you should instead call `router.invalidate()`, which will coordinate both a router reload and an error boundary reset:
+Se o erro foi resultado de um carregamento de route, você deve chamar `router.invalidate()`, que coordenará tanto um recarregamento do router quanto um reset do error boundary:
 
 ```tsx
 // routes/posts.tsx
@@ -546,9 +546,9 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-### Using the default `ErrorComponent`
+### Usando o `ErrorComponent` padrão
 
-TanStack Router provides a default `ErrorComponent` that is rendered when an error occurs during the route loading or rendering lifecycle. If you choose to override your routes' error components, it's still wise to always fall back to rendering any uncaught errors with the default `ErrorComponent`:
+O TanStack Router fornece um `ErrorComponent` padrão que é renderizado quando um erro ocorre durante o ciclo de vida de carregamento ou rendering da route. Se você optar por sobrescrever os error components das suas routes, ainda é prudente sempre fazer fallback para renderizar quaisquer erros não capturados com o `ErrorComponent` padrão:
 
 ```tsx
 // routes/posts.tsx

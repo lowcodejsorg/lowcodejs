@@ -2,7 +2,7 @@
 title: Link Options
 ---
 
-You may want to reuse options that are intended to be passed to `Link`, `redirect` or `navigate`. In which case you may decide an object literal is a good way to represent options passed to `Link`.
+Você pode querer reutilizar opções que se destinam a serem passadas para `Link`, `redirect` ou `navigate`. Nesse caso, você pode decidir que um objeto literal é uma boa forma de representar opções passadas para `Link`.
 
 ```tsx
 const dashboardLinkOptions = {
@@ -15,11 +15,11 @@ function DashboardComponent() {
 }
 ```
 
-There are a few problems here. `dashboardLinkOptions.to` is inferred as `string` which by default will resolve to every route when passed to `Link`, `navigate` or `redirect` (this particular issue could be fixed by `as const`). The other issue here is we do not know `dashboardLinkOptions` even passes the type checker until it is spread into `Link`. We could very easily create incorrect navigation options and only when the options are spread into `Link` do we know there is a type error.
+Existem alguns problemas aqui. `dashboardLinkOptions.to` é inferido como `string`, que por padrão resolverá para todas as routes quando passado para `Link`, `navigate` ou `redirect` (esse problema específico poderia ser resolvido com `as const`). O outro problema aqui é que não sabemos se `dashboardLinkOptions` sequer passa no verificador de tipos até que seja espalhado no `Link`. Poderíamos facilmente criar opções de navegação incorretas e somente quando as opções são espalhadas no `Link` é que sabemos que existe um erro de tipo.
 
-### Using `linkOptions` function to create re-usable options
+### Usando a função `linkOptions` para criar opções reutilizáveis
 
-`linkOptions` is a function which type checks an object literal and returns the inferred input as is. This provides type safety on options exactly like `Link` before it is used allowing for easier maintenance and re-usability. Our above example using `linkOptions` looks like this:
+`linkOptions` é uma função que verifica os tipos de um objeto literal e retorna a entrada inferida como está. Isso fornece segurança de tipos nas opções exatamente como o `Link` antes de ser usado, permitindo manutenção e reutilização mais fáceis. Nosso exemplo acima usando `linkOptions` fica assim:
 
 ```tsx
 const dashboardLinkOptions = linkOptions({
@@ -32,7 +32,7 @@ function DashboardComponent() {
 }
 ```
 
-This allows eager type checking of `dashboardLinkOptions` which can then be re-used anywhere
+Isso permite verificação de tipos antecipada de `dashboardLinkOptions`, que pode então ser reutilizado em qualquer lugar
 
 ```tsx
 const dashboardLinkOptions = linkOptions({
@@ -64,9 +64,9 @@ function DashboardComponent() {
 }
 ```
 
-### An array of `linkOptions`
+### Um array de `linkOptions`
 
-When creating navigation you might loop over an array to construct a navigation bar. In which case `linkOptions` can be used to type check an array of object literals which are intended for `Link` props
+Ao criar navegação, você pode iterar sobre um array para construir uma barra de navegação. Nesse caso, `linkOptions` pode ser usado para verificar os tipos de um array de objetos literais que são destinados para props do `Link`
 
 ```tsx
 const options = linkOptions([
@@ -114,4 +114,4 @@ function DashboardComponent() {
 }
 ```
 
-The input of `linkOptions` is inferred and returned, as shown with the use of `label` as this does not exist on `Link` props
+A entrada de `linkOptions` é inferida e retornada, como mostrado com o uso de `label`, pois isso não existe nas props do `Link`

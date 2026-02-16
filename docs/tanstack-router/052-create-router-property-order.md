@@ -3,14 +3,14 @@ id: create-route-property-order
 title: Ensure correct order of inference sensitive properties for createRoute functions
 ---
 
-For the following functions, the property order of the passed in object matters due to type inference:
+Para as seguintes funções, a ordem das propriedades do objeto passado importa devido à inferência de tipos:
 
 - `createRoute`
 - `createFileRoute`
 - `createRootRoute`
 - `createRootRouteWithContext`
 
-The correct property order is as follows
+A ordem correta das propriedades é a seguinte:
 
 - `params`, `validateSearch`
 - `loaderDeps`, `search.middlewares`, `ssr`
@@ -19,11 +19,11 @@ The correct property order is as follows
 - `loader`
 - `onEnter`, `onStay`, `onLeave`, `head`, `scripts`, `headers`, `remountDeps`
 
-All other properties are insensitive to the order as they do not depend on type inference.
+Todas as outras propriedades são insensíveis à ordem, pois não dependem de inferência de tipos.
 
-## Rule Details
+## Detalhes da regra
 
-Examples of **incorrect** code for this rule:
+Exemplos de código **incorreto** para esta regra:
 
 ```tsx
 /* eslint "@tanstack/router/create-route-property-order": "warn" */
@@ -37,7 +37,7 @@ export const Route = createFileRoute('/path')({
 })
 ```
 
-Examples of **correct** code for this rule:
+Exemplos de código **correto** para esta regra:
 
 ```tsx
 /* eslint "@tanstack/router/create-route-property-order": "warn" */
@@ -51,7 +51,7 @@ export const Route = createFileRoute('/path')({
 })
 ```
 
-## Attributes
+## Atributos
 
-- [x] ✅ Recommended
-- [x] 🔧 Fixable
+- [x] Recomendada
+- [x] Corrigível automaticamente

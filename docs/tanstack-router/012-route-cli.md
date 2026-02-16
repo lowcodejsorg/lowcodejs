@@ -3,15 +3,15 @@ title: Installation with Router CLI
 ---
 
 > [!WARNING]
-> You should only use the TanStack Router CLI if you are not using a supported bundler. The CLI only supports the generation of the route tree file and does not provide any other features.
+> Você só deve usar o TanStack Router CLI se não estiver usando um bundler suportado. O CLI suporta apenas a geração do arquivo da route tree e não fornece nenhum outro recurso.
 
-To use file-based routing with the TanStack Router CLI, you'll need to install the `@tanstack/router-cli` package.
+Para usar roteamento baseado em arquivos com o TanStack Router CLI, você precisará instalar o pacote `@tanstack/router-cli`.
 
 ```sh
 npm install -D @tanstack/router-cli
 ```
 
-Once installed, you'll need to amend your scripts in your `package.json` for the CLI to `watch` and `generate` files.
+Uma vez instalado, você precisará alterar seus scripts no `package.json` para o CLI fazer `watch` e `generate` dos arquivos.
 
 ```json
 {
@@ -27,44 +27,44 @@ Once installed, you'll need to amend your scripts in your `package.json` for the
 [//]: # "AfterScripts"
 [//]: # "AfterScripts"
 
-You shouldn't forget to _ignore_ the generated route tree file. Head over to the [Ignoring the generated route tree file](#ignoring-the-generated-route-tree-file) section to learn more.
+Você não deve esquecer de _ignorar_ o arquivo da route tree gerada. Vá para a seção [Ignorando o arquivo da route tree gerada](#ignorando-o-arquivo-da-route-tree-gerada) para saber mais.
 
-With the CLI installed, the following commands are made available via the `tsr` command
+Com o CLI instalado, os seguintes comandos ficam disponíveis através do comando `tsr`
 
-## Using the `generate` command
+## Usando o comando `generate`
 
-Generates the routes for a project based on the provided configuration.
+Gera as routes para um projeto com base na configuração fornecida.
 
 ```sh
 tsr generate
 ```
 
-## Using the `watch` command
+## Usando o comando `watch`
 
-Continuously watches the specified directories and regenerates routes as needed.
+Observa continuamente os diretórios especificados e regenera as routes conforme necessário.
 
-**Usage:**
+**Uso:**
 
 ```sh
 tsr watch
 ```
 
-With file-based routing enabled, whenever you start your application in development mode, TanStack Router will watch your configured `routesDirectory` and generate your route tree whenever a file is added, removed, or changed.
+Com o roteamento baseado em arquivos habilitado, sempre que você iniciar sua aplicação em modo de desenvolvimento, o TanStack Router observará o `routesDirectory` configurado e gerará sua route tree sempre que um arquivo for adicionado, removido ou alterado.
 
-## Ignoring the generated route tree file
+## Ignorando o arquivo da route tree gerada
 
-If your project is configured to use a linter and/or formatter, you may want to ignore the generated route tree file. This file is managed by TanStack Router and therefore shouldn't be changed by your linter or formatter.
+Se o seu projeto está configurado para usar um linter e/ou formatter, você pode querer ignorar o arquivo da route tree gerada. Este arquivo é gerenciado pelo TanStack Router e, portanto, não deve ser alterado pelo seu linter ou formatter.
 
-Here are some resources to help you ignore the generated route tree file:
+Aqui estão alguns recursos para ajudar você a ignorar o arquivo da route tree gerada:
 
 - Prettier - [https://prettier.io/docs/en/ignore.html#ignoring-files-prettierignore](https://prettier.io/docs/en/ignore.html#ignoring-files-prettierignore)
 - ESLint - [https://eslint.org/docs/latest/use/configure/ignore#ignoring-files](https://eslint.org/docs/latest/use/configure/ignore#ignoring-files)
 - Biome - [https://biomejs.dev/reference/configuration/#filesignore](https://biomejs.dev/reference/configuration/#filesignore)
 
 > [!WARNING]
-> If you are using VSCode, you may experience the route tree file unexpectedly open (with errors) after renaming a route.
+> Se você está usando o VSCode, pode experienciar o arquivo da route tree abrindo inesperadamente (com erros) após renomear uma route.
 
-You can prevent that from the VSCode settings by marking the file as readonly. Our recommendation is to also exclude it from search results and file watcher with the following settings:
+Você pode evitar isso nas configurações do VSCode marcando o arquivo como somente leitura. Nossa recomendação é também excluí-lo dos resultados de busca e do observador de arquivos com as seguintes configurações:
 
 ```json
 {
@@ -80,11 +80,11 @@ You can prevent that from the VSCode settings by marking the file as readonly. O
 }
 ```
 
-You can use those settings either at a user level or only for a single workspace by creating the file `.vscode/settings.json` at the root of your project.
+Você pode usar essas configurações no nível do usuário ou apenas para um workspace específico criando o arquivo `.vscode/settings.json` na raiz do seu projeto.
 
-## Configuration
+## Configuração
 
-When using the TanStack Router CLI for File-based routing, it comes with some sane defaults that should work for most projects:
+Ao usar o TanStack Router CLI para roteamento baseado em arquivos, ele vem com alguns padrões sensatos que devem funcionar para a maioria dos projetos:
 
 ```json
 {
@@ -95,9 +95,9 @@ When using the TanStack Router CLI for File-based routing, it comes with some sa
 }
 ```
 
-If these defaults work for your project, you don't need to configure anything at all! However, if you need to customize the configuration, you can do so by creating a `tsr.config.json` file in the root of your project directory.
+Se esses padrões funcionam para o seu projeto, você não precisa configurar nada! No entanto, se precisar personalizar a configuração, pode fazê-lo criando um arquivo `tsr.config.json` na raiz do diretório do seu projeto.
 
 [//]: # "TargetConfiguration"
 [//]: # "TargetConfiguration"
 
-You can find all the available configuration options in the [File-based Routing API Reference](../../../api/file-based-routing.md).
+Você pode encontrar todas as opções de configuração disponíveis na [Referência da API de Roteamento Baseado em Arquivos](../../../api/file-based-routing.md).

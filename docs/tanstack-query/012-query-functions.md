@@ -3,9 +3,9 @@ id: query-functions
 title: Query Functions
 ---
 
-A query function can be literally any function that **returns a promise**. The promise that is returned should either **resolve the data** or **throw an error**.
+Uma função de query pode ser literalmente qualquer função que **retorna uma promise**. A promise retornada deve **resolver os dados** ou **lançar um erro**.
 
-All of the following are valid query function configurations:
+Todas as configurações de função de query a seguir são válidas:
 
 [//]: # "Example"
 
@@ -27,9 +27,9 @@ useQuery({
 
 [//]: # "Example"
 
-## Handling and Throwing Errors
+## Tratando e Lançando Erros
 
-For TanStack Query to determine a query has errored, the query function **must throw** or return a **rejected Promise**. Any error that is thrown in the query function will be persisted on the `error` state of the query.
+Para que o TanStack Query determine que uma query teve erro, a função de query **deve lançar** ou retornar uma **Promise rejeitada**. Qualquer erro lançado na função de query será persistido no state `error` da query.
 
 [//]: # "Example2"
 
@@ -51,9 +51,9 @@ const { error } = useQuery({
 
 [//]: # "Example2"
 
-## Usage with `fetch` and other clients that do not throw by default
+## Uso com `fetch` e outros clientes que não lançam erros por padrão
 
-While most utilities like `axios` or `graphql-request` automatically throw errors for unsuccessful HTTP calls, some utilities like `fetch` do not throw errors by default. If that's the case, you'll need to throw them on your own. Here is a simple way to do that with the popular `fetch` API:
+Embora a maioria dos utilitários como `axios` ou `graphql-request` lancem erros automaticamente para chamadas HTTP malsucedidas, alguns utilitários como `fetch` não lançam erros por padrão. Se esse for o caso, você precisará lançá-los por conta própria. Aqui está uma maneira simples de fazer isso com a popular API `fetch`:
 
 [//]: # "Example3"
 
@@ -72,9 +72,9 @@ useQuery({
 
 [//]: # "Example3"
 
-## Query Function Variables
+## Variáveis da Função de Query
 
-Query keys are not just for uniquely identifying the data you are fetching, but are also conveniently passed into your query function as part of the QueryFunctionContext. While not always necessary, this makes it possible to extract your query functions if needed:
+As query keys não servem apenas para identificar de forma única os dados que você está buscando, mas também são convenientemente passadas para sua função de query como parte do QueryFunctionContext. Embora nem sempre seja necessário, isso torna possível extrair suas funções de query quando necessário:
 
 [//]: # "Example4"
 
@@ -97,21 +97,21 @@ function fetchTodoList({ queryKey }) {
 
 ### QueryFunctionContext
 
-The `QueryFunctionContext` is the object passed to each query function. It consists of:
+O `QueryFunctionContext` é o objeto passado para cada função de query. Ele consiste em:
 
 - `queryKey: QueryKey`: [Query Keys](./query-keys.md)
 - `client: QueryClient`: [QueryClient](../../../reference/QueryClient.md)
 - `signal?: AbortSignal`
-  - [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) instance provided by TanStack Query
-  - Can be used for [Query Cancellation](./query-cancellation.md)
+  - Instância de [AbortSignal](https://developer.mozilla.org/en-US/docs/Web/API/AbortSignal) fornecida pelo TanStack Query
+  - Pode ser usada para [Cancelamento de Queries](./query-cancellation.md)
 - `meta: Record<string, unknown> | undefined`
-  - an optional field you can fill with additional information about your query
+  - um campo opcional que você pode preencher com informações adicionais sobre sua query
 
-Additionally, [Infinite Queries](./infinite-queries.md) get the following options passed:
+Adicionalmente, [Queries Infinitas](./infinite-queries.md) recebem as seguintes opções:
 
 - `pageParam: TPageParam`
-  - the page parameter used to fetch the current page
+  - o parâmetro de página usado para buscar a página atual
 - `direction: 'forward' | 'backward'`
-  - **deprecated**
-  - the direction of the current page fetch
-  - To get access to the direction of the current page fetch, please add a direction to `pageParam` from `getNextPageParam` and `getPreviousPageParam`.
+  - **descontinuado**
+  - a direção do fetch da página atual
+  - Para ter acesso à direção do fetch da página atual, adicione uma direção ao `pageParam` a partir de `getNextPageParam` e `getPreviousPageParam`.

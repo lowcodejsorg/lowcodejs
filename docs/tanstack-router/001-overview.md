@@ -2,140 +2,140 @@
 title: Overview
 ---
 
-**TanStack Router is a router for building React and Solid applications**. Some of its features include:
+**TanStack Router é um router para construir aplicações React e Solid**. Algumas de suas funcionalidades incluem:
 
-- 100% inferred TypeScript support
-- Typesafe navigation
-- Nested Routing and layout routes (with pathless layouts)
-- Built-in Route Loaders w/ SWR Caching
-- Designed for client-side data caches (TanStack Query, SWR, etc.)
-- Automatic route prefetching
-- Asynchronous route elements and error boundaries
-- File-based Route Generation
-- Typesafe JSON-first Search Params state management APIs
-- Path and Search Parameter Schema Validation
-- Search Param Navigation APIs
-- Custom Search Param parser/serializer support
+- Suporte a TypeScript 100% inferido
+- Navegação typesafe
+- Routing aninhado e layout routes (com layouts sem path)
+- Route Loaders embutidos com SWR Caching
+- Projetado para caches de dados do lado do cliente (TanStack Query, SWR, etc.)
+- Prefetch automático de route
+- Elementos de route assíncronos e error boundaries
+- Geração de Route baseada em arquivo
+- APIs de gerenciamento de state de Search Params typesafe com JSON-first
+- Validação de Schema de Path e Search Parameter
+- APIs de navegação por Search Param
+- Suporte a parser/serializer customizado de Search Param
 - Search param middleware
 - Route matching/loading middleware
 
-To get started quickly, head to the next page. For a more lengthy explanation, buckle up while I bring you up to speed!
+Para começar rapidamente, vá para a próxima página. Para uma explicação mais detalhada, aperte os cintos enquanto eu te coloco a par de tudo!
 
-## "A Fork in the Route"
+## "Uma Bifurcação no Route"
 
-Using a router to build applications is widely regarded as a must-have and is usually one of the first choices you’ll make in your tech stack.
+Usar um router para construir aplicações é amplamente considerado indispensável e geralmente é uma das primeiras escolhas que você fará na sua stack de tecnologia.
 
-## Why TanStack Router?
+## Por que TanStack Router?
 
-TanStack Router delivers on the same fundamental expectations as other routers that you’ve come to expect:
+O TanStack Router entrega as mesmas expectativas fundamentais de outros routers que você já espera:
 
-- Nested routes, layout routes, grouped routes
-- File-based Routing
-- Parallel data loading
+- Routes aninhados, layout routes, routes agrupados
+- Routing baseado em arquivo
+- Carregamento paralelo de dados
 - Prefetching
 - URL Path Params
-- Error Boundaries and Handling
+- Error Boundaries e tratamento de erros
 - SSR
 - Route Masking
 
-And it also delivers some new features that raise the bar:
+E também entrega algumas funcionalidades novas que elevam o padrão:
 
-- 100% inferred TypeScript support
-- Typesafe navigation
-- Built-in SWR Caching for loaders
-- Designed for client-side data caches (TanStack Query, SWR, etc.)
-- Typesafe JSON-first Search Params state management APIs
-- Path and Search Parameter Schema Validation
-- Search Parameter Navigation APIs
-- Custom Search Param parser/serializer support
+- Suporte a TypeScript 100% inferido
+- Navegação typesafe
+- SWR Caching embutido para loaders
+- Projetado para caches de dados do lado do cliente (TanStack Query, SWR, etc.)
+- APIs de gerenciamento de state de Search Params typesafe com JSON-first
+- Validação de Schema de Path e Search Parameter
+- APIs de navegação por Search Parameter
+- Suporte a parser/serializer customizado de Search Param
 - Search param middleware
-- Inherited Route Context
-- Mixed file-based and code-based routing
+- Route Context herdado
+- Routing misto baseado em arquivo e baseado em código
 
-Let’s dive into some of the more important ones in more detail!
+Vamos mergulhar em alguns dos mais importantes com mais detalhes!
 
-## 100% Inferred TypeScript Support
+## Suporte a TypeScript 100% Inferido
 
-Everything these days is written “in Typescript” or at the very least offers type definitions that are veneered over runtime functionality, but too few packages in the ecosystem actually design their APIs with TypeScript in mind. So while I’m pleased that your router is auto-completing your option fields and catching a few property/method typos here and there, there is much more to be had.
+Tudo hoje em dia é escrito "em TypeScript" ou, no mínimo, oferece definições de tipo que são um verniz sobre a funcionalidade em tempo de execução, mas poucos pacotes no ecossistema realmente projetam suas APIs com TypeScript em mente. Então, embora seja bom que seu router faça auto-complete dos campos de opções e capture alguns erros de digitação de propriedade/método aqui e ali, há muito mais a ser obtido.
 
-- TanStack Router is fully aware of all of your routes and their configuration at any given point in your code. This includes the path, path params, search params, context, and any other configuration you’ve provided. Ultimately this means that you can navigate to any route in your app with 100% type safety and confidence that your link or navigate call will succeed.
-- TanStack Router provides lossless type-inference. It uses countless generic type parameters to enforce and propagate any type information you give it throughout the rest of its API and ultimately your app. No other router offers this level of type safety and developer confidence.
+- O TanStack Router tem plena consciência de todos os seus routes e suas configurações em qualquer ponto do seu código. Isso inclui o path, path params, search params, context e qualquer outra configuração que você tenha fornecido. Em última análise, isso significa que você pode navegar para qualquer route na sua aplicação com 100% de segurança de tipo e confiança de que sua chamada de link ou navigate será bem-sucedida.
+- O TanStack Router fornece inferência de tipo sem perdas. Ele usa inúmeros parâmetros de tipo genéricos para impor e propagar qualquer informação de tipo que você forneça ao longo do resto de sua API e, por fim, da sua aplicação. Nenhum outro router oferece esse nível de segurança de tipo e confiança para o desenvolvedor.
 
-What does all of that mean for you?
+O que tudo isso significa para você?
 
-- Faster feature development with auto-completion and type hints
-- Safer and faster refactors
-- Confidence that your code will work as expected
+- Desenvolvimento mais rápido de funcionalidades com auto-complete e dicas de tipo
+- Refatorações mais seguras e rápidas
+- Confiança de que seu código funcionará como esperado
 
-## 1st Class Search Parameters
+## Search Parameters de Primeira Classe
 
-Search parameters are often an afterthought, treated like a black box of strings (or string) that you can parse and update, but not much else. Existing solutions are **not** type-safe either, adding to the caution that is required to deal with them. Even the most "modern" frameworks and routers leave it up to you to figure out how to manage this state. Sometimes they'll parse the search string into an object for you, or sometimes you're left to do it yourself with `URLSearchParams`.
+Search parameters são frequentemente um pensamento posterior, tratados como uma caixa preta de strings (ou string) que você pode parsear e atualizar, mas não muito mais. Soluções existentes **não** são type-safe também, adicionando à cautela necessária para lidar com eles. Mesmo os frameworks e routers mais "modernos" deixam para você descobrir como gerenciar esse state. Às vezes eles parseiam a string de busca em um objeto para você, ou às vezes você fica por conta própria com `URLSearchParams`.
 
-Let's step back and remember that **search params are the most powerful state manager in your entire application.** They are global, serializable, bookmarkable, and shareable making them the perfect place to store any kind of state that needs to survive a page refresh or a social share.
+Vamos dar um passo atrás e lembrar que **search params são o gerenciador de state mais poderoso em toda a sua aplicação.** Eles são globais, serializáveis, favoritáveis e compartilháveis, tornando-os o lugar perfeito para armazenar qualquer tipo de state que precise sobreviver a um refresh de página ou um compartilhamento social.
 
-To live up to that responsibility, search parameters are a first-class citizen in TanStack Router. While still based on standard URLSearchParams, TanStack Router uses a powerful parser/serializer to manage deeper and more complex data structures in your search params, all while keeping them type-safe and easy to work with.
+Para fazer jus a essa responsabilidade, search parameters são cidadãos de primeira classe no TanStack Router. Embora ainda baseado em URLSearchParams padrão, o TanStack Router usa um poderoso parser/serializer para gerenciar estruturas de dados mais profundas e complexas nos seus search params, tudo mantendo-os type-safe e fáceis de trabalhar.
 
-**It's like having `useState` right in the URL!**
+**É como ter `useState` direto na URL!**
 
-Search parameters are:
+Search parameters são:
 
-- Automatically parsed and serialized as JSON
-- Validated and typed
-- Inherited from parent routes
-- Accessible in loaders, components, and hooks
-- Easily modified with the useSearch hook, Link, navigate, and router.navigate APIs
-- Customizable with a custom search filters and middleware
-- Subscribed via fine-grained search param selectors for efficient re-renders
+- Automaticamente parseados e serializados como JSON
+- Validados e tipados
+- Herdados de routes pais
+- Acessíveis em loaders, components e hooks
+- Facilmente modificados com o hook useSearch, Link, navigate e as APIs router.navigate
+- Customizáveis com filtros de busca e middleware personalizados
+- Subscritos via selectors de search param de granularidade fina para re-renders eficientes
 
-Once you start using TanStack Router's search parameters, you'll wonder how you ever lived without them.
+Uma vez que você comece a usar os search parameters do TanStack Router, vai se perguntar como viveu sem eles.
 
-## Built-In Caching and Friendly Data Loading
+## Caching Embutido e Carregamento de Dados Amigável
 
-Data loading is a critical part of any application and while most existing routers offer some form of critical data loading APIs, they often fall short when it comes to caching and data lifecycle management. Existing solutions suffer from a few common problems:
+Carregamento de dados é uma parte crítica de qualquer aplicação e, embora a maioria dos routers existentes ofereça alguma forma de APIs de carregamento de dados críticos, eles frequentemente ficam aquém quando se trata de caching e gerenciamento do ciclo de vida dos dados. Soluções existentes sofrem de alguns problemas comuns:
 
-- No caching at all. Data is always fresh, but your users are left waiting for frequently accessed data to load over and over again.
-- Overly-aggressive caching. Data is cached for too long, leading to stale data and a poor user experience.
-- Blunt invalidation strategies and APIs. Data may be invalidated too often, leading to unnecessary network requests and wasted resources, or you may not have any fine-grained control over when data is invalidated at all.
+- Nenhum caching. Os dados estão sempre frescos, mas seus usuários ficam esperando que dados acessados frequentemente carreguem repetidamente.
+- Caching excessivamente agressivo. Os dados são cacheados por tempo demais, levando a dados stale e uma experiência ruim para o usuário.
+- Estratégias e APIs de invalidação brutas. Os dados podem ser invalidados com muita frequência, levando a requisições de rede desnecessárias e desperdício de recursos, ou você pode não ter nenhum controle granular sobre quando os dados são invalidados.
 
-TanStack Router solves these problems with a two-prong approach to caching and data loading:
+O TanStack Router resolve esses problemas com uma abordagem de duas frentes para caching e carregamento de dados:
 
-### Built-in Cache
+### Cache Embutido
 
-TanStack Router provides a light-weight built-in caching layer that works seamlessly with the Router. This caching layer is loosely based on TanStack Query, but with fewer features and a much smaller API surface area. Like TanStack Query, sane but powerful defaults guarantee that your data is cached for reuse, invalidated when necessary, and garbage collected when not in use. It also provides a simple API for invalidating the cache manually when needed.
+O TanStack Router fornece uma camada de caching leve e embutida que funciona perfeitamente com o Router. Essa camada de caching é vagamente baseada no TanStack Query, mas com menos funcionalidades e uma superfície de API muito menor. Como o TanStack Query, padrões sensatos mas poderosos garantem que seus dados sejam cacheados para reutilização, invalidados quando necessário e coletados pelo garbage collection quando não estão em uso. Ele também fornece uma API simples para invalidar o cache manualmente quando necessário.
 
-### Flexible & Powerful Data Lifecycle APIs
+### APIs de Ciclo de Vida de Dados Flexíveis e Poderosas
 
-TanStack Router is designed with a flexible and powerful data loading API that more easily integrates with existing data fetching libraries like TanStack Query, SWR, Apollo, Relay, or even your own custom data fetching solution. Configurable APIs like `context`, `beforeLoad`, `loaderDeps` and `loader` work in unison to make it easy to define declarative data dependencies, prefetch data, and manage the lifecycle of an external data source with ease.
+O TanStack Router é projetado com uma API de carregamento de dados flexível e poderosa que se integra mais facilmente com bibliotecas de fetching de dados existentes como TanStack Query, SWR, Apollo, Relay, ou até mesmo sua própria solução customizada de fetching de dados. APIs configuráveis como `context`, `beforeLoad`, `loaderDeps` e `loader` trabalham em conjunto para facilitar a definição de dependências declarativas de dados, prefetch de dados e gerenciamento do ciclo de vida de uma fonte de dados externa com facilidade.
 
-## Inherited Route Context
+## Route Context Herdado
 
-TanStack Router's router and route context is a powerful feature that allows you to define context that is specific to a route which is then inherited by all child routes. Even the router and root routes themselves can provide context. Context can be built up both synchronously and asynchronously, and can be used to share data, configuration, or even functions between routes and route configurations. This is especially useful for scenarios like:
+O context do router e route do TanStack Router é uma funcionalidade poderosa que permite definir context específico de um route que é então herdado por todos os routes filhos. Até mesmo o router e os routes raiz podem fornecer context. O context pode ser construído tanto síncrona quanto assincronamente, e pode ser usado para compartilhar dados, configuração ou até funções entre routes e configurações de route. Isso é especialmente útil para cenários como:
 
-- Authentication and Authorization
-- Hybrid SSR/CSR data fetching and preloading
-- Theming
-- Singletons and global utilities
-- Curried or partial application across preloading, loading, and rendering stages
+- Autenticação e Autorização
+- Fetching e preloading de dados híbrido SSR/CSR
+- Tematização
+- Singletons e utilitários globais
+- Currying ou aplicação parcial entre os estágios de preloading, loading e rendering
 
-Also, what would route context be if it weren't type-safe? TanStack Router's route context is fully type-safe and inferred at zero cost to you.
+Além disso, o que seria route context se não fosse type-safe? O route context do TanStack Router é totalmente type-safe e inferido sem custo para você.
 
-## File-based and/or Code-Based Routing
+## Routing Baseado em Arquivo e/ou Baseado em Código
 
-TanStack Router supports both file-based and code-based routing at the same time. This flexibility allows you to choose the approach that best fits your project's needs.
+O TanStack Router suporta routing baseado em arquivo e baseado em código ao mesmo tempo. Essa flexibilidade permite que você escolha a abordagem que melhor se adapta às necessidades do seu projeto.
 
-TanStack Router's file-based routing approach is uniquely user-facing. Route configuration is generated for you either by the Vite plugin or TanStack Router CLI, leaving the usage of said generated code up to you! This means that you're always in total control of your routes and router, even if you use file-based routing.
+A abordagem de routing baseado em arquivo do TanStack Router é exclusivamente voltada para o usuário. A configuração de route é gerada para você pelo plugin Vite ou pelo TanStack Router CLI, deixando o uso do código gerado por sua conta! Isso significa que você sempre tem total controle sobre seus routes e router, mesmo que use routing baseado em arquivo.
 
-## Acknowledgements
+## Agradecimentos
 
-TanStack Router builds on concepts and patterns popularized by many other OSS projects, including:
+O TanStack Router se baseia em conceitos e padrões popularizados por muitos outros projetos OSS, incluindo:
 
 - [TRPC](https://trpc.io/)
 - [Remix](https://remix.run)
 - [Chicane](https://swan-io.github.io/chicane/)
 - [Next.js](https://nextjs.org)
 
-We acknowledge the investment, risk and research that went into their development, but are excited to push the bar they have set even higher.
+Reconhecemos o investimento, risco e pesquisa que foram dedicados ao seu desenvolvimento, mas estamos animados em elevar ainda mais o padrão que eles estabeleceram.
 
-## Let's go!
+## Vamos lá!
 
-Enough overview, there's so much more to do with TanStack Router. Hit that next button and let's get started!
+Visão geral suficiente, há muito mais para fazer com o TanStack Router. Clique no botão de próximo e vamos começar!

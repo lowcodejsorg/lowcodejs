@@ -2,11 +2,11 @@
 title: Static Route Data
 ---
 
-When creating routes, you can optionally specify a `staticData` property in the route's options. This object can literally contain anything you want as long as it's synchronously available when you create your route.
+Ao criar routes, você pode opcionalmente especificar uma propriedade `staticData` nas opções da route. Esse objeto pode conter literalmente qualquer coisa que você quiser, desde que esteja sincronamente disponível quando você criar sua route.
 
-In addition to being able to access this data from the route itself, you can also access it from any match under the `match.staticData` property.
+Além de poder acessar esses dados a partir da própria route, você também pode acessá-los a partir de qualquer match sob a propriedade `match.staticData`.
 
-## Example
+## Exemplo
 
 - `posts.tsx`
 
@@ -20,7 +20,7 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-You can then access this data anywhere you have access to your routes, including matches that can be mapped back to their routes.
+Você pode então acessar esses dados em qualquer lugar que tenha acesso às suas routes, incluindo matches que podem ser mapeados de volta para suas routes.
 
 - `__root.tsx`
 
@@ -42,9 +42,9 @@ export const Route = createRootRoute({
 });
 ```
 
-## Enforcing Static Data
+## Impondo Dados Estáticos
 
-If you want to enforce that a route has static data, you can use declaration merging to add a type to the route's static option:
+Se você quiser impor que uma route tenha dados estáticos, pode usar declaração de mesclagem (declaration merging) para adicionar um tipo à opção estática da route:
 
 ```tsx
 declare module "@tanstack/react-router" {
@@ -54,7 +54,7 @@ declare module "@tanstack/react-router" {
 }
 ```
 
-Now, if you try to create a route without the `customData` property, you'll get a type error:
+Agora, se você tentar criar uma route sem a propriedade `customData`, receberá um erro de tipo:
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -66,9 +66,9 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-## Optional Static Data
+## Dados Estáticos Opcionais
 
-If you want to make static data optional, simply add a `?` to the property:
+Se você quiser tornar os dados estáticos opcionais, simplesmente adicione um `?` à propriedade:
 
 ```tsx
 declare module "@tanstack/react-router" {
@@ -78,13 +78,13 @@ declare module "@tanstack/react-router" {
 }
 ```
 
-As long as there are any required properties on the `StaticDataRouteOption`, you'll be required to pass in an object.
+Desde que haja quaisquer propriedades obrigatórias no `StaticDataRouteOption`, você será obrigado a passar um objeto.
 
-## Common Patterns
+## Padrões Comuns
 
-### Controlling Layout Visibility
+### Controlando a Visibilidade do Layout
 
-Use staticData to control which routes show or hide layout elements:
+Use staticData para controlar quais routes mostram ou ocultam elementos de layout:
 
 ```tsx
 // routes/admin/route.tsx
@@ -112,7 +112,7 @@ function RootComponent() {
 }
 ```
 
-### Route Titles for Breadcrumbs
+### Títulos de Route para Breadcrumbs
 
 ```tsx
 // routes/posts/$postId.tsx
@@ -140,12 +140,12 @@ function Breadcrumbs() {
 }
 ```
 
-### When to Use staticData vs Context
+### Quando Usar staticData vs Context
 
-| staticData                             | context                         |
-| -------------------------------------- | ------------------------------- |
-| Synchronous, defined at route creation | Can be async (via `beforeLoad`) |
-| Available before loading starts        | Can depend on params/search     |
-| Same for all instances of a route      | Passed down to child routes     |
+| staticData                                      | context                                |
+| ----------------------------------------------- | -------------------------------------- |
+| Síncrono, definido na criação da route           | Pode ser async (via `beforeLoad`)      |
+| Disponível antes do carregamento iniciar         | Pode depender de params/search         |
+| Igual para todas as instâncias de uma route      | Passado para routes filhas             |
 
-Use staticData for static route metadata. Use context for dynamic data or auth state that varies per request.
+Use staticData para metadados estáticos de route. Use context para dados dinâmicos ou state de autenticação que varia por requisição.

@@ -3,18 +3,18 @@ id: typescript
 title: TypeScript
 ---
 
-React Query is now written in **TypeScript** to make sure the library and your projects are type-safe!
+O React Query agora é escrito em **TypeScript** para garantir que a biblioteca e seus projetos sejam type-safe!
 
-Things to keep in mind:
+Coisas para ter em mente:
 
-- Types currently require using TypeScript **v4.7** or greater
-- Changes to types in this repository are considered **non-breaking** and are usually released as **patch** semver changes (otherwise every type enhancement would be a major version!).
-- It is **highly recommended that you lock your react-query package version to a specific patch release and upgrade with the expectation that types may be fixed or upgraded between any release**
-- The non-type-related public API of React Query still follows semver very strictly.
+- Os tipos atualmente requerem o uso do TypeScript **v4.7** ou superior
+- Mudanças nos tipos neste repositório são consideradas **não-breaking** e geralmente são lançadas como mudanças de versão semver **patch** (caso contrário, cada melhoria de tipo seria uma versão major!).
+- É **altamente recomendado que você trave a versão do pacote react-query em uma release patch específica e atualize com a expectativa de que os tipos podem ser corrigidos ou atualizados entre qualquer release**
+- A API pública não relacionada a tipos do React Query ainda segue o semver de forma bem rigorosa.
 
-## Type Inference
+## Inferência de Tipos
 
-Types in React Query generally flow through very well so that you don't have to provide type annotations for yourself
+Os tipos no React Query geralmente fluem muito bem, de modo que você não precisa fornecer anotações de tipo por conta própria
 
 [//]: # "TypeInference1"
 
@@ -44,7 +44,7 @@ const { data } = useQuery({
 
 [//]: # "TypeInference2"
 
-This works best if your `queryFn` has a well-defined returned type. Keep in mind that most data fetching libraries return `any` per default, so make sure to extract it to a properly typed function:
+Isso funciona melhor se sua `queryFn` tiver um tipo de retorno bem definido. Tenha em mente que a maioria das bibliotecas de fetching de dados retorna `any` por padrão, então certifique-se de extraí-la para uma função com tipagem adequada:
 
 [//]: # "TypeInference3"
 
@@ -60,9 +60,9 @@ const { data } = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
 
 [//]: # "TypeInference3"
 
-## Type Narrowing
+## Narrowing de Tipos
 
-React Query uses a [discriminated union type](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes-func.html#discriminated-unions) for the query result, discriminated by the `status` field and the derived status boolean flags. This will allow you to check for e.g. `success` status to make `data` defined:
+O React Query usa um [tipo de union discriminada](https://www.typescriptlang.org/docs/handbook/typescript-in-5-minutes-func.html#discriminated-unions) para o resultado da query, discriminado pelo campo `status` e pelas flags booleanas de status derivadas. Isso vai permitir que você verifique, por exemplo, o status `success` para tornar `data` definido:
 
 [//]: # "TypeNarrowing"
 
@@ -82,9 +82,9 @@ if (isSuccess) {
 
 [//]: # "TypeNarrowing"
 
-## Typing the error field
+## Tipando o campo error
 
-The type for error defaults to `Error`, because that is what most users expect.
+O tipo do error é `Error` por padrão, porque é o que a maioria dos usuários espera.
 
 [//]: # "TypingError"
 
@@ -97,7 +97,7 @@ const { error } = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
 
 [//]: # "TypingError"
 
-If you want to throw a custom error, or something that isn't an `Error` at all, you can specify the type of the error field:
+Se você quiser lançar um erro customizado, ou algo que não seja um `Error`, você pode especificar o tipo do campo error:
 
 [//]: # "TypingError2"
 
@@ -108,7 +108,7 @@ const { error } = useQuery<Group[], string>(["groups"], fetchGroups);
 
 [//]: # "TypingError2"
 
-However, this has the drawback that type inference for all other generics of `useQuery` will not work anymore. It is generally not considered a good practice to throw something that isn't an `Error`, so if you have a subclass like `AxiosError` you can use _type narrowing_ to make the error field more specific:
+No entanto, isso tem a desvantagem de que a inferência de tipos para todos os outros generics do `useQuery` não funcionará mais. Geralmente não é considerado uma boa prática lançar algo que não seja um `Error`, então se você tem uma subclasse como `AxiosError` você pode usar _narrowing de tipos_ para tornar o campo error mais específico:
 
 [//]: # "TypingError3"
 
@@ -128,9 +128,9 @@ if (axios.isAxiosError(error)) {
 
 [//]: # "TypingError3"
 
-### Registering a global Error
+### Registrando um Error global
 
-TanStack Query v5 allows for a way to set a global Error type for everything, without having to specify generics on call-sides, by amending the `Register` interface. This will make sure inference still works, but the error field will be of the specified type. If you want to enforce that call-sides must do explicit type-narrowing, set `defaultError` to `unknown`:
+O TanStack Query v5 permite definir um tipo de Error global para tudo, sem precisar especificar generics nos locais de chamada, alterando a interface `Register`. Isso vai garantir que a inferência ainda funcione, mas o campo error será do tipo especificado. Se você quiser forçar que os locais de chamada façam narrowing de tipo explícito, defina `defaultError` como `unknown`:
 
 [//]: # "RegisterErrorType"
 
@@ -151,11 +151,11 @@ const { error } = useQuery({ queryKey: ["groups"], queryFn: fetchGroups });
 [//]: # "RegisterErrorType"
 [//]: # "TypingMeta"
 
-## Typing meta
+## Tipando meta
 
-### Registering global Meta
+### Registrando Meta global
 
-Similarly to registering a [global error type](#registering-a-global-error) you can also register a global `Meta` type. This ensures the optional `meta` field on [queries](./reference/useQuery.md) and [mutations](./reference/useMutation.md) stays consistent and is type-safe. Note that the registered type must extend `Record<string, unknown>` so that `meta` remains an object.
+De forma similar ao registro de um [tipo de error global](#registrando-um-error-global), você também pode registrar um tipo `Meta` global. Isso garante que o campo opcional `meta` em [queries](./reference/useQuery.md) e [mutations](./reference/useMutation.md) permaneça consistente e seja type-safe. Note que o tipo registrado deve estender `Record<string, unknown>` para que `meta` continue sendo um objeto.
 
 ```ts
 import "@tanstack/react-query";
@@ -175,11 +175,11 @@ declare module "@tanstack/react-query" {
 [//]: # "TypingMeta"
 [//]: # "TypingQueryAndMutationKeys"
 
-## Typing query and mutation keys
+## Tipando query keys e mutation keys
 
-### Registering the query and mutation key types
+### Registrando os tipos de query key e mutation key
 
-Also similarly to registering a [global error type](#registering-a-global-error), you can also register a global `QueryKey` and `MutationKey` type. This allows you to provide more structure to your keys, that matches your application's hierarchy, and have them be typed across all of the library's surface area. Note that the registered type must extend the `Array` type, so that your keys remain an array.
+De forma similar ao registro de um [tipo de error global](#registrando-um-error-global), você também pode registrar tipos globais de `QueryKey` e `MutationKey`. Isso permite que você forneça mais estrutura às suas keys, de forma que corresponda à hierarquia da sua aplicação, e que elas sejam tipadas em toda a superfície da biblioteca. Note que o tipo registrado deve estender o tipo `Array`, para que suas keys continuem sendo um array.
 
 ```ts
 import "@tanstack/react-query";
@@ -197,9 +197,9 @@ declare module "@tanstack/react-query" {
 [//]: # "TypingQueryAndMutationKeys"
 [//]: # "TypingQueryOptions"
 
-## Typing Query Options
+## Tipando Query Options
 
-If you inline query options into `useQuery`, you'll get automatic type inference. However, you might want to extract the query options into a separate function to share them between `useQuery` and e.g. `prefetchQuery`. In that case, you'd lose type inference. To get it back, you can use the `queryOptions` helper:
+Se você colocar as opções da query inline no `useQuery`, você terá inferência de tipos automática. No entanto, você pode querer extrair as opções da query em uma função separada para compartilhá-las entre `useQuery` e, por exemplo, `prefetchQuery`. Nesse caso, você perderia a inferência de tipos. Para recuperá-la, você pode usar o helper `queryOptions`:
 
 ```ts
 import { queryOptions } from "@tanstack/react-query";
@@ -216,7 +216,7 @@ useQuery(groupOptions());
 queryClient.prefetchQuery(groupOptions());
 ```
 
-Further, the `queryKey` returned from `queryOptions` knows about the `queryFn` associated with it, and we can leverage that type information to make functions like `queryClient.getQueryData` aware of those types as well:
+Além disso, a `queryKey` retornada por `queryOptions` conhece a `queryFn` associada a ela, e podemos aproveitar essa informação de tipo para fazer com que funções como `queryClient.getQueryData` também reconheçam esses tipos:
 
 ```ts
 function groupOptions() {
@@ -231,22 +231,22 @@ const data = queryClient.getQueryData(groupOptions().queryKey);
 //     ^? const data: Group[] | undefined
 ```
 
-Without `queryOptions`, the type of `data` would be `unknown`, unless we'd pass a generic to it:
+Sem `queryOptions`, o tipo de `data` seria `unknown`, a menos que passássemos um generic para ele:
 
 ```ts
 const data = queryClient.getQueryData<Group[]>(["groups"]);
 ```
 
-Note that type inference via `queryOptions` does _not_ work for `queryClient.getQueriesData`, because it returns an array of tuples with heterogeneous, `unknown` data. If you are sure of the type of data that your query will return, specify it explicitly:
+Note que a inferência de tipos via `queryOptions` _não_ funciona para `queryClient.getQueriesData`, porque ele retorna um array de tuplas com dados heterogêneos e `unknown`. Se você tem certeza do tipo de dados que sua query vai retornar, especifique-o explicitamente:
 
 ```ts
 const entries = queryClient.getQueriesData<Group[]>(groupOptions().queryKey);
 //     ^? const entries: Array<[QueryKey, Group[] | undefined]>
 ```
 
-## Typing Mutation Options
+## Tipando Mutation Options
 
-Similarly to `queryOptions`, you can use `mutationOptions` to extract mutation options into a separate function:
+De forma similar ao `queryOptions`, você pode usar `mutationOptions` para extrair opções de mutation em uma função separada:
 
 ```ts
 function groupMutationOptions() {
@@ -266,15 +266,15 @@ queryClient.isMutating(groupMutationOptions());
 
 [//]: # "TypingQueryOptions"
 
-## Typesafe disabling of queries using `skipToken`
+## Desabilitando queries de forma typesafe usando `skipToken`
 
-If you are using TypeScript, you can use the `skipToken` to disable a query. This is useful when you want to disable a query based on a condition, but you still want to keep the query to be type safe.
-Read more about it in the [Disabling Queries](./guides/disabling-queries.md) guide.
+Se você está usando TypeScript, pode usar o `skipToken` para desabilitar uma query. Isso é útil quando você quer desabilitar uma query baseado em uma condição, mas ainda quer manter a query type-safe.
+Leia mais sobre isso no guia [Desabilitando Queries](./guides/disabling-queries.md).
 
 [//]: # "Materials"
 
-## Further Reading
+## Leitura Complementar
 
-For tips and tricks around type inference, see the article [React Query and TypeScript](https://tkdodo.eu/blog/react-query-and-type-script). To find out how to get the best possible type-safety, you can read [Type-safe React Query](https://tkdodo.eu/blog/type-safe-react-query). [The Query Options API](https://tkdodo.eu/blog/the-query-options-api) outlines how type inference works with the `queryOptions` helper function.
+Para dicas e truques sobre inferência de tipos, veja o artigo [React Query and TypeScript](https://tkdodo.eu/blog/react-query-and-type-script). Para descobrir como obter a melhor segurança de tipos possível, você pode ler [Type-safe React Query](https://tkdodo.eu/blog/type-safe-react-query). [The Query Options API](https://tkdodo.eu/blog/the-query-options-api) descreve como a inferência de tipos funciona com a função helper `queryOptions`.
 
 [//]: # "Materials"

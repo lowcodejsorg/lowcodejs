@@ -3,20 +3,20 @@ title: Code-Based Routing
 ---
 
 > [!TIP]
-> Code-based routing is not recommended for most applications. It is recommended to use [File-Based Routing](./file-based-routing.md) instead.
+> O code-based routing não é recomendado para a maioria das aplicações. É recomendado usar o [File-Based Routing](./file-based-routing.md) em vez disso.
 
-## ⚠️ Before You Start
+## Antes de Começar
 
-- If you're using [File-Based Routing](./file-based-routing.md), **skip this guide**.
-- If you still insist on using code-based routing, you must read the [Routing Concepts](./routing-concepts.md) guide first, as it also covers core concepts of the router.
+- Se você está usando [File-Based Routing](./file-based-routing.md), **pule este guia**.
+- Se você ainda insiste em usar code-based routing, você deve ler o guia de [Routing Concepts](./routing-concepts.md) primeiro, pois ele também cobre conceitos fundamentais do router.
 
 ## Route Trees
 
-Code-based routing is no different from file-based routing in that it uses the same route tree concept to organize, match and compose matching routes into a component tree. The only difference is that instead of using the filesystem to organize your routes, you use code.
+O code-based routing não é diferente do file-based routing no sentido de que utiliza o mesmo conceito de route tree para organizar, combinar e compor routes correspondentes em uma árvore de components. A única diferença é que, em vez de usar o sistema de arquivos para organizar suas routes, você usa código.
 
-Let's consider the same route tree from the [Route Trees & Nesting](./route-trees.md#route-trees) guide, and convert it to code-based routing:
+Vamos considerar a mesma route tree do guia [Route Trees & Nesting](./route-trees.md#route-trees), e convertê-la para code-based routing:
 
-Here is the file-based version:
+Aqui está a versão file-based:
 
 ```
 routes/
@@ -38,7 +38,7 @@ routes/
 │   ├── $.tsx
 ```
 
-And here is a summarized code-based version:
+E aqui está uma versão resumida em code-based:
 
 ```tsx
 import { createRootRoute, createRoute } from "@tanstack/react-router";
@@ -111,9 +111,9 @@ const filesRoute = createRoute({
 });
 ```
 
-## Anatomy of a Route
+## Anatomia de uma Route
 
-All other routes other than the root route are configured using the `createRoute` function:
+Todas as routes, exceto a root route, são configuradas usando a função `createRoute`:
 
 ```tsx
 const route = createRoute({
@@ -123,16 +123,16 @@ const route = createRoute({
 });
 ```
 
-The `getParentRoute` option is a function that returns the parent route of the route you're creating.
+A opção `getParentRoute` é uma função que retorna a route pai da route que você está criando.
 
-**❓❓❓ "Wait, you're making me pass the parent route for every route I make?"**
+**"Espera, você está me fazendo passar a route pai para cada route que eu crio?"**
 
-Absolutely! The reason for passing the parent route has **everything to do with the magical type safety** of TanStack Router. Without the parent route, TypeScript would have no idea what types to supply your route with!
+Com certeza! O motivo de passar a route pai tem **tudo a ver com a mágica do type safety** do TanStack Router. Sem a route pai, o TypeScript não teria ideia de quais tipos fornecer para a sua route!
 
 > [!IMPORTANT]
-> For every route that's **NOT** the **Root Route** or a **Pathless Layout Route**, a `path` option is required. This is the path that will be matched against the URL pathname to determine if the route is a match.
+> Para toda route que **NÃO** seja a **Root Route** ou uma **Pathless Layout Route**, a opção `path` é obrigatória. Este é o path que será comparado com o pathname da URL para determinar se a route é uma correspondência.
 
-When configuring route `path` option on a route, it ignores leading and trailing slashes (this does not include "index" route paths `/`). You can include them if you want, but they will be normalized internally by TanStack Router. Here is a table of valid paths and what they will be normalized to:
+Ao configurar a opção `path` de uma route, barras iniciais e finais são ignoradas (isso não inclui paths de routes "index" `/`). Você pode incluí-las se quiser, mas elas serão normalizadas internamente pelo TanStack Router. Aqui está uma tabela de paths válidos e para o que eles serão normalizados:
 
 | Path     | Normalized Path |
 | -------- | --------------- |
@@ -144,9 +144,9 @@ When configuring route `path` option on a route, it ignores leading and trailing
 | `/$`     | `$`             |
 | `/$/`    | `$`             |
 
-## Manually building the route tree
+## Construindo a route tree manualmente
 
-When building a route tree in code, it's not enough to define the parent route of each route. You must also construct the final route tree by adding each route to its parent route's `children` array. This is because the route tree is not built automatically for you like it is in file-based routing.
+Ao construir uma route tree em código, não basta definir a route pai de cada route. Você também precisa construir a route tree final adicionando cada route ao array `children` da sua route pai. Isso porque a route tree não é construída automaticamente para você como no file-based routing.
 
 ```tsx
 /* prettier-ignore */
@@ -173,30 +173,30 @@ const routeTree = rootRoute.addChildren([
 /* prettier-ignore-end */
 ```
 
-But before you can go ahead and build the route tree, you need to understand how the Routing Concepts for Code-Based Routing work.
+Mas antes de ir em frente e construir a route tree, você precisa entender como os Conceitos de Routing para Code-Based Routing funcionam.
 
-## Routing Concepts for Code-Based Routing
+## Conceitos de Routing para Code-Based Routing
 
-Believe it or not, file-based routing is really a superset of code-based routing and uses the filesystem and a bit of code-generation abstraction on top of it to generate this structure you see above automatically.
+Acredite ou não, o file-based routing é na verdade um superconjunto do code-based routing e usa o sistema de arquivos e um pouco de abstração de geração de código por cima para gerar automaticamente essa estrutura que você vê acima.
 
-We're going to assume you've read the [Routing Concepts](./routing-concepts.md) guide and are familiar with each of these main concepts:
+Vamos assumir que você leu o guia de [Routing Concepts](./routing-concepts.md) e está familiarizado com cada um destes conceitos principais:
 
-- The Root Route
-- Basic Routes
+- A Root Route
+- Routes Básicas
 - Index Routes
-- Dynamic Route Segments
-- Splat / Catch-All Routes
+- Segmentos Dinâmicos de Route
+- Routes Splat / Catch-All
 - Layout Routes
 - Pathless Routes
-- Non-Nested Routes
+- Routes Não-Aninhadas
 
-Now, let's take a look at how to create each of these route types in code.
+Agora, vamos ver como criar cada um desses tipos de route em código.
 
-## The Root Route
+## A Root Route
 
-Creating a root route in code-based routing is thankfully the same as doing so in file-based routing. Call the `createRootRoute()` function.
+Criar uma root route em code-based routing é, felizmente, o mesmo que fazer no file-based routing. Chame a função `createRootRoute()`.
 
-Unlike file-based routing however, you do not need to export the root route if you don't want to. It's certainly not recommended to build an entire route tree and application in a single file (although you can and we do this in the examples to demonstrate routing concepts in brevity).
+Diferentemente do file-based routing, no entanto, você não precisa exportar a root route se não quiser. Certamente não é recomendado construir uma route tree inteira e uma aplicação em um único arquivo (embora você possa, e fazemos isso nos exemplos para demonstrar conceitos de routing de forma breve).
 
 ```tsx
 // Standard root route
@@ -214,11 +214,11 @@ export interface MyRouterContext {
 const rootRoute = createRootRouteWithContext<MyRouterContext>();
 ```
 
-To learn more about Context in TanStack Router, see the [Router Context](../guide/router-context.md) guide.
+Para saber mais sobre Context no TanStack Router, veja o guia de [Router Context](../guide/router-context.md).
 
-## Basic Routes
+## Routes Básicas
 
-To create a basic route, simply provide a normal `path` string to the `createRoute` function:
+Para criar uma route básica, simplesmente forneça uma string `path` normal para a função `createRoute`:
 
 ```tsx
 const aboutRoute = createRoute({
@@ -227,11 +227,11 @@ const aboutRoute = createRoute({
 });
 ```
 
-See, it's that simple! The `aboutRoute` will match the URL `/about`.
+Viu, é simples assim! A `aboutRoute` vai corresponder à URL `/about`.
 
 ## Index Routes
 
-Unlike file-based routing, which uses the `index` filename to denote an index route, code-based routing uses a single slash `/` to denote an index route. For example, the `posts.index.tsx` file from our example route tree above would be represented in code-based routing like this:
+Diferentemente do file-based routing, que usa o nome de arquivo `index` para denotar uma index route, o code-based routing usa uma única barra `/` para denotar uma index route. Por exemplo, o arquivo `posts.index.tsx` do nosso exemplo de route tree acima seria representado em code-based routing assim:
 
 ```tsx
 const postsRoute = createRoute({
@@ -246,11 +246,11 @@ const postsIndexRoute = createRoute({
 });
 ```
 
-So, the `postsIndexRoute` will match the URL `/posts/` (or `/posts`).
+Então, a `postsIndexRoute` vai corresponder à URL `/posts/` (ou `/posts`).
 
-## Dynamic Route Segments
+## Segmentos Dinâmicos de Route
 
-Dynamic route segments work exactly the same in code-based routing as they do in file-based routing. Simply prefix a segment of the path with a `$` and it will be captured into the `params` object of the route's `loader` or `component`:
+Os segmentos dinâmicos de route funcionam exatamente da mesma forma no code-based routing e no file-based routing. Simplesmente prefixe um segmento do path com `$` e ele será capturado no objeto `params` do `loader` ou `component` da route:
 
 ```tsx
 const postIdRoute = createRoute({
@@ -269,11 +269,11 @@ function PostComponent() {
 ```
 
 > [!TIP]
-> If your component is code-split, you can use the [getRouteApi function](../guide/code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) to avoid having to import the `postIdRoute` configuration to get access to the typed `useParams()` hook.
+> Se o seu component é code-split, você pode usar a [função getRouteApi](../guide/code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) para evitar ter que importar a configuração `postIdRoute` para acessar o hook tipado `useParams()`.
 
-## Splat / Catch-All Routes
+## Routes Splat / Catch-All
 
-As expected, splat/catch-all routes also work the same in code-based routing as they do in file-based routing. Simply prefix a segment of the path with a `$` and it will be captured into the `params` object under the `_splat` key:
+Como esperado, routes splat/catch-all também funcionam da mesma forma no code-based routing e no file-based routing. Simplesmente prefixe um segmento do path com `$` e ele será capturado no objeto `params` sob a chave `_splat`:
 
 ```tsx
 const filesRoute = createRoute({
@@ -287,7 +287,7 @@ const fileRoute = createRoute({
 });
 ```
 
-For the URL `/documents/hello-world`, the `params` object will look like this:
+Para a URL `/documents/hello-world`, o objeto `params` ficará assim:
 
 ```js
 {
@@ -297,7 +297,7 @@ For the URL `/documents/hello-world`, the `params` object will look like this:
 
 ## Layout Routes
 
-Layout routes are routes that wrap their children in a layout component. In code-based routing, you can create a layout route by simply nesting a route under another route:
+Layout routes são routes que envolvem seus filhos em um layout component. No code-based routing, você pode criar uma layout route simplesmente aninhando uma route dentro de outra:
 
 ```tsx
 const postsRoute = createRoute({
@@ -332,7 +332,7 @@ const routeTree = rootRoute.addChildren([
 ]);
 ```
 
-Now, both the `postsIndexRoute` and `postsCreateRoute` will render their contents inside of the `PostsLayoutComponent`:
+Agora, tanto a `postsIndexRoute` quanto a `postsCreateRoute` vão renderizar seu conteúdo dentro do `PostsLayoutComponent`:
 
 ```tsx
 // URL: /posts
@@ -348,7 +348,7 @@ Now, both the `postsIndexRoute` and `postsCreateRoute` will render their content
 
 ## Pathless Layout Routes
 
-In file-based routing a pathless layout route is prefixed with a `_`, but in code-based routing, this is simply a route with an `id` instead of a `path` option. This is because code-based routing does not use the filesystem to organize routes, so there is no need to prefix a route with a `_` to denote that it has no path.
+No file-based routing, uma pathless layout route é prefixada com `_`, mas no code-based routing, isso é simplesmente uma route com um `id` em vez de uma opção `path`. Isso porque o code-based routing não usa o sistema de arquivos para organizar routes, então não há necessidade de prefixar uma route com `_` para denotar que ela não tem path.
 
 ```tsx
 const pathlessLayoutRoute = createRoute({
@@ -383,7 +383,7 @@ const routeTree = rootRoute.addChildren([
 ]);
 ```
 
-Now both `/route-a` and `/route-b` will render their contents inside of the `PathlessLayoutComponent`:
+Agora tanto `/route-a` quanto `/route-b` vão renderizar seu conteúdo dentro do `PathlessLayoutComponent`:
 
 ```tsx
 // URL: /route-a
@@ -397,15 +397,15 @@ Now both `/route-a` and `/route-b` will render their contents inside of the `Pat
 </PathlessLayoutComponent>
 ```
 
-## Non-Nested Routes
+## Routes Não-Aninhadas
 
-Building non-nested routes in code-based routing does not require using a trailing `_` in the path, but does require you to build your route and route tree with the right paths and nesting. Let's consider the route tree where we want the post editor to **not** be nested under the posts route:
+Construir routes não-aninhadas em code-based routing não requer usar um `_` no final do path, mas requer que você construa sua route e route tree com os paths e aninhamento corretos. Vamos considerar a route tree onde queremos que o editor de post **não** seja aninhado sob a route de posts:
 
 - `/posts_/$postId/edit`
 - `/posts`
   - `$postId`
 
-To do this we need to build a separate route for the post editor and include the entire path in the `path` option from the root of where we want the route to be nested (in this case, the root):
+Para fazer isso, precisamos construir uma route separada para o editor de post e incluir o path inteiro na opção `path` a partir da raiz de onde queremos que a route seja aninhada (neste caso, a raiz):
 
 ```tsx
 // The posts editor route is nested under the root route

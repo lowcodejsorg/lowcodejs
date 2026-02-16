@@ -2,16 +2,16 @@
 title: Route Matching
 ---
 
-Route matching follows a consistent and predictable pattern. This guide will explain how route trees are matched.
+A correspondência de routes segue um padrão consistente e previsível. Este guia explicará como árvores de routes são correspondidas.
 
-When TanStack Router processes your route tree, all of your routes are automatically sorted to match the most specific routes first. This means that regardless of the order your route tree is defined, routes will always be sorted in this order:
+Quando o TanStack Router processa sua árvore de routes, todas as suas routes são automaticamente ordenadas para corresponder às routes mais específicas primeiro. Isso significa que independentemente da ordem em que sua árvore de routes é definida, as routes sempre serão ordenadas nesta ordem:
 
 - Index Route
-- Static Routes (most specific to least specific)
-- Dynamic Routes (longest to shortest)
-- Splat/Wildcard Routes
+- Routes Estáticas (da mais específica para a menos específica)
+- Routes Dinâmicas (da mais longa para a mais curta)
+- Routes Splat/Wildcard
 
-Consider the following pseudo route tree:
+Considere a seguinte pseudo árvore de routes:
 
 ```
 Root
@@ -25,7 +25,7 @@ Root
   - about/us
 ```
 
-After sorting, this route tree will become:
+Após a ordenação, essa árvore de routes se tornará:
 
 ```
 Root
@@ -39,9 +39,9 @@ Root
   - *
 ```
 
-This final order represents the order in which routes will be matched based on specificity.
+Essa ordem final representa a ordem em que as routes serão correspondidas com base na especificidade.
 
-Using that route tree, let's follow the matching process for a few different URLs:
+Usando essa árvore de routes, vamos seguir o processo de correspondência para algumas URLs diferentes:
 
 - `/blog`
   ```

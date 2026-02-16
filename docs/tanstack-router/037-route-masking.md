@@ -2,21 +2,21 @@
 title: Route Masking
 ---
 
-Route masking is a way to mask the actual URL of a route that gets persisted to the browser's history and URL bar. This is useful for scenarios where you want to show a different URL than the one that is actually being navigated to and then falling back to the displayed URL when it is shared and (optionally) when the page is reloaded. Here's a few examples:
+Route masking é uma forma de mascarar a URL real de uma route que é persistida no histórico do navegador e na barra de URL. Isso é útil para cenários onde você quer mostrar uma URL diferente da que está sendo realmente navegada e então voltar para a URL exibida quando ela é compartilhada e (opcionalmente) quando a página é recarregada. Aqui estão alguns exemplos:
 
-- Navigating to a modal route like `/photo/5/modal`, but masking the actual URL as `/photos/5`
-- Navigating to a modal route like `/post/5/comments`, but masking the actual URL as `/posts/5`
-- Navigating to a route with the search param `?showLogin=true`, but masking the URL to _not_ contain the search param
-- Navigating to a route with the search param `?modal=settings`, but masking the URL as `/settings'
+- Navegar para uma route modal como `/photo/5/modal`, mas mascarando a URL real como `/photos/5`
+- Navegar para uma route modal como `/post/5/comments`, mas mascarando a URL real como `/posts/5`
+- Navegar para uma route com o search param `?showLogin=true`, mas mascarando a URL para _não_ conter o search param
+- Navegar para uma route com o search param `?modal=settings`, mas mascarando a URL como `/settings`
 
-Each of these scenarios can be achieved with route masking and even extended to support more advanced patterns like [parallel routes](./parallel-routes.md).
+Cada um desses cenários pode ser alcançado com route masking e até estendido para suportar padrões mais avançados como [routes paralelas](./parallel-routes.md).
 
-## How does route masking work?
+## Como funciona o route masking?
 
 > [!IMPORTANT]
-> You **do not** need to understand how route masking works in order to use it. This section is for those who are curious about how it works under the hood. Skip to [How do I use route masking?](#how-do-i-use-route-masking) to learn how to use it!.
+> Você **não precisa** entender como o route masking funciona para usá-lo. Esta seção é para aqueles que têm curiosidade sobre como funciona internamente. Pule para [Como eu uso route masking?](#como-eu-uso-route-masking) para aprender a usá-lo!
 
-Route masking utilizes the `location.state` API to store the desired runtime location inside of the location that will get written to the URL. It stores this runtime location under the `__tempLocation` state property:
+O route masking utiliza a API `location.state` para armazenar a localização desejada em tempo de execução dentro da localização que será escrita na URL. Ele armazena essa localização de runtime sob a propriedade de state `__tempLocation`:
 
 ```tsx
 const location = {
@@ -36,24 +36,24 @@ const location = {
 };
 ```
 
-When the router parses a location from history with the `location.state.__tempLocation` property, it will use that location instead of the one that was parsed from the URL. This allows you to navigate to a route like `/photos/5` and have the router actually navigate to `/photo/5/modal` instead. When this happens, the history location is saved back into the `location.maskedLocation` property, just in case we need to know what the **actual URL** is. One example of where this is used is in the Devtools where we detect if a route is masked and show the actual URL instead of the masked one!
+Quando o router analisa uma localização do histórico com a propriedade `location.state.__tempLocation`, ele usará essa localização em vez da que foi analisada da URL. Isso permite que você navegue para uma route como `/photos/5` e faça o router realmente navegar para `/photo/5/modal`. Quando isso acontece, a localização do histórico é salva de volta na propriedade `location.maskedLocation`, caso precisemos saber qual é a **URL real**. Um exemplo de onde isso é usado é nas Devtools, onde detectamos se uma route está mascarada e mostramos a URL real em vez da mascarada!
 
-Remember, you don't need to worry about any of this. It's all handled for you automatically under the hood!
+Lembre-se, você não precisa se preocupar com nada disso. Tudo é tratado automaticamente internamente!
 
-## How do I use route masking?
+## Como eu uso route masking?
 
-Route masking is a simple API that can be used in 2 ways:
+O route masking é uma API simples que pode ser usada de 2 formas:
 
-- Imperatively via the `mask` option available on the `<Link>` and `navigate()` APIs
-- Declaratively via the Router's `routeMasks` option
+- Imperativamente via a opção `mask` disponível nas APIs `<Link>` e `navigate()`
+- Declarativamente via a opção `routeMasks` do Router
 
-When using either route masking APIs, the `mask` option accepts the same navigation object that the `<Link>` and `navigate()` APIs accept. This means you can use the same `to`, `replace`, `state`, and `search` options that you're already familiar with. The only difference is that the `mask` option will be used to mask the URL of the route being navigated to.
+Ao usar qualquer uma das APIs de route masking, a opção `mask` aceita o mesmo objeto de navegação que as APIs `<Link>` e `navigate()` aceitam. Isso significa que você pode usar as mesmas opções `to`, `replace`, `state` e `search` com as quais já está familiarizado. A única diferença é que a opção `mask` será usada para mascarar a URL da route sendo navegada.
 
-> 🧠 The mask option is also **type-safe**! This means that if you're using TypeScript, you'll get type errors if you try to pass an invalid navigation object to the `mask` option. Booyah!
+> 🧠 A opção mask também é **type-safe**! Isso significa que se você estiver usando TypeScript, receberá erros de tipo se tentar passar um objeto de navegação inválido para a opção `mask`. Excelente!
 
-### Imperative route masking
+### Route masking imperativo
 
-The `<Link>` and `navigate()` APIs both accept a `mask` option that can be used to mask the URL of the route being navigated to. Here's an example of using it with the `<Link>` component:
+As APIs `<Link>` e `navigate()` aceitam uma opção `mask` que pode ser usada para mascarar a URL da route sendo navegada. Aqui está um exemplo de uso com o component `<Link>`:
 
 ```tsx
 <Link
@@ -70,7 +70,7 @@ The `<Link>` and `navigate()` APIs both accept a `mask` option that can be used 
 </Link>
 ```
 
-And here's an example of using it with the `navigate()` API:
+E aqui está um exemplo de uso com a API `navigate()`:
 
 ```tsx
 const navigate = useNavigate();
@@ -89,11 +89,11 @@ function onOpenPhoto() {
 }
 ```
 
-### Declarative route masking
+### Route masking declarativo
 
-In addition to the imperative API, you can also use the Router's `routeMasks` option to declaratively mask routes. Instead of needing to pass the `mask` option to every `<Link>` or `navigate()` call, you can instead create a route mask on the Router to mask routes that match a certain pattern. Here's an example of the same route mask from above, but using the `routeMasks` option instead:
+Além da API imperativa, você também pode usar a opção `routeMasks` do Router para mascarar routes declarativamente. Em vez de precisar passar a opção `mask` para cada chamada `<Link>` ou `navigate()`, você pode criar uma máscara de route no Router para mascarar routes que correspondam a um determinado padrão. Aqui está um exemplo da mesma máscara de route acima, mas usando a opção `routeMasks`:
 
-// Use the following for the example below
+// Use o seguinte para o exemplo abaixo
 
 ```tsx
 import { createRouteMask } from "@tanstack/react-router";
@@ -113,28 +113,28 @@ const router = createRouter({
 });
 ```
 
-When creating a route mask, you'll need to pass 1 argument with at least:
+Ao criar uma máscara de route, você precisará passar 1 argumento com pelo menos:
 
-- `routeTree` - The route tree that the route mask will be applied to
-- `from` - The route ID that the route mask will be applied to
-- `...navigateOptions` - The standard `to`, `search`, `params`, `replace`, etc options that the `<Link>` and `navigate()` APIs accept
+- `routeTree` - A árvore de routes à qual a máscara de route será aplicada
+- `from` - O ID da route à qual a máscara de route será aplicada
+- `...navigateOptions` - As opções padrão `to`, `search`, `params`, `replace`, etc. que as APIs `<Link>` e `navigate()` aceitam
 
-> 🧠 The `createRouteMask` option is also **type-safe**! This means that if you're using TypeScript, you'll get type errors if you try to pass an invalid route mask to the `routeMasks` option.
+> 🧠 A opção `createRouteMask` também é **type-safe**! Isso significa que se você estiver usando TypeScript, receberá erros de tipo se tentar passar uma máscara de route inválida para a opção `routeMasks`.
 
-## Unmasking when sharing the URL
+## Desmascaramento ao compartilhar a URL
 
-URLs are automatically unmasked when they are shared since as soon as a URL is detached from your browsers local history stack, the URL masking data is no longer available. Essentially, as soon as you copy and paste a URL out of your history, its masking data is lost... after all, that's the point of masking a URL!
+As URLs são automaticamente desmascaradas quando são compartilhadas, pois assim que uma URL é desvinculada da pilha de histórico local do seu navegador, os dados de mascaramento da URL não estão mais disponíveis. Essencialmente, assim que você copia e cola uma URL fora do seu histórico, seus dados de mascaramento são perdidos... afinal, esse é o propósito de mascarar uma URL!
 
-## Local Unmasking Defaults
+## Padrões de Desmascaramento Local
 
-**By default, URLs are not unmasked when the page is reloaded locally**. Masking data is stored in the `location.state` property of the history location, so as long as the history location is still in memory in your history stack, the masking data will be available and the URL will continue to be masked.
+**Por padrão, as URLs não são desmascaradas quando a página é recarregada localmente**. Os dados de mascaramento são armazenados na propriedade `location.state` da localização do histórico, então enquanto a localização do histórico ainda estiver na memória da sua pilha de histórico, os dados de mascaramento estarão disponíveis e a URL continuará mascarada.
 
-## Unmasking on page reload
+## Desmascaramento ao recarregar a página
 
-**As stated above, URLs are not unmasked when the page is reloaded by default**.
+**Como mencionado acima, as URLs não são desmascaradas quando a página é recarregada por padrão**.
 
-If you want to unmask a URL locally when the page is reloaded, you have 3 options, each overriding the previous one in priority if passed:
+Se você quer desmascarar uma URL localmente quando a página é recarregada, você tem 3 opções, cada uma sobrescrevendo a anterior em prioridade se passada:
 
-- Set the Router's default `unmaskOnReload` option to `true`
-- Return the `unmaskOnReload: true` option from the masking function when creating a route mask with `createRouteMask()`
-- Pass the `unmaskOnReload: true` option to the `<Link`> component or `navigate()` API
+- Definir a opção padrão `unmaskOnReload` do Router como `true`
+- Retornar a opção `unmaskOnReload: true` da função de mascaramento ao criar uma máscara de route com `createRouteMask()`
+- Passar a opção `unmaskOnReload: true` para o component `<Link>` ou a API `navigate()`

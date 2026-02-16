@@ -2,20 +2,20 @@
 title: Router Context
 ---
 
-TanStack Router's router context is a very powerful tool that can be used for dependency injection among many other things. Aptly named, the router context is passed through the router and down through each matching route. At each route in the hierarchy, the context can be modified or added to. Here's a few ways you might use the router context practically:
+O router context do TanStack Router é uma ferramenta muito poderosa que pode ser usada para injeção de dependências, entre muitas outras coisas. Como o nome sugere, o router context é passado através do router e para baixo através de cada route correspondente. Em cada route na hierarquia, o context pode ser modificado ou acrescido. Aqui estão algumas maneiras práticas de usar o router context:
 
-- Dependency Injection
-  - You can supply dependencies (e.g. a loader function, a data fetching client, a mutation service) which the route and all child routes can access and use without importing or creating directly.
+- Injeção de Dependências
+  - Você pode fornecer dependências (por exemplo, uma função de loader, um client de data fetching, um serviço de mutation) que a route e todas as routes filhas podem acessar e usar sem importar ou criar diretamente.
 - Breadcrumbs
-  - While the main context object for each route is merged as it descends, each route's unique context is also stored making it possible to attach breadcrumbs or methods to each route's context.
-- Dynamic meta tag management
-  - You can attach meta tags to each route's context and then use a meta tag manager to dynamically update the meta tags on the page as the user navigates the site.
+  - Embora o objeto de context principal de cada route seja mesclado conforme desce na hierarquia, o context único de cada route também é armazenado, tornando possível anexar breadcrumbs ou métodos ao context de cada route.
+- Gerenciamento dinâmico de meta tags
+  - Você pode anexar meta tags ao context de cada route e depois usar um gerenciador de meta tags para atualizar dinamicamente as meta tags na página conforme o usuário navega pelo site.
 
-These are just suggested uses of the router context. You can use it for whatever you want!
+Esses são apenas usos sugeridos do router context. Você pode usá-lo para o que quiser!
 
-## Typed Router Context
+## Router Context Tipado
 
-Like everything else, the root router context is strictly typed. This type can be augmented via any route's `beforeLoad` option as it is merged down the route match tree. To constrain the type of the root router context, you must use the `createRootRouteWithContext<YourContextTypeHere>()(routeOptions)` function to create a new router context instead of the `createRootRoute()` function to create your root route. Here's an example:
+Assim como tudo o mais, o router context raiz é estritamente tipado. Esse tipo pode ser ampliado pela opção `beforeLoad` de qualquer route conforme é mesclado na árvore de route matches. Para restringir o tipo do router context raiz, você deve usar a função `createRootRouteWithContext<YourContextTypeHere>()(routeOptions)` para criar um novo router context em vez da função `createRootRoute()` para criar sua route raiz. Aqui está um exemplo:
 
 ```tsx
 import {
@@ -43,14 +43,14 @@ const router = createRouter({
 ```
 
 > [!TIP]
-> `MyRouterContext` only needs to contain content that will be passed directly to `createRouter` below. All other context added in `beforeLoad` will be inferred.
+> `MyRouterContext` só precisa conter o conteúdo que será passado diretamente para o `createRouter` abaixo. Todo o context adicional adicionado em `beforeLoad` será inferido.
 
-## Passing the initial Router Context
+## Passando o Router Context Inicial
 
-The router context is passed to the router at instantiation time. You can pass the initial router context to the router via the `context` option:
+O router context é passado para o router no momento da instanciação. Você pode passar o router context inicial para o router através da opção `context`:
 
 > [!TIP]
-> If your context has any required properties, you will see a TypeScript error if you don't pass them in the initial router context. If all of your context properties are optional, you will not see a TypeScript error and passing the context will be optional. If you don't pass a router context, it defaults to `{}`.
+> Se o seu context tiver alguma propriedade obrigatória, você verá um erro do TypeScript se não passá-la no router context inicial. Se todas as propriedades do seu context forem opcionais, você não verá um erro do TypeScript e passar o context será opcional. Se você não passar um router context, ele será `{}` por padrão.
 
 ```tsx
 import { createRouter } from "@tanstack/react-router";
@@ -67,9 +67,9 @@ const router = createRouter({
 });
 ```
 
-### Invalidating the Router Context
+### Invalidando o Router Context
 
-If you need to invalidate the context state you are passing into the router, you can call the `invalidate` method to tell the router to recompute the context. This is useful when you need to update the context state and have the router recompute the context for all routes.
+Se você precisar invalidar o state do context que está passando para o router, pode chamar o método `invalidate` para dizer ao router para recalcular o context. Isso é útil quando você precisa atualizar o state do context e fazer com que o router recalcule o context para todas as routes.
 
 ```tsx
 function useAuth() {
@@ -89,9 +89,9 @@ function useAuth() {
 }
 ```
 
-## Using the Router Context
+## Usando o Router Context
 
-Once you have defined the router context type, you can use it in your route definitions:
+Uma vez que você tenha definido o tipo do router context, pode usá-lo nas definições das suas routes:
 
 ```tsx
 // src/routes/todos.tsx
@@ -101,9 +101,9 @@ export const Route = createFileRoute("/todos")({
 });
 ```
 
-You can even inject data fetching and mutation implementations themselves! In fact, this is highly recommended 😜
+Você pode até injetar implementações de data fetching e mutations! Na verdade, isso é altamente recomendado.
 
-Let's try this with a simple function to fetch some todos:
+Vamos tentar isso com uma função simples para buscar alguns todos:
 
 ```tsx
 const fetchTodosByUserId = async ({ userId }) => {
@@ -121,7 +121,7 @@ const router = createRouter({
 });
 ```
 
-Then, in your route:
+Depois, na sua route:
 
 ```tsx
 // src/routes/todos.tsx
@@ -131,7 +131,7 @@ export const Route = createFileRoute("/todos")({
 });
 ```
 
-### How about an external data fetching library?
+### E quanto a uma biblioteca de data fetching externa?
 
 ```tsx
 import {
@@ -157,7 +157,7 @@ const router = createRouter({
 });
 ```
 
-Then, in your route:
+Depois, na sua route:
 
 ```tsx
 // src/routes/todos.tsx
@@ -172,13 +172,13 @@ export const Route = createFileRoute("/todos")({
 });
 ```
 
-## How about using React Context/Hooks?
+## E quanto ao uso de React Context/Hooks?
 
-When trying to use React Context or Hooks in your route's `beforeLoad` or `loader` functions, it's important to remember React's [Rules of Hooks](https://react.dev/reference/rules/rules-of-hooks). You can't use hooks in a non-React function, so you can't use hooks in your `beforeLoad` or `loader` functions.
+Ao tentar usar React Context ou Hooks nas funções `beforeLoad` ou `loader` da sua route, é importante lembrar as [Regras dos Hooks](https://react.dev/reference/rules/rules-of-hooks) do React. Você não pode usar hooks em uma função que não seja do React, então não pode usar hooks nas suas funções `beforeLoad` ou `loader`.
 
-So, how do we use React Context or Hooks in our route's `beforeLoad` or `loader` functions? We can use the router context to pass down the React Context or Hooks to our route's `beforeLoad` or `loader` functions.
+Então, como usamos React Context ou Hooks nas funções `beforeLoad` ou `loader` da nossa route? Podemos usar o router context para passar o React Context ou Hooks para as funções `beforeLoad` ou `loader` da nossa route.
 
-Let's look at the setup for an example, where we pass down a `useNetworkStrength` hook to our route's `loader` function:
+Vamos ver a configuração de um exemplo, onde passamos um hook `useNetworkStrength` para a função `loader` da nossa route:
 
 - `src/routes/__root.tsx`
 
@@ -196,7 +196,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 });
 ```
 
-In this example, we'd instantiate the hook before rendering the router using the `<RouterProvider />`. This way, the hook would be called in React-land, therefore adhering to the Rules of Hooks.
+Neste exemplo, instanciaríamos o hook antes de renderizar o router usando o `<RouterProvider />`. Dessa forma, o hook seria chamado no "território do React", aderindo assim às Regras dos Hooks.
 
 - `src/router.tsx`
 
@@ -230,7 +230,7 @@ function App() {
 // ...
 ```
 
-So, now in our route's `loader` function, we can access the `networkStrength` hook from the router context:
+Então, agora na função `loader` da nossa route, podemos acessar o hook `useNetworkStrength` a partir do router context:
 
 - `src/routes/posts.tsx`
 
@@ -247,9 +247,9 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-## Modifying the Router Context
+## Modificando o Router Context
 
-The router context is passed down the route tree and is merged at each route. This means that you can modify the context at each route and the modifications will be available to all child routes. Here's an example:
+O router context é passado para baixo na árvore de routes e é mesclado em cada route. Isso significa que você pode modificar o context em cada route e as modificações estarão disponíveis para todas as routes filhas. Aqui está um exemplo:
 
 - `src/routes/__root.tsx`
 
@@ -299,9 +299,9 @@ export const Route = createFileRoute("/todos")({
 });
 ```
 
-## Processing Accumulated Route Context
+## Processando o Router Context Acumulado
 
-Context, especially the isolated route `context` objects, make it trivial to accumulate and process the route context objects for all matched routes. Here's an example where we use all of the matched route contexts to generate a breadcrumb trail:
+O context, especialmente os objetos de `context` isolados de cada route, tornam trivial acumular e processar os objetos de context de todas as routes correspondentes. Aqui está um exemplo onde usamos todos os contexts das routes correspondentes para gerar uma trilha de breadcrumbs:
 
 ```tsx
 // src/routes/__root.tsx
@@ -323,7 +323,7 @@ export const Route = createRootRoute({
 });
 ```
 
-Using that same route context, we could also generate a title tag for our page's `<head>`:
+Usando esse mesmo router context, também poderíamos gerar uma tag de título para o `<head>` da nossa página:
 
 ```tsx
 // src/routes/__root.tsx

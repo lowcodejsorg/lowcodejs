@@ -3,28 +3,28 @@ id: llm-assistance
 title: LLM Assistance Support
 ---
 
-TanStack Router's documentation is integrated into its NPM module, making it available to install as LLM assistance rules. These rules can be integrated into various editors to provide context-aware help using [`vibe-rules`](https://www.npmjs.com/package/vibe-rules).
+A documentação do TanStack Router está integrada ao seu módulo NPM, tornando-a disponível para instalar como regras de assistência LLM. Essas regras podem ser integradas a vários editores para fornecer ajuda com reconhecimento de contexto usando [`vibe-rules`](https://www.npmjs.com/package/vibe-rules).
 
-## Installation
+## Instalação
 
-To use `vibe-rules`, install it globally using your package manager of choice. For example, with `pnpm`:
+Para usar o `vibe-rules`, instale-o globalmente usando o gerenciador de pacotes de sua preferência. Por exemplo, com `pnpm`:
 
 ```bash
 pnpm add -g vibe-rules
 ```
 
-Once installed, you can then run it in the editor of your choice. For example, to integrate with Cursor:
+Uma vez instalado, você pode executá-lo no editor de sua escolha. Por exemplo, para integrar com o Cursor:
 
 ```bash
 vibe-rules install cursor
 ```
 
-## Supported Editors
+## Editores Suportados
 
-`vibe-rules` supports a variety of editors, including `windsurf`, `claude-code`, and more. For more information on supported editors and how to set them up, refer to the [`vibe-rules` documentation](https://github.com/FutureExcited/vibe-rules).
+O `vibe-rules` suporta uma variedade de editores, incluindo `windsurf`, `claude-code` e mais. Para mais informações sobre editores suportados e como configurá-los, consulte a [documentação do `vibe-rules`](https://github.com/FutureExcited/vibe-rules).
 
 > [!IMPORTANT]
-> If you're using [Yarn Workspaces](https://yarnpkg.com/features/workspaces), you will need to add the following configuration to your `.yarnrc.yaml` file of your application that uses TanStack Router:
+> Se você está usando [Yarn Workspaces](https://yarnpkg.com/features/workspaces), precisará adicionar a seguinte configuração ao arquivo `.yarnrc.yaml` da sua aplicação que usa o TanStack Router:
 
 > ```yaml
 > pnpFallbackMode: all

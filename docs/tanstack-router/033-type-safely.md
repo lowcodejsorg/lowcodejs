@@ -2,21 +2,21 @@
 title: Type Safety
 ---
 
-TanStack Router is built to be as type-safe as possible within the limits of the TypeScript compiler and runtime. This means that it's not only written in TypeScript, but that it also **fully infers the types it's provided and tenaciously pipes them through the entire routing experience**.
+O TanStack Router foi construído para ser o mais type-safe possível dentro dos limites do compilador e runtime do TypeScript. Isso significa que ele não é apenas escrito em TypeScript, mas que também **infere completamente os tipos fornecidos e os conduz tenazmente por toda a experiência de roteamento**.
 
-Ultimately, this means that you write **less types as a developer** and have **more confidence in your code** as it evolves.
+No final das contas, isso significa que você **escreve menos tipos como desenvolvedor** e tem **mais confiança no seu código** à medida que ele evolui.
 
-## Route Definitions
+## Definições de Route
 
-### File-based Routing
+### Roteamento baseado em arquivo
 
-Routes are hierarchical, and so are their definitions. If you're using file-based routing, much of the type-safety is already taken care of for you.
+As routes são hierárquicas, e suas definições também são. Se você estiver usando roteamento baseado em arquivo, grande parte da segurança de tipos já é cuidada para você.
 
-### Code-based Routing
+### Roteamento baseado em código
 
-If you're using the `Route` class directly, you'll need to be aware of how to ensure your routes are typed properly using the `Route`'s `getParentRoute` option. This is because child routes need to be aware of **all** of their parent routes types. Without this, those precious search params you parsed out of your _layout_ and _pathless layout_ routes, 3 levels up, would be lost to the JS void.
+Se você estiver usando a classe `Route` diretamente, precisará estar ciente de como garantir que suas routes sejam tipadas corretamente usando a opção `getParentRoute` da `Route`. Isso porque as routes filhas precisam estar cientes de **todos** os tipos de suas routes pai. Sem isso, aqueles preciosos search params que você extraiu de suas routes de _layout_ e _layout sem caminho_, 3 níveis acima, seriam perdidos no vazio do JS.
 
-So, don't forget to pass the parent route to your child routes!
+Então, não esqueça de passar a route pai para suas routes filhas!
 
 ```tsx
 const parentRoute = createRoute({
@@ -24,9 +24,9 @@ const parentRoute = createRoute({
 });
 ```
 
-## Exported Hooks, Components, and Utilities
+## Hooks, Components e Utilitários Exportados
 
-For the types of your router to work with top-level exports like `Link`, `useNavigate`, `useParams`, etc. they must permeate the TypeScript module boundary and be registered right into the library. To do this, we use declaration merging on the exported `Register` interface.
+Para que os tipos do seu router funcionem com exportações de nível superior como `Link`, `useNavigate`, `useParams`, etc., eles precisam permear a fronteira de módulo do TypeScript e ser registrados diretamente na biblioteca. Para fazer isso, usamos a mesclagem de declarações na interface `Register` exportada.
 
 ```ts
 const router = createRouter({
@@ -40,11 +40,11 @@ declare module "@tanstack/react-router" {
 }
 ```
 
-By registering your router with the module, you can now use the exported hooks, components, and utilities with your router's exact types.
+Ao registrar seu router com o módulo, você agora pode usar os hooks, components e utilitários exportados com os tipos exatos do seu router.
 
-## Fixing the Component Context Problem
+## Corrigindo o Problema de Context do Component
 
-Component context is a wonderful tool in React and other frameworks for providing dependencies to components. However, if that context is changing types as it moves throughout your component hierarchy, it becomes impossible for TypeScript to know how to infer those changes. To get around this, context-based hooks and components require that you give them a hint on how and where they are being used.
+O context de component é uma ferramenta maravilhosa no React e outros frameworks para fornecer dependências aos components. No entanto, se esse context está mudando de tipos conforme se move pela hierarquia de components, torna-se impossível para o TypeScript saber como inferir essas mudanças. Para contornar isso, hooks e components baseados em context exigem que você dê a eles uma dica sobre como e onde estão sendo usados.
 
 ```tsx
 export const Route = createFileRoute("/posts")({
@@ -63,21 +63,21 @@ function PostsComponent() {
 }
 ```
 
-Every hook and component that requires a context hint will have a `from` param where you can pass the ID or path of the route you are rendering within.
+Todo hook e component que requer uma dica de context terá um parâmetro `from` onde você pode passar o ID ou caminho da route dentro da qual está renderizando.
 
-> 🧠 Quick tip: If your component is code-split, you can use the [getRouteApi function](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) to avoid having to pass in the `Route.fullPath` to get access to the typed `useParams()` and `useSearch()` hooks.
+> 🧠 Dica rápida: Se seu component é dividido por código (code-split), você pode usar a [função getRouteApi](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) para evitar ter que passar o `Route.fullPath` para obter acesso aos hooks tipados `useParams()` e `useSearch()`.
 
-### What if I don't know the route? What if it's a shared component?
+### E se eu não souber a route? E se for um component compartilhado?
 
-The `from` property is optional, which means if you don't pass it, you'll get the router's best guess on what types will be available. Usually, that means you'll get a union of all of the types of all of the routes in the router.
+A propriedade `from` é opcional, o que significa que se você não passá-la, você receberá a melhor estimativa do router sobre quais tipos estarão disponíveis. Normalmente, isso significa que você receberá uma union de todos os tipos de todas as routes no router.
 
-### What if I pass the wrong `from` path?
+### E se eu passar o caminho `from` errado?
 
-It's technically possible to pass a `from` that satisfies TypeScript, but may not match the actual route you are rendering within at runtime. In this case, each hook and component that supports `from` will detect if your expectations don't match the actual route you are rendering within, and will throw a runtime error.
+É tecnicamente possível passar um `from` que satisfaça o TypeScript, mas que pode não corresponder à route real dentro da qual você está renderizando em tempo de execução. Neste caso, cada hook e component que suporta `from` detectará se suas expectativas não correspondem à route real dentro da qual você está renderizando, e lançará um erro em tempo de execução.
 
-### What if I don't know the route, or it's a shared component, and I can't pass `from`?
+### E se eu não souber a route, ou for um component compartilhado, e não puder passar `from`?
 
-If you are rendering a component that is shared across multiple routes, or you are rendering a component that is not within a route, you can pass `strict: false` instead of a `from` option. This will not only silence the runtime error, but will also give you relaxed, but accurate types for the potential hook you are calling. A good example of this is calling `useSearch` from a shared component:
+Se você está renderizando um component que é compartilhado entre múltiplas routes, ou está renderizando um component que não está dentro de uma route, você pode passar `strict: false` em vez da opção `from`. Isso não apenas silenciará o erro em tempo de execução, mas também dará tipos relaxados, porém precisos, para o hook potencial que você está chamando. Um bom exemplo disso é chamar `useSearch` de um component compartilhado:
 
 ```tsx
 function MyComponent() {
@@ -85,13 +85,13 @@ function MyComponent() {
 }
 ```
 
-In this case, the `search` variable will be typed as a union of all possible search params from all routes in the router.
+Neste caso, a variável `search` será tipada como uma union de todos os possíveis search params de todas as routes no router.
 
 ## Router Context
 
-Router context is so extremely useful as it's the ultimate hierarchical dependency injection. You can supply context to the router and to each and every route it renders. As you build up this context, TanStack Router will merge it down with the hierarchy of routes, so that each route has access to the context of all of its parents.
+O router context é extremamente útil, pois é a injeção de dependência hierárquica definitiva. Você pode fornecer context ao router e a cada route que ele renderiza. Conforme você constrói esse context, o TanStack Router irá mesclá-lo na hierarquia de routes, de modo que cada route tenha acesso ao context de todos os seus pais.
 
-The `createRootRouteWithContext` factory creates a new router with the instantiated type, which then creates a requirement for you to fulfill the same type contract to your router, and will also ensure that your context is properly typed throughout the entire route tree.
+A factory `createRootRouteWithContext` cria um novo router com o tipo instanciado, o que então cria um requisito para você cumprir o mesmo contrato de tipo no seu router, e também garantirá que seu context seja devidamente tipado por toda a árvore de routes.
 
 ```tsx
 const rootRoute = createRootRouteWithContext<{ whateverYouWant: true }>()({
@@ -111,13 +111,13 @@ const router = createRouter({
 });
 ```
 
-## Performance Recommendations
+## Recomendações de Performance
 
-As your application scales, TypeScript check times will naturally increase. There are a few things to keep in mind when your application scales to keep your TS check times down.
+Conforme sua aplicação escala, os tempos de verificação do TypeScript naturalmente aumentarão. Há algumas coisas para ter em mente quando sua aplicação escala para manter os tempos de verificação do TS baixos.
 
-### Only infer types you need
+### Infira apenas os tipos que você precisa
 
-A great pattern with client side data caches (TanStack Query, etc.) is to prefetch data. For example with TanStack Query you might have a route which calls `queryClient.ensureQueryData` in a `loader`.
+Um ótimo padrão com caches de dados do lado do cliente (TanStack Query, etc.) é pré-carregar dados. Por exemplo, com o TanStack Query você pode ter uma route que chama `queryClient.ensureQueryData` em um `loader`.
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId/deep")({
@@ -134,7 +134,7 @@ function PostDeepComponent() {
 }
 ```
 
-This may look fine and for small route trees and you may not notice any TS performance issues. However in this case TS has to infer the loader's return type, despite it never being used in your route. If the loader data is a complex type with many routes that prefetch in this manner, it can slow down editor performance. In this case, the change is quite simple and let typescript infer Promise<void>.
+Isso pode parecer correto e para árvores de routes pequenas você pode não notar problemas de performance do TS. No entanto, neste caso o TS tem que inferir o tipo de retorno do loader, apesar de nunca ser usado na sua route. Se os dados do loader são um tipo complexo com muitas routes que fazem prefetch dessa maneira, isso pode desacelerar a performance do editor. Neste caso, a mudança é bastante simples: deixe o TypeScript inferir `Promise<void>`.
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId/deep")({
@@ -152,47 +152,47 @@ function PostDeepComponent() {
 }
 ```
 
-This way the loader data is never inferred and it moves the inference out of the route tree to the first time you use `useSuspenseQuery`.
+Dessa forma, os dados do loader nunca são inferidos e a inferência é movida para fora da árvore de routes para a primeira vez que você usa `useSuspenseQuery`.
 
-### Narrow to relevant routes as much as you possibly can
+### Restrinja às routes relevantes o máximo possível
 
-Consider the following usage of `Link`
+Considere o seguinte uso de `Link`
 
 ```tsx
 <Link to=".." search={{ page: 0 }} />
 <Link to="." search={{ page: 0 }} />
 ```
 
-**These examples are bad for TS performance**. That's because `search` resolves to a union of all `search` params for all routes and TS has to check whatever you pass to the `search` prop against this potentially big union. As your application grows, this check time will increase linearly to number of routes and search params. We have done our best to optimize for this case (TypeScript will typically do this work once and cache it) but the initial check against this large union is expensive. This also applies to `params` and other API's such as `useSearch`, `useParams`, `useNavigate` etc.
+**Esses exemplos são ruins para a performance do TS**. Isso porque `search` resolve para uma union de todos os `search` params de todas as routes e o TS tem que verificar o que você passa para a prop `search` contra essa union potencialmente grande. Conforme sua aplicação cresce, esse tempo de verificação aumentará linearmente com o número de routes e search params. Fizemos o nosso melhor para otimizar esse caso (o TypeScript tipicamente faz esse trabalho uma vez e o armazena em cache), mas a verificação inicial contra essa union grande é custosa. Isso também se aplica a `params` e outras APIs como `useSearch`, `useParams`, `useNavigate` etc.
 
-Instead you should try to narrow to relevant routes with `from` or `to`.
+Em vez disso, você deveria tentar restringir às routes relevantes com `from` ou `to`.
 
 ```tsx
 <Link from={Route.fullPath} to=".." search={{page: 0}} />
 <Link from="/posts" to=".." search={{page: 0}} />
 ```
 
-Remember you can always pass a union to `to` or `from` to narrow the routes you're interested in.
+Lembre-se de que você sempre pode passar uma union para `to` ou `from` para restringir as routes de seu interesse.
 
 ```tsx
 const from: '/posts/$postId/deep' | '/posts/' = '/posts/'
 <Link from={from} to='..' />
 ```
 
-You can also pass branches to `from` to only resolve `search` or `params` to be from any descendants of that branch:
+Você também pode passar branches para `from` para resolver `search` ou `params` apenas dos descendentes daquele branch:
 
 ```tsx
 const from = '/posts'
 <Link from={from} to='..' />
 ```
 
-`/posts` could be a branch with many descendants which share the same `search` or `params`
+`/posts` poderia ser um branch com muitos descendentes que compartilham os mesmos `search` ou `params`
 
-### Consider using the object syntax of `addChildren`
+### Considere usar a sintaxe de objeto do `addChildren`
 
-It's typical of routes to have `params` `search`, `loaders` or `context` that can even reference external dependencies which are also heavy on TS inference. For such applications, using objects for creating the route tree can be more performant than tuples.
+É típico que routes tenham `params`, `search`, `loaders` ou `context` que podem até referenciar dependências externas que também são pesadas na inferência do TS. Para tais aplicações, usar objetos para criar a árvore de routes pode ser mais performático do que tuplas.
 
-`createChildren` also can accept an object. For large route trees with complex routes and external libraries, objects can be much faster for TS to type check as opposed to large tuples. The performance gains depend on your project, what external dependencies you have and how the types for those libraries are written
+`createChildren` também pode aceitar um objeto. Para árvores de routes grandes com routes complexas e bibliotecas externas, objetos podem ser muito mais rápidos para o TS verificar tipos em comparação com tuplas grandes. Os ganhos de performance dependem do seu projeto, quais dependências externas você tem e como os tipos dessas bibliotecas são escritos
 
 ```tsx
 const routeTree = rootRoute.addChildren({
@@ -201,11 +201,11 @@ const routeTree = rootRoute.addChildren({
 });
 ```
 
-Note this syntax is more verbose but has better TS performance. With file based routing, the route tree is generated for you so a verbose route tree is not a concern
+Note que essa sintaxe é mais verbosa, mas tem melhor performance no TS. Com roteamento baseado em arquivo, a árvore de routes é gerada para você, então uma árvore de routes verbosa não é uma preocupação
 
-### Avoid internal types without narrowing
+### Evite tipos internos sem restringir
 
-It's common you might want to re-use types exposed. For example you might be tempted to use `LinkProps` like so
+É comum querer reutilizar tipos expostos. Por exemplo, você pode ficar tentado a usar `LinkProps` assim
 
 ```tsx
 const props: LinkProps = {
@@ -217,9 +217,9 @@ return (
 )
 ```
 
-**This is VERY bad for TS Performance**. The problem here is `LinkProps` has no type arguments and is therefore an extremely large type. It includes `search` which is a union of all `search` params, it contains `params` which is a union of all `params`. When merging this object with `Link` it will do a structural comparison of this huge type.
+**Isso é MUITO ruim para a performance do TS**. O problema aqui é que `LinkProps` não tem argumentos de tipo e é, portanto, um tipo extremamente grande. Ele inclui `search` que é uma union de todos os `search` params, contém `params` que é uma union de todos os `params`. Ao mesclar esse objeto com `Link`, ele fará uma comparação estrutural desse tipo enorme.
 
-Instead you can use `as const satisfies` to infer a precise type and not `LinkProps` directly to avoid the huge check
+Em vez disso, você pode usar `as const satisfies` para inferir um tipo preciso e não usar `LinkProps` diretamente para evitar a verificação enorme
 
 ```tsx
 const props = {
@@ -231,7 +231,7 @@ return (
 )
 ```
 
-As `props` is not of type `LinkProps` and therefore this check is cheaper because the type is much more precise. You can also improve type checking further by narrowing `LinkProps`
+Como `props` não é do tipo `LinkProps`, essa verificação é mais barata porque o tipo é muito mais preciso. Você também pode melhorar a verificação de tipos ainda mais restringindo `LinkProps`
 
 ```tsx
 const props = {
@@ -243,9 +243,9 @@ return (
 )
 ```
 
-This is even faster as we're checking against the narrowed `LinkProps` type.
+Isso é ainda mais rápido, pois estamos verificando contra o tipo `LinkProps` restringido.
 
-You can also use this to narrow the type of `LinkProps` to a specific type to be used as a prop or parameter to a function
+Você também pode usar isso para restringir o tipo de `LinkProps` a um tipo específico para ser usado como prop ou parâmetro de uma função
 
 ```tsx
 export const myLinkProps = [
@@ -265,9 +265,9 @@ const MyComponent = (props: { linkProps: MyLinkProps }) => {
 };
 ```
 
-This is faster than using `LinkProps` directly in a component because `MyLinkProps` is a much more precise type
+Isso é mais rápido do que usar `LinkProps` diretamente em um component porque `MyLinkProps` é um tipo muito mais preciso
 
-Another solution is not to use `LinkProps` and to provide inversion of control to render a `Link` component narrowed to a specific route. Render props are a good method of inverting control to the user of a component
+Outra solução é não usar `LinkProps` e fornecer inversão de controle para renderizar um component `Link` restringido a uma route específica. Render props são um bom método de inverter o controle para o usuário de um component
 
 ```tsx
 export interface MyComponentProps {
@@ -283,5 +283,4 @@ const Page = () => {
 };
 ```
 
-This particular example is very fast as we've inverted control of where we're navigating to the user of the component. The `Link` is narrowed to the exact route
-we want to navigate to
+Esse exemplo em particular é muito rápido, pois invertemos o controle de para onde estamos navegando para o usuário do component. O `Link` é restringido à route exata para a qual queremos navegar

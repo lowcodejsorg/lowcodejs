@@ -2,79 +2,79 @@
 title: Code Splitting
 ---
 
-Code splitting and lazy loading is a powerful technique for improving the bundle size and load performance of an application.
+Code splitting e lazy loading é uma técnica poderosa para melhorar o tamanho do bundle e a performance de carregamento de uma aplicação.
 
-- Reduces the amount of code that needs to be loaded on initial page load
-- Code is loaded on-demand when it is needed
-- Results in more chunks that are smaller in size that can be cached more easily by the browser.
+- Reduz a quantidade de código que precisa ser carregado no carregamento inicial da página
+- O código é carregado sob demanda quando é necessário
+- Resulta em mais chunks que são menores em tamanho e podem ser armazenados em cache mais facilmente pelo navegador.
 
-## How does TanStack Router split code?
+## Como o TanStack Router faz code splitting?
 
-TanStack Router separates code into two categories:
+O TanStack Router separa o código em duas categorias:
 
-- **Critical Route Configuration** - The code that is required to render the current route and kick off the data loading process as early as possible.
+- **Configuração Crítica de Route** - O código que é necessário para renderizar a route atual e iniciar o processo de carregamento de dados o mais cedo possível.
   - Path Parsing/Serialization
-  - Search Param Validation
+  - Validação de Search Params
   - Loaders, Before Load
   - Route Context
   - Static Data
   - Links
   - Scripts
   - Styles
-  - All other route configuration not listed below
+  - Toda outra configuração de route não listada abaixo
 
-- **Non-Critical/Lazy Route Configuration** - The code that is not required to match the route, and can be loaded on-demand.
+- **Configuração Não-Crítica/Lazy de Route** - O código que não é necessário para corresponder à route, e pode ser carregado sob demanda.
   - Route Component
   - Error Component
   - Pending Component
   - Not-found Component
 
-> 🧠 **Why is the loader not split?**
+> **Por que o loader não é separado?**
 >
-> - The loader is already an asynchronous boundary, so you pay double to both get the chunk _and_ wait for the loader to execute.
-> - Categorically, it is less likely to contribute to a large bundle size than a component.
-> - The loader is one of the most important preloadable assets for a route, especially if you're using a default preload intent, like hovering over a link, so it's important for the loader to be available without any additional async overhead.
+> - O loader já é uma fronteira assíncrona, então você paga dobrado para obter o chunk _e_ esperar o loader executar.
+> - Categoricamente, é menos provável que ele contribua para um tamanho de bundle grande do que um component.
+> - O loader é um dos assets preloadable mais importantes para uma route, especialmente se você está usando um intent de preload padrão, como passar o mouse sobre um link, então é importante que o loader esteja disponível sem nenhuma sobrecarga assíncrona adicional.
 >
->   Knowing the disadvantages of splitting the loader, if you still want to go ahead with it, head over to the [Data Loader Splitting](#data-loader-splitting) section.
+>   Sabendo as desvantagens de separar o loader, se você ainda quiser prosseguir com isso, vá para a seção [Data Loader Splitting](#data-loader-splitting).
 
-## Encapsulating a route's files into a directory
+## Encapsulando os arquivos de uma route em um diretório
 
-Since TanStack Router's file-based routing system is designed to support both flat and nested file structures, it's possible to encapsulate a route's files into a single directory without any additional configuration.
+Como o sistema de file-based routing do TanStack Router é projetado para suportar tanto estruturas de arquivo flat quanto aninhadas, é possível encapsular os arquivos de uma route em um único diretório sem nenhuma configuração adicional.
 
-To encapsulate a route's files into a directory, move the route file itself into a `.route` file within a directory with the same name as the route file.
+Para encapsular os arquivos de uma route em um diretório, mova o arquivo de route para um arquivo `.route` dentro de um diretório com o mesmo nome do arquivo de route.
 
-For example, if you have a route file named `posts.tsx`, you would create a new directory named `posts` and move the `posts.tsx` file into that directory, renaming it to `route.tsx`.
+Por exemplo, se você tem um arquivo de route chamado `posts.tsx`, você criaria um novo diretório chamado `posts` e moveria o arquivo `posts.tsx` para esse diretório, renomeando-o para `route.tsx`.
 
-**Before**
+**Antes**
 
 - `posts.tsx`
 
-**After**
+**Depois**
 
 - `posts`
   - `route.tsx`
 
-## Approaches to code splitting
+## Abordagens para code splitting
 
-TanStack Router supports multiple approaches to code splitting. If you are using code-based routing, skip to the [Code-Based Splitting](#code-based-splitting) section.
+O TanStack Router suporta múltiplas abordagens para code splitting. Se você está usando code-based routing, pule para a seção [Code-Based Splitting](#code-based-splitting).
 
-When you are using file-based routing, you can use the following approaches to code splitting:
+Quando você está usando file-based routing, pode usar as seguintes abordagens para code splitting:
 
-- [Using automatic code-splitting ✨](#using-automatic-code-splitting)
-- [Using the `.lazy.tsx` suffix](#using-the-lazytsx-suffix)
-- [Using Virtual Routes](#using-virtual-routes)
+- [Usando code-splitting automático](#using-automatic-code-splitting)
+- [Usando o sufixo `.lazy.tsx`](#using-the-lazytsx-suffix)
+- [Usando Virtual Routes](#using-virtual-routes)
 
-## Using automatic code-splitting✨
+## Usando code-splitting automático
 
-This is the easiest and most powerful way to code split your route files.
+Esta é a forma mais fácil e poderosa de fazer code splitting dos seus arquivos de route.
 
-When using the `autoCodeSplitting` feature, TanStack Router will automatically code split your route files based on the non-critical route configuration mentioned above.
+Ao usar o recurso `autoCodeSplitting`, o TanStack Router vai automaticamente fazer code splitting dos seus arquivos de route com base na configuração não-crítica de route mencionada acima.
 
 > [!IMPORTANT]
-> The automatic code-splitting feature is **ONLY** available when you are using file-based routing with one of our [supported bundlers](../routing/file-based-routing.md#getting-started-with-file-based-routing).
-> This will **NOT** work if you are **only** using the CLI (`@tanstack/router-cli`).
+> O recurso de code-splitting automático está disponível **APENAS** quando você está usando file-based routing com um dos nossos [bundlers suportados](../routing/file-based-routing.md#getting-started-with-file-based-routing).
+> Isso **NÃO** vai funcionar se você estiver usando **apenas** o CLI (`@tanstack/router-cli`).
 
-To enable automatic code-splitting, you just need to add the following to the configuration of your TanStack Router Bundler Plugin:
+Para habilitar o code-splitting automático, você só precisa adicionar o seguinte à configuração do seu TanStack Router Bundler Plugin:
 
 ```ts
 // vite.config.ts
@@ -93,31 +93,31 @@ export default defineConfig({
 });
 ```
 
-That's it! TanStack Router will automatically code-split all your route files by their critical and non-critical route configurations.
+Pronto! O TanStack Router vai automaticamente fazer code-splitting de todos os seus arquivos de route pelas suas configurações críticas e não-críticas.
 
-If you want more control over the code-splitting process, head over to the [Automatic Code Splitting](./automatic-code-splitting.md) guide to learn more about the options available.
+Se você quer mais controle sobre o processo de code-splitting, vá para o guia de [Automatic Code Splitting](./automatic-code-splitting.md) para saber mais sobre as opções disponíveis.
 
-## Using the `.lazy.tsx` suffix
+## Usando o sufixo `.lazy.tsx`
 
-If you are not able to use the automatic code-splitting feature, you can still code-split your route files using the `.lazy.tsx` suffix. It is **as easy as moving your code into a separate file with a `.lazy.tsx` suffix** and using the `createLazyFileRoute` function instead of `createFileRoute`.
+Se você não consegue usar o recurso de code-splitting automático, ainda pode fazer code-splitting dos seus arquivos de route usando o sufixo `.lazy.tsx`. É **tão fácil quanto mover seu código para um arquivo separado com o sufixo `.lazy.tsx`** e usar a função `createLazyFileRoute` em vez de `createFileRoute`.
 
 > [!IMPORTANT]
-> The `__root.tsx` route file, using either `createRootRoute` or `createRootRouteWithContext`, does not support code splitting, since it's always rendered regardless of the current route.
+> O arquivo de route `__root.tsx`, usando `createRootRoute` ou `createRootRouteWithContext`, não suporta code splitting, já que é sempre renderizado independentemente da route atual.
 
-These are the only options that `createLazyFileRoute` supports:
+Estas são as únicas opções que `createLazyFileRoute` suporta:
 
-| Export Name         | Description                                                           |
-| ------------------- | --------------------------------------------------------------------- |
-| `component`         | The component to render for the route.                                |
-| `errorComponent`    | The component to render when an error occurs while loading the route. |
-| `pendingComponent`  | The component to render while the route is loading.                   |
-| `notFoundComponent` | The component to render if a not-found error gets thrown.             |
+| Nome do Export      | Descrição                                                                |
+| ------------------- | ------------------------------------------------------------------------ |
+| `component`         | O component a ser renderizado para a route.                              |
+| `errorComponent`    | O component a ser renderizado quando ocorre um erro ao carregar a route. |
+| `pendingComponent`  | O component a ser renderizado enquanto a route está carregando.          |
+| `notFoundComponent` | O component a ser renderizado se um erro not-found for lançado.          |
 
-### Example code splitting with `.lazy.tsx`
+### Exemplo de code splitting com `.lazy.tsx`
 
-When you are using `.lazy.tsx` you can split your route into two files to enable code splitting:
+Quando você está usando `.lazy.tsx`, pode dividir sua route em dois arquivos para habilitar o code splitting:
 
-**Before (Single File)**
+**Antes (Arquivo Único)**
 
 ```tsx
 // src/routes/posts.tsx
@@ -134,9 +134,9 @@ function Posts() {
 }
 ```
 
-**After (Split into two files)**
+**Depois (Dividido em dois arquivos)**
 
-This file would contain the critical route configuration:
+Este arquivo conteria a configuração crítica da route:
 
 ```tsx
 // src/routes/posts.tsx
@@ -149,7 +149,7 @@ export const Route = createFileRoute("/posts")({
 });
 ```
 
-With the non-critical route configuration going into the file with the `.lazy.tsx` suffix:
+Com a configuração não-crítica da route indo para o arquivo com o sufixo `.lazy.tsx`:
 
 ```tsx
 // src/routes/posts.lazy.tsx
@@ -164,11 +164,11 @@ function Posts() {
 }
 ```
 
-## Using Virtual Routes
+## Usando Virtual Routes
 
-You might run into a situation where you end up splitting out everything from a route file, leaving it empty! In this case, simply **delete the route file entirely**! A virtual route will automatically be generated for you to serve as an anchor for your code split files. This virtual route will live directly in the generated route tree file.
+Você pode se deparar com uma situação onde acaba separando tudo de um arquivo de route, deixando-o vazio! Nesse caso, simplesmente **delete o arquivo de route inteiramente**! Uma virtual route será automaticamente gerada para você para servir como âncora para seus arquivos code-split. Essa virtual route ficará diretamente no arquivo de route tree gerado.
 
-**Before (Virtual Routes)**
+**Antes (Virtual Routes)**
 
 ```tsx
 // src/routes/posts.tsx
@@ -192,7 +192,7 @@ function Posts() {
 }
 ```
 
-**After (Virtual Routes)**
+**Depois (Virtual Routes)**
 
 ```tsx
 // src/routes/posts.lazy.tsx
@@ -207,13 +207,13 @@ function Posts() {
 }
 ```
 
-Tada! 🎉
+Pronto!
 
 ## Code-Based Splitting
 
-If you are using code-based routing, you can still code-split your routes using the `Route.lazy()` method and the `createLazyRoute` function. You'll need to split your route configuration into two parts:
+Se você está usando code-based routing, ainda pode fazer code-splitting das suas routes usando o método `Route.lazy()` e a função `createLazyRoute`. Você precisará dividir a configuração da sua route em duas partes:
 
-Create a lazy route using the `createLazyRoute` function.
+Crie uma lazy route usando a função `createLazyRoute`.
 
 ```tsx
 // src/posts.lazy.tsx
@@ -226,7 +226,7 @@ function MyComponent() {
 }
 ```
 
-Then, call the `.lazy` method on the route definition in your `app.tsx` to import the lazy/code-split route with the non-critical route configuration.
+Então, chame o método `.lazy` na definição da route no seu `app.tsx` para importar a lazy/code-split route com a configuração não-crítica da route.
 
 ```tsx
 // src/app.tsx
@@ -238,11 +238,11 @@ const postsRoute = createRoute({
 
 ## Data Loader Splitting
 
-**Be warned!!!** Splitting a route loader is a dangerous game.
+**Cuidado!!!** Separar um route loader é um jogo perigoso.
 
-It can be a powerful tool to reduce bundle size, but it comes with a cost as mentioned in the [How does TanStack Router split code?](#how-does-tanstack-router-split-code) section.
+Pode ser uma ferramenta poderosa para reduzir o tamanho do bundle, mas tem um custo conforme mencionado na seção [Como o TanStack Router faz code splitting?](#how-does-tanstack-router-split-code).
 
-You can code split your data loading logic using the Route's `loader` option. While this process makes it difficult to maintain type-safety with the parameters passed to your loader, you can always use the generic `LoaderContext` type to get you most of the way there:
+Você pode fazer code splitting da sua lógica de carregamento de dados usando a opção `loader` da Route. Embora esse processo dificulte manter o type-safety com os parâmetros passados para o seu loader, você sempre pode usar o tipo genérico `LoaderContext` para chegar na maior parte do caminho:
 
 ```tsx
 import { lazyFn } from "@tanstack/react-router";
@@ -259,11 +259,11 @@ export const loader = async (context: LoaderContext) => {
 };
 ```
 
-If you are using file-based routing, you'll only be able to split your `loader` if you are using [Automatic Code Splitting](#using-automatic-code-splitting) with customized bundling options.
+Se você está usando file-based routing, só poderá separar seu `loader` se estiver usando [Automatic Code Splitting](#using-automatic-code-splitting) com opções de bundling personalizadas.
 
-## Manually accessing Route APIs in other files with the `getRouteApi` helper
+## Acessando manualmente APIs de Route em outros arquivos com o helper `getRouteApi`
 
-As you might have guessed, placing your component code in a separate file than your route can make it difficult to consume the route itself. To help with this, TanStack Router exports a handy `getRouteApi` function that you can use to access a route's type-safe APIs in a file without importing the route itself.
+Como você deve ter imaginado, colocar o código do seu component em um arquivo separado do da sua route pode dificultar o consumo da route em si. Para ajudar com isso, o TanStack Router exporta uma função prática `getRouteApi` que você pode usar para acessar as APIs type-safe de uma route em um arquivo sem importar a route em si.
 
 - `my-route.tsx`
 
@@ -295,7 +295,7 @@ export function MyComponent() {
 }
 ```
 
-The `getRouteApi` function is useful for accessing other type-safe APIs:
+A função `getRouteApi` é útil para acessar outras APIs type-safe:
 
 - `useLoaderData`
 - `useLoaderDeps`

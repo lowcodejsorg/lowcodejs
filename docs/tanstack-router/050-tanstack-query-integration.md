@@ -4,18 +4,18 @@ title: TanStack Query Integration
 ---
 
 > [!IMPORTANT]
-> This integration automates SSR dehydration/hydration and streaming between TanStack Router and TanStack Query. If you haven't read the standard [External Data Loading](../framework/react/guide/external-data-loading.md) guide, start there.
+> Esta integração automatiza a dehydration/hydration de SSR e streaming entre o TanStack Router e o TanStack Query. Se você ainda não leu o guia padrão de [External Data Loading](../framework/react/guide/external-data-loading.md), comece por lá.
 
-## What you get
+## O que você ganha
 
-- **Automatic SSR dehydration/hydration** of your `QueryClient`
-- **Streaming of queries** that resolve during initial server render to the client
-- **Redirect handling** for `redirect()` thrown from queries/mutations
-- Optional **provider wrapping** with `QueryClientProvider`
+- **Dehydration/hydration automática de SSR** do seu `QueryClient`
+- **Streaming de queries** que resolvem durante o render inicial no servidor para o client
+- **Tratamento de redirect** para `redirect()` lançados a partir de queries/mutations
+- **Wrapping de provider** opcional com `QueryClientProvider`
 
-## Installation
+## Instalação
 
-The TanStack query integration is a separate package that you need to install:
+A integração com o TanStack Query é um pacote separado que você precisa instalar:
 
 ```sh
 npm install @tanstack/react-router-ssr-query
@@ -27,9 +27,9 @@ yarn add @tanstack/react-router-ssr-query
 bun add @tanstack/react-router-ssr-query
 ```
 
-## Setup
+## Configuração
 
-Create your router and wire up the integration. Ensure a fresh `QueryClient` is created per request in SSR environments.
+Crie seu router e conecte a integração. Certifique-se de que um novo `QueryClient` seja criado por requisição em ambientes SSR.
 
 ```tsx
 // src/router.tsx
@@ -60,20 +60,20 @@ export function getRouter() {
 }
 ```
 
-By default, the integration wraps your router with a `QueryClientProvider`. If you already provide your own provider, pass `wrapQueryClient: false` and keep your custom wrapper.
+Por padrão, a integração envolve seu router com um `QueryClientProvider`. Se você já fornece seu próprio provider, passe `wrapQueryClient: false` e mantenha seu wrapper customizado.
 
-## SSR behavior and streaming
+## Comportamento de SSR e streaming
 
-- During server render, the integration dehydrates initial queries and streams any subsequent queries that resolve while rendering.
-- On the client, the integration hydrates the initial state, then incrementally hydrates streamed queries.
-- Queries from `useSuspenseQuery` or loader prefetches participate in SSR/streaming. Plain `useQuery` does not execute on the server.
+- Durante o render no servidor, a integração faz a dehydration das queries iniciais e transmite via streaming quaisquer queries subsequentes que resolvam durante a renderização.
+- No client, a integração faz a hydration do state inicial e então faz a hydration incremental das queries transmitidas via streaming.
+- Queries de `useSuspenseQuery` ou prefetches do loader participam do SSR/streaming. `useQuery` simples não é executado no servidor.
 
-## Use in routes
+## Uso em routes
 
-### Using useSuspenseQuery vs useQuery
+### Usando useSuspenseQuery vs useQuery
 
-- `useSuspenseQuery`: runs on the server during SSR when its data is required and will be streamed to the client as it resolves.
-- `useQuery`: does not execute on the server; it will fetch on the client after hydration. Use this for data that is not required for SSR.
+- `useSuspenseQuery`: executa no servidor durante o SSR quando seus dados são necessários e será transmitido via streaming para o client conforme resolve.
+- `useQuery`: não executa no servidor; vai fazer fetch no client após a hydration. Use isso para dados que não são necessários para o SSR.
 
 ```tsx
 // Suspense: executes on server and streams
@@ -83,9 +83,9 @@ const { data } = useSuspenseQuery(postsQuery);
 const { data, isLoading } = useQuery(postsQuery);
 ```
 
-### Preload with a loader and read with a hook
+### Prefetch com um loader e leitura com um hook
 
-Preload critical data in the route `loader` to avoid waterfalls and loading flashes, then read it in the component. The integration ensures server-fetched data is dehydrated and streamed to the client during SSR.
+Faça o prefetch de dados críticos no `loader` do route para evitar waterfalls e flashes de carregamento, e então leia-os no component. A integração garante que os dados obtidos no servidor sejam desidratados e transmitidos via streaming para o client durante o SSR.
 
 ```tsx
 // src/routes/posts.tsx
@@ -114,9 +114,9 @@ function PostsPage() {
 }
 ```
 
-### Prefetching and streaming
+### Prefetching e streaming
 
-You can also prefetch with `fetchQuery` or `ensureQueryData` in a loader without consuming the data in a component. If you return the promise directly from the loader, it will be awaited and thus block the SSR request until the query finishes. If you don't await the promise nor return it, the query will be started on the server and will be streamed to the client without blocking the SSR request.
+Você também pode fazer prefetch com `fetchQuery` ou `ensureQueryData` em um loader sem consumir os dados em um component. Se você retornar a promise diretamente do loader, ela será aguardada e, portanto, bloqueará a requisição SSR até que a query termine. Se você não aguardar a promise nem retorná-la, a query será iniciada no servidor e será transmitida via streaming para o client sem bloquear a requisição SSR.
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -136,13 +136,13 @@ export const Route = createFileRoute("/user/$id")({
 });
 ```
 
-## Redirect handling
+## Tratamento de redirect
 
-If a query or mutation throws a `redirect(...)`, the integration intercepts it on the client and performs a router navigation.
+Se uma query ou mutation lança um `redirect(...)`, a integração intercepta no client e realiza uma navegação do router.
 
-- Enabled by default
-- Disable with `handleRedirects: false` if you need custom handling
+- Habilitado por padrão
+- Desabilite com `handleRedirects: false` se você precisar de tratamento customizado
 
-## Works with TanStack Start
+## Funciona com o TanStack Start
 
-TanStack Start uses TanStack Router under the hood. The same setup applies, and the integration will stream query results during SSR automatically.
+O TanStack Start usa o TanStack Router internamente. A mesma configuração se aplica, e a integração irá transmitir via streaming os resultados das queries durante o SSR automaticamente.

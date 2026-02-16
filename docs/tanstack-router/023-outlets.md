@@ -2,16 +2,16 @@
 title: Outlets
 ---
 
-Nested routing means that routes can be nested within other routes, including the way they render. So how do we tell our routes where to render this nested content?
+Rotas aninhadas significam que routes podem ser aninhadas dentro de outras routes, incluindo a forma como elas são renderizadas. Então, como dizemos às nossas routes onde renderizar esse conteúdo aninhado?
 
-## The `Outlet` Component
+## O Componente `Outlet`
 
-The `Outlet` component is used to render the next potentially matching child route. `<Outlet />` doesn't take any props and can be rendered anywhere within a route's component tree. If there is no matching child route, `<Outlet />` will render `null`.
+O component `Outlet` é usado para renderizar a próxima route filha potencialmente correspondente. `<Outlet />` não recebe nenhuma prop e pode ser renderizado em qualquer lugar dentro da árvore de componentes de uma route. Se não houver route filha correspondente, `<Outlet />` renderizará `null`.
 
 > [!TIP]
-> If a route's `component` is left undefined, it will render an `<Outlet />` automatically.
+> Se o `component` de uma route for deixado como undefined, ele renderizará um `<Outlet />` automaticamente.
 
-A great example is configuring the root route of your application. Let's give our root route a component that renders a title, then an `<Outlet />` for our top-level routes to render.
+Um ótimo exemplo é configurar a route raiz da sua aplicação. Vamos dar à nossa route raiz um component que renderiza um título e, em seguida, um `<Outlet />` para que nossas routes de nível superior sejam renderizadas.
 
 ```tsx
 import { createRootRoute, Outlet } from "@tanstack/react-router";

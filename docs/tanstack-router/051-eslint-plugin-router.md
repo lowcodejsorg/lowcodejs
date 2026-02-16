@@ -3,29 +3,29 @@ id: eslint-plugin-router
 title: ESLint Plugin Router
 ---
 
-TanStack Router comes with its own ESLint plugin. This plugin is used to enforce best practices and to help you avoid common mistakes.
+O TanStack Router vem com seu próprio plugin de ESLint. Este plugin é usado para aplicar boas práticas e ajudar você a evitar erros comuns.
 
-## Installation
+## Instalação
 
-The plugin is a separate package that you need to install:
+O plugin é um pacote separado que você precisa instalar:
 
 ```sh
 npm install -D @tanstack/eslint-plugin-router
 ```
 
-or
+ou
 
 ```sh
 pnpm add -D @tanstack/eslint-plugin-router
 ```
 
-or
+ou
 
 ```sh
 yarn add -D @tanstack/eslint-plugin-router
 ```
 
-or
+ou
 
 ```sh
 bun add -D @tanstack/eslint-plugin-router
@@ -33,12 +33,11 @@ bun add -D @tanstack/eslint-plugin-router
 
 ## Flat Config (`eslint.config.js`)
 
-The release of ESLint 9.0 introduced a new way to configure ESLint using a flat config format. This new format is more flexible and allows you to configure ESLint in a more granular way than the legacy `.eslintrc` format. The TanStack Router ESLint Plugin supports this new format and provides a recommended config that you can use to enable all of the recommended rules for the plugin
-.
+O lançamento do ESLint 9.0 introduziu uma nova forma de configurar o ESLint usando um formato de flat config. Este novo formato é mais flexível e permite configurar o ESLint de forma mais granular do que o formato legado `.eslintrc`. O plugin ESLint do TanStack Router suporta este novo formato e fornece uma configuração recomendada que você pode usar para habilitar todas as regras recomendadas do plugin.
 
-### Recommended Flat Config setup
+### Configuração recomendada de Flat Config
 
-To enable all of the recommended rules for our plugin, add the following config:
+Para habilitar todas as regras recomendadas do nosso plugin, adicione a seguinte configuração:
 
 ```js
 // eslint.config.js
@@ -50,9 +49,9 @@ export default [
 ];
 ```
 
-### Custom Flat Config setup
+### Configuração personalizada de Flat Config
 
-Alternatively, you can load the plugin and configure only the rules you want to use:
+Alternativamente, você pode carregar o plugin e configurar apenas as regras que deseja usar:
 
 ```js
 // eslint.config.js
@@ -73,11 +72,11 @@ export default [
 
 ## Legacy Config (`.eslintrc`)
 
-Prior to the ESLint 9.0 release, the most common way of configuring EsLint was using a `.eslintrc` file. The TanStack Router ESLint Plugin still supports this configuration method.
+Antes do lançamento do ESLint 9.0, a forma mais comum de configurar o ESLint era usando um arquivo `.eslintrc`. O plugin ESLint do TanStack Router ainda suporta este método de configuração.
 
-### Recommended Legacy Config setup
+### Configuração recomendada de Legacy Config
 
-To enable all of the recommended rules for our plugin, add `plugin:@tanstack/eslint-plugin-router/recommended` in extends:
+Para habilitar todas as regras recomendadas do nosso plugin, adicione `plugin:@tanstack/eslint-plugin-router/recommended` em extends:
 
 ```json
 {
@@ -85,9 +84,9 @@ To enable all of the recommended rules for our plugin, add `plugin:@tanstack/esl
 }
 ```
 
-### Custom Legacy Config setup
+### Configuração personalizada de Legacy Config
 
-Alternatively, add `@tanstack/eslint-plugin-router` to the plugins section, and configure the rules you want to use:
+Alternativamente, adicione `@tanstack/eslint-plugin-router` à seção de plugins e configure as regras que deseja usar:
 
 ```json
 {
@@ -98,21 +97,21 @@ Alternatively, add `@tanstack/eslint-plugin-router` to the plugins section, and 
 }
 ```
 
-## Rules
+## Regras
 
-The following rules are available in the TanStack Router ESLint Plugin:
+As seguintes regras estão disponíveis no plugin ESLint do TanStack Router:
 
 - [@tanstack/router/create-route-property-order](./create-route-property-order.md)
 
-## Conflicts with other ESLint plugins
+## Conflitos com outros plugins de ESLint
 
-If you have other ESLint plugins installed, they may rules that conflict with this plugin. If so, you'll need to make some tweaks to allow these plugins to work together.
+Se você tiver outros plugins de ESLint instalados, eles podem ter regras que conflitam com este plugin. Nesse caso, você precisará fazer alguns ajustes para permitir que esses plugins funcionem juntos.
 
 ### `typescript-eslint`
 
-The [`@typescript-eslint/only-throw-error`](https://typescript-eslint.io/rules/only-throw-error/) rule, enabled by default in the `recommended-type-checked` and `strict-type-checked` rulesets, disallows the throwing of non-Error values as exceptions, which is considered a good practice.
+A regra [`@typescript-eslint/only-throw-error`](https://typescript-eslint.io/rules/only-throw-error/), habilitada por padrão nos conjuntos de regras `recommended-type-checked` e `strict-type-checked`, não permite o lançamento de valores que não são Error como exceções, o que é considerado uma boa prática.
 
-To make sure it that it does not conflict with TanStack Router, you should add `redirect` to the allowed as a throwable objects.
+Para garantir que ela não entre em conflito com o TanStack Router, você deve adicionar `redirect` como um objeto que pode ser lançado.
 
 ```json
 {

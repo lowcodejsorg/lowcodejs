@@ -2,9 +2,9 @@
 title: Creating a Router
 ---
 
-## The `Router` Class
+## A Classe `Router`
 
-When you're ready to start using your router, you'll need to create a new `Router` instance. The router instance is the core brains of TanStack Router and is responsible for managing the route tree, matching routes, and coordinating navigations and route transitions. It also serves as a place to configure router-wide settings.
+Quando você estiver pronto para começar a usar seu router, precisará criar uma nova instância de `Router`. A instância do router é o cérebro central do TanStack Router e é responsável por gerenciar a route tree, combinar routes e coordenar navegações e transições de route. Ela também serve como um lugar para definir configurações gerais do router.
 
 ```tsx
 import { createRouter } from "@tanstack/react-router";
@@ -16,21 +16,21 @@ const router = createRouter({
 
 ## Route Tree
 
-You'll probably notice quickly that the `Router` constructor requires a `routeTree` option. This is the route tree that the router will use to match routes and render components.
+Você provavelmente vai notar rapidamente que o construtor do `Router` requer uma opção `routeTree`. Esta é a route tree que o router vai usar para combinar routes e renderizar components.
 
-Whether you used [file-based routing](../routing/file-based-routing.md) or [code-based routing](../routing/code-based-routing.md), you'll need to pass your route tree to the `createRouter` function:
+Independentemente de você ter usado [file-based routing](../routing/file-based-routing.md) ou [code-based routing](../routing/code-based-routing.md), você precisará passar sua route tree para a função `createRouter`:
 
-### Filesystem Route Tree
+### Route Tree do Sistema de Arquivos
 
-If you used our recommended file-based routing, then it's likely your generated route tree file was created at the default `src/routeTree.gen.ts` location. If you used a custom location, then you'll need to import your route tree from that location.
+Se você usou nosso file-based routing recomendado, então é provável que seu arquivo de route tree gerado foi criado no local padrão `src/routeTree.gen.ts`. Se você usou um local customizado, então precisará importar sua route tree desse local.
 
 ```tsx
 import { routeTree } from "./routeTree.gen";
 ```
 
-### Code-Based Route Tree
+### Route Tree Code-Based
 
-If you used code-based routing, then you likely created your route tree manually using the root route's `addChildren` method:
+Se você usou code-based routing, então provavelmente criou sua route tree manualmente usando o método `addChildren` da root route:
 
 ```tsx
 const routeTree = rootRoute.addChildren([
@@ -38,12 +38,12 @@ const routeTree = rootRoute.addChildren([
 ]);
 ```
 
-## Router Type Safety
+## Type Safety do Router
 
 > [!IMPORTANT]
-> DO NOT SKIP THIS SECTION! ⚠️
+> NAO PULE ESTA SECAO!
 
-TanStack Router provides amazing support for TypeScript, even for things you wouldn't expect like bare imports straight from the library! To make this possible, you must register your router's types using TypeScripts' [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) feature. This is done by extending the `Register` interface on `@tanstack/react-router` with a `router` property that has the type of your `router` instance:
+O TanStack Router fornece suporte incrível para TypeScript, mesmo para coisas que você não esperaria, como imports diretos da biblioteca! Para tornar isso possível, você deve registrar os tipos do seu router usando o recurso de [Declaration Merging](https://www.typescriptlang.org/docs/handbook/declaration-merging.html) do TypeScript. Isso é feito estendendo a interface `Register` em `@tanstack/react-router` com uma propriedade `router` que tem o tipo da sua instância de `router`:
 
 ```tsx
 declare module "@tanstack/react-router" {
@@ -54,13 +54,13 @@ declare module "@tanstack/react-router" {
 }
 ```
 
-With your router registered, you'll now get type-safety across your entire project for anything related to routing.
+Com seu router registrado, agora você terá type-safety em todo o seu projeto para tudo relacionado a routing.
 
-## 404 Not Found Route
+## Route 404 Not Found
 
-As promised in earlier guides, we'll now cover the `notFoundRoute` option. This option is used to configure a route that will render when no other suitable match is found. This is useful for rendering a 404 page or redirecting to a default route.
+Como prometido em guias anteriores, agora vamos cobrir a opção `notFoundRoute`. Esta opção é usada para configurar uma route que será renderizada quando nenhuma outra correspondência adequada for encontrada. Isso é útil para renderizar uma página 404 ou redirecionar para uma route padrão.
 
-If you are using either file-based or code-based routing, then you'll need to add a `notFoundComponent` key to `createRootRoute`:
+Se você está usando file-based ou code-based routing, precisará adicionar a chave `notFoundComponent` ao `createRootRoute`:
 
 ```tsx
 export const Route = createRootRoute({
@@ -71,6 +71,6 @@ export const Route = createRootRoute({
 });
 ```
 
-## Other Options
+## Outras Opções
 
-There are many other options that can be passed to the `Router` constructor. You can find a full list of them in the [API Reference](../api/router/RouterOptionsType.md).
+Existem muitas outras opções que podem ser passadas para o construtor do `Router`. Você pode encontrar uma lista completa na [Referência da API](../api/router/RouterOptionsType.md).

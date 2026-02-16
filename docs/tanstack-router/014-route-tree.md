@@ -2,18 +2,18 @@
 title: Route Trees
 ---
 
-TanStack Router uses a nested route tree to match up the URL with the correct component tree to render.
+O TanStack Router usa uma árvore de routes aninhada para corresponder a URL com a árvore de components correta a ser renderizada.
 
-To build a route tree, TanStack Router supports:
+Para construir uma árvore de routes, o TanStack Router suporta:
 
-- [File-Based Routing](./file-based-routing.md)
-- [Code-Based Routing](./code-based-routing.md)
+- [Roteamento Baseado em Arquivos](./file-based-routing.md)
+- [Roteamento Baseado em Código](./code-based-routing.md)
 
-Both methods support the exact same core features and functionality, but **file-based routing requires less code for the same or better results**. For this reason, **file-based routing is the preferred and recommended way** to configure TanStack Router. Most of the documentation is written from the perspective of file-based routing.
+Ambos os métodos suportam exatamente os mesmos recursos e funcionalidades principais, mas **o roteamento baseado em arquivos requer menos código para os mesmos ou melhores resultados**. Por essa razão, **o roteamento baseado em arquivos é a forma preferida e recomendada** de configurar o TanStack Router. A maior parte da documentação é escrita da perspectiva do roteamento baseado em arquivos.
 
-## Route Trees
+## Árvores de Routes
 
-Nested routing is a powerful concept that allows you to use a URL to render a nested component tree. For example, given the URL of `/blog/posts/123`, you could create a route hierarchy that looks like this:
+Roteamento aninhado é um conceito poderoso que permite usar uma URL para renderizar uma árvore de components aninhada. Por exemplo, dada a URL `/blog/posts/123`, você poderia criar uma hierarquia de routes que se parece com isso:
 
 ```tsx
 ├── blog
@@ -21,7 +21,7 @@ Nested routing is a powerful concept that allows you to use a URL to render a ne
 │   │   ├── $postId
 ```
 
-And render a component tree that looks like this:
+E renderizar uma árvore de components que se parece com isso:
 
 ```tsx
 <Blog>
@@ -31,7 +31,7 @@ And render a component tree that looks like this:
 </Blog>
 ```
 
-Let's take that concept and expand it out to a larger site structure, but with file-names now:
+Vamos pegar esse conceito e expandir para uma estrutura de site maior, mas agora com nomes de arquivos:
 
 ```
 /routes
@@ -52,16 +52,16 @@ Let's take that concept and expand it out to a larger site structure, but with f
 │   ├── $.tsx
 ```
 
-The above is a valid route tree configuration that can be used with TanStack Router! There's a lot of power and convention to unpack with file-based routing, so let's break it down a bit.
+O exemplo acima é uma configuração válida de árvore de routes que pode ser usada com o TanStack Router! Há muito poder e convenção para desempacotar com roteamento baseado em arquivos, então vamos detalhar um pouco.
 
-## Route Tree Configuration
+## Configuração da Árvore de Routes
 
-Route trees can be configured using a few different ways:
+Árvores de routes podem ser configuradas usando algumas formas diferentes:
 
-- [Flat Routes](./file-based-routing.md#flat-routes)
-- [Directories](./file-based-routing.md#directory-routes)
-- [Mixed Flat Routes and Directories](./file-based-routing.md#mixed-flat-and-directory-routes)
+- [Routes Flat](./file-based-routing.md#flat-routes)
+- [Diretórios](./file-based-routing.md#directory-routes)
+- [Routes Flat e Diretórios Misturados](./file-based-routing.md#mixed-flat-and-directory-routes)
 - [Virtual File Routes](./virtual-file-routes.md)
-- [Code-Based Routes](./code-based-routing.md)
+- [Routes Baseadas em Código](./code-based-routing.md)
 
-Please be sure to check out the full documentation links above for each type of route tree, or just proceed to the next section to get started with file-based routing.
+Certifique-se de conferir os links completos da documentação acima para cada tipo de árvore de routes, ou simplesmente prossiga para a próxima seção para começar com roteamento baseado em arquivos.

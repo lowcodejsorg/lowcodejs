@@ -3,15 +3,15 @@ id: virtual-file-routes
 title: Virtual File Routes
 ---
 
-> We'd like to thank the Remix team for [pioneering the concept of virtual file routes](https://www.youtube.com/watch?v=fjTX8hQTlEc&t=730s). We've taken inspiration from their work and adapted it to work with TanStack Router's existing file-based route-tree generation.
+> Gostaríamos de agradecer à equipe do Remix por [pioneirar o conceito de virtual file routes](https://www.youtube.com/watch?v=fjTX8hQTlEc&t=730s). Nos inspiramos no trabalho deles e adaptamos para funcionar com a geração de árvore de routes baseada em arquivos já existente do TanStack Router.
 
-Virtual file routes are a powerful concept that allows you to build a route tree programmatically using code that references real files in your project. This can be useful if:
+Virtual file routes são um conceito poderoso que permite construir uma árvore de routes programaticamente usando código que referencia arquivos reais no seu projeto. Isso pode ser útil se:
 
-- You have an existing route organization that you want to keep.
-- You want to customize the location of your route files.
-- You want to completely override TanStack Router's file-based route generation and build your own convention.
+- Você tem uma organização de routes existente que deseja manter.
+- Você quer personalizar a localização dos seus arquivos de route.
+- Você quer substituir completamente a geração de routes baseada em arquivos do TanStack Router e construir sua própria convenção.
 
-Here's a quick example of using virtual file routes to map a route tree to a set of real files in your project:
+Aqui está um exemplo rápido de uso de virtual file routes para mapear uma árvore de routes para um conjunto de arquivos reais no seu projeto:
 
 ```tsx
 // routes.ts
@@ -38,16 +38,16 @@ export const routes = rootRoute("root.tsx", [
 ]);
 ```
 
-## Configuration
+## Configuração
 
-Virtual file routes can be configured either via:
+Virtual file routes podem ser configuradas via:
 
-- The `TanStackRouter` plugin for Vite/Rspack/Webpack
-- The `tsr.config.json` file for the TanStack Router CLI
+- O plugin `TanStackRouter` para Vite/Rspack/Webpack
+- O arquivo `tsr.config.json` para o TanStack Router CLI
 
-## Configuration via the TanStackRouter Plugin
+## Configuração via Plugin TanStackRouter
 
-If you're using the `TanStackRouter` plugin for Vite/Rspack/Webpack, you can configure virtual file routes by passing the path of your routes file to the `virtualRoutesConfig` option when setting up the plugin:
+Se você está usando o plugin `TanStackRouter` para Vite/Rspack/Webpack, pode configurar virtual file routes passando o caminho do seu arquivo de routes para a opção `virtualRoutesConfig` ao configurar o plugin:
 
 ```tsx
 // vite.config.ts
@@ -66,7 +66,7 @@ export default defineConfig({
 });
 ```
 
-Or, you choose to define the virtual routes directly in the configuration:
+Ou você pode escolher definir as virtual routes diretamente na configuração:
 
 ```tsx
 // vite.config.ts
@@ -84,19 +84,19 @@ export default defineConfig({
 });
 ```
 
-## Creating Virtual File Routes
+## Criando Virtual File Routes
 
-To create virtual file routes, you'll need to import the `@tanstack/virtual-file-routes` package. This package provides a set of functions that allow you to create virtual routes that reference real files in your project. A few utility functions are exported from the package:
+Para criar virtual file routes, você precisará importar o pacote `@tanstack/virtual-file-routes`. Esse pacote fornece um conjunto de funções que permitem criar virtual routes que referenciam arquivos reais no seu projeto. Algumas funções utilitárias são exportadas do pacote:
 
-- `rootRoute` - Creates a virtual root route.
-- `route` - Creates a virtual route.
-- `index` - Creates a virtual index route.
-- `layout` - Creates a virtual pathless layout route.
-- `physical` - Creates a physical virtual route (more on this later).
+- `rootRoute` - Cria uma virtual root route.
+- `route` - Cria uma virtual route.
+- `index` - Cria uma virtual index route.
+- `layout` - Cria uma virtual pathless layout route.
+- `physical` - Cria uma virtual route física (mais sobre isso adiante).
 
 ## Virtual Root Route
 
-The `rootRoute` function is used to create a virtual root route. It takes a file name and an array of children routes. Here's an example of a virtual root route:
+A função `rootRoute` é usada para criar uma virtual root route. Ela recebe um nome de arquivo e um array de routes filhas. Aqui está um exemplo de uma virtual root route:
 
 ```tsx
 // routes.ts
@@ -109,7 +109,7 @@ export const routes = rootRoute("root.tsx", [
 
 ## Virtual Route
 
-The `route` function is used to create a virtual route. It takes a path, a file name, and an array of children routes. Here's an example of a virtual route:
+A função `route` é usada para criar uma virtual route. Ela recebe um caminho, um nome de arquivo e um array de routes filhas. Aqui está um exemplo de uma virtual route:
 
 ```tsx
 // routes.ts
@@ -122,7 +122,7 @@ export const routes = rootRoute("root.tsx", [
 ]);
 ```
 
-You can also define a virtual route without a file name. This allows to set a common path prefix for its children:
+Você também pode definir uma virtual route sem um nome de arquivo. Isso permite definir um prefixo de caminho comum para suas filhas:
 
 ```tsx
 // routes.ts
@@ -138,7 +138,7 @@ export const routes = rootRoute("root.tsx", [
 
 ## Virtual Index Route
 
-The `index` function is used to create a virtual index route. It takes a file name. Here's an example of a virtual index route:
+A função `index` é usada para criar uma virtual index route. Ela recebe um nome de arquivo. Aqui está um exemplo de uma virtual index route:
 
 ```tsx
 import { index } from "@tanstack/virtual-file-routes";
@@ -148,7 +148,7 @@ const routes = rootRoute("root.tsx", [index("index.tsx")]);
 
 ## Virtual Pathless Route
 
-The `layout` function is used to create a virtual pathless route. It takes a file name, an array of children routes, and an optional pathless ID. Here's an example of a virtual pathless route:
+A função `layout` é usada para criar uma virtual pathless route. Ela recebe um nome de arquivo, um array de routes filhas e um ID pathless opcional. Aqui está um exemplo de uma virtual pathless route:
 
 ```tsx
 // routes.ts
@@ -161,7 +161,7 @@ export const routes = rootRoute("root.tsx", [
 ]);
 ```
 
-You can also specify a pathless ID to give the route a unique identifier that is different from the filename:
+Você também pode especificar um ID pathless para dar à route um identificador único diferente do nome do arquivo:
 
 ```tsx
 // routes.ts
@@ -176,9 +176,9 @@ export const routes = rootRoute("root.tsx", [
 
 ## Physical Virtual Routes
 
-Physical virtual routes are a way to "mount" a directory of good ol' TanStack Router File Based routing convention under a specific URL path. This can be useful if you are using virtual routes to customize a small portion of your route tree high up in the hierarchy, but want to use the standard file-based routing convention for sub-routes and directories.
+Physical virtual routes são uma forma de "montar" um diretório com a boa e velha convenção de roteamento baseado em arquivos do TanStack Router sob um caminho de URL específico. Isso pode ser útil se você está usando virtual routes para personalizar uma pequena parte da sua árvore de routes no topo da hierarquia, mas quer usar a convenção padrão de roteamento baseado em arquivos para sub-routes e diretórios.
 
-Consider the following file structure:
+Considere a seguinte estrutura de arquivos:
 
 ```
 /routes
@@ -203,7 +203,7 @@ Consider the following file structure:
         ├── $likeId.tsx
 ```
 
-Let's use virtual routes to customize our route tree for everything but `posts`, then use physical virtual routes to mount the `posts` directory under the `/posts` path:
+Vamos usar virtual routes para personalizar nossa árvore de routes para tudo exceto `posts`, e então usar physical virtual routes para montar o diretório `posts` sob o caminho `/posts`:
 
 ```tsx
 // routes.ts
@@ -224,11 +224,11 @@ export const routes = rootRoute("root.tsx", [
 ]);
 ```
 
-### Merging Physical Routes at Current Level
+### Mesclando Routes Físicas no Nível Atual
 
-You can also use `physical` with an empty path prefix (or a single argument) to merge routes from a physical directory directly at the current level, without adding a path prefix. This is useful when you want to organize your routes into separate directories but have them appear at the same URL level.
+Você também pode usar `physical` com um prefixo de caminho vazio (ou um único argumento) para mesclar routes de um diretório físico diretamente no nível atual, sem adicionar um prefixo de caminho. Isso é útil quando você quer organizar suas routes em diretórios separados mas tê-las aparecendo no mesmo nível de URL.
 
-Consider the following file structure:
+Considere a seguinte estrutura de arquivos:
 
 ```
 /routes
@@ -239,7 +239,7 @@ Consider the following file structure:
     └── contact.tsx
 ```
 
-You can merge the `features` directory routes at the root level:
+Você pode mesclar as routes do diretório `features` no nível raiz:
 
 ```tsx
 // routes.ts
@@ -253,21 +253,21 @@ export const routes = rootRoute("__root.tsx", [
 ]);
 ```
 
-This will produce the following routes:
+Isso produzirá as seguintes routes:
 
-- `/about` - from `about.tsx`
-- `/` - from `features/index.tsx`
-- `/contact` - from `features/contact.tsx`
+- `/about` - de `about.tsx`
+- `/` - de `features/index.tsx`
+- `/contact` - de `features/contact.tsx`
 
-> **Note:** When merging at the same level, ensure there are no conflicting route paths between your virtual routes and the physical directory routes. If a conflict occurs (e.g., both have an `/about` route), the generator will throw an error.
+> **Nota:** Ao mesclar no mesmo nível, certifique-se de que não haja caminhos de route conflitantes entre suas virtual routes e as routes do diretório físico. Se um conflito ocorrer (por exemplo, ambos têm uma route `/about`), o gerador lançará um erro.
 
-## Virtual Routes inside of TanStack Router File Based routing
+## Virtual Routes Dentro do Roteamento Baseado em Arquivos do TanStack Router
 
-The previous section showed you how you can use TanStack Router's File Based routing convention inside of a virtual route configuration.
-However, the opposite is possible as well.  
-You can configure the main part of your app's route tree using TanStack Router's File Based routing convention and opt into virtual route configuration for specific subtrees.
+A seção anterior mostrou como você pode usar a convenção de roteamento baseado em arquivos do TanStack Router dentro de uma configuração de virtual route.
+No entanto, o oposto também é possível.
+Você pode configurar a parte principal da árvore de routes do seu app usando a convenção de roteamento baseado em arquivos do TanStack Router e optar pela configuração de virtual route para subárvores específicas.
 
-Consider the following file structure:
+Considere a seguinte estrutura de arquivos:
 
 ```
 /routes
@@ -282,9 +282,9 @@ Consider the following file structure:
 └── index.tsx
 ```
 
-Let's look at the `bar` directory which contains a special file named `__virtual.ts`. This file instructs the generator to switch over to virtual file route configuration for this directory (and its child directories).
+Vamos olhar o diretório `bar` que contém um arquivo especial chamado `__virtual.ts`. Esse arquivo instrui o gerador a mudar para a configuração de virtual file route para esse diretório (e seus diretórios filhos).
 
-`__virtual.ts` configures the virtual routes for that particular subtree of the route tree. It uses the same API as explained above, with the only difference being that no `rootRoute` is defined for that subtree:
+`__virtual.ts` configura as virtual routes para aquela subárvore particular da árvore de routes. Ele usa a mesma API explicada acima, com a única diferença sendo que nenhuma `rootRoute` é definida para aquela subárvore:
 
 ```tsx
 // routes/foo/bar/__virtual.ts
@@ -300,17 +300,17 @@ export default defineVirtualSubtreeConfig([
 ]);
 ```
 
-The helper function `defineVirtualSubtreeConfig` is closely modeled after vite's `defineConfig` and allows you to define a subtree configuration via a default export. The default export can either be
+A função auxiliar `defineVirtualSubtreeConfig` é modelada de forma semelhante ao `defineConfig` do Vite e permite definir uma configuração de subárvore via exportação padrão. A exportação padrão pode ser:
 
-- a subtree config object
-- a function returning a subtree config object
-- an async function returning a subtree config object
+- um objeto de configuração de subárvore
+- uma função retornando um objeto de configuração de subárvore
+- uma função async retornando um objeto de configuração de subárvore
 
 ## Inception
 
-You can mix and match TanStack Router's File Based routing convention and virtual route configuration however you like.  
-Let's go deeper!  
-Check out the following example that starts off using File Based routing convention, switches over to virtual route configuration for `/posts`, switches back to File Based routing convention for `/posts/lets-go` only to switch over to virtual route configuration again for `/posts/lets-go/deeper`.
+Você pode misturar e combinar a convenção de roteamento baseado em arquivos do TanStack Router e a configuração de virtual route como quiser.
+Vamos mais fundo!
+Confira o seguinte exemplo que começa usando a convenção de roteamento baseado em arquivos, muda para configuração de virtual route para `/posts`, volta para a convenção de roteamento baseado em arquivos para `/posts/lets-go` apenas para mudar novamente para configuração de virtual route para `/posts/lets-go/deeper`.
 
 ```
 ├── __root.tsx
@@ -327,9 +327,9 @@ Check out the following example that starts off using File Based routing convent
 └── posts.tsx
 ```
 
-## Configuration via the TanStack Router CLI
+## Configuração via TanStack Router CLI
 
-If you're using the TanStack Router CLI, you can configure virtual file routes by defining the path to your routes file in the `tsr.config.json` file:
+Se você está usando o TanStack Router CLI, pode configurar virtual file routes definindo o caminho do seu arquivo de routes no arquivo `tsr.config.json`:
 
 ```json
 // tsr.config.json
@@ -338,7 +338,7 @@ If you're using the TanStack Router CLI, you can configure virtual file routes b
 }
 ```
 
-Or you can define the virtual routes directly in the configuration, while much less common allows you to configure them via the TanStack Router CLI by adding a `virtualRouteConfig` object to your `tsr.config.json` file and defining your virtual routes and passing the resulting JSON that is generated by calling the actual `rootRoute`/`route`/`index`/etc functions from the `@tanstack/virtual-file-routes` package:
+Ou você pode definir as virtual routes diretamente na configuração. Embora muito menos comum, isso permite configurá-las via TanStack Router CLI adicionando um objeto `virtualRouteConfig` ao seu arquivo `tsr.config.json` e definindo suas virtual routes passando o JSON resultante gerado pela chamada das funções reais `rootRoute`/`route`/`index`/etc do pacote `@tanstack/virtual-file-routes`:
 
 ```json
 // tsr.config.json

@@ -3,44 +3,44 @@ id: important-defaults
 title: Important Defaults
 ---
 
-Out of the box, TanStack Query is configured with **aggressive but sane** defaults. **Sometimes these defaults can catch new users off guard or make learning/debugging difficult if they are unknown by the user.** Keep them in mind as you continue to learn and use TanStack Query:
+Direto da caixa, o TanStack Query e configurado com padroes **agressivos mas sensatos**. **As vezes esses padroes podem pegar novos usuarios de surpresa ou dificultar o aprendizado/depuracao se forem desconhecidos pelo usuario.** Mantenha-os em mente conforme voce continua a aprender e usar o TanStack Query:
 
-- Query instances via `useQuery` or `useInfiniteQuery` by default **consider cached data as stale**.
+- Instancias de query via `useQuery` ou `useInfiniteQuery` por padrao **consideram dados em cache como stale**.
 
-> To change this behavior, you can configure your queries both globally and per-query using the `staleTime` option. Specifying a longer `staleTime` means queries will not refetch their data as often
+> Para mudar esse comportamento, voce pode configurar suas queries tanto globalmente quanto por query usando a opcao `staleTime`. Especificar um `staleTime` mais longo significa que as queries nao vao fazer refetch dos seus dados com tanta frequencia
 
-- A Query that has a `staleTime` set is considered **fresh** until that `staleTime` has elapsed.
-  - set `staleTime` to e.g. `2 * 60 * 1000` to make sure data is read from the cache, without triggering any kinds of refetches, for 2 minutes, or until the Query is [invalidated manually](./query-invalidation.md).
-  - set `staleTime` to `Infinity` to never trigger a refetch until the Query is [invalidated manually](./query-invalidation.md).
-  - set `staleTime` to `'static'` to **never** trigger a refetch, even if the Query is [invalidated manually](./query-invalidation.md).
+- Uma query que tem um `staleTime` definido e considerada **fresh** ate que esse `staleTime` tenha expirado.
+  - defina `staleTime` para, por exemplo, `2 * 60 * 1000` para garantir que os dados sejam lidos do cache, sem disparar nenhum tipo de refetch, por 2 minutos, ou ate que a query seja [invalidada manualmente](./query-invalidation.md).
+  - defina `staleTime` para `Infinity` para nunca disparar um refetch ate que a query seja [invalidada manualmente](./query-invalidation.md).
+  - defina `staleTime` para `'static'` para **nunca** disparar um refetch, mesmo que a query seja [invalidada manualmente](./query-invalidation.md).
 
-- Stale queries are refetched automatically in the background when:
-  - New instances of the query mount
-  - The window is refocused
-  - The network is reconnected
+- Queries stale sao refeitas automaticamente em segundo plano quando:
+  - Novas instancias da query sao montadas
+  - A janela e refocada
+  - A rede e reconectada
 
-> Setting `staleTime` is the recommended way to avoid excessive refetches, but you can also customize the points in time for refetches by setting options like `refetchOnMount`, `refetchOnWindowFocus` and `refetchOnReconnect`.
+> Definir `staleTime` e a forma recomendada de evitar refetches excessivos, mas voce tambem pode customizar os momentos de refetch definindo opcoes como `refetchOnMount`, `refetchOnWindowFocus` e `refetchOnReconnect`.
 
-- Queries can optionally be configured with a `refetchInterval` to trigger refetches periodically, which is independent of the `staleTime` setting.
+- Queries podem opcionalmente ser configuradas com um `refetchInterval` para disparar refetches periodicamente, o que e independente da configuracao de `staleTime`.
 
-- Query results that have no more active instances of `useQuery`, `useInfiniteQuery` or query observers are labeled as "inactive" and remain in the cache in case they are used again at a later time.
-- By default, "inactive" queries are garbage collected after **5 minutes**.
+- Resultados de queries que nao tem mais instancias ativas de `useQuery`, `useInfiniteQuery` ou query observers sao rotulados como "inativos" e permanecem no cache caso sejam usados novamente mais tarde.
+- Por padrao, queries "inativas" sofrem garbage collection apos **5 minutos**.
 
-  > To change this, you can alter the default `gcTime` for queries to something other than `1000 * 60 * 5` milliseconds.
+  > Para mudar isso, voce pode alterar o `gcTime` padrao das queries para algo diferente de `1000 * 60 * 5` milissegundos.
 
-- Queries that fail are **silently retried 3 times, with exponential backoff delay** before capturing and displaying an error to the UI.
+- Queries que falham sao **silenciosamente tentadas novamente 3 vezes, com atraso exponencial** antes de capturar e exibir um erro na UI.
 
-  > To change this, you can alter the default `retry` and `retryDelay` options for queries to something other than `3` and the default exponential backoff function.
+  > Para mudar isso, voce pode alterar as opcoes padrao `retry` e `retryDelay` das queries para algo diferente de `3` e a funcao padrao de backoff exponencial.
 
-- Query results by default are **structurally shared to detect if data has actually changed** and if not, **the data reference remains unchanged** to better help with value stabilization with regards to useMemo and useCallback. If this concept sounds foreign, then don't worry about it! 99.9% of the time you will not need to disable this and it makes your app more performant at zero cost to you.
+- Resultados de queries por padrao sao **compartilhados estruturalmente para detectar se os dados realmente mudaram** e se nao, **a referencia dos dados permanece inalterada** para ajudar melhor com a estabilizacao de valores em relacao ao useMemo e useCallback. Se esse conceito parece estranho, entao nao se preocupe com isso! 99.9% das vezes voce nao vai precisar desabilitar isso e isso torna sua aplicacao mais performatica sem custo nenhum para voce.
 
-  > Structural sharing only works with JSON-compatible values, any other value types will always be considered as changed. If you are seeing performance issues because of large responses for example, you can disable this feature with the `config.structuralSharing` flag. If you are dealing with non-JSON compatible values in your query responses and still want to detect if data has changed or not, you can provide your own custom function as `config.structuralSharing` to compute a value from the old and new responses, retaining references as required.
+  > O compartilhamento estrutural so funciona com valores compativeis com JSON, qualquer outro tipo de valor sempre sera considerado como alterado. Se voce esta tendo problemas de performance por causa de respostas grandes, por exemplo, voce pode desabilitar essa funcionalidade com a flag `config.structuralSharing`. Se voce esta lidando com valores nao compativeis com JSON nas respostas das suas queries e ainda quer detectar se os dados mudaram ou nao, voce pode fornecer sua propria funcao customizada como `config.structuralSharing` para computar um valor a partir das respostas antiga e nova, mantendo referencias conforme necessario.
 
 [//]: # "Materials"
 
-## Further Reading
+## Leitura Adicional
 
-Have a look at the following articles from our [Community Resources](../../../community-resources) for further explanations of the defaults:
+De uma olhada nos seguintes artigos dos nossos [Recursos da Comunidade](../../../community-resources) para explicacoes adicionais sobre os padroes:
 
 - [Practical React Query](https://tkdodo.eu/blog/practical-react-query)
 - [React Query as a State Manager](https://tkdodo.eu/blog/react-query-as-a-state-manager)

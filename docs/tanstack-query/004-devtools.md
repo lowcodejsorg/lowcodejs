@@ -3,61 +3,61 @@ id: devtools
 title: Devtools
 ---
 
-Wave your hands in the air and shout hooray because React Query comes with dedicated devtools! 🥳
+Levante as maos e grite viva porque o React Query vem com devtools dedicadas! 🥳
 
-When you begin your React Query journey, you'll want these devtools by your side. They help visualize all the inner workings of React Query and will likely save you hours of debugging if you find yourself in a pinch!
+Quando voce comecar sua jornada com React Query, voce vai querer essas devtools ao seu lado. Elas ajudam a visualizar todo o funcionamento interno do React Query e provavelmente vao te economizar horas de depuracao se voce se encontrar em uma situacao dificil!
 
-> For Chrome, Firefox, and Edge users: Third-party browser extensions are available for debugging TanStack Query directly in browser DevTools. These provide the same functionality as the framework-specific devtools packages:
+> Para usuarios de Chrome, Firefox e Edge: extensoes de navegador de terceiros estao disponiveis para depurar o TanStack Query diretamente nas DevTools do navegador. Elas fornecem a mesma funcionalidade dos pacotes de devtools especificos de framework:
 >
-> - <img alt="Chrome logo" src="https://www.google.com/chrome/static/images/chrome-logo.svg" width="16" height="16" class="inline mr-1 not-prose" /> [Devtools for Chrome](https://chromewebstore.google.com/detail/tanstack-query-devtools/annajfchloimdhceglpgglpeepfghfai)
-> - <img alt="Firefox logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg" width="16" height="16" class="inline mr-1 not-prose" /> [Devtools for Firefox](https://addons.mozilla.org/en-US/firefox/addon/tanstack-query-devtools/)
-> - <img alt="Edge logo" src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" width="16" height="16" class="inline mr-1 not-prose" /> [Devtools for Edge](https://microsoftedge.microsoft.com/addons/detail/tanstack-query-devtools/edmdpkgkacmjopodhfolmphdenmddobj)
+> - <img alt="Chrome logo" src="https://www.google.com/chrome/static/images/chrome-logo.svg" width="16" height="16" class="inline mr-1 not-prose" /> [Devtools para Chrome](https://chromewebstore.google.com/detail/tanstack-query-devtools/annajfchloimdhceglpgglpeepfghfai)
+> - <img alt="Firefox logo" src="https://upload.wikimedia.org/wikipedia/commons/a/a0/Firefox_logo%2C_2019.svg" width="16" height="16" class="inline mr-1 not-prose" /> [Devtools para Firefox](https://addons.mozilla.org/en-US/firefox/addon/tanstack-query-devtools/)
+> - <img alt="Edge logo" src="https://upload.wikimedia.org/wikipedia/commons/9/98/Microsoft_Edge_logo_%282019%29.svg" width="16" height="16" class="inline mr-1 not-prose" /> [Devtools para Edge](https://microsoftedge.microsoft.com/addons/detail/tanstack-query-devtools/edmdpkgkacmjopodhfolmphdenmddobj)
 
-> For React Native users: A third-party native macOS app is available for debugging React Query in ANY js-based application. Monitor queries across devices in real-time. Check it out here: [rn-better-dev-tools](https://github.com/LovesWorking/rn-better-dev-tools)
+> Para usuarios de React Native: um aplicativo nativo de terceiros para macOS esta disponivel para depurar React Query em QUALQUER aplicacao baseada em js. Monitore queries entre dispositivos em tempo real. Confira aqui: [rn-better-dev-tools](https://github.com/LovesWorking/rn-better-dev-tools)
 
-> Note that since version 5, the dev tools support observing mutations as well.
+> Note que desde a versao 5, as devtools suportam a observacao de mutations tambem.
 
-## Install and Import the Devtools
+## Instalar e Importar as Devtools
 
-The devtools are a separate package that you need to install:
+As devtools sao um pacote separado que voce precisa instalar:
 
 ```bash
 npm i @tanstack/react-query-devtools
 ```
 
-or
+ou
 
 ```bash
 pnpm add @tanstack/react-query-devtools
 ```
 
-or
+ou
 
 ```bash
 yarn add @tanstack/react-query-devtools
 ```
 
-or
+ou
 
 ```bash
 bun add @tanstack/react-query-devtools
 ```
 
-For Next 13+ App Dir you must install it as a dev dependency for it to work.
+Para Next 13+ App Dir voce deve instala-lo como dependencia de desenvolvimento para que funcione.
 
-You can import the devtools like this:
+Voce pode importar as devtools assim:
 
 ```tsx
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 ```
 
-By default, React Query Devtools are only included in bundles when `process.env.NODE_ENV === 'development'`, so you don't need to worry about excluding them during a production build.
+Por padrao, as React Query Devtools so sao incluidas nos bundles quando `process.env.NODE_ENV === 'development'`, entao voce nao precisa se preocupar em exclui-las durante um build de producao.
 
-## Floating Mode
+## Modo Flutuante
 
-Floating Mode will mount the devtools as a fixed, floating element in your app and provide a toggle in the corner of the screen to show and hide the devtools. This toggle state will be stored and remembered in localStorage across reloads.
+O Modo Flutuante vai montar as devtools como um elemento fixo e flutuante na sua aplicacao e fornecer um botao no canto da tela para mostrar e esconder as devtools. Esse estado do botao sera armazenado e lembrado no localStorage entre recarregamentos.
 
-Place the following code as high in your React app as you can. The closer it is to the root of the page, the better it will work!
+Coloque o codigo a seguir o mais alto possivel na sua aplicacao React. Quanto mais proximo da raiz da pagina, melhor vai funcionar!
 
 ```tsx
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -72,32 +72,32 @@ function App() {
 }
 ```
 
-### Options
+### Opcoes
 
 - `initialIsOpen: boolean`
-  - Set this `true` if you want the dev tools to default to being open
+  - Defina como `true` se voce quiser que as devtools fiquem abertas por padrao
 - `buttonPosition?: "top-left" | "top-right" | "bottom-left" | "bottom-right" | "relative"`
-  - Defaults to `bottom-right`
-  - The position of the React Query logo to open and close the devtools panel
-  - If `relative`, the button is placed in the location that you render the devtools.
+  - Padrao: `bottom-right`
+  - A posicao do logo do React Query para abrir e fechar o painel das devtools
+  - Se `relative`, o botao sera colocado no local onde voce renderizar as devtools.
 - `position?: "top" | "bottom" | "left" | "right"`
-  - Defaults to `bottom`
-  - The position of the React Query devtools panel
+  - Padrao: `bottom`
+  - A posicao do painel das devtools do React Query
 - `client?: QueryClient`,
-  - Use this to use a custom QueryClient. Otherwise, the one from the nearest context will be used.
+  - Use isso para usar um QueryClient customizado. Caso contrario, o mais proximo do context sera usado.
 - `errorTypes?: { name: string; initializer: (query: Query) => TError}[]`
-  - Use this to predefine some errors that can be triggered on your queries. Initializer will be called (with the specific query) when that error is toggled on from the UI. It must return an Error.
+  - Use isso para predefinir alguns erros que podem ser disparados nas suas queries. O initializer sera chamado (com a query especifica) quando aquele erro for ativado pela UI. Ele deve retornar um Error.
 - `styleNonce?: string`
-  - Use this to pass a nonce to the style tag that is added to the document head. This is useful if you are using a Content Security Policy (CSP) nonce to allow inline styles.
+  - Use isso para passar um nonce para a tag style que e adicionada ao head do documento. Isso e util se voce esta usando um nonce de Content Security Policy (CSP) para permitir estilos inline.
 - `shadowDOMTarget?: ShadowRoot`
-  - Default behavior will apply the devtool's styles to the head tag within the DOM.
-  - Use this to pass a shadow DOM target to the devtools so that the styles will be applied within the shadow DOM instead of within the head tag in the light DOM.
+  - O comportamento padrao vai aplicar os estilos das devtools na tag head dentro do DOM.
+  - Use isso para passar um alvo de shadow DOM para as devtools para que os estilos sejam aplicados dentro do shadow DOM ao inves da tag head no light DOM.
 
-## Embedded Mode
+## Modo Embutido
 
-Embedded mode will show the development tools as a fixed element in your application, so you can use our panel in your own development tools.
+O modo embutido vai mostrar as ferramentas de desenvolvimento como um elemento fixo na sua aplicacao, para que voce possa usar nosso painel nas suas proprias ferramentas de desenvolvimento.
 
-Place the following code as high in your React app as you can. The closer it is to the root of the page, the better it will work!
+Coloque o codigo a seguir o mais alto possivel na sua aplicacao React. Quanto mais proximo da raiz da pagina, melhor vai funcionar!
 
 ```tsx
 import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
@@ -117,28 +117,28 @@ function App() {
 }
 ```
 
-### Options
+### Opcoes
 
 - `style?: React.CSSProperties`
-  - Custom styles for the devtools panel
-  - Default: `{ height: '500px' }`
-  - Example: `{ height: '100%' }`
-  - Example: `{ height: '100%', width: '100%' }`
+  - Estilos customizados para o painel das devtools
+  - Padrao: `{ height: '500px' }`
+  - Exemplo: `{ height: '100%' }`
+  - Exemplo: `{ height: '100%', width: '100%' }`
 - `onClose?: () => unknown`
-  - Callback function that is called when the devtools panel is closed
+  - Funcao de callback que e chamada quando o painel das devtools e fechado
 - `client?: QueryClient`,
-  - Use this to use a custom QueryClient. Otherwise, the one from the nearest context will be used.
+  - Use isso para usar um QueryClient customizado. Caso contrario, o mais proximo do context sera usado.
 - `errorTypes?: { name: string; initializer: (query: Query) => TError}[]`
-  - Use this to predefine some errors that can be triggered on your queries. Initializer will be called (with the specific query) when that error is toggled on from the UI. It must return an Error.
+  - Use isso para predefinir alguns erros que podem ser disparados nas suas queries. O initializer sera chamado (com a query especifica) quando aquele erro for ativado pela UI. Ele deve retornar um Error.
 - `styleNonce?: string`
-  - Use this to pass a nonce to the style tag that is added to the document head. This is useful if you are using a Content Security Policy (CSP) nonce to allow inline styles.
+  - Use isso para passar um nonce para a tag style que e adicionada ao head do documento. Isso e util se voce esta usando um nonce de Content Security Policy (CSP) nonce para permitir estilos inline.
 - `shadowDOMTarget?: ShadowRoot`
-  - Default behavior will apply the devtool's styles to the head tag within the DOM.
-  - Use this to pass a shadow DOM target to the devtools so that the styles will be applied within the shadow DOM instead of within the head tag in the light DOM.
+  - O comportamento padrao vai aplicar os estilos das devtools na tag head dentro do DOM.
+  - Use isso para passar um alvo de shadow DOM para as devtools para que os estilos sejam aplicados dentro do shadow DOM ao inves da tag head no light DOM.
 
-## Devtools in production
+## Devtools em producao
 
-Devtools are excluded in production builds. However, it might be desirable to lazy load the devtools in production:
+As devtools sao excluidas em builds de producao. No entanto, pode ser desejavel carregar as devtools de forma lazy em producao:
 
 ```tsx
 import * as React from "react";
@@ -180,11 +180,11 @@ function App() {
 export default App;
 ```
 
-With this, calling `window.toggleDevtools()` will download the devtools bundle and show them.
+Com isso, chamar `window.toggleDevtools()` vai baixar o bundle das devtools e exibi-las.
 
-### Modern bundlers
+### Bundlers modernos
 
-If your bundler supports package exports, you can use the following import path:
+Se o seu bundler suporta exportacoes de pacotes, voce pode usar o seguinte caminho de importacao:
 
 ```tsx
 const ReactQueryDevtoolsProduction = React.lazy(() =>
@@ -194,4 +194,4 @@ const ReactQueryDevtoolsProduction = React.lazy(() =>
 );
 ```
 
-For TypeScript, you would need to set `moduleResolution: 'nodenext'` in your tsconfig, which requires at least TypeScript v4.7.
+Para TypeScript, voce precisaria definir `moduleResolution: 'nodenext'` no seu tsconfig, o que requer pelo menos TypeScript v4.7.

@@ -2,47 +2,47 @@
 title: Decisions on Developer Experience
 ---
 
-When people first start using TanStack Router, they often have a lot of questions that revolve around the following themes:
+Quando as pessoas começam a usar o TanStack Router, elas geralmente têm muitas perguntas que giram em torno dos seguintes temas:
 
-> Why do I have to do things this way?
+> Por que eu tenho que fazer as coisas desse jeito?
 
-> Why is it done this way? and not that way?
+> Por que é feito desse jeito? e não daquele?
 
-> I'm used to doing it this way, why should I change?
+> Eu estou acostumado a fazer desse jeito, por que eu deveria mudar?
 
-And they are all valid questions. For the most part, people are used to using routing libraries that are very similar to each other. They all have a similar API, similar concepts, and similar ways of doing things.
+E são todas perguntas válidas. Na maioria das vezes, as pessoas estão acostumadas a usar bibliotecas de routing que são muito semelhantes entre si. Todas têm uma API similar, conceitos similares e maneiras similares de fazer as coisas.
 
-But TanStack Router is different. It's not your average routing library. It's not your average state management library. It's not your average anything.
+Mas o TanStack Router é diferente. Ele não é sua biblioteca de routing comum. Não é sua biblioteca de gerenciamento de state comum. Não é nada comum.
 
-## TanStack Router's origin story
+## A história de origem do TanStack Router
 
-It's important to remember that TanStack Router's origins stem from [Nozzle.io](https://nozzle.io)'s need for a client-side routing solution that offered a first-in-class _URL Search Parameters_ experience without compromising on the **_type-safety_** that was required to power its complex dashboards.
+É importante lembrar que as origens do TanStack Router vêm da necessidade do [Nozzle.io](https://nozzle.io) por uma solução de routing do lado do cliente que oferecesse uma experiência de primeira classe com _URL Search Parameters_ sem comprometer a **_segurança de tipo_** necessária para alimentar seus dashboards complexos.
 
-And so, from TanStack Router's very inception, every facet of its design was meticulously thought out to ensure that its type-safety and developer experience were second to none.
+E assim, desde a sua concepção, cada faceta do design do TanStack Router foi meticulosamente pensada para garantir que sua segurança de tipo e experiência de desenvolvedor fossem incomparáveis.
 
-## How does TanStack Router achieve this?
+## Como o TanStack Router consegue isso?
 
 > TypeScript! TypeScript! TypeScript!
 
-Every aspect of TanStack Router is designed to be as type-safe as possible, and this is achieved by leveraging TypeScript's type system to its fullest extent. This involves using some very advanced and complex types, type inference, and other features to ensure that the developer experience is as smooth as possible.
+Cada aspecto do TanStack Router é projetado para ser o mais type-safe possível, e isso é alcançado aproveitando o sistema de tipos do TypeScript ao máximo. Isso envolve o uso de alguns tipos muito avançados e complexos, inferência de tipo e outros recursos para garantir que a experiência do desenvolvedor seja a mais suave possível.
 
-But to achieve this, we had to make some decisions that deviate from the norms in the routing world.
+Mas para alcançar isso, tivemos que tomar algumas decisões que desviam das normas no mundo do routing.
 
-1. [**Route configuration boilerplate?**](#why-is-the-routers-configuration-done-this-way): You have to define your routes in a way that allows TypeScript to infer the types of your routes as much as possible.
-2. [**TypeScript module declaration for the router?**](#declaring-the-router-instance-for-type-inference): You have to pass the `Router` instance to the rest of your application using TypeScript's module declaration.
-3. [**Why push for file-based routing over code-based?**](#why-is-file-based-routing-the-preferred-way-to-define-routes): We push for file-based routing as the preferred way to define your routes.
+1. [**Boilerplate de configuração de route?**](#why-is-the-routers-configuration-done-this-way): Você precisa definir seus routes de uma maneira que permita ao TypeScript inferir os tipos dos seus routes o máximo possível.
+2. [**Declaração de módulo TypeScript para o router?**](#declaring-the-router-instance-for-type-inference): Você precisa passar a instância do `Router` para o resto da sua aplicação usando a declaração de módulo do TypeScript.
+3. [**Por que incentivar routing baseado em arquivo ao invés de baseado em código?**](#why-is-file-based-routing-the-preferred-way-to-define-routes): Incentivamos o routing baseado em arquivo como a maneira preferida de definir seus routes.
 
-> TLDR; All the design decisions in the developer experience of using TanStack Router are made so that you can have a best-in-class type-safety experience without compromising on the control, flexibility, and maintainability of your route configurations.
+> TLDR; Todas as decisões de design na experiência de desenvolvedor ao usar o TanStack Router são feitas para que você tenha uma experiência de segurança de tipo de primeira classe sem comprometer o controle, a flexibilidade e a manutenibilidade das suas configurações de route.
 
-## Why is the Router's configuration done this way?
+## Por que a configuração do Router é feita dessa maneira?
 
-When you want to leverage the TypeScript's inference features to its fullest, you'll quickly realize that _Generics_ are your best friend. And so, TanStack Router uses Generics everywhere to ensure that the types of your routes are inferred as much as possible.
+Quando você quer aproveitar os recursos de inferência do TypeScript ao máximo, rapidamente perceberá que _Generics_ são seu melhor amigo. E então, o TanStack Router usa Generics em todo lugar para garantir que os tipos dos seus routes sejam inferidos o máximo possível.
 
-This means that you have to define your routes in a way that allows TypeScript to infer the types of your routes as much as possible.
+Isso significa que você precisa definir seus routes de uma maneira que permita ao TypeScript inferir os tipos dos seus routes o máximo possível.
 
-> Can I use JSX to define my routes?
+> Posso usar JSX para definir meus routes?
 
-Using JSX for defining your routes is **out of the question**, as TypeScript will not be able to infer the route configuration types of your router.
+Usar JSX para definir seus routes está **fora de questão**, pois o TypeScript não será capaz de inferir os tipos de configuração de route do seu router.
 
 ```tsx
 // ⛔️ This is not possible
@@ -58,9 +58,9 @@ function App() {
 }
 ```
 
-And since this would mean that you'd have to manually type the `to` prop of the `<Link>` component and wouldn't catch any errors until runtime, it's not a viable option.
+E como isso significaria que você teria que tipar manualmente a prop `to` do component `<Link>` e não detectaria nenhum erro até o tempo de execução, não é uma opção viável.
 
-> Maybe I could define my routes as a tree of nested objects?
+> Talvez eu pudesse definir meus routes como uma árvore de objetos aninhados?
 
 ```tsx
 // ⛔️ This file will just keep growing and growing...
@@ -79,33 +79,33 @@ const router = createRouter({
 });
 ```
 
-At first glance, this seems like a good idea. It's easy to visualize the entire route hierarchy in one go. But this approach has a couple of big downsides that make it not ideal for large applications:
+À primeira vista, isso parece uma boa ideia. É fácil visualizar toda a hierarquia de routes de uma só vez. Mas essa abordagem tem algumas desvantagens grandes que a tornam não ideal para aplicações grandes:
 
-- **It's not very scalable**: As your application grows, the tree will grow and become harder to manage. And since it's all defined in one file, it can become very hard to maintain.
-- **It's not great for code-splitting**: You'd have to manually code-split each component and then pass it into the `component` property of the route, further complicating the route configuration with an ever-growing route configuration file.
+- **Não é muito escalável**: Conforme sua aplicação cresce, a árvore crescerá e ficará mais difícil de gerenciar. E como tudo é definido em um único arquivo, pode ficar muito difícil de manter.
+- **Não é ótimo para code splitting**: Você teria que fazer code splitting manualmente de cada component e depois passá-lo para a propriedade `component` do route, complicando ainda mais a configuração de route com um arquivo de configuração cada vez maior.
 
-This only gets worse as you begin to use more features of the router, such as nested context, loaders, search param validation, etc.
+Isso só piora conforme você começa a usar mais recursos do router, como context aninhado, loaders, validação de search param, etc.
 
-> So, what's the best way to define my routes?
+> Então, qual é a melhor maneira de definir meus routes?
 
-What we found to be the best way to define your routes is to abstract the definition of the route configuration outside of the route-tree. Then stitch together your route configurations into a single cohesive route-tree that is then passed into the `createRouter` function.
+O que descobrimos ser a melhor maneira de definir seus routes é abstrair a definição da configuração de route para fora da árvore de routes. Depois, costurar as configurações de route em uma única árvore de routes coesa que é então passada para a função `createRouter`.
 
-You can read more about [code-based routing](./routing/code-based-routing.md) to see how to define your routes in this way.
+Você pode ler mais sobre [routing baseado em código](./routing/code-based-routing.md) para ver como definir seus routes dessa maneira.
 
 > [!TIP]
-> Finding Code-based routing to be a bit too cumbersome? See why [file-based routing](#why-is-file-based-routing-the-preferred-way-to-define-routes) is the preferred way to define your routes.
+> Achando o routing baseado em código um pouco trabalhoso demais? Veja por que o [routing baseado em arquivo](#why-is-file-based-routing-the-preferred-way-to-define-routes) é a maneira preferida de definir seus routes.
 
-## Declaring the Router instance for type inference
+## Declarando a instância do Router para inferência de tipo
 
-> Why do I have to declare the `Router`?
+> Por que eu tenho que declarar o `Router`?
 
-> This declaration stuff is way too complicated for me...
+> Esse negócio de declaração é complicado demais para mim...
 
-Once you've constructed your routes into a tree and passed it into your Router instance (using `createRouter`) with all the generics working correctly, you then need to somehow pass this information to the rest of your application.
+Uma vez que você construiu seus routes em uma árvore e os passou para sua instância do Router (usando `createRouter`) com todos os generics funcionando corretamente, você então precisa de alguma forma passar essa informação para o resto da sua aplicação.
 
-There were two approaches we considered for this:
+Havia duas abordagens que consideramos para isso:
 
-1. **Imports**: You could import the `Router` instance from the file where you created it and use it directly in your components.
+1. **Imports**: Você poderia importar a instância do `Router` do arquivo onde a criou e usá-la diretamente nos seus components.
 
 ```tsx
 import { router } from "@/src/app";
@@ -118,11 +118,11 @@ export const PostsIdLink = () => {
 };
 ```
 
-A downside to this approach is that you'd have to import the entire `Router` instance into every file where you want to use it. This can lead to increased bundle sizes and can be cumbersome to manage, and only get worse as your application grows and you use more features of the router.
+Uma desvantagem dessa abordagem é que você teria que importar toda a instância do `Router` em cada arquivo onde quisesse usá-la. Isso pode levar a tamanhos de bundle maiores e pode ser trabalhoso de gerenciar, e só piora conforme sua aplicação cresce e você usa mais recursos do router.
 
-2. **Module declaration**: You can use TypeScript's module declaration to declare the `Router` instance as a module that can be used for type inference anywhere in your application without having to import it.
+2. **Declaração de módulo**: Você pode usar a declaração de módulo do TypeScript para declarar a instância do `Router` como um módulo que pode ser usado para inferência de tipo em qualquer lugar da sua aplicação sem precisar importá-la.
 
-You'll do this once in your application.
+Você fará isso uma vez na sua aplicação.
 
 ```tsx
 // src/app.tsx
@@ -133,7 +133,7 @@ declare module "@tanstack/react-router" {
 }
 ```
 
-And then you can benefit from its auto-complete anywhere in your app without having to import it.
+E então você pode se beneficiar do auto-complete em qualquer lugar da sua aplicação sem precisar importá-la.
 
 ```tsx
 export const PostsIdLink = () => {
@@ -149,22 +149,22 @@ export const PostsIdLink = () => {
 };
 ```
 
-We went with **module declaration**, as it is what we found to be the most scalable and maintainable approach with the least amount of overhead and boilerplate.
+Optamos pela **declaração de módulo**, pois é o que descobrimos ser a abordagem mais escalável e manutenível com a menor quantidade de overhead e boilerplate.
 
-## Why is file-based routing the preferred way to define routes?
+## Por que o routing baseado em arquivo é a maneira preferida de definir routes?
 
-> Why are the docs pushing for file-based routing?
+> Por que a documentação insiste no routing baseado em arquivo?
 
-> I'm used to defining my routes in a single file, why should I change?
+> Estou acostumado a definir meus routes em um único arquivo, por que eu deveria mudar?
 
-Something you'll notice (quite soon) in the TanStack Router documentation is that we push for **file-based routing** as the preferred method for defining your routes. This is because we've found that file-based routing is the most scalable and maintainable way to define your routes.
+Algo que você vai notar (bem cedo) na documentação do TanStack Router é que incentivamos o **routing baseado em arquivo** como o método preferido para definir seus routes. Isso porque descobrimos que o routing baseado em arquivo é a maneira mais escalável e manutenível de definir seus routes.
 
 > [!TIP]
-> Before you continue, it's important you have a good understanding of [code-based routing](./routing/code-based-routing.md) and [file-based routing](./routing/file-based-routing.md).
+> Antes de continuar, é importante que você tenha um bom entendimento do [routing baseado em código](./routing/code-based-routing.md) e do [routing baseado em arquivo](./routing/file-based-routing.md).
 
-As mentioned in the beginning, TanStack Router was designed for complex applications that require a high degree of type-safety and maintainability. And to achieve this, the configuration of the router has been done in a precise way that allows TypeScript to infer the types of your routes as much as possible.
+Como mencionado no início, o TanStack Router foi projetado para aplicações complexas que exigem um alto grau de segurança de tipo e manutenibilidade. E para alcançar isso, a configuração do router foi feita de uma maneira precisa que permite ao TypeScript inferir os tipos dos seus routes o máximo possível.
 
-A key difference in the set-up of a _basic_ application with TanStack Router, is that your route configurations require a function to be provided to `getParentRoute`, that returns the parent route of the current route.
+Uma diferença chave na configuração de uma aplicação _básica_ com o TanStack Router é que suas configurações de route requerem que uma função seja fornecida para `getParentRoute`, que retorna o route pai do route atual.
 
 ```tsx
 import { createRoute } from "@tanstack/react-router";
@@ -176,13 +176,13 @@ export const postsIndexRoute = createRoute({
 });
 ```
 
-At this stage, this is done so the definition of `postsIndexRoute` can be aware of its location in the route tree and so that it can correctly infer the types of the `context`, `path params`, `search params` returned by the parent route. Incorrectly defining the `getParentRoute` function means that the properties of the parent route will not be correctly inferred by the child route.
+Neste estágio, isso é feito para que a definição de `postsIndexRoute` possa estar ciente da sua localização na árvore de routes e para que possa inferir corretamente os tipos do `context`, `path params`, `search params` retornados pelo route pai. Definir incorretamente a função `getParentRoute` significa que as propriedades do route pai não serão corretamente inferidas pelo route filho.
 
-As such, this is a critical part of the route configuration and a point of failure if not done correctly.
+Como tal, essa é uma parte crítica da configuração de route e um ponto de falha se não for feita corretamente.
 
-But this is only one part of setting up a basic application. TanStack Router requires all the routes (including the root route) to be stitched into a **_route-tree_** so that it may be passed into the `createRouter` function before declaring the `Router` instance on the module for type inference. This is another critical part of the route configuration and a point of failure if not done correctly.
+Mas essa é apenas uma parte da configuração de uma aplicação básica. O TanStack Router requer que todos os routes (incluindo o root route) sejam costurados em uma **_árvore de routes_** para que possa ser passada para a função `createRouter` antes de declarar a instância do `Router` no módulo para inferência de tipo. Essa é outra parte crítica da configuração de route e um ponto de falha se não for feita corretamente.
 
-> 🤯 If this route-tree were in its own file for an application with ~40-50 routes, it can easily grow up to 700+ lines.
+> Se essa árvore de routes estivesse em seu próprio arquivo para uma aplicação com ~40-50 routes, ela pode facilmente crescer para mais de 700 linhas.
 
 ```tsx
 const routeTree = rootRoute.addChildren([
@@ -190,9 +190,9 @@ const routeTree = rootRoute.addChildren([
 ]);
 ```
 
-This complexity only increases as you begin to use more features of the router, such as nested context, loaders, search param validation, etc. As such, it no longer becomes feasible to define your routes in a single file. And so, users end up building their own _semi consistent_ way of defining their routes across multiple files. This can lead to inconsistencies and errors in the route configuration.
+Essa complexidade só aumenta conforme você começa a usar mais recursos do router, como context aninhado, loaders, validação de search param, etc. Assim, não é mais viável definir seus routes em um único arquivo. E então, os usuários acabam criando sua própria maneira _semi consistente_ de definir seus routes em múltiplos arquivos. Isso pode levar a inconsistências e erros na configuração de route.
 
-Finally, comes the issue of code-splitting. As your application grows, you'll want to code-split your components to reduce the initial bundle size of your application. This can be a bit of a headache to manage when you're defining your routes in a single file or even across multiple files.
+Por fim, vem a questão do code splitting. Conforme sua aplicação cresce, você vai querer fazer code splitting dos seus components para reduzir o tamanho inicial do bundle da sua aplicação. Isso pode ser um pouco trabalhoso de gerenciar quando você está definindo seus routes em um único arquivo ou mesmo em múltiplos arquivos.
 
 ```tsx
 import { createRoute, lazyRouteComponent } from "@tanstack/react-router";
@@ -205,21 +205,21 @@ export const postsIndexRoute = createRoute({
 });
 ```
 
-All of this boilerplate, no matter how essential for providing a best-in-class type-inference experience, can be a bit overwhelming and can lead to inconsistencies and errors in the route configuration.
+Todo esse boilerplate, não importa quão essencial para fornecer uma experiência de inferência de tipo de primeira classe, pode ser um pouco esmagador e pode levar a inconsistências e erros na configuração de route.
 
-... and this example configuration is just for rendering a single codes-split route. Imagine having to do this for 40-50 routes. Now remember that you still haven't touched the `context`, `loaders`, `search param validation`, and other features of the router 🤕.
+... e essa configuração de exemplo é apenas para renderizar um único route com code splitting. Imagine ter que fazer isso para 40-50 routes. Agora lembre-se que você ainda nem tocou no `context`, `loaders`, `validação de search param` e outros recursos do router.
 
-> So, why's file-based routing the preferred way?
+> Então, por que o routing baseado em arquivo é a maneira preferida?
 
-TanStack Router's file-based routing is designed to solve all of these issues. It allows you to define your routes in a predictable way that is easy to manage and maintain, and is scalable as your application grows.
+O routing baseado em arquivo do TanStack Router é projetado para resolver todos esses problemas. Ele permite que você defina seus routes de uma maneira previsível que é fácil de gerenciar e manter, e é escalável conforme sua aplicação cresce.
 
-The file-based routing approach is powered by the TanStack Router Bundler Plugin. It performs 3 essential tasks that solve the pain points in route configuration when using code-based routing:
+A abordagem de routing baseado em arquivo é alimentada pelo TanStack Router Bundler Plugin. Ele realiza 3 tarefas essenciais que resolvem os pontos de dor na configuração de route ao usar routing baseado em código:
 
-1. **Route configuration boilerplate**: It generates the boilerplate for your route configurations.
-2. **Route tree stitching**: It stitches together your route configurations into a single cohesive route-tree. Also in the background, it correctly updates the route configurations to define the `getParentRoute` function match the routes with their parent routes.
-3. **Code-splitting**: It automatically code-splits your route content components and updates the route configurations with the correct component. Additionally, at runtime, it ensures that the correct component is loaded when the route is visited.
+1. **Boilerplate de configuração de route**: Ele gera o boilerplate para suas configurações de route.
+2. **Costura da árvore de routes**: Ele costura as configurações de route em uma única árvore de routes coesa. Também nos bastidores, ele atualiza corretamente as configurações de route para definir a função `getParentRoute` associando os routes com seus routes pais.
+3. **Code splitting**: Ele automaticamente faz code splitting dos seus components de conteúdo de route e atualiza as configurações de route com o component correto. Adicionalmente, em tempo de execução, ele garante que o component correto seja carregado quando o route é visitado.
 
-Let's take a look at how the route configuration for the previous example would look like with file-based routing.
+Vamos dar uma olhada em como a configuração de route do exemplo anterior ficaria com routing baseado em arquivo.
 
 ```tsx
 // src/routes/posts/index.ts
@@ -230,8 +230,8 @@ export const Route = createFileRoute("/posts/")({
 });
 ```
 
-That's it! No need to worry about defining the `getParentRoute` function, stitching together the route-tree, or code-splitting your components. The TanStack Router Bundler Plugin handles all of this for you.
+É isso! Sem necessidade de se preocupar em definir a função `getParentRoute`, costurar a árvore de routes ou fazer code splitting dos seus components. O TanStack Router Bundler Plugin cuida de tudo isso para você.
 
-At no point does the TanStack Router Bundler Plugin take away your control over your route configurations. It's designed to be as flexible as possible, allowing you to define your routes in a way that suits your application whilst reducing the boilerplate and complexity of the route configuration.
+Em nenhum momento o TanStack Router Bundler Plugin tira seu controle sobre suas configurações de route. Ele é projetado para ser o mais flexível possível, permitindo que você defina seus routes de uma maneira que se adeque à sua aplicação enquanto reduz o boilerplate e a complexidade da configuração de route.
 
-Check out the guides for [file-based routing](./routing/file-based-routing.md) and [code-splitting](./guide/code-splitting.md) for a more in-depth explanation of how they work in TanStack Router.
+Confira os guias de [routing baseado em arquivo](./routing/file-based-routing.md) e [code splitting](./guide/code-splitting.md) para uma explicação mais aprofundada de como eles funcionam no TanStack Router.

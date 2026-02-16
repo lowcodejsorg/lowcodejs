@@ -2,46 +2,46 @@
 title: Search Params
 ---
 
-Similar to how TanStack Query made handling server-state in your React and Solid applications a breeze, TanStack Router aims to unlock the power of URL search params in your applications.
+Assim como o TanStack Query tornou o gerenciamento de server-state nas suas aplicações React e Solid muito mais fácil, o TanStack Router tem como objetivo desbloquear o poder dos search params de URL nas suas aplicações.
 
-> 🧠 If you are on a really old browser, like IE11, you may need to use a polyfill for `URLSearchParams`.
+> 🧠 Se você está usando um navegador realmente antigo, como o IE11, pode ser necessário usar um polyfill para `URLSearchParams`.
 
-## Why not just use `URLSearchParams`?
+## Por que não usar simplesmente `URLSearchParams`?
 
-We get it, you've been hearing a lot of "use the platform" lately and for the most part, we agree. However, we also believe it's important to recognize where the platform falls short for more advanced use-cases and we believe `URLSearchParams` is one of these circumstances.
+Entendemos, você tem ouvido muito sobre "use a plataforma" ultimamente e, na maior parte, concordamos. No entanto, também acreditamos que é importante reconhecer onde a plataforma fica aquém para casos de uso mais avançados, e acreditamos que `URLSearchParams` é uma dessas circunstâncias.
 
-Traditional Search Param APIs usually assume a few things:
+APIs tradicionais de Search Param geralmente assumem algumas coisas:
 
-- Search params are always strings
-- They are _mostly_ flat
-- Serializing and deserializing using `URLSearchParams` is good enough (Spoiler alert: it's not.)
-- Search params modifications are tightly coupled with the URL's pathname and must be updated together, even if the pathname is not changing.
+- Search params são sempre strings
+- Eles são _majoritariamente_ planos
+- Serializar e desserializar usando `URLSearchParams` é bom o suficiente (Spoiler: não é.)
+- Modificações de search params são fortemente acopladas ao pathname da URL e devem ser atualizadas juntas, mesmo que o pathname não esteja mudando.
 
-Reality is very different from these assumptions though.
+A realidade, porém, é muito diferente dessas suposições.
 
-- Search params represent application state, so inevitably, we will expect them to have the same DX associated with other state managers. This means having the capability of distinguishing between primitive value types and efficiently storing and manipulating complex data structures like nested arrays and objects.
-- There are many ways to serialize and deserialize state with different tradeoffs. You should be able to choose the best one for your application or at the very least get a better default than `URLSearchParams`.
-- Immutability & Structural Sharing. Every time you stringify and parse url search params, referential integrity and object identity is lost because each new parse creates a brand new data structure with a unique memory reference. If not properly managed over its lifetime, this constant serialization and parsing can result in unexpected and undesirable performance issues, especially in frameworks like React that choose to track reactivity via immutability or in Solid that normally relies on reconciliation to detect changes from deserialized data sources.
-- Search params, while an important part of the URL, do frequently change independently of the URL's pathname. For example, a user may want to change the page number of a paginated list without touching the URL's pathname.
+- Search params representam state da aplicação, então inevitavelmente, esperamos que eles tenham a mesma DX associada a outros gerenciadores de state. Isso significa ter a capacidade de distinguir entre tipos de valores primitivos e armazenar e manipular eficientemente estruturas de dados complexas como arrays aninhados e objetos.
+- Existem muitas formas de serializar e desserializar state com diferentes trade-offs. Você deveria poder escolher a melhor para sua aplicação ou, no mínimo, ter um padrão melhor que `URLSearchParams`.
+- Imutabilidade e Compartilhamento Estrutural. Toda vez que você converte search params de URL para string e os analisa, a integridade referencial e a identidade do objeto são perdidas porque cada nova análise cria uma estrutura de dados completamente nova com uma referência de memória única. Se não for gerenciado adequadamente ao longo de seu ciclo de vida, essa serialização e análise constantes podem resultar em problemas de desempenho inesperados e indesejáveis, especialmente em frameworks como React que optam por rastrear reatividade via imutabilidade ou em Solid que normalmente depende de reconciliação para detectar mudanças de fontes de dados desserializadas.
+- Search params, embora sejam uma parte importante da URL, frequentemente mudam independentemente do pathname da URL. Por exemplo, um usuário pode querer mudar o número da página de uma lista paginada sem alterar o pathname da URL.
 
-## Search Params, the "OG" State Manager
+## Search Params, o Gerenciador de State "OG"
 
-You've probably seen search params like `?page=3` or `?filter-name=tanner` in the URL. There is no question that this is truly **a form of global state** living inside of the URL. It's valuable to store specific pieces of state in the URL because:
+Você provavelmente já viu search params como `?page=3` ou `?filter-name=tanner` na URL. Não há dúvida de que isso é verdadeiramente **uma forma de state global** vivendo dentro da URL. É valioso armazenar partes específicas de state na URL porque:
 
-- Users should be able to:
-  - Cmd/Ctrl + Click to open a link in a new tab and reliably see the state they expected
-  - Bookmark and share links from your application with others with assurances that they will see exactly the state as when the link was copied.
-  - Refresh your app or navigate back and forth between pages without losing their state
-- Developers should be able to easily:
-  - Add, remove or modify state in the URL with the same great DX as other state managers
-  - Easily validate search params coming from the URL in a format and type that is safe for their application to consume
-  - Read and write to search params without having to worry about the underlying serialization format
+- Os usuários devem ser capazes de:
+  - Usar Cmd/Ctrl + Click para abrir um link em uma nova aba e ver de forma confiável o state que esperavam
+  - Adicionar aos favoritos e compartilhar links da sua aplicação com outros com a garantia de que eles verão exatamente o state de quando o link foi copiado.
+  - Atualizar sua aplicação ou navegar para frente e para trás entre páginas sem perder seu state
+- Os desenvolvedores devem ser capazes de facilmente:
+  - Adicionar, remover ou modificar state na URL com a mesma ótima DX de outros gerenciadores de state
+  - Validar facilmente search params vindos da URL em um formato e tipo que seja seguro para a aplicação consumir
+  - Ler e escrever em search params sem ter que se preocupar com o formato de serialização subjacente
 
-## JSON-first Search Params
+## Search Params JSON-first
 
-To achieve the above, the first step built in to TanStack Router is a powerful search param parser that automatically converts the search string of your URL to structured JSON. This means that you can store any JSON-serializable data structure in your search params and it will be parsed and serialized as JSON. This is a huge improvement over `URLSearchParams` which has limited support for array-like structures and nested data.
+Para alcançar o descrito acima, o primeiro passo embutido no TanStack Router é um poderoso parser de search params que converte automaticamente a string de busca da sua URL para JSON estruturado. Isso significa que você pode armazenar qualquer estrutura de dados serializável em JSON nos seus search params e ela será analisada e serializada como JSON. Essa é uma melhoria enorme em relação ao `URLSearchParams`, que tem suporte limitado para estruturas do tipo array e dados aninhados.
 
-For example, navigating to the following route:
+Por exemplo, navegar para a seguinte route:
 
 ```tsx
 const link = (
@@ -57,13 +57,13 @@ const link = (
 );
 ```
 
-Will result in the following URL:
+Resultará na seguinte URL:
 
 ```
 /shop?pageIndex=3&includeCategories=%5B%22electronics%22%2C%22gifts%22%5D&sortBy=price&desc=true
 ```
 
-When this URL is parsed, the search params will be accurately converted back to the following JSON:
+Quando essa URL é analisada, os search params serão convertidos de volta com precisão para o seguinte JSON:
 
 ```json
 {
@@ -74,52 +74,21 @@ When this URL is parsed, the search params will be accurately converted back to 
 }
 ```
 
-If you noticed, there are a few things going on here:
+Se você notou, algumas coisas estão acontecendo aqui:
 
-- The first level of the search params is flat and string based, just like `URLSearchParams`.
-- First level values that are not strings are accurately preserved as actual numbers and booleans.
-- Nested data structures are automatically converted to URL-safe JSON strings
+- O primeiro nível dos search params é plano e baseado em string, assim como `URLSearchParams`.
+- Valores de primeiro nível que não são strings são preservados com precisão como números e booleanos reais.
+- Estruturas de dados aninhadas são automaticamente convertidas em strings JSON seguras para URL
 
-> 🧠 It's common for other tools to assume that search params are always flat and string-based which is why we've chosen to keep things URLSearchParam compliant at the first level. This ultimately means that even though TanStack Router is managing your nested search params as JSON, other tools will still be able to write to the URL and read first-level params normally.
+> 🧠 É comum que outras ferramentas assumam que search params são sempre planos e baseados em string, e é por isso que escolhemos manter as coisas compatíveis com URLSearchParam no primeiro nível. Isso significa que, mesmo que o TanStack Router esteja gerenciando seus search params aninhados como JSON, outras ferramentas ainda poderão escrever na URL e ler parâmetros de primeiro nível normalmente.
 
-## Validating and Typing Search Params
+## Validando e Tipando Search Params
 
-Despite TanStack Router being able to parse search params into reliable JSON, they ultimately still came from **a user-facing raw-text input**. Similar to other serialization boundaries, this means that before you consume search params, they should be validated into a format that your application can trust and rely on.
+Apesar do TanStack Router ser capaz de analisar search params em JSON confiável, eles ainda vieram de **uma entrada de texto bruto voltada ao usuário**. Semelhante a outros limites de serialização, isso significa que antes de consumir search params, eles devem ser validados em um formato no qual sua aplicação possa confiar e depender.
 
-### Enter Validation + TypeScript!
+### Validação + TypeScript!
 
-TanStack Router provides convenient APIs for validating and typing search params. This all starts with the `Route`'s `validateSearch` option:
-
-```tsx
-// /routes/shop.products.tsx
-
-type ProductSearchSortOptions = "newest" | "oldest" | "price";
-
-type ProductSearch = {
-  page: number;
-  filter: string;
-  sort: ProductSearchSortOptions;
-};
-
-export const Route = createFileRoute("/shop/products")({
-  validateSearch: (search: Record<string, unknown>): ProductSearch => {
-    // validate and parse the search params into a typed state
-    return {
-      page: Number(search?.page ?? 1),
-      filter: (search.filter as string) || "",
-      sort: (search.sort as ProductSearchSortOptions) || "newest",
-    };
-  },
-});
-```
-
-In the above example, we're validating the search params of the `Route` and returning a typed `ProductSearch` object. This typed object is then made available to this route's other options **and any child routes, too!**
-
-### Validating Search Params
-
-The `validateSearch` option is a function that is provided the JSON parsed (but non-validated) search params as a `Record<string, unknown>` and returns a typed object of your choice. It's usually best to provide sensible fallbacks for malformed or unexpected search params so your users' experience stays non-interrupted.
-
-Here's an example:
+O TanStack Router fornece APIs convenientes para validar e tipar search params. Tudo começa com a opção `validateSearch` da `Route`:
 
 ```tsx
 // /routes/shop.products.tsx
@@ -144,7 +113,38 @@ export const Route = createFileRoute("/shop/products")({
 });
 ```
 
-Here's an example using the [Zod](https://zod.dev/) library (but feel free to use any validation library you want) to both validate and type the search params in a single step:
+No exemplo acima, estamos validando os search params da `Route` e retornando um objeto tipado `ProductSearch`. Esse objeto tipado é então disponibilizado para as outras opções dessa route **e para quaisquer routes filhas também!**
+
+### Validando Search Params
+
+A opção `validateSearch` é uma função que recebe os search params analisados em JSON (mas não validados) como um `Record<string, unknown>` e retorna um objeto tipado da sua escolha. Geralmente é melhor fornecer fallbacks sensatos para search params malformados ou inesperados, para que a experiência dos seus usuários não seja interrompida.
+
+Aqui está um exemplo:
+
+```tsx
+// /routes/shop.products.tsx
+
+type ProductSearchSortOptions = "newest" | "oldest" | "price";
+
+type ProductSearch = {
+  page: number;
+  filter: string;
+  sort: ProductSearchSortOptions;
+};
+
+export const Route = createFileRoute("/shop/products")({
+  validateSearch: (search: Record<string, unknown>): ProductSearch => {
+    // validate and parse the search params into a typed state
+    return {
+      page: Number(search?.page ?? 1),
+      filter: (search.filter as string) || "",
+      sort: (search.sort as ProductSearchSortOptions) || "newest",
+    };
+  },
+});
+```
+
+Aqui está um exemplo usando a biblioteca [Zod](https://zod.dev/) (mas fique à vontade para usar qualquer biblioteca de validação que preferir) para validar e tipar os search params em um único passo:
 
 ```tsx
 // /routes/shop.products.tsx
@@ -164,19 +164,19 @@ export const Route = createFileRoute("/shop/products")({
 });
 ```
 
-Because `validateSearch` also accepts an object with the `parse` property, this can be shortened to:
+Como `validateSearch` também aceita um objeto com a propriedade `parse`, isso pode ser simplificado para:
 
 ```tsx
 validateSearch: productSearchSchema;
 ```
 
-In the above example, we used Zod's `.catch()` modifier instead of `.default()` to avoid showing an error to the user because we firmly believe that if a search parameter is malformed, you probably don't want to halt the user's experience through the app to show a big fat error message. That said, there may be times that you **do want to show an error message**. In that case, you can use `.default()` instead of `.catch()`.
+No exemplo acima, usamos o modificador `.catch()` do Zod em vez de `.default()` para evitar mostrar um erro ao usuário, porque acreditamos firmemente que se um parâmetro de busca está malformado, você provavelmente não quer interromper a experiência do usuário pela aplicação para mostrar uma grande mensagem de erro. Dito isso, pode haver momentos em que você **realmente queira mostrar uma mensagem de erro**. Nesse caso, você pode usar `.default()` em vez de `.catch()`.
 
-The underlying mechanics why this works relies on the `validateSearch` function throwing an error. If an error is thrown, the route's `onError` option will be triggered (and `error.routerCode` will be set to `VALIDATE_SEARCH` and the `errorComponent` will be rendered instead of the route's `component` where you can handle the search param error however you'd like.
+A mecânica subjacente de por que isso funciona depende da função `validateSearch` lançar um erro. Se um erro é lançado, a opção `onError` da route será acionada (e `error.routerCode` será definido como `VALIDATE_SEARCH` e o `errorComponent` será renderizado em vez do `component` da route, onde você pode lidar com o erro de search param como preferir.
 
 #### Adapters
 
-When using a library like [Zod](https://zod.dev/) to validate search params you might want to `transform` search params before committing the search params to the URL. A common `zod` `transform` is `default` for example.
+Ao usar uma biblioteca como [Zod](https://zod.dev/) para validar search params, você pode querer `transform` (transformar) search params antes de confirmar os search params na URL. Um `transform` comum do `zod` é o `default`, por exemplo.
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -193,17 +193,17 @@ export const Route = createFileRoute("/shop/products/")({
 });
 ```
 
-It might be surprising that when you try to navigate to this route, `search` is required. The following `Link` will type error as `search` is missing.
+Pode ser surpreendente que quando você tenta navegar para essa route, `search` é obrigatório. O seguinte `Link` dará erro de tipo porque `search` está faltando.
 
 ```tsx
 <Link to="/shop/products" />
 ```
 
-For validation libraries we recommend using adapters which infer the correct `input` and `output` types.
+Para bibliotecas de validação, recomendamos usar adapters que inferem os tipos corretos de `input` e `output`.
 
 ### Zod
 
-An adapter is provided for [Zod](https://zod.dev/) which will pipe through the correct `input` type and `output` type
+Um adapter é fornecido para [Zod](https://zod.dev/) que encaminhará o tipo correto de `input` e o tipo correto de `output`
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -221,13 +221,13 @@ export const Route = createFileRoute("/shop/products/")({
 });
 ```
 
-The important part here is the following use of `Link` no longer requires `search` params
+A parte importante aqui é que o seguinte uso de `Link` não requer mais search params
 
 ```tsx
 <Link to="/shop/products" />
 ```
 
-However the use of `catch` here overrides the types and makes `page`, `filter` and `sort` `unknown` causing type loss. We have handled this case by providing a `fallback` generic function which retains the types but provides a `fallback` value when validation fails
+No entanto, o uso de `catch` aqui sobrescreve os tipos e torna `page`, `filter` e `sort` do tipo `unknown`, causando perda de tipos. Lidamos com esse caso fornecendo uma função genérica `fallback` que mantém os tipos, mas fornece um valor de `fallback` quando a validação falha
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -247,9 +247,9 @@ export const Route = createFileRoute("/shop/products/")({
 });
 ```
 
-Therefore when navigating to this route, `search` is optional and retains the correct types.
+Portanto, ao navegar para essa route, `search` é opcional e mantém os tipos corretos.
 
-While not recommended, it is also possible to configure `input` and `output` type in case the `output` type is more accurate than the `input` type
+Embora não recomendado, também é possível configurar os tipos de `input` e `output` caso o tipo `output` seja mais preciso que o tipo `input`
 
 ```tsx
 const productSearchSchema = z.object({
@@ -269,14 +269,14 @@ export const Route = createFileRoute("/shop/products/")({
 });
 ```
 
-This provides flexibility in which type you want to infer for navigation and which types you want to infer for reading search params.
+Isso fornece flexibilidade sobre qual tipo você quer inferir para navegação e quais tipos você quer inferir para leitura de search params.
 
 ### Valibot
 
 > [!WARNING]
-> Router expects the valibot 1.0 package to be installed.
+> O Router espera que o pacote valibot 1.0 esteja instalado.
 
-When using [Valibot](https://valibot.dev/) an adapter is not needed to ensure the correct `input` and `output` types are used for navigation and reading search params. This is because `valibot` implements [Standard Schema](https://github.com/standard-schema/standard-schema)
+Ao usar [Valibot](https://valibot.dev/), um adapter não é necessário para garantir que os tipos corretos de `input` e `output` sejam usados para navegação e leitura de search params. Isso porque o `valibot` implementa [Standard Schema](https://github.com/standard-schema/standard-schema)
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -299,9 +299,9 @@ export const Route = createFileRoute("/shop/products/")({
 ### Arktype
 
 > [!WARNING]
-> Router expects the arktype 2.0-rc package to be installed.
+> O Router espera que o pacote arktype 2.0-rc esteja instalado.
 
-When using [ArkType](https://arktype.io/) an adapter is not needed to ensure the correct `input` and `output` types are used for navigation and reading search params. This is because [ArkType](https://arktype.io/) implements [Standard Schema](https://github.com/standard-schema/standard-schema)
+Ao usar [ArkType](https://arktype.io/), um adapter não é necessário para garantir que os tipos corretos de `input` e `output` sejam usados para navegação e leitura de search params. Isso porque o [ArkType](https://arktype.io/) implementa [Standard Schema](https://github.com/standard-schema/standard-schema)
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -320,7 +320,7 @@ export const Route = createFileRoute("/shop/products/")({
 
 ### Effect/Schema
 
-When using [Effect/Schema](https://effect.website/docs/schema/introduction/) an adapter is not needed to ensure the correct `input` and `output` types are used for navigation and reading search params. This is because [Effect/Schema](https://effect.website/docs/schema/standard-schema/) implements [Standard Schema](https://github.com/standard-schema/standard-schema)
+Ao usar [Effect/Schema](https://effect.website/docs/schema/introduction/), um adapter não é necessário para garantir que os tipos corretos de `input` e `output` sejam usados para navegação e leitura de search params. Isso porque o [Effect/Schema](https://effect.website/docs/schema/standard-schema/) implementa [Standard Schema](https://github.com/standard-schema/standard-schema)
 
 ```tsx
 import { createFileRoute } from "@tanstack/react-router";
@@ -357,17 +357,17 @@ export const Route = createFileRoute("/shop/products/")({
 });
 ```
 
-## Reading Search Params
+## Lendo Search Params
 
-Once your search params have been validated and typed, you're finally ready to start reading and writing to them. There are a few ways to do this in TanStack Router, so let's check them out.
+Uma vez que seus search params foram validados e tipados, você está finalmente pronto para começar a lê-los e escrevê-los. Existem algumas formas de fazer isso no TanStack Router, então vamos conferir.
 
-### Using Search Params in Loaders
+### Usando Search Params em Loaders
 
-Please read the [Search Params in Loaders](./data-loading.md#using-loaderdeps-to-access-search-params) section for more information about how to read search params in loaders with the `loaderDeps` option.
+Por favor, leia a seção [Search Params em Loaders](./data-loading.md#using-loaderdeps-to-access-search-params) para mais informações sobre como ler search params em loaders com a opção `loaderDeps`.
 
-### Search Params are inherited from Parent Routes
+### Search Params são herdados das Routes Pai
 
-The search parameters and types of parents are merged as you go down the route tree, so child routes also have access to their parent's search params:
+Os parâmetros de busca e tipos dos pais são mesclados conforme você desce na árvore de routes, então routes filhas também têm acesso aos search params dos pais:
 
 - `shop.products.tsx`
 
@@ -396,9 +396,9 @@ export const Route = createFileRoute("/shop/products/$productId")({
 });
 ```
 
-### Search Params in Components
+### Search Params em Components
 
-You can access your route's validated search params in your route's `component` via the `useSearch` hook.
+Você pode acessar os search params validados da sua route no `component` da route via o hook `useSearch`.
 
 ```tsx
 // /routes/shop.products.tsx
@@ -415,11 +415,11 @@ const ProductList = () => {
 ```
 
 > [!TIP]
-> If your component is code-split, you can use the [getRouteApi function](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) to avoid having to import the `Route` configuration to get access to the typed `useSearch()` hook.
+> Se seu component é code-split, você pode usar a [função getRouteApi](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) para evitar ter que importar a configuração da `Route` para obter acesso ao hook tipado `useSearch()`.
 
-### Search Params outside of Route Components
+### Search Params fora de Route Components
 
-You can access your route's validated search params anywhere in your app using the `useSearch` hook. By passing the `from` id/path of your origin route, you'll get even better type safety:
+Você pode acessar os search params validados da sua route em qualquer lugar da aplicação usando o hook `useSearch`. Passando o id/caminho `from` da sua route de origem, você terá uma segurança de tipos ainda melhor:
 
 ```tsx
 // /routes/shop.products.tsx
@@ -446,7 +446,7 @@ const ProductList = () => {
 };
 ```
 
-Or, you can loosen up the type-safety and get an optional `search` object by passing `strict: false`:
+Ou, você pode relaxar a segurança de tipos e obter um objeto `search` opcional passando `strict: false`:
 
 ```tsx
 function ProductList() {
@@ -463,16 +463,16 @@ function ProductList() {
 }
 ```
 
-## Writing Search Params
+## Escrevendo Search Params
 
-Now that you've learned how to read your route's search params, you'll be happy to know that you've already seen the primary APIs to modify and update them. Let's remind ourselves a bit
+Agora que você aprendeu como ler os search params da sua route, ficará feliz em saber que já viu as APIs principais para modificá-los e atualizá-los. Vamos relembrar um pouco
 
 ### `<Link search />`
 
-The best way to update search params is to use the `search` prop on the `<Link />` component.
+A melhor forma de atualizar search params é usar a prop `search` no component `<Link />`.
 
-If the search for the current page shall be updated and the `from` prop is specified, the `to` prop can be omitted.  
-Here's an example:
+Se o search da página atual deve ser atualizado e a prop `from` está especificada, a prop `to` pode ser omitida.
+Aqui está um exemplo:
 
 ```tsx
 // /routes/shop.products.tsx
@@ -491,10 +491,10 @@ const ProductList = () => {
 };
 ```
 
-If you want to update the search params in a generic component that is rendered on multiple routes, specifying `from` can be challenging.
+Se você quer atualizar os search params em um component genérico que é renderizado em múltiplas routes, especificar `from` pode ser desafiador.
 
-In this scenario you can set `to="."` which will give you access to loosely typed search params.  
-Here is an example that illustrates this:
+Neste cenário, você pode definir `to="."` que lhe dará acesso a search params com tipagem mais flexível.
+Aqui está um exemplo que ilustra isso:
 
 ```tsx
 // `page` is a search param that is defined in the __root route and hence available on all routes.
@@ -509,7 +509,7 @@ const PageSelector = () => {
 };
 ```
 
-If the generic component is only rendered in a specific subtree of the route tree, you can specify that subtree using `from`. Here you can omit `to='.'` if you want.
+Se o component genérico é renderizado apenas em uma subárvore específica da árvore de routes, você pode especificar essa subárvore usando `from`. Aqui você pode omitir `to='.'` se quiser.
 
 ```tsx
 // `page` is a search param that is defined in the /posts route and hence available on all of its child routes.
@@ -529,7 +529,7 @@ const PageSelector = () => {
 
 ### `useNavigate(), navigate({ search })`
 
-The `navigate` function also accepts a `search` option that works the same way as the `search` prop on `<Link />`:
+A função `navigate` também aceita uma opção `search` que funciona da mesma forma que a prop `search` no `<Link />`:
 
 ```tsx
 // /routes/shop.products.tsx
@@ -558,21 +558,21 @@ const ProductList = () => {
 
 ### `router.navigate({ search })`
 
-The `router.navigate` function works exactly the same way as the `useNavigate`/`navigate` hook/function above.
+A função `router.navigate` funciona exatamente da mesma forma que o hook/função `useNavigate`/`navigate` acima.
 
 ### `<Navigate search />`
 
-The `<Navigate search />` component works exactly the same way as the `useNavigate`/`navigate` hook/function above, but accepts its options as props instead of a function argument.
+O component `<Navigate search />` funciona exatamente da mesma forma que o hook/função `useNavigate`/`navigate` acima, mas aceita suas opções como props em vez de um argumento de função.
 
-## Transforming search with search middlewares
+## Transformando search com search middlewares
 
-When link hrefs are built, by default the only thing that matters for the query string part is the `search` property of a `<Link>`.
+Quando hrefs de links são construídos, por padrão a única coisa que importa para a parte da query string é a propriedade `search` de um `<Link>`.
 
-TanStack Router provides a way to manipulate search params before the href is generated via **search middlewares**.
-Search middlewares are functions that transform the search parameters when generating new links for a route or its descendants.
-They are also executed upon navigation after search validation to allow manipulation of the query string.
+O TanStack Router fornece uma maneira de manipular search params antes que o href seja gerado via **search middlewares**.
+Search middlewares são funções que transformam os parâmetros de busca ao gerar novos links para uma route ou seus descendentes.
+Eles também são executados na navegação após a validação de search para permitir a manipulação da query string.
 
-The following example shows how to make sure that for **every** link that is being built, the `rootValue` search param is added _if_ it is part of the current search params. If a link specifies `rootValue` inside `search`, then that value is used for building the link.
+O exemplo a seguir mostra como garantir que para **todo** link que está sendo construído, o search param `rootValue` seja adicionado _se_ ele fizer parte dos search params atuais. Se um link especifica `rootValue` dentro de `search`, então esse valor é usado para construir o link.
 
 ```tsx
 import { z } from "zod";
@@ -599,7 +599,7 @@ export const Route = createRootRoute({
 });
 ```
 
-Since this specific use case is quite common, TanStack Router provides a generic implementation to retain search params via `retainSearchParams`:
+Como esse caso de uso específico é bastante comum, o TanStack Router fornece uma implementação genérica para reter search params via `retainSearchParams`:
 
 ```tsx
 import { z } from "zod";
@@ -618,7 +618,7 @@ export const Route = createRootRoute({
 });
 ```
 
-Another common use case is to strip out search params from links if their default value is set. TanStack Router provides a generic implementation for this use case via `stripSearchParams`:
+Outro caso de uso comum é remover search params dos links se seu valor padrão está definido. O TanStack Router fornece uma implementação genérica para esse caso de uso via `stripSearchParams`:
 
 ```tsx
 import { z } from "zod";
@@ -644,7 +644,7 @@ export const Route = createFileRoute("/hello")({
 });
 ```
 
-Multiple middlewares can be chained. The following example shows how to combine both `retainSearchParams` and `stripSearchParams`.
+Múltiplos middlewares podem ser encadeados. O exemplo a seguir mostra como combinar tanto `retainSearchParams` quanto `stripSearchParams`.
 
 ```tsx
 import {

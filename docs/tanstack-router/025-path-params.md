@@ -2,7 +2,7 @@
 title: Path Params
 ---
 
-Path params are used to match a single segment (the text until the next `/`) and provide its value back to you as a **named** variable. They are defined by using the `$` character prefix in the path, followed by the key variable to assign it to. The following are valid path param paths:
+Path params são usados para corresponder a um único segmento (o texto até a próxima `/`) e fornecer seu valor de volta para você como uma variável **nomeada**. Eles são definidos usando o caractere prefixo `$` no caminho, seguido pela variável de chave para atribuí-lo. Os seguintes são caminhos de path param válidos:
 
 - `$postId`
 - `$name`
@@ -11,9 +11,9 @@ Path params are used to match a single segment (the text until the next `/`) and
 - `team/$teamId`
 - `blog/$postId`
 
-Because path param routes only match to the next `/`, child routes can be created to continue expressing hierarchy:
+Como routes de path param só correspondem até a próxima `/`, routes filhas podem ser criadas para continuar expressando hierarquia:
 
-Let's create a post route file that uses a path param to match the post ID:
+Vamos criar um arquivo de route de post que usa um path param para corresponder ao ID do post:
 
 - `posts.$postId.tsx`
 
@@ -27,13 +27,13 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-## Path Params can be used by child routes
+## Path Params podem ser usados por routes filhas
 
-Once a path param has been parsed, it is available to all child routes. This means that if we define a child route to our `postRoute`, we can use the `postId` variable from the URL in the child route's path!
+Uma vez que um path param foi parseado, ele fica disponível para todas as routes filhas. Isso significa que se definirmos uma route filha para nossa `postRoute`, podemos usar a variável `postId` da URL no caminho da route filha!
 
-## Path Params in Loaders
+## Path Params em Loaders
 
-Path params are passed to the loader as a `params` object. The keys of this object are the names of the path params, and the values are the values that were parsed out of the actual URL path. For example, if we were to visit the `/blog/123` URL, the `params` object would be `{ postId: '123' }`:
+Path params são passados para o loader como um objeto `params`. As chaves desse objeto são os nomes dos path params, e os valores são os valores que foram parseados do caminho real da URL. Por exemplo, se visitássemos a URL `/blog/123`, o objeto `params` seria `{ postId: '123' }`:
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId")({
@@ -43,7 +43,7 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-The `params` object is also passed to the `beforeLoad` option:
+O objeto `params` também é passado para a opção `beforeLoad`:
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId")({
@@ -53,9 +53,9 @@ export const Route = createFileRoute("/posts/$postId")({
 });
 ```
 
-## Path Params in Components
+## Path Params em Components
 
-If we add a component to our `postRoute`, we can access the `postId` variable from the URL by using the route's `useParams` hook:
+Se adicionarmos um component à nossa `postRoute`, podemos acessar a variável `postId` da URL usando o hook `useParams` da route:
 
 ```tsx
 export const Route = createFileRoute("/posts/$postId")({
@@ -68,11 +68,11 @@ function PostComponent() {
 }
 ```
 
-> 🧠 Quick tip: If your component is code-split, you can use the [getRouteApi function](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) to avoid having to import the `Route` configuration to get access to the typed `useParams()` hook.
+> 🧠 Dica rápida: Se seu component tiver code splitting, você pode usar a [função getRouteApi](./code-splitting.md#manually-accessing-route-apis-in-other-files-with-the-getrouteapi-helper) para evitar ter que importar a configuração `Route` para obter acesso ao hook `useParams()` tipado.
 
-## Path Params outside of Routes
+## Path Params fora de Routes
 
-You can also use the globally exported `useParams` hook to access any parsed path params from any component in your app. You'll need to pass the `strict: false` option to `useParams`, denoting that you want to access the params from an ambiguous location:
+Você também pode usar o hook `useParams` exportado globalmente para acessar qualquer path param parseado de qualquer component na sua aplicação. Você precisará passar a opção `strict: false` para `useParams`, indicando que deseja acessar os params de uma localização ambígua:
 
 ```tsx
 function PostComponent() {
@@ -81,11 +81,11 @@ function PostComponent() {
 }
 ```
 
-## Navigating with Path Params
+## Navegando com Path Params
 
-When navigating to a route with path params, TypeScript will require you to pass the params either as an object or as a function that returns an object of params.
+Ao navegar para uma route com path params, TypeScript exigirá que você passe os params como um objeto ou como uma função que retorna um objeto de params.
 
-Let's see what an object style looks like:
+Vamos ver como fica o estilo de objeto:
 
 ```tsx
 function Component() {
@@ -97,7 +97,7 @@ function Component() {
 }
 ```
 
-And here's what a function style looks like:
+E aqui está como fica o estilo de função:
 
 ```tsx
 function Component() {
@@ -109,17 +109,17 @@ function Component() {
 }
 ```
 
-Notice that the function style is useful when you need to persist params that are already in the URL for other routes. This is because the function style will receive the current params as an argument, allowing you to modify them as needed and return the final params object.
+Note que o estilo de função é útil quando você precisa manter params que já estão na URL para outras routes. Isso porque o estilo de função receberá os params atuais como argumento, permitindo que você os modifique conforme necessário e retorne o objeto de params final.
 
-## Prefixes and Suffixes for Path Params
+## Prefixos e Sufixos para Path Params
 
-You can also use **prefixes** and **suffixes** with path params to create more complex routing patterns. This allows you to match specific URL structures while still capturing the dynamic segments.
+Você também pode usar **prefixos** e **sufixos** com path params para criar padrões de roteamento mais complexos. Isso permite que você corresponda a estruturas de URL específicas enquanto ainda captura os segmentos dinâmicos.
 
-When using either prefixes or suffixes, you can define them by wrapping the path param in curly braces `{}` and placing the prefix or suffix before or after the variable name.
+Ao usar prefixos ou sufixos, você pode defini-los envolvendo o path param em chaves `{}` e colocando o prefixo ou sufixo antes ou depois do nome da variável.
 
-### Defining Prefixes
+### Definindo Prefixos
 
-Prefixes are defined by placing the prefix text outside the curly braces before the variable name. For example, if you want to match a URL that starts with `post-` followed by a post ID, you can define it like this:
+Prefixos são definidos colocando o texto do prefixo fora das chaves antes do nome da variável. Por exemplo, se você quiser corresponder a uma URL que começa com `post-` seguido de um ID de post, você pode definir assim:
 
 ```tsx
 // src/routes/posts/post-{$postId}.tsx
@@ -134,7 +134,7 @@ function PostComponent() {
 }
 ```
 
-You can even combines prefixes with wildcard routes to create more complex patterns:
+Você pode até combinar prefixos com routes curinga para criar padrões mais complexos:
 
 ```tsx
 // src/routes/on-disk/storage-{$}
@@ -150,9 +150,9 @@ function StorageComponent() {
 }
 ```
 
-### Defining Suffixes
+### Definindo Sufixos
 
-Suffixes are defined by placing the suffix text outside the curly braces after the variable name. For example, if you want to match a URL a filename that ends with `txt`, you can define it like this:
+Sufixos são definidos colocando o texto do sufixo fora das chaves após o nome da variável. Por exemplo, se você quiser corresponder a uma URL de um nome de arquivo que termina com `txt`, você pode definir assim:
 
 ```tsx
 // src/routes/files/{$fileName}txt
@@ -167,7 +167,7 @@ function FileComponent() {
 }
 ```
 
-You can also combine suffixes with wildcards for more complex routing patterns:
+Você também pode combinar sufixos com curingas para padrões de roteamento mais complexos:
 
 ```tsx
 // src/routes/files/{$}[.]txt
@@ -182,9 +182,9 @@ function FileComponent() {
 }
 ```
 
-### Combining Prefixes and Suffixes
+### Combinando Prefixos e Sufixos
 
-You can combine both prefixes and suffixes to create very specific routing patterns. For example, if you want to match a URL that starts with `user-` and ends with `.json`, you can define it like this:
+Você pode combinar prefixos e sufixos para criar padrões de roteamento muito específicos. Por exemplo, se você quiser corresponder a uma URL que começa com `user-` e termina com `.json`, você pode definir assim:
 
 ```tsx
 // src/routes/users/user-{$userId}.json
@@ -199,15 +199,15 @@ function UserComponent() {
 }
 ```
 
-Similar to the previous examples, you can also use wildcards with prefixes and suffixes. Go wild!
+Similar aos exemplos anteriores, você também pode usar curingas com prefixos e sufixos. Use a criatividade!
 
-## Optional Path Parameters
+## Parâmetros de Caminho Opcionais
 
-Optional path parameters allow you to define route segments that may or may not be present in the URL. They use the `{-$paramName}` syntax and provide flexible routing patterns where certain parameters are optional.
+Parâmetros de caminho opcionais permitem que você defina segmentos de route que podem ou não estar presentes na URL. Eles usam a sintaxe `{-$paramName}` e fornecem padrões de roteamento flexíveis onde certos parâmetros são opcionais.
 
-### Defining Optional Parameters
+### Definindo Parâmetros Opcionais
 
-Optional path parameters are defined using curly braces with a dash prefix: `{-$paramName}`
+Parâmetros de caminho opcionais são definidos usando chaves com um prefixo de traço: `{-$paramName}`
 
 ```tsx
 // Single optional parameter
@@ -229,19 +229,19 @@ export const Route = createFileRoute("/users/$id/{-$tab}")({
 });
 ```
 
-### How Optional Parameters Work
+### Como os Parâmetros Opcionais Funcionam
 
-Optional parameters create flexible URL patterns:
+Parâmetros opcionais criam padrões de URL flexíveis:
 
-- `/posts/{-$category}` matches both `/posts` and `/posts/tech`
-- `/posts/{-$category}/{-$slug}` matches `/posts`, `/posts/tech`, and `/posts/tech/hello-world`
-- `/users/$id/{-$tab}` matches `/users/123` and `/users/123/settings`
+- `/posts/{-$category}` corresponde tanto a `/posts` quanto a `/posts/tech`
+- `/posts/{-$category}/{-$slug}` corresponde a `/posts`, `/posts/tech` e `/posts/tech/hello-world`
+- `/users/$id/{-$tab}` corresponde a `/users/123` e `/users/123/settings`
 
-When an optional parameter is not present in the URL, its value will be `undefined` in your route handlers and components.
+Quando um parâmetro opcional não está presente na URL, seu valor será `undefined` nos seus handlers de route e components.
 
-### Accessing Optional Parameters
+### Acessando Parâmetros Opcionais
 
-Optional parameters work exactly like regular parameters in your components, but their values may be `undefined`:
+Parâmetros opcionais funcionam exatamente como parâmetros regulares nos seus components, mas seus valores podem ser `undefined`:
 
 ```tsx
 function PostsComponent() {
@@ -251,9 +251,9 @@ function PostsComponent() {
 }
 ```
 
-### Optional Parameters in Loaders
+### Parâmetros Opcionais em Loaders
 
-Optional parameters are available in loaders and may be `undefined`:
+Parâmetros opcionais estão disponíveis em loaders e podem ser `undefined`:
 
 ```tsx
 export const Route = createFileRoute("/posts/{-$category}")({
@@ -264,9 +264,9 @@ export const Route = createFileRoute("/posts/{-$category}")({
 });
 ```
 
-### Optional Parameters in beforeLoad
+### Parâmetros Opcionais em beforeLoad
 
-Optional parameters work in `beforeLoad` handlers as well:
+Parâmetros opcionais também funcionam em handlers `beforeLoad`:
 
 ```tsx
 export const Route = createFileRoute("/posts/{-$category}")({
@@ -279,11 +279,11 @@ export const Route = createFileRoute("/posts/{-$category}")({
 });
 ```
 
-### Advanced Optional Parameter Patterns
+### Padrões Avançados de Parâmetros Opcionais
 
-#### With Prefix and Suffix
+#### Com Prefixo e Sufixo
 
-Optional parameters support prefix and suffix patterns:
+Parâmetros opcionais suportam padrões de prefixo e sufixo:
 
 ```tsx
 // File route: /files/prefix{-$name}.txt
@@ -298,9 +298,9 @@ function FileComponent() {
 }
 ```
 
-#### All Optional Parameters
+#### Todos os Parâmetros Opcionais
 
-You can create routes where all parameters are optional:
+Você pode criar routes onde todos os parâmetros são opcionais:
 
 ```tsx
 // Route: /{-$year}/{-$month}/{-$day}
@@ -329,9 +329,9 @@ function DateComponent() {
 }
 ```
 
-#### Optional Parameters with Wildcards
+#### Parâmetros Opcionais com Curingas
 
-Optional parameters can be combined with wildcards for complex routing patterns:
+Parâmetros opcionais podem ser combinados com curingas para padrões de roteamento complexos:
 
 ```tsx
 // Route: /docs/{-$version}/$
@@ -353,9 +353,9 @@ function DocsComponent() {
 }
 ```
 
-### Navigating with Optional Parameters
+### Navegando com Parâmetros Opcionais
 
-When navigating to routes with optional parameters, you have fine-grained control over which parameters to include:
+Ao navegar para routes com parâmetros opcionais, você tem controle granular sobre quais parâmetros incluir:
 
 ```tsx
 function Navigation() {
@@ -383,9 +383,9 @@ function Navigation() {
 }
 ```
 
-### Type Safety with Optional Parameters
+### Type Safety com Parâmetros Opcionais
 
-TypeScript provides full type safety for optional parameters:
+TypeScript fornece type safety completa para parâmetros opcionais:
 
 ```tsx
 function PostsComponent() {
@@ -414,13 +414,13 @@ function PostsComponent() {
 </Link>
 ```
 
-## Internationalization (i18n) with Optional Path Parameters
+## Internacionalização (i18n) com Parâmetros de Caminho Opcionais
 
-Optional path parameters are excellent for implementing internationalization (i18n) routing patterns. You can use prefix patterns to handle multiple languages while maintaining clean, SEO-friendly URLs.
+Parâmetros de caminho opcionais são excelentes para implementar padrões de roteamento de internacionalização (i18n). Você pode usar padrões de prefixo para lidar com múltiplos idiomas enquanto mantém URLs limpos e amigáveis para SEO.
 
-### Prefix-based i18n
+### i18n baseado em Prefixo
 
-Use optional language prefixes to support URLs like `/en/about`, `/fr/about`, or just `/about` (default language):
+Use prefixos de idioma opcionais para suportar URLs como `/en/about`, `/fr/about`, ou apenas `/about` (idioma padrão):
 
 ```tsx
 // Route: /{-$locale}/about
@@ -453,16 +453,16 @@ function AboutComponent() {
 }
 ```
 
-This pattern matches:
+Este padrão corresponde:
 
-- `/about` (default locale)
-- `/en/about` (explicit English)
-- `/fr/about` (French)
-- `/es/about` (Spanish)
+- `/about` (locale padrão)
+- `/en/about` (inglês explícito)
+- `/fr/about` (francês)
+- `/es/about` (espanhol)
 
-### Complex i18n Patterns
+### Padrões Complexos de i18n
 
-Combine optional parameters for more sophisticated i18n routing:
+Combine parâmetros opcionais para roteamento i18n mais sofisticado:
 
 ```tsx
 // Route: /{-$locale}/blog/{-$category}/$slug
@@ -504,16 +504,16 @@ function BlogPostComponent() {
 }
 ```
 
-This supports URLs like:
+Isso suporta URLs como:
 
-- `/blog/tech/my-post` (default locale, tech category)
-- `/fr/blog/my-post` (French, no category)
-- `/en/blog/tech/my-post` (explicit English, tech category)
-- `/es/blog/tecnologia/mi-post` (Spanish, Spanish category)
+- `/blog/tech/my-post` (locale padrão, categoria tech)
+- `/fr/blog/my-post` (francês, sem categoria)
+- `/en/blog/tech/my-post` (inglês explícito, categoria tech)
+- `/es/blog/tecnologia/mi-post` (espanhol, categoria em espanhol)
 
-### Language Navigation
+### Navegação de Idioma
 
-Create language switchers using optional i18n parameters with function-style params:
+Crie seletores de idioma usando parâmetros opcionais de i18n com params no estilo de função:
 
 ```tsx
 function LanguageSwitcher() {
@@ -545,7 +545,7 @@ function LanguageSwitcher() {
 }
 ```
 
-You can also create more sophisticated language switching logic:
+Você também pode criar lógica de troca de idioma mais sofisticada:
 
 ```tsx
 function AdvancedLanguageSwitcher() {
@@ -594,9 +594,9 @@ function AdvancedLanguageSwitcher() {
 }
 ```
 
-### Advanced i18n with Optional Parameters
+### i18n Avançado com Parâmetros Opcionais
 
-Organize i18n routes using optional parameters for flexible locale handling:
+Organize routes de i18n usando parâmetros opcionais para tratamento flexível de locale:
 
 ```tsx
 // Route structure:
@@ -631,9 +631,9 @@ export const Route = createFileRoute("/{-$locale}/about")({
 });
 ```
 
-### SEO and Canonical URLs
+### SEO e URLs Canônicas
 
-Handle SEO for i18n routes properly:
+Trate o SEO para routes de i18n corretamente:
 
 ```tsx
 export const Route = createFileRoute("/{-$locale}/products/$id")({
@@ -682,9 +682,9 @@ export const Route = createFileRoute("/{-$locale}/products/$id")({
 });
 ```
 
-### Type Safety for i18n
+### Type Safety para i18n
 
-Ensure type safety for your i18n implementations:
+Garanta type safety para suas implementações de i18n:
 
 ```tsx
 // Define supported locales
@@ -736,13 +736,13 @@ function ShopComponent() {
 }
 ```
 
-Optional path parameters provide a powerful and flexible foundation for implementing internationalization in your TanStack Router applications. Whether you prefer prefix-based or combined approaches, you can create clean, SEO-friendly URLs while maintaining excellent developer experience and type safety.
+Parâmetros de caminho opcionais fornecem uma base poderosa e flexível para implementar internacionalização nas suas aplicações TanStack Router. Seja preferindo abordagens baseadas em prefixo ou combinadas, você pode criar URLs limpos e amigáveis para SEO enquanto mantém uma excelente experiência de desenvolvedor e type safety.
 
-## Allowed Characters
+## Caracteres Permitidos
 
-By default, path params are escaped with `encodeURIComponent`. If you want to allow other valid URI characters (e.g. `@` or `+`), you can specify that in your [RouterOptions](../api/router/RouterOptionsType.md#pathparamsallowedcharacters-property).
+Por padrão, path params são escapados com `encodeURIComponent`. Se você quiser permitir outros caracteres URI válidos (por exemplo, `@` ou `+`), você pode especificar isso nas suas [RouterOptions](../api/router/RouterOptionsType.md#pathparamsallowedcharacters-property).
 
-Example usage:
+Exemplo de uso:
 
 ```tsx
 const router = createRouter({
@@ -751,7 +751,7 @@ const router = createRouter({
 });
 ```
 
-The following is the list of accepted allowed characters:
+A seguir está a lista de caracteres permitidos aceitos:
 
 - `;`
 - `:`

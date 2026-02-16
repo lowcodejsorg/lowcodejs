@@ -2,15 +2,15 @@
 title: Custom Link
 ---
 
-While repeating yourself can be acceptable in many situations, you might find that you do it too often. At times, you may want to create cross-cutting components with additional behavior or styles. You might also consider using third-party libraries in combination with TanStack Router's type safety.
+Embora se repetir possa ser aceitável em muitas situações, você pode perceber que faz isso com muita frequência. Às vezes, você pode querer criar components transversais com comportamento ou estilos adicionais. Você também pode considerar usar bibliotecas de terceiros em combinação com a segurança de tipos do TanStack Router.
 
-## `createLink` for cross-cutting concerns
+## `createLink` para preocupações transversais
 
-`createLink` creates a custom `Link` component with the same type parameters as `Link`. This means you can create your own component which provides the same type safety and typescript performance as `Link`.
+`createLink` cria um component `Link` personalizado com os mesmos parâmetros de tipo que `Link`. Isso significa que você pode criar seu próprio component que fornece a mesma segurança de tipos e desempenho de TypeScript que o `Link`.
 
-### Basic example
+### Exemplo básico
 
-If you want to create a basic custom link component, you can do so with the following:
+Se você quer criar um component de link personalizado básico, pode fazer isso da seguinte forma:
 
 [//]: # "BasicExampleImplementation"
 
@@ -39,7 +39,7 @@ export const CustomLink: LinkComponent<typeof BasicLinkComponent> = (props) => {
 
 [//]: # "BasicExampleImplementation"
 
-You can then use your newly created `Link` component as any other `Link`
+Você pode então usar seu component `Link` recém-criado como qualquer outro `Link`
 
 ```tsx
 <CustomLink to={"/dashboard/invoices/$invoiceId"} params={{ invoiceId: 0 }} />
@@ -47,13 +47,13 @@ You can then use your newly created `Link` component as any other `Link`
 
 [//]: # "ExamplesUsingThirdPartyLibs"
 
-## `createLink` with third party libraries
+## `createLink` com bibliotecas de terceiros
 
-Here are some examples of how you can use `createLink` with third-party libraries.
+Aqui estão alguns exemplos de como você pode usar `createLink` com bibliotecas de terceiros.
 
-### React Aria Components example
+### Exemplo com React Aria Components
 
-React Aria Components v1.11.0 and later works with TanStack Router's `preload (intent)` prop. Use `createLink` to wrap each React Aria component that you use as a link.
+React Aria Components v1.11.0 e posteriores funcionam com a prop `preload (intent)` do TanStack Router. Use `createLink` para envolver cada component React Aria que você usa como link.
 
 ```tsx
 import { createLink } from "@tanstack/react-router";
@@ -63,7 +63,7 @@ export const Link = createLink(RACLink);
 export const MenuItemLink = createLink(MenuItem);
 ```
 
-To use React Aria's render props, including the `className`, `style`, and `children` functions, create a wrapper component and pass that to `createLink`.
+Para usar as render props do React Aria, incluindo as funções `className`, `style` e `children`, crie um component wrapper e passe-o para `createLink`.
 
 ```tsx
 import { createLink } from "@tanstack/react-router";
@@ -87,7 +87,7 @@ function MyLink(props: MyLinkProps) {
 export const Link = createLink(MyLink);
 ```
 
-### Chakra UI example
+### Exemplo com Chakra UI
 
 ```tsx
 import * as React from "react";
@@ -125,13 +125,13 @@ export const CustomLink: LinkComponent<typeof ChakraLinkComponent> = (
 };
 ```
 
-### MUI example
+### Exemplo com MUI
 
-There is an [example](https://github.com/TanStack/router/tree/main/examples/react/start-material-ui) available which uses these patterns.
+Há um [exemplo](https://github.com/TanStack/router/tree/main/examples/react/start-material-ui) disponível que usa esses padrões.
 
 #### `Link`
 
-If the MUI `Link` should simply behave like the router `Link`, it can be just wrapped with `createLink`:
+Se o `Link` do MUI deve simplesmente se comportar como o `Link` do router, ele pode ser envolvido diretamente com `createLink`:
 
 ```tsx
 import { createLink } from "@tanstack/react-router";
@@ -140,7 +140,7 @@ import { Link } from "@mui/material";
 export const CustomLink = createLink(Link);
 ```
 
-If the `Link` should be customized this approach can be used:
+Se o `Link` deve ser personalizado, essa abordagem pode ser usada:
 
 ```tsx
 import React from "react";
@@ -168,7 +168,7 @@ export const CustomLink: LinkComponent<typeof MUILinkComponent> = (props) => {
 
 #### `Button`
 
-If a `Button` should be used as a router `Link`, the `component` should be set as `a`:
+Se um `Button` deve ser usado como um `Link` do router, o `component` deve ser definido como `a`:
 
 ```tsx
 import React from "react";
@@ -195,9 +195,9 @@ export const CustomButtonLink: LinkComponent<typeof MUIButtonLinkComponent> = (
 };
 ```
 
-#### Usage with `styled`
+#### Uso com `styled`
 
-Any of these MUI approaches can then be used with `styled`:
+Qualquer uma dessas abordagens do MUI pode então ser usada com `styled`:
 
 ```tsx
 import { css, styled } from "@mui/material";
@@ -210,7 +210,7 @@ const StyledCustomLink = styled(CustomLink)(
 );
 ```
 
-### Mantine example
+### Exemplo com Mantine
 
 ```tsx
 import * as React from "react";

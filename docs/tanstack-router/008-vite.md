@@ -4,13 +4,13 @@ title: Installation with Vite
 
 [//]: # "BundlerConfiguration"
 
-To use file-based routing with **Vite**, you'll need to install the `@tanstack/router-plugin` package.
+Para usar roteamento baseado em arquivos com o **Vite**, você precisará instalar o pacote `@tanstack/router-plugin`.
 
 ```sh
 npm install -D @tanstack/router-plugin
 ```
 
-Once installed, you'll need to add the plugin to your Vite configuration.
+Uma vez instalado, você precisará adicionar o plugin à sua configuração do Vite.
 
 ```ts
 // vite.config.ts
@@ -32,29 +32,29 @@ export default defineConfig({
 });
 ```
 
-Or, you can clone our [Quickstart Vite example](https://github.com/TanStack/router/tree/main/examples/react/quickstart-file-based) and get started.
+Ou você pode clonar nosso [exemplo Quickstart com Vite](https://github.com/TanStack/router/tree/main/examples/react/quickstart-file-based) e começar.
 
 > [!WARNING]
-> If you are using the older `@tanstack/router-vite-plugin` package, you can still continue to use it, as it will be aliased to the `@tanstack/router-plugin/vite` package. However, we would recommend using the `@tanstack/router-plugin` package directly.
+> Se você está usando o pacote antigo `@tanstack/router-vite-plugin`, pode continuar usando-o, pois ele será redirecionado para o pacote `@tanstack/router-plugin/vite`. No entanto, recomendamos usar o pacote `@tanstack/router-plugin` diretamente.
 
-Now that you've added the plugin to your Vite configuration, you're all set to start using file-based routing with TanStack Router.
+Agora que você adicionou o plugin à sua configuração do Vite, está tudo pronto para começar a usar roteamento baseado em arquivos com o TanStack Router.
 
 [//]: # "BundlerConfiguration"
 
-## Ignoring the generated route tree file
+## Ignorando o arquivo da route tree gerada
 
-If your project is configured to use a linter and/or formatter, you may want to ignore the generated route tree file. This file is managed by TanStack Router and therefore shouldn't be changed by your linter or formatter.
+Se o seu projeto está configurado para usar um linter e/ou formatter, você pode querer ignorar o arquivo da route tree gerada. Este arquivo é gerenciado pelo TanStack Router e, portanto, não deve ser alterado pelo seu linter ou formatter.
 
-Here are some resources to help you ignore the generated route tree file:
+Aqui estão alguns recursos para ajudar você a ignorar o arquivo da route tree gerada:
 
 - Prettier - [https://prettier.io/docs/en/ignore.html#ignoring-files-prettierignore](https://prettier.io/docs/en/ignore.html#ignoring-files-prettierignore)
 - ESLint - [https://eslint.org/docs/latest/use/configure/ignore#ignoring-files](https://eslint.org/docs/latest/use/configure/ignore#ignoring-files)
 - Biome - [https://biomejs.dev/reference/configuration/#filesignore](https://biomejs.dev/reference/configuration/#filesignore)
 
 > [!WARNING]
-> If you are using VSCode, you may experience the route tree file unexpectedly open (with errors) after renaming a route.
+> Se você está usando o VSCode, pode experienciar o arquivo da route tree abrindo inesperadamente (com erros) após renomear uma route.
 
-You can prevent that from the VSCode settings by marking the file as readonly. Our recommendation is to also exclude it from search results and file watcher with the following settings:
+Você pode evitar isso nas configurações do VSCode marcando o arquivo como somente leitura. Nossa recomendação é também excluí-lo dos resultados de busca e do observador de arquivos com as seguintes configurações:
 
 ```json
 {
@@ -70,11 +70,11 @@ You can prevent that from the VSCode settings by marking the file as readonly. O
 }
 ```
 
-You can use those settings either at a user level or only for a single workspace by creating the file `.vscode/settings.json` at the root of your project.
+Você pode usar essas configurações no nível do usuário ou apenas para um workspace específico criando o arquivo `.vscode/settings.json` na raiz do seu projeto.
 
-## Configuration
+## Configuração
 
-When using the TanStack Router Plugin with Vite for File-based routing, it comes with some sane defaults that should work for most projects:
+Ao usar o Plugin do TanStack Router com Vite para roteamento baseado em arquivos, ele vem com alguns padrões sensatos que devem funcionar para a maioria dos projetos:
 
 ```json
 {
@@ -85,6 +85,6 @@ When using the TanStack Router Plugin with Vite for File-based routing, it comes
 }
 ```
 
-If these defaults work for your project, you don't need to configure anything at all! However, if you need to customize the configuration, you can do so by editing the configuration object passed into the `tanstackRouter` function.
+Se esses padrões funcionam para o seu projeto, você não precisa configurar nada! No entanto, se precisar personalizar a configuração, pode fazê-lo editando o objeto de configuração passado para a função `tanstackRouter`.
 
-You can find all the available configuration options in the [File-based Routing API Reference](../../../api/file-based-routing.md).
+Você pode encontrar todas as opções de configuração disponíveis na [Referência da API de Roteamento Baseado em Arquivos](../../../api/file-based-routing.md).

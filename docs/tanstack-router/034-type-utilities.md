@@ -3,11 +3,11 @@ id: type-utilities
 title: Type Utilities
 ---
 
-Most types exposed by TanStack Router are internal, subject to breaking changes and not always easy to use. That is why TanStack Router has a subset of exposed types focused on ease of use with the intension to be used externally. These types provide the same type safe experience from TanStack Router's runtime concepts on the type level, with flexibility of where to provide type checking
+A maioria dos tipos expostos pelo TanStack Router são internos, sujeitos a mudanças que quebram compatibilidade e nem sempre fáceis de usar. Por isso, o TanStack Router possui um subconjunto de tipos expostos focados na facilidade de uso, com a intenção de serem usados externamente. Esses tipos fornecem a mesma experiência type-safe dos conceitos de runtime do TanStack Router no nível de tipos, com flexibilidade de onde fornecer verificação de tipos
 
-## Type checking Link options with `ValidateLinkOptions`
+## Verificação de tipos das opções de Link com `ValidateLinkOptions`
 
-`ValidateLinkOptions` type checks object literal types to ensure they conform to `Link` options at inference sites. For example, you may have a generic `HeadingLink` component which accepts a `title` prop along with `linkOptions`, the idea being this component can be re-used for any navigation.
+`ValidateLinkOptions` verifica tipos de objetos literais para garantir que estejam em conformidade com as opções do `Link` nos locais de inferência. Por exemplo, você pode ter um component genérico `HeadingLink` que aceita uma prop `title` junto com `linkOptions`, a ideia sendo que esse component pode ser reutilizado para qualquer navegação.
 
 ```tsx
 export interface HeaderLinkProps<
@@ -31,20 +31,20 @@ export function HeadingLink(props: HeaderLinkProps): React.ReactNode {
 }
 ```
 
-A more permissive overload of `HeadingLink` is used to avoid type assertions you would otherwise have to do with the generic signature. Using a looser signature without type parameters is an easy way to avoid type assertions in the implementation of `HeadingLink`
+Uma sobrecarga mais permissiva de `HeadingLink` é usada para evitar asserções de tipo que você teria que fazer com a assinatura genérica. Usar uma assinatura mais flexível sem parâmetros de tipo é uma maneira fácil de evitar asserções de tipo na implementação de `HeadingLink`
 
-All type parameters for utilities are optional but for the best TypeScript performance `TRouter` should always be specified for the public facing signature. And `TOptions` should always be used at inference sites like `HeadingLink` to infer the `linkOptions` to correctly narrow `params` and `search`
+Todos os parâmetros de tipo para utilitários são opcionais, mas para a melhor performance do TypeScript, `TRouter` deve sempre ser especificado para a assinatura pública. E `TOptions` deve sempre ser usado nos locais de inferência como `HeadingLink` para inferir as `linkOptions` e restringir corretamente `params` e `search`
 
-The result of this is that `linkOptions` in the following is completely type-safe
+O resultado disso é que `linkOptions` no exemplo a seguir é completamente type-safe
 
 ```tsx
 <HeadingLink title="Posts" linkOptions={{ to: '/posts' }} />
 <HeadingLink title="Post" linkOptions={{ to: '/posts/$postId', params: {postId: 'postId'} }} />
 ```
 
-## Type checking an array of Link options with `ValidateLinkOptionsArray`
+## Verificação de tipos de um array de opções de Link com `ValidateLinkOptionsArray`
 
-All navigation type utilities have an array variant. `ValidateLinkOptionsArray` enables type checking of an array of `Link` options. For example, you might have a generic `Menu` component where each item is a `Link`.
+Todos os utilitários de tipo de navegação possuem uma variante de array. `ValidateLinkOptionsArray` permite a verificação de tipos de um array de opções de `Link`. Por exemplo, você pode ter um component genérico `Menu` onde cada item é um `Link`.
 
 ```tsx
 export interface MenuProps<
@@ -71,7 +71,7 @@ export function Menu(props: MenuProps): React.ReactNode {
 }
 ```
 
-This of course allows the following `items` prop to be completely type-safe
+Isso obviamente permite que a prop `items` a seguir seja completamente type-safe
 
 ```tsx
 <Menu
@@ -82,7 +82,7 @@ This of course allows the following `items` prop to be completely type-safe
 />
 ```
 
-It is also possible to fix `from` for each `Link` options in the array. This would allow all `Menu` items to navigate relative to `from`. Additional type checking of `from` can be provided by the `ValidateFromPath` utility
+Também é possível fixar `from` para cada opção de `Link` no array. Isso permitiria que todos os itens do `Menu` naveguem relativamente ao `from`. Verificação de tipos adicional para `from` pode ser fornecida pelo utilitário `ValidateFromPath`
 
 ```tsx
 export interface MenuProps<
@@ -112,7 +112,7 @@ export function Menu(props: MenuProps): React.ReactNode {
 }
 ```
 
-`ValidateLinkOptionsArray` allows you to fix `from` by providing an extra type parameter. The result is a type safe array of `Link` options providing navigation relative to `from`
+`ValidateLinkOptionsArray` permite que você fixe `from` fornecendo um parâmetro de tipo extra. O resultado é um array type-safe de opções de `Link` fornecendo navegação relativa ao `from`
 
 ```tsx
 <Menu
@@ -121,9 +121,9 @@ export function Menu(props: MenuProps): React.ReactNode {
 />
 ```
 
-## Type checking redirect options with `ValidateRedirectOptions`
+## Verificação de tipos das opções de redirect com `ValidateRedirectOptions`
 
-`ValidateRedirectOptions` type checks object literal types to ensure they conform to redirect options at inference sites. For example, you may need a generic `fetchOrRedirect` function which accepts a `url` along with `redirectOptions`, the idea being this function will redirect when the `fetch` fails.
+`ValidateRedirectOptions` verifica tipos de objetos literais para garantir que estejam em conformidade com as opções de redirect nos locais de inferência. Por exemplo, você pode precisar de uma função genérica `fetchOrRedirect` que aceita uma `url` junto com `redirectOptions`, a ideia sendo que essa função fará redirect quando o `fetch` falhar.
 
 ```tsx
 export async function fetchOrRedirect<
@@ -147,15 +147,15 @@ export async function fetchOrRedirect(
 }
 ```
 
-The result is that `redirectOptions` passed to `fetchOrRedirect` is completely type-safe
+O resultado é que `redirectOptions` passado para `fetchOrRedirect` é completamente type-safe
 
 ```tsx
 fetchOrRedirect("http://example.com/", { to: "/login" });
 ```
 
-## Type checking navigate options with `ValidateNavigateOptions`
+## Verificação de tipos das opções de navigate com `ValidateNavigateOptions`
 
-`ValidateNavigateOptions` type checks object literal types to ensure they conform to navigate options at inference sites. For example, you may want to write a custom hook to enable/disable navigation.
+`ValidateNavigateOptions` verifica tipos de objetos literais para garantir que estejam em conformidade com as opções de navigate nos locais de inferência. Por exemplo, você pode querer escrever um hook personalizado para habilitar/desabilitar navegação.
 
 [//]: # "TypeCheckingNavigateOptionsWithValidateNavigateOptionsImpl"
 
@@ -191,7 +191,7 @@ export function useConditionalNavigate(
 
 [//]: # "TypeCheckingNavigateOptionsWithValidateNavigateOptionsImpl"
 
-The result of this is that `navigateOptions` passed to `useConditionalNavigate` is completely type-safe and we can enable/disable navigation based on react state
+O resultado disso é que `navigateOptions` passado para `useConditionalNavigate` é completamente type-safe e podemos habilitar/desabilitar navegação baseado no state do React
 
 ```tsx
 const { enable, disable, navigate } = useConditionalNavigate({

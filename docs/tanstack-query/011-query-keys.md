@@ -3,14 +3,14 @@ id: query-keys
 title: Query Keys
 ---
 
-At its core, TanStack Query manages query caching for you based on query keys. Query keys have to be an Array at the top level, and can be as simple as an Array with a single string, or as complex as an array of many strings and nested objects. As long as the query key is serializable using `JSON.stringify`, and **unique to the query's data**, you can use it!
+Em sua essência, o TanStack Query gerencia o caching de queries para você com base nas query keys. As query keys precisam ser um Array no nível superior, e podem ser tão simples quanto um Array com uma única string, ou tão complexas quanto um array de muitas strings e objetos aninhados. Desde que a query key seja serializável usando `JSON.stringify`, e **única para os dados da query**, você pode usá-la!
 
-## Simple Query Keys
+## Query Keys Simples
 
-The simplest form of a key is an array with constants values. This format is useful for:
+A forma mais simples de uma key é um array com valores constantes. Esse formato é útil para:
 
-- Generic List/Index resources
-- Non-hierarchical resources
+- Recursos genéricos de lista/índice
+- Recursos não-hierárquicos
 
 [//]: # "Example"
 
@@ -24,14 +24,14 @@ useQuery({ queryKey: ['something', 'special'], ... })
 
 [//]: # "Example"
 
-## Array Keys with variables
+## Keys de Array com variáveis
 
-When a query needs more information to uniquely describe its data, you can use an array with a string and any number of serializable objects to describe it. This is useful for:
+Quando uma query precisa de mais informações para descrever seus dados de forma única, você pode usar um array com uma string e qualquer número de objetos serializáveis para descrevê-la. Isso é útil para:
 
-- Hierarchical or nested resources
-  - It's common to pass an ID, index, or other primitive to uniquely identify the item
-- Queries with additional parameters
-  - It's common to pass an object of additional options
+- Recursos hierárquicos ou aninhados
+  - É comum passar um ID, índice ou outro valor primitivo para identificar o item de forma única
+- Queries com parâmetros adicionais
+  - É comum passar um objeto de opções adicionais
 
 [//]: # "Example2"
 
@@ -48,9 +48,9 @@ useQuery({ queryKey: ['todos', { type: 'done' }], ... })
 
 [//]: # "Example2"
 
-## Query Keys are hashed deterministically!
+## Query Keys são hasheadas de forma determinística!
 
-This means that no matter the order of keys in objects, all of the following queries are considered equal:
+Isso significa que, independentemente da ordem das keys nos objetos, todas as queries a seguir são consideradas iguais:
 
 [//]: # "Example3"
 
@@ -62,7 +62,7 @@ useQuery({ queryKey: ['todos', { page, status, other: undefined }], ... })
 
 [//]: # "Example3"
 
-The following query keys, however, are not equal. Array item order matters!
+As query keys a seguir, no entanto, não são iguais. A ordem dos itens no array importa!
 
 [//]: # "Example4"
 
@@ -74,9 +74,9 @@ useQuery({ queryKey: ['todos', undefined, page, status], ...})
 
 [//]: # "Example4"
 
-## If your query function depends on a variable, include it in your query key
+## Se sua função de query depende de uma variável, inclua-a na query key
 
-Since query keys uniquely describe the data they are fetching, they should include any variables you use in your query function that **change**. For example:
+Como as query keys descrevem de forma única os dados que estão sendo buscados, elas devem incluir quaisquer variáveis que você use na sua função de query que **mudam**. Por exemplo:
 
 [//]: # "Example5"
 
@@ -91,13 +91,13 @@ function Todos({ todoId }) {
 
 [//]: # "Example5"
 
-Note that query keys act as dependencies for your query functions. Adding dependent variables to your query key will ensure that queries are cached independently, and that any time a variable changes, _queries will be refetched automatically_ (depending on your `staleTime` settings). See the [exhaustive-deps](../../../eslint/exhaustive-deps.md) section for more information and examples.
+Note que as query keys atuam como dependências para suas funções de query. Adicionar variáveis dependentes à sua query key vai garantir que as queries sejam cacheadas independentemente, e que sempre que uma variável mudar, _as queries serão refetchadas automaticamente_ (dependendo das suas configurações de `staleTime`). Veja a seção [exhaustive-deps](../../../eslint/exhaustive-deps.md) para mais informações e exemplos.
 
 [//]: # "Materials"
 
-## Further reading
+## Leitura complementar
 
-For tips on organizing Query Keys in larger applications, have a look at [Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys) and check the [Query Key Factory Package](https://github.com/lukemorales/query-key-factory) from
-the [Community Resources](../../../community-resources).
+Para dicas sobre organização de Query Keys em aplicações maiores, dê uma olhada em [Effective React Query Keys](https://tkdodo.eu/blog/effective-react-query-keys) e confira o [Query Key Factory Package](https://github.com/lukemorales/query-key-factory) dos
+[Community Resources](../../../community-resources).
 
 [//]: # "Materials"
