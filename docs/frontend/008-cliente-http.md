@@ -6,6 +6,7 @@ Documentacao da camada de comunicacao HTTP do frontend LowCodeJS, incluindo a in
 - `src/lib/api.ts` -- Instancia Axios configurada
 - `src/lib/query-client.ts` -- Configuracao do QueryClient
 - `src/integrations/tanstack-query/root-provider.tsx` -- Provider React
+- `src/integrations/tanstack-query/devtools.tsx` -- DevTools (desenvolvimento)
 
 ---
 
@@ -233,7 +234,24 @@ function App() {
 
 ---
 
-## 4. Fluxo Completo de uma Requisicao
+## 4. DevTools (Desenvolvimento)
+
+O arquivo `src/integrations/tanstack-query/devtools.tsx` exporta a configuracao do painel de DevTools do TanStack Query, utilizado apenas em ambiente de desenvolvimento.
+
+```typescript
+import { ReactQueryDevtoolsPanel } from '@tanstack/react-query-devtools';
+
+export default {
+  name: 'Tanstack Query',
+  render: <ReactQueryDevtoolsPanel />,
+};
+```
+
+Este modulo e carregado automaticamente pelo plugin `devtools()` do Vite (configurado em `vite.config.ts`). Permite inspecionar queries, mutations, cache e estado do QueryClient durante o desenvolvimento.
+
+---
+
+## 5. Fluxo Completo de uma Requisicao
 
 O diagrama abaixo mostra o fluxo tipico de uma requisicao no frontend:
 
@@ -327,13 +345,14 @@ function useCreateTable() {
 
 ---
 
-## 5. Resumo da Arquitetura
+## 6. Resumo da Arquitetura
 
 | Camada | Arquivo | Responsabilidade |
 |--------|---------|-----------------|
 | HTTP Client | `src/lib/api.ts` | Instancia Axios com baseURL e cookies |
 | Cache Layer | `src/lib/query-client.ts` | QueryClient com staleTime 1h, sem retry |
 | React Integration | `src/integrations/tanstack-query/root-provider.tsx` | Provider e contexto para SSR |
+| DevTools | `src/integrations/tanstack-query/devtools.tsx` | Painel de inspecao do TanStack Query (dev only) |
 | Tipos | `src/lib/interfaces.ts` | Tipagem das respostas |
 | Payloads | `src/lib/payloads.ts` | Tipagem dos envios |
 | Validacao | `src/lib/schemas.ts` | Schemas Zod para formularios |

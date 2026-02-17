@@ -1,4 +1,0 @@
-/* Remove o InputSearch SOMENTE nesta página */
-[data-tsd-source^='/src/components/common/input-search.tsx'] {
-  display: none !important;
-}

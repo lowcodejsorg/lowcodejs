@@ -2,8 +2,6 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { CopyIcon, DatabaseIcon } from 'lucide-react';
 import React from 'react';
 
-import styles from './new.module.css';
-
 export const Route = createFileRoute('/_private/tables/new/')({
   component: RouteComponent,
 });
@@ -13,7 +11,7 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <div
-      className={`flex h-full items-center justify-center ${styles.hideSearch}`}
+      className="flex h-full items-center justify-center"
     >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full px-4">
         {/* Criar a partir de modelo */}

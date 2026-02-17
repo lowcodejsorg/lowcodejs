@@ -672,3 +672,64 @@ Constroi o ambiente sandbox com APIs disponiveis para scripts de usuario:
 | `console.log/warn/error` | Logging interceptado |
 
 Builtins permitidos: `JSON`, `Date`, `Math`, `parseInt`, `parseFloat`, `Number`, `String`, `Boolean`, `Array`, `Object`, `RegExp`, `Map`, `Set`, `Promise`, `Error` e variantes, `encodeURI*`, `decodeURI*`.
+
+### field-resolver.ts
+
+Funcoes utilitarias para resolucao e conversao de valores de campos em tabelas dinamicas.
+
+#### `normalizeSlug(slug: string): string`
+
+Normaliza um slug convertendo hifens em underscores:
+
+```typescript
+export function normalizeSlug(slug: string): string {
+  return slug.replace(/-/g, '_');
+}
+// Exemplo: 'data-nascimento' → 'data_nascimento'
+```
+
+#### `resolveFieldValue(doc: Record<string, any>, slug: string): any`
+
+Resolve o valor de um campo no documento tentando 3 formatos de slug:
+
+1. **Slug original** - tenta `doc[slug]` diretamente
+2. **Com underscores** - converte hifens para underscores via `normalizeSlug()`
+3. **Com hifens** - converte underscores para hifens
+
+```typescript
+export function resolveFieldValue(doc: Record<string, any>, slug: string): any {
+  if (slug in doc) return doc[slug];
+  const normalizedSlug = normalizeSlug(slug);
+  if (normalizedSlug in doc) return doc[normalizedSlug];
+  const hyphenSlug = slug.replace(/_/g, '-');
+  if (hyphenSlug in doc) return doc[hyphenSlug];
+  return undefined;
+}
+```
+
+Retorna `undefined` caso nenhum formato seja encontrado no documento.
+
+#### `convertValue(value: any): any`
+
+Converte strings para tipos apropriados de forma inteligente:
+
+| Entrada | Saida | Tipo |
+|---|---|---|
+| `"42"` | `42` | `number` |
+| `"3.14"` | `3.14` | `number` |
+| `"true"` / `"false"` | `true` / `false` | `boolean` |
+| `"2024-01-15"` | `Date` object | `Date` |
+| `"2024-01-15T10:30:00"` | `Date` object | `Date` |
+| `null` / `undefined` | `null` / `undefined` | inalterado |
+| valores nao-string | valor original | inalterado |
+
+```typescript
+export function convertValue(value: any): any {
+  if (value === null || value === undefined) return value;
+  if (typeof value !== 'string') return value;
+  // Boolean: "true"/"false" → true/false
+  // Number: strings numericas → Number
+  // Date: strings ISO (YYYY-MM-DD ou YYYY-MM-DDTHH:mm:ss) → Date
+  return value;
+}
+```

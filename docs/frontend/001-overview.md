@@ -104,7 +104,12 @@ export const SignInBodySchema = z.object({
 
 ```
 frontend/
-├── public/                     # Arquivos estaticos
+├── public/                     # Arquivos estaticos (PWA)
+│   ├── favicon.png             # Icone do navegador (64x64, 32x32, 24x24, 16x16)
+│   ├── logo192.png             # Icone PWA 192x192
+│   ├── logo512.png             # Icone PWA 512x512
+│   ├── manifest.json           # Web App Manifest (PWA)
+│   └── robots.txt              # Regras para crawlers
 ├── src/
 │   ├── components/
 │   │   ├── ui/                 # 33 componentes shadcn/Radix
