@@ -20,7 +20,6 @@ describe('E2E Profile Update Controller', () => {
   describe('PUT /profile', () => {
     it('deve atualizar perfil do usuario com sucesso', async () => {
       const { cookies, user } = await createAuthenticatedUser();
-      const group = await UserGroup.findOne({ slug: 'master' });
 
       const response = await supertest(kernel.server)
         .put('/profile')
@@ -28,7 +27,6 @@ describe('E2E Profile Update Controller', () => {
         .send({
           name: 'Nome Atualizado',
           email: user.email,
-          group: group!._id.toString(),
         });
 
       expect(response.statusCode).toBe(200);

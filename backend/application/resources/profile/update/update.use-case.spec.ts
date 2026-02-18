@@ -26,7 +26,6 @@ describe('Profile Update Use Case', () => {
       _id: created._id,
       name: 'John Updated',
       email: 'john.updated@example.com',
-      group: 'group-id',
       allowPasswordChange: false,
     });
 
@@ -50,7 +49,6 @@ describe('Profile Update Use Case', () => {
       _id: created._id,
       name: 'John Updated',
       email: 'john.updated@example.com',
-      group: 'group-id',
       allowPasswordChange: true,
       currentPassword: 'old_password',
       newPassword: 'new_password',
@@ -76,7 +74,6 @@ describe('Profile Update Use Case', () => {
       _id: created._id,
       name: 'John Updated',
       email: 'john.updated@example.com',
-      group: 'group-id',
       allowPasswordChange: true,
       currentPassword: 'wrong_password',
       newPassword: 'new_password',
@@ -89,28 +86,11 @@ describe('Profile Update Use Case', () => {
     }
   });
 
-  it('deve retornar erro GROUP_NOT_INFORMED quando grupo nao for informado', async () => {
-    const result = await sut.execute({
-      _id: 'some-id',
-      name: 'John',
-      email: 'john@example.com',
-      group: '',
-      allowPasswordChange: false,
-    });
-
-    expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(400);
-      expect(result.value.cause).toBe('GROUP_NOT_INFORMED');
-    }
-  });
-
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existe', async () => {
     const result = await sut.execute({
       _id: 'non-existent-id',
       name: 'John',
       email: 'john@example.com',
-      group: 'group-id',
       allowPasswordChange: false,
     });
 
@@ -130,7 +110,6 @@ describe('Profile Update Use Case', () => {
       _id: 'some-id',
       name: 'John',
       email: 'john@example.com',
-      group: 'group-id',
       allowPasswordChange: false,
     });
 

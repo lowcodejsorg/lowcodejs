@@ -20,11 +20,6 @@ export default class ProfileUpdateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      if (!payload?.group)
-        return left(
-          HTTPException.BadRequest('Group not informed', 'GROUP_NOT_INFORMED'),
-        );
-
       const user = await this.userRepository.findBy({
         _id: payload._id,
         exact: true,
@@ -38,7 +33,7 @@ export default class ProfileUpdateUseCase {
           _id: user._id,
           name: payload.name,
           email: payload.email,
-          group: payload.group,
+          group: user.group,
         });
 
         return right(updated);
@@ -63,7 +58,7 @@ export default class ProfileUpdateUseCase {
         _id: user._id,
         name: payload.name,
         email: payload.email,
-        group: payload.group,
+        group: user.group,
         password,
       });
 

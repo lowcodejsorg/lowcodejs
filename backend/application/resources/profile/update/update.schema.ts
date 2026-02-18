@@ -8,7 +8,7 @@ export const ProfileUpdateSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['name', 'email', 'group'],
+    required: ['name', 'email'],
     properties: {
       name: {
         type: 'string',
@@ -26,15 +26,6 @@ export const ProfileUpdateSchema: FastifySchema = {
         errorMessage: {
           type: 'O email deve ser um texto',
           format: 'Digite um email válido',
-        },
-      },
-      group: {
-        type: 'string',
-        minLength: 1,
-        description: 'ID do grupo do usuário',
-        errorMessage: {
-          type: 'O grupo deve ser um texto',
-          minLength: 'O grupo é obrigatório',
         },
       },
       allowPasswordChange: {
@@ -70,7 +61,6 @@ export const ProfileUpdateSchema: FastifySchema = {
       required: {
         name: 'O nome é obrigatório',
         email: 'O email é obrigatório',
-        group: 'O grupo é obrigatório',
       },
       additionalProperties: 'Campos extras não são permitidos',
     },
@@ -133,7 +123,7 @@ export const ProfileUpdateSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['GROUP_NOT_INFORMED', 'INVALID_PAYLOAD_FORMAT'],
+          enum: ['INVALID_PAYLOAD_FORMAT'],
         },
         errors: {
           type: 'object',
@@ -143,9 +133,9 @@ export const ProfileUpdateSchema: FastifySchema = {
       },
       examples: [
         {
-          message: 'Grupo não informado',
+          message: 'Formato de payload inválido',
           code: 400,
-          cause: 'GROUP_NOT_INFORMED',
+          cause: 'INVALID_PAYLOAD_FORMAT',
         },
       ],
     },

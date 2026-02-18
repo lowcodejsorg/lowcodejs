@@ -74,6 +74,39 @@ describe('User Paginated Use Case', () => {
     }
   });
 
+  it('deve incluir o usuario logado nos resultados da listagem', async () => {
+    const loggedUser = await userInMemoryRepository.create({
+      name: 'Logged User',
+      email: 'logged@example.com',
+      password: 'password123',
+      group: 'group-id',
+    });
+
+    for (let i = 0; i < 3; i++) {
+      await userInMemoryRepository.create({
+        name: `User ${i + 1}`,
+        email: `user${i + 1}@example.com`,
+        password: 'password123',
+        group: 'group-id',
+      });
+    }
+
+    const result = await sut.execute({
+      page: 1,
+      perPage: 20,
+      user: { _id: loggedUser._id } as any,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.data).toHaveLength(4);
+      expect(result.value.meta.total).toBe(4);
+      expect(
+        result.value.data.some((u) => u._id === loggedUser._id),
+      ).toBe(true);
+    }
+  });
+
   it('deve retornar erro LIST_USER_PAGINATED_ERROR quando houver falha', async () => {
     vi.spyOn(userInMemoryRepository, 'findMany').mockRejectedValueOnce(
       new Error('Database error'),

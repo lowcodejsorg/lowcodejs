@@ -12,11 +12,6 @@ export const ProfileUpdateBodyValidator = z.object({
     .string({ message: 'O email é obrigatório' })
     .email('Digite um email válido')
     .trim(),
-  group: z
-    .string({ message: 'O grupo é obrigatório' })
-    .min(1, 'O grupo é obrigatório')
-    .trim(),
-
   currentPassword: z
     .string({ message: 'A senha atual deve ser um texto' })
     .trim()

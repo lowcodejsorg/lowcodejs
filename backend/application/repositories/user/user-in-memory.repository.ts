@@ -64,10 +64,6 @@ export default class UserInMemoryRepository implements UserContractRepository {
       filtered = filtered.filter((user) => user.status === payload.status);
     }
 
-    if (payload?.user?._id) {
-      filtered = filtered.filter((user) => user._id !== payload.user?._id);
-    }
-
     if (payload?.search) {
       filtered = filtered.filter(
         (user) =>
