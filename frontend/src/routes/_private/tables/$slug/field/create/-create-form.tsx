@@ -156,14 +156,38 @@ export const CreateFieldFormFields = withForm({
                 blockedTypes={blockedTypes}
                 required
                 onTypeChange={(type) => {
+                  // Limpar metadados residuais de campos condicionais
+                  // que podem ter erros de validacao de um tipo anterior
+                  const conditionalFields = [
+                    'format',
+                    'defaultValue',
+                    'dropdown',
+                    'category',
+                    'relationship.tableId',
+                    'relationship.tableSlug',
+                    'relationship.fieldId',
+                    'relationship.fieldSlug',
+                    'relationship.order',
+                  ];
+                  for (const fieldName of conditionalFields) {
+                    if (form.getFieldMeta(fieldName)) {
+                      form.deleteField(fieldName);
+                    }
+                  }
+
+                  // Restaurar valores padrao dos campos condicionais
                   if (type === E_FIELD_TYPE.TEXT_LONG) {
                     form.setFieldValue('format', E_FIELD_FORMAT.PLAIN_TEXT);
-                  } else if (
-                    type !== E_FIELD_TYPE.TEXT_SHORT &&
-                    type !== E_FIELD_TYPE.DATE
-                  ) {
+                  } else {
                     form.setFieldValue('format', '');
                   }
+                  form.setFieldValue('defaultValue', '');
+                  form.setFieldValue('dropdown', []);
+                  form.setFieldValue('category', []);
+                  form.setFieldValue(
+                    'relationship',
+                    fieldCreateFormDefaultValues.relationship,
+                  );
                 }}
               />
             )}
