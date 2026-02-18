@@ -15,7 +15,7 @@ backend/
     core/
       di-registry.ts         <-- registro de dependencias (chamado pelo kernel)
       controllers.ts         <-- loader de controllers (chamado pelo kernel)
-      exception.core.ts      <-- HTTPException (usado no error handler)
+      exception.ts      <-- HTTPException (usado no error handler)
 ```
 
 - O kernel vive em `backend/start/kernel.ts`.
@@ -43,7 +43,7 @@ import { ZodError } from 'zod';
 
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
-import HTTPException from '@application/core/exception.core';
+import HTTPException from '@application/core/exception';
 import { Env } from '@start/env';
 
 const kernel = fastify({
@@ -79,11 +79,22 @@ kernel.register(jwt, {
 // 4. Multipart
 kernel.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } });
 
-// 5. Swagger + Scalar
+// 5. Static files
+import _static from '@fastify/static';
+import { join } from 'node:path';
+kernel.register(_static, {
+  root: join(process.cwd(), '_storage'),
+  prefix: '/storage/',
+});
+
+// 6. Swagger + Scalar (API docs at /documentation)
 kernel.register(swagger, {
   openapi: { info: { title: 'API', version: '1.0.0' } },
 });
-kernel.register(scalar, { /* configuracao do Scalar */ });
+kernel.register(scalar, {
+  routePrefix: '/documentation',
+  configuration: { title: 'API', theme: 'default' },
+});
 
 // 6. Error handler global
 kernel.setErrorHandler((error, request, response) => {
@@ -154,7 +165,7 @@ import { ZodError } from 'zod';
 
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
-import HTTPException from '@application/core/exception.core';
+import HTTPException from '@application/core/exception';
 import { Env } from '@start/env';
 
 const kernel = fastify({ logger: false, ajv: { customOptions: { allErrors: true } } });
@@ -194,11 +205,11 @@ kernel.register(multipart, { limits: { fileSize: 5 * 1024 * 1024 } });
 // Documentacao da API
 kernel.register(swagger, {
   openapi: {
-    info: { title: 'LowcodeJS API', version: '1.0.0' },
+    info: { title: 'project-name API', version: '1.0.0' },
   },
 });
 kernel.register(scalar, {
-  routePrefix: '/docs',
+  routePrefix: '/documentation',
 });
 
 // Error handler centralizado
@@ -263,11 +274,11 @@ export { kernel };
 
 1. **`reflect-metadata` como primeiro import** -- este import deve ser a primeira linha do arquivo, antes de qualquer outro import. Sem ele, os decorators `@Controller`, `@Service`, `@Inject` do `fastify-decorators` nao funcionam.
 
-2. **Ordem de registro dos plugins** -- sempre registrar na sequencia: CORS, Cookie, JWT, Multipart, Static (se houver), Swagger, Scalar. Alterar a ordem pode causar problemas de dependencia entre plugins.
+2. **Ordem de registro dos plugins** -- sempre registrar na sequencia: CORS, Cookie, JWT, Multipart, `@fastify/static` (para servir arquivos estaticos como uploads em `/_storage`), Swagger, Scalar. Alterar a ordem pode causar problemas de dependencia entre plugins.
 
 3. **CORS com allowlist** -- nunca use `origin: true` ou `origin: '*'` em producao. Sempre mantenha uma lista explicita de origens permitidas. Inclua as URLs de desenvolvimento (localhost) e a URL do frontend em producao via `Env.FRONTEND_URL`.
 
-4. **JWT RS256 com chaves base64** -- as chaves JWT sao armazenadas como strings base64 nas variaveis de ambiente e decodificadas com `Buffer.from(key, 'base64')`. Nunca armazene chaves PEM diretamente em variaveis de ambiente.
+4. **JWT RS256 com chaves base64 e autenticacao via cookie** -- as chaves JWT sao armazenadas como strings base64 nas variaveis de ambiente e decodificadas com `Buffer.from(key, 'base64')`. O JWT e transportado via cookie HTTP-only (`accessToken`), configurado com `cookie: { signed: false, cookieName: 'accessToken' }` no plugin JWT. Nunca armazene chaves PEM diretamente em variaveis de ambiente.
 
 5. **Error handler trata 4 camadas** -- a ordem de checagem no error handler e importante:
    - `HTTPException` (erros de dominio -- 4xx/5xx)
@@ -291,7 +302,9 @@ export { kernel };
 
 - [ ] O arquivo esta em `backend/start/kernel.ts`.
 - [ ] `import 'reflect-metadata'` e o primeiro import do arquivo.
-- [ ] Os plugins estao registrados na ordem: CORS, Cookie, JWT, Multipart, Swagger, Scalar.
+- [ ] Os plugins estao registrados na ordem: CORS, Cookie, JWT, Multipart, Static, Swagger, Scalar.
+- [ ] `@fastify/static` configurado para servir arquivos de `_storage` no prefixo `/storage/`.
+- [ ] Scalar configurado com `routePrefix: '/documentation'` para documentacao da API.
 - [ ] O CORS usa allowlist explicita de origens (nao `origin: true`).
 - [ ] O CORS tem `credentials: true`.
 - [ ] O JWT usa algoritmo RS256 com chaves decodificadas de base64.
@@ -317,7 +330,7 @@ export { kernel };
 | Upload rejeitado sem mensagem clara | Arquivo excede o limite de `fileSize` do multipart | Ajustar o limite em `multipart.limits.fileSize` ou tratar o erro no controller |
 | `ZodError` retornando 500 ao inves de 400 | Error handler nao trata `ZodError` antes do fallback generico | Adicionar checagem `error instanceof ZodError` antes do fallback 500 |
 | Erros de validacao do Fastify retornando 500 | Error handler nao trata `FST_ERR_VALIDATION` | Adicionar checagem `error.code === 'FST_ERR_VALIDATION'` no error handler |
-| Swagger nao carregando em `/docs` | Plugin Scalar nao registrado ou `routePrefix` incorreto | Registrar `scalar` com `routePrefix: '/docs'` apos o registro do `swagger` |
+| Swagger nao carregando em `/documentation` | Plugin Scalar nao registrado ou `routePrefix` incorreto | Registrar `scalar` com `routePrefix: '/documentation'` apos o registro do `swagger` |
 | Plugins registrados fora de ordem | JWT registrado antes do Cookie, causando erro de dependencia | Seguir a ordem: CORS, Cookie, JWT, Multipart, Static, Swagger, Scalar |
 
 ---

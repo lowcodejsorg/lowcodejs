@@ -12,7 +12,11 @@ O arquivo de middleware deve estar localizado em:
 backend/application/middlewares/[name].middleware.ts
 ```
 
-Onde `[name]` descreve a funcionalidade do middleware (ex: `authentication`, `authorization`, `rate-limit`).
+Onde `[name]` descreve a funcionalidade do middleware (ex: `authentication`, `permissions`, `rate-limit`).
+
+Os dois middlewares principais do projeto sao:
+- **`AuthenticationMiddleware`** (`authentication.middleware.ts`) -- verifica se o usuario esta autenticado via JWT cookie.
+- **`PermissionMiddleware`** (`permissions.middleware.ts`) -- verifica se o usuario tem a role necessaria para acessar o recurso.
 
 Componentes tipicos de um middleware:
 
@@ -25,7 +29,7 @@ Componentes tipicos de um middleware:
 
 ```typescript
 import { type FastifyRequest } from 'fastify';
-import HTTPException from '@application/core/exception.core';
+import HTTPException from '@application/core/exception';
 
 interface <Name>Options {
   optional?: boolean;
@@ -70,8 +74,8 @@ export function <Name>Middleware(options: <Name>Options = { optional: false }) {
 
 ```typescript
 import { type FastifyRequest } from 'fastify';
-import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
-import HTTPException from '@application/core/exception.core';
+import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entities';
+import HTTPException from '@application/core/exception';
 
 interface AuthOptions {
   optional?: boolean;

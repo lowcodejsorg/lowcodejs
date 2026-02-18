@@ -78,10 +78,8 @@ export default class TableRowUpdateUseCase {
           typeof groupData[0] === 'object' &&
           groupData[0] !== null
         ) {
-          // Sanitiza os dados embedded (remove _id interno se existir)
-          payload[groupSlug] = (
-            groupData as Array<{ _id?: string; [key: string]: unknown }>
-          ).map(({ _id, ...rest }) => rest);
+          // Preserva _id existente nos itens embedded (Mongoose gera para novos)
+          payload[groupSlug] = groupData;
         }
       }
 

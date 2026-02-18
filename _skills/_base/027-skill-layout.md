@@ -54,7 +54,7 @@ export const Route = createFileRoute('/{{_layout_prefix}}')({
 function RouteComponent(): React.JSX.Element {
   const authentication = useAuthenticationStore().authenticated;
   const isAuthenticated = Boolean(authentication?.role);
-  const { menu } = useMenuDynamic(authentication?.role ?? E_ROLE.REGISTERED);
+  const { menu } = useMenuDynamic(authentication?.role ?? E_ROLE.ARTISAN);
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     // Rotas onde o input de search no header nao deve aparecer
@@ -93,7 +93,7 @@ export const Route = createFileRoute('/_private')({
 function RouteComponent(): React.JSX.Element {
   const authentication = useAuthenticationStore().authenticated;
   const isAuthenticated = Boolean(authentication?.role);
-  const { menu } = useMenuDynamic(authentication?.role ?? E_ROLE.REGISTERED);
+  const { menu } = useMenuDynamic(authentication?.role ?? E_ROLE.ARTISAN);
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',
@@ -120,7 +120,7 @@ function RouteComponent(): React.JSX.Element {
 1. `createFileRoute('/_private')` registra o layout para todas as rotas sob `/_private/`. O underscore no inicio (`_private`) indica que esse segmento nao aparece na URL -- e um layout route do TanStack Router.
 2. `useAuthenticationStore().authenticated` acessa os dados do usuario logado do store Zustand. O `authenticated` pode ser `null` se o usuario nao estiver logado.
 3. `isAuthenticated` e derivado de `Boolean(authentication?.role)`. Usado para renderizacao condicional da Sidebar -- se o usuario nao estiver autenticado, a sidebar nao aparece.
-4. `useMenuDynamic` recebe a role do usuario (ex.: `'ADMIN'`, `'REGISTERED'`) e retorna o `menu` correspondente. O fallback `E_ROLE.REGISTERED` garante que sempre haja um menu, mesmo que a role esteja indefinida.
+4. `useMenuDynamic` recebe a role do usuario (ex.: `'ADMINISTRATOR'`, `'ARTISAN'`) e retorna o `menu` correspondente. O fallback `E_ROLE.ARTISAN` garante que sempre haja um menu, mesmo que a role esteja indefinida.
 5. `routesWithoutSearchInput` define as rotas onde o input de search no Header nao deve aparecer. Aceita strings (match exato) e RegExp (match por pattern). O Header usa essa lista para decidir se exibe ou oculta o campo de busca.
 6. `SidebarProvider` e o context provider do componente sidebar (shadcn), que gerencia o estado de aberto/fechado da sidebar.
 7. `{isAuthenticated && <Sidebar menu={menu} />}` renderiza a sidebar condicionalmente. Isso permite que o layout exista sem sidebar quando necessario.
@@ -146,7 +146,7 @@ function RouteComponent(): React.JSX.Element {
 
 7. **Hooks chamados incondicionalmente** -- `useAuthenticationStore`, `useMenuDynamic` e todos os outros hooks devem ser chamados no topo do componente, sem condicoes. Essa e uma regra fundamental dos hooks do React.
 
-8. **Fallback para role** -- ao chamar `useMenuDynamic`, sempre fornecer um fallback (ex.: `E_ROLE.REGISTERED`) caso `authentication?.role` seja `undefined`. Isso evita erros durante o carregamento inicial.
+8. **Fallback para role** -- ao chamar `useMenuDynamic`, sempre fornecer um fallback (ex.: `E_ROLE.ARTISAN`) caso `authentication?.role` seja `undefined`. Isso evita erros durante o carregamento inicial.
 
 9. **Classes CSS do layout** -- o `SidebarInset` deve ter `h-screen`, `overflow-hidden` e `flex-1` para ocupar o espaco restante corretamente. O scroll acontece dentro das rotas filhas, nao no layout.
 
@@ -164,7 +164,7 @@ function RouteComponent(): React.JSX.Element {
 - [ ] O componente renderiza `<Outlet />` exatamente uma vez.
 - [ ] `SidebarProvider` envolve `Sidebar` e `SidebarInset`.
 - [ ] `Sidebar` e renderizada condicionalmente com `isAuthenticated`.
-- [ ] `useMenuDynamic` recebe a role com fallback `E_ROLE.REGISTERED`.
+- [ ] `useMenuDynamic` recebe a role com fallback `E_ROLE.ARTISAN`.
 - [ ] `Header` recebe `routesWithoutSearchInput` com as rotas de exclusao.
 - [ ] Todos os hooks sao chamados incondicionalmente no topo do componente.
 - [ ] `SidebarInset` tem classes CSS para `h-screen`, `overflow-hidden` e `flex-1`.
@@ -177,7 +177,7 @@ function RouteComponent(): React.JSX.Element {
 | Erro | Causa | Correcao |
 |------|-------|----------|
 | Rotas filhas nao aparecem | `<Outlet />` nao renderizado no layout | Adicionar `<Outlet />` dentro do `SidebarInset`, apos o `Header` |
-| Sidebar sem itens de menu | `useMenuDynamic` recebendo `undefined` como role | Fornecer fallback: `authentication?.role ?? E_ROLE.REGISTERED` |
+| Sidebar sem itens de menu | `useMenuDynamic` recebendo `undefined` como role | Fornecer fallback: `authentication?.role ?? E_ROLE.ARTISAN` |
 | Sidebar aparece para usuario nao autenticado | Renderizacao incondicional da Sidebar | Usar `{isAuthenticated && <Sidebar menu={menu} />}` |
 | Erro `React Hook called conditionally` | Hook dentro de `if` ou apos `return` antecipado | Mover todos os hooks para o topo do componente, antes de qualquer condicional |
 | Scroll duplo (layout + conteudo) | `SidebarInset` sem `overflow-hidden` | Adicionar `overflow-hidden` ao `SidebarInset` e garantir que o scroll fique na rota filha |

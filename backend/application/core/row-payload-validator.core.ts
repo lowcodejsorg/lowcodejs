@@ -149,8 +149,10 @@ function validateFieldValue(
 
         // Validate each field in the group
         for (const groupField of groupConfig.fields) {
+          if (groupField.native) continue; // Skip native fields
+          if (groupField.trashed) continue; // Skip trashed fields
           const fieldValue = (item as Record<string, unknown>)[groupField.slug];
-          const fieldError = validateFieldValue(fieldValue, groupField);
+          const fieldError = validateFieldValue(fieldValue, groupField, groups);
           if (fieldError) {
             return `Item ${i}: ${groupField.name} - ${fieldError}`;
           }

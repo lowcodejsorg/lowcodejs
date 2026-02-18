@@ -127,7 +127,7 @@ export function TableRowFieldGroupField({
     );
   }
 
-  const groupFields = group.fields.filter((f) => !f.trashed);
+  const groupFields = group.fields.filter((f) => !f.trashed && !f.native);
 
   return (
     <Field data-invalid={isInvalid}>
@@ -202,7 +202,8 @@ function NestedGroupField({
   if (
     groupField.type === E_FIELD_TYPE.REACTION ||
     groupField.type === E_FIELD_TYPE.EVALUATION ||
-    groupField.type === E_FIELD_TYPE.FIELD_GROUP
+    groupField.type === E_FIELD_TYPE.FIELD_GROUP ||
+    groupField.native
   ) {
     return null;
   }
@@ -265,6 +266,13 @@ function NestedGroupField({
           case E_FIELD_TYPE.CATEGORY:
             return (
               <formField.TableRowCategoryField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.USER:
+            return (
+              <formField.TableRowUserField
                 field={groupField}
                 disabled={disabled}
               />

@@ -1,59 +1,73 @@
-# Skill: Mongoose Model
+# Skill: Model (Mongoose Schema)
 
-O model no LowcodeJS e a camada de definicao do schema Mongoose que mapeia diretamente uma entidade do dominio para uma collection no MongoDB. Cada model define a estrutura dos documentos, validacoes a nivel de banco, relacionamentos via `ref`, e convencoes como soft delete e timestamps automaticos. O model e consumido exclusivamente pelo repository Mongoose correspondente.
+O model no projeto e definido como um arquivo individual por entidade em `application/model/[entity].model.ts`. Cada arquivo exporta um Mongoose Schema e o Model correspondente usando o singleton pattern para evitar recompilacao. O schema define campos, tipos, relacionamentos via `ref`, enums via `Object.values()`, e usa `timestamps: true` para `createdAt`/`updatedAt` automaticos. O `_id` e `ObjectId` auto-gerado pelo MongoDB. Soft delete usa `trashed: Boolean` + `trashedAt: Date`.
 
 ---
 
 ## Estrutura do Arquivo
 
-Cada model fica em seu proprio arquivo dentro da pasta `model/`:
+Cada entidade tem seu proprio arquivo de model:
 
 ```
-backend/application/model/
-  user.model.ts
-  user-group.model.ts
-  project.model.ts
-  [entity].model.ts
+backend/
+  application/
+    model/
+      user.model.ts              <-- model do User
+      user-group.model.ts        <-- model do UserGroup
+      table.model.ts             <-- model do Table
+      storage.model.ts           <-- model do Storage
+      [entity].model.ts          <-- um arquivo por entidade
+  config/
+    database.config.ts           <-- MongooseConnect + imports dos models
 ```
 
-O nome do arquivo segue o padrao `[entity].model.ts` em kebab-case, onde `[entity]` e o nome da entidade no singular.
+O arquivo `config/database.config.ts` importa todos os models para garantir o registro no Mongoose antes da conexao.
 
 ---
 
 ## Template
 
 ```typescript
-import mongoose from 'mongoose';
-import { E_ENTITY_STATUS, Merge, type IEntity as Core } from '@application/core/entity.core';
+// application/model/[entity].model.ts
 
-// Tipo que combina a entidade core (sem _id) com mongoose.Document
+import mongoose from 'mongoose';
+
+import {
+  E_ENTITY_STATUS,
+  Merge,
+  type IEntity as Core,
+} from '@application/core/entity.core';
+
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 export const Schema = new mongoose.Schema(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
 
-    // Campos obrigatorios
     name: { type: String, required: true },
-
-    // Campos com enum
+    description: { type: String, default: null },
     status: {
       type: String,
       enum: Object.values(E_ENTITY_STATUS),
-      default: E_ENTITY_STATUS.INACTIVE,
+      default: E_ENTITY_STATUS.ACTIVE,
     },
 
-    // Relacionamentos
-    group: { type: mongoose.Schema.Types.ObjectId, ref: 'EntityGroup' },
+    // Relacionamento belongsTo (ref)
+    category: { type: mongoose.Schema.Types.ObjectId, ref: 'Category' },
+
+    // Relacionamento hasMany (array de refs)
+    items: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }],
 
     // Soft delete
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },
-  { timestamps: true, id: false },
+  {
+    timestamps: true,
+    id: false,
+  },
 );
 
-// Re-uso do model existente OU criacao de um novo
 export const Entity = (mongoose?.models?.Entity ||
   mongoose.model<Entity>('Entity', Schema, 'entities')) as mongoose.Model<Entity>;
 ```
@@ -63,14 +77,21 @@ export const Entity = (mongoose?.models?.Entity ||
 ## Exemplo Real
 
 ```typescript
+// application/model/user.model.ts
 import mongoose from 'mongoose';
-import { E_USER_STATUS, Merge, type IUser as Core } from '@application/core/entity.core';
+
+import {
+  E_USER_STATUS,
+  Merge,
+  type IUser as Core,
+} from '@application/core/entity.core';
 
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 export const Schema = new mongoose.Schema(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+
     name: { type: String, required: true },
     email: { type: String, required: true },
     password: { type: String, required: true },
@@ -80,64 +101,163 @@ export const Schema = new mongoose.Schema(
       default: E_USER_STATUS.INACTIVE,
     },
     group: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
+
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },
-  { timestamps: true, id: false },
+  {
+    timestamps: true,
+    id: false,
+  },
 );
 
 export const User = (mongoose?.models?.User ||
   mongoose.model<Entity>('User', Schema, 'users')) as mongoose.Model<Entity>;
 ```
 
+```typescript
+// application/model/table.model.ts (trecho -- model com subdocuments e arrays de refs)
+import mongoose from 'mongoose';
+
+import {
+  E_TABLE_TYPE,
+  E_TABLE_STYLE,
+  E_TABLE_VISIBILITY,
+  E_TABLE_COLLABORATION,
+  Merge,
+  type ITable as Core,
+} from '@application/core/entity.core';
+
+type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
+
+const GroupConfiguration = new mongoose.Schema(
+  {
+    slug: { type: String, required: true },
+    name: { type: String, required: true },
+    fields: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Field' }],
+    _schema: { type: mongoose.Schema.Types.Mixed, default: {} },
+  },
+  { _id: true, timestamps: true, id: false },
+);
+
+export const Schema = new mongoose.Schema(
+  {
+    _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
+    name: { type: String, required: true },
+    slug: { type: String, required: true },
+    description: { type: String, default: null },
+    type: {
+      type: String,
+      enum: Object.values(E_TABLE_TYPE),
+      default: E_TABLE_TYPE.TABLE,
+    },
+    visibility: {
+      type: String,
+      enum: Object.values(E_TABLE_VISIBILITY),
+      default: E_TABLE_VISIBILITY.RESTRICTED,
+    },
+    owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    fields: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Field' }],
+    groups: { type: [GroupConfiguration], default: [] },
+
+    trashed: { type: Boolean, default: false },
+    trashedAt: { type: Date, default: null },
+  },
+  {
+    timestamps: true,
+    id: false,
+  },
+);
+
+export const Table = (mongoose?.models?.Table ||
+  mongoose.model<Entity>('Table', Schema, 'tables')) as mongoose.Model<Entity>;
+```
+
 ### Detalhes do exemplo
 
-- **`_id` com `auto: true`**: O MongoDB gera o ObjectId automaticamente. Nao use `default: new ObjectId()` pois geraria o mesmo ID para todos os documentos.
-- **`E_USER_STATUS` com `Object.values()`**: Garante que o enum do schema esta sempre sincronizado com o enum definido em `entity.core.ts`.
-- **`ref: 'UserGroup'`**: Referencia ao model `UserGroup` para popular o campo `group` com `populate()` no repository.
-- **`trashed` e `trashedAt`**: Convencao de soft delete. Documentos "deletados" recebem `trashed: true` e `trashedAt: new Date()` ao inves de serem removidos do banco.
-- **`timestamps: true`**: Mongoose cria automaticamente os campos `createdAt` e `updatedAt`.
-- **`id: false`**: Desabilita a criacao do virtual `id` (string) pelo Mongoose, ja que usamos `_id` (ObjectId) diretamente.
-- **Re-uso do model**: O pattern `mongoose?.models?.User || mongoose.model(...)` evita o erro `OverwriteModelError` quando o arquivo e importado multiplas vezes (comum em hot reload e testes).
-- **Cast `as mongoose.Model<Entity>`**: Garante que o TypeScript reconhece o tipo correto do model independente de qual branch do `||` foi executada.
+- **`_id: { type: mongoose.Schema.Types.ObjectId, auto: true }`**: todo model usa ObjectId como chave primaria, gerado automaticamente pelo MongoDB.
+- **`timestamps: true`**: o Mongoose adiciona automaticamente `createdAt` e `updatedAt` (em camelCase) a cada documento.
+- **`id: false`**: desabilita o getter virtual `id` do Mongoose, evitando confusao com `_id`.
+- **`type: String, enum: Object.values(E_ENTITY_STATUS)`**: enums sao definidos como constantes TypeScript em `entity.core.ts` e validados pelo Mongoose via `enum`.
+- **`{ type: mongoose.Schema.Types.ObjectId, ref: 'ModelName' }`**: define relacionamento belongsTo via referencia.
+- **`[{ type: mongoose.Schema.Types.ObjectId, ref: 'ModelName' }]`**: define relacionamento hasMany via array de referencias.
+- **`trashed: Boolean` + `trashedAt: Date`**: convencao de soft delete. Registros "deletados" recebem `trashed: true` e `trashedAt` com timestamp.
+- **Singleton pattern**: `mongoose?.models?.Entity || mongoose.model<Entity>(...)` previne erro `OverwriteModelError` quando o model e importado multiplas vezes (ex.: hot reload, testes).
+- **`type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>`**: combina a interface da entidade (sem `_id` pois o Document ja fornece) com o tipo Document do Mongoose.
+- **`mongoose.Schema.Types.Mixed`**: tipo para dados semi-estruturados (equivalente a JSON).
+
+---
+
+## Registro dos Models
+
+O arquivo `config/database.config.ts` importa todos os models para garantir registro:
+
+```typescript
+// config/database.config.ts
+import mongoose from 'mongoose';
+import { Env } from '@start/env';
+
+// Importar todos os models para garantir registro
+import '@application/model/user.model';
+import '@application/model/user-group.model';
+import '@application/model/table.model';
+import '@application/model/storage.model';
+// ... demais models
+
+export async function MongooseConnect(): Promise<void> {
+  try {
+    await mongoose.connect(Env.DATABASE_URL, {
+      autoCreate: true,
+      dbName: Env.DB_NAME,
+    });
+  } catch (error) {
+    console.error(error);
+    await mongoose.disconnect();
+    process.exit(1);
+  }
+}
+```
 
 ---
 
 ## Regras e Convencoes
 
-1. **`_id` sempre e `ObjectId` com `auto: true`** -- nunca use `String`, `Number` ou `UUID` como tipo do `_id`. O auto-generate do MongoDB e o padrao do projeto.
+1. **Um arquivo por entidade** -- cada model vive em `application/model/[entity].model.ts`. Nunca centralize multiplos models em um unico arquivo.
 
-2. **`timestamps: true` e `id: false` sao obrigatorios** no segundo argumento do `new mongoose.Schema()`. Isso garante consistencia entre todos os models.
+2. **`_id: ObjectId` auto-gerado** -- nunca use UUID, autoincrement ou qualquer outro tipo de ID. ObjectId e o padrao do projeto.
 
-3. **Re-uso do model existente** -- sempre use o pattern `mongoose?.models?.ModelName || mongoose.model(...)` para evitar `OverwriteModelError`.
+3. **Soft delete com `trashed: Boolean` + `trashedAt: Date`** -- toda entidade que suporta exclusao deve ter `trashed` (default `false`) e `trashedAt` (default `null`). Quando `trashed: true`, o registro esta "deletado".
 
-4. **Enums usam `Object.values()`** -- nunca liste os valores manualmente no array `enum`. Importe o enum de `entity.core.ts` e use `Object.values(E_ENTITY_STATUS)`.
+4. **`timestamps: true` obrigatorio** -- todo schema deve incluir `timestamps: true` nas options. Isso gera `createdAt` e `updatedAt` automaticamente (camelCase, nao snake_case).
 
-5. **Relacionamentos usam `ref`** -- o valor do `ref` deve ser exatamente o nome usado no `mongoose.model('NomeDoModel', ...)` do model referenciado.
+5. **`id: false` obrigatorio** -- desabilita o getter virtual `id` para evitar confusao com `_id`.
 
-6. **Soft delete com `trashed` e `trashedAt`** -- toda entidade que suporta exclusao deve ter esses dois campos. `trashed` e `Boolean` com default `false`, `trashedAt` e `Date` com default `null`.
+6. **Enums via `Object.values(E_CONSTANT)`** -- enums sao definidos em `entity.core.ts` e usados no schema com `enum: Object.values(E_ENUM)`. Nunca hardcode arrays de strings.
 
-7. **O terceiro argumento de `mongoose.model()`** deve ser o nome da collection no MongoDB em lowercase e no plural (ex: `'users'`, `'user-groups'`, `'projects'`).
+7. **Refs para relacionamentos** -- use `{ type: mongoose.Schema.Types.ObjectId, ref: 'ModelName' }` para belongsTo. Use array `[{ type: ..., ref: ... }]` para hasMany.
 
-8. **O tipo `Entity`** deve ser `Merge<Omit<Core, '_id'>, mongoose.Document>` -- o `Omit<Core, '_id'>` remove o `_id` da interface core porque o Mongoose define o seu proprio `_id` via `Document`.
+8. **Singleton pattern obrigatorio** -- sempre use `mongoose?.models?.Name || mongoose.model<Entity>('Name', Schema, 'collection')` para evitar `OverwriteModelError`.
 
-9. **Exportacoes nomeadas** -- exporte `Schema` e o model (`User`, `Project`, etc.) como named exports, nunca default export.
+9. **Terceiro argumento do `mongoose.model()`** -- sempre passe o nome da collection como terceiro argumento (ex.: `'users'`, `'tables'`). Sem ele, o Mongoose pluraliza automaticamente e pode gerar nomes inesperados.
+
+10. **Type alias `Entity`** -- use `type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>` para combinar a interface core com o Document do Mongoose.
+
+11. **Subdocument schemas** -- para campos complexos, crie schemas separados (ex.: `GroupConfiguration`) com `{ _id: true/false, timestamps: true/false, id: false }` conforme necessario.
 
 ---
 
 ## Checklist
 
-- [ ] O arquivo esta em `backend/application/model/[entity].model.ts`
-- [ ] O tipo `Entity` usa `Merge<Omit<Core, '_id'>, mongoose.Document>`
-- [ ] O campo `_id` esta definido como `{ type: mongoose.Schema.Types.ObjectId, auto: true }`
-- [ ] `timestamps: true` e `id: false` estao no options do Schema
-- [ ] O model usa o pattern de re-uso: `mongoose?.models?.X || mongoose.model<Entity>(...)`
-- [ ] O cast `as mongoose.Model<Entity>` esta presente
-- [ ] Enums usam `Object.values(E_ENUM)` e nao arrays manuais
-- [ ] Relacionamentos usam `ref` com o nome exato do model referenciado
-- [ ] Campos de soft delete (`trashed`, `trashedAt`) estao presentes se a entidade suporta exclusao
-- [ ] O terceiro argumento de `mongoose.model()` e o nome da collection em lowercase plural
-- [ ] O `Schema` e o model sao named exports
+- [ ] O arquivo esta em `backend/application/model/[entity].model.ts`.
+- [ ] O schema usa `_id: { type: mongoose.Schema.Types.ObjectId, auto: true }`.
+- [ ] As options do schema incluem `timestamps: true` e `id: false`.
+- [ ] Soft delete usa `trashed: { type: Boolean, default: false }` e `trashedAt: { type: Date, default: null }`.
+- [ ] Enums usam `enum: Object.values(E_ENUM)` com constantes de `entity.core.ts`.
+- [ ] Relacionamentos usam `{ type: mongoose.Schema.Types.ObjectId, ref: 'ModelName' }`.
+- [ ] O export usa singleton pattern: `mongoose?.models?.Name || mongoose.model<Entity>(...)`.
+- [ ] O terceiro argumento de `mongoose.model()` especifica o nome da collection.
+- [ ] O type alias `Entity` usa `Merge<Omit<Core, '_id'>, mongoose.Document>`.
+- [ ] O model esta importado em `config/database.config.ts`.
 
 ---
 
@@ -145,15 +265,16 @@ export const User = (mongoose?.models?.User ||
 
 | Erro | Problema | Correcao |
 |------|----------|----------|
-| `mongoose.model('User', Schema)` sem re-uso | Causa `OverwriteModelError` em hot reload e testes | Usar `mongoose?.models?.User \|\| mongoose.model(...)` |
-| `_id: { type: String }` | Tipo errado para o `_id`, quebra populate e queries | Usar `mongoose.Schema.Types.ObjectId` com `auto: true` |
-| `enum: ['ACTIVE', 'INACTIVE']` hardcoded | Valores ficam desincronizados com o enum em `entity.core.ts` | Usar `enum: Object.values(E_ENTITY_STATUS)` |
-| `{ timestamps: false }` ou omissao | Campos `createdAt` e `updatedAt` nao sao criados automaticamente | Sempre incluir `{ timestamps: true, id: false }` |
-| `ref: 'user-group'` com nome errado | `populate()` falha silenciosamente retornando `null` | Usar o nome exato do model: `ref: 'UserGroup'` |
-| `export default mongoose.model(...)` | Inconsistente com o padrao do projeto | Usar named export: `export const User = ...` |
-| Omitir `trashed` e `trashedAt` | Impossibilita soft delete para a entidade | Adicionar ambos os campos com seus defaults |
-| `Merge<Core, mongoose.Document>` sem `Omit` | Conflito de tipos no `_id` entre a interface core e o Document | Usar `Merge<Omit<Core, '_id'>, mongoose.Document>` |
+| `OverwriteModelError` | Model registrado multiplas vezes (hot reload, testes) | Usar singleton: `mongoose?.models?.Name \|\| mongoose.model(...)` |
+| `_id` como `String` ou UUID | Usando tipo errado para PK | Usar `{ type: mongoose.Schema.Types.ObjectId, auto: true }` |
+| Soft delete com `deleted_at DateTime?` | Padrao Prisma, nao Mongoose | Usar `trashed: Boolean` + `trashedAt: Date` |
+| `timestamps` em snake_case (`created_at`) | Mongoose gera `createdAt`/`updatedAt` em camelCase | Nao renomear; usar camelCase padrao |
+| Enum como array hardcoded | Perde sincronismo com constantes TypeScript | Usar `enum: Object.values(E_CONSTANT)` |
+| Faltou `id: false` nas options | Mongoose gera virtual `id` que conflita com `_id` | Adicionar `id: false` nas options do schema |
+| Faltou terceiro argumento em `mongoose.model()` | Collection criada com nome pluralizado automaticamente | Passar nome da collection: `mongoose.model('User', Schema, 'users')` |
+| Model nao registrado no `database.config.ts` | `populate()` falha com `MissingSchemaError` | Adicionar `import '@application/model/[entity].model'` no `database.config.ts` |
+| `ref` apontando para nome errado | Populate nao encontra o model referenciado | Usar o nome exato registrado no `mongoose.model('NomeExato', ...)` |
 
 ---
 
-> **Cross-references:** ver `009-skill-repository.md` para como o repository Mongoose consome o model e utiliza o Schema para queries e populacao.
+> **Cross-references:** ver `009-skill-repository.md` para como o repository Mongoose consome o model para queries e populate de relacoes, e `config/database.config.ts` para como os models sao registrados na inicializacao.

@@ -22,7 +22,8 @@ Dependencias tipicas de um controller:
 - **Middleware** - funcoes de middleware (ex: `AuthenticationMiddleware`)
 - **Schema** - schema da rota para documentacao OpenAPI
 - **UseCase** - classe que contem a logica de negocio
-- **Validator** - parser de validacao dos dados de entrada
+- **Schema** - parser de validacao dos dados de entrada (Zod)
+- **Doc** - schema de documentacao OpenAPI (`.doc.ts`)
 
 ## Template
 
@@ -32,7 +33,8 @@ import { Controller, <HTTP_METHOD>, getInstanceByToken } from 'fastify-decorator
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { <Entity><Action>Schema } from './<action>.schema';
 import <Entity><Action>UseCase from './<action>.use-case';
-import { <Entity><Action><Param|Body>Validator } from './<action>.validator';
+import { <Entity><Action><Param|Body>Schema } from './<action>.schema';
+import { <Entity><Action>Doc } from './<action>.doc';
 
 @Controller({ route: '/<entities>' })
 export default class {
@@ -73,7 +75,8 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { UserShowSchema } from './show.schema';
 import UserShowUseCase from './show.use-case';
-import { UserShowParamValidator } from './show.validator';
+import { UserShowParamSchema } from './show.schema';
+import { UserShowDoc } from './show.doc';
 
 @Controller({ route: '/users' })
 export default class {
@@ -82,14 +85,14 @@ export default class {
   ) {}
 
   @GET({
-    url: '/:_id',
+    url: '/:id',
     options: {
       onRequest: [AuthenticationMiddleware({ optional: false })],
       schema: UserShowSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = UserShowParamValidator.parse(request.params);
+    const params = UserShowParamSchema.parse(request.params);
     const result = await this.useCase.execute(params);
 
     if (result.isLeft()) {
@@ -109,8 +112,8 @@ export default class {
 Neste exemplo, o controller de `UserShow`:
 
 1. Define a rota base `/users` via `@Controller`.
-2. Registra o endpoint `GET /:_id` com middleware de autenticacao obrigatoria.
-3. Faz parse dos parametros da URL usando `UserShowParamValidator`.
+2. Registra o endpoint `GET /:id` com middleware de autenticacao obrigatoria.
+3. Faz parse dos parametros da URL usando `UserShowParamSchema`.
 4. Delega a execucao para `UserShowUseCase`.
 5. Trata o retorno Either: erro com status code dinamico ou sucesso com status 200 (omitindo o campo `password`).
 
@@ -124,7 +127,7 @@ Neste exemplo, o controller de `UserShow`:
 
 4. **NUNCA coloque logica de negocio no controller.** O controller deve apenas: validar entrada, chamar o use case e formatar a resposta. Qualquer regra de dominio pertence ao use case.
 
-5. **Sempre use `validator.parse()`** para validar e tipar os dados de entrada (`request.params`, `request.body`, `request.query`). Nunca acesse dados do request diretamente sem validacao.
+5. **Sempre use `schema.parse()`** para validar e tipar os dados de entrada (`request.params`, `request.body`, `request.query`). Nunca acesse dados do request diretamente sem validacao.
 
 6. **Trate o retorno Either corretamente:**
    - `result.isLeft()` indica erro - extraia `message`, `code` e `cause` para a response.
@@ -146,7 +149,7 @@ Neste exemplo, o controller de `UserShow`:
 - [ ] `getInstanceByToken` usado para injecao do use case
 - [ ] Middleware de autenticacao configurado no `onRequest` (com `optional` correto)
 - [ ] Schema importado e referenciado na opcao `schema`
-- [ ] Validator usado para parse de `request.params`, `request.body` ou `request.query`
+- [ ] Schema Zod usado para parse de `request.params`, `request.body` ou `request.query`
 - [ ] Retorno Either tratado: `isLeft()` para erro, caminho normal para sucesso
 - [ ] Nenhuma logica de negocio presente no controller
 - [ ] Response de erro com `message`, `code` e `cause`
@@ -159,7 +162,7 @@ Neste exemplo, o controller de `UserShow`:
 
 1. **Colocar logica de negocio no controller.** Validacoes complexas, queries ao banco de dados ou transformacoes de dados devem estar no use case, nunca no controller.
 
-2. **Acessar `request.params` ou `request.body` sem validator.** Sempre passe os dados pelo `Validator.parse()` para garantir tipagem e validacao. Dados nao validados podem causar erros silenciosos em runtime.
+2. **Acessar `request.params` ou `request.body` sem schema.** Sempre passe os dados pelo `Schema.parse()` para garantir tipagem e validacao. Dados nao validados podem causar erros silenciosos em runtime.
 
 3. **Instanciar o use case com `new` ao inves de `getInstanceByToken`.** Isso quebra o ciclo de vida gerenciado pelo container de injecao de dependencia e pode causar problemas com singletons e dependencias compartilhadas.
 
@@ -176,3 +179,5 @@ Neste exemplo, o controller de `UserShow`:
 ---
 
 > **Ver tambem:** [001-skill-use-case.md](./001-skill-use-case.md) | [003-skill-validator.md](./003-skill-validator.md) | [004-skill-schema-api.md](./004-skill-schema-api.md) | [007-skill-middleware.md](./007-skill-middleware.md)
+
+> **Nota:** Os arquivos `.doc.ts` definem a documentacao OpenAPI/Swagger de cada endpoint (ver [004-skill-schema-api.md](./004-skill-schema-api.md)).

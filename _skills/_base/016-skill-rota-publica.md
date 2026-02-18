@@ -59,8 +59,8 @@ function RouteComponent(): React.JSX.Element {
       authentication.setAuthenticated({
         name: response.name,
         email: response.email,
-        role: response.group.slug.toUpperCase(),
-        sub: response._id.toString(),
+        role: response.role,
+        sub: response.id,
       });
       router.navigate({ to: '/dashboard', replace: true });
       toast('Operacao realizada com sucesso!', { /* config */ });
@@ -125,8 +125,8 @@ function RouteComponent(): React.JSX.Element {
       authentication.setAuthenticated({
         name: response.name,
         email: response.email,
-        role: response.group.slug.toUpperCase(),
-        sub: response._id.toString(),
+        role: response.role,
+        sub: response.id,
       });
       router.navigate({ to: ROLE_DEFAULT_ROUTE[role], replace: true });
       toast('Login realizado com sucesso!', {

@@ -83,7 +83,7 @@ export function registerDependencies(): void {
 
 1. **Um registro por entidade** -- cada entidade/servico recebe exatamente uma linha de `injectService`.
 2. **Contract primeiro, implementacao depois** -- a ordem dos argumentos e sempre `(Contract, Implementacao)`.
-3. **Trocar implementacao aqui** -- ao migrar de ORM (ex.: Mongoose para Prisma) ou de provider (ex.: Nodemailer para SendGrid), basta alterar o segundo argumento do `injectService`. Nenhum outro arquivo precisa mudar.
+3. **Trocar implementacao aqui** -- ao migrar de ORM ou de provider (ex.: Nodemailer para SendGrid), basta alterar o segundo argumento do `injectService`. Nenhum outro arquivo precisa mudar.
 4. **Chamado no kernel antes do bootstrap** -- a funcao `registerDependencies()` e invocada pelo kernel durante a fase de inicializacao, antes de qualquer route ou controller ser carregado (ver `014-skill-kernel.md`).
 5. **Imports agrupados** -- organize os imports em blocos logicos: primeiro contracts de repositories, depois suas implementacoes, depois contracts de services, depois suas implementacoes.
 6. **Arquivo unico** -- todo o registro de dependencias fica concentrado neste arquivo. Nao crie registros espalhados em outros modulos.

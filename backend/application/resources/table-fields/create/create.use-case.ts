@@ -6,6 +6,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
   E_FIELD_TYPE,
+  FIELD_GROUP_NATIVE_LIST,
   type IField as Entity,
   type IField,
   type IGroupConfiguration,
@@ -73,12 +74,19 @@ export default class TableFieldCreateUseCase {
       let groups = table.groups || [];
 
       if (field.type === E_FIELD_TYPE.FIELD_GROUP) {
+        // Cria campos nativos para o grupo
+        const nativeGroupFields = await this.fieldRepository.createMany(
+          FIELD_GROUP_NATIVE_LIST,
+        );
+
+        const groupSchema = buildSchema(nativeGroupFields);
+
         // Adiciona grupo em groups da tabela pai
         const newGroup: IGroupConfiguration = {
           slug,
           name: field.name,
-          fields: [],
-          _schema: {},
+          fields: nativeGroupFields,
+          _schema: groupSchema,
         };
 
         groups = [...groups, newGroup];

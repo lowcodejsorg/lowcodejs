@@ -7,6 +7,7 @@ import { TableRowReactionCell } from './table-row-reaction-cell';
 import { TableRowRelationshipCell } from './table-row-relationship-cell';
 import { TableRowTextLongCell } from './table-row-text-long-cell';
 import { TableRowTextShortCell } from './table-row-text-short-cell';
+import { TableRowUserCell } from './table-row-user-cell';
 
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { E_FIELD_TYPE } from '@/lib/constant';
@@ -53,7 +54,7 @@ export function TableRowFieldGroupCell({
   }
 
   const groupFields = group.fields.filter(
-    (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+    (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
   );
 
   return (
@@ -161,6 +162,13 @@ function RenderGroupFieldCell({
           field={field}
           row={row}
           tableSlug={tableSlug}
+        />
+      );
+    case E_FIELD_TYPE.USER:
+      return (
+        <TableRowUserCell
+          field={field}
+          row={row}
         />
       );
     default:

@@ -24,7 +24,10 @@ export function TableFieldCategoryTree({
       </FieldLabel>
       <TreeEditor
         initialData={field.state.value}
-        onChange={(treeData) => field.handleChange(treeData)}
+        onChange={(treeData) => {
+          field.handleChange(treeData);
+          field.handleBlur();
+        }}
         className={cn(isInvalid && 'border-destructive')}
       />
       {isInvalid && <FieldError errors={field.state.meta.errors} />}

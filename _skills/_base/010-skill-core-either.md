@@ -1,6 +1,6 @@
 # Skill: Either Pattern + HTTPException
 
-O Either Pattern e a base do tratamento de erros em todo o backend do LowcodeJS. Ao inves de usar `throw` para sinalizar falhas, os use cases retornam um tipo `Either<L, R>` onde `L` (Left) representa erro e `R` (Right) representa sucesso. Combinado com a classe `HTTPException`, esse padrao garante fluxo de controle explicito, previsivel e type-safe em toda a aplicacao.
+O Either Pattern e a base do tratamento de erros em todo o backend do project. Ao inves de usar `throw` para sinalizar falhas, os use cases retornam um tipo `Either<L, R>` onde `L` (Left) representa erro e `R` (Right) representa sucesso. Combinado com a classe `HTTPException`, esse padrao garante fluxo de controle explicito, previsivel e type-safe em toda a aplicacao.
 
 ---
 
@@ -10,18 +10,18 @@ O pattern Either e a classe HTTPException vivem na camada core da aplicacao:
 
 ```
 backend/application/core/
-  either.core.ts        # Classes Left, Right, tipo Either, helpers left() e right()
-  exception.core.ts     # Classe HTTPException com factory methods estaticos
+  either.ts        # Classes Left, Right, tipo Either, helpers left() e right()
+  exception.ts     # Classe HTTPException com factory methods estaticos
 ```
 
-- `either.core.ts` exporta as classes `Left` e `Right`, o tipo union `Either<L, R>` e as funcoes helper `left()` e `right()`.
-- `exception.core.ts` exporta a classe `HTTPException` que estende `Error` com constructor protegido e factory methods estaticos para cada codigo HTTP.
+- `either.ts` exporta as classes `Left` e `Right`, o tipo union `Either<L, R>` e as funcoes helper `left()` e `right()`.
+- `exception.ts` exporta a classe `HTTPException` que estende `Error` com constructor protegido e factory methods estaticos para cada codigo HTTP.
 
 ---
 
 ## Template
 
-### either.core.ts
+### either.ts
 
 ```typescript
 // ERROR
@@ -58,7 +58,7 @@ export const left = <L, R>(value: L): Either<L, R> => new Left(value);
 export const right = <L, R>(value: R): Either<L, R> => new Right(value);
 ```
 
-### exception.core.ts (resumo)
+### exception.ts (resumo)
 
 ```typescript
 export class HTTPException extends Error {
@@ -96,9 +96,9 @@ export class HTTPException extends Error {
 ### Use case retornando Either
 
 ```typescript
-import { left, right, type Either } from '@application/core/either.core';
-import { HTTPException } from '@application/core/exception.core';
-import type { IUser } from '@application/core/entity.core';
+import { left, right, type Either } from '@application/core/either';
+import { HTTPException } from '@application/core/exception';
+import type { IUser } from '@application/core/entities';
 
 type Input = { email: string; password: string };
 type Output = Either<HTTPException, IUser>;

@@ -1,12 +1,18 @@
-# Skill: Schema API
+# Skill: Schema API (OpenAPI Documentation)
 
-O Schema API e o contrato que define a documentacao OpenAPI/Swagger de cada endpoint da aplicacao. Ele descreve parametros de entrada, formatos de resposta e codigos de status possiveis, servindo tanto como documentacao automatica quanto como camada de validacao do Fastify. Todo endpoint exposto deve ter um schema correspondente que documente completamente seu comportamento.
+O Schema API (arquivo `.doc.ts`) e o contrato que define a documentacao OpenAPI/Swagger de cada endpoint da aplicacao. Note que `.schema.ts` contem a validacao Zod dos dados de entrada, enquanto `.doc.ts` contem a documentacao OpenAPI do endpoint. Sao responsabilidades distintas: `.schema.ts` valida dados em runtime, `.doc.ts` documenta a API. Ele descreve parametros de entrada, formatos de resposta e codigos de status possiveis, servindo tanto como documentacao automatica quanto como camada de validacao do Fastify. Todo endpoint exposto deve ter um schema correspondente que documente completamente seu comportamento.
 
 ---
 
 ## Estrutura do Arquivo
 
-O arquivo de schema deve estar localizado em:
+O arquivo de documentacao OpenAPI deve estar localizado em:
+
+```
+backend/application/resources/[entity]/[action]/[action].doc.ts
+```
+
+O arquivo de validacao Zod correspondente fica em:
 
 ```
 backend/application/resources/[entity]/[action]/[action].schema.ts
@@ -101,9 +107,9 @@ export const UserShowSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
-    required: ['_id'],
+    required: ['id'],
     properties: {
-      _id: { type: 'string', description: 'User ID' },
+      id: { type: 'string', description: 'User ID' },
     },
   },
   response: {
@@ -111,13 +117,13 @@ export const UserShowSchema: FastifySchema = {
       description: 'User details',
       type: 'object',
       properties: {
-        _id: { type: 'string' },
+        id: { type: 'string' },
         name: { type: 'string' },
         email: { type: 'string' },
         group: {
           type: 'object',
           properties: {
-            _id: { type: 'string' },
+            id: { type: 'string' },
             name: { type: 'string' },
           },
         },
@@ -161,7 +167,7 @@ Neste exemplo, o schema de `UserShow`:
 1. Agrupa o endpoint sob a tag `Users` no Swagger UI.
 2. Define `summary` conciso e `description` detalhada explicando que a password e excluida.
 3. Declara autenticacao obrigatoria via `cookieAuth`.
-4. Especifica o parametro `_id` como obrigatorio na URL.
+4. Especifica o parametro `id` como obrigatorio na URL.
 5. Documenta quatro codigos de resposta: 200 (sucesso com detalhes do usuario), 401 (nao autenticado), 404 (usuario nao encontrado) e 500 (erro interno).
 6. Usa `enum` para valores fixos como mensagens de erro e codigos.
 

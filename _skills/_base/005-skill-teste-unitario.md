@@ -1,6 +1,6 @@
 # Skill: Teste Unitario
 
-Testes unitarios validam o comportamento isolado de cada use case, garantindo que a logica de negocio funcione corretamente sem depender de banco de dados real ou servicos externos. Utilizamos repositorios in-memory para simular a camada de persistencia e o pattern Either (isRight/isLeft) para verificar respostas de sucesso e erro de forma explicita.
+Testes unitarios validam o comportamento isolado de cada use case, garantindo que a logica de negocio funcione corretamente sem depender de banco de dados real ou servicos externos. Utilizamos repositorios memory para simular a camada de persistencia e o pattern Either (isRight/isLeft) para verificar respostas de sucesso e erro de forma explicita.
 
 ---
 
@@ -20,8 +20,8 @@ backend/
 
 Cada arquivo `.use-case.spec.ts` deve conter:
 
-1. **Imports** - vitest (`describe`, `it`, `expect`, `beforeEach`, `vi`), repositorio in-memory e use case
-2. **Variaveis de modulo** - repositorio in-memory e `sut` (System Under Test)
+1. **Imports** - vitest (`describe`, `it`, `expect`, `beforeEach`, `vi`), repositorio memory e use case
+2. **Variaveis de modulo** - repositorio memory e `sut` (System Under Test)
 3. **Bloco `describe`** - agrupa todos os testes do use case
 4. **`beforeEach`** - recria o repositorio e o `sut` a cada teste
 5. **Casos de teste** - happy path, error path 404 e error path 500
@@ -116,7 +116,7 @@ describe('User Show Use Case', () => {
   });
 
   it('deve retornar erro USER_NOT_FOUND (404) quando usuario nao existe', async () => {
-    const result = await sut.execute({ _id: 'non-existent-id' });
+    const result = await sut.execute({ id: 'non-existent-id' });
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {
       expect(result.value.code).toBe(404);
@@ -126,7 +126,7 @@ describe('User Show Use Case', () => {
 
   it('deve retornar erro GET_USER_BY_ID_ERROR (500) em falha de DB', async () => {
     vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(new Error('Database error'));
-    const result = await sut.execute({ _id: 'any-id' });
+    const result = await sut.execute({ id: 'any-id' });
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {
       expect(result.value.code).toBe(500);
@@ -138,8 +138,8 @@ describe('User Show Use Case', () => {
 
 ## Regras e Convencoes
 
-1. **NUNCA usar banco de dados real** - Sempre utilizar repositorios in-memory (`[Entity]InMemoryRepository`). Testes unitarios devem ser rapidos, isolados e sem dependencias externas.
-2. **`beforeEach` recria repositorio e `sut`** - Cada teste comeca com um estado limpo. Instanciar o repositorio in-memory e o use case dentro do `beforeEach` garante isolamento total entre os testes.
+1. **NUNCA usar banco de dados real** - Sempre utilizar repositorios memory (`[Entity]InMemoryRepository`). Testes unitarios devem ser rapidos, isolados e sem dependencias externas.
+2. **`beforeEach` recria repositorio e `sut`** - Cada teste comeca com um estado limpo. Instanciar o repositorio memory e o use case dentro do `beforeEach` garante isolamento total entre os testes.
 3. **`sut` significa System Under Test** - A variavel `sut` sempre referencia a instancia do use case sendo testado. Essa convencao facilita a leitura e padroniza o codebase.
 4. **Testar os tres cenarios obrigatorios**:
    - **Happy path** (`isRight`) - o use case retorna sucesso com os dados esperados
@@ -154,7 +154,7 @@ describe('User Show Use Case', () => {
 
 - [ ] O arquivo esta em `backend/application/resources/[entity]/[action]/[action].use-case.spec.ts`
 - [ ] Imports de `vitest` incluem `beforeEach`, `describe`, `expect`, `it` e `vi`
-- [ ] Repositorio in-memory importado e instanciado (NUNCA DB real)
+- [ ] Repositorio memory importado e instanciado (NUNCA DB real)
 - [ ] Variavel `sut` declarada no escopo do modulo
 - [ ] `beforeEach` recria o repositorio e o `sut` a cada teste
 - [ ] Teste de happy path verifica `result.isRight()` e valores do `result.value`
@@ -166,7 +166,7 @@ describe('User Show Use Case', () => {
 
 ## Erros Comuns
 
-1. **Usar banco de dados real no teste unitario** - Testes unitarios NUNCA devem depender de MongoDB, PostgreSQL ou qualquer banco real. Use sempre o repositorio in-memory. Testes com DB real pertencem aos testes E2E (ver `006-skill-teste-e2e.md`).
+1. **Usar banco de dados real no teste unitario** - Testes unitarios NUNCA devem depender de MongoDB, PostgreSQL ou qualquer banco real. Use sempre o repositorio memory. Testes com DB real pertencem aos testes E2E (ver `006-skill-teste-e2e.md`).
 
 2. **Nao recriar o repositorio e `sut` no `beforeEach`** - Se o repositorio for compartilhado entre testes, dados de um teste podem vazar para outro, causando falsos positivos ou falsos negativos.
 
@@ -180,4 +180,4 @@ describe('User Show Use Case', () => {
 
 7. **Nao verificar o campo `cause` no error path** - Verificar apenas o `code` (404, 500) nao e suficiente. O campo `cause` identifica especificamente o tipo de erro e e essencial para debugging e tratamento no frontend.
 
-> **Cross-references**: ver [001-skill-use-case.md](./001-skill-use-case.md) para a estrutura do use case testado, [009-skill-repository.md](./009-skill-repository.md) para a implementacao dos repositorios in-memory, e [010-skill-core-either.md](./010-skill-core-either.md) para o pattern Either (isRight/isLeft).
+> **Cross-references**: ver [001-skill-use-case.md](./001-skill-use-case.md) para a estrutura do use case testado, [009-skill-repository.md](./009-skill-repository.md) para a implementacao dos repositorios memory, e [010-skill-core-either.md](./010-skill-core-either.md) para o pattern Either (isRight/isLeft).

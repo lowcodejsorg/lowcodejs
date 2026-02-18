@@ -59,11 +59,13 @@ export function TableFieldDropdownOptions({
     };
 
     field.handleChange([...field.state.value, newOption]);
+    field.handleBlur();
     setInputValue('');
   };
 
   const handleRemoveOption = (optionId: string): void => {
     field.handleChange(field.state.value.filter((opt) => opt.id !== optionId));
+    field.handleBlur();
   };
 
   const handleReorder = (newItems: Array<SortableChipItem>): void => {
@@ -111,6 +113,7 @@ export function TableFieldDropdownOptions({
           <Input
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
+            onBlur={() => field.handleBlur()}
             onKeyDown={handleKeyDown}
             placeholder={placeholder}
             disabled={disabled}

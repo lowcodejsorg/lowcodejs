@@ -63,7 +63,7 @@ export const {{funcaoAsync}} = async (
 
 ```typescript
 import type { FastifyReply } from 'fastify';
-import { E_JWT_TYPE, type E_ROLE, type IJWTPayload, type IUser } from '@application/core/entity.core';
+import { E_JWT_TYPE, type E_ROLE, type IJWTPayload, type IUser } from '@application/core/entities';
 
 export interface TokenPair {
   accessToken: string;
@@ -71,24 +71,24 @@ export interface TokenPair {
 }
 
 export const createTokens = async (
-  user: Pick<IUser, '_id' | 'email' | 'group'>,
+  user: Pick<IUser, 'id' | 'email' | 'role'>,
   response: FastifyReply,
 ): Promise<TokenPair> => {
   const jwt: IJWTPayload = {
-    sub: user._id.toString(),
+    sub: user.id,
     email: user.email,
     role: user?.group?.slug?.toUpperCase() as keyof typeof E_ROLE,
     type: E_JWT_TYPE.ACCESS,
   };
 
   const accessToken = await response.jwtSign(jwt, {
-    sub: user._id.toString(),
+    sub: user.id,
     expiresIn: '24h',
   });
 
   const refreshToken = await response.jwtSign(
-    { sub: user._id.toString(), type: E_JWT_TYPE.REFRESH },
-    { sub: user._id.toString(), expiresIn: '7d' },
+    { sub: user.id, type: E_JWT_TYPE.REFRESH },
+    { sub: user.id, expiresIn: '7d' },
   );
 
   return { accessToken, refreshToken };
@@ -139,7 +139,7 @@ export const setCookieTokens = (response: FastifyReply, tokens: TokenPair): void
 
 **Leitura do exemplo:**
 
-1. `createTokens` recebe um subset do usuario (`Pick<IUser, '_id' | 'email' | 'group'>`) e o `FastifyReply` para assinar os tokens via `response.jwtSign()`. Retorna um `TokenPair` com access e refresh tokens.
+1. `createTokens` recebe um subset do usuario (`Pick<IUser, 'id' | 'email' | 'role'>`) e o `FastifyReply` para assinar os tokens via `response.jwtSign()`. Retorna um `TokenPair` com access e refresh tokens.
 2. O `accessToken` carrega o payload completo (sub, email, role, type) e expira em 24h. O `refreshToken` carrega apenas sub e type, expirando em 7d.
 3. `clearCookieTokens` remove ambos os cookies (`accessToken` e `refreshToken`) com as mesmas opcoes de seguranca usadas na criacao.
 4. `setCookieTokens` define ambos os cookies com `httpOnly: true`, `secure` em producao, `sameSite` dinamico e `maxAge` correspondente ao tempo de expiracao de cada token.

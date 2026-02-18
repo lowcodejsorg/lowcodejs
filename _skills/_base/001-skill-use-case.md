@@ -14,18 +14,18 @@ backend/
         [action]/
           [action].use-case.ts        <-- use case da action
           [action].controller.ts
-          [action].validator.ts
+          [action].schema.ts
     core/
-      either.core.ts                  <-- Either, left, right
-      exception.core.ts               <-- HTTPException
-      entity.core.ts                  <-- interfaces de entidade
+      either.ts                        <-- Either, left, right
+      exception.ts                    <-- HTTPException
+      entities.ts                     <-- interfaces de entidade
     repositories/
       [entity]/
         [entity]-contract.repository.ts
 ```
 
 - O use case vive em `backend/application/resources/[entity]/[action]/[action].use-case.ts`.
-- Depende de `either.core.ts` para o padrao Either, `exception.core.ts` para erros HTTP e do contract do repository.
+- Depende de `either.ts` para o padrao Either, `exception.ts` para erros HTTP e do contract do repository.
 
 ---
 
@@ -33,12 +33,12 @@ backend/
 
 ```typescript
 import { Service } from 'fastify-decorators';
-import type { Either } from '@application/core/either.core';
-import { left, right } from '@application/core/either.core';
-import type { I{{Entity}} as Entity } from '@application/core/entity.core';
-import HTTPException from '@application/core/exception.core';
+import type { Either } from '@application/core/either';
+import { left, right } from '@application/core/either';
+import type { I{{Entity}} as Entity } from '@application/core/entities';
+import HTTPException from '@application/core/exception';
 import { {{Entity}}ContractRepository } from '@application/repositories/{{entity}}/{{entity}}-contract.repository';
-import type { {{Entity}}{{Action}}Payload } from './{{action}}.validator';
+import type { {{Entity}}{{Action}}Payload } from './{{action}}.schema';
 
 type Response = Either<HTTPException, Entity>;
 type Payload = {{Entity}}{{Action}}Payload;
@@ -65,12 +65,12 @@ export default class {{Entity}}{{Action}}UseCase {
 
 ```typescript
 import { Service } from 'fastify-decorators';
-import type { Either } from '@application/core/either.core';
-import { left, right } from '@application/core/either.core';
-import type { IUser as Entity } from '@application/core/entity.core';
-import HTTPException from '@application/core/exception.core';
+import type { Either } from '@application/core/either';
+import { left, right } from '@application/core/either';
+import type { IUser as Entity } from '@application/core/entities';
+import HTTPException from '@application/core/exception';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import type { UserShowPayload } from './show.validator';
+import type { UserShowPayload } from './show.schema';
 
 type Response = Either<HTTPException, Entity>;
 type Payload = UserShowPayload;
@@ -81,7 +81,7 @@ export default class UserShowUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const user = await this.userRepository.findBy({ _id: payload._id, exact: true });
+      const user = await this.userRepository.findBy({ id: payload.id });
       if (!user) return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
       return right(user);
     } catch (_error) {
@@ -97,7 +97,7 @@ export default class UserShowUseCase {
 2. O constructor injeta `UserContractRepository` (o contract abstrato, nunca a implementacao concreta). A resolucao da implementacao e feita pelo DI Registry (ver `011-skill-di-registry.md`).
 3. Os type aliases `Response` e `Payload` sao definidos acima da classe para manter a assinatura do `execute` limpa e legivel.
 4. `execute` recebe o payload ja validado pelo validator e retorna `Promise<Response>` (ou seja, `Promise<Either<HTTPException, Entity>>`).
-5. Dentro do `try`, a logica de negocio e executada: buscar o usuario pelo `_id`. Se nao encontrado, retorna `left()` com `HTTPException.NotFound`. Se encontrado, retorna `right(user)`.
+5. Dentro do `try`, a logica de negocio e executada: buscar o usuario pelo `id`. Se nao encontrado, retorna `left()` com `HTTPException.NotFound`. Se encontrado, retorna `right(user)`.
 6. O `catch` no nivel mais externo captura qualquer erro inesperado e retorna `left()` com `HTTPException.InternalServerError`, evitando que exceptions nao tratadas propaguem.
 7. Em nenhum momento `throw` e utilizado -- todo erro e tratado via `left()`.
 

@@ -12,7 +12,7 @@ O arquivo de hook mutation deve estar localizado em:
 frontend/src/hooks/tanstack-query/use-[entity]-[action].tsx
 ```
 
-Onde `[entity]` representa o recurso (ex: `table`, `user`, `project`) e `[action]` representa a operacao (ex: `create`, `update`, `delete`).
+Onde `[entity]` representa o recurso (ex: `user`, `category`, `piece`) e `[action]` representa a operacao (ex: `create`, `update`, `delete`).
 
 Dependencias tipicas de um hook mutation:
 
@@ -74,32 +74,32 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import { queryKeys } from './_query-keys';
 import { API } from '@/lib/api';
-import type { ITable } from '@/lib/interfaces';
-import type { TableCreatePayload } from '@/lib/payloads';
+import type { IEntity } from '@/lib/interfaces';
+import type { EntityCreatePayload } from '@/lib/payloads';
 
-type UseTableCreateProps = Pick<
+type UseEntityCreateProps = Pick<
   Omit<
-    UseMutationOptions<ITable, AxiosError | Error, TableCreatePayload, unknown>,
+    UseMutationOptions<IEntity, AxiosError | Error, EntityCreatePayload, unknown>,
     'mutationFn' | 'onSuccess'
   >,
   'onError'
 > & {
-  onSuccess?: (data: ITable, variables: TableCreatePayload) => void;
+  onSuccess?: (data: IEntity, variables: EntityCreatePayload) => void;
 };
 
-export function useCreateTable(
-  props: UseTableCreateProps,
-): UseMutationResult<ITable, AxiosError | Error, TableCreatePayload, unknown> {
+export function useCreateEntity(
+  props: UseEntityCreateProps,
+): UseMutationResult<IEntity, AxiosError | Error, EntityCreatePayload, unknown> {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async function (payload: TableCreatePayload) {
-      const route = '/tables';
-      const response = await API.post<ITable>(route, payload);
+    mutationFn: async function (payload: EntityCreatePayload) {
+      const route = '/entities';
+      const response = await API.post<IEntity>(route, payload);
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
+      queryClient.invalidateQueries({ queryKey: queryKeys.entities.lists() });
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,
@@ -109,10 +109,10 @@ export function useCreateTable(
 
 Leitura do exemplo:
 
-1. O tipo `UseTableCreateProps` usa `Pick<Omit<UseMutationOptions, ...>, 'onError'>` para expor apenas o callback `onError` das opcoes padrao, e adiciona `onSuccess` com assinatura customizada que recebe `data` e `variables` tipados.
+1. O tipo `UseEntityCreateProps` usa `Pick<Omit<UseMutationOptions, ...>, 'onError'>` para expor apenas o callback `onError` das opcoes padrao, e adiciona `onSuccess` com assinatura customizada que recebe `data` e `variables` tipados.
 2. `useQueryClient()` e chamado dentro do hook para obter acesso ao query client e poder invalidar queries no sucesso.
-3. `mutationFn` faz a chamada HTTP via `API.post<ITable>()` e retorna `response.data` -- o tipo generico garante que o retorno seja `ITable`.
-4. `onSuccess` invalida todas as queries de listagem de tables via `queryKeys.tables.lists()` e chama o callback `onSuccess` do consumidor com optional chaining (`?.`).
+3. `mutationFn` faz a chamada HTTP via `API.post<IEntity>()` e retorna `response.data` -- o tipo generico garante que o retorno seja `IEntity`.
+4. `onSuccess` invalida todas as queries de listagem de entities via `queryKeys.entities.lists()` e chama o callback `onSuccess` do consumidor com optional chaining (`?.`).
 5. `onError` e delegado diretamente para o callback recebido via props, sem tratamento adicional no hook.
 
 ## Regras e Convencoes
@@ -129,9 +129,9 @@ Leitura do exemplo:
 
 6. **`API.post`/`API.put`/`API.delete` para requests.** Toda comunicacao HTTP deve usar a instancia `API` de `@/lib/api`. Nunca use `axios` diretamente ou `fetch`. O metodo HTTP corresponde a operacao: `post` para create, `put` para update, `delete` para delete.
 
-7. **Um arquivo por acao por entidade.** Cada mutation tem seu proprio arquivo: `use-table-create.tsx`, `use-table-update.tsx`, `use-table-delete.tsx`. Nunca agrupe multiplas mutations no mesmo arquivo.
+7. **Um arquivo por acao por entidade.** Cada mutation tem seu proprio arquivo: `use-entity-create.tsx`, `use-entity-update.tsx`, `use-entity-delete.tsx`. Nunca agrupe multiplas mutations no mesmo arquivo.
 
-8. **A funcao do hook e nomeada como `use<Action><Entity>`.** Exemplos: `useCreateTable`, `useUpdateProject`, `useDeleteUser`. O prefixo `use` e obrigatorio para que o React reconheca como hook.
+8. **A funcao do hook e nomeada como `use<Action><Entity>`.** Exemplos: `useCreateEntity`, `useUpdateProject`, `useDeleteUser`. O prefixo `use` e obrigatorio para que o React reconheca como hook.
 
 9. **`mutationFn` deve ser uma `async function` nomeada ou anonima.** Sempre declare como `async function (payload)` e nao como arrow function, seguindo o pattern do projeto.
 
@@ -169,7 +169,7 @@ Leitura do exemplo:
 
 5. **Usar `axios` diretamente ao inves de `API`.** Chamadas diretas ao `axios` ignoram a `baseURL`, `withCredentials` e os interceptors configurados na instancia `API`, causando falhas de autenticacao e tratamento de erros inconsistente.
 
-6. **Agrupar multiplas mutations no mesmo arquivo.** Cada mutation deve ter seu proprio arquivo para manter responsabilidade unica e facilitar navegacao no projeto. `useCreateTable` e `useDeleteTable` nunca devem estar no mesmo arquivo.
+6. **Agrupar multiplas mutations no mesmo arquivo.** Cada mutation deve ter seu proprio arquivo para manter responsabilidade unica e facilitar navegacao no projeto. `useCreateEntity` e `useDeleteEntity` nunca devem estar no mesmo arquivo.
 
 7. **Declarar `onSuccess` no tipo de props sem omiti-lo de `UseMutationOptions` primeiro.** Sem o `Omit`, o TypeScript reclama de tipos conflitantes entre a assinatura original de `onSuccess` (que inclui `context`) e a customizada (que expoe apenas `data` e `variables`).
 

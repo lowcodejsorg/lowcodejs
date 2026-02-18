@@ -337,7 +337,9 @@ export async function buildTable(
       }
 
       const subSchema = new mongoose.Schema(subSchemaDefinition, {
-        _id: false,
+        _id: true,
+        timestamps: true,
+        id: false,
       });
       schemaDefinition[key] = [subSchema];
     } else {
@@ -568,6 +570,28 @@ export async function buildPopulate(
             path: `${field.slug}.${groupField.slug}`,
             model: 'Storage',
           });
+        }
+
+        if (groupField.type === E_FIELD_TYPE.RELATIONSHIP) {
+          const relationshipTableId =
+            groupField?.relationship?.table?._id?.toString();
+          if (relationshipTableId) {
+            const relationshipTable = await Table.findOne({
+              _id: relationshipTableId,
+            });
+
+            if (relationshipTable) {
+              await buildTable({
+                ...relationshipTable.toJSON({ flattenObjectIds: true }),
+                _id: relationshipTable._id.toString(),
+              });
+
+              populate.push({
+                path: `${field.slug}.${groupField.slug}`,
+                model: relationshipTable.slug,
+              });
+            }
+          }
         }
       }
     }

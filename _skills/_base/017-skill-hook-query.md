@@ -87,14 +87,14 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from './_query-keys';
 import { API } from '@/lib/api';
-import type { ITable } from '@/lib/interfaces';
+import type { IEntity } from '@/lib/interfaces';
 
-export function useReadTable(payload: { slug: string }): UseQueryResult<ITable, Error> {
+export function useReadEntity(payload: { slug: string }): UseQueryResult<IEntity, Error> {
   return useQuery({
-    queryKey: queryKeys.tables.detail(payload.slug),
+    queryKey: queryKeys.entities.detail(payload.slug),
     queryFn: async function () {
-      const route = '/tables/'.concat(payload.slug);
-      const response = await API.get<ITable>(route);
+      const route = '/entities/'.concat(payload.slug);
+      const response = await API.get<IEntity>(route);
       return response.data;
     },
     enabled: Boolean(payload.slug),
@@ -104,11 +104,11 @@ export function useReadTable(payload: { slug: string }): UseQueryResult<ITable, 
 
 **Leitura do exemplo (detail):**
 
-1. **`useReadTable`** recebe um `payload` com `slug` como parametro. O payload e um objeto para manter consistencia e permitir extensao futura.
-2. **`queryKey: queryKeys.tables.detail(payload.slug)`** -- a key vem da factory, resultando em `['tables', 'detail', slug]`. Isso garante que cada table tem sua propria entrada no cache.
-3. **`queryFn`** e uma funcao async que monta a rota concatenando o slug, chama `API.get<ITable>` com o generic para tipar a resposta e retorna `response.data`.
+1. **`useReadEntity`** recebe um `payload` com `slug` como parametro. O payload e um objeto para manter consistencia e permitir extensao futura.
+2. **`queryKey: queryKeys.entities.detail(payload.slug)`** -- a key vem da factory, resultando em `['entities', 'detail', slug]`. Isso garante que cada entidade tem sua propria entrada no cache.
+3. **`queryFn`** e uma funcao async que monta a rota concatenando o slug, chama `API.get<IEntity>` com o generic para tipar a resposta e retorna `response.data`.
 4. **`enabled: Boolean(payload.slug)`** -- a query so executa quando `slug` e truthy. Isso previne chamadas invalidas quando o slug ainda nao esta disponivel (ex.: durante carregamento da rota).
-5. **Tipo de retorno `UseQueryResult<ITable, Error>`** -- explicito na assinatura, garantindo que o componente consumidor sabe exatamente o que esperar de `data`, `error`, `isLoading`, etc.
+5. **Tipo de retorno `UseQueryResult<IEntity, Error>`** -- explicito na assinatura, garantindo que o componente consumidor sabe exatamente o que esperar de `data`, `error`, `isLoading`, etc.
 
 ### Query de list com paginacao
 
@@ -117,21 +117,21 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { queryKeys } from './_query-keys';
 import { API } from '@/lib/api';
-import type { ITable } from '@/lib/interfaces';
+import type { IEntity } from '@/lib/interfaces';
 
-interface PaginatedTablesResponse {
-  data: Array<ITable>;
+interface PaginatedEntitiesResponse {
+  data: Array<IEntity>;
   meta: { page: number; perPage: number; total: number };
 }
 
-export function useReadTables(payload?: { page?: number; perPage?: number }): UseQueryResult<Array<ITable>, Error> {
+export function useReadEntitys(payload?: { page?: number; perPage?: number }): UseQueryResult<Array<IEntity>, Error> {
   const page = payload?.page ?? 1;
   const perPage = payload?.perPage ?? 50;
 
   return useQuery({
-    queryKey: queryKeys.tables.list({ page, perPage }),
+    queryKey: queryKeys.entities.list({ page, perPage }),
     queryFn: async () => {
-      const response = await API.get<PaginatedTablesResponse>('/tables/paginated', {
+      const response = await API.get<PaginatedEntitiesResponse>('/entities/paginated', {
         params: { page, perPage },
       });
       return response.data.data;
@@ -142,17 +142,17 @@ export function useReadTables(payload?: { page?: number; perPage?: number }): Us
 
 **Leitura do exemplo (list):**
 
-1. **`useReadTables`** recebe um `payload` opcional com parametros de paginacao. Valores default sao aplicados: `page = 1`, `perPage = 50`.
-2. **`queryKey: queryKeys.tables.list({ page, perPage })`** -- a key inclui os parametros de paginacao, garantindo que cada combinacao de `page` e `perPage` tem sua propria entrada no cache. Mudar de pagina nao invalida o cache da pagina anterior.
-3. **`PaginatedTablesResponse`** -- interface local que descreve o formato da resposta paginada do backend, com `data` (array de itens) e `meta` (informacoes de paginacao).
-4. **`API.get<PaginatedTablesResponse>`** -- o generic tipa a resposta completa. O retorno do hook e `response.data.data` (o array de items dentro do wrapper de paginacao).
+1. **`useReadEntitys`** recebe um `payload` opcional com parametros de paginacao. Valores default sao aplicados: `page = 1`, `perPage = 50`.
+2. **`queryKey: queryKeys.entities.list({ page, perPage })`** -- a key inclui os parametros de paginacao, garantindo que cada combinacao de `page` e `perPage` tem sua propria entrada no cache. Mudar de pagina nao invalida o cache da pagina anterior.
+3. **`PaginatedEntitiesResponse`** -- interface local que descreve o formato da resposta paginada do backend, com `data` (array de itens) e `meta` (informacoes de paginacao).
+4. **`API.get<PaginatedEntitiesResponse>`** -- o generic tipa a resposta completa. O retorno do hook e `response.data.data` (o array de items dentro do wrapper de paginacao).
 5. **Sem `enabled`** -- a query de list nao precisa de condicional pois nao depende de parametros dinamicos obrigatorios. Os defaults de paginacao garantem que a query e sempre valida.
 
 ---
 
 ## Regras e Convencoes
 
-1. **Sempre usar `queryKeys` factory** -- nunca defina arrays inline como `queryKey: ['tables', slug]`. Todas as keys devem vir de `queryKeys` importado de `_query-keys.ts`.
+1. **Sempre usar `queryKeys` factory** -- nunca defina arrays inline como `queryKey: ['entities', slug]`. Todas as keys devem vir de `queryKeys` importado de `_query-keys.ts`.
 
 2. **`enabled` para queries condicionais** -- quando o hook depende de um parametro que pode ser undefined ou vazio (ex.: `slug`, `id`), use `enabled: Boolean(param)` para prevenir chamadas invalidas a API.
 
@@ -195,14 +195,14 @@ export function useReadTables(payload?: { page?: number; perPage?: number }): Us
 
 | Erro | Causa | Correcao |
 |------|-------|----------|
-| Array inline como query key | `queryKey: ['tables', slug]` em vez de usar a factory | Usar `queryKey: queryKeys.tables.detail(slug)` |
+| Array inline como query key | `queryKey: ['entities', slug]` em vez de usar a factory | Usar `queryKey: queryKeys.entities.detail(slug)` |
 | Query executa sem parametro valido | Falta `enabled` quando o parametro pode ser undefined | Adicionar `enabled: Boolean(payload.slug)` |
-| Tipo de retorno ausente | Hook sem `UseQueryResult<T, Error>` na assinatura | Declarar explicitamente: `): UseQueryResult<ITable, Error>` |
+| Tipo de retorno ausente | Hook sem `UseQueryResult<T, Error>` na assinatura | Declarar explicitamente: `): UseQueryResult<IEntity, Error>` |
 | Retorna `response` em vez de `response.data` | O `queryFn` retorna o objeto Axios completo | Retornar `response.data` (ou `response.data.data` para paginacao) |
 | Cache nao diferencia paginas | `queryKey` nao inclui parametros de paginacao | Usar `queryKeys.entity.list({ page, perPage })` -- os params fazem parte da key |
-| Parametros avulsos no hook | `useReadTable(slug: string)` em vez de objeto payload | Receber como `useReadTable(payload: { slug: string })` |
-| Generic ausente no `API.get` | `API.get('/tables')` sem generic perde tipagem | Usar `API.get<ITable>('/tables')` para tipar a resposta |
-| Defaults no componente | Componente faz `useReadTables({ page: page ?? 1 })` | Mover defaults para dentro do hook com `payload?.page ?? 1` |
+| Parametros avulsos no hook | `useReadEntity(slug: string)` em vez de objeto payload | Receber como `useReadEntity(payload: { slug: string })` |
+| Generic ausente no `API.get` | `API.get('/entities')` sem generic perde tipagem | Usar `API.get<IEntity>('/entities')` para tipar a resposta |
+| Defaults no componente | Componente faz `useReadEntitys({ page: page ?? 1 })` | Mover defaults para dentro do hook com `payload?.page ?? 1` |
 | `queryFn` inline muito grande | Logica de transformacao de dados dentro do `queryFn` | Manter o `queryFn` simples: apenas chamada API e retorno. Transformacoes complexas devem usar `select` do `useQuery` |
 
 ---

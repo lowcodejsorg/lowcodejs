@@ -58,19 +58,19 @@ export const queryKeys = {
 
 ```typescript
 export const queryKeys = {
-  tables: {
-    all: ['tables'] as const,
-    lists: () => [...queryKeys.tables.all, 'list'] as const,
-    list: (params: Record<string, unknown>) => [...queryKeys.tables.lists(), params] as const,
-    details: () => [...queryKeys.tables.all, 'detail'] as const,
-    detail: (slug: string) => [...queryKeys.tables.details(), slug] as const,
+  entities: {
+    all: ['entities'] as const,
+    lists: () => [...queryKeys.entities.all, 'list'] as const,
+    list: (params: Record<string, unknown>) => [...queryKeys.entities.lists(), params] as const,
+    details: () => [...queryKeys.entities.all, 'detail'] as const,
+    detail: (slug: string) => [...queryKeys.entities.details(), slug] as const,
   },
-  rows: {
-    all: (tableSlug: string) => ['tables', tableSlug, 'rows'] as const,
-    lists: (tableSlug: string) => [...queryKeys.rows.all(tableSlug), 'list'] as const,
-    list: (tableSlug: string, params: Record<string, unknown>) => [...queryKeys.rows.lists(tableSlug), params] as const,
-    details: (tableSlug: string) => [...queryKeys.rows.all(tableSlug), 'detail'] as const,
-    detail: (tableSlug: string, rowId: string) => [...queryKeys.rows.details(tableSlug), rowId] as const,
+  children: {
+    all: (entityId: string) => ['entities', entityId, 'children'] as const,
+    lists: (entityId: string) => [...queryKeys.children.all(entityId), 'list'] as const,
+    list: (entityId: string, params: Record<string, unknown>) => [...queryKeys.children.lists(entityId), params] as const,
+    details: (entityId: string) => [...queryKeys.children.all(entityId), 'detail'] as const,
+    detail: (entityId: string, childId: string) => [...queryKeys.children.details(entityId), childId] as const,
   },
   users: {
     all: ['users'] as const,
@@ -90,13 +90,13 @@ export const queryKeys = {
 
 **Leitura do exemplo:**
 
-1. **`tables`** e uma entidade raiz com hierarquia completa de 3 niveis. `all` e `['tables']`, `lists()` estende para `['tables', 'list']`, e `list(params)` estende para `['tables', 'list', { page: 1, perPage: 50 }]`.
-2. **`rows`** e uma entidade aninhada dentro de `tables`. O `all` recebe `tableSlug` como parametro e retorna `['tables', tableSlug, 'rows']`, vinculando as rows a uma table especifica. Isso permite invalidar todas as rows de uma table sem afetar rows de outras tables.
-3. **`users`** segue o mesmo padrao raiz de `tables`, com hierarquia completa independente.
+1. **`entities`** e uma entidade raiz com hierarquia completa de 3 niveis. `all` e `['entities']`, `lists()` estende para `['entities', 'list']`, e `list(params)` estende para `['entities', 'list', { page: 1, perPage: 50 }]`.
+2. **`children`** e uma entidade aninhada dentro de `entities`. O `all` recebe `entityId` como parametro e retorna `['entities', entityId, 'children']`, vinculando os children a uma entity especifica. Isso permite invalidar todos os children de uma entity sem afetar children de outras entities.
+3. **`users`** segue o mesmo padrao raiz de `entities`, com hierarquia completa independente.
 4. **`profile`** e uma entidade simplificada sem nivel `lists` -- possui apenas `all` e `detail`, pois o perfil nao tem listagem.
 5. **`permissions`** e **`settings`** sao entidades minimas com apenas `all`, usadas para invalidacao global quando necessario.
 6. Todos os retornos usam `as const` para garantir inferencia de tuplas literais readonly.
-7. Cada nivel usa spread (`...`) do nivel anterior, garantindo que a hierarquia de invalidacao funcione corretamente com `queryClient.invalidateQueries({ queryKey: queryKeys.tables.all })`.
+7. Cada nivel usa spread (`...`) do nivel anterior, garantindo que a hierarquia de invalidacao funcione corretamente com `queryClient.invalidateQueries({ queryKey: queryKeys.entities.all })`.
 
 ---
 
@@ -114,11 +114,11 @@ export const queryKeys = {
 
 6. **Spread do nivel anterior** -- cada nivel DEVE usar spread do nivel imediatamente anterior para manter a hierarquia. Nunca recrie a key manualmente: use `[...queryKeys.entity.lists(), params]` e nao `['entity', 'list', params]`.
 
-7. **Entidades aninhadas** -- quando uma entidade pertence a outra (ex.: `rows` pertence a `tables`), o `all` recebe o identificador do pai e inclui o namespace do pai na key. Isso permite invalidar rows de uma table especifica sem afetar outras.
+7. **Entidades aninhadas** -- quando uma entidade pertence a outra (ex.: `children` pertence a `entities`), o `all` recebe o identificador do pai e inclui o namespace do pai na key. Isso permite invalidar children de uma entity especifica sem afetar outras.
 
 8. **Arquivo unico** -- todas as query keys vivem em `_query-keys.ts`. Nunca defina query keys em arquivos de hook individuais.
 
-9. **Nunca use arrays inline nos hooks** -- sempre importe e use `queryKeys.entity.method()`. Arrays inline como `queryKey: ['tables', slug]` sao proibidos.
+9. **Nunca use arrays inline nos hooks** -- sempre importe e use `queryKeys.entity.method()`. Arrays inline como `queryKey: ['entities', slug]` sao proibidos.
 
 10. **O objeto raiz tambem usa `as const`** -- alem dos retornos individuais, o `export const queryKeys = { ... } as const` garante imutabilidade do objeto inteiro.
 
@@ -146,11 +146,11 @@ export const queryKeys = {
 |------|-------|----------|
 | Cache nao invalida corretamente | A key do `list` nao estende `lists()` via spread, quebrando a hierarquia | Garantir que cada nivel usa `[...queryKeys.entity.nivelAnterior(), novoSegmento]` |
 | `as const` ausente | Retorno inferido como `string[]` em vez de tupla literal readonly | Adicionar `as const` no retorno de toda funcao e array literal |
-| Array inline no hook | Query key definida como `['tables', slug]` diretamente no `useQuery` | Importar e usar `queryKeys.tables.detail(slug)` |
-| Entidade aninhada sem namespace do pai | `rows.all` retorna `['rows']` em vez de `['tables', tableSlug, 'rows']` | Incluir o identificador e namespace do pai no `all` da entidade aninhada |
+| Array inline no hook | Query key definida como `['entities', slug]` diretamente no `useQuery` | Importar e usar `queryKeys.entities.detail(slug)` |
+| Entidade aninhada sem namespace do pai | `children.all` retorna `['children']` em vez de `['entities', entityId, 'children']` | Incluir o identificador e namespace do pai no `all` da entidade aninhada |
 | `lists` como array literal em vez de funcao | `lists: [...queryKeys.entity.all, 'list'] as const` (sem `() =>`) | Tornar `lists` uma funcao: `lists: () => [...queryKeys.entity.all, 'list'] as const` |
 | Spread do nivel errado | `detail` estende `all` diretamente em vez de `details()` | Garantir a cadeia: `detail` -> `details()` -> `all` |
-| Invalidacao muito ampla | Usa `queryKeys.tables.all` quando deveria invalidar apenas `queryKeys.rows.all(tableSlug)` | Usar o nivel mais especifico possivel para invalidacao |
+| Invalidacao muito ampla | Usa `queryKeys.entities.all` quando deveria invalidar apenas `queryKeys.children.all(entityId)` | Usar o nivel mais especifico possivel para invalidacao |
 | `params` tipado como tipo especifico | `list(params: { page: number })` em vez de `Record<string, unknown>` | Usar `Record<string, unknown>` para manter a factory generica |
 
 ---

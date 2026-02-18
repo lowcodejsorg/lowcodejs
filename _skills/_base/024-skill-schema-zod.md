@@ -17,7 +17,7 @@ Diferente do backend (que possui um validator por action), o frontend centraliza
 Dependencias tipicas:
 
 - **z (zod)** - biblioteca de validacao e parsing
-- **constant.ts** - enums e regex patterns (ex: `E_FIELD_TYPE`, `PASSWORD_REGEX`)
+- **constant.ts** - enums e regex patterns (ex: `E_ENTITY_TYPE`, `PASSWORD_REGEX`)
 
 ---
 
@@ -25,7 +25,7 @@ Dependencias tipicas:
 
 ```typescript
 import z from 'zod';
-import { E_{{ENTITY}}_{{CAMPO}}, PASSWORD_REGEX } from './constant';
+import { E_{{ENTITY}}_{{CAMPO}}, PASSWORD_REGEX } from '@/lib/constant';
 
 // Base schema -- campos comuns entre create e update
 const {{Entity}}BaseSchema = z.object({
@@ -43,7 +43,7 @@ export const {{Entity}}CreateBodySchema = {{Entity}}BaseSchema.extend({
 
 // Update -- base com .partial() + campos fixos via .extend()
 export const {{Entity}}UpdateBodySchema = {{Entity}}BaseSchema.partial().extend({
-  _id: z.string().trim(),
+  id: z.string().trim(),
   {{campoOpcional}}: z.enum(['{{VALOR_1}}', '{{VALOR_2}}']).optional(),
 });
 
@@ -66,7 +66,7 @@ export const {{Entity}}DataSchema = z.record(
 
 ```typescript
 import z from 'zod';
-import { E_FIELD_TYPE, PASSWORD_REGEX } from './constant';
+import { E_ENTITY_TYPE, PASSWORD_REGEX } from '@/lib/constant';
 
 // Base schema para User
 const UserBaseSchema = z.object({
@@ -82,20 +82,20 @@ export const UserCreateBodySchema = UserBaseSchema.extend({
     .regex(PASSWORD_REGEX, 'A senha deve conter: 1 maiuscula, 1 minuscula, 1 numero e 1 especial'),
 });
 
-// Update: base com todos os campos opcionais + _id obrigatorio + status opcional
+// Update: base com todos os campos opcionais + id obrigatorio + status opcional
 export const UserUpdateBodySchema = UserBaseSchema.partial().extend({
-  _id: z.string().trim(),
+  id: z.string().trim(),
   status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
 });
 
-// Field create com merge de base schema
-export const FieldCreateBodySchema = z.object({
+// Entity create com merge de base schema
+export const EntityCreateBodySchema = z.object({
   name: z.string().trim(),
-  type: z.enum([E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG]),
-}).merge(FieldBaseSchema);
+  type: z.enum([E_ENTITY_TYPE.TYPE_A, E_ENTITY_TYPE.TYPE_B]),
+}).merge(EntityBaseSchema);
 
-// Row data com campos dinamicos
-export const RowDataSchema = z.record(
+// Dynamic data com campos dinamicos
+export const DynamicDataSchema = z.record(
   z.string(),
   z.union([z.string(), z.number(), z.boolean(), z.null(), z.array(z.string())]),
 );
@@ -105,9 +105,9 @@ Leitura do exemplo:
 
 1. `UserBaseSchema` define os campos comuns da entidade User (`name`, `email`, `group`) com validacoes e mensagens em PT-BR. Este schema nao e exportado diretamente -- serve apenas como base para composicao.
 2. `UserCreateBodySchema` estende o base adicionando `password` com validacao de tamanho minimo (6 caracteres) e regex de complexidade (`PASSWORD_REGEX` importado de `constant.ts`).
-3. `UserUpdateBodySchema` usa `.partial()` no base (tornando `name`, `email` e `group` opcionais) e `.extend()` para adicionar `_id` (obrigatorio) e `status` (opcional com valores restritos via `z.enum`).
-4. `FieldCreateBodySchema` usa `.merge()` para combinar dois schemas independentes -- util quando os campos vem de fontes diferentes.
-5. `RowDataSchema` usa `z.record()` para validar objetos com chaves dinamicas, onde os valores podem ser string, number, boolean, null ou array de strings.
+3. `UserUpdateBodySchema` usa `.partial()` no base (tornando `name`, `email` e `group` opcionais) e `.extend()` para adicionar `id` (obrigatorio) e `status` (opcional com valores restritos via `z.enum`).
+4. `EntityCreateBodySchema` usa `.merge()` para combinar dois schemas independentes -- util quando os campos vem de fontes diferentes.
+5. `DynamicDataSchema` usa `z.record()` para validar objetos com chaves dinamicas, onde os valores podem ser string, number, boolean, null ou array de strings.
 
 ---
 
@@ -115,13 +115,13 @@ Leitura do exemplo:
 
 1. **Base schema + `.extend()` para variantes** -- campos comuns entre create e update devem ser extraidos para um base schema (nao exportado). Variantes sao criadas com `.extend()` para adicionar campos especificos.
 
-2. **`.partial()` para schemas de update** -- ao atualizar uma entidade, nem todos os campos sao obrigatorios. Use `.partial()` no base schema para tornar todos os campos opcionais e `.extend()` para adicionar campos que permanecem obrigatorios (como `_id`).
+2. **`.partial()` para schemas de update** -- ao atualizar uma entidade, nem todos os campos sao obrigatorios. Use `.partial()` no base schema para tornar todos os campos opcionais e `.extend()` para adicionar campos que permanecem obrigatorios (como `id`).
 
 3. **`.merge()` para composicao de schemas independentes** -- quando dois schemas nao tem relacao de heranca (um nao e extensao do outro), use `.merge()` para combina-los. Diferente de `.extend()`, `.merge()` aceita outro schema completo como argumento.
 
 4. **Mensagens de validacao em PT-BR** -- toda validacao deve incluir mensagens descritivas em portugues. Exemplos: `'O nome e obrigatorio'`, `'A senha deve ter no minimo 6 caracteres'`, `'Digite um email valido'`.
 
-5. **`z.enum` com constantes de `constant.ts`** -- quando um campo aceita valores restritos definidos em um enum object, use `z.enum()` referenciando as constantes diretamente. Exemplo: `z.enum([E_FIELD_TYPE.TEXT_SHORT, E_FIELD_TYPE.TEXT_LONG])`.
+5. **`z.enum` com constantes de `constant.ts`** -- quando um campo aceita valores restritos definidos em um enum object, use `z.enum()` referenciando as constantes diretamente. Exemplo: `z.enum([E_ENTITY_TYPE.TEXT_SHORT, E_ENTITY_TYPE.TEXT_LONG])`.
 
 6. **Regex patterns importados de `constant.ts`** -- patterns de validacao reutilizaveis (como `PASSWORD_REGEX`) devem ser importados de `constant.ts`, nunca definidos inline no schema. Isso garante consistencia entre frontend e qualquer outro ponto que use o mesmo pattern.
 
@@ -141,7 +141,7 @@ Leitura do exemplo:
 - [ ] Import default do Zod: `import z from 'zod'`
 - [ ] Base schema criado para campos comuns (nao exportado diretamente)
 - [ ] Variantes de create usam `BaseSchema.extend({ ... })`
-- [ ] Variantes de update usam `BaseSchema.partial().extend({ _id: ..., ... })`
+- [ ] Variantes de update usam `BaseSchema.partial().extend({ id: ..., ... })`
 - [ ] Todas as mensagens de validacao estao em PT-BR
 - [ ] Todos os campos `z.string()` incluem `.trim()`
 - [ ] `z.enum()` referencia constantes de `constant.ts` (nao strings literais)
@@ -158,13 +158,13 @@ Leitura do exemplo:
 |------|-------|----------|
 | Update sobrescreve campos nao enviados com `undefined` | Schema de update nao usa `.partial()`, exigindo todos os campos | Aplicar `.partial()` no base schema antes de `.extend()` |
 | Mensagem de erro exibida em ingles no formulario | Faltou mensagem customizada na validacao Zod | Adicionar mensagem em PT-BR: `z.string().min(1, 'O campo e obrigatorio')` |
-| Enum no select aceita valores invalidos | `z.enum()` definido com strings literais em vez de constantes | Usar `z.enum([E_FIELD_TYPE.TEXT_SHORT, ...])` referenciando o enum de `constant.ts` |
+| Enum no select aceita valores invalidos | `z.enum()` definido com strings literais em vez de constantes | Usar `z.enum([E_ENTITY_TYPE.TEXT_SHORT, ...])` referenciando o enum de `constant.ts` |
 | Espacos em branco passam na validacao | Faltou `.trim()` na chain de validacao | Adicionar `.trim()` a todos os campos `z.string()` |
 | Regex definido em dois lugares com patterns diferentes | Pattern duplicado entre schema e `constant.ts` | Centralizar o regex em `constant.ts` e importar no schema |
 | `.extend()` usado com schema completo causa erro | `.extend()` aceita apenas shape object, nao outro schema | Usar `.merge()` para combinar dois schemas completos |
 | Base schema exportado e usado incorretamente em formularios | Schema base exposto sem as validacoes especificas da action | Manter base schema como `const` local (nao exportado), exportar apenas as variantes |
 | Import incorreto do Zod causa erro de compilacao | Usando `import { z } from 'zod'` em vez de default import | Corrigir para `import z from 'zod'` |
-| `_id` ausente no schema de update | `.partial()` tornou `_id` opcional | Adicionar `_id: z.string().trim()` no `.extend()` apos `.partial()` |
+| `id` ausente no schema de update | `.partial()` tornou `id` opcional | Adicionar `id: z.string().trim()` no `.extend()` apos `.partial()` |
 
 ---
 

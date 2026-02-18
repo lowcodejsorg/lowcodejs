@@ -62,7 +62,7 @@ export type {{Entity}}{{Action}}Payload = {
 
 // Payload com enum tipado
 export type {{Entity}}{{Action}}Payload = {
-  _id: string;
+  id: string;
   {{campo}}: ValueOf<typeof E_{{ENUM}}>;
 };
 
@@ -74,7 +74,7 @@ export type BaseQueryPayload = {
 };
 
 export type {{Entity}}QueryPayload = Merge<BaseQueryPayload, {
-  {{filtroExtra}}?: { _id: string; {{campo}}: ValueOf<typeof E_{{ENUM}}> };
+  {{filtroExtra}}?: { id: string; {{campo}}: ValueOf<typeof E_{{ENUM}}> };
 }>;
 ```
 
@@ -86,16 +86,15 @@ export type {{Entity}}QueryPayload = Merge<BaseQueryPayload, {
 
 ```typescript
 export const E_ROLE = {
-  MASTER: 'MASTER',
   ADMINISTRATOR: 'ADMINISTRATOR',
-  MANAGER: 'MANAGER',
-  REGISTERED: 'REGISTERED',
+  CURATOR: 'CURATOR',
+  ARTISAN: 'ARTISAN',
 } as const;
 
-export const E_FIELD_TYPE = {
-  TEXT_SHORT: 'TEXT_SHORT',
-  TEXT_LONG: 'TEXT_LONG',
-  DROPDOWN: 'DROPDOWN',
+export const E_ENTITY_TYPE = {
+  TYPE_A: 'TYPE_A',
+  TYPE_B: 'TYPE_B',
+  TYPE_C: 'TYPE_C',
 } as const;
 
 export const E_USER_STATUS = {
@@ -104,15 +103,16 @@ export const E_USER_STATUS = {
 } as const;
 
 // Options arrays para selects
-export const FIELD_TYPE_OPTIONS = [
-  { label: 'Texto', value: E_FIELD_TYPE.TEXT_SHORT },
-  { label: 'Texto longo', value: E_FIELD_TYPE.TEXT_LONG },
+export const ENTITY_TYPE_OPTIONS = [
+  { label: 'Tipo A', value: E_ENTITY_TYPE.TYPE_A },
+  { label: 'Tipo B', value: E_ENTITY_TYPE.TYPE_B },
 ] as const;
 
 // Mapper de roles para labels
-export const USER_GROUP_MAPPER = {
+export const USER_ROLE_MAPPER = {
   [E_ROLE.ADMINISTRATOR]: 'Administrador',
-  [E_ROLE.REGISTERED]: 'Registrado',
+  [E_ROLE.CURATOR]: 'Curador',
+  [E_ROLE.ARTISAN]: 'Artesao',
 } as const;
 
 // Regex de validacao de senha
@@ -138,7 +138,7 @@ export type UserCreatePayload = {
 };
 
 export type UserUpdatePayload = {
-  _id: string;
+  id: string;
   name?: string;
   email?: string;
   status?: ValueOf<typeof E_USER_STATUS>;
@@ -151,15 +151,15 @@ export type BaseQueryPayload = {
 };
 
 export type UserQueryPayload = Merge<BaseQueryPayload, {
-  user?: { _id: string; role: ValueOf<typeof E_ROLE> };
+  user?: { id: string; role: ValueOf<typeof E_ROLE> };
 }>;
 ```
 
 Leitura do exemplo:
 
-1. `E_ROLE`, `E_FIELD_TYPE` e `E_USER_STATUS` sao objetos `as const` que funcionam como enums type-safe. O prefixo `E_` identifica visualmente que se trata de uma enumeracao.
-2. `FIELD_TYPE_OPTIONS` e o array companion de `E_FIELD_TYPE` -- cada item possui `label` (para exibicao em PT-BR) e `value` (referenciando o enum). Isso garante que os valores nos selects estejam sempre sincronizados com o enum.
-3. `USER_GROUP_MAPPER` usa computed property names (`[E_ROLE.ADMINISTRATOR]`) para mapear valores do enum para labels de exibicao.
+1. `E_ROLE`, `E_ENTITY_TYPE` e `E_USER_STATUS` sao objetos `as const` que funcionam como enums type-safe. O prefixo `E_` identifica visualmente que se trata de uma enumeracao.
+2. `ENTITY_TYPE_OPTIONS` e o array companion de `E_ENTITY_TYPE` -- cada item possui `label` (para exibicao em PT-BR) e `value` (referenciando o enum). Isso garante que os valores nos selects estejam sempre sincronizados com o enum.
+3. `USER_ROLE_MAPPER` usa computed property names (`[E_ROLE.ADMINISTRATOR]`) para mapear valores do enum para labels de exibicao.
 4. `PASSWORD_REGEX` centraliza o pattern de validacao de senha, reutilizado tanto em schemas Zod quanto em constantes de UI.
 5. Em `payloads.ts`, `ValueOf<typeof E_USER_STATUS>` extrai o tipo union dos valores do enum (`'ACTIVE' | 'INACTIVE'`), garantindo type safety nos campos tipados.
 6. `BaseQueryPayload` define os campos comuns de paginacao. `UserQueryPayload` usa `Merge` para combinar a base com filtros especificos da entidade.
@@ -168,11 +168,11 @@ Leitura do exemplo:
 
 ## Regras e Convencoes
 
-1. **Prefixo `E_` para todos os enum objects** -- todo objeto que representa uma enumeracao deve comecar com `E_` seguido do nome em SCREAMING_SNAKE_CASE. Ex: `E_ROLE`, `E_FIELD_TYPE`, `E_USER_STATUS`.
+1. **Prefixo `E_` para todos os enum objects** -- todo objeto que representa uma enumeracao deve comecar com `E_` seguido do nome em SCREAMING_SNAKE_CASE. Ex: `E_ROLE`, `E_ENTITY_TYPE`, `E_USER_STATUS`.
 
 2. **`as const` em TODOS os enums e options** -- sem `as const`, o TypeScript infere tipos amplos (`string` em vez de `'ACTIVE' | 'INACTIVE'`). Isso quebra a type safety e permite valores invalidos.
 
-3. **Options arrays sao companions dos enums** -- para cada enum usado em selects/dropdowns, deve existir um array companion com sufixo `_OPTIONS`. Os valores do array devem referenciar o enum diretamente (`E_FIELD_TYPE.TEXT_SHORT`), nunca strings literais.
+3. **Options arrays sao companions dos enums** -- para cada enum usado em selects/dropdowns, deve existir um array companion com sufixo `_OPTIONS`. Os valores do array devem referenciar o enum diretamente (`E_ENTITY_TYPE.TEXT_SHORT`), nunca strings literais.
 
 4. **Mappers para labels de exibicao** -- quando e necessario converter um valor do enum para um label legivel, use um objeto mapper com sufixo `_MAPPER` e computed property names do enum.
 
@@ -209,12 +209,12 @@ Leitura do exemplo:
 | Erro | Causa | Correcao |
 |------|-------|----------|
 | Enum perde type safety e aceita qualquer string | Faltou `as const` no objeto enum | Adicionar `as const` ao final do objeto: `} as const` |
-| Select exibe valor invalido nao presente no enum | Options array usa string literal em vez de referenciar o enum | Usar `E_FIELD_TYPE.TEXT_SHORT` em vez de `'TEXT_SHORT'` no array de options |
+| Select exibe valor invalido nao presente no enum | Options array usa string literal em vez de referenciar o enum | Usar `E_ENTITY_TYPE.TEXT_SHORT` em vez de `'TEXT_SHORT'` no array de options |
 | Campo tipado como `string` aceita valores fora do enum | Tipo do campo definido como `string` em vez de `ValueOf<typeof E_*>` | Substituir `status: string` por `status: ValueOf<typeof E_USER_STATUS>` |
 | Duplicacao de labels entre mapper e options | Mapper e options definidos independentemente com strings duplicadas | Centralizar labels no mapper e, se necessario, derivar options a partir dele |
 | Payload type diverge do schema Zod | Type definido manualmente sem corresponder ao schema | Manter payload types e schemas Zod sincronizados. Para schemas de input, prefira `z.infer` em `schemas.ts` |
 | Query paginada faltando campos de paginacao | Payload de query definido sem estender `BaseQueryPayload` | Usar `Merge<BaseQueryPayload, { ...filtros }>` para garantir campos de paginacao |
-| Enum sem prefixo `E_` confundido com constante comum | Nomenclatura nao segue a convencao do projeto | Renomear para `E_NOME` seguindo o padrao: `E_ROLE`, `E_FIELD_TYPE`, etc. |
+| Enum sem prefixo `E_` confundido com constante comum | Nomenclatura nao segue a convencao do projeto | Renomear para `E_NOME` seguindo o padrao: `E_ROLE`, `E_ENTITY_TYPE`, etc. |
 | Import circular entre `constant.ts` e `payloads.ts` | `constant.ts` importando types de `payloads.ts` | `constant.ts` nunca deve importar de `payloads.ts`. O fluxo e unidirecional: `payloads.ts` importa de `constant.ts` |
 
 ---
