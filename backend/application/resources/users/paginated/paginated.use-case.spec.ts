@@ -101,9 +101,9 @@ describe('User Paginated Use Case', () => {
     if (result.isRight()) {
       expect(result.value.data).toHaveLength(4);
       expect(result.value.meta.total).toBe(4);
-      expect(
-        result.value.data.some((u) => u._id === loggedUser._id),
-      ).toBe(true);
+      expect(result.value.data.some((u) => u._id === loggedUser._id)).toBe(
+        true,
+      );
     }
   });
 
