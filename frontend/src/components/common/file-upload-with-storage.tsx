@@ -296,6 +296,19 @@ export function FileUploadWithStorage({
     });
   }, []);
 
+  const onFileValidate = React.useCallback(
+    (file: File) => {
+      const isDuplicate = value.some(
+        (existingFile) => existingFile.name === file.name,
+      );
+      if (isDuplicate) {
+        return 'Arquivo com esse nome já foi adicionado';
+      }
+      return null;
+    },
+    [value],
+  );
+
   const handleRemoveFile = React.useCallback(
     (file: File) => {
       const storage = storageFiles.get(file);
@@ -317,6 +330,7 @@ export function FileUploadWithStorage({
       onValueChange={onValueChange}
       onUpload={onUpload}
       onFileReject={onFileReject}
+      onFileValidate={onFileValidate}
       accept={accept}
       maxFiles={maxFiles}
       maxSize={maxSize}

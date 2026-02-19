@@ -120,6 +120,13 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
         onClick={navigateToTable}
         className="text-sm text-muted-foreground"
       >
+        {table.owner.name}
+      </TableCell>
+
+      <TableCell
+        onClick={navigateToTable}
+        className="text-sm text-muted-foreground"
+      >
         {table.createdAt
           ? format(
               new Date(table.createdAt),
