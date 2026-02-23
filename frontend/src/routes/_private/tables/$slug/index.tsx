@@ -10,6 +10,8 @@ import React from 'react';
 import { toast } from 'sonner';
 import z from 'zod';
 
+import { TableCalendarView } from './-table-calendar-view';
+import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
 import { TableCardView } from './-table-card-view';
 import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
@@ -78,7 +80,8 @@ function RouteComponent(): React.JSX.Element {
   const shouldDisablePagination =
     tableStyle === E_TABLE_STYLE.KANBAN ||
     tableStyle === E_TABLE_STYLE.DOCUMENT ||
-    tableStyle === E_TABLE_STYLE.FORUM;
+    tableStyle === E_TABLE_STYLE.FORUM ||
+    tableStyle === E_TABLE_STYLE.CALENDAR;
   const rowsSearch = React.useMemo(() => {
     const base = shouldDisablePagination
       ? {
@@ -211,6 +214,11 @@ function RouteComponent(): React.JSX.Element {
           table.data.style === E_TABLE_STYLE.FORUM && (
             <TableForumViewSkeleton />
           )}
+        {table.status === 'success' &&
+          rows.status === 'pending' &&
+          table.data.style === E_TABLE_STYLE.CALENDAR && (
+            <TableCalendarViewSkeleton />
+          )}
 
         {rows.status === 'error' &&
           ((): React.JSX.Element => {
@@ -315,6 +323,16 @@ function RouteComponent(): React.JSX.Element {
           table.data.style === E_TABLE_STYLE.FORUM &&
           rows.status === 'success' && (
             <TableForumView
+              headers={table.data.fields}
+              data={rows.data.data}
+              tableSlug={slug}
+              table={table.data}
+            />
+          )}
+        {table.status === 'success' &&
+          table.data.style === E_TABLE_STYLE.CALENDAR &&
+          rows.status === 'success' && (
+            <TableCalendarView
               headers={table.data.fields}
               data={rows.data.data}
               tableSlug={slug}

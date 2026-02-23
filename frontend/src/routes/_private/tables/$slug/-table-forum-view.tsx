@@ -1,6 +1,7 @@
 import { useStore } from '@tanstack/react-store';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { ArrowDownIcon, AtSignIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
@@ -16,6 +17,7 @@ import {
   ForumSidebar,
 } from '@/components/forum';
 import type { ForumDocument, ForumMessage } from '@/components/forum';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
@@ -45,6 +47,7 @@ import { cn } from '@/lib/utils';
 import { useAuthenticationStore } from '@/stores/authentication';
 
 const FORUM_SYNC_INTERVAL_MS = 5000;
+const FORUM_MENTIONS_STORAGE_KEY_PREFIX = 'forum-mentions-unseen';
 
 type ForumRealtimeSubscriptionArgs = {
   enabled: boolean;
@@ -55,6 +58,13 @@ type ForumRealtimeSubscriptionArgs = {
 type ForumRealtimeStrategy = {
   subscribeChannels: (args: ForumRealtimeSubscriptionArgs) => () => void;
   subscribeActiveChannel: (args: ForumRealtimeSubscriptionArgs) => () => void;
+};
+
+type ForumMentionAlert = {
+  channelId: string;
+  messageId: string;
+  dateValue: string | null;
+  dateLabel: string;
 };
 
 // Keep realtime sync behind a strategy so polling can be replaced by websocket later.
@@ -89,6 +99,11 @@ export function TableForumView({
   const auth = useAuthenticationStore((s) => s.authenticated);
   const { data: profile } = useProfileRead();
   const currentUserId = auth?.sub ?? profile?._id ?? '';
+  const mentionsStorageKey = React.useMemo(
+    () =>
+      `${FORUM_MENTIONS_STORAGE_KEY_PREFIX}:${tableSlug}:${currentUserId || 'anonymous'}`,
+    [currentUserId, tableSlug],
+  );
 
   const [rowsState, setRowsState] = React.useState<Array<IRow>>(data);
   const [activeRowId, setActiveRowId] = React.useState<string | null>(
@@ -130,6 +145,36 @@ export function TableForumView({
     inFlight: false,
   });
   const [focusTick, setFocusTick] = React.useState(0);
+  const [seenMentionIdsByChannel, setSeenMentionIdsByChannel] = React.useState<
+    Record<string, Array<string>>
+  >(() => {
+    if (typeof window === 'undefined') return {};
+    try {
+      const raw = window.localStorage.getItem(
+        `${FORUM_MENTIONS_STORAGE_KEY_PREFIX}:${tableSlug}:${currentUserId || 'anonymous'}`,
+      );
+      if (!raw) return {};
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (!parsed || typeof parsed !== 'object') return {};
+      return Object.fromEntries(
+        Object.entries(parsed).map(([channelId, value]) => [
+          channelId,
+          Array.isArray(value)
+            ? value.map((item) => String(item)).filter(Boolean)
+            : [],
+        ]),
+      );
+    } catch {
+      return {};
+    }
+  });
+  const [mentionJumpTick, setMentionJumpTick] = React.useState(0);
+  const [mentionJumpMessageId, setMentionJumpMessageId] = React.useState<
+    string | null
+  >(null);
+  const [highlightMentionMessageId, setHighlightMentionMessageId] =
+    React.useState<string | null>(null);
+  const [highlightMentionTick, setHighlightMentionTick] = React.useState(0);
 
   const bumpFocus = React.useCallback(() => {
     setFocusTick((value) => value + 1);
@@ -157,6 +202,46 @@ export function TableForumView({
     if (typeof window === 'undefined') return;
     window.localStorage.setItem('forum-composer-layout', composerLayout);
   }, [composerLayout]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(
+        mentionsStorageKey,
+        JSON.stringify(seenMentionIdsByChannel),
+      );
+    } catch {
+      // Ignore localStorage failures.
+    }
+  }, [mentionsStorageKey, seenMentionIdsByChannel]);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+    try {
+      const raw = window.localStorage.getItem(mentionsStorageKey);
+      if (!raw) {
+        setSeenMentionIdsByChannel({});
+        return;
+      }
+      const parsed = JSON.parse(raw) as Record<string, unknown>;
+      if (!parsed || typeof parsed !== 'object') {
+        setSeenMentionIdsByChannel({});
+        return;
+      }
+      setSeenMentionIdsByChannel(
+        Object.fromEntries(
+          Object.entries(parsed).map(([channelId, value]) => [
+            channelId,
+            Array.isArray(value)
+              ? value.map((item) => String(item)).filter(Boolean)
+              : [],
+          ]),
+        ),
+      );
+    } catch {
+      setSeenMentionIdsByChannel({});
+    }
+  }, [mentionsStorageKey]);
 
   const channelField =
     getFieldBySlug(headers, 'canal', E_FIELD_TYPE.TEXT_SHORT) ||
@@ -278,6 +363,11 @@ export function TableForumView({
         { slug: 'mencoes', type: E_FIELD_TYPE.USER, multiple: true },
         { slug: 'resposta', type: E_FIELD_TYPE.TEXT_SHORT, multiple: false },
         { slug: 'reacoes', type: E_FIELD_TYPE.TEXT_LONG, multiple: false },
+        {
+          slug: 'mencoes-visualizadas',
+          type: E_FIELD_TYPE.USER,
+          multiple: true,
+        },
       ] as Array<Pick<IField, 'slug' | 'type' | 'multiple'>>,
     [],
   );
@@ -314,6 +404,9 @@ export function TableForumView({
   );
   const messageReactionsField = resolvedGroupFields.find(
     (f) => f.slug === 'reacoes',
+  );
+  const messageMentionSeenField = resolvedGroupFields.find(
+    (f) => f.slug === 'mencoes-visualizadas',
   );
 
   const rawMessages = React.useMemo(() => {
@@ -406,6 +499,150 @@ export function TableForumView({
     }
     return items;
   }, [messages]);
+
+  const mentionAlertsByChannel = React.useMemo(() => {
+    const next = new Map<string, Array<ForumMentionAlert>>();
+
+    if (!currentUserId || !messagesField || !messageMentionsField) return next;
+
+    for (const row of rowsState) {
+      const rawChannelMessages = row[messagesField.slug];
+      const channelMessages = Array.isArray(rawChannelMessages)
+        ? rawChannelMessages
+        : [];
+
+      for (let index = 0; index < channelMessages.length; index += 1) {
+        const messageRecord =
+          channelMessages[index] && typeof channelMessages[index] === 'object'
+            ? (channelMessages[index] as Record<string, unknown>)
+            : {};
+
+        const mentionIds = normalizeIdList(
+          messageRecord[messageMentionsField.slug],
+        );
+        if (!mentionIds.includes(currentUserId)) continue;
+        const seenIds = messageMentionSeenField
+          ? normalizeIdList(messageRecord[messageMentionSeenField.slug])
+          : [];
+        if (seenIds.includes(currentUserId)) continue;
+
+        const authorCandidates = messageAuthorField
+          ? normalizeIdList(messageRecord[messageAuthorField.slug])
+          : [];
+        const authorId = authorCandidates[0] ?? null;
+        if (authorId && authorId === currentUserId) continue;
+
+        const messageId =
+          (messageIdField && normalizeId(messageRecord[messageIdField.slug])) ??
+          `message-${index}`;
+        const rawDate = messageDateField
+          ? messageRecord[messageDateField.slug]
+          : null;
+        const dateValue = typeof rawDate === 'string' ? rawDate : null;
+        const dateLabel =
+          dateValue && !Number.isNaN(new Date(dateValue).getTime())
+            ? format(new Date(dateValue), 'dd/MM/yyyy HH:mm', { locale: ptBR })
+            : '';
+
+        const list = next.get(row._id) ?? [];
+        list.push({
+          channelId: row._id,
+          messageId,
+          dateValue,
+          dateLabel,
+        });
+        next.set(row._id, list);
+      }
+    }
+
+    for (const [channelId, list] of next.entries()) {
+      list.sort((a, b) => {
+        if (!a.dateValue && !b.dateValue) return 0;
+        if (!a.dateValue) return 1;
+        if (!b.dateValue) return -1;
+        return (
+          new Date(a.dateValue).getTime() - new Date(b.dateValue).getTime()
+        );
+      });
+    }
+
+    return next;
+  }, [
+    currentUserId,
+    messageAuthorField,
+    messageDateField,
+    messageIdField,
+    messageMentionsField,
+    messageMentionSeenField,
+    messagesField,
+    rowsState,
+  ]);
+
+  React.useEffect(() => {
+    setSeenMentionIdsByChannel((prev) => {
+      const next: Record<string, Array<string>> = {};
+      let changed = false;
+
+      const channelIds = new Set([
+        ...Object.keys(prev),
+        ...Array.from(mentionAlertsByChannel.keys()),
+      ]);
+
+      for (const channelId of channelIds) {
+        const mentionIds = (mentionAlertsByChannel.get(channelId) ?? []).map(
+          (alert) => alert.messageId,
+        );
+        const mentionSet = new Set(mentionIds);
+        const prevIds = Array.isArray(prev[channelId]) ? prev[channelId] : [];
+        const seenIds = prevIds.filter((id) => mentionSet.has(id));
+
+        if (seenIds.length > 0) next[channelId] = seenIds;
+
+        if (
+          seenIds.length !== prevIds.length ||
+          seenIds.some((id, idx) => prevIds[idx] !== id)
+        ) {
+          changed = true;
+        }
+      }
+
+      if (!changed && Object.keys(next).length === Object.keys(prev).length) {
+        return prev;
+      }
+
+      return next;
+    });
+  }, [mentionAlertsByChannel]);
+
+  const clearMentionAlert = React.useCallback(
+    (channelId: string, messageId: string): void => {
+      setSeenMentionIdsByChannel((prev): Record<string, Array<string>> => {
+        const current = prev[channelId] ?? [];
+        if (current.includes(messageId)) return prev;
+        const nextChannelIds = [...current, messageId];
+        const next = { ...prev };
+        next[channelId] = nextChannelIds;
+        return next;
+      });
+
+      void (async (): Promise<void> => {
+        try {
+          const updatedRow = await API.put<IRow>(
+            `/tables/${tableSlug}/rows/${channelId}/forum/messages/${messageId}/mention-read`,
+          );
+          setRowsState(
+            (prev): Array<IRow> =>
+              prev.map((row) =>
+                row._id === updatedRow.data._id ? updatedRow.data : row,
+              ),
+          );
+        } catch {
+          // Keep local "seen" fallback even if server persist fails.
+        }
+      })();
+    },
+    [tableSlug],
+  );
 
   const updateRow = useUpdateTableRow({
     onSuccess(updatedRow) {
@@ -979,6 +1216,73 @@ export function TableForumView({
     messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
   }, [activeRowId, messages.length]);
 
+  React.useEffect(() => {
+    setMentionJumpMessageId(null);
+    setHighlightMentionMessageId(null);
+  }, [activeRowId]);
+
+  const unseenMentionIdsByChannel = React.useMemo(() => {
+    const next: Record<string, Array<string>> = {};
+
+    for (const [channelId, alerts] of mentionAlertsByChannel.entries()) {
+      const seenIds = new Set(seenMentionIdsByChannel[channelId] ?? []);
+      const unseenIds = alerts
+        .map((alert) => alert.messageId)
+        .filter((messageId) => !seenIds.has(messageId));
+      if (unseenIds.length > 0) next[channelId] = unseenIds;
+    }
+
+    return next;
+  }, [mentionAlertsByChannel, seenMentionIdsByChannel]);
+
+  const mentionCountByRowId = React.useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(unseenMentionIdsByChannel).map(([channelId, ids]) => [
+          channelId,
+          ids.length,
+        ]),
+      ),
+    [unseenMentionIdsByChannel],
+  );
+
+  const activeChannelMentionAlerts = React.useMemo(() => {
+    if (!activeRowId) return [];
+    const unseenIds = unseenMentionIdsByChannel[activeRowId] ?? [];
+    if (unseenIds.length === 0) return [];
+    const alertMap = new Map(
+      (mentionAlertsByChannel.get(activeRowId) ?? []).map((alert) => [
+        alert.messageId,
+        alert,
+      ]),
+    );
+    return unseenIds
+      .map((id) => alertMap.get(id))
+      .filter((item): item is ForumMentionAlert => Boolean(item));
+  }, [activeRowId, mentionAlertsByChannel, unseenMentionIdsByChannel]);
+
+  const activeChannelPrimaryMentionAlert =
+    activeChannelMentionAlerts[0] ?? null;
+
+  const handleMentionMessageVisible = React.useCallback(
+    (messageId: string) => {
+      if (!activeRowId) return;
+      clearMentionAlert(activeRowId, messageId);
+      if (mentionJumpMessageId === messageId) {
+        setMentionJumpMessageId(null);
+      }
+      if (highlightMentionMessageId === messageId) {
+        setHighlightMentionMessageId(null);
+      }
+    },
+    [
+      activeRowId,
+      clearMentionAlert,
+      highlightMentionMessageId,
+      mentionJumpMessageId,
+    ],
+  );
+
   const channelTitle =
     activeRow && channelField
       ? String(activeRow[channelField.slug] ?? 'Canal')
@@ -1006,6 +1310,7 @@ export function TableForumView({
         canManageRow={canManageChannel}
         onEditRow={handleChannelEdit}
         onDeleteRow={(row) => setDeleteChannelId(row._id)}
+        mentionCountByRowId={mentionCountByRowId}
       />
 
       <ForumAddChannelDialog
@@ -1091,7 +1396,7 @@ export function TableForumView({
             {activeRow ? (
               <div
                 className={cn(
-                  'flex-1 min-h-0',
+                  'flex-1 min-h-0 relative',
                   composerLayout === 'side' ? 'flex' : 'flex flex-col',
                 )}
               >
@@ -1103,7 +1408,50 @@ export function TableForumView({
                   onEdit={handleStartEdit}
                   onDelete={(index) => setDeleteIndex(index)}
                   onToggleReaction={toggleReaction}
+                  trackedMentionMessageIds={
+                    (activeRowId && unseenMentionIdsByChannel[activeRowId]) ??
+                    []
+                  }
+                  onMentionMessageVisible={handleMentionMessageVisible}
+                  scrollToMessageId={mentionJumpMessageId}
+                  scrollToMessageTick={mentionJumpTick}
+                  highlightedMessageId={highlightMentionMessageId}
+                  highlightedMessageTick={highlightMentionTick}
                 />
+
+                {activeTab === 'chat' && activeChannelPrimaryMentionAlert && (
+                  <div
+                    className={cn(
+                      'absolute z-20 right-4',
+                      composerLayout === 'bottom' ? 'bottom-24' : 'bottom-4',
+                    )}
+                  >
+                    <Button
+                      type="button"
+                      size="sm"
+                      className="cursor-pointer shadow-lg"
+                      onClick={() => {
+                        setMentionJumpMessageId(
+                          activeChannelPrimaryMentionAlert.messageId,
+                        );
+                        setMentionJumpTick((value) => value + 1);
+                        setHighlightMentionMessageId(
+                          activeChannelPrimaryMentionAlert.messageId,
+                        );
+                        setHighlightMentionTick((value) => value + 1);
+                      }}
+                    >
+                      <AtSignIcon className="size-4" />
+                      <span>
+                        Mencionado
+                        {activeChannelPrimaryMentionAlert.dateLabel
+                          ? ` • ${activeChannelPrimaryMentionAlert.dateLabel}`
+                          : ''}
+                      </span>
+                      <ArrowDownIcon className="size-4" />
+                    </Button>
+                  </div>
+                )}
 
                 <ForumComposer
                   composerLayout={composerLayout}

@@ -1,0 +1,294 @@
+import { useMutation } from '@tanstack/react-query';
+import { useRouter } from '@tanstack/react-router';
+import { addMonths, addWeeks, subMonths, subWeeks } from 'date-fns';
+import { PlusIcon } from 'lucide-react';
+import React from 'react';
+import { toast } from 'sonner';
+
+import {
+  CalendarAgendaView,
+  CalendarDeleteDialog,
+  CalendarEventDialog,
+  CalendarMonthView,
+  CalendarToolbar,
+  CalendarWeekView,
+} from '@/components/calendar';
+import type { CalendarViewMode } from '@/components/calendar';
+import { Button } from '@/components/ui/button';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
+import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
+import { API } from '@/lib/api';
+import {
+  normalizeCalendarEvents,
+  resolveCalendarFields,
+} from '@/lib/calendar-helpers';
+import type {
+  CalendarEventItem,
+  CalendarResolvedFields,
+} from '@/lib/calendar-helpers';
+import type { IField, IRow, ITable } from '@/lib/interfaces';
+import { QueryClient } from '@/lib/query-client';
+
+interface Props {
+  data: Array<IRow>;
+  headers: Array<IField>;
+  tableSlug: string;
+  table: ITable;
+}
+
+export function TableCalendarView({
+  data,
+  headers,
+  tableSlug,
+  table,
+}: Props): React.JSX.Element {
+  const router = useRouter();
+  const [viewMode, setViewMode] = React.useState<CalendarViewMode>('week');
+  const [currentDate, setCurrentDate] = React.useState<Date>(() => new Date());
+  const [rowsState, setRowsState] = React.useState<Array<IRow>>(data);
+  const [isCreateOpen, setIsCreateOpen] = React.useState(false);
+  const [editingRowId, setEditingRowId] = React.useState<string | null>(null);
+  const [isDeleteOpen, setIsDeleteOpen] = React.useState(false);
+  const [createDefaultStart, setCreateDefaultStart] =
+    React.useState<Date | null>(null);
+
+  React.useEffect(() => {
+    setRowsState(data);
+  }, [data]);
+
+  const resolvedFields = React.useMemo(
+    () => resolveCalendarFields(headers),
+    [headers],
+  );
+  const events = React.useMemo(
+    () => normalizeCalendarEvents(rowsState, headers),
+    [rowsState, headers],
+  );
+  const editingEvent = React.useMemo(
+    () => events.find((item) => item.rowId === editingRowId) ?? null,
+    [editingRowId, events],
+  );
+
+  const createRow = useCreateTableRow({
+    onSuccess: (createdRow) => {
+      setRowsState((prev) => [
+        createdRow,
+        ...prev.filter((r) => r._id !== createdRow._id),
+      ]);
+      setIsCreateOpen(false);
+      toast.success('Agendamento criado com sucesso');
+    },
+    onError(error) {
+      console.error(error);
+      toast.error('Erro ao criar agendamento');
+    },
+  });
+
+  const updateRow = useUpdateTableRow({
+    onSuccess: (updatedRow) => {
+      setRowsState((prev) =>
+        prev.map((row) => (row._id === updatedRow._id ? updatedRow : row)),
+      );
+      setEditingRowId(null);
+      toast.success('Agendamento atualizado com sucesso');
+    },
+    onError(error) {
+      console.error(error);
+      toast.error('Erro ao atualizar agendamento');
+    },
+  });
+
+  const deleteRow = useMutation({
+    mutationFn: async (rowId: string) => {
+      await API.delete(`/tables/${tableSlug}/rows/${rowId}`);
+      return rowId;
+    },
+    onSuccess: (rowId) => {
+      setRowsState((prev) => prev.filter((row) => row._id !== rowId));
+      setEditingRowId(null);
+      setIsDeleteOpen(false);
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.detail(tableSlug, rowId),
+      });
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(tableSlug),
+      });
+      toast.success('Agendamento excluído com sucesso');
+    },
+    onError(error) {
+      console.error(error);
+      toast.error('Erro ao excluir agendamento');
+    },
+  });
+
+  const buildCalendarPayload = React.useCallback(
+    (
+      fieldsMap: CalendarResolvedFields,
+      payload: {
+        title: string;
+        description: string;
+        start: Date;
+        end: Date;
+        colorOptionId: string | null;
+      },
+    ): Record<string, unknown> => {
+      const dataPayload: Record<string, unknown> = {};
+
+      if (fieldsMap.titleField)
+        dataPayload[fieldsMap.titleField.slug] = payload.title;
+      if (fieldsMap.descriptionField) {
+        dataPayload[fieldsMap.descriptionField.slug] =
+          payload.description || null;
+      }
+      if (fieldsMap.startField)
+        dataPayload[fieldsMap.startField.slug] = payload.start.toISOString();
+      if (fieldsMap.endField)
+        dataPayload[fieldsMap.endField.slug] = payload.end.toISOString();
+      if (fieldsMap.colorField) {
+        dataPayload[fieldsMap.colorField.slug] = payload.colorOptionId
+          ? [payload.colorOptionId]
+          : [];
+      }
+
+      return dataPayload;
+    },
+    [],
+  );
+
+  const handleSelectEvent = React.useCallback((event: CalendarEventItem) => {
+    setEditingRowId(event.rowId);
+  }, []);
+
+  const handlePrevious = React.useCallback(() => {
+    setCurrentDate((value) =>
+      viewMode === 'month' ? subMonths(value, 1) : subWeeks(value, 1),
+    );
+  }, [viewMode]);
+
+  const handleNext = React.useCallback(() => {
+    setCurrentDate((value) =>
+      viewMode === 'month' ? addMonths(value, 1) : addWeeks(value, 1),
+    );
+  }, [viewMode]);
+
+  const missingRequired =
+    !resolvedFields.titleField ||
+    !resolvedFields.startField ||
+    !resolvedFields.endField;
+
+  return (
+    <div className="flex h-full min-h-0 flex-col">
+      <CalendarToolbar
+        currentDate={currentDate}
+        viewMode={viewMode}
+        onPrevious={handlePrevious}
+        onNext={handleNext}
+        onToday={() => setCurrentDate(new Date())}
+        onChangeView={setViewMode}
+        onSelectDate={setCurrentDate}
+      />
+
+      <div className="flex items-center justify-between gap-2 border-b px-3 py-2">
+        <div className="text-xs text-muted-foreground">
+          {table.name} • clique em um agendamento para editar
+        </div>
+        <Button
+          type="button"
+          size="sm"
+          className="shadow-none"
+          onClick={() => {
+            setCreateDefaultStart(new Date());
+            setIsCreateOpen(true);
+          }}
+        >
+          <PlusIcon className="size-4" />
+          <span>Novo agendamento</span>
+        </Button>
+      </div>
+
+      {missingRequired ? (
+        <div className="p-4 text-sm text-muted-foreground">
+          Campos obrigatórios do template Calendario não encontrados. Esperado:
+          `titulo`, `data-inicio` e `data-termino`.
+        </div>
+      ) : (
+        <div className="min-h-0 flex-1">
+          {viewMode === 'agenda' && (
+            <CalendarAgendaView
+              events={events}
+              onSelectEvent={handleSelectEvent}
+            />
+          )}
+          {viewMode === 'month' && (
+            <CalendarMonthView
+              currentDate={currentDate}
+              events={events}
+              onSelectEvent={handleSelectEvent}
+            />
+          )}
+          {viewMode === 'week' && (
+            <CalendarWeekView
+              currentDate={currentDate}
+              events={events}
+              onSelectEvent={handleSelectEvent}
+            />
+          )}
+        </div>
+      )}
+
+      <CalendarEventDialog
+        open={isCreateOpen}
+        onOpenChange={setIsCreateOpen}
+        mode="create"
+        fields={resolvedFields}
+        event={null}
+        defaultStartDate={createDefaultStart}
+        isPending={createRow.status === 'pending'}
+        onSubmit={async (payload) => {
+          await createRow.mutateAsync({
+            slug: tableSlug,
+            data: buildCalendarPayload(resolvedFields, payload),
+          });
+        }}
+      />
+
+      <CalendarEventDialog
+        open={Boolean(editingEvent)}
+        onOpenChange={(open) => {
+          if (!open) setEditingRowId(null);
+        }}
+        mode="edit"
+        fields={resolvedFields}
+        event={editingEvent}
+        isPending={updateRow.status === 'pending'}
+        onSubmit={async (payload) => {
+          if (!editingEvent) return;
+          await updateRow.mutateAsync({
+            slug: tableSlug,
+            rowId: editingEvent.rowId,
+            data: buildCalendarPayload(resolvedFields, payload),
+          });
+        }}
+        onDeleteClick={() => setIsDeleteOpen(true)}
+        onOpenRecord={(row) => {
+          router.navigate({
+            to: '/tables/$slug/row/$rowId',
+            params: { slug: tableSlug, rowId: row._id },
+          });
+        }}
+      />
+
+      <CalendarDeleteDialog
+        open={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        title={editingEvent?.title}
+        isPending={deleteRow.status === 'pending'}
+        onConfirm={() => {
+          if (!editingEvent) return;
+          deleteRow.mutate(editingEvent.rowId);
+        }}
+      />
+    </div>
+  );
+}

@@ -42,3 +42,9 @@ export type ForumMessageDeletePayload = z.infer<
 > & {
   user: string;
 };
+
+export type ForumMessageMentionReadPayload = z.infer<
+  typeof ForumMessageParamsValidator
+> & {
+  user: string;
+};

@@ -1,4 +1,5 @@
 import {
+  AtSignIcon,
   LockIcon,
   MessageCircle,
   PanelLeftCloseIcon,
@@ -25,6 +26,7 @@ interface ForumSidebarProps {
   canManageRow: (row: IRow) => boolean;
   onEditRow: (row: IRow) => void;
   onDeleteRow: (row: IRow) => void;
+  mentionCountByRowId?: Record<string, number>;
 }
 
 export function ForumSidebar({
@@ -40,6 +42,7 @@ export function ForumSidebar({
   canManageRow,
   onEditRow,
   onDeleteRow,
+  mentionCountByRowId = {},
 }: ForumSidebarProps): React.JSX.Element {
   return (
     <aside
@@ -101,6 +104,7 @@ export function ForumSidebar({
             const isActive = row._id === activeRowId;
             const canAccess = canAccessRow(row);
             const canManage = canManageRow(row);
+            const mentionCount = mentionCountByRowId[row._id] ?? 0;
             return (
               <button
                 key={row._id}
@@ -119,8 +123,23 @@ export function ForumSidebar({
                   <LockIcon className="size-3.5" />
                 )}
                 <span className="truncate">{label}</span>
+                {mentionCount > 0 && (
+                  <span className="ml-auto inline-flex items-center gap-1">
+                    <span className="inline-flex size-4 items-center justify-center rounded-full bg-primary/15 text-primary">
+                      <AtSignIcon className="size-2.5" />
+                    </span>
+                    <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
+                      {mentionCount > 99 ? '99+' : mentionCount}
+                    </span>
+                  </span>
+                )}
                 {canManage && (
-                  <span className="ml-auto flex items-center gap-1 opacity-0 transition pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto">
+                  <span
+                    className={cn(
+                      'flex items-center gap-1 opacity-0 transition pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto',
+                      mentionCount > 0 ? 'ml-1' : 'ml-auto',
+                    )}
+                  >
                     <button
                       type="button"
                       className="p-1 rounded hover:bg-muted/60 cursor-pointer"

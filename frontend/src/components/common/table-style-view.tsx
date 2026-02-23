@@ -1,4 +1,5 @@
 import {
+  CalendarIcon,
   LayoutDashboard,
   LayoutDashboardIcon,
   LayoutListIcon,
@@ -97,6 +98,7 @@ export function TableStyleViewDropdown({
   const canShowMosaic = allowedStyles.includes(E_TABLE_STYLE.MOSAIC);
   const canShowKanban = allowedStyles.includes(E_TABLE_STYLE.KANBAN);
   const canShowForum = allowedStyles.includes(E_TABLE_STYLE.FORUM);
+  const canShowCalendar = allowedStyles.includes(E_TABLE_STYLE.CALENDAR);
 
   return (
     <DropdownMenu
@@ -142,6 +144,10 @@ export function TableStyleViewDropdown({
           {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.MOSAIC && (
               <LayoutDashboard className="size-4" />
+            )}
+          {table.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.CALENDAR && (
+              <CalendarIcon className="size-4" />
             )}
 
           <span>Exibição</span>
@@ -220,6 +226,17 @@ export function TableStyleViewDropdown({
               >
                 <MessageCircle className="size-4" />
                 <span>Forum</span>
+              </DropdownMenuRadioItem>
+            )}
+
+            {canShowCalendar && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value={E_TABLE_STYLE.CALENDAR}
+                onClick={() => handleStyleChange(E_TABLE_STYLE.CALENDAR)}
+              >
+                <CalendarIcon className="size-4" />
+                <span>Calendario</span>
               </DropdownMenuRadioItem>
             )}
           </DropdownMenuRadioGroup>
