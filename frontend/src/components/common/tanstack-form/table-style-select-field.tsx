@@ -35,7 +35,8 @@ export function TableStyleSelectField({
         option.value !== E_TABLE_STYLE.MOSAIC &&
         option.value !== E_TABLE_STYLE.CARD &&
         option.value !== E_TABLE_STYLE.KANBAN &&
-        option.value !== E_TABLE_STYLE.FORUM,
+        option.value !== E_TABLE_STYLE.FORUM &&
+        option.value !== E_TABLE_STYLE.CALENDAR,
     ).map((option) => option.value);
 
   return (

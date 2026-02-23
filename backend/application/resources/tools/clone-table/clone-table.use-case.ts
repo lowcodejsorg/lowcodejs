@@ -13,6 +13,7 @@ import {
 } from '@application/repositories/table/table-contract.repository';
 
 import {
+  CALENDAR_TEMPLATE_ID,
   CARDS_TEMPLATE_ID,
   DOCUMENT_TEMPLATE_ID,
   FORUM_TEMPLATE_ID,
@@ -24,6 +25,7 @@ import type {
   CloneTableResponse,
   CloneTableUseCasePayload,
 } from './clone-table.types';
+import { createCalendarTemplate } from './templates/calendar-template';
 import { createCardsTemplate } from './templates/cards-template';
 import { createDocumentTemplate } from './templates/document-template';
 import { createForumTemplate } from './templates/forum-template';
@@ -77,6 +79,10 @@ export default class CloneTableUseCase {
 
       if (payload.baseTableId === FORUM_TEMPLATE_ID) {
         return await createForumTemplate(payload, templateDeps);
+      }
+
+      if (payload.baseTableId === CALENDAR_TEMPLATE_ID) {
+        return await createCalendarTemplate(payload, templateDeps);
       }
 
       const baseTable = await this.tableRepository.findBy({

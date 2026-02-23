@@ -22,6 +22,7 @@ export const TableStyleSchema = z
     E_TABLE_STYLE.MOSAIC,
     E_TABLE_STYLE.KANBAN,
     E_TABLE_STYLE.FORUM,
+    E_TABLE_STYLE.CALENDAR,
   ])
   .default(E_TABLE_STYLE.LIST);
 

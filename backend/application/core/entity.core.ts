@@ -103,6 +103,7 @@ export const E_TABLE_STYLE = {
   MOSAIC: 'MOSAIC',
   KANBAN: 'KANBAN',
   FORUM: 'FORUM',
+  CALENDAR: 'CALENDAR',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
