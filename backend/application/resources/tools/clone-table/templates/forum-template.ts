@@ -71,13 +71,43 @@ export async function createForumTemplate(
         ? message['mencoes-emails']
             .map((item) => String(item || '').trim().toLowerCase())
             .filter(Boolean)
-        : [];
+        : (() => {
+            const raw = typeof message['mencoes-emails'] === 'string'
+              ? message['mencoes-emails'].trim()
+              : '';
+            if (!raw) return [];
+            try {
+              const parsed = JSON.parse(raw);
+              return Array.isArray(parsed)
+                ? parsed
+                    .map((item) => String(item || '').trim().toLowerCase())
+                    .filter(Boolean)
+                : [];
+            } catch {
+              return [];
+            }
+          })();
 
       const alreadyNotified = Array.isArray(message['mencoes-notificadas'])
         ? message['mencoes-notificadas']
             .map((item) => String(item || '').trim().toLowerCase())
             .filter(Boolean)
-        : [];
+        : (() => {
+            const raw = typeof message['mencoes-notificadas'] === 'string'
+              ? message['mencoes-notificadas'].trim()
+              : '';
+            if (!raw) return [];
+            try {
+              const parsed = JSON.parse(raw);
+              return Array.isArray(parsed)
+                ? parsed
+                    .map((item) => String(item || '').trim().toLowerCase())
+                    .filter(Boolean)
+                : [];
+            } catch {
+              return [];
+            }
+          })();
 
       const notifiedSet = new Set(alreadyNotified);
       const newRecipients = mentionEmails.filter((email) => !notifiedSet.has(email));
@@ -92,8 +122,8 @@ export async function createForumTemplate(
 
       return {
         ...message,
-        'mencoes-notificadas': Array.from(
-          new Set([...alreadyNotified, ...newRecipients])
+        'mencoes-notificadas': JSON.stringify(
+          Array.from(new Set([...alreadyNotified, ...newRecipients]))
         ),
       };
     })
@@ -431,6 +461,27 @@ export async function buildForumFields(
     widthInList: null,
   });
 
+  const messageMentionSeenField = await fieldRepository.create({
+    name: 'Menções visualizadas',
+    slug: 'mencoes-visualizadas',
+    type: E_FIELD_TYPE.USER,
+    required: false,
+    multiple: true,
+    format: null,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: null,
+    widthInList: null,
+  });
+
   const messageReplyField = await fieldRepository.create({
     name: 'Resposta',
     slug: 'resposta',
@@ -485,6 +536,7 @@ export async function buildForumFields(
       messageMentionsField,
       messageMentionEmailsField,
       messageMentionNotifiedField,
+      messageMentionSeenField,
       messageReplyField,
       messageReactionsField,
     ],
@@ -497,6 +549,7 @@ export async function buildForumFields(
       messageMentionsField,
       messageMentionEmailsField,
       messageMentionNotifiedField,
+      messageMentionSeenField,
       messageReplyField,
       messageReactionsField,
     ]),

@@ -95,3 +95,25 @@ export const ForumMessageDeleteSchema: FastifySchema = {
     },
   },
 };
+
+export const ForumMessageMentionReadSchema: FastifySchema = {
+  tags: ['Rows'],
+  summary: 'Mark forum mention as read',
+  security: [{ cookieAuth: [] }],
+  params: {
+    type: 'object',
+    required: ['slug', '_id', 'messageId'],
+    properties: {
+      slug: { type: 'string' },
+      _id: { type: 'string' },
+      messageId: { type: 'string' },
+    },
+    additionalProperties: false,
+  },
+  response: {
+    200: {
+      type: 'object',
+      additionalProperties: true,
+    },
+  },
+};

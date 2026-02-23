@@ -13,6 +13,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 import {
   ForumMessageCreateSchema,
   ForumMessageDeleteSchema,
+  ForumMessageMentionReadSchema,
   ForumMessageUpdateSchema,
 } from './forum-message.schema';
 import ForumMessageUseCase from './forum-message.use-case';
@@ -124,6 +125,43 @@ export default class {
     const params = ForumMessageParamsValidator.parse(request.params);
 
     const result = await this.useCase.remove({
+      ...params,
+      user: request.user.sub,
+    });
+
+    if (result.isLeft()) {
+      const error = result.value;
+      return response.status(error.code).send({
+        message: error.message,
+        code: error.code,
+        cause: error.cause,
+      });
+    }
+
+    return response.status(200).send(result.value);
+  }
+
+  @PUT({
+    url: '/:slug/rows/:_id/forum/messages/:messageId/mention-read',
+    options: {
+      onRequest: [
+        AuthenticationMiddleware({
+          optional: false,
+        }),
+        TableAccessMiddleware({
+          requiredPermission: 'VIEW_ROW',
+        }),
+      ],
+      schema: ForumMessageMentionReadSchema,
+    },
+  })
+  async mentionRead(
+    request: FastifyRequest,
+    response: FastifyReply,
+  ): Promise<void> {
+    const params = ForumMessageParamsValidator.parse(request.params);
+
+    const result = await this.useCase.markMentionRead({
       ...params,
       user: request.user.sub,
     });

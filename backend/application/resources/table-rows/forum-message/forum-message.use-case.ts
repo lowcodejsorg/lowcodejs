@@ -20,6 +20,7 @@ import { EmailContractService } from '@application/services/email/email-contract
 import type {
   ForumMessageCreatePayload,
   ForumMessageDeletePayload,
+  ForumMessageMentionReadPayload,
   ForumMessageUpdatePayload,
 } from './forum-message.validator';
 
@@ -40,6 +41,7 @@ type ForumConfig = {
   messageMentionsSlug: string;
   messageMentionEmailsSlug: string | null;
   messageMentionNotifiedSlug: string | null;
+  messageMentionSeenSlug: string | null;
   messageReplySlug: string;
   messageReactionsSlug: string;
 };
@@ -131,26 +133,33 @@ export default class ForumMessageUseCase {
         [config.messageAttachmentsSlug]: attachments,
         [config.messageMentionsSlug]: mentions,
         ...(config.messageMentionEmailsSlug
-          ? { [config.messageMentionEmailsSlug]: mentionEmails }
+          ? {
+              [config.messageMentionEmailsSlug]:
+                this.serializeStringList(mentionEmails),
+            }
           : {}),
         ...(config.messageMentionNotifiedSlug
-          ? { [config.messageMentionNotifiedSlug]: mentionEmails }
+          ? {
+              [config.messageMentionNotifiedSlug]:
+                this.serializeStringList(mentionEmails),
+            }
+          : {}),
+        ...(config.messageMentionSeenSlug
+          ? { [config.messageMentionSeenSlug]: [] }
           : {}),
         [config.messageReplySlug]: replyTo,
         [config.messageReactionsSlug]: '[]',
       });
 
-      await row.set(config.messagesSlug, nextMessages).save();
-      await row.populate(populate);
-      const rowJson = row.toJSON({
-        flattenObjectIds: true,
-      }) as unknown as IRow;
-
-      return right({
-        ...rowJson,
-        _id: row._id?.toString() ?? '',
+      return this.persistMessagesAndReturnRow({
+        model: c,
+        rowId: payload._id,
+        messagesSlug: config.messagesSlug,
+        nextMessages,
+        populate,
       });
-    } catch {
+    } catch (error) {
+      console.error('[ForumMessageUseCase.create]', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
@@ -281,29 +290,30 @@ export default class ForumMessageUseCase {
         [config.messageAttachmentsSlug]: nextAttachments,
         [config.messageMentionsSlug]: nextMentions,
         ...(config.messageMentionEmailsSlug
-          ? { [config.messageMentionEmailsSlug]: mentionEmails }
+          ? {
+              [config.messageMentionEmailsSlug]:
+                this.serializeStringList(mentionEmails),
+            }
           : {}),
         ...(config.messageMentionNotifiedSlug
           ? {
-              [config.messageMentionNotifiedSlug]: Array.from(
-                new Set([...alreadyNotified, ...newRecipients]),
+              [config.messageMentionNotifiedSlug]: this.serializeStringList(
+                Array.from(new Set([...alreadyNotified, ...newRecipients])),
               ),
             }
           : {}),
         [config.messageReplySlug]: nextReplyTo,
       };
 
-      await row.set(config.messagesSlug, nextMessages).save();
-      await row.populate(populate);
-      const rowJson = row.toJSON({
-        flattenObjectIds: true,
-      }) as unknown as IRow;
-
-      return right({
-        ...rowJson,
-        _id: row._id?.toString() ?? '',
+      return this.persistMessagesAndReturnRow({
+        model: c,
+        rowId: payload._id,
+        messagesSlug: config.messagesSlug,
+        nextMessages,
+        populate,
       });
-    } catch {
+    } catch (error) {
+      console.error('[ForumMessageUseCase.update]', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
@@ -389,7 +399,125 @@ export default class ForumMessageUseCase {
         );
 
       nextMessages.splice(messageIndex, 1);
-      await row.set(config.messagesSlug, nextMessages).save();
+      return this.persistMessagesAndReturnRow({
+        model: c,
+        rowId: payload._id,
+        messagesSlug: config.messagesSlug,
+        nextMessages,
+        populate,
+      });
+    } catch (error) {
+      console.error('[ForumMessageUseCase.remove]', error);
+      return left(
+        HTTPException.InternalServerError(
+          'Internal server error',
+          'FORUM_MESSAGE_DELETE_ERROR',
+        ),
+      );
+    }
+  }
+
+  async markMentionRead(
+    payload: ForumMessageMentionReadPayload,
+  ): Promise<Response> {
+    try {
+      const table = await this.tableRepository.findBy({
+        slug: payload.slug,
+        exact: true,
+      });
+
+      if (!table)
+        return left(
+          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+        );
+      if (table.style !== E_TABLE_STYLE.FORUM)
+        return left(
+          HTTPException.BadRequest(
+            'This endpoint is available only for forum tables',
+            'FORUM_TABLE_REQUIRED',
+          ),
+        );
+
+      const config = this.resolveForumConfig(table);
+      if (!config)
+        return left(
+          HTTPException.BadRequest(
+            'Forum messages field not found',
+            'FORUM_MESSAGES_FIELD_NOT_FOUND',
+          ),
+        );
+      if (!config.messageMentionSeenSlug)
+        return left(
+          HTTPException.BadRequest(
+            'Forum mention read field not found in template',
+            'FORUM_MENTION_READ_FIELD_NOT_FOUND',
+          ),
+        );
+
+      const c = await buildTable(table);
+      const populate = await buildPopulate(
+        table.fields as IField[],
+        table.groups,
+      );
+      const row = await c.findOne({ _id: payload._id });
+
+      if (!row)
+        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+
+      if (!this.canAccessChannel(row, config, payload.user))
+        return left(
+          HTTPException.Forbidden(
+            'User is not allowed to access this channel',
+            'FORUM_CHANNEL_ACCESS_DENIED',
+          ),
+        );
+
+      const nextMessages = this.getMessages(row, config.messagesSlug);
+      const messageIndex = nextMessages.findIndex(
+        (message) =>
+          this.normalizeId(message?.[config.messageIdSlug]) ===
+          payload.messageId,
+      );
+
+      if (messageIndex < 0)
+        return left(
+          HTTPException.NotFound(
+            'Message not found',
+            'FORUM_MESSAGE_NOT_FOUND',
+          ),
+        );
+
+      const currentMessage = nextMessages[messageIndex];
+      const mentionIds = this.normalizeIdList(
+        currentMessage?.[config.messageMentionsSlug],
+      );
+
+      if (!mentionIds.includes(payload.user)) {
+        return left(
+          HTTPException.BadRequest(
+            'User was not mentioned in this message',
+            'FORUM_MENTION_NOT_FOUND',
+          ),
+        );
+      }
+
+      const seenIds = this.normalizeIdList(
+        currentMessage?.[config.messageMentionSeenSlug],
+      );
+
+      if (!seenIds.includes(payload.user)) {
+        nextMessages[messageIndex] = {
+          ...currentMessage,
+          [config.messageMentionSeenSlug]: [...seenIds, payload.user],
+        };
+        return this.persistMessagesAndReturnRow({
+          model: c,
+          rowId: payload._id,
+          messagesSlug: config.messagesSlug,
+          nextMessages,
+          populate,
+        });
+      }
       await row.populate(populate);
       const rowJson = row.toJSON({
         flattenObjectIds: true,
@@ -399,11 +527,12 @@ export default class ForumMessageUseCase {
         ...rowJson,
         _id: row._id?.toString() ?? '',
       });
-    } catch {
+    } catch (error) {
+      console.error('[ForumMessageUseCase.markMentionRead]', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
-          'FORUM_MESSAGE_DELETE_ERROR',
+          'FORUM_MENTION_READ_ERROR',
         ),
       );
     }
@@ -436,6 +565,7 @@ export default class ForumMessageUseCase {
       { slug: 'mencoes', type: E_FIELD_TYPE.USER },
       { slug: 'mencoes-emails', type: E_FIELD_TYPE.TEXT_LONG },
       { slug: 'mencoes-notificadas', type: E_FIELD_TYPE.TEXT_LONG },
+      { slug: 'mencoes-visualizadas', type: E_FIELD_TYPE.USER },
       { slug: 'resposta', type: E_FIELD_TYPE.TEXT_SHORT },
       { slug: 'reacoes', type: E_FIELD_TYPE.TEXT_LONG },
     ];
@@ -446,11 +576,15 @@ export default class ForumMessageUseCase {
       : null;
 
     const groupFieldsRaw = Array.isArray(group?.fields) ? group?.fields : [];
-    const groupFields =
+    const actualGroupFields =
       groupFieldsRaw.length > 0 &&
       typeof groupFieldsRaw[0] === 'object' &&
       groupFieldsRaw[0] !== null &&
       'slug' in groupFieldsRaw[0]
+        ? (groupFieldsRaw as IField[])
+        : [];
+    const groupFields =
+      actualGroupFields.length > 0
         ? (groupFieldsRaw as IField[])
         : fallbackGroupFields;
 
@@ -464,8 +598,9 @@ export default class ForumMessageUseCase {
         null
       );
     };
-    const findGroupFieldBySlug = (slug: string): string | null =>
-      groupFields.find((field) => field.slug === slug)?.slug ?? null;
+    // Optional/internal fields must exist in the actual group schema.
+    const findActualGroupFieldBySlug = (slug: string): string | null =>
+      actualGroupFields.find((field) => field.slug === slug)?.slug ?? null;
     const getFieldSlug = (
       slug: string,
       type: (typeof E_FIELD_TYPE)[keyof typeof E_FIELD_TYPE],
@@ -481,8 +616,13 @@ export default class ForumMessageUseCase {
       messageDateSlug: getFieldSlug('data', E_FIELD_TYPE.DATE),
       messageAttachmentsSlug: getFieldSlug('anexos', E_FIELD_TYPE.FILE),
       messageMentionsSlug: getFieldSlug('mencoes', E_FIELD_TYPE.USER),
-      messageMentionEmailsSlug: findGroupFieldBySlug('mencoes-emails'),
-      messageMentionNotifiedSlug: findGroupFieldBySlug('mencoes-notificadas'),
+      messageMentionEmailsSlug: findActualGroupFieldBySlug('mencoes-emails'),
+      messageMentionNotifiedSlug: findActualGroupFieldBySlug(
+        'mencoes-notificadas',
+      ),
+      messageMentionSeenSlug: findActualGroupFieldBySlug(
+        'mencoes-visualizadas',
+      ),
       messageReplySlug: getFieldSlug('resposta', E_FIELD_TYPE.TEXT_SHORT),
       messageReactionsSlug: getFieldSlug('reacoes', E_FIELD_TYPE.TEXT_LONG),
     };
@@ -559,6 +699,26 @@ export default class ForumMessageUseCase {
   }
 
   private normalizeEmailList(value: unknown): string[] {
+    if (typeof value === 'string') {
+      const raw = value.trim();
+      if (!raw) return [];
+      if (raw.startsWith('[')) {
+        try {
+          const parsed = JSON.parse(raw);
+          if (Array.isArray(parsed)) {
+            return parsed
+              .map((item) =>
+                String(item ?? '')
+                  .trim()
+                  .toLowerCase(),
+              )
+              .filter(Boolean);
+          }
+        } catch {
+          // Fallback to treating it as a single value below.
+        }
+      }
+    }
     const values = Array.isArray(value) ? value : value ? [value] : [];
     return values
       .map((item) =>
@@ -611,5 +771,44 @@ export default class ForumMessageUseCase {
       .trim();
 
     return plainText.length > 0 || attachments.length > 0;
+  }
+
+  private serializeStringList(values: string[]): string {
+    return JSON.stringify(
+      values
+        .map((value) =>
+          String(value ?? '')
+            .trim()
+            .toLowerCase(),
+        )
+        .filter(Boolean),
+    );
+  }
+
+  private async persistMessagesAndReturnRow(params: {
+    model: Awaited<ReturnType<typeof buildTable>>;
+    rowId: string;
+    messagesSlug: string;
+    nextMessages: Array<Record<string, unknown>>;
+    populate: Awaited<ReturnType<typeof buildPopulate>>;
+  }): Promise<Response> {
+    const updatedRow = await params.model.findOneAndUpdate(
+      { _id: params.rowId },
+      { $set: { [params.messagesSlug]: params.nextMessages } },
+      { new: true },
+    );
+
+    if (!updatedRow)
+      return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+
+    await updatedRow.populate(params.populate);
+    const rowJson = updatedRow.toJSON({
+      flattenObjectIds: true,
+    }) as unknown as IRow;
+
+    return right({
+      ...rowJson,
+      _id: updatedRow._id?.toString() ?? '',
+    });
   }
 }

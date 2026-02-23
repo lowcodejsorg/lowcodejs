@@ -91,6 +91,7 @@ export function ForumComposer({
       <EditorExample
         value={composerText}
         onChange={onTextChange}
+        debounceMs={0}
         variant="compact"
         toolbarVariant="minimal"
         showBubble={false}
