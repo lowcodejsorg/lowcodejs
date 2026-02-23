@@ -55,6 +55,7 @@ describe('E2E Table Row Update Controller', () => {
         showInDetail: true,
         format: null,
         group: null,
+        order: null,
         showInList: true,
         multiple: false,
         required: false,

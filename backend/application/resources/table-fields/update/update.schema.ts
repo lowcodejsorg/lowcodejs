@@ -179,6 +179,13 @@ export const TableFieldUpdateSchema: FastifySchema = {
           },
         },
       },
+      order: {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        nullable: true,
+        default: null,
+        description: 'Field sort order',
+      },
       trashed: {
         type: 'boolean',
         description: 'Set field as trashed',
@@ -322,6 +329,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
             _id: { type: 'string' },
             slug: { type: 'string' },
           },
+        },
+        order: {
+          type: 'string',
+          enum: ['asc', 'desc'],
+          nullable: true,
+          description: 'Field sort order',
         },
         trashed: { type: 'boolean', description: 'Is field in trash' },
         trashedAt: {

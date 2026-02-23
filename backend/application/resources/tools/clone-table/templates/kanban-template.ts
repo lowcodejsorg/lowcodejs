@@ -150,6 +150,7 @@ export async function buildKanbanFields(
     dropdown: IField['dropdown'];
     category: IField['category'];
     group: IField['group'];
+    order: IField['order'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
   }): Promise<IField> => {
@@ -177,6 +178,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -198,6 +200,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -219,6 +222,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -240,6 +244,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -261,6 +266,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -282,6 +288,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -303,6 +310,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -324,6 +332,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -349,6 +358,7 @@ export async function buildKanbanFields(
     ],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -374,6 +384,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -395,6 +406,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -419,6 +431,7 @@ export async function buildKanbanFields(
     ],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -440,6 +453,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -461,6 +475,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -482,6 +497,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -528,6 +544,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: { slug: attachmentsGroupSlug },
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -549,6 +566,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: { slug: tasksGroupSlug },
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
@@ -570,6 +588,7 @@ export async function buildKanbanFields(
     dropdown: [],
     category: [],
     group: { slug: commentsGroupSlug },
+    order: null,
     widthInForm: null,
     widthInList: null,
   });

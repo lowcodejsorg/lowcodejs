@@ -35,6 +35,7 @@ export const FieldUpdateSchema = z.object({
   trashed: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
+  order: z.string().default('none'),
 });
 
 export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
@@ -62,6 +63,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   trashed: false,
   widthInForm: 50,
   widthInList: 10,
+  order: 'none',
 };
 
 export const UpdateFieldFormFields = withForm({
@@ -436,6 +438,17 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Ordenação padrão */}
+        <form.AppField name="order">
+          {(field) => (
+            <field.TableFieldOrderSelect
+              label="Ordenação padrão"
+              description="Definir este campo como ordenação padrão da listagem"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
 
         {/* Campo Lixeira */}
         <form.AppField name="trashed">

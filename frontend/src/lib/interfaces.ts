@@ -176,6 +176,7 @@ export type IField = Merge<
     dropdown: Array<IDropdown>;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
+    order: 'asc' | 'desc' | null;
   }
 >;
 

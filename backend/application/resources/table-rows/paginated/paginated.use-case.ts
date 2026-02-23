@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField, IMeta, Paginated } from '@application/core/entity.core';
+import type { IMeta, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   buildOrder,
@@ -44,15 +44,15 @@ export default class TableRowPaginatedUseCase {
 
       const query = await buildQuery(
         payload,
-        table.fields as IField[],
+        table.fields,
         table.groups,
         table.slug,
       );
 
-      const order = buildOrder(payload, table.fields as IField[]);
+      const order = buildOrder(payload, table.fields);
 
       const populate = await buildPopulate(
-        table.fields as IField[],
+        table.fields,
         table.groups,
         table.slug,
       );

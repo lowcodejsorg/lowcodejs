@@ -185,6 +185,11 @@ export const Schema = new mongoose.Schema(
       type: Group,
       default: null,
     },
+    order: {
+      type: String,
+      enum: ['asc', 'desc'],
+      default: null,
+    },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },

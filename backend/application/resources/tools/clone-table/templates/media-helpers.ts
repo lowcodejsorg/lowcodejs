@@ -31,6 +31,7 @@ export async function buildSimpleMediaFields(
     dropdown: IField['dropdown'];
     category: IField['category'];
     group: IField['group'];
+    order: IField['order'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
   }): Promise<IField> => {
@@ -58,6 +59,7 @@ export async function buildSimpleMediaFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: 50,
     widthInList: 50,
   });
@@ -79,6 +81,7 @@ export async function buildSimpleMediaFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: 100,
     widthInList: 50,
   });
@@ -100,6 +103,7 @@ export async function buildSimpleMediaFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: 50,
     widthInList: 50,
   });

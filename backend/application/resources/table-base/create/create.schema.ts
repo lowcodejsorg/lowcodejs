@@ -168,6 +168,12 @@ export const TableCreateSchema: FastifySchema = {
                 nullable: true,
                 description: 'Field group configuration',
               },
+              order: {
+                type: 'string',
+                enum: ['asc', 'desc'],
+                nullable: true,
+                description: 'Field sort order',
+              },
               trashed: {
                 type: 'boolean',
                 description: 'Is field in trash',
@@ -302,6 +308,7 @@ export const TableCreateSchema: FastifySchema = {
                     dropdown: { type: 'array', nullable: true },
                     category: { type: 'array', nullable: true },
                     group: { type: 'object', nullable: true },
+                    order: { type: 'string', enum: ['asc', 'desc'], nullable: true },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',

@@ -111,6 +111,12 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
           nullable: true,
           description: 'Category options',
         },
+        order: {
+          type: 'string',
+          enum: ['asc', 'desc'],
+          nullable: true,
+          description: 'Field sort order',
+        },
         trashed: {
           type: 'boolean',
           enum: [false],

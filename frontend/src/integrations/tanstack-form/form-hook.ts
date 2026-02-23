@@ -29,6 +29,7 @@ import {
   TableFieldCategoryTree,
   TableFieldDropdownOptions,
   TableFieldFormatSelect,
+  TableFieldOrderSelect,
   TableFieldRelationshipFieldSelect,
   TableFieldRelationshipOrderSelect,
   TableFieldRelationshipTableSelect,
@@ -80,6 +81,7 @@ export const { useAppForm, withForm } = createFormHook({
     TableStyleSelectField,
     // Table field configuration
     TableFieldTypeSelect,
+    TableFieldOrderSelect,
     TableFieldFormatSelect,
     TableFieldDropdownOptions,
     TableFieldRelationshipTableSelect,

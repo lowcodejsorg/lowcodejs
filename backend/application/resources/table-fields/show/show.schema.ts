@@ -153,6 +153,12 @@ export const TableFieldShowSchema: FastifySchema = {
             },
           },
         },
+        order: {
+          type: 'string',
+          enum: ['asc', 'desc'],
+          nullable: true,
+          description: 'Field sort order',
+        },
         trashed: { type: 'boolean', description: 'Is field in trash' },
         trashedAt: {
           type: 'string',

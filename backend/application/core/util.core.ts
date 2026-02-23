@@ -905,23 +905,20 @@ export function buildOrder(
 ): {
   [key: string]: SortOrder;
 } {
-  if (Object.keys(query).length === 0) return {};
+  const order: { [key: string]: SortOrder } = {};
 
-  const order = fields?.reduce(
-    (acc, col) => {
-      if (!col?.type || !col.slug || !('order-'.concat(col.slug) in query))
-        return acc;
+  for (const col of fields) {
+    if (!col?.type || !col.slug) continue;
 
-      const slug = String(col.slug?.toString());
+    const queryKey = 'order-'.concat(col.slug);
 
-      acc[slug] = query['order-'.concat(slug)]?.toString() as SortOrder;
-
-      return acc;
-    },
-    {} as {
-      [key: string]: SortOrder;
-    },
-  );
+    if (queryKey in query) {
+      const sortValue = query[queryKey]?.toString();
+      order[col.slug] = sortValue === 'asc' ? 1 : -1;
+    } else if (col.order != null && !col.trashed) {
+      order[col.slug] = col.order === 'asc' ? 1 : -1;
+    }
+  }
 
   return order;
 }

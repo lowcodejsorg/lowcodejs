@@ -27,6 +27,7 @@ export type FieldCreatePayload = Pick<
   | 'dropdown'
   | 'category'
   | 'group'
+  | 'order'
 >;
 
 export type FieldUpdatePayload = Merge<

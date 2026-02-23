@@ -83,4 +83,5 @@ export const TableFieldBaseSchema = z.object({
   dropdown: FieldDropdownSchema,
   category: FieldCategorySchema,
   group: FieldGroupSchema,
+  order: z.enum(['asc', 'desc']).nullable().default(null),
 });
