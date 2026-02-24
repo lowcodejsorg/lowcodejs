@@ -18,12 +18,12 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
-import { useAuthenticationStore } from '@/stores/authentication';
+import { useAuthStore } from '@/stores/authentication';
 
 export function Profile(): React.JSX.Element {
   const user = useProfileRead();
 
-  const authentication = useAuthenticationStore();
+  const authentication = useAuthStore();
 
   const router = useRouter();
 
@@ -45,7 +45,7 @@ export function Profile(): React.JSX.Element {
         closeButton: true,
       });
 
-      authentication.logout();
+      authentication.signOut();
 
       router.navigate({
         to: '/',

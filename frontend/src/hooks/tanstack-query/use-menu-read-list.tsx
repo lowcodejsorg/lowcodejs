@@ -5,7 +5,7 @@ import { queryKeys } from './_query-keys';
 
 import { API } from '@/lib/api';
 import type { IMenu } from '@/lib/interfaces';
-import { useAuthenticationStore } from '@/stores/authentication';
+import { useAuthStore } from '@/stores/authentication';
 
 interface UseMenuReadListOptions {
   enabled?: boolean;
@@ -14,8 +14,8 @@ interface UseMenuReadListOptions {
 export function useMenuReadList(
   options?: UseMenuReadListOptions,
 ): UseQueryResult<Array<IMenu>, Error> {
-  const authentication = useAuthenticationStore();
-  const isAuthenticated = Boolean(authentication.authenticated?.sub);
+  const authentication = useAuthStore();
+  const isAuthenticated = Boolean(authentication.user?._id);
 
   return useQuery({
     queryKey: queryKeys.menus.all,

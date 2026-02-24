@@ -4,7 +4,7 @@ import { useProfileRead } from './tanstack-query/use-profile-read';
 
 import { E_ROLE, E_TABLE_VISIBILITY } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
-import { useAuthenticationStore } from '@/stores/authentication';
+import { useAuthStore } from '@/stores/authentication';
 
 export type TableAction =
   | 'VIEW_TABLE'
@@ -53,10 +53,10 @@ interface UseTablePermissionResult {
 export function useTablePermission(
   table: ITable | undefined,
 ): UseTablePermissionResult {
-  const auth = useAuthenticationStore();
+  const auth = useAuthStore();
   const profile = useProfileRead();
 
-  const userId = auth.authenticated?.sub;
+  const userId = auth.user?._id;
 
   const isOwner = useMemo(() => {
     if (!table || !userId) return false;

@@ -1,15 +1,30 @@
-import type { QueryClient } from '@tanstack/react-query';
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import React from 'react';
 
-import { QueryClient as BaseQueryClient } from '@/lib/query-client';
+function makeQueryClient(): QueryClient {
+  return new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+        refetchOnWindowFocus: true,
+        staleTime: 60 * 60 * 1000,
+      },
+    },
+  });
+}
+
+let browserQueryClient: QueryClient | undefined;
 
 export function getContext(): {
   queryClient: QueryClient;
 } {
-  return {
-    queryClient: BaseQueryClient,
-  };
+  if (typeof window === 'undefined') {
+    return { queryClient: makeQueryClient() };
+  }
+  if (!browserQueryClient) {
+    browserQueryClient = makeQueryClient();
+  }
+  return { queryClient: browserQueryClient };
 }
 
 export function Provider({

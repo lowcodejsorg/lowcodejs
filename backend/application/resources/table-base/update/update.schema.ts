@@ -345,7 +345,11 @@ export const TableUpdateSchema: FastifySchema = {
                     dropdown: { type: 'array', nullable: true },
                     category: { type: 'array', nullable: true },
                     group: { type: 'object', nullable: true },
-                    order: { type: 'string', enum: ['asc', 'desc'], nullable: true },
+                    order: {
+                      type: 'string',
+                      enum: ['asc', 'desc'],
+                      nullable: true,
+                    },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',

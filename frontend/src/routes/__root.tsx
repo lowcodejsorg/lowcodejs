@@ -1,72 +1,72 @@
-// import { TanStackDevtools } from '@tanstack/react-devtools';
-import type { QueryClient } from '@tanstack/react-query';
 import {
   HeadContent,
+  Outlet,
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
-// import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
-import React from 'react';
 import { Toaster } from 'sonner';
 
-// import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
-import appCss from '../styles.css?url';
+import { RouteError } from '@/components/common/route-error';
+import { RouteNotFound } from '@/components/common/route-not-found';
+import RoutePending from '@/components/common/route-pending';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import type { RouterContext } from '@/router';
+import { useAuthStore } from '@/stores/authentication';
+import appCss from '@/styles.css?url';
 
-interface MyRouterContext {
-  queryClient: QueryClient;
-}
+export const Route = createRootRouteWithContext<RouterContext>()({
+  beforeLoad: async () => {
+    const state = useAuthStore.getState();
 
-export const Route = createRootRouteWithContext<MyRouterContext>()({
+    if (!state.isAuthenticated && state.isLoading) {
+      await state.fetchUser();
+    }
+  },
+  component: RootDocument,
+  pendingComponent: RoutePending,
+  errorComponent: RouteError,
+  notFoundComponent: RouteNotFound,
   head: () => ({
     meta: [
+      { charSet: 'utf-8' },
+      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+      { title: 'LowCodeJs' },
       {
-        charSet: 'utf-8',
+        name: 'description',
+        content: 'Plataforma Oficial',
       },
       {
-        name: 'viewport',
-        content: 'width=device-width, initial-scale=1',
+        property: 'og:title',
+        content: 'LowCodeJs',
       },
       {
-        title: 'LowCodeJS Platform',
+        property: 'og:description',
+        content: 'Plataforma Oficial',
       },
+      { property: 'og:type', content: 'website' },
     ],
     links: [
+      { rel: 'stylesheet', href: appCss },
       {
-        rel: 'stylesheet',
-        href: appCss,
+        rel: 'icon',
+        type: 'image/svg+xml',
+        href: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>",
       },
     ],
   }),
-
-  shellComponent: RootDocument,
 });
 
-function RootDocument({
-  children,
-}: {
-  children: React.ReactNode;
-}): React.JSX.Element {
+function RootDocument(): React.JSX.Element {
   return (
     <html lang="pt-br">
       <head>
         <HeadContent />
       </head>
       <body className="antialiased">
-        {/* <Header /> */}
-        {children}
-        <Toaster />
-        {/* <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-          ]}
-        /> */}
+        <TooltipProvider>
+          <Outlet />
+          <Toaster />
+        </TooltipProvider>
         <Scripts />
       </body>
     </html>

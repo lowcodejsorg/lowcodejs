@@ -2,22 +2,26 @@ import { Outlet, createFileRoute } from '@tanstack/react-router';
 import React from 'react';
 
 import { Header } from '@/components/common/header';
+import { RouteError } from '@/components/common/route-error';
+import RoutePending from '@/components/common/route-pending';
 import { Sidebar } from '@/components/common/sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import { E_ROLE } from '@/lib/constant';
-import { useAuthenticationStore } from '@/stores/authentication';
+import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private')({
-  component: RouteComponent,
+  component: PrivateLayout,
+  pendingComponent: RoutePending,
+  errorComponent: RouteError,
+  ssr: false,
 });
 
-function RouteComponent(): React.JSX.Element {
-  const authentication = useAuthenticationStore().authenticated;
-  const isAuthenticated = Boolean(authentication?.role);
+function PrivateLayout(): React.JSX.Element {
+  const user = useAuthStore((s) => s.user);
+  const role = user?.group?.slug?.toUpperCase() ?? E_ROLE.REGISTERED;
 
-  // Hook chamado sempre, independente de autenticação (regras de hooks)
-  const { menu } = useMenuDynamic(authentication?.role ?? E_ROLE.REGISTERED);
+  const { menu } = useMenuDynamic(role);
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',
@@ -43,8 +47,7 @@ function RouteComponent(): React.JSX.Element {
 
   return (
     <SidebarProvider>
-      {/* Sidebar só aparece se autenticado */}
-      {isAuthenticated && <Sidebar menu={menu} />}
+      <Sidebar menu={menu} />
       <SidebarInset className="relative flex flex-col h-screen w-screen overflow-hidden flex-1 px-4 sm:px-2">
         <Header routesWithoutSearchInput={routesWithoutSearchInput} />
         <Outlet />

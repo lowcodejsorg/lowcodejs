@@ -23,5 +23,5 @@ USER nitro
 EXPOSE 3000
 ENV PORT=3000
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+# ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["node", ".output/server/index.mjs"]

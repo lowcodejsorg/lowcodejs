@@ -6,7 +6,7 @@ import { LoginButton } from './login-button';
 
 import { Profile } from '@/components/common/profile';
 import { SidebarTrigger } from '@/components/ui/sidebar';
-import { useAuthenticationStore } from '@/stores/authentication';
+import { useAuthStore } from '@/stores/authentication';
 
 interface HeaderProps {
   routesWithoutSearchInput: Array<string | RegExp>;
@@ -16,8 +16,8 @@ export function Header({
   routesWithoutSearchInput,
 }: HeaderProps): React.JSX.Element {
   const location = useLocation();
-  const authentication = useAuthenticationStore().authenticated;
-  const isAuthenticated = Boolean(authentication?.role);
+  const user = useAuthStore((s) => s.user);
+  const isAuthenticated = Boolean(user);
 
   const showSearchInput = !routesWithoutSearchInput.some((route) => {
     if (route instanceof RegExp) {

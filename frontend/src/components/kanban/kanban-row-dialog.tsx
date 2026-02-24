@@ -50,7 +50,7 @@ import {
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
-import { useAuthenticationStore } from '@/stores/authentication';
+import { useAuthStore } from '@/stores/authentication';
 
 export function KanbanRowDialog({
   row,
@@ -71,9 +71,9 @@ export function KanbanRowDialog({
   table: ITable;
   fields: FieldMap;
 }): React.JSX.Element | null {
-  const auth = useAuthenticationStore((s) => s.authenticated);
+  const auth = useAuthStore((s) => s.user);
   const { data: profile } = useProfileRead();
-  const currentUserId = auth?.sub ?? '';
+  const currentUserId = auth?._id ?? '';
   const [editTarget, setEditTarget] = React.useState<
     'members' | 'start' | 'due' | null
   >(null);

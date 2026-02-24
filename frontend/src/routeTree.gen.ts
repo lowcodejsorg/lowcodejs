@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
+import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout'
 import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index'
 import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index'
 import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index'
@@ -43,158 +44,230 @@ const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
   id: '/_private',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticationLayoutRoute = AuthenticationLayoutRouteImport.update({
+  id: '/_authentication',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivateUsersIndexRoute = PrivateUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/users/index.lazy').then((d) => d.Route),
+)
 const PrivateToolsIndexRoute = PrivateToolsIndexRouteImport.update({
   id: '/tools/',
   path: '/tools/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/tools/index.lazy').then((d) => d.Route),
+)
 const PrivateTablesIndexRoute = PrivateTablesIndexRouteImport.update({
   id: '/tables/',
   path: '/tables/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/tables/index.lazy').then((d) => d.Route),
+)
 const PrivateSettingsIndexRoute = PrivateSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/settings/index.lazy').then((d) => d.Route),
+)
 const PrivateProfileIndexRoute = PrivateProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/profile/index.lazy').then((d) => d.Route),
+)
 const PrivateMenusIndexRoute = PrivateMenusIndexRouteImport.update({
   id: '/menus/',
   path: '/menus/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/menus/index.lazy').then((d) => d.Route),
+)
 const PrivateGroupsIndexRoute = PrivateGroupsIndexRouteImport.update({
   id: '/groups/',
   path: '/groups/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/groups/index.lazy').then((d) => d.Route),
+)
 const PrivateDashboardIndexRoute = PrivateDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/dashboard/index.lazy').then((d) => d.Route),
+)
 const AuthenticationSignUpIndexRoute =
   AuthenticationSignUpIndexRouteImport.update({
-    id: '/_authentication/sign-up/',
+    id: '/sign-up/',
     path: '/sign-up/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+    getParentRoute: () => AuthenticationLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authentication/sign-up/index.lazy').then((d) => d.Route),
+  )
 const AuthenticationSignInIndexRoute =
   AuthenticationSignInIndexRouteImport.update({
-    id: '/_authentication/_sign-in/',
+    id: '/_sign-in/',
     path: '/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+    getParentRoute: () => AuthenticationLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authentication/_sign-in/index.lazy').then((d) => d.Route),
+  )
 const PrivatePagesSlugRoute = PrivatePagesSlugRouteImport.update({
   id: '/pages/$slug',
   path: '/pages/$slug',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/pages/$slug.lazy').then((d) => d.Route),
+)
 const PrivateUsersCreateIndexRoute = PrivateUsersCreateIndexRouteImport.update({
   id: '/users/create/',
   path: '/users/create/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/users/create/index.lazy').then((d) => d.Route),
+)
 const PrivateUsersUserIdIndexRoute = PrivateUsersUserIdIndexRouteImport.update({
   id: '/users/$userId/',
   path: '/users/$userId/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/users/$userId/index.lazy').then((d) => d.Route),
+)
 const PrivateTablesNewIndexRoute = PrivateTablesNewIndexRouteImport.update({
   id: '/tables/new/',
   path: '/tables/new/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/tables/new/index.lazy').then((d) => d.Route),
+)
 const PrivateTablesCreateIndexRoute =
   PrivateTablesCreateIndexRouteImport.update({
     id: '/tables/create/',
     path: '/tables/create/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/create/index.lazy').then((d) => d.Route),
+  )
 const PrivateTablesCloneIndexRoute = PrivateTablesCloneIndexRouteImport.update({
   id: '/tables/clone/',
   path: '/tables/clone/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/tables/clone/index.lazy').then((d) => d.Route),
+)
 const PrivateTablesSlugIndexRoute = PrivateTablesSlugIndexRouteImport.update({
   id: '/tables/$slug/',
   path: '/tables/$slug/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/tables/$slug/index.lazy').then((d) => d.Route),
+)
 const PrivateMenusCreateIndexRoute = PrivateMenusCreateIndexRouteImport.update({
   id: '/menus/create/',
   path: '/menus/create/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/menus/create/index.lazy').then((d) => d.Route),
+)
 const PrivateMenusMenuIdIndexRoute = PrivateMenusMenuIdIndexRouteImport.update({
   id: '/menus/$menuId/',
   path: '/menus/$menuId/',
   getParentRoute: () => PrivateLayoutRoute,
-} as any)
+} as any).lazy(() =>
+  import('./routes/_private/menus/$menuId/index.lazy').then((d) => d.Route),
+)
 const PrivateGroupsCreateIndexRoute =
   PrivateGroupsCreateIndexRouteImport.update({
     id: '/groups/create/',
     path: '/groups/create/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/groups/create/index.lazy').then((d) => d.Route),
+  )
 const PrivateGroupsGroupIdIndexRoute =
   PrivateGroupsGroupIdIndexRouteImport.update({
     id: '/groups/$groupId/',
     path: '/groups/$groupId/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/groups/$groupId/index.lazy').then((d) => d.Route),
+  )
 const PrivateTablesSlugMethodsRoute =
   PrivateTablesSlugMethodsRouteImport.update({
     id: '/tables/$slug/methods',
     path: '/tables/$slug/methods',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/methods.lazy').then((d) => d.Route),
+  )
 const PrivateTablesSlugDetailIndexRoute =
   PrivateTablesSlugDetailIndexRouteImport.update({
     id: '/tables/$slug/detail/',
     path: '/tables/$slug/detail/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/detail/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugFieldManagementRoute =
   PrivateTablesSlugFieldManagementRouteImport.update({
     id: '/tables/$slug/field/management',
     path: '/tables/$slug/field/management',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/field/management.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugRowCreateIndexRoute =
   PrivateTablesSlugRowCreateIndexRouteImport.update({
     id: '/tables/$slug/row/create/',
     path: '/tables/$slug/row/create/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/row/create/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugRowRowIdIndexRoute =
   PrivateTablesSlugRowRowIdIndexRouteImport.update({
     id: '/tables/$slug/row/$rowId/',
     path: '/tables/$slug/row/$rowId/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/row/$rowId/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugFieldCreateIndexRoute =
   PrivateTablesSlugFieldCreateIndexRouteImport.update({
     id: '/tables/$slug/field/create/',
     path: '/tables/$slug/field/create/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/field/create/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugFieldFieldIdIndexRoute =
   PrivateTablesSlugFieldFieldIdIndexRouteImport.update({
     id: '/tables/$slug/field/$fieldId/',
     path: '/tables/$slug/field/$fieldId/',
     getParentRoute: () => PrivateLayoutRoute,
-  } as any)
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/field/$fieldId/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticationSignInIndexRoute
@@ -258,6 +331,7 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/_authentication': typeof AuthenticationLayoutRouteWithChildren
   '/_private': typeof PrivateLayoutRouteWithChildren
   '/_private/pages/$slug': typeof PrivatePagesSlugRoute
   '/_authentication/_sign-in/': typeof AuthenticationSignInIndexRoute
@@ -351,6 +425,7 @@ export interface FileRouteTypes {
     | '/tables/$slug/row/create'
   id:
     | '__root__'
+    | '/_authentication'
     | '/_private'
     | '/_private/pages/$slug'
     | '/_authentication/_sign-in/'
@@ -383,9 +458,8 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  AuthenticationLayoutRoute: typeof AuthenticationLayoutRouteWithChildren
   PrivateLayoutRoute: typeof PrivateLayoutRouteWithChildren
-  AuthenticationSignInIndexRoute: typeof AuthenticationSignInIndexRoute
-  AuthenticationSignUpIndexRoute: typeof AuthenticationSignUpIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -395,6 +469,13 @@ declare module '@tanstack/react-router' {
       path: ''
       fullPath: '/'
       preLoaderRoute: typeof PrivateLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authentication': {
+      id: '/_authentication'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticationLayoutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_private/users/': {
@@ -458,14 +539,14 @@ declare module '@tanstack/react-router' {
       path: '/sign-up'
       fullPath: '/sign-up/'
       preLoaderRoute: typeof AuthenticationSignUpIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
     }
     '/_authentication/_sign-in/': {
       id: '/_authentication/_sign-in/'
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticationSignInIndexRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
     }
     '/_private/pages/$slug': {
       id: '/_private/pages/$slug'
@@ -596,6 +677,19 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticationLayoutRouteChildren {
+  AuthenticationSignInIndexRoute: typeof AuthenticationSignInIndexRoute
+  AuthenticationSignUpIndexRoute: typeof AuthenticationSignUpIndexRoute
+}
+
+const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
+  AuthenticationSignInIndexRoute: AuthenticationSignInIndexRoute,
+  AuthenticationSignUpIndexRoute: AuthenticationSignUpIndexRoute,
+}
+
+const AuthenticationLayoutRouteWithChildren =
+  AuthenticationLayoutRoute._addFileChildren(AuthenticationLayoutRouteChildren)
+
 interface PrivateLayoutRouteChildren {
   PrivatePagesSlugRoute: typeof PrivatePagesSlugRoute
   PrivateDashboardIndexRoute: typeof PrivateDashboardIndexRoute
@@ -661,9 +755,8 @@ const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  AuthenticationLayoutRoute: AuthenticationLayoutRouteWithChildren,
   PrivateLayoutRoute: PrivateLayoutRouteWithChildren,
-  AuthenticationSignInIndexRoute: AuthenticationSignInIndexRoute,
-  AuthenticationSignUpIndexRoute: AuthenticationSignUpIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

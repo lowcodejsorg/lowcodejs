@@ -1,38 +1,43 @@
 import axios from 'axios';
 
-import { Env } from '@/env';
+import { getApiBaseUrl } from '@/lib/get-api-config';
+import { useAuthStore } from '@/stores/authentication';
 
-const API = axios.create({
-  baseURL: Env.VITE_API_BASE_URL,
+let resolvedBaseUrl: string | null = null;
+let baseUrlPromise: Promise<string> | null = null;
+
+export const API = axios.create({
   withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-API.interceptors.request.use(
-  function (config) {
-    return config;
-  },
-  function (error) {
-    console.error('[API] Request error:', error);
-    return Promise.reject(error);
-  },
-);
+API.interceptors.request.use(async (config) => {
+  if (!resolvedBaseUrl) {
+    if (!baseUrlPromise) {
+      baseUrlPromise = getApiBaseUrl();
+    }
+    resolvedBaseUrl = await baseUrlPromise;
+  }
+  config.baseURL = resolvedBaseUrl;
+  return config;
+});
+
+const PUBLIC_PATHS = ['/', '/sign-up', '/tables/'];
 
 API.interceptors.response.use(
   (response) => response,
   async (error) => {
-    // if (error.response?.status === 401) {
-    //   localStorage.clear();
-
-    //   try {
-    //     await API.post('/authentication/sign-out');
-    //   } catch (e) {
-    //     console.error(e);
-    //   }
-
-    //   window.location.href = '/';
-    // }
+    if (error.response?.status === 401) {
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname;
+        if (!PUBLIC_PATHS.includes(currentPath)) {
+          useAuthStore.getState().clear();
+          window.location.href = '/sign-in';
+        }
+      }
+    }
     return Promise.reject(error);
   },
 );
-
-export { API };

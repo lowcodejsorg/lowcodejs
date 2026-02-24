@@ -42,7 +42,7 @@ import type {
 } from '@/lib/interfaces';
 import { getFieldBySlug, getFirstFieldByType } from '@/lib/kanban-helpers';
 import { cn } from '@/lib/utils';
-import { useAuthenticationStore } from '@/stores/authentication';
+import { useAuthStore } from '@/stores/authentication';
 
 const FORUM_SYNC_INTERVAL_MS = 5000;
 
@@ -86,9 +86,9 @@ export function TableForumView({
   tableSlug,
   table,
 }: Props): React.JSX.Element {
-  const auth = useAuthenticationStore((s) => s.authenticated);
+  const auth = useAuthStore((s) => s.user);
   const { data: profile } = useProfileRead();
-  const currentUserId = auth?.sub ?? profile?._id ?? '';
+  const currentUserId = auth?._id ?? profile?._id ?? '';
 
   const [rowsState, setRowsState] = React.useState<Array<IRow>>(data);
   const [activeRowId, setActiveRowId] = React.useState<string | null>(
