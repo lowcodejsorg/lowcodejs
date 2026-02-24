@@ -44,7 +44,7 @@ describe('E2E Table Field Create Controller', () => {
         showInDetail: true,
         format: null,
         group: null,
-        order: null,
+        order: 'asc',
         showInList: true,
         locked: false,
         multiple: false,

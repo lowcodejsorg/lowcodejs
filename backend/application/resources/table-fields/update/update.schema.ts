@@ -180,9 +180,8 @@ export const TableFieldUpdateSchema: FastifySchema = {
         },
       },
       order: {
-        type: 'string',
-        enum: ['asc', 'desc'],
-        nullable: true,
+        type: ['string', 'null'],
+        enum: ['asc', 'desc', null],
         default: null,
         description: 'Field sort order',
       },

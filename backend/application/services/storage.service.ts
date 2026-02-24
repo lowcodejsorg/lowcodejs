@@ -40,7 +40,8 @@ export default class LocalStorageService {
   async upload(part: MultipartFile, staticName?: string): Promise<Response> {
     await this.ensureStorageExists();
 
-    const name = staticName ?? Math.floor(Math.random() * 100000000)?.toString();
+    const name =
+      staticName ?? Math.floor(Math.random() * 100000000)?.toString();
     const originalExt = part.filename?.split('.').pop();
     const buffer = await part.toBuffer();
 
