@@ -9,6 +9,8 @@ import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
+import { TableCalendarView } from './-table-calendar-view';
+import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
 import { TableCardView } from './-table-card-view';
 import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
@@ -18,8 +20,6 @@ import { TableForumView } from './-table-forum-view';
 import { TableForumViewSkeleton } from './-table-forum-view-skeleton';
 import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
-import { TableCalendarView } from './-table-calendar-view';
-import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
 import { TableKanbanView } from './-table-kanban-view';
 import { TableKanbanViewSkeleton } from './-table-kanban-view-skeleton';
 import { TableListView } from './-table-list-view';
