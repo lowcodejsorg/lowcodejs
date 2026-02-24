@@ -65,7 +65,7 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
-          source: "backend/_storage/large.png,backend/_storage/small.png"
+          source: "backend/_storage/logo-large.webp,backend/_storage/logo-small.webp"
           target: "/home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp"
           strip_components: 2
 
@@ -106,8 +106,8 @@ jobs:
             FILE_UPLOAD_MAX_FILES_PER_UPLOAD=10
             LOCALE=pt-br
             PAGINATION_PER_PAGE=20
-            LOGO_SMALL_URL=https://api.admin-saneago.3ck.org/storage/small.png
-            LOGO_LARGE_URL=https://api.admin-saneago.3ck.org/storage/large.png
+            LOGO_SMALL_URL=https://api.admin-saneago.3ck.org/storage/logo-small.webp
+            LOGO_LARGE_URL=https://api.admin-saneago.3ck.org/storage/logo-large.webp
             EOF
 
             echo "Environment variables configured successfully. Deploying..."
@@ -120,10 +120,10 @@ jobs:
             # Aguardar container da API estar pronto
             sleep 5
 
-            # Copiar logos para o container
+            # Copiar logos para o container (apenas se não existirem)
             CONTAINER_NAME="${{ inputs.branch }}-lowcodejs-api-1"
-            docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp/large.png $CONTAINER_NAME:/app/_storage/
-            docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp/small.png $CONTAINER_NAME:/app/_storage/
+            docker exec $CONTAINER_NAME sh -c "test -f /app/_storage/logo-small.webp" || docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp/logo-small.webp $CONTAINER_NAME:/app/_storage/
+            docker exec $CONTAINER_NAME sh -c "test -f /app/_storage/logo-large.webp" || docker cp /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp/logo-large.webp $CONTAINER_NAME:/app/_storage/
 
             # Limpar arquivos temporários
             rm -rf /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}/storage-temp

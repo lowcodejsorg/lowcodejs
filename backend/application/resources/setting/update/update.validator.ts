@@ -1,6 +1,11 @@
 import z from 'zod';
 
 export const SettingUpdateBodyValidator = z.object({
+  SYSTEM_NAME: z
+    .string({ message: 'O nome do sistema é obrigatório' })
+    .min(1, 'O nome do sistema é obrigatório')
+    .max(100, 'O nome do sistema deve ter no máximo 100 caracteres')
+    .trim(),
   LOCALE: z.enum(['pt-br', 'en-us'], {
     message: 'O locale deve ser pt-br ou en-us',
   }),

@@ -9,6 +9,7 @@ export const SettingUpdateSchema: FastifySchema = {
   body: {
     type: 'object',
     required: [
+      'SYSTEM_NAME',
       'LOCALE',
       'FILE_UPLOAD_MAX_SIZE',
       'FILE_UPLOAD_ACCEPTED',
@@ -20,6 +21,17 @@ export const SettingUpdateSchema: FastifySchema = {
       'EMAIL_PROVIDER_PASSWORD',
     ],
     properties: {
+      SYSTEM_NAME: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 100,
+        description: 'Nome do sistema exibido no título da plataforma',
+        errorMessage: {
+          type: 'O nome do sistema deve ser um texto',
+          minLength: 'O nome do sistema é obrigatório',
+          maxLength: 'O nome do sistema deve ter no máximo 100 caracteres',
+        },
+      },
       LOCALE: {
         type: 'string',
         enum: ['pt-br', 'en-us'],
@@ -130,6 +142,7 @@ export const SettingUpdateSchema: FastifySchema = {
     additionalProperties: false,
     errorMessage: {
       required: {
+        SYSTEM_NAME: 'O nome do sistema é obrigatório',
         LOCALE: 'O locale é obrigatório',
         FILE_UPLOAD_MAX_SIZE: 'O tamanho máximo de arquivo é obrigatório',
         FILE_UPLOAD_ACCEPTED: 'As extensões aceitas são obrigatórias',
@@ -149,6 +162,10 @@ export const SettingUpdateSchema: FastifySchema = {
       description: 'Configurações atualizadas com sucesso',
       type: 'object',
       properties: {
+        SYSTEM_NAME: {
+          type: 'string',
+          description: 'Nome do sistema exibido no título da plataforma',
+        },
         LOCALE: {
           type: 'string',
           enum: ['pt-br', 'en-us'],

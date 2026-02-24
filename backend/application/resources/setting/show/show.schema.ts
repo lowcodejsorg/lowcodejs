@@ -10,6 +10,11 @@ export const SettingShowSchema: FastifySchema = {
       description: 'Configurações recuperadas com sucesso',
       type: 'object',
       properties: {
+        SYSTEM_NAME: {
+          type: 'string',
+          description: 'Nome do sistema exibido no título da plataforma',
+          examples: ['LowCodeJs'],
+        },
         LOCALE: {
           type: 'string',
           enum: ['pt-br', 'en-us'],
@@ -72,12 +77,12 @@ export const SettingShowSchema: FastifySchema = {
         LOGO_SMALL_URL: {
           type: 'string',
           description: 'URL do logo pequeno',
-          examples: ['/assets/logo-small.png'],
+          examples: ['/assets/logo-small.webp'],
         },
         LOGO_LARGE_URL: {
           type: 'string',
           description: 'URL do logo grande',
-          examples: ['/assets/logo-large.png'],
+          examples: ['/assets/logo-large.webp'],
         },
       },
       examples: [

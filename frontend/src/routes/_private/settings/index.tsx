@@ -9,5 +9,8 @@ export const Route = createFileRoute('/_private/settings/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: () => ({ meta: [{ title: 'Configurações - LowCodeJS' }] }),
+  head: ({ matches }) => {
+    const systemName = (matches[0]?.loaderData as { systemName?: string })?.systemName || 'LowCodeJs';
+    return { meta: [{ title: `Configurações - ${systemName}` }] };
+  },
 });

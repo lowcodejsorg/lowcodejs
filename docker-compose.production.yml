@@ -41,10 +41,10 @@ services:
       FILE_UPLOAD_ACCEPTED: ${FILE_UPLOAD_ACCEPTED:-jpg;jpeg;png;pdf;doc;docx;xls;xlsx;txt;zip;rar}
       FILE_UPLOAD_MAX_FILES_PER_UPLOAD: ${FILE_UPLOAD_MAX_FILES_PER_UPLOAD:-10}
       LOCALE: ${LOCALE:-pt-br}
-      # LOGO_SMALL_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/small.png
-      # LOGO_LARGE_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/large.png
-      LOGO_SMALL_URL: ${LOGO_SMALL_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/small.png}
-      LOGO_LARGE_URL: ${LOGO_LARGE_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/large.png}
+      # LOGO_SMALL_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/logo-small.webp
+      # LOGO_LARGE_URL: https://api.${ENVIRONMENT}.lowcodejs.org/storage/logo-large.webp
+      LOGO_SMALL_URL: ${LOGO_SMALL_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/logo-small.webp}
+      LOGO_LARGE_URL: ${LOGO_LARGE_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/logo-large.webp}
       PAGINATION_PER_PAGE: ${PAGINATION_PER_PAGE:-20}
     restart: unless-stopped
     volumes:

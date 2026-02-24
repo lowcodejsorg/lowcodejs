@@ -6,6 +6,7 @@ import {
   ImageIcon,
   Languages,
   MailIcon,
+  TypeIcon,
   UploadIcon,
 } from 'lucide-react';
 import React from 'react';
@@ -38,6 +39,7 @@ import type { ISetting, IStorage, Merge } from '@/lib/interfaces';
 
 // Schema com campos de UI (logoSmallFile/logoLargeFile são para upload no frontend)
 export const SettingUpdateSchema = z.object({
+  SYSTEM_NAME: z.string().min(1, 'O nome do sistema é obrigatório').max(100, 'O nome do sistema deve ter no máximo 100 caracteres'),
   LOCALE: z.string().min(1, 'O idioma é obrigatório'),
   LOGO_SMALL_URL: z.string().nullable(),
   LOGO_LARGE_URL: z.string().nullable(),
@@ -57,6 +59,7 @@ export const SettingUpdateSchema = z.object({
 // Form usa string para números (inputs), payload usa number
 export type SettingUpdateFormValues = Merge<
   {
+    SYSTEM_NAME: string;
     LOCALE: string;
     LOGO_SMALL_URL: string | null;
     LOGO_LARGE_URL: string | null;
@@ -74,6 +77,7 @@ export type SettingUpdateFormValues = Merge<
 >;
 
 export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
+  SYSTEM_NAME: 'LowCodeJs',
   LOCALE: 'pt-br',
   LOGO_SMALL_URL: null,
   LOGO_LARGE_URL: null,
@@ -117,6 +121,61 @@ export const UpdateSettingFormFields = withForm({
 
     return (
       <section className="space-y-4 p-2">
+        {/* Nome do Sistema */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TypeIcon className="w-5 h-5" />
+              Nome do Sistema
+            </CardTitle>
+            <CardDescription>
+              Configure o nome exibido no título da plataforma
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form.Field
+              name="SYSTEM_NAME"
+              validators={{
+                onBlur: ({ value }) => {
+                  if (!value || value.trim() === '') {
+                    return { message: 'O nome do sistema é obrigatório' };
+                  }
+                  if (value.length > 100) {
+                    return { message: 'O nome do sistema deve ter no máximo 100 caracteres' };
+                  }
+                  return undefined;
+                },
+              }}
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Nome do sistema</FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        disabled={isDisabled}
+                        id={field.name}
+                        name={field.name}
+                        type="text"
+                        placeholder="LowCodeJs"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                    </InputGroup>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+          </CardContent>
+        </Card>
+
         {/* Idioma do Sistema */}
         <Card>
           <CardHeader>

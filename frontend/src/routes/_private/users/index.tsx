@@ -10,7 +10,10 @@ export const Route = createFileRoute('/_private/users/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: () => ({ meta: [{ title: 'Usuarios - LowCodeJS' }] }),
+  head: ({ matches }) => {
+    const systemName = (matches[0]?.loaderData as { systemName?: string })?.systemName || 'LowCodeJs';
+    return { meta: [{ title: `Usuarios - ${systemName}` }] };
+  },
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),

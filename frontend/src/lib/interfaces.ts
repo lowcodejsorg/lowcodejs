@@ -225,6 +225,7 @@ export type ITable = Merge<
 >;
 
 export type ISetting = {
+  SYSTEM_NAME: string;
   LOCALE: string;
   LOGO_SMALL_URL: string | null;
   LOGO_LARGE_URL: string | null;

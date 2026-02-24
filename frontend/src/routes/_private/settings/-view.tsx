@@ -4,6 +4,7 @@ import {
   ImageIcon,
   Languages,
   MailIcon,
+  TypeIcon,
   UploadIcon,
 } from 'lucide-react';
 
@@ -45,6 +46,27 @@ function getLocaleLabel(locale: string): string {
 export function SettingView({ data }: SettingViewProps): React.JSX.Element {
   return (
     <section className="space-y-4 p-2">
+      {/* Nome do Sistema */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TypeIcon className="w-5 h-5" />
+            Nome do Sistema
+          </CardTitle>
+          <CardDescription>
+            Nome exibido no título da plataforma
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Nome do sistema</p>
+            <p className="text-sm text-muted-foreground">
+              {data.SYSTEM_NAME || 'LowCodeJs'}
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Idioma do Sistema */}
       <Card>
         <CardHeader>

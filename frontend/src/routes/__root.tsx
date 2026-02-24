@@ -7,6 +7,8 @@ import {
 import type * as React from 'react';
 import { Toaster } from 'sonner';
 
+import { createServerFn } from '@tanstack/react-start';
+
 import { RouteError } from '@/components/common/route-error';
 import { RouteNotFound } from '@/components/common/route-not-found';
 import RoutePending from '@/components/common/route-pending';
@@ -15,6 +17,20 @@ import { getApiBaseUrl } from '@/lib/get-api-config';
 import type { RouterContext } from '@/router';
 import { useAuthStore } from '@/stores/authentication';
 import appCss from '@/styles.css?url';
+
+const getSystemName = createServerFn({ method: 'GET' }).handler(async () => {
+  try {
+    const baseUrl = process.env.VITE_API_BASE_URL || 'http://localhost:3000';
+    const response = await fetch(`${baseUrl}/setting`);
+    if (response.ok) {
+      const data = await response.json();
+      return data.SYSTEM_NAME || 'LowCodeJs';
+    }
+    return 'LowCodeJs';
+  } catch {
+    return 'LowCodeJs';
+  }
+});
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   beforeLoad: async () => {
@@ -25,8 +41,11 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     }
   },
   loader: async () => {
-    const baseUrl = await getApiBaseUrl();
-    return { baseUrl };
+    const [baseUrl, systemName] = await Promise.all([
+      getApiBaseUrl(),
+      getSystemName(),
+    ]);
+    return { baseUrl, systemName };
   },
   component: RootDocument,
   pendingComponent: RoutePending,
@@ -36,14 +55,14 @@ export const Route = createRootRouteWithContext<RouterContext>()({
     meta: [
       { charSet: 'utf-8' },
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: 'LowCodeJs' },
+      { title: loaderData?.systemName || 'LowCodeJs' },
       {
         name: 'description',
         content: 'Plataforma Oficial',
       },
       {
         property: 'og:title',
-        content: 'LowCodeJs',
+        content: loaderData?.systemName || 'LowCodeJs',
       },
       {
         property: 'og:description',

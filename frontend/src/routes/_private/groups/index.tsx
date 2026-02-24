@@ -10,7 +10,10 @@ export const Route = createFileRoute('/_private/groups/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: () => ({ meta: [{ title: 'Grupos - LowCodeJS' }] }),
+  head: ({ matches }) => {
+    const systemName = (matches[0]?.loaderData as { systemName?: string })?.systemName || 'LowCodeJs';
+    return { meta: [{ title: `Grupos - ${systemName}` }] };
+  },
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),

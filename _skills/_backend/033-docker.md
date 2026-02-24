@@ -66,7 +66,7 @@ COPY templates/ ./templates/
 
 # Storage com logos padrao
 RUN mkdir -p ./_storage
-COPY _storage/large.png _storage/small.png ./_storage/
+COPY _storage/logo-large.webp _storage/logo-small.webp ./_storage/
 
 # Usuario nao-root
 RUN addgroup -g 1001 -S nodejs && \
@@ -88,7 +88,7 @@ CMD ["node", "bin/server.js"]
   - `node_modules/` — dependencias de producao
   - `package.json`
   - `templates/` — templates de email EJS
-  - `_storage/large.png` e `_storage/small.png` — logos padrao
+  - `_storage/logo-large.webp` e `_storage/logo-small.webp` — logos padrao
 - **Seguranca**: usuario `nodejs` nao-root (UID 1001, GID 1001)
 - **Modo de execucao**: `node bin/server.js` (execucao direta do build)
 

@@ -10,7 +10,10 @@ export const Route = createFileRoute('/_private/menus/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: () => ({ meta: [{ title: 'Menus - LowCodeJS' }] }),
+  head: ({ matches }) => {
+    const systemName = (matches[0]?.loaderData as { systemName?: string })?.systemName || 'LowCodeJs';
+    return { meta: [{ title: `Menus - ${systemName}` }] };
+  },
   validateSearch: z.object({
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),

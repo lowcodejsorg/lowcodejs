@@ -6,6 +6,7 @@ type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 const Schema = new mongoose.Schema(
   {
+    SYSTEM_NAME: { type: String, default: 'LowCodeJs' },
     LOCALE: { type: String, default: 'pt-br' },
     FILE_UPLOAD_MAX_SIZE: { type: Number, default: 10485760 },
     FILE_UPLOAD_ACCEPTED: { type: String, default: 'jpg;jpeg;png;pdf' },

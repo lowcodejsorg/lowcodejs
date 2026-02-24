@@ -15,7 +15,7 @@ COPY templates/ ./templates/
 RUN mkdir -p ./_storage
 
 # Copiar logos padrão
-COPY _storage/large.png _storage/small.png ./_storage/
+COPY _storage/logo-large.webp _storage/logo-small.webp ./_storage/
 
 # Usuário não-root
 RUN addgroup -g 1001 -S nodejs && \

@@ -95,6 +95,7 @@ function SettingUpdateContent({
 
   function setFieldError(
     field:
+      | 'SYSTEM_NAME'
       | 'LOCALE'
       | 'LOGO_SMALL_URL'
       | 'LOGO_LARGE_URL'
@@ -133,6 +134,7 @@ function SettingUpdateContent({
     onError(error) {
       if (error instanceof AxiosError) {
         const errorData = error.response?.data as IHTTPExeptionError<{
+          SYSTEM_NAME?: string;
           LOCALE?: string;
           LOGO_SMALL_URL?: string;
           LOGO_LARGE_URL?: string;
@@ -167,6 +169,8 @@ function SettingUpdateContent({
             errorData.cause === 'VALIDATION_ERROR') &&
           errorData.code === 400
         ) {
+          if (errorData.errors['SYSTEM_NAME'])
+            setFieldError('SYSTEM_NAME', errorData.errors['SYSTEM_NAME']);
           if (errorData.errors['LOCALE'])
             setFieldError('LOCALE', errorData.errors['LOCALE']);
           if (errorData.errors['LOGO_SMALL_URL'])
@@ -250,6 +254,7 @@ function SettingUpdateContent({
 
   const form = useAppForm({
     defaultValues: {
+      SYSTEM_NAME: data.SYSTEM_NAME || 'LowCodeJs',
       LOCALE: data.LOCALE,
       LOGO_SMALL_URL: data.LOGO_SMALL_URL,
       LOGO_LARGE_URL: data.LOGO_LARGE_URL,
@@ -274,6 +279,7 @@ function SettingUpdateContent({
       if (_update.status === 'pending') return;
 
       const payload = {
+        SYSTEM_NAME: value.SYSTEM_NAME.trim(),
         LOCALE: value.LOCALE.trim(),
         LOGO_SMALL_URL: value.LOGO_SMALL_URL ?? undefined,
         LOGO_LARGE_URL: value.LOGO_LARGE_URL ?? undefined,

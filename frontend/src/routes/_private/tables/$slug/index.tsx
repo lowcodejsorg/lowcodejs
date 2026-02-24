@@ -2,7 +2,10 @@ import { createFileRoute } from '@tanstack/react-router';
 import z from 'zod';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
-  head: () => ({ meta: [{ title: 'Tabela - LowCodeJS' }] }),
+  head: ({ matches }) => {
+    const systemName = (matches[0]?.loaderData as { systemName?: string })?.systemName || 'LowCodeJs';
+    return { meta: [{ title: `Tabela - ${systemName}` }] };
+  },
   validateSearch: z
     .object({
       page: z.coerce.number().default(1),

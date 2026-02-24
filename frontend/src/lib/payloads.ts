@@ -219,6 +219,7 @@ export type ProfileUpdatePayload = {
 
 // ============== SETTING ==============
 export type SettingUpdatePayload = Partial<{
+  SYSTEM_NAME: string;
   LOCALE: string;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_ACCEPTED: string;
