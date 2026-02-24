@@ -11,7 +11,9 @@ export const Route = createFileRoute('/_private/groups/')({
     }
   },
   head: ({ matches }) => {
-    const systemName = (matches[0]?.loaderData as { systemName?: string })?.systemName || 'LowCodeJs';
+    const systemName =
+      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
+      'LowCodeJs';
     return { meta: [{ title: `Grupos - ${systemName}` }] };
   },
   validateSearch: z.object({

@@ -3,7 +3,9 @@ import z from 'zod';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   head: ({ matches }) => {
-    const systemName = (matches[0]?.loaderData as { systemName?: string })?.systemName || 'LowCodeJs';
+    const systemName =
+      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
+      'LowCodeJs';
     return { meta: [{ title: `Tabela - ${systemName}` }] };
   },
   validateSearch: z

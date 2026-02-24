@@ -4,10 +4,9 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
+import { createServerFn } from '@tanstack/react-start';
 import type * as React from 'react';
 import { Toaster } from 'sonner';
-
-import { createServerFn } from '@tanstack/react-start';
 
 import { RouteError } from '@/components/common/route-error';
 import { RouteNotFound } from '@/components/common/route-not-found';

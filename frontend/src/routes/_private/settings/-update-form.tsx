@@ -39,7 +39,10 @@ import type { ISetting, IStorage, Merge } from '@/lib/interfaces';
 
 // Schema com campos de UI (logoSmallFile/logoLargeFile são para upload no frontend)
 export const SettingUpdateSchema = z.object({
-  SYSTEM_NAME: z.string().min(1, 'O nome do sistema é obrigatório').max(100, 'O nome do sistema deve ter no máximo 100 caracteres'),
+  SYSTEM_NAME: z
+    .string()
+    .min(1, 'O nome do sistema é obrigatório')
+    .max(100, 'O nome do sistema deve ter no máximo 100 caracteres'),
   LOCALE: z.string().min(1, 'O idioma é obrigatório'),
   LOGO_SMALL_URL: z.string().nullable(),
   LOGO_LARGE_URL: z.string().nullable(),
@@ -141,7 +144,10 @@ export const UpdateSettingFormFields = withForm({
                     return { message: 'O nome do sistema é obrigatório' };
                   }
                   if (value.length > 100) {
-                    return { message: 'O nome do sistema deve ter no máximo 100 caracteres' };
+                    return {
+                      message:
+                        'O nome do sistema deve ter no máximo 100 caracteres',
+                    };
                   }
                   return undefined;
                 },
@@ -152,7 +158,9 @@ export const UpdateSettingFormFields = withForm({
 
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Nome do sistema</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>
+                      Nome do sistema
+                    </FieldLabel>
                     <InputGroup>
                       <InputGroupInput
                         disabled={isDisabled}

@@ -27,6 +27,7 @@ describe('E2E Setting Update Controller', () => {
         .put('/setting')
         .set('Cookie', cookies)
         .send({
+          SYSTEM_NAME: 'Test System',
           LOCALE: 'pt-br',
           FILE_UPLOAD_MAX_SIZE: 5242880,
           FILE_UPLOAD_ACCEPTED: 'image/png;image/jpeg;application/pdf',
