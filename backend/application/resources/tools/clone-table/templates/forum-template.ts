@@ -491,6 +491,7 @@ export async function buildForumFields(
     dropdown: [],
     category: [],
     group: null,
+    order: null,
     widthInForm: null,
     widthInList: null,
   });
