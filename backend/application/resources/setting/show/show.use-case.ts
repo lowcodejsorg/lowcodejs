@@ -14,6 +14,7 @@ const CARDS_TEMPLATE_ID = 'CARDS_TEMPLATE';
 const MOSAIC_TEMPLATE_ID = 'MOSAIC_TEMPLATE';
 const DOCUMENT_TEMPLATE_ID = 'DOCUMENT_TEMPLATE';
 const FORUM_TEMPLATE_ID = 'FORUM_TEMPLATE';
+const CALENDAR_TEMPLATE_ID = 'CALENDAR_TEMPLATE';
 
 function getKanbanTemplateEntry(): Pick<
   ISetting['MODEL_CLONE_TABLES'][number],
@@ -75,6 +76,18 @@ function getForumTemplateEntry(): Pick<
   };
 }
 
+function getCalendarTemplateEntry(): Pick<
+  ISetting['MODEL_CLONE_TABLES'][number],
+  '_id' | 'name' | 'slug' | 'description'
+> {
+  return {
+    _id: CALENDAR_TEMPLATE_ID,
+    name: 'Calendario',
+    slug: 'calendario',
+    description: 'Modelo predefinido para agenda/calendário',
+  };
+}
+
 @Service()
 export default class SettingShowUseCase {
   constructor(private readonly settingRepository: SettingContractRepository) {}
@@ -94,6 +107,7 @@ export default class SettingShowUseCase {
             getMosaicTemplateEntry(),
             getDocumentTemplateEntry(),
             getForumTemplateEntry(),
+            getCalendarTemplateEntry(),
           ],
         });
       }
@@ -107,6 +121,7 @@ export default class SettingShowUseCase {
           getMosaicTemplateEntry(),
           getDocumentTemplateEntry(),
           getForumTemplateEntry(),
+          getCalendarTemplateEntry(),
           ...(Array.isArray(setting.MODEL_CLONE_TABLES)
             ? setting.MODEL_CLONE_TABLES
             : []),

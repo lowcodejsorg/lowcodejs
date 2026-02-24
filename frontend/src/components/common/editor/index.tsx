@@ -181,6 +181,7 @@ function debounce(
 interface EditorExampleProps {
   value?: string;
   onChange?: (value: string) => void;
+  debounceMs?: number;
   variant?: 'default' | 'compact';
   className?: string;
   toolbarVariant?: 'default' | 'minimal';
@@ -192,6 +193,7 @@ interface EditorExampleProps {
 export function EditorExample({
   value,
   onChange,
+  debounceMs = 300,
   variant = 'default',
   className,
   toolbarVariant = 'default',
@@ -215,8 +217,8 @@ export function EditorExample({
       if (!isControlledRef.current) return;
       const nextValue = editor.getHTML();
       onChangeRef.current?.(nextValue);
-    }, 300),
-    [],
+    }, debounceMs),
+    [debounceMs],
   );
 
   const ed = useEditor(

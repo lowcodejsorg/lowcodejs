@@ -25,6 +25,7 @@ export const TableUpdateSchema = z.object({
     E_TABLE_STYLE.MOSAIC,
     E_TABLE_STYLE.KANBAN,
     E_TABLE_STYLE.FORUM,
+    E_TABLE_STYLE.CALENDAR,
   ]),
   visibility: z.enum([
     E_TABLE_VISIBILITY.PUBLIC,

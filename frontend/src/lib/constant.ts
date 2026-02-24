@@ -82,6 +82,7 @@ export const E_TABLE_STYLE = {
   MOSAIC: 'MOSAIC',
   KANBAN: 'KANBAN',
   FORUM: 'FORUM',
+  CALENDAR: 'CALENDAR',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -228,6 +229,7 @@ export const TABLE_STYLE_OPTIONS = [
   { label: 'Mosaico', value: E_TABLE_STYLE.MOSAIC },
   { label: 'Kanban', value: E_TABLE_STYLE.KANBAN },
   { label: 'Forum', value: E_TABLE_STYLE.FORUM },
+  { label: 'Calendario', value: E_TABLE_STYLE.CALENDAR },
 ] as const;
 
 export const USER_GROUP_MAPPER = {

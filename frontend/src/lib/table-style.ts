@@ -89,6 +89,49 @@ export function isKanbanTemplate(table?: ITable | null): boolean {
   );
 }
 
+export function isCalendarTemplate(table?: ITable | null): boolean {
+  if (!table) return false;
+  const fields = asFields(table.fields);
+  const hasTitleField = fields.some(
+    (field) =>
+      !field.trashed &&
+      field.type === E_FIELD_TYPE.TEXT_SHORT &&
+      field.slug === 'titulo',
+  );
+  const hasDescriptionField = fields.some(
+    (field) =>
+      !field.trashed &&
+      field.type === E_FIELD_TYPE.TEXT_LONG &&
+      field.slug === 'descricao',
+  );
+  const hasStartField = fields.some(
+    (field) =>
+      !field.trashed &&
+      field.type === E_FIELD_TYPE.DATE &&
+      field.slug === 'data-inicio',
+  );
+  const hasEndField = fields.some(
+    (field) =>
+      !field.trashed &&
+      field.type === E_FIELD_TYPE.DATE &&
+      field.slug === 'data-termino',
+  );
+  const hasColorField = fields.some(
+    (field) =>
+      !field.trashed &&
+      field.type === E_FIELD_TYPE.DROPDOWN &&
+      field.slug === 'cor',
+  );
+
+  return (
+    hasTitleField &&
+    hasDescriptionField &&
+    hasStartField &&
+    hasEndField &&
+    hasColorField
+  );
+}
+
 export function getAllowedTableStyles(
   table?: ITable | null,
 ): Array<ValueOf<typeof E_TABLE_STYLE>> {
@@ -125,6 +168,7 @@ export function getAllowedTableStyles(
 
   if (isKanbanTemplate(table)) styles.push(E_TABLE_STYLE.KANBAN);
   if (isForumTemplate(table)) styles.push(E_TABLE_STYLE.FORUM);
+  if (isCalendarTemplate(table)) styles.push(E_TABLE_STYLE.CALENDAR);
 
   return styles;
 }

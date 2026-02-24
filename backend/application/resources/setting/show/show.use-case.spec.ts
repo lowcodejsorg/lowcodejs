@@ -43,6 +43,13 @@ describe('Setting Show Use Case', () => {
     description: 'Modelo predefinido para canais e mensagens em forum',
   };
 
+  const calendarTemplate = {
+    _id: 'CALENDAR_TEMPLATE',
+    name: 'Calendario',
+    slug: 'calendario',
+    description: 'Modelo predefinido para agenda/calendário',
+  };
+
   beforeEach(() => {
     settingInMemoryRepository = new SettingInMemoryRepository();
     sut = new SettingShowUseCase(settingInMemoryRepository);
@@ -68,6 +75,7 @@ describe('Setting Show Use Case', () => {
         mosaicTemplate,
         documentTemplate,
         forumTemplate,
+        calendarTemplate,
         'table1',
         'table2',
       ]);
@@ -85,6 +93,7 @@ describe('Setting Show Use Case', () => {
         mosaicTemplate,
         documentTemplate,
         forumTemplate,
+        calendarTemplate,
       ]);
     }
   });

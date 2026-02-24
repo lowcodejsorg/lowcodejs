@@ -18,6 +18,12 @@ interface ForumMessagesListProps {
   onEdit: (index: number) => void;
   onDelete: (index: number) => void;
   onToggleReaction: (index: number, emoji: string) => void;
+  trackedMentionMessageIds?: Array<string>;
+  onMentionMessageVisible?: (messageId: string) => void;
+  scrollToMessageId?: string | null;
+  scrollToMessageTick?: number;
+  highlightedMessageId?: string | null;
+  highlightedMessageTick?: number;
 }
 
 export function ForumMessagesList({
@@ -28,9 +34,72 @@ export function ForumMessagesList({
   onEdit,
   onDelete,
   onToggleReaction,
+  trackedMentionMessageIds = [],
+  onMentionMessageVisible,
+  scrollToMessageId,
+  scrollToMessageTick,
+  highlightedMessageId,
+  highlightedMessageTick,
 }: ForumMessagesListProps): React.JSX.Element {
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+  const messageRefs = React.useRef<Record<string, HTMLDivElement | null>>({});
+  const [flashMessageId, setFlashMessageId] = React.useState<string | null>(
+    null,
+  );
+
+  React.useEffect(() => {
+    if (!scrollToMessageId) return;
+    const target = messageRefs.current[scrollToMessageId];
+    if (!target) return;
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [scrollToMessageId, scrollToMessageTick]);
+
+  React.useEffect((): void | (() => void) => {
+    if (!highlightedMessageId) return;
+    setFlashMessageId(highlightedMessageId);
+    const timeout = window.setTimeout(() => {
+      setFlashMessageId((current) =>
+        current === highlightedMessageId ? null : current,
+      );
+    }, 3500);
+    return (): void => window.clearTimeout(timeout);
+  }, [highlightedMessageId, highlightedMessageTick]);
+
+  React.useEffect(() => {
+    if (!onMentionMessageVisible) return;
+    if (trackedMentionMessageIds.length === 0) return;
+    const root = containerRef.current;
+    if (!root || typeof IntersectionObserver === 'undefined') return;
+
+    const trackedSet = new Set(trackedMentionMessageIds);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const messageId = (entry.target as HTMLElement).dataset.messageId;
+          if (!messageId || !trackedSet.has(messageId)) continue;
+          onMentionMessageVisible(messageId);
+        }
+      },
+      {
+        root,
+        threshold: 0.6,
+      },
+    );
+
+    for (const messageId of trackedMentionMessageIds) {
+      const node = messageRefs.current[messageId];
+      if (node) observer.observe(node);
+    }
+
+    return (): void => observer.disconnect();
+  }, [onMentionMessageVisible, trackedMentionMessageIds, messages.length]);
+
   return (
-    <div className="flex-1 min-h-0 overflow-auto px-4 py-3 space-y-4">
+    <div
+      ref={containerRef}
+      className="flex-1 min-h-0 overflow-auto px-4 py-3 space-y-4"
+    >
       {messages.map((message, index) => {
         const authorName =
           typeof message.author === 'string'
@@ -53,7 +122,17 @@ export function ForumMessagesList({
         return (
           <div
             key={message.id}
-            className="flex gap-3"
+            ref={(node) => {
+              messageRefs.current[message.id] = node;
+            }}
+            data-message-id={message.id}
+            className={cn(
+              'flex gap-3 rounded-md transition',
+              trackedMentionMessageIds.includes(message.id) &&
+                'ring-1 ring-primary/40 bg-primary/5 p-2 -m-2',
+              flashMessageId === message.id &&
+                'ring-2 ring-amber-400 bg-amber-50/70 dark:bg-amber-950/20 animate-pulse',
+            )}
           >
             <Avatar className="h-8 w-8">
               <AvatarFallback className="text-xs">
