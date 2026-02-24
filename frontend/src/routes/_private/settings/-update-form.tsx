@@ -210,6 +210,7 @@ export const UpdateSettingFormFields = withForm({
                           maxSize={4 * 1024 * 1024}
                           placeholder="Arraste ou selecione o logo pequeno"
                           shouldDeleteFromStorage={false}
+                          staticName="logo-small"
                         />
                       )}
                       {mode === 'show' && settingData?.LOGO_SMALL_URL && (
@@ -250,6 +251,7 @@ export const UpdateSettingFormFields = withForm({
                           maxSize={4 * 1024 * 1024}
                           placeholder="Arraste ou selecione o logo grande"
                           shouldDeleteFromStorage={false}
+                          staticName="logo-large"
                         />
                       )}
                       {mode === 'show' && settingData?.LOGO_LARGE_URL && (

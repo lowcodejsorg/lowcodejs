@@ -23,12 +23,14 @@ export default class StorageUploadUseCase {
 
   async execute(
     payload: AsyncIterableIterator<MultipartFile>,
+    staticName?: string,
   ): Promise<Response> {
     try {
+      console.log(JSON.stringify(payload, null, 2), staticName);
       const data: StorageCreatePayload[] = [];
 
       for await (const part of payload) {
-        const sended = await this.service.upload(part);
+        const sended = await this.service.upload(part, staticName);
         data.push(sended);
       }
 
@@ -36,6 +38,7 @@ export default class StorageUploadUseCase {
 
       return right(storages);
     } catch (error) {
+      console.log(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

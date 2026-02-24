@@ -7,6 +7,7 @@ import { AuthenticationMiddleware } from '@application/middlewares/authenticatio
 
 import { StorageUploadSchema } from './update.schema';
 import StorageUploadUseCase from './upload.use-case';
+import { StorageUploadQueryValidator } from './upload.validator';
 
 @Controller({
   route: '/storage',
@@ -30,7 +31,10 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const result = await this.useCase.execute(request.files());
+    console.log(JSON.stringify(request.files(), null, 2));
+    const { staticName } = StorageUploadQueryValidator.parse(request.query);
+
+    const result = await this.useCase.execute(request.files(), staticName);
 
     if (result.isLeft()) {
       const error = result.value;

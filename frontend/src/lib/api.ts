@@ -34,7 +34,7 @@ API.interceptors.response.use(
         const currentPath = window.location.pathname;
         if (!PUBLIC_PATHS.includes(currentPath)) {
           useAuthStore.getState().clear();
-          window.location.href = '/sign-in';
+          window.location.href = '/';
         }
       }
     }

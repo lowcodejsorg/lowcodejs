@@ -37,6 +37,7 @@ interface FileUploadWithStorageProps {
   shouldDeleteFromStorage?: boolean;
   compact?: boolean;
   showHint?: boolean;
+  staticName?: string;
 }
 
 function dedupeStorages(storages: Array<IStorage>): Array<IStorage> {
@@ -63,6 +64,7 @@ export function FileUploadWithStorage({
   shouldDeleteFromStorage = true,
   compact = false,
   showHint = true,
+  staticName,
 }: FileUploadWithStorageProps): React.JSX.Element {
   const [storageFiles, setStorageFiles] = React.useState<Map<File, IStorage>>(
     new Map(),
@@ -79,7 +81,12 @@ export function FileUploadWithStorage({
       }
 
       const route = '/storage';
-      const response = await API.post<Array<IStorage>>(route, formData);
+      const response = await API.post<Array<IStorage>>(route, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        ...(staticName && { params: { staticName } }),
+      });
       return response.data;
     },
     onError(error) {

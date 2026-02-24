@@ -148,7 +148,7 @@ function RouteComponent(): React.JSX.Element {
                   to="/"
                   className="flex flex-col items-center gap-2 font-medium"
                 >
-                  <Logo />
+                  <Logo className="h-8" />
                 </Link>
                 <FieldDescription>
                   Não possui uma conta?{' '}
