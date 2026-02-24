@@ -1,4 +1,8 @@
-import { createLazyFileRoute, useRouter, useSearch } from '@tanstack/react-router';
+import {
+  createLazyFileRoute,
+  useRouter,
+  useSearch,
+} from '@tanstack/react-router';
 
 import { TableUsers } from './-table-users';
 import { TableUsersSkeleton } from './-table-users-skeleton';

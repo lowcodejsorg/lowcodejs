@@ -1,4 +1,8 @@
-import { createLazyFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import {
+  createLazyFileRoute,
+  useParams,
+  useRouter,
+} from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import { AxiosError } from 'axios';
 import { ArrowLeftIcon, PencilIcon } from 'lucide-react';

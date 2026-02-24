@@ -1,4 +1,8 @@
-import { createLazyFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import {
+  createLazyFileRoute,
+  useParams,
+  useRouter,
+} from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 
@@ -11,9 +15,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { cn } from '@/lib/utils';
 
-export const Route = createLazyFileRoute(
-  '/_private/tables/$slug/row/create/',
-)({
+export const Route = createLazyFileRoute('/_private/tables/$slug/row/create/')({
   component: RouteComponent,
 });
 

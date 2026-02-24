@@ -1,4 +1,8 @@
-import { createLazyFileRoute, useParams, useRouter } from '@tanstack/react-router';
+import {
+  createLazyFileRoute,
+  useParams,
+  useRouter,
+} from '@tanstack/react-router';
 import { ArrowLeftIcon, Share2Icon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
