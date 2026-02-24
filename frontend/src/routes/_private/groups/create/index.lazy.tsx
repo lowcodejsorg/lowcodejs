@@ -53,6 +53,7 @@ function RouteComponent(): React.JSX.Element {
       form.reset();
       navigate({ to: '/groups', search: { page: 1, perPage: 50 } });
       sidebar.setOpen(true);
+      router.invalidate();
     },
     onError(error) {
       if (error instanceof AxiosError) {

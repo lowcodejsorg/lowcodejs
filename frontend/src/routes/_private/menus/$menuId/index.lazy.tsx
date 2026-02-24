@@ -141,6 +141,7 @@ function MenuUpdateContent({
 
       form.reset();
       setMode('show');
+      router.invalidate();
     },
     onError(error) {
       if (error instanceof AxiosError) {

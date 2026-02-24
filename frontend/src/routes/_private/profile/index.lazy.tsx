@@ -101,6 +101,7 @@ function ProfileUpdateContent({
       form.reset();
       setMode('show');
       setAllowPasswordChange(false);
+      router.invalidate();
     },
     onError(error) {
       if (error instanceof AxiosError) {
