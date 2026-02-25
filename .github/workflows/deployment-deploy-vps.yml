@@ -87,6 +87,7 @@ jobs:
             FILE_UPLOAD_MAX_FILES_PER_UPLOAD=10
             LOCALE=pt-br
             PAGINATION_PER_PAGE=20
+            ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
             LOGO_SMALL_URL=https://api.${{ inputs.branch }}.lowcodejs.org/storage/logo-small.webp
             LOGO_LARGE_URL=https://api.${{ inputs.branch }}.lowcodejs.org/storage/logo-large.webp
             EOF

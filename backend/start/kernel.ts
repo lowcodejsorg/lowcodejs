@@ -18,6 +18,19 @@ import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
 import { Env } from '@start/env';
 
+function matchOrigin(origin: string, pattern: string): boolean {
+  if (pattern.startsWith('*.')) {
+    const suffix = pattern.slice(1);
+    try {
+      const url = new URL(origin);
+      return url.hostname.endsWith(suffix) && url.hostname !== suffix.slice(1);
+    } catch {
+      return false;
+    }
+  }
+  return origin === pattern;
+}
+
 interface ValidationErrorDetail {
   instancePath: string;
   schemaPath: string;
@@ -53,16 +66,20 @@ const kernel = fastify({
 
 kernel.register(cors, {
   origin: (origin, callback) => {
-    const allowedOrigins = [
-      'https://lowcodejs.org',
-      Env.APP_CLIENT_URL,
-      Env.APP_SERVER_URL,
-    ];
-
     // Permitir requisições sem origin (ex: Postman, mobile apps)
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    // Origens fixas (sempre permitidas, não configuráveis)
+    const fixedOrigins = [Env.APP_CLIENT_URL, Env.APP_SERVER_URL];
+    if (fixedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    // Origens configuráveis via env var (ALLOWED_ORIGINS)
+    const matched = Env.ALLOWED_ORIGINS.some((pattern) =>
+      matchOrigin(origin, pattern),
+    );
+    if (matched) {
       return callback(null, true);
     }
 

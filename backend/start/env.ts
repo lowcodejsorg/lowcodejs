@@ -39,6 +39,16 @@ const EnvSchema = z.object({
 
   LOGO_SMALL_URL: z.string().trim(),
   LOGO_LARGE_URL: z.string().trim(),
+
+  ALLOWED_ORIGINS: z
+    .string()
+    .default('https://lowcodejs.org;*.lowcodejs.org')
+    .transform((val) =>
+      val
+        .split(';')
+        .map((s) => s.trim())
+        .filter(Boolean),
+    ),
 });
 
 const validation = EnvSchema.safeParse(process.env);
