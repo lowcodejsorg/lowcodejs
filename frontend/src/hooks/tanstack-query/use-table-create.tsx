@@ -33,6 +33,7 @@ export function useCreateTable(
       return response.data;
     },
     onSuccess(data, variables) {
+      queryClient.setQueryData(queryKeys.tables.detail(data.slug), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
       props.onSuccess?.(data, variables);
     },

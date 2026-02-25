@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
   useParams,
@@ -10,14 +11,12 @@ import { toast } from 'sonner';
 
 import type { GroupUpdateFormValues } from './-update-form';
 import { GroupUpdateSchema, UpdateGroupFormFields } from './-update-form';
-import { UpdateGroupFormSkeleton } from './-update-form-skeleton';
 import { GroupView } from './-view';
 
-import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useReadGroup } from '@/hooks/tanstack-query/use-group-read';
+import { groupDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateGroup } from '@/hooks/tanstack-query/use-group-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { IGroup, IHTTPExeptionError } from '@/lib/interfaces';
@@ -34,7 +33,7 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const _read = useReadGroup({ groupId });
+  const { data } = useSuspenseQuery(groupDetailOptions(groupId));
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
@@ -59,7 +58,7 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes do grupo</h1>
         </div>
-        {_read.status === 'success' && mode === 'show' && (
+        {mode === 'show' && (
           <Button
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"
@@ -74,20 +73,11 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {_read.status === 'error' && (
-          <LoadError
-            message="Houve um erro ao buscar dados do grupo"
-            refetch={_read.refetch}
-          />
-        )}
-        {_read.status === 'pending' && <UpdateGroupFormSkeleton />}
-        {_read.status === 'success' && (
-          <GroupUpdateContent
-            data={_read.data}
-            mode={mode}
-            setMode={setMode}
-          />
-        )}
+        <GroupUpdateContent
+          data={data}
+          mode={mode}
+          setMode={setMode}
+        />
       </div>
     </div>
   );

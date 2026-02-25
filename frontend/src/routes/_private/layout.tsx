@@ -1,11 +1,14 @@
-import { Outlet, createFileRoute } from '@tanstack/react-router';
+import { QueryErrorResetBoundary } from '@tanstack/react-query';
+import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 import React from 'react';
+import { ErrorBoundary } from 'react-error-boundary';
 
 import { Header } from '@/components/common/header';
 import { RouteError } from '@/components/common/route-error';
 import RoutePending from '@/components/common/route-pending';
 import { Sidebar } from '@/components/common/sidebar';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
+import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import { E_ROLE } from '@/lib/constant';
 import { useAuthStore } from '@/stores/authentication';
@@ -14,7 +17,18 @@ export const Route = createFileRoute('/_private')({
   component: PrivateLayout,
   pendingComponent: RoutePending,
   errorComponent: RouteError,
-  ssr: false,
+  ssr: 'data-only',
+  beforeLoad: async ({ context }) => {
+    try {
+      const user = await context.queryClient.ensureQueryData(
+        profileDetailOptions(),
+      );
+      useAuthStore.getState().setUser(user);
+    } catch {
+      useAuthStore.getState().clear();
+      throw redirect({ to: '/' });
+    }
+  },
 });
 
 function PrivateLayout(): React.JSX.Element {
@@ -50,7 +64,21 @@ function PrivateLayout(): React.JSX.Element {
       <Sidebar menu={menu} />
       <SidebarInset className="relative flex flex-col h-screen w-screen overflow-hidden flex-1 px-4 sm:px-2">
         <Header routesWithoutSearchInput={routesWithoutSearchInput} />
-        <Outlet />
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
+                <RouteError
+                  error={new Error('Erro ao carregar dados')}
+                  resetErrorBoundary={resetErrorBoundary}
+                />
+              )}
+            >
+              <Outlet />
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
       </SidebarInset>
     </SidebarProvider>
   );

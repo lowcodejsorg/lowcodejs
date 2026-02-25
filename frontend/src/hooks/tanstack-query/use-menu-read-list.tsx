@@ -1,9 +1,8 @@
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
-import { queryKeys } from './_query-keys';
+import { menuAllOptions } from './_query-options';
 
-import { API } from '@/lib/api';
 import type { IMenu } from '@/lib/interfaces';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -18,12 +17,7 @@ export function useMenuReadList(
   const isAuthenticated = Boolean(authentication.user?._id);
 
   return useQuery({
-    queryKey: queryKeys.menus.all,
-    queryFn: async function () {
-      const route = '/menu';
-      const response = await API.get<Array<IMenu>>(route);
-      return response.data;
-    },
+    ...menuAllOptions(),
     enabled: options?.enabled ?? isAuthenticated,
   });
 }

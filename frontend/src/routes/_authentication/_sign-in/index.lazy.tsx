@@ -25,7 +25,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationSignIn } from '@/hooks/tanstack-query/use-authentication-sign-in';
 import type { IHTTPExeptionError } from '@/lib/interfaces';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
-import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_authentication/_sign-in/')({
   component: RouteComponent,
@@ -44,12 +43,6 @@ function RouteComponent(): React.JSX.Element {
 
   const signInMutation = useAuthenticationSignIn({
     onSuccess(response) {
-      useAuthStore.setState({
-        user: response,
-        isAuthenticated: true,
-        isLoading: false,
-      });
-
       const role = response.group.slug.toUpperCase();
 
       const route = ROLE_DEFAULT_ROUTE[role];

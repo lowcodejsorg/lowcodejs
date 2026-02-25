@@ -10,6 +10,7 @@ import { queryKeys } from './_query-keys';
 import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
 import type { ProfileUpdatePayload } from '@/lib/payloads';
+import { useAuthStore } from '@/stores/authentication';
 
 type UseProfileUpdateProps = Pick<
   Omit<
@@ -38,7 +39,9 @@ export function useUpdateProfile(
       return response.data;
     },
     onSuccess(data, variables) {
+      queryClient.setQueryData(queryKeys.profile.detail(data._id), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.profile.all });
+      useAuthStore.getState().setUser(data);
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,

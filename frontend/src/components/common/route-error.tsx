@@ -4,7 +4,13 @@ import { AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-export function RouteError({ error }: { error: Error }): React.JSX.Element {
+export function RouteError({
+  error,
+  resetErrorBoundary,
+}: {
+  error: Error;
+  resetErrorBoundary?: () => void;
+}): React.JSX.Element {
   const router = useRouter();
 
   return (
@@ -16,7 +22,14 @@ export function RouteError({ error }: { error: Error }): React.JSX.Element {
           <p className="text-muted-foreground text-sm mb-6">
             {error.message || 'Ocorreu um erro inesperado. Tente novamente.'}
           </p>
-          <Button onClick={() => router.invalidate()}>Tentar Novamente</Button>
+          <Button
+            onClick={() => {
+              resetErrorBoundary?.();
+              router.invalidate();
+            }}
+          >
+            Tentar Novamente
+          </Button>
         </CardContent>
       </Card>
     </div>

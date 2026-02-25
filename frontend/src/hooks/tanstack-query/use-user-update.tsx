@@ -33,9 +33,7 @@ export function useUpdateUser(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.users.detail(variables._id),
-      });
+      queryClient.setQueryData(queryKeys.users.detail(variables._id), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
       props.onSuccess?.(data, variables);
     },

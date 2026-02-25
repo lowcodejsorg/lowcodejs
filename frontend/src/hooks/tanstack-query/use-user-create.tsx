@@ -33,6 +33,7 @@ export function useCreateUser(
       return response.data;
     },
     onSuccess(data, variables) {
+      queryClient.setQueryData(queryKeys.users.detail(data._id), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.users.lists() });
       props.onSuccess?.(data, variables);
     },

@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
   useParams,
@@ -7,15 +8,14 @@ import { ArrowLeftIcon, Share2Icon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
-import { UpdateRowFormSkeleton } from './-update-form-skeleton';
 import { UpdateRowForm } from './-update-row-form';
 
-import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
-import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
-import { cn } from '@/lib/utils';
+import {
+  rowDetailOptions,
+  tableDetailOptions,
+} from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/row/$rowId/')({
   component: RouteComponent,
@@ -29,12 +29,8 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/tables/$slug/row/$rowId/',
   });
 
-  const table = useReadTable({ slug });
-  const row = useReadTableRow({ slug, rowId });
-
-  const isLoading = table.status === 'pending' || row.status === 'pending';
-  const isError = table.status === 'error' || row.status === 'error';
-  const isSuccess = table.status === 'success' && row.status === 'success';
+  const { data: table } = useSuspenseQuery(tableDetailOptions(slug));
+  const { data: row } = useSuspenseQuery(rowDetailOptions(slug, rowId));
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -76,31 +72,10 @@ function RouteComponent(): React.JSX.Element {
         </div>
       </div>
 
-      {/* Content */}
-      <div
-        className={cn(
-          (isLoading || isError) &&
-            'flex-1 flex flex-col min-h-0 overflow-auto relative',
-        )}
-      >
-        {isLoading && <UpdateRowFormSkeleton />}
-        {isError && (
-          <LoadError
-            message="Houve um erro ao buscar dados do registro"
-            refetch={() => {
-              table.refetch();
-              row.refetch();
-            }}
-          />
-        )}
-      </div>
-
-      {isSuccess && (
-        <UpdateRowForm
-          table={table.data}
-          data={row.data}
-        />
-      )}
+      <UpdateRowForm
+        table={table}
+        data={row}
+      />
     </div>
   );
 }

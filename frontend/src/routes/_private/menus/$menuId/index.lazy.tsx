@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
   useParams,
@@ -11,14 +12,12 @@ import { toast } from 'sonner';
 
 import type { MenuUpdateFormValues } from './-update-form';
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
-import { UpdateMenuFormSkeleton } from './-update-form-skeleton';
 import { MenuView } from './-view';
 
-import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { useReadMenu } from '@/hooks/tanstack-query/use-menu-read';
+import { menuDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
@@ -36,7 +35,7 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const _read = useReadMenu({ menuId });
+  const { data } = useSuspenseQuery(menuDetailOptions(menuId));
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
@@ -61,7 +60,7 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes do menu</h1>
         </div>
-        {_read.status === 'success' && mode === 'show' && (
+        {mode === 'show' && (
           <Button
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"
@@ -76,20 +75,11 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {_read.status === 'error' && (
-          <LoadError
-            message="Houve um erro ao buscar dados do menu"
-            refetch={_read.refetch}
-          />
-        )}
-        {_read.status === 'pending' && <UpdateMenuFormSkeleton />}
-        {_read.status === 'success' && (
-          <MenuUpdateContent
-            data={_read.data}
-            mode={mode}
-            setMode={setMode}
-          />
-        )}
+        <MenuUpdateContent
+          data={data}
+          mode={mode}
+          setMode={setMode}
+        />
       </div>
     </div>
   );

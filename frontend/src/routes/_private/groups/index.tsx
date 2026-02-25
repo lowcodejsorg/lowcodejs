@@ -1,5 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
+
+import { TableGroupsSkeleton } from './-table-groups-skeleton';
+
+import { groupListOptions } from '@/hooks/tanstack-query/_query-options';
+
+const defaultSearch = { page: 1, perPage: 50 };
+const headers = ['Nome', 'Slug', 'Descrição'];
 
 export const Route = createFileRoute('/_private/groups/')({
   beforeLoad: async () => {
@@ -16,9 +23,21 @@ export const Route = createFileRoute('/_private/groups/')({
       'LowCodeJs';
     return { meta: [{ title: `Grupos - ${systemName}` }] };
   },
+  pendingComponent: () => <TableGroupsSkeleton headers={headers} />,
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
   }),
+  search: {
+    middlewares: [stripSearchParams(defaultSearch)],
+  },
+  loaderDeps: ({ search }) => ({
+    page: search.page,
+    perPage: search.perPage,
+    search: search.search,
+  }),
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureQueryData(groupListOptions(deps));
+  },
 });

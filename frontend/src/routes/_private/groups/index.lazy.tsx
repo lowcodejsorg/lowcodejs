@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
   useRouter,
@@ -5,14 +6,11 @@ import {
 } from '@tanstack/react-router';
 
 import { TableGroups } from './-table-groups';
-import { TableGroupsSkeleton } from './-table-groups-skeleton';
 
-import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useGroupReadPaginated } from '@/hooks/tanstack-query/use-group-read-paginated';
-import { MetaDefault } from '@/lib/constant';
+import { groupListOptions } from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createLazyFileRoute('/_private/groups/')({
   component: RouteComponent,
@@ -26,7 +24,7 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const pagination = useGroupReadPaginated(search);
+  const { data } = useSuspenseQuery(groupListOptions(search));
 
   const headers = ['Nome', 'Slug', 'Descrição'];
 
@@ -35,9 +33,6 @@ function RouteComponent(): React.JSX.Element {
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Grupos</h1>
         <Button
-          disabled={
-            pagination.status === 'pending' || pagination.status === 'error'
-          }
           className="disabled:cursor-not-allowed"
           onClick={() => {
             sidebar.setOpen(false);
@@ -52,27 +47,14 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {pagination.status === 'pending' && (
-          <TableGroupsSkeleton headers={headers} />
-        )}
-
-        {pagination.status === 'error' && (
-          <LoadError
-            message="Houve um erro ao buscar dados dos grupos"
-            refetch={pagination.refetch}
-          />
-        )}
-
-        {pagination.status === 'success' && (
-          <TableGroups
-            headers={headers}
-            data={pagination.data.data}
-          />
-        )}
+        <TableGroups
+          headers={headers}
+          data={data.data}
+        />
       </div>
 
       <div className="shrink-0 border-t p-2">
-        <Pagination meta={pagination.data?.meta ?? MetaDefault} />
+        <Pagination meta={data.meta} />
       </div>
     </div>
   );

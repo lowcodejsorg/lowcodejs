@@ -1,6 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 import z from 'zod';
 
+import {
+  rowListOptions,
+  tableDetailOptions,
+} from '@/hooks/tanstack-query/_query-options';
+
 export const Route = createFileRoute('/_private/tables/$slug/')({
   head: ({ matches }) => {
     const systemName =
@@ -17,4 +22,11 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
     .catchall(
       z.union([z.enum(['asc', 'desc']).optional(), z.string().optional()]),
     ),
+  loaderDeps: ({ search }) => search,
+  loader: async ({ context, params, deps }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(tableDetailOptions(params.slug)),
+      context.queryClient.ensureQueryData(rowListOptions(params.slug, deps)),
+    ]);
+  },
 });

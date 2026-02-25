@@ -33,9 +33,7 @@ export function useUpdateMenu(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.menus.detail(variables._id),
-      });
+      queryClient.setQueryData(queryKeys.menus.detail(variables._id), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
       props.onSuccess?.(data, variables);
     },

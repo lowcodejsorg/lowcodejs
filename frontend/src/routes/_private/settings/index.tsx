@@ -1,5 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { UpdateSettingFormSkeleton } from './-update-form-skeleton';
+
+import { settingOptions } from '@/hooks/tanstack-query/_query-options';
+
 export const Route = createFileRoute('/_private/settings/')({
   beforeLoad: async () => {
     const { useAuthStore } = await import('@/stores/authentication');
@@ -14,5 +18,9 @@ export const Route = createFileRoute('/_private/settings/')({
       (matches[0]?.loaderData as { systemName?: string })?.systemName ||
       'LowCodeJs';
     return { meta: [{ title: `Configurações - ${systemName}` }] };
+  },
+  pendingComponent: UpdateSettingFormSkeleton,
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(settingOptions());
   },
 });

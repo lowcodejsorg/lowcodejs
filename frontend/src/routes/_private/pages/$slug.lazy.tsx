@@ -1,6 +1,7 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useParams } from '@tanstack/react-router';
 
-import { usePageRead } from '@/hooks/tanstack-query/use-page-read';
+import { pageDetailOptions } from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createLazyFileRoute('/_private/pages/$slug')({
   component: RouteComponent,
@@ -11,18 +12,18 @@ function RouteComponent(): React.JSX.Element {
     from: '/_private/pages/$slug',
   });
 
-  const page = usePageRead({ slug });
+  const { data: page } = useSuspenseQuery(pageDetailOptions(slug));
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
-        <h1 className="text-2xl font-medium ">{page.data?.name ?? ''}</h1>
+        <h1 className="text-2xl font-medium ">{page?.name ?? ''}</h1>
       </div>
 
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
         <div
           className="prose dark:prose-invert"
-          dangerouslySetInnerHTML={{ __html: page.data?.html ?? '' }}
+          dangerouslySetInnerHTML={{ __html: page?.html ?? '' }}
         />
       </div>
 

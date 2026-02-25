@@ -21,6 +21,17 @@ API.interceptors.request.use(async (config) => {
     resolvedBaseUrl = await baseUrlPromise;
   }
   config.baseURL = resolvedBaseUrl;
+
+  if (typeof window === 'undefined') {
+    try {
+      const { getRequestHeader } = await import('@tanstack/react-start/server');
+      const cookies = getRequestHeader('Cookie');
+      if (cookies) config.headers.set('Cookie', cookies);
+    } catch {
+      /* not in request context */
+    }
+  }
+
   return config;
 });
 

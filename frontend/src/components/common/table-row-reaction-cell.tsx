@@ -1,15 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
-import { API } from '@/lib/api';
+import { useRowUpdateReaction } from '@/hooks/tanstack-query/use-row-update-reaction';
 import { E_REACTION_TYPE } from '@/lib/constant';
 import type { IField, IRow, ValueOf } from '@/lib/interfaces';
-import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 
 interface Reaction {
@@ -49,25 +46,7 @@ export function TableRowReactionCell({
       d.user?._id.toString() === user?._id.toString(),
   );
 
-  const reaction = useMutation({
-    mutationFn: async function (payload: {
-      user: string;
-      field: string;
-      type: Reaction['type'];
-    }) {
-      const route = '/tables/'
-        .concat(tableSlug)
-        .concat('/rows/')
-        .concat(row._id)
-        .concat('/reaction');
-      const response = await API.post<IRow>(route, payload);
-      return response.data;
-    },
-    onSuccess() {
-      QueryClient.invalidateQueries({
-        queryKey: queryKeys.rows.lists(tableSlug),
-      });
-    },
+  const reaction = useRowUpdateReaction({
     onError(error) {
       if (error instanceof AxiosError) {
         const errorData = error.response?.data;
@@ -88,8 +67,9 @@ export function TableRowReactionCell({
         onClick={(e) => {
           e.stopPropagation();
           if (!user?._id) return;
-          reaction.mutateAsync({
-            user: user._id.toString(),
+          reaction.mutate({
+            tableSlug,
+            rowId: row._id,
             field: field.slug,
             type: E_REACTION_TYPE.LIKE,
           });
@@ -108,8 +88,9 @@ export function TableRowReactionCell({
         onClick={(e) => {
           e.stopPropagation();
           if (!user?._id) return;
-          reaction.mutateAsync({
-            user: user._id.toString(),
+          reaction.mutate({
+            tableSlug,
+            rowId: row._id,
             field: field.slug,
             type: E_REACTION_TYPE.UNLIKE,
           });

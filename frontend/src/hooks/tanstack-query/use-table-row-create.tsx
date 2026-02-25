@@ -30,6 +30,10 @@ export function useCreateTableRow(
       return response.data;
     },
     onSuccess(data, variables) {
+      queryClient.setQueryData(
+        queryKeys.rows.detail(variables.slug, data._id),
+        data,
+      );
       queryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(variables.slug),
       });

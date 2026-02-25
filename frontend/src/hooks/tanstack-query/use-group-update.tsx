@@ -43,9 +43,7 @@ export function useUpdateGroup(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.groups.detail(variables._id),
-      });
+      queryClient.setQueryData(queryKeys.groups.detail(variables._id), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
       props.onSuccess?.(data, variables);
     },

@@ -1,15 +1,12 @@
-import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { Star } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
-import { API } from '@/lib/api';
+import { useRowUpdateEvaluation } from '@/hooks/tanstack-query/use-row-update-evaluation';
 import type { IField, IRow } from '@/lib/interfaces';
-import { QueryClient } from '@/lib/query-client';
 import { cn } from '@/lib/utils';
 
 interface Evaluation {
@@ -54,25 +51,7 @@ export function TableRowEvaluationCell({
 
   const [hoverRating, setHoverRating] = React.useState(0);
 
-  const evaluation = useMutation({
-    mutationFn: async function (payload: {
-      user: string;
-      field: string;
-      value: number;
-    }) {
-      const route = '/tables/'
-        .concat(tableSlug)
-        .concat('/rows/')
-        .concat(row._id)
-        .concat('/evaluation');
-      const response = await API.post<IRow>(route, payload);
-      return response.data;
-    },
-    onSuccess() {
-      QueryClient.invalidateQueries({
-        queryKey: queryKeys.rows.lists(tableSlug),
-      });
-    },
+  const evaluation = useRowUpdateEvaluation({
     onError(error) {
       if (error instanceof AxiosError) {
         const errorData = error.response?.data;
@@ -102,8 +81,9 @@ export function TableRowEvaluationCell({
               onClick={(e) => {
                 e.stopPropagation();
                 if (!user?._id) return;
-                evaluation.mutateAsync({
-                  user: user._id.toString(),
+                evaluation.mutate({
+                  tableSlug,
+                  rowId: row._id,
                   field: field.slug,
                   value,
                 });

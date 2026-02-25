@@ -43,6 +43,7 @@ export function useCreateGroup(
       return response.data;
     },
     onSuccess(data, variables) {
+      queryClient.setQueryData(queryKeys.groups.detail(data._id), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.groups.all });
       props.onSuccess?.(data, variables);
     },

@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { PencilIcon } from 'lucide-react';
@@ -5,17 +6,15 @@ import React from 'react';
 import { toast } from 'sonner';
 
 import { SettingUpdateSchema, UpdateSettingFormFields } from './-update-form';
-import { UpdateSettingFormSkeleton } from './-update-form-skeleton';
 import { SettingView } from './-view';
 
-import { LoadError } from '@/components/common/load-error';
 import {
   UploadingProvider,
   useIsUploading,
 } from '@/components/common/uploading-context';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
+import { settingOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateSetting } from '@/hooks/tanstack-query/use-setting-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { IHTTPExeptionError, ISetting } from '@/lib/interfaces';
@@ -25,7 +24,7 @@ export const Route = createLazyFileRoute('/_private/settings/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const _read = useSettingRead();
+  const { data } = useSuspenseQuery(settingOptions());
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
@@ -36,7 +35,7 @@ function RouteComponent(): React.JSX.Element {
         <div className="inline-flex items-center space-x-2">
           <h1 className="text-xl font-medium">Configurações do Sistema</h1>
         </div>
-        {_read.status === 'success' && mode === 'show' && (
+        {mode === 'show' && (
           <Button
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"
@@ -51,22 +50,13 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {_read.status === 'error' && (
-          <LoadError
-            message="Houve um erro ao buscar configurações do sistema"
-            refetch={_read.refetch}
+        <UploadingProvider>
+          <SettingUpdateContent
+            data={data}
+            mode={mode}
+            setMode={setMode}
           />
-        )}
-        {_read.status === 'pending' && <UpdateSettingFormSkeleton />}
-        {_read.status === 'success' && (
-          <UploadingProvider>
-            <SettingUpdateContent
-              data={_read.data}
-              mode={mode}
-              setMode={setMode}
-            />
-          </UploadingProvider>
-        )}
+        </UploadingProvider>
       </div>
     </div>
   );

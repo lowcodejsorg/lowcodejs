@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
   useRouter,
@@ -5,17 +6,15 @@ import {
 } from '@tanstack/react-router';
 
 import { TableTables } from './-table-tables';
-import { TableTablesSkeleton } from './-table-tables-skeleton';
 
-import { LoadError } from '@/components/common/load-error';
 import { Pagination } from '@/components/common/pagination';
 import { SheetFilter } from '@/components/common/sheet-filter';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
+import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 import { usePermission } from '@/hooks/use-table-permission';
-import { E_FIELD_TYPE, MetaDefault } from '@/lib/constant';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 
 export const Route = createLazyFileRoute('/_private/tables/')({
@@ -30,7 +29,7 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
 
-  const pagination = useTablesReadPaginated(search);
+  const { data } = useSuspenseQuery(tableListOptions(search));
   const permission = usePermission();
 
   const headers = [
@@ -67,6 +66,7 @@ function RouteComponent(): React.JSX.Element {
       widthInForm: null,
       widthInList: null,
       native: false,
+      order: null,
     },
   ];
 
@@ -80,9 +80,6 @@ function RouteComponent(): React.JSX.Element {
           <SheetFilter fields={fieldFilters} />
           {permission.can('CREATE_TABLE') && (
             <Button
-              disabled={
-                pagination.status === 'pending' || pagination.status === 'error'
-              }
               className="disabled:cursor-not-allowed"
               size={'sm'}
               onClick={() => {
@@ -101,28 +98,15 @@ function RouteComponent(): React.JSX.Element {
 
       {/* content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {pagination.status === 'pending' && (
-          <TableTablesSkeleton headers={headers} />
-        )}
-
-        {pagination.status === 'error' && (
-          <LoadError
-            message="Houve um erro ao buscar dados das tabelas"
-            refetch={pagination.refetch}
-          />
-        )}
-
-        {pagination.status === 'success' && (
-          <TableTables
-            headers={headers}
-            data={pagination.data.data}
-          />
-        )}
+        <TableTables
+          headers={headers}
+          data={data.data}
+        />
       </div>
 
       {/* footer */}
       <div className="shrink-0 border-t p-2">
-        <Pagination meta={pagination.data?.meta ?? MetaDefault} />
+        <Pagination meta={data.meta} />
       </div>
     </div>
   );

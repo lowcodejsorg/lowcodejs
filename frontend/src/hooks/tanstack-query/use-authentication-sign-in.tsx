@@ -8,6 +8,7 @@ import type { AxiosError } from 'axios';
 import { API } from '@/lib/api';
 import type { IUser } from '@/lib/interfaces';
 import type { SignInPayload } from '@/lib/payloads';
+import { useAuthStore } from '@/stores/authentication';
 
 type UseAuthenticationSignInProps = Pick<
   Omit<
@@ -24,7 +25,9 @@ export function useAuthenticationSignIn(
     mutationFn: async function (payload: SignInPayload) {
       await API.post('/authentication/sign-in', payload);
       const response = await API.get<IUser>('/profile');
-      return response.data;
+      const user = response.data;
+      useAuthStore.getState().setUser(user);
+      return user;
     },
     ...props,
   });

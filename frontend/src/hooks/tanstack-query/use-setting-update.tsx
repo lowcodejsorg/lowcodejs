@@ -43,7 +43,7 @@ export function useUpdateSetting(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({ queryKey: queryKeys.settings.all });
+      queryClient.setQueryData(queryKeys.settings.all, data);
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,

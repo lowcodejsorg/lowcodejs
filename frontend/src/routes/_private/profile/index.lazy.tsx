@@ -1,3 +1,4 @@
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { AxiosError } from 'axios';
 import { PencilIcon } from 'lucide-react';
@@ -6,13 +7,11 @@ import { toast } from 'sonner';
 
 import type { ProfileUpdateFormValues } from './-update-form';
 import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
-import { UpdateProfileFormSkeleton } from './-update-form-skeleton';
 import { ProfileView } from './-view';
 
-import { LoadError } from '@/components/common/load-error';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
+import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { IUser } from '@/lib/interfaces';
@@ -22,7 +21,7 @@ export const Route = createLazyFileRoute('/_private/profile/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const _read = useProfileRead();
+  const { data } = useSuspenseQuery(profileDetailOptions());
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
@@ -33,7 +32,7 @@ function RouteComponent(): React.JSX.Element {
         <div className="inline-flex items-center space-x-2">
           <h1 className="text-xl font-medium">Perfil do usuário</h1>
         </div>
-        {_read.status === 'success' && mode === 'show' && (
+        {mode === 'show' && (
           <Button
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"
@@ -48,20 +47,11 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {_read.status === 'error' && (
-          <LoadError
-            message="Houve um erro ao buscar dados do perfil"
-            refetch={_read.refetch}
-          />
-        )}
-        {_read.status === 'pending' && <UpdateProfileFormSkeleton />}
-        {_read.status === 'success' && (
-          <ProfileUpdateContent
-            data={_read.data}
-            mode={mode}
-            setMode={setMode}
-          />
-        )}
+        <ProfileUpdateContent
+          data={data}
+          mode={mode}
+          setMode={setMode}
+        />
       </div>
     </div>
   );

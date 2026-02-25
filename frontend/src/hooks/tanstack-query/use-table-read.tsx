@@ -2,6 +2,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
 import { queryKeys } from './_query-keys';
+import { tableDetailOptions } from './_query-options';
 
 import { API } from '@/lib/api';
 import type { ITable } from '@/lib/interfaces';
@@ -9,15 +10,7 @@ import type { ITable } from '@/lib/interfaces';
 export function useReadTable(payload: {
   slug: string;
 }): UseQueryResult<ITable, Error> {
-  return useQuery({
-    queryKey: queryKeys.tables.detail(payload.slug),
-    queryFn: async function () {
-      const route = '/tables/'.concat(payload.slug);
-      const response = await API.get<ITable>(route);
-      return response.data;
-    },
-    enabled: Boolean(payload.slug),
-  });
+  return useQuery(tableDetailOptions(payload.slug));
 }
 
 interface PaginatedTablesResponse {
@@ -45,8 +38,8 @@ export function useReadTables(payload?: {
           params: { page, perPage },
         },
       );
-
       return response.data.data;
     },
+    staleTime: 60 * 1000,
   });
 }

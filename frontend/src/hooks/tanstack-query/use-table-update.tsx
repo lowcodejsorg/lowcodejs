@@ -33,9 +33,7 @@ export function useUpdateTable(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.tables.detail(variables.slug),
-      });
+      queryClient.setQueryData(queryKeys.tables.detail(variables.slug), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
       props.onSuccess?.(data, variables);
     },

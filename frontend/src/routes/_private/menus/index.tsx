@@ -1,5 +1,12 @@
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
+
+import { TableMenusSkeleton } from './-table-menus-skeleton';
+
+import { menuListOptions } from '@/hooks/tanstack-query/_query-options';
+
+const defaultSearch = { page: 1, perPage: 50 };
+const headers = ['Nome', 'Slug', 'Tipo'];
 
 export const Route = createFileRoute('/_private/menus/')({
   beforeLoad: async () => {
@@ -16,8 +23,19 @@ export const Route = createFileRoute('/_private/menus/')({
       'LowCodeJs';
     return { meta: [{ title: `Menus - ${systemName}` }] };
   },
+  pendingComponent: () => <TableMenusSkeleton headers={headers} />,
   validateSearch: z.object({
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
   }),
+  search: {
+    middlewares: [stripSearchParams(defaultSearch)],
+  },
+  loaderDeps: ({ search }) => ({
+    page: search.page,
+    perPage: search.perPage,
+  }),
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureQueryData(menuListOptions(deps));
+  },
 });

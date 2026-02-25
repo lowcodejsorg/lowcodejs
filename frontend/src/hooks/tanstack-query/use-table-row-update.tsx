@@ -33,13 +33,13 @@ export function useUpdateTableRow(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.rows.detail(variables.slug, variables.rowId),
-      });
+      queryClient.setQueryData(
+        queryKeys.rows.detail(variables.slug, variables.rowId),
+        data,
+      );
       queryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(variables.slug),
       });
-
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,
