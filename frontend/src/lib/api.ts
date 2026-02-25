@@ -1,6 +1,7 @@
 import axios from 'axios';
 
 import { getApiBaseUrl } from '@/lib/get-api-config';
+import { getServerCookies } from '@/lib/server/get-cookies';
 import { useAuthStore } from '@/stores/authentication';
 
 let resolvedBaseUrl: string | null = null;
@@ -24,8 +25,7 @@ API.interceptors.request.use(async (config) => {
 
   if (typeof window === 'undefined') {
     try {
-      const { getRequestHeader } = await import('@tanstack/react-start/server');
-      const cookies = getRequestHeader('Cookie');
+      const cookies = await getServerCookies();
       if (cookies) config.headers.set('Cookie', cookies);
     } catch {
       /* not in request context */
