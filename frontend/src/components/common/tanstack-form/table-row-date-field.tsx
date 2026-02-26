@@ -39,7 +39,7 @@ export function TableRowDateField({
           formField.handleChange(value?.startDate?.toISOString() ?? '')
         }
         displayFormat={formatString}
-        placeholder={field.format ?? E_FIELD_FORMAT.DD_MM_YYYY}
+        placeholder={(field.format ?? E_FIELD_FORMAT.DD_MM_YYYY).toUpperCase()}
         disabled={disabled}
         useRange={false}
         asSingle

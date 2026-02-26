@@ -115,7 +115,7 @@ export const CreateFieldFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
-            onBlur: ({ value }) => {
+            onChange: ({ value }) => {
               if (!value || value.trim() === '') {
                 return { message: 'Nome é obrigatório' };
               }
@@ -142,7 +142,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="type"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
                   return { message: 'Tipo é obrigatório' };
                 }
@@ -210,7 +210,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="format"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
                   return { message: 'Formato é obrigatório' };
                 }
@@ -248,7 +248,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="format"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
                   return { message: 'Formato é obrigatório' };
                 }
@@ -294,7 +294,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="dropdown"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.length === 0) {
                   return { message: 'Adicione ao menos uma opção' };
                 }
@@ -318,7 +318,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="format"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
                   return { message: 'Formato da data é obrigatório' };
                 }
@@ -343,7 +343,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="relationship.tableId"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
                   return { message: 'Tabela de relacionamento é obrigatória' };
                 }
@@ -373,7 +373,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="relationship.fieldId"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
                   return { message: 'Campo é obrigatório' };
                 }
@@ -401,7 +401,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="relationship.order"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
                   return { message: 'Ordem é obrigatória' };
                 }
@@ -425,7 +425,7 @@ export const CreateFieldFormFields = withForm({
           <form.AppField
             name="category"
             validators={{
-              onBlur: ({ value }) => {
+              onChange: ({ value }) => {
                 if (!value || value.length === 0) {
                   return { message: 'Estrutura da categoria é obrigatória' };
                 }
