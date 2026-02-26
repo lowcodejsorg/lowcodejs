@@ -29,7 +29,9 @@ export const Route = createFileRoute('/_private')({
 
       // Permitir acesso público a rotas de visualização de tabela
       // O componente e o backend controlam por visibility
-      const isTableViewRoute = /^\/tables\/[^/]+\/?$/.test(location.pathname);
+      const isTableViewRoute = /^\/tables\/[^/]+(?:\/?|\/row\/[^/]+\/?)$/.test(
+        location.pathname,
+      );
       if (isTableViewRoute) {
         return;
       }
@@ -82,7 +84,8 @@ function PrivateLayout(): React.JSX.Element {
                 />
               )}
             >
-              <div className="flex flex-col h-screen overflow-hidden px-4 sm:px-2">
+              <div className="flex flex-col h-screen overflow-hidden px-4 sm:px-2 w-full">
+                <Header routesWithoutSearchInput={routesWithoutSearchInput} />
                 <Outlet />
               </div>
             </ErrorBoundary>

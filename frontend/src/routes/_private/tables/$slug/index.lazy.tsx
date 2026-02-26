@@ -29,6 +29,7 @@ import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
 import { LoadError } from '@/components/common/load-error';
+import { LoginButton } from '@/components/common/login-button';
 import { Pagination } from '@/components/common/pagination';
 import { SheetFilter } from '@/components/common/sheet-filter';
 import { TableStyleViewDropdown } from '@/components/common/table-style-view';
@@ -222,7 +223,8 @@ function RouteComponent(): React.JSX.Element {
             if (
               cause === 'TABLE_PRIVATE' ||
               cause === 'FORM_VIEW_RESTRICTED' ||
-              error.response?.status === 403
+              error.response?.status === 403 ||
+              error.response?.status === 401
             ) {
               const message =
                 cause === 'TABLE_PRIVATE'
@@ -239,6 +241,11 @@ function RouteComponent(): React.JSX.Element {
                     </EmptyMedia>
                     <EmptyTitle>Acesso negado</EmptyTitle>
                     <EmptyDescription>{message}</EmptyDescription>
+                    {!isAuthenticated && (
+                      <div className="mt-4">
+                        <LoginButton />
+                      </div>
+                    )}
                   </EmptyHeader>
                 </Empty>
               );
