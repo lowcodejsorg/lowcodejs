@@ -1,102 +1,367 @@
-// Base Kit
-// import { TextStyle } from '@tiptap/extension-text-style';
+import type { Editor } from '@tiptap/core';
+import {
+  AlignCenter,
+  AlignJustify,
+  AlignLeft,
+  AlignRight,
+  Bold,
+  ChevronDown,
+  Heading1,
+  Heading2,
+  Heading3,
+  Highlighter,
+  Image,
+  Italic,
+  Link,
+  List,
+  ListOrdered,
+  Minus,
+  Palette,
+  Pilcrow,
+  Quote,
+  Redo,
+  Strikethrough,
+  Table,
+  Underline,
+  Undo,
+} from 'lucide-react';
 
-// build extensions
-import { RichTextAttachment } from 'reactjs-tiptap-editor/attachment';
-import { RichTextBlockquote } from 'reactjs-tiptap-editor/blockquote';
-import { RichTextBold } from 'reactjs-tiptap-editor/bold';
-import { RichTextBulletList } from 'reactjs-tiptap-editor/bulletlist';
-import { RichTextClear } from 'reactjs-tiptap-editor/clear';
-import { RichTextColor } from 'reactjs-tiptap-editor/color';
-import { RichTextColumn } from 'reactjs-tiptap-editor/column';
-import { RichTextEmoji } from 'reactjs-tiptap-editor/emoji';
-import { RichTextExportPdf } from 'reactjs-tiptap-editor/exportpdf';
-import { RichTextFontFamily } from 'reactjs-tiptap-editor/fontfamily';
-import { RichTextFontSize } from 'reactjs-tiptap-editor/fontsize';
-import { RichTextHeading } from 'reactjs-tiptap-editor/heading';
-import { RichTextHighlight } from 'reactjs-tiptap-editor/highlight';
-import { RichTextRedo, RichTextUndo } from 'reactjs-tiptap-editor/history';
-import { RichTextHorizontalRule } from 'reactjs-tiptap-editor/horizontalrule';
-import { RichTextIframe } from 'reactjs-tiptap-editor/iframe';
-import { RichTextImage } from 'reactjs-tiptap-editor/image';
-import { RichTextIndent } from 'reactjs-tiptap-editor/indent';
-import { RichTextItalic } from 'reactjs-tiptap-editor/italic';
-import { RichTextLineHeight } from 'reactjs-tiptap-editor/lineheight';
-import { RichTextLink } from 'reactjs-tiptap-editor/link';
-import { RichTextMoreMark } from 'reactjs-tiptap-editor/moremark';
-import { RichTextOrderedList } from 'reactjs-tiptap-editor/orderedlist';
-import { RichTextSearchAndReplace } from 'reactjs-tiptap-editor/searchandreplace';
-import { RichTextStrike } from 'reactjs-tiptap-editor/strike';
-import { RichTextTable } from 'reactjs-tiptap-editor/table';
-import { RichTextTaskList } from 'reactjs-tiptap-editor/tasklist';
-import { RichTextAlign } from 'reactjs-tiptap-editor/textalign';
-import { RichTextTextDirection } from 'reactjs-tiptap-editor/textdirection';
-import { RichTextUnderline } from 'reactjs-tiptap-editor/textunderline';
-import { RichTextVideo } from 'reactjs-tiptap-editor/video';
+import { ColorPicker } from './color-picker';
+import { ImageUpload } from './image-upload';
+import { LinkEditBlock } from './link-edit-block';
+import { TablePicker } from './table-picker';
+import { ToolbarButton } from './toolbar-button';
 
-// Slash Command
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Separator } from '@/components/ui/separator';
 
-// Bubble
-
-import 'reactjs-tiptap-editor/style.css';
-
-interface ToolbarProps {
-  variant?: 'default' | 'minimal';
+interface EditorToolbarProps {
+  editor: Editor;
 }
 
-export function Toolbar({
-  variant = 'default',
-}: ToolbarProps): React.JSX.Element {
-  if (variant === 'minimal') {
-    return (
-      <div className="flex items-center gap-1 flex-wrap border-b! border-solid! border-[#a5a4a4]! p-1!">
-        <RichTextUndo />
-        <RichTextRedo />
-        <RichTextBold />
-        <RichTextItalic />
-        <RichTextUnderline />
-        <RichTextBulletList />
-        <RichTextOrderedList />
-        <RichTextLink />
-        <RichTextEmoji />
-      </div>
-    );
-  }
+export function EditorToolbar({
+  editor,
+}: EditorToolbarProps): React.JSX.Element {
+  return (
+    <div className="flex flex-wrap items-center gap-0.5 border-b px-1 py-1">
+      {/* Undo / Redo */}
+      <ToolbarButton
+        icon={Undo}
+        tooltip="Desfazer"
+        action={() => editor.chain().focus().undo().run()}
+        disabled={!editor.can().undo()}
+      />
+      <ToolbarButton
+        icon={Redo}
+        tooltip="Refazer"
+        action={() => editor.chain().focus().redo().run()}
+        disabled={!editor.can().redo()}
+      />
+
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-6"
+      />
+
+      {/* Heading Dropdown */}
+      <HeadingDropdown editor={editor} />
+
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-6"
+      />
+
+      {/* Inline Formatting */}
+      <ToolbarButton
+        icon={Bold}
+        tooltip="Negrito"
+        action={() => editor.chain().focus().toggleBold().run()}
+        isActive={editor.isActive('bold')}
+      />
+      <ToolbarButton
+        icon={Italic}
+        tooltip="Itálico"
+        action={() => editor.chain().focus().toggleItalic().run()}
+        isActive={editor.isActive('italic')}
+      />
+      <ToolbarButton
+        icon={Underline}
+        tooltip="Sublinhado"
+        action={() => editor.chain().focus().toggleUnderline().run()}
+        isActive={editor.isActive('underline')}
+      />
+      <ToolbarButton
+        icon={Strikethrough}
+        tooltip="Tachado"
+        action={() => editor.chain().focus().toggleStrike().run()}
+        isActive={editor.isActive('strike')}
+      />
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-6"
+      />
+
+      {/* Text Color */}
+      <ColorPicker
+        value={editor.getAttributes('textStyle').color}
+        onChange={(color) => {
+          if (color) {
+            editor.chain().focus().setColor(color).run();
+          } else {
+            editor.chain().focus().unsetColor().run();
+          }
+        }}
+      >
+        <div>
+          <ToolbarButton
+            icon={Palette}
+            tooltip="Cor do texto"
+          />
+        </div>
+      </ColorPicker>
+
+      {/* Highlight */}
+      <ColorPicker
+        highlight
+        value={editor.getAttributes('highlight').color}
+        onChange={(color) => {
+          if (color) {
+            editor.chain().focus().toggleHighlight({ color }).run();
+          } else {
+            editor.chain().focus().unsetHighlight().run();
+          }
+        }}
+      >
+        <div>
+          <ToolbarButton
+            icon={Highlighter}
+            tooltip="Destaque"
+            isActive={editor.isActive('highlight')}
+          />
+        </div>
+      </ColorPicker>
+
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-6"
+      />
+
+      {/* Text Align */}
+      <ToolbarButton
+        icon={AlignLeft}
+        tooltip="Alinhar à esquerda"
+        action={() => editor.chain().focus().setTextAlign('left').run()}
+        isActive={editor.isActive({ textAlign: 'left' })}
+      />
+      <ToolbarButton
+        icon={AlignCenter}
+        tooltip="Centralizar"
+        action={() => editor.chain().focus().setTextAlign('center').run()}
+        isActive={editor.isActive({ textAlign: 'center' })}
+      />
+      <ToolbarButton
+        icon={AlignRight}
+        tooltip="Alinhar à direita"
+        action={() => editor.chain().focus().setTextAlign('right').run()}
+        isActive={editor.isActive({ textAlign: 'right' })}
+      />
+      <ToolbarButton
+        icon={AlignJustify}
+        tooltip="Justificar"
+        action={() => editor.chain().focus().setTextAlign('justify').run()}
+        isActive={editor.isActive({ textAlign: 'justify' })}
+      />
+
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-6"
+      />
+
+      {/* Lists */}
+      <ToolbarButton
+        icon={List}
+        tooltip="Lista com marcadores"
+        action={() => editor.chain().focus().toggleBulletList().run()}
+        isActive={editor.isActive('bulletList')}
+      />
+      <ToolbarButton
+        icon={ListOrdered}
+        tooltip="Lista numerada"
+        action={() => editor.chain().focus().toggleOrderedList().run()}
+        isActive={editor.isActive('orderedList')}
+      />
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-6"
+      />
+
+      {/* Link */}
+      <LinkPopover editor={editor} />
+
+      {/* Image */}
+      <ImageUpload
+        onUpload={(url) => editor.chain().focus().setImage({ src: url }).run()}
+      >
+        <div>
+          <ToolbarButton
+            icon={Image}
+            tooltip="Imagem"
+          />
+        </div>
+      </ImageUpload>
+
+      {/* Table */}
+      <TablePicker
+        onInsert={(rows, cols) =>
+          editor
+            .chain()
+            .focus()
+            .insertTable({ rows, cols, withHeaderRow: true })
+            .run()
+        }
+      >
+        <div>
+          <ToolbarButton
+            icon={Table}
+            tooltip="Tabela"
+          />
+        </div>
+      </TablePicker>
+
+      <Separator
+        orientation="vertical"
+        className="mx-1 h-6"
+      />
+
+      {/* Block elements */}
+      <ToolbarButton
+        icon={Quote}
+        tooltip="Citação"
+        action={() => editor.chain().focus().toggleBlockquote().run()}
+        isActive={editor.isActive('blockquote')}
+      />
+      <ToolbarButton
+        icon={Minus}
+        tooltip="Linha divisória"
+        action={() => editor.chain().focus().setHorizontalRule().run()}
+      />
+    </div>
+  );
+}
+
+function HeadingDropdown({ editor }: { editor: Editor }): React.JSX.Element {
+  const current = editor.isActive('heading', { level: 1 })
+    ? 'H1'
+    : editor.isActive('heading', { level: 2 })
+      ? 'H2'
+      : editor.isActive('heading', { level: 3 })
+        ? 'H3'
+        : 'Texto';
 
   return (
-    <div className="flex items-center p-1! gap-2 flex-wrap border-b! border-solid! border-[#a5a4a4]!">
-      <RichTextUndo />
-      <RichTextRedo />
-      <RichTextSearchAndReplace />
-      <RichTextClear />
-      <RichTextFontFamily />
-      <RichTextHeading />
-      <RichTextFontSize />
-      <RichTextBold />
-      <RichTextItalic />
-      <RichTextUnderline />
-      <RichTextStrike />
-      <RichTextMoreMark />
-      <RichTextEmoji />
-      <RichTextColor />
-      <RichTextHighlight />
-      <RichTextBulletList />
-      <RichTextOrderedList />
-      <RichTextAlign />
-      <RichTextIndent />
-      <RichTextLineHeight />
-      <RichTextTaskList />
-      <RichTextLink />
-      <RichTextImage />
-      <RichTextVideo />
-      <RichTextBlockquote />
-      <RichTextHorizontalRule />
-      <RichTextColumn />
-      <RichTextTable />
-      <RichTextIframe />
-      <RichTextExportPdf />
-      <RichTextTextDirection />
-      <RichTextAttachment />
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex items-center gap-1 rounded-md px-2 h-8 text-sm hover:bg-accent cursor-pointer"
+        >
+          {current}
+          <ChevronDown className="size-3" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start">
+        <DropdownMenuItem
+          onClick={() => editor.chain().focus().setParagraph().run()}
+        >
+          <Pilcrow className="size-4 mr-2" />
+          Parágrafo
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
+        >
+          <Heading1 className="size-4 mr-2" />
+          Título 1
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 2 }).run()
+          }
+        >
+          <Heading2 className="size-4 mr-2" />
+          Título 2
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+        >
+          <Heading3 className="size-4 mr-2" />
+          Título 3
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function LinkPopover({ editor }: { editor: Editor }): React.JSX.Element {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <div>
+          <ToolbarButton
+            icon={Link}
+            tooltip="Link"
+            isActive={editor.isActive('link')}
+          />
+        </div>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        className="w-72 p-2"
+      >
+        <LinkEditBlock
+          defaultUrl={editor.getAttributes('link').href || ''}
+          onSubmit={(url, text, openInNewTab) => {
+            const chain = editor.chain().focus();
+            if (text) {
+              chain
+                .insertContent({
+                  type: 'text',
+                  marks: [
+                    {
+                      type: 'link',
+                      attrs: {
+                        href: url,
+                        target: openInNewTab ? '_blank' : null,
+                      },
+                    },
+                  ],
+                  text,
+                })
+                .run();
+            } else {
+              chain
+                .setLink({
+                  href: url,
+                  target: openInNewTab ? '_blank' : null,
+                })
+                .run();
+            }
+          }}
+        />
+      </PopoverContent>
+    </Popover>
   );
 }

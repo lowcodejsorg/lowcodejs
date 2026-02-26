@@ -5,10 +5,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
-// Lazy load do editor pesado
-const EditorExample = lazy(() =>
+const Editor = lazy(() =>
   import('@/components/common/editor').then((m) => ({
-    default: m.EditorExample,
+    default: m.Editor,
+  })),
+);
+
+const ContentViewer = lazy(() =>
+  import('@/components/common/editor').then((m) => ({
+    default: m.ContentViewer,
   })),
 );
 
@@ -51,21 +56,20 @@ export function FieldEditor({
           )}
         >
           <Suspense fallback={<EditorSkeleton />}>
-            <EditorExample
+            <Editor
               value={field.state.value || ''}
               onChange={(value) => field.handleChange(value)}
+              showToolbar={true}
+              showCharCount={true}
             />
           </Suspense>
         </div>
       )}
       {showPreview && (
         <div className="border rounded-md p-4 bg-muted min-h-25">
-          <div
-            className="prose prose-sm max-w-none"
-            dangerouslySetInnerHTML={{
-              __html: field.state.value || '<p>Sem conteudo</p>',
-            }}
-          />
+          <Suspense fallback={<Skeleton className="h-20 w-full" />}>
+            <ContentViewer content={field.state.value || ''} />
+          </Suspense>
         </div>
       )}
       {isInvalid && <FieldError errors={field.state.meta.errors} />}

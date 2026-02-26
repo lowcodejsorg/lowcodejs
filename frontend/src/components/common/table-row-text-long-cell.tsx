@@ -1,3 +1,4 @@
+import { ContentViewer } from '@/components/common/editor';
 import { E_FIELD_FORMAT } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
@@ -21,12 +22,7 @@ export function TableRowTextLongCell({
   }
 
   if (isRichText) {
-    return (
-      <div
-        className={cn('prose prose-sm max-w-none', className)}
-        dangerouslySetInnerHTML={{ __html: value }}
-      />
-    );
+    return <ContentViewer content={value} />;
   }
 
   return (

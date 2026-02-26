@@ -1,3 +1,4 @@
+import { ContentViewer } from '@/components/common/editor';
 import { E_MENU_ITEM_TYPE, MENU_ITEM_TYPE_OPTIONS } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 
@@ -45,10 +46,7 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
         <div className="space-y-1">
           <p className="text-sm font-medium">Conteúdo da Página</p>
           {data.html ? (
-            <div
-              className="text-sm text-muted-foreground prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: data.html }}
-            />
+            <ContentViewer content={data.html} />
           ) : (
             <p className="text-sm text-muted-foreground">-</p>
           )}

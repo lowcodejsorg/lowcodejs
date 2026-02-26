@@ -3,7 +3,7 @@ import React from 'react';
 
 import { ForumUserMultiSelect } from './forum-user-multi-select';
 
-import { EditorExample } from '@/components/common/editor';
+import { Editor } from '@/components/common/editor';
 import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
 import { Button } from '@/components/ui/button';
 import type { IStorage, IUser } from '@/lib/interfaces';
@@ -88,12 +88,12 @@ export function ForumComposer({
         </div>
       )}
 
-      <EditorExample
+      <Editor
         value={composerText}
         onChange={onTextChange}
         debounceMs={0}
         variant="compact"
-        toolbarVariant="minimal"
+        showToolbar={true}
         showBubble={false}
         autoFocus
         focusKey={focusKey}

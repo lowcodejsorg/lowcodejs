@@ -3,6 +3,7 @@ import React from 'react';
 
 import type { ForumMessage } from './forum-types';
 
+import { ContentViewer } from '@/components/common/editor';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -181,12 +182,7 @@ export function ForumMessagesList({
                 </div>
               )}
 
-              {message.text && (
-                <div
-                  className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ __html: message.text }}
-                />
-              )}
+              {message.text && <ContentViewer content={message.text} />}
 
               {message.attachments.length > 0 && (
                 <div className="flex flex-wrap gap-2">
