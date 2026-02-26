@@ -70,23 +70,25 @@ function PrivateLayout(): React.JSX.Element {
 
   if (!isAuthenticated) {
     return (
-      <QueryErrorResetBoundary>
-        {({ reset }) => (
-          <ErrorBoundary
-            onReset={reset}
-            fallbackRender={({ resetErrorBoundary }) => (
-              <RouteError
-                error={new Error('Erro ao carregar dados')}
-                resetErrorBoundary={resetErrorBoundary}
-              />
-            )}
-          >
-            <div className="flex flex-col h-screen overflow-hidden px-4 sm:px-2">
-              <Outlet />
-            </div>
-          </ErrorBoundary>
-        )}
-      </QueryErrorResetBoundary>
+      <SidebarProvider>
+        <QueryErrorResetBoundary>
+          {({ reset }) => (
+            <ErrorBoundary
+              onReset={reset}
+              fallbackRender={({ resetErrorBoundary }) => (
+                <RouteError
+                  error={new Error('Erro ao carregar dados')}
+                  resetErrorBoundary={resetErrorBoundary}
+                />
+              )}
+            >
+              <div className="flex flex-col h-screen overflow-hidden px-4 sm:px-2">
+                <Outlet />
+              </div>
+            </ErrorBoundary>
+          )}
+        </QueryErrorResetBoundary>
+      </SidebarProvider>
     );
   }
 
