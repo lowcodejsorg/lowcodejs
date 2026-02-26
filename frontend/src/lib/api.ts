@@ -35,7 +35,8 @@ API.interceptors.request.use(async (config) => {
   return config;
 });
 
-const PUBLIC_PATHS = ['/', '/sign-up', '/tables/'];
+const isPublicPath = (path: string): boolean =>
+  path === '/' || path === '/sign-up' || path.startsWith('/tables/');
 
 API.interceptors.response.use(
   (response) => response,
@@ -43,7 +44,7 @@ API.interceptors.response.use(
     if (error.response?.status === 401) {
       if (typeof window !== 'undefined') {
         const currentPath = window.location.pathname;
-        if (!PUBLIC_PATHS.includes(currentPath)) {
+        if (!isPublicPath(currentPath)) {
           useAuthStore.getState().clear();
           window.location.href = '/';
         }

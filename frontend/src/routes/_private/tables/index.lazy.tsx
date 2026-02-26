@@ -76,7 +76,7 @@ function RouteComponent(): React.JSX.Element {
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
-          <TrashButton />
+          {permission.can('REMOVE_TABLE') && <TrashButton />}
           <SheetFilter fields={fieldFilters} />
           {permission.can('CREATE_TABLE') && (
             <Button

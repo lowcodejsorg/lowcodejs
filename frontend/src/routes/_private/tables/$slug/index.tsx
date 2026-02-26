@@ -5,6 +5,7 @@ import {
   rowListOptions,
   tableDetailOptions,
 } from '@/hooks/tanstack-query/_query-options';
+import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   head: ({ matches }) => {
@@ -24,6 +25,9 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
     ),
   loaderDeps: ({ search }) => search,
   loader: async ({ context, params, deps }) => {
+    const isAuthenticated = Boolean(useAuthStore.getState().user);
+    if (!isAuthenticated) return; // componente trata via hooks
+
     await Promise.all([
       context.queryClient.ensureQueryData(tableDetailOptions(params.slug)),
       context.queryClient.ensureQueryData(rowListOptions(params.slug, deps)),

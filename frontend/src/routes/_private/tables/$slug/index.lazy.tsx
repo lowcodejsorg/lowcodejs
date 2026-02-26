@@ -145,7 +145,7 @@ function RouteComponent(): React.JSX.Element {
               fields={table.data.fields.filter((f) => f.showInFilter)}
             />
           )}
-          <TrashButton />
+          {permission.can('UPDATE_ROW') && <TrashButton />}
 
           <TableStyleViewDropdown slug={slug} />
           <TableConfigurationDropdown tableSlug={slug} />

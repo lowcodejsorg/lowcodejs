@@ -18,7 +18,7 @@ export const Route = createFileRoute('/_private')({
   pendingComponent: RoutePending,
   errorComponent: RouteError,
   ssr: 'data-only',
-  beforeLoad: async ({ context }) => {
+  beforeLoad: async ({ context, location }) => {
     try {
       const user = await context.queryClient.ensureQueryData(
         profileDetailOptions(),
@@ -26,6 +26,14 @@ export const Route = createFileRoute('/_private')({
       useAuthStore.getState().setUser(user);
     } catch {
       useAuthStore.getState().clear();
+
+      // Permitir acesso público a rotas de visualização de tabela
+      // O componente e o backend controlam por visibility
+      const isTableViewRoute = /^\/tables\/[^/]+\/?$/.test(location.pathname);
+      if (isTableViewRoute) {
+        return;
+      }
+
       throw redirect({ to: '/' });
     }
   },
@@ -33,6 +41,7 @@ export const Route = createFileRoute('/_private')({
 
 function PrivateLayout(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
+  const isAuthenticated = Boolean(user);
   const role = user?.group?.slug?.toUpperCase() ?? E_ROLE.REGISTERED;
 
   const { menu } = useMenuDynamic(role);
@@ -58,6 +67,28 @@ function PrivateLayout(): React.JSX.Element {
     '/tables/new',
     '/tools',
   ];
+
+  if (!isAuthenticated) {
+    return (
+      <QueryErrorResetBoundary>
+        {({ reset }) => (
+          <ErrorBoundary
+            onReset={reset}
+            fallbackRender={({ resetErrorBoundary }) => (
+              <RouteError
+                error={new Error('Erro ao carregar dados')}
+                resetErrorBoundary={resetErrorBoundary}
+              />
+            )}
+          >
+            <div className="flex flex-col h-screen overflow-hidden px-4 sm:px-2">
+              <Outlet />
+            </div>
+          </ErrorBoundary>
+        )}
+      </QueryErrorResetBoundary>
+    );
+  }
 
   return (
     <SidebarProvider>
