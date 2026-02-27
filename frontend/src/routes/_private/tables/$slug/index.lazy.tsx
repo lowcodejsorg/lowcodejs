@@ -28,10 +28,12 @@ import { TableMosaicView } from './-table-mosaic-view';
 import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
+import { getActiveFiltersCount } from '@/components/common/filter-fields';
+import { FilterSidebar } from '@/components/common/filter-sidebar';
+import { FilterTrigger } from '@/components/common/filter-trigger';
 import { LoadError } from '@/components/common/load-error';
 import { LoginButton } from '@/components/common/login-button';
 import { Pagination } from '@/components/common/pagination';
-import { SheetFilter } from '@/components/common/sheet-filter';
 import { TableStyleViewDropdown } from '@/components/common/table-style-view';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
@@ -94,6 +96,24 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const sidebar = useSidebar();
 
+  const [filterOpen, setFilterOpen] = React.useState(() => {
+    try {
+      return localStorage.getItem('filter-sidebar-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleFilterOpenChange = React.useCallback((open: boolean) => {
+    setFilterOpen(open);
+    try {
+      localStorage.setItem('filter-sidebar-open', String(open));
+    } catch {}
+  }, []);
+
+  const filterFields = table.data?.fields.filter((f) => f.showInFilter) ?? [];
+  const activeFiltersCount = getActiveFiltersCount(filterFields, search);
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
@@ -141,9 +161,11 @@ function RouteComponent(): React.JSX.Element {
         </div>
 
         <div className="inline-flex items-center space-x-2">
-          {table.status === 'success' && (
-            <SheetFilter
-              fields={table.data.fields.filter((f) => f.showInFilter)}
+          {table.status === 'success' && filterFields.length > 0 && (
+            <FilterTrigger
+              activeFiltersCount={activeFiltersCount}
+              onClick={() => handleFilterOpenChange(!filterOpen)}
+              isOpen={filterOpen}
             />
           )}
           {permission.can('UPDATE_ROW') && <TrashButton />}
@@ -172,7 +194,15 @@ function RouteComponent(): React.JSX.Element {
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <div className="flex-1 flex flex-row min-h-0">
+        {table.status === 'success' && filterFields.length > 0 && (
+          <FilterSidebar
+            fields={filterFields}
+            open={filterOpen}
+            onOpenChange={handleFilterOpenChange}
+          />
+        )}
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
         {table.status === 'pending' && <TableSkeleton />}
         {table.status === 'success' &&
           rows.status === 'pending' &&
@@ -336,6 +366,7 @@ function RouteComponent(): React.JSX.Element {
               table={table.data}
             />
           )}
+        </div>
       </div>
 
       {!shouldDisablePagination && (
