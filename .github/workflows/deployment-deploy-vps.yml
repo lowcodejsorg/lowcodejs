@@ -41,6 +41,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Read deploy config
+        id: config
+        run: |
+          BRANCH="${{ inputs.branch }}"
+          CONFIG_FILE=".github/deploy-config.json"
+          if [ -f "$CONFIG_FILE" ] && jq -e ".\"$BRANCH\"" "$CONFIG_FILE" > /dev/null 2>&1; then
+            echo "api_host=$(jq -r ".\"$BRANCH\".api_host" "$CONFIG_FILE")" >> $GITHUB_OUTPUT
+            echo "app_host=$(jq -r ".\"$BRANCH\".app_host" "$CONFIG_FILE")" >> $GITHUB_OUTPUT
+            echo "cookie_domain=$(jq -r ".\"$BRANCH\".cookie_domain" "$CONFIG_FILE")" >> $GITHUB_OUTPUT
+          else
+            echo "api_host=api.${BRANCH}.lowcodejs.org" >> $GITHUB_OUTPUT
+            echo "app_host=${BRANCH}.lowcodejs.org" >> $GITHUB_OUTPUT
+            echo "cookie_domain=${{ secrets.COOKIE_DOMAIN }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Create deployment directory
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -81,32 +96,33 @@ jobs:
             cat > .env << EOF
             ENVIRONMENT=${{ inputs.branch }}
             NODE_ENV=production
+            API_HOST=${{ steps.config.outputs.api_host }}
+            APP_HOST=${{ steps.config.outputs.app_host }}
             PORT=3000
             DOCKER_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
             DB_USERNAME=${{ inputs.branch }}
             DB_PASSWORD=${{ secrets.DB_PASSWORD }}
             DB_NAME=${{ inputs.branch }}
-            # DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@${{ inputs.branch }}-lowcodejs-mongo-1:27017/${{ inputs.branch }}?authSource=admin
             DATABASE_URL=mongodb://${{ inputs.branch }}:${{ secrets.DB_PASSWORD }}@mongo:27017/${{ inputs.branch }}?authSource=admin
-            APP_SERVER_URL=https://api.${{ inputs.branch }}.lowcodejs.org
-            APP_CLIENT_URL=https://${{ inputs.branch }}.lowcodejs.org
+            APP_SERVER_URL=https://${{ steps.config.outputs.api_host }}
+            APP_CLIENT_URL=https://${{ steps.config.outputs.app_host }}
             JWT_PRIVATE_KEY=${{ secrets.JWT_PRIVATE_KEY }}
             JWT_PUBLIC_KEY=${{ secrets.JWT_PUBLIC_KEY }}
             COOKIE_SECRET=${{ secrets.COOKIE_SECRET }}
-            COOKIE_DOMAIN=${{ secrets.COOKIE_DOMAIN }}
+            COOKIE_DOMAIN=${{ steps.config.outputs.cookie_domain }}
             EMAIL_PROVIDER_PASSWORD=${{ secrets.EMAIL_PROVIDER_PASSWORD }}
             EMAIL_PROVIDER_USER=${{ secrets.EMAIL_PROVIDER_USER }}
             EMAIL_PROVIDER_HOST=${{ secrets.EMAIL_PROVIDER_HOST }}
             EMAIL_PROVIDER_PORT=${{ secrets.EMAIL_PROVIDER_PORT }}
-            VITE_API_BASE_URL=https://api.${{ inputs.branch }}.lowcodejs.org
+            VITE_API_BASE_URL=https://${{ steps.config.outputs.api_host }}
             FILE_UPLOAD_MAX_SIZE=10485760
             FILE_UPLOAD_ACCEPTED=jpg;jpeg;png;pdf;doc;docx;xls;xlsx;txt;zip;rar
             FILE_UPLOAD_MAX_FILES_PER_UPLOAD=10
             LOCALE=pt-br
             PAGINATION_PER_PAGE=20
             ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
-            LOGO_SMALL_URL=https://api.${{ inputs.branch }}.lowcodejs.org/storage/logo-small.webp
-            LOGO_LARGE_URL=https://api.${{ inputs.branch }}.lowcodejs.org/storage/logo-large.webp
+            LOGO_SMALL_URL=https://${{ steps.config.outputs.api_host }}/storage/logo-small.webp
+            LOGO_LARGE_URL=https://${{ steps.config.outputs.api_host }}/storage/logo-large.webp
             EOF
 
             echo "Environment variables configured successfully. Deploying..."
@@ -115,17 +131,6 @@ jobs:
             docker compose -f docker-compose.production.yml pull
             docker image prune -f || true
             docker compose -f docker-compose.production.yml up -d --force-recreate
-
-            # LOGICA PARA O NET-LABIC
-            if [ "${{ inputs.branch }}" = "develop" ]; then
-              echo "Branch develop detectada. Atualizando net-labic..."
-              cd /home/${{ secrets.VPS_USER }}/deployments/net-labic
-              
-              # o pull vai baixar a imagem (develop) que acabou de buildar
-              docker compose -f docker-compose.production.yml pull
-              docker compose -f docker-compose.production.yml up -d --force-recreate
-              echo "net-labic atualizado com sucesso!"
-            fi
 
             # Aguardar container da API estar pronto
             sleep 5
