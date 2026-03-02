@@ -203,169 +203,173 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
         <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        {table.status === 'pending' && <TableSkeleton />}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.LIST && <TableListViewSkeleton />}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.GALLERY && (
-            <TableGridViewSkeleton />
-          )}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.DOCUMENT && (
-            <TableDocumentViewSkeleton />
-          )}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.CARD && <TableCardViewSkeleton />}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.MOSAIC && (
-            <TableMosaicViewSkeleton />
-          )}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.KANBAN && (
-            <TableKanbanViewSkeleton />
-          )}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.FORUM && (
-            <TableForumViewSkeleton />
-          )}
-        {table.status === 'success' &&
-          rows.status === 'pending' &&
-          table.data.style === E_TABLE_STYLE.CALENDAR && (
-            <TableCalendarViewSkeleton />
-          )}
+          {table.status === 'pending' && <TableSkeleton />}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.LIST && (
+              <TableListViewSkeleton />
+            )}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.GALLERY && (
+              <TableGridViewSkeleton />
+            )}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.DOCUMENT && (
+              <TableDocumentViewSkeleton />
+            )}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.CARD && (
+              <TableCardViewSkeleton />
+            )}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.MOSAIC && (
+              <TableMosaicViewSkeleton />
+            )}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.KANBAN && (
+              <TableKanbanViewSkeleton />
+            )}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.FORUM && (
+              <TableForumViewSkeleton />
+            )}
+          {table.status === 'success' &&
+            rows.status === 'pending' &&
+            table.data.style === E_TABLE_STYLE.CALENDAR && (
+              <TableCalendarViewSkeleton />
+            )}
 
-        {rows.status === 'error' &&
-          ((): React.JSX.Element => {
-            const error = rows.error as AxiosError<{
-              code: number;
-              cause: string;
-            }>;
-            const cause = error.response?.data.cause;
+          {rows.status === 'error' &&
+            ((): React.JSX.Element => {
+              const error = rows.error as AxiosError<{
+                code: number;
+                cause: string;
+              }>;
+              const cause = error.response?.data.cause;
 
-            // Erros de permissão - sem botão de refetch
-            if (
-              cause === 'TABLE_PRIVATE' ||
-              cause === 'FORM_VIEW_RESTRICTED' ||
-              error.response?.status === 403 ||
-              error.response?.status === 401
-            ) {
-              const message =
-                cause === 'TABLE_PRIVATE'
-                  ? 'Esta tabela é privada'
-                  : cause === 'FORM_VIEW_RESTRICTED'
-                    ? 'Apenas o dono pode visualizar tabelas de formulário'
-                    : 'Você não tem permissão para acessar esta tabela';
+              // Erros de permissão - sem botão de refetch
+              if (
+                cause === 'TABLE_PRIVATE' ||
+                cause === 'FORM_VIEW_RESTRICTED' ||
+                error.response?.status === 403 ||
+                error.response?.status === 401
+              ) {
+                const message =
+                  cause === 'TABLE_PRIVATE'
+                    ? 'Esta tabela é privada'
+                    : cause === 'FORM_VIEW_RESTRICTED'
+                      ? 'Apenas o dono pode visualizar tabelas de formulário'
+                      : 'Você não tem permissão para acessar esta tabela';
 
+                return (
+                  <Empty className="from-muted/50 to-background h-full bg-linear-to-b from-30%">
+                    <EmptyHeader>
+                      <EmptyMedia variant="icon">
+                        <ShieldXIcon />
+                      </EmptyMedia>
+                      <EmptyTitle>Acesso negado</EmptyTitle>
+                      <EmptyDescription>{message}</EmptyDescription>
+                      {!isAuthenticated && (
+                        <div className="mt-4">
+                          <LoginButton />
+                        </div>
+                      )}
+                    </EmptyHeader>
+                  </Empty>
+                );
+              }
+
+              // Outros erros - com botão de refetch
               return (
-                <Empty className="from-muted/50 to-background h-full bg-linear-to-b from-30%">
-                  <EmptyHeader>
-                    <EmptyMedia variant="icon">
-                      <ShieldXIcon />
-                    </EmptyMedia>
-                    <EmptyTitle>Acesso negado</EmptyTitle>
-                    <EmptyDescription>{message}</EmptyDescription>
-                    {!isAuthenticated && (
-                      <div className="mt-4">
-                        <LoginButton />
-                      </div>
-                    )}
-                  </EmptyHeader>
-                </Empty>
+                <LoadError
+                  message="Houve um erro ao buscar dados de registros da tabela"
+                  refetch={rows.refetch}
+                />
               );
-            }
+            })()}
 
-            // Outros erros - com botão de refetch
-            return (
-              <LoadError
-                message="Houve um erro ao buscar dados de registros da tabela"
-                refetch={rows.refetch}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.LIST &&
+            rows.status === 'success' && (
+              <TableListView
+                headers={table.data.fields}
+                order={table.data.fieldOrderList}
+                data={rows.data.data}
               />
-            );
-          })()}
-
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.LIST &&
-          rows.status === 'success' && (
-            <TableListView
-              headers={table.data.fields}
-              order={table.data.fieldOrderList}
-              data={rows.data.data}
-            />
-          )}
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.GALLERY &&
-          rows.status === 'success' && (
-            <TableGridView
-              headers={table.data.fields}
-              order={table.data.fieldOrderList}
-              data={rows.data.data}
-            />
-          )}
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.DOCUMENT &&
-          rows.status === 'success' && (
-            <TableDocumentView
-              headers={table.data.fields}
-              order={table.data.fieldOrderList}
-              data={rows.data.data}
-              tableSlug={slug}
-            />
-          )}
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.CARD &&
-          rows.status === 'success' && (
-            <TableCardView
-              headers={table.data.fields}
-              order={table.data.fieldOrderList}
-              data={rows.data.data}
-            />
-          )}
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.MOSAIC &&
-          rows.status === 'success' && (
-            <TableMosaicView
-              headers={table.data.fields}
-              order={table.data.fieldOrderList}
-              data={rows.data.data}
-            />
-          )}
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.KANBAN &&
-          rows.status === 'success' && (
-            <TableKanbanView
-              headers={table.data.fields}
-              data={rows.data.data}
-              tableSlug={slug}
-              table={table.data}
-            />
-          )}
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.FORUM &&
-          rows.status === 'success' && (
-            <TableForumView
-              headers={table.data.fields}
-              data={rows.data.data}
-              tableSlug={slug}
-              table={table.data}
-            />
-          )}
-        {table.status === 'success' &&
-          table.data.style === E_TABLE_STYLE.CALENDAR &&
-          rows.status === 'success' && (
-            <TableCalendarView
-              headers={table.data.fields}
-              data={rows.data.data}
-              tableSlug={slug}
-              table={table.data}
-            />
-          )}
+            )}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.GALLERY &&
+            rows.status === 'success' && (
+              <TableGridView
+                headers={table.data.fields}
+                order={table.data.fieldOrderList}
+                data={rows.data.data}
+              />
+            )}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.DOCUMENT &&
+            rows.status === 'success' && (
+              <TableDocumentView
+                headers={table.data.fields}
+                order={table.data.fieldOrderList}
+                data={rows.data.data}
+                tableSlug={slug}
+              />
+            )}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.CARD &&
+            rows.status === 'success' && (
+              <TableCardView
+                headers={table.data.fields}
+                order={table.data.fieldOrderList}
+                data={rows.data.data}
+              />
+            )}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.MOSAIC &&
+            rows.status === 'success' && (
+              <TableMosaicView
+                headers={table.data.fields}
+                order={table.data.fieldOrderList}
+                data={rows.data.data}
+              />
+            )}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.KANBAN &&
+            rows.status === 'success' && (
+              <TableKanbanView
+                headers={table.data.fields}
+                data={rows.data.data}
+                tableSlug={slug}
+                table={table.data}
+              />
+            )}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.FORUM &&
+            rows.status === 'success' && (
+              <TableForumView
+                headers={table.data.fields}
+                data={rows.data.data}
+                tableSlug={slug}
+                table={table.data}
+              />
+            )}
+          {table.status === 'success' &&
+            table.data.style === E_TABLE_STYLE.CALENDAR &&
+            rows.status === 'success' && (
+              <TableCalendarView
+                headers={table.data.fields}
+                data={rows.data.data}
+                tableSlug={slug}
+                table={table.data}
+              />
+            )}
         </div>
       </div>
 

@@ -93,7 +93,7 @@
     "react-hook-form": "^7.68.0",
     "react-markdown": "^10.1.0",
     "react-pdf-html": "^2.1.5",
-    "react-resizable-panels": "^4.0.3",
+    "react-resizable-panels": "^4.7.0",
     "react-to-print": "^3.2.0",
     "recharts": "^2.15.4",
     "rehype-highlight": "^7.0.2",

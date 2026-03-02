@@ -1,6 +1,12 @@
 import { pdf } from '@react-pdf/renderer';
-import { FolderTreeIcon, WorkflowIcon } from 'lucide-react';
-import React, { useMemo, useState } from 'react';
+import { GripVerticalIcon } from 'lucide-react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { DocumentMain } from '@/components/common/document-main';
 import { DocumentPdf } from '@/components/common/document-pdf';
@@ -25,6 +31,10 @@ import {
 } from '@/lib/document-helpers';
 import type { IField, IRow } from '@/lib/interfaces';
 
+const DEFAULT_SIDEBAR_WIDTH = 288; // w-72
+const MIN_SIDEBAR_WIDTH = 180;
+const MAX_SIDEBAR_WIDTH = 600;
+
 export function TableDocumentView({
   data,
   headers,
@@ -44,6 +54,48 @@ export function TableDocumentView({
     null,
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [sidebarWidth, setSidebarWidth] = useState(DEFAULT_SIDEBAR_WIDTH);
+  const isDragging = useRef(false);
+  const startX = useRef(0);
+  const startWidth = useRef(0);
+
+  const handleMouseDown = useCallback(
+    (e: React.MouseEvent): void => {
+      e.preventDefault();
+      isDragging.current = true;
+      startX.current = e.clientX;
+      startWidth.current = sidebarWidth;
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    },
+    [sidebarWidth],
+  );
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent): void => {
+      if (!isDragging.current) return;
+      const delta = e.clientX - startX.current;
+      const newWidth = Math.min(
+        MAX_SIDEBAR_WIDTH,
+        Math.max(MIN_SIDEBAR_WIDTH, startWidth.current + delta),
+      );
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = (): void => {
+      if (!isDragging.current) return;
+      isDragging.current = false;
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+    return (): void => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+    };
+  }, []);
 
   const table = useReadTable({ slug: tableSlug });
 
@@ -69,18 +121,6 @@ export function TableDocumentView({
     () => buildDescendantsMap(categoryTree),
     [categoryTree],
   );
-
-  const hasChildrenMap = useMemo(() => {
-    const map = new Map<string, boolean>();
-    const walk = (nodes: Array<CatNode>): void => {
-      for (const n of nodes) {
-        map.set(n.id, !!n.children?.length);
-        if (n.children?.length) walk(n.children);
-      }
-    };
-    walk(categoryTree);
-    return map;
-  }, [categoryTree]);
 
   const filteredRows = useMemo(() => {
     if (!categoryField) return data;
@@ -137,18 +177,6 @@ export function TableDocumentView({
       ? rowHeadingLevelFromLeaf(row, categoryField.slug, depthMap)
       : 2;
 
-  const getLeafIcon = (row: IRow): React.ReactNode | null => {
-    if (!categoryField) return null;
-    const leafId = getRowLeafId(row, categoryField.slug);
-    if (!leafId) return null;
-    const hasChildren = hasChildrenMap.get(leafId);
-    return hasChildren ? (
-      <FolderTreeIcon className="size-4" />
-    ) : (
-      <WorkflowIcon className="size-4" />
-    );
-  };
-
   async function handlePrint(): Promise<void> {
     const blob = await pdf(
       <DocumentPdf
@@ -173,20 +201,39 @@ export function TableDocumentView({
   }
 
   return (
-    <div className="flex flex-row h-[calc(100vh-64px)] gap-4 relative w-full overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] relative w-full overflow-hidden">
       <DocumentPrintButton onClick={handlePrint} />
 
-      <DocumentSidebar
-        subtitle={`Por: ${categoryField?.name}`}
-        nodes={categoryTree}
-        selectedId={selectedCategoryId}
-        onSelect={setSelectedCategoryId}
-        isOpen={isSidebarOpen}
-        onToggle={() => setIsSidebarOpen((v) => !v)}
-        categoryField={categoryField ?? ({} as IField)}
-      />
+      {/* Sidebar */}
+      <div
+        className="shrink-0 h-full"
+        style={{ width: isSidebarOpen ? sidebarWidth : 40 }}
+      >
+        <DocumentSidebar
+          subtitle={`Por: ${categoryField?.name}`}
+          nodes={categoryTree}
+          selectedId={selectedCategoryId}
+          onSelect={setSelectedCategoryId}
+          isOpen={isSidebarOpen}
+          onToggle={() => setIsSidebarOpen((v) => !v)}
+          categoryField={categoryField ?? ({} as IField)}
+        />
+      </div>
 
-      <div className="w-full flex-1 min-w-0 overflow-y-auto">
+      {/* Resize handle */}
+      {isSidebarOpen && (
+        <div
+          role="separator"
+          aria-orientation="vertical"
+          className="shrink-0 w-1.5 cursor-col-resize flex items-center justify-center hover:bg-primary/10 active:bg-primary/20 transition-colors border-r"
+          onMouseDown={handleMouseDown}
+        >
+          <GripVerticalIcon className="size-3 text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Main content */}
+      <div className="flex-1 min-w-0 h-full overflow-y-auto">
         <DocumentToc
           nodes={categoryTree}
           title={categoryField?.name ?? 'Sumário'}
@@ -199,7 +246,6 @@ export function TableDocumentView({
           getIndentPx={getIndentPx}
           getLeafLabel={getLeafLabel}
           getHeadingLevel={getHeadingLevel}
-          getLeafIcon={getLeafIcon}
           categorySlug={categoryField?.slug ?? 'category'}
         />
       </div>

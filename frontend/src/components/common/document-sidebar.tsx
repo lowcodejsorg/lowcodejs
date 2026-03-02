@@ -431,14 +431,8 @@ export function DocumentSidebar({
     addParentId && labelMap.get(addParentId) ? labelMap.get(addParentId) : null;
 
   return (
-    <div className="relative">
-      <aside
-        className={[
-          'fixed left-0 top-0 bottom-0 z-40 bg-background border-r h-svh flex flex-col relative md:sticky md:top-0 md:h-full md:inset-auto md:z-0',
-          'transition-all duration-300',
-          isOpen ? 'w-72' : 'w-10',
-        ].join(' ')}
-      >
+    <div className="relative h-full w-full">
+      <aside className="bg-background border-r h-full flex flex-col w-full overflow-hidden">
         <button
           onClick={onToggle}
           className="p-2 rounded cursor-pointer absolute top-2 right-1"

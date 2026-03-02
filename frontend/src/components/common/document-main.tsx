@@ -11,7 +11,6 @@ interface DocumentMainProps {
   getIndentPx: (row: IRow) => number;
   getLeafLabel: (row: IRow) => string | null;
   getHeadingLevel: (row: IRow) => number;
-  getLeafIcon?: (row: IRow) => React.ReactNode | null;
   categorySlug: string;
 }
 
@@ -23,7 +22,6 @@ export function DocumentMain({
   getIndentPx,
   getLeafLabel,
   getHeadingLevel,
-  getLeafIcon,
   categorySlug,
 }: DocumentMainProps): React.JSX.Element {
   return (
@@ -58,7 +56,6 @@ export function DocumentMain({
                 indentPx={getIndentPx(row)}
                 leafLabel={getLeafLabel(row)}
                 headingLevel={getHeadingLevel(row)}
-                leafIcon={getLeafIcon ? getLeafIcon(row) : null}
                 categorySlug={categorySlug}
                 showHeading={showHeading}
               />

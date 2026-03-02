@@ -19,10 +19,7 @@ export function FilterTrigger({
   return (
     <div className="relative">
       <Button
-        className={cn(
-          'shadow-none p-1 h-auto',
-          isOpen && 'bg-accent',
-        )}
+        className={cn('shadow-none p-1 h-auto', isOpen && 'bg-accent')}
         variant="outline"
         onClick={onClick}
       >
