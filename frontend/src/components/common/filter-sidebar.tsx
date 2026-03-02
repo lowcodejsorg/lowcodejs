@@ -32,8 +32,13 @@ export function FilterSidebar({
   const isMobile = useIsMobile();
   const search = useSearch({ strict: false });
 
-  const { filterValues, setFilterValues, handleSubmit, handleClear, removeFilter } =
-    useFilterState(fields);
+  const {
+    filterValues,
+    setFilterValues,
+    handleSubmit,
+    handleClear,
+    removeFilter,
+  } = useFilterState(fields);
 
   if (isMobile) {
     return (

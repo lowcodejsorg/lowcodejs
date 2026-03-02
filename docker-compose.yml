@@ -52,10 +52,11 @@ services:
     container_name: low-code-js-app
     restart: unless-stopped
     ports:
-      - "${APP_CLIENT_PORT}:3000"
+      - "${APP_CLIENT_PORT}:5173"
     env_file: .env
     environment:
       - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+      - PORT=5173
     networks:
       - low-code-js-network
     depends_on:

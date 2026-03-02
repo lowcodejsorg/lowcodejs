@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { useSearch } from '@tanstack/react-router';
 import { FilterIcon } from 'lucide-react';
 import React from 'react';

@@ -15,9 +15,6 @@
 **/.env
 **/.env.test
 
-**/claude
-**/.claude
-
 # Ignora todos os arquivos em backend/_storage/
 backend/_storage/*
 # Mas mantém os logos
