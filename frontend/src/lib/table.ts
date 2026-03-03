@@ -361,15 +361,46 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
         value as Array<Record<string, RowBasePayload>>,
       );
 
-      const hasItem = options.length > 0;
+      // Normalize sub-field values (e.g. FILE { files, storages } -> storage IDs,
+      // or existing IStorage arrays [{_id, url, ...}] -> ID arrays)
+      const normalized = options.map((item) => {
+        const result: Record<string, RowBasePayload> = {};
+        for (const [key, subValue] of Object.entries(item)) {
+          if (
+            subValue &&
+            typeof subValue === 'object' &&
+            !Array.isArray(subValue) &&
+            'storages' in subValue
+          ) {
+            // New file from form: { files, storages } -> extract storage IDs
+            const storages = (subValue as { storages: Array<IStorage> })
+              .storages;
+            result[key] = storages.map((s) => s._id);
+          } else if (
+            Array.isArray(subValue) &&
+            subValue.length > 0 &&
+            typeof subValue[0] === 'object' &&
+            subValue[0] !== null &&
+            '_id' in subValue[0]
+          ) {
+            // Existing data from API: [{_id, url, ...}] -> extract IDs
+            result[key] = subValue.map((s: any) => s._id);
+          } else {
+            result[key] = subValue;
+          }
+        }
+        return result;
+      });
+
+      const hasItem = normalized.length > 0;
 
       if (!isMultiple && hasItem) {
-        const [option] = options;
+        const [option] = normalized;
         return [option];
       }
 
       if (isMultiple && hasItem) {
-        return options;
+        return normalized;
       }
 
       return [];

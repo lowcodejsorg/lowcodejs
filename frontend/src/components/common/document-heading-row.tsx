@@ -29,17 +29,19 @@ export function DocumentHeadingRow({
     `h${level}` as keyof React.JSX.IntrinsicElements as React.ElementType;
 
   return (
-    <Tag
-      id={id}
-      className={cn(className, headingStyles[level])}
-    >
-      <span className="inline-flex items-center gap-2 w-full">
-        {icon ? <span className="inline-flex opacity-70">{icon}</span> : null}
-        <span>{children}</span>
-        {actions ? (
-          <span className="inline-flex self-end ml-auto">{actions}</span>
-        ) : null}
-      </span>
-    </Tag>
+    <div>
+      <Tag
+        id={id}
+        className={cn(className, headingStyles[level])}
+      >
+        <span className="inline-flex items-center gap-1 w-full">
+          {icon ? <span className="inline-flex opacity-70">{icon}</span> : null}
+          <span>{children}</span>
+          {actions ? (
+            <span className="inline-flex no-print mt-auto">{actions}</span>
+          ) : null}
+        </span>
+      </Tag>
+    </div>
   );
 }

@@ -128,13 +128,44 @@ export function buildPayload(
         break;
       }
       case E_FIELD_TYPE.FIELD_GROUP: {
-        // const groupValue = value as Array<Record<string, any>>;
         const groupValue = Array.from<Record<string, any>>(value ?? []);
+
+        // Normalize sub-field values (e.g. FILE { files, storages } -> storage IDs,
+        // or existing IStorage arrays [{_id, url, ...}] -> ID arrays)
+        const normalized = groupValue.map((item) => {
+          const result: Record<string, any> = {};
+          for (const [key, subValue] of Object.entries(item)) {
+            if (
+              subValue &&
+              typeof subValue === 'object' &&
+              !Array.isArray(subValue) &&
+              'storages' in subValue
+            ) {
+              // New file from form: { files, storages } -> extract storage IDs
+              const storages = (subValue as { storages: Array<IStorage> })
+                .storages;
+              result[key] = storages.map((s: IStorage) => s._id);
+            } else if (
+              Array.isArray(subValue) &&
+              subValue.length > 0 &&
+              typeof subValue[0] === 'object' &&
+              subValue[0] !== null &&
+              '_id' in subValue[0]
+            ) {
+              // Existing data from API: [{_id, url, ...}] -> extract IDs
+              result[key] = subValue.map((s: any) => s._id);
+            } else {
+              result[key] = subValue;
+            }
+          }
+          return result;
+        });
+
         // Always send as array, but limit to 1 item if multiple=false
         if (field.multiple) {
-          payload[field.slug] = groupValue;
+          payload[field.slug] = normalized;
         } else {
-          payload[field.slug] = groupValue.slice(0, 1);
+          payload[field.slug] = normalized.slice(0, 1);
         }
         break;
       }

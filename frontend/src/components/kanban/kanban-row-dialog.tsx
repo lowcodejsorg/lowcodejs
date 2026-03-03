@@ -2,6 +2,7 @@ import { CopyIcon, FileTextIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 import { toast } from 'sonner';
 
+import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
 import { KanbanRowCommentsSection } from './kanban-row-comments';
 import { KanbanRowDescriptionSection } from './kanban-row-description';
 import { KanbanRowExtraFieldsSection } from './kanban-row-extra-fields';
@@ -100,13 +101,19 @@ export function KanbanRowDialog({
     React.useState(false);
 
   const descriptionField = fields.description;
-  const extraFields = table.fields.filter(
+  const allExtraFields = table.fields.filter(
     (field) =>
       !field.trashed &&
       !field.native &&
       !TEMPLATE_FIELD_SLUGS.has(field.slug) &&
       field.slug !== fields.attachments?.slug &&
       field.slug !== ORDER_FIELD_SLUG,
+  );
+  const extraFields = allExtraFields.filter(
+    (field) => field.type !== E_FIELD_TYPE.FIELD_GROUP,
+  );
+  const extraFieldGroups = allExtraFields.filter(
+    (field) => field.type === E_FIELD_TYPE.FIELD_GROUP,
   );
   const editableFields = [
     fields.title,
@@ -769,6 +776,7 @@ export function KanbanRowDialog({
                 <formField.TableRowFieldGroupField
                   field={field}
                   tableSlug={tableSlug}
+                  form={extraForm}
                 />
               );
             case E_FIELD_TYPE.USER:
@@ -921,7 +929,16 @@ export function KanbanRowDialog({
 
             {fields.attachments && (
               <section className="mt-4 space-y-2">
-                {supportsInlineAttachmentManager ? (
+                {fields.attachments.type === E_FIELD_TYPE.FIELD_GROUP ? (
+                  <KanbanFieldGroupEditor
+                    row={row}
+                    field={fields.attachments}
+                    table={table}
+                    tableSlug={tableSlug}
+                    currentUserId={currentUserId}
+                    updateRow={updateRow}
+                  />
+                ) : supportsInlineAttachmentManager ? (
                   <>
                     <div className="flex items-center justify-between gap-2">
                       <h3 className="text-sm font-semibold">Anexos</h3>
@@ -1120,6 +1137,22 @@ export function KanbanRowDialog({
               renderExtraFieldEditor={renderExtraFieldEditor}
               isSaving={updateRow.status === 'pending'}
             />
+
+            {extraFieldGroups.map((groupField) => (
+              <section
+                key={groupField._id}
+                className="mt-4"
+              >
+                <KanbanFieldGroupEditor
+                  row={row}
+                  field={groupField}
+                  table={table}
+                  tableSlug={tableSlug}
+                  currentUserId={currentUserId}
+                  updateRow={updateRow}
+                />
+              </section>
+            ))}
           </div>
 
           <aside className="border-l bg-muted/30 p-4 flex flex-col gap-6 overflow-hidden">

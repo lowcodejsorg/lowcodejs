@@ -36,6 +36,9 @@ export function TableRowUserField({
   disabled,
 }: TableRowUserFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<UserOption>>();
+  const fieldValue = Array.isArray(formField.state.value)
+    ? formField.state.value
+    : [];
   const isInvalid =
     formField.state.meta.isDirty && !formField.state.meta.isValid;
   const isRequired = field.required;
@@ -77,10 +80,10 @@ export function TableRowUserField({
   }, [users]);
 
   React.useEffect(() => {
-    if (!formField.state.value.length) return;
+    if (!fieldValue.length) return;
     setSelectedCache((prev) => {
       const next = new Map(prev);
-      formField.state.value.forEach((opt) => {
+      fieldValue.forEach((opt) => {
         if (next.has(opt.value)) return;
         next.set(opt.value, {
           _id: opt.value,
@@ -93,10 +96,10 @@ export function TableRowUserField({
       });
       return next;
     });
-  }, [formField.state.value]);
+  }, [fieldValue]);
 
   const selectedUsers = React.useMemo(() => {
-    return formField.state.value.map((opt) => {
+    return fieldValue.map((opt) => {
       const cached = selectedCache.get(opt.value);
       const fromList = users.find((user) => user._id === opt.value);
       if (cached) return cached;
@@ -110,7 +113,7 @@ export function TableRowUserField({
         group: null as unknown as IUser['group'],
       };
     });
-  }, [formField.state.value, selectedCache, users]);
+  }, [fieldValue, selectedCache, users]);
 
   const items = React.useMemo(() => {
     const cachedUsers = users.map(
@@ -147,7 +150,7 @@ export function TableRowUserField({
   };
 
   const handleToggleUser = (user: IUser): void => {
-    const prevIds = formField.state.value.map((opt) => opt.value);
+    const prevIds = fieldValue.map((opt) => opt.value);
     const nextIds = prevIds.includes(user._id)
       ? prevIds.filter((id) => id !== user._id)
       : [...prevIds, user._id];
@@ -160,7 +163,7 @@ export function TableRowUserField({
 
     const newValues = nextIds.map((id) => {
       const cached = selectedCache.get(id);
-      const fallback = formField.state.value.find((opt) => opt.value === id);
+      const fallback = fieldValue.find((opt) => opt.value === id);
       return {
         value: id,
         label: cached?.name ?? fallback?.label ?? id,
@@ -279,10 +282,9 @@ export function TableRowUserField({
         >
           <ComboboxInput
             placeholder={
-              (formField.state.value ?? [])[0]?.label ||
-              `Selecione ${field.name.toLowerCase()}`
+              fieldValue[0]?.label || `Selecione ${field.name.toLowerCase()}`
             }
-            showClear={(formField.state.value ?? []).length > 0}
+            showClear={fieldValue.length > 0}
             className={cn(isInvalid && 'border-destructive')}
           />
           <ComboboxContent>
