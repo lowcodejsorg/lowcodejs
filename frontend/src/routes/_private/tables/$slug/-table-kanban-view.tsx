@@ -47,6 +47,7 @@ import {
   parseOrderValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
+import { useAuthStore } from '@/stores/authentication';
 
 interface Props {
   data: Array<IRow>;
@@ -62,6 +63,7 @@ export function TableKanbanView({
   table,
 }: Props): React.JSX.Element {
   const queryClient = useQueryClient();
+  const currentUserId = useAuthStore((s) => s.user?._id) ?? '';
   const [activeRow, setActiveRow] = React.useState<IRow | null>(null);
   const activeRowId = activeRow?._id ?? null;
   const [isAddListOpen, setIsAddListOpen] = React.useState(false);
@@ -445,6 +447,20 @@ export function TableKanbanView({
 
       const payload = buildPayload(value, activeFields);
       payload[fields.list.slug] = [createColumnId];
+
+      // Auto-fill autor/data in attachment group items
+      if (
+        fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP &&
+        Array.isArray(payload[fields.attachments.slug])
+      ) {
+        payload[fields.attachments.slug] = (
+          payload[fields.attachments.slug] as Array<Record<string, any>>
+        ).map((item) => ({
+          ...item,
+          autor: currentUserId ? [currentUserId] : [],
+          data: new Date().toISOString(),
+        }));
+      }
 
       if (orderFieldSlug) {
         const columnCount = columns.byStatus[createColumnId].length;

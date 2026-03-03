@@ -42,7 +42,6 @@ export function DocumentHeadingRow({
           ) : null}
         </span>
       </Tag>
-      <hr className="mt-2 border-border/60" />
     </div>
   );
 }

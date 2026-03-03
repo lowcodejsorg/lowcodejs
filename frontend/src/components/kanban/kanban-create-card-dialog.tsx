@@ -255,6 +255,7 @@ export function KanbanCreateCardDialog({
                         <formField.TableRowFieldGroupField
                           field={attachmentsField}
                           tableSlug={tableSlug}
+                          form={createForm}
                         />
                       ) : (
                         <formField.TableRowFileField field={attachmentsField} />
@@ -309,6 +310,7 @@ export function KanbanCreateCardDialog({
                             <formField.TableRowFieldGroupField
                               field={field}
                               tableSlug={tableSlug}
+                              form={createForm}
                             />
                           );
                         case E_FIELD_TYPE.USER:

@@ -117,8 +117,9 @@ export function FileUploadWithStorage({
           }
         }
 
-        // Keep existing storages and append new uploaded files.
-        onStorageChange(dedupeStorages(Array.from(newStorageFiles.values())));
+        // Defer onStorageChange to avoid setState during render
+        const storages = dedupeStorages(Array.from(newStorageFiles.values()));
+        queueMicrotask(() => onStorageChange(storages));
 
         return newStorageFiles;
       });
@@ -173,18 +174,23 @@ export function FileUploadWithStorage({
         setStorageFiles((prev) => {
           const newMap = new Map(prev);
           newMap.delete(fileToRemove);
+
+          // Defer onStorageChange to avoid setState during render
+          const remaining = dedupeStorages(Array.from(newMap.values()));
+          queueMicrotask(() => onStorageChange(remaining));
+
           return newMap;
         });
 
         const updatedFiles = value.filter((f) => f !== fileToRemove);
         onValueChange(updatedFiles);
+      } else {
+        // Atualizar lista de storages retornando objetos completos
+        const remainingStorages = Array.from(storageFiles.values()).filter(
+          (storage) => storage._id !== deletedStorage._id,
+        );
+        onStorageChange(dedupeStorages(remainingStorages));
       }
-
-      // Atualizar lista de storages retornando objetos completos
-      const remainingStorages = Array.from(storageFiles.values()).filter(
-        (storage) => storage._id !== deletedStorage._id,
-      );
-      onStorageChange(dedupeStorages(remainingStorages));
     },
   });
 

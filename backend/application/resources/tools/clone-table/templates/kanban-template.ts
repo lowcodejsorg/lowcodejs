@@ -502,11 +502,59 @@ export async function buildKanbanFields(
     widthInList: null,
   });
 
+  const attachmentAuthorField = await fieldRepository.create({
+    name: 'Autor',
+    slug: 'autor',
+    type: E_FIELD_TYPE.USER,
+    required: false,
+    multiple: false,
+    format: null,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    order: null,
+    widthInForm: null,
+    widthInList: null,
+  });
+
+  const attachmentDateField = await fieldRepository.create({
+    name: 'Data',
+    slug: 'data',
+    type: E_FIELD_TYPE.DATE,
+    required: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    order: null,
+    widthInForm: null,
+    widthInList: null,
+  });
+
   const attachmentsGroup: IGroupConfiguration = {
     slug: attachmentsGroupSlug,
     name: 'Anexos',
-    fields: [attachmentFileField],
-    _schema: buildSchema([attachmentFileField]),
+    fields: [attachmentFileField, attachmentAuthorField, attachmentDateField],
+    _schema: buildSchema([
+      attachmentFileField,
+      attachmentAuthorField,
+      attachmentDateField,
+    ]),
   };
 
   const tasksGroup: IGroupConfiguration = {

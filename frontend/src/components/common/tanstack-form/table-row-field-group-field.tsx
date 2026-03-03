@@ -127,7 +127,9 @@ export function TableRowFieldGroupField({
     );
   }
 
-  const groupFields = group.fields.filter((f) => !f.trashed && !f.native);
+  const groupFields = group.fields.filter(
+    (f) => !f.trashed && !f.native && f.showInForm !== false,
+  );
 
   return (
     <Field data-invalid={isInvalid}>
