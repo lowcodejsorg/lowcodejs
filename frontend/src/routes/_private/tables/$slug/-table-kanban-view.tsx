@@ -29,7 +29,7 @@ import {
   KanbanRowDialog,
   KanbanSortableCard,
   KanbanUnassignedColumn,
-} from '@/components/kanban';
+} from '@/components/common/kanban';
 import { Button } from '@/components/ui/button';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';

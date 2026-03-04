@@ -277,6 +277,14 @@ export function RowFormFields({
                         />
                       );
                     }
+                    if (field.format === E_FIELD_FORMAT.MARKDOWN) {
+                      return (
+                        <formField.TableRowMarkdownField
+                          field={field}
+                          disabled={disabled}
+                        />
+                      );
+                    }
                     return (
                       <formField.TableRowTextareaField
                         field={field}

@@ -5,7 +5,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type {
   IField,
   IGroupConfiguration,
@@ -231,6 +231,22 @@ function NestedGroupField({
               />
             );
           case E_FIELD_TYPE.TEXT_LONG:
+            if (groupField.format === E_FIELD_FORMAT.RICH_TEXT) {
+              return (
+                <formField.TableRowRichTextField
+                  field={groupField}
+                  disabled={disabled}
+                />
+              );
+            }
+            if (groupField.format === E_FIELD_FORMAT.MARKDOWN) {
+              return (
+                <formField.TableRowMarkdownField
+                  field={groupField}
+                  disabled={disabled}
+                />
+              );
+            }
             return (
               <formField.TableRowTextareaField
                 field={groupField}

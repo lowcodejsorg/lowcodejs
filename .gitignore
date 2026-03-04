@@ -20,3 +20,6 @@ backend/_storage/*
 # Mas mantém os logos
 !backend/_storage/logo-large.webp
 !backend/_storage/logo-small.webp
+
+_docs/nextjs/
+frontend-next

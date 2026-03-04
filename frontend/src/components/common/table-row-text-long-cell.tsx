@@ -15,13 +15,15 @@ export function TableRowTextLongCell({
   className,
 }: TableRowTextLongCellProps): React.JSX.Element {
   const value = row[field.slug];
-  const isRichText = field.format === E_FIELD_FORMAT.RICH_TEXT;
+  const isRenderedMarkdown =
+    field.format === E_FIELD_FORMAT.RICH_TEXT ||
+    field.format === E_FIELD_FORMAT.MARKDOWN;
 
   if (!value) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
-  if (isRichText) {
+  if (isRenderedMarkdown) {
     return <ContentViewer content={value} />;
   }
 

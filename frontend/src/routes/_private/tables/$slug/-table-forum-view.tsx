@@ -15,8 +15,8 @@ import {
   ForumHeader,
   ForumMessagesList,
   ForumSidebar,
-} from '@/components/forum';
-import type { ForumDocument, ForumMessage } from '@/components/forum';
+} from '@/components/common/forum';
+import type { ForumDocument, ForumMessage } from '@/components/common/forum';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';

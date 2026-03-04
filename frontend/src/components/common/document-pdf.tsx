@@ -171,7 +171,8 @@ export function DocumentPdf({
                     {titleRaw ? (
                       <Text style={styles.blockTitle}>{titleRaw}</Text>
                     ) : null}
-                    {b.bodyField.format === E_FIELD_FORMAT.RICH_TEXT ? (
+                    {b.bodyField.format === E_FIELD_FORMAT.RICH_TEXT ||
+                    b.bodyField.format === E_FIELD_FORMAT.MARKDOWN ? (
                       <Html
                         style={styles.blockBody}
                         renderersProps={{

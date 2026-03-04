@@ -12,8 +12,8 @@ import {
   CalendarMonthView,
   CalendarToolbar,
   CalendarWeekView,
-} from '@/components/calendar';
-import type { CalendarViewMode } from '@/components/calendar';
+} from '@/components/common/calendar';
+import type { CalendarViewMode } from '@/components/common/calendar';
 import { Button } from '@/components/ui/button';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
