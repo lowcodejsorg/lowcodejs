@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
@@ -8,15 +10,17 @@ import {
 
 import { TableTables } from './-table-tables';
 
+import { getActiveFiltersCount } from '@/components/common/filter-fields';
+import { FilterSidebar } from '@/components/common/filter-sidebar';
+import { FilterTrigger } from '@/components/common/filter-trigger';
 import { Pagination } from '@/components/common/pagination';
-import { SheetFilter } from '@/components/common/sheet-filter';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 import { usePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField } from '@/lib/interfaces';
+import type { IFilterField } from '@/lib/interfaces';
 
 export const Route = createLazyFileRoute('/_private/tables/')({
   component: RouteComponent,
@@ -34,6 +38,21 @@ function RouteComponent(): React.JSX.Element {
   const { data } = useSuspenseQuery(tableListOptions(search));
   const permission = usePermission();
 
+  const [filterOpen, setFilterOpen] = React.useState(() => {
+    try {
+      return localStorage.getItem('filter-sidebar-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleFilterOpenChange = React.useCallback((open: boolean) => {
+    setFilterOpen(open);
+    try {
+      localStorage.setItem('filter-sidebar-open', String(open));
+    } catch {}
+  }, []);
+
   const headers = [
     'Tabela',
     'Link (slug)',
@@ -42,34 +61,11 @@ function RouteComponent(): React.JSX.Element {
     'Criado em',
   ];
 
-  const fieldFilters: Array<IField> = [
-    {
-      _id: 'name',
-      slug: 'name',
-      name: 'Nome',
-      type: E_FIELD_TYPE.TEXT_SHORT,
-      trashed: false,
-      trashedAt: null,
-      createdAt: '',
-      updatedAt: null,
-      format: null,
-      category: [],
-      defaultValue: null,
-      dropdown: [],
-      showInFilter: true,
-      showInForm: true,
-      showInDetail: true,
-      showInList: true,
-      group: null,
-      multiple: false,
-      relationship: null,
-      required: false,
-      locked: false,
-      widthInForm: null,
-      widthInList: null,
-      native: false,
-    },
+  const fieldFilters: Array<IFilterField> = [
+    { slug: 'name', name: 'Nome', type: E_FIELD_TYPE.TEXT_SHORT, multiple: false },
   ];
+
+  const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -78,7 +74,11 @@ function RouteComponent(): React.JSX.Element {
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
           {permission.can('REMOVE_TABLE') && <TrashButton />}
-          <SheetFilter fields={fieldFilters} />
+          <FilterTrigger
+            activeFiltersCount={activeFiltersCount}
+            onClick={() => handleFilterOpenChange(!filterOpen)}
+            isOpen={filterOpen}
+          />
           {permission.can('CREATE_TABLE') && (
             <Button
               className="disabled:cursor-not-allowed"
@@ -98,11 +98,18 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {/* content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        <TableTables
-          headers={headers}
-          data={data.data}
+      <div className="flex-1 flex flex-row min-h-0">
+        <FilterSidebar
+          fields={fieldFilters}
+          open={filterOpen}
+          onOpenChange={handleFilterOpenChange}
         />
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+          <TableTables
+            headers={headers}
+            data={data.data}
+          />
+        </div>
       </div>
 
       {/* footer */}

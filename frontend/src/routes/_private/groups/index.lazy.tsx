@@ -5,13 +5,19 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
+import React from 'react';
 
 import { TableGroups } from './-table-groups';
 
+import { getActiveFiltersCount } from '@/components/common/filter-fields';
+import { FilterSidebar } from '@/components/common/filter-sidebar';
+import { FilterTrigger } from '@/components/common/filter-trigger';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { groupListOptions } from '@/hooks/tanstack-query/_query-options';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import type { IFilterField } from '@/lib/interfaces';
 
 export const Route = createLazyFileRoute('/_private/groups/')({
   component: RouteComponent,
@@ -28,31 +34,66 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(groupListOptions(search));
 
+  const [filterOpen, setFilterOpen] = React.useState(() => {
+    try {
+      return localStorage.getItem('filter-sidebar-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleFilterOpenChange = React.useCallback((open: boolean) => {
+    setFilterOpen(open);
+    try {
+      localStorage.setItem('filter-sidebar-open', String(open));
+    } catch {}
+  }, []);
+
   const headers = ['Nome', 'Slug', 'Descrição'];
+
+  const fieldFilters: Array<IFilterField> = [
+    { slug: 'search', name: 'Nome', type: E_FIELD_TYPE.TEXT_SHORT, multiple: false },
+  ];
+
+  const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Grupos</h1>
-        <Button
-          className="disabled:cursor-not-allowed"
-          onClick={() => {
-            sidebar.setOpen(false);
-            router.navigate({
-              to: '/groups/create',
-              replace: true,
-            });
-          }}
-        >
-          <span>Novo Grupo</span>
-        </Button>
+        <div className="inline-flex items-center gap-2">
+          <FilterTrigger
+            activeFiltersCount={activeFiltersCount}
+            onClick={() => handleFilterOpenChange(!filterOpen)}
+            isOpen={filterOpen}
+          />
+          <Button
+            className="disabled:cursor-not-allowed"
+            onClick={() => {
+              sidebar.setOpen(false);
+              router.navigate({
+                to: '/groups/create',
+                replace: true,
+              });
+            }}
+          >
+            <span>Novo Grupo</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        <TableGroups
-          headers={headers}
-          data={data.data}
+      <div className="flex-1 flex flex-row min-h-0">
+        <FilterSidebar
+          fields={fieldFilters}
+          open={filterOpen}
+          onOpenChange={handleFilterOpenChange}
         />
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+          <TableGroups
+            headers={headers}
+            data={data.data}
+          />
+        </div>
       </div>
 
       <div className="shrink-0 border-t p-2">

@@ -179,6 +179,11 @@ export type IField = Merge<
   }
 >;
 
+export type IFilterField = Pick<IField, 'slug' | 'name' | 'type' | 'multiple'> & {
+  dropdown?: Array<IDropdown>;
+  category?: Array<ICategory>;
+};
+
 export type ISchema = {
   type: 'Number' | 'String' | 'Date' | 'Boolean' | 'ObjectId';
   required?: boolean;

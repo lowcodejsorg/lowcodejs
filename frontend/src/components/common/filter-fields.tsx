@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { ICategory, IField } from '@/lib/interfaces';
+import type { ICategory, IFilterField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 export function convertCategoriesToTreeNodes(
@@ -79,7 +79,7 @@ interface UseFilterStateReturn {
 }
 
 export function useFilterState(
-  fields: Array<IField>,
+  fields: Array<IFilterField>,
   options?: { closeOnSubmit?: boolean; onClose?: () => void },
 ): UseFilterStateReturn {
   const navigate = useNavigate();
@@ -232,7 +232,7 @@ export function useFilterState(
 }
 
 export function getActiveFiltersCount(
-  fields: Array<IField>,
+  fields: Array<IFilterField>,
   search: Record<string, unknown>,
 ): number {
   return fields.filter((f) => {
@@ -243,7 +243,7 @@ export function getActiveFiltersCount(
 }
 
 interface FilterFieldsFormProps {
-  fields: Array<IField>;
+  fields: Array<IFilterField>;
   filterValues: Record<string, any>;
   setFilterValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   removeFilter: (key: string) => void;
@@ -345,7 +345,7 @@ export function FilterTextShort({
   onRemove,
   hasValue,
 }: {
-  field: IField;
+  field: IFilterField;
   value: string;
   onChange: (value: string) => void;
   onRemove: () => void;
@@ -393,12 +393,12 @@ export function FilterDropdown({
   value,
   onChange,
 }: {
-  field: IField;
+  field: IFilterField;
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
   const anchorRef = useComboboxAnchor();
-  const options: Array<DropdownOption> = field.dropdown.map((d) => ({
+  const options: Array<DropdownOption> = (field.dropdown ?? []).map((d) => ({
     value: d.id,
     label: d.label,
     color: d.color,
@@ -499,7 +499,7 @@ export function FilterDate({
   value,
   onChange,
 }: {
-  field: IField;
+  field: IFilterField;
   value: DatepickerValue | null;
   onChange: (value: DatepickerValue | null) => void;
 }): React.JSX.Element {
@@ -522,11 +522,11 @@ export function FilterCategory({
   value,
   onChange,
 }: {
-  field: IField;
+  field: IFilterField;
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
-  const categories = field.category;
+  const categories = field.category ?? [];
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedLabel = React.useMemo(() => {

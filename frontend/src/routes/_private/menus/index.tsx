@@ -27,6 +27,7 @@ export const Route = createFileRoute('/_private/menus/')({
   validateSearch: z.object({
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
+    search: z.string().optional(),
   }),
   search: {
     middlewares: [stripSearchParams(defaultSearch)],
@@ -34,6 +35,7 @@ export const Route = createFileRoute('/_private/menus/')({
   loaderDeps: ({ search }) => ({
     page: search.page,
     perPage: search.perPage,
+    search: search.search,
   }),
   loader: async ({ context, deps }) => {
     await context.queryClient.ensureQueryData(menuListOptions(deps));
