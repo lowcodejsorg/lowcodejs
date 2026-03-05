@@ -34,7 +34,6 @@ export const FieldCreateSchema = z.object({
   required: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
-  order: z.string().default('none'),
 });
 
 export type FieldCreateFormValues = z.infer<typeof FieldCreateSchema>;
@@ -61,7 +60,6 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   required: false,
   widthInForm: 50,
   widthInList: 10,
-  order: 'none',
 };
 
 export const CreateFieldFormFields = withForm({
@@ -492,16 +490,6 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Ordenação padrão */}
-        <form.AppField name="order">
-          {(field) => (
-            <field.TableFieldOrderSelect
-              label="Ordenação padrão"
-              description="Definir este campo como ordenação padrão da listagem"
-              disabled={isPending}
-            />
-          )}
-        </form.AppField>
       </section>
     );
   },

@@ -49,7 +49,7 @@ export default class TableRowPaginatedUseCase {
         table.slug,
       );
 
-      const order = buildOrder(payload, table.fields);
+      const order = buildOrder(payload, table.fields, table.order);
 
       const populate = await buildPopulate(
         table.fields,

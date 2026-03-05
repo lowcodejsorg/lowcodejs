@@ -8,6 +8,7 @@ import {
   TableFieldOrderFormSchema,
   TableFieldOrderListSchema,
   TableMethodSchema,
+  TableOrderSchema,
   TableStyleSchema,
   TableVisibilitySchema,
 } from '../table-base.schema';
@@ -31,6 +32,7 @@ export const TableUpdateBodyValidator = z.object({
   fieldOrderList: TableFieldOrderListSchema,
   fieldOrderForm: TableFieldOrderFormSchema,
   methods: TableMethodSchema,
+  order: TableOrderSchema,
 });
 
 export const TableUpdateParamsValidator = z.object({

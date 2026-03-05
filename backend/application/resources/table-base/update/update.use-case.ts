@@ -71,6 +71,7 @@ export default class TableUpdateUseCase {
         fieldOrderForm: payload.fieldOrderForm ?? table.fieldOrderForm,
         administrators:
           payload.administrators ?? table.administrators.flatMap((a) => a._id),
+        order: payload.order !== undefined ? payload.order : table.order,
       });
 
       // Propagar visibilidade para grupos de campos (FIELD_GROUP)

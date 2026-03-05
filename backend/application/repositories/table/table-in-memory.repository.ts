@@ -52,6 +52,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
         afterSave: { code: null },
       },
       groups: payload.groups ?? [],
+      order: payload.order ?? null,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,

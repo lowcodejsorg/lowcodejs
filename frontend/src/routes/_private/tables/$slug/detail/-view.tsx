@@ -87,6 +87,16 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
           <p className="text-sm text-muted-foreground">{collaborationLabel}</p>
         </div>
 
+        {/* Ordenação padrão */}
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Ordenação padrão</p>
+          <p className="text-sm text-muted-foreground">
+            {data.order
+              ? `${data.fields?.find((f) => f.slug === data.order?.field)?.name ?? data.order.field} (${data.order.direction === 'asc' ? 'Ascendente' : 'Descendente'})`
+              : '-'}
+          </p>
+        </div>
+
         {/* Administradores */}
         <div className="space-y-1">
           <p className="text-sm font-medium">Administradores</p>

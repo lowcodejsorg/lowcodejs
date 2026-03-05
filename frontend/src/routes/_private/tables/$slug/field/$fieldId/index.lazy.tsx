@@ -467,7 +467,6 @@ function FieldUpdateContent({
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
       widthInForm: data.widthInForm ?? 50,
       widthInList: data.widthInList ?? 10,
-      order: data.order ?? 'none',
     },
     onSubmit: async ({ value }) => {
       const validation = FieldUpdateSchema.safeParse(value);
@@ -512,7 +511,6 @@ function FieldUpdateContent({
         category: hasCategory
           ? (value.category as unknown as IField['category'])
           : [],
-        order: value.order === 'none' ? null : (value.order as 'asc' | 'desc'),
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
       });

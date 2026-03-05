@@ -66,7 +66,6 @@ function RouteComponent(): React.JSX.Element {
       widthInForm: null,
       widthInList: null,
       native: false,
-      order: null,
     },
   ];
 

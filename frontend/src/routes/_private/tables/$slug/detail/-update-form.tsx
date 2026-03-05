@@ -1,6 +1,15 @@
 import { FileTextIcon } from 'lucide-react';
+import React from 'react';
 import { z } from 'zod';
 
+import { Field, FieldLabel } from '@/components/ui/field';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
   E_TABLE_COLLABORATION,
@@ -41,6 +50,7 @@ export const TableUpdateSchema = z.object({
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
+  order: z.string().default('none'),
 });
 
 export type TableUpdateFormValues = {
@@ -52,6 +62,7 @@ export type TableUpdateFormValues = {
   logo: string | null;
   logoFile: Array<File>;
   administrators: Array<string>;
+  order: string;
 };
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
@@ -63,6 +74,7 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logo: null,
   logoFile: [],
   administrators: [],
+  order: 'none',
 };
 
 export const UpdateTableFormFields = withForm({
@@ -74,6 +86,24 @@ export const UpdateTableFormFields = withForm({
   },
   render: function Render({ form, isPending, mode, tableData }) {
     const isDisabled = mode === 'show' || isPending;
+
+    const orderOptions = React.useMemo(() => {
+      const fields = tableData?.fields?.filter((f) => !f.trashed) ?? [];
+      const options: Array<{ label: string; value: string }> = [
+        { label: 'Nenhuma', value: 'none' },
+      ];
+      for (const f of fields) {
+        options.push({
+          label: `${f.name} (Ascendente)`,
+          value: `${f.slug}:asc`,
+        });
+        options.push({
+          label: `${f.name} (Descendente)`,
+          value: `${f.slug}:desc`,
+        });
+      }
+      return options;
+    }, [tableData]);
 
     return (
       <section className="space-y-4 p-2">
@@ -208,6 +238,34 @@ export const UpdateTableFormFields = withForm({
               placeholder="Selecione administradores"
               disabled={isDisabled}
             />
+          )}
+        </form.AppField>
+
+        {/* Ordenação padrão */}
+        <form.AppField name="order">
+          {(field) => (
+            <Field>
+              <FieldLabel htmlFor={field.name}>Ordenação padrão</FieldLabel>
+              <p className="text-sm text-muted-foreground">
+                Define a ordenação padrão dos registros na listagem
+              </p>
+              <Select
+                disabled={isDisabled}
+                value={field.state.value}
+                onValueChange={(value) => field.handleChange(value)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione uma ordenação" />
+                </SelectTrigger>
+                <SelectContent>
+                  {orderOptions.map((item) => (
+                    <SelectItem key={item.value} value={item.value}>
+                      {item.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </Field>
           )}
         </form.AppField>
       </section>

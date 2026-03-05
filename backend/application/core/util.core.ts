@@ -902,6 +902,7 @@ export type QueryOrder = Record<
 export function buildOrder(
   query: Partial<QueryOrder>,
   fields: IField[] = [],
+  tableOrder?: { field: string; direction: 'asc' | 'desc' } | null,
 ): {
   [key: string]: SortOrder;
 } {
@@ -915,9 +916,11 @@ export function buildOrder(
     if (queryKey in query) {
       const sortValue = query[queryKey]?.toString();
       order[col.slug] = sortValue === 'asc' ? 1 : -1;
-    } else if (col.order != null && !col.trashed) {
-      order[col.slug] = col.order === 'asc' ? 1 : -1;
     }
+  }
+
+  if (Object.keys(order).length === 0 && tableOrder?.field) {
+    order[tableOrder.field] = tableOrder.direction === 'asc' ? 1 : -1;
   }
 
   return order;

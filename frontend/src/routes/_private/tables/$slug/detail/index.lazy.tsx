@@ -155,12 +155,25 @@ function TableUpdateContent({
       administrators: data.administrators.map((admin) =>
         typeof admin === 'string' ? admin : admin._id,
       ),
+      order: data.order
+        ? `${data.order.field}:${data.order.direction}`
+        : 'none',
     },
     onSubmit: async ({ value }) => {
       const validation = TableUpdateSchema.safeParse(value);
       if (!validation.success) return;
 
       if (_update.status === 'pending') return;
+
+      let orderPayload: { field: string; direction: 'asc' | 'desc' } | null =
+        null;
+      if (value.order && value.order !== 'none') {
+        const [field, direction] = value.order.split(':');
+        orderPayload = {
+          field,
+          direction: direction as 'asc' | 'desc',
+        };
+      }
 
       await _update.mutateAsync({
         slug: data.slug,
@@ -176,6 +189,7 @@ function TableUpdateContent({
         methods: {
           ...data.methods,
         },
+        order: orderPayload,
       });
     },
   });

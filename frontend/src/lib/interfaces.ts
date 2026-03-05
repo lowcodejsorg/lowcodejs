@@ -176,7 +176,6 @@ export type IField = Merge<
     dropdown: Array<IDropdown>;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
-    order: 'asc' | 'desc' | null;
   }
 >;
 
@@ -221,6 +220,7 @@ export type ITable = Merge<
     fieldOrderForm: Array<string>;
     methods: ITableMethod;
     groups: Array<IGroupConfiguration>;
+    order: { field: string; direction: 'asc' | 'desc' } | null;
   }
 >;
 

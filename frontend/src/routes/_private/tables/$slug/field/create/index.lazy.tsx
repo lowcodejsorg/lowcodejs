@@ -231,7 +231,6 @@ function RouteComponent(): React.JSX.Element {
           : null,
         group: groupSlug ? { slug: groupSlug } : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
-        order: value.order === 'none' ? null : (value.order as 'asc' | 'desc'),
       });
     },
   });

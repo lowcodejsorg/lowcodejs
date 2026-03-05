@@ -254,6 +254,7 @@ export type ITable = Merge<
     fieldOrderForm: string[];
     methods: ITableMethod;
     groups: IGroupConfiguration[];
+    order: { field: string; direction: 'asc' | 'desc' } | null;
   }
 >;
 
@@ -302,7 +303,6 @@ export type IField = Merge<
     dropdown: IDropdown[];
     category: ICategory[];
     group: IFieldConfigurationGroup | null;
-    order: 'asc' | 'desc' | null;
   }
 >;
 
@@ -446,7 +446,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Criador',
@@ -468,7 +467,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Criado em',
@@ -490,7 +488,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Lixeira',
@@ -512,7 +509,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Enviado para lixeira em',
@@ -534,7 +530,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
 ];
 
@@ -559,7 +554,6 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Criado em',
@@ -581,7 +575,6 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Lixeira',
@@ -603,7 +596,6 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Enviado para lixeira em',
@@ -625,6 +617,5 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
 ];

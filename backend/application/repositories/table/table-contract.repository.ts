@@ -29,6 +29,7 @@ export type TableCreatePayload = Merge<
     fieldOrderForm?: string[];
     methods?: ITableMethod;
     groups?: IGroupConfiguration[];
+    order?: { field: string; direction: 'asc' | 'desc' } | null;
   }
 >;
 

@@ -70,6 +70,7 @@ describe('Table Update Use Case', () => {
       fieldOrderForm: [],
       fieldOrderList: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      order: null,
     });
 
     expect(result.isRight()).toBe(true);
@@ -102,6 +103,7 @@ describe('Table Update Use Case', () => {
       fieldOrderForm: [],
       fieldOrderList: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      order: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -148,6 +150,7 @@ describe('Table Update Use Case', () => {
       fieldOrderForm: [],
       fieldOrderList: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      order: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -184,6 +187,7 @@ describe('Table Update Use Case', () => {
       fieldOrderForm: [],
       fieldOrderList: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      order: null,
     });
 
     expect(result.isLeft()).toBe(true);

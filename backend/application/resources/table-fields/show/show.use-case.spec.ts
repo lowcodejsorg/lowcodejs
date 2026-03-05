@@ -55,7 +55,6 @@ describe('Table Field Show Use Case', () => {
       defaultValue: null,
       format: E_FIELD_FORMAT.ALPHA_NUMERIC,
       group: null,
-      order: null,
       multiple: false,
       relationship: null,
       widthInForm: null,

@@ -116,6 +116,10 @@ export const Schema = new mongoose.Schema(
       type: [GroupConfiguration],
       default: [],
     },
+    order: {
+      field: { type: String, default: null },
+      direction: { type: String, enum: ['asc', 'desc'], default: null },
+    },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },

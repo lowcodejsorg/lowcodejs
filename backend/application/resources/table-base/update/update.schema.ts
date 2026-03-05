@@ -80,6 +80,25 @@ export const TableUpdateSchema: FastifySchema = {
         default: [],
         description: 'Field order for form view',
       },
+      order: {
+        anyOf: [
+          { type: 'null' },
+          {
+            type: 'object',
+            required: ['field', 'direction'],
+            properties: {
+              field: { type: 'string', description: 'Field slug to sort by' },
+              direction: {
+                type: 'string',
+                enum: ['asc', 'desc'],
+                description: 'Sort direction',
+              },
+            },
+          },
+        ],
+        default: null,
+        description: 'Default sort order for table records',
+      },
     },
   },
   response: {
@@ -197,12 +216,6 @@ export const TableUpdateSchema: FastifySchema = {
                 type: 'object',
                 nullable: true,
                 description: 'Field group configuration',
-              },
-              order: {
-                type: 'string',
-                enum: ['asc', 'desc'],
-                nullable: true,
-                description: 'Field sort order',
               },
               trashed: {
                 type: 'boolean',
@@ -347,11 +360,6 @@ export const TableUpdateSchema: FastifySchema = {
                     dropdown: { type: 'array', nullable: true },
                     category: { type: 'array', nullable: true },
                     group: { type: 'object', nullable: true },
-                    order: {
-                      type: 'string',
-                      enum: ['asc', 'desc'],
-                      nullable: true,
-                    },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',
@@ -371,6 +379,19 @@ export const TableUpdateSchema: FastifySchema = {
               },
             },
           },
+        },
+        order: {
+          anyOf: [
+            { type: 'null' },
+            {
+              type: 'object',
+              properties: {
+                field: { type: 'string' },
+                direction: { type: 'string', enum: ['asc', 'desc'] },
+              },
+            },
+          ],
+          description: 'Default sort order for table records',
         },
         _schema: {
           type: 'object',

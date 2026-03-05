@@ -117,7 +117,7 @@ export function KanbanCreateCardDialog({
                     ) : fields.description?.format ===
                       E_FIELD_FORMAT.MARKDOWN ? (
                       <formField.TableRowMarkdownField
-                        field={fields.description!}
+                        field={fields.description}
                       />
                     ) : (
                       <formField.TableRowTextareaField

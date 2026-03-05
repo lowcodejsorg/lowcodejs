@@ -97,7 +97,6 @@ export async function buildCalendarFields(
     group: IField['group'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
-    order: IField['order'];
   }): Promise<IField> => {
     const field = await fieldRepository.create({
       ...payload,
@@ -125,7 +124,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
   });
 
   const descriptionField = await createField({
@@ -147,7 +145,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 100,
     widthInList: 100,
-    order: null,
   });
 
   const startField = await createField({
@@ -169,7 +166,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
   });
 
   const endField = await createField({
@@ -191,7 +187,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
   });
 
   const colorField = await createField({
@@ -220,7 +215,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
   });
 
   return {

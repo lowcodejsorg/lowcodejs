@@ -114,6 +114,7 @@ export type TableUpdatePayload = {
   fieldOrderList?: Array<string>;
   fieldOrderForm?: Array<string>;
   methods?: TableMethodPayload;
+  order?: { field: string; direction: 'asc' | 'desc' } | null;
   fields?: Array<string>;
   groups?: Array<{
     slug: string;

@@ -46,6 +46,14 @@ export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
 
 export const TableFieldOrderFormSchema = z.array(z.string().trim()).default([]);
 
+export const TableOrderSchema = z
+  .object({
+    field: z.string().trim(),
+    direction: z.enum(['asc', 'desc']),
+  })
+  .nullable()
+  .default(null);
+
 export const TableMethodSchema = z.object({
   beforeSave: z.object({
     code: z.string().trim().nullable(),
