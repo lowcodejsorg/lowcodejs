@@ -1,7 +1,5 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import {
   CloneTableBodySchema,
@@ -17,7 +15,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import type { IHTTPExeptionError } from '@/lib/interfaces';
+import { handleApiError } from '@/lib/handle-api-error';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/clone/')({
   component: RouteComponent,
@@ -39,12 +38,7 @@ function RouteComponent(): React.JSX.Element {
 
   const _clone = useCloneTable({
     onSuccess(data) {
-      toast('Tabela clonada', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi clonada com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Tabela clonada', 'A tabela foi clonada com sucesso');
 
       form.reset();
       sidebar.setOpen(true);
@@ -57,50 +51,8 @@ function RouteComponent(): React.JSX.Element {
       });
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data as IHTTPExeptionError<{
-          name?: string;
-          baseTableId?: string;
-        }>;
-
-        if (errorData.cause === 'TABLE_NOT_FOUND' && errorData.code === 404) {
-          toast('Modelo não encontrado', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: 'A tabela modelo selecionada não foi encontrada',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          (errorData.cause === 'INVALID_PAYLOAD_FORMAT' ||
-            errorData.cause === 'VALIDATION_ERROR') &&
-          errorData.code === 400
-        ) {
-          toast('Erro de validação', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData.message || 'Verifique os dados informados',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        toast('Erro ao clonar tabela', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData.message || 'Erro ao clonar a tabela',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-        return;
-      }
-
-      toast('Erro ao clonar tabela', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Houve um erro interno ao clonar a tabela',
-        descriptionClassName: '!text-white',
-        closeButton: true,
+      handleApiError(error, {
+        context: 'Erro ao clonar tabela',
       });
     },
   });

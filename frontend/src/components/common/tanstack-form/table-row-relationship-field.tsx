@@ -32,6 +32,7 @@ export function TableRowRelationshipField({
   const formField = useFieldContext<Array<SearchableOption>>();
   const isInvalid =
     formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
   const anchorRef = useComboboxAnchor();
 
@@ -183,7 +184,12 @@ export function TableRowRelationshipField({
             </div>
           )}
         </div>
-        {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+        {isInvalid && (
+          <FieldError
+            id={errorId}
+            errors={formField.state.meta.errors}
+          />
+        )}
       </Field>
     );
   }
@@ -241,7 +247,12 @@ export function TableRowRelationshipField({
           </div>
         )}
       </div>
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

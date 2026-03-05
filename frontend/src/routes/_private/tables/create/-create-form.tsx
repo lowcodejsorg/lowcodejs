@@ -2,7 +2,11 @@ import { FileTextIcon } from 'lucide-react';
 import { z } from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import { E_TABLE_STYLE, E_TABLE_VISIBILITY } from '@/lib/constant';
+import {
+  E_TABLE_STYLE,
+  E_TABLE_VISIBILITY,
+  TABLE_NAME_REGEX,
+} from '@/lib/constant';
 
 export const TableCreateSchema = z.object({
   name: z
@@ -25,13 +29,7 @@ export const TableCreateSchema = z.object({
   ]),
 });
 
-export type TableCreateFormValues = {
-  name: string;
-  logo: string | null;
-  logoFile: Array<File>;
-  style: (typeof E_TABLE_STYLE)[keyof typeof E_TABLE_STYLE];
-  visibility: (typeof E_TABLE_VISIBILITY)[keyof typeof E_TABLE_VISIBILITY];
-};
+export type TableCreateFormValues = z.infer<typeof TableCreateSchema>;
 
 export const tableCreateFormDefaultValues: TableCreateFormValues = {
   name: '',
@@ -79,9 +77,7 @@ export const CreateTableFormFields = withForm({
               if (value.length > 40) {
                 return { message: 'Nome deve ter no máximo 40 caracteres' };
               }
-              if (
-                !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
-              ) {
+              if (!TABLE_NAME_REGEX.test(value)) {
                 return {
                   message: 'O nome não pode conter caracteres especiais',
                 };

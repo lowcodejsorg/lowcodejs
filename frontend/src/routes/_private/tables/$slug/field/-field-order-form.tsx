@@ -25,7 +25,6 @@ import {
   PencilIcon,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -33,6 +32,7 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
+import { toastError, toastSuccess } from '@/lib/toast';
 
 interface SortableItemProps {
   field: IField;
@@ -285,13 +285,12 @@ export function FieldOrderForm({
   const update = useUpdateTable({
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.tables.detail(table.slug), data);
-      toast.success('Ordem atualizada com sucesso');
+      toastSuccess('Ordem atualizada com sucesso');
       setHasChanges(false);
       onSuccess?.();
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar ordem dos campos');
+    onError: () => {
+      toastError('Erro ao atualizar ordem dos campos');
     },
   });
 
@@ -489,12 +488,11 @@ export function FieldManagementList({
   const updateTable = useUpdateTable({
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.tables.detail(table.slug), data);
-      toast.success('Ordem atualizada com sucesso');
+      toastSuccess('Ordem atualizada com sucesso');
       setHasChanges(false);
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar ordem dos campos');
+    onError: () => {
+      toastError('Erro ao atualizar ordem dos campos');
     },
   });
 
@@ -646,15 +644,14 @@ export function FieldManagementList({
         showInDetail: 'detalhes',
       };
       const visibilityLabel = visibilityLabels[visibilityKey];
-      toast.success(
+      toastSuccess(
         response[visibilityKey]
           ? `Campo visível em ${visibilityLabel}`
           : `Campo oculto em ${visibilityLabel}`,
       );
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar visibilidade do campo');
+    onError: () => {
+      toastError('Erro ao atualizar visibilidade do campo');
     },
     onSettled: () => {
       setTogglingFieldId(null);
@@ -796,13 +793,12 @@ export function FieldManagementList({
         },
       );
 
-      toast.success(
+      toastSuccess(
         `Largura atualizada para ${response[widthKey!]}${widthKey === 'widthInList' ? 'px' : '%'}`,
       );
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar largura do campo');
+    onError: () => {
+      toastError('Erro ao atualizar largura do campo');
     },
     onSettled: () => {
       setChangingWidthFieldId(null);

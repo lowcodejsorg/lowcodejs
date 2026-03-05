@@ -23,6 +23,7 @@ export function FieldText({
 }: FieldTextProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+  const errorId = `${field.name}-error`;
 
   return (
     <Field data-invalid={isInvalid}>
@@ -41,10 +42,17 @@ export function FieldText({
           onBlur={field.handleBlur}
           onChange={(e) => field.handleChange(e.target.value)}
           aria-invalid={isInvalid}
+          aria-required={required || undefined}
+          aria-describedby={isInvalid ? errorId : undefined}
         />
         {icon && <InputGroupAddon>{icon}</InputGroupAddon>}
       </InputGroup>
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={field.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

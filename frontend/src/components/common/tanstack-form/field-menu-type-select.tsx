@@ -27,6 +27,7 @@ export function FieldMenuTypeSelect({
 }: FieldMenuTypeSelectProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+  const errorId = `${field.name}-error`;
 
   return (
     <Field data-invalid={isInvalid}>
@@ -36,6 +37,7 @@ export function FieldMenuTypeSelect({
       <Select
         disabled={disabled}
         value={field.state.value}
+        aria-label={label}
         onValueChange={(value) => {
           field.handleChange(value as ValueOf<typeof E_MENU_ITEM_TYPE>);
         }}
@@ -54,7 +56,12 @@ export function FieldMenuTypeSelect({
           ))}
         </SelectContent>
       </Select>
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={field.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

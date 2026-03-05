@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
+  useNavigate,
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
@@ -25,6 +26,7 @@ function RouteComponent(): React.JSX.Element {
   });
 
   const router = useRouter();
+  const navigate = useNavigate({ from: '/users' });
 
   const sidebar = useSidebar();
 
@@ -63,7 +65,17 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       <div className="shrink-0 border-t p-2">
-        <Pagination meta={data.meta} />
+        <Pagination
+          meta={data.meta}
+          page={search.page}
+          perPage={search.perPage}
+          onPageChange={(page) =>
+            navigate({ search: (prev) => ({ ...prev, page }) })
+          }
+          onPerPageChange={(perPage) =>
+            navigate({ search: (prev) => ({ ...prev, perPage, page: 1 }) })
+          }
+        />
       </div>
     </div>
   );

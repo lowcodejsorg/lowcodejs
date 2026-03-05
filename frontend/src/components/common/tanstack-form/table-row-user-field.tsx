@@ -41,6 +41,7 @@ export function TableRowUserField({
     : [];
   const isInvalid =
     formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
   const isMultiple = field.multiple;
   const anchorRef = useComboboxAnchor();
@@ -259,7 +260,12 @@ export function TableRowUserField({
             </div>
           )}
         </div>
-        {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+        {isInvalid && (
+          <FieldError
+            id={errorId}
+            errors={formField.state.meta.errors}
+          />
+        )}
       </Field>
     );
   }
@@ -319,7 +325,12 @@ export function TableRowUserField({
           </div>
         )}
       </div>
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

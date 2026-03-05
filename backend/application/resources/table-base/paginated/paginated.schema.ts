@@ -379,17 +379,16 @@ export const TablePaginatedSchema: FastifySchema = {
                 },
               },
               order: {
-                anyOf: [
-                  { type: 'null' },
-                  {
-                    type: 'object',
-                    properties: {
-                      field: { type: 'string' },
-                      direction: { type: 'string', enum: ['asc', 'desc'] },
-                    },
-                  },
-                ],
+                type: 'object',
                 description: 'Default sort order for table records',
+                properties: {
+                  field: { type: 'string', nullable: true },
+                  direction: {
+                    type: 'string',
+                    enum: ['asc', 'desc'],
+                    nullable: true,
+                  },
+                },
               },
               _schema: {
                 type: 'object',

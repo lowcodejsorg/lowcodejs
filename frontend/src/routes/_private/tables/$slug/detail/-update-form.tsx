@@ -2,21 +2,14 @@ import { FileTextIcon } from 'lucide-react';
 import React from 'react';
 import { z } from 'zod';
 
-import { Field, FieldLabel } from '@/components/ui/field';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
+  TABLE_NAME_REGEX,
 } from '@/lib/constant';
-import type { ITable, ValueOf } from '@/lib/interfaces';
+import type { ITable } from '@/lib/interfaces';
 import { getAllowedTableStyles } from '@/lib/table-style';
 
 // Schema estendido com campos de UI (logoFile)
@@ -53,17 +46,7 @@ export const TableUpdateSchema = z.object({
   order: z.string().default('none'),
 });
 
-export type TableUpdateFormValues = {
-  name: string;
-  description: string;
-  style: ValueOf<typeof E_TABLE_STYLE>;
-  visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-  logo: string | null;
-  logoFile: Array<File>;
-  administrators: Array<string>;
-  order: string;
-};
+export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
@@ -140,9 +123,7 @@ export const UpdateTableFormFields = withForm({
               if (value.length > 40) {
                 return { message: 'Nome deve ter no máximo 40 caracteres' };
               }
-              if (
-                !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
-              ) {
+              if (!TABLE_NAME_REGEX.test(value)) {
                 return {
                   message: 'O nome não pode conter caracteres especiais',
                 };
@@ -244,28 +225,13 @@ export const UpdateTableFormFields = withForm({
         {/* Ordenação padrão */}
         <form.AppField name="order">
           {(field) => (
-            <Field>
-              <FieldLabel htmlFor={field.name}>Ordenação padrão</FieldLabel>
-              <p className="text-sm text-muted-foreground">
-                Define a ordenação padrão dos registros na listagem
-              </p>
-              <Select
-                disabled={isDisabled}
-                value={field.state.value}
-                onValueChange={(value) => field.handleChange(value)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione uma ordenação" />
-                </SelectTrigger>
-                <SelectContent>
-                  {orderOptions.map((item) => (
-                    <SelectItem key={item.value} value={item.value}>
-                      {item.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </Field>
+            <field.TableOrderSelectField
+              label="Ordenação padrão"
+              description="Define a ordenação padrão dos registros na listagem"
+              placeholder="Selecione uma ordenação"
+              disabled={isDisabled}
+              options={orderOptions}
+            />
           )}
         </form.AppField>
       </section>

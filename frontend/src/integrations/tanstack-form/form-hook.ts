@@ -33,6 +33,7 @@ import {
   TableFieldRelationshipOrderSelect,
   TableFieldRelationshipTableSelect,
   TableFieldTypeSelect,
+  TableOrderSelectField,
   TableStyleSelectField,
   TableVisibilitySelectField,
 } from './fields/table-config';
@@ -78,6 +79,7 @@ export const { useAppForm, withForm } = createFormHook({
     TableComboboxField,
     TableVisibilitySelectField,
     TableCollaborationSelectField,
+    TableOrderSelectField,
     TableStyleSelectField,
     // Table field configuration
     TableFieldTypeSelect,

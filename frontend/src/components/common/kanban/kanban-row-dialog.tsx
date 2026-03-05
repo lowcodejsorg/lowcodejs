@@ -1,6 +1,5 @@
 import { CopyIcon, FileTextIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
 import { KanbanRowCommentsSection } from './kanban-row-comments';
@@ -51,6 +50,7 @@ import {
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
+import { toastError, toastSuccess, toastWarning } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export function KanbanRowDialog({
@@ -128,12 +128,7 @@ export function KanbanRowDialog({
 
   const updateRow = useUpdateTableRow({
     onSuccess(data) {
-      toast('Registro atualizado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O card foi atualizado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Registro atualizado', 'O card foi atualizado com sucesso');
       onRowUpdated?.(data);
       setTaskTitle('');
       setCommentText('');
@@ -141,53 +136,28 @@ export function KanbanRowDialog({
       setEditingTaskTitle('');
     },
     onError() {
-      toast('Erro ao atualizar', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Nao foi possivel atualizar o card',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError('Erro ao atualizar', 'Nao foi possivel atualizar o card');
     },
   });
 
   const createRow = useCreateTableRow({
     onSuccess(data) {
-      toast('Card duplicado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O card foi duplicado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Card duplicado', 'O card foi duplicado com sucesso');
       onRowDuplicated?.(data);
     },
     onError() {
-      toast('Erro ao duplicar', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Nao foi possivel duplicar o card',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError('Erro ao duplicar', 'Nao foi possivel duplicar o card');
     },
   });
 
   const trashRow = useRowUpdateTrash({
     onSuccess() {
-      toast('Card excluido', {
-        className: '!bg-amber-600 !text-white !border-amber-600',
-        description: 'O card foi enviado para a lixeira',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastWarning('Card excluido', 'O card foi enviado para a lixeira');
       if (row) onRowDeleted?.(row._id);
       onClose();
     },
     onError() {
-      toast('Erro ao excluir', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Nao foi possivel excluir o card',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError('Erro ao excluir', 'Nao foi possivel excluir o card');
     },
   });
 

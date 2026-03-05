@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import { TABLE_NAME_REGEX } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
 export const CloneTableBodySchema = z.object({
@@ -73,9 +74,7 @@ export const CloneTableFormFields = withForm({
               if (value.length > 40) {
                 return { message: 'Nome deve ter no máximo 40 caracteres' };
               }
-              if (
-                !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
-              ) {
+              if (!TABLE_NAME_REGEX.test(value)) {
                 return {
                   message: 'O nome não pode conter caracteres especiais',
                 };

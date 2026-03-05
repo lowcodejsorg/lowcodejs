@@ -29,6 +29,7 @@ export function TableRowMarkdownField({
   const formField = useFieldContext<string>();
   const isInvalid =
     formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
   const [preview, setPreview] = useState(false);
 
@@ -89,9 +90,16 @@ export function TableRowMarkdownField({
           rows={compact ? 3 : 6}
           className={cn('font-mono text-sm', isInvalid && 'border-destructive')}
           aria-invalid={isInvalid}
+          aria-required={isRequired}
+          aria-describedby={isInvalid ? errorId : undefined}
         />
       )}
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

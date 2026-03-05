@@ -21,6 +21,7 @@ export function TableRowTextField({
   const formField = useFieldContext<string>();
   const isInvalid =
     formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
 
   return (
@@ -40,12 +41,19 @@ export function TableRowTextField({
           onBlur={formField.handleBlur}
           onChange={(e) => formField.handleChange(e.target.value)}
           aria-invalid={isInvalid}
+          aria-required={isRequired || undefined}
+          aria-describedby={isInvalid ? errorId : undefined}
         />
         <InputGroupAddon>
           <TextIcon className="size-4" />
         </InputGroupAddon>
       </InputGroup>
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

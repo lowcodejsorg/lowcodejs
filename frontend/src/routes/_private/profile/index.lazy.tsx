@@ -1,9 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import type { ProfileUpdateFormValues } from './-update-form';
 import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
@@ -14,7 +12,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
+import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/profile/')({
   component: RouteComponent,
@@ -81,12 +81,10 @@ function ProfileUpdateContent({
 
   const _update = useUpdateProfile({
     onSuccess() {
-      toast('Perfil atualizado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'Os dados do perfil foram atualizados com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess(
+        'Perfil atualizado',
+        'Os dados do perfil foram atualizados com sucesso',
+      );
 
       form.reset();
       setMode('show');
@@ -94,18 +92,9 @@ function ProfileUpdateContent({
       router.invalidate();
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-
-        toast('Erro ao atualizar o perfil', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar o perfil',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      console.error(error);
+      handleApiError(error, {
+        context: 'Erro ao atualizar o perfil',
+      });
     },
   });
 
@@ -124,12 +113,10 @@ function ProfileUpdateContent({
       if (_update.status === 'pending') return;
 
       if (allowPasswordChange && value.newPassword !== value.confirmPassword) {
-        toast('As senhas não coincidem', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: 'A nova senha e a confirmação devem ser iguais',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastError(
+          'As senhas não coincidem',
+          'A nova senha e a confirmação devem ser iguais',
+        );
         return;
       }
 

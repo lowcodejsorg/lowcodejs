@@ -1,6 +1,5 @@
 import { useForm } from '@tanstack/react-form';
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import {
   EyeClosedIcon,
   EyeIcon,
@@ -9,7 +8,6 @@ import {
   UserIcon,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Logo } from '@/components/common/logo';
@@ -29,7 +27,8 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationSignUp } from '@/hooks/tanstack-query/use-authentication-sign-up';
-import type { IHTTPExeptionError } from '@/lib/interfaces';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
 
 export const Route = createLazyFileRoute('/_authentication/sign-up/')({
   component: RouteComponent,
@@ -67,77 +66,6 @@ function RouteComponent(): React.JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const signUpMutation = useAuthenticationSignUp({
-    onSuccess() {
-      router.navigate({ to: '/', replace: true });
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data as IHTTPExeptionError<
-          Partial<
-            Pick<
-              z.infer<typeof FormSignUpSchema>,
-              'name' | 'email' | 'password'
-            >
-          >
-        >;
-
-        // 400 - Validation errors
-        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
-          if (data.errors['name']) setFieldError('name', data.errors['name']);
-
-          if (data.errors['email'])
-            setFieldError('email', data.errors['email']);
-
-          if (data.errors['password'])
-            setFieldError('password', data.errors['password']);
-
-          return;
-        }
-
-        // 409 - User already exists
-        if (data.cause === 'USER_ALREADY_EXISTS' && data.code === 409) {
-          setFieldError('email', 'Este email já está em uso');
-          return;
-        }
-
-        if (data.cause === 'SIGN_UP_ERROR' && data.code === 500) {
-          toast('Erro ao fazer cadastro', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Houve um erro ao fazer cadastro. Tente novamente mais tarde.',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-        }
-      }
-
-      toast('Erro ao criar conta', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Houve um erro interno. Tente novamente mais tarde.',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
-    },
-  });
-
-  function setFieldError(
-    field: keyof Pick<
-      z.infer<typeof FormSignUpSchema>,
-      'name' | 'email' | 'password'
-    >,
-    message: string,
-  ): void {
-    form.setFieldMeta(field, (prev) => {
-      return {
-        ...prev,
-        isTouched: true,
-        errors: [{ message }],
-        errorMap: { onSubmit: { message } },
-      };
-    });
-  }
-
   const form = useForm({
     defaultValues: {
       name: '',
@@ -151,6 +79,28 @@ function RouteComponent(): React.JSX.Element {
     onSubmit: async function ({ value: payload }) {
       const { confirmPassword, ...data } = payload;
       await signUpMutation.mutateAsync(data);
+    },
+  });
+
+  const setFieldError = createFieldErrorSetter(form);
+
+  const signUpMutation = useAuthenticationSignUp({
+    onSuccess() {
+      router.navigate({ to: '/', replace: true });
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Erro ao criar conta',
+        onFieldErrors: (errors) => {
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
+        causeHandlers: {
+          USER_ALREADY_EXISTS: () =>
+            setFieldError('email', 'Este email já está em uso'),
+        },
+      });
     },
   });
 

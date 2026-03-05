@@ -12,15 +12,18 @@ interface FieldEmailProps {
   label: string;
   placeholder?: string;
   disabled?: boolean;
+  required?: boolean;
 }
 
 export function FieldEmail({
   label,
   placeholder,
   disabled,
+  required,
 }: FieldEmailProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+  const errorId = `${field.name}-error`;
 
   return (
     <Field data-invalid={isInvalid}>
@@ -36,12 +39,19 @@ export function FieldEmail({
           onBlur={field.handleBlur}
           onChange={(e) => field.handleChange(e.target.value)}
           aria-invalid={isInvalid}
+          aria-required={required || undefined}
+          aria-describedby={isInvalid ? errorId : undefined}
         />
         <InputGroupAddon>
           <MailIcon />
         </InputGroupAddon>
       </InputGroup>
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={field.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

@@ -1,8 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { AxiosError } from 'axios';
 import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,8 +15,10 @@ import {
 } from '@/components/ui/dialog';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { toastSuccess } from '@/lib/toast';
 
 type TableRemoveFromTrashDialogProps = React.ComponentProps<
   typeof DialogTrigger
@@ -49,35 +49,10 @@ export function TableRemoveFromTrashDialog({
         queryKey: queryKeys.tables.lists(),
       });
 
-      toast('Tabela restaurada!', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi restaurada da lixeira',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Tabela restaurada!', 'A tabela foi restaurada da lixeira');
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data;
-
-        if (data?.code === 401 && data?.cause === 'AUTHENTICATION_REQUIRED') {
-          toast.error(data?.message ?? 'Autenticação necessária');
-        }
-
-        if (data?.code === 404 && data?.cause === 'TABLE_NOT_FOUND') {
-          toast.error(data?.message ?? 'Tabela não encontrada');
-        }
-
-        if (data?.code === 409 && data?.cause === 'NOT_TRASHED') {
-          toast.error(data?.message ?? 'Tabela não está na lixeira');
-        }
-
-        if (data?.code === 500) {
-          toast.error(data?.message ?? 'Erro interno do servidor');
-        }
-      }
-
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao restaurar tabela da lixeira' });
     },
   });
 

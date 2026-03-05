@@ -1,8 +1,6 @@
 import { Link, useLocation, useRouter } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ChevronRightIcon, LogOutIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import {
@@ -34,7 +32,9 @@ import {
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { MenuRoute } from '@/lib/menu/menu-route';
+import { toastSuccess } from '@/lib/toast';
 
 interface SidebarProps {
   menu: MenuRoute;
@@ -52,12 +52,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
 
   const signOut = useAuthenticationSignOut({
     onSuccess() {
-      toast('Logout realizado com sucesso!', {
-        className: '!bg-green-500 !text-primary-foreground !border-green-500',
-        description: 'Volte sempre!',
-        descriptionClassName: '!text-primary-foreground',
-        closeButton: true,
-      });
+      toastSuccess('Logout realizado com sucesso!', 'Volte sempre!');
 
       router.navigate({
         to: '/',
@@ -65,21 +60,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
       });
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data;
-
-        // 401 - AUTHENTICATION_REQUIRED
-        if (data?.code === 401 && data?.cause === 'AUTHENTICATION_REQUIRED') {
-          toast.error(data?.message ?? 'Authentication required');
-        }
-
-        // 500 - SERVER_ERROR
-        if (data?.code === 500) {
-          toast.error(data?.message ?? 'Erro interno do servidor');
-        }
-      }
-
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao fazer logout' });
     },
   });
 

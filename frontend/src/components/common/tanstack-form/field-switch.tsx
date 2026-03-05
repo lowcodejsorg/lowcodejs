@@ -24,7 +24,7 @@ export function FieldSwitch({
   return (
     <div className="flex flex-row items-center justify-between rounded-lg border p-3">
       <div className="space-y-0.5">
-        <FieldLabel>{label}</FieldLabel>
+        <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
@@ -32,6 +32,8 @@ export function FieldSwitch({
       <div className="inline-flex space-x-2 items-center">
         <span className="text-sm text-muted-foreground">{inactiveLabel}</span>
         <Switch
+          id={field.name}
+          aria-label={label}
           disabled={disabled}
           checked={field.state.value === E_USER_STATUS.ACTIVE}
           onCheckedChange={(checked) => {

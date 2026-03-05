@@ -1,6 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
 import { useParams, useRouter, useSearch } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import {
   ArchiveRestoreIcon,
   ArrowDownIcon,
@@ -13,7 +12,6 @@ import {
   XIcon,
 } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/table-row-date-cell';
@@ -56,8 +54,10 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface TableListViewProps {
@@ -394,28 +394,17 @@ export function TableListView({
         queryKey: queryKeys.rows.lists(slug),
       });
 
-      toast(
+      toastSuccess(
         result.modified === 1
           ? '1 registro enviado para lixeira!'
           : `${result.modified} registros enviados para lixeira!`,
-        {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description: 'Os registros foram movidos para a lixeira',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        },
+        'Os registros foram movidos para a lixeira',
       );
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        toast.error(
-          errorData?.message ?? 'Erro ao enviar registros para lixeira',
-        );
-      } else {
-        toast.error('Erro ao enviar registros para lixeira');
-      }
-      console.error(error);
+      handleApiError(error, {
+        context: 'Erro ao enviar registros para lixeira',
+      });
     },
   });
 
@@ -433,26 +422,15 @@ export function TableListView({
         queryKey: queryKeys.rows.lists(slug),
       });
 
-      toast(
+      toastSuccess(
         result.modified === 1
           ? '1 registro restaurado!'
           : `${result.modified} registros restaurados!`,
-        {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description: 'Os registros foram restaurados da lixeira',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        },
+        'Os registros foram restaurados da lixeira',
       );
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        toast.error(errorData?.message ?? 'Erro ao restaurar registros');
-      } else {
-        toast.error('Erro ao restaurar registros');
-      }
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao restaurar registros' });
     },
   });
 

@@ -1,4 +1,4 @@
-import { useLocation, useRouter } from '@tanstack/react-router';
+import { useRouter } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
@@ -59,10 +59,6 @@ const VISIBILITY_CONFIG: Record<
 function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
-
-  const location = useLocation();
-
-  console.log(location);
 
   const tableDeleteButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const tableRemoveFromTrashButtonRef = React.useRef<HTMLButtonElement | null>(

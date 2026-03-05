@@ -17,6 +17,7 @@ export function TableRowTextareaField({
   const formField = useFieldContext<string>();
   const isInvalid =
     formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
 
   return (
@@ -36,8 +37,15 @@ export function TableRowTextareaField({
         rows={compact ? 2 : 3}
         className={compact ? 'max-h-24 min-h-20' : undefined}
         aria-invalid={isInvalid}
+        aria-required={isRequired || undefined}
+        aria-describedby={isInvalid ? errorId : undefined}
       />
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

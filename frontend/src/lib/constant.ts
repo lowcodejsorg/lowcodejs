@@ -1,5 +1,8 @@
 import type { Meta } from './interfaces';
 
+export const TABLE_NAME_REGEX =
+  /^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/;
+
 export const MetaDefault: Meta = {
   total: 1,
   perPage: 50,
@@ -121,7 +124,7 @@ export const E_SCHEMA_TYPE = {
   STRING: 'String',
   DATE: 'Date',
   BOOLEAN: 'Boolean',
-  OBJECT_ID: 'Boolean',
+  OBJECT_ID: 'ObjectId',
 } as const;
 
 export const E_REACTION_TYPE = {

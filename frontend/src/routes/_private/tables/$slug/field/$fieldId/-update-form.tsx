@@ -4,20 +4,14 @@ import z from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
-import type { ICategory } from '@/lib/interfaces';
-
-interface DropdownOption {
-  id: string;
-  label: string;
-  color: string | null;
-}
+import type { ICategory, IDropdown } from '@/lib/interfaces';
 
 export const FieldUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   defaultValue: z.string().default(''),
-  dropdown: z.array(z.custom<DropdownOption>()).default([]),
+  dropdown: z.array(z.custom<IDropdown>()).default([]),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
@@ -101,7 +95,6 @@ export const UpdateFieldFormFields = withForm({
       isFieldGroup ||
       isCategory ||
       isUser;
-    const showFiltering = !isReaction && !isFile;
     const showRequired = !isReaction && !isEvaluation;
 
     const isDisabled = mode === 'show' || isPending;
@@ -399,30 +392,6 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
-
-        {/* Campo Filtro */}
-        {/* {showFiltering && (
-          <form.AppField name="filter">
-            {(field) => (
-              <field.FieldBooleanSwitch
-                label="Usar no filtro"
-                description="Usar este campo para filtrar os dados?"
-                disabled={isDisabled || lockNonOptions}
-              />
-            )}
-          </form.AppField>
-        )} */}
-
-        {/* Campo Exibição */}
-        {/* <form.AppField name="display">
-          {(field) => (
-            <field.FieldBooleanSwitch
-              label="Exibir na listagem"
-              description="Exibir este campo na listagem?"
-              disabled={isDisabled || lockNonOptions}
-            />
-          )}
-        </form.AppField> */}
 
         {/* Campo Obrigatoriedade */}
         {showRequired && (

@@ -5,10 +5,8 @@ import {
   useParams,
   useSearch,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
 import { FieldView } from './-view';
@@ -28,7 +26,9 @@ import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
+import { toastSuccess, toastWarning } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_private/tables/$slug/field/$fieldId/',
@@ -285,157 +285,29 @@ function FieldUpdateContent({
       const isTrashed = Boolean(response.trashed);
 
       if (!wasTrashed && isTrashed) {
-        toast('Campo enviado para lixeira', {
-          className: '!bg-amber-600 !text-white !border-amber-600',
-          description:
-            'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastWarning(
+          'Campo enviado para lixeira',
+          'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
+        );
       } else if (wasTrashed && !isTrashed) {
-        toast('Campo restaurado', {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description:
-            'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastSuccess(
+          'Campo restaurado',
+          'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
+        );
       } else {
-        toast('Campo atualizado', {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description: 'Os dados do campo foram atualizados com sucesso',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastSuccess(
+          'Campo atualizado',
+          'Os dados do campo foram atualizados com sucesso',
+        );
       }
 
       form.reset();
       setMode('show');
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-
-        if (
-          errorData?.code === 400 &&
-          errorData?.cause === 'INVALID_PARAMETERS'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Dados inválidos',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 401 &&
-          errorData?.cause === 'AUTHENTICATION_REQUIRED'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Autenticação necessária',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 403 && errorData?.cause === 'ACCESS_DENIED') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              errorData?.message ??
-              'Permissões insuficientes para atualizar este campo',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 404 && errorData?.cause === 'FIELD_NOT_FOUND') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Campo não encontrado',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 409 &&
-          errorData?.cause === 'LAST_ACTIVE_FIELD'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Último campo ativo, não pode ser enviado para a lixeira',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 409 &&
-          errorData?.cause === 'FIELD_ALREADY_EXISTS'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              errorData?.message ?? 'Já existe um campo com este nome',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 409 && errorData?.cause === 'FIELD_IN_USE') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              errorData?.message ??
-              'Não é possível alterar o tipo do campo: o campo contém dados',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 422 &&
-          errorData?.cause === 'UNPROCESSABLE_ENTITY'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Configuração de campo inválida',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 500 && errorData?.cause === 'SERVER_ERROR') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Erro interno do servidor',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        toast('Erro ao atualizar o campo', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar o campo',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      console.error(error);
+      handleApiError(error, {
+        context: 'Erro ao atualizar o campo',
+      });
     },
   });
 

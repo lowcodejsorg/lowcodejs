@@ -28,18 +28,6 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
 
   return (
     <React.Fragment>
-      {/* <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
-        {permission.can('UPDATE_TABLE') && !data.trashed && (
-          <TableSendToTrashDialog slug={data.slug} />
-        )}
-        {permission.can('UPDATE_TABLE') && data.trashed && (
-          <TableRemoveFromTrashDialog slug={data.slug} />
-        )}
-        {permission.can('REMOVE_TABLE') && data.trashed && (
-          <TableDeleteDialog slug={data.slug} />
-        )}
-      </div> */}
-
       <section className="space-y-4 p-2">
         {/* Logo */}
         <div className="space-y-1">

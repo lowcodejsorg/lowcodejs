@@ -9,6 +9,7 @@ import {
   E_TABLE_VISIBILITY,
   E_USER_STATUS,
   PASSWORD_REGEX,
+  TABLE_NAME_REGEX,
 } from './constant';
 
 // ============== AUTHENTICATION ==============
@@ -190,7 +191,7 @@ export const TableCreateBodySchema = z.object({
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres')
     .regex(
-      /^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/,
+      TABLE_NAME_REGEX,
       'Nome pode conter apenas letras, números, espaços, hífen, underscore e ç',
     ),
   owner: z.string().trim().optional(),
@@ -222,7 +223,7 @@ export const TableUpdateBodySchema = z.object({
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres')
     .regex(
-      /^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/,
+      TABLE_NAME_REGEX,
       'Nome pode conter apenas letras, números, espaços, hífen, underscore e ç',
     ),
   description: z.string().trim().nullable(),

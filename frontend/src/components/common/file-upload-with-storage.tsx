@@ -2,7 +2,6 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { Paperclip, Upload, X } from 'lucide-react';
 import * as React from 'react';
-import { toast } from 'sonner';
 
 import type { FileUploadProps } from '@/components/common/file-upload';
 import {
@@ -20,6 +19,7 @@ import { useUploadingContext } from '@/components/common/uploading-context';
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
 import type { IStorage } from '@/lib/interfaces';
+import { toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface FileUploadWithStorageProps {
@@ -94,18 +94,12 @@ export function FileUploadWithStorage({
         const data = error.response?.data;
 
         if (data?.code === 500 && data?.cause === 'STORAGE_UPLOAD_ERROR') {
-          toast('Erro ao fazer upload', {
-            className:
-              '!bg-destructive !text-primary-foreground !border-destructive',
-            description:
-              'Houve um problema ao tentar fazer upload, tente novamente mais tarde.',
-            descriptionClassName: '!text-primary-foreground',
-            closeButton: true,
-          });
+          toastError(
+            'Erro ao fazer upload',
+            'Houve um problema ao tentar fazer upload, tente novamente mais tarde.',
+          );
         }
       }
-
-      console.error(error);
     },
     onSuccess(response, uploadedFiles) {
       setStorageFiles((prevStorageFiles) => {
@@ -139,25 +133,13 @@ export function FileUploadWithStorage({
         const data = error.response?.data;
 
         if (data?.code === 404 && data?.cause === 'STORAGE_NOT_FOUND') {
-          toast(data?.message ?? 'Arquivo não encontrado', {
-            className:
-              '!bg-destructive !text-primary-foreground !border-destructive',
-            descriptionClassName: '!text-primary-foreground',
-            closeButton: true,
-          });
+          toastError(data?.message ?? 'Arquivo não encontrado');
         }
 
         if (data?.code === 500 && data?.cause === 'STORAGE_DELETE_ERROR') {
-          toast(data?.message ?? 'Erro interno do servidor', {
-            className:
-              '!bg-destructive !text-primary-foreground !border-destructive',
-            descriptionClassName: '!text-primary-foreground',
-            closeButton: true,
-          });
+          toastError(data?.message ?? 'Erro interno do servidor');
         }
       }
-
-      console.error(error);
     },
     onSuccess(deletedStorage) {
       // Encontrar o arquivo associado ao storage
@@ -281,8 +263,8 @@ export function FileUploadWithStorage({
             );
           }
         }
-      } catch (error) {
-        console.error('Unexpected error during upload:', error);
+      } catch {
+        // Errors already handled by upload mutation onError
       } finally {
         setIsProcessing(false);
       }
@@ -301,12 +283,10 @@ export function FileUploadWithStorage({
       errorMessage = 'Número máximo de arquivos excedido';
     }
 
-    toast(errorMessage, {
-      className: '!bg-destructive !text-primary-foreground !border-destructive',
-      description: `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}" foi rejeitado`,
-      descriptionClassName: '!text-primary-foreground',
-      closeButton: true,
-    });
+    toastError(
+      errorMessage,
+      `"${file.name.length > 20 ? `${file.name.slice(0, 20)}...` : file.name}" foi rejeitado`,
+    );
   }, []);
 
   const onFileValidate = React.useCallback(

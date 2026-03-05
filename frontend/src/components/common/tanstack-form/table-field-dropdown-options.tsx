@@ -7,13 +7,8 @@ import { ComboboxSortableChips } from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import type { IDropdown } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-
-interface DropdownOption {
-  id: string;
-  label: string;
-  color?: string;
-}
 
 interface TableFieldDropdownOptionsProps {
   label: string;
@@ -28,7 +23,7 @@ export function TableFieldDropdownOptions({
   disabled,
   required,
 }: TableFieldDropdownOptionsProps): React.JSX.Element {
-  const field = useFieldContext<Array<DropdownOption>>();
+  const field = useFieldContext<Array<IDropdown>>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const [inputValue, setInputValue] = React.useState('');
 
@@ -52,7 +47,7 @@ export function TableFieldDropdownOptions({
     );
     if (exists) return;
 
-    const newOption: DropdownOption = {
+    const newOption: IDropdown = {
       id: crypto.randomUUID(),
       label: trimmed,
       color: undefined,
@@ -69,7 +64,7 @@ export function TableFieldDropdownOptions({
   };
 
   const handleReorder = (newItems: Array<SortableChipItem>): void => {
-    const reorderedOptions: Array<DropdownOption> = newItems.map((item) => {
+    const reorderedOptions: Array<IDropdown> = newItems.map((item) => {
       const prev = optionById.get(item.id);
       return {
         id: item.id,

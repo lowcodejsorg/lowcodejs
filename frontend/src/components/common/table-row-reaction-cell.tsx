@@ -1,11 +1,10 @@
-import { AxiosError } from 'axios';
 import { ThumbsDownIcon, ThumbsUpIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { useRowUpdateReaction } from '@/hooks/tanstack-query/use-row-update-reaction';
 import { E_REACTION_TYPE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow, ValueOf } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -48,13 +47,7 @@ export function TableRowReactionCell({
 
   const reaction = useRowUpdateReaction({
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        if (errorData?.message) {
-          toast.error(errorData.message);
-        }
-      }
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao reagir' });
     },
   });
 

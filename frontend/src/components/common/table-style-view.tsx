@@ -7,7 +7,6 @@ import {
   ListTreeIcon,
   MessageCircle,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { Spinner } from '../ui/spinner';
 
@@ -26,6 +25,7 @@ import { E_TABLE_STYLE } from '@/lib/constant';
 import type { ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { getAllowedTableStyles } from '@/lib/table-style';
+import { toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface TableStyleViewDropdownProps {
@@ -63,9 +63,8 @@ export function TableStyleViewDropdown({
         },
       );
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao atualizar estilo da tabela');
+    onError() {
+      toastError('Erro ao atualizar estilo da tabela');
     },
   });
 

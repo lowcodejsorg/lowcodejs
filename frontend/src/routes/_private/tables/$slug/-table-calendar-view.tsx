@@ -3,7 +3,6 @@ import { useRouter } from '@tanstack/react-router';
 import { addMonths, addWeeks, subMonths, subWeeks } from 'date-fns';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import {
   CalendarAgendaView,
@@ -29,6 +28,7 @@ import type {
 } from '@/lib/calendar-helpers';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { toastError, toastSuccess } from '@/lib/toast';
 
 interface Props {
   data: Array<IRow>;
@@ -77,11 +77,10 @@ export function TableCalendarView({
         ...prev.filter((r) => r._id !== createdRow._id),
       ]);
       setIsCreateOpen(false);
-      toast.success('Agendamento criado com sucesso');
+      toastSuccess('Agendamento criado com sucesso');
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao criar agendamento');
+    onError() {
+      toastError('Erro ao criar agendamento');
     },
   });
 
@@ -91,11 +90,10 @@ export function TableCalendarView({
         prev.map((row) => (row._id === updatedRow._id ? updatedRow : row)),
       );
       setEditingRowId(null);
-      toast.success('Agendamento atualizado com sucesso');
+      toastSuccess('Agendamento atualizado com sucesso');
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao atualizar agendamento');
+    onError() {
+      toastError('Erro ao atualizar agendamento');
     },
   });
 
@@ -114,11 +112,10 @@ export function TableCalendarView({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(tableSlug),
       });
-      toast.success('Agendamento excluído com sucesso');
+      toastSuccess('Agendamento excluído com sucesso');
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao excluir agendamento');
+    onError() {
+      toastError('Erro ao excluir agendamento');
     },
   });
 

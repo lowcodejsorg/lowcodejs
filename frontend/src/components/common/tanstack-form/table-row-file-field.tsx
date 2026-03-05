@@ -36,6 +36,7 @@ export function TableRowFileField({
   const formField = useFieldContext<FileValue>();
   const isInvalid =
     formField.state.meta.isDirty && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
 
   const rawValue = formField.state.value;
@@ -109,7 +110,12 @@ export function TableRowFileField({
         maxFiles={field.multiple ? 10 : 1}
         className={cn(disabled && 'pointer-events-none opacity-50')}
       />
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

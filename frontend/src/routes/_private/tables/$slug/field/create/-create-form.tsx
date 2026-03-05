@@ -5,19 +5,14 @@ import z from 'zod';
 import type { TreeNode } from '@/components/common/-tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
-
-interface DropdownOption {
-  id: string;
-  label: string;
-  color: string | null;
-}
+import type { IDropdown } from '@/lib/interfaces';
 
 export const FieldCreateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   defaultValue: z.string().default(''),
-  dropdown: z.array(z.custom<DropdownOption>()).default([]),
+  dropdown: z.array(z.custom<IDropdown>()).default([]),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
@@ -104,7 +99,6 @@ export const CreateFieldFormFields = withForm({
       isFieldGroup ||
       isCategory ||
       isUser;
-    const showFiltering = !isReaction && !isFile;
     const showRequired = !isReaction && !isEvaluation;
 
     return (
@@ -453,30 +447,6 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Campo Filtro */}
-        {/* {showFiltering && (
-          <form.AppField name="filter">
-            {(field) => (
-              <field.FieldBooleanSwitch
-                label="Usar no filtro"
-                description="Usar este campo para filtrar os dados?"
-                disabled={isPending}
-              />
-            )}
-          </form.AppField>
-        )} */}
-
-        {/* Campo Exibição */}
-        {/* <form.AppField name="display">
-          {(field) => (
-            <field.FieldBooleanSwitch
-              label="Exibir na listagem"
-              description="Exibir este campo na listagem?"
-              disabled={isPending}
-            />
-          )}
-        </form.AppField> */}
-
         {/* Campo Obrigatoriedade */}
         {showRequired && (
           <form.AppField name="required">
@@ -489,7 +459,6 @@ export const CreateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
-
       </section>
     );
   },

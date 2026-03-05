@@ -26,6 +26,7 @@ export function FieldPassword({
   const field = useFieldContext<string>();
   const [showPassword, setShowPassword] = React.useState(false);
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+  const errorId = `${field.name}-error`;
 
   return (
     <Field data-invalid={isInvalid}>
@@ -43,6 +44,8 @@ export function FieldPassword({
           onBlur={field.handleBlur}
           onChange={(e) => field.handleChange(e.target.value)}
           aria-invalid={isInvalid}
+          aria-required={required || undefined}
+          aria-describedby={isInvalid ? errorId : undefined}
         />
         <InputGroupAddon align="inline-end">
           <InputGroupButton
@@ -56,7 +59,12 @@ export function FieldPassword({
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={field.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }
