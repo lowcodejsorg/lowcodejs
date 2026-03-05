@@ -154,7 +154,7 @@ export function TableListViewHeader({
               }}
             >
               <ArrowUpIcon />
-              <span>Ascending</span>
+              <span>Crescente</span>
             </DropdownMenuItem>
             <DropdownMenuItem
               onClick={() => {
@@ -168,7 +168,7 @@ export function TableListViewHeader({
               }}
             >
               <ArrowDownIcon />
-              <span>Descending</span>
+              <span>Decrescente</span>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

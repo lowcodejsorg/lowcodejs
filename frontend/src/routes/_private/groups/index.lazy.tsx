@@ -52,7 +52,12 @@ function RouteComponent(): React.JSX.Element {
   const headers = ['Nome', 'Slug', 'Descrição'];
 
   const fieldFilters: Array<IFilterField> = [
-    { slug: 'search', name: 'Nome', type: E_FIELD_TYPE.TEXT_SHORT, multiple: false },
+    {
+      slug: 'search',
+      name: 'Nome',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      multiple: false,
+    },
   ];
 
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);

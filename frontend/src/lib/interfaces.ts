@@ -179,7 +179,10 @@ export type IField = Merge<
   }
 >;
 
-export type IFilterField = Pick<IField, 'slug' | 'name' | 'type' | 'multiple'> & {
+export type IFilterField = Pick<
+  IField,
+  'slug' | 'name' | 'type' | 'multiple'
+> & {
   dropdown?: Array<IDropdown>;
   category?: Array<ICategory>;
 };

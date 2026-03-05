@@ -34,21 +34,18 @@ export const TablePaginatedSchema: FastifySchema = {
       'order-name': {
         type: 'string',
         enum: ['asc', 'desc'],
-        default: 'asc',
         description: 'Order by name (optional)',
         examples: ['asc', 'desc'],
       },
       'order-link': {
         type: 'string',
         enum: ['asc', 'desc'],
-        default: 'asc',
         description: 'Order by link (optional)',
         examples: ['asc', 'desc'],
       },
       'order-created-at': {
         type: 'string',
         enum: ['asc', 'desc'],
-        default: 'asc',
         description: 'Order by created at (optional)',
         examples: ['asc', 'desc'],
       },
@@ -76,6 +73,16 @@ export const TablePaginatedSchema: FastifySchema = {
         type: 'string',
         description: 'Filter by exact table name (optional)',
         examples: ['Users', 'Products'],
+      },
+      visibility: {
+        type: 'string',
+        description: 'Filter by visibility (optional)',
+        examples: ['PUBLIC', 'PRIVATE', 'RESTRICTED', 'OPEN', 'FORM'],
+      },
+      owner: {
+        type: 'string',
+        description: 'Filter by owner name (optional)',
+        examples: ['John'],
       },
     },
     additionalProperties: false,

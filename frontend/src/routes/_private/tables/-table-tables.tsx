@@ -1,8 +1,11 @@
-import { useRouter } from '@tanstack/react-router';
+import { useRouter, useSearch } from '@tanstack/react-router';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
+  ArrowDownIcon,
+  ArrowUpIcon,
+  ChevronsLeftRightIcon,
   EllipsisIcon,
   ImageOffIcon,
   TrashIcon,
@@ -15,6 +18,7 @@ import { TableSendToTrashDialog } from './-send-to-trash-dialog';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,9 +41,14 @@ import { E_TABLE_VISIBILITY } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
+export type TableHeader = {
+  label: string;
+  orderKey?: string;
+};
+
 interface Props {
   data: Array<ITable>;
-  headers: Array<string>;
+  headers: Array<TableHeader>;
 }
 
 const VISIBILITY_CONFIG: Record<
@@ -213,15 +222,85 @@ function TableTableRow({ table }: { table: ITable }): React.JSX.Element {
   );
 }
 
+function SortableHeader({ header }: { header: TableHeader }): React.JSX.Element {
+  const search = useSearch({ from: '/_private/tables/' });
+  const router = useRouter();
+
+  if (!header.orderKey) {
+    return (
+      <TableHead key={header.label}>
+        <span>{header.label}</span>
+      </TableHead>
+    );
+  }
+
+  const orderKey = header.orderKey;
+  const currentOrder = (search as Record<string, unknown>)[orderKey] as
+    | 'asc'
+    | 'desc'
+    | undefined;
+
+  return (
+    <TableHead key={header.label}>
+      <div className="inline-flex items-center">
+        <span>{header.label}</span>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              className="h-auto px-1 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent"
+              variant="outline"
+              size="sm"
+            >
+              {currentOrder === 'asc' && <ArrowUpIcon className="size-4" />}
+              {currentOrder === 'desc' && <ArrowDownIcon className="size-4" />}
+              {!currentOrder && (
+                <ChevronsLeftRightIcon className="size-4 rotate-90" />
+              )}
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem
+              onClick={() => {
+                router.navigate({
+                  // @ts-ignore Tanstack Router Navigate
+                  search: (state) => ({
+                    ...state,
+                    [orderKey]: 'asc',
+                  }),
+                });
+              }}
+            >
+              <ArrowUpIcon />
+              <span>Crescente</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() => {
+                router.navigate({
+                  // @ts-ignore Tanstack Router Navigate
+                  search: (state) => ({
+                    ...state,
+                    [orderKey]: 'desc',
+                  }),
+                });
+              }}
+            >
+              <ArrowDownIcon />
+              <span>Decrescente</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </TableHead>
+  );
+}
+
 export function TableTables({ data, headers }: Props): React.ReactElement {
   return (
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow className="">
-          {headers.map((head) => (
-            <TableHead key={head}>
-              <span>{head}</span>
-            </TableHead>
+          {headers.map((header) => (
+            <SortableHeader key={header.label} header={header} />
           ))}
           <TableHead></TableHead>
         </TableRow>

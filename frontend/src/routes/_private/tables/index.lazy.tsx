@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
@@ -7,6 +5,7 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
+import React from 'react';
 
 import { TableTables } from './-table-tables';
 
@@ -19,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 import { usePermission } from '@/hooks/use-table-permission';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
 
 export const Route = createLazyFileRoute('/_private/tables/')({
@@ -53,16 +52,38 @@ function RouteComponent(): React.JSX.Element {
     } catch {}
   }, []);
 
-  const headers = [
-    'Tabela',
-    'Link (slug)',
-    'Visibilidade',
-    'Criado por',
-    'Criado em',
+  const headers: Array<{ label: string; orderKey?: string }> = [
+    { label: 'Tabela', orderKey: 'order-name' },
+    { label: 'Link (slug)', orderKey: 'order-link' },
+    { label: 'Visibilidade' },
+    { label: 'Criado por' },
+    { label: 'Criado em', orderKey: 'order-created-at' },
   ];
 
   const fieldFilters: Array<IFilterField> = [
-    { slug: 'name', name: 'Nome', type: E_FIELD_TYPE.TEXT_SHORT, multiple: false },
+    {
+      slug: 'name',
+      name: 'Nome',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      multiple: false,
+    },
+    {
+      slug: 'visibility',
+      name: 'Visibilidade',
+      type: E_FIELD_TYPE.DROPDOWN,
+      multiple: true,
+      dropdown: TABLE_VISIBILITY_OPTIONS.map((o) => ({
+        id: o.value,
+        label: o.label,
+        color: null,
+      })),
+    },
+    {
+      slug: 'owner',
+      name: 'Criado por',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      multiple: false,
+    },
   ];
 
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);

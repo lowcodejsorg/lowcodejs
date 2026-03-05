@@ -41,6 +41,8 @@ export default class TableMongooseRepository implements TableContractRepository 
     if (payload?.type) where.type = payload.type;
     if (payload?.owner) where['owner'] = payload.owner;
 
+    if (payload?.visibility) where.visibility = payload.visibility;
+
     if (payload?.search) {
       where.name = { $regex: normalize(payload.search), $options: 'i' };
     }
@@ -96,9 +98,14 @@ export default class TableMongooseRepository implements TableContractRepository 
       take = payload.perPage;
     }
 
+    const sortOption =
+      payload?.sort && Object.keys(payload.sort).length > 0
+        ? payload.sort
+        : { name: 'asc' as const };
+
     const tables = await Model.find(where)
       .populate(this.populateOptions)
-      .sort({ name: 'asc' })
+      .sort(sortOption)
       .skip(skip ?? 0)
       .limit(take ?? 0);
 

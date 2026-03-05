@@ -56,6 +56,8 @@ export type TableQueryPayload = {
   owner?: string;
   trashed?: boolean;
   _ids?: string[];
+  visibility?: string;
+  sort?: Record<string, 'asc' | 'desc'>;
 };
 
 export type TableUpdateManyPayload = {

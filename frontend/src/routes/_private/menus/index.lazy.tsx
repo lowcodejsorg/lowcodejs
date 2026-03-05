@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
@@ -7,6 +5,7 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
+import React from 'react';
 
 import { TableMenus } from './-table-menus';
 
@@ -48,7 +47,12 @@ function RouteComponent(): React.JSX.Element {
   }, []);
 
   const fieldFilters: Array<IFilterField> = [
-    { slug: 'search', name: 'Nome', type: E_FIELD_TYPE.TEXT_SHORT, multiple: false },
+    {
+      slug: 'search',
+      name: 'Nome',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      multiple: false,
+    },
   ];
 
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);

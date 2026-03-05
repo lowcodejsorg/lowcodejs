@@ -1,3 +1,5 @@
+import type { TableHeader as THeader } from './-table-tables';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -11,15 +13,15 @@ import {
 export function TableTablesSkeleton({
   headers,
 }: {
-  headers: Array<string>;
+  headers: Array<THeader>;
 }): React.JSX.Element {
   return (
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow>
           {headers.map((head) => (
-            <TableHead key={head}>
-              <span>{head}</span>
+            <TableHead key={head.label}>
+              <span>{head.label}</span>
             </TableHead>
           ))}
           <TableHead></TableHead>
