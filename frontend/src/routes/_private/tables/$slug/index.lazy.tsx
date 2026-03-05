@@ -315,7 +315,7 @@ function RouteComponent(): React.JSX.Element {
               const ViewComponent = entry.view;
               const baseProps = {
                 headers: table.data.fields,
-                order: table.data.fieldOrderList,
+                order: table.data.fieldOrderList ?? [],
                 data: rows.data.data,
               };
               if (entry.extraProps) {

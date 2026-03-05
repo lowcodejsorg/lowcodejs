@@ -76,15 +76,21 @@ export default class TableRowPaginatedUseCase {
         firstPage: total > 0 ? 1 : 0,
       };
 
+      const data = rows?.map((u) => ({
+        ...u?.toJSON({
+          flattenObjectIds: true,
+        }),
+        _id: u?._id.toString(),
+      }));
+
+      console.log('meta', JSON.stringify(meta, null, 2));
+
+      console.log('data', JSON.stringify(data, null, 2));
+
       // @ts-ignore
       return right({
         meta,
-        data: rows?.map((u) => ({
-          ...u?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: u?._id.toString(),
-        })),
+        data,
       });
     } catch (error) {
       console.error(error);
