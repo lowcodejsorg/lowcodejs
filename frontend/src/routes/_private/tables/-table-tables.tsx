@@ -14,7 +14,12 @@ import { TableDeleteDialog } from './-delete-dialog';
 import { TableRemoveFromTrashDialog } from './-remove-from-trash-dialog';
 import { TableSendToTrashDialog } from './-send-to-trash-dialog';
 
-import { DataTable, DataTableToolbar } from '@/components/common/data-table';
+import { createPortal } from 'react-dom';
+
+import {
+  DataTable,
+  DataTableColumnToggle,
+} from '@/components/common/data-table';
 import { DataTableColumnHeader } from '@/components/common/data-table/data-table-column-header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -232,9 +237,10 @@ const columns: Array<ColumnDef<ITable, any>> = [
 
 interface Props {
   data: Array<ITable>;
+  toolbarPortal: HTMLDivElement | null;
 }
 
-export function TableTables({ data }: Props): React.ReactElement {
+export function TableTables({ data, toolbarPortal }: Props): React.ReactElement {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -251,7 +257,8 @@ export function TableTables({ data }: Props): React.ReactElement {
 
   return (
     <>
-      <DataTableToolbar table={table} />
+      {toolbarPortal &&
+        createPortal(<DataTableColumnToggle table={table} />, toolbarPortal)}
       <DataTable
         table={table}
         onRowClick={(t) => {

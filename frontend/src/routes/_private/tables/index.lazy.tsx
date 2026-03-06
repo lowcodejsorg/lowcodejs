@@ -26,6 +26,7 @@ export const Route = createLazyFileRoute('/_private/tables/')({
 });
 
 function RouteComponent(): React.JSX.Element {
+  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(null);
   const search = useSearch({
     from: '/_private/tables/',
   });
@@ -86,6 +87,7 @@ function RouteComponent(): React.JSX.Element {
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
+          <div ref={setToolbarNode} />
           {permission.can('REMOVE_TABLE') && <TrashButton />}
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
@@ -118,7 +120,7 @@ function RouteComponent(): React.JSX.Element {
           onOpenChange={handleFilterOpenChange}
         />
         <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-          <TableTables data={data.data} />
+          <TableTables data={data.data} toolbarPortal={toolbarNode} />
         </div>
       </div>
 

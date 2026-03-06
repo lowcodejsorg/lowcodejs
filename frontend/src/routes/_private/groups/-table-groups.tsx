@@ -3,7 +3,12 @@ import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowRightIcon } from 'lucide-react';
 import React from 'react';
 
-import { DataTable, DataTableToolbar } from '@/components/common/data-table';
+import { createPortal } from 'react-dom';
+
+import {
+  DataTable,
+  DataTableColumnToggle,
+} from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useDataTable } from '@/hooks/use-data-table';
@@ -12,6 +17,7 @@ import type { IGroup } from '@/lib/interfaces';
 
 interface Props {
   data: Array<IGroup>;
+  toolbarPortal: HTMLDivElement | null;
 }
 
 const columns: Array<ColumnDef<IGroup, any>> = [
@@ -58,7 +64,7 @@ const columns: Array<ColumnDef<IGroup, any>> = [
   },
 ];
 
-export function TableGroups({ data }: Props): React.ReactElement {
+export function TableGroups({ data, toolbarPortal }: Props): React.ReactElement {
   const sidebar = useSidebar();
   const router = useRouter();
 
@@ -74,7 +80,8 @@ export function TableGroups({ data }: Props): React.ReactElement {
 
   return (
     <>
-      <DataTableToolbar table={table} />
+      {toolbarPortal &&
+        createPortal(<DataTableColumnToggle table={table} />, toolbarPortal)}
       <DataTable
         table={table}
         onRowClick={(group) => {

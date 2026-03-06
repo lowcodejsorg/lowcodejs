@@ -24,6 +24,7 @@ export const Route = createLazyFileRoute('/_private/menus/')({
 });
 
 function RouteComponent(): React.JSX.Element {
+  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(null);
   const search = useSearch({ from: '/_private/menus/' });
   const sidebar = useSidebar();
   const router = useRouter();
@@ -63,6 +64,7 @@ function RouteComponent(): React.JSX.Element {
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium">Gestão de Menus</h1>
         <div className="inline-flex items-center gap-2">
+          <div ref={setToolbarNode} />
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
             onClick={() => handleFilterOpenChange(!filterOpen)}
@@ -91,7 +93,7 @@ function RouteComponent(): React.JSX.Element {
           onOpenChange={handleFilterOpenChange}
         />
         <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-          <TableMenus data={data.data} />
+          <TableMenus data={data.data} toolbarPortal={toolbarNode} />
         </div>
       </div>
 

@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { DataTable, DataTableToolbar } from '@/components/common/data-table';
+import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -421,8 +421,6 @@ export function TableListView({
 
   return (
     <>
-      <DataTableToolbar table={table} />
-
       <DataTable
         table={table}
         enableVirtualization
