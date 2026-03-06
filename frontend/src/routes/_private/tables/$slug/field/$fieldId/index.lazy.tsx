@@ -22,7 +22,7 @@ import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
+import { QueryClient as queryClient } from '@/lib/query-client';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
@@ -185,7 +185,7 @@ function FieldUpdateContent({
     });
   };
 
-  const { queryClient } = getContext();
+
 
   const isGroupContext = !!groupSlug;
 

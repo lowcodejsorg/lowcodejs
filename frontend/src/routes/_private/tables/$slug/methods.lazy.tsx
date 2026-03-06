@@ -21,7 +21,7 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
+import { QueryClient as queryClient } from '@/lib/query-client';
 import type { ITable } from '@/lib/interfaces';
 import { toastError, toastInfo } from '@/lib/toast';
 
@@ -103,7 +103,6 @@ function MethodsFormContent({
   data,
   tableSlug,
 }: MethodsFormContentProps): React.JSX.Element {
-  const { queryClient } = getContext();
   const table = useReadTable({ slug: tableSlug });
   const permission = useTablePermission(table.data);
   const canEdit = permission.can('UPDATE_TABLE');
