@@ -70,12 +70,26 @@ export const CreateTableFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
-            onBlur: ({ value }) => {
+            onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               if (value.length > 40) {
-                return { message: 'Nome deve ter no máximo 40 caracteres' };
+                return 'Nome deve ter no máximo 40 caracteres';
+              }
+              if (!TABLE_NAME_REGEX.test(value)) {
+                return {
+                  message: 'O nome não pode conter caracteres especiais',
+                };
+              }
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'Nome é obrigatório';
+              }
+              if (value.length > 40) {
+                return 'Nome deve ter no máximo 40 caracteres';
               }
               if (!TABLE_NAME_REGEX.test(value)) {
                 return {

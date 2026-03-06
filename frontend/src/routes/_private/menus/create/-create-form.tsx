@@ -35,9 +35,15 @@ export const CreateMenuFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
+            onChange: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'Nome é obrigatório';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               return undefined;
             },
@@ -57,9 +63,15 @@ export const CreateMenuFormFields = withForm({
         <form.AppField
           name="type"
           validators={{
+            onChange: ({ value }) => {
+              if (value.trim() === '') {
+                return 'Tipo é obrigatório';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (value.trim() === '') {
-                return { message: 'Tipo é obrigatório' };
+                return 'Tipo é obrigatório';
               }
               return undefined;
             },
@@ -94,9 +106,15 @@ export const CreateMenuFormFields = withForm({
           <form.AppField
             name="table"
             validators={{
+              onChange: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return 'Tabela é obrigatória';
+                }
+                return undefined;
+              },
               onBlur: ({ value }) => {
-                if (value.trim() === '') {
-                  return { message: 'Tabela é obrigatória' };
+                if (!value || value.trim() === '') {
+                  return 'Tabela é obrigatória';
                 }
                 return undefined;
               },
@@ -120,7 +138,7 @@ export const CreateMenuFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '' || value === '<p></p>') {
-                  return { message: 'O conteúdo da página é obrigatório' };
+                  return 'O conteúdo da página é obrigatório';
                 }
                 return undefined;
               },
@@ -135,14 +153,25 @@ export const CreateMenuFormFields = withForm({
           <form.AppField
             name="url"
             validators={{
-              onBlur: ({ value }) => {
-                if (value.trim() === '') {
-                  return { message: 'URL é obrigatória' };
+              onChange: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return 'URL é obrigatória';
                 }
                 try {
                   new URL(value);
                 } catch {
-                  return { message: 'URL inválida' };
+                  return 'URL inválida';
+                }
+                return undefined;
+              },
+              onBlur: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return 'URL é obrigatória';
+                }
+                try {
+                  new URL(value);
+                } catch {
+                  return 'URL inválida';
                 }
                 return undefined;
               },

@@ -26,7 +26,6 @@ export default class StorageUploadUseCase {
     staticName?: string,
   ): Promise<Response> {
     try {
-      console.log(JSON.stringify(payload, null, 2), staticName);
       const data: StorageCreatePayload[] = [];
 
       for await (const part of payload) {
@@ -38,7 +37,6 @@ export default class StorageUploadUseCase {
 
       return right(storages);
     } catch (error) {
-      console.log(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

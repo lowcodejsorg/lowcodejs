@@ -70,6 +70,7 @@ function RouteComponent(): React.JSX.Element {
       password: '',
     },
     validators: {
+      onChange: FormSignInSchema,
       onSubmit: FormSignInSchema,
     },
     onSubmit: async function ({ value: payload }) {

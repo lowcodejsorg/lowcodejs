@@ -60,6 +60,7 @@ function RouteComponent(): React.JSX.Element {
   const form = useAppForm({
     defaultValues: cloneTableFormDefaultValues,
     validators: {
+      onChange: CloneTableBodySchema,
       onSubmit: CloneTableBodySchema,
     },
     onSubmit: async ({ value }) => {

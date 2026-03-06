@@ -38,8 +38,6 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const query = TablePaginatedQueryValidator.parse(request.query);
 
-    console.log('Received query:', query);
-
     const result = await this.useCase.execute({
       ...query,
     });
@@ -53,7 +51,6 @@ export default class {
         cause: error.cause,
       });
     }
-    console.log('Result:', JSON.stringify(result.value, null, 2));
 
     return response.status(200).send(result.value);
   }

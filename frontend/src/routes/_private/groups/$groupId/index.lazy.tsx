@@ -137,10 +137,9 @@ function GroupUpdateContent({
       description: data.description ?? '',
       permissions: data.permissions.map((p) => p._id),
     } satisfies GroupUpdateFormValues,
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: GroupUpdateSchema, onSubmit: GroupUpdateSchema },
     onSubmit: async ({ value }) => {
-      const validation = GroupUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
 
       await _update.mutateAsync({

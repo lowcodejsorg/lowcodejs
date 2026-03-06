@@ -56,10 +56,8 @@ function RouteComponent(): React.JSX.Element {
 
   const form = useAppForm({
     defaultValues: menuFormDefaultValues,
+    validators: { onChange: MenuCreateSchema, onSubmit: MenuCreateSchema },
     onSubmit: async ({ value }) => {
-      const validation = MenuCreateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_create.status === 'pending') return;
 
       await _create.mutateAsync({

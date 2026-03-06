@@ -83,10 +83,6 @@ export default class TableRowPaginatedUseCase {
         _id: u?._id.toString(),
       }));
 
-      console.log('meta', JSON.stringify(meta, null, 2));
-
-      console.log('data', JSON.stringify(data, null, 2));
-
       // @ts-ignore
       return right({
         meta,

@@ -116,6 +116,7 @@ function UserUpdateContent({
       group: data.group._id,
     } satisfies UserUpdateFormValues,
     validators: {
+      onChange: UserUpdateSchema,
       onSubmit: UserUpdateSchema,
     },
     onSubmit: async ({ value }) => {

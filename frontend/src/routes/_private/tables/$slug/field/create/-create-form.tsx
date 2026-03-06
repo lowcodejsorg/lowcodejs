@@ -109,10 +109,10 @@ export const CreateFieldFormFields = withForm({
           validators={{
             onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               if (value.length > 40) {
-                return { message: 'O nome deve ter no máximo 40 caracteres' };
+                return 'O nome deve ter no máximo 40 caracteres';
               }
               return undefined;
             },
@@ -136,7 +136,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Tipo é obrigatório' };
+                  return 'Tipo é obrigatório';
                 }
                 return undefined;
               },
@@ -204,7 +204,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Formato é obrigatório' };
+                  return 'Formato é obrigatório';
                 }
                 return undefined;
               },
@@ -242,7 +242,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Formato é obrigatório' };
+                  return 'Formato é obrigatório';
                 }
                 return undefined;
               },
@@ -288,7 +288,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.length === 0) {
-                  return { message: 'Adicione ao menos uma opção' };
+                  return 'Adicione ao menos uma opção';
                 }
                 return undefined;
               },
@@ -312,7 +312,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Formato da data é obrigatório' };
+                  return 'Formato da data é obrigatório';
                 }
                 return undefined;
               },
@@ -337,7 +337,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Tabela de relacionamento é obrigatória' };
+                  return 'Tabela de relacionamento é obrigatória';
                 }
                 return undefined;
               },
@@ -367,7 +367,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Campo é obrigatório' };
+                  return 'Campo é obrigatório';
                 }
                 return undefined;
               },
@@ -395,7 +395,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Ordem é obrigatória' };
+                  return 'Ordem é obrigatória';
                 }
                 return undefined;
               },
@@ -419,7 +419,7 @@ export const CreateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.length === 0) {
-                  return { message: 'Estrutura da categoria é obrigatória' };
+                  return 'Estrutura da categoria é obrigatória';
                 }
                 return undefined;
               },

@@ -89,16 +89,17 @@ export function useFilterState(
     {},
   );
 
+  const fieldsKey = fields.map((f) => f.slug).join(',');
+
   React.useEffect(() => {
     const initialValues: Record<string, unknown> = {};
     for (const field of fields) {
       const fieldValue = search[field.slug];
       if (typeof fieldValue === 'string') {
-        if (field.type === E_FIELD_TYPE.DROPDOWN) {
-          initialValues[field.slug] = fieldValue
-            .split(',')
-            .map((v) => ({ value: v, label: v }));
-        } else if (field.type === E_FIELD_TYPE.CATEGORY) {
+        if (
+          field.type === E_FIELD_TYPE.DROPDOWN ||
+          field.type === E_FIELD_TYPE.CATEGORY
+        ) {
           initialValues[field.slug] = fieldValue.split(',');
         } else {
           initialValues[field.slug] = fieldValue;
@@ -125,10 +126,19 @@ export function useFilterState(
       }
     }
     setFilterValues(initialValues);
-  }, [fields, search]);
+  }, [fieldsKey, search]);
 
   const handleSubmit = (): void => {
     const filters: Record<string, string | undefined> = {};
+
+    // Initialize all field keys as undefined so cleared fields are removed from URL
+    for (const field of fields) {
+      filters[field.slug] = undefined;
+      if (field.type === E_FIELD_TYPE.DATE) {
+        filters[`${field.slug}-initial`] = undefined;
+        filters[`${field.slug}-final`] = undefined;
+      }
+    }
 
     for (const field of fields) {
       const value = filterValues[field.slug];

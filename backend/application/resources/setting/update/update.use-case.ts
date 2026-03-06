@@ -45,7 +45,6 @@ export default class SettingUpdateUseCase {
         // MODEL_CLONE_TABLES já vem populado do repository
       });
     } catch (_error) {
-      console.log(_error);
       return left(
         HTTPException.InternalServerError(
           'Erro ao atualizar configurações',

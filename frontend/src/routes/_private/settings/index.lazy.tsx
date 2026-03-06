@@ -129,6 +129,7 @@ function SettingUpdateContent({
       logoLargeFile: [] as Array<File>,
     },
     validators: {
+      onChange: SettingUpdateSchema,
       onSubmit: SettingUpdateSchema,
     },
     onSubmit: async ({ value }) => {

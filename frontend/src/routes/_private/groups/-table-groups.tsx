@@ -2,7 +2,6 @@ import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowRightIcon } from 'lucide-react';
 import React from 'react';
-
 import { createPortal } from 'react-dom';
 
 import {
@@ -64,7 +63,10 @@ const columns: Array<ColumnDef<IGroup, any>> = [
   },
 ];
 
-export function TableGroups({ data, toolbarPortal }: Props): React.ReactElement {
+export function TableGroups({
+  data,
+  toolbarPortal,
+}: Props): React.ReactElement {
   const sidebar = useSidebar();
   const router = useRouter();
 

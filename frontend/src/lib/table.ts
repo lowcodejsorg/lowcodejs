@@ -413,7 +413,7 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
 export function buildFieldValidator(
   field: IField,
   value: null | undefined | string | { storages: Array<IStorage> },
-): { message: string } | undefined {
+): string | undefined {
   const isRequired = field.required;
 
   if (!isRequired) return undefined;
@@ -437,11 +437,11 @@ export function buildFieldValidator(
     storageInvalidValue;
 
   if (!isMultiple && invalidValue) {
-    return { message: field.name + ' é obrigatório' };
+    return field.name + ' é obrigatório';
   }
 
   if (isMultiple && invalidValue) {
-    return { message: 'Adicione ao menos um item a ' + field.name };
+    return 'Adicione ao menos um item a ' + field.name;
   }
 
   return undefined;

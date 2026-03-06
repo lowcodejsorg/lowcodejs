@@ -106,10 +106,12 @@ function ProfileUpdateContent({
       newPassword: '',
       confirmPassword: '',
     } satisfies ProfileUpdateFormValues,
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: {
+      onChange: ProfileUpdateSchema,
+      onSubmit: ProfileUpdateSchema,
+    },
     onSubmit: async ({ value }) => {
-      const validation = ProfileUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
 
       if (allowPasswordChange && value.newPassword !== value.confirmPassword) {

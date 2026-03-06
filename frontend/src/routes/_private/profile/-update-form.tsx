@@ -56,9 +56,15 @@ export const UpdateProfileFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
+            onChange: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'Nome é obrigatório';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               return undefined;
             },
@@ -78,13 +84,23 @@ export const UpdateProfileFormFields = withForm({
         <form.AppField
           name="email"
           validators={{
-            onBlur: ({ value }) => {
+            onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'E-mail é obrigatório' };
+                return 'E-mail é obrigatório';
               }
               const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
               if (!emailRegex.test(value)) {
-                return { message: 'Digite um e-mail válido' };
+                return 'Digite um e-mail válido';
+              }
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'E-mail é obrigatório';
+              }
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(value)) {
+                return 'Digite um e-mail válido';
               }
               return undefined;
             },
@@ -136,9 +152,15 @@ export const UpdateProfileFormFields = withForm({
             <form.AppField
               name="currentPassword"
               validators={{
+                onChange: ({ value }) => {
+                  if (!value || value.trim() === '') {
+                    return 'Senha atual é obrigatória';
+                  }
+                  return undefined;
+                },
                 onBlur: ({ value }) => {
                   if (!value || value.trim() === '') {
-                    return { message: 'Senha atual é obrigatória' };
+                    return 'Senha atual é obrigatória';
                   }
                   return undefined;
                 },
@@ -158,9 +180,49 @@ export const UpdateProfileFormFields = withForm({
             <form.AppField
               name="newPassword"
               validators={{
+                onChange: ({ value }) => {
+                  if (!value || value.trim() === '') {
+                    return 'Nova senha é obrigatória';
+                  }
+
+                  if (value.length < 8) {
+                    return {
+                      message: 'Senha deve ter pelo menos 8 caracteres',
+                    };
+                  }
+
+                  if (!/[A-Z]/.test(value)) {
+                    return {
+                      message:
+                        'Senha deve conter pelo menos uma letra maiúscula',
+                    };
+                  }
+
+                  if (!/[a-z]/.test(value)) {
+                    return {
+                      message:
+                        'Senha deve conter pelo menos uma letra minúscula',
+                    };
+                  }
+
+                  if (!/[0-9]/.test(value)) {
+                    return {
+                      message: 'Senha deve conter pelo menos um número',
+                    };
+                  }
+
+                  if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+                    return {
+                      message:
+                        'Senha deve conter pelo menos um caractere especial',
+                    };
+                  }
+
+                  return undefined;
+                },
                 onBlur: ({ value }) => {
                   if (!value || value.trim() === '') {
-                    return { message: 'Nova senha é obrigatória' };
+                    return 'Nova senha é obrigatória';
                   }
 
                   if (value.length < 8) {
@@ -214,15 +276,28 @@ export const UpdateProfileFormFields = withForm({
             <form.AppField
               name="confirmPassword"
               validators={{
-                onBlur: ({ value, fieldApi }) => {
+                onChange: ({ value, fieldApi }) => {
                   if (!value || value.trim() === '') {
-                    return { message: 'Confirmação de senha é obrigatória' };
+                    return 'Confirmação de senha é obrigatória';
                   }
 
                   const newPassword =
                     fieldApi.form.getFieldValue('newPassword');
                   if (value !== newPassword) {
-                    return { message: 'As senhas não coincidem' };
+                    return 'As senhas não coincidem';
+                  }
+
+                  return undefined;
+                },
+                onBlur: ({ value, fieldApi }) => {
+                  if (!value || value.trim() === '') {
+                    return 'Confirmação de senha é obrigatória';
+                  }
+
+                  const newPassword =
+                    fieldApi.form.getFieldValue('newPassword');
+                  if (value !== newPassword) {
+                    return 'As senhas não coincidem';
                   }
 
                   return undefined;

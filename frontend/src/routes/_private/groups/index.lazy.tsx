@@ -24,7 +24,9 @@ export const Route = createLazyFileRoute('/_private/groups/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(null);
+  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(
+    null,
+  );
   const search = useSearch({
     from: '/_private/groups/',
   });
@@ -94,7 +96,10 @@ function RouteComponent(): React.JSX.Element {
           onOpenChange={handleFilterOpenChange}
         />
         <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-          <TableGroups data={data.data} toolbarPortal={toolbarNode} />
+          <TableGroups
+            data={data.data}
+            toolbarPortal={toolbarNode}
+          />
         </div>
       </div>
 

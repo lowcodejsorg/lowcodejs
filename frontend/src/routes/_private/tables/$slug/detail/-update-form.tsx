@@ -116,12 +116,26 @@ export const UpdateTableFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
-            onBlur: ({ value }) => {
+            onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               if (value.length > 40) {
-                return { message: 'Nome deve ter no máximo 40 caracteres' };
+                return 'Nome deve ter no máximo 40 caracteres';
+              }
+              if (!TABLE_NAME_REGEX.test(value)) {
+                return {
+                  message: 'O nome não pode conter caracteres especiais',
+                };
+              }
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'Nome é obrigatório';
+              }
+              if (value.length > 40) {
+                return 'Nome deve ter no máximo 40 caracteres';
               }
               if (!TABLE_NAME_REGEX.test(value)) {
                 return {
@@ -171,9 +185,15 @@ export const UpdateTableFormFields = withForm({
         <form.AppField
           name="visibility"
           validators={{
+            onChange: ({ value }) => {
+              if (value.trim() === '') {
+                return 'Visibilidade é obrigatória';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (value.trim() === '') {
-                return { message: 'Visibilidade é obrigatória' };
+                return 'Visibilidade é obrigatória';
               }
               return undefined;
             },
@@ -193,9 +213,15 @@ export const UpdateTableFormFields = withForm({
         <form.AppField
           name="collaboration"
           validators={{
+            onChange: ({ value }) => {
+              if (value.trim() === '') {
+                return 'Colaboração é obrigatória';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (value.trim() === '') {
-                return { message: 'Colaboração é obrigatória' };
+                return 'Colaboração é obrigatória';
               }
               return undefined;
             },

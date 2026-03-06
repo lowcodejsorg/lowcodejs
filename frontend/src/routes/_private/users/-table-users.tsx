@@ -2,7 +2,6 @@ import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowRightIcon } from 'lucide-react';
 import React from 'react';
-
 import { createPortal } from 'react-dom';
 
 import {

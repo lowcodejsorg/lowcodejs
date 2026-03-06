@@ -83,10 +83,9 @@ function RouteComponent(): React.JSX.Element {
       ...fieldCreateFormDefaultValues,
       type: defaultFieldType ?? '',
     },
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: FieldCreateSchema, onSubmit: FieldCreateSchema },
     onSubmit: async ({ value }) => {
-      const validation = FieldCreateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_create.status === 'pending') return;
 
       const hasRelationship = value.relationship.tableId !== '';

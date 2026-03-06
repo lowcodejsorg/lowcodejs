@@ -79,6 +79,9 @@ function RouteComponentContent(): React.JSX.Element {
   const form = useAppForm({
     defaultValues: tableCreateFormDefaultValues,
     validators: {
+      // @ts-expect-error Zod Standard Schema type inference
+      onChange: TableCreateSchema,
+      // @ts-expect-error Zod Standard Schema type inference
       onSubmit: TableCreateSchema,
     },
     onSubmit: async ({ value }) => {

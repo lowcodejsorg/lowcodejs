@@ -35,7 +35,7 @@ export function TableRowFileField({
 }: TableRowFileFieldProps): React.JSX.Element {
   const formField = useFieldContext<FileValue>();
   const isInvalid =
-    formField.state.meta.isDirty && !formField.state.meta.isValid;
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
   const isRequired = field.required;
 

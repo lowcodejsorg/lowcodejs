@@ -25,9 +25,15 @@ export const CreateGroupFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
+            onChange: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'Nome é obrigatório';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               return undefined;
             },
@@ -59,9 +65,15 @@ export const CreateGroupFormFields = withForm({
         <form.AppField
           name="permissions"
           validators={{
+            onChange: ({ value }) => {
+              if (value.length === 0) {
+                return 'Selecione ao menos uma permissão';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (value.length === 0) {
-                return { message: 'Selecione ao menos uma permissão' };
+                return 'Selecione ao menos uma permissão';
               }
               return undefined;
             },

@@ -26,7 +26,9 @@ export const Route = createLazyFileRoute('/_private/tables/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(null);
+  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(
+    null,
+  );
   const search = useSearch({
     from: '/_private/tables/',
   });
@@ -120,7 +122,10 @@ function RouteComponent(): React.JSX.Element {
           onOpenChange={handleFilterOpenChange}
         />
         <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-          <TableTables data={data.data} toolbarPortal={toolbarNode} />
+          <TableTables
+            data={data.data}
+            toolbarPortal={toolbarNode}
+          />
         </div>
       </div>
 

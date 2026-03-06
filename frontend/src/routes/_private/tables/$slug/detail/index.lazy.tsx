@@ -148,10 +148,9 @@ function TableUpdateContent({
         ? `${data.order.field}:${data.order.direction}`
         : 'none',
     },
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: TableUpdateSchema, onSubmit: TableUpdateSchema },
     onSubmit: async ({ value }) => {
-      const validation = TableUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
 
       let orderPayload: { field: string; direction: 'asc' | 'desc' } | null =

@@ -57,8 +57,8 @@ export function useFieldCreate(
         return {
           ...old,
           fields: [...old.fields, response],
-          fieldOrderForm: [...old.fieldOrderForm, response.slug],
-          fieldOrderList: [...old.fieldOrderList, response.slug],
+          fieldOrderForm: [...(old.fieldOrderForm ?? []), response.slug],
+          fieldOrderList: [...(old.fieldOrderList ?? []), response.slug],
         };
       });
 

@@ -32,6 +32,7 @@ function RouteComponent(): React.JSX.Element {
   const form = useAppForm({
     defaultValues: userFormDefaultValues,
     validators: {
+      onChange: UserCreateSchema,
       onSubmit: UserCreateSchema,
     },
     onSubmit: async ({ value }) => {

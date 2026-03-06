@@ -340,10 +340,9 @@ function FieldUpdateContent({
       widthInForm: data.widthInForm ?? 50,
       widthInList: data.widthInList ?? 10,
     },
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: FieldUpdateSchema, onSubmit: FieldUpdateSchema },
     onSubmit: async ({ value }) => {
-      const validation = FieldUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
 
       const hasRelationship = value.relationship.tableId !== '';

@@ -28,7 +28,7 @@ export function TableRowMarkdownField({
 }: TableRowMarkdownFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
-    formField.state.meta.isDirty && !formField.state.meta.isValid;
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
   const isRequired = field.required;
   const [preview, setPreview] = useState(false);

@@ -142,10 +142,9 @@ function MenuUpdateContent({
       url: data.url ?? '',
       parent: data.parent?._id ?? '',
     } satisfies MenuUpdateFormValues,
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
     onSubmit: async ({ value }) => {
-      const validation = MenuUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
 
       await _update.mutateAsync({

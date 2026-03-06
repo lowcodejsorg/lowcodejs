@@ -9,12 +9,11 @@ import {
   TrashIcon,
 } from 'lucide-react';
 import React from 'react';
+import { createPortal } from 'react-dom';
 
 import { TableDeleteDialog } from './-delete-dialog';
 import { TableRemoveFromTrashDialog } from './-remove-from-trash-dialog';
 import { TableSendToTrashDialog } from './-send-to-trash-dialog';
-
-import { createPortal } from 'react-dom';
 
 import {
   DataTable,
@@ -240,7 +239,10 @@ interface Props {
   toolbarPortal: HTMLDivElement | null;
 }
 
-export function TableTables({ data, toolbarPortal }: Props): React.ReactElement {
+export function TableTables({
+  data,
+  toolbarPortal,
+}: Props): React.ReactElement {
   const sidebar = useSidebar();
   const router = useRouter();
 

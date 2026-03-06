@@ -1,5 +1,5 @@
-import { queryOptions } from '@tanstack/react-query';
 import type { UndefinedInitialDataOptions } from '@tanstack/react-query';
+import { queryOptions } from '@tanstack/react-query';
 
 import { queryKeys } from './_query-keys';
 

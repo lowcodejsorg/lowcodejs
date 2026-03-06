@@ -54,6 +54,9 @@ function RouteComponent(): React.JSX.Element {
   const form = useAppForm({
     defaultValues: groupFormDefaultValues,
     validators: {
+      // @ts-expect-error Zod Standard Schema type inference
+      onChange: GroupCreateSchema,
+      // @ts-expect-error Zod Standard Schema type inference
       onSubmit: GroupCreateSchema,
     },
     onSubmit: async ({ value }) => {

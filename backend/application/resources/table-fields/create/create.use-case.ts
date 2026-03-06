@@ -124,6 +124,7 @@ export default class TableFieldCreateUseCase {
 
       return right(field);
     } catch (error) {
+      console.error('Error creating field:', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

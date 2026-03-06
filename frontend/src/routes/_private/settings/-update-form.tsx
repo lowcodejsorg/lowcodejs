@@ -139,9 +139,21 @@ export const UpdateSettingFormFields = withForm({
             <form.Field
               name="SYSTEM_NAME"
               validators={{
+                onChange: ({ value }) => {
+                  if (!value || value.trim() === '') {
+                    return 'O nome do sistema é obrigatório';
+                  }
+                  if (value.length > 100) {
+                    return {
+                      message:
+                        'O nome do sistema deve ter no máximo 100 caracteres',
+                    };
+                  }
+                  return undefined;
+                },
                 onBlur: ({ value }) => {
                   if (!value || value.trim() === '') {
-                    return { message: 'O nome do sistema é obrigatório' };
+                    return 'O nome do sistema é obrigatório';
                   }
                   if (value.length > 100) {
                     return {
@@ -199,9 +211,15 @@ export const UpdateSettingFormFields = withForm({
             <form.Field
               name="LOCALE"
               validators={{
+                onChange: ({ value }) => {
+                  if (!value) {
+                    return 'O idioma é obrigatório';
+                  }
+                  return undefined;
+                },
                 onBlur: ({ value }) => {
                   if (!value) {
-                    return { message: 'O idioma é obrigatório' };
+                    return 'O idioma é obrigatório';
                   }
                   return undefined;
                 },
@@ -355,13 +373,23 @@ export const UpdateSettingFormFields = withForm({
               <form.Field
                 name="FILE_UPLOAD_MAX_SIZE"
                 validators={{
-                  onBlur: ({ value }) => {
+                  onChange: ({ value }) => {
                     if (!value) {
-                      return { message: 'O tamanho máximo é obrigatório' };
+                      return 'O tamanho máximo é obrigatório';
                     }
                     const size = Number(value);
                     if (isNaN(size) || size <= 0) {
-                      return { message: 'Deve ser um número positivo' };
+                      return 'Deve ser um número positivo';
+                    }
+                    return undefined;
+                  },
+                  onBlur: ({ value }) => {
+                    if (!value) {
+                      return 'O tamanho máximo é obrigatório';
+                    }
+                    const size = Number(value);
+                    if (isNaN(size) || size <= 0) {
+                      return 'Deve ser um número positivo';
                     }
                     return undefined;
                   },
@@ -404,6 +432,18 @@ export const UpdateSettingFormFields = withForm({
               <form.Field
                 name="FILE_UPLOAD_MAX_FILES_PER_UPLOAD"
                 validators={{
+                  onChange: ({ value }) => {
+                    if (!value) {
+                      return {
+                        message: 'O número máximo de arquivos é obrigatório',
+                      };
+                    }
+                    const files = Number(value);
+                    if (isNaN(files) || files <= 0) {
+                      return 'Deve ser um número positivo';
+                    }
+                    return undefined;
+                  },
                   onBlur: ({ value }) => {
                     if (!value) {
                       return {
@@ -412,7 +452,7 @@ export const UpdateSettingFormFields = withForm({
                     }
                     const files = Number(value);
                     if (isNaN(files) || files <= 0) {
-                      return { message: 'Deve ser um número positivo' };
+                      return 'Deve ser um número positivo';
                     }
                     return undefined;
                   },
@@ -452,6 +492,14 @@ export const UpdateSettingFormFields = withForm({
             <form.Field
               name="FILE_UPLOAD_ACCEPTED"
               validators={{
+                onChange: ({ value }) => {
+                  if (!value || value.trim() === '') {
+                    return {
+                      message: 'Os tipos de arquivo aceitos são obrigatórios',
+                    };
+                  }
+                  return undefined;
+                },
                 onBlur: ({ value }) => {
                   if (!value || value.trim() === '') {
                     return {
@@ -512,6 +560,23 @@ export const UpdateSettingFormFields = withForm({
             <form.Field
               name="PAGINATION_PER_PAGE"
               validators={{
+                onChange: ({ value }) => {
+                  if (!value) {
+                    return {
+                      message: 'O número de itens por página é obrigatório',
+                    };
+                  }
+                  const pages = Number(value);
+                  if (isNaN(pages) || pages <= 0) {
+                    return 'Deve ser um número positivo';
+                  }
+                  if (pages > 500) {
+                    return {
+                      message: 'O número máximo de itens por página é 500',
+                    };
+                  }
+                  return undefined;
+                },
                 onBlur: ({ value }) => {
                   if (!value) {
                     return {
@@ -520,7 +585,7 @@ export const UpdateSettingFormFields = withForm({
                   }
                   const pages = Number(value);
                   if (isNaN(pages) || pages <= 0) {
-                    return { message: 'Deve ser um número positivo' };
+                    return 'Deve ser um número positivo';
                   }
                   if (pages > 500) {
                     return {
@@ -633,9 +698,14 @@ export const UpdateSettingFormFields = withForm({
                 <form.AppField
                   name="MODEL_CLONE_TABLES"
                   validators={{
+                    onChange: ({ value }) => {
+                      if (!Array.isArray(value) || value.length === 0) {
+                        return 'Selecione ao menos uma tabela';
+                      }
+                    },
                     onBlur: ({ value }) => {
                       if (!Array.isArray(value) || value.length === 0) {
-                        return { message: 'Selecione ao menos uma tabela' };
+                        return 'Selecione ao menos uma tabela';
                       }
                     },
                   }}
@@ -670,9 +740,15 @@ export const UpdateSettingFormFields = withForm({
               <form.Field
                 name="EMAIL_PROVIDER_HOST"
                 validators={{
+                  onChange: ({ value }) => {
+                    if (!value) {
+                      return 'O host é obrigatório';
+                    }
+                    return undefined;
+                  },
                   onBlur: ({ value }) => {
                     if (!value) {
-                      return { message: 'O host é obrigatório' };
+                      return 'O host é obrigatório';
                     }
                     return undefined;
                   },
@@ -709,9 +785,21 @@ export const UpdateSettingFormFields = withForm({
               <form.Field
                 name="EMAIL_PROVIDER_PORT"
                 validators={{
+                  onChange: ({ value }) => {
+                    if (!value) {
+                      return 'A porta é obrigatória';
+                    }
+                    const port = Number(value);
+                    if (isNaN(port) || port <= 0 || port > 65535) {
+                      return {
+                        message: 'A porta deve ser um número entre 1 e 65535',
+                      };
+                    }
+                    return undefined;
+                  },
                   onBlur: ({ value }) => {
                     if (!value) {
-                      return { message: 'A porta é obrigatória' };
+                      return 'A porta é obrigatória';
                     }
                     const port = Number(value);
                     if (isNaN(port) || port <= 0 || port > 65535) {
@@ -785,9 +873,20 @@ export const UpdateSettingFormFields = withForm({
             <form.Field
               name="EMAIL_PROVIDER_PASSWORD"
               validators={{
+                onChange: ({ value }) => {
+                  if (!value) {
+                    return 'A senha é obrigatória';
+                  }
+                  if (value.length < 6) {
+                    return {
+                      message: 'A senha deve ter pelo menos 6 caracteres',
+                    };
+                  }
+                  return undefined;
+                },
                 onBlur: ({ value }) => {
                   if (!value) {
-                    return { message: 'A senha é obrigatória' };
+                    return 'A senha é obrigatória';
                   }
                   if (value.length < 6) {
                     return {
