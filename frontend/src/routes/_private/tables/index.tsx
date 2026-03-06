@@ -6,16 +6,9 @@ import { TableTablesSkeleton } from './-table-tables-skeleton';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 
 const defaultSearch = { page: 1, perPage: 50 };
-const headers: Array<{ label: string; orderKey?: string }> = [
-  { label: 'Tabela', orderKey: 'order-name' },
-  { label: 'Link (slug)', orderKey: 'order-link' },
-  { label: 'Visibilidade' },
-  { label: 'Criado por' },
-  { label: 'Criado em', orderKey: 'order-created-at' },
-];
 
 export const Route = createFileRoute('/_private/tables/')({
-  pendingComponent: () => <TableTablesSkeleton headers={headers} />,
+  pendingComponent: () => <TableTablesSkeleton />,
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),

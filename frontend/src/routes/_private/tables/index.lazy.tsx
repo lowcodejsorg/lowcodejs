@@ -52,14 +52,6 @@ function RouteComponent(): React.JSX.Element {
     } catch {}
   }, []);
 
-  const headers: Array<{ label: string; orderKey?: string }> = [
-    { label: 'Tabela', orderKey: 'order-name' },
-    { label: 'Link (slug)', orderKey: 'order-link' },
-    { label: 'Visibilidade' },
-    { label: 'Criado por' },
-    { label: 'Criado em', orderKey: 'order-created-at' },
-  ];
-
   const fieldFilters: Array<IFilterField> = [
     {
       slug: 'name',
@@ -126,10 +118,7 @@ function RouteComponent(): React.JSX.Element {
           onOpenChange={handleFilterOpenChange}
         />
         <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-          <TableTables
-            headers={headers}
-            data={data.data}
-          />
+          <TableTables data={data.data} />
         </div>
       </div>
 

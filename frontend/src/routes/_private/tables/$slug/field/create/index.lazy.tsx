@@ -146,7 +146,7 @@ function RouteComponent(): React.JSX.Element {
 
   // Blocked types for field-group tables or when in group context
   const blockedTypes =
-    isGroupContext ||
+    !!groupSlug ||
     (table.status === 'success' && table.data.type === E_TABLE_TYPE.FIELD_GROUP)
       ? [
           E_FIELD_TYPE.FIELD_GROUP,

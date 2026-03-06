@@ -49,8 +49,6 @@ function RouteComponent(): React.JSX.Element {
     } catch {}
   }, []);
 
-  const headers = ['Nome', 'Slug', 'Descrição'];
-
   const fieldFilters: Array<IFilterField> = [
     {
       slug: 'search',
@@ -94,10 +92,7 @@ function RouteComponent(): React.JSX.Element {
           onOpenChange={handleFilterOpenChange}
         />
         <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-          <TableGroups
-            headers={headers}
-            data={data.data}
-          />
+          <TableGroups data={data.data} />
         </div>
       </div>
 

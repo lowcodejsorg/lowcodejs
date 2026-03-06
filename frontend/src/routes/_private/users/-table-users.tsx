@@ -1,18 +1,13 @@
 import { useRouter } from '@tanstack/react-router';
+import type { ColumnDef } from '@tanstack/react-table';
 import { ArrowRightIcon } from 'lucide-react';
 import React from 'react';
 
+import { DataTable, DataTableToolbar } from '@/components/common/data-table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { useDataTable } from '@/hooks/use-data-table';
 import {
   E_USER_STATUS,
   USER_GROUP_MAPPER,
@@ -21,85 +16,103 @@ import {
 import type { IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
-interface Props {
-  data: Array<IUser>;
-  headers: Array<string>;
-}
-
-function TableUserRow({ user }: { user: IUser }): React.JSX.Element {
-  const sidebar = useSidebar();
-  const router = useRouter();
-
-  return (
-    <TableRow
-      key={user._id}
-      className="cursor-pointer"
-      onClick={() => {
-        sidebar.setOpen(false);
-        router.navigate({
-          to: '/users/$userId',
-          params: {
-            userId: user._id,
-          },
-        });
-      }}
-    >
-      <TableCell>{user.name}</TableCell>
-      <TableCell>{user.email}</TableCell>
-      <TableCell>
-        {user.group.slug in USER_GROUP_MAPPER &&
-          USER_GROUP_MAPPER[user.group.slug as keyof typeof USER_GROUP_MAPPER]}
-        {!(user.group.slug in USER_GROUP_MAPPER) && user.group.slug}
-      </TableCell>
-      <TableCell>
+const columns: Array<ColumnDef<IUser, any>> = [
+  {
+    id: 'name',
+    accessorKey: 'name',
+    header: 'Nome',
+    meta: { label: 'Nome' },
+  },
+  {
+    id: 'email',
+    accessorKey: 'email',
+    header: 'E-mail',
+    meta: { label: 'E-mail' },
+  },
+  {
+    id: 'group',
+    accessorFn: (row) => row.group,
+    header: 'Grupo',
+    meta: { label: 'Grupo' },
+    cell: ({ getValue }): React.ReactElement | string => {
+      const group = getValue() as IUser['group'];
+      if (group.slug in USER_GROUP_MAPPER) {
+        return USER_GROUP_MAPPER[group.slug as keyof typeof USER_GROUP_MAPPER];
+      }
+      return group.slug;
+    },
+  },
+  {
+    id: 'status',
+    accessorKey: 'status',
+    header: 'Status',
+    meta: { label: 'Status' },
+    cell: ({ getValue }): React.ReactElement => {
+      const status = getValue() as string;
+      return (
         <Badge
           variant="outline"
           className={cn(
             'font-semibold border-transparent',
-            user.status === E_USER_STATUS.ACTIVE &&
-              'bg-green-100 text-green-700',
-            user.status === E_USER_STATUS.INACTIVE &&
+            status === E_USER_STATUS.ACTIVE && 'bg-green-100 text-green-700',
+            status === E_USER_STATUS.INACTIVE &&
               'bg-destructive/10 text-destructive',
           )}
         >
-          {user.status in USER_STATUS_MAPPER && USER_STATUS_MAPPER[user.status]}
-          {!(user.status in USER_STATUS_MAPPER) && user.status}
+          {status in USER_STATUS_MAPPER
+            ? USER_STATUS_MAPPER[status as keyof typeof USER_STATUS_MAPPER]
+            : status}
         </Badge>
-      </TableCell>
+      );
+    },
+  },
+  {
+    id: 'actions',
+    enableHiding: false,
+    enableResizing: false,
+    size: 50,
+    cell: () => (
+      <Button
+        variant="ghost"
+        size="icon-sm"
+      >
+        <ArrowRightIcon />
+      </Button>
+    ),
+  },
+];
 
-      <TableCell>
-        <Button
-          variant="ghost"
-          size="icon-sm"
-        >
-          <ArrowRightIcon />
-        </Button>
-      </TableCell>
-    </TableRow>
-  );
+interface Props {
+  data: Array<IUser>;
 }
 
-export function TableUsers({ data, headers }: Props): React.ReactElement {
+export function TableUsers({ data }: Props): React.ReactElement {
+  const sidebar = useSidebar();
+  const router = useRouter();
+
+  const table = useDataTable({
+    data,
+    columns,
+    getRowId: (row) => row._id,
+    persistKey: 'admin:users',
+    initialColumnPinning: {
+      right: ['actions'],
+    },
+  });
+
   return (
-    <Table>
-      <TableHeader className="sticky top-0 bg-background">
-        <TableRow className="">
-          {headers.map((head) => (
-            <TableHead key={head}>
-              <span>{head}</span>
-            </TableHead>
-          ))}
-          <TableHead></TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {data.map((user) => (
-          <TableUserRow
-            user={user}
-            key={user._id}
-          />
-        ))}
-      </TableBody>
-    </Table>
+    <>
+      <DataTableToolbar table={table} />
+      <DataTable
+        table={table}
+        onRowClick={(user) => {
+          sidebar.setOpen(false);
+          router.navigate({
+            to: '/users/$userId',
+            params: { userId: user._id },
+          });
+        }}
+      />
+    </>
   );
 }

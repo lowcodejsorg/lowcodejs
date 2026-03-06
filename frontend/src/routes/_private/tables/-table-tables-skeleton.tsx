@@ -1,5 +1,3 @@
-import type { TableHeader as THeader } from './-table-tables';
-
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Table,
@@ -10,18 +8,22 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export function TableTablesSkeleton({
-  headers,
-}: {
-  headers: Array<THeader>;
-}): React.JSX.Element {
+const HEADERS = [
+  'Tabela',
+  'Link (slug)',
+  'Visibilidade',
+  'Criado por',
+  'Criado em',
+];
+
+export function TableTablesSkeleton(): React.JSX.Element {
   return (
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow>
-          {headers.map((head) => (
-            <TableHead key={head.label}>
-              <span>{head.label}</span>
+          {HEADERS.map((label) => (
+            <TableHead key={label}>
+              <span>{label}</span>
             </TableHead>
           ))}
           <TableHead></TableHead>

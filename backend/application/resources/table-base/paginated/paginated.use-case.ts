@@ -28,7 +28,8 @@ export default class TablePaginatedUseCase {
       const sort: Record<string, 'asc' | 'desc'> = {};
       if (payload['order-name']) sort.name = payload['order-name'];
       if (payload['order-link']) sort.slug = payload['order-link'];
-      if (payload['order-created-at']) sort.createdAt = payload['order-created-at'];
+      if (payload['order-created-at'])
+        sort.createdAt = payload['order-created-at'];
 
       const tables = await this.tableRepository.findMany({
         page: payload.page,
