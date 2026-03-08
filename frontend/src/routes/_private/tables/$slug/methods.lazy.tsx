@@ -21,8 +21,8 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { QueryClient as queryClient } from '@/lib/query-client';
 import type { ITable } from '@/lib/interfaces';
+import { QueryClient as queryClient } from '@/lib/query-client';
 import { toastError, toastInfo } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/methods')({

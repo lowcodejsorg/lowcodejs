@@ -22,12 +22,12 @@ import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { QueryClient as queryClient } from '@/lib/query-client';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
+import { QueryClient as queryClient } from '@/lib/query-client';
 import { toastSuccess, toastWarning } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
@@ -184,8 +184,6 @@ function FieldUpdateContent({
       params: { slug },
     });
   };
-
-
 
   const isGroupContext = !!groupSlug;
 

@@ -3,9 +3,10 @@ import type { QueryClient } from '@tanstack/react-query';
 import { createRouter } from '@tanstack/react-router';
 import { setupRouterSsrQueryIntegration } from '@tanstack/react-router-ssr-query';
 
-import { QueryClient as queryClient } from '@/lib/query-client';
 import * as TanstackQuery from './integrations/tanstack-query/root-provider';
 import { routeTree } from './routeTree.gen';
+
+import { QueryClient as queryClient } from '@/lib/query-client';
 
 export interface RouterContext {
   queryClient: QueryClient;
@@ -20,11 +21,7 @@ export const getRouter = () => {
     scrollRestoration: true,
     defaultStructuralSharing: true,
     Wrap: (props: { children: React.ReactNode }) => {
-      return (
-        <TanstackQuery.Provider>
-          {props.children}
-        </TanstackQuery.Provider>
-      );
+      return <TanstackQuery.Provider>{props.children}</TanstackQuery.Provider>;
     },
   });
 
