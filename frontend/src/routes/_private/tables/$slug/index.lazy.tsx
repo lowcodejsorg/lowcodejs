@@ -336,6 +336,7 @@ function RouteComponent(): React.JSX.Element {
                 headers: table.data.fields,
                 order: table.data.fieldOrderList ?? [],
                 data: rows.data.data,
+                layoutFields: table.data.layoutFields,
               };
               return (
                 <React.Suspense fallback={<SkeletonComponent />}>

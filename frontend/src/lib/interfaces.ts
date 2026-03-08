@@ -209,6 +209,16 @@ export type ITableMethod = {
   afterSave: { code: string | null };
 };
 
+export type ILayoutFields = {
+  title: string | null;
+  description: string | null;
+  cover: string | null;
+  category: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  color: string | null;
+};
+
 export type ITable = Merge<
   Base,
   {
@@ -229,6 +239,7 @@ export type ITable = Merge<
     methods: ITableMethod;
     groups: Array<IGroupConfiguration>;
     order: { field: string; direction: 'asc' | 'desc' } | null;
+    layoutFields: ILayoutFields;
   }
 >;
 

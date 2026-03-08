@@ -122,6 +122,15 @@ export type TableUpdatePayload = {
     fields: Array<{ _id: string }>;
     _schema: Record<string, unknown>;
   }>;
+  layoutFields?: {
+    title: string | null;
+    description: string | null;
+    cover: string | null;
+    category: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    color: string | null;
+  };
 };
 
 // ============== FIELD ==============

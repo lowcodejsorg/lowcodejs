@@ -7,6 +7,7 @@ import {
   TableCollaborationSchema,
   TableFieldOrderFormSchema,
   TableFieldOrderListSchema,
+  TableLayoutFieldsSchema,
   TableMethodSchema,
   TableOrderSchema,
   TableStyleSchema,
@@ -33,6 +34,7 @@ export const TableUpdateBodyValidator = z.object({
   fieldOrderForm: TableFieldOrderFormSchema,
   methods: TableMethodSchema,
   order: TableOrderSchema,
+  layoutFields: TableLayoutFieldsSchema.optional(),
 });
 
 export const TableUpdateParamsValidator = z.object({

@@ -18,13 +18,15 @@ import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
+import { resolveLayoutField } from '@/lib/layout-field-resolver';
 import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
 
 interface TableGridViewProps {
   data: Array<IRow>;
   headers: Array<IField>;
   order: Array<string>;
+  layoutFields?: ILayoutFields | null;
 }
 
 interface RenderGridCellProps {
@@ -154,6 +156,7 @@ export function TableGridView({
   data,
   headers,
   order,
+  layoutFields,
 }: TableGridViewProps): React.ReactElement {
   const router = useRouter();
 
@@ -168,7 +171,7 @@ export function TableGridView({
 
   const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
-  const thumbField = visibleHeaders.find((f) => f.type === E_FIELD_TYPE.FILE);
+  const thumbField = resolveLayoutField(visibleHeaders, layoutFields, 'cover', E_FIELD_TYPE.FILE);
   const filteredHeaders = visibleHeaders.filter(
     (f) => f._id !== thumbField?._id,
   );

@@ -147,6 +147,15 @@ function TableUpdateContent({
       order: data.order
         ? `${data.order.field}:${data.order.direction}`
         : 'none',
+      layoutFields: {
+        title: data.layoutFields?.title ?? '',
+        description: data.layoutFields?.description ?? '',
+        cover: data.layoutFields?.cover ?? '',
+        category: data.layoutFields?.category ?? '',
+        startDate: data.layoutFields?.startDate ?? '',
+        endDate: data.layoutFields?.endDate ?? '',
+        color: data.layoutFields?.color ?? '',
+      },
     },
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: TableUpdateSchema, onSubmit: TableUpdateSchema },
@@ -178,6 +187,15 @@ function TableUpdateContent({
           ...data.methods,
         },
         order: orderPayload,
+        layoutFields: {
+          title: value.layoutFields.title || null,
+          description: value.layoutFields.description || null,
+          cover: value.layoutFields.cover || null,
+          category: value.layoutFields.category || null,
+          startDate: value.layoutFields.startDate || null,
+          endDate: value.layoutFields.endDate || null,
+          color: value.layoutFields.color || null,
+        },
       });
     },
   });

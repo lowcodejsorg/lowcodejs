@@ -54,6 +54,16 @@ export const TableOrderSchema = z
   .nullable()
   .default(null);
 
+export const TableLayoutFieldsSchema = z.object({
+  title: z.string().nullable().default(null),
+  description: z.string().nullable().default(null),
+  cover: z.string().nullable().default(null),
+  category: z.string().nullable().default(null),
+  startDate: z.string().nullable().default(null),
+  endDate: z.string().nullable().default(null),
+  color: z.string().nullable().default(null),
+});
+
 export const TableMethodSchema = z.object({
   beforeSave: z.object({
     code: z.string().trim().nullable(),

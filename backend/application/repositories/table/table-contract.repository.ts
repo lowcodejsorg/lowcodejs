@@ -5,6 +5,7 @@ import type {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
   IGroupConfiguration,
+  ILayoutFields,
   ITable,
   ITableMethod,
   ITableSchema,
@@ -30,6 +31,7 @@ export type TableCreatePayload = Merge<
     methods?: ITableMethod;
     groups?: IGroupConfiguration[];
     order?: { field: string; direction: 'asc' | 'desc' } | null;
+    layoutFields?: ILayoutFields;
   }
 >;
 

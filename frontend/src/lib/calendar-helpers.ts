@@ -8,7 +8,8 @@ import {
 } from 'date-fns';
 
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow, ITable } from '@/lib/interfaces';
+import type { IField, ILayoutFields, IRow, ITable } from '@/lib/interfaces';
+import { resolveLayoutField } from '@/lib/layout-field-resolver';
 import { getFieldBySlug, getFirstFieldByType } from '@/lib/kanban-helpers';
 
 const DEFAULT_EVENT_COLOR = '#2563eb';
@@ -56,19 +57,26 @@ function stripHtml(value: string): string {
 
 export function resolveCalendarFields(
   fields: Array<IField>,
+  layoutFields?: ILayoutFields | null,
 ): CalendarResolvedFields {
   return {
     titleField:
+      resolveLayoutField(fields, layoutFields, 'title', E_FIELD_TYPE.TEXT_SHORT) ??
       getFieldBySlug(fields, 'titulo', E_FIELD_TYPE.TEXT_SHORT) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.TEXT_SHORT),
     descriptionField:
+      resolveLayoutField(fields, layoutFields, 'description', E_FIELD_TYPE.TEXT_LONG) ??
       getFieldBySlug(fields, 'descricao', E_FIELD_TYPE.TEXT_LONG) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.TEXT_LONG),
     startField:
+      resolveLayoutField(fields, layoutFields, 'startDate', E_FIELD_TYPE.DATE) ??
       getFieldBySlug(fields, 'data-inicio', E_FIELD_TYPE.DATE) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.DATE),
-    endField: getFieldBySlug(fields, 'data-termino', E_FIELD_TYPE.DATE),
+    endField:
+      resolveLayoutField(fields, layoutFields, 'endDate', E_FIELD_TYPE.DATE) ??
+      getFieldBySlug(fields, 'data-termino', E_FIELD_TYPE.DATE),
     colorField:
+      resolveLayoutField(fields, layoutFields, 'color', E_FIELD_TYPE.DROPDOWN) ??
       getFieldBySlug(fields, 'cor', E_FIELD_TYPE.DROPDOWN) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.DROPDOWN),
   };
@@ -144,8 +152,9 @@ function resolveEventColor(
 export function normalizeCalendarEvents(
   rows: Array<IRow>,
   fields: Array<IField>,
+  layoutFields?: ILayoutFields | null,
 ): Array<CalendarEventItem> {
-  const resolved = resolveCalendarFields(fields);
+  const resolved = resolveCalendarFields(fields, layoutFields);
   if (!resolved.titleField || !resolved.startField) return [];
 
   return rows

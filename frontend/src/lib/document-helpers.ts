@@ -1,5 +1,6 @@
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
+import { resolveLayoutField } from '@/lib/layout-field-resolver';
 
 export type DocBlock = {
   id: string;
@@ -17,11 +18,10 @@ export function headerSorter(order: Array<string>) {
 export function firstCategoryField(
   headers: Array<IField>,
   order: Array<string>,
+  layoutFields?: ILayoutFields | null,
 ): IField | undefined {
-  return headers
-    .filter((h) => !h.trashed)
-    .sort(headerSorter(order))
-    .find((h) => h.type === E_FIELD_TYPE.CATEGORY);
+  const sorted = headers.filter((h) => !h.trashed).sort(headerSorter(order));
+  return resolveLayoutField(sorted, layoutFields, 'category', E_FIELD_TYPE.CATEGORY);
 }
 
 export function buildDepthMap(
@@ -47,25 +47,21 @@ export function buildLabelMap(
   return map;
 }
 
-export function buildDocBlocks(headersOrdered: Array<IField>): Array<DocBlock> {
+export function buildDocBlocks(
+  headersOrdered: Array<IField>,
+  layoutFields?: ILayoutFields | null,
+): Array<DocBlock> {
   const h = headersOrdered.filter((x) => !x.trashed);
 
   const blocks: Array<DocBlock> = [];
 
-  const info: { titleField?: IField; bodyField?: IField } = {};
-
-  h.map((field) => {
-    if (field.type === E_FIELD_TYPE.TEXT_SHORT) {
-      info.titleField = field;
-    } else if (field.type === E_FIELD_TYPE.TEXT_LONG) {
-      info.bodyField = field;
-    }
-  });
+  const titleField = resolveLayoutField(h, layoutFields, 'title', E_FIELD_TYPE.TEXT_SHORT);
+  const bodyField = resolveLayoutField(h, layoutFields, 'description', E_FIELD_TYPE.TEXT_LONG);
 
   blocks.push({
-    id: `block-${info.titleField?.slug}`,
-    titleField: info.titleField as IField,
-    bodyField: info.bodyField,
+    id: `block-${titleField?.slug}`,
+    titleField: titleField as IField,
+    bodyField,
   });
 
   return blocks;

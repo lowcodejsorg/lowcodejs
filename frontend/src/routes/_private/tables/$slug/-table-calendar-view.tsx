@@ -58,12 +58,12 @@ export function TableCalendarView({
   }, [data]);
 
   const resolvedFields = React.useMemo(
-    () => resolveCalendarFields(headers),
-    [headers],
+    () => resolveCalendarFields(headers, table.layoutFields),
+    [headers, table.layoutFields],
   );
   const events = React.useMemo(
-    () => normalizeCalendarEvents(rowsState, headers),
-    [rowsState, headers],
+    () => normalizeCalendarEvents(rowsState, headers, table.layoutFields),
+    [rowsState, headers, table.layoutFields],
   );
   const editingEvent = React.useMemo(
     () => events.find((item) => item.rowId === editingRowId) ?? null,

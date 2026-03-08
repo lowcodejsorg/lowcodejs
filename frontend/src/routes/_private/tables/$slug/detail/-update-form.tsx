@@ -4,13 +4,24 @@ import { z } from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
+  E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
   TABLE_NAME_REGEX,
 } from '@/lib/constant';
-import type { ITable } from '@/lib/interfaces';
+import type { IField, ITable } from '@/lib/interfaces';
 import { getAllowedTableStyles } from '@/lib/table-style';
+
+const LayoutFieldsSchema = z.object({
+  title: z.string().default(''),
+  description: z.string().default(''),
+  cover: z.string().default(''),
+  category: z.string().default(''),
+  startDate: z.string().default(''),
+  endDate: z.string().default(''),
+  color: z.string().default(''),
+});
 
 // Schema estendido com campos de UI (logoFile)
 export const TableUpdateSchema = z.object({
@@ -44,6 +55,15 @@ export const TableUpdateSchema = z.object({
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
   order: z.string().default('none'),
+  layoutFields: LayoutFieldsSchema.default({
+    title: '',
+    description: '',
+    cover: '',
+    category: '',
+    startDate: '',
+    endDate: '',
+    color: '',
+  }),
 });
 
 export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
@@ -58,6 +78,15 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logoFile: [],
   administrators: [],
   order: 'none',
+  layoutFields: {
+    title: '',
+    description: '',
+    cover: '',
+    category: '',
+    startDate: '',
+    endDate: '',
+    color: '',
+  },
 };
 
 export const UpdateTableFormFields = withForm({
@@ -87,6 +116,54 @@ export const UpdateTableFormFields = withForm({
       }
       return options;
     }, [tableData]);
+
+    const activeFields = React.useMemo(
+      () => tableData?.fields?.filter((f: IField) => !f.trashed) ?? [],
+      [tableData],
+    );
+
+    const fieldOptionsByType = React.useCallback(
+      (type: string) =>
+        activeFields
+          .filter((f: IField) => f.type === type)
+          .map((f: IField) => ({ label: f.name, value: f._id })),
+      [activeFields],
+    );
+
+    const LAYOUT_ROLE_CONFIG: Record<
+      string,
+      Array<{
+        role: 'title' | 'description' | 'cover' | 'category' | 'startDate' | 'endDate' | 'color';
+        label: string;
+        type: string;
+      }>
+    > = {
+      [E_TABLE_STYLE.CARD]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
+      ],
+      [E_TABLE_STYLE.MOSAIC]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
+      ],
+      [E_TABLE_STYLE.GALLERY]: [
+        { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
+      ],
+      [E_TABLE_STYLE.DOCUMENT]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        { role: 'category', label: 'Categoria', type: E_FIELD_TYPE.CATEGORY },
+      ],
+      [E_TABLE_STYLE.CALENDAR]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        { role: 'startDate', label: 'Data de início', type: E_FIELD_TYPE.DATE },
+        { role: 'endDate', label: 'Data de término', type: E_FIELD_TYPE.DATE },
+        { role: 'color', label: 'Cor', type: E_FIELD_TYPE.DROPDOWN },
+      ],
+    };
 
     return (
       <section className="space-y-4 p-2">
@@ -180,6 +257,35 @@ export const UpdateTableFormFields = withForm({
             />
           )}
         </form.AppField>
+
+        {/* Campos do Layout */}
+        <form.Subscribe selector={(state) => state.values.style}>
+          {(currentStyle) => {
+            const layoutRoles = LAYOUT_ROLE_CONFIG[currentStyle] ?? [];
+            if (layoutRoles.length === 0) return null;
+            return (
+              <div className="space-y-3 rounded-lg border p-3">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Campos do Layout
+                </p>
+                {layoutRoles.map((item) => (
+                  <form.AppField
+                    key={item.role}
+                    name={`layoutFields.${item.role}`}
+                  >
+                    {(field) => (
+                      <field.TableLayoutFieldSelect
+                        label={item.label}
+                        disabled={isDisabled}
+                        options={fieldOptionsByType(item.type)}
+                      />
+                    )}
+                  </form.AppField>
+                ))}
+              </div>
+            );
+          }}
+        </form.Subscribe>
 
         {/* Campo Visibility */}
         <form.AppField
