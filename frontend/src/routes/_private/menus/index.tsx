@@ -4,6 +4,7 @@ import z from 'zod';
 import { TableMenusSkeleton } from './-table-menus-skeleton';
 
 import { menuListOptions } from '@/hooks/tanstack-query/_query-options';
+import { createRouteHead } from '@/lib/seo';
 
 const defaultSearch = { page: 1, perPage: 50 };
 const headers = ['Nome', 'Slug', 'Tipo'];
@@ -17,12 +18,7 @@ export const Route = createFileRoute('/_private/menus/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: ({ matches }) => {
-    const systemName =
-      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
-      'LowCodeJs';
-    return { meta: [{ title: `Menus - ${systemName}` }] };
-  },
+  head: createRouteHead({ title: 'Menus' }),
   pendingComponent: () => <TableMenusSkeleton headers={headers} />,
   validateSearch: z.object({
     page: z.coerce.number().default(1),

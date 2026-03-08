@@ -12,78 +12,106 @@ import { RouteError } from '@/components/common/route-error';
 import { RouteNotFound } from '@/components/common/route-not-found';
 import RoutePending from '@/components/common/route-pending';
 import { TooltipProvider } from '@/components/ui/tooltip';
-import { getApiBaseUrl } from '@/lib/get-api-config';
+import { getApiBaseUrl, getAppBaseUrl } from '@/lib/get-api-config';
 import type { RouterContext } from '@/router';
 import appCss from '@/styles.css?url';
 
-const getSystemName = createServerFn({ method: 'GET' }).handler(async () => {
-  try {
-    const { Env } = await import('@/env');
-    const baseUrl = Env.VITE_API_BASE_URL;
-    const response = await fetch(`${baseUrl}/setting`);
-    if (response.ok) {
-      const data = await response.json();
-      return data.SYSTEM_NAME || 'LowCodeJs';
+const getSystemSettings = createServerFn({ method: 'GET' }).handler(
+  async () => {
+    try {
+      const { Env } = await import('@/env');
+      const baseUrl = Env.VITE_API_BASE_URL;
+      const response = await fetch(`${baseUrl}/setting`);
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          systemName: data.SYSTEM_NAME || 'LowCodeJs',
+          systemDescription: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
+        };
+      }
+      return {
+        systemName: 'LowCodeJs',
+        systemDescription: 'Plataforma Oficial',
+      };
+    } catch {
+      return {
+        systemName: 'LowCodeJs',
+        systemDescription: 'Plataforma Oficial',
+      };
     }
-    return 'LowCodeJs';
-  } catch {
-    return 'LowCodeJs';
-  }
-});
+  },
+);
 
 export const Route = createRootRouteWithContext<RouterContext>()({
   loader: async () => {
-    const [baseUrl, systemName] = await Promise.all([
+    const [baseUrl, appUrl, settings] = await Promise.all([
       getApiBaseUrl(),
-      getSystemName(),
+      getAppBaseUrl(),
+      getSystemSettings(),
     ]);
-    return { baseUrl, systemName };
+    return {
+      baseUrl,
+      appUrl,
+      systemName: settings.systemName,
+      systemDescription: settings.systemDescription,
+    };
   },
   component: RootDocument,
   pendingComponent: RoutePending,
   errorComponent: RouteError,
   notFoundComponent: RouteNotFound,
-  head: ({ loaderData }) => ({
-    meta: [
-      { charSet: 'utf-8' },
-      { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-      { title: loaderData?.systemName || 'LowCodeJs' },
-      {
-        name: 'description',
-        content: 'Plataforma Oficial',
-      },
-      {
-        property: 'og:title',
-        content: loaderData?.systemName || 'LowCodeJs',
-      },
-      {
-        property: 'og:description',
-        content: 'Plataforma Oficial',
-      },
-      { property: 'og:type', content: 'website' },
-      { property: 'og:url', content: loaderData?.baseUrl ?? '' },
-    ],
-    links: [
-      { rel: 'stylesheet', href: appCss },
-      {
-        rel: 'icon',
-        type: 'image/webp',
-        href: `${loaderData?.baseUrl}/storage/logo-small.webp`,
-      },
-      { rel: 'canonical', href: loaderData?.baseUrl ?? '' },
-    ],
-    scripts: [
-      {
-        type: 'application/ld+json',
-        children: JSON.stringify({
-          '@context': 'https://schema.org',
-          '@type': 'WebApplication',
-          name: loaderData?.systemName ?? 'LowCodeJs',
-          url: loaderData?.baseUrl ?? '',
-        }),
-      },
-    ],
-  }),
+  head: ({ loaderData }) => {
+    const systemName = loaderData?.systemName || 'LowCodeJs';
+    const systemDescription =
+      loaderData?.systemDescription || 'Plataforma Oficial';
+    const appUrl = loaderData?.appUrl || '';
+    const baseUrl = loaderData?.baseUrl || '';
+    const ogImage = `${baseUrl}/storage/logo-small.webp`;
+
+    return {
+      meta: [
+        { charSet: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { title: systemName },
+        { name: 'description', content: systemDescription },
+        { property: 'og:title', content: systemName },
+        { property: 'og:description', content: systemDescription },
+        { property: 'og:type', content: 'website' },
+        { property: 'og:url', content: appUrl },
+        { property: 'og:image', content: ogImage },
+        { property: 'og:image:width', content: '200' },
+        { property: 'og:image:height', content: '200' },
+        { property: 'og:site_name', content: systemName },
+        { property: 'og:locale', content: 'pt_BR' },
+        { name: 'twitter:card', content: 'summary' },
+        { name: 'twitter:title', content: systemName },
+        { name: 'twitter:description', content: systemDescription },
+        { name: 'twitter:image', content: ogImage },
+      ],
+      links: [
+        { rel: 'stylesheet', href: appCss },
+        {
+          rel: 'icon',
+          type: 'image/webp',
+          href: ogImage,
+        },
+        { rel: 'canonical', href: appUrl },
+      ],
+      scripts: [
+        {
+          type: 'application/ld+json',
+          children: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebApplication',
+            name: systemName,
+            description: systemDescription,
+            url: appUrl,
+            image: ogImage,
+          }),
+        },
+      ],
+    };
+  },
 });
 
 function RootDocument(): React.JSX.Element {

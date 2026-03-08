@@ -3,6 +3,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { UpdateSettingFormSkeleton } from './-update-form-skeleton';
 
 import { settingOptions } from '@/hooks/tanstack-query/_query-options';
+import { createRouteHead } from '@/lib/seo';
 
 export const Route = createFileRoute('/_private/settings/')({
   beforeLoad: async () => {
@@ -13,12 +14,7 @@ export const Route = createFileRoute('/_private/settings/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: ({ matches }) => {
-    const systemName =
-      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
-      'LowCodeJs';
-    return { meta: [{ title: `Configurações - ${systemName}` }] };
-  },
+  head: createRouteHead({ title: 'Configurações' }),
   pendingComponent: UpdateSettingFormSkeleton,
   loader: async ({ context }) => {
     await context.queryClient.ensureQueryData(settingOptions());

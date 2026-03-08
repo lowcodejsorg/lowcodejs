@@ -4,6 +4,7 @@ import z from 'zod';
 import { TableGroupsSkeleton } from './-table-groups-skeleton';
 
 import { groupListOptions } from '@/hooks/tanstack-query/_query-options';
+import { createRouteHead } from '@/lib/seo';
 
 const defaultSearch = { page: 1, perPage: 50 };
 const headers = ['Nome', 'Slug', 'Descrição'];
@@ -17,12 +18,7 @@ export const Route = createFileRoute('/_private/groups/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: ({ matches }) => {
-    const systemName =
-      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
-      'LowCodeJs';
-    return { meta: [{ title: `Grupos - ${systemName}` }] };
-  },
+  head: createRouteHead({ title: 'Grupos' }),
   pendingComponent: () => <TableGroupsSkeleton headers={headers} />,
   validateSearch: z.object({
     search: z.string().optional(),

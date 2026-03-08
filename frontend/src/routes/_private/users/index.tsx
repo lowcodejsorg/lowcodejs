@@ -4,6 +4,7 @@ import z from 'zod';
 import { TableUsersSkeleton } from './-table-users-skeleton';
 
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
+import { createRouteHead } from '@/lib/seo';
 
 const defaultSearch = { page: 1, perPage: 50 };
 const headers = ['Nome', 'E-mail', 'Papel', 'Status'];
@@ -17,12 +18,7 @@ export const Route = createFileRoute('/_private/users/')({
       throw redirect({ to: '/tables' });
     }
   },
-  head: ({ matches }) => {
-    const systemName =
-      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
-      'LowCodeJs';
-    return { meta: [{ title: `Usuarios - ${systemName}` }] };
-  },
+  head: createRouteHead({ title: 'Usuários' }),
   pendingComponent: () => <TableUsersSkeleton headers={headers} />,
   validateSearch: z.object({
     search: z.string().optional(),
