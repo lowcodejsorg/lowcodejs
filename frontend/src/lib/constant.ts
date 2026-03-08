@@ -54,6 +54,10 @@ export const E_FIELD_FORMAT = {
   DECIMAL: 'DECIMAL',
   URL: 'URL',
   EMAIL: 'EMAIL',
+  PASSWORD: 'PASSWORD',
+  PHONE: 'PHONE',
+  CNPJ: 'CNPJ',
+  CPF: 'CPF',
   // TEXT_LONG
   RICH_TEXT: 'RICH_TEXT',
   PLAIN_TEXT: 'PLAIN_TEXT',
@@ -154,7 +158,7 @@ export const E_TABLE_PERMISSION = {
 
 // ============== OPTIONS PARA SELECTS ==============
 export const FIELD_TYPE_OPTIONS = [
-  { label: 'Texto', value: E_FIELD_TYPE.TEXT_SHORT },
+  { label: 'Texto curto', value: E_FIELD_TYPE.TEXT_SHORT },
   { label: 'Texto longo', value: E_FIELD_TYPE.TEXT_LONG },
   { label: 'Dropdown', value: E_FIELD_TYPE.DROPDOWN },
   { label: 'Arquivo', value: E_FIELD_TYPE.FILE },
@@ -173,6 +177,10 @@ export const TEXT_FORMAT_OPTIONS = [
   { label: 'Decimal', value: E_FIELD_FORMAT.DECIMAL },
   { label: 'URL', value: E_FIELD_FORMAT.URL },
   { label: 'E-mail', value: E_FIELD_FORMAT.EMAIL },
+  { label: 'Senha', value: E_FIELD_FORMAT.PASSWORD },
+  { label: 'Telefone', value: E_FIELD_FORMAT.PHONE },
+  { label: 'CNPJ', value: E_FIELD_FORMAT.CNPJ },
+  { label: 'CPF', value: E_FIELD_FORMAT.CPF },
 ] as const;
 
 export const TEXT_LONG_FORMAT_OPTIONS = [

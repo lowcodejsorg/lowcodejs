@@ -27,6 +27,19 @@ const FORMAT_VALIDATORS: Record<string, { regex: RegExp; message: string }> = {
     regex: /^-?\d+(\.\d+)?$/,
     message: 'Deve ser um número decimal',
   },
+  [E_FIELD_FORMAT.PHONE]: {
+    regex: /^\(\d{2}\)\s?\d{4,5}-\d{4}$/,
+    message:
+      'Formato de telefone inválido. Use (XX) XXXXX-XXXX ou (XX) XXXX-XXXX',
+  },
+  [E_FIELD_FORMAT.CNPJ]: {
+    regex: /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/,
+    message: 'Formato de CNPJ inválido. Use XX.XXX.XXX/XXXX-XX',
+  },
+  [E_FIELD_FORMAT.CPF]: {
+    regex: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+    message: 'Formato de CPF inválido. Use XXX.XXX.XXX-XX',
+  },
 };
 
 function isValidObjectId(value: unknown): boolean {

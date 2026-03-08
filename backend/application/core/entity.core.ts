@@ -55,6 +55,10 @@ export const E_FIELD_FORMAT = {
   DECIMAL: 'DECIMAL',
   URL: 'URL',
   EMAIL: 'EMAIL',
+  PASSWORD: 'PASSWORD',
+  PHONE: 'PHONE',
+  CNPJ: 'CNPJ',
+  CPF: 'CPF',
 
   // TEXT_LONG
   RICH_TEXT: 'RICH_TEXT',

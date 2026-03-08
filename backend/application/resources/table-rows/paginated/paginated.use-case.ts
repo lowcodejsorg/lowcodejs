@@ -3,8 +3,9 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IMeta, Paginated } from '@application/core/entity.core';
+import type { IField, IMeta, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import {
   buildOrder,
   buildPopulate,
@@ -76,12 +77,16 @@ export default class TableRowPaginatedUseCase {
         firstPage: total > 0 ? 1 : 0,
       };
 
-      const data = rows?.map((u) => ({
-        ...u?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: u?._id.toString(),
-      }));
+      const data = rows?.map((u) => {
+        const rowJson = {
+          ...u?.toJSON({
+            flattenObjectIds: true,
+          }),
+          _id: u?._id.toString(),
+        };
+        maskPasswordFields(rowJson, table.fields as IField[]);
+        return rowJson;
+      });
 
       // @ts-ignore
       return right({
