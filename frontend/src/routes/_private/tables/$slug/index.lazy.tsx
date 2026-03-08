@@ -9,22 +9,14 @@ import type { AxiosError } from 'axios';
 import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
 
-import { TableCalendarView } from './-table-calendar-view';
 import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
-import { TableCardView } from './-table-card-view';
 import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
-import { TableDocumentView } from './-table-document-view';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
-import { TableForumView } from './-table-forum-view';
 import { TableForumViewSkeleton } from './-table-forum-view-skeleton';
-import { TableGridView } from './-table-grid-view';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
-import { TableKanbanView } from './-table-kanban-view';
 import { TableKanbanViewSkeleton } from './-table-kanban-view-skeleton';
-import { TableListView } from './-table-list-view';
 import { TableListViewSkeleton } from './-table-list-view-skeleton';
-import { TableMosaicView } from './-table-mosaic-view';
 import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
@@ -61,44 +53,70 @@ const VIEW_MAP: Record<
   string,
   {
     skeleton: React.ComponentType;
-    view: React.ComponentType<any>;
+    view: React.LazyExoticComponent<React.ComponentType<any>>;
     extraProps?: boolean;
   }
 > = {
   [E_TABLE_STYLE.LIST]: {
     skeleton: TableListViewSkeleton,
-    view: TableListView,
+    view: React.lazy(() =>
+      import('./-table-list-view').then((m) => ({ default: m.TableListView })),
+    ),
   },
   [E_TABLE_STYLE.GALLERY]: {
     skeleton: TableGridViewSkeleton,
-    view: TableGridView,
+    view: React.lazy(() =>
+      import('./-table-grid-view').then((m) => ({ default: m.TableGridView })),
+    ),
   },
   [E_TABLE_STYLE.DOCUMENT]: {
     skeleton: TableDocumentViewSkeleton,
-    view: TableDocumentView,
+    view: React.lazy(() =>
+      import('./-table-document-view').then((m) => ({
+        default: m.TableDocumentView,
+      })),
+    ),
     extraProps: true,
   },
   [E_TABLE_STYLE.CARD]: {
     skeleton: TableCardViewSkeleton,
-    view: TableCardView,
+    view: React.lazy(() =>
+      import('./-table-card-view').then((m) => ({ default: m.TableCardView })),
+    ),
   },
   [E_TABLE_STYLE.MOSAIC]: {
     skeleton: TableMosaicViewSkeleton,
-    view: TableMosaicView,
+    view: React.lazy(() =>
+      import('./-table-mosaic-view').then((m) => ({
+        default: m.TableMosaicView,
+      })),
+    ),
   },
   [E_TABLE_STYLE.KANBAN]: {
     skeleton: TableKanbanViewSkeleton,
-    view: TableKanbanView,
+    view: React.lazy(() =>
+      import('./-table-kanban-view').then((m) => ({
+        default: m.TableKanbanView,
+      })),
+    ),
     extraProps: true,
   },
   [E_TABLE_STYLE.FORUM]: {
     skeleton: TableForumViewSkeleton,
-    view: TableForumView,
+    view: React.lazy(() =>
+      import('./-table-forum-view').then((m) => ({
+        default: m.TableForumView,
+      })),
+    ),
     extraProps: true,
   },
   [E_TABLE_STYLE.CALENDAR]: {
     skeleton: TableCalendarViewSkeleton,
-    view: TableCalendarView,
+    view: React.lazy(() =>
+      import('./-table-calendar-view').then((m) => ({
+        default: m.TableCalendarView,
+      })),
+    ),
     extraProps: true,
   },
 };
@@ -313,21 +331,25 @@ function RouteComponent(): React.JSX.Element {
               const entry = VIEW_MAP[table.data.style];
               if (!entry) return null;
               const ViewComponent = entry.view;
+              const SkeletonComponent = entry.skeleton;
               const baseProps = {
                 headers: table.data.fields,
                 order: table.data.fieldOrderList ?? [],
                 data: rows.data.data,
               };
-              if (entry.extraProps) {
-                return (
-                  <ViewComponent
-                    {...baseProps}
-                    tableSlug={slug}
-                    table={table.data}
-                  />
-                );
-              }
-              return <ViewComponent {...baseProps} />;
+              return (
+                <React.Suspense fallback={<SkeletonComponent />}>
+                  {entry.extraProps ? (
+                    <ViewComponent
+                      {...baseProps}
+                      tableSlug={slug}
+                      table={table.data}
+                    />
+                  ) : (
+                    <ViewComponent {...baseProps} />
+                  )}
+                </React.Suspense>
+              );
             })()}
         </div>
       </div>
