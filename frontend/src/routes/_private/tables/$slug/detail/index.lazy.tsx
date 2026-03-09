@@ -144,9 +144,10 @@ function TableUpdateContent({
       administrators: data.administrators.map((admin) =>
         typeof admin === 'string' ? admin : admin._id,
       ),
-      order: data.order
-        ? `${data.order.field}:${data.order.direction}`
-        : 'none',
+      order:
+        data.order?.field && data.order?.direction
+          ? `${data.order.field}:${data.order.direction}`
+          : 'none',
       layoutFields: {
         title: data.layoutFields?.title ?? '',
         description: data.layoutFields?.description ?? '',
@@ -238,14 +239,6 @@ function TableUpdateContent({
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
                   onClick={() => {
-                    if (
-                      form.state.isDirty &&
-                      !window.confirm(
-                        'Existem alterações não salvas. Deseja descartar?',
-                      )
-                    ) {
-                      return;
-                    }
                     form.reset();
                     setMode('show');
                   }}
