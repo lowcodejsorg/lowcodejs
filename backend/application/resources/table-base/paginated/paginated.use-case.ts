@@ -30,6 +30,9 @@ export default class TablePaginatedUseCase {
       if (payload['order-link']) sort.slug = payload['order-link'];
       if (payload['order-created-at'])
         sort.createdAt = payload['order-created-at'];
+      if (payload['order-visibility'])
+        sort.visibility = payload['order-visibility'];
+      if (payload['order-owner']) sort['owner.name'] = payload['order-owner'];
 
       const tables = await this.tableRepository.findMany({
         page: payload.page,

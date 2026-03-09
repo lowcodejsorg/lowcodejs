@@ -103,6 +103,46 @@ export default class TableMongooseRepository implements TableContractRepository 
         ? payload.sort
         : { name: 'asc' as const };
 
+    const hasOwnerSort = sortOption && 'owner.name' in sortOption;
+
+    if (hasOwnerSort) {
+      const aggregationSort: Record<string, 1 | -1> = {};
+      for (const [key, dir] of Object.entries(sortOption)) {
+        if (key === 'owner.name') {
+          aggregationSort['_ownerName'] = dir === 'asc' ? 1 : -1;
+        } else {
+          aggregationSort[key] = dir === 'asc' ? 1 : -1;
+        }
+      }
+
+      const docs = await Model.aggregate([
+        { $match: where },
+        {
+          $lookup: {
+            from: 'users',
+            localField: 'owner',
+            foreignField: '_id',
+            as: '_ownerDoc',
+          },
+        },
+        {
+          $addFields: {
+            _ownerName: { $arrayElemAt: ['$_ownerDoc.name', 0] },
+          },
+        },
+        { $sort: aggregationSort },
+        { $skip: skip ?? 0 },
+        ...(take ? [{ $limit: take }] : []),
+        { $project: { _ownerDoc: 0, _ownerName: 0 } },
+      ]);
+
+      const populated = await Model.populate(docs, this.populateOptions);
+      return populated.map((doc: any) => ({
+        ...doc,
+        _id: doc._id.toString(),
+      }));
+    }
+
     const tables = await Model.find(where)
       .populate(this.populateOptions)
       .sort(sortOption)

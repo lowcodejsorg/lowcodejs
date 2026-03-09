@@ -133,19 +133,34 @@ export const UpdateTableFormFields = withForm({
     const LAYOUT_ROLE_CONFIG: Record<
       string,
       Array<{
-        role: 'title' | 'description' | 'cover' | 'category' | 'startDate' | 'endDate' | 'color';
+        role:
+          | 'title'
+          | 'description'
+          | 'cover'
+          | 'category'
+          | 'startDate'
+          | 'endDate'
+          | 'color';
         label: string;
         type: string;
       }>
     > = {
       [E_TABLE_STYLE.CARD]: [
         { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
-        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
         { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
       ],
       [E_TABLE_STYLE.MOSAIC]: [
         { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
-        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
         { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
       ],
       [E_TABLE_STYLE.GALLERY]: [
@@ -153,12 +168,20 @@ export const UpdateTableFormFields = withForm({
       ],
       [E_TABLE_STYLE.DOCUMENT]: [
         { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
-        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
         { role: 'category', label: 'Categoria', type: E_FIELD_TYPE.CATEGORY },
       ],
       [E_TABLE_STYLE.CALENDAR]: [
         { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
-        { role: 'description', label: 'Descrição', type: E_FIELD_TYPE.TEXT_LONG },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
         { role: 'startDate', label: 'Data de início', type: E_FIELD_TYPE.DATE },
         { role: 'endDate', label: 'Data de término', type: E_FIELD_TYPE.DATE },
         { role: 'color', label: 'Cor', type: E_FIELD_TYPE.DROPDOWN },

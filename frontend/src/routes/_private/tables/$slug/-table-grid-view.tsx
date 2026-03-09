@@ -171,7 +171,12 @@ export function TableGridView({
 
   const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
-  const thumbField = resolveLayoutField(visibleHeaders, layoutFields, 'cover', E_FIELD_TYPE.FILE);
+  const thumbField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'cover',
+    E_FIELD_TYPE.FILE,
+  );
   const filteredHeaders = visibleHeaders.filter(
     (f) => f._id !== thumbField?._id,
   );

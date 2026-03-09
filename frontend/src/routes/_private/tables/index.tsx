@@ -20,6 +20,8 @@ export const Route = createFileRoute('/_private/tables/')({
     'order-name': z.enum(['asc', 'desc']).optional(),
     'order-link': z.enum(['asc', 'desc']).optional(),
     'order-created-at': z.enum(['asc', 'desc']).optional(),
+    'order-visibility': z.enum(['asc', 'desc']).optional(),
+    'order-owner': z.enum(['asc', 'desc']).optional(),
   }),
   search: {
     middlewares: [stripSearchParams(defaultSearch)],
@@ -35,6 +37,8 @@ export const Route = createFileRoute('/_private/tables/')({
     'order-name': search['order-name'],
     'order-link': search['order-link'],
     'order-created-at': search['order-created-at'],
+    'order-visibility': search['order-visibility'],
+    'order-owner': search['order-owner'],
   }),
   loader: async ({ context, deps }) => {
     await context.queryClient.ensureQueryData(tableListOptions(deps));

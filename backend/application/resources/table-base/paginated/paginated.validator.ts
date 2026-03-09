@@ -13,6 +13,8 @@ export const TablePaginatedQueryValidator = z.object({
   'order-name': z.enum(['asc', 'desc']).optional(),
   'order-link': z.enum(['asc', 'desc']).optional(),
   'order-created-at': z.enum(['asc', 'desc']).optional(),
+  'order-visibility': z.enum(['asc', 'desc']).optional(),
+  'order-owner': z.enum(['asc', 'desc']).optional(),
 });
 
 export type TablePaginatedPayload = z.infer<

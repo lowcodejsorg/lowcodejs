@@ -21,7 +21,12 @@ export function firstCategoryField(
   layoutFields?: ILayoutFields | null,
 ): IField | undefined {
   const sorted = headers.filter((h) => !h.trashed).sort(headerSorter(order));
-  return resolveLayoutField(sorted, layoutFields, 'category', E_FIELD_TYPE.CATEGORY);
+  return resolveLayoutField(
+    sorted,
+    layoutFields,
+    'category',
+    E_FIELD_TYPE.CATEGORY,
+  );
 }
 
 export function buildDepthMap(
@@ -55,8 +60,18 @@ export function buildDocBlocks(
 
   const blocks: Array<DocBlock> = [];
 
-  const titleField = resolveLayoutField(h, layoutFields, 'title', E_FIELD_TYPE.TEXT_SHORT);
-  const bodyField = resolveLayoutField(h, layoutFields, 'description', E_FIELD_TYPE.TEXT_LONG);
+  const titleField = resolveLayoutField(
+    h,
+    layoutFields,
+    'title',
+    E_FIELD_TYPE.TEXT_SHORT,
+  );
+  const bodyField = resolveLayoutField(
+    h,
+    layoutFields,
+    'description',
+    E_FIELD_TYPE.TEXT_LONG,
+  );
 
   blocks.push({
     id: `block-${titleField?.slug}`,

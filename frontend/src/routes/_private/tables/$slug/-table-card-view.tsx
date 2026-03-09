@@ -177,9 +177,24 @@ export function TableCardView({
 
   const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
-  const thumbField = resolveLayoutField(visibleHeaders, layoutFields, 'cover', E_FIELD_TYPE.FILE);
-  const titleField = resolveLayoutField(visibleHeaders, layoutFields, 'title', E_FIELD_TYPE.TEXT_SHORT);
-  const descField = resolveLayoutField(visibleHeaders, layoutFields, 'description', E_FIELD_TYPE.TEXT_LONG);
+  const thumbField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'cover',
+    E_FIELD_TYPE.FILE,
+  );
+  const titleField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'title',
+    E_FIELD_TYPE.TEXT_SHORT,
+  );
+  const descField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'description',
+    E_FIELD_TYPE.TEXT_LONG,
+  );
 
   const used = new Set(
     [thumbField?._id, titleField?._id, descField?._id].filter(

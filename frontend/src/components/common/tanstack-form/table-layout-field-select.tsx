@@ -39,9 +39,7 @@ export function TableLayoutFieldSelect({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__auto__">
-            Automático (primeiro campo)
-          </SelectItem>
+          <SelectItem value="__auto__">Automático (primeiro campo)</SelectItem>
           {options.map((item) => (
             <SelectItem
               key={item.value}

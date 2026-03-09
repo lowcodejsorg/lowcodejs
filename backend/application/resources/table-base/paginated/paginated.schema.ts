@@ -49,6 +49,18 @@ export const TablePaginatedSchema: FastifySchema = {
         description: 'Order by created at (optional)',
         examples: ['asc', 'desc'],
       },
+      'order-visibility': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Order by visibility (optional)',
+        examples: ['asc', 'desc'],
+      },
+      'order-owner': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Order by owner name (optional)',
+        examples: ['asc', 'desc'],
+      },
       trashed: {
         type: 'string',
         enum: ['true', 'false'],

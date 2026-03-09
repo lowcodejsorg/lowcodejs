@@ -180,7 +180,13 @@ const columns: Array<ColumnDef<ITable, any>> = [
   {
     id: 'visibility',
     accessorKey: 'visibility',
-    header: 'Visibilidade',
+    header: () => (
+      <DataTableColumnHeader
+        title="Visibilidade"
+        orderKey="order-visibility"
+        routeId={ROUTE_ID}
+      />
+    ),
     meta: { label: 'Visibilidade' },
     cell: ({ getValue }): React.ReactElement | null => {
       const visibility = getValue() as string;
@@ -193,7 +199,13 @@ const columns: Array<ColumnDef<ITable, any>> = [
   {
     id: 'owner',
     accessorFn: (row) => row.owner?.name,
-    header: 'Criado por',
+    header: () => (
+      <DataTableColumnHeader
+        title="Criado por"
+        orderKey="order-owner"
+        routeId={ROUTE_ID}
+      />
+    ),
     meta: { label: 'Criado por' },
     cell: ({ getValue }) => (
       <span className="text-sm text-muted-foreground">
