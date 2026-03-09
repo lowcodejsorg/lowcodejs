@@ -8,6 +8,7 @@ import {
   DataTable,
   DataTableColumnToggle,
 } from '@/components/common/data-table';
+import { DataTableColumnHeader } from '@/components/common/data-table/data-table-column-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -20,24 +21,44 @@ import {
 import type { IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
+const ROUTE_ID = '/_private/users/';
+
 const columns: Array<ColumnDef<IUser, any>> = [
   {
     id: 'name',
     accessorKey: 'name',
-    header: 'Nome',
     meta: { label: 'Nome' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Nome"
+        orderKey="order-name"
+        routeId={ROUTE_ID}
+      />
+    ),
   },
   {
     id: 'email',
     accessorKey: 'email',
-    header: 'E-mail',
     meta: { label: 'E-mail' },
+    header: () => (
+      <DataTableColumnHeader
+        title="E-mail"
+        orderKey="order-email"
+        routeId={ROUTE_ID}
+      />
+    ),
   },
   {
     id: 'group',
     accessorFn: (row) => row.group,
-    header: 'Grupo',
     meta: { label: 'Grupo' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Grupo"
+        orderKey="order-group"
+        routeId={ROUTE_ID}
+      />
+    ),
     cell: ({ getValue }): React.ReactElement | string => {
       const group = getValue() as IUser['group'];
       if (group.slug in USER_GROUP_MAPPER) {
@@ -49,8 +70,14 @@ const columns: Array<ColumnDef<IUser, any>> = [
   {
     id: 'status',
     accessorKey: 'status',
-    header: 'Status',
     meta: { label: 'Status' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Status"
+        orderKey="order-status"
+        routeId={ROUTE_ID}
+      />
+    ),
     cell: ({ getValue }): React.ReactElement => {
       const status = getValue() as string;
       return (

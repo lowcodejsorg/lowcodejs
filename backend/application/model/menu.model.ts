@@ -47,6 +47,12 @@ export const Schema = new mongoose.Schema(
       default: null,
     },
 
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null,
+    },
+
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },

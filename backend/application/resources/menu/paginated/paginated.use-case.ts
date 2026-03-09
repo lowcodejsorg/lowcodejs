@@ -22,11 +22,20 @@ export default class MenuPaginatedUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
+      const sort: Record<string, 'asc' | 'desc'> = {};
+      if (payload['order-name']) sort.name = payload['order-name'];
+      if (payload['order-slug']) sort.slug = payload['order-slug'];
+      if (payload['order-type']) sort.type = payload['order-type'];
+      if (payload['order-created-at'])
+        sort.createdAt = payload['order-created-at'];
+      if (payload['order-owner']) sort['owner.name'] = payload['order-owner'];
+
       const menus = await this.menuRepository.findMany({
         page: payload.page,
         perPage: payload.perPage,
         search: payload.search,
         trashed: false,
+        sort,
       });
 
       const total = await this.menuRepository.count({

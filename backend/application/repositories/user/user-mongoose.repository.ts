@@ -107,9 +107,54 @@ export default class UserMongooseRepository implements UserContractRepository {
       take = payload.perPage;
     }
 
+    const sortOption =
+      payload?.sort && Object.keys(payload.sort).length > 0
+        ? payload.sort
+        : { name: 'asc' as const };
+
+    const hasGroupSort = sortOption && 'group.name' in sortOption;
+
+    if (hasGroupSort) {
+      const aggregationSort: Record<string, 1 | -1> = {};
+      for (const [key, dir] of Object.entries(sortOption)) {
+        if (key === 'group.name') {
+          aggregationSort['_groupName'] = dir === 'asc' ? 1 : -1;
+        } else {
+          aggregationSort[key] = dir === 'asc' ? 1 : -1;
+        }
+      }
+
+      const docs = await Model.aggregate([
+        { $match: where },
+        {
+          $lookup: {
+            from: 'usergroups',
+            localField: 'group',
+            foreignField: '_id',
+            as: '_groupDoc',
+          },
+        },
+        {
+          $addFields: {
+            _groupName: { $arrayElemAt: ['$_groupDoc.name', 0] },
+          },
+        },
+        { $sort: aggregationSort },
+        { $skip: skip ?? 0 },
+        ...(take ? [{ $limit: take }] : []),
+        { $project: { _groupDoc: 0, _groupName: 0 } },
+      ]);
+
+      const populated = await Model.populate(docs, this.populateOptions);
+      return populated.map((doc: any) => ({
+        ...doc,
+        _id: doc._id.toString(),
+      }));
+    }
+
     const users = await Model.find(where)
       .populate(this.populateOptions)
-      .sort({ name: 'asc' })
+      .sort(sortOption)
       .skip(skip ?? 0)
       .limit(take ?? 0);
 

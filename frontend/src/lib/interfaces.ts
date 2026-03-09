@@ -129,6 +129,7 @@ export type IMenu = Merge<
     parent: IMenu | null;
     url: string | null;
     html: string | null;
+    owner: IUser | null;
   }
 >;
 

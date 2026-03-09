@@ -15,12 +15,17 @@ import type {
   IUser,
   Paginated,
 } from '@/lib/interfaces';
-import type { BaseQueryPayload, TableQueryPayload } from '@/lib/payloads';
+import type {
+  BaseQueryPayload,
+  TableQueryPayload,
+  UserGroupQueryPayload,
+  UserQueryPayload,
+} from '@/lib/payloads';
 
 // ============== USERS ==============
 
 export const userListOptions = (
-  params: BaseQueryPayload,
+  params: UserQueryPayload,
 ): UndefinedInitialDataOptions<Paginated<IUser>> =>
   queryOptions({
     queryKey: queryKeys.users.list(params),
@@ -49,7 +54,7 @@ export const userDetailOptions = (
 // ============== GROUPS ==============
 
 export const groupListOptions = (
-  params: BaseQueryPayload,
+  params: UserGroupQueryPayload,
 ): UndefinedInitialDataOptions<Paginated<IGroup>> =>
   queryOptions({
     queryKey: queryKeys.groups.list(params),

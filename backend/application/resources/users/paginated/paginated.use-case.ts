@@ -22,7 +22,15 @@ export default class UserPaginatedUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const users = await this.userRepository.findMany(payload);
+      const sort: Record<string, 'asc' | 'desc'> = {};
+      if (payload['order-name']) sort.name = payload['order-name'];
+      if (payload['order-email']) sort.email = payload['order-email'];
+      if (payload['order-group']) sort['group.name'] = payload['order-group'];
+      if (payload['order-status']) sort.status = payload['order-status'];
+      if (payload['order-created-at'])
+        sort.createdAt = payload['order-created-at'];
+
+      const users = await this.userRepository.findMany({ ...payload, sort });
 
       const total = await this.userRepository.count(payload);
 

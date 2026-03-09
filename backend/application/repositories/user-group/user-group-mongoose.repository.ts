@@ -83,9 +83,14 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
       take = payload.perPage;
     }
 
+    const sortOption =
+      payload?.sort && Object.keys(payload.sort).length > 0
+        ? payload.sort
+        : { name: 'asc' as const };
+
     const groups = await Model.find(where)
       .populate(this.populateOptions)
-      .sort({ name: 'asc' })
+      .sort(sortOption)
       .skip(skip ?? 0)
       .limit(take ?? 0);
 

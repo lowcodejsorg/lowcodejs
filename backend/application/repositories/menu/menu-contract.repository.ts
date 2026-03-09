@@ -3,7 +3,7 @@ import type { IMenu, Merge } from '@application/core/entity.core';
 
 export type MenuCreatePayload = Merge<
   Pick<IMenu, 'name' | 'slug' | 'type'>,
-  Partial<Pick<IMenu, 'table' | 'parent' | 'url' | 'html'>>
+  Partial<Pick<IMenu, 'table' | 'parent' | 'url' | 'html' | 'owner'>>
 >;
 
 export type MenuUpdatePayload = Merge<
@@ -22,6 +22,7 @@ export type MenuQueryPayload = {
   search?: string;
   trashed?: boolean;
   parent?: string | null;
+  sort?: Record<string, 'asc' | 'desc'>;
 };
 
 export abstract class MenuContractRepository {

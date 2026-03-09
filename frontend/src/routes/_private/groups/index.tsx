@@ -24,6 +24,9 @@ export const Route = createFileRoute('/_private/groups/')({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
+    'order-name': z.enum(['asc', 'desc']).optional(),
+    'order-description': z.enum(['asc', 'desc']).optional(),
+    'order-created-at': z.enum(['asc', 'desc']).optional(),
   }),
   search: {
     middlewares: [stripSearchParams(defaultSearch)],
@@ -32,6 +35,9 @@ export const Route = createFileRoute('/_private/groups/')({
     page: search.page,
     perPage: search.perPage,
     search: search.search,
+    'order-name': search['order-name'],
+    'order-description': search['order-description'],
+    'order-created-at': search['order-created-at'],
   }),
   loader: async ({ context, deps }) => {
     await context.queryClient.ensureQueryData(groupListOptions(deps));

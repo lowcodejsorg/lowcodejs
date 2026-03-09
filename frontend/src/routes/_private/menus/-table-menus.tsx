@@ -1,5 +1,7 @@
 import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { ArrowRightIcon } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -8,6 +10,7 @@ import {
   DataTable,
   DataTableColumnToggle,
 } from '@/components/common/data-table';
+import { DataTableColumnHeader } from '@/components/common/data-table/data-table-column-header';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -15,6 +18,8 @@ import { useDataTable } from '@/hooks/use-data-table';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
+
+const ROUTE_ID = '/_private/menus/';
 
 const TypeMapper = {
   [E_MENU_ITEM_TYPE.PAGE]: 'Pagina',
@@ -28,8 +33,14 @@ const columns: Array<ColumnDef<IMenu, any>> = [
   {
     id: 'name',
     accessorKey: 'name',
-    header: 'Nome',
     meta: { label: 'Nome' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Nome"
+        orderKey="order-name"
+        routeId={ROUTE_ID}
+      />
+    ),
     cell: ({ getValue }) => (
       <span className="font-medium">{getValue() as string}</span>
     ),
@@ -37,8 +48,14 @@ const columns: Array<ColumnDef<IMenu, any>> = [
   {
     id: 'slug',
     accessorKey: 'slug',
-    header: 'Slug',
     meta: { label: 'Slug' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Slug"
+        orderKey="order-slug"
+        routeId={ROUTE_ID}
+      />
+    ),
     cell: ({ getValue }) => (
       <span className="text-muted-foreground">{getValue() as string}</span>
     ),
@@ -46,8 +63,14 @@ const columns: Array<ColumnDef<IMenu, any>> = [
   {
     id: 'type',
     accessorKey: 'type',
-    header: 'Tipo',
     meta: { label: 'Tipo' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Tipo"
+        orderKey="order-type"
+        routeId={ROUTE_ID}
+      />
+    ),
     cell: ({ getValue }): React.ReactElement => {
       const type = getValue() as string;
       return (
@@ -64,6 +87,47 @@ const columns: Array<ColumnDef<IMenu, any>> = [
         >
           {TypeMapper[type as keyof typeof TypeMapper] || 'N/A'}
         </Badge>
+      );
+    },
+  },
+  {
+    id: 'owner',
+    accessorFn: (row) => row.owner?.name,
+    header: () => (
+      <DataTableColumnHeader
+        title="Criado por"
+        orderKey="order-owner"
+        routeId={ROUTE_ID}
+      />
+    ),
+    meta: { label: 'Criado por' },
+    cell: ({ getValue }) => (
+      <span className="text-sm text-muted-foreground">
+        {getValue() as string}
+      </span>
+    ),
+  },
+  {
+    id: 'createdAt',
+    accessorKey: 'createdAt',
+    meta: { label: 'Criado em' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Criado em"
+        orderKey="order-created-at"
+        routeId={ROUTE_ID}
+      />
+    ),
+    cell: ({ getValue }): React.ReactElement => {
+      const date = getValue() as string | undefined;
+      return (
+        <span className="text-sm text-muted-foreground">
+          {date
+            ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'as' HH:mm", {
+                locale: ptBR,
+              })
+            : 'N/A'}
+        </span>
       );
     },
   },

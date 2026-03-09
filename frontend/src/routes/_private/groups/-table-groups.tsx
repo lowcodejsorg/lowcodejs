@@ -8,11 +8,14 @@ import {
   DataTable,
   DataTableColumnToggle,
 } from '@/components/common/data-table';
+import { DataTableColumnHeader } from '@/components/common/data-table/data-table-column-header';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useDataTable } from '@/hooks/use-data-table';
 import { USER_GROUP_MAPPER } from '@/lib/constant';
 import type { IGroup } from '@/lib/interfaces';
+
+const ROUTE_ID = '/_private/groups/';
 
 interface Props {
   data: Array<IGroup>;
@@ -23,8 +26,14 @@ const columns: Array<ColumnDef<IGroup, any>> = [
   {
     id: 'name',
     accessorFn: (row) => row,
-    header: 'Nome',
     meta: { label: 'Nome' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Nome"
+        orderKey="order-name"
+        routeId={ROUTE_ID}
+      />
+    ),
     cell: ({ getValue }): React.ReactElement => {
       const group = getValue() as IGroup;
       return (
@@ -39,8 +48,14 @@ const columns: Array<ColumnDef<IGroup, any>> = [
   {
     id: 'description',
     accessorKey: 'description',
-    header: 'Descricao',
     meta: { label: 'Descricao' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Descricao"
+        orderKey="order-description"
+        routeId={ROUTE_ID}
+      />
+    ),
     cell: ({ getValue }) => (
       <span className="truncate max-w-xs block">
         {(getValue() as string) || 'N/A'}

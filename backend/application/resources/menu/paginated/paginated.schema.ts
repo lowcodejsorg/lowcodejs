@@ -26,6 +26,31 @@ export const MenuPaginatedSchema: FastifySchema = {
         type: 'string',
         description: 'Termo de busca para filtrar itens de menu',
       },
+      'order-name': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por nome',
+      },
+      'order-slug': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por slug',
+      },
+      'order-type': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por tipo',
+      },
+      'order-created-at': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por data de criacao',
+      },
+      'order-owner': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por criador',
+      },
     },
   },
   response: {

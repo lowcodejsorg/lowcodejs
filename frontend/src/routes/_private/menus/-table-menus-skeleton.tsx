@@ -38,6 +38,12 @@ export function TableMenusSkeleton({
               <Skeleton className="h-6 w-24 rounded-full" />
             </TableCell>
             <TableCell>
+              <Skeleton className="h-4 w-28" />
+            </TableCell>
+            <TableCell>
+              <Skeleton className="h-4 w-36" />
+            </TableCell>
+            <TableCell>
               <Skeleton className="h-8 w-8 rounded-md" />
             </TableCell>
           </TableRow>
