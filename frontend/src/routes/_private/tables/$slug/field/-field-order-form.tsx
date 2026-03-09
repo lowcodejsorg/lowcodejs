@@ -316,7 +316,7 @@ export function FieldOrderForm({
           const trashedFields = g.fields.filter((f) => f.trashed);
           return {
             ...g,
-            fields: [...fields, ...trashedFields],
+            fields: [...fields, ...trashedFields].map((f) => ({ _id: f._id })),
           };
         }
         return g;
@@ -451,7 +451,9 @@ export function FieldManagementList({
   // Para tabelas, usa fieldOrderList
   const order = isGroupContext
     ? groupFields.flatMap((f) => f._id)
-    : table.fieldOrderList;
+    : visibilityKey === 'showInForm'
+      ? table.fieldOrderForm
+      : table.fieldOrderList;
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter(
@@ -827,7 +829,7 @@ export function FieldManagementList({
           const trashedFields = g.fields.filter((f) => f.trashed);
           return {
             ...g,
-            fields: [...fields, ...trashedFields],
+            fields: [...fields, ...trashedFields].map((f) => ({ _id: f._id })),
           };
         }
         return g;
@@ -865,8 +867,14 @@ export function FieldManagementList({
       visibility: table.visibility,
       style: table.style,
       collaboration: table.collaboration,
-      fieldOrderList: fields.flatMap((f) => f._id),
-      fieldOrderForm: table.fieldOrderForm,
+      fieldOrderList:
+        visibilityKey === 'showInForm'
+          ? table.fieldOrderList
+          : fields.flatMap((f) => f._id),
+      fieldOrderForm:
+        visibilityKey === 'showInForm'
+          ? fields.flatMap((f) => f._id)
+          : table.fieldOrderForm,
       administrators: table.administrators.flatMap((admin) => admin._id),
       fields: fields.flatMap((f) => f._id),
       methods: {

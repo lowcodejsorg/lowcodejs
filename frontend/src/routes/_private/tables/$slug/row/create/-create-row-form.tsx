@@ -47,8 +47,11 @@ function CreateRowFormContent({
   const navigate = useNavigate();
 
   const fields = React.useMemo(() => {
-    return table.fields.filter((f) => !f.trashed && f.showInForm);
-  }, [table.fields]);
+    const order = table.fieldOrderForm;
+    return table.fields
+      .filter((f) => !f.trashed && f.showInForm)
+      .sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+  }, [table.fields, table.fieldOrderForm]);
 
   const form = useAppForm({
     defaultValues: buildCreateRowDefaultValues(fields),

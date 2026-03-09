@@ -62,13 +62,13 @@ function UpdateRowFormContent({
   };
 
   const fields = React.useMemo(() => {
-    const order = table.fieldOrderList;
+    const order = table.fieldOrderForm;
     const orderedFields = table.fields
       .filter((f) => !f.trashed)
       .sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
 
     return orderedFields;
-  }, [table.fields, table.fieldOrderList]);
+  }, [table.fields, table.fieldOrderForm]);
 
   const form = useAppForm({
     defaultValues: buildUpdateRowDefaultValues(data, fields),
