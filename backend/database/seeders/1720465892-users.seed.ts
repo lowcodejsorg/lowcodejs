@@ -14,18 +14,21 @@ type Payload = BasePayload & {
 };
 
 export default async function Seed(): Promise<void> {
-  await User.deleteMany({});
+  // await User.deleteMany({});
 
   const groups = await UserGroup.find();
 
   const masterGroup = groups.find((g) => g.slug === E_ROLE.MASTER);
+
   const administratorGroup = groups.find(
     (g) => g.slug === E_ROLE.ADMINISTRATOR,
   );
   const managerGroup = groups.find((g) => g.slug === E_ROLE.MANAGER);
+
   const registeredGroup = groups.find((g) => g.slug === E_ROLE.REGISTERED);
 
   const password = await bcrypt.hash('10203040', 6);
+
   const payload: Payload[] = [
     {
       name: 'admin',
@@ -64,7 +67,17 @@ export default async function Seed(): Promise<void> {
       status: E_USER_STATUS.ACTIVE,
     },
   ];
-  await User.insertMany(payload);
 
+  // await User.insertMany(payload);
+
+  await User.bulkWrite(
+    payload.map(({ email, ...rest }) => ({
+      updateOne: {
+        filter: { email },
+        update: { $set: { email, ...rest } as any },
+        upsert: true,
+      },
+    })),
+  );
   console.info('🌱 \x1b[32m Users \x1b[0m');
 }
