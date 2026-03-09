@@ -25,6 +25,7 @@ describe('Menu Create Use Case', () => {
       slug: 'dashboard',
       type: 'PAGE',
       parent: null,
+      owner: 'test-user-id',
     });
 
     expect(result.isRight()).toBe(true);
@@ -43,6 +44,7 @@ describe('Menu Create Use Case', () => {
       type: 'EXTERNAL',
       url: 'https://google.com',
       parent: null,
+      owner: 'test-user-id',
     });
 
     expect(result.isRight()).toBe(true);
@@ -65,6 +67,7 @@ describe('Menu Create Use Case', () => {
       slug: 'existing',
       type: 'PAGE',
       parent: null,
+      owner: 'test-user-id',
     });
 
     expect(result.isLeft()).toBe(true);
@@ -80,6 +83,7 @@ describe('Menu Create Use Case', () => {
       slug: 'sub-menu',
       type: 'PAGE',
       parent: 'non-existent-id',
+      owner: 'test-user-id',
     });
 
     expect(result.isLeft()).toBe(true);
@@ -95,6 +99,7 @@ describe('Menu Create Use Case', () => {
       slug: 'table-menu',
       type: 'TABLE',
       parent: null,
+      owner: 'test-user-id',
     });
 
     expect(result.isLeft()).toBe(true);
@@ -114,6 +119,7 @@ describe('Menu Create Use Case', () => {
       slug: 'menu',
       type: 'PAGE',
       parent: null,
+      owner: 'test-user-id',
     });
 
     expect(result.isLeft()).toBe(true);
