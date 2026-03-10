@@ -65,7 +65,13 @@ function UpdateRowFormContent({
     const order = table.fieldOrderForm;
     const orderedFields = table.fields
       .filter((f) => !f.trashed)
-      .sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+      .sort((a, b) => {
+        const idxA = order.indexOf(a._id);
+        const idxB = order.indexOf(b._id);
+        return (
+          (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB)
+        );
+      });
 
     return orderedFields;
   }, [table.fields, table.fieldOrderForm]);

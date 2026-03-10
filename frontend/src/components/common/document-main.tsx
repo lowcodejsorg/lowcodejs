@@ -41,7 +41,7 @@ export function DocumentMain({
       </div>
 
       {rows.length ? (
-        <div className="divide-y divide-border/40">
+        <div>
           {rows.map((row, index) => {
             const leafId = getRowLeafId(row, categorySlug);
             const prevLeafId =

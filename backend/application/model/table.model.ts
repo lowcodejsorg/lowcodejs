@@ -18,6 +18,8 @@ const LayoutFields = new mongoose.Schema(
     startDate: { type: String, default: null },
     endDate: { type: String, default: null },
     color: { type: String, default: null },
+    participants: { type: String, default: null },
+    reminder: { type: String, default: null },
   },
   { _id: false },
 );
@@ -143,6 +145,8 @@ export const Schema = new mongoose.Schema(
         startDate: null,
         endDate: null,
         color: null,
+        participants: null,
+        reminder: null,
       },
     },
 

@@ -20,6 +20,8 @@ export interface CalendarResolvedFields {
   startField?: IField;
   endField?: IField;
   colorField?: IField;
+  participantsField?: IField;
+  reminderField?: IField;
 }
 
 export interface CalendarEventItem {
@@ -31,6 +33,7 @@ export interface CalendarEventItem {
   end: Date;
   color: string;
   colorLabel: string | null;
+  participants: Array<{ _id: string; name: string }>;
 }
 
 function firstValue(value: unknown): unknown {
@@ -59,6 +62,23 @@ export function resolveCalendarFields(
   fields: Array<IField>,
   layoutFields?: ILayoutFields | null,
 ): CalendarResolvedFields {
+  const startField =
+    resolveLayoutField(fields, layoutFields, 'startDate') ??
+    getFieldBySlug(fields, 'data-inicio', E_FIELD_TYPE.DATE) ??
+    getFirstFieldByType(fields, E_FIELD_TYPE.DATE);
+
+  const resolvedEnd =
+    resolveLayoutField(fields, layoutFields, 'endDate') ??
+    getFieldBySlug(fields, 'data-termino', E_FIELD_TYPE.DATE) ??
+    fields.find(
+      (f) =>
+        !f.trashed && f.type === E_FIELD_TYPE.DATE && f._id !== startField?._id,
+    );
+  const endField =
+    resolvedEnd && resolvedEnd._id !== startField?._id
+      ? resolvedEnd
+      : undefined;
+
   return {
     titleField:
       resolveLayoutField(
@@ -78,18 +98,8 @@ export function resolveCalendarFields(
       ) ??
       getFieldBySlug(fields, 'descricao', E_FIELD_TYPE.TEXT_LONG) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.TEXT_LONG),
-    startField:
-      resolveLayoutField(
-        fields,
-        layoutFields,
-        'startDate',
-        E_FIELD_TYPE.DATE,
-      ) ??
-      getFieldBySlug(fields, 'data-inicio', E_FIELD_TYPE.DATE) ??
-      getFirstFieldByType(fields, E_FIELD_TYPE.DATE),
-    endField:
-      resolveLayoutField(fields, layoutFields, 'endDate', E_FIELD_TYPE.DATE) ??
-      getFieldBySlug(fields, 'data-termino', E_FIELD_TYPE.DATE),
+    startField,
+    endField,
     colorField:
       resolveLayoutField(
         fields,
@@ -99,6 +109,12 @@ export function resolveCalendarFields(
       ) ??
       getFieldBySlug(fields, 'cor', E_FIELD_TYPE.DROPDOWN) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.DROPDOWN),
+    participantsField:
+      resolveLayoutField(fields, layoutFields, 'participants') ??
+      getFieldBySlug(fields, 'participantes', E_FIELD_TYPE.USER),
+    reminderField:
+      resolveLayoutField(fields, layoutFields, 'reminder') ??
+      getFieldBySlug(fields, 'lembrete', E_FIELD_TYPE.FIELD_GROUP),
   };
 }
 
@@ -197,6 +213,20 @@ export function normalizeCalendarEvents(
         : '';
       const { color, colorLabel } = resolveEventColor(row, resolved.colorField);
 
+      const rawParticipants = resolved.participantsField
+        ? row[resolved.participantsField.slug]
+        : null;
+      const participants: Array<{ _id: string; name: string }> = Array.isArray(
+        rawParticipants,
+      )
+        ? rawParticipants
+            .filter(
+              (p: unknown): p is { _id: string; name: string } =>
+                typeof p === 'object' && p !== null && 'name' in p,
+            )
+            .map((p) => ({ _id: String(p._id), name: String(p.name) }))
+        : [];
+
       return {
         row,
         rowId: row._id,
@@ -206,6 +236,7 @@ export function normalizeCalendarEvents(
         end,
         color,
         colorLabel,
+        participants,
       } satisfies CalendarEventItem;
     })
     .filter((event): event is CalendarEventItem => Boolean(event))
