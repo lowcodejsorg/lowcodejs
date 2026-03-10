@@ -98,6 +98,8 @@ function UserUpdateContent({
   const sidebar = useSidebar();
   const router = useRouter();
 
+  const [allowPasswordChange, setAllowPasswordChange] = React.useState(false);
+
   const goBack = (): void => {
     sidebar.setOpen(true);
     router.navigate({
@@ -121,10 +123,12 @@ function UserUpdateContent({
     },
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending') return;
+
+      const { password, ...rest } = value;
       await _update.mutateAsync({
-        ...value,
+        ...rest,
         _id: data._id,
-        ...(value.password !== '' && { password: value.password }),
+        ...(allowPasswordChange && password !== '' && { password }),
       });
     },
   });
@@ -140,6 +144,7 @@ function UserUpdateContent({
 
       form.reset();
       setMode('show');
+      setAllowPasswordChange(false);
       router.invalidate();
     },
     onError(error) {
@@ -193,6 +198,8 @@ function UserUpdateContent({
             form={form}
             isPending={isPending}
             mode={mode}
+            allowPasswordChange={allowPasswordChange}
+            onAllowPasswordChangeChange={setAllowPasswordChange}
           />
         </form>
       )}
@@ -213,6 +220,7 @@ function UserUpdateContent({
                   onClick={() => {
                     form.reset();
                     setMode('show');
+                    setAllowPasswordChange(false);
                   }}
                 >
                   <span>Cancelar</span>

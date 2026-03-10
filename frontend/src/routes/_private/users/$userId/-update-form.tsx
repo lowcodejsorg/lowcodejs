@@ -1,5 +1,7 @@
 import { UserIcon } from 'lucide-react';
 
+import { FieldLabel } from '@/components/ui/field';
+import { Switch } from '@/components/ui/switch';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_USER_STATUS } from '@/lib/constant';
 import type { ValueOf } from '@/lib/interfaces';
@@ -27,8 +29,16 @@ export const UpdateUserFormFields = withForm({
   props: {
     isPending: false,
     mode: 'show' as 'show' | 'edit',
+    allowPasswordChange: false,
+    onAllowPasswordChangeChange: (() => {}) as (value: boolean) => void,
   },
-  render: function Render({ form, isPending, mode }) {
+  render: function Render({
+    form,
+    isPending,
+    mode,
+    allowPasswordChange,
+    onAllowPasswordChangeChange,
+  }) {
     const isDisabled = mode === 'show' || isPending;
 
     return (
@@ -56,16 +66,68 @@ export const UpdateUserFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo Senha (opcional) */}
-        <form.AppField name="password">
-          {(field) => (
-            <field.FieldPassword
-              label="Senha (opcional)"
-              placeholder="Digite nova senha se quiser alterá-la"
-              disabled={isDisabled}
-            />
-          )}
-        </form.AppField>
+        {/* Switch Alterar Senha */}
+        <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+          <div className="space-y-0.5">
+            <FieldLabel>Alterar senha</FieldLabel>
+            <p className="text-sm text-muted-foreground">
+              Ative esta opção para atualizar a senha do usuário
+            </p>
+          </div>
+          <Switch
+            disabled={isDisabled}
+            checked={allowPasswordChange}
+            onCheckedChange={onAllowPasswordChangeChange}
+          />
+        </div>
+
+        {/* Campo Senha (condicional) */}
+        {allowPasswordChange && (
+          <form.AppField
+            name="password"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return 'Senha é obrigatória';
+                }
+                if (value.length < 6) {
+                  return 'Senha deve ter pelo menos 6 caracteres';
+                }
+                if (!/[A-Z]/.test(value)) {
+                  return 'Senha deve conter pelo menos uma letra maiúscula';
+                }
+                if (!/[a-z]/.test(value)) {
+                  return 'Senha deve conter pelo menos uma letra minúscula';
+                }
+                if (!/[0-9]/.test(value)) {
+                  return 'Senha deve conter pelo menos um número';
+                }
+                if (!/[!@#$%^&*(),.?":{}|<>]/.test(value)) {
+                  return 'Senha deve conter pelo menos um caractere especial';
+                }
+                return undefined;
+              },
+              onBlur: ({ value }) => {
+                if (!value || value.trim() === '') {
+                  return 'Senha é obrigatória';
+                }
+                if (value.length < 6) {
+                  return 'Senha deve ter pelo menos 6 caracteres';
+                }
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <field.FieldPassword
+                label="Nova senha"
+                placeholder="Digite a nova senha"
+                disabled={isDisabled}
+                required
+              />
+            )}
+          </form.AppField>
+        )}
 
         {/* Campo Status como Switch */}
         <form.AppField name="status">
