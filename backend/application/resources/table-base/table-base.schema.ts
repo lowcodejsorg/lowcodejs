@@ -62,6 +62,8 @@ export const TableLayoutFieldsSchema = z.object({
   startDate: z.string().nullable().default(null),
   endDate: z.string().nullable().default(null),
   color: z.string().nullable().default(null),
+  participants: z.string().nullable().default(null),
+  reminder: z.string().nullable().default(null),
 });
 
 export const TableMethodSchema = z.object({

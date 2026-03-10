@@ -7,7 +7,7 @@ export function resolveLayoutField(
   fields: Array<IField>,
   layoutFields: ILayoutFields | null | undefined,
   role: keyof ILayoutFields,
-  fallbackType: string,
+  fallbackType?: string,
 ): IField | undefined {
   const configuredId = layoutFields?.[role];
 
@@ -16,5 +16,9 @@ export function resolveLayoutField(
     if (found) return found;
   }
 
-  return fields.find((f) => f.type === fallbackType && !f.trashed);
+  if (fallbackType) {
+    return fields.find((f) => f.type === fallbackType && !f.trashed);
+  }
+
+  return undefined;
 }

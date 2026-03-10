@@ -61,6 +61,8 @@ export default class TableInMemoryRepository implements TableContractRepository 
         startDate: null,
         endDate: null,
         color: null,
+        participants: null,
+        reminder: null,
       },
       createdAt: new Date(),
       updatedAt: new Date(),

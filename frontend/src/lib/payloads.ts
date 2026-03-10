@@ -130,6 +130,8 @@ export type TableUpdatePayload = {
     startDate: string | null;
     endDate: string | null;
     color: string | null;
+    participants: string | null;
+    reminder: string | null;
   };
 };
 
