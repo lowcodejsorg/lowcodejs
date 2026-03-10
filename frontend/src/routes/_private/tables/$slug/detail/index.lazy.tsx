@@ -156,6 +156,8 @@ function TableUpdateContent({
         startDate: data.layoutFields?.startDate ?? '',
         endDate: data.layoutFields?.endDate ?? '',
         color: data.layoutFields?.color ?? '',
+        participants: data.layoutFields?.participants ?? '',
+        reminder: data.layoutFields?.reminder ?? '',
       },
     },
     // @ts-expect-error Zod Standard Schema type inference
@@ -196,6 +198,8 @@ function TableUpdateContent({
           startDate: value.layoutFields.startDate || null,
           endDate: value.layoutFields.endDate || null,
           color: value.layoutFields.color || null,
+          participants: value.layoutFields.participants || null,
+          reminder: value.layoutFields.reminder || null,
         },
       });
     },

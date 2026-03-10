@@ -247,6 +247,8 @@ export type ILayoutFields = {
   startDate: string | null;
   endDate: string | null;
   color: string | null;
+  participants: string | null;
+  reminder: string | null;
 };
 
 export type ITable = Merge<

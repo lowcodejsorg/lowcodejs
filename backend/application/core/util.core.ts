@@ -329,7 +329,21 @@ export async function buildTable(
   for (const [key, value] of Object.entries(table._schema)) {
     if (Array.isArray(value) && value[0]?.type === 'Embedded') {
       // Cria subdocument schema para campos embedded
-      const embeddedSchema = value[0].schema || {};
+      let embeddedSchema = value[0].schema || {};
+
+      // Fallback: se o schema embedded estiver vazio, usa o _schema do grupo
+      if (
+        Object.keys(embeddedSchema).length === 0 &&
+        Array.isArray(table.groups)
+      ) {
+        const group = table.groups.find(
+          (g: IGroupConfiguration) => g.slug === key,
+        );
+        if (group?._schema) {
+          embeddedSchema = group._schema;
+        }
+      }
+
       const subSchemaDefinition: Record<string, any> = {};
 
       for (const [subKey, subValue] of Object.entries(embeddedSchema)) {

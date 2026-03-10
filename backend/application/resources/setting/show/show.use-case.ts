@@ -22,7 +22,7 @@ function getKanbanTemplateEntry(): Pick<
 > {
   return {
     _id: KANBAN_TEMPLATE_ID,
-    name: 'Kanban (Tarefas)',
+    name: 'Kanban',
     slug: 'kanban-tarefas',
     description: 'Modelo predefinido de tarefas em Kanban',
   };

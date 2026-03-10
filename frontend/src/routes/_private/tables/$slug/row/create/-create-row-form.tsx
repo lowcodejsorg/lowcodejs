@@ -50,7 +50,13 @@ function CreateRowFormContent({
     const order = table.fieldOrderForm;
     return table.fields
       .filter((f) => !f.trashed && f.showInForm)
-      .sort((a, b) => order.indexOf(a._id) - order.indexOf(b._id));
+      .sort((a, b) => {
+        const idxA = order.indexOf(a._id);
+        const idxB = order.indexOf(b._id);
+        return (
+          (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB)
+        );
+      });
   }, [table.fields, table.fieldOrderForm]);
 
   const form = useAppForm({

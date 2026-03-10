@@ -2,7 +2,6 @@ import { format, isSameDay, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 import { Button } from '@/components/ui/button';
-import { formatEventTimeRange } from '@/lib/calendar-helpers';
 import type { CalendarEventItem } from '@/lib/calendar-helpers';
 
 interface CalendarAgendaViewProps {
@@ -52,14 +51,38 @@ export function CalendarAgendaView({
                   />
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{event.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {formatEventTimeRange(event)}
-                    </div>
-                    {event.description && (
-                      <div className="mt-1 line-clamp-2 text-xs text-muted-foreground">
-                        {event.description}
+                    <div className="mt-0.5 space-y-0.5 text-xs text-muted-foreground">
+                      <div>
+                        <span className="font-medium text-foreground/70">
+                          Data:
+                        </span>{' '}
+                        {format(event.start, 'dd/MM/yyyy', { locale: ptBR })}
+                        {', '}
+                        {format(event.start, 'HH:mm')}
+                        {' - '}
+                        {isSameDay(event.start, event.end)
+                          ? format(event.end, 'HH:mm')
+                          : format(event.end, 'dd/MM/yyyy HH:mm')}
                       </div>
-                    )}
+                      {event.participants.length > 0 && (
+                        <div>
+                          <span className="font-medium text-foreground/70">
+                            Participantes:
+                          </span>{' '}
+                          {event.participants
+                            .map((p) => p.name.trim())
+                            .join(', ')}
+                        </div>
+                      )}
+                      {event.description && (
+                        <div className="line-clamp-2">
+                          <span className="font-medium text-foreground/70">
+                            Descrição:
+                          </span>{' '}
+                          {event.description}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Button>

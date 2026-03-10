@@ -10,7 +10,7 @@ import {
   E_TABLE_VISIBILITY,
   TABLE_NAME_REGEX,
 } from '@/lib/constant';
-import type { IField, ITable } from '@/lib/interfaces';
+import type { IField, ILayoutFields, ITable } from '@/lib/interfaces';
 import { getAllowedTableStyles } from '@/lib/table-style';
 
 const LayoutFieldsSchema = z.object({
@@ -21,6 +21,8 @@ const LayoutFieldsSchema = z.object({
   startDate: z.string().default(''),
   endDate: z.string().default(''),
   color: z.string().default(''),
+  participants: z.string().default(''),
+  reminder: z.string().default(''),
 });
 
 // Schema estendido com campos de UI (logoFile)
@@ -63,6 +65,8 @@ export const TableUpdateSchema = z.object({
     startDate: '',
     endDate: '',
     color: '',
+    participants: '',
+    reminder: '',
   }),
 });
 
@@ -86,6 +90,8 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
     startDate: '',
     endDate: '',
     color: '',
+    participants: '',
+    reminder: '',
   },
 };
 
@@ -133,14 +139,7 @@ export const UpdateTableFormFields = withForm({
     const LAYOUT_ROLE_CONFIG: Record<
       string,
       Array<{
-        role:
-          | 'title'
-          | 'description'
-          | 'cover'
-          | 'category'
-          | 'startDate'
-          | 'endDate'
-          | 'color';
+        role: keyof ILayoutFields;
         label: string;
         type: string;
       }>
@@ -185,6 +184,16 @@ export const UpdateTableFormFields = withForm({
         { role: 'startDate', label: 'Data de início', type: E_FIELD_TYPE.DATE },
         { role: 'endDate', label: 'Data de término', type: E_FIELD_TYPE.DATE },
         { role: 'color', label: 'Cor', type: E_FIELD_TYPE.DROPDOWN },
+        {
+          role: 'participants',
+          label: 'Participantes',
+          type: E_FIELD_TYPE.USER,
+        },
+        {
+          role: 'reminder',
+          label: 'Lembrete',
+          type: E_FIELD_TYPE.FIELD_GROUP,
+        },
       ],
     };
 

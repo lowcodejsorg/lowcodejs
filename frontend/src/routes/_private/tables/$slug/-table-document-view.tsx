@@ -212,6 +212,7 @@ export function TableDocumentView({
         style={{ width: isSidebarOpen ? sidebarWidth : 40 }}
       >
         <DocumentSidebar
+          title={categoryField?.name ?? 'Índice'}
           subtitle={`Por: ${categoryField?.name}`}
           nodes={categoryTree}
           selectedId={selectedCategoryId}

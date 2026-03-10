@@ -99,6 +99,14 @@ export const TableUpdateSchema: FastifySchema = {
         default: null,
         description: 'Default sort order for table records',
       },
+      methods: {
+        type: 'object',
+        description: 'Table methods configuration',
+      },
+      layoutFields: {
+        type: 'object',
+        description: 'Layout fields configuration',
+      },
     },
   },
   response: {
