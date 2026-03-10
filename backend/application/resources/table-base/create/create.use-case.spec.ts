@@ -36,9 +36,9 @@ describe('Table Create Use Case', () => {
       expect(result.value.name).toBe('Clientes');
       expect(result.value.slug).toBe('clientes');
 
-      // Deve criar 5 campos nativos com tipos corretos
+      // Deve criar 5 campos nativos + 1 campo "Nome" padrão
       const fields = result.value.fields;
-      expect(fields).toHaveLength(5);
+      expect(fields).toHaveLength(6);
 
       const idField = fields.find((f) => f.slug === '_id');
       expect(idField).toBeDefined();
@@ -69,6 +69,13 @@ describe('Table Create Use Case', () => {
       expect(trashedAtField!.type).toBe(E_FIELD_TYPE.TRASHED_AT);
       expect(trashedAtField!.native).toBe(true);
       expect(trashedAtField!.locked).toBe(true);
+
+      const nomeField = fields.find((f) => f.slug === 'nome');
+      expect(nomeField).toBeDefined();
+      expect(nomeField!.type).toBe(E_FIELD_TYPE.TEXT_SHORT);
+      expect(nomeField!.native).toBe(false);
+      expect(nomeField!.locked).toBe(false);
+      expect(nomeField!.required).toBe(true);
     }
   });
 
