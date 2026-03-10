@@ -56,11 +56,14 @@ function RouteComponentContent(): React.JSX.Element {
   const isUploading = useIsUploading();
 
   const _create = useCreateTable({
-    onSuccess() {
+    onSuccess(response) {
       toastSuccess('Tabela criada', 'A tabela foi criada com sucesso');
 
       form.reset();
-      navigate({ to: '/tables', search: { page: 1, perPage: 50 } });
+      navigate({
+        to: '/tables/$slug',
+        params: { slug: response.slug },
+      });
       sidebar.setOpen(true);
     },
     onError(error) {
