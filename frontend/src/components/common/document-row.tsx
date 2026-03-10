@@ -1,8 +1,13 @@
 import { useParams, useRouter } from '@tanstack/react-router';
-import { PencilIcon, PlusIcon } from 'lucide-react';
+import { ChevronDownIcon, PencilIcon, PlusIcon } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '../ui/button';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from '../ui/collapsible';
 
 import { DocumentHeadingRow } from './document-heading-row';
 import { TableRowCategoryCell } from './table-row-category-cell';
@@ -32,6 +37,14 @@ interface DocumentRowProps {
   headingLevel?: number;
   categorySlug: string;
   showHeading?: boolean;
+}
+
+function hasFieldValue(field: IField, row: IRow): boolean {
+  const value = row[field.slug];
+  if (value == null) return false;
+  if (typeof value === 'string' && value.trim() === '') return false;
+  if (Array.isArray(value) && value.length === 0) return false;
+  return true;
 }
 
 function renderFieldCell(
@@ -244,10 +257,39 @@ export function DocumentRow({
               </section>
             );
           })}
-          {extraFields.length > 0 &&
-            extraFields.map((field) => (
-              <div key={field._id}>{renderFieldCell(field, row, slug)}</div>
-            ))}
+          {((): React.JSX.Element | null => {
+            const visibleExtra = extraFields.filter((field) =>
+              hasFieldValue(field, row),
+            );
+            if (visibleExtra.length === 0) return null;
+            if (visibleExtra.length === 1)
+              return (
+                <div>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {visibleExtra[0].name}
+                  </span>
+                  {renderFieldCell(visibleExtra[0], row, slug)}
+                </div>
+              );
+            return (
+              <Collapsible>
+                <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors [&[data-state=open]>svg]:rotate-180">
+                  <ChevronDownIcon className="size-3.5 transition-transform" />
+                  Mais informações
+                </CollapsibleTrigger>
+                <CollapsibleContent className="space-y-1 mt-1.5">
+                  {visibleExtra.map((field) => (
+                    <div key={field._id}>
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {field.name}
+                      </span>
+                      {renderFieldCell(field, row, slug)}
+                    </div>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })()}
         </div>
       </div>
     </article>

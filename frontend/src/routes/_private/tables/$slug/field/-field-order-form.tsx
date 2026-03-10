@@ -268,9 +268,11 @@ export function FieldOrderForm({
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter((f) => !f.trashed);
 
-  const sorted = [...activeFields].sort(
-    (a, b) => order.indexOf(a._id) - order.indexOf(b._id),
-  );
+  const sorted = [...activeFields].sort((a, b) => {
+    const idxA = order.indexOf(a._id);
+    const idxB = order.indexOf(b._id);
+    return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+  });
 
   const [fields, setFields] = useState<Array<IField>>(sorted);
   const [hasChanges, setHasChanges] = useState(false);
@@ -460,9 +462,11 @@ export function FieldManagementList({
     (f) => !f.trashed && !(excludeNative && f.native),
   );
 
-  const sorted = [...activeFields].sort(
-    (a, b) => order.indexOf(a._id) - order.indexOf(b._id),
-  );
+  const sorted = [...activeFields].sort((a, b) => {
+    const idxA = order.indexOf(a._id);
+    const idxB = order.indexOf(b._id);
+    return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+  });
 
   const [fields, setFields] = useState<Array<IField>>(sorted);
 

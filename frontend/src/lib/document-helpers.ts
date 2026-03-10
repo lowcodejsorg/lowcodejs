@@ -11,8 +11,11 @@ export type DocBlock = {
 export type CatNode = { id: string; label: string; children?: Array<CatNode> };
 
 export function headerSorter(order: Array<string>) {
-  return (a: IField, b: IField): number =>
-    order.indexOf(a._id) - order.indexOf(b._id);
+  return (a: IField, b: IField): number => {
+    const idxA = order.indexOf(a._id);
+    const idxB = order.indexOf(b._id);
+    return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+  };
 }
 
 export function firstCategoryField(

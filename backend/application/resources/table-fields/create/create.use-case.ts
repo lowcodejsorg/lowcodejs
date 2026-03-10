@@ -110,6 +110,8 @@ export default class TableFieldCreateUseCase {
         groups,
         owner: table.owner._id,
         administrators: table.administrators.flatMap((a) => a._id),
+        fieldOrderList: [...(table.fieldOrderList ?? []), field._id],
+        fieldOrderForm: [...(table.fieldOrderForm ?? []), field._id],
       });
 
       await buildTable({

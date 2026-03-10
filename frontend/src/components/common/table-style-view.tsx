@@ -75,13 +75,20 @@ export function TableStyleViewDropdown({
     if (!table.data) return;
 
     update.mutate({
-      ...table.data,
       slug,
-      fields: table.data.fields.map((f) => f._id),
-      style,
-      administrators: table.data.administrators.flatMap((a) => a._id),
+      name: table.data.name,
+      description: table.data.description ?? null,
       logo: table.data.logo?._id ?? null,
-    } as any);
+      style,
+      visibility: table.data.visibility,
+      collaboration: table.data.collaboration,
+      administrators: table.data.administrators.flatMap((a) => a._id),
+      fieldOrderList: table.data.fieldOrderList ?? [],
+      fieldOrderForm: table.data.fieldOrderForm ?? [],
+      order: table.data.order?.field ? table.data.order : null,
+      methods: table.data.methods,
+      layoutFields: table.data.layoutFields,
+    });
   };
 
   const currentStyle = table.data?.style ?? E_TABLE_STYLE.LIST;

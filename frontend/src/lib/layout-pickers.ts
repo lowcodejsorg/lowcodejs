@@ -6,6 +6,8 @@ export function HeaderFilter(field: IField): boolean {
 
 export function HeaderSorter(order: Array<string>) {
   return function (a: IField, b: IField): number {
-    return order.indexOf(a._id) - order.indexOf(b._id);
+    const idxA = order.indexOf(a._id);
+    const idxB = order.indexOf(b._id);
+    return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
   };
 }

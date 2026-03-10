@@ -10,7 +10,7 @@ let sut: SettingShowUseCase;
 describe('Setting Show Use Case', () => {
   const kanbanTemplate = {
     _id: 'KANBAN_TEMPLATE',
-    name: 'Kanban (Tarefas)',
+    name: 'Kanban',
     slug: 'kanban-tarefas',
     description: 'Modelo predefinido de tarefas em Kanban',
   };

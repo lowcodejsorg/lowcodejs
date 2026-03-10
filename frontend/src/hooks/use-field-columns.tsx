@@ -167,7 +167,13 @@ export function useFieldColumns({
   return React.useMemo(() => {
     const sorted = fields
       .filter((f) => f.showInList && !f.trashed)
-      .sort((a, b) => fieldOrder.indexOf(a._id) - fieldOrder.indexOf(b._id));
+      .sort((a, b) => {
+        const idxA = fieldOrder.indexOf(a._id);
+        const idxB = fieldOrder.indexOf(b._id);
+        return (
+          (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB)
+        );
+      });
 
     return sorted.map(
       (field): ColumnDef<IRow, any> => ({
