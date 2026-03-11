@@ -23,6 +23,7 @@ export const TableStyleSchema = z
     E_TABLE_STYLE.KANBAN,
     E_TABLE_STYLE.FORUM,
     E_TABLE_STYLE.CALENDAR,
+    E_TABLE_STYLE.GANTT,
   ])
   .default(E_TABLE_STYLE.LIST);
 

@@ -166,7 +166,10 @@ export function getAllowedTableStyles(
   if (canShowCard) styles.push(E_TABLE_STYLE.CARD);
   if (canShowMosaic) styles.push(E_TABLE_STYLE.MOSAIC);
 
-  if (isKanbanTemplate(table)) styles.push(E_TABLE_STYLE.KANBAN);
+  if (isKanbanTemplate(table)) {
+    styles.push(E_TABLE_STYLE.KANBAN);
+    styles.push(E_TABLE_STYLE.GANTT);
+  }
   if (isForumTemplate(table)) styles.push(E_TABLE_STYLE.FORUM);
   if (isCalendarTemplate(table)) styles.push(E_TABLE_STYLE.CALENDAR);
 

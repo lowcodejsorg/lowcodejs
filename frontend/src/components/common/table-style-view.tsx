@@ -1,5 +1,6 @@
 import {
   CalendarIcon,
+  GanttChartIcon,
   LayoutDashboard,
   LayoutDashboardIcon,
   LayoutListIcon,
@@ -105,6 +106,7 @@ export function TableStyleViewDropdown({
   const canShowKanban = allowedStyles.includes(E_TABLE_STYLE.KANBAN);
   const canShowForum = allowedStyles.includes(E_TABLE_STYLE.FORUM);
   const canShowCalendar = allowedStyles.includes(E_TABLE_STYLE.CALENDAR);
+  const canShowGantt = allowedStyles.includes(E_TABLE_STYLE.GANTT);
 
   return (
     <DropdownMenu
@@ -154,6 +156,10 @@ export function TableStyleViewDropdown({
           {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.CALENDAR && (
               <CalendarIcon className="size-4" />
+            )}
+          {table.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.GANTT && (
+              <GanttChartIcon className="size-4" />
             )}
 
           <span>Exibição</span>
@@ -243,6 +249,17 @@ export function TableStyleViewDropdown({
               >
                 <CalendarIcon className="size-4" />
                 <span>Calendario</span>
+              </DropdownMenuRadioItem>
+            )}
+
+            {canShowGantt && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value={E_TABLE_STYLE.GANTT}
+                onClick={() => handleStyleChange(E_TABLE_STYLE.GANTT)}
+              >
+                <GanttChartIcon className="size-4" />
+                <span>Gantt</span>
               </DropdownMenuRadioItem>
             )}
           </DropdownMenuRadioGroup>
