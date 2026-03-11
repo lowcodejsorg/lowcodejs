@@ -109,6 +109,7 @@ export const E_TABLE_STYLE = {
   KANBAN: 'KANBAN',
   FORUM: 'FORUM',
   CALENDAR: 'CALENDAR',
+  GANTT: 'GANTT',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
