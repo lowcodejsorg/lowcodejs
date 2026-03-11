@@ -1,9 +1,6 @@
 import { addDays } from 'date-fns';
 import React from 'react';
 
-import type { FieldMap } from '@/lib/kanban-types';
-import type { IRow } from '@/lib/interfaces';
-
 import type {
   CreateDragState,
   DragMode,
@@ -12,6 +9,9 @@ import type {
   GroupYRange,
 } from './gantt-types';
 import { ROW_HEIGHT } from './gantt-types';
+
+import type { IRow } from '@/lib/interfaces';
+import type { FieldMap } from '@/lib/kanban-types';
 
 // ─── Hook: drag de barras (mover, resize, troca de grupo) ───
 
@@ -175,7 +175,15 @@ export function useBarDrag({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragState, dayWidth, fields, tableSlug, groupYRanges, rowPositionMap, onCommit]);
+  }, [
+    dragState,
+    dayWidth,
+    fields,
+    tableSlug,
+    groupYRanges,
+    rowPositionMap,
+    onCommit,
+  ]);
 
   return { dragState, dragDelta, dragDeltaY, handleBarMouseDown };
 }
@@ -193,10 +201,7 @@ interface UseCreateDragOptions {
 
 interface UseCreateDragReturn {
   createDrag: CreateDragState | null;
-  handleTimelineMouseDown: (
-    e: React.MouseEvent,
-    groupOptionId: string,
-  ) => void;
+  handleTimelineMouseDown: (e: React.MouseEvent, groupOptionId: string) => void;
 }
 
 export function useCreateDrag({
@@ -296,7 +301,15 @@ export function useCreateDrag({
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [createDrag, dayWidth, viewStart, fields, tableSlug, timelineRef, onCreate]);
+  }, [
+    createDrag,
+    dayWidth,
+    viewStart,
+    fields,
+    tableSlug,
+    timelineRef,
+    onCreate,
+  ]);
 
   return { createDrag, handleTimelineMouseDown };
 }

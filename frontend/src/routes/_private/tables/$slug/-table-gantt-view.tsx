@@ -23,7 +23,11 @@ import {
   useBarDrag,
   useCreateDrag,
 } from '@/components/common/gantt';
-import type { GanttGroup, GanttRow, ZoomLevel } from '@/components/common/gantt';
+import type {
+  GanttGroup,
+  GanttRow,
+  ZoomLevel,
+} from '@/components/common/gantt';
 import { KanbanRowDialog } from '@/components/common/kanban';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
