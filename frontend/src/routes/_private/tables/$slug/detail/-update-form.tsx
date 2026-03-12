@@ -41,6 +41,7 @@ export const TableUpdateSchema = z.object({
     E_TABLE_STYLE.KANBAN,
     E_TABLE_STYLE.FORUM,
     E_TABLE_STYLE.CALENDAR,
+    E_TABLE_STYLE.GANTT,
   ]),
   visibility: z.enum([
     E_TABLE_VISIBILITY.PUBLIC,

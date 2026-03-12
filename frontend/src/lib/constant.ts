@@ -91,6 +91,7 @@ export const E_TABLE_STYLE = {
   KANBAN: 'KANBAN',
   FORUM: 'FORUM',
   CALENDAR: 'CALENDAR',
+  GANTT: 'GANTT',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -243,6 +244,7 @@ export const TABLE_STYLE_OPTIONS = [
   { label: 'Kanban', value: E_TABLE_STYLE.KANBAN },
   { label: 'Forum', value: E_TABLE_STYLE.FORUM },
   { label: 'Calendario', value: E_TABLE_STYLE.CALENDAR },
+  { label: 'Gantt', value: E_TABLE_STYLE.GANTT },
 ] as const;
 
 export const USER_GROUP_MAPPER = {

@@ -14,6 +14,7 @@ import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
 import { TableForumViewSkeleton } from './-table-forum-view-skeleton';
+import { TableGanttViewSkeleton } from './-table-gantt-view-skeleton';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
 import { TableKanbanViewSkeleton } from './-table-kanban-view-skeleton';
 import { TableListViewSkeleton } from './-table-list-view-skeleton';
@@ -119,6 +120,15 @@ const VIEW_MAP: Record<
     ),
     extraProps: true,
   },
+  [E_TABLE_STYLE.GANTT]: {
+    skeleton: TableGanttViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-gantt-view').then((m) => ({
+        default: m.TableGanttView,
+      })),
+    ),
+    extraProps: true,
+  },
 };
 
 function RouteComponent(): React.JSX.Element {
@@ -140,7 +150,8 @@ function RouteComponent(): React.JSX.Element {
     tableStyle === E_TABLE_STYLE.KANBAN ||
     tableStyle === E_TABLE_STYLE.DOCUMENT ||
     tableStyle === E_TABLE_STYLE.FORUM ||
-    tableStyle === E_TABLE_STYLE.CALENDAR;
+    tableStyle === E_TABLE_STYLE.CALENDAR ||
+    tableStyle === E_TABLE_STYLE.GANTT;
   const rowsSearch = React.useMemo(() => {
     const base = shouldDisablePagination
       ? {
