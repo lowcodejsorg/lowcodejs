@@ -4,7 +4,12 @@ import { MongooseConnect } from '@config/database.config';
 
 async function seed(): Promise<void> {
   await MongooseConnect();
-  let seeders = await glob(process.cwd() + '/database/seeders/*.seed.{js,ts}');
+  const base = process.cwd().replace(/\\/g, '/');
+  const [ts, js] = await Promise.all([
+    glob(base + '/database/seeders/*.seed.ts'),
+    glob(base + '/database/seeders/*.seed.js'),
+  ]);
+  let seeders = [...ts, ...js];
 
   seeders = seeders.sort((a, b) => {
     return a.localeCompare(b);

@@ -32,6 +32,7 @@ import { Input } from '@/components/ui/input';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
 
 interface SortableItemProps {
@@ -456,7 +457,15 @@ export function FieldManagementList({
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter(
-    (f) => !f.trashed && !(excludeNative && f.native),
+    //Comentado por Vanessa
+    // (f) => !f.trashed && !(excludeNative && f.native)
+    (f) =>
+      !f.trashed &&
+      !(excludeNative && f.native) &&
+      // [TASK] Ocultar campos "Lixeira" e "Enviado para lixeira em" da tela Gerenciar Campos
+      f.type !== E_FIELD_TYPE.TRASHED &&
+      f.type !== E_FIELD_TYPE.TRASHED_AT,
+    
   );
 
   const sorted = [...activeFields].sort(
