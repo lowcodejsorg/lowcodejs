@@ -5,7 +5,9 @@
       "Bash(npx shadcn@latest:*)",
       "Bash(npx tsc:*)",
       "Bash(node:*)",
-      "Bash(cd /home/indio/Desktop/low-code-js/backend && npm run test:unit -- --run application/resources/table-base/create/create.use-case.spec.ts 2>&1)"
+      "Bash(cd /home/indio/Desktop/low-code-js/backend && npm run test:unit -- --run application/resources/table-base/create/create.use-case.spec.ts 2>&1)",
+      "Bash(grep:*)",
+      "Bash(cd:*)"
     ]
   }
 }

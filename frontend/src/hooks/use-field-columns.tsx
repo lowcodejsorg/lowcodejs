@@ -28,7 +28,7 @@ function RenderCell({
   row: IRow;
   tableSlug: string;
 }): React.JSX.Element {
-  if (!(field.slug in row)) {
+  if (!field || !(field.slug in row)) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 

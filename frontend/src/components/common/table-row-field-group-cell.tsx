@@ -31,6 +31,8 @@ export function TableRowFieldGroupCell({
   tableSlug,
   table: tableProp,
 }: TableRowFieldGroupCellProps): React.JSX.Element {
+  if (!field) return <span className="text-muted-foreground text-sm">-</span>;
+
   const groupSlug = field.group?.slug;
 
   // Usa useReadTable como fallback quando table não é passada
@@ -38,8 +40,8 @@ export function TableRowFieldGroupCell({
   const table = tableProp ?? tableQuery.data;
 
   // Busca os campos do grupo em groups
-  const group: IGroupConfiguration | undefined = table?.groups.find(
-    (g) => g.slug === groupSlug,
+  const group: IGroupConfiguration | undefined = table?.groups?.find(
+    (g) => g?.slug === groupSlug,
   );
 
   if (!groupSlug || !group) {
@@ -54,7 +56,7 @@ export function TableRowFieldGroupCell({
   }
 
   const groupFields = group.fields.filter(
-    (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
+    (f): f is IField => !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
   );
 
   return (
@@ -94,7 +96,7 @@ function RenderGroupFieldCell({
   row: IRow;
   tableSlug: string;
 }): React.JSX.Element {
-  if (!(field.slug in row)) {
+  if (!field || !(field.slug in row)) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
