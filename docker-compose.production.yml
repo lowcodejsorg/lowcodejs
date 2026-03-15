@@ -4,6 +4,8 @@ services:
   mongo:
     image: mongo:latest
     restart: unless-stopped
+    mem_limit: 256m
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.1"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
@@ -11,6 +13,11 @@ services:
       - mongo-volume:/data/db
     networks:
       - traefik-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.runCommand('ping')"]
       interval: 10s
@@ -20,6 +27,7 @@ services:
 
   api:
     image: ${DOCKER_USERNAME}/lowcodejs-api:${ENVIRONMENT}
+    mem_limit: 256m
     environment:
       NODE_ENV: production
       PORT: 3000
@@ -47,6 +55,11 @@ services:
       LOGO_LARGE_URL: ${LOGO_LARGE_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/logo-large.webp}
       PAGINATION_PER_PAGE: ${PAGINATION_PER_PAGE:-20}
     restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     volumes:
       - storage-api-volume:/app/_storage
     depends_on:
@@ -69,6 +82,7 @@ services:
   app:
     image: ${DOCKER_USERNAME}/lowcodejs-app:${ENVIRONMENT}
     restart: unless-stopped
+    mem_limit: 256m
     environment:
       #VITE_API_BASE_URL: https://api.${ENVIRONMENT}.lowcodejs.org
       VITE_API_BASE_URL: ${VITE_API_BASE_URL:-https://api.${ENVIRONMENT}.lowcodejs.org}
@@ -80,12 +94,17 @@ services:
       - api
     networks:
       - traefik-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+      interval: 60s
+      timeout: 15s
+      retries: 5
+      start_period: 120s
     labels:
       - "traefik.enable=true"
       #- "traefik.http.routers.${ENVIRONMENT}-app.rule=Host(`${ENVIRONMENT}.lowcodejs.org`)"
