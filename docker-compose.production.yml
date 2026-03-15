@@ -5,7 +5,7 @@ services:
     image: mongo:latest
     restart: unless-stopped
     mem_limit: 512m
-    command: ["mongod", "--wiredTigerCacheSizeGB", "0.1"]
+    command: ["mongod", "--wiredTigerCacheSizeGB", "0.25"]
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${DB_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${DB_PASSWORD}
