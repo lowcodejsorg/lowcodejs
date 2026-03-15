@@ -35,6 +35,13 @@ export function TableRowFieldGroupCell({
 
   const groupSlug = field.group?.slug;
 
+  console.log('Renderizando TableRowFieldGroupCell', {
+    fieldSlug: field.slug,
+    groupSlug,
+    rowId: row._id,
+    tableSlug,
+  });
+
   // Usa useReadTable como fallback quando table não é passada
   const tableQuery = useReadTable({ slug: tableSlug });
   const table = tableProp ?? tableQuery.data;
@@ -48,7 +55,7 @@ export function TableRowFieldGroupCell({
     return <span className="text-muted-foreground text-sm">-</span>;
   }
 
-  const groupData = row[field.slug] ?? [];
+  const groupData = row?.[field.slug] ?? [];
   const total = groupData.length || 0;
 
   if (total === 0) {
@@ -59,6 +66,12 @@ export function TableRowFieldGroupCell({
     (f): f is IField =>
       !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
   );
+
+  console.log('Campos do grupo encontrados', {
+    groupSlug,
+    groupFields: groupFields.map((f) => f.slug),
+    total,
+  });
 
   return (
     <div className="flex flex-col gap-2">
