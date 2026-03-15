@@ -65,7 +65,7 @@ jobs:
           script: mkdir -p /home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}
 
       - name: Copy docker-compose to VPS
-        uses: appleboy/scp-action@v0.1.9
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
@@ -74,7 +74,7 @@ jobs:
           target: "/home/${{ secrets.VPS_USER }}/deployments/${{ inputs.branch }}"
 
       - name: Copy storage files to VPS
-        uses: appleboy/scp-action@v0.1.9
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
