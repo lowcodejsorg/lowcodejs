@@ -51,7 +51,7 @@ export function TableRowRelationshipField({
   }, [searchQuery]);
 
   const { data, isLoading } = useRelationshipRowsReadPaginated({
-    tableSlug: relConfig?.table.slug ?? '',
+    tableSlug: relConfig?.table?.slug ?? '',
     fieldSlug: field.slug,
     search: debouncedQuery,
     page: 1,
@@ -59,7 +59,7 @@ export function TableRowRelationshipField({
     enabled: Boolean(relConfig),
   });
 
-  if (!relConfig) {
+  if (!relConfig || !relConfig.field || !relConfig.table) {
     return (
       <Field>
         <FieldLabel>{field.name}</FieldLabel>
