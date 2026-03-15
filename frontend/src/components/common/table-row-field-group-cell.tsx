@@ -56,7 +56,8 @@ export function TableRowFieldGroupCell({
   }
 
   const groupFields = group.fields.filter(
-    (f): f is IField => !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
+    (f): f is IField =>
+      !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
   );
 
   return (
