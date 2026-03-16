@@ -26,7 +26,6 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +34,7 @@ import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
+import { toastError, toastSuccess } from '@/lib/toast';
 
 interface SortableItemProps {
   field: IField;
@@ -295,9 +295,11 @@ export function FieldOrderForm({
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter((f) => !f.trashed);
 
-  const sorted = [...activeFields].sort(
-    (a, b) => order.indexOf(a._id) - order.indexOf(b._id),
-  );
+  const sorted = [...activeFields].sort((a, b) => {
+    const idxA = order.indexOf(a._id);
+    const idxB = order.indexOf(b._id);
+    return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+  });
 
   const [fields, setFields] = useState<Array<IField>>(sorted);
   const [hasChanges, setHasChanges] = useState(false);
@@ -312,13 +314,12 @@ export function FieldOrderForm({
   const update = useUpdateTable({
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.tables.detail(table.slug), data);
-      toast.success('Ordem atualizada com sucesso');
+      toastSuccess('Ordem atualizada com sucesso');
       setHasChanges(false);
       onSuccess?.();
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar ordem dos campos');
+    onError: () => {
+      toastError('Erro ao atualizar ordem dos campos');
     },
   });
 
@@ -344,7 +345,7 @@ export function FieldOrderForm({
           const trashedFields = g.fields.filter((f) => f.trashed);
           return {
             ...g,
-            fields: [...fields, ...trashedFields],
+            fields: [...fields, ...trashedFields].map((f) => ({ _id: f._id })),
           };
         }
         return g;
@@ -479,7 +480,9 @@ export function FieldManagementList({
   // Para tabelas, usa fieldOrderList
   const order = isGroupContext
     ? groupFields.flatMap((f) => f._id)
-    : table.fieldOrderList;
+    : visibilityKey === 'showInForm'
+      ? table.fieldOrderForm
+      : table.fieldOrderList;
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter(
@@ -494,9 +497,11 @@ export function FieldManagementList({
     
   );
 
-  const sorted = [...activeFields].sort(
-    (a, b) => order.indexOf(a._id) - order.indexOf(b._id),
-  );
+  const sorted = [...activeFields].sort((a, b) => {
+    const idxA = order.indexOf(a._id);
+    const idxB = order.indexOf(b._id);
+    return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+  });
 
   const [fields, setFields] = useState<Array<IField>>(sorted);
 
@@ -524,12 +529,11 @@ export function FieldManagementList({
   const updateTable = useUpdateTable({
     onSuccess: (data) => {
       queryClient.setQueryData(queryKeys.tables.detail(table.slug), data);
-      toast.success('Ordem atualizada com sucesso');
+      toastSuccess('Ordem atualizada com sucesso');
       setHasChanges(false);
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar ordem dos campos');
+    onError: () => {
+      toastError('Erro ao atualizar ordem dos campos');
     },
   });
 
@@ -541,10 +545,9 @@ export function FieldManagementList({
       field: IField;
       newValue: boolean;
     }) => {
-      const route = '/tables/'
-        .concat(table.slug)
-        .concat('/fields/')
-        .concat(field._id);
+      const route = groupSlug
+        ? `/tables/${table.slug}/groups/${groupSlug}/fields/${field._id}`
+        : `/tables/${table.slug}/fields/${field._id}`;
 
       // Build full payload as API requires complete field data
       const hasRelationship = field.relationship !== null;
@@ -681,15 +684,14 @@ export function FieldManagementList({
         showInDetail: 'detalhes',
       };
       const visibilityLabel = visibilityLabels[visibilityKey];
-      toast.success(
+      toastSuccess(
         response[visibilityKey]
           ? `Campo visível em ${visibilityLabel}`
           : `Campo oculto em ${visibilityLabel}`,
       );
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar visibilidade do campo');
+    onError: () => {
+      toastError('Erro ao atualizar visibilidade do campo');
     },
     onSettled: () => {
       setTogglingFieldId(null);
@@ -706,10 +708,9 @@ export function FieldManagementList({
       newWidth: number;
       targetWidthKey: 'widthInForm' | 'widthInList';
     }) => {
-      const route = '/tables/'
-        .concat(table.slug)
-        .concat('/fields/')
-        .concat(field._id);
+      const route = groupSlug
+        ? `/tables/${table.slug}/groups/${groupSlug}/fields/${field._id}`
+        : `/tables/${table.slug}/fields/${field._id}`;
 
       const hasRelationship = field.relationship !== null;
       const hasDropdown = field.dropdown.length > 0;
@@ -831,13 +832,12 @@ export function FieldManagementList({
         },
       );
 
-      toast.success(
+      toastSuccess(
         `Largura atualizada para ${response[widthKey!]}${widthKey === 'widthInList' ? 'px' : '%'}`,
       );
     },
-    onError: (error) => {
-      console.error(error);
-      toast.error('Erro ao atualizar largura do campo');
+    onError: () => {
+      toastError('Erro ao atualizar largura do campo');
     },
     onSettled: () => {
       setChangingWidthFieldId(null);
@@ -866,7 +866,7 @@ export function FieldManagementList({
           const trashedFields = g.fields.filter((f) => f.trashed);
           return {
             ...g,
-            fields: [...fields, ...trashedFields],
+            fields: [...fields, ...trashedFields].map((f) => ({ _id: f._id })),
           };
         }
         return g;
@@ -904,8 +904,14 @@ export function FieldManagementList({
       visibility: table.visibility,
       style: table.style,
       collaboration: table.collaboration,
-      fieldOrderList: fields.flatMap((f) => f._id),
-      fieldOrderForm: table.fieldOrderForm,
+      fieldOrderList:
+        visibilityKey === 'showInForm'
+          ? table.fieldOrderList
+          : fields.flatMap((f) => f._id),
+      fieldOrderForm:
+        visibilityKey === 'showInForm'
+          ? fields.flatMap((f) => f._id)
+          : table.fieldOrderForm,
       administrators: table.administrators.flatMap((admin) => admin._id),
       fields: fields.flatMap((f) => f._id),
       methods: {

@@ -8,18 +8,22 @@ import {
   TableRow,
 } from '@/components/ui/table';
 
-export function TableTablesSkeleton({
-  headers,
-}: {
-  headers: Array<string>;
-}): React.JSX.Element {
+const HEADERS = [
+  'Tabela',
+  'Link (slug)',
+  'Visibilidade',
+  'Criado por',
+  'Criado em',
+];
+
+export function TableTablesSkeleton(): React.JSX.Element {
   return (
     <Table>
       <TableHeader className="sticky top-0 bg-background">
         <TableRow>
-          {headers.map((head) => (
-            <TableHead key={head}>
-              <span>{head}</span>
+          {HEADERS.map((label) => (
+            <TableHead key={label}>
+              <span>{label}</span>
             </TableHead>
           ))}
           <TableHead></TableHead>

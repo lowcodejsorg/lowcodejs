@@ -6,7 +6,6 @@ import {
 import type { AxiosError } from 'axios';
 import { ArrowLeftIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { UpdateRowFormSkeleton } from './-update-form-skeleton';
 import { UpdateRowForm } from './-update-row-form';
@@ -24,6 +23,7 @@ import {
 import { useSidebar } from '@/components/ui/sidebar';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
+import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/row/$rowId/')({
@@ -127,13 +127,10 @@ function RouteComponent(): React.JSX.Element {
             className="shadow-none p-1 h-auto"
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              toast('Link do registro copiado', {
-                className:
-                  '!bg-primary !text-primary-foreground !border-primary',
-                description:
-                  'O link do registro foi copiado para a área de transferência',
-                closeButton: true,
-              });
+              toastInfo(
+                'Link do registro copiado',
+                'O link do registro foi copiado para a área de transferência',
+              );
             }}
           >
             <Share2Icon />

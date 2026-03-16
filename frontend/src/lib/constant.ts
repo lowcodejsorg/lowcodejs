@@ -1,5 +1,8 @@
 import type { Meta } from './interfaces';
 
+export const TABLE_NAME_REGEX =
+  /^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/;
+
 export const MetaDefault: Meta = {
   total: 1,
   perPage: 50,
@@ -51,9 +54,14 @@ export const E_FIELD_FORMAT = {
   DECIMAL: 'DECIMAL',
   URL: 'URL',
   EMAIL: 'EMAIL',
+  PASSWORD: 'PASSWORD',
+  PHONE: 'PHONE',
+  CNPJ: 'CNPJ',
+  CPF: 'CPF',
   // TEXT_LONG
   RICH_TEXT: 'RICH_TEXT',
   PLAIN_TEXT: 'PLAIN_TEXT',
+  MARKDOWN: 'MARKDOWN',
   // DATE
   DD_MM_YYYY: 'dd/MM/yyyy',
   MM_DD_YYYY: 'MM/dd/yyyy',
@@ -83,6 +91,7 @@ export const E_TABLE_STYLE = {
   KANBAN: 'KANBAN',
   FORUM: 'FORUM',
   CALENDAR: 'CALENDAR',
+  GANTT: 'GANTT',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -120,7 +129,7 @@ export const E_SCHEMA_TYPE = {
   STRING: 'String',
   DATE: 'Date',
   BOOLEAN: 'Boolean',
-  OBJECT_ID: 'Boolean',
+  OBJECT_ID: 'ObjectId',
 } as const;
 
 export const E_REACTION_TYPE = {
@@ -150,7 +159,7 @@ export const E_TABLE_PERMISSION = {
 
 // ============== OPTIONS PARA SELECTS ==============
 export const FIELD_TYPE_OPTIONS = [
-  { label: 'Texto', value: E_FIELD_TYPE.TEXT_SHORT },
+  { label: 'Texto curto', value: E_FIELD_TYPE.TEXT_SHORT },
   { label: 'Texto longo', value: E_FIELD_TYPE.TEXT_LONG },
   { label: 'Dropdown', value: E_FIELD_TYPE.DROPDOWN },
   { label: 'Arquivo', value: E_FIELD_TYPE.FILE },
@@ -169,11 +178,16 @@ export const TEXT_FORMAT_OPTIONS = [
   { label: 'Decimal', value: E_FIELD_FORMAT.DECIMAL },
   { label: 'URL', value: E_FIELD_FORMAT.URL },
   { label: 'E-mail', value: E_FIELD_FORMAT.EMAIL },
+  { label: 'Senha', value: E_FIELD_FORMAT.PASSWORD },
+  { label: 'Telefone', value: E_FIELD_FORMAT.PHONE },
+  { label: 'CNPJ', value: E_FIELD_FORMAT.CNPJ },
+  { label: 'CPF', value: E_FIELD_FORMAT.CPF },
 ] as const;
 
 export const TEXT_LONG_FORMAT_OPTIONS = [
   { label: 'Área de texto', value: E_FIELD_FORMAT.PLAIN_TEXT },
   { label: 'Editor rico', value: E_FIELD_FORMAT.RICH_TEXT },
+  { label: 'Markdown', value: E_FIELD_FORMAT.MARKDOWN },
 ] as const;
 
 export const DATE_FORMAT_OPTIONS = [
@@ -230,6 +244,7 @@ export const TABLE_STYLE_OPTIONS = [
   { label: 'Kanban', value: E_TABLE_STYLE.KANBAN },
   { label: 'Forum', value: E_TABLE_STYLE.FORUM },
   { label: 'Calendario', value: E_TABLE_STYLE.CALENDAR },
+  { label: 'Gantt', value: E_TABLE_STYLE.GANTT },
 ] as const;
 
 export const USER_GROUP_MAPPER = {

@@ -28,7 +28,10 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const body = MenuCreateBodyValidator.parse(request.body);
 
-    const result = await this.useCase.execute(body);
+    const result = await this.useCase.execute({
+      ...body,
+      owner: request.user.sub,
+    });
 
     if (result.isLeft()) {
       const error = result.value;

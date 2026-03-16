@@ -18,6 +18,7 @@ export function FieldGroupCombobox({
 }: FieldGroupComboboxProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+  const errorId = `${field.name}-error`;
 
   return (
     <Field data-invalid={isInvalid}>
@@ -32,8 +33,14 @@ export function FieldGroupCombobox({
         }}
         placeholder={placeholder}
         className={cn(isInvalid && 'border-destructive')}
+        aria-label={label}
       />
-      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={field.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

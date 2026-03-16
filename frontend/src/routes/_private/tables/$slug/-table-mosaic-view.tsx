@@ -13,13 +13,15 @@ import { TableRowTextLongCell } from '@/components/common/table-row-text-long-ce
 import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/table-row-user-cell';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
+import { resolveLayoutField } from '@/lib/layout-field-resolver';
 import { HeaderFilter, HeaderSorter } from '@/lib/layout-pickers';
 
 interface Props {
   data: Array<IRow>;
   headers: Array<IField>;
   order: Array<string>;
+  layoutFields?: ILayoutFields | null;
 }
 
 interface RenderMosaicCellProps {
@@ -168,18 +170,30 @@ export function TableMosaicView({
   data,
   headers,
   order,
+  layoutFields,
 }: Props): React.JSX.Element {
   const router = useRouter();
   const { slug } = useParams({ from: '/_private/tables/$slug/' });
 
   const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
-  const thumbField = visibleHeaders.find((f) => f.type === E_FIELD_TYPE.FILE);
-  const titleField = visibleHeaders.find(
-    (f) => f.type === E_FIELD_TYPE.TEXT_SHORT,
+  const thumbField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'cover',
+    E_FIELD_TYPE.FILE,
   );
-  const descField = visibleHeaders.find(
-    (f) => f.type === E_FIELD_TYPE.TEXT_LONG,
+  const titleField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'title',
+    E_FIELD_TYPE.TEXT_SHORT,
+  );
+  const descField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'description',
+    E_FIELD_TYPE.TEXT_LONG,
   );
 
   const used = new Set(

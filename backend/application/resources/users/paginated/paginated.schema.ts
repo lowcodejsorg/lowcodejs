@@ -37,6 +37,31 @@ export const UserPaginatedSchema: FastifySchema = {
           'User ID for filtering specific user (optional, used internally)',
         examples: ['507f1f77bcf86cd799439011'],
       },
+      'order-name': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por nome',
+      },
+      'order-email': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por e-mail',
+      },
+      'order-group': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por grupo',
+      },
+      'order-status': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por status',
+      },
+      'order-created-at': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por data de criacao',
+      },
     },
     additionalProperties: false,
   },

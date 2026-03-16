@@ -31,7 +31,8 @@ export function TableRowRelationshipField({
 }: TableRowRelationshipFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<SearchableOption>>();
   const isInvalid =
-    formField.state.meta.isDirty && !formField.state.meta.isValid;
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
   const anchorRef = useComboboxAnchor();
 
@@ -50,7 +51,7 @@ export function TableRowRelationshipField({
   }, [searchQuery]);
 
   const { data, isLoading } = useRelationshipRowsReadPaginated({
-    tableSlug: relConfig?.table.slug ?? '',
+    tableSlug: relConfig?.table?.slug ?? '',
     fieldSlug: field.slug,
     search: debouncedQuery,
     page: 1,
@@ -58,7 +59,7 @@ export function TableRowRelationshipField({
     enabled: Boolean(relConfig),
   });
 
-  if (!relConfig) {
+  if (!relConfig || !relConfig.field || !relConfig.table) {
     return (
       <Field>
         <FieldLabel>{field.name}</FieldLabel>
@@ -183,7 +184,12 @@ export function TableRowRelationshipField({
             </div>
           )}
         </div>
-        {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+        {isInvalid && (
+          <FieldError
+            id={errorId}
+            errors={formField.state.meta.errors}
+          />
+        )}
       </Field>
     );
   }
@@ -241,7 +247,12 @@ export function TableRowRelationshipField({
           </div>
         )}
       </div>
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

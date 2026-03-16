@@ -34,22 +34,31 @@ export const TablePaginatedSchema: FastifySchema = {
       'order-name': {
         type: 'string',
         enum: ['asc', 'desc'],
-        default: 'asc',
         description: 'Order by name (optional)',
         examples: ['asc', 'desc'],
       },
       'order-link': {
         type: 'string',
         enum: ['asc', 'desc'],
-        default: 'asc',
         description: 'Order by link (optional)',
         examples: ['asc', 'desc'],
       },
       'order-created-at': {
         type: 'string',
         enum: ['asc', 'desc'],
-        default: 'asc',
         description: 'Order by created at (optional)',
+        examples: ['asc', 'desc'],
+      },
+      'order-visibility': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Order by visibility (optional)',
+        examples: ['asc', 'desc'],
+      },
+      'order-owner': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Order by owner name (optional)',
         examples: ['asc', 'desc'],
       },
       trashed: {
@@ -76,6 +85,16 @@ export const TablePaginatedSchema: FastifySchema = {
         type: 'string',
         description: 'Filter by exact table name (optional)',
         examples: ['Users', 'Products'],
+      },
+      visibility: {
+        type: 'string',
+        description: 'Filter by visibility (optional)',
+        examples: ['PUBLIC', 'PRIVATE', 'RESTRICTED', 'OPEN', 'FORM'],
+      },
+      owner: {
+        type: 'string',
+        description: 'Filter by owner name (optional)',
+        examples: ['John'],
       },
     },
     additionalProperties: false,
@@ -212,12 +231,6 @@ export const TablePaginatedSchema: FastifySchema = {
                       type: 'object',
                       nullable: true,
                       description: 'Field group configuration',
-                    },
-                    order: {
-                      type: 'string',
-                      enum: ['asc', 'desc'],
-                      nullable: true,
-                      description: 'Field sort order',
                     },
                     trashed: {
                       type: 'boolean',
@@ -364,11 +377,6 @@ export const TablePaginatedSchema: FastifySchema = {
                           dropdown: { type: 'array', nullable: true },
                           category: { type: 'array', nullable: true },
                           group: { type: 'object', nullable: true },
-                          order: {
-                            type: 'string',
-                            enum: ['asc', 'desc'],
-                            nullable: true,
-                          },
                           trashed: { type: 'boolean' },
                           trashedAt: {
                             type: 'string',
@@ -386,6 +394,18 @@ export const TablePaginatedSchema: FastifySchema = {
                       description: 'Group schema',
                       additionalProperties: true,
                     },
+                  },
+                },
+              },
+              order: {
+                type: 'object',
+                description: 'Default sort order for table records',
+                properties: {
+                  field: { type: 'string', nullable: true },
+                  direction: {
+                    type: 'string',
+                    enum: ['asc', 'desc'],
+                    nullable: true,
                   },
                 },
               },

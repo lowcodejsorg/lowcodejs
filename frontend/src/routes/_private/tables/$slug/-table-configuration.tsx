@@ -11,7 +11,6 @@ import {
   Settings2Icon,
 } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 
 import { ApiEndpointsModal } from './-api-endpoints-modal';
 
@@ -32,6 +31,7 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import type { IField, ITable } from '@/lib/interfaces';
+import { toastInfo } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface FieldGroupSubMenuProps {
@@ -341,14 +341,10 @@ export function TableConfigurationDropdown({
 
                     navigator.clipboard.writeText(iframeCode);
 
-                    toast('Código embed copiado', {
-                      className:
-                        '!bg-primary !text-primary-foreground !border-primary',
-                      description:
-                        'O código iframe foi copiado para a área de transferência',
-                      descriptionClassName: '!text-primary-foreground',
-                      closeButton: true,
-                    });
+                    toastInfo(
+                      'Código embed copiado',
+                      'O código iframe foi copiado para a área de transferência',
+                    );
                   }}
                 >
                   <CodeIcon className="size-4" />

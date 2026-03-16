@@ -4,10 +4,8 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import type { UserUpdateFormValues } from './-update-form';
 import { UpdateUserFormFields, UserUpdateSchema } from './-update-form';
@@ -19,7 +17,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { userDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateUser } from '@/hooks/tanstack-query/use-user-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import type { IHTTPExeptionError, IUser } from '@/lib/interfaces';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
+import type { IUser } from '@/lib/interfaces';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/users/$userId/')({
   component: RouteComponent,
@@ -97,6 +98,8 @@ function UserUpdateContent({
   const sidebar = useSidebar();
   const router = useRouter();
 
+  const [allowPasswordChange, setAllowPasswordChange] = React.useState(false);
+
   const goBack = (): void => {
     sidebar.setOpen(true);
     router.navigate({
@@ -115,106 +118,44 @@ function UserUpdateContent({
       group: data.group._id,
     } satisfies UserUpdateFormValues,
     validators: {
+      onChange: UserUpdateSchema,
       onSubmit: UserUpdateSchema,
     },
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending') return;
+
+      const { password, ...rest } = value;
       await _update.mutateAsync({
-        ...value,
+        ...rest,
         _id: data._id,
-        ...(value.password !== '' && { password: value.password }),
+        ...(allowPasswordChange && password !== '' && { password }),
       });
     },
   });
 
-  function setFieldError(
-    field: 'name' | 'email' | 'password' | 'status' | 'group',
-    message: string,
-  ): void {
-    form.setFieldMeta(field, (prev) => ({
-      ...prev,
-      isTouched: true,
-      errors: [{ message }],
-      errorMap: { onSubmit: { message } },
-    }));
-  }
+  const setFieldError = createFieldErrorSetter(form);
 
   const _update = useUpdateUser({
     onSuccess() {
-      toast('Usuário atualizado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'Os dados do usuário foram atualizados com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess(
+        'Usuário atualizado',
+        'Os dados do usuário foram atualizados com sucesso',
+      );
 
       form.reset();
       setMode('show');
+      setAllowPasswordChange(false);
       router.invalidate();
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data as IHTTPExeptionError<{
-          name?: string;
-          email?: string;
-          password?: string;
-          status?: string;
-          group?: string;
-        }>;
-
-        // 404 - Usuário não encontrado
-        if (errorData.cause === 'USER_NOT_FOUND' && errorData.code === 404) {
-          toast('Usuário não encontrado', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'O usuário que você está tentando atualizar não existe',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        // 400 - Erros de validação
-        if (
-          errorData.cause === 'INVALID_PAYLOAD_FORMAT' &&
-          errorData.code === 400
-        ) {
-          if (errorData.errors['name'])
-            setFieldError('name', errorData.errors['name']);
-
-          if (errorData.errors['email'])
-            setFieldError('email', errorData.errors['email']);
-
-          if (errorData.errors['password'])
-            setFieldError('password', errorData.errors['password']);
-
-          if (errorData.errors['group'])
-            setFieldError('group', errorData.errors['group']);
-
-          return;
-        }
-
-        if (errorData.cause === 'UPDATE_USER_ERROR' && errorData.code === 500) {
-          toast('Erro ao atualizar o usuário', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Houve um erro ao atualizar o usuário. Tente novamente mais tarde.',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        toast('Erro ao atualizar o usuário', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description:
-            'Houve um erro interno ao atualizar o usuário. Tente novamente mais tarde.',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      console.error(error);
+      handleApiError(error, {
+        context: 'Erro ao atualizar o usuário',
+        onFieldErrors: (errors) => {
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
+      });
     },
   });
 
@@ -257,6 +198,8 @@ function UserUpdateContent({
             form={form}
             isPending={isPending}
             mode={mode}
+            allowPasswordChange={allowPasswordChange}
+            onAllowPasswordChangeChange={setAllowPasswordChange}
           />
         </form>
       )}
@@ -277,6 +220,7 @@ function UserUpdateContent({
                   onClick={() => {
                     form.reset();
                     setMode('show');
+                    setAllowPasswordChange(false);
                   }}
                 >
                   <span>Cancelar</span>

@@ -26,6 +26,21 @@ export const UserGroupPaginatedSchema: FastifySchema = {
         type: 'string',
         description: 'Termo de busca para filtrar grupos',
       },
+      'order-name': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por nome',
+      },
+      'order-description': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por descricao',
+      },
+      'order-created-at': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por data de criacao',
+      },
     },
   },
   response: {

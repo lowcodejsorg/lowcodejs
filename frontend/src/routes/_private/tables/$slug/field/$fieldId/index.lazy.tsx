@@ -5,10 +5,8 @@ import {
   useParams,
   useSearch,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
 import { FieldView } from './-view';
@@ -21,14 +19,17 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
+import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-update';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
+import { QueryClient as queryClient } from '@/lib/query-client';
+import { toastSuccess, toastWarning } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_private/tables/$slug/field/$fieldId/',
@@ -185,20 +186,50 @@ function FieldUpdateContent({
     });
   };
 
-  const { queryClient } = getContext();
+  const handleUpdateSuccess = (response: IField): void => {
+    const wasTrashed = Boolean(
+      (data as IField & { trashed?: boolean }).trashed,
+    );
+    const isTrashed = Boolean(response.trashed);
 
-  const isGroupContext = !!groupSlug;
+    if (!wasTrashed && isTrashed) {
+      toastWarning(
+        'Campo enviado para lixeira',
+        'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
+      );
+    } else if (wasTrashed && !isTrashed) {
+      toastSuccess(
+        'Campo restaurado',
+        'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
+      );
+    } else {
+      toastSuccess(
+        'Campo atualizado',
+        'Os dados do campo foram atualizados com sucesso',
+      );
+    }
+
+    form.reset();
+    setMode('show');
+  };
+
+  const handleUpdateError = (error: Error): void => {
+    handleApiError(error, {
+      context: 'Erro ao atualizar o campo',
+    });
+  };
 
   const _update = useMutation({
     mutationFn: async (
       payload: Partial<IField> & {
         trashed?: boolean;
         trashedAt?: string | null;
-        group?: { slug: string } | string | null;
       },
     ) => {
-      const route = '/tables/'.concat(slug).concat('/fields/').concat(data._id);
-      const response = await API.put<IField>(route, payload);
+      const response = await API.put<IField>(
+        `/tables/${slug}/fields/${data._id}`,
+        payload,
+      );
       return response.data;
     },
     onSuccess(response) {
@@ -209,32 +240,11 @@ function FieldUpdateContent({
 
       queryClient.setQueryData<ITable>(queryKeys.tables.detail(slug), (old) => {
         if (!old) return old;
-
-        // Se for contexto de grupo, atualiza groups
-        if (isGroupContext && groupSlug) {
-          return {
-            ...old,
-            groups: old.groups.map((g) =>
-              g.slug === groupSlug
-                ? {
-                    ...g,
-                    fields: g.fields.map((f) =>
-                      f._id === response._id ? response : f,
-                    ),
-                  }
-                : g,
-            ),
-          };
-        }
-
         return {
           ...old,
-          fields: old.fields.map((f) => {
-            if (f._id === response._id) {
-              return response;
-            }
-            return f;
-          }),
+          fields: old.fields.map((f) =>
+            f._id === response._id ? response : f,
+          ),
         };
       });
 
@@ -246,31 +256,11 @@ function FieldUpdateContent({
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug === slug) {
-                // Se for contexto de grupo, atualiza groups
-                if (isGroupContext && groupSlug) {
-                  return {
-                    ...t,
-                    groups: t.groups.map((g) =>
-                      g.slug === groupSlug
-                        ? {
-                            ...g,
-                            fields: g.fields.map((f) =>
-                              f._id === response._id ? response : f,
-                            ),
-                          }
-                        : g,
-                    ),
-                  };
-                }
-
                 return {
                   ...t,
-                  fields: t.fields.map((f) => {
-                    if (f._id === response._id) {
-                      return response;
-                    }
-                    return f;
-                  }),
+                  fields: t.fields.map((f) =>
+                    f._id === response._id ? response : f,
+                  ),
                 };
               }
               return t;
@@ -279,164 +269,14 @@ function FieldUpdateContent({
         },
       );
 
-      const wasTrashed = Boolean(
-        (data as IField & { trashed?: boolean }).trashed,
-      );
-      const isTrashed = Boolean(response.trashed);
-
-      if (!wasTrashed && isTrashed) {
-        toast('Campo enviado para lixeira', {
-          className: '!bg-amber-600 !text-white !border-amber-600',
-          description:
-            'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      } else if (wasTrashed && !isTrashed) {
-        toast('Campo restaurado', {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description:
-            'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      } else {
-        toast('Campo atualizado', {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description: 'Os dados do campo foram atualizados com sucesso',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      form.reset();
-      setMode('show');
+      handleUpdateSuccess(response);
     },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
+    onError: handleUpdateError,
+  });
 
-        if (
-          errorData?.code === 400 &&
-          errorData?.cause === 'INVALID_PARAMETERS'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Dados inválidos',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 401 &&
-          errorData?.cause === 'AUTHENTICATION_REQUIRED'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Autenticação necessária',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 403 && errorData?.cause === 'ACCESS_DENIED') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              errorData?.message ??
-              'Permissões insuficientes para atualizar este campo',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 404 && errorData?.cause === 'FIELD_NOT_FOUND') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Campo não encontrado',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 409 &&
-          errorData?.cause === 'LAST_ACTIVE_FIELD'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Último campo ativo, não pode ser enviado para a lixeira',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 409 &&
-          errorData?.cause === 'FIELD_ALREADY_EXISTS'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              errorData?.message ?? 'Já existe um campo com este nome',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 409 && errorData?.cause === 'FIELD_IN_USE') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              errorData?.message ??
-              'Não é possível alterar o tipo do campo: o campo contém dados',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 422 &&
-          errorData?.cause === 'UNPROCESSABLE_ENTITY'
-        ) {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Configuração de campo inválida',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 500 && errorData?.cause === 'SERVER_ERROR') {
-          toast('Erro ao atualizar o campo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Erro interno do servidor',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        toast('Erro ao atualizar o campo', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar o campo',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      console.error(error);
-    },
+  const _updateGroupField = useGroupFieldUpdate({
+    onSuccess: handleUpdateSuccess,
+    onError: handleUpdateError,
   });
 
   const form = useAppForm({
@@ -451,10 +291,10 @@ function FieldUpdateContent({
         color: d.color,
       })),
       relationship: {
-        tableId: data.relationship?.table._id ?? '',
-        tableSlug: data.relationship?.table.slug ?? '',
-        fieldId: data.relationship?.field._id ?? '',
-        fieldSlug: data.relationship?.field.slug ?? '',
+        tableId: data.relationship?.table?._id ?? '',
+        tableSlug: data.relationship?.table?.slug ?? '',
+        fieldId: data.relationship?.field?._id ?? '',
+        fieldSlug: data.relationship?.field?.slug ?? '',
         order: data.relationship?.order ?? '',
       },
       category: data.category ?? [],
@@ -467,19 +307,20 @@ function FieldUpdateContent({
       trashed: Boolean((data as IField & { trashed?: boolean }).trashed),
       widthInForm: data.widthInForm ?? 50,
       widthInList: data.widthInList ?? 10,
-      order: data.order ?? 'none',
     },
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: FieldUpdateSchema, onSubmit: FieldUpdateSchema },
     onSubmit: async ({ value }) => {
-      const validation = FieldUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
-      if (_update.status === 'pending') return;
+      if (_update.status === 'pending' || _updateGroupField.isPending) return;
 
       const hasRelationship = value.relationship.tableId !== '';
       const hasDropdown = value.dropdown.length > 0;
       const hasCategory = value.category.length > 0;
 
-      await _update.mutateAsync({
+      const payload: Partial<IField> & {
+        trashed?: boolean;
+        trashedAt?: string | null;
+      } = {
         name: value.name,
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
@@ -508,18 +349,27 @@ function FieldUpdateContent({
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
             }
           : null,
-        group: groupSlug ? { slug: groupSlug } : null,
         category: hasCategory
           ? (value.category as unknown as IField['category'])
           : [],
-        order: value.order === 'none' ? null : (value.order as 'asc' | 'desc'),
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
-      });
+      };
+
+      if (groupSlug) {
+        await _updateGroupField.mutateAsync({
+          tableSlug: slug,
+          groupSlug,
+          fieldId: data._id,
+          data: payload,
+        });
+      } else {
+        await _update.mutateAsync(payload);
+      }
     },
   });
 
-  const isPending = _update.status === 'pending';
+  const isPending = _update.status === 'pending' || _updateGroupField.isPending;
 
   return (
     <>

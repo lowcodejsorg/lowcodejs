@@ -114,6 +114,7 @@ export type TableUpdatePayload = {
   fieldOrderList?: Array<string>;
   fieldOrderForm?: Array<string>;
   methods?: TableMethodPayload;
+  order?: { field: string; direction: 'asc' | 'desc' } | null;
   fields?: Array<string>;
   groups?: Array<{
     slug: string;
@@ -121,6 +122,17 @@ export type TableUpdatePayload = {
     fields: Array<{ _id: string }>;
     _schema: Record<string, unknown>;
   }>;
+  layoutFields?: {
+    title: string | null;
+    description: string | null;
+    cover: string | null;
+    category: string | null;
+    startDate: string | null;
+    endDate: string | null;
+    color: string | null;
+    participants: string | null;
+    reminder: string | null;
+  };
 };
 
 // ============== FIELD ==============
@@ -265,16 +277,33 @@ export type UserQueryPayload = Merge<
     _ids?: Array<string>;
     status?: ValueOf<typeof E_USER_STATUS>;
     trashed?: boolean;
+    'order-name'?: 'asc' | 'desc';
+    'order-email'?: 'asc' | 'desc';
+    'order-group'?: 'asc' | 'desc';
+    'order-status'?: 'asc' | 'desc';
+    'order-created-at'?: 'asc' | 'desc';
   }
 >;
 
-export type UserGroupQueryPayload = BaseQueryPayload;
+export type UserGroupQueryPayload = Merge<
+  BaseQueryPayload,
+  {
+    'order-name'?: 'asc' | 'desc';
+    'order-description'?: 'asc' | 'desc';
+    'order-created-at'?: 'asc' | 'desc';
+  }
+>;
 
 export type MenuQueryPayload = Merge<
   BaseQueryPayload,
   {
     trashed?: boolean;
     parent?: string | null;
+    'order-name'?: 'asc' | 'desc';
+    'order-slug'?: 'asc' | 'desc';
+    'order-type'?: 'asc' | 'desc';
+    'order-created-at'?: 'asc' | 'desc';
+    'order-owner'?: 'asc' | 'desc';
   }
 >;
 

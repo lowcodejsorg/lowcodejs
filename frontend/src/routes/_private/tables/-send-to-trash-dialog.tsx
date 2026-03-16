@@ -1,9 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -18,8 +16,10 @@ import {
 } from '@/components/ui/dialog';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { toastSuccess } from '@/lib/toast';
 
 type TableSendToTrashDialogProps = React.ComponentProps<
   typeof DialogTrigger
@@ -51,12 +51,10 @@ export function TableSendToTrashDialog({
         queryKey: queryKeys.tables.lists(),
       });
 
-      toast('Tabela enviada para lixeira!', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi movida para a lixeira',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess(
+        'Tabela enviada para lixeira!',
+        'A tabela foi movida para a lixeira',
+      );
 
       navigate({
         to: '/tables',
@@ -65,27 +63,7 @@ export function TableSendToTrashDialog({
       });
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data;
-
-        if (data?.code === 401 && data?.cause === 'AUTHENTICATION_REQUIRED') {
-          toast.error(data?.message ?? 'Autenticação necessária');
-        }
-
-        if (data?.code === 404 && data?.cause === 'TABLE_NOT_FOUND') {
-          toast.error(data?.message ?? 'Tabela não encontrada');
-        }
-
-        if (data?.code === 409 && data?.cause === 'ALREADY_TRASHED') {
-          toast.error(data?.message ?? 'Tabela já está na lixeira');
-        }
-
-        if (data?.code === 500) {
-          toast.error(data?.message ?? 'Erro interno do servidor');
-        }
-      }
-
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao enviar tabela para lixeira' });
     },
   });
 

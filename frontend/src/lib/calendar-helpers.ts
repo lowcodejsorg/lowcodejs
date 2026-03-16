@@ -8,8 +8,9 @@ import {
 } from 'date-fns';
 
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow, ITable } from '@/lib/interfaces';
+import type { IField, ILayoutFields, IRow, ITable } from '@/lib/interfaces';
 import { getFieldBySlug, getFirstFieldByType } from '@/lib/kanban-helpers';
+import { resolveLayoutField } from '@/lib/layout-field-resolver';
 
 const DEFAULT_EVENT_COLOR = '#2563eb';
 
@@ -19,6 +20,8 @@ export interface CalendarResolvedFields {
   startField?: IField;
   endField?: IField;
   colorField?: IField;
+  participantsField?: IField;
+  reminderField?: IField;
 }
 
 export interface CalendarEventItem {
@@ -30,6 +33,7 @@ export interface CalendarEventItem {
   end: Date;
   color: string;
   colorLabel: string | null;
+  participants: Array<{ _id: string; name: string }>;
 }
 
 function firstValue(value: unknown): unknown {
@@ -56,21 +60,61 @@ function stripHtml(value: string): string {
 
 export function resolveCalendarFields(
   fields: Array<IField>,
+  layoutFields?: ILayoutFields | null,
 ): CalendarResolvedFields {
+  const startField =
+    resolveLayoutField(fields, layoutFields, 'startDate') ??
+    getFieldBySlug(fields, 'data-inicio', E_FIELD_TYPE.DATE) ??
+    getFirstFieldByType(fields, E_FIELD_TYPE.DATE);
+
+  const resolvedEnd =
+    resolveLayoutField(fields, layoutFields, 'endDate') ??
+    getFieldBySlug(fields, 'data-termino', E_FIELD_TYPE.DATE) ??
+    fields.find(
+      (f) =>
+        !f.trashed && f.type === E_FIELD_TYPE.DATE && f._id !== startField?._id,
+    );
+  const endField =
+    resolvedEnd && resolvedEnd._id !== startField?._id
+      ? resolvedEnd
+      : undefined;
+
   return {
     titleField:
+      resolveLayoutField(
+        fields,
+        layoutFields,
+        'title',
+        E_FIELD_TYPE.TEXT_SHORT,
+      ) ??
       getFieldBySlug(fields, 'titulo', E_FIELD_TYPE.TEXT_SHORT) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.TEXT_SHORT),
     descriptionField:
+      resolveLayoutField(
+        fields,
+        layoutFields,
+        'description',
+        E_FIELD_TYPE.TEXT_LONG,
+      ) ??
       getFieldBySlug(fields, 'descricao', E_FIELD_TYPE.TEXT_LONG) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.TEXT_LONG),
-    startField:
-      getFieldBySlug(fields, 'data-inicio', E_FIELD_TYPE.DATE) ??
-      getFirstFieldByType(fields, E_FIELD_TYPE.DATE),
-    endField: getFieldBySlug(fields, 'data-termino', E_FIELD_TYPE.DATE),
+    startField,
+    endField,
     colorField:
+      resolveLayoutField(
+        fields,
+        layoutFields,
+        'color',
+        E_FIELD_TYPE.DROPDOWN,
+      ) ??
       getFieldBySlug(fields, 'cor', E_FIELD_TYPE.DROPDOWN) ??
       getFirstFieldByType(fields, E_FIELD_TYPE.DROPDOWN),
+    participantsField:
+      resolveLayoutField(fields, layoutFields, 'participants') ??
+      getFieldBySlug(fields, 'participantes', E_FIELD_TYPE.USER),
+    reminderField:
+      resolveLayoutField(fields, layoutFields, 'reminder') ??
+      getFieldBySlug(fields, 'lembrete', E_FIELD_TYPE.FIELD_GROUP),
   };
 }
 
@@ -144,8 +188,9 @@ function resolveEventColor(
 export function normalizeCalendarEvents(
   rows: Array<IRow>,
   fields: Array<IField>,
+  layoutFields?: ILayoutFields | null,
 ): Array<CalendarEventItem> {
-  const resolved = resolveCalendarFields(fields);
+  const resolved = resolveCalendarFields(fields, layoutFields);
   if (!resolved.titleField || !resolved.startField) return [];
 
   return rows
@@ -168,6 +213,20 @@ export function normalizeCalendarEvents(
         : '';
       const { color, colorLabel } = resolveEventColor(row, resolved.colorField);
 
+      const rawParticipants = resolved.participantsField
+        ? row[resolved.participantsField.slug]
+        : null;
+      const participants: Array<{ _id: string; name: string }> = Array.isArray(
+        rawParticipants,
+      )
+        ? rawParticipants
+            .filter(
+              (p: unknown): p is { _id: string; name: string } =>
+                typeof p === 'object' && p !== null && 'name' in p,
+            )
+            .map((p) => ({ _id: String(p._id), name: String(p.name) }))
+        : [];
+
       return {
         row,
         rowId: row._id,
@@ -177,6 +236,7 @@ export function normalizeCalendarEvents(
         end,
         color,
         colorLabel,
+        participants,
       } satisfies CalendarEventItem;
     })
     .filter((event): event is CalendarEventItem => Boolean(event))

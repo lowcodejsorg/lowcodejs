@@ -15,6 +15,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     const menu: IMenu = {
       ...payload,
       _id: crypto.randomUUID(),
+      owner: payload.owner ?? null,
       table: payload.table ?? null,
       parent: payload.parent ?? null,
       url: payload.url ?? null,

@@ -210,7 +210,6 @@ export default class CloneTableUseCase {
         dropdown: field.dropdown,
         category: field.category,
         group: field.group,
-        order: field.order ?? null,
         widthInForm: field.widthInForm,
         widthInList: field.widthInList,
       });
@@ -288,7 +287,6 @@ export default class CloneTableUseCase {
           dropdown: field.dropdown,
           category: field.category,
           group: field.group,
-          order: field.order ?? null,
           widthInForm: field.widthInForm,
           widthInList: field.widthInList,
         });

@@ -47,6 +47,7 @@ export const TableUpdateSchema: FastifySchema = {
           'KANBAN',
           'FORUM',
           'CALENDAR',
+          'GANTT',
         ],
         default: 'LIST',
         description: 'Display style',
@@ -79,6 +80,33 @@ export const TableUpdateSchema: FastifySchema = {
         items: { type: 'string' },
         default: [],
         description: 'Field order for form view',
+      },
+      order: {
+        anyOf: [
+          { type: 'null' },
+          {
+            type: 'object',
+            required: ['field', 'direction'],
+            properties: {
+              field: { type: 'string', description: 'Field slug to sort by' },
+              direction: {
+                type: 'string',
+                enum: ['asc', 'desc'],
+                description: 'Sort direction',
+              },
+            },
+          },
+        ],
+        default: null,
+        description: 'Default sort order for table records',
+      },
+      methods: {
+        type: 'object',
+        description: 'Table methods configuration',
+      },
+      layoutFields: {
+        type: 'object',
+        description: 'Layout fields configuration',
       },
     },
   },
@@ -198,12 +226,6 @@ export const TableUpdateSchema: FastifySchema = {
                 nullable: true,
                 description: 'Field group configuration',
               },
-              order: {
-                type: 'string',
-                enum: ['asc', 'desc'],
-                nullable: true,
-                description: 'Field sort order',
-              },
               trashed: {
                 type: 'boolean',
                 description: 'Is field in trash',
@@ -230,6 +252,7 @@ export const TableUpdateSchema: FastifySchema = {
             'KANBAN',
             'FORUM',
             'CALENDAR',
+            'GANTT',
           ],
           description: 'Display style',
         },
@@ -347,11 +370,6 @@ export const TableUpdateSchema: FastifySchema = {
                     dropdown: { type: 'array', nullable: true },
                     category: { type: 'array', nullable: true },
                     group: { type: 'object', nullable: true },
-                    order: {
-                      type: 'string',
-                      enum: ['asc', 'desc'],
-                      nullable: true,
-                    },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',
@@ -369,6 +387,18 @@ export const TableUpdateSchema: FastifySchema = {
                 description: 'Group schema',
                 additionalProperties: true,
               },
+            },
+          },
+        },
+        order: {
+          type: 'object',
+          description: 'Default sort order for table records',
+          properties: {
+            field: { type: 'string', nullable: true },
+            direction: {
+              type: 'string',
+              enum: ['asc', 'desc'],
+              nullable: true,
             },
           },
         },

@@ -16,7 +16,8 @@ export function TableRowDateField({
 }: TableRowDateFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
-    formField.state.meta.isDirty && !formField.state.meta.isValid;
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
 
   const formatString = field.format ?? E_FIELD_FORMAT.DD_MM_YYYY;
@@ -48,7 +49,12 @@ export function TableRowDateField({
           isInvalid && 'border-destructive',
         )}
       />
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

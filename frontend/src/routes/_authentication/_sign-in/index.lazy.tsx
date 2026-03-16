@@ -1,9 +1,7 @@
 import { useForm } from '@tanstack/react-form';
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import React, { useState } from 'react';
-import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Logo } from '@/components/common/logo';
@@ -23,8 +21,10 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationSignIn } from '@/hooks/tanstack-query/use-authentication-sign-in';
-import type { IHTTPExeptionError } from '@/lib/interfaces';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_authentication/_sign-in/')({
   component: RouteComponent,
@@ -49,68 +49,20 @@ function RouteComponent(): React.JSX.Element {
 
       router.navigate({ to: route, replace: true });
 
-      toast('Login realizado com sucesso!', {
-        className: '!bg-green-500 !text-primary-foreground !border-green-500',
-        description: 'Seja bem-vindo!',
-        descriptionClassName: '!text-primary-foreground',
-        closeButton: true,
-      });
+      toastSuccess('Login realizado com sucesso!', 'Seja bem-vindo!');
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data as IHTTPExeptionError<{
-          email?: string;
-          password?: string;
-        }>;
-
-        if (data.cause === 'INVALID_CREDENTIALS' && data.code === 401) {
-          setFieldError('password', data.message);
-          return;
-        }
-
-        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
-          if (data.errors['email'])
-            setFieldError('email', data.errors['email']);
-
-          if (data.errors['password'])
-            setFieldError('password', data.errors['password']);
-
-          return;
-        }
-
-        if (data.cause === 'SIGN_IN_ERROR' && data.code === 500) {
-          toast('Erro ao fazer login', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Houve um erro ao fazer login. Tente novamente mais tarde.',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-        }
-      }
-
-      toast('Erro ao fazer login', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Houve um erro interno ao fazer login. Tente novamente.',
-        descriptionClassName: '!text-white',
-        closeButton: true,
+      handleApiError(error, {
+        context: 'Erro ao fazer login',
+        onFieldErrors: (errors) => {
+          const setFieldError = createFieldErrorSetter(form);
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
       });
     },
   });
-
-  function setFieldError(
-    field: keyof z.infer<typeof FormSignInSchema>,
-    message: string,
-  ): void {
-    form.setFieldMeta(field, (prev) => {
-      return {
-        ...prev,
-        isTouched: true,
-        errors: [{ message }],
-        errorMap: { onSubmit: { message } },
-      };
-    });
-  }
 
   const form = useForm({
     defaultValues: {
@@ -118,6 +70,7 @@ function RouteComponent(): React.JSX.Element {
       password: '',
     },
     validators: {
+      onChange: FormSignInSchema,
       onSubmit: FormSignInSchema,
     },
     onSubmit: async function ({ value: payload }) {

@@ -3,7 +3,6 @@ import { useRouter } from '@tanstack/react-router';
 import { addMonths, addWeeks, subMonths, subWeeks } from 'date-fns';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import {
   CalendarAgendaView,
@@ -12,8 +11,8 @@ import {
   CalendarMonthView,
   CalendarToolbar,
   CalendarWeekView,
-} from '@/components/calendar';
-import type { CalendarViewMode } from '@/components/calendar';
+} from '@/components/common/calendar';
+import type { CalendarViewMode } from '@/components/common/calendar';
 import { Button } from '@/components/ui/button';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
@@ -27,8 +26,11 @@ import type {
   CalendarEventItem,
   CalendarResolvedFields,
 } from '@/lib/calendar-helpers';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { mountRowValue } from '@/lib/table';
+import { toastError, toastSuccess } from '@/lib/toast';
 
 interface Props {
   data: Array<IRow>;
@@ -58,12 +60,37 @@ export function TableCalendarView({
   }, [data]);
 
   const resolvedFields = React.useMemo(
-    () => resolveCalendarFields(headers),
-    [headers],
+    () => resolveCalendarFields(headers, table.layoutFields),
+    [headers, table.layoutFields],
   );
+
+  const extraFields = React.useMemo(() => {
+    const baseFieldIds = new Set(
+      [
+        resolvedFields.titleField,
+        resolvedFields.descriptionField,
+        resolvedFields.startField,
+        resolvedFields.endField,
+        resolvedFields.colorField,
+        resolvedFields.participantsField,
+        resolvedFields.reminderField,
+      ]
+        .filter(Boolean)
+        .map((f) => f!._id),
+    );
+    return table.fields.filter(
+      (field) =>
+        !field.trashed &&
+        !field.native &&
+        !baseFieldIds.has(field._id) &&
+        field.type !== E_FIELD_TYPE.REACTION &&
+        field.type !== E_FIELD_TYPE.EVALUATION,
+    );
+  }, [resolvedFields, table.fields]);
+
   const events = React.useMemo(
-    () => normalizeCalendarEvents(rowsState, headers),
-    [rowsState, headers],
+    () => normalizeCalendarEvents(rowsState, headers, table.layoutFields),
+    [rowsState, headers, table.layoutFields],
   );
   const editingEvent = React.useMemo(
     () => events.find((item) => item.rowId === editingRowId) ?? null,
@@ -77,11 +104,10 @@ export function TableCalendarView({
         ...prev.filter((r) => r._id !== createdRow._id),
       ]);
       setIsCreateOpen(false);
-      toast.success('Agendamento criado com sucesso');
+      toastSuccess('Agendamento criado com sucesso');
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao criar agendamento');
+    onError() {
+      toastError('Erro ao criar agendamento');
     },
   });
 
@@ -91,11 +117,10 @@ export function TableCalendarView({
         prev.map((row) => (row._id === updatedRow._id ? updatedRow : row)),
       );
       setEditingRowId(null);
-      toast.success('Agendamento atualizado com sucesso');
+      toastSuccess('Agendamento atualizado com sucesso');
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao atualizar agendamento');
+    onError() {
+      toastError('Erro ao atualizar agendamento');
     },
   });
 
@@ -114,13 +139,20 @@ export function TableCalendarView({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(tableSlug),
       });
-      toast.success('Agendamento excluído com sucesso');
+      toastSuccess('Agendamento excluído com sucesso');
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao excluir agendamento');
+    onError() {
+      toastError('Erro ao excluir agendamento');
     },
   });
+
+  const allExtraFields = React.useMemo(() => {
+    const baseExtra: Array<IField> = [
+      resolvedFields.participantsField,
+      resolvedFields.reminderField,
+    ].filter((f): f is IField => Boolean(f));
+    return [...baseExtra, ...extraFields];
+  }, [resolvedFields, extraFields]);
 
   const buildCalendarPayload = React.useCallback(
     (
@@ -131,6 +163,7 @@ export function TableCalendarView({
         start: Date;
         end: Date;
         colorOptionId: string | null;
+        extraValues: Record<string, unknown>;
       },
     ): Record<string, unknown> => {
       const dataPayload: Record<string, unknown> = {};
@@ -151,9 +184,20 @@ export function TableCalendarView({
           : [];
       }
 
+      for (const field of allExtraFields) {
+        if (field.slug in payload.extraValues) {
+          dataPayload[field.slug] = mountRowValue(
+            payload.extraValues[field.slug] as Parameters<
+              typeof mountRowValue
+            >[0],
+            field,
+          );
+        }
+      }
+
       return dataPayload;
     },
-    [],
+    [allExtraFields],
   );
 
   const handleSelectEvent = React.useCallback((event: CalendarEventItem) => {
@@ -193,18 +237,20 @@ export function TableCalendarView({
         <div className="text-xs text-muted-foreground">
           {table.name} • clique em um agendamento para editar
         </div>
-        <Button
-          type="button"
-          size="sm"
-          className="shadow-none"
-          onClick={() => {
-            setCreateDefaultStart(new Date());
-            setIsCreateOpen(true);
-          }}
-        >
-          <PlusIcon className="size-4" />
-          <span>Novo agendamento</span>
-        </Button>
+        {!missingRequired && (
+          <Button
+            type="button"
+            size="sm"
+            className="shadow-none"
+            onClick={() => {
+              setCreateDefaultStart(new Date());
+              setIsCreateOpen(true);
+            }}
+          >
+            <PlusIcon className="size-4" />
+            <span>Novo agendamento</span>
+          </Button>
+        )}
       </div>
 
       {missingRequired ? (
@@ -237,47 +283,58 @@ export function TableCalendarView({
         </div>
       )}
 
-      <CalendarEventDialog
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-        mode="create"
-        fields={resolvedFields}
-        event={null}
-        defaultStartDate={createDefaultStart}
-        isPending={createRow.status === 'pending'}
-        onSubmit={async (payload) => {
-          await createRow.mutateAsync({
-            slug: tableSlug,
-            data: buildCalendarPayload(resolvedFields, payload),
-          });
-        }}
-      />
+      {!missingRequired && (
+        <CalendarEventDialog
+          open={isCreateOpen}
+          onOpenChange={setIsCreateOpen}
+          mode="create"
+          fields={resolvedFields}
+          event={null}
+          defaultStartDate={createDefaultStart}
+          isPending={createRow.status === 'pending'}
+          extraFields={extraFields}
+          tableSlug={tableSlug}
+          table={table}
+          onSubmit={async (payload) => {
+            await createRow.mutateAsync({
+              slug: tableSlug,
+              data: buildCalendarPayload(resolvedFields, payload),
+            });
+          }}
+        />
+      )}
 
-      <CalendarEventDialog
-        open={Boolean(editingEvent)}
-        onOpenChange={(open) => {
-          if (!open) setEditingRowId(null);
-        }}
-        mode="edit"
-        fields={resolvedFields}
-        event={editingEvent}
-        isPending={updateRow.status === 'pending'}
-        onSubmit={async (payload) => {
-          if (!editingEvent) return;
-          await updateRow.mutateAsync({
-            slug: tableSlug,
-            rowId: editingEvent.rowId,
-            data: buildCalendarPayload(resolvedFields, payload),
-          });
-        }}
-        onDeleteClick={() => setIsDeleteOpen(true)}
-        onOpenRecord={(row) => {
-          router.navigate({
-            to: '/tables/$slug/row/$rowId',
-            params: { slug: tableSlug, rowId: row._id },
-          });
-        }}
-      />
+      {!missingRequired && editingEvent && (
+        <CalendarEventDialog
+          key={editingEvent.rowId}
+          open
+          onOpenChange={(open) => {
+            if (!open) setEditingRowId(null);
+          }}
+          mode="edit"
+          fields={resolvedFields}
+          event={editingEvent}
+          isPending={updateRow.status === 'pending'}
+          extraFields={extraFields}
+          tableSlug={tableSlug}
+          table={table}
+          onSubmit={async (payload) => {
+            if (!editingEvent) return;
+            await updateRow.mutateAsync({
+              slug: tableSlug,
+              rowId: editingEvent.rowId,
+              data: buildCalendarPayload(resolvedFields, payload),
+            });
+          }}
+          onDeleteClick={() => setIsDeleteOpen(true)}
+          onOpenRecord={(row) => {
+            router.navigate({
+              to: '/tables/$slug/row/$rowId',
+              params: { slug: tableSlug, rowId: row._id },
+            });
+          }}
+        />
+      )}
 
       <CalendarDeleteDialog
         open={isDeleteOpen}

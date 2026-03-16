@@ -136,6 +136,7 @@ kernel.register(_static, {
 
 kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
   console.error(JSON.stringify(error, null, 2));
+  console.error(error);
 
   if (error instanceof HTTPException) {
     return response.status(error.code).send({

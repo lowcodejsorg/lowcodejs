@@ -1,9 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArchiveRestoreIcon, LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,8 +17,10 @@ import {
 import { useSidebar } from '@/components/ui/sidebar';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IRow } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { toastSuccess } from '@/lib/toast';
 
 interface RowRemoveFromTrashDialogProps {
   rowId: string;
@@ -56,12 +56,7 @@ export function RowRemoveFromTrashDialog({
         queryKey: queryKeys.rows.lists(slug),
       });
 
-      toast('Linha restaurada!', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A linha foi restaurada da lixeira',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Linha restaurada!', 'A linha foi restaurada da lixeira');
 
       sidebar.setOpen(false);
       navigate({
@@ -71,41 +66,7 @@ export function RowRemoveFromTrashDialog({
       });
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data;
-
-        if (data?.code === 400 && data?.cause === 'INVALID_PARAMETERS') {
-          toast.error(data?.message ?? 'ID do registro inválido');
-        }
-
-        if (data?.code === 401 && data?.cause === 'AUTHENTICATION_REQUIRED') {
-          toast.error(data?.message ?? 'Autenticação necessária');
-        }
-
-        if (data?.code === 403 && data?.cause === 'ACCESS_DENIED') {
-          toast.error(data?.message ?? 'Acesso negado');
-        }
-
-        if (data?.code === 403 && data?.cause === 'OWNER_OR_ADMIN_REQUIRED') {
-          toast.error(
-            'Apenas o dono ou administradores da tabela podem restaurar registros',
-          );
-        }
-
-        if (data?.code === 403 && data?.cause === 'TABLE_PRIVATE') {
-          toast.error('Esta tabela é privada e você não tem acesso');
-        }
-
-        if (data?.code === 404 && data?.cause === 'ROW_NOT_FOUND') {
-          toast.error(data?.message ?? 'Registro não encontrado na lixeira');
-        }
-
-        if (data?.code === 500) {
-          toast.error(data?.message ?? 'Erro interno do servidor');
-        }
-      }
-
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao restaurar linha da lixeira' });
     },
   });
 

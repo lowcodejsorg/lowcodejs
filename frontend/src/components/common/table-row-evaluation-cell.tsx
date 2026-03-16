@@ -1,11 +1,10 @@
-import { AxiosError } from 'axios';
 import { Star } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { useRowUpdateEvaluation } from '@/hooks/tanstack-query/use-row-update-evaluation';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -53,13 +52,7 @@ export function TableRowEvaluationCell({
 
   const evaluation = useRowUpdateEvaluation({
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        if (errorData?.message) {
-          toast.error(errorData.message);
-        }
-      }
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao avaliar' });
     },
   });
 

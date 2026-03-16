@@ -4,20 +4,14 @@ import z from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
-import type { ICategory } from '@/lib/interfaces';
-
-interface DropdownOption {
-  id: string;
-  label: string;
-  color: string | null;
-}
+import type { ICategory, IDropdown } from '@/lib/interfaces';
 
 export const FieldUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   defaultValue: z.string().default(''),
-  dropdown: z.array(z.custom<DropdownOption>()).default([]),
+  dropdown: z.array(z.custom<IDropdown>()).default([]),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
@@ -35,7 +29,6 @@ export const FieldUpdateSchema = z.object({
   trashed: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
-  order: z.string().default('none'),
 });
 
 export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
@@ -63,7 +56,6 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   trashed: false,
   widthInForm: 50,
   widthInList: 10,
-  order: 'none',
 };
 
 export const UpdateFieldFormFields = withForm({
@@ -103,7 +95,6 @@ export const UpdateFieldFormFields = withForm({
       isFieldGroup ||
       isCategory ||
       isUser;
-    const showFiltering = !isReaction && !isFile;
     const showRequired = !isReaction && !isEvaluation;
 
     const isDisabled = mode === 'show' || isPending;
@@ -118,10 +109,10 @@ export const UpdateFieldFormFields = withForm({
           validators={{
             onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               if (value.length > 40) {
-                return { message: 'O nome deve ter no máximo 40 caracteres' };
+                return 'O nome deve ter no máximo 40 caracteres';
               }
               return undefined;
             },
@@ -159,7 +150,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Formato é obrigatório' };
+                  return 'Formato é obrigatório';
                 }
                 return undefined;
               },
@@ -197,7 +188,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Formato é obrigatório' };
+                  return 'Formato é obrigatório';
                 }
                 return undefined;
               },
@@ -243,7 +234,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.length === 0) {
-                  return { message: 'Adicione ao menos uma opção' };
+                  return 'Adicione ao menos uma opção';
                 }
                 return undefined;
               },
@@ -267,7 +258,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Formato da data é obrigatório' };
+                  return 'Formato da data é obrigatório';
                 }
                 return undefined;
               },
@@ -292,7 +283,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Tabela de relacionamento é obrigatória' };
+                  return 'Tabela de relacionamento é obrigatória';
                 }
                 return undefined;
               },
@@ -322,7 +313,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Campo é obrigatório' };
+                  return 'Campo é obrigatório';
                 }
                 return undefined;
               },
@@ -350,7 +341,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.trim() === '') {
-                  return { message: 'Ordem é obrigatória' };
+                  return 'Ordem é obrigatória';
                 }
                 return undefined;
               },
@@ -374,7 +365,7 @@ export const UpdateFieldFormFields = withForm({
             validators={{
               onChange: ({ value }) => {
                 if (!value || value.length === 0) {
-                  return { message: 'Estrutura da categoria é obrigatória' };
+                  return 'Estrutura da categoria é obrigatória';
                 }
                 return undefined;
               },
@@ -402,30 +393,6 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Campo Filtro */}
-        {/* {showFiltering && (
-          <form.AppField name="filter">
-            {(field) => (
-              <field.FieldBooleanSwitch
-                label="Usar no filtro"
-                description="Usar este campo para filtrar os dados?"
-                disabled={isDisabled || lockNonOptions}
-              />
-            )}
-          </form.AppField>
-        )} */}
-
-        {/* Campo Exibição */}
-        {/* <form.AppField name="display">
-          {(field) => (
-            <field.FieldBooleanSwitch
-              label="Exibir na listagem"
-              description="Exibir este campo na listagem?"
-              disabled={isDisabled || lockNonOptions}
-            />
-          )}
-        </form.AppField> */}
-
         {/* Campo Obrigatoriedade */}
         {showRequired && (
           <form.AppField name="required">
@@ -438,17 +405,6 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
-
-        {/* Ordenação padrão */}
-        <form.AppField name="order">
-          {(field) => (
-            <field.TableFieldOrderSelect
-              label="Ordenação padrão"
-              description="Definir este campo como ordenação padrão da listagem"
-              disabled={isDisabled}
-            />
-          )}
-        </form.AppField>
 
         {/* Campo Lixeira */}
         <form.AppField name="trashed">

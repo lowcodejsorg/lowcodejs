@@ -30,7 +30,7 @@ export function FieldBooleanSwitch({
       )}
     >
       <div className="space-y-0.5">
-        <FieldLabel>{label}</FieldLabel>
+        <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
         {description && (
           <p className="text-sm text-muted-foreground">{description}</p>
         )}
@@ -38,6 +38,8 @@ export function FieldBooleanSwitch({
       <div className="inline-flex space-x-2 items-center">
         <span className="text-sm text-muted-foreground">{noLabel}</span>
         <Switch
+          id={field.name}
+          aria-label={label}
           disabled={disabled}
           checked={field.state.value}
           onCheckedChange={(checked) => {

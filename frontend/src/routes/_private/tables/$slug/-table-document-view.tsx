@@ -29,7 +29,7 @@ import {
   rowLeafLabel,
   rowMatchesCategory,
 } from '@/lib/document-helpers';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IField, IRow, ITable } from '@/lib/interfaces';
 
 const DEFAULT_SIDEBAR_WIDTH = 288; // w-72
 const MIN_SIDEBAR_WIDTH = 180;
@@ -40,15 +40,17 @@ export function TableDocumentView({
   headers,
   order,
   tableSlug,
+  table,
 }: {
   data: Array<IRow>;
   headers: Array<IField>;
   order: Array<string>;
   tableSlug: string;
+  table: ITable;
 }): React.ReactElement {
   const categoryField = useMemo(
-    () => firstCategoryField(headers, order),
-    [headers, order],
+    () => firstCategoryField(headers, order, table.layoutFields),
+    [headers, order, table.layoutFields],
   );
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(
     null,
@@ -97,7 +99,7 @@ export function TableDocumentView({
     };
   }, []);
 
-  const table = useReadTable({ slug: tableSlug });
+  const tableQuery = useReadTable({ slug: tableSlug });
 
   const orderedHeaders = useMemo(
     () => headers.filter((h) => !h.trashed).sort(headerSorter(order)),
@@ -105,8 +107,8 @@ export function TableDocumentView({
   );
 
   const docBlocks = useMemo(
-    () => buildDocBlocks(orderedHeaders),
-    [orderedHeaders],
+    () => buildDocBlocks(orderedHeaders, table.layoutFields),
+    [orderedHeaders, table.layoutFields],
   );
 
   const categoryTree: Array<CatNode> = useMemo(() => {
@@ -180,7 +182,7 @@ export function TableDocumentView({
   async function handlePrint(): Promise<void> {
     const blob = await pdf(
       <DocumentPdf
-        title={table.data?.name ?? ''}
+        title={tableQuery.data?.name ?? ''}
         categoryTitle={categoryField?.name ?? 'Sumario'}
         nodes={categoryTree}
         rows={sortedRows}
@@ -210,6 +212,7 @@ export function TableDocumentView({
         style={{ width: isSidebarOpen ? sidebarWidth : 40 }}
       >
         <DocumentSidebar
+          title={categoryField?.name ?? 'Índice'}
           subtitle={`Por: ${categoryField?.name}`}
           nodes={categoryTree}
           selectedId={selectedCategoryId}

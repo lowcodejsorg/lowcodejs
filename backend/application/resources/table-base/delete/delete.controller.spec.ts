@@ -44,7 +44,6 @@ describe('E2E Table Delete Controller', () => {
         showInDetail: true,
         format: null,
         group: null,
-        order: null,
         showInList: true,
         multiple: false,
         required: false,

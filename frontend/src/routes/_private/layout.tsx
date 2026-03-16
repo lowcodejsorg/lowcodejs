@@ -18,6 +18,9 @@ export const Route = createFileRoute('/_private')({
   pendingComponent: RoutePending,
   errorComponent: RouteError,
   ssr: 'data-only',
+  head: () => ({
+    meta: [{ name: 'robots', content: 'noindex, nofollow' }],
+  }),
   beforeLoad: async ({ context, location }) => {
     try {
       const user = await context.queryClient.ensureQueryData(

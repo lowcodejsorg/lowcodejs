@@ -1,4 +1,8 @@
-import { TextIcon } from 'lucide-react';
+import { HashIcon, LinkIcon, MailIcon, TextIcon } from 'lucide-react';
+import React from 'react';
+
+import { TableRowMaskedTextField } from './table-row-masked-text-field';
+import { TableRowPasswordField } from './table-row-password-field';
 
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
@@ -7,6 +11,13 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { E_FIELD_FORMAT } from '@/lib/constant';
+import {
+  getInputModeForFormat,
+  getInputTypeForFormat,
+  isFormatMasked,
+  isPasswordFormat,
+} from '@/lib/field-masks';
 import type { IField } from '@/lib/interfaces';
 
 interface TableRowTextFieldProps {
@@ -14,14 +25,63 @@ interface TableRowTextFieldProps {
   disabled?: boolean;
 }
 
-export function TableRowTextField({
+function getFormatIcon(format: string | null | undefined): React.JSX.Element {
+  switch (format) {
+    case E_FIELD_FORMAT.EMAIL:
+      return <MailIcon className="size-4" />;
+    case E_FIELD_FORMAT.URL:
+      return <LinkIcon className="size-4" />;
+    case E_FIELD_FORMAT.INTEGER:
+    case E_FIELD_FORMAT.DECIMAL:
+      return <HashIcon className="size-4" />;
+    default:
+      return <TextIcon className="size-4" />;
+  }
+}
+
+function TableRowTextFieldDefault({
   field,
   disabled,
 }: TableRowTextFieldProps): React.JSX.Element {
   const formField = useFieldContext<string>();
   const isInvalid =
-    formField.state.meta.isDirty && !formField.state.meta.isValid;
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
+
+  const inputType = getInputTypeForFormat(field.format);
+  const inputMode = getInputModeForFormat(field.format);
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>): void => {
+    if (field.format === E_FIELD_FORMAT.INTEGER) {
+      const allowed = [
+        'Backspace',
+        'Delete',
+        'ArrowLeft',
+        'ArrowRight',
+        'Tab',
+        '-',
+      ];
+      if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+        e.preventDefault();
+      }
+    }
+    if (field.format === E_FIELD_FORMAT.DECIMAL) {
+      const allowed = [
+        'Backspace',
+        'Delete',
+        'ArrowLeft',
+        'ArrowRight',
+        'Tab',
+        '-',
+        '.',
+        ',',
+      ];
+      if (!allowed.includes(e.key) && !/^\d$/.test(e.key)) {
+        e.preventDefault();
+      }
+    }
+  };
 
   return (
     <Field data-invalid={isInvalid}>
@@ -34,18 +94,57 @@ export function TableRowTextField({
           disabled={disabled}
           id={formField.name}
           name={formField.name}
-          type="text"
+          type={inputType}
+          inputMode={
+            inputMode as React.HTMLAttributes<HTMLInputElement>['inputMode']
+          }
           placeholder={`Digite ${field.name.toLowerCase()}`}
           value={formField.state.value || ''}
           onBlur={formField.handleBlur}
           onChange={(e) => formField.handleChange(e.target.value)}
+          onKeyDown={handleKeyDown}
           aria-invalid={isInvalid}
+          aria-required={isRequired || undefined}
+          aria-describedby={isInvalid ? errorId : undefined}
         />
-        <InputGroupAddon>
-          <TextIcon className="size-4" />
-        </InputGroupAddon>
+        <InputGroupAddon>{getFormatIcon(field.format)}</InputGroupAddon>
       </InputGroup>
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
+  );
+}
+
+export function TableRowTextField({
+  field,
+  disabled,
+}: TableRowTextFieldProps): React.JSX.Element {
+  if (isPasswordFormat(field.format)) {
+    return (
+      <TableRowPasswordField
+        field={field}
+        disabled={disabled}
+      />
+    );
+  }
+
+  if (isFormatMasked(field.format)) {
+    return (
+      <TableRowMaskedTextField
+        field={field}
+        disabled={disabled}
+      />
+    );
+  }
+
+  return (
+    <TableRowTextFieldDefault
+      field={field}
+      disabled={disabled}
+    />
   );
 }

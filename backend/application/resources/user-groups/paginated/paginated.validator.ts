@@ -13,6 +13,10 @@ export const UserGroupPaginatedQueryValidator = z.object({
     .max(100, 'O limite por página deve ser no máximo 100')
     .default(50),
   search: z.string({ message: 'A busca deve ser um texto' }).trim().optional(),
+
+  'order-name': z.enum(['asc', 'desc']).optional(),
+  'order-description': z.enum(['asc', 'desc']).optional(),
+  'order-created-at': z.enum(['asc', 'desc']).optional(),
 });
 
 export type UserGroupPaginatedPayload = Merge<

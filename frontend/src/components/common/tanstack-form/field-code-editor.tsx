@@ -1,13 +1,13 @@
 import { Suspense, lazy } from 'react';
 
-import type { HookType } from '@/components/code-editor/tutorial-content';
+import type { HookType } from '@/components/common/code-editor/tutorial-content';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { ITable } from '@/lib/interfaces';
 
 // Lazy load do Monaco Editor (76MB de dependência)
 const CodeEditor = lazy(() =>
-  import('@/components/code-editor/code-editor').then((m) => ({
+  import('@/components/common/code-editor/code-editor').then((m) => ({
     default: m.CodeEditor,
   })),
 );

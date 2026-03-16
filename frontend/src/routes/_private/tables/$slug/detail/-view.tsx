@@ -28,18 +28,6 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
 
   return (
     <React.Fragment>
-      {/* <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
-        {permission.can('UPDATE_TABLE') && !data.trashed && (
-          <TableSendToTrashDialog slug={data.slug} />
-        )}
-        {permission.can('UPDATE_TABLE') && data.trashed && (
-          <TableRemoveFromTrashDialog slug={data.slug} />
-        )}
-        {permission.can('REMOVE_TABLE') && data.trashed && (
-          <TableDeleteDialog slug={data.slug} />
-        )}
-      </div> */}
-
       <section className="space-y-4 p-2">
         {/* Logo */}
         <div className="space-y-1">
@@ -85,6 +73,16 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
         <div className="space-y-1">
           <p className="text-sm font-medium">Colaboração</p>
           <p className="text-sm text-muted-foreground">{collaborationLabel}</p>
+        </div>
+
+        {/* Ordenação padrão */}
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Ordenação padrão</p>
+          <p className="text-sm text-muted-foreground">
+            {data.order
+              ? `${data.fields?.find((f) => f.slug === data.order?.field)?.name ?? data.order.field} (${data.order.direction === 'asc' ? 'Ascendente' : 'Descendente'})`
+              : '-'}
+          </p>
         </div>
 
         {/* Administradores */}

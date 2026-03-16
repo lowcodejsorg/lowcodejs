@@ -6,10 +6,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableFieldShowSchema } from './show.schema';
 import TableFieldShowUseCase from './show.use-case';
-import {
-  TableFieldShowParamsValidator,
-  TableFieldShowQueryValidator,
-} from './show.validator';
+import { TableFieldShowParamsValidator } from './show.validator';
 
 @Controller({
   route: 'tables',
@@ -38,9 +35,8 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const params = TableFieldShowParamsValidator.parse(request.params);
-    const query = TableFieldShowQueryValidator.parse(request.query);
 
-    const result = await this.useCase.execute({ ...params, ...query });
+    const result = await this.useCase.execute({ ...params });
 
     if (result.isLeft()) {
       const error = result.value;

@@ -17,11 +17,11 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import type { IField } from '@/lib/interfaces';
+import type { IFilterField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface SheetFilterProps {
-  fields: Array<IField>;
+  fields: Array<IFilterField>;
 }
 
 export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {

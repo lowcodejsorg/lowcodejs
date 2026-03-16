@@ -49,7 +49,8 @@ export function TableRowCategoryField({
 }: TableRowCategoryFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<string>>();
   const isInvalid =
-    formField.state.meta.isDirty && !formField.state.meta.isValid;
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
 
   const categories = field.category;
@@ -98,7 +99,6 @@ export function TableRowCategoryField({
             data={treeData}
             selectedIds={selectedIds}
             onSelectionChange={(ids) => {
-              console.log(ids);
               if (!field.multiple) {
                 const [id] = ids;
                 formField.handleChange(id ? [id] : []);
@@ -113,7 +113,12 @@ export function TableRowCategoryField({
           />
         </PopoverContent>
       </Popover>
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }

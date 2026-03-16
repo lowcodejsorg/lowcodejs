@@ -1,0 +1,56 @@
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult } from '@tanstack/react-query';
+import type { AxiosError } from 'axios';
+
+import { queryKeys } from './_query-keys';
+
+import { API } from '@/lib/api';
+import type { IField, ITable } from '@/lib/interfaces';
+
+interface GroupFieldCreatePayload {
+  tableSlug: string;
+  groupSlug: string;
+  data: Partial<IField>;
+}
+
+interface UseGroupFieldCreateProps {
+  onSuccess?: (data: IField) => void;
+  onError?: (error: AxiosError | Error) => void;
+}
+
+export function useGroupFieldCreate(
+  props: UseGroupFieldCreateProps,
+): UseMutationResult<IField, AxiosError | Error, GroupFieldCreatePayload> {
+  const queryClient = useQueryClient();
+
+  return useMutation<IField, AxiosError | Error, GroupFieldCreatePayload>({
+    mutationFn: async (payload) => {
+      const route = `/tables/${payload.tableSlug}/groups/${payload.groupSlug}/fields`;
+      const response = await API.post<IField>(route, payload.data);
+      return response.data;
+    },
+    onSuccess(response, variables) {
+      queryClient.setQueryData<ITable>(
+        queryKeys.tables.detail(variables.tableSlug),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            groups: old.groups.map((g) =>
+              g.slug === variables.groupSlug
+                ? { ...g, fields: [...g.fields, response] }
+                : g,
+            ),
+          };
+        },
+      );
+
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.lists(),
+      });
+
+      props.onSuccess?.(response);
+    },
+    onError: props.onError,
+  });
+}

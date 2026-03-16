@@ -16,7 +16,6 @@ import {
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useParams, useRouter } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import {
   BookOpenCheckIcon,
   GripVerticalIcon,
@@ -26,7 +25,6 @@ import {
   SettingsIcon,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
-import { toast } from 'sonner';
 
 import { DocumentSidebarAddDialog } from '@/components/common/document-sidebar-add-dialog';
 import {
@@ -50,7 +48,9 @@ import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { buildLabelMap } from '@/lib/document-helpers';
 import type { CatNode } from '@/lib/document-helpers';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IField } from '@/lib/interfaces';
+import { toastSuccess } from '@/lib/toast';
 
 export function DocumentSidebar({
   title = 'Índice',
@@ -158,12 +158,7 @@ export function DocumentSidebar({
         queryKey: queryKeys.tables.detail(slug),
       });
 
-      toast('Seção criada', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A seção foi criada com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Seção criada', 'A seção foi criada com sucesso');
 
       setAddModalOpen(false);
 
@@ -179,16 +174,9 @@ export function DocumentSidebar({
       }, 200);
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        toast('Erro ao criar seção', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao criar seção',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-      console.error(error);
+      handleApiError(error, {
+        context: 'Erro ao criar seção',
+      });
     },
   });
 
@@ -249,16 +237,9 @@ export function DocumentSidebar({
       });
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        toast('Erro ao atualizar categorias', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar categorias',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-      console.error(error);
+      handleApiError(error, {
+        context: 'Erro ao atualizar categorias',
+      });
     },
   });
 

@@ -14,6 +14,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import { TABLE_NAME_REGEX } from '@/lib/constant';
 import { cn } from '@/lib/utils';
 
 export const CloneTableBodySchema = z.object({
@@ -66,16 +67,28 @@ export const CloneTableFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
-            onBlur: ({ value }) => {
+            onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               if (value.length > 40) {
-                return { message: 'Nome deve ter no máximo 40 caracteres' };
+                return 'Nome deve ter no máximo 40 caracteres';
               }
-              if (
-                !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
-              ) {
+              if (!TABLE_NAME_REGEX.test(value)) {
+                return {
+                  message: 'O nome não pode conter caracteres especiais',
+                };
+              }
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'Nome é obrigatório';
+              }
+              if (value.length > 40) {
+                return 'Nome deve ter no máximo 40 caracteres';
+              }
+              if (!TABLE_NAME_REGEX.test(value)) {
                 return {
                   message: 'O nome não pode conter caracteres especiais',
                 };
@@ -99,9 +112,14 @@ export const CloneTableFormFields = withForm({
         <form.AppField
           name="MODEL_CLONE_TABLES"
           validators={{
+            onChange: ({ value }) => {
+              if (!value) {
+                return 'Selecione um modelo';
+              }
+            },
             onBlur: ({ value }) => {
               if (!value) {
-                return { message: 'Selecione um modelo' };
+                return 'Selecione um modelo';
               }
             },
           }}

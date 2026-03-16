@@ -3,9 +3,7 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import {
   CreateTableFormFields,
@@ -25,7 +23,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import type { IHTTPExeptionError } from '@/lib/interfaces';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/create/')({
   component: RouteComponent,
@@ -55,71 +55,36 @@ function RouteComponentContent(): React.JSX.Element {
   const permission = usePermission();
   const isUploading = useIsUploading();
 
-  function setFieldError(field: 'name', message: string): void {
-    form.setFieldMeta(field, (prev) => ({
-      ...prev,
-      isTouched: true,
-      errors: [{ message }],
-      errorMap: { onSubmit: { message } },
-    }));
-  }
-
   const _create = useCreateTable({
-    onSuccess() {
-      toast('Tabela criada', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A tabela foi criada com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+    onSuccess(response) {
+      toastSuccess('Tabela criada', 'A tabela foi criada com sucesso');
 
       form.reset();
-      navigate({ to: '/tables', search: { page: 1, perPage: 50 } });
+      navigate({
+        to: '/tables/$slug',
+        params: { slug: response.slug },
+      });
       sidebar.setOpen(true);
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data as IHTTPExeptionError<{
-          name?: string;
-        }>;
-
-        // 409 - Tabela já existe (TABLE_EXISTS)
-        if (data.cause === 'TABLE_EXISTS' && data.code === 409) {
-          setFieldError('name', 'Já existe uma tabela com este nome');
-          return;
-        }
-
-        // 400 - Erros de validação (INVALID_PAYLOAD_FORMAT)
-        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
-          if (data.errors['name']) setFieldError('name', data.errors['name']);
-          return;
-        }
-
-        // 500 - Erro interno (CREATE_TABLE_ERROR)
-        if (data.cause === 'CREATE_TABLE_ERROR' && data.code === 500) {
-          toast('Erro ao criar a tabela', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Houve um erro ao criar a tabela. Tente novamente mais tarde.',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        toast('Erro ao criar a tabela', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: data.message || 'Erro ao criar a tabela',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
+      handleApiError(error, {
+        context: 'Erro ao criar a tabela',
+        onFieldErrors: (errors) => {
+          const setFieldError = createFieldErrorSetter(form);
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
+      });
     },
   });
 
   const form = useAppForm({
     defaultValues: tableCreateFormDefaultValues,
     validators: {
+      // @ts-expect-error Zod Standard Schema type inference
+      onChange: TableCreateSchema,
+      // @ts-expect-error Zod Standard Schema type inference
       onSubmit: TableCreateSchema,
     },
     onSubmit: async ({ value }) => {

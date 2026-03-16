@@ -25,8 +25,8 @@ export const queryKeys = {
   },
   fields: {
     all: (tableSlug: string) => ['tables', tableSlug, 'fields'] as const,
-    detail: (tableSlug: string, fieldId: string, groupSlug?: string) =>
-      [...queryKeys.fields.all(tableSlug), fieldId, groupSlug] as const,
+    detail: (tableSlug: string, fieldId: string) =>
+      [...queryKeys.fields.all(tableSlug), fieldId] as const,
   },
   users: {
     all: ['users'] as const,
@@ -60,6 +60,41 @@ export const queryKeys = {
   pages: {
     all: ['pages'] as const,
     detail: (slug: string) => [...queryKeys.pages.all, slug] as const,
+  },
+  groupFields: {
+    all: (tableSlug: string, groupSlug: string) =>
+      ['tables', tableSlug, 'groups', groupSlug, 'fields'] as const,
+    details: (tableSlug: string, groupSlug: string) =>
+      [...queryKeys.groupFields.all(tableSlug, groupSlug), 'detail'] as const,
+    detail: (tableSlug: string, groupSlug: string, fieldId: string) =>
+      [
+        ...queryKeys.groupFields.details(tableSlug, groupSlug),
+        fieldId,
+      ] as const,
+  },
+  groupRows: {
+    all: (tableSlug: string, rowId: string, groupSlug: string) =>
+      ['tables', tableSlug, 'rows', rowId, 'groups', groupSlug] as const,
+    lists: (tableSlug: string, rowId: string, groupSlug: string) =>
+      [
+        ...queryKeys.groupRows.all(tableSlug, rowId, groupSlug),
+        'list',
+      ] as const,
+    details: (tableSlug: string, rowId: string, groupSlug: string) =>
+      [
+        ...queryKeys.groupRows.all(tableSlug, rowId, groupSlug),
+        'detail',
+      ] as const,
+    detail: (
+      tableSlug: string,
+      rowId: string,
+      groupSlug: string,
+      itemId: string,
+    ) =>
+      [
+        ...queryKeys.groupRows.details(tableSlug, rowId, groupSlug),
+        itemId,
+      ] as const,
   },
   permissions: {
     all: ['permissions'] as const,

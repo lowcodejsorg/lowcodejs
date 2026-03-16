@@ -23,6 +23,7 @@ export const TableStyleSchema = z
     E_TABLE_STYLE.KANBAN,
     E_TABLE_STYLE.FORUM,
     E_TABLE_STYLE.CALENDAR,
+    E_TABLE_STYLE.GANTT,
   ])
   .default(E_TABLE_STYLE.LIST);
 
@@ -45,6 +46,26 @@ export const TableAdministratorsSchema = z.array(z.string()).default([]);
 export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
 
 export const TableFieldOrderFormSchema = z.array(z.string().trim()).default([]);
+
+export const TableOrderSchema = z
+  .object({
+    field: z.string().trim(),
+    direction: z.enum(['asc', 'desc']),
+  })
+  .nullable()
+  .default(null);
+
+export const TableLayoutFieldsSchema = z.object({
+  title: z.string().nullable().default(null),
+  description: z.string().nullable().default(null),
+  cover: z.string().nullable().default(null),
+  category: z.string().nullable().default(null),
+  startDate: z.string().nullable().default(null),
+  endDate: z.string().nullable().default(null),
+  color: z.string().nullable().default(null),
+  participants: z.string().nullable().default(null),
+  reminder: z.string().nullable().default(null),
+});
 
 export const TableMethodSchema = z.object({
   beforeSave: z.object({

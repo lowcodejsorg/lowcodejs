@@ -192,12 +192,6 @@ export const TableFieldCreateSchema: FastifySchema = {
           },
         },
       },
-      order: {
-        type: ['string', 'null'],
-        enum: ['asc', 'desc', null],
-        default: null,
-        description: 'Field sort order',
-      },
     },
   },
   response: {
@@ -330,12 +324,6 @@ export const TableFieldCreateSchema: FastifySchema = {
             _id: { type: 'string' },
             slug: { type: 'string' },
           },
-        },
-        order: {
-          type: 'string',
-          enum: ['asc', 'desc'],
-          nullable: true,
-          description: 'Field sort order',
         },
         trashed: {
           type: 'boolean',

@@ -3,9 +3,7 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import {
   CreateGroupFormFields,
@@ -18,7 +16,9 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useCreateGroup } from '@/hooks/tanstack-query/use-group-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import type { IHTTPExeptionError } from '@/lib/interfaces';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/groups/create/')({
   component: RouteComponent,
@@ -29,26 +29,9 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const navigate = useNavigate();
 
-  function setFieldError(
-    field: 'name' | 'description' | 'permissions',
-    message: string,
-  ): void {
-    form.setFieldMeta(field, (prev) => ({
-      ...prev,
-      isTouched: true,
-      errors: [{ message }],
-      errorMap: { onSubmit: { message } },
-    }));
-  }
-
   const _create = useCreateGroup({
     onSuccess() {
-      toast('Grupo criado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O grupo foi criado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Grupo criado', 'O grupo foi criado com sucesso');
 
       form.reset();
       navigate({ to: '/groups', search: { page: 1, perPage: 50 } });
@@ -56,57 +39,24 @@ function RouteComponent(): React.JSX.Element {
       router.invalidate();
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data as IHTTPExeptionError<{
-          name?: string;
-          description?: string;
-          permissions?: string;
-        }>;
-
-        // 409 - Grupo já existe (GROUP_EXISTS)
-        if (data.cause === 'GROUP_EXISTS' && data.code === 409) {
-          setFieldError('name', 'Já existe um grupo com este nome');
-          return;
-        }
-
-        // 400 - Erros de validação (INVALID_PAYLOAD_FORMAT)
-        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
-          if (data.errors['name']) setFieldError('name', data.errors['name']);
-          if (data.errors['description'])
-            setFieldError('description', data.errors['description']);
-          if (data.errors['permissions'])
-            setFieldError('permissions', data.errors['permissions']);
-          return;
-        }
-
-        // 500 - Erro interno (CREATE_USER_GROUP_ERROR)
-        if (data.cause === 'CREATE_USER_GROUP_ERROR' && data.code === 500) {
-          toast('Erro ao criar o grupo', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Houve um erro ao criar o grupo. Tente novamente mais tarde.',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-      }
-
-      toast('Erro ao criar o grupo', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description:
-          'Houve um erro interno ao criar o grupo. Tente novamente mais tarde.',
-        descriptionClassName: '!text-white',
-        closeButton: true,
+      handleApiError(error, {
+        context: 'Erro ao criar o grupo',
+        onFieldErrors: (errors) => {
+          const setFieldError = createFieldErrorSetter(form);
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
       });
-
-      console.error(error);
     },
   });
 
   const form = useAppForm({
     defaultValues: groupFormDefaultValues,
     validators: {
+      // @ts-expect-error Zod Standard Schema type inference
+      onChange: GroupCreateSchema,
+      // @ts-expect-error Zod Standard Schema type inference
       onSubmit: GroupCreateSchema,
     },
     onSubmit: async ({ value }) => {

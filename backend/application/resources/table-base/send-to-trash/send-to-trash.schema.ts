@@ -169,12 +169,6 @@ export const TableSendToTrashSchema: FastifySchema = {
                   slug: { type: 'string', nullable: true },
                 },
               },
-              order: {
-                type: 'string',
-                enum: ['asc', 'desc'],
-                nullable: true,
-                description: 'Field sort order',
-              },
               trashed: {
                 type: 'boolean',
                 description: 'Is field in trash',
@@ -238,6 +232,18 @@ export const TableSendToTrashSchema: FastifySchema = {
           type: 'string',
           enum: ['TABLE', 'FIELD_GROUP'],
           description: 'Table type',
+        },
+        order: {
+          type: 'object',
+          description: 'Default sort order for table records',
+          properties: {
+            field: { type: 'string', nullable: true },
+            direction: {
+              type: 'string',
+              enum: ['asc', 'desc'],
+              nullable: true,
+            },
+          },
         },
         _schema: {
           type: 'object',

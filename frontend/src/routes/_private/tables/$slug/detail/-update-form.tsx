@@ -1,14 +1,29 @@
 import { FileTextIcon } from 'lucide-react';
+import React from 'react';
 import { z } from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import {
+  E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
+  TABLE_NAME_REGEX,
 } from '@/lib/constant';
-import type { ITable, ValueOf } from '@/lib/interfaces';
+import type { IField, ILayoutFields, ITable } from '@/lib/interfaces';
 import { getAllowedTableStyles } from '@/lib/table-style';
+
+const LayoutFieldsSchema = z.object({
+  title: z.string().default(''),
+  description: z.string().default(''),
+  cover: z.string().default(''),
+  category: z.string().default(''),
+  startDate: z.string().default(''),
+  endDate: z.string().default(''),
+  color: z.string().default(''),
+  participants: z.string().default(''),
+  reminder: z.string().default(''),
+});
 
 // Schema estendido com campos de UI (logoFile)
 export const TableUpdateSchema = z.object({
@@ -26,6 +41,7 @@ export const TableUpdateSchema = z.object({
     E_TABLE_STYLE.KANBAN,
     E_TABLE_STYLE.FORUM,
     E_TABLE_STYLE.CALENDAR,
+    E_TABLE_STYLE.GANTT,
   ]),
   visibility: z.enum([
     E_TABLE_VISIBILITY.PUBLIC,
@@ -41,18 +57,21 @@ export const TableUpdateSchema = z.object({
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
   administrators: z.array(z.string()).default([]),
+  order: z.string().default('none'),
+  layoutFields: LayoutFieldsSchema.default({
+    title: '',
+    description: '',
+    cover: '',
+    category: '',
+    startDate: '',
+    endDate: '',
+    color: '',
+    participants: '',
+    reminder: '',
+  }),
 });
 
-export type TableUpdateFormValues = {
-  name: string;
-  description: string;
-  style: ValueOf<typeof E_TABLE_STYLE>;
-  visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-  logo: string | null;
-  logoFile: Array<File>;
-  administrators: Array<string>;
-};
+export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
@@ -63,6 +82,18 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   logo: null,
   logoFile: [],
   administrators: [],
+  order: 'none',
+  layoutFields: {
+    title: '',
+    description: '',
+    cover: '',
+    category: '',
+    startDate: '',
+    endDate: '',
+    color: '',
+    participants: '',
+    reminder: '',
+  },
 };
 
 export const UpdateTableFormFields = withForm({
@@ -74,6 +105,98 @@ export const UpdateTableFormFields = withForm({
   },
   render: function Render({ form, isPending, mode, tableData }) {
     const isDisabled = mode === 'show' || isPending;
+
+    const orderOptions = React.useMemo(() => {
+      const fields = tableData?.fields?.filter((f) => !f.trashed) ?? [];
+      const options: Array<{ label: string; value: string }> = [
+        { label: 'Nenhuma', value: 'none' },
+      ];
+      for (const f of fields) {
+        options.push({
+          label: `${f.name} (Ascendente)`,
+          value: `${f.slug}:asc`,
+        });
+        options.push({
+          label: `${f.name} (Descendente)`,
+          value: `${f.slug}:desc`,
+        });
+      }
+      return options;
+    }, [tableData]);
+
+    const activeFields = React.useMemo(
+      () => tableData?.fields?.filter((f: IField) => !f.trashed) ?? [],
+      [tableData],
+    );
+
+    const fieldOptionsByType = React.useCallback(
+      (type: string) =>
+        activeFields
+          .filter((f: IField) => f.type === type)
+          .map((f: IField) => ({ label: f.name, value: f._id })),
+      [activeFields],
+    );
+
+    const LAYOUT_ROLE_CONFIG: Record<
+      string,
+      Array<{
+        role: keyof ILayoutFields;
+        label: string;
+        type: string;
+      }>
+    > = {
+      [E_TABLE_STYLE.CARD]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
+        { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
+      ],
+      [E_TABLE_STYLE.MOSAIC]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
+        { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
+      ],
+      [E_TABLE_STYLE.GALLERY]: [
+        { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
+      ],
+      [E_TABLE_STYLE.DOCUMENT]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
+        { role: 'category', label: 'Categoria', type: E_FIELD_TYPE.CATEGORY },
+      ],
+      [E_TABLE_STYLE.CALENDAR]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
+        { role: 'startDate', label: 'Data de início', type: E_FIELD_TYPE.DATE },
+        { role: 'endDate', label: 'Data de término', type: E_FIELD_TYPE.DATE },
+        { role: 'color', label: 'Cor', type: E_FIELD_TYPE.DROPDOWN },
+        {
+          role: 'participants',
+          label: 'Participantes',
+          type: E_FIELD_TYPE.USER,
+        },
+        {
+          role: 'reminder',
+          label: 'Lembrete',
+          type: E_FIELD_TYPE.FIELD_GROUP,
+        },
+      ],
+    };
 
     return (
       <section className="space-y-4 p-2">
@@ -103,16 +226,28 @@ export const UpdateTableFormFields = withForm({
         <form.AppField
           name="name"
           validators={{
-            onBlur: ({ value }) => {
+            onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return { message: 'Nome é obrigatório' };
+                return 'Nome é obrigatório';
               }
               if (value.length > 40) {
-                return { message: 'Nome deve ter no máximo 40 caracteres' };
+                return 'Nome deve ter no máximo 40 caracteres';
               }
-              if (
-                !/^[a-zA-ZáàâãéèêíïóôõöúçÁÀÂÃÉÈÊÍÏÓÔÕÖÚÇ0-9\s\-_]+$/.test(value)
-              ) {
+              if (!TABLE_NAME_REGEX.test(value)) {
+                return {
+                  message: 'O nome não pode conter caracteres especiais',
+                };
+              }
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value || value.trim() === '') {
+                return 'Nome é obrigatório';
+              }
+              if (value.length > 40) {
+                return 'Nome deve ter no máximo 40 caracteres';
+              }
+              if (!TABLE_NAME_REGEX.test(value)) {
                 return {
                   message: 'O nome não pode conter caracteres especiais',
                 };
@@ -156,13 +291,48 @@ export const UpdateTableFormFields = withForm({
           )}
         </form.AppField>
 
+        {/* Campos do Layout */}
+        <form.Subscribe selector={(state) => state.values.style}>
+          {(currentStyle) => {
+            const layoutRoles = LAYOUT_ROLE_CONFIG[currentStyle] ?? [];
+            if (layoutRoles.length === 0) return null;
+            return (
+              <div className="space-y-3 rounded-lg border p-3">
+                <p className="text-sm font-medium text-muted-foreground">
+                  Campos do Layout
+                </p>
+                {layoutRoles.map((item) => (
+                  <form.AppField
+                    key={item.role}
+                    name={`layoutFields.${item.role}`}
+                  >
+                    {(field) => (
+                      <field.TableLayoutFieldSelect
+                        label={item.label}
+                        disabled={isDisabled}
+                        options={fieldOptionsByType(item.type)}
+                      />
+                    )}
+                  </form.AppField>
+                ))}
+              </div>
+            );
+          }}
+        </form.Subscribe>
+
         {/* Campo Visibility */}
         <form.AppField
           name="visibility"
           validators={{
+            onChange: ({ value }) => {
+              if (value.trim() === '') {
+                return 'Visibilidade é obrigatória';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (value.trim() === '') {
-                return { message: 'Visibilidade é obrigatória' };
+                return 'Visibilidade é obrigatória';
               }
               return undefined;
             },
@@ -182,9 +352,15 @@ export const UpdateTableFormFields = withForm({
         <form.AppField
           name="collaboration"
           validators={{
+            onChange: ({ value }) => {
+              if (value.trim() === '') {
+                return 'Colaboração é obrigatória';
+              }
+              return undefined;
+            },
             onBlur: ({ value }) => {
               if (value.trim() === '') {
-                return { message: 'Colaboração é obrigatória' };
+                return 'Colaboração é obrigatória';
               }
               return undefined;
             },
@@ -207,6 +383,19 @@ export const UpdateTableFormFields = withForm({
               label="Administradores"
               placeholder="Selecione administradores"
               disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
+
+        {/* Ordenação padrão */}
+        <form.AppField name="order">
+          {(field) => (
+            <field.TableOrderSelectField
+              label="Ordenação padrão"
+              description="Define a ordenação padrão dos registros na listagem"
+              placeholder="Selecione uma ordenação"
+              disabled={isDisabled}
+              options={orderOptions}
             />
           )}
         </form.AppField>

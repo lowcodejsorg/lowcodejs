@@ -4,9 +4,7 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import {
   CreateMenuFormFields,
@@ -20,7 +18,10 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import type { IHTTPExeptionError, ValueOf } from '@/lib/interfaces';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
+import type { ValueOf } from '@/lib/interfaces';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/menus/create/')({
   component: RouteComponent,
@@ -31,26 +32,9 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const navigate = useNavigate();
 
-  function setFieldError(
-    field: 'name' | 'type' | 'table' | 'parent' | 'html' | 'url',
-    message: string,
-  ): void {
-    form.setFieldMeta(field, (prev) => ({
-      ...prev,
-      isTouched: true,
-      errors: [{ message }],
-      errorMap: { onSubmit: { message } },
-    }));
-  }
-
   const _create = useCreateMenu({
     onSuccess() {
-      toast('Menu criado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O menu foi criado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Menu criado', 'O menu foi criado com sucesso');
 
       form.reset();
       navigate({ to: '/menus', search: { page: 1, perPage: 50 } });
@@ -58,84 +42,22 @@ function RouteComponent(): React.JSX.Element {
       router.invalidate();
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data as IHTTPExeptionError<{
-          name?: string;
-          type?: string;
-          table?: string;
-          parent?: string;
-          html?: string;
-          url?: string;
-        }>;
-
-        // 404 - Menu pai não encontrado
-        if (data.cause === 'PARENT_MENU_NOT_FOUND' && data.code === 404) {
-          setFieldError('parent', 'Menu pai não encontrado');
-          return;
-        }
-
-        // 409 - Menu já existe
-        if (data.cause === 'MENU_ALREADY_EXISTS' && data.code === 409) {
-          setFieldError('name', 'Já existe um menu com este nome');
-          return;
-        }
-
-        // 404 - Tabela não encontrada
-        if (data.cause === 'TABLE_NOT_FOUND' && data.code === 404) {
-          setFieldError('table', 'Tabela não encontrada');
-          return;
-        }
-
-        // 400 - Parâmetros inválidos
-        if (data.cause === 'INVALID_PARAMETERS' && data.code === 400) {
-          setFieldError('table', 'Tabela é obrigatória para este tipo de menu');
-          return;
-        }
-
-        // 400 - Erros de validação
-        if (data.cause === 'INVALID_PAYLOAD_FORMAT' && data.code === 400) {
-          if (data.errors['name']) setFieldError('name', data.errors['name']);
-          if (data.errors['type']) setFieldError('type', data.errors['type']);
-          if (data.errors['table'])
-            setFieldError('table', data.errors['table']);
-          if (data.errors['parent'])
-            setFieldError('parent', data.errors['parent']);
-          if (data.errors['html']) setFieldError('html', data.errors['html']);
-          if (data.errors['url']) setFieldError('url', data.errors['url']);
-          return;
-        }
-
-        // 500 - Erro interno
-        if (data.cause === 'CREATE_MENU_ERROR' && data.code === 500) {
-          toast('Erro ao criar o menu', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Houve um erro ao criar o menu. Tente novamente mais tarde.',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-      }
-
-      toast('Erro ao criar o menu', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description:
-          'Houve um erro interno ao criar o menu. Tente novamente mais tarde.',
-        descriptionClassName: '!text-white',
-        closeButton: true,
+      handleApiError(error, {
+        context: 'Erro ao criar o menu',
+        onFieldErrors: (errors) => {
+          const setFieldError = createFieldErrorSetter(form);
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
       });
-
-      console.error(error);
     },
   });
 
   const form = useAppForm({
     defaultValues: menuFormDefaultValues,
+    validators: { onChange: MenuCreateSchema, onSubmit: MenuCreateSchema },
     onSubmit: async ({ value }) => {
-      const validation = MenuCreateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_create.status === 'pending') return;
 
       await _create.mutateAsync({

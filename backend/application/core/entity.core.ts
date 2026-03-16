@@ -55,10 +55,15 @@ export const E_FIELD_FORMAT = {
   DECIMAL: 'DECIMAL',
   URL: 'URL',
   EMAIL: 'EMAIL',
+  PASSWORD: 'PASSWORD',
+  PHONE: 'PHONE',
+  CNPJ: 'CNPJ',
+  CPF: 'CPF',
 
   // TEXT_LONG
   RICH_TEXT: 'RICH_TEXT',
   PLAIN_TEXT: 'PLAIN_TEXT',
+  MARKDOWN: 'MARKDOWN',
 
   // DATE
   DD_MM_YYYY: 'dd/MM/yyyy',
@@ -104,6 +109,7 @@ export const E_TABLE_STYLE = {
   KANBAN: 'KANBAN',
   FORUM: 'FORUM',
   CALENDAR: 'CALENDAR',
+  GANTT: 'GANTT',
 } as const;
 
 export const E_TABLE_VISIBILITY = {
@@ -234,6 +240,18 @@ export type ITableMethod = {
   afterSave: { code: string | null };
 };
 
+export type ILayoutFields = {
+  title: string | null;
+  description: string | null;
+  cover: string | null;
+  category: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  color: string | null;
+  participants: string | null;
+  reminder: string | null;
+};
+
 export type ITable = Merge<
   Base,
   {
@@ -253,6 +271,8 @@ export type ITable = Merge<
     fieldOrderForm: string[];
     methods: ITableMethod;
     groups: IGroupConfiguration[];
+    order: { field: string; direction: 'asc' | 'desc' } | null;
+    layoutFields: ILayoutFields;
   }
 >;
 
@@ -301,7 +321,6 @@ export type IField = Merge<
     dropdown: IDropdown[];
     category: ICategory[];
     group: IFieldConfigurationGroup | null;
-    order: 'asc' | 'desc' | null;
   }
 >;
 
@@ -385,6 +404,7 @@ export type IMenu = Merge<
     parent: string | null;
     url: string | null;
     html: string | null;
+    owner: IUser | string | null;
   }
 >;
 
@@ -434,10 +454,10 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
+    showInList: false,
     showInFilter: false,
     showInForm: false,
-    showInDetail: true,
+    showInDetail: false,
     widthInForm: null,
     widthInList: 10,
     defaultValue: null,
@@ -445,7 +465,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Criador',
@@ -467,7 +486,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Criado em',
@@ -489,7 +507,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Lixeira',
@@ -511,7 +528,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Enviado para lixeira em',
@@ -533,7 +549,6 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
 ];
 
@@ -547,10 +562,10 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
+    showInList: false,
     showInFilter: false,
     showInForm: false,
-    showInDetail: true,
+    showInDetail: false,
     widthInForm: null,
     widthInList: 10,
     defaultValue: null,
@@ -558,7 +573,6 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Criado em',
@@ -580,7 +594,6 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Lixeira',
@@ -602,7 +615,6 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
   {
     name: 'Enviado para lixeira em',
@@ -624,6 +636,5 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     dropdown: [],
     category: [],
     group: null,
-    order: null,
   },
 ];

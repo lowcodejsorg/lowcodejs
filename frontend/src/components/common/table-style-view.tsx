@@ -1,5 +1,6 @@
 import {
   CalendarIcon,
+  GanttChartIcon,
   LayoutDashboard,
   LayoutDashboardIcon,
   LayoutListIcon,
@@ -7,7 +8,6 @@ import {
   ListTreeIcon,
   MessageCircle,
 } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { Spinner } from '../ui/spinner';
 
@@ -26,6 +26,7 @@ import { E_TABLE_STYLE } from '@/lib/constant';
 import type { ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { getAllowedTableStyles } from '@/lib/table-style';
+import { toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface TableStyleViewDropdownProps {
@@ -63,9 +64,8 @@ export function TableStyleViewDropdown({
         },
       );
     },
-    onError(error) {
-      console.error(error);
-      toast.error('Erro ao atualizar estilo da tabela');
+    onError() {
+      toastError('Erro ao atualizar estilo da tabela');
     },
   });
 
@@ -76,13 +76,20 @@ export function TableStyleViewDropdown({
     if (!table.data) return;
 
     update.mutate({
-      ...table.data,
       slug,
-      fields: table.data.fields.map((f) => f._id),
-      style,
-      administrators: table.data.administrators.flatMap((a) => a._id),
+      name: table.data.name,
+      description: table.data.description ?? null,
       logo: table.data.logo?._id ?? null,
-    } as any);
+      style,
+      visibility: table.data.visibility,
+      collaboration: table.data.collaboration,
+      administrators: table.data.administrators.flatMap((a) => a._id),
+      fieldOrderList: table.data.fieldOrderList ?? [],
+      fieldOrderForm: table.data.fieldOrderForm ?? [],
+      order: table.data.order?.field ? table.data.order : null,
+      methods: table.data.methods,
+      layoutFields: table.data.layoutFields,
+    });
   };
 
   const currentStyle = table.data?.style ?? E_TABLE_STYLE.LIST;
@@ -99,6 +106,7 @@ export function TableStyleViewDropdown({
   const canShowKanban = allowedStyles.includes(E_TABLE_STYLE.KANBAN);
   const canShowForum = allowedStyles.includes(E_TABLE_STYLE.FORUM);
   const canShowCalendar = allowedStyles.includes(E_TABLE_STYLE.CALENDAR);
+  const canShowGantt = allowedStyles.includes(E_TABLE_STYLE.GANTT);
 
   return (
     <DropdownMenu
@@ -148,6 +156,10 @@ export function TableStyleViewDropdown({
           {table.status === 'success' &&
             currentStyle === E_TABLE_STYLE.CALENDAR && (
               <CalendarIcon className="size-4" />
+            )}
+          {table.status === 'success' &&
+            currentStyle === E_TABLE_STYLE.GANTT && (
+              <GanttChartIcon className="size-4" />
             )}
 
           <span>Exibição</span>
@@ -237,6 +249,17 @@ export function TableStyleViewDropdown({
               >
                 <CalendarIcon className="size-4" />
                 <span>Calendario</span>
+              </DropdownMenuRadioItem>
+            )}
+
+            {canShowGantt && (
+              <DropdownMenuRadioItem
+                className="inline-flex space-x-1 w-full"
+                value={E_TABLE_STYLE.GANTT}
+                onClick={() => handleStyleChange(E_TABLE_STYLE.GANTT)}
+              >
+                <GanttChartIcon className="size-4" />
+                <span>Gantt</span>
               </DropdownMenuRadioItem>
             )}
           </DropdownMenuRadioGroup>

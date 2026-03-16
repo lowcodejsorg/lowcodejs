@@ -5,7 +5,7 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type {
   IField,
   IGroupConfiguration,
@@ -53,7 +53,8 @@ export function TableRowFieldGroupField({
 }: TableRowFieldGroupFieldProps): React.JSX.Element {
   const formField = useFieldContext<Array<Record<string, any>>>();
   const isInvalid =
-    formField.state.meta.isDirty && !formField.state.meta.isValid;
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
   const isRequired = field.required;
   const isMultiple = field.multiple;
 
@@ -181,7 +182,12 @@ export function TableRowFieldGroupField({
           </Button>
         )}
       </div>
-      {isInvalid && <FieldError errors={formField.state.meta.errors} />}
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
     </Field>
   );
 }
@@ -231,6 +237,22 @@ function NestedGroupField({
               />
             );
           case E_FIELD_TYPE.TEXT_LONG:
+            if (groupField.format === E_FIELD_FORMAT.RICH_TEXT) {
+              return (
+                <formField.TableRowRichTextField
+                  field={groupField}
+                  disabled={disabled}
+                />
+              );
+            }
+            if (groupField.format === E_FIELD_FORMAT.MARKDOWN) {
+              return (
+                <formField.TableRowMarkdownField
+                  field={groupField}
+                  disabled={disabled}
+                />
+              );
+            }
             return (
               <formField.TableRowTextareaField
                 field={groupField}

@@ -3,10 +3,8 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
@@ -21,7 +19,9 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/detail/')({
   component: RouteComponent,
@@ -117,29 +117,18 @@ function TableUpdateContent({
 }: TableUpdateContentProps): React.JSX.Element {
   const _update = useUpdateTable({
     onSuccess() {
-      toast('Tabela atualizada', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'Os dados da tabela foram atualizados com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess(
+        'Tabela atualizada',
+        'Os dados da tabela foram atualizados com sucesso',
+      );
 
       form.reset();
       setMode('show');
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-
-        toast('Erro ao atualizar a tabela', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao atualizar a tabela',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-
-      console.error(error);
+      handleApiError(error, {
+        context: 'Erro ao atualizar a tabela',
+      });
     },
   });
 
@@ -155,12 +144,36 @@ function TableUpdateContent({
       administrators: data.administrators.map((admin) =>
         typeof admin === 'string' ? admin : admin._id,
       ),
+      order:
+        data.order?.field && data.order?.direction
+          ? `${data.order.field}:${data.order.direction}`
+          : 'none',
+      layoutFields: {
+        title: data.layoutFields?.title ?? '',
+        description: data.layoutFields?.description ?? '',
+        cover: data.layoutFields?.cover ?? '',
+        category: data.layoutFields?.category ?? '',
+        startDate: data.layoutFields?.startDate ?? '',
+        endDate: data.layoutFields?.endDate ?? '',
+        color: data.layoutFields?.color ?? '',
+        participants: data.layoutFields?.participants ?? '',
+        reminder: data.layoutFields?.reminder ?? '',
+      },
     },
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: TableUpdateSchema, onSubmit: TableUpdateSchema },
     onSubmit: async ({ value }) => {
-      const validation = TableUpdateSchema.safeParse(value);
-      if (!validation.success) return;
-
       if (_update.status === 'pending') return;
+
+      let orderPayload: { field: string; direction: 'asc' | 'desc' } | null =
+        null;
+      if (value.order && value.order !== 'none') {
+        const [field, direction] = value.order.split(':');
+        orderPayload = {
+          field,
+          direction: direction as 'asc' | 'desc',
+        };
+      }
 
       await _update.mutateAsync({
         slug: data.slug,
@@ -176,6 +189,18 @@ function TableUpdateContent({
         methods: {
           ...data.methods,
         },
+        order: orderPayload,
+        layoutFields: {
+          title: value.layoutFields.title || null,
+          description: value.layoutFields.description || null,
+          cover: value.layoutFields.cover || null,
+          category: value.layoutFields.category || null,
+          startDate: value.layoutFields.startDate || null,
+          endDate: value.layoutFields.endDate || null,
+          color: value.layoutFields.color || null,
+          participants: value.layoutFields.participants || null,
+          reminder: value.layoutFields.reminder || null,
+        },
       });
     },
   });
@@ -188,6 +213,7 @@ function TableUpdateContent({
 
       {mode === 'edit' && (
         <form
+          id="table-update-form"
           className="flex-1 flex flex-col min-h-0 overflow-auto"
           onSubmit={(e) => {
             e.preventDefault();
@@ -224,11 +250,11 @@ function TableUpdateContent({
                   <span>Cancelar</span>
                 </Button>
                 <Button
-                  type="button"
+                  type="submit"
+                  form="table-update-form"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
-                  onClick={() => form.handleSubmit()}
                 >
                   {isSubmitting && <Spinner />}
                   <span>Salvar</span>

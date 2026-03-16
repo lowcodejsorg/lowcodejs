@@ -1,10 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 
+import { createRouteHead } from '@/lib/seo';
+
 export const Route = createFileRoute('/_authentication/sign-up/')({
-  head: ({ matches }) => {
-    const systemName =
-      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
-      'LowCodeJs';
-    return { meta: [{ title: `Cadastro - ${systemName}` }] };
-  },
+  head: createRouteHead({ title: 'Cadastro' }),
 });

@@ -9,6 +9,21 @@ import {
   type ITable as Core,
 } from '@application/core/entity.core';
 
+const LayoutFields = new mongoose.Schema(
+  {
+    title: { type: String, default: null },
+    description: { type: String, default: null },
+    cover: { type: String, default: null },
+    category: { type: String, default: null },
+    startDate: { type: String, default: null },
+    endDate: { type: String, default: null },
+    color: { type: String, default: null },
+    participants: { type: String, default: null },
+    reminder: { type: String, default: null },
+  },
+  { _id: false },
+);
+
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
 const GroupConfiguration = new mongoose.Schema(
@@ -115,6 +130,24 @@ export const Schema = new mongoose.Schema(
     groups: {
       type: [GroupConfiguration],
       default: [],
+    },
+    order: {
+      field: { type: String, default: null },
+      direction: { type: String, enum: ['asc', 'desc'], default: null },
+    },
+    layoutFields: {
+      type: LayoutFields,
+      default: {
+        title: null,
+        description: null,
+        cover: null,
+        category: null,
+        startDate: null,
+        endDate: null,
+        color: null,
+        participants: null,
+        reminder: null,
+      },
     },
 
     trashed: { type: Boolean, default: false },

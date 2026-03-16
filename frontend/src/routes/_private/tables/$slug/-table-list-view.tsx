@@ -1,31 +1,19 @@
 import { useMutation } from '@tanstack/react-query';
 import { useParams, useRouter, useSearch } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
+import type { ColumnDef } from '@tanstack/react-table';
 import {
   ArchiveRestoreIcon,
-  ArrowDownIcon,
   ArrowRightIcon,
-  ArrowUpIcon,
-  ChevronsLeftRightIcon,
+  EllipsisIcon,
   LoaderCircleIcon,
   PlusIcon,
   Trash2Icon,
+  TrashIcon,
   XIcon,
 } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
-import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
-import { TableRowDateCell } from '@/components/common/table-row-date-cell';
-import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
-import { TableRowEvaluationCell } from '@/components/common/table-row-evaluation-cell';
-import { TableRowFieldGroupCell } from '@/components/common/table-row-field-group-cell';
-import { TableRowFileCell } from '@/components/common/table-row-file-cell';
-import { TableRowReactionCell } from '@/components/common/table-row-reaction-cell';
-import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
-import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
-import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
-import { TableRowUserCell } from '@/components/common/table-row-user-cell';
+import { DataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -41,271 +29,187 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import {
-  Table as BaseTabela,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useDataTable } from '@/hooks/use-data-table';
+import { useFieldColumns } from '@/hooks/use-field-columns';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
-import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
+import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
+
+function RowActionsCell({
+  row,
+  slug,
+  canUpdateRow,
+  canRemoveRow,
+}: {
+  row: IRow;
+  slug: string;
+  canUpdateRow: boolean;
+  canRemoveRow: boolean;
+}): React.JSX.Element {
+  const [dialogType, setDialogType] = React.useState<
+    'trash' | 'restore' | 'delete' | null
+  >(null);
+
+  const trashMutation = useMutation({
+    mutationFn: async () => {
+      await API.patch(`/tables/${slug}/rows/${row._id}/trash`);
+    },
+    onSuccess() {
+      setDialogType(null);
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
+      toastSuccess('Registro enviado para lixeira!');
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: async () => {
+      await API.patch(`/tables/${slug}/rows/${row._id}/restore`);
+    },
+    onSuccess() {
+      setDialogType(null);
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
+      toastSuccess('Registro restaurado!');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      await API.delete(`/tables/${slug}/rows/${row._id}`);
+    },
+    onSuccess() {
+      setDialogType(null);
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
+      toastSuccess('Registro excluido permanentemente!');
+    },
+  });
+
+  const activeMutation =
+    dialogType === 'trash'
+      ? trashMutation
+      : dialogType === 'restore'
+        ? restoreMutation
+        : deleteMutation;
+
+  return (
+    <div onClick={(e) => e.stopPropagation()}>
+      <DropdownMenu
+        dir="ltr"
+        modal={false}
+      >
+        <DropdownMenuTrigger className="p-1 rounded-full">
+          <EllipsisIcon className="size-4" />
+        </DropdownMenuTrigger>
+
+        <DropdownMenuContent className="mr-10">
+          <DropdownMenuLabel>Acoes</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            className={cn(
+              'inline-flex space-x-1 w-full cursor-pointer',
+              (row.trashed || !canUpdateRow) && 'hidden',
+            )}
+            onClick={() => setDialogType('trash')}
+          >
+            <TrashIcon className="size-4" />
+            <span>Enviar para lixeira</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className={cn(
+              'inline-flex space-x-1 w-full cursor-pointer',
+              (!row.trashed || !canUpdateRow) && 'hidden',
+            )}
+            onClick={() => setDialogType('restore')}
+          >
+            <ArchiveRestoreIcon className="size-4" />
+            <span>Restaurar</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className={cn(
+              'inline-flex space-x-1 w-full cursor-pointer',
+              (!row.trashed || !canRemoveRow) && 'hidden',
+            )}
+            onClick={() => setDialogType('delete')}
+          >
+            <Trash2Icon className="size-4" />
+            <span>Excluir permanentemente</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <Dialog
+        modal
+        open={dialogType !== null}
+        onOpenChange={(open) => {
+          if (!open) setDialogType(null);
+        }}
+      >
+        <DialogContent className="py-4 px-6">
+          <DialogHeader>
+            <DialogTitle>
+              {dialogType === 'trash' && 'Enviar para lixeira'}
+              {dialogType === 'restore' && 'Restaurar da lixeira'}
+              {dialogType === 'delete' && 'Excluir permanentemente'}
+            </DialogTitle>
+            <DialogDescription>
+              {dialogType === 'trash' &&
+                'Ao confirmar essa acao, o registro sera enviado para a lixeira.'}
+              {dialogType === 'restore' &&
+                'Ao confirmar essa acao, o registro sera restaurado da lixeira.'}
+              {dialogType === 'delete' &&
+                'Ao confirmar essa acao, o registro sera excluido permanentemente. Essa acao nao pode ser desfeita.'}
+            </DialogDescription>
+          </DialogHeader>
+          <section>
+            <form className="pt-4 pb-2">
+              <DialogFooter className="inline-flex w-full gap-2 justify-end">
+                <DialogClose asChild>
+                  <Button className="bg-destructive hover:bg-destructive">
+                    Cancelar
+                  </Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  disabled={activeMutation.status === 'pending'}
+                  onClick={() => activeMutation.mutateAsync()}
+                >
+                  {activeMutation.status === 'pending' && (
+                    <LoaderCircleIcon className="size-4 animate-spin" />
+                  )}
+                  {activeMutation.status !== 'pending' && (
+                    <span>Confirmar</span>
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </section>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
 
 interface TableListViewProps {
   data: Array<IRow>;
   headers: Array<IField>;
   order: Array<string>;
-}
-
-function HeaderFilter(field: IField): boolean {
-  return field.showInList && !field.trashed;
-}
-
-function HeaderSorter(order: Array<string>) {
-  return function (a: IField, b: IField): number {
-    return order.indexOf(a._id) - order.indexOf(b._id);
-  };
-}
-
-interface TableListViewHeaderProps {
-  field: IField;
-  canEdit: boolean;
-}
-
-export function TableListViewHeader({
-  field,
-  canEdit,
-}: TableListViewHeaderProps): React.JSX.Element {
-  const search = useSearch({
-    from: '/_private/tables/$slug/',
-  });
-
-  const router = useRouter();
-
-  const orderKey = 'order-'.concat(field.slug);
-
-  const { slug } = useParams({
-    from: '/_private/tables/$slug/',
-  });
-
-  return (
-    <TableHead
-      key={field._id}
-      // style={{ width: `${field.widthInList ?? 50}%` }}
-    >
-      <div className="inline-flex items-center">
-        <Button
-          className={cn(
-            'h-auto px-2 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent',
-            canEdit ? 'cursor-pointer' : 'cursor-default',
-          )}
-          variant="link"
-          onClick={() => {
-            if (!canEdit) return;
-            router.navigate({
-              to: '/tables/$slug/field/$fieldId',
-              params: {
-                fieldId: field._id,
-                slug,
-              },
-            });
-          }}
-        >
-          {field.name}
-        </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              className={cn(
-                'h-auto px-1 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent',
-                field.type === E_FIELD_TYPE.FIELD_GROUP && 'invisible',
-              )}
-              variant="outline"
-            >
-              {search[orderKey] === 'asc' && <ArrowUpIcon className="size-4" />}
-              {search[orderKey] === 'desc' && (
-                <ArrowDownIcon className="size-4" />
-              )}
-              {!search[orderKey] && (
-                <ChevronsLeftRightIcon className="size-4 rotate-90" />
-              )}
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            <DropdownMenuItem
-              onClick={() => {
-                router.navigate({
-                  // @ts-ignore Tanstack Router Navigate
-                  search: (state) => ({
-                    ...state,
-                    [orderKey]: 'asc',
-                  }),
-                });
-              }}
-            >
-              <ArrowUpIcon />
-              <span>Ascending</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={() => {
-                router.navigate({
-                  // @ts-ignore Tanstack Router Navigate
-                  search: (state) => ({
-                    ...state,
-                    [orderKey]: 'desc',
-                  }),
-                });
-              }}
-            >
-              <ArrowDownIcon />
-              <span>Descending</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </TableHead>
-  );
-}
-
-interface RenderCellProps {
-  field: IField;
-  row: IRow;
-  tableSlug: string;
-}
-
-function RenderCell({
-  field,
-  row,
-  tableSlug,
-}: RenderCellProps): React.JSX.Element {
-  if (!(field.slug in row)) {
-    return <span className="text-muted-foreground text-sm">-</span>;
-  }
-
-  switch (field.type) {
-    case E_FIELD_TYPE.TEXT_SHORT:
-      return (
-        <TableRowTextShortCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.TEXT_LONG:
-      return (
-        <TableRowTextLongCell
-          field={field}
-          row={row}
-          className="max-w-sm truncate"
-        />
-      );
-    case E_FIELD_TYPE.DATE:
-      return (
-        <TableRowDateCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.DROPDOWN:
-      return (
-        <TableRowDropdownCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.CATEGORY:
-      return (
-        <TableRowCategoryCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.RELATIONSHIP:
-      return (
-        <TableRowRelationshipCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.FILE:
-      return (
-        <TableRowFileCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.FIELD_GROUP:
-      return (
-        <TableRowFieldGroupCell
-          field={field}
-          row={row}
-          tableSlug={tableSlug}
-        />
-      );
-    case E_FIELD_TYPE.REACTION:
-      return (
-        <TableRowReactionCell
-          field={field}
-          row={row}
-          tableSlug={tableSlug}
-        />
-      );
-    case E_FIELD_TYPE.EVALUATION:
-      return (
-        <TableRowEvaluationCell
-          field={field}
-          row={row}
-          tableSlug={tableSlug}
-        />
-      );
-    case E_FIELD_TYPE.USER:
-      return (
-        <TableRowUserCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.IDENTIFIER:
-      return (
-        <TableRowTextShortCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.CREATOR:
-      return (
-        <TableRowUserCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.CREATED_AT:
-    case E_FIELD_TYPE.TRASHED_AT:
-      return (
-        <TableRowDateCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.TRASHED:
-      return (
-        <TableRowTextShortCell
-          field={field}
-          row={row}
-        />
-      );
-    default:
-      return <span className="text-muted-foreground text-sm">-</span>;
-  }
 }
 
 export function TableListView({
@@ -314,71 +218,164 @@ export function TableListView({
   order,
 }: TableListViewProps): React.ReactElement {
   const router = useRouter();
-
-  const { slug } = useParams({
-    from: '/_private/tables/$slug/',
-  });
-
-  const search = useSearch({
-    from: '/_private/tables/$slug/',
-  });
-
+  const { slug } = useParams({ from: '/_private/tables/$slug/' });
+  const search = useSearch({ from: '/_private/tables/$slug/' });
   const isTrashView = search.trashed === true;
 
-  const table = useReadTable({ slug });
-  const permission = useTablePermission(table.data);
+  const table_ = useReadTable({ slug });
+  const permission = useTablePermission(table_.data);
 
   const canCreateField = permission.can('CREATE_FIELD');
   const canEditField = permission.can('UPDATE_FIELD');
   const canTrashRow = permission.can('UPDATE_ROW');
+  const canRemoveRow = permission.can('REMOVE_ROW');
 
-  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(
-    new Set(),
-  );
   const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
 
-  const visibleIds = data.map((row) => row._id);
-  const allVisibleSelected =
-    visibleIds.length > 0 && visibleIds.every((id) => selectedRows.has(id));
-  const someVisibleSelected =
-    visibleIds.some((id) => selectedRows.has(id)) && !allVisibleSelected;
-  const selectedCount = selectedRows.size;
+  const fieldColumns = useFieldColumns({
+    fields: headers,
+    fieldOrder: order,
+    tableSlug: slug,
+    canEditField,
+  });
 
-  function toggleRow(id: string): void {
-    setSelectedRows((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }
+  const columns = React.useMemo(() => {
+    const cols: Array<ColumnDef<IRow, any>> = [];
 
-  function toggleAll(): void {
-    if (allVisibleSelected) {
-      setSelectedRows((prev) => {
-        const next = new Set(prev);
-        for (const id of visibleIds) {
-          next.delete(id);
-        }
-        return next;
-      });
-    } else {
-      setSelectedRows((prev) => {
-        const next = new Set(prev);
-        for (const id of visibleIds) {
-          next.add(id);
-        }
-        return next;
+    if (canTrashRow) {
+      cols.push({
+        id: '_select',
+        enableHiding: false,
+        enableResizing: false,
+        size: 40,
+        header: ({ table }) => (
+          <Checkbox
+            checked={
+              table.getIsAllPageRowsSelected()
+                ? true
+                : table.getIsSomePageRowsSelected()
+                  ? 'indeterminate'
+                  : false
+            }
+            onCheckedChange={(value) =>
+              table.toggleAllPageRowsSelected(!!value)
+            }
+            aria-label="Selecionar todos"
+          />
+        ),
+        cell: ({ row }) => (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label={`Selecionar registro ${row.id}`}
+            />
+          </div>
+        ),
       });
     }
-  }
 
-  function clearSelection(): void {
-    setSelectedRows(new Set());
-  }
+    cols.push(...fieldColumns);
+
+    if (canTrashRow || canRemoveRow) {
+      cols.push({
+        id: '_actions',
+        enableHiding: false,
+        enableResizing: false,
+        size: 80,
+        header: canCreateField
+          ? (): React.ReactElement => (
+              <Button
+                variant="outline"
+                className="cursor-pointer size-6"
+                onClick={() => {
+                  router.navigate({
+                    to: '/tables/$slug/field/create',
+                    replace: true,
+                    params: { slug },
+                  });
+                }}
+              >
+                <PlusIcon className="size-4" />
+              </Button>
+            )
+          : undefined,
+        cell: ({ row }) => (
+          <RowActionsCell
+            row={row.original}
+            slug={slug}
+            canUpdateRow={canTrashRow}
+            canRemoveRow={canRemoveRow}
+          />
+        ),
+      });
+    }
+
+    if (!(canTrashRow || canRemoveRow) && canCreateField) {
+      cols.push({
+        id: '_create_field',
+        enableHiding: false,
+        enableResizing: false,
+        size: 50,
+        header: () => (
+          <Button
+            variant="outline"
+            className="cursor-pointer size-6"
+            onClick={() => {
+              router.navigate({
+                to: '/tables/$slug/field/create',
+                replace: true,
+                params: { slug },
+              });
+            }}
+          >
+            <PlusIcon className="size-4" />
+          </Button>
+        ),
+        cell: () => null,
+      });
+    } else if (!(canTrashRow || canRemoveRow)) {
+      cols.push({
+        id: '_navigate',
+        enableHiding: false,
+        enableResizing: false,
+        size: 50,
+        cell: () => (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+          >
+            <ArrowRightIcon />
+          </Button>
+        ),
+      });
+    }
+
+    return cols;
+  }, [canTrashRow, canRemoveRow, canCreateField, fieldColumns, router, slug]);
+
+  const table = useDataTable({
+    data,
+    columns,
+    getRowId: (row) => row._id,
+    enableRowSelection: canTrashRow,
+    enableColumnResizing: true,
+    persistKey: `list-view:${slug}`,
+    initialColumnPinning: {
+      left: canTrashRow ? ['_select'] : [],
+      right: [
+        canTrashRow || canRemoveRow
+          ? '_actions'
+          : canCreateField
+            ? '_create_field'
+            : '_navigate',
+      ],
+    },
+  });
+
+  const selectedRows = table.getSelectedRowModel().rows;
+  const selectedCount = selectedRows.length;
+  const selectedIds = selectedRows.map((r) => r.id);
 
   const bulkTrash = useMutation({
     mutationFn: async function (ids: Array<string>) {
@@ -388,34 +385,16 @@ export function TableListView({
     },
     onSuccess(result) {
       setShowConfirmDialog(false);
-      clearSelection();
-
+      table.resetRowSelection();
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-
-      toast(
+      toastSuccess(
         result.modified === 1
           ? '1 registro enviado para lixeira!'
           : `${result.modified} registros enviados para lixeira!`,
-        {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description: 'Os registros foram movidos para a lixeira',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        },
+        'Os registros foram movidos para a lixeira',
       );
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        toast.error(
-          errorData?.message ?? 'Erro ao enviar registros para lixeira',
-        );
-      } else {
-        toast.error('Erro ao enviar registros para lixeira');
-      }
-      console.error(error);
     },
   });
 
@@ -427,141 +406,33 @@ export function TableListView({
     },
     onSuccess(result) {
       setShowConfirmDialog(false);
-      clearSelection();
-
+      table.resetRowSelection();
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-
-      toast(
+      toastSuccess(
         result.modified === 1
           ? '1 registro restaurado!'
           : `${result.modified} registros restaurados!`,
-        {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description: 'Os registros foram restaurados da lixeira',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        },
+        'Os registros foram restaurados da lixeira',
       );
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        toast.error(errorData?.message ?? 'Erro ao restaurar registros');
-      } else {
-        toast.error('Erro ao restaurar registros');
-      }
-      console.error(error);
     },
   });
 
   return (
     <>
-      <BaseTabela>
-        {headers.length > 0 && (
-          <TableHeader className="sticky top-0 bg-background">
-            <TableRow>
-              {canTrashRow && (
-                <TableHead className="w-10">
-                  <Checkbox
-                    checked={
-                      allVisibleSelected
-                        ? true
-                        : someVisibleSelected
-                          ? 'indeterminate'
-                          : false
-                    }
-                    onCheckedChange={toggleAll}
-                    aria-label="Selecionar todos"
-                  />
-                </TableHead>
-              )}
-
-              {headers
-                .filter(HeaderFilter)
-                .sort(HeaderSorter(order))
-                .map((field) => (
-                  <TableListViewHeader
-                    field={field}
-                    key={field._id}
-                    canEdit={canEditField}
-                  />
-                ))}
-
-              {canCreateField && (
-                <TableHead className="w-30">
-                  <Button
-                    variant="outline"
-                    className="cursor-pointer size-6"
-                    onClick={() => {
-                      router.navigate({
-                        to: '/tables/$slug/field/create',
-                        replace: true,
-                        params: {
-                          slug,
-                        },
-                      });
-                    }}
-                  >
-                    <PlusIcon className="size-4" />
-                  </Button>
-                </TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-        )}
-        <TableBody>
-          {data.map((row) => (
-            <TableRow
-              key={row._id}
-              className="cursor-pointer hover:bg-muted/50"
-              data-state={selectedRows.has(row._id) ? 'selected' : undefined}
-              onClick={() => {
-                router.navigate({
-                  to: '/tables/$slug/row/$rowId',
-                  params: { slug, rowId: row._id },
-                });
-              }}
-            >
-              {canTrashRow && (
-                <TableCell className="w-10">
-                  <Checkbox
-                    checked={selectedRows.has(row._id)}
-                    onCheckedChange={() => toggleRow(row._id)}
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={`Selecionar registro ${row._id}`}
-                  />
-                </TableCell>
-              )}
-
-              {headers
-                .filter(HeaderFilter)
-                .sort(HeaderSorter(order))
-                .map((field) => (
-                  <TableCell
-                    key={field._id.concat('-').concat(row._id)}
-                    style={{ width: `${field.widthInList ?? 10}px` }}
-                  >
-                    <RenderCell
-                      field={field}
-                      row={row}
-                      tableSlug={slug}
-                    />
-                  </TableCell>
-                ))}
-              <TableCell>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                >
-                  <ArrowRightIcon />
-                </Button>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </BaseTabela>
+      <DataTable
+        table={table}
+        enableVirtualization
+        enableColumnDragging
+        enableKeyboardNavigation
+        onRowClick={(row) => {
+          router.navigate({
+            to: '/tables/$slug/row/$rowId',
+            params: { slug, rowId: row._id },
+          });
+        }}
+      />
 
       {selectedCount > 0 && (
         <div className="sticky bottom-4 mx-auto flex w-fit items-center gap-3 rounded-lg border bg-background px-4 py-2 shadow-lg">
@@ -592,7 +463,7 @@ export function TableListView({
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={clearSelection}
+            onClick={() => table.resetRowSelection()}
           >
             <XIcon className="size-4" />
           </Button>
@@ -614,11 +485,11 @@ export function TableListView({
             <DialogDescription>
               {isTrashView
                 ? selectedCount === 1
-                  ? 'Ao confirmar essa ação, 1 registro será restaurado da lixeira.'
-                  : `Ao confirmar essa ação, ${selectedCount} registros serão restaurados da lixeira.`
+                  ? 'Ao confirmar essa acao, 1 registro sera restaurado da lixeira.'
+                  : `Ao confirmar essa acao, ${selectedCount} registros serao restaurados da lixeira.`
                 : selectedCount === 1
-                  ? 'Ao confirmar essa ação, 1 registro será enviado para a lixeira.'
-                  : `Ao confirmar essa ação, ${selectedCount} registros serão enviados para a lixeira.`}
+                  ? 'Ao confirmar essa acao, 1 registro sera enviado para a lixeira.'
+                  : `Ao confirmar essa acao, ${selectedCount} registros serao enviados para a lixeira.`}
             </DialogDescription>
           </DialogHeader>
           <section>
@@ -638,9 +509,9 @@ export function TableListView({
                   }
                   onClick={() => {
                     if (isTrashView) {
-                      bulkRestore.mutateAsync(Array.from(selectedRows));
+                      bulkRestore.mutateAsync(selectedIds);
                     } else {
-                      bulkTrash.mutateAsync(Array.from(selectedRows));
+                      bulkTrash.mutateAsync(selectedIds);
                     }
                   }}
                 >

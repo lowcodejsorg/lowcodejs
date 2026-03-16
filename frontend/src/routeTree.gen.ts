@@ -9,6 +9,8 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
 import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
 import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout'
 import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index'
@@ -40,6 +42,16 @@ import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_pr
 import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index'
 import { Route as PrivateTablesSlugFieldFieldIdIndexRouteImport } from './routes/_private/tables/$slug/field/$fieldId/index'
 
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
+  id: '/robots.txt',
+  path: '/robots.txt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
   id: '/_private',
   getParentRoute: () => rootRouteImport,
@@ -270,6 +282,8 @@ const PrivateTablesSlugFieldFieldIdIndexRoute =
   )
 
 export interface FileRoutesByFullPath {
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/pages/$slug': typeof PrivatePagesSlugRoute
   '/': typeof AuthenticationSignInIndexRoute
   '/sign-up': typeof AuthenticationSignUpIndexRoute
@@ -300,6 +314,8 @@ export interface FileRoutesByFullPath {
   '/tables/$slug/row/create': typeof PrivateTablesSlugRowCreateIndexRoute
 }
 export interface FileRoutesByTo {
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/pages/$slug': typeof PrivatePagesSlugRoute
   '/': typeof AuthenticationSignInIndexRoute
   '/sign-up': typeof AuthenticationSignUpIndexRoute
@@ -333,6 +349,8 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authentication': typeof AuthenticationLayoutRouteWithChildren
   '/_private': typeof PrivateLayoutRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_private/pages/$slug': typeof PrivatePagesSlugRoute
   '/_authentication/_sign-in/': typeof AuthenticationSignInIndexRoute
   '/_authentication/sign-up/': typeof AuthenticationSignUpIndexRoute
@@ -365,6 +383,8 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/pages/$slug'
     | '/'
     | '/sign-up'
@@ -395,6 +415,8 @@ export interface FileRouteTypes {
     | '/tables/$slug/row/create'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/pages/$slug'
     | '/'
     | '/sign-up'
@@ -427,6 +449,8 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authentication'
     | '/_private'
+    | '/robots.txt'
+    | '/sitemap.xml'
     | '/_private/pages/$slug'
     | '/_authentication/_sign-in/'
     | '/_authentication/sign-up/'
@@ -460,10 +484,26 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticationLayoutRoute: typeof AuthenticationLayoutRouteWithChildren
   PrivateLayoutRoute: typeof PrivateLayoutRouteWithChildren
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/robots.txt': {
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_private': {
       id: '/_private'
       path: ''
@@ -757,6 +797,8 @@ const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   AuthenticationLayoutRoute: AuthenticationLayoutRouteWithChildren,
   PrivateLayoutRoute: PrivateLayoutRouteWithChildren,
+  RobotsDottxtRoute: RobotsDottxtRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

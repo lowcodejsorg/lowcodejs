@@ -129,6 +129,7 @@ export type IMenu = Merge<
     parent: IMenu | null;
     url: string | null;
     html: string | null;
+    owner: IUser | null;
   }
 >;
 
@@ -176,9 +177,16 @@ export type IField = Merge<
     dropdown: Array<IDropdown>;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
-    order: 'asc' | 'desc' | null;
   }
 >;
+
+export type IFilterField = Pick<
+  IField,
+  'slug' | 'name' | 'type' | 'multiple'
+> & {
+  dropdown?: Array<IDropdown>;
+  category?: Array<ICategory>;
+};
 
 export type ISchema = {
   type: 'Number' | 'String' | 'Date' | 'Boolean' | 'ObjectId';
@@ -202,6 +210,18 @@ export type ITableMethod = {
   afterSave: { code: string | null };
 };
 
+export type ILayoutFields = {
+  title: string | null;
+  description: string | null;
+  cover: string | null;
+  category: string | null;
+  startDate: string | null;
+  endDate: string | null;
+  color: string | null;
+  participants: string | null;
+  reminder: string | null;
+};
+
 export type ITable = Merge<
   Base,
   {
@@ -221,6 +241,8 @@ export type ITable = Merge<
     fieldOrderForm: Array<string>;
     methods: ITableMethod;
     groups: Array<IGroupConfiguration>;
+    order: { field: string; direction: 'asc' | 'desc' } | null;
+    layoutFields: ILayoutFields;
   }
 >;
 

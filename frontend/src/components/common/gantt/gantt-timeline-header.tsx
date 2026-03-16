@@ -1,0 +1,107 @@
+import { format, isToday, isWeekend } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import React from 'react';
+
+import type { ZoomLevel } from './gantt-types';
+
+import { cn } from '@/lib/utils';
+
+interface TimelineMonthHeadersProps {
+  days: Array<Date>;
+  dayWidth: number;
+}
+
+export function TimelineMonthHeaders({
+  days,
+  dayWidth,
+}: TimelineMonthHeadersProps): React.JSX.Element {
+  const months: Array<{ label: string; width: number }> = [];
+  let currentLabel = '';
+  let currentWidth = 0;
+
+  for (const day of days) {
+    const label = format(day, 'MMMM yyyy', { locale: ptBR });
+    if (label !== currentLabel) {
+      if (currentLabel)
+        months.push({ label: currentLabel, width: currentWidth });
+      currentLabel = label;
+      currentWidth = dayWidth;
+    } else {
+      currentWidth += dayWidth;
+    }
+  }
+  if (currentLabel) months.push({ label: currentLabel, width: currentWidth });
+
+  return (
+    <div
+      className="flex"
+      style={{ height: 28 }}
+    >
+      {months.map((m, i) => (
+        <div
+          key={i}
+          className="shrink-0 truncate border-r px-2 text-xs font-medium leading-7 capitalize"
+          style={{ width: m.width }}
+        >
+          {m.label}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+interface GanttTimelineHeaderProps {
+  days: Array<Date>;
+  dayWidth: number;
+  zoom: ZoomLevel;
+  headerHeight: number;
+}
+
+export function GanttTimelineHeader({
+  days,
+  dayWidth,
+  zoom,
+  headerHeight,
+}: GanttTimelineHeaderProps): React.JSX.Element {
+  return (
+    <div
+      className="sticky top-0 z-10 border-b bg-background"
+      style={{ height: headerHeight }}
+    >
+      {zoom !== 'month' && (
+        <TimelineMonthHeaders
+          days={days}
+          dayWidth={dayWidth}
+        />
+      )}
+      <div
+        className="flex"
+        style={{ height: zoom === 'month' ? headerHeight : 20 }}
+      >
+        {days.map((day, i) => (
+          <div
+            key={i}
+            className={cn(
+              'shrink-0 border-r text-center text-[10px] leading-5 text-muted-foreground',
+              isToday(day) && 'bg-primary/10 font-bold text-primary',
+              isWeekend(day) && 'bg-muted/30',
+            )}
+            style={{ width: dayWidth }}
+          >
+            {zoom === 'day' && format(day, 'd')}
+            {zoom === 'week' &&
+              (day.getDate() === 1 || i === 0
+                ? format(day, 'd MMM', { locale: ptBR })
+                : day.getDate() % 7 === 0
+                  ? format(day, 'd')
+                  : '')}
+            {zoom === 'month' &&
+              (day.getDate() === 1
+                ? format(day, 'MMM yy', { locale: ptBR })
+                : '')}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}

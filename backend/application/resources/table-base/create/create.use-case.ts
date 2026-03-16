@@ -5,6 +5,8 @@ import slugify from 'slugify';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
@@ -51,8 +53,30 @@ export default class TableCreateUseCase {
           ),
         );
 
-      const nativeFields =
-        await this.fieldRepository.createMany(FIELD_NATIVE_LIST);
+      const nativeFields = await this.fieldRepository.createMany([
+        ...FIELD_NATIVE_LIST,
+        {
+          name: 'Nome',
+          slug: 'nome',
+          type: E_FIELD_TYPE.TEXT_SHORT,
+          native: false,
+          locked: false,
+          required: true,
+          multiple: false,
+          format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+          showInList: true,
+          showInFilter: true,
+          showInForm: true,
+          showInDetail: true,
+          widthInForm: 50,
+          widthInList: 10,
+          defaultValue: null,
+          relationship: null,
+          dropdown: [],
+          category: [],
+          group: null,
+        },
+      ]);
 
       const nativeFieldIds = nativeFields.flatMap((f) => f._id);
 

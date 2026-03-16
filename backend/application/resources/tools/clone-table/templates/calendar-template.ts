@@ -10,6 +10,7 @@ import {
   E_TABLE_VISIBILITY,
   FIELD_NATIVE_LIST,
   type IField,
+  type IGroupConfiguration,
 } from '@application/core/entity.core';
 import { buildSchema } from '@application/core/util.core';
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
@@ -31,13 +32,13 @@ export async function createCalendarTemplate(
     trim: true,
   });
 
-  const { fields, orderList, orderForm } = await buildCalendarFields(
+  const { fields, groups, orderList, orderForm } = await buildCalendarFields(
     deps.fieldRepository,
   );
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = buildSchema([...nativeFields, ...fields]);
+  const _schema = buildSchema([...nativeFields, ...fields], groups);
 
   const createPayload: TableCreatePayload = {
     _schema,
@@ -59,6 +60,7 @@ export async function createCalendarTemplate(
       beforeSave: { code: null },
       afterSave: { code: null },
     },
+    groups,
   };
 
   const newTable = await deps.tableRepository.create(createPayload);
@@ -73,6 +75,7 @@ export async function buildCalendarFields(
   fieldRepository: FieldContractRepository,
 ): Promise<{
   fields: IField[];
+  groups: IGroupConfiguration[];
   orderList: string[];
   orderForm: string[];
 }> {
@@ -97,7 +100,6 @@ export async function buildCalendarFields(
     group: IField['group'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
-    order: IField['order'];
   }): Promise<IField> => {
     const field = await fieldRepository.create({
       ...payload,
@@ -125,7 +127,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
   });
 
   const descriptionField = await createField({
@@ -147,7 +148,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 100,
     widthInList: 100,
-    order: null,
   });
 
   const startField = await createField({
@@ -169,7 +169,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
   });
 
   const endField = await createField({
@@ -191,7 +190,6 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
   });
 
   const colorField = await createField({
@@ -220,16 +218,115 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
-    order: null,
+  });
+
+  const participantsField = await createField({
+    name: 'Participantes',
+    slug: 'participantes',
+    type: E_FIELD_TYPE.USER,
+    required: false,
+    multiple: true,
+    format: null,
+    showInList: true,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: true,
+    defaultValue: null,
+    locked: false,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: 100,
+    widthInList: 50,
+  });
+
+  // Sub-fields for "Lembrete" group
+  const reminderGroupSlug = 'lembrete';
+
+  const reminderUnitField = await fieldRepository.create({
+    name: 'Unidade',
+    slug: 'unidade',
+    type: E_FIELD_TYPE.DROPDOWN,
+    required: false,
+    multiple: false,
+    format: null,
+    showInList: true,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: false,
+    defaultValue: null,
+    locked: false,
+    relationship: null,
+    dropdown: [
+      { id: 'minutos', label: 'Minutos', color: null },
+      { id: 'horas', label: 'Horas', color: null },
+      { id: 'dias', label: 'Dias', color: null },
+    ],
+    category: [],
+    group: { slug: reminderGroupSlug },
+    widthInForm: 50,
+    widthInList: 50,
+  });
+
+  const reminderValueField = await fieldRepository.create({
+    name: 'Valor',
+    slug: 'valor',
+    type: E_FIELD_TYPE.TEXT_SHORT,
+    required: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.INTEGER,
+    showInList: true,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: false,
+    defaultValue: null,
+    locked: false,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: { slug: reminderGroupSlug },
+    widthInForm: 50,
+    widthInList: 50,
+  });
+
+  const reminderGroup = {
+    slug: reminderGroupSlug,
+    name: 'Lembrete',
+    fields: [reminderUnitField, reminderValueField],
+    _schema: buildSchema([reminderUnitField, reminderValueField]),
+  };
+
+  const reminderGroupField = await createField({
+    name: 'Lembrete',
+    slug: reminderGroupSlug,
+    type: E_FIELD_TYPE.FIELD_GROUP,
+    required: false,
+    multiple: true,
+    format: null,
+    showInList: false,
+    showInForm: true,
+    showInDetail: true,
+    showInFilter: false,
+    defaultValue: null,
+    locked: false,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: { slug: reminderGroupSlug },
+    widthInForm: 100,
+    widthInList: null,
   });
 
   return {
     fields: createdFields,
+    groups: [reminderGroup],
     orderList: [
       titleField._id,
       startField._id,
       endField._id,
       colorField._id,
+      participantsField._id,
       descriptionField._id,
     ],
     orderForm: [
@@ -238,6 +335,8 @@ export async function buildCalendarFields(
       startField._id,
       endField._id,
       colorField._id,
+      participantsField._id,
+      reminderGroupField._id,
     ],
   };
 }

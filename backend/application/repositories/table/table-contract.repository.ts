@@ -5,6 +5,7 @@ import type {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
   IGroupConfiguration,
+  ILayoutFields,
   ITable,
   ITableMethod,
   ITableSchema,
@@ -29,6 +30,8 @@ export type TableCreatePayload = Merge<
     fieldOrderForm?: string[];
     methods?: ITableMethod;
     groups?: IGroupConfiguration[];
+    order?: { field: string; direction: 'asc' | 'desc' } | null;
+    layoutFields?: ILayoutFields;
   }
 >;
 
@@ -55,6 +58,8 @@ export type TableQueryPayload = {
   owner?: string;
   trashed?: boolean;
   _ids?: string[];
+  visibility?: string;
+  sort?: Record<string, 'asc' | 'desc'>;
 };
 
 export type TableUpdateManyPayload = {

@@ -41,7 +41,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { ICategory, IField } from '@/lib/interfaces';
+import type { ICategory, IFilterField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 export function convertCategoriesToTreeNodes(
@@ -79,7 +79,7 @@ interface UseFilterStateReturn {
 }
 
 export function useFilterState(
-  fields: Array<IField>,
+  fields: Array<IFilterField>,
   options?: { closeOnSubmit?: boolean; onClose?: () => void },
 ): UseFilterStateReturn {
   const navigate = useNavigate();
@@ -89,16 +89,17 @@ export function useFilterState(
     {},
   );
 
+  const fieldsKey = fields.map((f) => f.slug).join(',');
+
   React.useEffect(() => {
     const initialValues: Record<string, unknown> = {};
     for (const field of fields) {
       const fieldValue = search[field.slug];
       if (typeof fieldValue === 'string') {
-        if (field.type === E_FIELD_TYPE.DROPDOWN) {
-          initialValues[field.slug] = fieldValue
-            .split(',')
-            .map((v) => ({ value: v, label: v }));
-        } else if (field.type === E_FIELD_TYPE.CATEGORY) {
+        if (
+          field.type === E_FIELD_TYPE.DROPDOWN ||
+          field.type === E_FIELD_TYPE.CATEGORY
+        ) {
           initialValues[field.slug] = fieldValue.split(',');
         } else {
           initialValues[field.slug] = fieldValue;
@@ -125,10 +126,19 @@ export function useFilterState(
       }
     }
     setFilterValues(initialValues);
-  }, [fields, search]);
+  }, [fieldsKey, search]);
 
   const handleSubmit = (): void => {
     const filters: Record<string, string | undefined> = {};
+
+    // Initialize all field keys as undefined so cleared fields are removed from URL
+    for (const field of fields) {
+      filters[field.slug] = undefined;
+      if (field.type === E_FIELD_TYPE.DATE) {
+        filters[`${field.slug}-initial`] = undefined;
+        filters[`${field.slug}-final`] = undefined;
+      }
+    }
 
     for (const field of fields) {
       const value = filterValues[field.slug];
@@ -232,7 +242,7 @@ export function useFilterState(
 }
 
 export function getActiveFiltersCount(
-  fields: Array<IField>,
+  fields: Array<IFilterField>,
   search: Record<string, unknown>,
 ): number {
   return fields.filter((f) => {
@@ -243,7 +253,7 @@ export function getActiveFiltersCount(
 }
 
 interface FilterFieldsFormProps {
-  fields: Array<IField>;
+  fields: Array<IFilterField>;
   filterValues: Record<string, any>;
   setFilterValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   removeFilter: (key: string) => void;
@@ -345,7 +355,7 @@ export function FilterTextShort({
   onRemove,
   hasValue,
 }: {
-  field: IField;
+  field: IFilterField;
   value: string;
   onChange: (value: string) => void;
   onRemove: () => void;
@@ -393,12 +403,12 @@ export function FilterDropdown({
   value,
   onChange,
 }: {
-  field: IField;
+  field: IFilterField;
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
   const anchorRef = useComboboxAnchor();
-  const options: Array<DropdownOption> = field.dropdown.map((d) => ({
+  const options: Array<DropdownOption> = (field.dropdown ?? []).map((d) => ({
     value: d.id,
     label: d.label,
     color: d.color,
@@ -499,7 +509,7 @@ export function FilterDate({
   value,
   onChange,
 }: {
-  field: IField;
+  field: IFilterField;
   value: DatepickerValue | null;
   onChange: (value: DatepickerValue | null) => void;
 }): React.JSX.Element {
@@ -522,11 +532,11 @@ export function FilterCategory({
   value,
   onChange,
 }: {
-  field: IField;
+  field: IFilterField;
   value: Array<string>;
   onChange: (value: Array<string>) => void;
 }): React.JSX.Element {
-  const categories = field.category;
+  const categories = field.category ?? [];
   const treeData = convertCategoriesToTreeNodes(categories);
 
   const selectedLabel = React.useMemo(() => {

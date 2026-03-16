@@ -24,11 +24,19 @@ export default class UserGroupPaginatedUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
+      const sort: Record<string, 'asc' | 'desc'> = {};
+      if (payload['order-name']) sort.name = payload['order-name'];
+      if (payload['order-description'])
+        sort.description = payload['order-description'];
+      if (payload['order-created-at'])
+        sort.createdAt = payload['order-created-at'];
+
       const groups = await this.userGroupRepository.findMany({
         page: payload.page,
         perPage: payload.perPage,
         search: payload.search,
         user: payload.user,
+        sort,
       });
 
       const total = await this.userGroupRepository.count({

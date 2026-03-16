@@ -1,8 +1,6 @@
 import { Link, useRouter } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { LogOut, User } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { Spinner } from '../ui/spinner';
 
@@ -18,6 +16,8 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
+import { handleApiError } from '@/lib/handle-api-error';
+import { toastSuccess } from '@/lib/toast';
 
 export function Profile(): React.JSX.Element {
   const user = useProfileRead();
@@ -35,12 +35,7 @@ export function Profile(): React.JSX.Element {
 
   const signOut = useAuthenticationSignOut({
     onSuccess() {
-      toast('Logout realizado com sucesso!', {
-        className: '!bg-green-500 !text-primary-foreground !border-green-500',
-        description: 'Volte sempre!',
-        descriptionClassName: '!text-primary-foreground',
-        closeButton: true,
-      });
+      toastSuccess('Logout realizado com sucesso!', 'Volte sempre!');
 
       router.navigate({
         to: '/',
@@ -48,19 +43,7 @@ export function Profile(): React.JSX.Element {
       });
     },
     onError(error) {
-      if (error instanceof AxiosError) {
-        const data = error.response?.data;
-
-        if (data?.code === 401 && data?.cause === 'AUTHENTICATION_REQUIRED') {
-          toast.error(data?.message ?? 'Authentication required');
-        }
-
-        if (data?.code === 500) {
-          toast.error(data?.message ?? 'Erro interno do servidor');
-        }
-      }
-
-      console.error(error);
+      handleApiError(error, { context: 'Erro ao fazer logout' });
     },
   });
 

@@ -15,11 +15,11 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import type { IField } from '@/lib/interfaces';
+import type { IFilterField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface FilterSidebarProps {
-  fields: Array<IField>;
+  fields: Array<IFilterField>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }

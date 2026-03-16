@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { E_FIELD_TYPE } from './constant';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from './constant';
 import type {
   ICategory,
   IDropdown,
@@ -63,7 +63,8 @@ export function buildCreateRowDefaultValues(
     // Skip system-managed fields
     if (
       field.type === E_FIELD_TYPE.REACTION ||
-      field.type === E_FIELD_TYPE.EVALUATION
+      field.type === E_FIELD_TYPE.EVALUATION ||
+      field.type === E_FIELD_TYPE.FIELD_GROUP
     ) {
       continue;
     }
@@ -87,9 +88,6 @@ export function buildCreateRowDefaultValues(
       case E_FIELD_TYPE.CATEGORY:
       case E_FIELD_TYPE.USER:
         defaults[field.slug] = [];
-        break;
-      case E_FIELD_TYPE.FIELD_GROUP:
-        defaults[field.slug] = [{}];
         break;
       // @ts-ignore
       case E_FIELD_TYPE.EVALUATION:
@@ -129,7 +127,8 @@ export function buildUpdateRowDefaultValues(
     // Skip system-managed fields
     if (
       field.type === E_FIELD_TYPE.REACTION ||
-      field.type === E_FIELD_TYPE.EVALUATION
+      field.type === E_FIELD_TYPE.EVALUATION ||
+      field.type === E_FIELD_TYPE.FIELD_GROUP
     ) {
       continue;
     }
@@ -139,6 +138,14 @@ export function buildUpdateRowDefaultValues(
 
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
+        if (field.format === E_FIELD_FORMAT.PASSWORD) {
+          defaults[field.slug] = '';
+        } else if (value) {
+          defaults[field.slug] = value;
+        } else {
+          defaults[field.slug] = field.defaultValue ?? '';
+        }
+        break;
       case E_FIELD_TYPE.TEXT_LONG:
         if (value) defaults[field.slug] = value;
         else defaults[field.slug] = field.defaultValue ?? '';
@@ -188,12 +195,6 @@ export function buildUpdateRowDefaultValues(
         }));
         break;
       }
-      case E_FIELD_TYPE.FIELD_GROUP:
-        if (Array.isArray(value) && value.length > 0)
-          defaults[field.slug] = value;
-        else if (value && !Array.isArray(value)) defaults[field.slug] = [value];
-        else defaults[field.slug] = [{}];
-        break;
       default:
         defaults[field.slug] = value ?? '';
     }
@@ -222,7 +223,8 @@ export function buildRowPayload(
     // Skip system-managed fields
     if (
       field.type === E_FIELD_TYPE.REACTION ||
-      field.type === E_FIELD_TYPE.EVALUATION
+      field.type === E_FIELD_TYPE.EVALUATION ||
+      field.type === E_FIELD_TYPE.FIELD_GROUP
     ) {
       continue;
     }
@@ -354,57 +356,6 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
 
       return [];
     }
-    case E_FIELD_TYPE.FIELD_GROUP: {
-      if (value === null) return [];
-
-      const options = Array.from<Record<string, RowBasePayload>>(
-        value as Array<Record<string, RowBasePayload>>,
-      );
-
-      // Normalize sub-field values (e.g. FILE { files, storages } -> storage IDs,
-      // or existing IStorage arrays [{_id, url, ...}] -> ID arrays)
-      const normalized = options.map((item) => {
-        const result: Record<string, RowBasePayload> = {};
-        for (const [key, subValue] of Object.entries(item)) {
-          if (
-            subValue &&
-            typeof subValue === 'object' &&
-            !Array.isArray(subValue) &&
-            'storages' in subValue
-          ) {
-            // New file from form: { files, storages } -> extract storage IDs
-            const storages = (subValue as { storages: Array<IStorage> })
-              .storages;
-            result[key] = storages.map((s) => s._id);
-          } else if (
-            Array.isArray(subValue) &&
-            subValue.length > 0 &&
-            typeof subValue[0] === 'object' &&
-            subValue[0] !== null &&
-            '_id' in subValue[0]
-          ) {
-            // Existing data from API: [{_id, url, ...}] -> extract IDs
-            result[key] = subValue.map((s: any) => s._id);
-          } else {
-            result[key] = subValue;
-          }
-        }
-        return result;
-      });
-
-      const hasItem = normalized.length > 0;
-
-      if (!isMultiple && hasItem) {
-        const [option] = normalized;
-        return [option];
-      }
-
-      if (isMultiple && hasItem) {
-        return normalized;
-      }
-
-      return [];
-    }
     default:
       return value !== null ? (value as string) : null;
   }
@@ -413,11 +364,8 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
 export function buildFieldValidator(
   field: IField,
   value: null | undefined | string | { storages: Array<IStorage> },
-): { message: string } | undefined {
+): string | undefined {
   const isRequired = field.required;
-
-  if (!isRequired) return undefined;
-
   const isMultiple = field.multiple;
 
   const isStorage =
@@ -436,12 +384,58 @@ export function buildFieldValidator(
     arrayInvalidValue ||
     storageInvalidValue;
 
-  if (!isMultiple && invalidValue) {
-    return { message: field.name + ' é obrigatório' };
+  if (isRequired) {
+    if (!isMultiple && invalidValue) {
+      return field.name + ' é obrigatório';
+    }
+
+    if (isMultiple && invalidValue) {
+      return 'Adicione ao menos um item a ' + field.name;
+    }
   }
 
-  if (isMultiple && invalidValue) {
-    return { message: 'Adicione ao menos um item a ' + field.name };
+  // Validação de formato para TEXT_SHORT
+  if (
+    typeof value === 'string' &&
+    value !== '' &&
+    field.format &&
+    field.type === E_FIELD_TYPE.TEXT_SHORT
+  ) {
+    const formatValidators: Record<string, { regex: RegExp; message: string }> =
+      {
+        [E_FIELD_FORMAT.EMAIL]: {
+          regex: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+          message: 'E-mail inválido',
+        },
+        [E_FIELD_FORMAT.URL]: {
+          regex: /^https?:\/\/.+/,
+          message: 'URL inválida. Use http:// ou https://',
+        },
+        [E_FIELD_FORMAT.INTEGER]: {
+          regex: /^-?\d+$/,
+          message: 'Deve ser um número inteiro',
+        },
+        [E_FIELD_FORMAT.DECIMAL]: {
+          regex: /^-?\d+([.,]\d+)?$/,
+          message: 'Deve ser um número decimal',
+        },
+        [E_FIELD_FORMAT.PHONE]: {
+          regex: /^\(\d{2}\)\s?\d{4,5}-\d{4}$/,
+          message: 'Telefone inválido',
+        },
+        [E_FIELD_FORMAT.CPF]: {
+          regex: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+          message: 'CPF inválido',
+        },
+        [E_FIELD_FORMAT.CNPJ]: {
+          regex: /^\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}$/,
+          message: 'CNPJ inválido',
+        },
+      };
+    const validator = formatValidators[field.format];
+    if (validator && !validator.regex.test(value)) {
+      return validator.message;
+    }
   }
 
   return undefined;

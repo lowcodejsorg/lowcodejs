@@ -1,5 +1,6 @@
 import {
   createLazyFileRoute,
+  useNavigate,
   useParams,
   useRouter,
   useSearch,
@@ -7,24 +8,16 @@ import {
 import type { AxiosError } from 'axios';
 import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
-import { TableCalendarView } from './-table-calendar-view';
 import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
-import { TableCardView } from './-table-card-view';
 import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
-import { TableDocumentView } from './-table-document-view';
 import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
-import { TableForumView } from './-table-forum-view';
 import { TableForumViewSkeleton } from './-table-forum-view-skeleton';
-import { TableGridView } from './-table-grid-view';
+import { TableGanttViewSkeleton } from './-table-gantt-view-skeleton';
 import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
-import { TableKanbanView } from './-table-kanban-view';
 import { TableKanbanViewSkeleton } from './-table-kanban-view-skeleton';
-import { TableListView } from './-table-list-view';
 import { TableListViewSkeleton } from './-table-list-view-skeleton';
-import { TableMosaicView } from './-table-mosaic-view';
 import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
@@ -50,11 +43,93 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
+import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
 });
+
+const VIEW_MAP: Record<
+  string,
+  {
+    skeleton: React.ComponentType;
+    view: React.LazyExoticComponent<React.ComponentType<any>>;
+    extraProps?: boolean;
+  }
+> = {
+  [E_TABLE_STYLE.LIST]: {
+    skeleton: TableListViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-list-view').then((m) => ({ default: m.TableListView })),
+    ),
+  },
+  [E_TABLE_STYLE.GALLERY]: {
+    skeleton: TableGridViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-grid-view').then((m) => ({ default: m.TableGridView })),
+    ),
+  },
+  [E_TABLE_STYLE.DOCUMENT]: {
+    skeleton: TableDocumentViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-document-view').then((m) => ({
+        default: m.TableDocumentView,
+      })),
+    ),
+    extraProps: true,
+  },
+  [E_TABLE_STYLE.CARD]: {
+    skeleton: TableCardViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-card-view').then((m) => ({ default: m.TableCardView })),
+    ),
+  },
+  [E_TABLE_STYLE.MOSAIC]: {
+    skeleton: TableMosaicViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-mosaic-view').then((m) => ({
+        default: m.TableMosaicView,
+      })),
+    ),
+  },
+  [E_TABLE_STYLE.KANBAN]: {
+    skeleton: TableKanbanViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-kanban-view').then((m) => ({
+        default: m.TableKanbanView,
+      })),
+    ),
+    extraProps: true,
+  },
+  [E_TABLE_STYLE.FORUM]: {
+    skeleton: TableForumViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-forum-view').then((m) => ({
+        default: m.TableForumView,
+      })),
+    ),
+    extraProps: true,
+  },
+  [E_TABLE_STYLE.CALENDAR]: {
+    skeleton: TableCalendarViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-calendar-view').then((m) => ({
+        default: m.TableCalendarView,
+      })),
+    ),
+    extraProps: true,
+  },
+  [E_TABLE_STYLE.GANTT]: {
+    skeleton: TableGanttViewSkeleton,
+    view: React.lazy(() =>
+      import('./-table-gantt-view').then((m) => ({
+        default: m.TableGanttView,
+      })),
+    ),
+    extraProps: true,
+  },
+};
 
 function RouteComponent(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
@@ -67,6 +142,7 @@ function RouteComponent(): React.JSX.Element {
   const search = useSearch({
     from: '/_private/tables/$slug/',
   });
+  const navigate = useNavigate({ from: '/tables/$slug' });
 
   const table = useReadTable({ slug });
   const tableStyle = table.data?.style;
@@ -74,7 +150,8 @@ function RouteComponent(): React.JSX.Element {
     tableStyle === E_TABLE_STYLE.KANBAN ||
     tableStyle === E_TABLE_STYLE.DOCUMENT ||
     tableStyle === E_TABLE_STYLE.FORUM ||
-    tableStyle === E_TABLE_STYLE.CALENDAR;
+    tableStyle === E_TABLE_STYLE.CALENDAR ||
+    tableStyle === E_TABLE_STYLE.GANTT;
   const rowsSearch = React.useMemo(() => {
     const base = shouldDisablePagination
       ? {
@@ -146,13 +223,10 @@ function RouteComponent(): React.JSX.Element {
             // size="icon-sm"
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              toast('Link da tabela copiado', {
-                className:
-                  '!bg-primary !text-primary-foreground !border-primary',
-                description:
-                  'O link da tabela foi copiado para a área de transferência',
-                closeButton: true,
-              });
+              toastInfo(
+                'Link da tabela copiado',
+                'O link da tabela foi copiado para a área de transferência',
+              );
             }}
           >
             <Share2Icon />
@@ -206,44 +280,12 @@ function RouteComponent(): React.JSX.Element {
           {table.status === 'pending' && <TableSkeleton />}
           {table.status === 'success' &&
             rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.LIST && (
-              <TableListViewSkeleton />
-            )}
-          {table.status === 'success' &&
-            rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.GALLERY && (
-              <TableGridViewSkeleton />
-            )}
-          {table.status === 'success' &&
-            rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.DOCUMENT && (
-              <TableDocumentViewSkeleton />
-            )}
-          {table.status === 'success' &&
-            rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.CARD && (
-              <TableCardViewSkeleton />
-            )}
-          {table.status === 'success' &&
-            rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.MOSAIC && (
-              <TableMosaicViewSkeleton />
-            )}
-          {table.status === 'success' &&
-            rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.KANBAN && (
-              <TableKanbanViewSkeleton />
-            )}
-          {table.status === 'success' &&
-            rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.FORUM && (
-              <TableForumViewSkeleton />
-            )}
-          {table.status === 'success' &&
-            rows.status === 'pending' &&
-            table.data.style === E_TABLE_STYLE.CALENDAR && (
-              <TableCalendarViewSkeleton />
-            )}
+            ((): React.JSX.Element | null => {
+              const entry = VIEW_MAP[table.data.style];
+              if (!entry) return null;
+              const SkeletonComponent = entry.skeleton;
+              return <SkeletonComponent />;
+            })()}
 
           {rows.status === 'error' &&
             ((): React.JSX.Element => {
@@ -295,87 +337,48 @@ function RouteComponent(): React.JSX.Element {
             })()}
 
           {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.LIST &&
-            rows.status === 'success' && (
-              <TableListView
-                headers={table.data.fields}
-                order={table.data.fieldOrderList}
-                data={rows.data.data}
-              />
-            )}
-          {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.GALLERY &&
-            rows.status === 'success' && (
-              <TableGridView
-                headers={table.data.fields}
-                order={table.data.fieldOrderList}
-                data={rows.data.data}
-              />
-            )}
-          {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.DOCUMENT &&
-            rows.status === 'success' && (
-              <TableDocumentView
-                headers={table.data.fields}
-                order={table.data.fieldOrderList}
-                data={rows.data.data}
-                tableSlug={slug}
-              />
-            )}
-          {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.CARD &&
-            rows.status === 'success' && (
-              <TableCardView
-                headers={table.data.fields}
-                order={table.data.fieldOrderList}
-                data={rows.data.data}
-              />
-            )}
-          {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.MOSAIC &&
-            rows.status === 'success' && (
-              <TableMosaicView
-                headers={table.data.fields}
-                order={table.data.fieldOrderList}
-                data={rows.data.data}
-              />
-            )}
-          {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.KANBAN &&
-            rows.status === 'success' && (
-              <TableKanbanView
-                headers={table.data.fields}
-                data={rows.data.data}
-                tableSlug={slug}
-                table={table.data}
-              />
-            )}
-          {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.FORUM &&
-            rows.status === 'success' && (
-              <TableForumView
-                headers={table.data.fields}
-                data={rows.data.data}
-                tableSlug={slug}
-                table={table.data}
-              />
-            )}
-          {table.status === 'success' &&
-            table.data.style === E_TABLE_STYLE.CALENDAR &&
-            rows.status === 'success' && (
-              <TableCalendarView
-                headers={table.data.fields}
-                data={rows.data.data}
-                tableSlug={slug}
-                table={table.data}
-              />
-            )}
+            rows.status === 'success' &&
+            ((): React.JSX.Element | null => {
+              const entry = VIEW_MAP[table.data.style];
+              if (!entry) return null;
+              const ViewComponent = entry.view;
+              const SkeletonComponent = entry.skeleton;
+              const baseProps = {
+                headers: table.data.fields,
+                order: table.data.fieldOrderList ?? [],
+                data: rows.data.data,
+                layoutFields: table.data.layoutFields,
+              };
+              return (
+                <React.Suspense fallback={<SkeletonComponent />}>
+                  {entry.extraProps ? (
+                    <ViewComponent
+                      {...baseProps}
+                      tableSlug={slug}
+                      table={table.data}
+                    />
+                  ) : (
+                    <ViewComponent {...baseProps} />
+                  )}
+                </React.Suspense>
+              );
+            })()}
         </div>
       </div>
 
       {!shouldDisablePagination && (
         <div className="shrink-0 border-t p-2">
-          <Pagination meta={rows.data?.meta ?? MetaDefault} />
+          <Pagination
+            meta={rows.data?.meta ?? MetaDefault}
+            page={search.page}
+            perPage={search.perPage}
+            onPageChange={(page) =>
+              navigate({ search: (prev) => ({ ...prev, page }) })
+            }
+            onPerPageChange={(perPage) =>
+              navigate({ search: (prev) => ({ ...prev, perPage, page: 1 }) })
+            }
+          />
         </div>
       )}
     </div>

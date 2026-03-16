@@ -1,7 +1,5 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { RowFormFields } from './-create-form';
 
@@ -17,8 +15,11 @@ import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IHTTPExeptionError, ITable } from '@/lib/interfaces';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
+import type { ITable } from '@/lib/interfaces';
 import { buildCreateRowDefaultValues, buildRowPayload } from '@/lib/table';
+import { toastSuccess } from '@/lib/toast';
 
 interface CreateRowFormProps {
   table: ITable;
@@ -46,8 +47,17 @@ function CreateRowFormContent({
   const navigate = useNavigate();
 
   const fields = React.useMemo(() => {
-    return table.fields.filter((f) => !f.trashed && f.showInForm);
-  }, [table.fields]);
+    const order = table.fieldOrderForm;
+    return table.fields
+      .filter((f) => !f.trashed && f.showInForm)
+      .sort((a, b) => {
+        const idxA = order.indexOf(a._id);
+        const idxB = order.indexOf(b._id);
+        return (
+          (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB)
+        );
+      });
+  }, [table.fields, table.fieldOrderForm]);
 
   const form = useAppForm({
     defaultValues: buildCreateRowDefaultValues(fields),
@@ -58,155 +68,42 @@ function CreateRowFormContent({
     },
   });
 
-  function setFieldError(field: string, message: string): void {
-    form.setFieldMeta(field, (prev) => ({
-      ...prev,
-      isTouched: true,
-      errors: [{ message }],
-      errorMap: { onSubmit: { message } },
-    }));
-  }
+  const setFieldError = createFieldErrorSetter(form);
 
   const _create = useCreateTableRow({
-    onSuccess() {
-      toast('Registro criado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O registro foi criado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+    onSuccess(data) {
+      toastSuccess('Registro criado', 'O registro foi criado com sucesso');
 
       form.reset();
 
-      sidebar.setOpen(false);
+      const hasGroups = table.fields.some(
+        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+      );
 
-      navigate({
-        to: '/tables/$slug',
-        replace: true,
-        params: { slug: table.slug },
-      });
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data as IHTTPExeptionError<
-          Record<string, string>
-        >;
+      if (hasGroups) {
+        navigate({
+          to: '/tables/$slug/row/$rowId',
+          params: { slug: table.slug, rowId: data._id },
+        });
+      } else {
+        sidebar.setOpen(false);
 
-        if (
-          errorData?.code === 400 &&
-          errorData?.cause === 'INVALID_PARAMETERS'
-        ) {
-          toast('Erro ao criar o registro', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Dados inválidos',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 400 &&
-          errorData?.cause === 'INVALID_PAYLOAD_FORMAT'
-        ) {
-          for (const [field, message] of Object.entries(errorData.errors)) {
-            setFieldError(field, message);
-          }
-          return;
-        }
-
-        if (
-          errorData?.code === 401 &&
-          errorData?.cause === 'AUTHENTICATION_REQUIRED'
-        ) {
-          toast('Erro ao criar o registro', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Autenticação necessária',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 403 && errorData?.cause === 'ACCESS_DENIED') {
-          toast('Erro ao criar o registro', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Permissões insuficientes',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 403 &&
-          errorData?.cause === 'OWNER_OR_ADMIN_REQUIRED'
-        ) {
-          toast('Acesso negado', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Apenas o dono ou administradores da tabela podem realizar esta ação',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 403 && errorData?.cause === 'TABLE_PRIVATE') {
-          toast('Tabela privada', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: 'Esta tabela é privada e você não tem acesso',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 403 &&
-          errorData?.cause === 'RESTRICTED_CREATE'
-        ) {
-          toast('Criação restrita', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description:
-              'Apenas o dono ou administradores podem criar registros nesta tabela',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (
-          errorData?.code === 422 &&
-          errorData?.cause === 'UNPROCESSABLE_ENTITY'
-        ) {
-          toast('Erro ao criar o registro', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Dados inválidos',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        if (errorData?.code === 500 && errorData?.cause === 'SERVER_ERROR') {
-          toast('Erro ao criar o registro', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: errorData?.message ?? 'Erro interno do servidor',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
-          return;
-        }
-
-        toast('Erro ao criar o registro', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao criar o registro',
-          descriptionClassName: '!text-white',
-          closeButton: true,
+        navigate({
+          to: '/tables/$slug',
+          replace: true,
+          params: { slug: table.slug },
         });
       }
-      console.error(error);
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Erro ao criar o registro',
+        onFieldErrors: (errors) => {
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
+      });
     },
   });
 

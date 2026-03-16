@@ -18,7 +18,7 @@ import { TableContractRepository } from '@application/repositories/table/table-c
 import type { MenuCreatePayload } from './create.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = MenuCreatePayload;
+type Payload = MenuCreatePayload & { owner: string };
 
 @Service()
 export default class MenuCreateUseCase {
@@ -123,6 +123,7 @@ export default class MenuCreateUseCase {
       const created = await this.menuRepository.create({
         ...payload,
         slug,
+        owner: payload.owner,
       } as RepositoryMenuCreatePayload);
 
       return right(created);

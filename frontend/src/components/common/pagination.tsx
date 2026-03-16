@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-import { useNavigate, useSearch } from '@tanstack/react-router';
 import {
   ChevronLeft,
   ChevronRight,
@@ -21,24 +19,21 @@ import type { Meta } from '@/lib/interfaces';
 
 interface Props {
   meta: Meta;
+  page?: number;
+  perPage?: number;
+  onPageChange: (page: number) => void;
+  onPerPageChange: (perPage: number) => void;
 }
 
-export function Pagination({ meta }: Props): React.JSX.Element {
-  const search = useSearch({
-    // from: '/_private',
-    strict: false,
-    select(state) {
-      return {
-        page: state.page,
-        perPage: state.perPage,
-      };
-    },
-  });
-
-  const navigate = useNavigate();
-
-  const page = Math.max(1, Number(search.page || meta.page || 1));
-  const perPage = Math.max(1, Number(search.perPage || meta.perPage || 50));
+export function Pagination({
+  meta,
+  page: pageProp,
+  perPage: perPageProp,
+  onPageChange,
+  onPerPageChange,
+}: Props): React.JSX.Element {
+  const page = Math.max(1, Number(pageProp || meta.page || 1));
+  const perPage = Math.max(1, Number(perPageProp || meta.perPage || 50));
   const lastPage = Math.max(1, Number(meta.lastPage || 1));
 
   return (
@@ -48,14 +43,7 @@ export function Pagination({ meta }: Props): React.JSX.Element {
         <Select
           defaultValue={String(perPage)}
           onValueChange={(value) => {
-            navigate({
-              // @ts-ignore
-              search: (prev) => ({
-                ...prev,
-                perPage: Number(value),
-                page: 1,
-              }),
-            });
+            onPerPageChange(Number(value));
           }}
         >
           <SelectTrigger className="w-45">
@@ -89,15 +77,7 @@ export function Pagination({ meta }: Props): React.JSX.Element {
               size="icon"
               className="border"
               disabled={page === 1}
-              onClick={() => {
-                navigate({
-                  // @ts-ignore
-                  search: (prev) => ({
-                    ...prev,
-                    page: 1,
-                  }),
-                });
-              }}
+              onClick={() => onPageChange(1)}
             >
               <ChevronsLeft />
             </Button>
@@ -108,15 +88,7 @@ export function Pagination({ meta }: Props): React.JSX.Element {
               size="icon"
               className="border"
               disabled={page === 1}
-              onClick={() => {
-                navigate({
-                  // @ts-ignore
-                  search: (prev) => ({
-                    ...prev,
-                    page: Math.max(1, page - 1),
-                  }),
-                });
-              }}
+              onClick={() => onPageChange(Math.max(1, page - 1))}
             >
               <ChevronLeft />
             </Button>
@@ -127,15 +99,7 @@ export function Pagination({ meta }: Props): React.JSX.Element {
               size="icon"
               className="border"
               disabled={page === lastPage}
-              onClick={() => {
-                navigate({
-                  // @ts-ignore
-                  search: (prev) => ({
-                    ...prev,
-                    page: Math.min(lastPage, page + 1),
-                  }),
-                });
-              }}
+              onClick={() => onPageChange(Math.min(lastPage, page + 1))}
             >
               <ChevronRight />
             </Button>
@@ -146,15 +110,7 @@ export function Pagination({ meta }: Props): React.JSX.Element {
               size="icon"
               className="border"
               disabled={page === lastPage}
-              onClick={() => {
-                navigate({
-                  // @ts-ignore
-                  search: (prev) => ({
-                    ...prev,
-                    page: lastPage,
-                  }),
-                });
-              }}
+              onClick={() => onPageChange(lastPage)}
             >
               <ChevronsRight />
             </Button>

@@ -5,15 +5,11 @@ import {
   rowListOptions,
   tableDetailOptions,
 } from '@/hooks/tanstack-query/_query-options';
+import { createRouteHead } from '@/lib/seo';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
-  head: ({ matches }) => {
-    const systemName =
-      (matches[0]?.loaderData as { systemName?: string })?.systemName ||
-      'LowCodeJs';
-    return { meta: [{ title: `Tabela - ${systemName}` }] };
-  },
+  head: createRouteHead({ title: 'Tabela' }),
   validateSearch: z
     .object({
       page: z.coerce.number().default(1),

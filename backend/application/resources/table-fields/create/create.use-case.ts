@@ -8,9 +8,7 @@ import {
   E_FIELD_TYPE,
   FIELD_GROUP_NATIVE_LIST,
   type IField as Entity,
-  type IField,
   type IGroupConfiguration,
-  type ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
@@ -40,19 +38,6 @@ export default class TableFieldCreateUseCase {
         return left(
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
-
-      // Se foi fornecido um group slug, adiciona o campo ao grupo
-      const groupSlug =
-        typeof payload.group === 'string' ? payload.group : payload.group?.slug;
-      if (groupSlug) {
-        const targetGroup = table.groups?.find((g) => g.slug === groupSlug);
-        if (!targetGroup) {
-          return left(
-            HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
-          );
-        }
-        return this.addFieldToGroup(payload, table, targetGroup);
-      }
 
       const slug = slugify(payload.name, { lower: true, trim: true });
 
@@ -110,6 +95,8 @@ export default class TableFieldCreateUseCase {
         groups,
         owner: table.owner._id,
         administrators: table.administrators.flatMap((a) => a._id),
+        fieldOrderList: [...(table.fieldOrderList ?? []), field._id],
+        fieldOrderForm: [...(table.fieldOrderForm ?? []), field._id],
       });
 
       await buildTable({
@@ -124,6 +111,7 @@ export default class TableFieldCreateUseCase {
 
       return right(field);
     } catch (error) {
+      console.error('Error creating field:', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
@@ -131,68 +119,5 @@ export default class TableFieldCreateUseCase {
         ),
       );
     }
-  }
-
-  private async addFieldToGroup(
-    payload: Payload,
-    parentTable: ITable,
-    targetGroup: IGroupConfiguration,
-  ): Promise<Response> {
-    const slug = slugify(payload.name, { lower: true, trim: true });
-
-    // Verifica se o campo já existe no grupo
-    const existFieldInGroup = targetGroup.fields?.find((f) => f.slug === slug);
-    if (existFieldInGroup) {
-      return left(
-        HTTPException.Conflict(
-          'Field already exist in group',
-          'FIELD_ALREADY_EXIST',
-        ),
-      );
-    }
-
-    // Cria o campo
-    const field = await this.fieldRepository.create({
-      ...payload,
-      slug,
-      group: null,
-    });
-
-    // Atualiza o grupo com o novo campo e schema
-    const updatedGroups = parentTable.groups.map((g) => {
-      if (g.slug !== targetGroup.slug) return g;
-
-      const updatedFields = [...(g.fields || []), field];
-      const groupSchema = buildSchema(updatedFields);
-
-      return {
-        ...g,
-        fields: updatedFields,
-        _schema: groupSchema,
-      };
-    });
-
-    // Reconstrói o schema da tabela pai com os grupos atualizados
-    const parentSchema = buildSchema(
-      parentTable.fields as IField[],
-      updatedGroups,
-    );
-
-    await this.tableRepository.update({
-      _id: parentTable._id,
-      _schema: parentSchema,
-      groups: updatedGroups,
-      owner: parentTable.owner._id,
-      administrators: parentTable.administrators.flatMap((a) => a._id),
-    });
-
-    await buildTable({
-      ...parentTable,
-      _id: parentTable._id,
-      _schema: parentSchema,
-      groups: updatedGroups,
-    });
-
-    return right(field);
   }
 }

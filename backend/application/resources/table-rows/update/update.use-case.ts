@@ -3,8 +3,12 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_FIELD_TYPE, type IField } from '@application/core/entity.core';
+import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import {
+  hashPasswordFields,
+  maskPasswordFields,
+} from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 // import TableFieldRowValidation from '@application/core/table-field-row-validation.exception';
 import { buildPopulate, buildTable } from '@application/core/util.core';
@@ -50,6 +54,8 @@ export default class TableRowUpdateUseCase {
         );
       }
 
+      await hashPasswordFields(payload, table.fields as IField[]);
+
       const build = await buildTable(table);
 
       const populate = await buildPopulate(
@@ -62,27 +68,6 @@ export default class TableRowUpdateUseCase {
       if (!row)
         return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
 
-      // Processa campos FIELD_GROUP como embedded documents
-      const groupFields = (table.fields as IField[])?.filter(
-        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
-      );
-
-      for (const groupField of groupFields) {
-        const groupSlug = groupField.slug;
-        const groupData = payload[groupSlug];
-
-        if (
-          groupData &&
-          Array.isArray(groupData) &&
-          groupData.length > 0 &&
-          typeof groupData[0] === 'object' &&
-          groupData[0] !== null
-        ) {
-          // Preserva _id existente nos itens embedded (Mongoose gera para novos)
-          payload[groupSlug] = groupData;
-        }
-      }
-
       await row
         .set({
           ...row.toJSON({
@@ -94,13 +79,17 @@ export default class TableRowUpdateUseCase {
 
       await row.populate(populate);
 
-      // @ts-ignore
-      return right({
+      const rowJson = {
         ...row.toJSON({
           flattenObjectIds: true,
         }),
         _id: row?._id?.toString(),
-      });
+      };
+
+      maskPasswordFields(rowJson, table.fields as IField[]);
+
+      // @ts-ignore
+      return right(rowJson);
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

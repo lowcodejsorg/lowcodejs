@@ -18,7 +18,7 @@ export function DocumentHeadingRow({
   actions?: React.ReactNode;
 }): React.JSX.Element {
   const headingStyles: Record<number, string> = {
-    2: 'text-2xl font-bold mt-8',
+    2: 'text-2xl font-bold mt-8 border-b pb-2',
     3: 'text-xl font-semibold mt-6',
     4: 'text-lg font-semibold mt-4',
     5: 'text-base font-semibold mt-3',

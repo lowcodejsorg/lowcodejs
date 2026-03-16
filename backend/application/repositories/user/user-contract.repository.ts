@@ -30,6 +30,7 @@ export type UserQueryPayload = {
   _ids?: string[];
   status?: ValueOf<typeof E_USER_STATUS>;
   trashed?: boolean;
+  sort?: Record<string, 'asc' | 'desc'>;
 };
 
 export abstract class UserContractRepository {

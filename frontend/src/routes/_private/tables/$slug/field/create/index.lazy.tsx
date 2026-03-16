@@ -1,13 +1,10 @@
-import { useMutation } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
   useNavigate,
   useParams,
   useSearch,
 } from '@tanstack/react-router';
-import { AxiosError } from 'axios';
 import { ArrowLeftIcon } from 'lucide-react';
-import { toast } from 'sonner';
 
 import {
   CreateFieldFormFields,
@@ -21,22 +18,16 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useFieldCreate } from '@/hooks/tanstack-query/use-field-create';
+import { useGroupFieldCreate } from '@/hooks/tanstack-query/use-group-field-create';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { getContext } from '@/integrations/tanstack-query/root-provider';
-import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
-import type {
-  ICategory,
-  IField,
-  IRow,
-  ITable,
-  Paginated,
-  ValueOf,
-} from '@/lib/interfaces';
+import { handleApiError } from '@/lib/handle-api-error';
+import type { ICategory, IField, ValueOf } from '@/lib/interfaces';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_private/tables/$slug/field/create/',
@@ -53,7 +44,6 @@ function convertTreeNodeToCategory(nodes: Array<TreeNode>): Array<ICategory> {
 }
 
 function RouteComponent(): React.JSX.Element {
-  const { queryClient } = getContext();
   const sidebar = useSidebar();
   const navigate = useNavigate();
 
@@ -66,123 +56,35 @@ function RouteComponent(): React.JSX.Element {
   });
 
   const table = useReadTable({ slug });
-
-  // Se foi fornecido um group slug, é contexto de grupo
-  const isGroupContext = !!groupSlug;
-
   const permission = useTablePermission(table.data);
 
+  const onCreateSuccess = (): void => {
+    toastSuccess('Campo criado', 'O campo foi criado com sucesso');
+    form.reset();
+    sidebar.setOpen(false);
+    navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
+  const onCreateError = (error: Error): void => {
+    handleApiError(error, {
+      context: 'Erro ao criar o campo',
+    });
+  };
+
   // Hooks devem ser chamados ANTES de qualquer early return (Regra dos Hooks do React)
-  const _create = useMutation({
-    mutationFn: async (
-      payload: Partial<IField> & { group?: { slug: string } | string | null },
-    ) => {
-      const route = '/tables/'.concat(slug).concat('/fields');
-      const response = await API.post<IField>(route, payload);
-      return response.data;
-    },
-    onSuccess(response) {
-      queryClient.setQueryData<ITable>(queryKeys.tables.detail(slug), (old) => {
-        if (!old) return old;
+  const _create = useFieldCreate({
+    slug,
+    onSuccess: onCreateSuccess,
+    onError: onCreateError,
+  });
 
-        // Se estamos em contexto de grupo, atualiza groups
-        if (isGroupContext && groupSlug) {
-          return {
-            ...old,
-            groups: old.groups.map((g) =>
-              g.slug === groupSlug
-                ? { ...g, fields: [...g.fields, response] }
-                : g,
-            ),
-          };
-        }
-
-        // Atualiza campos da tabela normalmente
-        return {
-          ...old,
-          fields: [...old.fields, response],
-          fieldOrderForm: [...old.fieldOrderForm, response.slug],
-          fieldOrderList: [...old.fieldOrderList, response.slug],
-        };
-      });
-
-      queryClient.setQueryData<Paginated<ITable>>(
-        queryKeys.tables.list({ page: 1, perPage: 50 }),
-        (old) => {
-          if (!old) return old;
-          return {
-            meta: old.meta,
-            data: old.data.map((t) => {
-              if (t.slug === slug) {
-                // Se estamos em contexto de grupo, atualiza groups
-                if (isGroupContext && groupSlug) {
-                  return {
-                    ...t,
-                    groups: t.groups.map((g) =>
-                      g.slug === groupSlug
-                        ? { ...g, fields: [...g.fields, response] }
-                        : g,
-                    ),
-                  };
-                }
-
-                return {
-                  ...t,
-                  fields: [...t.fields, response],
-                  fieldOrderForm: [...t.fieldOrderForm, response.slug],
-                  fieldOrderList: [...t.fieldOrderList, response.slug],
-                };
-              }
-              return t;
-            }),
-          };
-        },
-      );
-
-      // Não atualiza rows quando em contexto de grupo (campos ficam embedded)
-      if (!isGroupContext) {
-        queryClient.setQueryData<Paginated<IRow>>(
-          queryKeys.rows.list(slug, { page: 1, perPage: 50 }),
-          (old) => {
-            if (!old) return old;
-            return {
-              meta: old.meta,
-              data: old.data.map((row) => ({
-                ...row,
-                [response.slug]: null,
-              })),
-            };
-          },
-        );
-      }
-
-      toast('Campo criado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O campo foi criado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
-
-      form.reset();
-      sidebar.setOpen(false);
-      navigate({
-        to: '/tables/$slug',
-        replace: true,
-        params: { slug },
-      });
-    },
-    onError(error) {
-      if (error instanceof AxiosError) {
-        const errorData = error.response?.data;
-        toast('Erro ao criar o campo', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: errorData?.message ?? 'Erro ao criar o campo',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
-      }
-      console.error(error);
-    },
+  const _createGroupField = useGroupFieldCreate({
+    onSuccess: onCreateSuccess,
+    onError: onCreateError,
   });
 
   const form = useAppForm({
@@ -190,17 +92,20 @@ function RouteComponent(): React.JSX.Element {
       ...fieldCreateFormDefaultValues,
       type: defaultFieldType ?? '',
     },
+    // @ts-expect-error Zod Standard Schema type inference
+    validators: { onChange: FieldCreateSchema, onSubmit: FieldCreateSchema },
     onSubmit: async ({ value }) => {
-      const validation = FieldCreateSchema.safeParse(value);
-      if (!validation.success) return;
-
-      if (_create.status === 'pending') return;
+      if (
+        _create.status === 'pending' ||
+        _createGroupField.status === 'pending'
+      )
+        return;
 
       const hasRelationship = value.relationship.tableId !== '';
       const hasDropdown = value.dropdown.length > 0;
       const hasCategory = value.category.length > 0;
 
-      await _create.mutateAsync({
+      const payload: Partial<IField> = {
         name: value.name,
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
@@ -229,10 +134,21 @@ function RouteComponent(): React.JSX.Element {
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
             }
           : null,
-        group: groupSlug ? { slug: groupSlug } : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
-        order: value.order === 'none' ? null : (value.order as 'asc' | 'desc'),
-      });
+      };
+
+      if (groupSlug) {
+        await _createGroupField.mutateAsync({
+          tableSlug: slug,
+          groupSlug,
+          data: payload,
+        });
+      } else {
+        await _create.mutateAsync({
+          ...payload,
+          group: null,
+        });
+      }
     },
   });
 
@@ -254,7 +170,7 @@ function RouteComponent(): React.JSX.Element {
 
   // Blocked types for field-group tables or when in group context
   const blockedTypes =
-    isGroupContext ||
+    !!groupSlug ||
     (table.status === 'success' && table.data.type === E_TABLE_TYPE.FIELD_GROUP)
       ? [
           E_FIELD_TYPE.FIELD_GROUP,
@@ -263,7 +179,8 @@ function RouteComponent(): React.JSX.Element {
         ]
       : [];
 
-  const isPending = _create.status === 'pending';
+  const isPending =
+    _create.status === 'pending' || _createGroupField.status === 'pending';
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -303,6 +220,7 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <form
+        id="field-create-form"
         className="flex-1 flex flex-col min-h-0 overflow-auto"
         onSubmit={(e) => {
           e.preventDefault();
@@ -342,10 +260,10 @@ function RouteComponent(): React.JSX.Element {
                 <span>Cancelar</span>
               </Button>
               <Button
-                type="button"
+                type="submit"
+                form="field-create-form"
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                 disabled={!canSubmit}
-                onClick={() => form.handleSubmit()}
               >
                 {isSubmitting && <Spinner />}
                 <span>Criar</span>

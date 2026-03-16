@@ -44,7 +44,6 @@ describe('E2E Table Field Send To Trash Controller', () => {
         showInDetail: true,
         format: null,
         group: null,
-        order: null,
         showInList: true,
         multiple: false,
         required: false,

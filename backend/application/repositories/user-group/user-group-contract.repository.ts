@@ -30,6 +30,7 @@ export type UserGroupQueryPayload = {
   perPage?: number;
   search?: string;
   user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+  sort?: Record<string, 'asc' | 'desc'>;
 };
 
 export abstract class UserGroupContractRepository {

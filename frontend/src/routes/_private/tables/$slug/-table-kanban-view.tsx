@@ -17,7 +17,6 @@ import {
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
-import { toast } from 'sonner';
 
 import { buildDefaultValues, buildPayload } from './row/create/-create-form';
 
@@ -29,7 +28,7 @@ import {
   KanbanRowDialog,
   KanbanSortableCard,
   KanbanUnassignedColumn,
-} from '@/components/kanban';
+} from '@/components/common/kanban';
 import { Button } from '@/components/ui/button';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
@@ -47,6 +46,7 @@ import {
   parseOrderValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
+import { toastError, toastSuccess } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 interface Props {
@@ -217,21 +217,11 @@ export function TableKanbanView({
           };
         },
       );
-      toast('Lista adicionada', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A nova coluna foi criada com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Lista adicionada', 'A nova coluna foi criada com sucesso');
       setIsAddListOpen(false);
     },
     onError() {
-      toast('Erro ao adicionar lista', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Nao foi possivel criar a coluna',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError('Erro ao adicionar lista', 'Nao foi possivel criar a coluna');
     },
   });
 
@@ -297,20 +287,13 @@ export function TableKanbanView({
       setEditingColumnId(null);
       setEditingColumnLabel('');
       setEditingColumnColor(null);
-      toast('Lista atualizada', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'A lista foi atualizada',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Lista atualizada', 'A lista foi atualizada');
     },
     onError() {
-      toast('Erro ao atualizar lista', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Nao foi possivel atualizar o nome',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError(
+        'Erro ao atualizar lista',
+        'Nao foi possivel atualizar o nome',
+      );
     },
   });
 
@@ -368,22 +351,12 @@ export function TableKanbanView({
   const createRow = useCreateTableRow({
     onSuccess(createdRow) {
       setRowsState((prev) => [...prev, createdRow]);
-      toast('Card criado', {
-        className: '!bg-green-600 !text-white !border-green-600',
-        description: 'O card foi criado com sucesso',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess('Card criado', 'O card foi criado com sucesso');
       setIsCreateCardOpen(false);
       setCreateColumnId(null);
     },
     onError() {
-      toast('Erro ao criar card', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Nao foi possivel criar o card',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError('Erro ao criar card', 'Nao foi possivel criar o card');
     },
   });
 
@@ -422,20 +395,16 @@ export function TableKanbanView({
             };
           },
         );
-        toast('Campo Data de início criado', {
-          className: '!bg-green-600 !text-white !border-green-600',
-          description: 'Kanban atualizado com o novo campo de início',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastSuccess(
+          'Campo Data de início criado',
+          'Kanban atualizado com o novo campo de início',
+        );
       })
       .catch(() => {
-        toast('Erro ao criar Data de início', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: 'Nao foi possivel adicionar o campo no Kanban',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastError(
+          'Erro ao criar Data de início',
+          'Nao foi possivel adicionar o campo no Kanban',
+        );
       });
   }, [fields.startDate, queryClient, tableSlug]);
 
@@ -539,12 +508,10 @@ export function TableKanbanView({
             },
           );
         } catch (error) {
-          toast('Erro ao travar o campo de ordem', {
-            className: '!bg-destructive !text-white !border-destructive',
-            description: 'Nao foi possivel travar o campo de ordem',
-            descriptionClassName: '!text-white',
-            closeButton: true,
-          });
+          toastError(
+            'Erro ao travar o campo de ordem',
+            'Nao foi possivel travar o campo de ordem',
+          );
         }
       }
       return orderField.slug;
@@ -591,12 +558,10 @@ export function TableKanbanView({
 
       return createdField.slug;
     } catch (error) {
-      toast('Erro ao preparar ordenação', {
-        className: '!bg-destructive !text-white !border-destructive',
-        description: 'Nao foi possivel criar o campo de ordem',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError(
+        'Erro ao preparar ordenação',
+        'Nao foi possivel criar o campo de ordem',
+      );
       return null;
     }
   }, [orderField, orderFieldSlug, queryClient, tableSlug]);
@@ -633,12 +598,10 @@ export function TableKanbanView({
           },
         );
       } catch (error) {
-        toast('Erro ao ordenar colunas', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: 'Nao foi possivel salvar a nova ordem',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastError(
+          'Erro ao ordenar colunas',
+          'Nao foi possivel salvar a nova ordem',
+        );
       }
     },
     [fields.list, queryClient, tableSlug],
@@ -664,12 +627,10 @@ export function TableKanbanView({
           queryKey: queryKeys.rows.lists(tableSlug),
         });
       } catch (error) {
-        toast('Erro ao reordenar cards', {
-          className: '!bg-destructive !text-white !border-destructive',
-          description: 'Nao foi possivel salvar a nova ordem',
-          descriptionClassName: '!text-white',
-          closeButton: true,
-        });
+        toastError(
+          'Erro ao reordenar cards',
+          'Nao foi possivel salvar a nova ordem',
+        );
       }
     },
     [queryClient, tableSlug],

@@ -7,10 +7,14 @@ export const TablePaginatedQueryValidator = z.object({
   //
   name: z.string().trim().optional(),
   trashed: z.string().trim().optional(),
+  visibility: z.string().trim().optional(),
+  owner: z.string().trim().optional(),
 
-  'order-name': z.enum(['asc', 'desc']).optional().default('asc'),
-  'order-link': z.enum(['asc', 'desc']).optional().default('asc'),
-  'order-created-at': z.enum(['asc', 'desc']).optional().default('asc'),
+  'order-name': z.enum(['asc', 'desc']).optional(),
+  'order-link': z.enum(['asc', 'desc']).optional(),
+  'order-created-at': z.enum(['asc', 'desc']).optional(),
+  'order-visibility': z.enum(['asc', 'desc']).optional(),
+  'order-owner': z.enum(['asc', 'desc']).optional(),
 });
 
 export type TablePaginatedPayload = z.infer<
