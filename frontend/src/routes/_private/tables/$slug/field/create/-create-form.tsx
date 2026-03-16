@@ -464,6 +464,7 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+
         {/* Campo Obrigatoriedade */}
         {showRequired && (
           <form.AppField name="required">
@@ -476,6 +477,17 @@ export const CreateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Campo Listagem */}
+        <form.AppField name="showInList">
+          {(field) => (
+            <field.FieldBooleanSwitch
+              label="Formato de listagem"
+              description="Exibir no formato de listagem?"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
       </section>
     );
   },
