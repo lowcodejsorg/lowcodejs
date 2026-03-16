@@ -510,10 +510,9 @@ export function FieldManagementList({
       field: IField;
       newValue: boolean;
     }) => {
-      const route = '/tables/'
-        .concat(table.slug)
-        .concat('/fields/')
-        .concat(field._id);
+      const route = groupSlug
+        ? `/tables/${table.slug}/groups/${groupSlug}/fields/${field._id}`
+        : `/tables/${table.slug}/fields/${field._id}`;
 
       // Build full payload as API requires complete field data
       const hasRelationship = field.relationship !== null;
@@ -674,10 +673,9 @@ export function FieldManagementList({
       newWidth: number;
       targetWidthKey: 'widthInForm' | 'widthInList';
     }) => {
-      const route = '/tables/'
-        .concat(table.slug)
-        .concat('/fields/')
-        .concat(field._id);
+      const route = groupSlug
+        ? `/tables/${table.slug}/groups/${groupSlug}/fields/${field._id}`
+        : `/tables/${table.slug}/fields/${field._id}`;
 
       const hasRelationship = field.relationship !== null;
       const hasDropdown = field.dropdown.length > 0;

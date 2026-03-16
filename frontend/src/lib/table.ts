@@ -63,7 +63,8 @@ export function buildCreateRowDefaultValues(
     // Skip system-managed fields
     if (
       field.type === E_FIELD_TYPE.REACTION ||
-      field.type === E_FIELD_TYPE.EVALUATION
+      field.type === E_FIELD_TYPE.EVALUATION ||
+      field.type === E_FIELD_TYPE.FIELD_GROUP
     ) {
       continue;
     }
@@ -87,9 +88,6 @@ export function buildCreateRowDefaultValues(
       case E_FIELD_TYPE.CATEGORY:
       case E_FIELD_TYPE.USER:
         defaults[field.slug] = [];
-        break;
-      case E_FIELD_TYPE.FIELD_GROUP:
-        defaults[field.slug] = [{}];
         break;
       // @ts-ignore
       case E_FIELD_TYPE.EVALUATION:
@@ -129,7 +127,8 @@ export function buildUpdateRowDefaultValues(
     // Skip system-managed fields
     if (
       field.type === E_FIELD_TYPE.REACTION ||
-      field.type === E_FIELD_TYPE.EVALUATION
+      field.type === E_FIELD_TYPE.EVALUATION ||
+      field.type === E_FIELD_TYPE.FIELD_GROUP
     ) {
       continue;
     }
@@ -196,12 +195,6 @@ export function buildUpdateRowDefaultValues(
         }));
         break;
       }
-      case E_FIELD_TYPE.FIELD_GROUP:
-        if (Array.isArray(value) && value.length > 0)
-          defaults[field.slug] = value;
-        else if (value && !Array.isArray(value)) defaults[field.slug] = [value];
-        else defaults[field.slug] = [{}];
-        break;
       default:
         defaults[field.slug] = value ?? '';
     }
@@ -230,7 +223,8 @@ export function buildRowPayload(
     // Skip system-managed fields
     if (
       field.type === E_FIELD_TYPE.REACTION ||
-      field.type === E_FIELD_TYPE.EVALUATION
+      field.type === E_FIELD_TYPE.EVALUATION ||
+      field.type === E_FIELD_TYPE.FIELD_GROUP
     ) {
       continue;
     }
@@ -358,57 +352,6 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
 
       if (isMultiple && hasItem) {
         return options.flatMap((option) => option.value);
-      }
-
-      return [];
-    }
-    case E_FIELD_TYPE.FIELD_GROUP: {
-      if (value === null) return [];
-
-      const options = Array.from<Record<string, RowBasePayload>>(
-        value as Array<Record<string, RowBasePayload>>,
-      );
-
-      // Normalize sub-field values (e.g. FILE { files, storages } -> storage IDs,
-      // or existing IStorage arrays [{_id, url, ...}] -> ID arrays)
-      const normalized = options.map((item) => {
-        const result: Record<string, RowBasePayload> = {};
-        for (const [key, subValue] of Object.entries(item)) {
-          if (
-            subValue &&
-            typeof subValue === 'object' &&
-            !Array.isArray(subValue) &&
-            'storages' in subValue
-          ) {
-            // New file from form: { files, storages } -> extract storage IDs
-            const storages = (subValue as { storages: Array<IStorage> })
-              .storages;
-            result[key] = storages.map((s) => s._id);
-          } else if (
-            Array.isArray(subValue) &&
-            subValue.length > 0 &&
-            typeof subValue[0] === 'object' &&
-            subValue[0] !== null &&
-            '_id' in subValue[0]
-          ) {
-            // Existing data from API: [{_id, url, ...}] -> extract IDs
-            result[key] = subValue.map((s: any) => s._id);
-          } else {
-            result[key] = subValue;
-          }
-        }
-        return result;
-      });
-
-      const hasItem = normalized.length > 0;
-
-      if (!isMultiple && hasItem) {
-        const [option] = normalized;
-        return [option];
-      }
-
-      if (isMultiple && hasItem) {
-        return normalized;
       }
 
       return [];

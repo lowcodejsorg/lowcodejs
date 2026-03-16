@@ -160,6 +160,7 @@ function UpdateRowFormContent({
             data={data}
             fields={fields}
             tableSlug={slug}
+            table={table}
           />
         </div>
       )}

@@ -19,13 +19,14 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { useFieldCreate } from '@/hooks/tanstack-query/use-field-create';
+import { useGroupFieldCreate } from '@/hooks/tanstack-query/use-group-field-create';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
-import type { ICategory, ValueOf } from '@/lib/interfaces';
+import type { ICategory, IField, ValueOf } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
@@ -57,25 +58,33 @@ function RouteComponent(): React.JSX.Element {
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);
 
+  const onCreateSuccess = (): void => {
+    toastSuccess('Campo criado', 'O campo foi criado com sucesso');
+    form.reset();
+    sidebar.setOpen(false);
+    navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
+  const onCreateError = (error: Error): void => {
+    handleApiError(error, {
+      context: 'Erro ao criar o campo',
+    });
+  };
+
   // Hooks devem ser chamados ANTES de qualquer early return (Regra dos Hooks do React)
   const _create = useFieldCreate({
     slug,
-    groupSlug,
-    onSuccess() {
-      toastSuccess('Campo criado', 'O campo foi criado com sucesso');
-      form.reset();
-      sidebar.setOpen(false);
-      navigate({
-        to: '/tables/$slug',
-        replace: true,
-        params: { slug },
-      });
-    },
-    onError(error) {
-      handleApiError(error, {
-        context: 'Erro ao criar o campo',
-      });
-    },
+    onSuccess: onCreateSuccess,
+    onError: onCreateError,
+  });
+
+  const _createGroupField = useGroupFieldCreate({
+    onSuccess: onCreateSuccess,
+    onError: onCreateError,
   });
 
   const form = useAppForm({
@@ -86,13 +95,17 @@ function RouteComponent(): React.JSX.Element {
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: FieldCreateSchema, onSubmit: FieldCreateSchema },
     onSubmit: async ({ value }) => {
-      if (_create.status === 'pending') return;
+      if (
+        _create.status === 'pending' ||
+        _createGroupField.status === 'pending'
+      )
+        return;
 
       const hasRelationship = value.relationship.tableId !== '';
       const hasDropdown = value.dropdown.length > 0;
       const hasCategory = value.category.length > 0;
 
-      await _create.mutateAsync({
+      const payload: Partial<IField> = {
         name: value.name,
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
@@ -121,9 +134,21 @@ function RouteComponent(): React.JSX.Element {
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
             }
           : null,
-        group: groupSlug ? { slug: groupSlug } : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],
-      });
+      };
+
+      if (groupSlug) {
+        await _createGroupField.mutateAsync({
+          tableSlug: slug,
+          groupSlug,
+          data: payload,
+        });
+      } else {
+        await _create.mutateAsync({
+          ...payload,
+          group: null,
+        });
+      }
     },
   });
 
@@ -154,7 +179,8 @@ function RouteComponent(): React.JSX.Element {
         ]
       : [];
 
-  const isPending = _create.status === 'pending';
+  const isPending =
+    _create.status === 'pending' || _createGroupField.status === 'pending';
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

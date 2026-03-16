@@ -1,0 +1,117 @@
+import type { FastifySchema } from 'fastify';
+
+export const GroupFieldCreateSchema: FastifySchema = {
+  tags: ['Group Fields'],
+  summary: 'Create field in group',
+  description:
+    'Creates a new field inside a FIELD_GROUP. Automatically generates slug from name and rebuilds group and table schemas.',
+  security: [{ cookieAuth: [] }],
+  params: {
+    type: 'object',
+    required: ['slug', 'groupSlug'],
+    properties: {
+      slug: {
+        type: 'string',
+        description: 'Table slug',
+      },
+      groupSlug: {
+        type: 'string',
+        description: 'Group slug within the table',
+      },
+    },
+    additionalProperties: false,
+  },
+  body: {
+    type: 'object',
+    required: ['name', 'type'],
+    properties: {
+      name: {
+        type: 'string',
+        description: 'Field name',
+      },
+      type: {
+        type: 'string',
+        enum: [
+          'TEXT_SHORT',
+          'TEXT_LONG',
+          'DROPDOWN',
+          'DATE',
+          'RELATIONSHIP',
+          'FILE',
+          'CATEGORY',
+          'USER',
+        ],
+        description: 'Field type',
+      },
+      required: { type: 'boolean', default: false },
+      multiple: { type: 'boolean', default: false },
+      showInFilter: { type: 'boolean', default: false },
+      showInForm: { type: 'boolean', default: false },
+      showInDetail: { type: 'boolean', default: false },
+      showInList: { type: 'boolean', default: false },
+      widthInForm: { type: 'number', nullable: true, default: 50 },
+      widthInList: { type: 'number', nullable: true, default: 10 },
+      locked: { type: 'boolean', default: false },
+      format: { type: 'string', nullable: true, default: null },
+      defaultValue: { type: 'string', nullable: true, default: null },
+      dropdown: { type: 'array', nullable: true, default: [] },
+      relationship: { type: 'object', nullable: true, default: null },
+      category: { type: 'array', nullable: true, default: [] },
+    },
+  },
+  response: {
+    201: {
+      description: 'Field created successfully in group',
+      type: 'object',
+      properties: {
+        _id: { type: 'string' },
+        name: { type: 'string' },
+        slug: { type: 'string' },
+        type: { type: 'string' },
+        required: { type: 'boolean' },
+        multiple: { type: 'boolean' },
+        showInFilter: { type: 'boolean' },
+        showInForm: { type: 'boolean' },
+        showInDetail: { type: 'boolean' },
+        showInList: { type: 'boolean' },
+        widthInForm: { type: 'number', nullable: true },
+        widthInList: { type: 'number', nullable: true },
+        locked: { type: 'boolean' },
+        native: { type: 'boolean' },
+        format: { type: 'string', nullable: true },
+        defaultValue: { type: 'string', nullable: true },
+        trashed: { type: 'boolean' },
+        trashedAt: { type: 'string', nullable: true },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
+      },
+    },
+    404: {
+      description: 'Table or group not found',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [404] },
+        cause: { type: 'string', enum: ['TABLE_NOT_FOUND', 'GROUP_NOT_FOUND'] },
+      },
+    },
+    409: {
+      description: 'Field already exists in group',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [409] },
+        cause: { type: 'string', enum: ['FIELD_ALREADY_EXIST'] },
+      },
+    },
+    500: {
+      description: 'Internal server error',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [500] },
+        cause: { type: 'string', enum: ['CREATE_GROUP_FIELD_ERROR'] },
+      },
+    },
+  },
+};

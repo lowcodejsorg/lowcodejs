@@ -10,18 +10,20 @@ import { TableRowTextLongCell } from '@/components/common/table-row-text-long-ce
 import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/table-row-user-cell';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IField, IRow, ITable } from '@/lib/interfaces';
 
 interface RowViewProps {
   data: IRow;
   fields: Array<IField>;
   tableSlug: string;
+  table?: ITable;
 }
 
 export function RowView({
   data,
   fields,
   tableSlug,
+  table,
 }: RowViewProps): React.JSX.Element {
   const renderFieldValue = (field: IField): React.JSX.Element => {
     switch (field.type) {
@@ -96,6 +98,8 @@ export function RowView({
             row={data}
             field={field}
             tableSlug={tableSlug}
+            table={table}
+            variant="detail"
           />
         );
       case E_FIELD_TYPE.USER:

@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_FIELD_TYPE, type IField } from '@application/core/entity.core';
+import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   hashPasswordFields,
@@ -67,27 +67,6 @@ export default class TableRowUpdateUseCase {
 
       if (!row)
         return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
-
-      // Processa campos FIELD_GROUP como embedded documents
-      const groupFields = (table.fields as IField[])?.filter(
-        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
-      );
-
-      for (const groupField of groupFields) {
-        const groupSlug = groupField.slug;
-        const groupData = payload[groupSlug];
-
-        if (
-          groupData &&
-          Array.isArray(groupData) &&
-          groupData.length > 0 &&
-          typeof groupData[0] === 'object' &&
-          groupData[0] !== null
-        ) {
-          // Preserva _id existente nos itens embedded (Mongoose gera para novos)
-          payload[groupSlug] = groupData;
-        }
-      }
 
       await row
         .set({

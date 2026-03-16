@@ -3,11 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import {
-  E_FIELD_TYPE,
-  type IField,
-  type IRow,
-} from '@application/core/entity.core';
+import { type IField, type IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   hashPasswordFields,
@@ -54,29 +50,6 @@ export default class TableRowCreateUseCase {
       }
 
       await hashPasswordFields(payload, table.fields as IField[]);
-
-      // Processa campos FIELD_GROUP como embedded documents
-      const groupFields = table.fields?.filter(
-        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP,
-      );
-
-      for (const groupField of groupFields) {
-        const groupSlug = groupField.slug;
-        const groupData = payload[groupSlug];
-
-        if (
-          groupData &&
-          Array.isArray(groupData) &&
-          groupData.length > 0 &&
-          typeof groupData[0] === 'object' &&
-          groupData[0] !== null
-        ) {
-          // Sanitiza os dados embedded (remove _id interno se existir)
-          payload[groupSlug] = (
-            groupData as Array<{ _id?: string; [key: string]: unknown }>
-          ).map(({ _id, ...rest }) => rest);
-        }
-      }
 
       const build = await buildTable(table);
 

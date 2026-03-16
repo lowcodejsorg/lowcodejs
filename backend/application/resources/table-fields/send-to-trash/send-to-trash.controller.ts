@@ -6,10 +6,7 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 
 import { TableFieldSendToTrashSchema } from './send-to-trash.schema';
 import TableFieldSendToTrashUseCase from './send-to-trash.use-case';
-import {
-  TableFieldSendToTrashParamsValidator,
-  TableFieldSendToTrashQueryValidator,
-} from './send-to-trash.validator';
+import { TableFieldSendToTrashParamsValidator } from './send-to-trash.validator';
 
 @Controller({
   route: 'tables',
@@ -38,9 +35,8 @@ export default class {
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const params = TableFieldSendToTrashParamsValidator.parse(request.params);
-    const query = TableFieldSendToTrashQueryValidator.parse(request.query);
 
-    const result = await this.useCase.execute({ ...params, ...query });
+    const result = await this.useCase.execute({ ...params });
 
     if (result.isLeft()) {
       const error = result.value;

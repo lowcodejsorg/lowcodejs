@@ -197,19 +197,32 @@ export const rowDetailOptions = (
 export const fieldDetailOptions = (
   tableSlug: string,
   fieldId: string,
-  groupSlug?: string,
 ): UndefinedInitialDataOptions<IField> =>
   queryOptions({
-    queryKey: queryKeys.fields.detail(tableSlug, fieldId, groupSlug),
+    queryKey: queryKeys.fields.detail(tableSlug, fieldId),
     queryFn: async () => {
-      let route = `/tables/${tableSlug}/fields/${fieldId}`;
-      if (groupSlug) {
-        route = route.concat('?group=').concat(groupSlug);
-      }
-      const response = await API.get<IField>(route);
+      const response = await API.get<IField>(
+        `/tables/${tableSlug}/fields/${fieldId}`,
+      );
       return response.data;
     },
     enabled: Boolean(tableSlug) && Boolean(fieldId),
+    staleTime: 60 * 1000,
+  });
+
+export const groupFieldDetailOptions = (
+  tableSlug: string,
+  groupSlug: string,
+  fieldId: string,
+): UndefinedInitialDataOptions<IField> =>
+  queryOptions({
+    queryKey: queryKeys.groupFields.detail(tableSlug, groupSlug, fieldId),
+    queryFn: async () => {
+      const route = `/tables/${tableSlug}/groups/${groupSlug}/fields/${fieldId}`;
+      const response = await API.get<IField>(route);
+      return response.data;
+    },
+    enabled: Boolean(tableSlug) && Boolean(fieldId) && Boolean(groupSlug),
     staleTime: 60 * 1000,
   });
 
@@ -264,6 +277,25 @@ export const pageDetailOptions = (
     },
     enabled: Boolean(slug),
     staleTime: 5 * 60 * 1000,
+  });
+
+// ============== GROUP ROWS ==============
+
+export const groupRowListOptions = (
+  slug: string,
+  rowId: string,
+  groupSlug: string,
+): UndefinedInitialDataOptions<Array<IRow>> =>
+  queryOptions({
+    queryKey: queryKeys.groupRows.lists(slug, rowId, groupSlug),
+    queryFn: async () => {
+      const response = await API.get<Array<IRow>>(
+        `/tables/${slug}/rows/${rowId}/groups/${groupSlug}`,
+      );
+      return response.data;
+    },
+    enabled: Boolean(slug) && Boolean(rowId) && Boolean(groupSlug),
+    staleTime: 30 * 1000,
   });
 
 // ============== RELATIONSHIPS ==============

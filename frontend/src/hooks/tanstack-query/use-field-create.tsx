@@ -8,7 +8,7 @@ import type { AxiosError } from 'axios';
 import { queryKeys } from './_query-keys';
 
 import { API } from '@/lib/api';
-import type { IField, IRow, ITable, Paginated } from '@/lib/interfaces';
+import type { IField, ITable } from '@/lib/interfaces';
 
 type FieldCreatePayload = Partial<IField> & {
   group?: { slug: string } | string | null;
@@ -22,7 +22,6 @@ interface UseFieldCreateProps extends Pick<
   'onError'
 > {
   slug: string;
-  groupSlug?: string;
   onSuccess?: (data: IField) => void;
 }
 
@@ -30,29 +29,19 @@ export function useFieldCreate(
   props: UseFieldCreateProps,
 ): UseMutationResult<IField, AxiosError | Error, FieldCreatePayload> {
   const queryClient = useQueryClient();
-  const { slug, groupSlug } = props;
-  const isGroupContext = !!groupSlug;
+  const { slug } = props;
 
   return useMutation({
     mutationFn: async (payload: FieldCreatePayload) => {
-      const route = '/tables/'.concat(slug).concat('/fields');
-      const response = await API.post<IField>(route, payload);
+      const response = await API.post<IField>(
+        `/tables/${slug}/fields`,
+        payload,
+      );
       return response.data;
     },
     onSuccess(response) {
       queryClient.setQueryData<ITable>(queryKeys.tables.detail(slug), (old) => {
         if (!old) return old;
-
-        if (isGroupContext && groupSlug) {
-          return {
-            ...old,
-            groups: old.groups.map((g) =>
-              g.slug === groupSlug
-                ? { ...g, fields: [...g.fields, response] }
-                : g,
-            ),
-          };
-        }
 
         return {
           ...old,
@@ -66,11 +55,9 @@ export function useFieldCreate(
         queryKey: queryKeys.tables.lists(),
       });
 
-      if (!isGroupContext) {
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.rows.lists(slug),
-        });
-      }
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
 
       props.onSuccess?.(response);
     },

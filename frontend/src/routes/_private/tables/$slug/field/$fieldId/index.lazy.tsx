@@ -19,6 +19,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
+import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-update';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -185,18 +186,50 @@ function FieldUpdateContent({
     });
   };
 
-  const isGroupContext = !!groupSlug;
+  const handleUpdateSuccess = (response: IField): void => {
+    const wasTrashed = Boolean(
+      (data as IField & { trashed?: boolean }).trashed,
+    );
+    const isTrashed = Boolean(response.trashed);
+
+    if (!wasTrashed && isTrashed) {
+      toastWarning(
+        'Campo enviado para lixeira',
+        'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
+      );
+    } else if (wasTrashed && !isTrashed) {
+      toastSuccess(
+        'Campo restaurado',
+        'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
+      );
+    } else {
+      toastSuccess(
+        'Campo atualizado',
+        'Os dados do campo foram atualizados com sucesso',
+      );
+    }
+
+    form.reset();
+    setMode('show');
+  };
+
+  const handleUpdateError = (error: Error): void => {
+    handleApiError(error, {
+      context: 'Erro ao atualizar o campo',
+    });
+  };
 
   const _update = useMutation({
     mutationFn: async (
       payload: Partial<IField> & {
         trashed?: boolean;
         trashedAt?: string | null;
-        group?: { slug: string } | string | null;
       },
     ) => {
-      const route = '/tables/'.concat(slug).concat('/fields/').concat(data._id);
-      const response = await API.put<IField>(route, payload);
+      const response = await API.put<IField>(
+        `/tables/${slug}/fields/${data._id}`,
+        payload,
+      );
       return response.data;
     },
     onSuccess(response) {
@@ -207,32 +240,11 @@ function FieldUpdateContent({
 
       queryClient.setQueryData<ITable>(queryKeys.tables.detail(slug), (old) => {
         if (!old) return old;
-
-        // Se for contexto de grupo, atualiza groups
-        if (isGroupContext && groupSlug) {
-          return {
-            ...old,
-            groups: old.groups.map((g) =>
-              g.slug === groupSlug
-                ? {
-                    ...g,
-                    fields: g.fields.map((f) =>
-                      f._id === response._id ? response : f,
-                    ),
-                  }
-                : g,
-            ),
-          };
-        }
-
         return {
           ...old,
-          fields: old.fields.map((f) => {
-            if (f._id === response._id) {
-              return response;
-            }
-            return f;
-          }),
+          fields: old.fields.map((f) =>
+            f._id === response._id ? response : f,
+          ),
         };
       });
 
@@ -244,31 +256,11 @@ function FieldUpdateContent({
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug === slug) {
-                // Se for contexto de grupo, atualiza groups
-                if (isGroupContext && groupSlug) {
-                  return {
-                    ...t,
-                    groups: t.groups.map((g) =>
-                      g.slug === groupSlug
-                        ? {
-                            ...g,
-                            fields: g.fields.map((f) =>
-                              f._id === response._id ? response : f,
-                            ),
-                          }
-                        : g,
-                    ),
-                  };
-                }
-
                 return {
                   ...t,
-                  fields: t.fields.map((f) => {
-                    if (f._id === response._id) {
-                      return response;
-                    }
-                    return f;
-                  }),
+                  fields: t.fields.map((f) =>
+                    f._id === response._id ? response : f,
+                  ),
                 };
               }
               return t;
@@ -277,36 +269,14 @@ function FieldUpdateContent({
         },
       );
 
-      const wasTrashed = Boolean(
-        (data as IField & { trashed?: boolean }).trashed,
-      );
-      const isTrashed = Boolean(response.trashed);
-
-      if (!wasTrashed && isTrashed) {
-        toastWarning(
-          'Campo enviado para lixeira',
-          'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
-        );
-      } else if (wasTrashed && !isTrashed) {
-        toastSuccess(
-          'Campo restaurado',
-          'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
-        );
-      } else {
-        toastSuccess(
-          'Campo atualizado',
-          'Os dados do campo foram atualizados com sucesso',
-        );
-      }
-
-      form.reset();
-      setMode('show');
+      handleUpdateSuccess(response);
     },
-    onError(error) {
-      handleApiError(error, {
-        context: 'Erro ao atualizar o campo',
-      });
-    },
+    onError: handleUpdateError,
+  });
+
+  const _updateGroupField = useGroupFieldUpdate({
+    onSuccess: handleUpdateSuccess,
+    onError: handleUpdateError,
   });
 
   const form = useAppForm({
@@ -341,13 +311,16 @@ function FieldUpdateContent({
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: FieldUpdateSchema, onSubmit: FieldUpdateSchema },
     onSubmit: async ({ value }) => {
-      if (_update.status === 'pending') return;
+      if (_update.status === 'pending' || _updateGroupField.isPending) return;
 
       const hasRelationship = value.relationship.tableId !== '';
       const hasDropdown = value.dropdown.length > 0;
       const hasCategory = value.category.length > 0;
 
-      await _update.mutateAsync({
+      const payload: Partial<IField> & {
+        trashed?: boolean;
+        trashedAt?: string | null;
+      } = {
         name: value.name,
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
@@ -376,17 +349,27 @@ function FieldUpdateContent({
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
             }
           : null,
-        group: groupSlug ? { slug: groupSlug } : null,
         category: hasCategory
           ? (value.category as unknown as IField['category'])
           : [],
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
-      });
+      };
+
+      if (groupSlug) {
+        await _updateGroupField.mutateAsync({
+          tableSlug: slug,
+          groupSlug,
+          fieldId: data._id,
+          data: payload,
+        });
+      } else {
+        await _update.mutateAsync(payload);
+      }
     },
   });
 
-  const isPending = _update.status === 'pending';
+  const isPending = _update.status === 'pending' || _updateGroupField.isPending;
 
   return (
     <>

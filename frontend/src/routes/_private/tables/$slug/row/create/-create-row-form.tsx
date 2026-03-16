@@ -71,18 +71,29 @@ function CreateRowFormContent({
   const setFieldError = createFieldErrorSetter(form);
 
   const _create = useCreateTableRow({
-    onSuccess() {
+    onSuccess(data) {
       toastSuccess('Registro criado', 'O registro foi criado com sucesso');
 
       form.reset();
 
-      sidebar.setOpen(false);
+      const hasGroups = table.fields.some(
+        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+      );
 
-      navigate({
-        to: '/tables/$slug',
-        replace: true,
-        params: { slug: table.slug },
-      });
+      if (hasGroups) {
+        navigate({
+          to: '/tables/$slug/row/$rowId',
+          params: { slug: table.slug, rowId: data._id },
+        });
+      } else {
+        sidebar.setOpen(false);
+
+        navigate({
+          to: '/tables/$slug',
+          replace: true,
+          params: { slug: table.slug },
+        });
+      }
     },
     onError(error) {
       handleApiError(error, {
