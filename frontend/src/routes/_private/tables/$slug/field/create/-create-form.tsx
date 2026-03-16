@@ -79,6 +79,10 @@ export const CreateFieldFormFields = withForm({
       (state) => state.values.relationship.tableSlug,
     );
     const textLongFormat = useStore(form.store, (state) => state.values.format);
+    const dropdownOptions = useStore(
+      form.store,
+      (state) => state.values.dropdown,
+    );
 
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
     const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
@@ -300,6 +304,19 @@ export const CreateFieldFormFields = withForm({
                 placeholder="Escreva e adicione"
                 disabled={isPending}
                 required
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Valor padrão do Dropdown */}
+        {isDropdown && (
+          <form.AppField name="defaultValue">
+            {(field) => (
+              <field.TableFieldDropdownDefaultValue
+                label="Valor padrão"
+                disabled={isPending}
+                dropdown={dropdownOptions}
               />
             )}
           </form.AppField>
