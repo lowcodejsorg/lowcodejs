@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
+  DownloadIcon,
   EllipsisIcon,
   ImageOffIcon,
   TrashIcon,
@@ -12,6 +13,7 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 
 import { TableDeleteDialog } from './-delete-dialog';
+import { TableExportDialog } from './-export-dialog';
 import { TableRemoveFromTrashDialog } from './-remove-from-trash-dialog';
 import { TableSendToTrashDialog } from './-send-to-trash-dialog';
 
@@ -61,6 +63,7 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
   const tableSendToTrashButtonRef = React.useRef<HTMLButtonElement | null>(
     null,
   );
+  const tableExportButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   const permission = useTablePermission(table);
 
@@ -77,6 +80,17 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
         <DropdownMenuContent className="mr-10">
           <DropdownMenuLabel>Acoes</DropdownMenuLabel>
           <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            className={cn(
+              'inline-flex space-x-1 w-full cursor-pointer',
+              table.trashed && 'hidden',
+            )}
+            onClick={() => tableExportButtonRef.current?.click()}
+          >
+            <DownloadIcon className="size-4" />
+            <span>Exportar</span>
+          </DropdownMenuItem>
 
           <DropdownMenuItem
             className={cn(
@@ -116,6 +130,11 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
         </DropdownMenuContent>
       </DropdownMenu>
 
+      <TableExportDialog
+        ref={tableExportButtonRef}
+        slug={table.slug}
+        tableName={table.name}
+      />
       <TableDeleteDialog
         ref={tableDeleteButtonRef}
         slug={table.slug}
