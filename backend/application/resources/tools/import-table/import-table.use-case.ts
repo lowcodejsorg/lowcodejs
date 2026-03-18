@@ -8,6 +8,7 @@ import {
   FIELD_NATIVE_LIST,
   type IField,
   type IGroupConfiguration,
+  type ILayoutFields,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
@@ -277,26 +278,26 @@ export default class ImportTableUseCase {
         }
 
         // 4. Resolve layout fields (slug -> new field id)
-        const layoutFields: Record<string, string | null> = {};
+        const layoutFields: Partial<ILayoutFields> = {};
         if (structure.layoutFields) {
           for (const [key, slugValue] of Object.entries(
-            structure.layoutFields,
+            structure.layoutFields as Record<string, string | null>,
           )) {
             if (slugValue && slugToFieldId.has(slugValue)) {
-              layoutFields[key] = slugToFieldId.get(slugValue) || null;
+              layoutFields[key as keyof ILayoutFields] = slugToFieldId.get(slugValue) || null;
             } else {
-              layoutFields[key] = null;
+              layoutFields[key as keyof ILayoutFields] = null;
             }
           }
         }
 
         // 5. Resolve field order (slug -> new field id)
         const fieldOrderList = (structure.fieldOrderList || [])
-          .map((slug) => slugToFieldId.get(slug))
+          .map((slug: string) => slugToFieldId.get(slug))
           .filter(Boolean) as string[];
 
         const fieldOrderForm = (structure.fieldOrderForm || [])
-          .map((slug) => slugToFieldId.get(slug))
+          .map((slug: string) => slugToFieldId.get(slug))
           .filter(Boolean) as string[];
 
         // 6. Build schema and create table
@@ -323,7 +324,7 @@ export default class ImportTableUseCase {
             afterSave: { code: null },
           },
           groups,
-          layoutFields,
+          layoutFields: layoutFields as ILayoutFields,
         };
 
         const newTable = await this.tableRepository.create(createPayload);
