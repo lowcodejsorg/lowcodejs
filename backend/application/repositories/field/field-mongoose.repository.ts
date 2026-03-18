@@ -103,7 +103,7 @@ export default class FieldMongooseRepository implements FieldContractRepository 
   }
 
   async delete(_id: string): Promise<void> {
-    await this.update({ _id, trashed: true, trashedAt: new Date() });
+    await Model.deleteOne({ _id });
   }
 
   async hardDelete(_id: string): Promise<void> {
