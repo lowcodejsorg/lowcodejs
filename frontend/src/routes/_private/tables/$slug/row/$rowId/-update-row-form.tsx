@@ -1,5 +1,5 @@
 import { useRouter } from '@tanstack/react-router';
-import { PencilIcon } from 'lucide-react';
+import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
 import { RowFormFields } from '../create/-create-form';
@@ -124,24 +124,54 @@ function UpdateRowFormContent({
           <RowSendToTrashDialog
             rowId={rowId}
             slug={slug}
-          />
+            asChild
+          >
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+            >
+              <TrashIcon className="size-4" />
+              <span>Enviar para lixeira</span>
+            </Button>
+          </RowSendToTrashDialog>
         )}
 
         {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
           <RowRemoveFromTrashDialog
             rowId={rowId}
             slug={slug}
-          />
+            asChild
+          >
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+            >
+              <ArchiveRestoreIcon className="size-4" />
+              <span>Restaurar</span>
+            </Button>
+          </RowRemoveFromTrashDialog>
         )}
 
         {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
           <RowDeleteDialog
             rowId={rowId}
             slug={slug}
-          />
+            asChild
+          >
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+            >
+              <TrashIcon className="size-4" />
+              <span>Excluir permanentemente</span>
+            </Button>
+          </RowDeleteDialog>
         )}
 
-        {mode === 'show' && permission.can('UPDATE_ROW') && (
+        {mode === 'show' && !data.trashed && permission.can('UPDATE_ROW') && (
           <Button
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"

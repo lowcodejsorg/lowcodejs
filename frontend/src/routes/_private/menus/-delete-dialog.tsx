@@ -20,8 +20,9 @@ import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
 
-interface MenuDeleteDialogProps
-  extends React.ComponentProps<typeof DialogTrigger> {
+interface MenuDeleteDialogProps extends React.ComponentProps<
+  typeof DialogTrigger
+> {
   menuId: string;
 }
 

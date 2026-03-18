@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { LoaderCircleIcon, Trash2Icon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -21,14 +21,15 @@ import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
 
-interface RowDeleteDialogProps {
+type RowDeleteDialogProps = React.ComponentProps<typeof DialogTrigger> & {
   rowId: string;
   slug: string;
-}
+};
 
 export function RowDeleteDialog({
   rowId,
   slug,
+  ...props
 }: RowDeleteDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const sidebar = useSidebar();
@@ -73,15 +74,7 @@ export function RowDeleteDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="destructive"
-          size="sm"
-        >
-          <Trash2Icon className="size-4" />
-          <span>Excluir permanentemente</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger {...props} />
       <DialogContent className="py-4 px-6">
         <DialogHeader>
           <DialogTitle>Excluir registro permanentemente</DialogTitle>

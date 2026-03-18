@@ -100,17 +100,16 @@ function SidebarMenuItemRecursive({
                   'type' in subItem &&
                   subItem.type === E_MENU_ITEM_TYPE.EXTERNAL;
 
-                const subUrl = String(
-                  subItem.url?.toString() ?? '#',
-                ).replace(/\/$/, '');
+                const subUrl = String(subItem.url?.toString() ?? '#').replace(
+                  /\/$/,
+                  '',
+                );
 
                 return (
                   <SidebarMenuSubItem key={subItem.title}>
                     <SidebarMenuSubButton
                       asChild
-                      isActive={
-                        !isExternal && location.pathname === subUrl
-                      }
+                      isActive={!isExternal && location.pathname === subUrl}
                     >
                       {isExternal ? (
                         <a
@@ -156,7 +155,10 @@ function SidebarMenuItemRecursive({
       <SidebarMenuItem>
         <SidebarMenuButton tooltip={item.title}>
           {item.icon && (
-            <item.icon className="text-primary" width={32} />
+            <item.icon
+              className="text-primary"
+              width={32}
+            />
           )}
           <span>{item.title}</span>
         </SidebarMenuButton>
@@ -166,8 +168,7 @@ function SidebarMenuItemRecursive({
 
   // Simple LinkItem
   const to = String(item.url?.toString() ?? '/').replace(/\/$/, '');
-  const isExternal =
-    'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
+  const isExternal = 'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
 
   return (
     <SidebarMenuItem key={item.title}>
@@ -205,9 +206,7 @@ function SidebarMenuItemRecursive({
             )}
             <span>{item.title}</span>
             {item.badge && (
-              <Badge className="rounded-full px-1  text-xs">
-                {item.badge}
-              </Badge>
+              <Badge className="rounded-full px-1  text-xs">{item.badge}</Badge>
             )}
           </Link>
         )}

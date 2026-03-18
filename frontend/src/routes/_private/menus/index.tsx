@@ -24,13 +24,15 @@ export const Route = createFileRoute('/_private/menus/')({
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
     search: z.string().optional(),
-    trashed: z.preprocess(
-      (v) => {
-        if (typeof v === 'boolean') return String(v);
-        return v;
-      },
-      z.enum(['true', 'false']).transform((v) => v === 'true'),
-    ).optional(),
+    trashed: z
+      .preprocess(
+        (v) => {
+          if (typeof v === 'boolean') return String(v);
+          return v;
+        },
+        z.enum(['true', 'false']).transform((v) => v === 'true'),
+      )
+      .optional(),
     'order-name': z.enum(['asc', 'desc']).optional(),
     'order-slug': z.enum(['asc', 'desc']).optional(),
     'order-type': z.enum(['asc', 'desc']).optional(),

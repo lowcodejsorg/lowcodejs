@@ -14,13 +14,15 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
     .object({
       page: z.coerce.number().default(1),
       perPage: z.coerce.number().default(50),
-      trashed: z.preprocess(
-        (v) => {
-          if (typeof v === 'boolean') return String(v);
-          return v;
-        },
-        z.enum(['true', 'false']).transform((v) => v === 'true'),
-      ).optional(),
+      trashed: z
+        .preprocess(
+          (v) => {
+            if (typeof v === 'boolean') return String(v);
+            return v;
+          },
+          z.enum(['true', 'false']).transform((v) => v === 'true'),
+        )
+        .optional(),
     })
     .catchall(
       z.union([z.enum(['asc', 'desc']).optional(), z.string().optional()]),

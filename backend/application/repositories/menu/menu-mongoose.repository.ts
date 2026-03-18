@@ -1,5 +1,5 @@
-import mongoose from 'mongoose';
 import { Service } from 'fastify-decorators';
+import mongoose from 'mongoose';
 
 import type { IMenu } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
@@ -76,9 +76,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     }
 
     const baseConds =
-      trashed !== undefined
-        ? [...conditions, { trashed }]
-        : conditions;
+      trashed !== undefined ? [...conditions, { trashed }] : conditions;
 
     const whereClause = exact
       ? { $and: baseConds }

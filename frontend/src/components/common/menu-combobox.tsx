@@ -46,9 +46,7 @@ function getMenuDepth(menu: IMenu, menuMap: Map<string, IMenu>): number {
 
   while (current.parent) {
     const parentId =
-      typeof current.parent === 'string'
-        ? current.parent
-        : current.parent?._id;
+      typeof current.parent === 'string' ? current.parent : current.parent?._id;
     if (!parentId) break;
     const parentMenu = menuMap.get(parentId);
     if (!parentMenu) break;
@@ -65,9 +63,7 @@ function getBreadcrumb(menu: IMenu, menuMap: Map<string, IMenu>): string {
 
   while (current.parent) {
     const parentId =
-      typeof current.parent === 'string'
-        ? current.parent
-        : current.parent?._id;
+      typeof current.parent === 'string' ? current.parent : current.parent?._id;
     if (!parentId) break;
     const parentMenu = menuMap.get(parentId);
     if (!parentMenu) break;

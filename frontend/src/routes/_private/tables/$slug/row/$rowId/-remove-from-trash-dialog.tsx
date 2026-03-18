@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { ArchiveRestoreIcon, LoaderCircleIcon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -22,14 +22,17 @@ import type { IRow } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
 
-interface RowRemoveFromTrashDialogProps {
+type RowRemoveFromTrashDialogProps = React.ComponentProps<
+  typeof DialogTrigger
+> & {
   rowId: string;
   slug: string;
-}
+};
 
 export function RowRemoveFromTrashDialog({
   rowId,
   slug,
+  ...props
 }: RowRemoveFromTrashDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const sidebar = useSidebar();
@@ -76,15 +79,7 @@ export function RowRemoveFromTrashDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-        >
-          <ArchiveRestoreIcon className="size-4" />
-          <span>Remover da lixeira</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger {...props} />
       <DialogContent className="py-4 px-6">
         <DialogHeader>
           <DialogTitle>Restaurar linha da lixeira</DialogTitle>

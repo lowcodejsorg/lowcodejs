@@ -161,8 +161,7 @@ export default class MenuUpdateUseCase {
       };
 
       const parentChanged =
-        payload.parent !== undefined &&
-        payload.parent !== existingMenu.parent;
+        payload.parent !== undefined && payload.parent !== existingMenu.parent;
 
       if (parentChanged && payload.order === undefined) {
         const siblingCount = await this.menuRepository.count({

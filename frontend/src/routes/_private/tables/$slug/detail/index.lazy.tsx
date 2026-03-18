@@ -3,12 +3,16 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
+import { ArchiveRestoreIcon, ArrowLeftIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 import { TableView } from './-view';
+
+import { TableDeleteDialog } from '../../-delete-dialog';
+import { TableRemoveFromTrashDialog } from '../../-remove-from-trash-dialog';
+import { TableSendToTrashDialog } from '../../-send-to-trash-dialog';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
@@ -67,21 +71,6 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes da tabela</h1>
         </div>
-        {_read.status === 'success' && mode === 'show' && (
-          <div className="inline-flex items-center gap-2">
-            {permission.can('UPDATE_TABLE') && (
-              <Button
-                type="button"
-                className="px-2 cursor-pointer max-w-40 w-full"
-                size="sm"
-                onClick={() => setMode('edit')}
-              >
-                <PencilIcon className="size-4 mr-1" />
-                <span>Editar</span>
-              </Button>
-            )}
-          </div>
-        )}
       </div>
 
       {/* Content */}
@@ -97,6 +86,7 @@ function RouteComponent(): React.JSX.Element {
             data={_read.data}
             mode={mode}
             setMode={setMode}
+            permission={permission}
           />
         )}
       </div>
@@ -108,13 +98,17 @@ interface TableUpdateContentProps {
   data: ITable;
   mode: 'show' | 'edit';
   setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
+  permission: ReturnType<typeof useTablePermission>;
 }
 
 function TableUpdateContent({
   data,
   mode,
   setMode,
+  permission,
 }: TableUpdateContentProps): React.JSX.Element {
+  const sidebar = useSidebar();
+  const router = useRouter();
   const _update = useUpdateTable({
     onSuccess() {
       toastSuccess(
@@ -209,7 +203,87 @@ function TableUpdateContent({
 
   return (
     <>
-      {mode === 'show' && <TableView data={data} />}
+      {mode === 'show' && (
+        <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
+          {!data.trashed && permission.can('REMOVE_TABLE') && (
+            <TableSendToTrashDialog slug={data.slug} asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                <TrashIcon className="size-4" />
+                <span>Enviar para lixeira</span>
+              </Button>
+            </TableSendToTrashDialog>
+          )}
+          {data.trashed && permission.can('UPDATE_TABLE') && (
+            <TableRemoveFromTrashDialog slug={data.slug} asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                <ArchiveRestoreIcon className="size-4" />
+                <span>Restaurar</span>
+              </Button>
+            </TableRemoveFromTrashDialog>
+          )}
+          {data.trashed && permission.can('REMOVE_TABLE') && (
+            <TableDeleteDialog slug={data.slug} asChild>
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+              >
+                <TrashIcon className="size-4" />
+                <span>Excluir permanentemente</span>
+              </Button>
+            </TableDeleteDialog>
+          )}
+          {!data.trashed && permission.can('UPDATE_TABLE') && (
+            <Button
+              type="button"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              size="sm"
+              onClick={() => setMode('edit')}
+            >
+              <PencilIcon className="size-4 mr-1" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </div>
+      )}
+
+      {mode === 'show' && (
+        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+          <TableView data={data} />
+        </div>
+      )}
+
+      {/* Footer - Show Mode */}
+      {mode === 'show' && (
+        <div className="shrink-0 border-t bg-sidebar p-2">
+          <div className="flex justify-end gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              onClick={() => {
+                sidebar.setOpen(false);
+                router.navigate({
+                  to: '/tables',
+                  replace: true,
+                  search: { page: 1, perPage: 50 },
+                });
+              }}
+            >
+              <span>Voltar</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {mode === 'edit' && (
         <form

@@ -13,13 +13,13 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import type { MenuUpdateFormValues } from './-update-form';
-import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
-import { MenuView } from './-view';
-
 import { MenuDeleteDialog } from '../-delete-dialog';
 import { MenuRestoreDialog } from '../-restore-dialog';
 import { MenuSendToTrashDialog } from '../-send-to-trash-dialog';
+
+import type { MenuUpdateFormValues } from './-update-form';
+import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
+import { MenuView } from './-view';
 
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -167,24 +167,48 @@ function MenuUpdateContent({
       {mode === 'show' && (
         <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
           {!data.trashed && (
-            <MenuSendToTrashDialog menuId={data._id} asChild>
-              <Button type="button" className="px-2 cursor-pointer" size="sm" variant="outline">
+            <MenuSendToTrashDialog
+              menuId={data._id}
+              asChild
+            >
+              <Button
+                type="button"
+                className="px-2 cursor-pointer"
+                size="sm"
+                variant="outline"
+              >
                 <TrashIcon className="size-4 mr-1" />
                 <span>Enviar para lixeira</span>
               </Button>
             </MenuSendToTrashDialog>
           )}
           {data.trashed && (
-            <MenuRestoreDialog menuId={data._id} asChild>
-              <Button type="button" className="px-2 cursor-pointer" size="sm" variant="outline">
+            <MenuRestoreDialog
+              menuId={data._id}
+              asChild
+            >
+              <Button
+                type="button"
+                className="px-2 cursor-pointer"
+                size="sm"
+                variant="outline"
+              >
                 <ArchiveRestoreIcon className="size-4 mr-1" />
                 <span>Restaurar</span>
               </Button>
             </MenuRestoreDialog>
           )}
           {data.trashed && (
-            <MenuDeleteDialog menuId={data._id} asChild>
-              <Button type="button" className="px-2 cursor-pointer" size="sm" variant="destructive">
+            <MenuDeleteDialog
+              menuId={data._id}
+              asChild
+            >
+              <Button
+                type="button"
+                className="px-2 cursor-pointer"
+                size="sm"
+                variant="destructive"
+              >
                 <TrashIcon className="size-4 mr-1" />
                 <span>Excluir permanentemente</span>
               </Button>

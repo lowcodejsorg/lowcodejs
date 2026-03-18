@@ -6,6 +6,7 @@ import {
   ArchiveRestoreIcon,
   DownloadIcon,
   EllipsisIcon,
+  EyeIcon,
   ImageOffIcon,
   TrashIcon,
 } from 'lucide-react';
@@ -66,6 +67,8 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
   const tableExportButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   const permission = useTablePermission(table);
+  const router = useRouter();
+  const sidebar = useSidebar();
 
   return (
     <div onClick={(e) => e.stopPropagation()}>
@@ -80,6 +83,20 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
         <DropdownMenuContent className="mr-10">
           <DropdownMenuLabel>Acoes</DropdownMenuLabel>
           <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            className="inline-flex space-x-1 w-full cursor-pointer"
+            onClick={() => {
+              sidebar.setOpen(false);
+              router.navigate({
+                to: '/tables/$slug',
+                params: { slug: table.slug },
+              });
+            }}
+          >
+            <EyeIcon className="size-4" />
+            <span>Visualizar</span>
+          </DropdownMenuItem>
 
           <DropdownMenuItem
             className={cn(

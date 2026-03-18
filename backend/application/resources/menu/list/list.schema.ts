@@ -22,7 +22,11 @@ export const MenuListSchema: FastifySchema = {
             nullable: true,
             description: 'ID da tabela',
           },
-          owner: { type: 'string', nullable: true, description: 'ID do criador' },
+          owner: {
+            type: 'string',
+            nullable: true,
+            description: 'ID do criador',
+          },
           html: {
             type: 'string',
             nullable: true,

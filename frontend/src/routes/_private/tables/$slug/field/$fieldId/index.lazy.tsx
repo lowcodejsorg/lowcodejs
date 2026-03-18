@@ -100,6 +100,7 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' &&
           mode === 'show' &&
           permission.can('UPDATE_FIELD') &&
+          !(_read.data as IField & { trashed?: boolean }).trashed &&
           (!_read.data.locked || _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
             <Button
               type="button"

@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { LoaderCircleIcon, Trash2Icon } from 'lucide-react';
+import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
@@ -22,14 +22,15 @@ import type { IRow } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
 
-interface RowSendToTrashDialogProps {
+type RowSendToTrashDialogProps = React.ComponentProps<typeof DialogTrigger> & {
   rowId: string;
   slug: string;
-}
+};
 
 export function RowSendToTrashDialog({
   rowId,
   slug,
+  ...props
 }: RowSendToTrashDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const sidebar = useSidebar();
@@ -79,15 +80,7 @@ export function RowSendToTrashDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-        >
-          <Trash2Icon className="size-4" />
-          <span>Enviar para lixeira</span>
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger {...props} />
       <DialogContent className="py-4 px-6">
         <DialogHeader>
           <DialogTitle>Enviar linha para a lixeira</DialogTitle>

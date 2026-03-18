@@ -118,7 +118,11 @@ export const MenuUpdateSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS', 'CIRCULAR_REFERENCE'],
+          enum: [
+            'INVALID_PAYLOAD_FORMAT',
+            'INVALID_PARAMETERS',
+            'CIRCULAR_REFERENCE',
+          ],
         },
         errors: {
           type: 'object',

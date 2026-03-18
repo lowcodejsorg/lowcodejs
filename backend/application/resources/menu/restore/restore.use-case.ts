@@ -24,9 +24,7 @@ export default class MenuRestoreUseCase {
       });
 
       if (!menu)
-        return left(
-          HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'),
-        );
+        return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
 
       if (!menu.trashed)
         return left(
