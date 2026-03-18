@@ -69,7 +69,9 @@ export function TableRowFieldGroupField({
     (g) => g.slug === groupConfig?.slug,
   );
 
-  const items = formField.state.value;
+  const items = Array.isArray(formField.state.value)
+    ? formField.state.value
+    : [];
 
   const addItem = (): void => {
     formField.handleChange([...items, {}]);

@@ -6,8 +6,16 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
-import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
+import {
+  ArrowLeftIcon,
+  DownloadIcon,
+  PlusIcon,
+  Share2Icon,
+  ShieldXIcon,
+} from 'lucide-react';
 import React from 'react';
+
+import { TableExportDialog } from '../-export-dialog';
 
 import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
 import { TableCardViewSkeleton } from './-table-card-view-skeleton';
@@ -245,6 +253,18 @@ function RouteComponent(): React.JSX.Element {
           {permission.can('UPDATE_ROW') && <TrashButton />}
 
           <TableStyleViewDropdown slug={slug} />
+          <TableExportDialog
+            slug={slug}
+            tableName={table.data?.name ?? slug}
+          >
+            <Button
+              variant="outline"
+              className="shadow-none p-1 h-auto"
+            >
+              <DownloadIcon className="size-4" />
+              <span>Exportar</span>
+            </Button>
+          </TableExportDialog>
           <TableConfigurationDropdown tableSlug={slug} />
 
           {permission.can('CREATE_ROW') &&
