@@ -5,8 +5,10 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
+import { UploadIcon } from 'lucide-react';
 import React from 'react';
 
+import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
 import { getActiveFiltersCount } from '@/components/common/filter-fields';
@@ -96,6 +98,17 @@ function RouteComponent(): React.JSX.Element {
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
+          {permission.can('CREATE_TABLE') && (
+            <TableImportDialog>
+              <Button
+                variant="outline"
+                size={'sm'}
+              >
+                <UploadIcon className="size-4" />
+                <span>Importar</span>
+              </Button>
+            </TableImportDialog>
+          )}
           {permission.can('CREATE_TABLE') && (
             <Button
               className="disabled:cursor-not-allowed"

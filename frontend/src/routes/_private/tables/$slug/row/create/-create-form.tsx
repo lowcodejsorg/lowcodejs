@@ -134,6 +134,34 @@ export function buildPayload(
         }
         break;
       }
+      case E_FIELD_TYPE.FIELD_GROUP: {
+        if (!Array.isArray(value)) {
+          payload[field.slug] = value || null;
+          break;
+        }
+        payload[field.slug] = value.map((item: Record<string, any>) => {
+          const normalized: Record<string, any> = {};
+          for (const [key, val] of Object.entries(item)) {
+            // Normalize FILE sub-fields: { files, storages } -> array of IDs
+            if (
+              val &&
+              typeof val === 'object' &&
+              !Array.isArray(val) &&
+              'storages' in val
+            ) {
+              const fileVal = val as {
+                files: Array<File>;
+                storages: Array<IStorage>;
+              };
+              normalized[key] = fileVal.storages.map((s) => s._id);
+            } else {
+              normalized[key] = val;
+            }
+          }
+          return normalized;
+        });
+        break;
+      }
       default:
         payload[field.slug] = value || null;
     }
