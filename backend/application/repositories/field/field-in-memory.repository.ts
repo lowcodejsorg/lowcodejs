@@ -86,13 +86,7 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   }
 
   async delete(_id: string): Promise<void> {
-    const field = this.items.find((f) => f._id === _id);
-    if (!field) throw new Error('Field not found');
-    Object.assign(field, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    await this.update({ _id, trashed: true, trashedAt: new Date() });
   }
 
   async hardDelete(_id: string): Promise<void> {
