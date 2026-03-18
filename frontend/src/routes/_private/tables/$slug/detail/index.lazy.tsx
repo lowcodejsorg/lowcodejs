@@ -3,16 +3,21 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { ArchiveRestoreIcon, ArrowLeftIcon, PencilIcon, TrashIcon } from 'lucide-react';
+import {
+  ArchiveRestoreIcon,
+  ArrowLeftIcon,
+  PencilIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
-
-import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
-import { UpdateTableFormSkeleton } from './-update-form-skeleton';
-import { TableView } from './-view';
 
 import { TableDeleteDialog } from '../../-delete-dialog';
 import { TableRemoveFromTrashDialog } from '../../-remove-from-trash-dialog';
 import { TableSendToTrashDialog } from '../../-send-to-trash-dialog';
+
+import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
+import { UpdateTableFormSkeleton } from './-update-form-skeleton';
+import { TableView } from './-view';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
@@ -206,7 +211,10 @@ function TableUpdateContent({
       {mode === 'show' && (
         <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
           {!data.trashed && permission.can('REMOVE_TABLE') && (
-            <TableSendToTrashDialog slug={data.slug} asChild>
+            <TableSendToTrashDialog
+              slug={data.slug}
+              asChild
+            >
               <Button
                 type="button"
                 variant="outline"
@@ -218,7 +226,10 @@ function TableUpdateContent({
             </TableSendToTrashDialog>
           )}
           {data.trashed && permission.can('UPDATE_TABLE') && (
-            <TableRemoveFromTrashDialog slug={data.slug} asChild>
+            <TableRemoveFromTrashDialog
+              slug={data.slug}
+              asChild
+            >
               <Button
                 type="button"
                 variant="outline"
@@ -230,7 +241,10 @@ function TableUpdateContent({
             </TableRemoveFromTrashDialog>
           )}
           {data.trashed && permission.can('REMOVE_TABLE') && (
-            <TableDeleteDialog slug={data.slug} asChild>
+            <TableDeleteDialog
+              slug={data.slug}
+              asChild
+            >
               <Button
                 type="button"
                 variant="destructive"
