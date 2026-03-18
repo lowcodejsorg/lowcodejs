@@ -64,40 +64,19 @@ export const MenuDeleteSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Separador possui filhos ativos',
+      description: 'Menu possui filhos ativos',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Separator has active children'] },
+        message: { type: 'string', enum: ['Menu has active children'] },
         code: { type: 'number', enum: [409] },
-        cause: { type: 'string', enum: ['SEPARATOR_HAS_CHILDREN'] },
-        data: {
-          type: 'object',
-          properties: {
-            childrenCount: {
-              type: 'number',
-              description: 'Quantidade de filhos',
-            },
-            children: {
-              type: 'array',
-              description: 'Lista de filhos',
-              items: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string' },
-                  name: { type: 'string' },
-                  type: { type: 'string' },
-                },
-              },
-            },
-          },
-        },
+        cause: { type: 'string', enum: ['MENU_HAS_CHILDREN'] },
       },
     },
     500: {
       description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Erro interno do servidor'] },
+        message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['DELETE_MENU_ERROR'] },
       },

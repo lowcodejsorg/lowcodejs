@@ -87,18 +87,16 @@ export const CreateMenuFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo Parent - Oculto para tipo SEPARATOR */}
-        {menuType !== E_MENU_ITEM_TYPE.SEPARATOR && (
-          <form.AppField name="parent">
-            {(field) => (
-              <field.FieldMenuCombobox
-                label="Menu Pai"
-                placeholder="Nenhum (raiz)"
-                disabled={isPending}
-              />
-            )}
-          </form.AppField>
-        )}
+        {/* Campo Parent */}
+        <form.AppField name="parent">
+          {(field) => (
+            <field.FieldMenuCombobox
+              label="Menu Pai"
+              placeholder="Nenhum (raiz)"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
 
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
         {(menuType === E_MENU_ITEM_TYPE.TABLE ||

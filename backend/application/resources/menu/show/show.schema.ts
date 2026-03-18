@@ -55,12 +55,30 @@ export const MenuShowSchema: FastifySchema = {
             slug: { type: 'string' },
           },
         },
+        owner: {
+          type: 'object',
+          nullable: true,
+          description: 'Criador do menu',
+          properties: {
+            _id: { type: 'string' },
+            name: { type: 'string' },
+            email: { type: 'string' },
+          },
+        },
         html: {
           type: 'string',
           nullable: true,
           description: 'Conteúdo HTML',
         },
         url: { type: 'string', nullable: true, description: 'URL' },
+        order: { type: 'number', description: 'Ordem do menu' },
+        trashed: { type: 'boolean', description: 'Se está na lixeira' },
+        trashedAt: {
+          type: 'string',
+          format: 'date-time',
+          nullable: true,
+          description: 'Data de envio para lixeira',
+        },
         children: {
           type: 'array',
           description: 'Itens de menu filhos ativos',

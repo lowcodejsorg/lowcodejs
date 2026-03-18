@@ -34,13 +34,13 @@ export default class MenuPaginatedUseCase {
         page: payload.page,
         perPage: payload.perPage,
         search: payload.search,
-        trashed: false,
+        trashed: payload.trashed ?? false,
         sort,
       });
 
       const total = await this.menuRepository.count({
         search: payload.search,
-        trashed: false,
+        trashed: payload.trashed ?? false,
       });
 
       const lastPage = Math.ceil(total / payload.perPage);

@@ -21,7 +21,7 @@ export function TrashButton(): React.JSX.Element {
             // @ts-ignore
             search: (state) => ({
               ...state,
-              trashed: true,
+              trashed: 'true',
               page: 1,
               perPage: 50,
             }),
@@ -31,12 +31,10 @@ export function TrashButton(): React.JSX.Element {
 
         router.navigate({
           // @ts-ignore
-          search: (state) => ({
-            ...state,
-            trashed: false,
-            page: 1,
-            perPage: 50,
-          }),
+          search: (state) => {
+            const { trashed, ...rest } = state;
+            return { ...rest, page: 1, perPage: 50 };
+          },
         });
       }}
       className={cn(

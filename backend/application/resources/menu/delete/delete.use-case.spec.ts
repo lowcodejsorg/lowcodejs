@@ -24,12 +24,13 @@ describe('Menu Delete Use Case', () => {
 
     expect(result.isRight()).toBe(true);
 
-    const deleted = await menuInMemoryRepository.findBy({
+    const trashed = await menuInMemoryRepository.findBy({
       _id: created._id,
       trashed: true,
       exact: true,
     });
-    expect(deleted?.trashed).toBe(true);
+    expect(trashed?.trashed).toBe(true);
+    expect(trashed?.trashedAt).toBeTruthy();
   });
 
   it('deve retornar erro MENU_NOT_FOUND quando menu nao existe', async () => {
@@ -42,7 +43,7 @@ describe('Menu Delete Use Case', () => {
     }
   });
 
-  it('deve retornar erro SEPARATOR_HAS_CHILDREN quando separator tem filhos ativos', async () => {
+  it('deve retornar erro MENU_HAS_CHILDREN quando menu tem filhos ativos', async () => {
     const parent = await menuInMemoryRepository.create({
       name: 'Parent',
       slug: 'parent',
@@ -61,7 +62,7 @@ describe('Menu Delete Use Case', () => {
     expect(result.isLeft()).toBe(true);
     if (result.isLeft()) {
       expect(result.value.code).toBe(409);
-      expect(result.value.cause).toBe('SEPARATOR_HAS_CHILDREN');
+      expect(result.value.cause).toBe('MENU_HAS_CHILDREN');
     }
   });
 

@@ -5,12 +5,21 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
+import {
+  ArchiveRestoreIcon,
+  ArrowLeftIcon,
+  PencilIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import type { MenuUpdateFormValues } from './-update-form';
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { MenuView } from './-view';
+
+import { MenuDeleteDialog } from '../-delete-dialog';
+import { MenuRestoreDialog } from '../-restore-dialog';
+import { MenuSendToTrashDialog } from '../-send-to-trash-dialog';
 
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
@@ -61,17 +70,6 @@ function RouteComponent(): React.JSX.Element {
           </Button>
           <h1 className="text-xl font-medium">Detalhes do menu</h1>
         </div>
-        {mode === 'show' && (
-          <Button
-            type="button"
-            className="px-2 cursor-pointer max-w-40 w-full"
-            size="sm"
-            onClick={() => setMode('edit')}
-          >
-            <PencilIcon className="size-4 mr-1" />
-            <span>Editar</span>
-          </Button>
-        )}
       </div>
 
       {/* Content */}
@@ -166,6 +164,44 @@ function MenuUpdateContent({
 
   return (
     <>
+      {mode === 'show' && (
+        <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
+          {!data.trashed && (
+            <MenuSendToTrashDialog menuId={data._id} asChild>
+              <Button type="button" className="px-2 cursor-pointer" size="sm" variant="outline">
+                <TrashIcon className="size-4 mr-1" />
+                <span>Enviar para lixeira</span>
+              </Button>
+            </MenuSendToTrashDialog>
+          )}
+          {data.trashed && (
+            <MenuRestoreDialog menuId={data._id} asChild>
+              <Button type="button" className="px-2 cursor-pointer" size="sm" variant="outline">
+                <ArchiveRestoreIcon className="size-4 mr-1" />
+                <span>Restaurar</span>
+              </Button>
+            </MenuRestoreDialog>
+          )}
+          {data.trashed && (
+            <MenuDeleteDialog menuId={data._id} asChild>
+              <Button type="button" className="px-2 cursor-pointer" size="sm" variant="destructive">
+                <TrashIcon className="size-4 mr-1" />
+                <span>Excluir permanentemente</span>
+              </Button>
+            </MenuDeleteDialog>
+          )}
+          <Button
+            type="button"
+            className="px-2 cursor-pointer max-w-40 w-full"
+            size="sm"
+            onClick={() => setMode('edit')}
+          >
+            <PencilIcon className="size-4 mr-1" />
+            <span>Editar</span>
+          </Button>
+        </div>
+      )}
+
       {mode === 'show' && (
         <div className="flex-1 flex flex-col min-h-0 overflow-auto">
           <MenuView data={data} />

@@ -15,7 +15,10 @@ export default class MenuListUseCase {
 
   async execute(): Promise<Response> {
     try {
-      const menus = await this.menuRepository.findMany({ trashed: false });
+      const menus = await this.menuRepository.findMany({
+        trashed: false,
+        sort: { order: 'asc', name: 'asc' },
+      });
 
       return right(menus);
     } catch (error) {

@@ -13,6 +13,7 @@ import { getActiveFiltersCount } from '@/components/common/filter-fields';
 import { FilterSidebar } from '@/components/common/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filter-trigger';
 import { Pagination } from '@/components/common/pagination';
+import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { menuListOptions } from '@/hooks/tanstack-query/_query-options';
@@ -67,6 +68,7 @@ function RouteComponent(): React.JSX.Element {
         <h1 className="text-2xl font-medium">Gestão de Menus</h1>
         <div className="inline-flex items-center gap-2">
           <div ref={setToolbarNode} />
+          <TrashButton />
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
             onClick={() => handleFilterOpenChange(!filterOpen)}

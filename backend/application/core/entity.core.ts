@@ -405,6 +405,7 @@ export type IMenu = Merge<
     url: string | null;
     html: string | null;
     owner: IUser | string | null;
+    order: number;
   }
 >;
 

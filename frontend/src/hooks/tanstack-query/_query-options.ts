@@ -16,7 +16,7 @@ import type {
   Paginated,
 } from '@/lib/interfaces';
 import type {
-  BaseQueryPayload,
+  MenuQueryPayload,
   TableQueryPayload,
   UserGroupQueryPayload,
   UserQueryPayload,
@@ -94,7 +94,7 @@ export const groupDetailOptions = (
 // ============== MENUS ==============
 
 export const menuListOptions = (
-  params: BaseQueryPayload,
+  params: MenuQueryPayload,
 ): UndefinedInitialDataOptions<Paginated<IMenu>> =>
   queryOptions({
     queryKey: queryKeys.menus.list(params),

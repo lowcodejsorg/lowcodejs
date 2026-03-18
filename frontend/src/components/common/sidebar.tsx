@@ -33,11 +33,187 @@ import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authenticat
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
-import type { MenuRoute } from '@/lib/menu/menu-route';
+import type { MenuItem, MenuRoute } from '@/lib/menu/menu-route';
 import { toastSuccess } from '@/lib/toast';
 
 interface SidebarProps {
   menu: MenuRoute;
+}
+
+const MAX_DEPTH = 4;
+
+function SidebarMenuItemRecursive({
+  item,
+  depth,
+  location,
+  setOpenMobile,
+}: {
+  item: MenuItem;
+  depth: number;
+  location: { pathname: string };
+  setOpenMobile: (open: boolean) => void;
+}): React.JSX.Element {
+  // CollapsibleItem with sub-items
+  if ('items' in item && item.items && item.items.length > 0) {
+    return (
+      <Collapsible
+        key={item.title}
+        asChild
+        className="group/collapsible"
+      >
+        <SidebarMenuItem>
+          <CollapsibleTrigger asChild>
+            <SidebarMenuButton tooltip={item.title}>
+              {item.icon && (
+                <item.icon
+                  className="text-primary"
+                  width={32}
+                />
+              )}
+              <span>{item.title}</span>
+              <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+            </SidebarMenuButton>
+          </CollapsibleTrigger>
+          <CollapsibleContent>
+            <SidebarMenuSub>
+              {item.items.map((subItem) => {
+                // If sub-item has its own children and we haven't hit max depth, recurse
+                if (
+                  'items' in subItem &&
+                  subItem.items &&
+                  subItem.items.length > 0 &&
+                  depth < MAX_DEPTH
+                ) {
+                  return (
+                    <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuItemRecursive
+                        item={subItem}
+                        depth={depth + 1}
+                        location={location}
+                        setOpenMobile={setOpenMobile}
+                      />
+                    </SidebarMenuSubItem>
+                  );
+                }
+
+                const isExternal =
+                  'type' in subItem &&
+                  subItem.type === E_MENU_ITEM_TYPE.EXTERNAL;
+
+                const subUrl = String(
+                  subItem.url?.toString() ?? '#',
+                ).replace(/\/$/, '');
+
+                return (
+                  <SidebarMenuSubItem key={subItem.title}>
+                    <SidebarMenuSubButton
+                      asChild
+                      isActive={
+                        !isExternal && location.pathname === subUrl
+                      }
+                    >
+                      {isExternal ? (
+                        <a
+                          href={subUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={() => setOpenMobile(false)}
+                        >
+                          {subItem.icon && (
+                            <subItem.icon className="text-primary size-4" />
+                          )}
+                          <span>{subItem.title}</span>
+                        </a>
+                      ) : (
+                        <Link
+                          to={subUrl}
+                          onClick={() => setOpenMobile(false)}
+                        >
+                          {subItem.icon && (
+                            <subItem.icon className="text-primary size-4" />
+                          )}
+                          <span>{subItem.title}</span>
+                        </Link>
+                      )}
+                    </SidebarMenuSubButton>
+                  </SidebarMenuSubItem>
+                );
+              })}
+            </SidebarMenuSub>
+          </CollapsibleContent>
+        </SidebarMenuItem>
+      </Collapsible>
+    );
+  }
+
+  // SEPARATOR sem filhos: renderizar como label estático (sem link, sem collapsible)
+  if (
+    'type' in item &&
+    item.type === E_MENU_ITEM_TYPE.SEPARATOR &&
+    (!('items' in item) || !item.items || item.items.length === 0)
+  ) {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton tooltip={item.title}>
+          {item.icon && (
+            <item.icon className="text-primary" width={32} />
+          )}
+          <span>{item.title}</span>
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
+  }
+
+  // Simple LinkItem
+  const to = String(item.url?.toString() ?? '/').replace(/\/$/, '');
+  const isExternal =
+    'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
+
+  return (
+    <SidebarMenuItem key={item.title}>
+      <SidebarMenuButton
+        asChild
+        className="group data-[active=true]:bg-primary data-[active=true]:text-primary-foreground "
+        isActive={!isExternal && location.pathname === to}
+        tooltip={item.title}
+      >
+        {isExternal ? (
+          <a
+            href={to}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={() => setOpenMobile(false)}
+          >
+            {item.icon && (
+              <item.icon
+                className="text-primary group-data-[active=true]:text-primary-foreground"
+                width={32}
+              />
+            )}
+            <span>{item.title}</span>
+          </a>
+        ) : (
+          <Link
+            to={to}
+            onClick={() => setOpenMobile(false)}
+          >
+            {item.icon && (
+              <item.icon
+                className="text-primary group-data-[active=true]:text-primary-foreground"
+                width={32}
+              />
+            )}
+            <span>{item.title}</span>
+            {item.badge && (
+              <Badge className="rounded-full px-1  text-xs">
+                {item.badge}
+              </Badge>
+            )}
+          </Link>
+        )}
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 }
 
 export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
@@ -109,132 +285,15 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
                 <SidebarGroupLabel>{props.title}</SidebarGroupLabel>
               )}
               <SidebarMenu>
-                {props.items.map((item) => {
-                  // Verificar se é CollapsibleItem (tem sub-items)
-                  if ('items' in item && item.items && item.items.length > 0) {
-                    return (
-                      <Collapsible
-                        key={item.title}
-                        asChild
-                        className="group/collapsible"
-                      >
-                        <SidebarMenuItem>
-                          <CollapsibleTrigger asChild>
-                            <SidebarMenuButton tooltip={item.title}>
-                              {item.icon && (
-                                <item.icon
-                                  className="text-primary"
-                                  width={32}
-                                />
-                              )}
-                              <span>{item.title}</span>
-                              <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                            </SidebarMenuButton>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <SidebarMenuSub>
-                              {item.items.map((subItem) => {
-                                const isExternal =
-                                  'type' in subItem &&
-                                  subItem.type === E_MENU_ITEM_TYPE.EXTERNAL;
-
-                                return (
-                                  <SidebarMenuSubItem key={subItem.title}>
-                                    <SidebarMenuSubButton
-                                      asChild
-                                      isActive={
-                                        !isExternal &&
-                                        location.pathname === subItem.url
-                                      }
-                                    >
-                                      {isExternal ? (
-                                        <a
-                                          href={subItem.url}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          onClick={() => setOpenMobile(false)}
-                                        >
-                                          {subItem.icon && (
-                                            <subItem.icon className="text-primary size-4" />
-                                          )}
-                                          <span>{subItem.title}</span>
-                                        </a>
-                                      ) : (
-                                        <Link
-                                          to={subItem.url}
-                                          onClick={() => setOpenMobile(false)}
-                                        >
-                                          {subItem.icon && (
-                                            <subItem.icon className="text-primary size-4" />
-                                          )}
-                                          <span>{subItem.title}</span>
-                                        </Link>
-                                      )}
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                );
-                              })}
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </SidebarMenuItem>
-                      </Collapsible>
-                    );
-                  }
-
-                  // Item simples (LinkItem)
-                  const to = String(item.url?.toString() ?? '/').replace(
-                    /\/$/,
-                    '',
-                  );
-                  const isExternal =
-                    'type' in item && item.type === E_MENU_ITEM_TYPE.EXTERNAL;
-
-                  return (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton
-                        asChild
-                        className="group data-[active=true]:bg-primary data-[active=true]:text-primary-foreground "
-                        isActive={!isExternal && location.pathname === to}
-                        tooltip={item.title}
-                      >
-                        {isExternal ? (
-                          <a
-                            href={to}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => setOpenMobile(false)}
-                          >
-                            {item.icon && (
-                              <item.icon
-                                className="text-primary group-data-[active=true]:text-primary-foreground"
-                                width={32}
-                              />
-                            )}
-                            <span>{item.title}</span>
-                          </a>
-                        ) : (
-                          <Link
-                            to={to}
-                            onClick={() => setOpenMobile(false)}
-                          >
-                            {item.icon && (
-                              <item.icon
-                                className="text-primary group-data-[active=true]:text-primary-foreground"
-                                width={32}
-                              />
-                            )}
-                            <span>{item.title}</span>
-                            {item.badge && (
-                              <Badge className="rounded-full px-1  text-xs">
-                                {item.badge}
-                              </Badge>
-                            )}
-                          </Link>
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                {props.items.map((item) => (
+                  <SidebarMenuItemRecursive
+                    key={item.title}
+                    item={item}
+                    depth={0}
+                    location={location}
+                    setOpenMobile={setOpenMobile}
+                  />
+                ))}
               </SidebarMenu>
             </SidebarGroup>
           );

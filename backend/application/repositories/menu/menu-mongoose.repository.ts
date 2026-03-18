@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import { Service } from 'fastify-decorators';
 
 import type { IMenu } from '@application/core/entity.core';
@@ -60,7 +61,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
 
   async findBy({
     exact = false,
-    trashed = false,
+    trashed,
     ...payload
   }: MenuFindByPayload): Promise<IMenu | null> {
     const conditions: Record<string, unknown>[] = [];
@@ -74,9 +75,14 @@ export default class MenuMongooseRepository implements MenuContractRepository {
       throw new Error('At least one query is required');
     }
 
+    const baseConds =
+      trashed !== undefined
+        ? [...conditions, { trashed }]
+        : conditions;
+
     const whereClause = exact
-      ? { $and: [...conditions, { trashed }] }
-      : { $or: conditions, trashed };
+      ? { $and: baseConds }
+      : { ...(baseConds.length > 1 ? { $or: baseConds } : baseConds[0]) };
 
     const menu = await Model.findOne(whereClause).populate(
       this.populateOptions,
@@ -101,7 +107,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     const sortOption =
       payload?.sort && Object.keys(payload.sort).length > 0
         ? payload.sort
-        : { name: 'asc' as const };
+        : { order: 'asc' as const, name: 'asc' as const };
 
     const hasOwnerSort = sortOption && 'owner.name' in sortOption;
 
@@ -167,14 +173,33 @@ export default class MenuMongooseRepository implements MenuContractRepository {
   }
 
   async delete(_id: string): Promise<void> {
-    await Model.updateOne(
-      { _id },
-      { $set: { trashed: true, trashedAt: new Date() } },
-    );
+    await Model.deleteOne({ _id });
   }
 
   async count(payload?: MenuQueryPayload): Promise<number> {
     const where = this.buildWhereClause(payload);
     return Model.countDocuments(where);
+  }
+
+  async findDescendantIds(menuId: string): Promise<string[]> {
+    const result = await Model.aggregate([
+      { $match: { _id: new mongoose.Types.ObjectId(menuId) } },
+      {
+        $graphLookup: {
+          from: 'menus',
+          startWith: '$_id',
+          connectFromField: '_id',
+          connectToField: 'parent',
+          as: 'descendants',
+        },
+      },
+      { $project: { descendants: '$descendants._id' } },
+    ]);
+
+    if (!result.length || !result[0].descendants) return [];
+
+    return result[0].descendants.map((id: mongoose.Types.ObjectId) =>
+      id.toString(),
+    );
   }
 }

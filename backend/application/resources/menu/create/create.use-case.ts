@@ -35,6 +35,7 @@ export default class MenuCreateUseCase {
       if (payload.parent) {
         parent = await this.menuRepository.findBy({
           _id: payload.parent,
+          trashed: false,
           exact: true,
         });
 
@@ -96,34 +97,17 @@ export default class MenuCreateUseCase {
         payload.url = '/pages/'.concat(slug);
       }
 
-      if (parent && parent.type !== E_MENU_ITEM_TYPE.SEPARATOR) {
-        await this.menuRepository.create({
-          name: parent.name,
-          slug: slugify(parent.name, {
-            lower: true,
-            trim: true,
-          }),
-          type: parent.type,
-          table: parent.table,
-          parent: parent._id,
-          url: parent.url,
-          html: parent.html,
-        });
-
-        await this.menuRepository.update({
-          _id: parent._id,
-          type: E_MENU_ITEM_TYPE.SEPARATOR,
-          slug: slugify(parent.name.concat('-separator'), {
-            lower: true,
-            trim: true,
-          }),
-        });
-      }
+      // Auto-assign order: count siblings and place at end
+      const siblingCount = await this.menuRepository.count({
+        parent: payload.parent ?? undefined,
+        trashed: false,
+      });
 
       const created = await this.menuRepository.create({
         ...payload,
         slug,
         owner: payload.owner,
+        order: siblingCount,
       } as RepositoryMenuCreatePayload);
 
       return right(created);

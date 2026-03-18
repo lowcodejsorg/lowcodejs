@@ -11,6 +11,7 @@ export const MenuPaginatedQueryValidator = z.object({
     .max(100, 'O limite por página deve ser no máximo 100')
     .default(50),
   search: z.string({ message: 'A busca deve ser um texto' }).trim().optional(),
+  trashed: z.enum(['true', 'false']).transform((v) => v === 'true').optional(),
 
   'order-name': z.enum(['asc', 'desc']).optional(),
   'order-slug': z.enum(['asc', 'desc']).optional(),

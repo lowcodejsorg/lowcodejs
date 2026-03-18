@@ -135,6 +135,7 @@ export const MenuCreateBodySchema = z.object({
   parent: z.string().default(''),
   html: z.string().default(''),
   url: z.string().default(''),
+  order: z.number().default(0),
 });
 
 export const MenuUpdateParamsSchema = z.object({
@@ -148,6 +149,7 @@ export const MenuUpdateBodySchema = z.object({
   parent: z.string().default(''),
   html: z.string().default(''),
   url: z.string().default(''),
+  order: z.number().default(0),
 });
 
 // ============== TABLE ==============

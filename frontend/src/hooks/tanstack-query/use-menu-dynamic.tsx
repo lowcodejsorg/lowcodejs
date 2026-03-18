@@ -14,7 +14,7 @@ import { useMenuReadList } from './use-menu-read-list';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { getStaticMenusByRole } from '@/lib/menu/menu';
-import type { MenuGroupItem, MenuRoute } from '@/lib/menu/menu-route';
+import type { MenuGroupItem, MenuItem, MenuRoute } from '@/lib/menu/menu-route';
 
 // Mapeamento de ícones por tipo de menu
 const TYPE_ICONS: Record<string, LucideIcon> = {
@@ -69,9 +69,9 @@ function buildMenuTree(menus: Array<IMenu>): Array<MenuWithChildren> {
 }
 
 /**
- * Converte um menu com filhos para item do MenuRoute
+ * Converte um menu com filhos para item do MenuRoute (recursivo)
  */
-function convertMenuToItem(menu: MenuWithChildren) {
+function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
   const Icon = TYPE_ICONS[menu.type] || LayoutListIcon;
   const hasChildren = menu.children && menu.children.length > 0;
 
@@ -79,17 +79,20 @@ function convertMenuToItem(menu: MenuWithChildren) {
   if (menu.url) {
     // Se tem filhos, é um CollapsibleItem
     if (hasChildren) {
+      const childItems: Array<MenuItem> = [];
+      for (const child of menu.children!) {
+        const childItem = convertMenuToItem(child);
+        if (childItem) {
+          childItems.push(childItem);
+        }
+      }
+
       return {
         title: menu.name,
         icon: Icon,
         url: menu.url,
         type: menu.type,
-        items: menu.children!.map((child) => ({
-          title: child.name,
-          icon: TYPE_ICONS[child.type] || LayoutListIcon,
-          url: child.url || '#',
-          type: child.type,
-        })),
+        items: childItems,
       };
     }
 
@@ -104,16 +107,29 @@ function convertMenuToItem(menu: MenuWithChildren) {
 
   // Menu sem URL (separator ou parent)
   if (hasChildren) {
+    const childItems: Array<MenuItem> = [];
+    for (const child of menu.children!) {
+      const childItem = convertMenuToItem(child);
+      if (childItem) {
+        childItems.push(childItem);
+      }
+    }
+
     return {
       title: menu.name,
       icon: Icon,
       type: menu.type,
-      items: menu.children!.map((child) => ({
-        title: child.name,
-        icon: TYPE_ICONS[child.type] || LayoutListIcon,
-        url: child.url || '#',
-        type: child.type,
-      })),
+      items: childItems,
+    };
+  }
+
+  // SEPARATOR sem filhos: renderizar como item visível (label)
+  if (menu.type === E_MENU_ITEM_TYPE.SEPARATOR) {
+    return {
+      title: menu.name,
+      icon: Icon,
+      type: menu.type,
+      items: [],
     };
   }
 
@@ -127,42 +143,26 @@ function convertMenuToItem(menu: MenuWithChildren) {
 function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
   if (menuTree.length === 0) return [];
 
-  const items: Array<any> = [];
+  const items: Array<MenuItem> = [];
 
   for (const menu of menuTree) {
-    // Se é SEPARATOR, cria CollapsibleItem com seus filhos
-    if (menu.type === E_MENU_ITEM_TYPE.SEPARATOR) {
-      if (menu.children && menu.children.length > 0) {
-        items.push({
-          title: menu.name,
-          icon: TYPE_ICONS[menu.type] || LayoutListIcon,
-          type: menu.type,
-          items: menu.children.map((child) => ({
-            title: child.name,
-            url: child.url || '#',
-            icon: TYPE_ICONS[child.type] || LayoutListIcon,
-            type: child.type,
-          })),
-        });
-      }
-    } else {
-      // Menu normal (não separator)
-      const item = convertMenuToItem(menu);
-      if (item) {
-        items.push(item);
-      }
+    const item = convertMenuToItem(menu);
+    if (item) {
+      items.push(item);
     }
   }
 
   // Retorna um único grupo sem título (título vazio = sem rótulo)
-  return items.length > 0
-    ? [
-        {
-          title: '',
-          items: items,
-        },
-      ]
-    : [];
+  if (items.length > 0) {
+    return [
+      {
+        title: '',
+        items: items,
+      },
+    ];
+  }
+
+  return [];
 }
 
 /**

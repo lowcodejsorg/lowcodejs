@@ -13,7 +13,7 @@ export type LinkItem = MenuRouteBaseItem & {
 };
 
 export type CollapsibleItem = MenuRouteBaseItem & {
-  items: Array<MenuRouteBaseItem & { url: LinkProps['to'] }>;
+  items: Array<MenuItem>;
   url?: LinkProps['to'];
 };
 

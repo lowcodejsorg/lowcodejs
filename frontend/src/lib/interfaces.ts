@@ -130,6 +130,7 @@ export type IMenu = Merge<
     url: string | null;
     html: string | null;
     owner: IUser | null;
+    order: number;
   }
 >;
 

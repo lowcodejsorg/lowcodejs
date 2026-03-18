@@ -3,7 +3,6 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
@@ -27,23 +26,25 @@ export default class MenuDeleteUseCase {
       if (!menu)
         return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
 
-      if (menu.type === E_MENU_ITEM_TYPE.SEPARATOR) {
-        const childrenCount = await this.menuRepository.count({
-          parent: menu._id,
-          trashed: false,
-        });
+      const childrenCount = await this.menuRepository.count({
+        parent: menu._id,
+        trashed: false,
+      });
 
-        if (childrenCount > 0) {
-          return left(
-            HTTPException.Conflict(
-              'Separator has active children',
-              'SEPARATOR_HAS_CHILDREN',
-            ),
-          );
-        }
+      if (childrenCount > 0) {
+        return left(
+          HTTPException.Conflict(
+            'Menu has active children',
+            'MENU_HAS_CHILDREN',
+          ),
+        );
       }
 
-      await this.menuRepository.delete(menu._id);
+      await this.menuRepository.update({
+        _id: menu._id,
+        trashed: true,
+        trashedAt: new Date(),
+      });
 
       return right(null);
     } catch (error) {

@@ -11,7 +11,13 @@
       "WebSearch",
       "Bash(gh api:*)",
       "WebFetch(domain:github.com)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx vitest:*)",
+      "Bash(npx --no-install tsc --noEmit)"
     ]
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": [
+    "lowcodejs"
+  ]
 }

@@ -20,6 +20,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
       parent: payload.parent ?? null,
       url: payload.url ?? null,
       html: payload.html ?? null,
+      order: payload.order ?? 0,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -33,7 +34,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     _id,
     slug,
     parent,
-    trashed = false,
+    trashed,
     exact = false,
   }: MenuFindByPayload): Promise<IMenu | null> {
     const menu = this.items.find((m) => {
@@ -42,12 +43,12 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
           (_id ? m._id === _id : true) &&
           (slug ? m.slug === slug : true) &&
           (parent !== undefined ? m.parent === parent : true) &&
-          m.trashed === trashed
+          (trashed !== undefined ? m.trashed === trashed : true)
         );
       }
       return (
         (m._id === _id || m.slug === slug || m.parent === parent) &&
-        m.trashed === trashed
+        (trashed !== undefined ? m.trashed === trashed : true)
       );
     });
 
@@ -73,7 +74,11 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
       );
     }
 
-    filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
+    filtered = filtered.sort((a, b) => {
+      const orderDiff = (a.order ?? 0) - (b.order ?? 0);
+      if (orderDiff !== 0) return orderDiff;
+      return a.name.localeCompare(b.name);
+    });
 
     if (payload?.page && payload?.perPage) {
       const start = (payload.page - 1) * payload.perPage;
@@ -92,13 +97,9 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
   }
 
   async delete(_id: string): Promise<void> {
-    const menu = this.items.find((m) => m._id === _id);
-    if (!menu) throw new Error('Menu not found');
-    Object.assign(menu, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((m) => m._id === _id);
+    if (index === -1) throw new Error('Menu not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: MenuQueryPayload): Promise<number> {
@@ -108,5 +109,21 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
       perPage: undefined,
     });
     return filtered.length;
+  }
+
+  async findDescendantIds(menuId: string): Promise<string[]> {
+    const descendants: string[] = [];
+    const queue = [menuId];
+
+    while (queue.length > 0) {
+      const currentId = queue.shift()!;
+      const children = this.items.filter((m) => m.parent === currentId);
+      for (const child of children) {
+        descendants.push(child._id);
+        queue.push(child._id);
+      }
+    }
+
+    return descendants;
   }
 }

@@ -3,12 +3,15 @@ import type { IMenu, Merge } from '@application/core/entity.core';
 
 export type MenuCreatePayload = Merge<
   Pick<IMenu, 'name' | 'slug' | 'type'>,
-  Partial<Pick<IMenu, 'table' | 'parent' | 'url' | 'html' | 'owner'>>
+  Partial<Pick<IMenu, 'table' | 'parent' | 'url' | 'html' | 'owner' | 'order'>>
 >;
 
 export type MenuUpdatePayload = Merge<
   Pick<IMenu, '_id'>,
-  Partial<MenuCreatePayload>
+  Partial<MenuCreatePayload> & {
+    trashed?: boolean;
+    trashedAt?: Date | null;
+  }
 >;
 
 export type MenuFindByPayload = Merge<
@@ -32,4 +35,5 @@ export abstract class MenuContractRepository {
   abstract update(payload: MenuUpdatePayload): Promise<IMenu>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: MenuQueryPayload): Promise<number>;
+  abstract findDescendantIds(menuId: string): Promise<string[]>;
 }

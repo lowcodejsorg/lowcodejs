@@ -75,6 +75,7 @@ export type MenuCreatePayload = {
   parent?: string | null;
   html?: string | null;
   url?: string | null;
+  order?: number;
 };
 
 export type MenuUpdatePayload = {
@@ -85,6 +86,7 @@ export type MenuUpdatePayload = {
   parent?: string | null;
   html?: string | null;
   url?: string | null;
+  order?: number;
 };
 
 // ============== TABLE ==============

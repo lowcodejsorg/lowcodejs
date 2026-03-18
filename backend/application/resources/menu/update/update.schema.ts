@@ -95,8 +95,17 @@ export const MenuUpdateSchema: FastifySchema = {
         type: { type: 'string', description: 'Tipo do menu' },
         parent: { type: 'string', nullable: true, description: 'ID do pai' },
         table: { type: 'string', nullable: true, description: 'ID da tabela' },
+        owner: { type: 'string', nullable: true, description: 'ID do criador' },
         html: { type: 'string', nullable: true, description: 'Conteúdo HTML' },
         url: { type: 'string', nullable: true, description: 'URL' },
+        order: { type: 'number', description: 'Ordem do menu' },
+        trashed: { type: 'boolean', description: 'Se está na lixeira' },
+        trashedAt: {
+          type: 'string',
+          format: 'date-time',
+          nullable: true,
+          description: 'Data de envio para lixeira',
+        },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },
       },
@@ -109,7 +118,7 @@ export const MenuUpdateSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS'],
+          enum: ['INVALID_PAYLOAD_FORMAT', 'INVALID_PARAMETERS', 'CIRCULAR_REFERENCE'],
         },
         errors: {
           type: 'object',
@@ -155,7 +164,7 @@ export const MenuUpdateSchema: FastifySchema = {
       description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Erro interno do servidor'] },
+        message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['UPDATE_MENU_ERROR'] },
       },

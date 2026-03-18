@@ -29,6 +29,7 @@ export default class MenuShowUseCase {
       const children = await this.menuRepository.findMany({
         parent: payload._id,
         trashed: false,
+        sort: { order: 'asc' },
       });
 
       return right({

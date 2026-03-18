@@ -31,6 +31,7 @@ export default class MenuUpdateUseCase {
     try {
       const existingMenu = await this.menuRepository.findBy({
         _id: payload._id,
+        trashed: false,
         exact: true,
       });
 
@@ -42,8 +43,33 @@ export default class MenuUpdateUseCase {
 
       if (payload.parent !== undefined) {
         if (payload.parent) {
+          // Check self-reference
+          if (payload.parent === payload._id) {
+            return left(
+              HTTPException.BadRequest(
+                'Menu cannot be parent of itself',
+                'CIRCULAR_REFERENCE',
+              ),
+            );
+          }
+
+          // Check circular reference: ensure the new parent is not a descendant
+          const descendantIds = await this.menuRepository.findDescendantIds(
+            payload._id,
+          );
+
+          if (descendantIds.includes(payload.parent)) {
+            return left(
+              HTTPException.BadRequest(
+                'Circular reference detected',
+                'CIRCULAR_REFERENCE',
+              ),
+            );
+          }
+
           parent = await this.menuRepository.findBy({
             _id: payload.parent,
+            trashed: false,
             exact: true,
           });
 
@@ -63,6 +89,7 @@ export default class MenuUpdateUseCase {
       } else if (existingMenu.parent) {
         const currentParent = await this.menuRepository.findBy({
           _id: existingMenu.parent,
+          trashed: false,
           exact: true,
         });
         if (currentParent) {
@@ -127,45 +154,27 @@ export default class MenuUpdateUseCase {
         payload.url = '/pages/'.concat(finalSlug);
       }
 
-      if (parent) {
-        if (payload.parent === payload._id) {
-          return left(
-            HTTPException.BadRequest(
-              'Menu cannot be parent of itself',
-              'INVALID_PARAMETERS',
-            ),
-          );
-        }
-
-        if (parent.type !== E_MENU_ITEM_TYPE.SEPARATOR) {
-          await this.menuRepository.create({
-            name: parent.name,
-            slug: slugify(parent.name, {
-              lower: true,
-              trim: true,
-            }),
-            type: parent.type,
-            table: parent.table,
-            parent: parent._id,
-            url: parent.url,
-            html: parent.html,
-          });
-
-          await this.menuRepository.update({
-            _id: parent._id,
-            type: E_MENU_ITEM_TYPE.SEPARATOR,
-            slug: slugify(parent.name.concat('-separator'), {
-              lower: true,
-              trim: true,
-            }),
-          });
-        }
-      }
-
-      const updated = await this.menuRepository.update({
+      // If parent changed, recalculate order
+      const updatePayload: Record<string, unknown> = {
         ...payload,
         slug: finalSlug,
-      } as RepositoryMenuUpdatePayload);
+      };
+
+      const parentChanged =
+        payload.parent !== undefined &&
+        payload.parent !== existingMenu.parent;
+
+      if (parentChanged && payload.order === undefined) {
+        const siblingCount = await this.menuRepository.count({
+          parent: payload.parent ?? undefined,
+          trashed: false,
+        });
+        updatePayload.order = siblingCount;
+      }
+
+      const updated = await this.menuRepository.update(
+        updatePayload as RepositoryMenuUpdatePayload,
+      );
 
       return right(updated);
     } catch (error) {

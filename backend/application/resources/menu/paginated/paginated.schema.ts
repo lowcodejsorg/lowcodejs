@@ -51,6 +51,13 @@ export const MenuPaginatedSchema: FastifySchema = {
         enum: ['asc', 'desc'],
         description: 'Ordenar por criador',
       },
+      trashed: {
+        type: 'string',
+        enum: ['true', 'false'],
+        default: 'false',
+        description: 'Filtrar itens na lixeira (opcional)',
+        examples: ['true', 'false'],
+      },
     },
   },
   response: {
@@ -77,12 +84,30 @@ export const MenuPaginatedSchema: FastifySchema = {
                 nullable: true,
                 description: 'ID da tabela',
               },
+              owner: {
+                type: 'object',
+                nullable: true,
+                description: 'Criador do menu',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                },
+              },
               html: {
                 type: 'string',
                 nullable: true,
                 description: 'Conteúdo HTML',
               },
               url: { type: 'string', nullable: true, description: 'URL' },
+              order: { type: 'number', description: 'Ordem do menu' },
+              trashed: { type: 'boolean', description: 'Se está na lixeira' },
+              trashedAt: {
+                type: 'string',
+                format: 'date-time',
+                nullable: true,
+                description: 'Data de envio para lixeira',
+              },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
             },
@@ -114,7 +139,7 @@ export const MenuPaginatedSchema: FastifySchema = {
       description: 'Erro interno do servidor',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Erro interno do servidor'] },
+        message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['LIST_MENU_PAGINATED_ERROR'] },
       },
