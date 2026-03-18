@@ -284,7 +284,8 @@ export default class ImportTableUseCase {
             structure.layoutFields as Record<string, string | null>,
           )) {
             if (slugValue && slugToFieldId.has(slugValue)) {
-              layoutFields[key as keyof ILayoutFields] = slugToFieldId.get(slugValue) || null;
+              layoutFields[key as keyof ILayoutFields] =
+                slugToFieldId.get(slugValue) || null;
             } else {
               layoutFields[key as keyof ILayoutFields] = null;
             }
