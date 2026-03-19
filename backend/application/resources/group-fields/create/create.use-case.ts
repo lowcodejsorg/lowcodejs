@@ -20,7 +20,7 @@ export default class GroupFieldCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-  ) {}
+  ) { }
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -31,7 +31,7 @@ export default class GroupFieldCreateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const targetGroup = table.groups?.find(
@@ -39,7 +39,7 @@ export default class GroupFieldCreateUseCase {
       );
       if (!targetGroup) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -53,7 +53,7 @@ export default class GroupFieldCreateUseCase {
       if (existFieldInGroup) {
         return left(
           HTTPException.Conflict(
-            'Field already exist in group',
+            'Campo já existe no grupo',
             'FIELD_ALREADY_EXIST',
           ),
         );
@@ -100,10 +100,9 @@ export default class GroupFieldCreateUseCase {
 
       return right(field);
     } catch (error) {
-      console.error('Error creating group field:', error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'CREATE_GROUP_FIELD_ERROR',
         ),
       );

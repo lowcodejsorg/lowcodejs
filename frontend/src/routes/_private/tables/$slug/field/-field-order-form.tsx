@@ -23,6 +23,7 @@ import {
   GripVerticalIcon,
   LoaderCircleIcon,
   PencilIcon,
+  Trash2Icon,
 } from 'lucide-react';
 import React, { useEffect, useRef, useState } from 'react';
 
@@ -31,6 +32,7 @@ import { Input } from '@/components/ui/input';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
 import { toastError, toastSuccess } from '@/lib/toast';
 
@@ -217,20 +219,45 @@ function SortableManagementItem({
 interface TrashedItemProps {
   field: IField;
   onEdit: () => void;
+  onDelete: () => void;
+  isDeleting?: boolean;
 }
 
-function TrashedItem({ field, onEdit }: TrashedItemProps): React.JSX.Element {
+function TrashedItem({
+  field,
+  onEdit,
+  onDelete,
+  isDeleting,
+}: TrashedItemProps): React.JSX.Element {
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/50 p-3">
       <span className="text-sm text-muted-foreground">{field.name}</span>
-      <Button
-        variant="ghost"
-        size="icon"
-        className="h-8 w-8"
-        onClick={onEdit}
-      >
-        <PencilIcon className="h-4 w-4" />
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={onEdit}
+          disabled={isDeleting}
+        >
+          <PencilIcon className="h-4 w-4" />
+        </Button>
+        {/* [TASK] Botão de exclusão permanente da lixeira */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 text-destructive hover:text-destructive"
+          onClick={onDelete}
+          disabled={isDeleting}
+          title="Excluir permanentemente"
+        >
+          {isDeleting ? (
+            <LoaderCircleIcon className="h-4 w-4 animate-spin" />
+          ) : (
+            <Trash2Icon className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -459,7 +486,15 @@ export function FieldManagementList({
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter(
-    (f) => !f.trashed && !(excludeNative && f.native),
+    //Comentado por Vanessa
+    // (f) => !f.trashed && !(excludeNative && f.native)
+    (f) =>
+      !f.trashed &&
+      !(excludeNative && f.native) &&
+      // [TASK] Ocultar campos "Lixeira" e "Enviado para lixeira em" da tela Gerenciar Campos
+      f.type !== E_FIELD_TYPE.TRASHED &&
+      f.type !== E_FIELD_TYPE.TRASHED_AT,
+    
   );
 
   const sorted = [...activeFields].sort((a, b) => {
@@ -986,12 +1021,98 @@ export function TrashedFieldsList({
   excludeNative,
 }: TrashedFieldsListProps): React.JSX.Element | null {
   const router = useRouter();
+  const queryClient = useQueryClient();
+  const [deletingFieldId, setDeletingFieldId] = useState<string | null>(null);
 
   const isGroupContext = !!groupSlug && !!groupFields;
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const trashedFields = sourceFields.filter(
     (f) => f.trashed && !(excludeNative && f.native),
   );
+
+  // [TASK] Permitir excluir para sempre um campo na lixeira
+  const deleteMutation = useMutation({
+    mutationFn: async (field: IField) => {
+      const route = '/tables/'
+        .concat(table.slug)
+        .concat('/fields/')
+        .concat(field._id);
+      const params = groupSlug ? `?group=${groupSlug}` : '';
+      await API.delete(route.concat(params));
+    },
+    onMutate: (field) => {
+      setDeletingFieldId(field._id);
+    },
+    onSuccess: (_, field) => {
+      // Atualiza cache da tabela removendo o campo deletado
+      queryClient.setQueryData<ITable>(
+        queryKeys.tables.detail(table.slug),
+        (old) => {
+          if (!old) return old;
+
+          if (isGroupContext && groupSlug) {
+            return {
+              ...old,
+              groups: old.groups.map((g) =>
+                g.slug === groupSlug
+                  ? { ...g, fields: g.fields.filter((f) => f._id !== field._id) }
+                  : g,
+              ),
+            };
+          }
+
+          return {
+            ...old,
+            fields: old.fields.filter((f) => f._id !== field._id),
+          };
+        },
+      );
+
+      // Atualiza cache da lista de tabelas
+      queryClient.setQueryData<Paginated<ITable>>(
+        queryKeys.tables.list({ page: 1, perPage: 50 }),
+        (old) => {
+          if (!old) return old;
+          return {
+            meta: old.meta,
+            data: old.data.map((t) => {
+              if (t.slug !== table.slug) return t;
+              if (isGroupContext && groupSlug) {
+                return {
+                  ...t,
+                  groups: t.groups.map((g) =>
+                    g.slug === groupSlug
+                      ? { ...g, fields: g.fields.filter((f) => f._id !== field._id) }
+                      : g,
+                  ),
+                };
+              }
+              return { ...t, fields: t.fields.filter((f) => f._id !== field._id) };
+            }),
+          };
+        },
+      );
+
+      toast(`Campo "${field.name}" excluído permanentemente`, {
+        className: '!bg-red-600 !text-white !border-red-600',
+        description: 'O campo foi removido permanentemente e não pode ser recuperado.',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
+    },
+    onError: (error) => {
+      console.error(error);
+      toast('Erro ao excluir campo', {
+        className: '!bg-red-600 !text-white !border-red-600',
+        description: 'Não foi possível excluir o campo permanentemente. Tente novamente.',
+        descriptionClassName: '!text-white',
+        closeButton: true,
+      });
+    },
+    onSettled: () => {
+      setDeletingFieldId(null);
+    },
+  });
 
   if (trashedFields.length === 0) {
     return null;
@@ -1012,6 +1133,8 @@ export function TrashedFieldsList({
           key={field._id}
           field={field}
           onEdit={() => handleEditField(field._id)}
+          onDelete={() => deleteMutation.mutate(field)}
+          isDeleting={deletingFieldId === field._id}
         />
       ))}
     </div>

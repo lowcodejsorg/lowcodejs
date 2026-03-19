@@ -87,6 +87,10 @@ export const UpdateFieldFormFields = withForm({
       (state) => state.values.relationship.tableSlug,
     );
     const textLongFormat = useStore(form.store, (state) => state.values.format);
+    const dropdownOptions = useStore(
+      form.store,
+      (state) => state.values.dropdown,
+    );
 
     const showMultiple =
       isDropdown ||
@@ -246,6 +250,19 @@ export const UpdateFieldFormFields = withForm({
                 placeholder="Escreva e adicione"
                 disabled={isDisabled}
                 required
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Valor padrão do Dropdown */}
+        {isDropdown && (
+          <form.AppField name="defaultValue">
+            {(field) => (
+              <field.TableFieldDropdownDefaultValue
+                label="Valor padrão"
+                disabled={isDisabled}
+                dropdown={dropdownOptions}
               />
             )}
           </form.AppField>

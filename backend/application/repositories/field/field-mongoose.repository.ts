@@ -103,12 +103,10 @@ export default class FieldMongooseRepository implements FieldContractRepository 
   }
 
   async delete(_id: string): Promise<void> {
-    await Model.updateOne(
-      { _id },
-      { $set: { trashed: true, trashedAt: new Date() } },
-    );
+    await Model.deleteOne({ _id });
   }
 
+  
   async count(payload?: FieldQueryPayload): Promise<number> {
     const where = this.buildWhereClause(payload);
     return Model.countDocuments(where);

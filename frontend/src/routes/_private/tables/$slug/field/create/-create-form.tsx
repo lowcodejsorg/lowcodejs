@@ -25,7 +25,7 @@ export const FieldCreateSchema = z.object({
   showInFilter: z.boolean().default(true),
   showInForm: z.boolean().default(true),
   showInDetail: z.boolean().default(true),
-  showInList: z.boolean().default(true),
+  showInList: z.boolean().default(false),
   required: z.boolean().default(false),
   widthInForm: z.number().default(50),
   widthInList: z.number().default(10),
@@ -51,7 +51,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   showInFilter: true,
   showInForm: true,
   showInDetail: true,
-  showInList: true,
+  showInList: false,
   required: false,
   widthInForm: 50,
   widthInList: 10,
@@ -79,6 +79,10 @@ export const CreateFieldFormFields = withForm({
       (state) => state.values.relationship.tableSlug,
     );
     const textLongFormat = useStore(form.store, (state) => state.values.format);
+    const dropdownOptions = useStore(
+      form.store,
+      (state) => state.values.dropdown,
+    );
 
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
     const isTextLong = fieldType === E_FIELD_TYPE.TEXT_LONG;
@@ -305,6 +309,19 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {/* Valor padrão do Dropdown */}
+        {isDropdown && (
+          <form.AppField name="defaultValue">
+            {(field) => (
+              <field.TableFieldDropdownDefaultValue
+                label="Valor padrão"
+                disabled={isPending}
+                dropdown={dropdownOptions}
+              />
+            )}
+          </form.AppField>
+        )}
+
         {/* Campo Formato Data */}
         {isDate && (
           <form.AppField
@@ -447,6 +464,7 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+
         {/* Campo Obrigatoriedade */}
         {showRequired && (
           <form.AppField name="required">
@@ -459,6 +477,17 @@ export const CreateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Campo Listagem */}
+        <form.AppField name="showInList">
+          {(field) => (
+            <field.FieldBooleanSwitch
+              label="Formato de listagem"
+              description="Exibir no formato de listagem?"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
       </section>
     );
   },

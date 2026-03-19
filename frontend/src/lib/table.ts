@@ -79,7 +79,8 @@ export function buildCreateRowDefaultValues(
         defaults[field.slug] = '';
         break;
       case E_FIELD_TYPE.DROPDOWN:
-        defaults[field.slug] = [];
+        // Se o campo tem valor padrão definido, pré-selecionar
+        defaults[field.slug] = field.defaultValue ? [field.defaultValue] : [];
         break;
       case E_FIELD_TYPE.FILE:
         defaults[field.slug] = { storages: [], files: [] };
