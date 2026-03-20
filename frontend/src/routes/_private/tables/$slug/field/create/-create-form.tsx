@@ -464,7 +464,6 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-
         {/* Campo Obrigatoriedade */}
         {showRequired && (
           <form.AppField name="required">

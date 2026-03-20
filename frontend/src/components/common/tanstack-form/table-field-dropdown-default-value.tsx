@@ -2,11 +2,11 @@ import * as React from 'react';
 
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from '@/components/ui/select';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IDropdown } from '@/lib/interfaces';

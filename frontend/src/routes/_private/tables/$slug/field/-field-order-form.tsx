@@ -486,7 +486,7 @@ export function FieldManagementList({
 
   const sourceFields = isGroupContext ? groupFields : table.fields;
   const activeFields = sourceFields.filter(
-    //Comentado por Vanessa
+    // Comentado por Vanessa
     // (f) => !f.trashed && !(excludeNative && f.native)
     (f) =>
       !f.trashed &&
@@ -494,7 +494,6 @@ export function FieldManagementList({
       // [TASK] Ocultar campos "Lixeira" e "Enviado para lixeira em" da tela Gerenciar Campos
       f.type !== E_FIELD_TYPE.TRASHED &&
       f.type !== E_FIELD_TYPE.TRASHED_AT,
-    
   );
 
   const sorted = [...activeFields].sort((a, b) => {
@@ -1055,7 +1054,10 @@ export function TrashedFieldsList({
               ...old,
               groups: old.groups.map((g) =>
                 g.slug === groupSlug
-                  ? { ...g, fields: g.fields.filter((f) => f._id !== field._id) }
+                  ? {
+                      ...g,
+                      fields: g.fields.filter((f) => f._id !== field._id),
+                    }
                   : g,
               ),
             };
@@ -1082,12 +1084,18 @@ export function TrashedFieldsList({
                   ...t,
                   groups: t.groups.map((g) =>
                     g.slug === groupSlug
-                      ? { ...g, fields: g.fields.filter((f) => f._id !== field._id) }
+                      ? {
+                          ...g,
+                          fields: g.fields.filter((f) => f._id !== field._id),
+                        }
                       : g,
                   ),
                 };
               }
-              return { ...t, fields: t.fields.filter((f) => f._id !== field._id) };
+              return {
+                ...t,
+                fields: t.fields.filter((f) => f._id !== field._id),
+              };
             }),
           };
         },
@@ -1095,7 +1103,8 @@ export function TrashedFieldsList({
 
       toast(`Campo "${field.name}" excluído permanentemente`, {
         className: '!bg-red-600 !text-white !border-red-600',
-        description: 'O campo foi removido permanentemente e não pode ser recuperado.',
+        description:
+          'O campo foi removido permanentemente e não pode ser recuperado.',
         descriptionClassName: '!text-white',
         closeButton: true,
       });
@@ -1104,7 +1113,8 @@ export function TrashedFieldsList({
       console.error(error);
       toast('Erro ao excluir campo', {
         className: '!bg-red-600 !text-white !border-red-600',
-        description: 'Não foi possível excluir o campo permanentemente. Tente novamente.',
+        description:
+          'Não foi possível excluir o campo permanentemente. Tente novamente.',
         descriptionClassName: '!text-white',
         closeButton: true,
       });

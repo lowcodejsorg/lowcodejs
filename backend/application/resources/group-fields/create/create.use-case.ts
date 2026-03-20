@@ -20,7 +20,7 @@ export default class GroupFieldCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-  ) { }
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {

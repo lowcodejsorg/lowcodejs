@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { type FastifyRequest } from 'fastify';
 
 import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';
@@ -32,6 +31,8 @@ export function AuthenticationMiddleware(
         extractLastCookieValue(request.headers.cookie, 'accessToken') ??
         request.cookies.accessToken;
 
+      console.log('Access Token:', JSON.stringify(accessToken, null, 2));
+
       if (!accessToken) {
         if (options.optional) return;
         throw HTTPException.Unauthorized(
@@ -42,6 +43,11 @@ export function AuthenticationMiddleware(
 
       const accessTokenDecoded: IJWTPayload | null =
         await request.server.jwt.decode(String(accessToken));
+
+      console.log(
+        'Access Token Decoded:',
+        JSON.stringify(accessTokenDecoded, null, 2),
+      );
 
       if (
         !accessTokenDecoded ||
@@ -54,6 +60,20 @@ export function AuthenticationMiddleware(
         );
       }
 
+      console.log(
+        'User Info:',
+        JSON.stringify(
+          {
+            sub: accessTokenDecoded.sub,
+            email: accessTokenDecoded.email,
+            role: accessTokenDecoded.role,
+            type: E_JWT_TYPE.ACCESS,
+          },
+          null,
+          2,
+        ),
+      );
+
       request.user = {
         sub: accessTokenDecoded.sub,
         email: accessTokenDecoded.email,
@@ -61,6 +81,7 @@ export function AuthenticationMiddleware(
         type: E_JWT_TYPE.ACCESS,
       };
     } catch (error) {
+      console.error(error);
       if (options.optional) return;
 
       throw HTTPException.Unauthorized(

@@ -7,8 +7,8 @@ import { TableAccessMiddleware } from '@application/middlewares/table-access.mid
 import { TableFieldDeleteSchema } from './delete.schema';
 import TableFieldDeleteUseCase from './delete.use-case';
 import {
-    TableFieldDeleteParamsValidator,
-    TableFieldDeleteQueryValidator,
+  TableFieldDeleteParamsValidator,
+  TableFieldDeleteQueryValidator,
 } from './delete.validator';
 
 @Controller({
