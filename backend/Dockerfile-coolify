@@ -18,11 +18,11 @@ WORKDIR /app
 
 RUN apk add --no-cache curl
 
-COPY --from=builder /app/build ./build
 COPY --from=builder /app/application ./application
 COPY --from=builder /app/start ./start
 COPY --from=builder /app/config ./config
 COPY --from=builder /app/bin ./bin
+COPY --from=builder /app/database ./database
 COPY --from=builder /app/templates ./templates
 COPY --from=builder /app/_storage ./_storage
 COPY --from=builder /app/package.json ./package.json
@@ -30,8 +30,7 @@ COPY --from=builder /app/package-lock.json ./package-lock.json
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
-RUN npm install tsx && \
-    mkdir -p ./_storage && \
+RUN mkdir -p ./_storage && \
     addgroup -S nodejs -g 1001 && \
     adduser -S appuser -u 1001 -G nodejs && \
     chown -R appuser:nodejs /app
@@ -42,4 +41,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 
-CMD ["node", "--import", "tsx", "build/bin/server.js"]
+CMD ["node", "--import", "@swc-node/register/esm-register", "bin/server.ts"]
