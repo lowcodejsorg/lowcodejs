@@ -4,9 +4,9 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type {
-    IField,
-    IGroupConfiguration,
-    ITable,
+  IField,
+  IGroupConfiguration,
+  ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { buildSchema } from '@application/core/util.core';
@@ -86,9 +86,7 @@ export default class TableFieldDeleteUseCase {
       }
 
       // Remove o campo da tabela e reconstrói o schema
-      const remainingFields = table.fields.filter(
-        (f) => f._id !== field._id,
-      );
+      const remainingFields = table.fields.filter((f) => f._id !== field._id);
       const _schema = buildSchema(remainingFields as IField[]);
 
       await this.tableRepository.update({
@@ -98,7 +96,7 @@ export default class TableFieldDeleteUseCase {
         owner: table.owner._id,
       });
 
-      await this.fieldRepository.hardDelete(field._id);
+      await this.fieldRepository.delete(field._id);
 
       return right(null);
     } catch (error) {
@@ -160,7 +158,7 @@ export default class TableFieldDeleteUseCase {
       administrators: parentTable.administrators.flatMap((a) => a._id),
     });
 
-    await this.fieldRepository.hardDelete(field._id);
+    await this.fieldRepository.delete(field._id);
 
     return right(null);
   }

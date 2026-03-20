@@ -57,6 +57,5 @@ export abstract class FieldContractRepository {
   abstract findMany(payload?: FieldQueryPayload): Promise<IField[]>;
   abstract update(payload: FieldUpdatePayload): Promise<IField>;
   abstract delete(_id: string): Promise<void>;
-  abstract hardDelete(_id: string): Promise<void>;
   abstract count(payload?: FieldQueryPayload): Promise<number>;
 }
