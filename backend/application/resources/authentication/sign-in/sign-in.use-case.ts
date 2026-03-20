@@ -22,6 +22,7 @@ export default class SignInUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
+      console.log('payload', payload);
       const user = await this.userRepository.findBy({
         email: payload.email,
         exact: true,
@@ -34,6 +35,8 @@ export default class SignInUseCase {
             'INVALID_CREDENTIALS',
           ),
         );
+
+      console.log('user', JSON.stringify(user, null, 2));
 
       if (user.status === E_USER_STATUS.INACTIVE)
         return left(
@@ -55,6 +58,7 @@ export default class SignInUseCase {
 
       return right(user);
     } catch (error) {
+      console.error(error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
