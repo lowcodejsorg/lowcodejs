@@ -5,7 +5,7 @@ WORKDIR /app
 RUN apk add --no-cache curl
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 COPY . .
 
@@ -31,10 +31,10 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 RUN npm install tsx && \
-    mkdir -p ./_storage && \
-    addgroup -S nodejs -g 1001 && \
-    adduser -S appuser -u 1001 -G nodejs && \
-    chown -R appuser:nodejs /app
+mkdir -p ./_storage && \
+addgroup -S nodejs -g 1001 && \
+adduser -S appuser -u 1001 -G nodejs && \
+chown -R appuser:nodejs /app
 
 USER appuser
 
