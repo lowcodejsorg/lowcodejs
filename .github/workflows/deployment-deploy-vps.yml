@@ -33,6 +33,8 @@ on:
         required: true
       EMAIL_PROVIDER_PORT:
         required: true
+      OPENAI_API_KEY:
+        required: false
 
 jobs:
   deploy:
@@ -123,6 +125,7 @@ jobs:
             ALLOWED_ORIGINS=${{ secrets.ALLOWED_ORIGINS }}
             LOGO_SMALL_URL=https://${{ steps.config.outputs.api_host }}/storage/logo-small.webp
             LOGO_LARGE_URL=https://${{ steps.config.outputs.api_host }}/storage/logo-large.webp
+            OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             EOF
 
             echo "Environment variables configured successfully. Deploying..."

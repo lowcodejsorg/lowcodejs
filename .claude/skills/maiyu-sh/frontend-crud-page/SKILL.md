@@ -1,0 +1,400 @@
+---
+name: frontend-crud-page
+description: |
+  Generates complete CRUD page setups for frontend projects.
+  Use when: user asks to create a CRUD page, list page, detail page, create page,
+  edit page, or mentions "page" with create/read/update/delete operations.
+  Supports: List + Detail + Create + Edit pages with forms, permissions, skeletons.
+  Frameworks: TanStack Start, React (Vite), Next.js, Remix.
+metadata:
+  author: low-code-js
+  version: "1.0.0"
+---
+
+## Project Detection
+
+Before generating code, detect the project stack:
+
+1. Find `package.json` (walk up directories if needed)
+2. From `dependencies`/`devDependencies`, detect:
+   - **Router**: `@tanstack/react-router` | `next` | `@remix-run/react`
+   - **Form**: `@tanstack/react-form` | `react-hook-form`
+   - **Query**: `@tanstack/react-query`
+   - **Validation**: `zod`
+3. Scan existing route pages to detect:
+   - File structure: `index.tsx` + `index.lazy.tsx` split
+   - Private route patterns (`_private/` prefix)
+   - Form patterns (useAppForm, withForm)
+   - Permission patterns (useTablePermission, beforeLoad guards)
+
+## CRUD Page Structure
+
+Each entity generates these files:
+
+```
+routes/_private/{entity}/
+├── index.tsx                    ← List: loader + search validation
+├── index.lazy.tsx               ← List: table + filters + pagination
+├── -{entity}-table.tsx          ← Table columns + cell renderers
+├── -{entity}-table-skeleton.tsx ← Table loading skeleton
+├── create/
+│   ├── index.tsx                ← Create: loader
+│   ├── index.lazy.tsx           ← Create: form wrapper
+│   └── -create-form.tsx         ← Create form component
+└── $entityId/
+    ├── index.tsx                ← Detail: loader
+    ├── index.lazy.tsx           ← Detail: show/edit toggle
+    ├── -view.tsx                ← Read-only view
+    ├── -update-form.tsx         ← Edit form component
+    └── -update-form-skeleton.tsx ← Form loading skeleton
+```
+
+## Conventions
+
+### Rules
+- **Loader in index.tsx**: Always prefetch with `ensureQueryData()`
+- **UI in index.lazy.tsx**: Actual component with Suspense
+- **Show/Edit mode**: `useState<'show' | 'edit'>('show')` toggle
+- **Permission check**: `beforeLoad` for role-based, `useTablePermission()` for action-based
+- **Layout**: `flex flex-col h-full overflow-hidden` with header/content/footer
+- **Footer**: Cancel/Save in edit mode, Edit/Back in show mode
+- **Skeleton**: Matches the visual structure of the real component
+- **No ternary operators**
+
+## Templates
+
+### TanStack Router (Reference Implementation)
+
+**List Page — `index.tsx` (loader):**
+```typescript
+import { createFileRoute } from '@tanstack/react-router';
+import z from 'zod';
+
+import { entityListOptions } from '@/hooks/tanstack-query/_query-options';
+import { createRouteHead } from '@/lib/seo';
+
+const SearchSchema = z.object({
+  page: z.coerce.number().default(1),
+  perPage: z.coerce.number().default(50),
+  search: z.string().optional(),
+});
+
+export const Route = createFileRoute('/_private/{entities}/')({
+  head: createRouteHead({ title: '{Entities}' }),
+  validateSearch: SearchSchema,
+  loaderDeps: ({ search }) => search,
+  loader: async ({ context, deps }) => {
+    await context.queryClient.ensureQueryData(entityListOptions(deps));
+  },
+});
+```
+
+**List Page — `index.lazy.tsx` (component):**
+```tsx
+import { createLazyFileRoute } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+
+import { entityListOptions } from '@/hooks/tanstack-query/_query-options';
+import { EntityTable } from './-entity-table';
+import { EntityTableSkeleton } from './-entity-table-skeleton';
+import { Pagination } from '@/components/common/pagination';
+import { Button } from '@/components/ui/button';
+
+export const Route = createLazyFileRoute('/_private/{entities}/')({
+  component: RouteComponent,
+  pendingComponent: EntityTableSkeleton,
+});
+
+function RouteComponent(): React.JSX.Element {
+  const search = Route.useSearch();
+  const navigate = Route.useNavigate();
+
+  const { data } = useSuspenseQuery(entityListOptions(search));
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0 flex items-center justify-between p-4">
+        <h1 className="text-2xl font-bold">{Entities}</h1>
+        <Button
+          onClick={() => navigate({ to: '/{entities}/create' })}
+        >
+          Create
+        </Button>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-auto px-4">
+        <EntityTable data={data.data} />
+      </div>
+
+      <div className="shrink-0 border-t p-4">
+        <Pagination
+          meta={data.meta}
+          onPageChange={(page) => navigate({ search: { ...search, page } })}
+          onPerPageChange={(perPage) =>
+            navigate({ search: { ...search, perPage, page: 1 } })
+          }
+        />
+      </div>
+    </div>
+  );
+}
+```
+
+**Detail Page — `index.tsx` (loader):**
+```typescript
+import { createFileRoute } from '@tanstack/react-router';
+
+import { entityDetailOptions } from '@/hooks/tanstack-query/_query-options';
+import { UpdateFormSkeleton } from './-update-form-skeleton';
+
+export const Route = createFileRoute('/_private/{entities}/$entityId/')({
+  loader: async ({ context, params }) => {
+    await context.queryClient.ensureQueryData(
+      entityDetailOptions(params.entityId),
+    );
+  },
+  pendingComponent: UpdateFormSkeleton,
+});
+```
+
+**Detail Page — `index.lazy.tsx` (show/edit mode):**
+```tsx
+import { createLazyFileRoute } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+
+import { entityDetailOptions } from '@/hooks/tanstack-query/_query-options';
+import { EntityView } from './-view';
+import { UpdateForm } from './-update-form';
+import { Button } from '@/components/ui/button';
+
+export const Route = createLazyFileRoute('/_private/{entities}/$entityId/')({
+  component: RouteComponent,
+});
+
+function RouteComponent(): React.JSX.Element {
+  const { entityId } = Route.useParams();
+  const navigate = Route.useNavigate();
+  const [mode, setMode] = useState<'show' | 'edit'>('show');
+
+  const { data } = useSuspenseQuery(entityDetailOptions(entityId));
+
+  return (
+    <div className="flex flex-col h-full overflow-hidden">
+      <div className="shrink-0 flex items-center justify-between p-4 border-b">
+        <h1 className="text-lg font-semibold">{data.name}</h1>
+      </div>
+
+      <div className="flex-1 min-h-0 overflow-auto p-4">
+        {mode === 'show' && <EntityView data={data} />}
+        {mode === 'edit' && (
+          <UpdateForm
+            data={data}
+            onSuccess={() => setMode('show')}
+          />
+        )}
+      </div>
+
+      <div className="shrink-0 border-t bg-sidebar p-2 flex justify-between">
+        {mode === 'show' && (
+          <>
+            <Button
+              variant="ghost"
+              onClick={() => navigate({ to: '/{entities}' })}
+            >
+              Back
+            </Button>
+            <Button onClick={() => setMode('edit')}>Edit</Button>
+          </>
+        )}
+        {mode === 'edit' && (
+          <>
+            <Button variant="ghost" onClick={() => setMode('show')}>
+              Cancel
+            </Button>
+            <Button type="submit" form="update-form">
+              Save
+            </Button>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+```
+
+**Create Form — `-create-form.tsx`:**
+```tsx
+import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { handleApiError } from '@/lib/handle-api-error';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { EntityCreateSchema } from '@/lib/schemas';
+import { useCreateEntity } from '@/hooks/tanstack-query/use-entity-create';
+import { toastSuccess } from '@/lib/toast';
+
+interface CreateFormProps {
+  onSuccess?: () => void;
+}
+
+export function CreateForm({ onSuccess }: CreateFormProps): React.JSX.Element {
+  const mutation = useCreateEntity({
+    onSuccess() {
+      toastSuccess('Created successfully');
+      onSuccess?.();
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Error creating',
+        onFieldErrors(errors) {
+          const setFieldError = createFieldErrorSetter(form);
+          for (const [field, message] of Object.entries(errors)) {
+            setFieldError(field, message);
+          }
+        },
+      });
+    },
+  });
+
+  const form = useAppForm({
+    defaultValues: { name: '', email: '' },
+    validators: {
+      onChange: EntityCreateSchema,
+      onSubmit: EntityCreateSchema,
+    },
+    onSubmit: async ({ value }) => {
+      await mutation.mutateAsync(value);
+    },
+  });
+
+  return (
+    <form
+      id="create-form"
+      onSubmit={(e) => {
+        e.preventDefault();
+        form.handleSubmit();
+      }}
+      className="space-y-4"
+    >
+      <form.AppField
+        name="name"
+        children={(field) => <field.FieldText label="Name" required />}
+      />
+      <form.AppField
+        name="email"
+        children={(field) => <field.FieldEmail label="Email" required />}
+      />
+    </form>
+  );
+}
+```
+
+**Read-Only View — `-view.tsx`:**
+```tsx
+interface EntityViewProps {
+  data: IEntity;
+}
+
+export function EntityView({ data }: EntityViewProps): React.JSX.Element {
+  return (
+    <div className="space-y-4">
+      <div>
+        <p className="text-sm text-muted-foreground">Name</p>
+        <p className="font-medium">{data.name}</p>
+      </div>
+      <div>
+        <p className="text-sm text-muted-foreground">Email</p>
+        <p className="font-medium">{data.email}</p>
+      </div>
+    </div>
+  );
+}
+```
+
+**Skeleton — `-update-form-skeleton.tsx`:**
+```tsx
+import { Skeleton } from '@/components/ui/skeleton';
+
+export function UpdateFormSkeleton(): React.JSX.Element {
+  return (
+    <div className="space-y-6 p-4">
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+      <div className="space-y-2">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-10 w-full" />
+      </div>
+    </div>
+  );
+}
+```
+
+### Next.js App Router
+
+**List Page — `page.tsx`:**
+```tsx
+import { dehydrate, HydrationBoundary, QueryClient } from '@tanstack/react-query';
+
+export default async function EntitiesPage({ searchParams }) {
+  const params = await searchParams;
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(entityListOptions(params));
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <EntityList />
+    </HydrationBoundary>
+  );
+}
+```
+
+**Detail Page — `[entityId]/page.tsx`:**
+```tsx
+export default async function EntityDetailPage({ params }) {
+  const { entityId } = await params;
+  const queryClient = new QueryClient();
+  await queryClient.prefetchQuery(entityDetailOptions(entityId));
+
+  return (
+    <HydrationBoundary state={dehydrate(queryClient)}>
+      <EntityDetail entityId={entityId} />
+    </HydrationBoundary>
+  );
+}
+```
+
+### Remix
+
+**List Route — `{entities}.tsx`:**
+```tsx
+import type { LoaderFunctionArgs } from '@remix-run/node';
+import { useLoaderData } from '@remix-run/react';
+
+export async function loader({ request }: LoaderFunctionArgs) {
+  const url = new URL(request.url);
+  const page = Number(url.searchParams.get('page') ?? '1');
+  return fetch(`${API_URL}/{entities}/paginated?page=${page}`).then((r) => r.json());
+}
+
+export default function EntitiesRoute() {
+  const data = useLoaderData<typeof loader>();
+  return <EntityList data={data} />;
+}
+```
+
+## Checklist
+
+- [ ] Loader prefetches data with `ensureQueryData`
+- [ ] Lazy component for code splitting
+- [ ] Show/edit mode toggle for detail pages
+- [ ] Form with Zod validation + mutation + error handling
+- [ ] Skeleton components for loading states
+- [ ] Permission checks (beforeLoad + usePermission)
+- [ ] Layout: header/content/footer with overflow handling
+- [ ] Footer with mode-appropriate buttons
+- [ ] No ternary operators

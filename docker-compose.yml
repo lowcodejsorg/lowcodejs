@@ -66,6 +66,27 @@ services:
       - ./frontend:/app
       - /app/node_modules
 
+  mcp:
+    image: ${DOCKER_USERNAME}/lowcodejs-mcp:${MCP_IMAGE_TAG:-latest}
+    container_name: low-code-js-mcp
+    restart: unless-stopped
+    ports:
+      - "${MCP_PORT:-3001}:3000"
+    environment:
+      - LOWCODE_API_URL=http://api:3000
+      - PORT=3000
+      - CORS_ORIGIN=*
+    networks:
+      - low-code-js-network
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health-check"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
 volumes:
   mongo-volume:
     driver: local

@@ -29,6 +29,8 @@ import { TableListViewSkeleton } from './-table-list-view-skeleton';
 import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
+import { ChatSidebar } from '@/components/chat/chat-sidebar';
+import { ChatTrigger } from '@/components/chat/chat-trigger';
 import { getActiveFiltersCount } from '@/components/common/filter-fields';
 import { FilterSidebar } from '@/components/common/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filter-trigger';
@@ -49,6 +51,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
+import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { toastInfo } from '@/lib/toast';
@@ -199,6 +202,9 @@ function RouteComponent(): React.JSX.Element {
   const filterFields = table.data?.fields.filter((f) => f.showInFilter) ?? [];
   const activeFiltersCount = getActiveFiltersCount(filterFields, search);
 
+  const { open: chatOpen, onOpenChange: handleChatOpenChange } =
+    useChatSidebar();
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
@@ -266,6 +272,10 @@ function RouteComponent(): React.JSX.Element {
             </Button>
           </TableExportDialog>
           <TableConfigurationDropdown tableSlug={slug} />
+          <ChatTrigger
+            onClick={() => handleChatOpenChange(!chatOpen)}
+            isOpen={chatOpen}
+          />
 
           {permission.can('CREATE_ROW') &&
             (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) > 0 && (
@@ -384,6 +394,10 @@ function RouteComponent(): React.JSX.Element {
               );
             })()}
         </div>
+        <ChatSidebar
+          open={chatOpen}
+          onOpenChange={handleChatOpenChange}
+        />
       </div>
 
       {!shouldDisablePagination && (

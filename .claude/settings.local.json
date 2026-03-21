@@ -14,7 +14,9 @@
       "Bash(find:*)",
       "Bash(npx vitest:*)",
       "Bash(npx --no-install tsc --noEmit)",
-      "Bash(docker ps:*)"
+      "Bash(docker ps:*)",
+      "Bash(python3:*)",
+      "Bash(head:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -11,6 +11,8 @@ import React from 'react';
 import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
+import { ChatSidebar } from '@/components/chat/chat-sidebar';
+import { ChatTrigger } from '@/components/chat/chat-trigger';
 import { getActiveFiltersCount } from '@/components/common/filter-fields';
 import { FilterSidebar } from '@/components/common/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filter-trigger';
@@ -19,6 +21,7 @@ import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
+import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { usePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
@@ -85,6 +88,9 @@ function RouteComponent(): React.JSX.Element {
 
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
+  const { open: chatOpen, onOpenChange: handleChatOpenChange } =
+    useChatSidebar();
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -124,6 +130,10 @@ function RouteComponent(): React.JSX.Element {
               <span>Nova Tabela</span>
             </Button>
           )}
+          <ChatTrigger
+            onClick={() => handleChatOpenChange(!chatOpen)}
+            isOpen={chatOpen}
+          />
         </div>
       </div>
 
@@ -140,6 +150,10 @@ function RouteComponent(): React.JSX.Element {
             toolbarPortal={toolbarNode}
           />
         </div>
+        <ChatSidebar
+          open={chatOpen}
+          onOpenChange={handleChatOpenChange}
+        />
       </div>
 
       {/* footer */}

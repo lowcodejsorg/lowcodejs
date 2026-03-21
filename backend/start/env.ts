@@ -49,6 +49,9 @@ const EnvSchema = z.object({
         .map((s) => s.trim())
         .filter(Boolean),
     ),
+
+  MCP_SERVER_URL: z.string().trim().optional(),
+  OPENAI_API_KEY: z.string().trim().optional(),
 });
 
 const validation = EnvSchema.safeParse(process.env);

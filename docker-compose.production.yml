@@ -54,6 +54,8 @@ services:
       LOGO_SMALL_URL: ${LOGO_SMALL_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/logo-small.webp}
       LOGO_LARGE_URL: ${LOGO_LARGE_URL:-https://api.${ENVIRONMENT}.lowcodejs.org/storage/logo-large.webp}
       PAGINATION_PER_PAGE: ${PAGINATION_PER_PAGE:-20}
+      MCP_SERVER_URL: ${MCP_SERVER_URL:-http://${ENVIRONMENT}-lowcodejs-mcp-1:3000/mcp}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -121,6 +123,41 @@ services:
       - "traefik.http.middlewares.${ENVIRONMENT}-app-headers.headers.customResponseHeaders.Pragma=no-cache"
       - "traefik.http.middlewares.${ENVIRONMENT}-app-headers.headers.customResponseHeaders.Expires=0"
       - "traefik.http.routers.${ENVIRONMENT}-app.middlewares=${ENVIRONMENT}-app-headers"
+
+  mcp:
+    image: ${DOCKER_USERNAME}/lowcodejs-mcp:${MCP_IMAGE_TAG:-latest}
+    restart: unless-stopped
+    mem_limit: 128m
+    environment:
+      LOWCODE_API_URL: http://${ENVIRONMENT}-lowcodejs-api-1:3000
+      PORT: 3000
+      CORS_ORIGIN: "*"
+    depends_on:
+      - api
+    networks:
+      - traefik-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/health-check"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.${ENVIRONMENT}-mcp.rule=Host(`mcp.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-mcp.entrypoints=websecure"
+      - "traefik.http.routers.${ENVIRONMENT}-mcp.tls.certresolver=myresolver"
+      - "traefik.http.services.${ENVIRONMENT}-mcp.loadbalancer.server.port=3000"
+      - "traefik.http.routers.${ENVIRONMENT}-mcp-http.rule=Host(`mcp.${ENVIRONMENT}.lowcodejs.org`)"
+      - "traefik.http.routers.${ENVIRONMENT}-mcp-http.entrypoints=web"
+      - "traefik.http.routers.${ENVIRONMENT}-mcp-http.middlewares=https-only@file"
+      - "traefik.http.middlewares.${ENVIRONMENT}-mcp-headers.headers.customResponseHeaders.X-Accel-Buffering=no"
+      - "traefik.http.routers.${ENVIRONMENT}-mcp.middlewares=${ENVIRONMENT}-mcp-headers"
 
 volumes:
   mongo-volume:
