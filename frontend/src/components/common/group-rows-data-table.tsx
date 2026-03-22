@@ -60,6 +60,61 @@ export function GroupRowsDataTable({
     [group],
   );
 
+  const columns = React.useMemo<Array<ColumnDef<IRow, any>>>(
+    () => [
+      ...groupFields.map(
+        (gf): ColumnDef<IRow, any> => ({
+          id: gf._id,
+          accessorFn: (row) => row[gf.slug],
+          header: () => <span className="text-xs font-medium">{gf.name}</span>,
+          cell: ({ row }) => (
+            <RenderGroupCell
+              field={gf}
+              row={row.original}
+            />
+          ),
+        }),
+      ),
+      {
+        id: '_actions',
+        header: (): null => null,
+        size: 80,
+        cell: ({ row }): React.JSX.Element => (
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setEditItem(row.original);
+                setFormOpen(true);
+              }}
+            >
+              <PencilIcon className="size-3.5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={(e) => {
+                e.stopPropagation();
+                setDeleteItem(row.original);
+              }}
+            >
+              <TrashIcon className="size-3.5" />
+            </Button>
+          </div>
+        ),
+      },
+    ],
+    [groupFields, tableSlug],
+  );
+
+  const dataTable = useDataTable({
+    data: items,
+    columns,
+    getRowId: (row) => row._id,
+  });
+
   if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
