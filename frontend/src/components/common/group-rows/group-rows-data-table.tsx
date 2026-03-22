@@ -150,6 +150,7 @@ export function GroupRowsDataTable({
             setEditItem(null);
             setFormOpen(true);
           }}
+          disabled={field.multiple === false && items.length >= 1}
         >
           <PlusIcon className="size-4" />
           <span>Adicionar item</span>
