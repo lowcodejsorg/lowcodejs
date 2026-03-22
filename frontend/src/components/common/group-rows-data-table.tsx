@@ -77,8 +77,10 @@ export function GroupRowsDataTable({
       ),
       {
         id: '_actions',
-        header: (): null => null,
         size: 80,
+        enableHiding: false,
+        enableResizing: false,
+        header: () => <span className="text-xs font-medium">Ações</span>,
         cell: ({ row }): React.JSX.Element => (
           <div className="flex items-center gap-1">
             <Button
@@ -106,7 +108,7 @@ export function GroupRowsDataTable({
         ),
       },
     ],
-    [groupFields, tableSlug],
+    [groupFields],
   );
 
   const dataTable = useDataTable({
