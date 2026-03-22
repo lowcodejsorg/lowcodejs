@@ -1,9 +1,8 @@
 import { useChat } from '@ai-sdk/react';
+import { getRouteApi } from '@tanstack/react-router';
 import { DefaultChatTransport } from 'ai';
 import { Send, Trash2, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
-
-import { getRouteApi } from '@tanstack/react-router';
 
 import { ChatMessage } from './chat-message';
 

@@ -29,6 +29,10 @@ export default class {
     request: FastifyRequest<{ Body: { messages: UIMessage[] } }>,
     response: FastifyReply,
   ): Promise<void> {
+    console.log('Received chat request with messages:', request.body.messages, {
+      Env,
+    });
+
     if (!Env.OPENAI_API_KEY || !Env.MCP_SERVER_URL) {
       return response.status(503).send({
         message: 'Chat service is not configured',
