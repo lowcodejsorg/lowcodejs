@@ -14,15 +14,17 @@ import {
 import type { FieldMap } from '@/lib/kanban-types';
 import { cn } from '@/lib/utils';
 
+export interface KanbanCardProps {
+  row: IRow;
+  fields: FieldMap;
+  onClick: () => void;
+}
+
 export function KanbanCard({
   row,
   fields,
   onClick,
-}: {
-  row: IRow;
-  fields: FieldMap;
-  onClick: () => void;
-}): React.JSX.Element {
+}: KanbanCardProps): React.JSX.Element {
   const title = getTitleValue(row, fields.title);
   const progress = getProgressValue(row, fields.progress);
   const members = getMembersFromRow(row, fields.members);

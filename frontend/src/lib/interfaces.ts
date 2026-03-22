@@ -154,6 +154,7 @@ export type IFieldConfigurationRelationship = {
 
 export type IFieldConfigurationGroup = {
   slug: string;
+  fields?: Array<IField>;
 };
 
 export type IField = Merge<

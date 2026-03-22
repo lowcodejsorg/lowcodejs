@@ -254,8 +254,8 @@ export function DocumentSidebarTree({
     onStartEdit(nodeId, label);
   };
 
-  const handleSelect = (id: string): void => {
-    handleItemClick(id);
+  const handleSelect = (id: string | null): void => {
+    if (id) handleItemClick(id);
   };
 
   const handleDoubleClick = (nodeId: string, label: string): void => {

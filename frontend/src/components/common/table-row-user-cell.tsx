@@ -1,5 +1,3 @@
-import { TableRowBadgeList } from './table-row-badge-list';
-
 import type { IField, IRow, IUser } from '@/lib/interfaces';
 
 interface TableRowUserCellProps {

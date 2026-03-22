@@ -54,7 +54,6 @@ import { toastSuccess } from '@/lib/toast';
 
 export function DocumentSidebar({
   title = 'Índice',
-  subtitle,
   nodes,
   selectedId,
   onSelect,
@@ -63,7 +62,6 @@ export function DocumentSidebar({
   categoryField,
 }: {
   title?: string;
-  subtitle?: string;
   nodes: Array<CatNode>;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
@@ -409,7 +407,9 @@ export function DocumentSidebar({
   };
 
   const parentLabel =
-    addParentId && labelMap.get(addParentId) ? labelMap.get(addParentId) : null;
+    addParentId && labelMap.get(addParentId)
+      ? (labelMap.get(addParentId) ?? null)
+      : null;
 
   return (
     <div className="relative h-full w-full">

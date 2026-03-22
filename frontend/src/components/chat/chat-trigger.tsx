@@ -8,7 +8,10 @@ interface ChatTriggerProps {
   isOpen: boolean;
 }
 
-export function ChatTrigger({ onClick, isOpen }: ChatTriggerProps): React.JSX.Element {
+export function ChatTrigger({
+  onClick,
+  isOpen,
+}: ChatTriggerProps): React.JSX.Element {
   return (
     <Button
       variant={isOpen ? 'default' : 'outline'}

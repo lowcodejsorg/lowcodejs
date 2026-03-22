@@ -77,13 +77,6 @@ function SettingUpdateContent({
   const router = useRouter();
   const isUploading = useIsUploading();
 
-  const goBack = (): void => {
-    router.navigate({
-      to: '/',
-      replace: true,
-    });
-  };
-
   const _update = useUpdateSetting({
     onSuccess() {
       toastSuccess(

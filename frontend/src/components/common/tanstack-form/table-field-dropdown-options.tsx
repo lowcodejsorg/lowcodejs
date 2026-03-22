@@ -50,7 +50,7 @@ export function TableFieldDropdownOptions({
     const newOption: IDropdown = {
       id: crypto.randomUUID(),
       label: trimmed,
-      color: undefined,
+      color: null,
     };
 
     field.handleChange([...field.state.value, newOption]);
@@ -69,7 +69,7 @@ export function TableFieldDropdownOptions({
       return {
         id: item.id,
         label: String(item.label),
-        color: prev?.color,
+        color: prev?.color ?? null,
       };
     });
     field.handleChange(reorderedOptions);
@@ -77,7 +77,12 @@ export function TableFieldDropdownOptions({
 
   const setColor = (id: string, color?: string): void => {
     field.handleChange(
-      field.state.value.map((opt) => (opt.id === id ? { ...opt, color } : opt)),
+      field.state.value.map((opt) => {
+        if (opt.id === id) {
+          return { ...opt, color: color ?? null };
+        }
+        return opt;
+      }),
     );
   };
 
@@ -101,7 +106,7 @@ export function TableFieldDropdownOptions({
         onRemove={disabled ? undefined : handleRemoveOption}
         disabled={disabled}
         className={cn(isInvalid && 'border-destructive')}
-        getItemColor={(id) => optionById.get(id)?.color}
+        getItemColor={(id) => optionById.get(id)?.color ?? undefined}
         onItemColorChange={(id, color) => setColor(id, color)}
       >
         <div className="flex flex-1 items-center gap-1">

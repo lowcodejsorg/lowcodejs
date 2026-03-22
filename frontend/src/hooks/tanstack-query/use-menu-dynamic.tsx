@@ -1,3 +1,4 @@
+import type { LinkProps } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
 import {
   ExternalLinkIcon,
@@ -89,7 +90,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
       return {
         title: menu.name,
         icon: Icon,
-        url: menu.url,
+        url: menu.url as LinkProps['to'],
         type: menu.type,
         items: childItems,
       };
@@ -99,7 +100,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
     return {
       title: menu.name,
       icon: Icon,
-      url: menu.url,
+      url: menu.url as LinkProps['to'],
       type: menu.type,
     };
   }

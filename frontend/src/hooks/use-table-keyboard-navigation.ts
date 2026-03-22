@@ -105,7 +105,7 @@ export function useTableKeyboardNavigation<TData>({
         tabIndex: 0,
         role: 'grid' as const,
       }
-    : {};
+    : ({} as Record<string, never>);
 
   const isCellFocused = React.useCallback(
     (rowIndex: number, colIndex: number) => {

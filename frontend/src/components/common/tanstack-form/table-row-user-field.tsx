@@ -86,14 +86,29 @@ export function TableRowUserField({
       const next = new Map(prev);
       fieldValue.forEach((opt) => {
         if (next.has(opt.value)) return;
-        next.set(opt.value, {
+        const stubUser: IUser = {
           _id: opt.value,
           name: opt.label,
           email: '',
           password: '',
           status: E_USER_STATUS.ACTIVE,
-          group: null as unknown as IUser['group'],
-        });
+          group: {
+            _id: '',
+            name: '',
+            slug: '',
+            description: null,
+            permissions: [],
+            createdAt: '',
+            updatedAt: null,
+            trashedAt: null,
+            trashed: false,
+          },
+          createdAt: '',
+          updatedAt: null,
+          trashedAt: null,
+          trashed: false,
+        };
+        next.set(opt.value, stubUser);
       });
       return next;
     });
@@ -105,14 +120,29 @@ export function TableRowUserField({
       const fromList = users.find((user) => user._id === opt.value);
       if (cached) return cached;
       if (fromList) return fromList;
-      return {
+      const fallbackUser: IUser = {
         _id: opt.value,
         name: opt.label,
         email: '',
         password: '',
         status: E_USER_STATUS.ACTIVE,
-        group: null as unknown as IUser['group'],
+        group: {
+          _id: '',
+          name: '',
+          slug: '',
+          description: null,
+          permissions: [],
+          createdAt: '',
+          updatedAt: null,
+          trashedAt: null,
+          trashed: false,
+        },
+        createdAt: '',
+        updatedAt: null,
+        trashedAt: null,
+        trashed: false,
       };
+      return fallbackUser;
     });
   }, [fieldValue, selectedCache, users]);
 

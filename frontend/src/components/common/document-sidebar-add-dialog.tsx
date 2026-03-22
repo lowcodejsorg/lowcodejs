@@ -28,7 +28,10 @@ export function DocumentSidebarAddDialog({
   onCancel: () => void;
   isPending: boolean;
 }): React.JSX.Element {
-  const label = useStore(form.store, (state) => state.values.label) as string;
+  const label = useStore(form.store, (state: unknown) => {
+    const s = state as { values: { label: string } };
+    return s.values.label;
+  });
 
   return (
     <Dialog

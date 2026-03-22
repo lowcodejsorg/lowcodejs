@@ -1,6 +1,5 @@
 import {
   createLazyFileRoute,
-  useNavigate,
   useParams,
   useRouter,
   useSearch,
@@ -153,8 +152,6 @@ function RouteComponent(): React.JSX.Element {
   const search = useSearch({
     from: '/_private/tables/$slug/',
   });
-  const navigate = useNavigate({ from: '/tables/$slug' });
-
   const table = useReadTable({ slug });
   const tableStyle = table.data?.style;
   const shouldDisablePagination =
@@ -406,12 +403,24 @@ function RouteComponent(): React.JSX.Element {
             meta={rows.data?.meta ?? MetaDefault}
             page={search.page}
             perPage={search.perPage}
-            onPageChange={(page) =>
-              navigate({ search: (prev) => ({ ...prev, page }) })
-            }
-            onPerPageChange={(perPage) =>
-              navigate({ search: (prev) => ({ ...prev, perPage, page: 1 }) })
-            }
+            onPageChange={(newPage) => {
+              void router.navigate({
+                to: '.',
+                search: {
+                  page: String(newPage),
+                  perPage: String(search.perPage),
+                },
+              });
+            }}
+            onPerPageChange={(newPerPage) => {
+              void router.navigate({
+                to: '.',
+                search: {
+                  page: String(1),
+                  perPage: String(newPerPage),
+                },
+              });
+            }}
           />
         </div>
       )}

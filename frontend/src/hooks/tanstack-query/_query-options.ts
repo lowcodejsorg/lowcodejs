@@ -1,4 +1,4 @@
-import type { UndefinedInitialDataOptions } from '@tanstack/react-query';
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import { queryOptions } from '@tanstack/react-query';
 
 import { queryKeys } from './_query-keys';
@@ -24,9 +24,7 @@ import type {
 
 // ============== USERS ==============
 
-export const userListOptions = (
-  params: UserQueryPayload,
-): UndefinedInitialDataOptions<Paginated<IUser>> =>
+export const userListOptions = (params: UserQueryPayload) =>
   queryOptions({
     queryKey: queryKeys.users.list(params),
     queryFn: async () => {
@@ -38,9 +36,7 @@ export const userListOptions = (
     staleTime: 2 * 60 * 1000,
   });
 
-export const userDetailOptions = (
-  userId: string,
-): UndefinedInitialDataOptions<IUser> =>
+export const userDetailOptions = (userId: string) =>
   queryOptions({
     queryKey: queryKeys.users.detail(userId),
     queryFn: async () => {
@@ -53,9 +49,7 @@ export const userDetailOptions = (
 
 // ============== GROUPS ==============
 
-export const groupListOptions = (
-  params: UserGroupQueryPayload,
-): UndefinedInitialDataOptions<Paginated<IGroup>> =>
+export const groupListOptions = (params: UserGroupQueryPayload) =>
   queryOptions({
     queryKey: queryKeys.groups.list(params),
     queryFn: async () => {
@@ -68,7 +62,7 @@ export const groupListOptions = (
     staleTime: 2 * 60 * 1000,
   });
 
-export const groupAllOptions = (): UndefinedInitialDataOptions<Array<IGroup>> =>
+export const groupAllOptions = () =>
   queryOptions({
     queryKey: queryKeys.groups.all,
     queryFn: async () => {
@@ -78,9 +72,7 @@ export const groupAllOptions = (): UndefinedInitialDataOptions<Array<IGroup>> =>
     staleTime: 2 * 60 * 1000,
   });
 
-export const groupDetailOptions = (
-  groupId: string,
-): UndefinedInitialDataOptions<IGroup> =>
+export const groupDetailOptions = (groupId: string) =>
   queryOptions({
     queryKey: queryKeys.groups.detail(groupId),
     queryFn: async () => {
@@ -93,9 +85,7 @@ export const groupDetailOptions = (
 
 // ============== MENUS ==============
 
-export const menuListOptions = (
-  params: MenuQueryPayload,
-): UndefinedInitialDataOptions<Paginated<IMenu>> =>
+export const menuListOptions = (params: MenuQueryPayload) =>
   queryOptions({
     queryKey: queryKeys.menus.list(params),
     queryFn: async () => {
@@ -107,7 +97,7 @@ export const menuListOptions = (
     staleTime: 5 * 60 * 1000,
   });
 
-export const menuAllOptions = (): UndefinedInitialDataOptions<Array<IMenu>> =>
+export const menuAllOptions = () =>
   queryOptions({
     queryKey: queryKeys.menus.all,
     queryFn: async () => {
@@ -117,9 +107,7 @@ export const menuAllOptions = (): UndefinedInitialDataOptions<Array<IMenu>> =>
     staleTime: 5 * 60 * 1000,
   });
 
-export const menuDetailOptions = (
-  menuId: string,
-): UndefinedInitialDataOptions<IMenu> =>
+export const menuDetailOptions = (menuId: string) =>
   queryOptions({
     queryKey: queryKeys.menus.detail(menuId),
     queryFn: async () => {
@@ -132,9 +120,7 @@ export const menuDetailOptions = (
 
 // ============== TABLES ==============
 
-export const tableListOptions = (
-  params: TableQueryPayload,
-): UndefinedInitialDataOptions<Paginated<ITable>> =>
+export const tableListOptions = (params: TableQueryPayload) =>
   queryOptions({
     queryKey: queryKeys.tables.list(params),
     queryFn: async () => {
@@ -146,9 +132,7 @@ export const tableListOptions = (
     staleTime: 60 * 1000,
   });
 
-export const tableDetailOptions = (
-  slug: string,
-): UndefinedInitialDataOptions<ITable> =>
+export const tableDetailOptions = (slug: string) =>
   queryOptions({
     queryKey: queryKeys.tables.detail(slug),
     queryFn: async () => {
@@ -161,10 +145,7 @@ export const tableDetailOptions = (
 
 // ============== ROWS ==============
 
-export const rowListOptions = (
-  slug: string,
-  params: Record<string, unknown>,
-): UndefinedInitialDataOptions<Paginated<IRow>> =>
+export const rowListOptions = (slug: string, params: Record<string, unknown>) =>
   queryOptions({
     queryKey: queryKeys.rows.list(slug, params),
     queryFn: async () => {
@@ -178,10 +159,7 @@ export const rowListOptions = (
     staleTime: 30 * 1000,
   });
 
-export const rowDetailOptions = (
-  slug: string,
-  rowId: string,
-): UndefinedInitialDataOptions<IRow> =>
+export const rowDetailOptions = (slug: string, rowId: string) =>
   queryOptions({
     queryKey: queryKeys.rows.detail(slug, rowId),
     queryFn: async () => {
@@ -194,10 +172,7 @@ export const rowDetailOptions = (
 
 // ============== FIELDS ==============
 
-export const fieldDetailOptions = (
-  tableSlug: string,
-  fieldId: string,
-): UndefinedInitialDataOptions<IField> =>
+export const fieldDetailOptions = (tableSlug: string, fieldId: string) =>
   queryOptions({
     queryKey: queryKeys.fields.detail(tableSlug, fieldId),
     queryFn: async () => {
@@ -214,7 +189,7 @@ export const groupFieldDetailOptions = (
   tableSlug: string,
   groupSlug: string,
   fieldId: string,
-): UndefinedInitialDataOptions<IField> =>
+) =>
   queryOptions({
     queryKey: queryKeys.groupFields.detail(tableSlug, groupSlug, fieldId),
     queryFn: async () => {
@@ -228,7 +203,7 @@ export const groupFieldDetailOptions = (
 
 // ============== PROFILE ==============
 
-export const profileDetailOptions = (): UndefinedInitialDataOptions<IUser> =>
+export const profileDetailOptions = () =>
   queryOptions({
     queryKey: queryKeys.profile.all,
     queryFn: async () => {
@@ -240,7 +215,7 @@ export const profileDetailOptions = (): UndefinedInitialDataOptions<IUser> =>
 
 // ============== SETTINGS ==============
 
-export const settingOptions = (): UndefinedInitialDataOptions<ISetting> =>
+export const settingOptions = () =>
   queryOptions({
     queryKey: queryKeys.settings.all,
     queryFn: async () => {
@@ -252,9 +227,7 @@ export const settingOptions = (): UndefinedInitialDataOptions<ISetting> =>
 
 // ============== PERMISSIONS ==============
 
-export const permissionOptions = (): UndefinedInitialDataOptions<
-  Array<IPermission>
-> =>
+export const permissionOptions = () =>
   queryOptions({
     queryKey: queryKeys.permissions.all,
     queryFn: async () => {
@@ -266,9 +239,7 @@ export const permissionOptions = (): UndefinedInitialDataOptions<
 
 // ============== PAGES ==============
 
-export const pageDetailOptions = (
-  slug: string,
-): UndefinedInitialDataOptions<IMenu> =>
+export const pageDetailOptions = (slug: string) =>
   queryOptions({
     queryKey: queryKeys.pages.detail(slug),
     queryFn: async () => {
@@ -285,7 +256,7 @@ export const groupRowListOptions = (
   slug: string,
   rowId: string,
   groupSlug: string,
-): UndefinedInitialDataOptions<Array<IRow>> =>
+) =>
   queryOptions({
     queryKey: queryKeys.groupRows.lists(slug, rowId, groupSlug),
     queryFn: async () => {
@@ -306,7 +277,7 @@ export const relationshipRowsOptions = (params: {
   search?: string;
   page?: number;
   perPage?: number;
-}): UndefinedInitialDataOptions<Paginated<IRow>> =>
+}) =>
   queryOptions({
     queryKey: queryKeys.relationships.rows(
       params.fieldSlug,

@@ -106,7 +106,6 @@ function ProfileUpdateContent({
       newPassword: '',
       confirmPassword: '',
     } satisfies ProfileUpdateFormValues,
-    // @ts-expect-error Zod Standard Schema type inference
     validators: {
       onChange: ProfileUpdateSchema,
       onSubmit: ProfileUpdateSchema,

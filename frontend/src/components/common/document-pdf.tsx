@@ -173,14 +173,7 @@ export function DocumentPdf({
                     ) : null}
                     {b.bodyField.format === E_FIELD_FORMAT.RICH_TEXT ||
                     b.bodyField.format === E_FIELD_FORMAT.MARKDOWN ? (
-                      <Html
-                        style={styles.blockBody}
-                        renderersProps={{
-                          a: { style: { textDecoration: 'none' } },
-                        }}
-                      >
-                        {bodyRaw}
-                      </Html>
+                      <Html style={styles.blockBody}>{bodyRaw}</Html>
                     ) : (
                       <Text style={styles.blockBody}>{bodyRaw}</Text>
                     )}

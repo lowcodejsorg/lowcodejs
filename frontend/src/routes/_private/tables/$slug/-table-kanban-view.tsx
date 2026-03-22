@@ -172,7 +172,8 @@ export function TableKanbanView({
         !TEMPLATE_FIELD_SLUGS.has(field.slug) &&
         field.slug !== fields.attachments?.slug &&
         field.slug !== ORDER_FIELD_SLUG &&
-        ![E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION].includes(field.type),
+        field.type !== E_FIELD_TYPE.REACTION &&
+        field.type !== E_FIELD_TYPE.EVALUATION,
     );
   }, [fields, table.fields]);
 

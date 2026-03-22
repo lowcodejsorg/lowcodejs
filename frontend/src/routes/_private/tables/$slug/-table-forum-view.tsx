@@ -555,7 +555,7 @@ export function TableForumView({
       }
     }
 
-    for (const [channelId, list] of next.entries()) {
+    for (const [, list] of next.entries()) {
       list.sort((a, b) => {
         if (!a.dateValue && !b.dateValue) return 0;
         if (!a.dateValue) return 1;
@@ -1388,8 +1388,8 @@ export function TableForumView({
                   onDelete={(index) => setDeleteIndex(index)}
                   onToggleReaction={toggleReaction}
                   trackedMentionMessageIds={
-                    (activeRowId && unseenMentionIdsByChannel[activeRowId]) ??
-                    []
+                    (activeRowId && unseenMentionIdsByChannel[activeRowId]) ||
+                    undefined
                   }
                   onMentionMessageVisible={handleMentionMessageVisible}
                   scrollToMessageId={mentionJumpMessageId}

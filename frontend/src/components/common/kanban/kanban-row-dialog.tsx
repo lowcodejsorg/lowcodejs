@@ -290,8 +290,8 @@ export function KanbanRowDialog({
       : [];
   const attachmentGroupFileFieldSlug =
     fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP
-      ? (fields.attachments.groups?.fields ?? []).find(
-          (groupField) => groupField.type === E_FIELD_TYPE.FILE,
+      ? (fields.attachments.group?.fields ?? []).find(
+          (groupField: IField) => groupField.type === E_FIELD_TYPE.FILE,
         )?.slug
       : null;
   const attachmentItems =
@@ -630,7 +630,8 @@ export function KanbanRowDialog({
   };
 
   const isExtraFieldEditable = (field: IField): boolean =>
-    ![E_FIELD_TYPE.REACTION, E_FIELD_TYPE.EVALUATION].includes(field.type);
+    field.type !== E_FIELD_TYPE.REACTION &&
+    field.type !== E_FIELD_TYPE.EVALUATION;
 
   const renderExtraField = (field: IField): React.JSX.Element => {
     switch (field.type) {

@@ -19,10 +19,9 @@ export const useAuthStore = create<AuthStore>()(
       isAuthenticated: false,
       hasHydrated: false,
 
-      setHasHydrated: (val: boolean): void => set({ hasHydrated: val }),
+      setHasHydrated: (val: boolean): void => { set({ hasHydrated: val }); },
 
-      setUser: (user: IUser | null): void =>
-        set({ user, isAuthenticated: Boolean(user) }),
+      setUser: (user: IUser | null): void => { set({ user, isAuthenticated: Boolean(user) }); },
 
       clear(): void {
         set({ user: null, isAuthenticated: false });

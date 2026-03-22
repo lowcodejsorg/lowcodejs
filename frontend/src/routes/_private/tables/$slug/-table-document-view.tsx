@@ -213,7 +213,6 @@ export function TableDocumentView({
       >
         <DocumentSidebar
           title={categoryField?.name ?? 'Índice'}
-          subtitle={`Por: ${categoryField?.name}`}
           nodes={categoryTree}
           selectedId={selectedCategoryId}
           onSelect={setSelectedCategoryId}

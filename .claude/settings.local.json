@@ -16,7 +16,8 @@
       "Bash(npx --no-install tsc --noEmit)",
       "Bash(docker ps:*)",
       "Bash(python3:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(npm run:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

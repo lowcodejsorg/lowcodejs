@@ -22,8 +22,14 @@ export function KanbanAddListDialog({
   form: any;
   isSubmitting: boolean;
 }): React.JSX.Element {
-  const label = useStore(form.store, (state) => state.values.label) as string;
-  const color = useStore(form.store, (state) => state.values.color) as string;
+  const label = useStore(form.store, (state: unknown) => {
+    const s = state as { values: { label: string } };
+    return s.values.label;
+  });
+  useStore(form.store, (state: unknown) => {
+    const s = state as { values: { color: string } };
+    return s.values.color;
+  });
 
   return (
     <Dialog

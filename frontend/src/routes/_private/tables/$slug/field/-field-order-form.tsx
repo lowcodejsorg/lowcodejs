@@ -1101,23 +1101,14 @@ export function TrashedFieldsList({
         },
       );
 
-      toast(`Campo "${field.name}" excluído permanentemente`, {
-        className: '!bg-red-600 !text-white !border-red-600',
-        description:
-          'O campo foi removido permanentemente e não pode ser recuperado.',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastSuccess(`Campo "${field.name}" excluído permanentemente`);
     },
     onError: (error) => {
       console.error(error);
-      toast('Erro ao excluir campo', {
-        className: '!bg-red-600 !text-white !border-red-600',
-        description:
-          'Não foi possível excluir o campo permanentemente. Tente novamente.',
-        descriptionClassName: '!text-white',
-        closeButton: true,
-      });
+      toastError(
+        'Erro ao excluir campo',
+        'Não foi possível excluir o campo permanentemente. Tente novamente.',
+      );
     },
     onSettled: () => {
       setDeletingFieldId(null);
