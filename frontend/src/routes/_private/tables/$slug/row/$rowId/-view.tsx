@@ -19,133 +19,209 @@ interface RowViewProps {
   table?: ITable;
 }
 
+function renderCell(
+  field: IField,
+  row: IRow,
+  tableSlug: string,
+): React.JSX.Element {
+  switch (field.type) {
+    case E_FIELD_TYPE.TEXT_SHORT:
+      return (
+        <TableRowTextShortCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.TEXT_LONG:
+      return (
+        <TableRowTextLongCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.DATE:
+      return (
+        <TableRowDateCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.DROPDOWN:
+      return (
+        <TableRowDropdownCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.FILE:
+      return (
+        <TableRowFileCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.RELATIONSHIP:
+      return (
+        <TableRowRelationshipCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.CATEGORY:
+      return (
+        <TableRowCategoryCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.EVALUATION:
+      return (
+        <TableRowEvaluationCell
+          row={row}
+          field={field}
+          tableSlug={tableSlug}
+        />
+      );
+    case E_FIELD_TYPE.REACTION:
+      return (
+        <TableRowReactionCell
+          row={row}
+          field={field}
+          tableSlug={tableSlug}
+        />
+      );
+    case E_FIELD_TYPE.USER:
+      return (
+        <TableRowUserCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.IDENTIFIER:
+      return (
+        <TableRowTextShortCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.CREATOR:
+      return (
+        <TableRowUserCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.CREATED_AT:
+    case E_FIELD_TYPE.TRASHED_AT:
+      return (
+        <TableRowDateCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.TRASHED:
+      return (
+        <TableRowTextShortCell
+          row={row}
+          field={field}
+        />
+      );
+    default:
+      return (
+        <p className="text-sm text-muted-foreground">
+          {String(row[field.slug] ?? '-')}
+        </p>
+      );
+  }
+}
+
 export function RowView({
   data,
   fields,
   tableSlug,
   table,
 }: RowViewProps): React.JSX.Element {
-  const renderFieldValue = (field: IField): React.JSX.Element => {
-    switch (field.type) {
-      case E_FIELD_TYPE.TEXT_SHORT:
+  const [sortState, setSortState] = React.useState<
+    Record<string, 'asc' | 'desc' | undefined>
+  >({});
+
+  const visibleFields = React.useMemo(
+    () => fields.filter((f) => f.showInDetail),
+    [fields],
+  );
+
+  const mainFields = React.useMemo(
+    () => visibleFields.filter((f) => f.type !== E_FIELD_TYPE.FIELD_GROUP),
+    [visibleFields],
+  );
+
+  const groupFields = React.useMemo(
+    () => visibleFields.filter((f) => f.type === E_FIELD_TYPE.FIELD_GROUP),
+    [visibleFields],
+  );
+
+  const columns = React.useMemo((): Array<ColumnDef<IRow, any>> => {
+    return mainFields.map((field) => ({
+      id: field._id,
+      accessorFn: (row) => row[field.slug],
+      size: field.widthInList ?? undefined,
+      header: () => {
+        const currentSort = sortState[field._id];
         return (
-          <TableRowTextShortCell
-            row={data}
-            field={field}
-          />
+          <div className="inline-flex items-center">
+            <Button
+              className="h-auto px-2 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent cursor-default"
+              variant="link"
+            >
+              {field.name}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className="h-auto px-1 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent"
+                  variant="outline"
+                  size="sm"
+                >
+                  {currentSort === 'asc' && <ArrowUpIcon className="size-4" />}
+                  {currentSort === 'desc' && (
+                    <ArrowDownIcon className="size-4" />
+                  )}
+                  {!currentSort && (
+                    <ChevronsLeftRightIcon className="size-4 rotate-90" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={() =>
+                    setSortState((prev) => ({ ...prev, [field._id]: 'asc' }))
+                  }
+                >
+                  <ArrowUpIcon />
+                  <span>Crescente</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() =>
+                    setSortState((prev) => ({ ...prev, [field._id]: 'desc' }))
+                  }
+                >
+                  <ArrowDownIcon />
+                  <span>Decrescente</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         );
-      case E_FIELD_TYPE.TEXT_LONG:
-        return (
-          <TableRowTextLongCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.DATE:
-        return (
-          <TableRowDateCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.DROPDOWN:
-        return (
-          <TableRowDropdownCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.FILE:
-        return (
-          <TableRowFileCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.RELATIONSHIP:
-        return (
-          <TableRowRelationshipCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.CATEGORY:
-        return (
-          <TableRowCategoryCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.EVALUATION:
-        return (
-          <TableRowEvaluationCell
-            row={data}
-            field={field}
-            tableSlug={tableSlug}
-          />
-        );
-      case E_FIELD_TYPE.REACTION:
-        return (
-          <TableRowReactionCell
-            row={data}
-            field={field}
-            tableSlug={tableSlug}
-          />
-        );
-      case E_FIELD_TYPE.FIELD_GROUP:
-        return (
-          <TableRowFieldGroupCell
-            row={data}
-            field={field}
-            tableSlug={tableSlug}
-            table={table}
-            variant="detail"
-          />
-        );
-      case E_FIELD_TYPE.USER:
-        return (
-          <TableRowUserCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.IDENTIFIER:
-        return (
-          <TableRowTextShortCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.CREATOR:
-        return (
-          <TableRowUserCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.CREATED_AT:
-      case E_FIELD_TYPE.TRASHED_AT:
-        return (
-          <TableRowDateCell
-            row={data}
-            field={field}
-          />
-        );
-      case E_FIELD_TYPE.TRASHED:
-        return (
-          <TableRowTextShortCell
-            row={data}
-            field={field}
-          />
-        );
-      default:
-        return (
-          <p className="text-sm text-muted-foreground">
-            {String(data[field.slug] ?? '-')}
-          </p>
-        );
-    }
-  };
+      },
+      cell: ({ row }) => renderCell(field, row.original, tableSlug),
+    }));
+  }, [mainFields, tableSlug, sortState]);
+
+  const tableInstance = useDataTable({
+    data: [data],
+    columns,
+    getRowId: (row) => row._id,
+  });
 
   return (
     <section className="flex flex-wrap gap-4 p-2">
@@ -162,12 +238,26 @@ export function RowView({
           </div>
         ))}
 
-      {/* Informações do registro */}
       {data.trashed && (
-        <div className="rounded-md border border-amber-500 p-3 bg-amber-50">
+        <div className="rounded-md border border-amber-500 p-3 bg-amber-50 m-2">
           <p className="text-sm text-amber-700">
             Este registro está na lixeira
           </p>
+        </div>
+      )}
+
+      {groupFields.length > 0 && (
+        <div className="flex flex-col gap-6 pt-4 border-t">
+          {groupFields.map((field) => (
+            <TableRowFieldGroupCell
+              key={field._id}
+              row={data}
+              field={field}
+              tableSlug={tableSlug}
+              table={table}
+              variant="detail"
+            />
+          ))}
         </div>
       )}
     </section>
