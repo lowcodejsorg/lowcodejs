@@ -3,18 +3,15 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
-
-import { FieldManagementList, TrashedFieldsList } from './-field-order-form';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
-import { Button } from '@/components/ui/button';
+import { FieldManagement } from '@/components/field-management/field-management';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTableFieldManagement } from '@/hooks/use-table-field-management';
 import { useTablePermission } from '@/hooks/use-table-permission';
 
 export const Route = createLazyFileRoute(
@@ -31,6 +28,7 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const table = useReadTable({ slug });
   const permission = useTablePermission(table.data);
+  const actions = useTableFieldManagement(table.data);
 
   if (table.status === 'pending' || permission.isLoading) {
     return (
@@ -46,9 +44,14 @@ function RouteComponent(): React.JSX.Element {
     return <AccessDenied />;
   }
 
-  const fields = table.data?.fields ?? [];
-  const nonNativeFields = fields.filter((f) => !f.native);
-  const trashedCount = nonNativeFields.filter((f) => f.trashed).length;
+  if (table.status === 'error') {
+    return (
+      <LoadError
+        message="Erro ao buscar dados da tabela"
+        refetch={table.refetch}
+      />
+    );
+  }
 
   const handleBack = (): void => {
     sidebar.setOpen(true);
@@ -60,87 +63,12 @@ function RouteComponent(): React.JSX.Element {
   };
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={handleBack}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Gerenciar campos</h1>
-        </div>
-      </div>
-
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative p-4">
-        {table.status === 'error' && (
-          <LoadError
-            message="Erro ao buscar dados da tabela"
-            refetch={table.refetch}
-          />
-        )}
-
-        {table.status === 'success' && (
-          <Tabs
-            defaultValue="display"
-            className="w-f
-     u          ll max-w-6xl mx
-           -    auto"
-          >
-            <TabsList className="grid w-full grid-cols-5 mb-4">
-              <TabsTrigger value="display">Lista</TabsTrigger>
-              <TabsTrigger value="filter">Filtros</TabsTrigger>
-              <TabsTrigger value="form">Formulários</TabsTrigger>
-              <TabsTrigger value="detail">Detalhes</TabsTrigger>
-              <TabsTrigger
-                value="trashed"
-                disabled={trashedCount === 0}
-              >
-                Lixeira{trashedCount > 0 && ` (${trashedCount})`}
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="display">
-              <FieldManagementList
-                table={table.data}
-                visibilityKey="showInList"
-              />
-            </TabsContent>
-
-            <TabsContent value="filter">
-              <FieldManagementList
-                table={table.data}
-                visibilityKey="showInFilter"
-                excludeNative
-              />
-            </TabsContent>
-
-            <TabsContent value="form">
-              <FieldManagementList
-                table={table.data}
-                visibilityKey="showInForm"
-                excludeNative
-              />
-            </TabsContent>
-
-            <TabsContent value="detail">
-              <FieldManagementList
-                table={table.data}
-                visibilityKey="showInDetail"
-              />
-            </TabsContent>
-
-            <TabsContent value="trashed">
-              <TrashedFieldsList
-                table={table.data}
-                excludeNative
-              />
-            </TabsContent>
-          </Tabs>
-        )}
-      </div>
-    </div>
+    <FieldManagement.Root actions={actions}>
+      <FieldManagement.Header
+        title="Gerenciar campos"
+        onBack={handleBack}
+      />
+      <FieldManagement.Tabs />
+    </FieldManagement.Root>
   );
 }
