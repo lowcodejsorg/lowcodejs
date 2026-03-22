@@ -93,23 +93,21 @@ export default class {
       stopWhen: stepCountIs(5),
     });
 
-    // Setar CORS headers antes do streaming (writeHead bypassa @fastify/cors)
-    const origin = request.headers.origin;
-    if (origin) {
-      response.header('Access-Control-Allow-Origin', origin);
-      response.header('Access-Control-Allow-Credentials', 'true');
-    }
-
     const webResponse = result.toUIMessageStreamResponse();
 
-    // Mergear headers do Fastify (CORS) com headers do AI SDK
-    const aiHeaders = Object.fromEntries(webResponse.headers);
-    const fastifyHeaders = response.getHeaders();
-
-    response.raw.writeHead(webResponse.status, {
-      ...fastifyHeaders,
-      ...aiHeaders,
+    const headers: Record<string, string> = {};
+    webResponse.headers.forEach((value, key) => {
+      headers[key] = value;
     });
+
+    // Adicionar CORS headers (writeHead bypassa @fastify/cors)
+    const origin = request.headers.origin;
+    if (origin) {
+      headers['Access-Control-Allow-Origin'] = origin;
+      headers['Access-Control-Allow-Credentials'] = 'true';
+    }
+
+    response.raw.writeHead(webResponse.status, headers);
 
     if (webResponse.body) {
       const reader = (webResponse.body as ReadableStream).getReader();
