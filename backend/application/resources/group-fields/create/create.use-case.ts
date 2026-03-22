@@ -64,6 +64,7 @@ export default class GroupFieldCreateUseCase {
         ...payload,
         slug,
         group: null,
+        multiple: typeof payload.multiple === 'boolean' ? payload.multiple : false,
       });
 
       // Atualiza o grupo com o novo campo e schema

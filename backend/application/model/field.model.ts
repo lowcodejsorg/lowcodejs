@@ -118,6 +118,9 @@ export const Schema = new mongoose.Schema(
     multiple: {
       type: Boolean,
       default: false,
+      required: true,
+      set: (v) => v === undefined ? false : v,
+  // Garante que o campo multiple sempre será salvo, mesmo se for false
     },
     format: {
       type: String,
