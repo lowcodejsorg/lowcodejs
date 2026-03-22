@@ -3,24 +3,28 @@ import { DefaultChatTransport } from 'ai';
 import { Send, Trash2, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
+import { getRouteApi } from '@tanstack/react-router';
+
 import { ChatMessage } from './chat-message';
 
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
-import { Env } from '@/env';
+
+const rootApi = getRouteApi('__root__');
 
 interface ChatPanelProps {
   onClose?: () => void;
 }
 
 export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
+  const { baseUrl } = rootApi.useLoaderData();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const { messages, sendMessage, status, setMessages } = useChat({
     transport: new DefaultChatTransport({
-      api: `${Env.VITE_API_BASE_URL}/chat`,
+      api: `${baseUrl}/chat`,
       credentials: 'include',
     }),
   });

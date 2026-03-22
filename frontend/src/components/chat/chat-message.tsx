@@ -27,7 +27,10 @@ export function ChatMessage({ message }: ChatMessageProps): React.JSX.Element {
             return (
               <div
                 key={index}
-                className="prose prose-sm dark:prose-invert max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0"
+                className={cn(
+                  'prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
+                  isUser ? 'prose-invert' : 'dark:prose-invert',
+                )}
               >
                 <ReactMarkdown remarkPlugins={[remarkGfm]}>
                   {part.text}
