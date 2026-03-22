@@ -168,7 +168,7 @@ function SortableManagementItem({
               const raw = e.target.value.replace(/\D/g, '');
               setLocalWidth(raw);
               if (raw === '') return;
-              const val = Math.min(100, Math.max(0, Number(raw)));
+              const val = Math.max(0, Number(raw));
               if (debounceRef.current) clearTimeout(debounceRef.current);
               debounceRef.current = setTimeout(() => {
                 onWidthChange(val);
@@ -242,7 +242,6 @@ function TrashedItem({
         >
           <PencilIcon className="h-4 w-4" />
         </Button>
-        {/* [TASK] Botão de exclusão permanente da lixeira */}
         <Button
           variant="ghost"
           size="icon"
@@ -266,34 +265,20 @@ interface FieldOrderFormProps {
   table: ITable;
   reference: 'orderList' | 'orderForm';
   onSuccess?: () => void;
-  /** Se for contexto de grupo embedded */
-  groupSlug?: string;
-  /** Campos do grupo (quando em contexto de grupo) */
-  groupFields?: Array<IField>;
 }
 
 export function FieldOrderForm({
   table,
   reference,
   onSuccess,
-  groupSlug,
-  groupFields,
 }: FieldOrderFormProps): React.JSX.Element {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const isGroupContext = !!groupSlug && !!groupFields;
+  const order =
+    reference === 'orderList' ? table.fieldOrderList : table.fieldOrderForm;
 
-  // Para grupos, a ordem é simplesmente a ordem no array de campos
-  // Para tabelas, usa fieldOrderList ou fieldOrderForm
-  const order = isGroupContext
-    ? groupFields.flatMap((f) => f._id)
-    : reference === 'orderList'
-      ? table.fieldOrderList
-      : table.fieldOrderForm;
-
-  const sourceFields = isGroupContext ? groupFields : table.fields;
-  const activeFields = sourceFields.filter((f) => !f.trashed);
+  const activeFields = table.fields.filter((f) => !f.trashed);
 
   const sorted = [...activeFields].sort((a, b) => {
     const idxA = order.indexOf(a._id);
@@ -337,44 +322,6 @@ export function FieldOrderForm({
   }
 
   function handleSave(): void {
-    // Para contexto de grupo, atualiza groups com a nova ordem
-    if (isGroupContext && groupSlug) {
-      const updatedGroups = table.groups.map((g) => {
-        if (g.slug === groupSlug) {
-          // Mantém campos trashed no final, mas atualiza a ordem dos ativos
-          const trashedFields = g.fields.filter((f) => f.trashed);
-          return {
-            ...g,
-            fields: [...fields, ...trashedFields].map((f) => ({ _id: f._id })),
-          };
-        }
-        return g;
-      });
-
-      update.mutate({
-        slug: table.slug,
-        name: table.name,
-        description: table.description,
-        logo: table.logo?._id ?? null,
-        visibility: table.visibility,
-        style: table.style,
-        collaboration: table.collaboration,
-        fieldOrderList: table.fieldOrderList,
-        fieldOrderForm: table.fieldOrderForm,
-        administrators: table.administrators.flatMap((admin) => admin._id),
-        groups: updatedGroups,
-        fields: table.fields.flatMap((f) => f._id),
-        methods: {
-          ...table.methods,
-          afterSave: table.methods.afterSave,
-          beforeSave: table.methods.beforeSave,
-          onLoad: table.methods.onLoad,
-        },
-      });
-      return;
-    }
-
-    // Para tabelas normais, atualiza fields e fieldOrderList/fieldOrderForm
     const newOrder = fields.flatMap((f) => f._id);
     update.mutate({
       slug: table.slug,
@@ -403,7 +350,6 @@ export function FieldOrderForm({
     router.navigate({
       to: '/tables/$slug/field/$fieldId',
       params: { slug: table.slug, fieldId },
-      search: groupSlug ? { group: groupSlug } : undefined,
     });
   }
 
@@ -456,38 +402,23 @@ export function FieldOrderForm({
 interface FieldManagementListProps {
   table: ITable;
   visibilityKey: 'showInFilter' | 'showInForm' | 'showInDetail' | 'showInList';
-  /** Se for contexto de grupo embedded */
-  groupSlug?: string;
-  /** Campos do grupo (quando em contexto de grupo) */
-  groupFields?: Array<IField>;
-  /** Exclude native fields from the list */
   excludeNative?: boolean;
 }
 
 export function FieldManagementList({
   table,
   visibilityKey,
-  groupSlug,
-  groupFields,
   excludeNative,
 }: FieldManagementListProps): React.JSX.Element {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const isGroupContext = !!groupSlug && !!groupFields;
-
-  // Para grupos, a ordem é simplesmente a ordem no array de campos
-  // Para tabelas, usa fieldOrderList
-  const order = isGroupContext
-    ? groupFields.flatMap((f) => f._id)
-    : visibilityKey === 'showInForm'
+  const order =
+    visibilityKey === 'showInForm'
       ? table.fieldOrderForm
       : table.fieldOrderList;
 
-  const sourceFields = isGroupContext ? groupFields : table.fields;
-  const activeFields = sourceFields.filter(
-    // Comentado por Vanessa
-    // (f) => !f.trashed && !(excludeNative && f.native)
+  const activeFields = table.fields.filter(
     (f) =>
       !f.trashed &&
       !(excludeNative && f.native) &&
@@ -510,7 +441,6 @@ export function FieldManagementList({
     string | null
   >(null);
 
-  // Map visibilityKey to widthKey (only for showInForm and showInList)
   const widthKey: 'widthInForm' | 'widthInList' | undefined =
     visibilityKey === 'showInForm'
       ? 'widthInForm'
@@ -544,11 +474,8 @@ export function FieldManagementList({
       field: IField;
       newValue: boolean;
     }) => {
-      const route = groupSlug
-        ? `/tables/${table.slug}/groups/${groupSlug}/fields/${field._id}`
-        : `/tables/${table.slug}/fields/${field._id}`;
+      const route = `/tables/${table.slug}/fields/${field._id}`;
 
-      // Build full payload as API requires complete field data
       const hasRelationship = field.relationship !== null;
       const hasDropdown = field.dropdown.length > 0;
       const hasCategory = field.category.length > 0;
@@ -584,7 +511,7 @@ export function FieldManagementList({
               order: field.relationship!.order,
             }
           : null,
-        group: groupSlug ? { slug: groupSlug } : null,
+        group: field.group,
         category: hasCategory ? field.category : [],
         trashed: field.trashed,
         trashedAt: field.trashedAt ?? null,
@@ -595,40 +522,19 @@ export function FieldManagementList({
       setTogglingFieldId(field._id);
     },
     onSuccess: (response) => {
-      // Update field in local state
       setFields((prev) =>
         prev.map((f) => (f._id === response._id ? response : f)),
       );
 
-      // Update query cache for field
       queryClient.setQueryData<IField>(
         queryKeys.fields.detail(table.slug, response._id),
         response,
       );
 
-      // Update table cache
       queryClient.setQueryData<ITable>(
         queryKeys.tables.detail(table.slug),
         (old) => {
           if (!old) return old;
-
-          // Se for contexto de grupo, atualiza groups
-          if (isGroupContext && groupSlug) {
-            return {
-              ...old,
-              groups: old.groups.map((g) =>
-                g.slug === groupSlug
-                  ? {
-                      ...g,
-                      fields: g.fields.map((f) =>
-                        f._id === response._id ? response : f,
-                      ),
-                    }
-                  : g,
-              ),
-            };
-          }
-
           return {
             ...old,
             fields: old.fields.map((f) =>
@@ -638,7 +544,6 @@ export function FieldManagementList({
         },
       );
 
-      // Update paginated table cache
       queryClient.setQueryData<Paginated<ITable>>(
         queryKeys.tables.list({ page: 1, perPage: 50 }),
         (old) => {
@@ -647,22 +552,6 @@ export function FieldManagementList({
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug === table.slug) {
-                if (isGroupContext && groupSlug) {
-                  return {
-                    ...t,
-                    groups: t.groups.map((g) =>
-                      g.slug === groupSlug
-                        ? {
-                            ...g,
-                            fields: g.fields.map((f) =>
-                              f._id === response._id ? response : f,
-                            ),
-                          }
-                        : g,
-                    ),
-                  };
-                }
-
                 return {
                   ...t,
                   fields: t.fields.map((f) =>
@@ -707,9 +596,7 @@ export function FieldManagementList({
       newWidth: number;
       targetWidthKey: 'widthInForm' | 'widthInList';
     }) => {
-      const route = groupSlug
-        ? `/tables/${table.slug}/groups/${groupSlug}/fields/${field._id}`
-        : `/tables/${table.slug}/fields/${field._id}`;
+      const route = `/tables/${table.slug}/fields/${field._id}`;
 
       const hasRelationship = field.relationship !== null;
       const hasDropdown = field.dropdown.length > 0;
@@ -744,7 +631,7 @@ export function FieldManagementList({
               order: field.relationship!.order,
             }
           : null,
-        group: groupSlug ? { slug: groupSlug } : null,
+        group: field.group,
         category: hasCategory ? field.category : [],
         trashed: field.trashed,
         trashedAt: field.trashedAt ?? null,
@@ -768,23 +655,6 @@ export function FieldManagementList({
         queryKeys.tables.detail(table.slug),
         (old) => {
           if (!old) return old;
-
-          if (isGroupContext && groupSlug) {
-            return {
-              ...old,
-              groups: old.groups.map((g) =>
-                g.slug === groupSlug
-                  ? {
-                      ...g,
-                      fields: g.fields.map((f) =>
-                        f._id === response._id ? response : f,
-                      ),
-                    }
-                  : g,
-              ),
-            };
-          }
-
           return {
             ...old,
             fields: old.fields.map((f) =>
@@ -802,22 +672,6 @@ export function FieldManagementList({
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug === table.slug) {
-                if (isGroupContext && groupSlug) {
-                  return {
-                    ...t,
-                    groups: t.groups.map((g) =>
-                      g.slug === groupSlug
-                        ? {
-                            ...g,
-                            fields: g.fields.map((f) =>
-                              f._id === response._id ? response : f,
-                            ),
-                          }
-                        : g,
-                    ),
-                  };
-                }
-
                 return {
                   ...t,
                   fields: t.fields.map((f) =>
@@ -857,44 +711,6 @@ export function FieldManagementList({
   }
 
   function handleSave(): void {
-    // Para contexto de grupo, atualiza groups com a nova ordem
-    if (isGroupContext && groupSlug) {
-      const updatedGroups = table.groups.map((g) => {
-        if (g.slug === groupSlug) {
-          // Mantém campos trashed no final, mas atualiza a ordem dos ativos
-          const trashedFields = g.fields.filter((f) => f.trashed);
-          return {
-            ...g,
-            fields: [...fields, ...trashedFields].map((f) => ({ _id: f._id })),
-          };
-        }
-        return g;
-      });
-
-      updateTable.mutate({
-        slug: table.slug,
-        name: table.name,
-        description: table.description,
-        logo: table.logo?._id ?? null,
-        visibility: table.visibility,
-        style: table.style,
-        collaboration: table.collaboration,
-        fieldOrderList: table.fieldOrderList,
-        fieldOrderForm: table.fieldOrderForm,
-        administrators: table.administrators.flatMap((admin) => admin._id),
-        groups: updatedGroups,
-        fields: table.fields.flatMap((f) => f._id),
-        methods: {
-          ...table.methods,
-          afterSave: table.methods.afterSave,
-          beforeSave: table.methods.beforeSave,
-          onLoad: table.methods.onLoad,
-        },
-      });
-      return;
-    }
-
-    // Para tabelas normais, atualiza fields e fieldOrderList
     updateTable.mutate({
       slug: table.slug,
       name: table.name,
@@ -926,7 +742,6 @@ export function FieldManagementList({
     router.navigate({
       to: '/tables/$slug/field/$fieldId',
       params: { slug: table.slug, fieldId },
-      search: groupSlug ? { group: groupSlug } : undefined,
     });
   }
 
@@ -1005,64 +820,34 @@ export function FieldManagementList({
 
 interface TrashedFieldsListProps {
   table: ITable;
-  /** Se for contexto de grupo embedded */
-  groupSlug?: string;
-  /** Campos do grupo (quando em contexto de grupo) */
-  groupFields?: Array<IField>;
-  /** Exclude native fields from the list */
   excludeNative?: boolean;
 }
 
 export function TrashedFieldsList({
   table,
-  groupSlug,
-  groupFields,
   excludeNative,
 }: TrashedFieldsListProps): React.JSX.Element | null {
   const router = useRouter();
   const queryClient = useQueryClient();
   const [deletingFieldId, setDeletingFieldId] = useState<string | null>(null);
 
-  const isGroupContext = !!groupSlug && !!groupFields;
-  const sourceFields = isGroupContext ? groupFields : table.fields;
-  const trashedFields = sourceFields.filter(
+  const trashedFields = table.fields.filter(
     (f) => f.trashed && !(excludeNative && f.native),
   );
 
-  // [TASK] Permitir excluir para sempre um campo na lixeira
   const deleteMutation = useMutation({
     mutationFn: async (field: IField) => {
-      const route = '/tables/'
-        .concat(table.slug)
-        .concat('/fields/')
-        .concat(field._id);
-      const params = groupSlug ? `?group=${groupSlug}` : '';
-      await API.delete(route.concat(params));
+      const route = `/tables/${table.slug}/fields/${field._id}`;
+      await API.delete(route);
     },
     onMutate: (field) => {
       setDeletingFieldId(field._id);
     },
     onSuccess: (_, field) => {
-      // Atualiza cache da tabela removendo o campo deletado
       queryClient.setQueryData<ITable>(
         queryKeys.tables.detail(table.slug),
         (old) => {
           if (!old) return old;
-
-          if (isGroupContext && groupSlug) {
-            return {
-              ...old,
-              groups: old.groups.map((g) =>
-                g.slug === groupSlug
-                  ? {
-                      ...g,
-                      fields: g.fields.filter((f) => f._id !== field._id),
-                    }
-                  : g,
-              ),
-            };
-          }
-
           return {
             ...old,
             fields: old.fields.filter((f) => f._id !== field._id),
@@ -1070,7 +855,6 @@ export function TrashedFieldsList({
         },
       );
 
-      // Atualiza cache da lista de tabelas
       queryClient.setQueryData<Paginated<ITable>>(
         queryKeys.tables.list({ page: 1, perPage: 50 }),
         (old) => {
@@ -1079,19 +863,6 @@ export function TrashedFieldsList({
             meta: old.meta,
             data: old.data.map((t) => {
               if (t.slug !== table.slug) return t;
-              if (isGroupContext && groupSlug) {
-                return {
-                  ...t,
-                  groups: t.groups.map((g) =>
-                    g.slug === groupSlug
-                      ? {
-                          ...g,
-                          fields: g.fields.filter((f) => f._id !== field._id),
-                        }
-                      : g,
-                  ),
-                };
-              }
               return {
                 ...t,
                 fields: t.fields.filter((f) => f._id !== field._id),
@@ -1123,7 +894,6 @@ export function TrashedFieldsList({
     router.navigate({
       to: '/tables/$slug/field/$fieldId',
       params: { slug: table.slug, fieldId },
-      search: groupSlug ? { group: groupSlug } : undefined,
     });
   }
 

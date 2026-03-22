@@ -87,9 +87,8 @@ function FieldGroupSubMenu({
               className="inline-flex space-x-1 w-full"
               onClick={() => {
                 router.navigate({
-                  to: '/tables/$slug/field/management',
-                  params: { slug: originSlug },
-                  search: { group: groupSlug },
+                  to: '/tables/$slug/group/$groupSlug/field/management',
+                  params: { slug: originSlug, groupSlug },
                 });
               }}
             >

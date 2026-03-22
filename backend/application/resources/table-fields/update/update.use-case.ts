@@ -196,50 +196,60 @@ export default class TableFieldUpdateUseCase {
     if (payload.multiple !== field.multiple) return false;
     if (payload.format !== field.format) return false;
     if (payload.defaultValue !== field.defaultValue) return false;
-    if (payload.showInFilter !== field.showInFilter) return false;
-    if (payload.showInForm !== field.showInForm) return false;
-    if (
-      JSON.stringify(payload.relationship ?? null) !==
-      JSON.stringify(field.relationship ?? null)
-    )
-      return false;
-    if (
-      JSON.stringify(payload.group ?? null) !==
-      JSON.stringify(field.group ?? null)
-    )
-      return false;
-    if (
-      JSON.stringify(payload.dropdown ?? []) !==
-      JSON.stringify(field.dropdown ?? [])
-    )
-      return false;
-    if (
-      JSON.stringify(payload.category ?? []) !==
-      JSON.stringify(field.category ?? [])
-    )
-      return false;
+
+    // relationship: comparar por _id
+    const payloadRelId = payload.relationship?.table?._id ?? null;
+    const fieldRelId = field.relationship?.table?._id ?? null;
+    if (payloadRelId !== fieldRelId) return false;
+
+    // group: comparar por slug
+    const payloadGroupSlug =
+      typeof payload.group === 'string'
+        ? payload.group
+        : (payload.group?.slug ?? null);
+    const fieldGroupSlug = field.group?.slug ?? null;
+    if (payloadGroupSlug !== fieldGroupSlug) return false;
+
+    // dropdown: comparar por ids
+    const payloadDropdownIds = (payload.dropdown ?? [])
+      .map((d) => d.id)
+      .join(',');
+    const fieldDropdownIds = (field.dropdown ?? []).map((d) => d.id).join(',');
+    if (payloadDropdownIds !== fieldDropdownIds) return false;
+
+    // category: comparar por ids
+    const payloadCategoryIds = (payload.category ?? [])
+      .map((c) => c.id)
+      .join(',');
+    const fieldCategoryIds = (field.category ?? []).map((c) => c.id).join(',');
+    if (payloadCategoryIds !== fieldCategoryIds) return false;
+
     return true;
   }
 
   private canUpdateLockedField(payload: Payload, field: IField): boolean {
+    // Locked fields allow visibility and width changes, block everything else
     if (payload.name !== field.name) return false;
     if (payload.type !== field.type) return false;
     if (payload.trashed || payload.trashedAt) return false;
+    if (payload.required !== field.required) return false;
+    if (payload.multiple !== field.multiple) return false;
+    if (payload.format !== field.format) return false;
+    if (payload.defaultValue !== field.defaultValue) return false;
 
-    const sameConfig =
-      payload.required === field.required &&
-      payload.multiple === field.multiple &&
-      payload.format === field.format &&
-      payload.showInFilter === field.showInFilter &&
-      payload.showInForm === field.showInForm &&
-      payload.showInDetail === field.showInDetail &&
-      payload.showInList === field.showInList &&
-      payload.defaultValue === field.defaultValue &&
-      JSON.stringify(payload.relationship ?? null) ===
-        JSON.stringify(field.relationship ?? null) &&
-      JSON.stringify(payload.group ?? null) ===
-        JSON.stringify(field.group ?? null);
+    // relationship: comparar por _id
+    const payloadRelId = payload.relationship?.table?._id ?? null;
+    const fieldRelId = field.relationship?.table?._id ?? null;
+    if (payloadRelId !== fieldRelId) return false;
 
-    return sameConfig;
+    // group: comparar por slug
+    const payloadGroupSlug =
+      typeof payload.group === 'string'
+        ? payload.group
+        : (payload.group?.slug ?? null);
+    const fieldGroupSlug = field.group?.slug ?? null;
+    if (payloadGroupSlug !== fieldGroupSlug) return false;
+
+    return true;
   }
 }

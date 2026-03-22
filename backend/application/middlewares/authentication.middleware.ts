@@ -31,8 +31,6 @@ export function AuthenticationMiddleware(
         extractLastCookieValue(request.headers.cookie, 'accessToken') ??
         request.cookies.accessToken;
 
-      console.log('Access Token:', JSON.stringify(accessToken, null, 2));
-
       if (!accessToken) {
         if (options.optional) return;
         throw HTTPException.Unauthorized(
@@ -44,11 +42,6 @@ export function AuthenticationMiddleware(
       const accessTokenDecoded: IJWTPayload | null =
         await request.server.jwt.decode(String(accessToken));
 
-      console.log(
-        'Access Token Decoded:',
-        JSON.stringify(accessTokenDecoded, null, 2),
-      );
-
       if (
         !accessTokenDecoded ||
         accessTokenDecoded.type !== E_JWT_TYPE.ACCESS
@@ -59,20 +52,6 @@ export function AuthenticationMiddleware(
           'AUTHENTICATION_REQUIRED',
         );
       }
-
-      console.log(
-        'User Info:',
-        JSON.stringify(
-          {
-            sub: accessTokenDecoded.sub,
-            email: accessTokenDecoded.email,
-            role: accessTokenDecoded.role,
-            type: E_JWT_TYPE.ACCESS,
-          },
-          null,
-          2,
-        ),
-      );
 
       request.user = {
         sub: accessTokenDecoded.sub,

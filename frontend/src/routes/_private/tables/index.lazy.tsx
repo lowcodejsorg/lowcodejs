@@ -115,6 +115,12 @@ function RouteComponent(): React.JSX.Element {
               </Button>
             </TableImportDialog>
           )}
+
+          <ChatTrigger
+            onClick={() => handleChatOpenChange(!chatOpen)}
+            isOpen={chatOpen}
+          />
+
           {permission.can('CREATE_TABLE') && (
             <Button
               className="disabled:cursor-not-allowed"
@@ -130,10 +136,6 @@ function RouteComponent(): React.JSX.Element {
               <span>Nova Tabela</span>
             </Button>
           )}
-          <ChatTrigger
-            onClick={() => handleChatOpenChange(!chatOpen)}
-            isOpen={chatOpen}
-          />
         </div>
       </div>
 

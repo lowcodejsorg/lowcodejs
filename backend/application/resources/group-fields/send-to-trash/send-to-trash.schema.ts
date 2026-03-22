@@ -25,13 +25,75 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
         name: { type: 'string' },
         slug: { type: 'string' },
         type: { type: 'string' },
-        required: { type: 'boolean', enum: [false] },
-        showInList: { type: 'boolean', enum: [false] },
-        showInForm: { type: 'boolean', enum: [false] },
-        showInDetail: { type: 'boolean', enum: [false] },
-        showInFilter: { type: 'boolean', enum: [false] },
-        trashed: { type: 'boolean', enum: [true] },
-        trashedAt: { type: 'string', format: 'date-time' },
+        required: { type: 'boolean' },
+        multiple: { type: 'boolean' },
+        showInFilter: { type: 'boolean' },
+        showInForm: { type: 'boolean' },
+        showInDetail: { type: 'boolean' },
+        showInList: { type: 'boolean' },
+        widthInForm: { type: 'number', nullable: true },
+        widthInList: { type: 'number', nullable: true },
+        locked: { type: 'boolean' },
+        native: { type: 'boolean' },
+        format: { type: 'string', nullable: true },
+        defaultValue: { type: 'string', nullable: true },
+        dropdown: {
+          type: 'array',
+          nullable: true,
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string' },
+              color: { type: 'string' },
+            },
+          },
+        },
+        relationship: {
+          type: 'object',
+          nullable: true,
+          properties: {
+            table: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string' },
+                slug: { type: 'string' },
+              },
+            },
+            field: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string' },
+                slug: { type: 'string' },
+              },
+            },
+            order: { type: 'string', enum: ['asc', 'desc'] },
+          },
+        },
+        category: {
+          type: 'array',
+          nullable: true,
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string' },
+              children: { type: 'array' },
+            },
+          },
+        },
+        group: {
+          type: 'object',
+          nullable: true,
+          properties: {
+            _id: { type: 'string' },
+            slug: { type: 'string' },
+          },
+        },
+        trashed: { type: 'boolean' },
+        trashedAt: { type: 'string', format: 'date-time', nullable: true },
+        createdAt: { type: 'string', format: 'date-time' },
+        updatedAt: { type: 'string', format: 'date-time' },
       },
     },
     403: {

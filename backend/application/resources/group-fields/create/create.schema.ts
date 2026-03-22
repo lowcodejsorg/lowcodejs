@@ -80,6 +80,59 @@ export const GroupFieldCreateSchema: FastifySchema = {
         native: { type: 'boolean' },
         format: { type: 'string', nullable: true },
         defaultValue: { type: 'string', nullable: true },
+        dropdown: {
+          type: 'array',
+          nullable: true,
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string' },
+              color: { type: 'string' },
+            },
+          },
+        },
+        relationship: {
+          type: 'object',
+          nullable: true,
+          properties: {
+            table: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string' },
+                slug: { type: 'string' },
+              },
+            },
+            field: {
+              type: 'object',
+              properties: {
+                _id: { type: 'string' },
+                slug: { type: 'string' },
+              },
+            },
+            order: { type: 'string', enum: ['asc', 'desc'] },
+          },
+        },
+        category: {
+          type: 'array',
+          nullable: true,
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              label: { type: 'string' },
+              children: { type: 'array' },
+            },
+          },
+        },
+        group: {
+          type: 'object',
+          nullable: true,
+          properties: {
+            _id: { type: 'string' },
+            slug: { type: 'string' },
+          },
+        },
         trashed: { type: 'boolean' },
         trashedAt: { type: 'string', nullable: true },
         createdAt: { type: 'string', format: 'date-time' },

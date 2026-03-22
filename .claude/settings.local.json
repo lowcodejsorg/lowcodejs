@@ -17,7 +17,8 @@
       "Bash(docker ps:*)",
       "Bash(python3:*)",
       "Bash(head:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm test:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

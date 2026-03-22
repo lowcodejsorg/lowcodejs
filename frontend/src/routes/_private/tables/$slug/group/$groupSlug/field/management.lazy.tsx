@@ -6,7 +6,10 @@ import {
 import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 
-import { FieldManagementList, TrashedFieldsList } from './-field-order-form';
+import {
+  GroupFieldManagementList,
+  GroupTrashedFieldsList,
+} from '../../../field/-group-field-management';
 
 import { AccessDenied } from '@/components/common/access-denied';
 import { LoadError } from '@/components/common/load-error';
@@ -18,14 +21,14 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 
 export const Route = createLazyFileRoute(
-  '/_private/tables/$slug/field/management',
+  '/_private/tables/$slug/group/$groupSlug/field/management',
 )({
-  component: RouteComponent,
+  component: GroupFieldManagementPage,
 });
 
-function RouteComponent(): React.JSX.Element {
-  const { slug } = useParams({
-    from: '/_private/tables/$slug/field/management',
+function GroupFieldManagementPage(): React.JSX.Element {
+  const { slug, groupSlug } = useParams({
+    from: '/_private/tables/$slug/group/$groupSlug/field/management',
   });
   const sidebar = useSidebar();
   const router = useRouter();
@@ -46,9 +49,12 @@ function RouteComponent(): React.JSX.Element {
     return <AccessDenied />;
   }
 
-  const fields = table.data?.fields ?? [];
-  const nonNativeFields = fields.filter((f) => !f.native);
-  const trashedCount = nonNativeFields.filter((f) => f.trashed).length;
+  const targetGroup = (table.data?.groups ?? []).find(
+    (g) => g.slug === groupSlug,
+  );
+  const groupName = targetGroup?.name ?? groupSlug;
+  const groupFields = targetGroup?.fields ?? [];
+  const trashedCount = groupFields.filter((f) => !f.native && f.trashed).length;
 
   const handleBack = (): void => {
     sidebar.setOpen(true);
@@ -70,7 +76,9 @@ function RouteComponent(): React.JSX.Element {
           >
             <ArrowLeftIcon />
           </Button>
-          <h1 className="text-xl font-medium">Gerenciar campos</h1>
+          <h1 className="text-xl font-medium">
+            Gerenciar campos - {groupName}
+          </h1>
         </div>
       </div>
 
@@ -85,9 +93,7 @@ function RouteComponent(): React.JSX.Element {
         {table.status === 'success' && (
           <Tabs
             defaultValue="display"
-            className="w-f
-     u          ll max-w-6xl mx
-           -    auto"
+            className="w-full max-w-6xl mx-auto"
           >
             <TabsList className="grid w-full grid-cols-5 mb-4">
               <TabsTrigger value="display">Lista</TabsTrigger>
@@ -103,38 +109,43 @@ function RouteComponent(): React.JSX.Element {
             </TabsList>
 
             <TabsContent value="display">
-              <FieldManagementList
+              <GroupFieldManagementList
                 table={table.data}
+                groupSlug={groupSlug}
                 visibilityKey="showInList"
               />
             </TabsContent>
 
             <TabsContent value="filter">
-              <FieldManagementList
+              <GroupFieldManagementList
                 table={table.data}
+                groupSlug={groupSlug}
                 visibilityKey="showInFilter"
                 excludeNative
               />
             </TabsContent>
 
             <TabsContent value="form">
-              <FieldManagementList
+              <GroupFieldManagementList
                 table={table.data}
+                groupSlug={groupSlug}
                 visibilityKey="showInForm"
                 excludeNative
               />
             </TabsContent>
 
             <TabsContent value="detail">
-              <FieldManagementList
+              <GroupFieldManagementList
                 table={table.data}
+                groupSlug={groupSlug}
                 visibilityKey="showInDetail"
               />
             </TabsContent>
 
             <TabsContent value="trashed">
-              <TrashedFieldsList
+              <GroupTrashedFieldsList
                 table={table.data}
+                groupSlug={groupSlug}
                 excludeNative
               />
             </TabsContent>
