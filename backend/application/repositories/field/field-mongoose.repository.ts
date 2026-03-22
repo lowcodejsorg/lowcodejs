@@ -103,7 +103,9 @@ export default class FieldMongooseRepository implements FieldContractRepository 
   }
 
   async delete(_id: string): Promise<void> {
-    await Model.deleteOne({ _id });
+    console.log('[FieldRepository] Tentando deletar field com _id:', _id);
+    const result = await Model.deleteOne({ _id });
+    console.log('[FieldRepository] Resultado do deleteOne:', result);
   }
 
   async count(payload?: FieldQueryPayload): Promise<number> {
