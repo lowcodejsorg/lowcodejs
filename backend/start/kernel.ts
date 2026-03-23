@@ -2,9 +2,9 @@ import 'reflect-metadata';
 
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
+import httpProxy from '@fastify/http-proxy';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
-import httpProxy from '@fastify/http-proxy';
 import _static from '@fastify/static';
 import swagger from '@fastify/swagger';
 import scalar from '@scalar/fastify-api-reference';

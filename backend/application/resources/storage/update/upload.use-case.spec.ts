@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+import LocalStorageService from '@application/services/storage.service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
-import LocalStorageService from '@application/services/storage.service';
 
 import StorageUploadUseCase from './upload.use-case';
 

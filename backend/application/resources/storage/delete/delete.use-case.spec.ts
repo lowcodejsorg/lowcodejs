@@ -1,7 +1,7 @@
+import LocalStorageService from '@application/services/storage.service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
-import LocalStorageService from '@application/services/storage.service';
 
 import StorageDeleteUseCase from './delete.use-case';
 
