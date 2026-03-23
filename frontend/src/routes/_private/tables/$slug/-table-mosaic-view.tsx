@@ -196,14 +196,6 @@ export function TableMosaicView({
     E_FIELD_TYPE.TEXT_LONG,
   );
 
-  const used = new Set(
-    [thumbField?._id, titleField?._id, descField?._id].filter(
-      Boolean,
-    ) as Array<string>,
-  );
-  const rest = visibleHeaders.filter(
-    (f) => !used.has(f._id) && f.type !== E_FIELD_TYPE.FILE,
-  );
 
   return (
     <div className="gap-x-4 columns-1 sm:columns-2 lg:columns-3 xl:columns-4">
@@ -255,23 +247,6 @@ export function TableMosaicView({
               </div>
             ) : null}
 
-            <div className="mt-2 space-y-1">
-              {rest.map((field) => (
-                <div
-                  key={field._id}
-                  className="text-xs"
-                >
-                  <span className="text-muted-foreground">{field.name}: </span>
-                  <span className="text-foreground">
-                    <RenderMosaicCell
-                      field={field}
-                      row={row}
-                      tableSlug={slug}
-                    />
-                  </span>
-                </div>
-              ))}
-            </div>
           </div>
         </article>
       ))}

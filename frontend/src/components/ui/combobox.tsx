@@ -486,6 +486,7 @@ interface ComboboxSortableChipsProps {
   children?: React.ReactNode;
   getItemColor?: (id: string) => string | undefined;
   onItemColorChange?: (id: string, color?: string) => void;
+  onItemLabelChange?: (id: string, newLabel: string) => void;
 }
 
 function ComboboxSortableChips({
@@ -497,6 +498,7 @@ function ComboboxSortableChips({
   children,
   getItemColor,
   onItemColorChange,
+  onItemLabelChange,
 }: ComboboxSortableChipsProps): React.JSX.Element {
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -552,6 +554,7 @@ function ComboboxSortableChips({
               disabled={disabled}
               color={getItemColor?.(item.id)}
               onColorChange={(color) => onItemColorChange?.(item.id, color)}
+              onLabelChange={onItemLabelChange ? (newLabel) => onItemLabelChange(item.id, newLabel) : undefined}
             />
           ))}
           {children}
@@ -569,6 +572,7 @@ interface ComboboxSortableChipProps {
   className?: string;
   color?: string;
   onColorChange?: (color?: string) => void;
+  onLabelChange?: (newLabel: string) => void;
 }
 
 function ComboboxSortableChip({
@@ -579,6 +583,7 @@ function ComboboxSortableChip({
   className,
   color,
   onColorChange,
+  onLabelChange,
 }: ComboboxSortableChipProps): React.JSX.Element {
   const {
     attributes,
@@ -597,11 +602,28 @@ function ComboboxSortableChip({
   };
 
   const colorInputRef = React.useRef<HTMLInputElement | null>(null);
+  const editInputRef = React.useRef<HTMLInputElement | null>(null);
+  const [isEditing, setIsEditing] = React.useState(false);
+  const [editValue, setEditValue] = React.useState(label);
 
   const canPickColor = !!onColorChange && !disabled;
+  const canEditLabel = !!onLabelChange && !disabled;
 
   const handleColorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onColorChange?.(e.target.value);
+  };
+
+  const commitEdit = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== label) {
+      onLabelChange?.(trimmed);
+    }
+    setIsEditing(false);
+  };
+
+  const cancelEdit = () => {
+    setEditValue(label);
+    setIsEditing(false);
   };
 
   return (
@@ -649,7 +671,40 @@ function ComboboxSortableChip({
         </button>
       )}
 
-      <span className="px-0.5">{label}</span>
+      {isEditing ? (
+        <input
+          ref={editInputRef}
+          type="text"
+          value={editValue}
+          onChange={(e) => setEditValue(e.target.value)}
+          onBlur={commitEdit}
+          onKeyDown={(e) => {
+            e.stopPropagation();
+            if (e.key === 'Enter') {
+              e.preventDefault();
+              commitEdit();
+            }
+            if (e.key === 'Escape') {
+              e.preventDefault();
+              cancelEdit();
+            }
+          }}
+          className="px-0.5 bg-transparent border-none outline-none text-xs font-medium w-16 min-w-0"
+          autoFocus
+        />
+      ) : (
+        <span
+          className={cn('px-0.5', canEditLabel && 'cursor-text')}
+          onDoubleClick={(e) => {
+            if (!canEditLabel) return;
+            e.stopPropagation();
+            setEditValue(label);
+            setIsEditing(true);
+          }}
+        >
+          {label}
+        </span>
+      )}
 
       {onColorChange && (
         <input
@@ -657,7 +712,7 @@ function ComboboxSortableChip({
           type="color"
           value={color ?? '#000000'}
           onChange={handleColorChange}
-          className="hidden"
+          className="absolute w-0 h-0 overflow-hidden opacity-0 pointer-events-none"
           tabIndex={-1}
         />
       )}

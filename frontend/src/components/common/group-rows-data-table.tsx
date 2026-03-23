@@ -58,7 +58,7 @@ export function GroupRowsDataTable({
     () =>
       group?.fields.filter(
         (f): f is IField =>
-          !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed && !f.native,
+          !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
       ) ?? [],
     [group],
   );
@@ -253,8 +253,23 @@ function RenderGroupCell({
         />
       );
     case E_FIELD_TYPE.USER:
+    case E_FIELD_TYPE.CREATOR:
       return (
         <TableRowUserCell
+          field={field}
+          row={row}
+        />
+      );
+    case E_FIELD_TYPE.IDENTIFIER:
+      return (
+        <TableRowTextShortCell
+          field={field}
+          row={row}
+        />
+      );
+    case E_FIELD_TYPE.CREATED_AT:
+      return (
+        <TableRowDateCell
           field={field}
           row={row}
         />

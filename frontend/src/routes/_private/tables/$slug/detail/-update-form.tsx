@@ -164,6 +164,12 @@ export const UpdateTableFormFields = withForm({
         { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
       ],
       [E_TABLE_STYLE.GALLERY]: [
+        { role: 'title', label: 'Título', type: E_FIELD_TYPE.TEXT_SHORT },
+        {
+          role: 'description',
+          label: 'Descrição',
+          type: E_FIELD_TYPE.TEXT_LONG,
+        },
         { role: 'cover', label: 'Capa (imagem)', type: E_FIELD_TYPE.FILE },
       ],
       [E_TABLE_STYLE.DOCUMENT]: [

@@ -86,6 +86,18 @@ export function TableFieldDropdownOptions({
     );
   };
 
+  const handleLabelChange = (id: string, newLabel: string): void => {
+    field.handleChange(
+      field.state.value.map((opt) => {
+        if (opt.id === id) {
+          return { ...opt, label: newLabel };
+        }
+        return opt;
+      }),
+    );
+    field.handleBlur();
+  };
+
   const handleKeyDown = (e: React.KeyboardEvent): void => {
     if (e.key === 'Enter') {
       e.preventDefault();
@@ -108,6 +120,7 @@ export function TableFieldDropdownOptions({
         className={cn(isInvalid && 'border-destructive')}
         getItemColor={(id) => optionById.get(id)?.color ?? undefined}
         onItemColorChange={(id, color) => setColor(id, color)}
+        onItemLabelChange={disabled ? undefined : handleLabelChange}
       >
         <div className="flex flex-1 items-center gap-1">
           <Input

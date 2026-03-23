@@ -177,8 +177,17 @@ export function TableGridView({
     'cover',
     E_FIELD_TYPE.FILE,
   );
-  const filteredHeaders = visibleHeaders.filter(
-    (f) => f._id !== thumbField?._id,
+  const titleField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'title',
+    E_FIELD_TYPE.TEXT_SHORT,
+  );
+  const descField = resolveLayoutField(
+    visibleHeaders,
+    layoutFields,
+    'description',
+    E_FIELD_TYPE.TEXT_LONG,
   );
 
   return (
@@ -203,18 +212,27 @@ export function TableGridView({
                 </div>
               )}
             </div>
-            <CardContent className="p-3">
-              <div className="grid grid-cols-2 gap-3">
-                {filteredHeaders.map((field) => (
-                  <div key={field._id}>
-                    <RenderGridCell
-                      field={field}
-                      row={row}
-                      tableSlug={slug}
-                    />
-                  </div>
-                ))}
+            <CardContent className="p-3 space-y-1">
+              <div className="font-semibold leading-tight line-clamp-2">
+                {titleField ? (
+                  <RenderGridCell
+                    field={titleField}
+                    row={row}
+                    tableSlug={slug}
+                  />
+                ) : (
+                  <span className="text-muted-foreground">Sem título</span>
+                )}
               </div>
+              {descField ? (
+                <div className="text-sm text-muted-foreground line-clamp-2">
+                  <RenderGridCell
+                    field={descField}
+                    row={row}
+                    tableSlug={slug}
+                  />
+                </div>
+              ) : null}
             </CardContent>
             <CardFooter className="inline-flex justify-end p-1">
               <Button

@@ -21,7 +21,7 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { createFieldErrorSetter } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
-import type { IRow, ITable } from '@/lib/interfaces';
+import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
 import { toastSuccess } from '@/lib/toast';
 
@@ -61,27 +61,37 @@ function UpdateRowFormContent({
     });
   };
 
-  const fields = React.useMemo(() => {
-    const order = table.fieldOrderForm;
-    const orderedFields = table.fields
-      .filter((f) => !f.trashed)
-      .sort((a, b) => {
-        const idxA = order.indexOf(a._id);
-        const idxB = order.indexOf(b._id);
-        return (
-          (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB)
-        );
-      });
+  const baseFields = React.useMemo(
+    () => table.fields.filter((f) => !f.trashed),
+    [table.fields],
+  );
 
-    return orderedFields;
-  }, [table.fields, table.fieldOrderForm]);
+  const sortByOrder =
+    (order: Array<string>) =>
+    (a: IField, b: IField): number => {
+      const idxA = order.indexOf(a._id);
+      const idxB = order.indexOf(b._id);
+      return (
+        (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB)
+      );
+    };
+
+  const formFields = React.useMemo(
+    () => [...baseFields].sort(sortByOrder(table.fieldOrderForm)),
+    [baseFields, table.fieldOrderForm],
+  );
+
+  const viewFields = React.useMemo(
+    () => [...baseFields].sort(sortByOrder(table.fieldOrderList)),
+    [baseFields, table.fieldOrderList],
+  );
 
   const form = useAppForm({
-    defaultValues: buildUpdateRowDefaultValues(data, fields),
+    defaultValues: buildUpdateRowDefaultValues(data, formFields),
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending') return;
 
-      const payload = buildRowPayload(value, fields);
+      const payload = buildRowPayload(value, formFields);
 
       await _update.mutateAsync({
         slug,
@@ -188,7 +198,7 @@ function UpdateRowFormContent({
         <div className="flex-1 flex flex-col min-h-0 overflow-auto">
           <RowView
             data={data}
-            fields={fields}
+            fields={viewFields}
             tableSlug={slug}
             table={table}
           />
@@ -222,7 +232,7 @@ function UpdateRowFormContent({
         >
           <RowFormFields
             form={form}
-            fields={fields}
+            fields={formFields}
             disabled={isDisabled}
             tableSlug={slug}
           />

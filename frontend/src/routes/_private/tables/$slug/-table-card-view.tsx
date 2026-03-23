@@ -196,12 +196,6 @@ export function TableCardView({
     E_FIELD_TYPE.TEXT_LONG,
   );
 
-  const used = new Set(
-    [thumbField?._id, titleField?._id, descField?._id].filter(
-      Boolean,
-    ) as Array<string>,
-  );
-  const extraFields = visibleHeaders.filter((f) => !used.has(f._id));
 
   return (
     <div className="divide-y divide-border/50">
@@ -258,25 +252,6 @@ export function TableCardView({
                 ) : null}
               </div>
 
-              <div className="mt-3 grid grid-cols-2 gap-x-6 gap-y-2">
-                {extraFields.map((field) => (
-                  <div
-                    key={field._id}
-                    className="text-sm"
-                  >
-                    <div className="text-xs text-muted-foreground">
-                      {field.name}
-                    </div>
-                    <div className="text-foreground">
-                      <RenderCardCell
-                        field={field}
-                        row={row}
-                        tableSlug={slug}
-                      />
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </article>
