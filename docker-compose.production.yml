@@ -56,6 +56,7 @@ services:
       PAGINATION_PER_PAGE: ${PAGINATION_PER_PAGE:-20}
       MCP_SERVER_URL: ${MCP_SERVER_URL:-http://${ENVIRONMENT}-lowcodejs-mcp-1:3000/mcp}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      REDIS_URL: redis://${ENVIRONMENT}-lowcodejs-redis-1:6379
       STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
       STORAGE_ENDPOINT: http://${ENVIRONMENT}-lowcodejs-minio-1:9000
       STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
@@ -74,6 +75,8 @@ services:
       mongo:
         condition: service_healthy
       minio:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - traefik-network
@@ -166,6 +169,27 @@ services:
       - "traefik.http.routers.${ENVIRONMENT}-minio-console.tls.certresolver=myresolver"
       - "traefik.http.services.${ENVIRONMENT}-minio-console.loadbalancer.server.port=9001"
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    mem_limit: 128m
+    command: ["redis-server", "--maxmemory", "100mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes:
+      - redis-volume:/data
+    networks:
+      - traefik-network
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
   mcp:
     image: ${DOCKER_USERNAME}/lowcodejs-mcp:${MCP_IMAGE_TAG:-latest}
     restart: unless-stopped
@@ -203,6 +227,8 @@ services:
 
 volumes:
   mongo-volume:
+    driver: local
+  redis-volume:
     driver: local
   storage-api-volume:
     driver: local

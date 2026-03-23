@@ -126,6 +126,7 @@ jobs:
             LOGO_SMALL_URL=https://${{ steps.config.outputs.api_host }}/storage/logo-small.webp
             LOGO_LARGE_URL=https://${{ steps.config.outputs.api_host }}/storage/logo-large.webp
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            REDIS_URL=redis://${{ inputs.branch }}-lowcodejs-redis-1:6379
             EOF
 
             echo "Environment variables configured successfully. Deploying..."

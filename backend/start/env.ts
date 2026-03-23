@@ -57,6 +57,8 @@ const EnvSchema = z.object({
   STORAGE_ACCESS_KEY: z.string().trim().optional(),
   STORAGE_SECRET_KEY: z.string().trim().optional(),
 
+  REDIS_URL: z.string().trim().default('redis://localhost:6379'),
+
   MCP_SERVER_URL: z.string().trim().optional(),
   OPENAI_API_KEY: z.string().trim().optional(),
 });

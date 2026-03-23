@@ -7,6 +7,7 @@ import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import _static from '@fastify/static';
 import swagger from '@fastify/swagger';
+import websocket from '@fastify/websocket';
 import scalar from '@scalar/fastify-api-reference';
 import ajv from 'ajv-errors';
 import fastify from 'fastify';
@@ -244,6 +245,8 @@ kernel.register(scalar, {
     theme: 'default',
   },
 });
+
+kernel.register(websocket);
 
 registerDependencies();
 
