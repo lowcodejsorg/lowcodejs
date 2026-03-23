@@ -1,10 +1,13 @@
-import type { ControllersListConfig } from 'fastify-decorators/interfaces/bootstrap-config';
+import type { BootstrapConfig } from 'fastify-decorators';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 import { Env } from '@start/env';
 
-type Controllers = ControllersListConfig['controllers'];
+type Controllers = Extract<
+  BootstrapConfig,
+  { controllers: unknown[] }
+>['controllers'];
 
 const isDevOrTest = ['development'].includes(Env.NODE_ENV);
 const controllerPattern = /^(?!.*\.spec\.).*\.controller\.(ts|js)$/;

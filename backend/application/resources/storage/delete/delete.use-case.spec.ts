@@ -1,12 +1,12 @@
-import LocalStorageService from '@application/services/storage.service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
+import FlyDriveStorageService from '@application/services/flydrive-storage.service';
 
 import StorageDeleteUseCase from './delete.use-case';
 
 let storageInMemoryRepository: StorageInMemoryRepository;
-let storageService: LocalStorageService;
+let storageService: FlyDriveStorageService;
 let sut: StorageDeleteUseCase;
 
 describe('Storage Delete Use Case', () => {
@@ -14,8 +14,9 @@ describe('Storage Delete Use Case', () => {
     storageInMemoryRepository = new StorageInMemoryRepository();
     storageService = {
       upload: vi.fn(),
-      delete: vi.fn().mockResolvedValue(undefined),
-    } as unknown as LocalStorageService;
+      delete: vi.fn().mockResolvedValue(true),
+      exists: vi.fn(),
+    } as unknown as FlyDriveStorageService;
     sut = new StorageDeleteUseCase(storageInMemoryRepository, storageService);
   });
 

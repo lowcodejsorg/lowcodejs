@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import LocalStorageService from '@application/services/storage.service';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
+import FlyDriveStorageService from '@application/services/flydrive-storage.service';
 
 import StorageUploadUseCase from './upload.use-case';
 
 let storageInMemoryRepository: StorageInMemoryRepository;
-let storageService: LocalStorageService;
+let storageService: FlyDriveStorageService;
 let sut: StorageUploadUseCase;
 
 describe('Storage Upload Use Case', () => {
@@ -17,12 +17,12 @@ describe('Storage Upload Use Case', () => {
       upload: vi.fn().mockResolvedValue({
         filename: 'random-name.webp',
         originalName: 'test.jpg',
-        url: '/uploads/random-name.webp',
         size: 1024,
         mimetype: 'image/webp',
       }),
-      delete: vi.fn(),
-    } as unknown as LocalStorageService;
+      delete: vi.fn().mockResolvedValue(true),
+      exists: vi.fn(),
+    } as unknown as FlyDriveStorageService;
     sut = new StorageUploadUseCase(storageInMemoryRepository, storageService);
   });
 

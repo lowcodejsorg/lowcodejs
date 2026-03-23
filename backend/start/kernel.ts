@@ -241,8 +241,6 @@ kernel.register(scalar, {
   routePrefix: '/documentation',
   configuration: {
     title: 'LowCodeJs API',
-    description: 'LowCodeJs API Documentation',
-    version: '1.0.0',
     theme: 'default',
   },
 });
