@@ -28,8 +28,8 @@ import { TableListViewSkeleton } from './-table-list-view-skeleton';
 import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
 import { TableSkeleton } from './-table-skeleton';
 
-import { ChatSidebar } from '@/components/chat/chat-sidebar';
-import { ChatTrigger } from '@/components/chat/chat-trigger';
+import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
+import { ChatTrigger } from '@/components/common/chat/chat-trigger';
 import { getActiveFiltersCount } from '@/components/common/filter-fields';
 import { FilterSidebar } from '@/components/common/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filter-trigger';

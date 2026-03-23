@@ -63,9 +63,14 @@ function GroupRowFormDialogContent({
   const isEdit = Boolean(editItem);
   const isUploading = useIsUploading();
 
+  const visibleFields = React.useMemo(
+    () => groupFields.filter((f) => f.showInForm),
+    [groupFields],
+  );
+
   const defaultValues = React.useMemo(() => {
     const defaults: Record<string, any> = {};
-    for (const field of groupFields) {
+    for (const field of visibleFields) {
       if (isEdit && editItem) {
         defaults[field.slug] = transformFieldValueForEdit(
           editItem[field.slug],
@@ -76,7 +81,7 @@ function GroupRowFormDialogContent({
       }
     }
     return defaults;
-  }, [groupFields, editItem, isEdit]);
+  }, [visibleFields, editItem, isEdit]);
 
   const _create = useCreateGroupRow({
     onSuccess() {
@@ -105,7 +110,7 @@ function GroupRowFormDialogContent({
     defaultValues,
     onSubmit: async ({ value }) => {
       if (isPending) return;
-      const payload = buildGroupRowPayload(value, groupFields);
+      const payload = buildGroupRowPayload(value, visibleFields);
 
       if (isEdit && editItem) {
         await _update.mutateAsync({
@@ -139,7 +144,7 @@ function GroupRowFormDialogContent({
           form.handleSubmit();
         }}
       >
-        {groupFields.map((field) => (
+        {visibleFields.map((field) => (
           <form.AppField
             key={field._id}
             name={field.slug}

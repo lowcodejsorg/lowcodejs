@@ -64,11 +64,11 @@ function RouteComponent(): React.JSX.Element {
             variant="ghost"
             size="icon-sm"
             onClick={() => {
-              sidebar.setOpen(true);
+              sidebar.setOpen(false);
               router.navigate({
-                to: '/tables',
+                to: '/tables/$slug',
+                params: { slug },
                 replace: true,
-                search: { page: 1, perPage: 50 },
               });
             }}
           >
@@ -121,8 +121,11 @@ function TableUpdateContent({
         'Os dados da tabela foram atualizados com sucesso',
       );
 
-      form.reset();
-      setMode('show');
+      sidebar.setOpen(false);
+      router.navigate({
+        to: '/tables/$slug',
+        params: { slug: data.slug },
+      });
     },
     onError(error) {
       handleApiError(error, {
@@ -287,9 +290,9 @@ function TableUpdateContent({
               onClick={() => {
                 sidebar.setOpen(false);
                 router.navigate({
-                  to: '/tables',
+                  to: '/tables/$slug',
+                  params: { slug: data.slug },
                   replace: true,
-                  search: { page: 1, perPage: 50 },
                 });
               }}
             >

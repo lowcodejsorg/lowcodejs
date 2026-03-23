@@ -11,8 +11,8 @@ import React from 'react';
 import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
-import { ChatSidebar } from '@/components/chat/chat-sidebar';
-import { ChatTrigger } from '@/components/chat/chat-trigger';
+import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
+import { ChatTrigger } from '@/components/common/chat/chat-trigger';
 import { getActiveFiltersCount } from '@/components/common/filter-fields';
 import { FilterSidebar } from '@/components/common/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filter-trigger';

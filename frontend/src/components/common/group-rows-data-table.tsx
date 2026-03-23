@@ -63,9 +63,14 @@ export function GroupRowsDataTable({
     [group],
   );
 
+  const visibleGroupFields = React.useMemo(
+    () => groupFields.filter((f) => f.showInList),
+    [groupFields],
+  );
+
   const columns = React.useMemo<Array<ColumnDef<IRow, any>>>(
     () => [
-      ...groupFields.map(
+      ...visibleGroupFields.map(
         (gf): ColumnDef<IRow, any> => ({
           id: gf._id,
           accessorFn: (row) => row[gf.slug],
@@ -109,7 +114,7 @@ export function GroupRowsDataTable({
         ),
       },
     ],
-    [groupFields, tableSlug],
+    [visibleGroupFields, tableSlug],
   );
 
   const dataTable = useDataTable({
