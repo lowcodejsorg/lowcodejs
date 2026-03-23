@@ -554,7 +554,11 @@ function ComboboxSortableChips({
               disabled={disabled}
               color={getItemColor?.(item.id)}
               onColorChange={(color) => onItemColorChange?.(item.id, color)}
-              onLabelChange={onItemLabelChange ? (newLabel) => onItemLabelChange(item.id, newLabel) : undefined}
+              onLabelChange={
+                onItemLabelChange
+                  ? (newLabel) => onItemLabelChange(item.id, newLabel)
+                  : undefined
+              }
             />
           ))}
           {children}

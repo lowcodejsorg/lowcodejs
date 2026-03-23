@@ -20,7 +20,8 @@
       "Bash(npm run:*)",
       "Bash(npm test:*)",
       "Bash(npx eslint:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(npm install:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

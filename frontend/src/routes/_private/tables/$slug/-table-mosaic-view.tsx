@@ -196,7 +196,6 @@ export function TableMosaicView({
     E_FIELD_TYPE.TEXT_LONG,
   );
 
-
   return (
     <div className="gap-x-4 columns-1 sm:columns-2 lg:columns-3 xl:columns-4">
       {data.map((row) => (
@@ -246,7 +245,6 @@ export function TableMosaicView({
                 />
               </div>
             ) : null}
-
           </div>
         </article>
       ))}

@@ -196,7 +196,6 @@ export function TableCardView({
     E_FIELD_TYPE.TEXT_LONG,
   );
 
-
   return (
     <div className="divide-y divide-border/50">
       {data.map((row) => (
@@ -251,7 +250,6 @@ export function TableCardView({
                   </div>
                 ) : null}
               </div>
-
             </div>
           </div>
         </article>

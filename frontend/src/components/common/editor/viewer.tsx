@@ -1,5 +1,6 @@
 import Markdown from 'react-markdown';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 
 import { cn } from '@/lib/utils';
@@ -27,7 +28,7 @@ export function ContentViewer({
     >
       <Markdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
+        rehypePlugins={[rehypeRaw, rehypeHighlight]}
       >
         {content}
       </Markdown>
