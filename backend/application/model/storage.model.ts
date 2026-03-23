@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 import type { IStorage as Core, Merge } from '@application/core/entity.core';
+import { Env } from '@start/env';
 
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
@@ -18,8 +19,14 @@ export const Schema = new mongoose.Schema(
   {
     timestamps: true,
     id: false,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true },
   },
 );
+
+Schema.virtual('url').get(function () {
+  return Env.APP_SERVER_URL.concat('/storage/').concat(this.filename);
+});
 
 export const Storage = (mongoose?.models?.Storage ||
   mongoose.model<Entity>(
