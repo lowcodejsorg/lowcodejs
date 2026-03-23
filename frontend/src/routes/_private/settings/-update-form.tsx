@@ -3,6 +3,7 @@ import {
   EyeClosedIcon,
   EyeIcon,
   FileTextIcon,
+  HardDriveIcon,
   ImageIcon,
   Languages,
   MailIcon,
@@ -44,6 +45,7 @@ export const SettingUpdateSchema = z.object({
     .min(1, 'O nome do sistema é obrigatório')
     .max(100, 'O nome do sistema deve ter no máximo 100 caracteres'),
   LOCALE: z.string().min(1, 'O idioma é obrigatório'),
+  STORAGE_DRIVER: z.enum(['local', 's3']),
   LOGO_SMALL_URL: z.string().nullable(),
   LOGO_LARGE_URL: z.string().nullable(),
   FILE_UPLOAD_MAX_SIZE: z.string(),
@@ -64,6 +66,7 @@ export type SettingUpdateFormValues = Merge<
   {
     SYSTEM_NAME: string;
     LOCALE: string;
+    STORAGE_DRIVER: 'local' | 's3';
     LOGO_SMALL_URL: string | null;
     LOGO_LARGE_URL: string | null;
     FILE_UPLOAD_MAX_SIZE: string;
@@ -82,6 +85,7 @@ export type SettingUpdateFormValues = Merge<
 export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   SYSTEM_NAME: 'LowCodeJs',
   LOCALE: 'pt-br',
+  STORAGE_DRIVER: 'local',
   LOGO_SMALL_URL: null,
   LOGO_LARGE_URL: null,
   FILE_UPLOAD_MAX_SIZE: '10485760',
@@ -251,6 +255,55 @@ export const UpdateSettingFormFields = withForm({
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
+                  </Field>
+                );
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Armazenamento */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HardDriveIcon className="w-5 h-5" />
+              Armazenamento
+            </CardTitle>
+            <CardDescription>
+              Configure o driver de armazenamento de arquivos
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form.Field
+              name="STORAGE_DRIVER"
+              children={(field) => {
+                return (
+                  <Field>
+                    <FieldLabel htmlFor={field.name}>
+                      Driver de armazenamento
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Alterar o driver requer reinício do servidor
+                    </div>
+                    <Select
+                      disabled={isDisabled}
+                      value={field.state.value}
+                      onValueChange={(value) =>
+                        field.handleChange(value as 'local' | 's3')
+                      }
+                    >
+                      <SelectTrigger className="w-full max-w-xs">
+                        <SelectValue placeholder="Selecione o driver" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="local">
+                          Local (filesystem)
+                        </SelectItem>
+                        <SelectItem value="s3">
+                          S3 (MinIO, AWS, R2, etc.)
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                   </Field>
                 );
               }}

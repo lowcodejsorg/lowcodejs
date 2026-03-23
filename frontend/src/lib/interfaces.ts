@@ -251,6 +251,7 @@ export type ITable = Merge<
 export type ISetting = {
   SYSTEM_NAME: string;
   LOCALE: string;
+  STORAGE_DRIVER: 'local' | 's3';
   LOGO_SMALL_URL: string | null;
   LOGO_LARGE_URL: string | null;
   FILE_UPLOAD_MAX_SIZE: number;

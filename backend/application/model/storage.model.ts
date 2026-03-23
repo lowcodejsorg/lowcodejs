@@ -7,7 +7,6 @@ type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 export const Schema = new mongoose.Schema(
   {
     _id: { type: mongoose.Schema.Types.ObjectId, auto: true },
-    url: { type: String, required: true },
     filename: { type: String, required: true },
     mimetype: { type: String, required: true },
     size: { type: Number, required: true },

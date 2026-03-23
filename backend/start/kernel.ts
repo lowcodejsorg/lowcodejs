@@ -4,6 +4,7 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
+import httpProxy from '@fastify/http-proxy';
 import _static from '@fastify/static';
 import swagger from '@fastify/swagger';
 import scalar from '@scalar/fastify-api-reference';
@@ -129,10 +130,20 @@ kernel.register(multipart, {
   },
 });
 
-kernel.register(_static, {
-  root: join(process.cwd(), '_storage'),
-  prefix: '/storage/',
-});
+if (Env.STORAGE_DRIVER === 's3') {
+  kernel.register(httpProxy, {
+    upstream: Env.STORAGE_ENDPOINT!,
+    prefix: '/storage',
+    rewritePrefix: `/${Env.STORAGE_BUCKET}`,
+    http2: false,
+    httpMethods: ['GET'],
+  });
+} else {
+  kernel.register(_static, {
+    root: join(process.cwd(), '_storage'),
+    prefix: '/storage/',
+  });
+}
 
 kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
   console.error(JSON.stringify(error, null, 2));

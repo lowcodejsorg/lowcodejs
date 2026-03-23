@@ -3,6 +3,7 @@ import { Service } from 'fastify-decorators';
 import type { IStorage } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Storage as Model } from '@application/model/storage.model';
+import { Env } from '@start/env';
 
 import type {
   StorageContractRepository,
@@ -29,9 +30,12 @@ export default class StorageMongooseRepository implements StorageContractReposit
   }
 
   private transform(entity: InstanceType<typeof Model>): IStorage {
+    const json = entity.toJSON({ flattenObjectIds: true });
+
     return {
-      ...entity.toJSON({ flattenObjectIds: true }),
+      ...json,
       _id: entity._id.toString(),
+      url: Env.APP_SERVER_URL.concat('/storage/').concat(json.filename),
     };
   }
 

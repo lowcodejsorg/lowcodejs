@@ -23,7 +23,6 @@ describe('Storage Delete Use Case', () => {
     const storage = await storageInMemoryRepository.create({
       filename: 'random-name.webp',
       originalName: 'test.jpg',
-      url: '/uploads/random-name.webp',
       size: 1024,
       mimetype: 'image/webp',
     });

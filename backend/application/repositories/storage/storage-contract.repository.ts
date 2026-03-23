@@ -3,7 +3,7 @@ import type { IStorage, Merge } from '@application/core/entity.core';
 
 export type StorageCreatePayload = Pick<
   IStorage,
-  'url' | 'filename' | 'mimetype' | 'originalName' | 'size'
+  'filename' | 'mimetype' | 'originalName' | 'size'
 >;
 
 export type StorageUpdatePayload = Merge<

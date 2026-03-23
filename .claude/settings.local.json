@@ -21,7 +21,8 @@
       "Bash(npm test:*)",
       "Bash(npx eslint:*)",
       "Bash(git diff:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

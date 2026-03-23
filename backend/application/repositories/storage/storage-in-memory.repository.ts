@@ -15,6 +15,7 @@ export default class StorageInMemoryRepository implements StorageContractReposit
     const storage: IStorage = {
       ...payload,
       _id: crypto.randomUUID(),
+      url: `/storage/${payload.filename}`,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -28,6 +29,7 @@ export default class StorageInMemoryRepository implements StorageContractReposit
     const storages: IStorage[] = payload.map((p) => ({
       ...p,
       _id: crypto.randomUUID(),
+      url: `/storage/${p.filename}`,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,

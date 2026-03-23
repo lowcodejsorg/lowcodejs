@@ -9,6 +9,11 @@ export const SettingUpdateBodyValidator = z.object({
   LOCALE: z.enum(['pt-br', 'en-us'], {
     message: 'O locale deve ser pt-br ou en-us',
   }),
+  STORAGE_DRIVER: z
+    .enum(['local', 's3'], {
+      message: 'O driver de storage deve ser local ou s3',
+    })
+    .optional(),
   FILE_UPLOAD_MAX_SIZE: z.coerce
     .number({ message: 'O tamanho máximo de arquivo deve ser um número' })
     .min(1, 'O tamanho máximo de arquivo deve ser maior que zero'),

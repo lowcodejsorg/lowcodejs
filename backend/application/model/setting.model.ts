@@ -8,6 +8,7 @@ const Schema = new mongoose.Schema(
   {
     SYSTEM_NAME: { type: String, default: 'LowCodeJs' },
     LOCALE: { type: String, default: 'pt-br' },
+    STORAGE_DRIVER: { type: String, default: 'local', enum: ['local', 's3'] },
     FILE_UPLOAD_MAX_SIZE: { type: Number, default: 10485760 },
     FILE_UPLOAD_ACCEPTED: { type: String, default: 'jpg;jpeg;png;pdf' },
     FILE_UPLOAD_MAX_FILES_PER_UPLOAD: { type: Number, default: 10 },

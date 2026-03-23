@@ -105,6 +105,7 @@ function SettingUpdateContent({
     defaultValues: {
       SYSTEM_NAME: data.SYSTEM_NAME || 'LowCodeJs',
       LOCALE: data.LOCALE,
+      STORAGE_DRIVER: data.STORAGE_DRIVER || 'local',
       LOGO_SMALL_URL: data.LOGO_SMALL_URL,
       LOGO_LARGE_URL: data.LOGO_LARGE_URL,
       FILE_UPLOAD_MAX_SIZE: String(data.FILE_UPLOAD_MAX_SIZE),
@@ -131,6 +132,7 @@ function SettingUpdateContent({
       const payload = {
         SYSTEM_NAME: value.SYSTEM_NAME.trim(),
         LOCALE: value.LOCALE.trim(),
+        STORAGE_DRIVER: value.STORAGE_DRIVER,
         LOGO_SMALL_URL: value.LOGO_SMALL_URL ?? undefined,
         LOGO_LARGE_URL: value.LOGO_LARGE_URL ?? undefined,
         FILE_UPLOAD_MAX_SIZE: Number(value.FILE_UPLOAD_MAX_SIZE),

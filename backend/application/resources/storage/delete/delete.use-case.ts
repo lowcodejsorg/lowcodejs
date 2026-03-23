@@ -5,7 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
-import LocalStorageService from '@application/services/storage.service';
+import FlyDriveStorageService from '@application/services/flydrive-storage.service';
 
 type Response = Either<HTTPException, null>;
 
@@ -13,7 +13,7 @@ type Response = Either<HTTPException, null>;
 export default class StorageDeleteUseCase {
   constructor(
     private readonly storageRepository: StorageContractRepository,
-    private readonly service: LocalStorageService,
+    private readonly service: FlyDriveStorageService,
   ) {}
 
   async execute({ _id }: { _id: string }): Promise<Response> {

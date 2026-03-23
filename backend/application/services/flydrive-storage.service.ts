@@ -1,22 +1,19 @@
+/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import type { MultipartFile } from '@fastify/multipart';
 import { Service } from 'fastify-decorators';
-import { access, mkdir, unlink, writeFile } from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import { Readable } from 'node:stream';
 import sharp from 'sharp';
 
 import type { IStorage, Optional } from '@application/core/entity.core';
-import { Env } from '@start/env';
+import { drive } from '@config/storage.config';
 
 type Response = Optional<
   IStorage,
-  '_id' | 'createdAt' | 'updatedAt' | 'trashedAt' | 'trashed'
+  '_id' | 'url' | 'createdAt' | 'updatedAt' | 'trashedAt' | 'trashed'
 >;
 
 @Service()
-export default class LocalStorageService {
-  private readonly storagePath = join(process.cwd(), '_storage');
-  private readonly baseUrl = Env.APP_SERVER_URL;
-
+export default class FlyDriveStorageService {
   private readonly IMAGE_MIMETYPES = [
     'image/jpeg',
     'image/png',
@@ -25,21 +22,15 @@ export default class LocalStorageService {
     'image/tiff',
   ];
 
+  private get disk() {
+    return drive.use();
+  }
+
   private isProcessableImage(mimetype: string): boolean {
     return this.IMAGE_MIMETYPES.includes(mimetype);
   }
 
-  async ensureStorageExists(): Promise<void> {
-    try {
-      await access(this.storagePath);
-    } catch {
-      await mkdir(this.storagePath, { recursive: true });
-    }
-  }
-
   async upload(part: MultipartFile, staticName?: string): Promise<Response> {
-    await this.ensureStorageExists();
-
     const name =
       staticName ?? Math.floor(Math.random() * 100000000)?.toString();
     const originalExt = part.filename?.split('.').pop();
@@ -63,14 +54,17 @@ export default class LocalStorageService {
     }
 
     const filename = name.concat('.').concat(finalExt);
-    const filePath = resolve(this.storagePath, filename);
 
-    await writeFile(filePath, finalBuffer);
+    const stream = Readable.from(finalBuffer);
+
+    await this.disk.putStream(filename, stream, {
+      contentType: finalMimetype,
+      contentLength: finalBuffer.length,
+    });
 
     return {
       filename,
       mimetype: finalMimetype,
-      url: this.baseUrl.concat('/storage/').concat(filename),
       originalName: part.filename,
       size: finalBuffer.length,
     };
@@ -78,8 +72,7 @@ export default class LocalStorageService {
 
   async delete(filename: string): Promise<boolean> {
     try {
-      const filePath = resolve(this.storagePath, filename);
-      await unlink(filePath);
+      await this.disk.delete(filename);
       return true;
     } catch (error) {
       console.error('Error deleting file:', error);
@@ -88,12 +81,6 @@ export default class LocalStorageService {
   }
 
   async exists(filename: string): Promise<boolean> {
-    try {
-      const filePath = resolve(this.storagePath, filename);
-      await access(filePath);
-      return true;
-    } catch {
-      return false;
-    }
+    return this.disk.exists(filename);
   }
 }
