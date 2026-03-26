@@ -33,6 +33,7 @@ export const GroupFieldListSchema: FastifySchema = {
           showInList: { type: 'boolean' },
           widthInForm: { type: 'number', nullable: true },
           widthInList: { type: 'number', nullable: true },
+          widthInDetail: { type: 'number', nullable: true },
           locked: { type: 'boolean' },
           native: { type: 'boolean' },
           format: { type: 'string', nullable: true },

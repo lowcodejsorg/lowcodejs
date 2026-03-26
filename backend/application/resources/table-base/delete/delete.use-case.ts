@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
+import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { TableDeletePayload } from './delete.validator';
@@ -13,7 +14,10 @@ type Payload = TableDeletePayload;
 
 @Service()
 export default class TableDeleteUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly fieldRepository: FieldContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -27,6 +31,16 @@ export default class TableDeleteUseCase {
           HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
         );
 
+      // Excluir campos associados à tabela
+      const fieldIds = table.fields?.map((f) => f._id) ?? [];
+      if (fieldIds.length > 0) {
+        await this.fieldRepository.deleteMany(fieldIds);
+      }
+
+      // Dropar a coleção dinâmica (registros da tabela)
+      await this.tableRepository.dropCollection(table.slug);
+
+      // Excluir o documento da tabela
       await this.tableRepository.delete(table._id);
 
       return right(null);

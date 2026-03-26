@@ -67,6 +67,7 @@ describe('E2E Table Row Reaction Controller', () => {
         type: E_FIELD_TYPE.REACTION,
         widthInForm: null,
         widthInList: null,
+        widthInDetail: null,
       };
 
       const reactionField = await Field.create(fieldPayload);

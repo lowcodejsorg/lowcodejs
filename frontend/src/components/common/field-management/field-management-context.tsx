@@ -8,7 +8,7 @@ export type VisibilityKey =
   | 'showInDetail'
   | 'showInList';
 
-export type WidthKey = 'widthInForm' | 'widthInList';
+export type WidthKey = 'widthInForm' | 'widthInList' | 'widthInDetail';
 
 export interface FieldManagementActions {
   fields: Array<IField>;

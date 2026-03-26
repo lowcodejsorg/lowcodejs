@@ -100,6 +100,7 @@ export async function buildCalendarFields(
     group: IField['group'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
+    widthInDetail: IField['widthInDetail'];
   }): Promise<IField> => {
     const field = await fieldRepository.create({
       ...payload,
@@ -127,6 +128,7 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const descriptionField = await createField({
@@ -148,6 +150,7 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 100,
     widthInList: 100,
+    widthInDetail: null,
   });
 
   const startField = await createField({
@@ -169,6 +172,7 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const endField = await createField({
@@ -190,6 +194,7 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const colorField = await createField({
@@ -218,6 +223,7 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const participantsField = await createField({
@@ -239,6 +245,7 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 100,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   // Sub-fields for "Lembrete" group
@@ -267,6 +274,7 @@ export async function buildCalendarFields(
     group: { slug: reminderGroupSlug },
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const reminderValueField = await fieldRepository.create({
@@ -288,6 +296,7 @@ export async function buildCalendarFields(
     group: { slug: reminderGroupSlug },
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const reminderGroup = {
@@ -316,6 +325,7 @@ export async function buildCalendarFields(
     group: { slug: reminderGroupSlug },
     widthInForm: 100,
     widthInList: null,
+    widthInDetail: null,
   });
 
   return {

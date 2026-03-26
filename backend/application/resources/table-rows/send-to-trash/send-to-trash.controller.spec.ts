@@ -64,6 +64,7 @@ describe('E2E Table Row Send To Trash Controller', () => {
         type: E_FIELD_TYPE.TEXT_SHORT,
         widthInForm: null,
         widthInList: null,
+        widthInDetail: null,
       };
 
       const field = await Field.create(fieldPayload);

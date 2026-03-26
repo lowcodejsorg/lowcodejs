@@ -47,7 +47,7 @@ interface SortableManagementItemProps {
   field: IField;
   disabled?: boolean;
   visibilityKey: VisibilityKey;
-  widthKey?: 'widthInForm' | 'widthInList';
+  widthKey?: 'widthInForm' | 'widthInList' | 'widthInDetail';
   onEdit: () => void;
   onToggleVisibility: () => void;
   onWidthChange?: (width: number) => void;
@@ -344,11 +344,13 @@ function FieldManagementList({
   const [fields, setFields] = useState<Array<IField>>(activeFields);
   const [hasChanges, setHasChanges] = useState(false);
 
-  let widthKey: 'widthInForm' | 'widthInList' | undefined;
+  let widthKey: 'widthInForm' | 'widthInList' | 'widthInDetail' | undefined;
   if (visibilityKey === 'showInForm') {
     widthKey = 'widthInForm';
   } else if (visibilityKey === 'showInList') {
     widthKey = 'widthInList';
+  } else if (visibilityKey === 'showInDetail') {
+    widthKey = 'widthInDetail';
   }
 
   const sensors = useSensors(

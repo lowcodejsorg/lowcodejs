@@ -54,6 +54,7 @@ describe('Table Field Update Use Case', () => {
       relationship: null,
       widthInForm: null,
       widthInList: null,
+      widthInDetail: null,
     });
 
     await tableInMemoryRepository.create({
@@ -92,6 +93,7 @@ describe('Table Field Update Use Case', () => {
       trashedAt: null,
       widthInForm: 75,
       widthInList: 30,
+      widthInDetail: null,
     });
 
     expect(result.isRight()).toBe(true);
@@ -125,6 +127,7 @@ describe('Table Field Update Use Case', () => {
       trashedAt: null,
       widthInForm: null,
       widthInList: null,
+      widthInDetail: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -171,6 +174,7 @@ describe('Table Field Update Use Case', () => {
       trashedAt: null,
       widthInForm: null,
       widthInList: null,
+      widthInDetail: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -201,6 +205,7 @@ describe('Table Field Update Use Case', () => {
       relationship: null,
       widthInForm: null,
       widthInList: null,
+      widthInDetail: null,
     });
 
     await tableInMemoryRepository.create({
@@ -239,6 +244,7 @@ describe('Table Field Update Use Case', () => {
       trashedAt: null,
       widthInForm: null,
       widthInList: null,
+      widthInDetail: null,
     });
 
     expect(result.isLeft()).toBe(true);
@@ -275,6 +281,7 @@ describe('Table Field Update Use Case', () => {
       trashedAt: null,
       widthInForm: null,
       widthInList: null,
+      widthInDetail: null,
     });
 
     expect(result.isLeft()).toBe(true);

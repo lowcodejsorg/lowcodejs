@@ -106,8 +106,31 @@ export default class FieldMongooseRepository implements FieldContractRepository 
     await Model.deleteOne({ _id });
   }
 
+  async deleteMany(_ids: string[]): Promise<void> {
+    await Model.deleteMany({ _id: { $in: _ids } });
+  }
+
   async count(payload?: FieldQueryPayload): Promise<number> {
     const where = this.buildWhereClause(payload);
     return Model.countDocuments(where);
+  }
+
+  async updateRelationshipTableSlug(
+    oldSlug: string,
+    newSlug: string,
+  ): Promise<void> {
+    await Model.updateMany(
+      { 'relationship.table.slug': oldSlug },
+      { $set: { 'relationship.table.slug': newSlug } },
+    );
+  }
+
+  async findByRelationshipTableId(tableId: string): Promise<IField[]> {
+    const fields = await Model.find({
+      'relationship.table._id': tableId,
+      trashed: { $ne: true },
+    });
+
+    return fields.map((f) => this.transform(f));
   }
 }

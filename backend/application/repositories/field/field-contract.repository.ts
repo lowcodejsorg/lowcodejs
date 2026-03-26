@@ -20,6 +20,7 @@ export type FieldCreatePayload = Pick<
   | 'showInList'
   | 'widthInForm'
   | 'widthInList'
+  | 'widthInDetail'
   | 'locked'
   | 'native'
   | 'defaultValue'
@@ -57,5 +58,11 @@ export abstract class FieldContractRepository {
   abstract findMany(payload?: FieldQueryPayload): Promise<IField[]>;
   abstract update(payload: FieldUpdatePayload): Promise<IField>;
   abstract delete(_id: string): Promise<void>;
+  abstract deleteMany(_ids: string[]): Promise<void>;
   abstract count(payload?: FieldQueryPayload): Promise<number>;
+  abstract updateRelationshipTableSlug(
+    oldSlug: string,
+    newSlug: string,
+  ): Promise<void>;
+  abstract findByRelationshipTableId(tableId: string): Promise<IField[]>;
 }

@@ -314,6 +314,7 @@ export type IField = Merge<
     showInList: boolean;
     widthInForm: number | null;
     widthInList: number | null;
+    widthInDetail: number | null;
     defaultValue: string | null;
     locked?: boolean;
     native?: boolean;
@@ -462,6 +463,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: false,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -483,6 +485,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: true,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -504,6 +507,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: true,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -525,6 +529,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: false,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -546,6 +551,7 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: false,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -570,6 +576,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: false,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -591,6 +598,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: true,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -612,6 +620,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: true,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -633,6 +642,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: false,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],
@@ -654,6 +664,7 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     showInDetail: false,
     widthInForm: null,
     widthInList: 10,
+    widthInDetail: null,
     defaultValue: null,
     relationship: null,
     dropdown: [],

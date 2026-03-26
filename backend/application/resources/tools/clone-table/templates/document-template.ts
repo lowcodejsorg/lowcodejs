@@ -97,6 +97,7 @@ export async function buildDocumentFields(
     group: IField['group'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
+    widthInDetail: IField['widthInDetail'];
   }): Promise<IField> => {
     const field = await fieldRepository.create({
       ...payload,
@@ -124,6 +125,7 @@ export async function buildDocumentFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const titleField = await createField({
@@ -145,6 +147,7 @@ export async function buildDocumentFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const textField = await createField({
@@ -166,6 +169,7 @@ export async function buildDocumentFields(
     group: null,
     widthInForm: 100,
     widthInList: 100,
+    widthInDetail: null,
   });
 
   const orderList = [indexField._id, titleField._id, textField._id];

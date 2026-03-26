@@ -32,6 +32,7 @@ function buildFieldPayload(
     showInList: field.showInList,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
+    widthInDetail: field.widthInDetail,
     format: field.format ?? null,
     defaultValue: field.defaultValue ?? null,
     dropdown: hasDropdown ? field.dropdown : [],
@@ -187,7 +188,10 @@ export function useTableFieldManagement(
     },
     onSuccess: ({ data: response, widthKey }) => {
       updateFieldInTableCache(queryClient, tableSlug, response);
-      const unit = widthKey === 'widthInList' ? 'px' : '%';
+      let unit = '%';
+      if (widthKey === 'widthInList') {
+        unit = 'px';
+      }
       toastSuccess(`Largura atualizada para ${response[widthKey]}${unit}`);
     },
     onError: () => {

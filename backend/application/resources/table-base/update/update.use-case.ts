@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
+import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -59,10 +60,46 @@ export default class TableUpdateUseCase {
         }
       }
 
+      // Gerar novo slug a partir do nome
+      const oldSlug = table.slug;
+      const newSlug = slugify(payload.name, {
+        lower: true,
+        strict: true,
+        trim: true,
+      });
+      const slugChanged = newSlug !== oldSlug;
+
+      // Verificar unicidade do novo slug
+      if (slugChanged) {
+        const existingTable = await this.tableRepository.findBy({
+          slug: newSlug,
+          exact: true,
+        });
+
+        if (existingTable) {
+          return left(
+            HTTPException.Conflict(
+              'Table already exists',
+              'TABLE_ALREADY_EXISTS',
+            ),
+          );
+        }
+      }
+
+      // Renomear coleção e atualizar referências nos campos RELATIONSHIP
+      if (slugChanged) {
+        await this.tableRepository.renameSlug(oldSlug, newSlug);
+        await this.fieldRepository.updateRelationshipTableSlug(
+          oldSlug,
+          newSlug,
+        );
+      }
+
       // Mapear propriedades populadas para strings (IDs)
       const updated = await this.tableRepository.update({
         _id: table._id,
         ...payload,
+        slug: newSlug,
         owner: table.owner._id,
         style: payload.style ?? table.style,
         visibility: payload.visibility ?? table.visibility,
@@ -98,6 +135,22 @@ export default class TableUpdateUseCase {
       }
 
       await buildTable(updated);
+
+      // Reconstruir tabelas que têm RELATIONSHIP apontando para esta
+      if (slugChanged) {
+        const pointingFields =
+          await this.fieldRepository.findByRelationshipTableId(table._id);
+
+        if (pointingFields.length > 0) {
+          const pointingFieldIds = pointingFields.map((f) => f._id);
+          const relatedTables =
+            await this.tableRepository.findByFieldIds(pointingFieldIds);
+
+          for (const relatedTable of relatedTables) {
+            await buildTable(relatedTable);
+          }
+        }
+      }
 
       return right(updated);
     } catch (error) {

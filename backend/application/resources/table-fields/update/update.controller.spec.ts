@@ -54,6 +54,7 @@ describe('E2E Table Field Update Controller', () => {
         type: E_FIELD_TYPE.TEXT_SHORT,
         widthInForm: null,
         widthInList: null,
+        widthInDetail: null,
       };
 
       const field = await Field.create(fieldPayload);
@@ -106,6 +107,7 @@ describe('E2E Table Field Update Controller', () => {
         type: E_FIELD_TYPE.TEXT_SHORT,
         widthInForm: 75,
         widthInList: 30,
+        widthInDetail: null,
       };
 
       const response = await supertest(kernel.server)

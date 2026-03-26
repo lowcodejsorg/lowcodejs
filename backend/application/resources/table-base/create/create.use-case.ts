@@ -70,6 +70,7 @@ export default class TableCreateUseCase {
           showInDetail: true,
           widthInForm: 50,
           widthInList: 10,
+          widthInDetail: null,
           defaultValue: null,
           relationship: null,
           dropdown: [],

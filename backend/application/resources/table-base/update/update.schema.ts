@@ -193,6 +193,11 @@ export const TableUpdateSchema: FastifySchema = {
                 description:
                   'Field width in list/grid views, integer 0-100 (px)',
               },
+              widthInDetail: {
+                type: 'number',
+                nullable: true,
+                description: 'Field width in detail views, integer 0-100 (%)',
+              },
               locked: {
                 type: 'boolean',
                 description: 'Field is locked and cannot be modified',
@@ -363,6 +368,7 @@ export const TableUpdateSchema: FastifySchema = {
                     showInFilter: { type: 'boolean' },
                     widthInForm: { type: 'number', nullable: true },
                     widthInList: { type: 'number', nullable: true },
+                    widthInDetail: { type: 'number', nullable: true },
                     locked: { type: 'boolean' },
                     native: { type: 'boolean' },
                     defaultValue: { type: 'string', nullable: true },
@@ -456,6 +462,15 @@ export const TableUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+      },
+    },
+    409: {
+      description: 'Conflict - Table with the generated slug already exists',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Table already exists'] },
+        code: { type: 'number', enum: [409] },
+        cause: { type: 'string', enum: ['TABLE_ALREADY_EXISTS'] },
       },
     },
     404: {

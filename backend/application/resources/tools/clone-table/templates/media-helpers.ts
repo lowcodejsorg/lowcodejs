@@ -33,6 +33,7 @@ export async function buildSimpleMediaFields(
     group: IField['group'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
+    widthInDetail: IField['widthInDetail'];
   }): Promise<IField> => {
     const field = await fieldRepository.create({
       ...payload,
@@ -60,6 +61,7 @@ export async function buildSimpleMediaFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const descriptionField = await createField({
@@ -81,6 +83,7 @@ export async function buildSimpleMediaFields(
     group: null,
     widthInForm: 100,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const imageField = await createField({
@@ -102,6 +105,7 @@ export async function buildSimpleMediaFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const orderList = [imageField._id, titleField._id, descriptionField._id];

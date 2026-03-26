@@ -80,4 +80,7 @@ export abstract class TableContractRepository {
   abstract updateMany(payload: TableUpdateManyPayload): Promise<void>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: TableQueryPayload): Promise<number>;
+  abstract renameSlug(oldSlug: string, newSlug: string): Promise<void>;
+  abstract dropCollection(slug: string): Promise<void>;
+  abstract findByFieldIds(fieldIds: string[]): Promise<ITable[]>;
 }

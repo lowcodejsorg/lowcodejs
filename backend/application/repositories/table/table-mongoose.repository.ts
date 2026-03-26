@@ -1,4 +1,5 @@
 import { Service } from 'fastify-decorators';
+import mongoose from 'mongoose';
 
 import type { ITable } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
@@ -189,5 +190,36 @@ export default class TableMongooseRepository implements TableContractRepository 
   async count(payload?: TableQueryPayload): Promise<number> {
     const where = this.buildWhereClause(payload);
     return Model.countDocuments(where);
+  }
+
+  async dropCollection(slug: string): Promise<void> {
+    const db = mongoose.connection.db!;
+
+    const collections = await db.listCollections({ name: slug }).toArray();
+    if (collections.length > 0) {
+      await db.dropCollection(slug);
+    }
+
+    if (mongoose.models[slug]) {
+      delete mongoose.models[slug];
+    }
+  }
+
+  async renameSlug(oldSlug: string, newSlug: string): Promise<void> {
+    const db = mongoose.connection.db!;
+    await db.renameCollection(oldSlug, newSlug);
+
+    if (mongoose.models[oldSlug]) {
+      delete mongoose.models[oldSlug];
+    }
+  }
+
+  async findByFieldIds(fieldIds: string[]): Promise<ITable[]> {
+    const tables = await Model.find({
+      fields: { $in: fieldIds },
+      trashed: { $ne: true },
+    }).populate(this.populateOptions);
+
+    return tables.map((t) => this.transform(t));
   }
 }

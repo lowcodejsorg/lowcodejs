@@ -36,6 +36,7 @@ type ExportedField = {
   showInList: boolean;
   widthInForm: number | null;
   widthInList: number | null;
+  widthInDetail: number | null;
   defaultValue: string | null;
   locked?: boolean;
   relationship: {
@@ -150,6 +151,7 @@ export default class ImportTableUseCase {
             showInFilter: false,
             widthInForm: null,
             widthInList: null,
+            widthInDetail: null,
             defaultValue: null,
             relationship: null,
             dropdown: [],
@@ -179,6 +181,7 @@ export default class ImportTableUseCase {
               showInDetail: false,
               widthInForm: null,
               widthInList: 10,
+              widthInDetail: null,
               defaultValue: null,
               relationship: null,
               dropdown: [],
@@ -200,6 +203,7 @@ export default class ImportTableUseCase {
               showInDetail: true,
               widthInForm: null,
               widthInList: 10,
+              widthInDetail: null,
               defaultValue: null,
               relationship: null,
               dropdown: [],
@@ -221,6 +225,7 @@ export default class ImportTableUseCase {
               showInDetail: false,
               widthInForm: null,
               widthInList: 10,
+              widthInDetail: null,
               defaultValue: null,
               relationship: null,
               dropdown: [],
@@ -242,6 +247,7 @@ export default class ImportTableUseCase {
               showInDetail: false,
               widthInForm: null,
               widthInList: 10,
+              widthInDetail: null,
               defaultValue: null,
               relationship: null,
               dropdown: [],
@@ -418,6 +424,7 @@ export default class ImportTableUseCase {
       showInFilter: exportedField.showInFilter,
       widthInForm: exportedField.widthInForm,
       widthInList: exportedField.widthInList,
+      widthInDetail: exportedField.widthInDetail,
       defaultValue: exportedField.defaultValue,
       locked: exportedField.locked,
       relationship,

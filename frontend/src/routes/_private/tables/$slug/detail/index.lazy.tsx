@@ -115,7 +115,7 @@ function TableUpdateContent({
   const sidebar = useSidebar();
   const router = useRouter();
   const _update = useUpdateTable({
-    onSuccess() {
+    onSuccess(responseData) {
       toastSuccess(
         'Tabela atualizada',
         'Os dados da tabela foram atualizados com sucesso',
@@ -124,7 +124,7 @@ function TableUpdateContent({
       sidebar.setOpen(false);
       router.navigate({
         to: '/tables/$slug',
-        params: { slug: data.slug },
+        params: { slug: responseData.slug },
       });
     },
     onError(error) {

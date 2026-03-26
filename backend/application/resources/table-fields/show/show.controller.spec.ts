@@ -53,6 +53,7 @@ describe('E2E Table Field Show Controller', () => {
         type: E_FIELD_TYPE.TEXT_SHORT,
         widthInForm: 50,
         widthInList: 10,
+        widthInDetail: null,
       };
 
       const field = await Field.create(fieldPayload);

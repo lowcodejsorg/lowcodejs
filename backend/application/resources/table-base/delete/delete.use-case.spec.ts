@@ -5,17 +5,23 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableDeleteUseCase from './delete.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
+let fieldInMemoryRepository: FieldInMemoryRepository;
 let sut: TableDeleteUseCase;
 
 describe('Table Delete Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
-    sut = new TableDeleteUseCase(tableInMemoryRepository);
+    fieldInMemoryRepository = new FieldInMemoryRepository();
+    sut = new TableDeleteUseCase(
+      tableInMemoryRepository,
+      fieldInMemoryRepository,
+    );
   });
 
   it('deve deletar tabela com sucesso', async () => {

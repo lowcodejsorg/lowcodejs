@@ -199,6 +199,12 @@ export const TablePaginatedSchema: FastifySchema = {
                       description:
                         'Field width in list/grid views, integer 0-100 (px)',
                     },
+                    widthInDetail: {
+                      type: 'number',
+                      nullable: true,
+                      description:
+                        'Field width in detail views, integer 0-100 (%)',
+                    },
                     locked: {
                       type: 'boolean',
                       description: 'Field is locked and cannot be modified',
@@ -370,6 +376,7 @@ export const TablePaginatedSchema: FastifySchema = {
                           showInFilter: { type: 'boolean' },
                           widthInForm: { type: 'number', nullable: true },
                           widthInList: { type: 'number', nullable: true },
+                          widthInDetail: { type: 'number', nullable: true },
                           locked: { type: 'boolean' },
                           native: { type: 'boolean' },
                           defaultValue: { type: 'string', nullable: true },

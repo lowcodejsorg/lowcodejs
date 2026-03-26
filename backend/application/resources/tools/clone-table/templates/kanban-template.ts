@@ -152,6 +152,7 @@ export async function buildKanbanFields(
     group: IField['group'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
+    widthInDetail: IField['widthInDetail'];
   }): Promise<IField> => {
     const field = await fieldRepository.create({
       ...payload,
@@ -179,6 +180,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const descriptionField = await createField({
@@ -200,6 +202,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const membersField = await createField({
@@ -221,6 +224,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   await createField({
@@ -242,6 +246,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   await createField({
@@ -263,6 +268,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const dueDateField = await createField({
@@ -284,6 +290,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const startDateField = await createField({
@@ -305,6 +312,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const progressField = await createField({
@@ -326,6 +334,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const listField = await createField({
@@ -351,6 +360,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const attachmentsGroupSlug = 'anexos';
@@ -376,6 +386,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const taskTitleField = await fieldRepository.create({
@@ -397,6 +408,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const taskDoneField = await fieldRepository.create({
@@ -421,6 +433,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const commentTextField = await fieldRepository.create({
@@ -442,6 +455,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const commentAuthorField = await fieldRepository.create({
@@ -463,6 +477,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const commentDateField = await fieldRepository.create({
@@ -484,6 +499,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const attachmentAuthorField = await fieldRepository.create({
@@ -505,6 +521,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const attachmentDateField = await fieldRepository.create({
@@ -526,6 +543,7 @@ export async function buildKanbanFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const attachmentsGroup: IGroupConfiguration = {
@@ -576,6 +594,7 @@ export async function buildKanbanFields(
     group: { slug: attachmentsGroupSlug },
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const tasksGroupField = await createField({
@@ -597,6 +616,7 @@ export async function buildKanbanFields(
     group: { slug: tasksGroupSlug },
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const commentsGroupField = await createField({
@@ -618,6 +638,7 @@ export async function buildKanbanFields(
     group: { slug: commentsGroupSlug },
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const groups = [attachmentsGroup, tasksGroup, commentsGroup];

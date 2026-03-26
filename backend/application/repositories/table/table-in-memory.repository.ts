@@ -211,4 +211,22 @@ export default class TableInMemoryRepository implements TableContractRepository 
     });
     return filtered.length;
   }
+
+  // eslint-disable-next-line no-unused-vars
+  async dropCollection(_slug: string): Promise<void> {
+    // No-op em memória — os registros não existem separadamente
+  }
+
+  async renameSlug(oldSlug: string, newSlug: string): Promise<void> {
+    const table = this.items.find((t) => t.slug === oldSlug);
+    if (table) {
+      table.slug = newSlug;
+    }
+  }
+
+  async findByFieldIds(fieldIds: string[]): Promise<ITable[]> {
+    return this.items.filter(
+      (t) => !t.trashed && t.fields.some((f) => fieldIds.includes(f._id)),
+    );
+  }
 }

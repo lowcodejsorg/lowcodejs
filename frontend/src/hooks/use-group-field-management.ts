@@ -48,6 +48,7 @@ function buildGroupFieldPayload(
     showInList: field.showInList,
     widthInForm: field.widthInForm ?? 50,
     widthInList: field.widthInList ?? 10,
+    widthInDetail: field.widthInDetail ?? 50,
     format: field.format ?? null,
     defaultValue: field.defaultValue ?? null,
     dropdown,
@@ -91,7 +92,10 @@ export function useGroupFieldManagement(
     onSuccess: (response) => {
       if (pendingWidthKey) {
         const widthValue = response[pendingWidthKey] ?? 'N/A';
-        const unit = pendingWidthKey === 'widthInList' ? 'px' : '%';
+        let unit = '%';
+        if (pendingWidthKey === 'widthInList') {
+          unit = 'px';
+        }
         toastSuccess(`Largura atualizada para ${widthValue}${unit}`);
       } else if (togglingFieldId) {
         // Determine which visibility key was toggled by checking context

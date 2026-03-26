@@ -196,6 +196,7 @@ export async function buildForumFields(
     group: IField['group'];
     widthInForm: IField['widthInForm'];
     widthInList: IField['widthInList'];
+    widthInDetail: IField['widthInDetail'];
   }): Promise<IField> => {
     const field = await fieldRepository.create({
       ...payload,
@@ -223,6 +224,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const channelDescriptionField = await createField({
@@ -244,6 +246,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: 100,
     widthInList: 100,
+    widthInDetail: null,
   });
 
   const channelPrivacyField = await createField({
@@ -268,6 +271,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: 50,
     widthInList: 50,
+    widthInDetail: null,
   });
 
   const channelMembersField = await createField({
@@ -289,6 +293,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: 100,
     widthInList: 100,
+    widthInDetail: null,
   });
 
   const messagesGroupSlug = 'mensagens';
@@ -312,6 +317,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageTextField = await fieldRepository.create({
@@ -333,6 +339,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageAuthorField = await fieldRepository.create({
@@ -354,6 +361,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageDateField = await fieldRepository.create({
@@ -375,6 +383,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageAttachmentsField = await fieldRepository.create({
@@ -396,6 +405,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageMentionsField = await fieldRepository.create({
@@ -417,6 +427,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageMentionEmailsField = await fieldRepository.create({
@@ -438,6 +449,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageMentionNotifiedField = await fieldRepository.create({
@@ -459,6 +471,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageMentionSeenField = await fieldRepository.create({
@@ -480,6 +493,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageReplyField = await fieldRepository.create({
@@ -501,6 +515,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messageReactionsField = await fieldRepository.create({
@@ -522,6 +537,7 @@ export async function buildForumFields(
     group: null,
     widthInForm: null,
     widthInList: null,
+    widthInDetail: null,
   });
 
   const messagesGroup: IGroupConfiguration = {
@@ -574,6 +590,7 @@ export async function buildForumFields(
     group: { slug: messagesGroupSlug },
     widthInForm: 100,
     widthInList: 100,
+    widthInDetail: null,
   });
 
   const groups = [messagesGroup];

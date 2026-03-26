@@ -148,6 +148,10 @@ export const Schema = new mongoose.Schema(
       type: Number,
       default: 10,
     },
+    widthInDetail: {
+      type: Number,
+      default: 50,
+    },
     locked: {
       type: Boolean,
       default: false,

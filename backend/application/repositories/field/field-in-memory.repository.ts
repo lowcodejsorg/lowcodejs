@@ -89,6 +89,10 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
     await this.update({ _id, trashed: true, trashedAt: new Date() });
   }
 
+  async deleteMany(_ids: string[]): Promise<void> {
+    this.items = this.items.filter((f) => !_ids.includes(f._id));
+  }
+
   async count(payload?: FieldQueryPayload): Promise<number> {
     const filtered = await this.findMany({
       ...payload,
@@ -96,5 +100,22 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
       perPage: undefined,
     });
     return filtered.length;
+  }
+
+  async updateRelationshipTableSlug(
+    oldSlug: string,
+    newSlug: string,
+  ): Promise<void> {
+    for (const field of this.items) {
+      if (field.relationship?.table?.slug === oldSlug) {
+        field.relationship.table.slug = newSlug;
+      }
+    }
+  }
+
+  async findByRelationshipTableId(tableId: string): Promise<IField[]> {
+    return this.items.filter(
+      (f) => !f.trashed && f.relationship?.table?._id === tableId,
+    );
   }
 }

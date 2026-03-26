@@ -1,6 +1,8 @@
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
+import mongoose from 'mongoose';
+
 import {
   E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
@@ -8,7 +10,7 @@ import {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
-import { buildSchema } from '@application/core/util.core';
+import { buildSchema, buildTable } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
 import { UserGroup } from '@application/model/user-group.model';
@@ -24,6 +26,19 @@ describe('E2E Table Update Controller', () => {
     await User.deleteMany({});
     await UserGroup.deleteMany({});
     await Table.deleteMany({});
+    await Field.deleteMany({});
+
+    // Limpar coleções dinâmicas que possam ter ficado de testes anteriores
+    const db = mongoose.connection.db!;
+    for (const slug of ['my-table', 'updated-table']) {
+      const exists = await db.listCollections({ name: slug }).toArray();
+      if (exists.length > 0) {
+        await db.dropCollection(slug);
+      }
+      if (mongoose.models[slug]) {
+        delete mongoose.models[slug];
+      }
+    }
   });
 
   afterAll(async () => {
@@ -52,6 +67,7 @@ describe('E2E Table Update Controller', () => {
         type: E_FIELD_TYPE.TEXT_SHORT,
         widthInForm: null,
         widthInList: null,
+        widthInDetail: null,
       };
 
       const field = await Field.create(fieldPayload);
@@ -84,6 +100,13 @@ describe('E2E Table Update Controller', () => {
       };
 
       const table = await Table.create(tablePayload);
+
+      // Criar a coleção dinâmica para que o rename funcione
+      await buildTable({
+        ...table.toJSON(),
+        _id: table._id.toString(),
+        fields: [{ ...field.toJSON(), _id: field._id.toString() }],
+      });
 
       const response = await supertest(kernel.server)
         .put(`/tables/${table.slug}`)

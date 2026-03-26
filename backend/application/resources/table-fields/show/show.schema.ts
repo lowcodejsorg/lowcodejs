@@ -81,6 +81,11 @@ export const TableFieldShowSchema: FastifySchema = {
           nullable: true,
           description: 'Field width in list/grid views, integer 0-100 (px)',
         },
+        widthInDetail: {
+          type: 'number',
+          nullable: true,
+          description: 'Field width in detail views, integer 0-100 (%)',
+        },
         locked: {
           type: 'boolean',
           description: 'Field is locked and cannot be modified',

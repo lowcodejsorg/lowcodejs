@@ -33,7 +33,15 @@ export function useUpdateTable(
       return response.data;
     },
     onSuccess(data, variables) {
-      queryClient.setQueryData(queryKeys.tables.detail(variables.slug), data);
+      if (data.slug !== variables.slug) {
+        queryClient.removeQueries({
+          queryKey: queryKeys.tables.detail(variables.slug),
+        });
+        queryClient.removeQueries({
+          queryKey: queryKeys.rows.all(variables.slug),
+        });
+      }
+      queryClient.setQueryData(queryKeys.tables.detail(data.slug), data);
       queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
       props.onSuccess?.(data, variables);
     },

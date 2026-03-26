@@ -148,13 +148,14 @@ export function RowView({
   };
 
   return (
-    <section className="space-y-4 p-2">
+    <section className="flex flex-wrap gap-4 p-2">
       {fields
         .filter((f) => f.showInDetail)
         .map((field) => (
           <div
             key={field._id}
-            className="space-y-1"
+            className="space-y-1 min-w-[200px]"
+            style={{ width: `calc(${field.widthInDetail ?? 50}% - 1rem)` }}
           >
             <p className="text-sm font-medium">{field.name}</p>
             {renderFieldValue(field)}

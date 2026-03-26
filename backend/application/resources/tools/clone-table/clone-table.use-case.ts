@@ -212,6 +212,7 @@ export default class CloneTableUseCase {
         group: field.group,
         widthInForm: field.widthInForm,
         widthInList: field.widthInList,
+        widthInDetail: field.widthInDetail,
       });
 
       newFieldIds.push(createdField._id);
@@ -289,6 +290,7 @@ export default class CloneTableUseCase {
           group: field.group,
           widthInForm: field.widthInForm,
           widthInList: field.widthInList,
+          widthInDetail: field.widthInDetail,
         });
 
         fieldIdMap[field._id] = createdField._id;

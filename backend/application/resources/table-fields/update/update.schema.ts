@@ -96,6 +96,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
         default: 10,
         description: 'Field width in list/grid views, integer 0-100 (px)',
       },
+      widthInDetail: {
+        type: 'number',
+        nullable: true,
+        default: 50,
+        description: 'Field width in detail views, integer 0-100 (%)',
+      },
       locked: {
         type: 'boolean',
         default: false,
@@ -253,6 +259,11 @@ export const TableFieldUpdateSchema: FastifySchema = {
           type: 'number',
           nullable: true,
           description: 'Field width in list/grid views, integer 0-100 (px)',
+        },
+        widthInDetail: {
+          type: 'number',
+          nullable: true,
+          description: 'Field width in detail views, integer 0-100 (%)',
         },
         locked: { type: 'boolean', description: 'Field is locked' },
         native: { type: 'boolean', description: 'Field is native' },
