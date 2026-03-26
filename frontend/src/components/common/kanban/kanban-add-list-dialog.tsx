@@ -36,7 +36,10 @@ export function KanbanAddListDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="max-w-md">
+      <DialogContent
+        data-slot="kanban-add-list-dialog"
+        className="max-w-md"
+      >
         <form
           onSubmit={(event) => {
             event.preventDefault();

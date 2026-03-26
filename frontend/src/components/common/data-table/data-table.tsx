@@ -103,9 +103,15 @@ export function DataTable<TData>({
     return colSizes;
   }, [table.getState().columnSizingInfo, table.getState().columnSizing]);
 
+  let scrollContainerRef: React.RefObject<HTMLDivElement | null> | undefined;
+  if (enableVirtualization) {
+    scrollContainerRef = scrollRef;
+  }
+
   const tableContent = (
     <div
-      ref={enableVirtualization ? scrollRef : undefined}
+      data-slot="data-table"
+      ref={scrollContainerRef}
       className={cn(
         'relative w-full overflow-x-auto',
         enableVirtualization && 'overflow-y-auto',
@@ -120,6 +126,38 @@ export function DataTable<TData>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 const isPinned = header.column.getIsPinned();
+
+                const headerStyle: React.CSSProperties = {
+                  width: `calc(var(--col-${header.column.id}-size) * 1px)`,
+                };
+                if (isPinned) {
+                  headerStyle.position = 'sticky';
+                  headerStyle.zIndex = 30;
+                }
+                if (isPinned === 'left') {
+                  headerStyle.left = `${header.column.getStart('left')}px`;
+                }
+                if (isPinned === 'right') {
+                  headerStyle.right = `${header.column.getAfter('right')}px`;
+                }
+
+                let headerContent: React.ReactNode = null;
+                if (!header.isPlaceholder && enableColumnDragging) {
+                  headerContent = (
+                    <DataTableDraggableHeader header={header}>
+                      {flexRender(
+                        header.column.columnDef.header,
+                        header.getContext(),
+                      )}
+                    </DataTableDraggableHeader>
+                  );
+                } else if (!header.isPlaceholder) {
+                  headerContent = flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  );
+                }
+
                 return (
                   <TableHead
                     key={header.id}
@@ -127,33 +165,9 @@ export function DataTable<TData>({
                       'relative group',
                       isPinned && 'bg-background',
                     )}
-                    style={{
-                      width: `calc(var(--col-${header.column.id}-size) * 1px)`,
-                      position: isPinned ? 'sticky' : undefined,
-                      left:
-                        isPinned === 'left'
-                          ? `${header.column.getStart('left')}px`
-                          : undefined,
-                      right:
-                        isPinned === 'right'
-                          ? `${header.column.getAfter('right')}px`
-                          : undefined,
-                      zIndex: isPinned ? 30 : undefined,
-                    }}
+                    style={headerStyle}
                   >
-                    {header.isPlaceholder ? null : enableColumnDragging ? (
-                      <DataTableDraggableHeader header={header}>
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
-                      </DataTableDraggableHeader>
-                    ) : (
-                      flexRender(
-                        header.column.columnDef.header,
-                        header.getContext(),
-                      )
-                    )}
+                    {headerContent}
                     {header.column.getCanResize() && (
                       <DataTableResizeHandle header={header} />
                     )}
@@ -174,7 +188,7 @@ export function DataTable<TData>({
               </TableCell>
             </TableRow>
           )}
-          {enableVirtualization ? (
+          {enableVirtualization && (
             <>
               {virtualizer.getVirtualItems().length > 0 && (
                 <tr>
@@ -190,13 +204,28 @@ export function DataTable<TData>({
                   <TableRow
                     key={row.id}
                     className={cn(onRowClick && 'cursor-pointer')}
-                    data-state={row.getIsSelected() ? 'selected' : undefined}
+                    data-state={
+                      (row.getIsSelected() && 'selected') || undefined
+                    }
                     onClick={() => onRowClick?.(row.original)}
                     data-index={virtualRow.index}
                     ref={virtualizer.measureElement}
                   >
                     {row.getVisibleCells().map((cell, colIndex) => {
                       const isPinned = cell.column.getIsPinned();
+                      const cellStyle: React.CSSProperties = {
+                        width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
+                      };
+                      if (isPinned) {
+                        cellStyle.position = 'sticky';
+                        cellStyle.zIndex = 10;
+                      }
+                      if (isPinned === 'left') {
+                        cellStyle.left = `${cell.column.getStart('left')}px`;
+                      }
+                      if (isPinned === 'right') {
+                        cellStyle.right = `${cell.column.getAfter('right')}px`;
+                      }
                       return (
                         <TableCell
                           key={cell.id}
@@ -208,19 +237,7 @@ export function DataTable<TData>({
                             isPinned && 'bg-background',
                             'data-[focused]:ring-2 data-[focused]:ring-primary data-[focused]:ring-inset',
                           )}
-                          style={{
-                            width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
-                            position: isPinned ? 'sticky' : undefined,
-                            left:
-                              isPinned === 'left'
-                                ? `${cell.column.getStart('left')}px`
-                                : undefined,
-                            right:
-                              isPinned === 'right'
-                                ? `${cell.column.getAfter('right')}px`
-                                : undefined,
-                            zIndex: isPinned ? 10 : undefined,
-                          }}
+                          style={cellStyle}
                         >
                           {flexRender(
                             cell.column.columnDef.cell,
@@ -245,16 +262,30 @@ export function DataTable<TData>({
                 </tr>
               )}
             </>
-          ) : (
+          )}
+          {!enableVirtualization &&
             rows.map((row, rowIndex) => (
               <TableRow
                 key={row.id}
                 className={cn(onRowClick && 'cursor-pointer')}
-                data-state={row.getIsSelected() ? 'selected' : undefined}
+                data-state={(row.getIsSelected() && 'selected') || undefined}
                 onClick={() => onRowClick?.(row.original)}
               >
                 {row.getVisibleCells().map((cell, colIndex) => {
                   const isPinned = cell.column.getIsPinned();
+                  const cellStyle: React.CSSProperties = {
+                    width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
+                  };
+                  if (isPinned) {
+                    cellStyle.position = 'sticky';
+                    cellStyle.zIndex = 10;
+                  }
+                  if (isPinned === 'left') {
+                    cellStyle.left = `${cell.column.getStart('left')}px`;
+                  }
+                  if (isPinned === 'right') {
+                    cellStyle.right = `${cell.column.getAfter('right')}px`;
+                  }
                   return (
                     <TableCell
                       key={cell.id}
@@ -265,19 +296,7 @@ export function DataTable<TData>({
                         isPinned && 'bg-background',
                         'data-[focused]:ring-2 data-[focused]:ring-primary data-[focused]:ring-inset',
                       )}
-                      style={{
-                        width: cell.column.getSize(),
-                        position: isPinned ? 'sticky' : undefined,
-                        left:
-                          isPinned === 'left'
-                            ? `${cell.column.getStart('left')}px`
-                            : undefined,
-                        right:
-                          isPinned === 'right'
-                            ? `${cell.column.getAfter('right')}px`
-                            : undefined,
-                        zIndex: isPinned ? 10 : undefined,
-                      }}
+                      style={cellStyle}
                     >
                       {flexRender(
                         cell.column.columnDef.cell,
@@ -287,8 +306,7 @@ export function DataTable<TData>({
                   );
                 })}
               </TableRow>
-            ))
-          )}
+            ))}
         </TableBody>
       </Table>
     </div>

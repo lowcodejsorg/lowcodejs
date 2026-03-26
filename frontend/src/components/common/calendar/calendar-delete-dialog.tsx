@@ -28,6 +28,7 @@ export function CalendarDeleteDialog({
 }: CalendarDeleteDialogProps): React.JSX.Element {
   return (
     <Dialog
+      data-slot="calendar-delete-dialog"
       open={open}
       onOpenChange={onOpenChange}
       modal
@@ -36,9 +37,10 @@ export function CalendarDeleteDialog({
         <DialogHeader>
           <DialogTitle>Excluir agendamento</DialogTitle>
           <DialogDescription>
-            {title
-              ? `Tem certeza que deseja excluir "${title}"? Essa ação não pode ser desfeita.`
-              : 'Tem certeza que deseja excluir este agendamento? Essa ação não pode ser desfeita.'}
+            {title &&
+              `Tem certeza que deseja excluir "${title}"? Essa ação não pode ser desfeita.`}
+            {!title &&
+              'Tem certeza que deseja excluir este agendamento? Essa ação não pode ser desfeita.'}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="mt-2 flex gap-2 sm:justify-end">

@@ -8,18 +8,18 @@ import { KanbanRowExtraFieldsSection } from './kanban-row-extra-fields';
 import { KanbanRowQuickActions } from './kanban-row-quick-actions';
 import { KanbanRowTasksSection } from './kanban-row-tasks';
 
-import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
-import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
-import { TableRowDateCell } from '@/components/common/table-row-date-cell';
-import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
-import { TableRowEvaluationCell } from '@/components/common/table-row-evaluation-cell';
-import { TableRowFieldGroupCell } from '@/components/common/table-row-field-group-cell';
-import { TableRowFileCell } from '@/components/common/table-row-file-cell';
-import { TableRowReactionCell } from '@/components/common/table-row-reaction-cell';
-import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
-import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
-import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
-import { TableRowUserCell } from '@/components/common/table-row-user-cell';
+import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
+import { TableRowCategoryCell } from '@/components/common/table-cells/table-row-category-cell';
+import { TableRowDateCell } from '@/components/common/table-cells/table-row-date-cell';
+import { TableRowDropdownCell } from '@/components/common/table-cells/table-row-dropdown-cell';
+import { TableRowEvaluationCell } from '@/components/common/table-cells/table-row-evaluation-cell';
+import { TableRowFieldGroupCell } from '@/components/common/table-cells/table-row-field-group-cell';
+import { TableRowFileCell } from '@/components/common/table-cells/table-row-file-cell';
+import { TableRowReactionCell } from '@/components/common/table-cells/table-row-reaction-cell';
+import { TableRowRelationshipCell } from '@/components/common/table-cells/table-row-relationship-cell';
+import { TableRowTextLongCell } from '@/components/common/table-cells/table-row-text-long-cell';
+import { TableRowTextShortCell } from '@/components/common/table-cells/table-row-text-short-cell';
+import { TableRowUserCell } from '@/components/common/table-cells/table-row-user-cell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -162,24 +162,41 @@ export function KanbanRowDialog({
   });
 
   const quickForm = useAppForm({
-    defaultValues: row ? buildDefaultValuesFromRow(row, quickFields) : {},
+    defaultValues: ((): Record<string, any> => {
+      if (row) {
+        return buildDefaultValuesFromRow(row, quickFields);
+      }
+      return {};
+    })(),
     onSubmit: async ({ value }) => {
       if (!row || updateRow.status === 'pending') return;
       const payload: Record<string, any> = {};
       for (const field of quickFields) {
         const v = value[field.slug];
         if (field.type === E_FIELD_TYPE.USER) {
-          payload[field.slug] = Array.isArray(v)
-            ? v.map((opt: any) => opt.value ?? opt._id ?? opt)
-            : [];
+          let userValue: Array<any> = [];
+          if (Array.isArray(v)) {
+            userValue = v.map((opt: any) => opt.value ?? opt._id ?? opt);
+          }
+          payload[field.slug] = userValue;
           continue;
         }
 
         if (field.type === E_FIELD_TYPE.DROPDOWN) {
           if (field.multiple) {
-            payload[field.slug] = Array.isArray(v) ? v : v ? [v] : [];
+            let dropdownValue: Array<any> = [];
+            if (Array.isArray(v)) {
+              dropdownValue = v;
+            } else if (v) {
+              dropdownValue = [v];
+            }
+            payload[field.slug] = dropdownValue;
           } else {
-            payload[field.slug] = typeof v === 'string' && v ? v : (v ?? null);
+            let singleValue: any = v ?? null;
+            if (typeof v === 'string' && v) {
+              singleValue = v;
+            }
+            payload[field.slug] = singleValue;
           }
           continue;
         }
@@ -205,7 +222,12 @@ export function KanbanRowDialog({
   }, [rowId, quickFields.length]);
 
   const extraForm = useAppForm({
-    defaultValues: row ? buildUpdateRowDefaultValues(row, editableFields) : {},
+    defaultValues: ((): Record<string, any> => {
+      if (row) {
+        return buildUpdateRowDefaultValues(row, editableFields);
+      }
+      return {};
+    })(),
     onSubmit: async ({ value }) => {
       if (!row || updateRow.status === 'pending' || !editingFieldSlug) {
         return;
@@ -332,25 +354,28 @@ export function KanbanRowDialog({
 
   const handleTaskToggle = async (index: number): Promise<void> => {
     if (!fields.tasks) return;
-    const updated = tasks.map((task, i) =>
-      i === index
-        ? {
-            ...task,
-            realizado: normalizeRowValue(task.realizado).includes('sim')
-              ? ['nao']
-              : ['sim'],
-          }
-        : task,
-    );
+    const updated = tasks.map((task, i) => {
+      if (i !== index) return task;
+      let realizadoValue = ['sim'];
+      if (normalizeRowValue(task.realizado).includes('sim')) {
+        realizadoValue = ['nao'];
+      }
+      return {
+        ...task,
+        realizado: realizadoValue,
+      };
+    });
     const nextProgress = getTaskCompletionPercent(updated);
+    const progressData: Record<string, any> = {};
+    if (fields.progress) {
+      progressData[fields.progress.slug] = String(nextProgress);
+    }
     await updateRow.mutateAsync({
       slug: tableSlug,
       rowId: row._id,
       data: {
         [fields.tasks.slug]: updated,
-        ...(fields.progress
-          ? { [fields.progress.slug]: String(nextProgress) }
-          : {}),
+        ...progressData,
       },
     });
   };
@@ -365,14 +390,16 @@ export function KanbanRowDialog({
       },
     ];
     const nextProgress = getTaskCompletionPercent(updated);
+    const progressData: Record<string, any> = {};
+    if (fields.progress) {
+      progressData[fields.progress.slug] = String(nextProgress);
+    }
     await updateRow.mutateAsync({
       slug: tableSlug,
       rowId: row._id,
       data: {
         [fields.tasks.slug]: updated,
-        ...(fields.progress
-          ? { [fields.progress.slug]: String(nextProgress) }
-          : {}),
+        ...progressData,
       },
     });
     setTaskTitle('');
@@ -395,23 +422,24 @@ export function KanbanRowDialog({
       handleTaskEditCancel();
       return;
     }
-    const updated = tasks.map((task, i) =>
-      i === index
-        ? {
-            ...task,
-            titulo: nextTitle,
-          }
-        : task,
-    );
+    const updated = tasks.map((task, i) => {
+      if (i !== index) return task;
+      return {
+        ...task,
+        titulo: nextTitle,
+      };
+    });
     const nextProgress = getTaskCompletionPercent(updated);
+    const progressData: Record<string, any> = {};
+    if (fields.progress) {
+      progressData[fields.progress.slug] = String(nextProgress);
+    }
     await updateRow.mutateAsync({
       slug: tableSlug,
       rowId: row._id,
       data: {
         [fields.tasks.slug]: updated,
-        ...(fields.progress
-          ? { [fields.progress.slug]: String(nextProgress) }
-          : {}),
+        ...progressData,
       },
     });
     handleTaskEditCancel();
@@ -421,14 +449,16 @@ export function KanbanRowDialog({
     if (!fields.tasks) return;
     const updated = tasks.filter((_, i) => i !== index);
     const nextProgress = getTaskCompletionPercent(updated);
+    const progressData: Record<string, any> = {};
+    if (fields.progress) {
+      progressData[fields.progress.slug] = String(nextProgress);
+    }
     await updateRow.mutateAsync({
       slug: tableSlug,
       rowId: row._id,
       data: {
         [fields.tasks.slug]: updated,
-        ...(fields.progress
-          ? { [fields.progress.slug]: String(nextProgress) }
-          : {}),
+        ...progressData,
       },
     });
   };
@@ -496,7 +526,10 @@ export function KanbanRowDialog({
         if (typeof member === 'string') return member !== currentUserId;
         return member._id !== currentUserId;
       })
-      .map((member) => (typeof member === 'string' ? member : member._id));
+      .map((member) => {
+        if (typeof member === 'string') return member;
+        return member._id;
+      });
 
     await updateRow.mutateAsync({
       slug: tableSlug,
@@ -770,22 +803,30 @@ export function KanbanRowDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="w-[min(75vw,1000px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0">
+      <DialogContent
+        data-slot="kanban-row-dialog"
+        className="w-[min(75vw,1000px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0"
+      >
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] h-full min-h-0">
           <div className="overflow-y-auto p-6 h-full min-h-0">
             <DialogHeader>
               <DialogTitle className="text-2xl font-semibold">
-                {fields.title ? (
-                  <button
-                    type="button"
-                    className="text-left hover:underline cursor-pointer"
-                    onClick={() => handleStartEditingField(fields.title!.slug)}
-                  >
-                    {title}
-                  </button>
-                ) : (
-                  title
-                )}
+                {((): React.ReactNode => {
+                  if (fields.title) {
+                    return (
+                      <button
+                        type="button"
+                        className="text-left hover:underline cursor-pointer"
+                        onClick={() =>
+                          handleStartEditingField(fields.title!.slug)
+                        }
+                      >
+                        {title}
+                      </button>
+                    );
+                  }
+                  return title;
+                })()}
               </DialogTitle>
               <DialogDescription className="sr-only">
                 Detalhes do cartao do kanban
@@ -903,178 +944,212 @@ export function KanbanRowDialog({
 
             {fields.attachments && (
               <section className="mt-4 space-y-2">
-                {fields.attachments.type === E_FIELD_TYPE.FIELD_GROUP ? (
-                  <KanbanFieldGroupEditor
-                    row={row}
-                    field={fields.attachments}
-                    table={table}
-                    tableSlug={tableSlug}
-                    currentUserId={currentUserId}
-                    updateRow={updateRow}
-                  />
-                ) : supportsInlineAttachmentManager ? (
-                  <>
-                    <div className="flex items-center justify-between gap-2">
-                      <h3 className="text-sm font-semibold">Anexos</h3>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        className="cursor-pointer"
-                        onClick={() => setIsAddingAttachments(true)}
-                        disabled={updateRow.status === 'pending'}
-                      >
-                        Adicionar
-                      </Button>
-                    </div>
-                    <div className="space-y-2 rounded-md border px-3 py-2">
-                      {attachmentItems.length > 0 ? (
-                        <ul className="space-y-1">
-                          {attachmentItems.map(({ storage: attachment }) => (
-                            <li
-                              key={attachment._id}
-                              className="flex items-center justify-between gap-2"
-                            >
-                              <div className="flex min-w-0 items-center gap-2">
-                                {attachment.mimetype?.includes('image') ? (
-                                  <a
-                                    href={attachment.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="shrink-0"
-                                  >
-                                    <img
-                                      src={attachment.url}
-                                      alt={attachment.originalName}
-                                      className="size-9 rounded object-cover border"
-                                    />
-                                  </a>
-                                ) : attachment.mimetype ===
-                                  'application/pdf' ? (
-                                  <a
-                                    href={attachment.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="shrink-0"
-                                  >
-                                    <div className="size-9 rounded border bg-muted flex items-center justify-center">
-                                      <FileTextIcon className="size-4 text-muted-foreground" />
-                                    </div>
-                                  </a>
-                                ) : null}
-                                <a
-                                  href={attachment.url}
-                                  target="_blank"
-                                  rel="noreferrer"
-                                  className="text-sm text-primary underline underline-offset-2 truncate"
-                                >
-                                  {attachment.originalName}
-                                </a>
-                              </div>
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon-sm"
-                                className="cursor-pointer text-destructive"
-                                disabled={updateRow.status === 'pending'}
-                                onClick={() =>
-                                  handleAttachmentDelete(attachment._id)
-                                }
-                              >
-                                <TrashIcon className="size-3.5" />
-                              </Button>
-                            </li>
-                          ))}
-                        </ul>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">-</span>
-                      )}
+                {((): React.ReactNode => {
+                  if (fields.attachments.type === E_FIELD_TYPE.FIELD_GROUP) {
+                    return (
+                      <KanbanFieldGroupEditor
+                        row={row}
+                        field={fields.attachments}
+                        table={table}
+                        tableSlug={tableSlug}
+                        currentUserId={currentUserId}
+                        updateRow={updateRow}
+                      />
+                    );
+                  }
+                  if (supportsInlineAttachmentManager) {
+                    return (
+                      <>
+                        <div className="flex items-center justify-between gap-2">
+                          <h3 className="text-sm font-semibold">Anexos</h3>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="cursor-pointer"
+                            onClick={() => setIsAddingAttachments(true)}
+                            disabled={updateRow.status === 'pending'}
+                          >
+                            Adicionar
+                          </Button>
+                        </div>
+                        <div className="space-y-2 rounded-md border px-3 py-2">
+                          {((): React.ReactNode => {
+                            if (attachmentItems.length > 0) {
+                              return (
+                                <ul className="space-y-1">
+                                  {attachmentItems.map(
+                                    ({ storage: attachment }) => {
+                                      let attachmentThumbnail: React.JSX.Element | null =
+                                        null;
+                                      if (
+                                        attachment.mimetype?.includes('image')
+                                      ) {
+                                        attachmentThumbnail = (
+                                          <a
+                                            href={attachment.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="shrink-0"
+                                          >
+                                            <img
+                                              src={attachment.url}
+                                              alt={attachment.originalName}
+                                              className="size-9 rounded object-cover border"
+                                            />
+                                          </a>
+                                        );
+                                      } else if (
+                                        attachment.mimetype ===
+                                        'application/pdf'
+                                      ) {
+                                        attachmentThumbnail = (
+                                          <a
+                                            href={attachment.url}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="shrink-0"
+                                          >
+                                            <div className="size-9 rounded border bg-muted flex items-center justify-center">
+                                              <FileTextIcon className="size-4 text-muted-foreground" />
+                                            </div>
+                                          </a>
+                                        );
+                                      }
+                                      return (
+                                        <li
+                                          key={attachment._id}
+                                          className="flex items-center justify-between gap-2"
+                                        >
+                                          <div className="flex min-w-0 items-center gap-2">
+                                            {attachmentThumbnail}
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="text-sm text-primary underline underline-offset-2 truncate"
+                                            >
+                                              {attachment.originalName}
+                                            </a>
+                                          </div>
+                                          <Button
+                                            type="button"
+                                            variant="ghost"
+                                            size="icon-sm"
+                                            className="cursor-pointer text-destructive"
+                                            disabled={
+                                              updateRow.status === 'pending'
+                                            }
+                                            onClick={() =>
+                                              handleAttachmentDelete(
+                                                attachment._id,
+                                              )
+                                            }
+                                          >
+                                            <TrashIcon className="size-3.5" />
+                                          </Button>
+                                        </li>
+                                      );
+                                    },
+                                  )}
+                                </ul>
+                              );
+                            }
+                            return (
+                              <span className="text-sm text-muted-foreground">
+                                -
+                              </span>
+                            );
+                          })()}
 
-                      {isAddingAttachments && (
-                        <div className="space-y-2 border-t pt-2">
-                          <FileUploadWithStorage
-                            value={attachmentUploadFiles}
-                            onValueChange={setAttachmentUploadFiles}
-                            onStorageChange={setAttachmentUploadStorages}
-                            maxFiles={10}
-                            onUploadingChange={setIsAttachmentUploading}
-                          />
+                          {isAddingAttachments && (
+                            <div className="space-y-2 border-t pt-2">
+                              <FileUploadWithStorage
+                                value={attachmentUploadFiles}
+                                onValueChange={setAttachmentUploadFiles}
+                                onStorageChange={setAttachmentUploadStorages}
+                                maxFiles={10}
+                                onUploadingChange={setIsAttachmentUploading}
+                              />
+                              <div className="flex justify-end gap-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  className="cursor-pointer"
+                                  onClick={handleAttachmentAddCancel}
+                                  disabled={updateRow.status === 'pending'}
+                                >
+                                  Cancelar
+                                </Button>
+                                <Button
+                                  type="button"
+                                  className="cursor-pointer"
+                                  onClick={handleAttachmentAddSave}
+                                  disabled={
+                                    updateRow.status === 'pending' ||
+                                    isAttachmentUploading ||
+                                    attachmentUploadStorages.length === 0
+                                  }
+                                >
+                                  Adicionar
+                                </Button>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </>
+                    );
+                  }
+                  return (
+                    <>
+                      <h3 className="text-sm font-semibold">Anexos</h3>
+                      <div
+                        role="button"
+                        tabIndex={0}
+                        className="w-full text-left rounded-md border border-transparent px-2 py-1 -ml-2 hover:border-muted-foreground/30 hover:bg-muted/30 cursor-pointer"
+                        onClick={() =>
+                          handleStartEditingField(fields.attachments!.slug)
+                        }
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault();
+                            handleStartEditingField(fields.attachments!.slug);
+                          }
+                        }}
+                      >
+                        {renderExtraField(fields.attachments)}
+                      </div>
+                      {editingFieldSlug === fields.attachments.slug && (
+                        <form
+                          className="space-y-2"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            extraForm.handleSubmit();
+                          }}
+                        >
+                          {renderExtraFieldEditor(fields.attachments)}
                           <div className="flex justify-end gap-2">
                             <Button
                               type="button"
                               variant="ghost"
                               className="cursor-pointer"
-                              onClick={handleAttachmentAddCancel}
-                              disabled={updateRow.status === 'pending'}
+                              onClick={() => setEditingFieldSlug(null)}
                             >
                               Cancelar
                             </Button>
                             <Button
-                              type="button"
+                              type="submit"
                               className="cursor-pointer"
-                              onClick={handleAttachmentAddSave}
-                              disabled={
-                                updateRow.status === 'pending' ||
-                                isAttachmentUploading ||
-                                attachmentUploadStorages.length === 0
-                              }
+                              disabled={updateRow.status === 'pending'}
                             >
-                              Adicionar
+                              Salvar
                             </Button>
                           </div>
-                        </div>
+                        </form>
                       )}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <h3 className="text-sm font-semibold">Anexos</h3>
-                    <div
-                      role="button"
-                      tabIndex={0}
-                      className="w-full text-left rounded-md border border-transparent px-2 py-1 -ml-2 hover:border-muted-foreground/30 hover:bg-muted/30 cursor-pointer"
-                      onClick={() =>
-                        handleStartEditingField(fields.attachments!.slug)
-                      }
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') {
-                          event.preventDefault();
-                          handleStartEditingField(fields.attachments!.slug);
-                        }
-                      }}
-                    >
-                      {renderExtraField(fields.attachments)}
-                    </div>
-                    {editingFieldSlug === fields.attachments.slug && (
-                      <form
-                        className="space-y-2"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          extraForm.handleSubmit();
-                        }}
-                      >
-                        {renderExtraFieldEditor(fields.attachments)}
-                        <div className="flex justify-end gap-2">
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            className="cursor-pointer"
-                            onClick={() => setEditingFieldSlug(null)}
-                          >
-                            Cancelar
-                          </Button>
-                          <Button
-                            type="submit"
-                            className="cursor-pointer"
-                            disabled={updateRow.status === 'pending'}
-                          >
-                            Salvar
-                          </Button>
-                        </div>
-                      </form>
-                    )}
-                  </>
-                )}
+                    </>
+                  );
+                })()}
               </section>
             )}
 

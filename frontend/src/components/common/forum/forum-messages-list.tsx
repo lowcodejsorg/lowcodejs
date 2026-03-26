@@ -3,7 +3,7 @@ import React from 'react';
 
 import type { ForumMessage } from './forum-types';
 
-import { ContentViewer } from '@/components/common/editor';
+import { ContentViewer } from '@/components/common/rich-editor';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,9 +59,12 @@ export function ForumMessagesList({
     if (!highlightedMessageId) return;
     setFlashMessageId(highlightedMessageId);
     const timeout = window.setTimeout(() => {
-      setFlashMessageId((current) =>
-        current === highlightedMessageId ? null : current,
-      );
+      setFlashMessageId((current) => {
+        if (current === highlightedMessageId) {
+          return null;
+        }
+        return current;
+      });
     }, 3500);
     return (): void => window.clearTimeout(timeout);
   }, [highlightedMessageId, highlightedMessageTick]);
@@ -98,14 +101,19 @@ export function ForumMessagesList({
 
   return (
     <div
+      data-slot="forum-messages-list"
       ref={containerRef}
       className="flex-1 min-h-0 overflow-auto px-4 py-3 space-y-4"
     >
       {messages.map((message, index) => {
-        const authorName =
-          typeof message.author === 'string'
-            ? message.author
-            : message.author?.name || message.author?.email || 'Usuario';
+        let authorName = 'Usuario';
+        if (typeof message.author === 'string') {
+          authorName = message.author;
+        } else if (message.author?.name) {
+          authorName = message.author.name;
+        } else if (message.author?.email) {
+          authorName = message.author.email;
+        }
         const canManage = message.authorId === currentUserId;
         const hasLiked = message.reactions
           .find((r) => r.emoji === '👍')
@@ -113,12 +121,16 @@ export function ForumMessagesList({
         const hasLoved = message.reactions
           .find((r) => r.emoji === '❤️')
           ?.users.includes(currentUserId);
-        const replyMessage = message.replyTo
-          ? messages.find((item) => item.id === message.replyTo)
-          : null;
-        const replySnippet = replyMessage
-          ? stripHtml(replyMessage.text || '') || 'Mensagem sem texto'
-          : '';
+        let replyMessage: ForumMessage | null = null;
+        if (message.replyTo) {
+          replyMessage =
+            messages.find((item) => item.id === message.replyTo) ?? null;
+        }
+        let replySnippet = '';
+        if (replyMessage) {
+          replySnippet =
+            stripHtml(replyMessage.text || '') || 'Mensagem sem texto';
+        }
 
         return (
           <div
@@ -174,9 +186,12 @@ export function ForumMessagesList({
                 <div className="rounded-md border bg-muted/40 px-2 py-1 text-xs">
                   <div className="font-medium text-muted-foreground">
                     Respondendo a{' '}
-                    {typeof replyMessage.author === 'string'
-                      ? replyMessage.author
-                      : replyMessage.author?.name || 'Usuario'}
+                    {((): string => {
+                      if (typeof replyMessage.author === 'string') {
+                        return replyMessage.author;
+                      }
+                      return replyMessage.author?.name || 'Usuario';
+                    })()}
                   </div>
                   <div className="line-clamp-2">{replySnippet}</div>
                 </div>
@@ -188,6 +203,16 @@ export function ForumMessagesList({
                 <div className="flex flex-wrap gap-2">
                   {message.attachments.map((file) => {
                     const isImage = file.mimetype.includes('image');
+                    let filePreview = <FileIcon className="size-5" />;
+                    if (isImage) {
+                      filePreview = (
+                        <img
+                          src={file.url}
+                          alt={file.originalName}
+                          className="h-12 w-12 rounded-md object-cover"
+                        />
+                      );
+                    }
                     return (
                       <a
                         key={file._id}
@@ -196,15 +221,7 @@ export function ForumMessagesList({
                         rel="noreferrer"
                         className="flex items-center gap-2 rounded-md border p-2 text-xs hover:bg-muted/40"
                       >
-                        {isImage ? (
-                          <img
-                            src={file.url}
-                            alt={file.originalName}
-                            className="h-12 w-12 rounded-md object-cover"
-                          />
-                        ) : (
-                          <FileIcon className="size-5" />
-                        )}
+                        {filePreview}
                         <span className="max-w-[160px] truncate">
                           {file.originalName}
                         </span>
@@ -216,18 +233,23 @@ export function ForumMessagesList({
 
               {message.mentions.length > 0 && (
                 <div className="flex flex-wrap gap-1">
-                  {message.mentions.map((mention, idx) => (
-                    <Badge
-                      key={`${message.id}-mention-${idx}`}
-                      variant="secondary"
-                      className="text-[10px]"
-                    >
-                      @
-                      {typeof mention === 'string'
-                        ? mention
-                        : mention.name || mention.email}
-                    </Badge>
-                  ))}
+                  {message.mentions.map((mention, idx) => {
+                    let mentionLabel = '';
+                    if (typeof mention === 'string') {
+                      mentionLabel = mention;
+                    } else {
+                      mentionLabel = mention.name || mention.email;
+                    }
+                    return (
+                      <Badge
+                        key={`${message.id}-mention-${idx}`}
+                        variant="secondary"
+                        className="text-[10px]"
+                      >
+                        @{mentionLabel}
+                      </Badge>
+                    );
+                  })}
                 </div>
               )}
 
@@ -245,7 +267,12 @@ export function ForumMessagesList({
                 <Button
                   type="button"
                   size="sm"
-                  variant={hasLiked ? 'secondary' : 'ghost'}
+                  variant={((): 'secondary' | 'ghost' => {
+                    if (hasLiked) {
+                      return 'secondary';
+                    }
+                    return 'ghost';
+                  })()}
                   onClick={() => onToggleReaction(index, '👍')}
                   className={cn(
                     'cursor-pointer transition',
@@ -260,7 +287,12 @@ export function ForumMessagesList({
                 <Button
                   type="button"
                   size="sm"
-                  variant={hasLoved ? 'secondary' : 'ghost'}
+                  variant={((): 'secondary' | 'ghost' => {
+                    if (hasLoved) {
+                      return 'secondary';
+                    }
+                    return 'ghost';
+                  })()}
                   onClick={() => onToggleReaction(index, '❤️')}
                   className={cn(
                     'cursor-pointer transition',

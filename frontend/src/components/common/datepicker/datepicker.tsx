@@ -24,10 +24,16 @@ import {
 } from '@/components/ui/popover';
 
 function applyDateMask(value: string, format: string): string {
-  const separator = format.includes('/') ? '/' : '-';
+  let separator = '-';
+  if (format.includes('/')) {
+    separator = '/';
+  }
   const numbers = value.replace(/\D/g, '');
   const hasTime = format.includes('HH');
-  const maxDigits = hasTime ? 14 : 8;
+  let maxDigits = 8;
+  if (hasTime) {
+    maxDigits = 14;
+  }
   const yearFirst = format.toLowerCase().startsWith('yyyy');
 
   let masked = '';
@@ -277,11 +283,24 @@ export function Datepicker({
     return `dd/mm/aaaa ${separator} dd/mm/aaaa`;
   };
 
+  // Hover date for range selection preview
+  let activeHoverDate: Date | null = null;
+  if (isSelectingRange) {
+    activeHoverDate = hoverDate;
+  }
+
+  // Selected date for single mode
+  let singleSelectedDate: Date | null = null;
+  if (asSingle) {
+    singleSelectedDate = value?.startDate || null;
+  }
+
   // Check if we have a value to show clear button
   const hasValue = value?.startDate || value?.endDate;
 
   return (
     <InputGroup
+      data-slot="datepicker"
       data-disabled={disabled}
       className={className}
     >
@@ -323,19 +342,19 @@ export function Datepicker({
             align="end"
             sideOffset={8}
           >
-            {useRange ? (
+            {useRange && (
               // Dual calendar layout
               <div className="flex">
                 {/* Left calendar */}
                 <div className="relative">
                   <DatepickerCalendar
-                    selectedDate={asSingle ? value?.startDate || null : null}
+                    selectedDate={singleSelectedDate}
                     onSelectDate={handleSelectDate}
                     minDate={minDate}
                     maxDate={maxDate}
                     rangeStart={rangeStart}
                     rangeEnd={rangeEnd}
-                    hoverDate={isSelectingRange ? hoverDate : null}
+                    hoverDate={activeHoverDate}
                     onDateHover={handleDateHover}
                     isRangeMode={!asSingle}
                     displayMonth={leftCalendarMonth}
@@ -370,13 +389,13 @@ export function Datepicker({
                 {/* Right calendar */}
                 <div className="relative">
                   <DatepickerCalendar
-                    selectedDate={asSingle ? value?.startDate || null : null}
+                    selectedDate={singleSelectedDate}
                     onSelectDate={handleSelectDate}
                     minDate={minDate}
                     maxDate={maxDate}
                     rangeStart={rangeStart}
                     rangeEnd={rangeEnd}
-                    hoverDate={isSelectingRange ? hoverDate : null}
+                    hoverDate={activeHoverDate}
                     onDateHover={handleDateHover}
                     isRangeMode={!asSingle}
                     displayMonth={rightCalendarMonth}
@@ -404,16 +423,17 @@ export function Datepicker({
                   </button>
                 </div>
               </div>
-            ) : (
+            )}
+            {!useRange && (
               // Single calendar layout
               <DatepickerCalendar
-                selectedDate={asSingle ? value?.startDate || null : null}
+                selectedDate={singleSelectedDate}
                 onSelectDate={handleSelectDate}
                 minDate={minDate}
                 maxDate={maxDate}
                 rangeStart={rangeStart}
                 rangeEnd={rangeEnd}
-                hoverDate={isSelectingRange ? hoverDate : null}
+                hoverDate={activeHoverDate}
                 onDateHover={handleDateHover}
                 isRangeMode={!asSingle}
               />

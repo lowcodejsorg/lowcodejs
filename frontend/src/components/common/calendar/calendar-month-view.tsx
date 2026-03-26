@@ -34,7 +34,10 @@ export function CalendarMonthView({
   const days = eachDayOfInterval({ start: gridStart, end: gridEnd });
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div
+      data-slot="calendar-month-view"
+      className="flex h-full min-h-0 flex-col"
+    >
       <div className="grid grid-cols-7 border-b text-xs font-medium text-muted-foreground">
         {Array.from({ length: 7 }).map((_, index) => {
           const day = days[index];
@@ -84,6 +87,10 @@ export function CalendarMonthView({
               <div className="space-y-1">
                 {dayEvents.slice(0, 3).map((event) => {
                   const startsToday = isSameDay(event.start, day);
+                  let timeLabel = 'Continua';
+                  if (startsToday) {
+                    timeLabel = formatEventTimeRange(event);
+                  }
                   return (
                     <Button
                       key={`${event.rowId}-${day.toISOString()}`}
@@ -102,9 +109,7 @@ export function CalendarMonthView({
                             {event.title}
                           </div>
                           <div className="truncate text-[10px] text-muted-foreground">
-                            {startsToday
-                              ? formatEventTimeRange(event)
-                              : 'Continua'}
+                            {timeLabel}
                           </div>
                         </div>
                       </div>

@@ -45,20 +45,25 @@ export function DataTableColumnHeader({
     return <span>{title}</span>;
   }
 
-  const currentOrder = orderKey
-    ? ((search as Record<string, unknown>)[orderKey] as
-        | 'asc'
-        | 'desc'
-        | undefined)
-    : undefined;
+  let currentOrder: 'asc' | 'desc' | undefined = undefined;
+  if (orderKey) {
+    currentOrder = (search as Record<string, unknown>)[orderKey] as
+      | 'asc'
+      | 'desc'
+      | undefined;
+  }
 
   return (
-    <div className="inline-flex items-center">
-      {onTitleClick ? (
+    <div
+      data-slot="data-table-column-header"
+      className="inline-flex items-center"
+    >
+      {onTitleClick && (
         <Button
           className={cn(
             'h-auto px-2 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent',
-            canNavigate ? 'cursor-pointer' : 'cursor-default',
+            canNavigate && 'cursor-pointer',
+            !canNavigate && 'cursor-default',
           )}
           variant="link"
           onClick={() => {
@@ -67,9 +72,8 @@ export function DataTableColumnHeader({
         >
           {title}
         </Button>
-      ) : (
-        <span>{title}</span>
       )}
+      {!onTitleClick && <span>{title}</span>}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

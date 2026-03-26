@@ -15,6 +15,7 @@ export function TrashButton(): React.JSX.Element {
 
   return (
     <Button
+      data-slot="trash-button"
       onClick={() => {
         if (!search.trashed) {
           router.navigate({

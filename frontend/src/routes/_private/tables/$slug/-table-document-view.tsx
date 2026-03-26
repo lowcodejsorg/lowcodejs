@@ -8,11 +8,11 @@ import React, {
   useState,
 } from 'react';
 
-import { DocumentMain } from '@/components/common/document-main';
-import { DocumentPdf } from '@/components/common/document-pdf';
-import { DocumentPrintButton } from '@/components/common/document-print-button';
-import { DocumentSidebar } from '@/components/common/document-sidebar';
-import { DocumentToc } from '@/components/common/document-toc';
+import { DocumentMain } from '@/components/common/document/document-main';
+import { DocumentPdf } from '@/components/common/document/document-pdf';
+import { DocumentPrintButton } from '@/components/common/document/document-print-button';
+import { DocumentSidebar } from '@/components/common/document/document-sidebar';
+import { DocumentToc } from '@/components/common/document/document-toc';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import type { CatNode } from '@/lib/document-helpers';
 import {

@@ -1,7 +1,7 @@
 import { PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
-import { badgeStyleFromColor } from '@/components/common/table-row-badge-list';
+import { badgeStyleFromColor } from '@/components/common/table-cells/table-row-badge-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -44,7 +44,10 @@ export function KanbanCreateCardDialog({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="w-[min(95vw,1400px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0">
+      <DialogContent
+        data-slot="kanban-create-card-dialog"
+        className="w-[min(95vw,1400px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0"
+      >
         <form
           className="grid grid-cols-1 lg:grid-cols-[1fr_280px] h-full min-h-0"
           onSubmit={(event) => {
@@ -58,9 +61,12 @@ export function KanbanCreateCardDialog({
                 Novo card
               </DialogTitle>
               <DialogDescription>
-                {createColumnOption?.label
-                  ? `Adicionar em ${createColumnOption.label}`
-                  : 'Preencha os dados do card.'}
+                {((): string => {
+                  if (createColumnOption?.label) {
+                    return `Adicionar em ${createColumnOption.label}`;
+                  }
+                  return 'Preencha os dados do card.';
+                })()}
               </DialogDescription>
             </DialogHeader>
 
@@ -108,24 +114,27 @@ export function KanbanCreateCardDialog({
 
             {fields.description && (
               <createForm.AppField name={fields.description.slug}>
-                {(formField: any) => (
-                  <>
-                    {fields.description?.format === E_FIELD_FORMAT.RICH_TEXT ? (
+                {(formField: any) => {
+                  if (fields.description?.format === E_FIELD_FORMAT.RICH_TEXT) {
+                    return (
                       <formField.TableRowRichTextField
                         field={fields.description}
                       />
-                    ) : fields.description?.format ===
-                      E_FIELD_FORMAT.MARKDOWN ? (
+                    );
+                  }
+                  if (fields.description?.format === E_FIELD_FORMAT.MARKDOWN) {
+                    return (
                       <formField.TableRowMarkdownField
                         field={fields.description}
                       />
-                    ) : (
-                      <formField.TableRowTextareaField
-                        field={fields.description!}
-                      />
-                    )}
-                  </>
-                )}
+                    );
+                  }
+                  return (
+                    <formField.TableRowTextareaField
+                      field={fields.description!}
+                    />
+                  );
+                }}
               </createForm.AppField>
             )}
 
@@ -177,15 +186,17 @@ export function KanbanCreateCardDialog({
                                         (
                                           item: Record<string, unknown>,
                                           itemIndex: number,
-                                        ) =>
-                                          itemIndex === index
-                                            ? {
-                                                ...item,
-                                                realizado: [
-                                                  checked ? 'sim' : 'nao',
-                                                ],
-                                              }
-                                            : item,
+                                        ) => {
+                                          if (itemIndex !== index) return item;
+                                          let realizadoValue = 'nao';
+                                          if (checked) {
+                                            realizadoValue = 'sim';
+                                          }
+                                          return {
+                                            ...item,
+                                            realizado: [realizadoValue],
+                                          };
+                                        },
                                       );
                                       tasksField.handleChange(updated);
                                     }}
@@ -248,26 +259,24 @@ export function KanbanCreateCardDialog({
 
             {fields.attachments && (
               <createForm.AppField name={fields.attachments.slug}>
-                {(formField: any) => (
-                  <>
-                    {((): React.JSX.Element => {
-                      const attachmentsField = {
-                        ...fields.attachments!,
-                        name: 'Anexos',
-                      };
-                      return fields.attachments?.type ===
-                        E_FIELD_TYPE.FIELD_GROUP ? (
-                        <formField.TableRowFieldGroupField
-                          field={attachmentsField}
-                          tableSlug={tableSlug}
-                          form={createForm}
-                        />
-                      ) : (
-                        <formField.TableRowFileField field={attachmentsField} />
-                      );
-                    })()}
-                  </>
-                )}
+                {(formField: any) => {
+                  const attachmentsField = {
+                    ...fields.attachments!,
+                    name: 'Anexos',
+                  };
+                  if (fields.attachments?.type === E_FIELD_TYPE.FIELD_GROUP) {
+                    return (
+                      <formField.TableRowFieldGroupField
+                        field={attachmentsField}
+                        tableSlug={tableSlug}
+                        form={createForm}
+                      />
+                    );
+                  }
+                  return (
+                    <formField.TableRowFileField field={attachmentsField} />
+                  );
+                }}
               </createForm.AppField>
             )}
 
@@ -339,16 +348,21 @@ export function KanbanCreateCardDialog({
             <div className="flex-1 min-h-0 overflow-y-auto p-4">
               <div className="space-y-2">
                 <p className="text-xs uppercase text-muted-foreground">Lista</p>
-                {createColumnOption ? (
-                  <Badge
-                    variant="outline"
-                    style={badgeStyleFromColor(createColumnOption.color)}
-                  >
-                    {createColumnOption.label}
-                  </Badge>
-                ) : (
-                  <span className="text-sm text-muted-foreground">-</span>
-                )}
+                {((): React.ReactNode => {
+                  if (createColumnOption) {
+                    return (
+                      <Badge
+                        variant="outline"
+                        style={badgeStyleFromColor(createColumnOption.color)}
+                      >
+                        {createColumnOption.label}
+                      </Badge>
+                    );
+                  }
+                  return (
+                    <span className="text-sm text-muted-foreground">-</span>
+                  );
+                })()}
               </div>
             </div>
 

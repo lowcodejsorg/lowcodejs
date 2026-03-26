@@ -46,7 +46,10 @@ export function InputSearch(): React.JSX.Element {
   };
 
   return (
-    <div className="flex-1 w-full">
+    <div
+      data-slot="input-search"
+      className="flex-1 w-full"
+    >
       <InputGroup>
         <InputGroupAddon>
           <Tooltip>

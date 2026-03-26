@@ -10,8 +10,8 @@ import React from 'react';
 import { UpdateRowFormSkeleton } from './-update-form-skeleton';
 import { UpdateRowForm } from './-update-row-form';
 
-import { LoadError } from '@/components/common/load-error';
-import { LoginButton } from '@/components/common/login-button';
+import { LoginButton } from '@/components/common/layout/login-button';
+import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
 import {
   Empty,

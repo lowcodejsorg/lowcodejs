@@ -94,7 +94,10 @@ export function DatepickerCalendar({
   );
 
   const handleNavigateYears = useCallback((direction: 'prev' | 'next') => {
-    setYearRangeCenter((prev) => prev + (direction === 'next' ? 12 : -12));
+    setYearRangeCenter((prev) => {
+      if (direction === 'next') return prev + 12;
+      return prev - 12;
+    });
   }, []);
 
   const handleSelectDate = useCallback(
@@ -105,19 +108,44 @@ export function DatepickerCalendar({
   );
 
   const handleMonthClick = useCallback(() => {
-    setView((prev) => (prev === 'months' ? 'days' : 'months'));
+    setView((prev) => {
+      if (prev === 'months') return 'days';
+      return 'months';
+    });
   }, []);
 
   const handleYearClick = useCallback(() => {
     setYearRangeCenter(currentMonth.getFullYear());
-    setView((prev) => (prev === 'years' ? 'days' : 'years'));
+    setView((prev) => {
+      if (prev === 'years') return 'days';
+      return 'years';
+    });
   }, [currentMonth]);
 
-  const minYear = minDate ? minDate.getFullYear() : null;
-  const maxYear = maxDate ? maxDate.getFullYear() : null;
+  let minYear: number | null = null;
+  if (minDate) {
+    minYear = minDate.getFullYear();
+  }
+  let maxYear: number | null = null;
+  if (maxDate) {
+    maxYear = maxDate.getFullYear();
+  }
+
+  let monthButtonVariant: 'secondary' | 'ghost' = 'ghost';
+  if (view === 'months') {
+    monthButtonVariant = 'secondary';
+  }
+
+  let yearButtonVariant: 'secondary' | 'ghost' = 'ghost';
+  if (view === 'years') {
+    yearButtonVariant = 'secondary';
+  }
 
   return (
-    <div className="w-70">
+    <div
+      data-slot="datepicker-calendar"
+      className="w-70"
+    >
       {/* Header with navigation */}
       <div className="flex items-center space-x-1.5 border border-border rounded-md px-2 py-1.5">
         {/* Left navigation - Prev month (days view) or Prev years (years view) */}
@@ -154,7 +182,7 @@ export function DatepickerCalendar({
           <div className="w-1/2">
             <Button
               type="button"
-              variant={view === 'months' ? 'secondary' : 'ghost'}
+              variant={monthButtonVariant}
               className="w-full h-8 font-medium"
               onClick={handleMonthClick}
             >
@@ -164,7 +192,7 @@ export function DatepickerCalendar({
           <div className="w-1/2">
             <Button
               type="button"
-              variant={view === 'years' ? 'secondary' : 'ghost'}
+              variant={yearButtonVariant}
               className="w-full h-8 font-medium"
               onClick={handleYearClick}
             >

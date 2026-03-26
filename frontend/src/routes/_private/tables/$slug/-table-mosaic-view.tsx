@@ -1,17 +1,17 @@
 import { useParams, useRouter } from '@tanstack/react-router';
 import React from 'react';
 
-import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
-import { TableRowDateCell } from '@/components/common/table-row-date-cell';
-import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
-import { TableRowEvaluationCell } from '@/components/common/table-row-evaluation-cell';
-import { TableRowFieldGroupCell } from '@/components/common/table-row-field-group-cell';
-import { TableRowFileCell } from '@/components/common/table-row-file-cell';
-import { TableRowReactionCell } from '@/components/common/table-row-reaction-cell';
-import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
-import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
-import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
-import { TableRowUserCell } from '@/components/common/table-row-user-cell';
+import { TableRowCategoryCell } from '@/components/common/table-cells/table-row-category-cell';
+import { TableRowDateCell } from '@/components/common/table-cells/table-row-date-cell';
+import { TableRowDropdownCell } from '@/components/common/table-cells/table-row-dropdown-cell';
+import { TableRowEvaluationCell } from '@/components/common/table-cells/table-row-evaluation-cell';
+import { TableRowFieldGroupCell } from '@/components/common/table-cells/table-row-field-group-cell';
+import { TableRowFileCell } from '@/components/common/table-cells/table-row-file-cell';
+import { TableRowReactionCell } from '@/components/common/table-cells/table-row-reaction-cell';
+import { TableRowRelationshipCell } from '@/components/common/table-cells/table-row-relationship-cell';
+import { TableRowTextLongCell } from '@/components/common/table-cells/table-row-text-long-cell';
+import { TableRowTextShortCell } from '@/components/common/table-cells/table-row-text-short-cell';
+import { TableRowUserCell } from '@/components/common/table-cells/table-row-user-cell';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
 import { resolveLayoutField } from '@/lib/layout-field-resolver';

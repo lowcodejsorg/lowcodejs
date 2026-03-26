@@ -6,7 +6,7 @@ import React from 'react';
 import {
   badgeStyleFromColor,
   hexToRgb,
-} from '@/components/common/table-row-badge-list';
+} from '@/components/common/table-cells/table-row-badge-list';
 import { Badge } from '@/components/ui/badge';
 import {
   columnHeaderStyleFromColor,
@@ -78,6 +78,7 @@ export function KanbanColumn({
 
   return (
     <section
+      data-slot="kanban-column"
       ref={setNodeRef}
       style={{ ...style, ...columnStyle }}
       className={cn(
@@ -99,75 +100,84 @@ export function KanbanColumn({
           >
             <GripVerticalIcon className="size-4" />
           </button>
-          {editingColumnId === option.id ? (
-            <div className="flex items-center gap-2">
-              <input
-                value={editingColumnLabel}
-                onChange={(event) => onEditChange(event.target.value)}
-                onBlur={(event) => {
-                  if (event.relatedTarget === colorInputRef.current) return;
-                  const nextLabel = editingColumnLabel.trim();
-                  const nextColor = editingColumnColor ?? option.color ?? null;
-                  const labelChanged = nextLabel && nextLabel !== option.label;
-                  const colorChanged = nextColor !== (option.color ?? null);
-                  if (!labelChanged && !colorChanged) {
-                    onEditCancel();
-                    return;
-                  }
-                  if (!nextLabel) {
-                    onEditCancel();
-                    return;
-                  }
-                  onEditCommit(option.id, nextLabel, nextColor);
+          {((): React.ReactNode => {
+            if (editingColumnId === option.id) {
+              return (
+                <div className="flex items-center gap-2">
+                  <input
+                    value={editingColumnLabel}
+                    onChange={(event) => onEditChange(event.target.value)}
+                    onBlur={(event) => {
+                      if (event.relatedTarget === colorInputRef.current) return;
+                      const nextLabel = editingColumnLabel.trim();
+                      const nextColor =
+                        editingColumnColor ?? option.color ?? null;
+                      const labelChanged =
+                        nextLabel && nextLabel !== option.label;
+                      const colorChanged = nextColor !== (option.color ?? null);
+                      if (!labelChanged && !colorChanged) {
+                        onEditCancel();
+                        return;
+                      }
+                      if (!nextLabel) {
+                        onEditCancel();
+                        return;
+                      }
+                      onEditCommit(option.id, nextLabel, nextColor);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault();
+                        (event.target as HTMLInputElement).blur();
+                      }
+                      if (event.key === 'Escape') {
+                        event.preventDefault();
+                        onEditCancel();
+                      }
+                    }}
+                    autoFocus
+                    className="w-40 rounded-md border border-input bg-background px-2 py-1 text-base font-semibold focus:outline-none"
+                  />
+                  <input
+                    type="color"
+                    value={editingColumnColor ?? option.color ?? '#64748b'}
+                    onChange={(event) => onEditColorChange(event.target.value)}
+                    onBlur={() => {
+                      const nextLabel = editingColumnLabel.trim();
+                      const nextColor =
+                        editingColumnColor ?? option.color ?? null;
+                      const labelChanged =
+                        nextLabel && nextLabel !== option.label;
+                      const colorChanged = nextColor !== (option.color ?? null);
+                      if (!labelChanged && !colorChanged) {
+                        onEditCancel();
+                        return;
+                      }
+                      if (!nextLabel) {
+                        onEditCancel();
+                        return;
+                      }
+                      onEditCommit(option.id, nextLabel, nextColor);
+                    }}
+                    className="h-7 w-10 rounded border bg-transparent p-0"
+                    aria-label="Cor da coluna"
+                    ref={colorInputRef}
+                  />
+                </div>
+              );
+            }
+            return (
+              <button
+                type="button"
+                className="text-base font-semibold cursor-pointer"
+                onDoubleClick={() => {
+                  onEditStart(option);
                 }}
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault();
-                    (event.target as HTMLInputElement).blur();
-                  }
-                  if (event.key === 'Escape') {
-                    event.preventDefault();
-                    onEditCancel();
-                  }
-                }}
-                autoFocus
-                className="w-40 rounded-md border border-input bg-background px-2 py-1 text-base font-semibold focus:outline-none"
-              />
-              <input
-                type="color"
-                value={editingColumnColor ?? option.color ?? '#64748b'}
-                onChange={(event) => onEditColorChange(event.target.value)}
-                onBlur={() => {
-                  const nextLabel = editingColumnLabel.trim();
-                  const nextColor = editingColumnColor ?? option.color ?? null;
-                  const labelChanged = nextLabel && nextLabel !== option.label;
-                  const colorChanged = nextColor !== (option.color ?? null);
-                  if (!labelChanged && !colorChanged) {
-                    onEditCancel();
-                    return;
-                  }
-                  if (!nextLabel) {
-                    onEditCancel();
-                    return;
-                  }
-                  onEditCommit(option.id, nextLabel, nextColor);
-                }}
-                className="h-7 w-10 rounded border bg-transparent p-0"
-                aria-label="Cor da coluna"
-                ref={colorInputRef}
-              />
-            </div>
-          ) : (
-            <button
-              type="button"
-              className="text-base font-semibold cursor-pointer"
-              onDoubleClick={() => {
-                onEditStart(option);
-              }}
-            >
-              {option.label}
-            </button>
-          )}
+              >
+                {option.label}
+              </button>
+            );
+          })()}
         </div>
         <Badge
           variant="outline"

@@ -2,7 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import React from 'react';
 
-import { TableRowDateCell } from '@/components/common/table-row-date-cell';
+import { TableRowDateCell } from '@/components/common/table-cells/table-row-date-cell';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { IRow } from '@/lib/interfaces';
 import {
@@ -31,6 +31,7 @@ export function KanbanCard({
 
   return (
     <button
+      data-slot="kanban-card"
       type="button"
       onClick={onClick}
       className="w-full text-left rounded-md border bg-background p-3 shadow-sm hover:shadow-md transition cursor-pointer"
@@ -42,9 +43,8 @@ export function KanbanCard({
           <div
             className={cn(
               'gap-2',
-              fields.startDate && fields.dueDate
-                ? 'grid grid-cols-2'
-                : 'flex flex-col gap-1',
+              fields.startDate && fields.dueDate && 'grid grid-cols-2',
+              !(fields.startDate && fields.dueDate) && 'flex flex-col gap-1',
             )}
           >
             {fields.startDate && (
@@ -133,6 +133,7 @@ export function KanbanSortableCard({
 
   return (
     <div
+      data-slot="kanban-sortable-card"
       ref={setNodeRef}
       style={style}
       className={cn(isDragging && 'opacity-70')}

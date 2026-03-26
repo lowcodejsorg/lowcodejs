@@ -3,8 +3,8 @@ import React from 'react';
 
 import { ForumUserMultiSelect } from './forum-user-multi-select';
 
-import { Editor } from '@/components/common/editor';
-import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
+import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
+import { Editor } from '@/components/common/rich-editor';
 import { Button } from '@/components/ui/button';
 import type { IStorage, IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
@@ -61,21 +61,26 @@ export function ForumComposer({
   );
   return (
     <div
+      data-slot="forum-composer"
       className={cn(
         'shrink-0 border-t',
-        composerLayout === 'side'
-          ? 'w-[360px] border-t-0 border-l min-h-0 overflow-y-auto'
-          : 'max-h-[40vh] overflow-y-auto',
-        composerLayout === 'side' ? 'p-4 space-y-3' : 'p-3 space-y-2',
+        composerLayout === 'side' &&
+          'w-[360px] border-t-0 border-l min-h-0 overflow-y-auto',
+        composerLayout !== 'side' && 'max-h-[40vh] overflow-y-auto',
+        composerLayout === 'side' && 'p-4 space-y-3',
+        composerLayout !== 'side' && 'p-3 space-y-2',
       )}
     >
       {replyMessage && (
         <div className="flex items-center justify-between rounded-md border bg-muted/40 px-3 py-2 text-xs">
           <span>
             Respondendo a{' '}
-            {typeof replyMessage.author === 'string'
-              ? replyMessage.author
-              : replyMessage.author?.name || 'mensagem'}
+            {((): string => {
+              if (typeof replyMessage.author === 'string') {
+                return replyMessage.author;
+              }
+              return replyMessage.author?.name || 'mensagem';
+            })()}
           </span>
           <Button
             type="button"
@@ -97,11 +102,10 @@ export function ForumComposer({
         showBubble={false}
         autoFocus
         focusKey={focusKey}
-        className={
-          composerLayout === 'side'
-            ? 'max-h-none'
-            : 'max-h-[200px] min-h-[120px] p-0 gap-2'
-        }
+        className={cn(
+          composerLayout === 'side' && 'max-h-none',
+          composerLayout !== 'side' && 'max-h-[200px] min-h-[120px] p-0 gap-2',
+        )}
       />
 
       <div className="space-y-2">
@@ -153,7 +157,8 @@ export function ForumComposer({
           disabled={isFileUploading}
         >
           <SendIcon className="size-4" />
-          {isEditing ? 'Salvar' : 'Enviar'}
+          {isEditing && 'Salvar'}
+          {!isEditing && 'Enviar'}
         </Button>
         {isEditing && (
           <Button

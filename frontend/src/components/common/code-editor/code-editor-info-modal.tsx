@@ -28,7 +28,10 @@ export function CodeEditorInfoModal({
   label = 'Editor JavaScript',
   hook,
 }: CodeEditorInfoModalProps): React.JSX.Element {
-  const tutorialContent = hook ? getTutorialContent(hook) : null;
+  let tutorialContent: ReturnType<typeof getTutorialContent> | null = null;
+  if (hook) {
+    tutorialContent = getTutorialContent(hook);
+  }
   const apiDocs = getApiDocumentation();
 
   return (
@@ -43,7 +46,10 @@ export function CodeEditorInfoModal({
           <InfoIcon className="w-3 h-3" />
         </Button>
       </DialogTrigger>
-      <DialogContent className="flex flex-col py-4 px-6 gap-5 sm:max-w-[85vw] sm:max-h-[85vh]">
+      <DialogContent
+        data-slot="code-editor-info-modal"
+        className="flex flex-col py-4 px-6 gap-5 sm:max-w-[85vw] sm:max-h-[85vh]"
+      >
         <DialogHeader>
           <DialogTitle>Tutorial - {label}</DialogTitle>
           <DialogDescription>
@@ -99,7 +105,7 @@ export function CodeEditorInfoModal({
               value="examples"
               className="space-y-6 text-sm pr-4"
             >
-              {tutorialContent ? (
+              {tutorialContent &&
                 tutorialContent.sections.map((section, idx) => (
                   <div key={idx}>
                     <h3 className="font-semibold mb-2 text-base">
@@ -125,8 +131,8 @@ export function CodeEditorInfoModal({
                       ))}
                     </div>
                   </div>
-                ))
-              ) : (
+                ))}
+              {!tutorialContent && (
                 <div className="text-center text-muted-foreground py-8">
                   <p>
                     Selecione um tipo de hook (onLoad, beforeSave, afterSave)

@@ -3,15 +3,15 @@ import { ptBR } from 'date-fns/locale';
 import { FileIcon, FileTextIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
-import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
-import { TableRowCategoryCell } from '@/components/common/table-row-category-cell';
-import { TableRowDateCell } from '@/components/common/table-row-date-cell';
-import { TableRowDropdownCell } from '@/components/common/table-row-dropdown-cell';
-import { TableRowFileCell } from '@/components/common/table-row-file-cell';
-import { TableRowRelationshipCell } from '@/components/common/table-row-relationship-cell';
-import { TableRowTextLongCell } from '@/components/common/table-row-text-long-cell';
-import { TableRowTextShortCell } from '@/components/common/table-row-text-short-cell';
-import { TableRowUserCell } from '@/components/common/table-row-user-cell';
+import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
+import { TableRowCategoryCell } from '@/components/common/table-cells/table-row-category-cell';
+import { TableRowDateCell } from '@/components/common/table-cells/table-row-date-cell';
+import { TableRowDropdownCell } from '@/components/common/table-cells/table-row-dropdown-cell';
+import { TableRowFileCell } from '@/components/common/table-cells/table-row-file-cell';
+import { TableRowRelationshipCell } from '@/components/common/table-cells/table-row-relationship-cell';
+import { TableRowTextLongCell } from '@/components/common/table-cells/table-row-text-long-cell';
+import { TableRowTextShortCell } from '@/components/common/table-cells/table-row-text-short-cell';
+import { TableRowUserCell } from '@/components/common/table-cells/table-row-user-cell';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -57,11 +57,15 @@ function normalizeGroupRow(
         break;
       case E_FIELD_TYPE.DROPDOWN:
       case E_FIELD_TYPE.CATEGORY:
-        normalized[gf.slug] = Array.isArray(value)
-          ? value
-          : value
-            ? [value]
-            : [];
+        {
+          let dropdownValue: Array<any> = [];
+          if (Array.isArray(value)) {
+            dropdownValue = value;
+          } else if (value) {
+            dropdownValue = [value];
+          }
+          normalized[gf.slug] = dropdownValue;
+        }
         break;
       default:
         normalized[gf.slug] = value ?? null;
@@ -96,9 +100,15 @@ function getAuthorFromGroupRow(groupRow: Record<string, any>): IUser | null {
   const raw = groupRow['autor'];
   if (Array.isArray(raw)) {
     const first = raw[0];
-    return first && typeof first === 'object' && first.name ? first : null;
+    if (first && typeof first === 'object' && first.name) {
+      return first;
+    }
+    return null;
   }
-  return raw && typeof raw === 'object' && raw.name ? raw : null;
+  if (raw && typeof raw === 'object' && raw.name) {
+    return raw;
+  }
+  return null;
 }
 
 function formatAttachmentDate(dateValue: any): string | null {
@@ -270,7 +280,10 @@ export function KanbanFieldGroupEditor({
     const fileField = fileFields[0];
 
     return (
-      <div className="space-y-2">
+      <div
+        data-slot="kanban-field-group-editor"
+        className="space-y-2"
+      >
         <div className="flex items-center justify-between gap-2">
           <h3 className="text-sm font-semibold">{field.name}</h3>
           <Button
@@ -287,81 +300,92 @@ export function KanbanFieldGroupEditor({
         </div>
 
         <div className="space-y-2 rounded-md border px-3 py-2">
-          {groupData.length > 0 ? (
-            <ul className="space-y-2">
-              {groupData.map((groupRow, index) => {
-                const storages = fileField
-                  ? getStoragesFromGroupRow(groupRow, fileField)
-                  : [];
-                const author = getAuthorFromGroupRow(groupRow);
-                const dateStr = formatAttachmentDate(groupRow['data']);
+          {((): React.ReactNode => {
+            if (groupData.length > 0) {
+              return (
+                <ul className="space-y-2">
+                  {groupData.map((groupRow, index) => {
+                    const storages = fileField
+                      ? getStoragesFromGroupRow(groupRow, fileField)
+                      : [];
+                    const author = getAuthorFromGroupRow(groupRow);
+                    const dateStr = formatAttachmentDate(groupRow['data']);
 
-                if (storages.length === 0) {
-                  return (
-                    <li
-                      key={groupRow._id || index}
-                      className="flex items-center justify-between gap-2"
-                    >
-                      <span className="text-sm text-muted-foreground">
-                        Arquivo removido
-                      </span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon-sm"
-                        className="cursor-pointer text-destructive shrink-0"
-                        disabled={isSaving}
-                        onClick={() => handleDelete(index)}
-                      >
-                        <TrashIcon className="size-3.5" />
-                      </Button>
-                    </li>
-                  );
-                }
-
-                return storages.map((storage) => (
-                  <li
-                    key={storage._id}
-                    className="flex items-center justify-between gap-2"
-                  >
-                    <div className="flex min-w-0 items-center gap-2 flex-1">
-                      {renderAttachmentThumbnail(storage)}
-                      <div className="min-w-0 flex-1">
-                        <a
-                          href={storage.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="text-sm text-primary underline underline-offset-2 truncate block"
+                    if (storages.length === 0) {
+                      return (
+                        <li
+                          key={groupRow._id || index}
+                          className="flex items-center justify-between gap-2"
                         >
-                          {storage.originalName}
-                        </a>
-                        {(author || dateStr) && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {author
-                              ? `Adicionado por: ${author.name}`
-                              : 'Adicionado'}
-                            {dateStr ? ` às ${dateStr}` : ''}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      className="cursor-pointer text-destructive shrink-0"
-                      disabled={isSaving}
-                      onClick={() => handleDelete(index)}
-                    >
-                      <TrashIcon className="size-3.5" />
-                    </Button>
-                  </li>
-                ));
-              })}
-            </ul>
-          ) : (
-            <span className="text-sm text-muted-foreground">-</span>
-          )}
+                          <span className="text-sm text-muted-foreground">
+                            Arquivo removido
+                          </span>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="cursor-pointer text-destructive shrink-0"
+                            disabled={isSaving}
+                            onClick={() => handleDelete(index)}
+                          >
+                            <TrashIcon className="size-3.5" />
+                          </Button>
+                        </li>
+                      );
+                    }
+
+                    return storages.map((storage) => (
+                      <li
+                        key={storage._id}
+                        className="flex items-center justify-between gap-2"
+                      >
+                        <div className="flex min-w-0 items-center gap-2 flex-1">
+                          {renderAttachmentThumbnail(storage)}
+                          <div className="min-w-0 flex-1">
+                            <a
+                              href={storage.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-sm text-primary underline underline-offset-2 truncate block"
+                            >
+                              {storage.originalName}
+                            </a>
+                            {(author || dateStr) && (
+                              <p className="text-xs text-muted-foreground truncate">
+                                {((): string => {
+                                  if (author) {
+                                    return `Adicionado por: ${author.name}`;
+                                  }
+                                  return 'Adicionado';
+                                })()}
+                                {((): string => {
+                                  if (dateStr) {
+                                    return ` às ${dateStr}`;
+                                  }
+                                  return '';
+                                })()}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon-sm"
+                          className="cursor-pointer text-destructive shrink-0"
+                          disabled={isSaving}
+                          onClick={() => handleDelete(index)}
+                        >
+                          <TrashIcon className="size-3.5" />
+                        </Button>
+                      </li>
+                    ));
+                  })}
+                </ul>
+              );
+            }
+            return <span className="text-sm text-muted-foreground">-</span>;
+          })()}
 
           {isAdding && (
             <div className="space-y-2 border-t pt-2">
@@ -402,7 +426,10 @@ export function KanbanFieldGroupEditor({
   }
 
   return (
-    <div className="space-y-2">
+    <div
+      data-slot="kanban-field-group-editor"
+      className="space-y-2"
+    >
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{field.name}</h3>
         <Button
@@ -419,47 +446,50 @@ export function KanbanFieldGroupEditor({
       </div>
 
       <div className="space-y-2 rounded-md border px-3 py-2">
-        {groupData.length > 0 ? (
-          <ul className="space-y-2">
-            {groupData.map((groupRow, index) => (
-              <li
-                key={groupRow._id || index}
-                className="flex items-start justify-between gap-2"
-              >
-                <div className="flex-1 min-w-0">
-                  <div className="grid grid-cols-2 gap-2">
-                    {groupFields.map((groupField) => (
-                      <div
-                        key={groupField._id}
-                        className="flex flex-col gap-0.5"
-                      >
-                        <span className="text-xs font-medium text-muted-foreground">
-                          {groupField.name}
-                        </span>
-                        <RenderGroupFieldCell
-                          field={groupField}
-                          row={groupRow as IRow}
-                        />
+        {((): React.ReactNode => {
+          if (groupData.length > 0) {
+            return (
+              <ul className="space-y-2">
+                {groupData.map((groupRow, index) => (
+                  <li
+                    key={groupRow._id || index}
+                    className="flex items-start justify-between gap-2"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="grid grid-cols-2 gap-2">
+                        {groupFields.map((groupField) => (
+                          <div
+                            key={groupField._id}
+                            className="flex flex-col gap-0.5"
+                          >
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {groupField.name}
+                            </span>
+                            <RenderGroupFieldCell
+                              field={groupField}
+                              row={groupRow as IRow}
+                            />
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className="cursor-pointer text-destructive shrink-0 mt-1"
-                  disabled={isSaving}
-                  onClick={() => handleDelete(index)}
-                >
-                  <TrashIcon className="size-3.5" />
-                </Button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <span className="text-sm text-muted-foreground">-</span>
-        )}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon-sm"
+                      className="cursor-pointer text-destructive shrink-0 mt-1"
+                      disabled={isSaving}
+                      onClick={() => handleDelete(index)}
+                    >
+                      <TrashIcon className="size-3.5" />
+                    </Button>
+                  </li>
+                ))}
+              </ul>
+            );
+          }
+          return <span className="text-sm text-muted-foreground">-</span>;
+        })()}
 
         {isAdding && (
           <div className="space-y-3 border-t pt-2">
@@ -471,28 +501,33 @@ export function KanbanFieldGroupEditor({
                 <label className="text-xs font-medium text-muted-foreground">
                   {gf.name}
                 </label>
-                {gf.type === E_FIELD_TYPE.TEXT_LONG ? (
-                  <Textarea
-                    value={newItem[gf.slug] ?? ''}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({
-                        ...prev,
-                        [gf.slug]: e.target.value,
-                      }))
-                    }
-                    rows={2}
-                  />
-                ) : (
-                  <Input
-                    value={newItem[gf.slug] ?? ''}
-                    onChange={(e) =>
-                      setNewItem((prev) => ({
-                        ...prev,
-                        [gf.slug]: e.target.value,
-                      }))
-                    }
-                  />
-                )}
+                {((): React.ReactNode => {
+                  if (gf.type === E_FIELD_TYPE.TEXT_LONG) {
+                    return (
+                      <Textarea
+                        value={newItem[gf.slug] ?? ''}
+                        onChange={(e) =>
+                          setNewItem((prev) => ({
+                            ...prev,
+                            [gf.slug]: e.target.value,
+                          }))
+                        }
+                        rows={2}
+                      />
+                    );
+                  }
+                  return (
+                    <Input
+                      value={newItem[gf.slug] ?? ''}
+                      onChange={(e) =>
+                        setNewItem((prev) => ({
+                          ...prev,
+                          [gf.slug]: e.target.value,
+                        }))
+                      }
+                    />
+                  );
+                })()}
               </div>
             ))}
 

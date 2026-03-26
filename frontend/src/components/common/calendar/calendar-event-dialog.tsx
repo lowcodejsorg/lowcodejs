@@ -70,9 +70,10 @@ interface CalendarEventDialogProps {
 }
 
 function getColorOptions(fields: CalendarResolvedFields): Array<IDropdown> {
-  return Array.isArray(fields.colorField?.dropdown)
-    ? fields.colorField.dropdown
-    : [];
+  if (Array.isArray(fields.colorField?.dropdown)) {
+    return fields.colorField.dropdown;
+  }
+  return [];
 }
 
 function buildExtraDefaults(
@@ -117,7 +118,11 @@ function getInitialValues(args: {
     if (fields.reminderField) {
       const slug = fields.reminderField.slug;
       const rowVal = event.row[slug];
-      extras[slug] = Array.isArray(rowVal) && rowVal.length > 0 ? rowVal : [];
+      if (Array.isArray(rowVal) && rowVal.length > 0) {
+        extras[slug] = rowVal;
+      } else {
+        extras[slug] = [];
+      }
     }
 
     return {
@@ -201,16 +206,16 @@ export function CalendarEventDialog({
   const colorOptions = getColorOptions(fields);
 
   const reminderSlug = fields.reminderField?.slug;
-  const reminderItems = reminderSlug
-    ? Array.isArray(values[reminderSlug])
-      ? (values[reminderSlug] as Array<Record<string, unknown>>)
-      : []
-    : [];
+  let reminderItems: Array<Record<string, unknown>> = [];
+  if (reminderSlug && Array.isArray(values[reminderSlug])) {
+    reminderItems = values[reminderSlug] as Array<Record<string, unknown>>;
+  }
   const hasIncompleteReminder = reminderItems.some((item) => {
     const val = String(item.valor ?? '').trim();
-    const unit = Array.isArray(item.unidade)
-      ? String(item.unidade[0] ?? '').trim()
-      : String(item.unidade ?? '').trim();
+    let unit = String(item.unidade ?? '').trim();
+    if (Array.isArray(item.unidade)) {
+      unit = String(item.unidade[0] ?? '').trim();
+    }
     return !val || !unit;
   });
 
@@ -234,6 +239,7 @@ export function CalendarEventDialog({
 
   return (
     <Dialog
+      data-slot="calendar-event-dialog"
       open={open}
       onOpenChange={onOpenChange}
       modal={false}
@@ -247,12 +253,13 @@ export function CalendarEventDialog({
         >
           <DialogHeader>
             <DialogTitle>
-              {mode === 'create' ? 'Novo agendamento' : 'Editar agendamento'}
+              {mode === 'create' && 'Novo agendamento'}
+              {mode !== 'create' && 'Editar agendamento'}
             </DialogTitle>
             <DialogDescription>
-              {mode === 'create'
-                ? 'Crie um registro na agenda.'
-                : 'Atualize os dados do registro na agenda selecionado.'}
+              {mode === 'create' && 'Crie um registro na agenda.'}
+              {mode !== 'create' &&
+                'Atualize os dados do registro na agenda selecionado.'}
             </DialogDescription>
           </DialogHeader>
 
@@ -283,11 +290,12 @@ export function CalendarEventDialog({
                       <div>
                         <label className="text-sm font-medium">Cor</label>
                         <Select
-                          value={
-                            typeof field.state.value === 'string'
-                              ? field.state.value
-                              : ''
-                          }
+                          value={((): string => {
+                            if (typeof field.state.value === 'string') {
+                              return field.state.value;
+                            }
+                            return '';
+                          })()}
                           onValueChange={(value) => {
                             field.handleChange(value);
                             field.handleBlur();
@@ -380,11 +388,12 @@ export function CalendarEventDialog({
             {fields.reminderField && (
               <form.AppField name={fields.reminderField.slug}>
                 {(reminderFormField: any) => {
-                  const items = Array.isArray(reminderFormField.state.value)
-                    ? (reminderFormField.state.value as Array<
-                        Record<string, unknown>
-                      >)
-                    : [];
+                  let items: Array<Record<string, unknown>> = [];
+                  if (Array.isArray(reminderFormField.state.value)) {
+                    items = reminderFormField.state.value as Array<
+                      Record<string, unknown>
+                    >;
+                  }
 
                   const groupSlug = fields.reminderField!.group?.slug;
                   const group = table?.groups?.find(
@@ -393,15 +402,14 @@ export function CalendarEventDialog({
                   const unitSubField = group?.fields?.find(
                     (f) => f.slug === 'unidade',
                   );
-                  const unitOptions: Array<IDropdown> = Array.isArray(
-                    unitSubField?.dropdown,
-                  )
-                    ? unitSubField.dropdown
-                    : [
-                        { id: 'minutos', label: 'Minutos', color: null },
-                        { id: 'horas', label: 'Horas', color: null },
-                        { id: 'dias', label: 'Dias', color: null },
-                      ];
+                  let unitOptions: Array<IDropdown> = [
+                    { id: 'minutos', label: 'Minutos', color: null },
+                    { id: 'horas', label: 'Horas', color: null },
+                    { id: 'dias', label: 'Dias', color: null },
+                  ];
+                  if (Array.isArray(unitSubField?.dropdown)) {
+                    unitOptions = unitSubField.dropdown;
+                  }
 
                   const addReminder = (): void => {
                     reminderFormField.handleChange([
@@ -422,9 +430,12 @@ export function CalendarEventDialog({
                     val: unknown,
                   ): void => {
                     reminderFormField.handleChange(
-                      items.map((item, i) =>
-                        i === index ? { ...item, [key]: val } : item,
-                      ),
+                      items.map((item, i) => {
+                        if (i === index) {
+                          return { ...item, [key]: val };
+                        }
+                        return item;
+                      }),
                     );
                   };
 
@@ -448,9 +459,10 @@ export function CalendarEventDialog({
                       </div>
                       {items.map((item, index) => {
                         const rawUnit = item.unidade;
-                        const unitVal = Array.isArray(rawUnit)
-                          ? String(rawUnit[0] ?? '')
-                          : String(rawUnit ?? '');
+                        let unitVal = String(rawUnit ?? '');
+                        if (Array.isArray(rawUnit)) {
+                          unitVal = String(rawUnit[0] ?? '');
+                        }
                         return (
                           <div
                             key={index}
@@ -630,7 +642,10 @@ export function CalendarEventDialog({
                 disabled={!canSubmit || isPending}
               >
                 {isPending && <Spinner />}
-                <span>{mode === 'create' ? 'Criar' : 'Salvar'}</span>
+                <span>
+                  {mode === 'create' && 'Criar'}
+                  {mode !== 'create' && 'Salvar'}
+                </span>
               </Button>
             </div>
           </DialogFooter>

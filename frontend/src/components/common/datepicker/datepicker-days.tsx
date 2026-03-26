@@ -157,7 +157,10 @@ export function DatepickerDays({
   };
 
   return (
-    <div className="p-2">
+    <div
+      data-slot="datepicker-days"
+      className="p-2"
+    >
       {/* Weekday headers */}
       <div className="grid grid-cols-7 mb-1">
         {WEEKDAYS.map((day) => (

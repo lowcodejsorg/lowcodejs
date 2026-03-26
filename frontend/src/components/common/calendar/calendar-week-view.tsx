@@ -177,7 +177,10 @@ export function CalendarWeekView({
   }, [currentDate, events, weekStart]);
 
   return (
-    <div className="flex h-full min-h-0 flex-col">
+    <div
+      data-slot="calendar-week-view"
+      className="flex h-full min-h-0 flex-col"
+    >
       <div
         className="border-b"
         style={{ paddingRight: scrollbarWidth }}

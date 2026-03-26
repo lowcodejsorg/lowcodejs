@@ -4,7 +4,7 @@ import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import * as z from 'zod';
 
-import { Logo } from '@/components/common/logo';
+import { Logo } from '@/components/common/layout/logo';
 import { Button } from '@/components/ui/button';
 import {
   Field,

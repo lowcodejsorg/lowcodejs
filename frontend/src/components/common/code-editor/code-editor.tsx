@@ -56,7 +56,10 @@ export function CodeEditor({
   };
 
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      data-slot="code-editor"
+      className="flex flex-col gap-2"
+    >
       <div className="flex items-center gap-2">
         <Label>{label}</Label>
         <CodeEditorInfoModal

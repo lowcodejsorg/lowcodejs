@@ -2,7 +2,7 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
-import type { TreeNode } from '@/components/common/-tree-list';
+import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IDropdown } from '@/lib/interfaces';

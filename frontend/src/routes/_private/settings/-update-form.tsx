@@ -13,7 +13,7 @@ import {
 import React from 'react';
 import { z } from 'zod';
 
-import { FileUploadWithStorage } from '@/components/common/file-upload-with-storage';
+import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import {
   Card,
   CardContent,

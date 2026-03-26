@@ -5,9 +5,9 @@ import {
 } from '@tanstack/react-router';
 import React from 'react';
 
-import { AccessDenied } from '@/components/common/access-denied';
 import { FieldManagement } from '@/components/common/field-management/field-management';
-import { LoadError } from '@/components/common/load-error';
+import { AccessDenied } from '@/components/common/route-status/access-denied';
+import { LoadError } from '@/components/common/route-status/load-error';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';

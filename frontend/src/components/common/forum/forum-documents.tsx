@@ -11,39 +11,53 @@ export function ForumDocuments({
   documents,
 }: ForumDocumentsProps): React.JSX.Element {
   return (
-    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-      {documents.map((doc) => (
-        <a
-          key={`${doc.messageId}-${doc.file._id}`}
-          href={doc.file.url}
-          target="_blank"
-          rel="noreferrer"
-          className="flex gap-3 rounded-lg border p-3 hover:bg-muted/40"
-        >
-          {doc.file.mimetype.includes('image') ? (
+    <div
+      data-slot="forum-documents"
+      className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      {documents.map((doc) => {
+        const isImage = doc.file.mimetype.includes('image');
+        let thumbnail = (
+          <div className="flex h-16 w-16 items-center justify-center rounded-md bg-muted/60">
+            <FileIcon className="size-6 text-muted-foreground" />
+          </div>
+        );
+        if (isImage) {
+          thumbnail = (
             <img
               src={doc.file.url}
               alt={doc.file.originalName}
               className="h-16 w-16 rounded-md object-cover"
             />
-          ) : (
-            <div className="flex h-16 w-16 items-center justify-center rounded-md bg-muted/60">
-              <FileIcon className="size-6 text-muted-foreground" />
+          );
+        }
+
+        let authorLabel = 'Usuario';
+        if (typeof doc.author === 'string') {
+          authorLabel = doc.author;
+        } else if (doc.author?.name) {
+          authorLabel = doc.author.name;
+        }
+
+        return (
+          <a
+            key={`${doc.messageId}-${doc.file._id}`}
+            href={doc.file.url}
+            target="_blank"
+            rel="noreferrer"
+            className="flex gap-3 rounded-lg border p-3 hover:bg-muted/40"
+          >
+            {thumbnail}
+            <div className="flex-1 space-y-1">
+              <p className="text-sm font-medium line-clamp-2">
+                {doc.file.originalName}
+              </p>
+              <p className="text-xs text-muted-foreground">{authorLabel}</p>
+              <p className="text-xs text-muted-foreground">{doc.dateLabel}</p>
             </div>
-          )}
-          <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium line-clamp-2">
-              {doc.file.originalName}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {typeof doc.author === 'string'
-                ? doc.author
-                : doc.author?.name || 'Usuario'}
-            </p>
-            <p className="text-xs text-muted-foreground">{doc.dateLabel}</p>
-          </div>
-        </a>
-      ))}
+          </a>
+        );
+      })}
     </div>
   );
 }

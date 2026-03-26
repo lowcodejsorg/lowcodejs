@@ -9,9 +9,9 @@ import React from 'react';
 
 import { TableMenus } from './-table-menus';
 
-import { getActiveFiltersCount } from '@/components/common/filter-fields';
-import { FilterSidebar } from '@/components/common/filter-sidebar';
-import { FilterTrigger } from '@/components/common/filter-trigger';
+import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
+import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
+import { FilterTrigger } from '@/components/common/filters/filter-trigger';
 import { Pagination } from '@/components/common/pagination';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';

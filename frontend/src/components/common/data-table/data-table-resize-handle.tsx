@@ -11,6 +11,7 @@ export function DataTableResizeHandle<TData>({
 }: DataTableResizeHandleProps<TData>): React.JSX.Element {
   return (
     <div
+      data-slot="data-table-resize-handle"
       onMouseDown={header.getResizeHandler()}
       onTouchStart={header.getResizeHandler()}
       onDoubleClick={() => header.column.resetSize()}

@@ -1,0 +1,318 @@
+import { PlusIcon, TrashIcon } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Spinner } from '@/components/ui/spinner';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import type {
+  IField,
+  IGroupConfiguration,
+  IStorage,
+  ITable,
+} from '@/lib/interfaces';
+
+interface TableRowFieldGroupFieldProps {
+  field: IField;
+  disabled?: boolean;
+  tableSlug?: string;
+  table?: ITable; // Tabela pai com groups
+  form: any; // TanStack Form instance
+}
+
+// Validator for required fields inside groups
+function createNestedRequiredValidator(fieldName: string): {
+  onBlur: ({ value }: { value: any }) => { message: string } | undefined;
+} {
+  return {
+    onBlur: ({ value }: { value: any }): { message: string } | undefined => {
+      if (value === null || value === undefined || value === '') {
+        return { message: `${fieldName} é obrigatório` };
+      }
+      if (Array.isArray(value) && value.length === 0) {
+        return { message: `${fieldName} é obrigatório` };
+      }
+      if (typeof value === 'object' && 'storages' in value) {
+        const storageValue = value as { storages: Array<IStorage> };
+        if (storageValue.storages.length === 0) {
+          return { message: `${fieldName} é obrigatório` };
+        }
+      }
+      return undefined;
+    },
+  };
+}
+
+export function TableRowFieldGroupField({
+  field,
+  disabled,
+  table: tableProp,
+  tableSlug,
+  form,
+}: TableRowFieldGroupFieldProps): React.JSX.Element {
+  const formField = useFieldContext<Array<Record<string, any>>>();
+  const isInvalid =
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
+  const isRequired = field.required;
+  const isMultiple = field.multiple;
+
+  const groupConfig = field.group;
+
+  // Usa useReadTable como fallback quando table não é passada
+  const tableQuery = useReadTable({ slug: tableSlug ?? '' });
+  const table = tableProp ?? tableQuery.data;
+
+  // Busca os campos do grupo em groups
+  const group: IGroupConfiguration | undefined = table?.groups.find(
+    (g) => g.slug === groupConfig?.slug,
+  );
+
+  const items = Array.isArray(formField.state.value)
+    ? formField.state.value
+    : [];
+
+  const addItem = (): void => {
+    formField.handleChange([...items, {}]);
+  };
+
+  const removeItem = (index: number): void => {
+    formField.handleChange(items.filter((_, i) => i !== index));
+  };
+
+  // Control based on multiple config
+  const canAdd = isMultiple;
+  const canRemove = isMultiple && items.length > 1;
+
+  if (!groupConfig) {
+    return (
+      <Field data-slot="table-row-field-group-field">
+        <FieldLabel>{field.name}</FieldLabel>
+        <p className="text-muted-foreground text-sm">
+          Grupo de campos não configurado
+        </p>
+      </Field>
+    );
+  }
+
+  // Se não temos a tabela ainda (carregando via useReadTable)
+  if (!tableProp && tableQuery.status === 'pending') {
+    return (
+      <Field data-slot="table-row-field-group-field">
+        <FieldLabel>{field.name}</FieldLabel>
+        <div className="flex items-center justify-center py-4">
+          <Spinner />
+        </div>
+      </Field>
+    );
+  }
+
+  if (!tableProp && tableQuery.status === 'error') {
+    return (
+      <Field data-slot="table-row-field-group-field">
+        <FieldLabel>{field.name}</FieldLabel>
+        <p className="text-destructive text-sm">
+          Erro ao carregar grupo de campos
+        </p>
+      </Field>
+    );
+  }
+
+  if (!group) {
+    return (
+      <Field data-slot="table-row-field-group-field">
+        <FieldLabel>{field.name}</FieldLabel>
+        <p className="text-muted-foreground text-sm">
+          Grupo de campos não encontrado
+        </p>
+      </Field>
+    );
+  }
+
+  const groupFields = group.fields.filter(
+    (f) => !f.trashed && !f.native && f.showInForm !== false,
+  );
+
+  return (
+    <Field
+      data-slot="table-row-field-group-field"
+      data-invalid={isInvalid}
+    >
+      <FieldLabel htmlFor={formField.name}>
+        {field.name}
+        {isRequired && <span className="text-destructive"> *</span>}
+      </FieldLabel>
+      <div className="space-y-4">
+        {items.map((_, index) => (
+          <div
+            key={index}
+            className="border rounded-lg p-4 space-y-4 bg-muted/30"
+          >
+            <div className="flex justify-between items-center">
+              {/* <span className="text-sm font-medium">Item {index + 1}</span> */}
+              {canRemove && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  disabled={disabled}
+                  onClick={() => removeItem(index)}
+                >
+                  <TrashIcon className="size-4" />
+                </Button>
+              )}
+            </div>
+            {groupFields.map((groupField) => (
+              <NestedGroupField
+                key={groupField._id}
+                form={form}
+                parentSlug={field.slug}
+                index={index}
+                groupField={groupField}
+                disabled={disabled}
+              />
+            ))}
+          </div>
+        ))}
+        {canAdd && (
+          <Button
+            type="button"
+            variant="outline"
+            disabled={disabled}
+            onClick={addItem}
+          >
+            <PlusIcon className="size-4" />
+            <span>Adicionar item</span>
+          </Button>
+        )}
+      </div>
+      {isInvalid && (
+        <FieldError
+          id={errorId}
+          errors={formField.state.meta.errors}
+        />
+      )}
+    </Field>
+  );
+}
+
+// Nested field with REAL validation
+function NestedGroupField({
+  form,
+  parentSlug,
+  index,
+  groupField,
+  disabled,
+}: {
+  form: any;
+  parentSlug: string;
+  index: number;
+  groupField: IField;
+  disabled?: boolean;
+}): React.JSX.Element | null {
+  // Skip non-editable field types
+  if (
+    groupField.type === E_FIELD_TYPE.REACTION ||
+    groupField.type === E_FIELD_TYPE.EVALUATION ||
+    groupField.type === E_FIELD_TYPE.FIELD_GROUP ||
+    groupField.native
+  ) {
+    return null;
+  }
+
+  // Field name in format: "addresses[0].street"
+  const fieldName = `${parentSlug}[${index}].${groupField.slug}`;
+  const isRequired = groupField.required;
+
+  let validators = undefined;
+  if (isRequired) {
+    validators = createNestedRequiredValidator(groupField.name);
+  }
+
+  return (
+    <form.AppField
+      name={fieldName}
+      validators={validators}
+    >
+      {(formField: any) => {
+        switch (groupField.type) {
+          case E_FIELD_TYPE.TEXT_SHORT:
+            return (
+              <formField.TableRowTextField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.TEXT_LONG:
+            if (groupField.format === E_FIELD_FORMAT.RICH_TEXT) {
+              return (
+                <formField.TableRowRichTextField
+                  field={groupField}
+                  disabled={disabled}
+                />
+              );
+            }
+            if (groupField.format === E_FIELD_FORMAT.MARKDOWN) {
+              return (
+                <formField.TableRowMarkdownField
+                  field={groupField}
+                  disabled={disabled}
+                />
+              );
+            }
+            return (
+              <formField.TableRowTextareaField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.DROPDOWN:
+            return (
+              <formField.TableRowDropdownField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.DATE:
+            return (
+              <formField.TableRowDateField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.FILE:
+            return (
+              <formField.TableRowFileField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.RELATIONSHIP:
+            return (
+              <formField.TableRowRelationshipField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.CATEGORY:
+            return (
+              <formField.TableRowCategoryField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          case E_FIELD_TYPE.USER:
+            return (
+              <formField.TableRowUserField
+                field={groupField}
+                disabled={disabled}
+              />
+            );
+          default:
+            return null;
+        }
+      }}
+    </form.AppField>
+  );
+}

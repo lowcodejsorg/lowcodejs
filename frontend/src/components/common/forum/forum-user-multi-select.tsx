@@ -74,11 +74,15 @@ export function ForumUserMultiSelect({
     if (!selectedUsers.length) return users;
     const userIds = new Set(users.map((user) => user._id));
     const extras = selectedUsers.filter((user) => !userIds.has(user._id));
-    return extras.length ? [...users, ...extras] : users;
+    if (extras.length) {
+      return [...users, ...extras];
+    }
+    return users;
   }, [selectedUsers, users]);
 
   return (
     <Combobox
+      data-slot="forum-user-multi-select"
       items={items}
       multiple
       value={selectedUsers}
@@ -114,9 +118,12 @@ export function ForumUserMultiSelect({
                 </span>
               )}
               <ComboboxChipsInput
-                placeholder={
-                  values.length > 0 ? '' : (placeholder ?? 'Mencionar usuarios')
-                }
+                placeholder={((): string => {
+                  if (values.length > 0) {
+                    return '';
+                  }
+                  return placeholder ?? 'Mencionar usuarios';
+                })()}
               />
             </React.Fragment>
           )}

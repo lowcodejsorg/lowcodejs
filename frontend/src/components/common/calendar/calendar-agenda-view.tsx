@@ -15,7 +15,10 @@ export function CalendarAgendaView({
 }: CalendarAgendaViewProps): React.JSX.Element {
   if (events.length === 0) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">
+      <div
+        data-slot="calendar-agenda-view"
+        className="p-6 text-sm text-muted-foreground"
+      >
         Nenhum agendamento com data válida para exibir.
       </div>
     );
@@ -24,12 +27,20 @@ export function CalendarAgendaView({
   let lastDay: Date | null = null;
 
   return (
-    <div className="h-full overflow-auto">
+    <div
+      data-slot="calendar-agenda-view"
+      className="h-full overflow-auto"
+    >
       <div className="divide-y">
         {events.map((event) => {
           const day = startOfDay(event.start);
           const showHeader = !lastDay || !isSameDay(lastDay, day);
           lastDay = day;
+
+          let endDateLabel = format(event.end, 'dd/MM/yyyy HH:mm');
+          if (isSameDay(event.start, event.end)) {
+            endDateLabel = format(event.end, 'HH:mm');
+          }
 
           return (
             <div key={event.rowId}>
@@ -60,9 +71,7 @@ export function CalendarAgendaView({
                         {', '}
                         {format(event.start, 'HH:mm')}
                         {' - '}
-                        {isSameDay(event.start, event.end)
-                          ? format(event.end, 'HH:mm')
-                          : format(event.end, 'dd/MM/yyyy HH:mm')}
+                        {endDateLabel}
                       </div>
                       {event.participants.length > 0 && (
                         <div>

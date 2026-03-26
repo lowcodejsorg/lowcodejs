@@ -22,6 +22,7 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 
 interface ForumAddChannelDialogProps {
   open: boolean;
@@ -48,13 +49,16 @@ export function ForumAddChannelDialog({
     form.store,
     (state: any) => state.values.privacy,
   );
-  const normalizedPrivacy =
-    typeof privacyValue === 'string' ? privacyValue : 'publico';
+  let normalizedPrivacy = 'publico';
+  if (typeof privacyValue === 'string') {
+    normalizedPrivacy = privacyValue;
+  }
   const shouldShowMembers =
     requiresMembers && (!requiresPrivacy || normalizedPrivacy === 'privado');
 
   return (
     <Dialog
+      data-slot="forum-add-channel-dialog"
       open={open}
       onOpenChange={onOpenChange}
       modal={false}
@@ -99,20 +103,20 @@ export function ForumAddChannelDialog({
               <div className="flex flex-col gap-2 sm:flex-row">
                 {requiresPrivacy && (
                   <div
-                    className={
-                      shouldShowMembers
-                        ? 'sm:basis-1/4 sm:grow-0 sm:shrink-0'
-                        : 'w-full'
-                    }
+                    className={cn(
+                      shouldShowMembers && 'sm:basis-1/4 sm:grow-0 sm:shrink-0',
+                      !shouldShowMembers && 'w-full',
+                    )}
                   >
                     <form.AppField name="privacy">
                       {(field: any) => (
                         <Select
-                          value={
-                            typeof field.state.value === 'string'
-                              ? field.state.value
-                              : 'publico'
-                          }
+                          value={((): string => {
+                            if (typeof field.state.value === 'string') {
+                              return field.state.value;
+                            }
+                            return 'publico';
+                          })()}
                           onValueChange={(value) => {
                             field.handleChange(value);
                             if (value !== 'privado') {
@@ -138,11 +142,12 @@ export function ForumAddChannelDialog({
                     <form.AppField name="members">
                       {(field: any) => (
                         <ForumUserMultiSelect
-                          value={
-                            Array.isArray(field.state.value)
-                              ? field.state.value
-                              : []
-                          }
+                          value={((): Array<string> => {
+                            if (Array.isArray(field.state.value)) {
+                              return field.state.value;
+                            }
+                            return [];
+                          })()}
                           onChange={(value) => field.handleChange(value)}
                           disabled={isPending}
                           placeholder="Selecione membros"

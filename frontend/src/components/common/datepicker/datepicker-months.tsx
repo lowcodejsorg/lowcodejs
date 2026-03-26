@@ -12,7 +12,10 @@ export function DatepickerMonths({
   onSelectMonth,
 }: DatepickerMonthsProps): React.JSX.Element {
   return (
-    <div className="p-2">
+    <div
+      data-slot="datepicker-months"
+      className="p-2"
+    >
       <div className="grid grid-cols-2 gap-2 mt-2">
         {MONTHS_SHORT.map((month, index) => {
           const isSelected = currentMonth === index;

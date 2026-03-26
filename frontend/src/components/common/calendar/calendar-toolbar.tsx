@@ -124,7 +124,10 @@ export function CalendarToolbar({
   }, [monthValue, onSelectDate, viewMode, weekValue]);
 
   return (
-    <div className="flex flex-col gap-3 border-b p-3 sm:flex-row sm:items-center sm:justify-between">
+    <div
+      data-slot="calendar-toolbar"
+      className="flex flex-col gap-3 border-b p-3 sm:flex-row sm:items-center sm:justify-between"
+    >
       <div className="flex items-center gap-2">
         <Button
           variant="outline"
@@ -150,7 +153,7 @@ export function CalendarToolbar({
         >
           <ChevronRightIcon className="size-4" />
         </Button>
-        {canPickDirectly ? (
+        {canPickDirectly && (
           <Popover
             open={isPickerOpen}
             onOpenChange={setIsPickerOpen}
@@ -170,24 +173,23 @@ export function CalendarToolbar({
             >
               <div className="space-y-1">
                 <div className="text-sm font-medium">
-                  {viewMode === 'month'
-                    ? 'Selecionar mês e ano'
-                    : 'Selecionar semana'}
+                  {viewMode === 'month' && 'Selecionar mês e ano'}
+                  {viewMode !== 'month' && 'Selecionar semana'}
                 </div>
                 <div className="text-xs text-muted-foreground">
-                  {viewMode === 'month'
-                    ? 'Escolha diretamente o mês/ano.'
-                    : 'Escolha uma semana do ano.'}
+                  {viewMode === 'month' && 'Escolha diretamente o mês/ano.'}
+                  {viewMode !== 'month' && 'Escolha uma semana do ano.'}
                 </div>
               </div>
 
-              {viewMode === 'month' ? (
+              {viewMode === 'month' && (
                 <Input
                   type="month"
                   value={monthValue}
                   onChange={(event) => setMonthValue(event.target.value)}
                 />
-              ) : (
+              )}
+              {viewMode !== 'month' && (
                 <Input
                   type="week"
                   value={weekValue}
@@ -216,7 +218,8 @@ export function CalendarToolbar({
               </div>
             </PopoverContent>
           </Popover>
-        ) : (
+        )}
+        {!canPickDirectly && (
           <div className="ml-1 text-sm font-medium capitalize">
             {getTitle(currentDate, viewMode)}
           </div>
@@ -231,11 +234,15 @@ export function CalendarToolbar({
         ].map((item) => {
           const Icon = item.icon;
           const isActive = viewMode === item.mode;
+          let buttonVariant: 'default' | 'ghost' = 'ghost';
+          if (isActive) {
+            buttonVariant = 'default';
+          }
           return (
             <Button
               key={item.mode}
               type="button"
-              variant={isActive ? 'default' : 'ghost'}
+              variant={buttonVariant}
               size="sm"
               className={cn(
                 'cursor-pointer shadow-none',

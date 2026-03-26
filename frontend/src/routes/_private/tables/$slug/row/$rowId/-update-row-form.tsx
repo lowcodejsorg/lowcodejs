@@ -12,7 +12,7 @@ import { RowView } from './-view';
 import {
   UploadingProvider,
   useIsUploading,
-} from '@/components/common/uploading-context';
+} from '@/components/common/file-upload/uploading-context';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';

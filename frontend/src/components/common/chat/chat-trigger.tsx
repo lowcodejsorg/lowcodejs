@@ -14,7 +14,13 @@ export function ChatTrigger({
 }: ChatTriggerProps): React.JSX.Element {
   return (
     <Button
-      variant={isOpen ? 'default' : 'outline'}
+      data-slot="chat-trigger"
+      variant={((): 'default' | 'outline' => {
+        if (isOpen) {
+          return 'default';
+        }
+        return 'outline';
+      })()}
       className="shadow-none p-1 h-auto"
       onClick={onClick}
     >

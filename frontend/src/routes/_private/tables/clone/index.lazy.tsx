@@ -7,7 +7,7 @@ import {
   cloneTableFormDefaultValues,
 } from './-clone-form';
 
-import { AccessDenied } from '@/components/common/access-denied';
+import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';

@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react';
 
-import { hexToRgb } from '@/components/common/table-row-badge-list';
+import { hexToRgb } from '@/components/common/table-cells/table-row-badge-list';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IUser } from '@/lib/interfaces';
 

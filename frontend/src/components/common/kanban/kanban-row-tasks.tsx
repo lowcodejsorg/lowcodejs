@@ -34,7 +34,10 @@ export function KanbanRowTasksSection({
   onTaskAdd: () => void;
 }): React.JSX.Element {
   return (
-    <section className="mt-6 space-y-3">
+    <section
+      data-slot="kanban-row-tasks"
+      className="mt-6 space-y-3"
+    >
       <h3 className="text-sm font-semibold">Tarefas</h3>
       <div className="space-y-2">
         {tasks.map((task, index) => (
@@ -46,55 +49,60 @@ export function KanbanRowTasksSection({
               checked={normalizeRowValue(task.realizado).includes('sim')}
               onCheckedChange={() => onTaskToggle(index)}
             />
-            {editingTaskIndex === index ? (
-              <div className="flex-1 flex items-center gap-2">
-                <Input
-                  value={editingTaskTitle}
-                  onChange={(event) => onTaskEditChange(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter') {
-                      event.preventDefault();
-                      onTaskEditSave(index);
-                    }
-                    if (event.key === 'Escape') {
-                      event.preventDefault();
-                      onTaskEditCancel();
-                    }
-                  }}
-                  autoFocus
-                />
-                <Button
+            {((): React.ReactNode => {
+              if (editingTaskIndex === index) {
+                return (
+                  <div className="flex-1 flex items-center gap-2">
+                    <Input
+                      value={editingTaskTitle}
+                      onChange={(event) => onTaskEditChange(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault();
+                          onTaskEditSave(index);
+                        }
+                        if (event.key === 'Escape') {
+                          event.preventDefault();
+                          onTaskEditCancel();
+                        }
+                      }}
+                      autoFocus
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-foreground"
+                      onClick={() => onTaskEditSave(index)}
+                      aria-label="Salvar tarefa"
+                    >
+                      <CheckIcon className="size-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-foreground"
+                      onClick={onTaskEditCancel}
+                      aria-label="Cancelar edição"
+                    >
+                      <XIcon className="size-4" />
+                    </Button>
+                  </div>
+                );
+              }
+              return (
+                <button
                   type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-foreground"
-                  onClick={() => onTaskEditSave(index)}
-                  aria-label="Salvar tarefa"
+                  className="text-sm flex-1 text-left cursor-pointer"
+                  onDoubleClick={() =>
+                    onTaskEditStart(index, String(task.titulo || ''))
+                  }
                 >
-                  <CheckIcon className="size-4" />
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  className="h-7 w-7 cursor-pointer text-muted-foreground hover:text-foreground"
-                  onClick={onTaskEditCancel}
-                  aria-label="Cancelar edição"
-                >
-                  <XIcon className="size-4" />
-                </Button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                className="text-sm flex-1 text-left cursor-pointer"
-                onDoubleClick={() =>
-                  onTaskEditStart(index, String(task.titulo || ''))
-                }
-              >
-                {task.titulo || '-'}
-              </button>
-            )}
+                  {task.titulo || '-'}
+                </button>
+              );
+            })()}
             <Button
               type="button"
               variant="ghost"

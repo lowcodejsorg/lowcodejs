@@ -3,11 +3,11 @@ import React from 'react';
 
 import { RowFormFields } from './-create-form';
 
-import { AccessDenied } from '@/components/common/access-denied';
 import {
   UploadingProvider,
   useIsUploading,
-} from '@/components/common/uploading-context';
+} from '@/components/common/file-upload/uploading-context';
+import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';

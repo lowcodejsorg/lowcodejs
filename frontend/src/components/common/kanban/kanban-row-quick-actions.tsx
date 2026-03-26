@@ -27,7 +27,10 @@ export function KanbanRowQuickActions({
 }): React.JSX.Element {
   return (
     <>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
+      <div
+        data-slot="kanban-row-quick-actions"
+        className="mt-4 flex flex-wrap items-center gap-2"
+      >
         <div className="flex -space-x-2">
           {members.map((member, index) => (
             <Avatar

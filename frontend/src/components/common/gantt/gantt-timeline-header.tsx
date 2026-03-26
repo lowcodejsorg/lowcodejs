@@ -34,6 +34,7 @@ export function TimelineMonthHeaders({
 
   return (
     <div
+      data-slot="timeline-month-headers"
       className="flex"
       style={{ height: 28 }}
     >
@@ -63,8 +64,36 @@ export function GanttTimelineHeader({
   zoom,
   headerHeight,
 }: GanttTimelineHeaderProps): React.JSX.Element {
+  let dayRowHeight = 20;
+  if (zoom === 'month') {
+    dayRowHeight = headerHeight;
+  }
+
+  const getDayLabel = (day: Date, i: number): string => {
+    if (zoom === 'day') {
+      return format(day, 'd');
+    }
+    if (zoom === 'week') {
+      if (day.getDate() === 1 || i === 0) {
+        return format(day, 'd MMM', { locale: ptBR });
+      }
+      if (day.getDate() % 7 === 0) {
+        return format(day, 'd');
+      }
+      return '';
+    }
+    if (zoom === 'month') {
+      if (day.getDate() === 1) {
+        return format(day, 'MMM yy', { locale: ptBR });
+      }
+      return '';
+    }
+    return '';
+  };
+
   return (
     <div
+      data-slot="gantt-timeline-header"
       className="sticky top-0 z-10 border-b bg-background"
       style={{ height: headerHeight }}
     >
@@ -76,7 +105,7 @@ export function GanttTimelineHeader({
       )}
       <div
         className="flex"
-        style={{ height: zoom === 'month' ? headerHeight : 20 }}
+        style={{ height: dayRowHeight }}
       >
         {days.map((day, i) => (
           <div
@@ -88,17 +117,7 @@ export function GanttTimelineHeader({
             )}
             style={{ width: dayWidth }}
           >
-            {zoom === 'day' && format(day, 'd')}
-            {zoom === 'week' &&
-              (day.getDate() === 1 || i === 0
-                ? format(day, 'd MMM', { locale: ptBR })
-                : day.getDate() % 7 === 0
-                  ? format(day, 'd')
-                  : '')}
-            {zoom === 'month' &&
-              (day.getDate() === 1
-                ? format(day, 'MMM yy', { locale: ptBR })
-                : '')}
+            {getDayLabel(day, i)}
           </div>
         ))}
       </div>

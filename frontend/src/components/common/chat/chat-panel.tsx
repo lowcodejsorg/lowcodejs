@@ -49,7 +49,10 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
   }
 
   return (
-    <div className="flex h-full flex-col">
+    <div
+      data-slot="chat-panel"
+      className="flex h-full flex-col"
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>

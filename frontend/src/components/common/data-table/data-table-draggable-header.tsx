@@ -29,14 +29,20 @@ export function DataTableDraggableHeader<TData>({
     disabled: !canDrag || !!isPinned,
   });
 
+  let opacityValue = 1;
+  if (isDragging) {
+    opacityValue = 0.5;
+  }
+
   const style: React.CSSProperties = {
     transform: CSS.Translate.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: opacityValue,
   };
 
   return (
     <div
+      data-slot="data-table-draggable-header"
       ref={setNodeRef}
       style={style}
       className="flex items-center gap-0.5"

@@ -17,7 +17,7 @@ function DataTableBodyInner<TData>({
   emptyMessage,
 }: DataTableBodyProps<TData>): React.JSX.Element {
   return (
-    <TableBody>
+    <TableBody data-slot="data-table-body">
       {table.getRowModel().rows.length === 0 && (
         <TableRow>
           <TableCell
@@ -28,39 +28,61 @@ function DataTableBodyInner<TData>({
           </TableCell>
         </TableRow>
       )}
-      {table.getRowModel().rows.map((row) => (
-        <TableRow
-          key={row.id}
-          className={cn(onRowClick && 'cursor-pointer')}
-          data-state={row.getIsSelected() ? 'selected' : undefined}
-          onClick={() => onRowClick?.(row.original)}
-        >
-          {row.getVisibleCells().map((cell) => {
-            const isPinned = cell.column.getIsPinned();
-            return (
-              <TableCell
-                key={cell.id}
-                style={{
-                  width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
-                  position: isPinned ? 'sticky' : undefined,
-                  left:
-                    isPinned === 'left'
-                      ? `${cell.column.getStart('left')}px`
-                      : undefined,
-                  right:
-                    isPinned === 'right'
-                      ? `${cell.column.getAfter('right')}px`
-                      : undefined,
-                  zIndex: isPinned ? 10 : undefined,
-                }}
-                className={cn(isPinned && 'bg-background')}
-              >
-                {flexRender(cell.column.columnDef.cell, cell.getContext())}
-              </TableCell>
-            );
-          })}
-        </TableRow>
-      ))}
+      {table.getRowModel().rows.map((row) => {
+        let dataState: 'selected' | undefined = undefined;
+        if (row.getIsSelected()) {
+          dataState = 'selected';
+        }
+
+        return (
+          <TableRow
+            key={row.id}
+            className={cn(onRowClick && 'cursor-pointer')}
+            data-state={dataState}
+            onClick={() => onRowClick?.(row.original)}
+          >
+            {row.getVisibleCells().map((cell) => {
+              const isPinned = cell.column.getIsPinned();
+
+              let positionStyle: React.CSSProperties['position'] = undefined;
+              if (isPinned) {
+                positionStyle = 'sticky';
+              }
+
+              let leftStyle: string | undefined = undefined;
+              if (isPinned === 'left') {
+                leftStyle = `${cell.column.getStart('left')}px`;
+              }
+
+              let rightStyle: string | undefined = undefined;
+              if (isPinned === 'right') {
+                rightStyle = `${cell.column.getAfter('right')}px`;
+              }
+
+              let zIndexStyle: number | undefined = undefined;
+              if (isPinned) {
+                zIndexStyle = 10;
+              }
+
+              return (
+                <TableCell
+                  key={cell.id}
+                  style={{
+                    width: `calc(var(--col-${cell.column.id}-size) * 1px)`,
+                    position: positionStyle,
+                    left: leftStyle,
+                    right: rightStyle,
+                    zIndex: zIndexStyle,
+                  }}
+                  className={cn(isPinned && 'bg-background')}
+                >
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                </TableCell>
+              );
+            })}
+          </TableRow>
+        );
+      })}
     </TableBody>
   );
 }

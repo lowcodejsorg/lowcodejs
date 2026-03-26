@@ -40,7 +40,10 @@ export function KanbanRowCommentsSection({
   onAddComment: () => void;
 }): React.JSX.Element {
   return (
-    <section className="mt-6 space-y-3">
+    <section
+      data-slot="kanban-row-comments"
+      className="mt-6 space-y-3"
+    >
       <h3 className="text-sm font-semibold">Comentarios</h3>
       <div className="space-y-3">
         {comments.map((comment, index) => {
@@ -53,7 +56,12 @@ export function KanbanRowCommentsSection({
             rawAuthor === profile._id
               ? profile
               : (rawAuthor as IUser | string | undefined);
-          const authorId = typeof author === 'string' ? author : author?._id;
+          let authorId: string | undefined;
+          if (typeof author === 'string') {
+            authorId = author;
+          } else {
+            authorId = author?._id;
+          }
           const canManage =
             authorId === currentUserId || rowCreatorId === currentUserId;
           const dateLabel = comment.data
@@ -76,9 +84,12 @@ export function KanbanRowCommentsSection({
                   </Avatar>
                   <div className="text-xs">
                     <div className="font-medium">
-                      {typeof author === 'string'
-                        ? author
-                        : author?.name || author?.email || 'Usuario'}
+                      {((): React.ReactNode => {
+                        if (typeof author === 'string') {
+                          return author;
+                        }
+                        return author?.name || author?.email || 'Usuario';
+                      })()}
                     </div>
                     <div className="text-muted-foreground">{dateLabel}</div>
                   </div>
@@ -107,35 +118,40 @@ export function KanbanRowCommentsSection({
                 )}
               </div>
 
-              {editingCommentIndex === index ? (
-                <div className="space-y-2">
-                  <Textarea
-                    value={editingCommentText}
-                    onChange={(event) => onEditChange(event.target.value)}
-                  />
-                  <div className="flex justify-end gap-2">
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      className="cursor-pointer"
-                      onClick={onEditCancel}
-                    >
-                      Cancelar
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={onSave}
-                      className="cursor-pointer"
-                    >
-                      Salvar
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">
-                  {comment.comentario || '-'}
-                </p>
-              )}
+              {((): React.ReactNode => {
+                if (editingCommentIndex === index) {
+                  return (
+                    <div className="space-y-2">
+                      <Textarea
+                        value={editingCommentText}
+                        onChange={(event) => onEditChange(event.target.value)}
+                      />
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          className="cursor-pointer"
+                          onClick={onEditCancel}
+                        >
+                          Cancelar
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={onSave}
+                          className="cursor-pointer"
+                        >
+                          Salvar
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <p className="text-sm text-muted-foreground">
+                    {comment.comentario || '-'}
+                  </p>
+                );
+              })()}
             </div>
           );
         })}

@@ -2,8 +2,8 @@ import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { WrenchIcon } from 'lucide-react';
 import React from 'react';
 
-import { AccessDenied } from '@/components/common/access-denied';
-import { TableComboboxPaginated } from '@/components/common/table-combobox-paginated';
+import { AccessDenied } from '@/components/common/route-status/access-denied';
+import { TableComboboxPaginated } from '@/components/common/table-selectors/table-combobox-paginated';
 import { Button } from '@/components/ui/button';
 import {
   Card,

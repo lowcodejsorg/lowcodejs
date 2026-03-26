@@ -37,7 +37,10 @@ export function Pagination({
   const lastPage = Math.max(1, Number(meta.lastPage || 1));
 
   return (
-    <section className="flex flex-col lg:flex-row w-full justify-between shrink-0 gap-2">
+    <section
+      data-slot="pagination"
+      className="flex flex-col lg:flex-row w-full justify-between shrink-0 gap-2"
+    >
       <div className="inline-flex gap-2 items-center ">
         <span className="inline-flex flex-1">Itens por página: </span>
         <Select

@@ -25,6 +25,7 @@ export function ChatSidebar({
   if (isMobile) {
     return (
       <Sheet
+        data-slot="chat-sidebar"
         open={open}
         onOpenChange={onOpenChange}
       >
@@ -43,9 +44,11 @@ export function ChatSidebar({
 
   return (
     <div
+      data-slot="chat-sidebar"
       className={cn(
         'shrink-0 transition-[width] duration-200 ease-linear overflow-hidden border-l',
-        open ? 'w-[340px]' : 'w-0 border-l-0',
+        open && 'w-[340px]',
+        !open && 'w-0 border-l-0',
       )}
     >
       <div className="w-[340px] h-full">

@@ -17,7 +17,10 @@ export function ForumHeader({
   onChangeLayout,
 }: ForumHeaderProps): React.JSX.Element {
   return (
-    <div className="shrink-0 border-b p-3">
+    <div
+      data-slot="forum-header"
+      className="shrink-0 border-b p-3"
+    >
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-semibold">{title}</h2>
@@ -29,7 +32,12 @@ export function ForumHeader({
             <Button
               type="button"
               size="icon-sm"
-              variant={composerLayout === 'bottom' ? 'secondary' : 'ghost'}
+              variant={((): 'secondary' | 'ghost' => {
+                if (composerLayout === 'bottom') {
+                  return 'secondary';
+                }
+                return 'ghost';
+              })()}
               onClick={() => onChangeLayout('bottom')}
               className="cursor-pointer"
               aria-label="Compositor embaixo"
@@ -40,7 +48,12 @@ export function ForumHeader({
             <Button
               type="button"
               size="icon-sm"
-              variant={composerLayout === 'side' ? 'secondary' : 'ghost'}
+              variant={((): 'secondary' | 'ghost' => {
+                if (composerLayout === 'side') {
+                  return 'secondary';
+                }
+                return 'ghost';
+              })()}
               onClick={() => onChangeLayout('side')}
               className="cursor-pointer"
               aria-label="Compositor ao lado"

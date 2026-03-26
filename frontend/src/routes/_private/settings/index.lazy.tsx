@@ -9,7 +9,7 @@ import { SettingView } from './-view';
 import {
   UploadingProvider,
   useIsUploading,
-} from '@/components/common/uploading-context';
+} from '@/components/common/file-upload/uploading-context';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { settingOptions } from '@/hooks/tanstack-query/_query-options';

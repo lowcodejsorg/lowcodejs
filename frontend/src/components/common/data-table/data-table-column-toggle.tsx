@@ -22,6 +22,7 @@ export function DataTableColumnToggle<TData>({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button
+          data-slot="data-table-column-toggle"
           variant="outline"
           size="sm"
           className="h-8"

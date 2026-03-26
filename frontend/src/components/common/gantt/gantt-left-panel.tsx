@@ -24,7 +24,10 @@ export function GanttLeftPanel({
   headerHeight,
 }: GanttLeftPanelProps): React.JSX.Element {
   return (
-    <div className="w-56 shrink-0 overflow-hidden border-r bg-background">
+    <div
+      data-slot="gantt-left-panel"
+      className="w-56 shrink-0 overflow-hidden border-r bg-background"
+    >
       {/* Espaçador do header */}
       <div
         className="border-b bg-muted/30"
@@ -43,9 +46,10 @@ export function GanttLeftPanel({
                 style={{ height: ROW_HEIGHT }}
                 onClick={() => onToggleGroup(group.option.id)}
               >
-                {isCollapsed ? (
+                {isCollapsed && (
                   <ChevronRightIcon className="size-3 shrink-0 text-muted-foreground" />
-                ) : (
+                )}
+                {!isCollapsed && (
                   <ChevronDownIcon className="size-3 shrink-0 text-muted-foreground" />
                 )}
                 <span

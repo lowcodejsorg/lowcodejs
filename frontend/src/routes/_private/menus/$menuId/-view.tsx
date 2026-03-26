@@ -1,4 +1,4 @@
-import { ContentViewer } from '@/components/common/editor';
+import { ContentViewer } from '@/components/common/rich-editor';
 import { E_MENU_ITEM_TYPE, MENU_ITEM_TYPE_OPTIONS } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 

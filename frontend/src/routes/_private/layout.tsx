@@ -3,10 +3,10 @@ import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 import React from 'react';
 import { ErrorBoundary } from 'react-error-boundary';
 
-import { Header } from '@/components/common/header';
-import { RouteError } from '@/components/common/route-error';
-import RoutePending from '@/components/common/route-pending';
-import { Sidebar } from '@/components/common/sidebar';
+import { Header } from '@/components/common/layout/header';
+import { Sidebar } from '@/components/common/layout/sidebar';
+import { RouteError } from '@/components/common/route-status/route-error';
+import RoutePending from '@/components/common/route-status/route-pending';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';

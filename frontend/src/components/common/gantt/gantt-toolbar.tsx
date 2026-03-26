@@ -46,9 +46,36 @@ export function GanttToolbar({
   const [showFilters, setShowFilters] = React.useState(false);
   const hasActiveFilter = filterStatus !== null || filterMember !== null;
 
+  let activeFilterCount = 0;
+  if (filterStatus) {
+    activeFilterCount += 1;
+  }
+  if (filterMember) {
+    activeFilterCount += 1;
+  }
+
+  const getZoomLabel = (level: ZoomLevel): string => {
+    if (level === 'day') return 'Dia';
+    if (level === 'week') return 'Semana';
+    return 'Mês';
+  };
+
+  let filterButtonVariant: 'secondary' | 'ghost' = 'ghost';
+  if (hasActiveFilter) {
+    filterButtonVariant = 'secondary';
+  }
+
+  const getZoomVariant = (level: ZoomLevel): 'secondary' | 'ghost' => {
+    if (zoom === level) return 'secondary';
+    return 'ghost';
+  };
+
   return (
     <>
-      <div className="flex items-center gap-2 border-b px-3 py-2">
+      <div
+        data-slot="gantt-toolbar"
+        className="flex items-center gap-2 border-b px-3 py-2"
+      >
         <GanttChartIcon className="size-4 text-muted-foreground" />
         <span className="text-sm font-medium">Gantt</span>
 
@@ -85,7 +112,7 @@ export function GanttToolbar({
         {/* Toggle de filtros */}
         <Button
           type="button"
-          variant={hasActiveFilter ? 'secondary' : 'ghost'}
+          variant={filterButtonVariant}
           size="sm"
           className="ml-2 h-7 gap-1 text-xs"
           onClick={() => setShowFilters((v) => !v)}
@@ -97,7 +124,7 @@ export function GanttToolbar({
               variant="default"
               className="ml-1 h-4 px-1 text-[10px]"
             >
-              {(filterStatus ? 1 : 0) + (filterMember ? 1 : 0)}
+              {activeFilterCount}
             </Badge>
           )}
         </Button>
@@ -123,12 +150,12 @@ export function GanttToolbar({
             <Button
               key={level}
               type="button"
-              variant={zoom === level ? 'secondary' : 'ghost'}
+              variant={getZoomVariant(level)}
               size="sm"
               className="h-6 px-2 text-xs"
               onClick={() => onZoomChange(level)}
             >
-              {level === 'day' ? 'Dia' : level === 'week' ? 'Semana' : 'Mês'}
+              {getZoomLabel(level)}
             </Button>
           ))}
         </div>
@@ -147,15 +174,18 @@ export function GanttToolbar({
                   type="button"
                   className={cn(
                     'flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors',
-                    filterStatus === opt.id
-                      ? 'border-primary bg-primary/10 font-medium'
-                      : 'border-transparent hover:bg-muted/50',
+                    filterStatus === opt.id &&
+                      'border-primary bg-primary/10 font-medium',
+                    filterStatus !== opt.id &&
+                      'border-transparent hover:bg-muted/50',
                   )}
-                  onClick={() =>
-                    onFilterStatusChange(
-                      filterStatus === opt.id ? null : opt.id,
-                    )
-                  }
+                  onClick={() => {
+                    if (filterStatus === opt.id) {
+                      onFilterStatusChange(null);
+                    } else {
+                      onFilterStatusChange(opt.id);
+                    }
+                  }}
                 >
                   <span
                     className="size-2 shrink-0 rounded-full"
@@ -178,15 +208,18 @@ export function GanttToolbar({
                     type="button"
                     className={cn(
                       'flex items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] transition-colors',
-                      filterMember === member._id
-                        ? 'border-primary bg-primary/10 font-medium'
-                        : 'border-transparent hover:bg-muted/50',
+                      filterMember === member._id &&
+                        'border-primary bg-primary/10 font-medium',
+                      filterMember !== member._id &&
+                        'border-transparent hover:bg-muted/50',
                     )}
-                    onClick={() =>
-                      onFilterMemberChange(
-                        filterMember === member._id ? null : member._id,
-                      )
-                    }
+                    onClick={() => {
+                      if (filterMember === member._id) {
+                        onFilterMemberChange(null);
+                      } else {
+                        onFilterMemberChange(member._id);
+                      }
+                    }}
                   >
                     <Avatar className="size-4">
                       <AvatarFallback className="text-[8px]">

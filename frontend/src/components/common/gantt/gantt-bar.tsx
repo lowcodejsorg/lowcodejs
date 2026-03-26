@@ -59,10 +59,26 @@ export function GanttBar({
     onBarClick();
   };
 
+  let cursorStyle = 'grab';
+  if (isDragging) {
+    cursorStyle = 'grabbing';
+  }
+
+  let transformStyle: string | undefined = undefined;
+  if (isDragging) {
+    transformStyle = `translateY(${dragOffsetY}px)`;
+  }
+
+  let progressBorderRadius = '0.125rem 0 0 0.125rem';
+  if (ganttRow.progress !== null && ganttRow.progress >= 100) {
+    progressBorderRadius = 'inherit';
+  }
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <div
+          data-slot="gantt-bar"
           data-gantt-bar
           className={cn(
             'group/bar absolute top-1 rounded-sm shadow-sm transition-shadow',
@@ -76,8 +92,8 @@ export function GanttBar({
             width: Math.max(bar.width, dayWidth),
             height: barHeight,
             backgroundColor: barColor,
-            cursor: isDragging ? 'grabbing' : 'grab',
-            transform: isDragging ? `translateY(${dragOffsetY}px)` : undefined,
+            cursor: cursorStyle,
+            transform: transformStyle,
           }}
           onMouseDown={(e) => handleMouseDown(e, 'move')}
           onClick={handleClick}
@@ -88,10 +104,7 @@ export function GanttBar({
               className="absolute inset-y-0 left-0 rounded-l-sm bg-black/20"
               style={{
                 width: `${Math.min(ganttRow.progress, 100)}%`,
-                borderRadius:
-                  ganttRow.progress >= 100
-                    ? 'inherit'
-                    : '0.125rem 0 0 0.125rem',
+                borderRadius: progressBorderRadius,
               }}
             />
           )}

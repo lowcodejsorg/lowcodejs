@@ -46,10 +46,12 @@ export function ForumSidebar({
 }: ForumSidebarProps): React.JSX.Element {
   return (
     <aside
+      data-slot="forum-sidebar"
       className={cn(
         'fixed left-0 top-0 bottom-0 z-40 bg-background border-r h-svh flex flex-col relative md:sticky md:top-0 md:h-full md:inset-auto md:z-0',
         'transition-all duration-300',
-        isOpen ? 'w-64' : 'w-10',
+        isOpen && 'w-64',
+        !isOpen && 'w-10',
       )}
     >
       <div
@@ -58,7 +60,7 @@ export function ForumSidebar({
           isOpen && 'border-b',
         )}
       >
-        {isOpen ? (
+        {isOpen && (
           <>
             <div className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
               <MessageCircle className="size-4" />
@@ -84,7 +86,8 @@ export function ForumSidebar({
               </button>
             </div>
           </>
-        ) : (
+        )}
+        {!isOpen && (
           <button
             onClick={onToggleOpen}
             className="p-1 rounded hover:bg-muted/60 cursor-pointer mx-auto"
@@ -98,9 +101,10 @@ export function ForumSidebar({
       {isOpen && (
         <div className="flex-1 overflow-auto space-y-1 px-3 pb-3 pt-2">
           {rows.map((row) => {
-            const label = channelField
-              ? String(row[channelField.slug] ?? 'Canal sem nome')
-              : row._id;
+            let label = row._id;
+            if (channelField) {
+              label = String(row[channelField.slug] ?? 'Canal sem nome');
+            }
             const isActive = row._id === activeRowId;
             const canAccess = canAccessRow(row);
             const canManage = canManageRow(row);
@@ -111,17 +115,14 @@ export function ForumSidebar({
                 type="button"
                 className={cn(
                   'group w-full flex items-center gap-2 rounded-md px-2 py-1 text-left text-sm transition-colors cursor-pointer',
-                  isActive
-                    ? 'bg-muted text-foreground'
-                    : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
+                  isActive && 'bg-muted text-foreground',
+                  !isActive &&
+                    'text-muted-foreground hover:bg-muted/60 hover:text-foreground',
                 )}
                 onClick={() => onSelectRow(row._id)}
               >
-                {canAccess ? (
-                  <span className="font-medium">#</span>
-                ) : (
-                  <LockIcon className="size-3.5" />
-                )}
+                {canAccess && <span className="font-medium">#</span>}
+                {!canAccess && <LockIcon className="size-3.5" />}
                 <span className="truncate">{label}</span>
                 {mentionCount > 0 && (
                   <span className="ml-auto inline-flex items-center gap-1">
@@ -129,7 +130,8 @@ export function ForumSidebar({
                       <AtSignIcon className="size-2.5" />
                     </span>
                     <span className="inline-flex min-w-5 items-center justify-center rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-primary-foreground">
-                      {mentionCount > 99 ? '99+' : mentionCount}
+                      {mentionCount > 99 && '99+'}
+                      {mentionCount <= 99 && mentionCount}
                     </span>
                   </span>
                 )}
@@ -137,7 +139,8 @@ export function ForumSidebar({
                   <span
                     className={cn(
                       'flex items-center gap-1 opacity-0 transition pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto',
-                      mentionCount > 0 ? 'ml-1' : 'ml-auto',
+                      mentionCount > 0 && 'ml-1',
+                      mentionCount <= 0 && 'ml-auto',
                     )}
                   >
                     <button

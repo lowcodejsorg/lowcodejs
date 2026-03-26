@@ -11,8 +11,8 @@ import React from 'react';
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
 import { FieldView } from './-view';
 
-import { AccessDenied } from '@/components/common/access-denied';
-import { LoadError } from '@/components/common/load-error';
+import { AccessDenied } from '@/components/common/route-status/access-denied';
+import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';

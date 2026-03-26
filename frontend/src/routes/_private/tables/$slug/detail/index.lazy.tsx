@@ -19,8 +19,8 @@ import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 import { TableView } from './-view';
 
-import { AccessDenied } from '@/components/common/access-denied';
-import { LoadError } from '@/components/common/load-error';
+import { AccessDenied } from '@/components/common/route-status/access-denied';
+import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';

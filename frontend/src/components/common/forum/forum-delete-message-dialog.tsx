@@ -23,6 +23,7 @@ export function ForumDeleteMessageDialog({
 }: ForumDeleteMessageDialogProps): React.JSX.Element {
   return (
     <Dialog
+      data-slot="forum-delete-message-dialog"
       open={open}
       onOpenChange={onOpenChange}
     >

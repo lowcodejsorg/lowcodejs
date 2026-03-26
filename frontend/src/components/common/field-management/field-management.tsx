@@ -75,14 +75,22 @@ function SortableManagementItem({
     isDragging,
   } = useSortable({ id: field._id, disabled });
 
+  let opacityValue = 1;
+  if (isDragging) {
+    opacityValue = 0.5;
+  }
+
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    opacity: isDragging ? 0.5 : 1,
+    opacity: opacityValue,
   };
 
   const isVisible = field[visibilityKey];
-  const currentWidth = widthKey ? (field[widthKey] ?? 50) : null;
+  let currentWidth: number | null = null;
+  if (widthKey) {
+    currentWidth = field[widthKey] ?? 50;
+  }
   const isNative = !!field.native;
 
   const [localWidth, setLocalWidth] = useState<string>(
@@ -102,6 +110,7 @@ function SortableManagementItem({
 
   return (
     <div
+      data-slot="sortable-management-item"
       ref={setNodeRef}
       style={style}
       className="flex items-center justify-between gap-2 rounded-lg border bg-card p-3 shadow-sm"
@@ -133,11 +142,10 @@ function SortableManagementItem({
           className="h-8 w-8"
           onClick={onToggleVisibility}
           disabled={isTogglingVisibility}
-          title={isVisible ? 'Ocultar campo' : 'Mostrar campo'}
+          title={(isVisible && 'Ocultar campo') || 'Mostrar campo'}
         >
-          {isVisible ? (
-            <EyeIcon className="h-4 w-4" />
-          ) : (
+          {isVisible && <EyeIcon className="h-4 w-4" />}
+          {!isVisible && (
             <EyeOffIcon className="h-4 w-4 text-muted-foreground" />
           )}
         </Button>
@@ -199,11 +207,8 @@ function TrashedItem({
           disabled={isDeleting}
           title="Excluir permanentemente"
         >
-          {isDeleting ? (
-            <LoaderCircleIcon className="h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2Icon className="h-4 w-4" />
-          )}
+          {isDeleting && <LoaderCircleIcon className="h-4 w-4 animate-spin" />}
+          {!isDeleting && <Trash2Icon className="h-4 w-4" />}
         </Button>
       </div>
     </div>

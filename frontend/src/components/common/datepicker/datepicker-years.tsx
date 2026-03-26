@@ -20,7 +20,10 @@ export function DatepickerYears({
   const years = generateYearRange(centerYear);
 
   return (
-    <div className="p-2">
+    <div
+      data-slot="datepicker-years"
+      className="p-2"
+    >
       {/* Years grid */}
       <div className="grid grid-cols-2 gap-2 mt-2">
         {years.map((year) => {
