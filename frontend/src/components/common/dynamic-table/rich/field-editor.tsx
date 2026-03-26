@@ -17,6 +17,7 @@ const ContentViewer = lazy(() =>
   })),
 );
 
+
 function EditorSkeleton(): React.JSX.Element {
   return (
     <div className="border rounded-md p-4 space-y-3">

@@ -1,7 +1,6 @@
+import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-
-import mongoose from 'mongoose';
 
 import {
   E_FIELD_TYPE,

@@ -100,6 +100,7 @@ export function ForumComposer({
         variant="compact"
         showToolbar={true}
         showBubble={false}
+        showModeToggle={false}
         autoFocus
         focusKey={focusKey}
         className={cn(

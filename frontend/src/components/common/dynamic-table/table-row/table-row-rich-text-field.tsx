@@ -91,6 +91,7 @@ export function TableRowRichTextField({
             variant={editorVariant}
             showToolbar={!compact}
             showBubble={!compact}
+            showModeToggle={!compact}
           />
         </Suspense>
       </div>
