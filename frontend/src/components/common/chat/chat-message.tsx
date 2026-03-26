@@ -1,12 +1,12 @@
-import type { UIMessage } from 'ai';
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
+import type { ChatMessage as ChatMessageData } from '@/hooks/use-chat-socket';
 import { cn } from '@/lib/utils';
 
 interface ChatMessageProps {
-  message: UIMessage;
+  message: ChatMessageData;
 }
 
 export function ChatMessage({ message }: ChatMessageProps): React.JSX.Element {
@@ -28,59 +28,24 @@ export function ChatMessage({ message }: ChatMessageProps): React.JSX.Element {
           !isUser && 'bg-muted text-foreground',
         )}
       >
-        {message.parts.map((part, index) => {
-          if (part.type === 'text') {
-            return (
-              <div
-                key={index}
-                className={cn(
-                  'prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
-                  isUser && 'prose-invert',
-                  !isUser && 'dark:prose-invert',
-                )}
-              >
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                  {part.text}
-                </ReactMarkdown>
-              </div>
-            );
-          }
-
-          if (part.type.startsWith('tool-')) {
-            const toolName = part.type.replace('tool-', '');
-            const toolPart = part as {
-              state: string;
-              errorText?: string;
-            };
-
-            if (toolPart.state === 'output-error') {
-              return (
-                <div
-                  key={index}
-                  className="mt-1 rounded border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs text-destructive"
-                >
-                  Erro: {toolPart.errorText || toolName}
-                </div>
-              );
-            }
-
-            if (toolPart.state === 'output-available') {
-              return null;
-            }
-
-            return (
-              <div
-                key={index}
-                className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground"
-              >
-                <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
-                Usando ferramenta: {toolName.replace(/_/g, ' ')}
-              </div>
-            );
-          }
-
-          return null;
-        })}
+        {/* Indicador de arquivo enviado */}
+        {message.file && (
+          <div className="mb-1 text-xs opacity-70">
+            {message.file.type === 'image' ? 'Imagem' : 'PDF'}:{' '}
+            {message.file.filename}
+          </div>
+        )}
+        <div
+          className={cn(
+            'prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
+            isUser && 'prose-invert',
+            !isUser && 'dark:prose-invert',
+          )}
+        >
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {message.content}
+          </ReactMarkdown>
+        </div>
       </div>
     </div>
   );

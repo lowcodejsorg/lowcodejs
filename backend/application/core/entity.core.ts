@@ -129,6 +129,17 @@ export const E_JWT_TYPE = {
   REFRESH: 'REFRESH',
 } as const;
 
+export const E_CHAT_EVENT = {
+  STATUS: 'status',
+  READY: 'ready',
+  THINKING: 'thinking',
+  TOOL_CALL: 'tool_call',
+  TOOL_RESULT: 'tool_result',
+  TOOL_ERROR: 'tool_error',
+  MESSAGE: 'message',
+  ERROR: 'error',
+} as const;
+
 export type IJWTPayload = {
   sub: string;
   email: string;

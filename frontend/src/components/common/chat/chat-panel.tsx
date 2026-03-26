@@ -1,7 +1,5 @@
-import { useChat } from '@ai-sdk/react';
 import { getRouteApi } from '@tanstack/react-router';
-import { DefaultChatTransport } from 'ai';
-import { Send, Trash2, XIcon } from 'lucide-react';
+import { Paperclip, Send, Trash2, XIcon } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 
 import { ChatMessage } from './chat-message';
@@ -9,6 +7,8 @@ import { ChatMessage } from './chat-message';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
+import { useChatSocket } from '@/hooks/use-chat-socket';
+import type { FileData } from '@/hooks/use-chat-socket';
 
 const rootApi = getRouteApi('__root__');
 
@@ -20,31 +20,98 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
   const { baseUrl } = rootApi.useLoaderData();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { messages, sendMessage, status, setMessages } = useChat({
-    transport: new DefaultChatTransport({
-      api: `${baseUrl}/chat`,
-      credentials: 'include',
-    }),
-  });
+  const {
+    messages,
+    toolActivities,
+    status,
+    statusMessage,
+    sendMessage,
+    clearMessages,
+  } = useChatSocket(baseUrl);
 
-  const isLoading = status === 'streaming' || status === 'submitted';
+  const isLoading = status === 'thinking' || status === 'connecting';
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [messages, toolActivities]);
 
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
     if (!input.trim() || isLoading) return;
-    sendMessage({ text: input.trim() });
+    sendMessage(input.trim());
     setInput('');
+  }
+
+  function renderStatusOrWelcome(): React.JSX.Element | null {
+    if (status === 'connecting') {
+      return (
+        <div className="text-center text-sm text-muted-foreground py-8">
+          {statusMessage}
+        </div>
+      );
+    }
+    if (status === 'error') {
+      return (
+        <div className="text-center text-sm text-destructive py-8">
+          {statusMessage}
+        </div>
+      );
+    }
+    if (messages.length === 0) {
+      return (
+        <div className="text-center text-sm text-muted-foreground py-8">
+          Ola! Sou o assistente do LowCodeJS. Posso ajudar a gerenciar suas
+          tabelas, campos e registros. Como posso ajudar?
+        </div>
+      );
+    }
+    return null;
   }
 
   function handleKeyDown(e: React.KeyboardEvent): void {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSubmit(e);
+    }
+  }
+
+  async function handleFileUpload(
+    e: React.ChangeEvent<HTMLInputElement>,
+  ): Promise<void> {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Upload via POST /chat/upload (igual agent POST /upload)
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch(`${baseUrl}/chat/upload`, {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        alert(data.error || 'Erro ao enviar arquivo');
+        return;
+      }
+
+      const fileData: FileData = data;
+      const text = input.trim();
+      sendMessage(text || '', fileData);
+      setInput('');
+    } catch {
+      alert('Erro ao enviar arquivo');
+    }
+
+    // Limpar input de arquivo
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   }
 
@@ -65,7 +132,7 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
               variant="ghost"
               size="icon"
               className="h-7 w-7"
-              onClick={() => setMessages([])}
+              onClick={clearMessages}
               title="Limpar historico"
             >
               <Trash2 className="h-3.5 w-3.5" />
@@ -87,19 +154,54 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
       {/* Messages */}
       <ScrollArea className="flex-1 overflow-hidden px-4">
         <div className="space-y-3 py-4">
-          {messages.length === 0 && (
-            <div className="text-center text-sm text-muted-foreground py-8">
-              Ola! Sou o assistente do LowCodeJS. Posso ajudar a gerenciar suas
-              tabelas, campos e registros. Como posso ajudar?
-            </div>
-          )}
+          {renderStatusOrWelcome()}
           {messages.map((message) => (
             <ChatMessage
               key={message.id}
               message={message}
             />
           ))}
-          {isLoading && messages.length > 0 && (
+          {/* Tool activities (igual agent: tool_call com loading, tool_result, tool_error) */}
+          {toolActivities.length > 0 && (
+            <div className="flex justify-start">
+              <div className="max-w-[85%] rounded-lg bg-muted px-3 py-2 text-sm space-y-1">
+                {toolActivities.map((activity) => {
+                  if (activity.type === 'tool_call') {
+                    return (
+                      <div
+                        key={activity.id}
+                        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                      >
+                        <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-primary" />
+                        Usando ferramenta: {activity.name.replace(/_/g, ' ')}
+                      </div>
+                    );
+                  }
+                  if (activity.type === 'tool_error') {
+                    return (
+                      <div
+                        key={activity.id}
+                        className="rounded border border-destructive/30 bg-destructive/10 px-2 py-1 text-xs text-destructive"
+                      >
+                        Erro: {activity.errorMessage || activity.name}
+                      </div>
+                    );
+                  }
+                  // tool_result - mostrar como concluído
+                  return (
+                    <div
+                      key={activity.id}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                    >
+                      <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+                      {activity.name.replace(/_/g, ' ')}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {status === 'thinking' && toolActivities.length === 0 && (
             <div className="flex justify-start">
               <div className="rounded-lg bg-muted px-3 py-2 text-sm text-muted-foreground">
                 Pensando...
@@ -116,6 +218,25 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
         className="border-t p-3"
       >
         <div className="flex gap-2">
+          {/* Upload de arquivo (igual agent POST /upload) */}
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp,application/pdf"
+            className="hidden"
+            onChange={handleFileUpload}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-10 w-10 shrink-0"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isLoading}
+            title="Enviar arquivo"
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
           <Textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

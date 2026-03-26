@@ -48,7 +48,8 @@
       "Bash(sed -i \"s|@/components/common/-tree-node|@/components/common/-tree-editor/tree-node|g\" frontend/src/components/common/tanstack-form/table-field-category-tree.tsx)",
       "Bash(sed -i \"s|@/components/common/-tree-list|@/components/common/-tree-editor/tree-list|g\" frontend/src/components/common/filters/filter-fields.tsx frontend/src/components/common/tanstack-form/table-row-category-field.tsx frontend/src/components/common/tanstack-form/table-field-category-tree.tsx frontend/src/routes/_private/tables/$slug/field/create/index.lazy.tsx frontend/src/routes/_private/tables/$slug/field/create/-create-form.tsx)",
       "Bash(echo \"EXIT CODE: $?\")",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(xargs cat:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

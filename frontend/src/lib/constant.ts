@@ -259,3 +259,26 @@ export const USER_STATUS_MAPPER = {
 
 export const PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
+
+// Socket.IO Chat Events
+export const E_CHAT_EVENT = {
+  // Server -> Client
+  STATUS: 'status',
+  READY: 'ready',
+  THINKING: 'thinking',
+  TOOL_CALL: 'tool_call',
+  TOOL_RESULT: 'tool_result',
+  TOOL_ERROR: 'tool_error',
+  MESSAGE: 'message',
+  ERROR: 'error',
+  // Client -> Server (same as server message event)
+} as const;
+
+// Tool name prefixes for query invalidation mapping
+export const E_CHAT_TOOL_PREFIX = {
+  TABLES: 'tables_',
+  FIELDS: 'fields_',
+  ROWS: 'rows_',
+  FILES: 'files_',
+  PROFILE: 'profile_',
+} as const;
