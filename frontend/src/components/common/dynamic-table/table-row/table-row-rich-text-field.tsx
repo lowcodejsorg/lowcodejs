@@ -89,6 +89,7 @@ export function TableRowRichTextField({
             value={formField.state.value || ''}
             onChange={(value) => formField.handleChange(value)}
             variant={editorVariant}
+            defaultMode="rich"
             showToolbar={!compact}
             showBubble={!compact}
             showModeToggle={!compact}

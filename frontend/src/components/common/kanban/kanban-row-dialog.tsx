@@ -764,9 +764,6 @@ export function KanbanRowDialog({
               if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
                 return <formField.TableRowRichTextField field={field} />;
               }
-              if (field.format === E_FIELD_FORMAT.MARKDOWN) {
-                return <formField.TableRowMarkdownField field={field} />;
-              }
               return <formField.TableRowTextareaField field={field} />;
             case E_FIELD_TYPE.DROPDOWN:
               return <formField.TableRowDropdownField field={field} />;

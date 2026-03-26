@@ -1,5 +1,6 @@
 import { Suspense, lazy } from 'react';
 
+import type { EditorMode } from '@/components/common/rich-editor';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
@@ -16,7 +17,6 @@ const ContentViewer = lazy(() =>
     default: m.ContentViewer,
   })),
 );
-
 
 function EditorSkeleton(): React.JSX.Element {
   return (
@@ -37,11 +37,13 @@ function EditorSkeleton(): React.JSX.Element {
 interface FieldEditorProps {
   label: string;
   showPreview?: boolean;
+  defaultMode?: EditorMode;
 }
 
 export function FieldEditor({
   label,
   showPreview,
+  defaultMode,
 }: FieldEditorProps): React.JSX.Element {
   const field = useFieldContext<string>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
@@ -66,6 +68,7 @@ export function FieldEditor({
               onChange={(value) => field.handleChange(value)}
               showToolbar={true}
               showCharCount={true}
+              defaultMode={defaultMode}
             />
           </Suspense>
         </div>

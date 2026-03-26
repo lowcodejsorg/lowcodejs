@@ -80,7 +80,10 @@ export function TableExportDialog({
       open={open}
       onOpenChange={setOpen}
     >
-      <DialogTrigger {...props} />
+      <DialogTrigger
+        asChild
+        {...props}
+      />
       <DialogContent className="py-4 px-6 max-w-md">
         <DialogHeader>
           <DialogTitle>Exportar tabela</DialogTitle>

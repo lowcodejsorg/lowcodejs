@@ -542,11 +542,6 @@ export function CalendarEventDialog({
                               <formField.TableRowRichTextField field={field} />
                             );
                           }
-                          if (field.format === E_FIELD_FORMAT.MARKDOWN) {
-                            return (
-                              <formField.TableRowMarkdownField field={field} />
-                            );
-                          }
                           return (
                             <formField.TableRowTextareaField field={field} />
                           );

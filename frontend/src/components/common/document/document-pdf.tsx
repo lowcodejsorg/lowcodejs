@@ -183,8 +183,7 @@ export function DocumentPdf({
                 if (!bodyRaw) return null;
 
                 const isRichOrMarkdown =
-                  b.bodyField.format === E_FIELD_FORMAT.RICH_TEXT ||
-                  b.bodyField.format === E_FIELD_FORMAT.MARKDOWN;
+                  b.bodyField.format === E_FIELD_FORMAT.RICH_TEXT;
 
                 let bodyContent = (
                   <Text style={styles.blockBody}>{bodyRaw}</Text>

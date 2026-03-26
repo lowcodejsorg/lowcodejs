@@ -61,7 +61,6 @@ export const E_FIELD_FORMAT = {
   // TEXT_LONG
   RICH_TEXT: 'RICH_TEXT',
   PLAIN_TEXT: 'PLAIN_TEXT',
-  MARKDOWN: 'MARKDOWN',
   // DATE
   DD_MM_YYYY: 'dd/MM/yyyy',
   MM_DD_YYYY: 'MM/dd/yyyy',
@@ -187,7 +186,6 @@ export const TEXT_FORMAT_OPTIONS = [
 export const TEXT_LONG_FORMAT_OPTIONS = [
   { label: 'Área de texto', value: E_FIELD_FORMAT.PLAIN_TEXT },
   { label: 'Editor rico', value: E_FIELD_FORMAT.RICH_TEXT },
-  { label: 'Markdown', value: E_FIELD_FORMAT.MARKDOWN },
 ] as const;
 
 export const DATE_FORMAT_OPTIONS = [

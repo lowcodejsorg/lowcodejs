@@ -6,7 +6,6 @@ export { TableRowDateField } from '@/components/common/dynamic-table/table-row/t
 export { TableRowDropdownField } from '@/components/common/dynamic-table/table-row/table-row-dropdown-field';
 export { TableRowFieldGroupField } from '@/components/common/dynamic-table/table-row/table-row-field-group-field';
 export { TableRowFileField } from '@/components/common/dynamic-table/table-row/table-row-file-field';
-export { TableRowMarkdownField } from '@/components/common/dynamic-table/table-row/table-row-markdown-field';
 export { TableRowRelationshipField } from '@/components/common/dynamic-table/table-row/table-row-relationship-field';
 export { TableRowRichTextField } from '@/components/common/dynamic-table/table-row/table-row-rich-text-field';
 export { TableRowTextField } from '@/components/common/dynamic-table/table-row/table-row-text-field';

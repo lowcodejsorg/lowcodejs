@@ -3,7 +3,6 @@ export { TableRowDateField } from './table-row-date-field';
 export { TableRowDropdownField } from './table-row-dropdown-field';
 export { TableRowFieldGroupField } from './table-row-field-group-field';
 export { TableRowFileField } from './table-row-file-field';
-export { TableRowMarkdownField } from './table-row-markdown-field';
 export { TableRowMaskedTextField } from './table-row-masked-text-field';
 export { TableRowPasswordField } from './table-row-password-field';
 export { TableRowRelationshipField } from './table-row-relationship-field';

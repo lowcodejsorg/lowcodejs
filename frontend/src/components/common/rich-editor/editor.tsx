@@ -398,15 +398,12 @@ export function Editor({
   );
 
   // Sync rawMd changes back to parent onChange
-  const handleRawMdChange = useCallback(
-    (newMd: string) => {
-      setRawMd(newMd);
-      if (isControlledRef.current) {
-        onChangeRef.current?.(newMd);
-      }
-    },
-    [],
-  );
+  const handleRawMdChange = useCallback((newMd: string) => {
+    setRawMd(newMd);
+    if (isControlledRef.current) {
+      onChangeRef.current?.(newMd);
+    }
+  }, []);
 
   // Sync rawHtml changes back to parent onChange
   const handleRawHtmlChange = useCallback(
@@ -469,11 +466,17 @@ export function Editor({
       )}
 
       {mode === 'markdown' && (
-        <MarkdownTextarea value={rawMd} onChange={handleRawMdChange} />
+        <MarkdownTextarea
+          value={rawMd}
+          onChange={handleRawMdChange}
+        />
       )}
 
       {mode === 'html' && (
-        <HtmlTextarea value={rawHtml} onChange={handleRawHtmlChange} />
+        <HtmlTextarea
+          value={rawHtml}
+          onChange={handleRawHtmlChange}
+        />
       )}
 
       {mode === 'preview' && (

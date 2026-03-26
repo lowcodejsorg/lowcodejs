@@ -253,14 +253,6 @@ function NestedGroupField({
                 />
               );
             }
-            if (groupField.format === E_FIELD_FORMAT.MARKDOWN) {
-              return (
-                <formField.TableRowMarkdownField
-                  field={groupField}
-                  disabled={disabled}
-                />
-              );
-            }
             return (
               <formField.TableRowTextareaField
                 field={groupField}

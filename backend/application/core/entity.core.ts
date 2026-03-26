@@ -63,7 +63,6 @@ export const E_FIELD_FORMAT = {
   // TEXT_LONG
   RICH_TEXT: 'RICH_TEXT',
   PLAIN_TEXT: 'PLAIN_TEXT',
-  MARKDOWN: 'MARKDOWN',
 
   // DATE
   DD_MM_YYYY: 'dd/MM/yyyy',

@@ -122,13 +122,6 @@ export function KanbanCreateCardDialog({
                       />
                     );
                   }
-                  if (fields.description?.format === E_FIELD_FORMAT.MARKDOWN) {
-                    return (
-                      <formField.TableRowMarkdownField
-                        field={fields.description}
-                      />
-                    );
-                  }
                   return (
                     <formField.TableRowTextareaField
                       field={fields.description!}
@@ -296,11 +289,6 @@ export function KanbanCreateCardDialog({
                           if (field.format === E_FIELD_FORMAT.RICH_TEXT) {
                             return (
                               <formField.TableRowRichTextField field={field} />
-                            );
-                          }
-                          if (field.format === E_FIELD_FORMAT.MARKDOWN) {
-                            return (
-                              <formField.TableRowMarkdownField field={field} />
                             );
                           }
                           return (

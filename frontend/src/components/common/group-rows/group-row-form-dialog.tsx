@@ -360,14 +360,6 @@ function renderGroupFormField(
           />
         );
       }
-      if (field.format === E_FIELD_FORMAT.MARKDOWN) {
-        return (
-          <formField.TableRowMarkdownField
-            field={field}
-            disabled={false}
-          />
-        );
-      }
       return (
         <formField.TableRowTextareaField
           field={field}
