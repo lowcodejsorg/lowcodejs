@@ -118,6 +118,7 @@ export const Schema = new mongoose.Schema(
     multiple: {
       type: Boolean,
       default: false,
+      required: true,
     },
     format: {
       type: String,

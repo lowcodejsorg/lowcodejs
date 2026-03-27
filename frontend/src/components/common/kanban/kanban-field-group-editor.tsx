@@ -438,7 +438,11 @@ export function KanbanFieldGroupEditor({
           size="sm"
           className="cursor-pointer"
           onClick={() => setIsAdding(true)}
-          disabled={isSaving || isAdding}
+          disabled={
+            isSaving ||
+            isAdding ||
+            (field.multiple === false && groupData.length >= 1)
+          }
         >
           <PlusIcon className="size-3.5 mr-1" />
           Adicionar item

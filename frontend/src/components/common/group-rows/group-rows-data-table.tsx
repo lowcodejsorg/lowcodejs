@@ -1,9 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import type { ColumnDef } from '@tanstack/react-table';
 import { PencilIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
-import { DataTable } from '../data-table/data-table';
 import { TableRowCategoryCell } from '../table-cells/table-row-category-cell';
 import { TableRowDateCell } from '../table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '../table-cells/table-row-dropdown-cell';
@@ -19,7 +17,6 @@ import { GroupRowFormDialog } from './group-row-form-dialog';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { groupRowListOptions } from '@/hooks/tanstack-query/_query-options';
-import { useDataTable } from '@/hooks/use-data-table';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type {
   IField,
@@ -64,66 +61,6 @@ export function GroupRowsDataTable({
     [group],
   );
 
-  const visibleGroupFields = React.useMemo(
-    () => groupFields.filter((f) => f.showInList),
-    [groupFields],
-  );
-
-  const columns = React.useMemo<Array<ColumnDef<IRow, any>>>(
-    () => [
-      ...visibleGroupFields.map(
-        (gf): ColumnDef<IRow, any> => ({
-          id: gf._id,
-          accessorFn: (row) => row[gf.slug],
-          header: () => <span className="text-xs font-medium">{gf.name}</span>,
-          cell: ({ row }) => (
-            <RenderGroupCell
-              field={gf}
-              row={row.original}
-            />
-          ),
-        }),
-      ),
-      {
-        id: '_actions',
-        header: (): null => null,
-        size: 80,
-        cell: ({ row }): React.JSX.Element => (
-          <div className="flex items-center gap-1">
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setEditItem(row.original);
-                setFormOpen(true);
-              }}
-            >
-              <PencilIcon className="size-3.5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={(e) => {
-                e.stopPropagation();
-                setDeleteItem(row.original);
-              }}
-            >
-              <TrashIcon className="size-3.5" />
-            </Button>
-          </div>
-        ),
-      },
-    ],
-    [visibleGroupFields, tableSlug],
-  );
-
-  const dataTable = useDataTable({
-    data: items,
-    columns,
-    getRowId: (row) => row._id,
-  });
-
   if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
   }
@@ -141,7 +78,8 @@ export function GroupRowsDataTable({
       data-slot="group-rows-data-table"
       className="space-y-2"
     >
-      <div className="flex justify-end">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium ml-2">{field.name}</span>
         <Button
           type="button"
           variant="outline"
@@ -150,21 +88,94 @@ export function GroupRowsDataTable({
             setEditItem(null);
             setFormOpen(true);
           }}
+          disabled={field.multiple === false && items.length >= 1}
         >
           <PlusIcon className="size-4" />
           <span>Adicionar item</span>
         </Button>
       </div>
 
-      <DataTable
-        table={dataTable}
-        stickyHeader={false}
-        emptyMessage="Nenhum item encontrado"
-        onRowClick={(row) => {
-          setEditItem(row);
-          setFormOpen(true);
-        }}
-      />
+      <div className="w-full overflow-x-auto border rounded-md">
+        <table className="w-full text-sm">
+          <thead className="border-b bg-muted/50">
+            <tr>
+              {groupFields.map((gf) => (
+                <th
+                  key={gf._id}
+                  className="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                >
+                  {gf.name}
+                </th>
+              ))}
+              <th className="w-20 px-4 py-2 text-left text-xs font-medium text-muted-foreground">
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 && (
+              <tr>
+                <td
+                  colSpan={groupFields.length + 1}
+                  className="px-4 py-8 text-center text-sm text-muted-foreground"
+                >
+                  Nenhum item encontrado
+                </td>
+              </tr>
+            )}
+            {items.map((item) => (
+              <tr
+                key={item._id}
+                className="border-b last:border-0 cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => {
+                  setEditItem(item);
+                  setFormOpen(true);
+                }}
+              >
+                {groupFields.map((gf) => (
+                  <td
+                    key={gf._id}
+                    className="px-4 py-2"
+                  >
+                    <RenderGroupCell
+                      field={gf}
+                      row={item}
+                    />
+                  </td>
+                ))}
+                <td
+                  className="w-20 px-4 py-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditItem(item);
+                        setFormOpen(true);
+                      }}
+                    >
+                      <PencilIcon className="size-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setDeleteItem(item);
+                      }}
+                    >
+                      <TrashIcon className="size-3.5" />
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
       <GroupRowFormDialog
         open={formOpen}

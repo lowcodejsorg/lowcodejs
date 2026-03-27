@@ -36,6 +36,16 @@ import {
 } from './field-management-context';
 
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { E_FIELD_TYPE } from '@/lib/constant';
@@ -186,6 +196,7 @@ function TrashedItem({
   onDelete,
   isDeleting,
 }: TrashedItemProps): React.JSX.Element {
+  const [open, setOpen] = useState(false);
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/50 p-3">
       <span className="text-sm text-muted-foreground">{field.name}</span>
@@ -199,17 +210,60 @@ function TrashedItem({
         >
           <PencilIcon className="h-4 w-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-destructive hover:text-destructive"
-          onClick={onDelete}
-          disabled={isDeleting}
-          title="Excluir permanentemente"
+        <Dialog
+          modal
+          open={open}
+          onOpenChange={setOpen}
         >
-          {isDeleting && <LoaderCircleIcon className="h-4 w-4 animate-spin" />}
-          {!isDeleting && <Trash2Icon className="h-4 w-4" />}
-        </Button>
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-auto text-destructive hover:text-destructive gap-2 px-2"
+              disabled={isDeleting}
+              title="Excluir permanentemente"
+            >
+              <Trash2Icon className="h-4 w-4" />
+              <span className="text-destructive text-xs font-medium">
+                Excluir permanentemente
+              </span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="py-4 px-6">
+            <DialogHeader>
+              <DialogTitle>Excluir campo permanentemente</DialogTitle>
+              <DialogDescription>
+                Essa ação é irreversível. O campo será excluído permanentemente
+                e não poderá ser recuperado.
+              </DialogDescription>
+            </DialogHeader>
+            <section>
+              <form className="pt-4 pb-2">
+                <DialogFooter className="inline-flex w-full gap-2 justify-end">
+                  <DialogClose asChild>
+                    <Button className="bg-destructive hover:bg-destructive">
+                      Cancelar
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    type="button"
+                    disabled={isDeleting}
+                    onClick={async () => {
+                      await onDelete();
+                      setOpen(false);
+                    }}
+                  >
+                    {isDeleting ? (
+                      <LoaderCircleIcon className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <span>Confirmar</span>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </section>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

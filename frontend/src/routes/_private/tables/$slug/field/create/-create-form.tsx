@@ -477,8 +477,9 @@ export const CreateFieldFormFields = withForm({
           </form.AppField>
         )}
 
-        {/* Campo Listagem */}
-        <form.AppField name="showInList">
+        {/* Campo Listagem - Desabilitado por enquanto a solicitação para desabilitar
+        foi solicitada em 21/03/2026 pois não fazia mais sentido para o que temos hoje, e será analisado se vai continuar ou não. */}
+        {/* <form.AppField name="showInList">
           {(field) => (
             <field.FieldBooleanSwitch
               label="Formato de listagem"
@@ -486,7 +487,7 @@ export const CreateFieldFormFields = withForm({
               disabled={isPending}
             />
           )}
-        </form.AppField>
+        </form.AppField> */}
       </section>
     );
   },
