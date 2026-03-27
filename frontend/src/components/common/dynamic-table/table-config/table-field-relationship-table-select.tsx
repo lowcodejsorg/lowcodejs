@@ -1,4 +1,4 @@
-import { TableCombobox } from '@/components/common/table-selectors/table-combobox';
+import { TableCombobox } from '@/components/common/dynamic-table/table-selectors/table-combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';

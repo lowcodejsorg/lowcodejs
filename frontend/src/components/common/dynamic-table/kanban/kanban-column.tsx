@@ -6,7 +6,7 @@ import React from 'react';
 import {
   badgeStyleFromColor,
   hexToRgb,
-} from '@/components/common/table-cells/table-row-badge-list';
+} from '@/components/common/dynamic-table/table-cells/table-row-badge-list';
 import { Badge } from '@/components/ui/badge';
 import {
   columnHeaderStyleFromColor,

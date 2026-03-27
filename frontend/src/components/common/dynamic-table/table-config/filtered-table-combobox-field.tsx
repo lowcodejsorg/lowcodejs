@@ -1,7 +1,7 @@
 import { AlertCircle } from 'lucide-react';
 import { useMemo } from 'react';
 
-import { TableComboboxFilteredSafe } from '@/components/common/table-selectors/table-combobox-filtered';
+import { TableComboboxFilteredSafe } from '@/components/common/dynamic-table/table-selectors/table-combobox-filtered';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';

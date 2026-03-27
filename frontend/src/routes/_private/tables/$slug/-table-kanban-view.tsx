@@ -28,7 +28,7 @@ import {
   KanbanRowDialog,
   KanbanSortableCard,
   KanbanUnassignedColumn,
-} from '@/components/common/kanban';
+} from '@/components/common/dynamic-table/kanban';
 import { Button } from '@/components/ui/button';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';

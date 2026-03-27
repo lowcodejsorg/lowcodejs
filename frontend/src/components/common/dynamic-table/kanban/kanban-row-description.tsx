@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { TableRowTextLongCell } from '@/components/common/table-cells/table-row-text-long-cell';
+import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { Button } from '@/components/ui/button';
 import type { IField, IRow } from '@/lib/interfaces';
 

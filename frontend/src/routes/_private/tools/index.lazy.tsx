@@ -3,7 +3,7 @@ import { WrenchIcon } from 'lucide-react';
 import React from 'react';
 
 import { AccessDenied } from '@/components/common/route-status/access-denied';
-import { TableComboboxPaginated } from '@/components/common/table-selectors/table-combobox-paginated';
+import { TableComboboxPaginated } from '@/components/common/dynamic-table/table-selectors/table-combobox-paginated';
 import { Button } from '@/components/ui/button';
 import {
   Card,

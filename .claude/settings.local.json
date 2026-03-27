@@ -53,7 +53,10 @@
       "Bash(git fetch:*)",
       "Bash(git log:*)",
       "Bash(while read:*)",
-      "Bash(do echo:*)"
+      "Bash(do echo:*)",
+      "Bash(/tmp/detailed_imports.sh:*)",
+      "Bash(bash /tmp/detailed_imports.sh)",
+      "Bash(xargs sed:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -1,7 +1,7 @@
 import { PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
-import { badgeStyleFromColor } from '@/components/common/table-cells/table-row-badge-list';
+import { badgeStyleFromColor } from '@/components/common/dynamic-table/table-cells/table-row-badge-list';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';

@@ -5,7 +5,7 @@ import {
 } from '@tanstack/react-router';
 import React from 'react';
 
-import { FieldManagement } from '@/components/common/field-management/field-management';
+import { FieldManagement } from '@/components/common/dynamic-table/field-management/field-management';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { useSidebar } from '@/components/ui/sidebar';

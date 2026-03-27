@@ -1,6 +1,6 @@
 import { AlertCircle } from 'lucide-react';
 
-import { TableCombobox } from '@/components/common/table-selectors/table-combobox';
+import { TableCombobox } from '@/components/common/dynamic-table/table-selectors/table-combobox';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';

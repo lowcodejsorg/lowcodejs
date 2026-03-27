@@ -6,7 +6,7 @@ import type {
   FieldManagementActions,
   VisibilityKey,
   WidthKey,
-} from '@/components/common/field-management/field-management-context';
+} from '@/components/common/dynamic-table/field-management/field-management-context';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';

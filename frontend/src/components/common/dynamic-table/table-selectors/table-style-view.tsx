@@ -9,7 +9,7 @@ import {
   MessageCircle,
 } from 'lucide-react';
 
-import { Spinner } from '../../ui/spinner';
+import { Spinner } from '@/components/ui/spinner';
 
 import { Button } from '@/components/ui/button';
 import {

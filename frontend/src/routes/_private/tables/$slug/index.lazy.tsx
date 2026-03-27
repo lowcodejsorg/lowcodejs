@@ -36,7 +36,7 @@ import { FilterTrigger } from '@/components/common/filters/filter-trigger';
 import { LoginButton } from '@/components/common/layout/login-button';
 import { Pagination } from '@/components/common/pagination';
 import { LoadError } from '@/components/common/route-status/load-error';
-import { TableStyleViewDropdown } from '@/components/common/table-selectors/table-style-view';
+import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import {

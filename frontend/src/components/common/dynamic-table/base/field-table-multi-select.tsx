@@ -1,4 +1,4 @@
-import { TableMultiSelect } from '@/components/common/table-selectors/table-multi-select';
+import { TableMultiSelect } from '@/components/common/dynamic-table/table-selectors/table-multi-select';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';

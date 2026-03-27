@@ -2,7 +2,7 @@ import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import React from 'react';
 
-import { TableRowDateCell } from '@/components/common/table-cells/table-row-date-cell';
+import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import type { IRow } from '@/lib/interfaces';
 import {

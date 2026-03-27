@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { badgeStyleFromColor } from '../../table-cells/table-row-badge-list';
+import { badgeStyleFromColor } from '../table-cells/table-row-badge-list';
 
 import {
   Combobox,
