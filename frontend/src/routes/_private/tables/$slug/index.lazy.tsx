@@ -30,13 +30,13 @@ import { TableSkeleton } from './-table-skeleton';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
+import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
 import { LoginButton } from '@/components/common/layout/login-button';
 import { Pagination } from '@/components/common/pagination';
 import { LoadError } from '@/components/common/route-status/load-error';
-import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import {

@@ -9,8 +9,6 @@ import {
   MessageCircle,
 } from 'lucide-react';
 
-import { Spinner } from '@/components/ui/spinner';
-
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -19,6 +17,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { useTablePermission } from '@/hooks/use-table-permission';

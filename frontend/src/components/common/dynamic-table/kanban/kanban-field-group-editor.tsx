@@ -3,7 +3,6 @@ import { ptBR } from 'date-fns/locale';
 import { FileIcon, FileTextIcon, PlusIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
-import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -12,6 +11,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

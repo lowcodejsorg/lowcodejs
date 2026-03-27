@@ -10,6 +10,7 @@ import {
 import React from 'react';
 import { toast } from 'sonner';
 
+import { KanbanRowDialog } from '@/components/common/dynamic-table/kanban';
 import {
   DAY_WIDTH,
   GanttBar,
@@ -28,7 +29,6 @@ import type {
   GanttRow,
   ZoomLevel,
 } from '@/components/common/gantt';
-import { KanbanRowDialog } from '@/components/common/dynamic-table/kanban';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { E_FIELD_TYPE } from '@/lib/constant';
