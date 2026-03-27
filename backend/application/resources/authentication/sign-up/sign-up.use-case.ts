@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -13,6 +12,7 @@ import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 import { EmailContractService } from '@application/services/email/email-contract.service';
+import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { SignUpBodyValidator } from './sign-up.validator';
 
@@ -25,6 +25,7 @@ export default class SignUpUseCase {
     private readonly userRepository: UserContractRepository,
     private readonly userGroupRepository: UserGroupContractRepository,
     private readonly emailService: EmailContractService,
+    private readonly passwordService: PasswordContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -49,7 +50,7 @@ export default class SignUpUseCase {
           HTTPException.Conflict('Group not found', 'GROUP_NOT_FOUND'),
         );
 
-      const passwordHash = await hash(payload.password, 6);
+      const passwordHash = await this.passwordService.hash(payload.password);
 
       const created = await this.userRepository.create({
         ...payload,

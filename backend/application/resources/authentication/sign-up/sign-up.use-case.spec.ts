@@ -4,12 +4,14 @@ import { E_ROLE } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
 import InMemoryEmailService from '@application/services/email/in-memory-email.service';
+import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import SignUpUseCase from './sign-up.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let userGroupInMemoryRepository: UserGroupInMemoryRepository;
 let emailService: InMemoryEmailService;
+let passwordService: InMemoryPasswordService;
 let sut: SignUpUseCase;
 
 describe('Sign Up Use Case', () => {
@@ -17,10 +19,12 @@ describe('Sign Up Use Case', () => {
     userInMemoryRepository = new UserInMemoryRepository();
     userGroupInMemoryRepository = new UserGroupInMemoryRepository();
     emailService = new InMemoryEmailService();
+    passwordService = new InMemoryPasswordService();
     sut = new SignUpUseCase(
       userInMemoryRepository,
       userGroupInMemoryRepository,
       emailService,
+      passwordService,
     );
 
     await userGroupInMemoryRepository.create({
@@ -69,10 +73,12 @@ describe('Sign Up Use Case', () => {
     const newUserRepo = new UserInMemoryRepository();
     const newGroupRepo = new UserGroupInMemoryRepository();
     const newEmailService = new InMemoryEmailService();
+    const newPasswordService = new InMemoryPasswordService();
     const newSut = new SignUpUseCase(
       newUserRepo,
       newGroupRepo,
       newEmailService,
+      newPasswordService,
     );
 
     const result = await newSut.execute({

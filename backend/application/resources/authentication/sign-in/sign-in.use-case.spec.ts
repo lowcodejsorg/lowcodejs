@@ -1,22 +1,24 @@
-import { hash } from 'bcryptjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { E_USER_STATUS } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import SignInUseCase from './sign-in.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
+let passwordService: InMemoryPasswordService;
 let sut: SignInUseCase;
 
 describe('Sign In Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
-    sut = new SignInUseCase(userInMemoryRepository);
+    passwordService = new InMemoryPasswordService();
+    sut = new SignInUseCase(userInMemoryRepository, passwordService);
   });
 
   it('deve autenticar usuario com credenciais validas', async () => {
-    const hashedPassword = await hash('password123', 6);
+    const hashedPassword = await passwordService.hash('password123');
     await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -48,7 +50,7 @@ describe('Sign In Use Case', () => {
   });
 
   it('deve retornar erro 401 quando senha estiver incorreta', async () => {
-    const hashedPassword = await hash('correct_password', 6);
+    const hashedPassword = await passwordService.hash('correct_password');
     await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -68,7 +70,7 @@ describe('Sign In Use Case', () => {
   });
 
   it('deve retornar erro 401 quando usuario estiver inativo', async () => {
-    const hashedPassword = await hash('password123', 6);
+    const hashedPassword = await passwordService.hash('password123');
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',

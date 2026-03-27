@@ -4,6 +4,8 @@ import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { toUserResponse } from '../users.mapper';
+
 import { UserUpdateSchema } from './update.schema';
 import UserUpdateUseCase from './update.use-case';
 import {
@@ -51,6 +53,6 @@ export default class {
       });
     }
 
-    return response.status(200).send(result.value);
+    return response.status(200).send(toUserResponse(result.value));
   }
 }

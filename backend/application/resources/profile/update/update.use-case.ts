@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
@@ -7,7 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IUser as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import { isPasswordMatch } from '@config/util.config';
+import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { ProfileUpdatePayload } from './update.validator';
 
@@ -16,7 +15,10 @@ type Payload = ProfileUpdatePayload;
 
 @Service()
 export default class ProfileUpdateUseCase {
-  constructor(private readonly userRepository: UserContractRepository) {}
+  constructor(
+    private readonly userRepository: UserContractRepository,
+    private readonly passwordService: PasswordContractService,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -39,10 +41,10 @@ export default class ProfileUpdateUseCase {
         return right(updated);
       }
 
-      const isMatch = await isPasswordMatch({
-        hashed: user.password,
-        plain: payload.currentPassword as string,
-      });
+      const isMatch = await this.passwordService.compare(
+        payload.currentPassword as string,
+        user.password,
+      );
 
       if (!isMatch)
         return left(
@@ -52,7 +54,9 @@ export default class ProfileUpdateUseCase {
           ),
         );
 
-      const password = await hash(payload.newPassword as string, 6);
+      const password = await this.passwordService.hash(
+        payload.newPassword as string,
+      );
 
       const updated = await this.userRepository.update({
         _id: user._id,

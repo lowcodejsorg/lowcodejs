@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-import bcrypt from 'bcryptjs';
 import { Service } from 'fastify-decorators';
 import type z from 'zod';
 
@@ -10,6 +9,7 @@ import {
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { SignInBodyValidator } from './sign-in.validator';
 
@@ -18,11 +18,13 @@ type Payload = z.infer<typeof SignInBodyValidator>;
 
 @Service()
 export default class SignInUseCase {
-  constructor(private readonly userRepository: UserContractRepository) {}
+  constructor(
+    private readonly userRepository: UserContractRepository,
+    private readonly passwordService: PasswordContractService,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      console.log('payload', payload);
       const user = await this.userRepository.findBy({
         email: payload.email,
         exact: true,
@@ -36,14 +38,12 @@ export default class SignInUseCase {
           ),
         );
 
-      console.log('user', JSON.stringify(user, null, 2));
-
       if (user.status === E_USER_STATUS.INACTIVE)
         return left(
           HTTPException.Unauthorized('Usuário inativo', 'USER_INACTIVE'),
         );
 
-      const passwordDoesMatch = await bcrypt.compare(
+      const passwordDoesMatch = await this.passwordService.compare(
         payload.password,
         user.password,
       );

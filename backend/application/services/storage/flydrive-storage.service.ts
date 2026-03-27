@@ -1,19 +1,15 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
 import type { MultipartFile } from '@fastify/multipart';
 import { Service } from 'fastify-decorators';
 import { Readable } from 'node:stream';
 import sharp from 'sharp';
 
-import type { IStorage, Optional } from '@application/core/entity.core';
 import { drive } from '@config/storage.config';
 
-type Response = Optional<
-  IStorage,
-  '_id' | 'url' | 'createdAt' | 'updatedAt' | 'trashedAt' | 'trashed'
->;
+import type { StorageUploadResponse } from './storage-contract.service';
+import { StorageContractService } from './storage-contract.service';
 
 @Service()
-export default class FlyDriveStorageService {
+export default class FlyDriveStorageService extends StorageContractService {
   private readonly IMAGE_MIMETYPES = [
     'image/jpeg',
     'image/png',
@@ -22,7 +18,7 @@ export default class FlyDriveStorageService {
     'image/tiff',
   ];
 
-  private get disk() {
+  private get disk(): ReturnType<typeof drive.use> {
     return drive.use();
   }
 
@@ -30,7 +26,10 @@ export default class FlyDriveStorageService {
     return this.IMAGE_MIMETYPES.includes(mimetype);
   }
 
-  async upload(part: MultipartFile, staticName?: string): Promise<Response> {
+  async upload(
+    part: MultipartFile,
+    staticName?: string,
+  ): Promise<StorageUploadResponse> {
     const name =
       staticName ?? Math.floor(Math.random() * 100000000)?.toString();
     const originalExt = part.filename?.split('.').pop();

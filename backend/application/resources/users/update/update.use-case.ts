@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
@@ -7,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IUser as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { UserUpdatePayload } from './update.validator';
 
@@ -15,7 +15,10 @@ type Payload = UserUpdatePayload;
 
 @Service()
 export default class UserUpdateUseCase {
-  constructor(private readonly userRepository: UserContractRepository) {}
+  constructor(
+    private readonly userRepository: UserContractRepository,
+    private readonly passwordService: PasswordContractService,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -30,7 +33,7 @@ export default class UserUpdateUseCase {
       const updated = await this.userRepository.update({
         ...payload,
         ...(payload.password && {
-          password: await hash(payload.password, 12),
+          password: await this.passwordService.hash(payload.password),
         }),
       });
 

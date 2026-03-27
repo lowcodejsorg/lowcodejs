@@ -24,6 +24,12 @@ import { ValidationTokenContractRepository } from '@application/repositories/val
 import ValidationTokenMongooseRepository from '@application/repositories/validation-token/validation-token-mongoose.repository';
 import { EmailContractService } from '@application/services/email/email-contract.service';
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import BcryptPasswordService from '@application/services/password/bcrypt-password.service';
+import { PasswordContractService } from '@application/services/password/password-contract.service';
+import { PermissionContractService } from '@application/services/permission/permission-contract.service';
+import PermissionService from '@application/services/permission/permission.service';
+import FlyDriveStorageService from '@application/services/storage/flydrive-storage.service';
+import { StorageContractService } from '@application/services/storage/storage-contract.service';
 
 /**
  * Registro explícito de dependências.
@@ -86,4 +92,16 @@ export function registerDependencies(): void {
   );
 
   injectablesHolder.injectService(EmailContractService, NodemailerEmailService);
+
+  injectablesHolder.injectService(
+    StorageContractService,
+    FlyDriveStorageService,
+  );
+
+  injectablesHolder.injectService(
+    PasswordContractService,
+    BcryptPasswordService,
+  );
+
+  injectablesHolder.injectService(PermissionContractService, PermissionService);
 }

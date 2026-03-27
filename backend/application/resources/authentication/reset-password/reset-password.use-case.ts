@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
-import { hash } from 'bcryptjs';
 import { Service } from 'fastify-decorators';
 
 import { left, right, type Either } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { ResetPasswordPayload } from './reset-password.validator';
 
@@ -13,7 +13,10 @@ type Payload = ResetPasswordPayload;
 
 @Service()
 export default class UpdatePasswordRecoveryUseCase {
-  constructor(private readonly userRepository: UserContractRepository) {}
+  constructor(
+    private readonly userRepository: UserContractRepository,
+    private readonly passwordService: PasswordContractService,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -25,7 +28,7 @@ export default class UpdatePasswordRecoveryUseCase {
       if (!user)
         return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
 
-      const hashedPassword = await hash(payload.password, 6);
+      const hashedPassword = await this.passwordService.hash(payload.password);
 
       await this.userRepository.update({
         _id: user._id,

@@ -10,7 +10,7 @@ import {
   StorageContractRepository,
   type StorageCreatePayload,
 } from '@application/repositories/storage/storage-contract.repository';
-import FlyDriveStorageService from '@application/services/flydrive-storage.service';
+import { StorageContractService } from '@application/services/storage/storage-contract.service';
 
 type Response = Either<HTTPException, Entity[]>;
 
@@ -18,7 +18,7 @@ type Response = Either<HTTPException, Entity[]>;
 export default class StorageUploadUseCase {
   constructor(
     private readonly storageRepository: StorageContractRepository,
-    private readonly service: FlyDriveStorageService,
+    private readonly service: StorageContractService,
   ) {}
 
   async execute(
@@ -37,7 +37,6 @@ export default class StorageUploadUseCase {
 
       return right(storages);
     } catch (error) {
-      console.error('StorageUploadUseCase error:', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

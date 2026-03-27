@@ -55,11 +55,6 @@ export default class {
       });
     }
 
-    console.log(
-      'Group field updated successfully:',
-      JSON.stringify(result.value, null, 2),
-    );
-
     return response.status(200).send(result.value);
   }
 }

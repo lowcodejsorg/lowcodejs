@@ -2,12 +2,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
-import FlyDriveStorageService from '@application/services/flydrive-storage.service';
+import { StorageContractService } from '@application/services/storage/storage-contract.service';
 
 import StorageUploadUseCase from './upload.use-case';
 
 let storageInMemoryRepository: StorageInMemoryRepository;
-let storageService: FlyDriveStorageService;
+let storageService: StorageContractService;
 let sut: StorageUploadUseCase;
 
 describe('Storage Upload Use Case', () => {
@@ -22,7 +22,7 @@ describe('Storage Upload Use Case', () => {
       }),
       delete: vi.fn().mockResolvedValue(true),
       exists: vi.fn(),
-    } as unknown as FlyDriveStorageService;
+    } as unknown as StorageContractService;
     sut = new StorageUploadUseCase(storageInMemoryRepository, storageService);
   });
 

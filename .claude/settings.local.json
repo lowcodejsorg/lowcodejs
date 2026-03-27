@@ -56,7 +56,8 @@
       "Bash(do echo:*)",
       "Bash(/tmp/detailed_imports.sh:*)",
       "Bash(bash /tmp/detailed_imports.sh)",
-      "Bash(xargs sed:*)"
+      "Bash(xargs sed:*)",
+      "Bash(git:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

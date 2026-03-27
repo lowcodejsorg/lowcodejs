@@ -31,7 +31,6 @@ export default class {
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    console.log(JSON.stringify(request.files(), null, 2));
     const { staticName } = StorageUploadQueryValidator.parse(request.query);
 
     const result = await this.useCase.execute(request.files(), staticName);

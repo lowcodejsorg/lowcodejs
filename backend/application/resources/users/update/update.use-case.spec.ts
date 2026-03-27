@@ -2,16 +2,19 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { E_USER_STATUS } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import UserUpdateUseCase from './update.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
+let passwordService: InMemoryPasswordService;
 let sut: UserUpdateUseCase;
 
 describe('User Update Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
-    sut = new UserUpdateUseCase(userInMemoryRepository);
+    passwordService = new InMemoryPasswordService();
+    sut = new UserUpdateUseCase(userInMemoryRepository, passwordService);
   });
 
   it('deve atualizar usuario com sucesso (sem password)', async () => {

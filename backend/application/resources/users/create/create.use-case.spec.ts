@@ -1,16 +1,19 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import UserCreateUseCase from './create.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
+let passwordService: InMemoryPasswordService;
 let sut: UserCreateUseCase;
 
 describe('User Create Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
-    sut = new UserCreateUseCase(userInMemoryRepository);
+    passwordService = new InMemoryPasswordService();
+    sut = new UserCreateUseCase(userInMemoryRepository, passwordService);
   });
 
   it('deve criar um usuário com sucesso', async () => {

@@ -1,16 +1,22 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import UpdatePasswordRecoveryUseCase from './reset-password.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
+let passwordService: InMemoryPasswordService;
 let sut: UpdatePasswordRecoveryUseCase;
 
 describe('Reset Password Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
-    sut = new UpdatePasswordRecoveryUseCase(userInMemoryRepository);
+    passwordService = new InMemoryPasswordService();
+    sut = new UpdatePasswordRecoveryUseCase(
+      userInMemoryRepository,
+      passwordService,
+    );
   });
 
   it('deve atualizar senha com sucesso', async () => {

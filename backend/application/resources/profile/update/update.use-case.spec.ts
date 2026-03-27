@@ -1,17 +1,19 @@
-import { hash } from 'bcryptjs';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import ProfileUpdateUseCase from './update.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
+let passwordService: InMemoryPasswordService;
 let sut: ProfileUpdateUseCase;
 
 describe('Profile Update Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
-    sut = new ProfileUpdateUseCase(userInMemoryRepository);
+    passwordService = new InMemoryPasswordService();
+    sut = new ProfileUpdateUseCase(userInMemoryRepository, passwordService);
   });
 
   it('deve atualizar o perfil do usuario sem alterar senha', async () => {
@@ -37,7 +39,7 @@ describe('Profile Update Use Case', () => {
   });
 
   it('deve atualizar o perfil e senha quando senha atual estiver correta', async () => {
-    const hashedPassword = await hash('old_password', 6);
+    const hashedPassword = await passwordService.hash('old_password');
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -62,7 +64,7 @@ describe('Profile Update Use Case', () => {
   });
 
   it('deve retornar erro INVALID_CREDENTIALS quando senha atual estiver incorreta', async () => {
-    const hashedPassword = await hash('correct_password', 6);
+    const hashedPassword = await passwordService.hash('correct_password');
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',

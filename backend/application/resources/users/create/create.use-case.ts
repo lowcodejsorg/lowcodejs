@@ -1,5 +1,4 @@
 /* eslint-disable no-unused-vars */
-import bcrypt from 'bcryptjs';
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
@@ -10,6 +9,7 @@ import {
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { UserCreatePayload } from './create.validator';
 
@@ -18,7 +18,10 @@ type Payload = UserCreatePayload;
 
 @Service()
 export default class UserCreateUseCase {
-  constructor(private readonly userRepository: UserContractRepository) {}
+  constructor(
+    private readonly userRepository: UserContractRepository,
+    private readonly passwordService: PasswordContractService,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -37,7 +40,7 @@ export default class UserCreateUseCase {
           HTTPException.Conflict('User already exists', 'USER_ALREADY_EXISTS'),
         );
 
-      const passwordHash = await bcrypt.hash(payload.password, 12);
+      const passwordHash = await this.passwordService.hash(payload.password);
 
       const created = await this.userRepository.create({
         ...payload,

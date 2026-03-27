@@ -2,6 +2,7 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { toUserResponse } from '@application/resources/users/users.mapper';
 
 import { ProfileUpdateSchema } from './update.schema';
 import ProfileUpdateUseCase from './update.use-case';
@@ -47,6 +48,6 @@ export default class {
       });
     }
 
-    return response.status(200).send(result.value);
+    return response.status(200).send(toUserResponse(result.value));
   }
 }

@@ -4,6 +4,8 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { toUserResponse } from '../users.mapper';
+
 import { UserShowSchema } from './show.schema';
 import UserShowUseCase from './show.use-case';
 import { UserShowParamValidator } from './show.validator';
@@ -44,9 +46,6 @@ export default class {
       });
     }
 
-    return response.status(200).send({
-      ...result?.value,
-      password: undefined,
-    });
+    return response.status(200).send(toUserResponse(result.value));
   }
 }
