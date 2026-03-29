@@ -5,9 +5,8 @@ import type { AxiosError } from 'axios';
 import { queryKeys } from './_query-keys';
 
 import { API } from '@/lib/api';
-import type { IRow } from '@/lib/interfaces';
+import type { IEvaluationSummary, IRow } from '@/lib/interfaces';
 import type { RowEvaluationPayload } from '@/lib/payloads';
-import { useAuthStore } from '@/stores/authentication';
 
 type UseRowUpdateEvaluationProps = {
   onSuccess?: (data: IRow, variables: RowEvaluationPayload) => void;
@@ -46,25 +45,31 @@ export function useRowUpdateEvaluation(
       const previous = queryClient.getQueryData<IRow>(key);
 
       if (previous) {
-        const currentUserId = useAuthStore.getState().user?._id?.toString();
-        const evaluations = Array.from<Record<string, unknown>>(
-          previous[variables.field] ?? [],
-        );
-        const idx = evaluations.findIndex(
-          (e) =>
-            (e.user as { _id?: string })?._id?.toString() === currentUserId,
-        );
-        if (idx >= 0) {
-          evaluations[idx] = { ...evaluations[idx], value: variables.value };
+        const current = (previous[variables.field] ?? {}) as IEvaluationSummary;
+        const oldCount = current._count ?? 0;
+        const oldAverage = current._average ?? 0;
+        const oldUserValue = current._userValue;
+
+        let newCount = oldCount;
+        let newAverage = oldAverage;
+
+        if (oldUserValue === null || oldUserValue === undefined) {
+          newCount = oldCount + 1;
+          newAverage = (oldAverage * oldCount + variables.value) / newCount;
         } else {
-          evaluations.push({
-            value: variables.value,
-            user: { _id: currentUserId },
-          });
+          const totalSum = oldAverage * oldCount;
+          newAverage = (totalSum - oldUserValue + variables.value) / oldCount;
         }
+
+        const summary: IEvaluationSummary = {
+          _average: newAverage,
+          _count: newCount,
+          _userValue: variables.value,
+        };
+
         queryClient.setQueryData<IRow>(key, {
           ...previous,
-          [variables.field]: evaluations,
+          [variables.field]: summary,
         });
       }
 

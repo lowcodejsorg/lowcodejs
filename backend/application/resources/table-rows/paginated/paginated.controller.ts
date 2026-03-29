@@ -40,7 +40,11 @@ export default class {
     const query = TableRowPaginatedQueryValidator.parse(request.query);
     const params = TableRowPaginatedParamsValidator.parse(request.params);
 
-    const result = await this.useCase.execute({ ...query, ...params });
+    const result = await this.useCase.execute({
+      ...query,
+      ...params,
+      user: request.user?.sub,
+    });
 
     if (result.isLeft()) {
       const error = result.value;

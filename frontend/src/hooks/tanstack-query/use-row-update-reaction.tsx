@@ -5,9 +5,9 @@ import type { AxiosError } from 'axios';
 import { queryKeys } from './_query-keys';
 
 import { API } from '@/lib/api';
-import type { IRow } from '@/lib/interfaces';
+import { E_REACTION_TYPE } from '@/lib/constant';
+import type { IReactionSummary, IRow } from '@/lib/interfaces';
 import type { RowReactionPayload } from '@/lib/payloads';
-import { useAuthStore } from '@/stores/authentication';
 
 type UseRowUpdateReactionProps = {
   onSuccess?: (data: IRow, variables: RowReactionPayload) => void;
@@ -43,25 +43,32 @@ export function useRowUpdateReaction(
       const previous = queryClient.getQueryData<IRow>(key);
 
       if (previous) {
-        const currentUserId = useAuthStore.getState().user?._id?.toString();
-        const reactions = Array.from<Record<string, unknown>>(
-          previous[variables.field] ?? [],
-        );
-        const idx = reactions.findIndex(
-          (r) =>
-            (r.user as { _id?: string })?._id?.toString() === currentUserId,
-        );
-        if (idx >= 0) {
-          reactions[idx] = { ...reactions[idx], type: variables.type };
-        } else {
-          reactions.push({
-            type: variables.type,
-            user: { _id: currentUserId },
-          });
+        const current = (previous[variables.field] ?? {}) as IReactionSummary;
+        let likeCount = current._likeCount ?? 0;
+        let unlikeCount = current._unlikeCount ?? 0;
+        const oldReaction = current._userReaction;
+
+        if (oldReaction === E_REACTION_TYPE.LIKE) {
+          likeCount--;
+        } else if (oldReaction === E_REACTION_TYPE.UNLIKE) {
+          unlikeCount--;
         }
+
+        if (variables.type === E_REACTION_TYPE.LIKE) {
+          likeCount++;
+        } else if (variables.type === E_REACTION_TYPE.UNLIKE) {
+          unlikeCount++;
+        }
+
+        const summary: IReactionSummary = {
+          _likeCount: likeCount,
+          _unlikeCount: unlikeCount,
+          _userReaction: variables.type,
+        };
+
         queryClient.setQueryData<IRow>(key, {
           ...previous,
-          [variables.field]: reactions,
+          [variables.field]: summary,
         });
       }
 

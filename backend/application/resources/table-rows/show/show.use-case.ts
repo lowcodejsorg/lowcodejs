@@ -5,7 +5,11 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import {
+  buildPopulate,
+  buildTable,
+  transformRowContext,
+} from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { TableRowShowPayload } from './show.validator';
@@ -15,7 +19,7 @@ type Response = Either<
   import('@application/core/entity.core').IRow
 >;
 
-type Payload = TableRowShowPayload;
+type Payload = TableRowShowPayload & { user?: string };
 
 @Service()
 export default class TableRowShowUseCase {
@@ -59,7 +63,9 @@ export default class TableRowShowUseCase {
         _id: populated?._id?.toString(),
       };
 
-      return right(rowJson);
+      return right(
+        transformRowContext(rowJson, table.fields as IField[], payload.user),
+      );
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

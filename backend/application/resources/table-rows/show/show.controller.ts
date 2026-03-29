@@ -37,6 +37,7 @@ export default class {
     const params = TableRowShowParamsValidator.parse(request.params);
     const result = await this.useCase.execute({
       ...params,
+      user: request.user?.sub,
     });
 
     if (result.isLeft()) {

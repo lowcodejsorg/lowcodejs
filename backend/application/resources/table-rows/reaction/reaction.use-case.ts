@@ -6,7 +6,11 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import {
+  buildPopulate,
+  buildTable,
+  transformRowContext,
+} from '@application/core/util.core';
 import { ReactionContractRepository } from '@application/repositories/reaction/reaction-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -54,39 +58,52 @@ export default class TableRowReactionUseCase {
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
 
-      let reaction = await this.reactionRepository.findBy({
-        user: payload.user,
-        exact: true,
-      });
+      const existingIds: string[] =
+        row[payload.field]?.flatMap((r: ObjectId) => r?.toString()) ?? [];
 
-      if (!reaction) {
-        reaction = await this.reactionRepository.create({
-          type: payload.type,
+      let oldReactionId: string | null = null;
+
+      for (const id of existingIds) {
+        const found = await this.reactionRepository.findBy({
+          _id: id,
           user: payload.user,
+          exact: true,
         });
-      } else {
-        reaction = await this.reactionRepository.update({
-          _id: reaction._id,
-          type: payload.type,
-        });
+        if (found) {
+          oldReactionId = found._id;
+          break;
+        }
       }
 
-      const reactions =
-        row[payload.field]?.flatMap((r: ObjectId) => r?.toString()) ?? [];
-      const reactionId = reaction?._id?.toString();
+      const reaction = await this.reactionRepository.create({
+        type: payload.type,
+        user: payload.user,
+      });
 
-      // se não existir a reação adiciona o id na propriedade do registro
-      if (!reactions.includes(reactionId))
-        await row?.set(payload.field, [...reactions, reactionId]).save();
+      const reactionId = reaction._id.toString();
+
+      if (oldReactionId) {
+        const updatedIds = existingIds.map((id) =>
+          id === oldReactionId ? reactionId : id,
+        );
+        await row.set(payload.field, updatedIds).save();
+        await this.reactionRepository.delete(oldReactionId);
+      } else {
+        await row.set(payload.field, [...existingIds, reactionId]).save();
+      }
 
       const populated = await row?.populate(populate);
 
-      return right({
+      const rowJson = {
         ...populated?.toJSON({
           flattenObjectIds: true,
         }),
         _id: populated?._id.toString(),
-      });
+      };
+
+      return right(
+        transformRowContext(rowJson, table.fields as IField[], payload.user),
+      );
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

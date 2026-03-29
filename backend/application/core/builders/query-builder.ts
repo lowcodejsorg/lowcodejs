@@ -68,7 +68,10 @@ export async function buildQuery(
       };
     }
 
-    if (field.type === E_FIELD_TYPE.DATE) {
+    if (
+      field.type === E_FIELD_TYPE.DATE ||
+      field.type === E_FIELD_TYPE.CREATED_AT
+    ) {
       const initialKey = `${slug}-initial`;
       const finalKey = `${slug}-final`;
 

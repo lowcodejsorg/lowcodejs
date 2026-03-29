@@ -111,7 +111,10 @@ export function useFilterState(
         }
       }
 
-      if (field.type === E_FIELD_TYPE.DATE) {
+      if (
+        field.type === E_FIELD_TYPE.DATE ||
+        field.type === E_FIELD_TYPE.CREATED_AT
+      ) {
         const initialDateStr = search[`${field.slug}-initial`];
         const finalDateStr = search[`${field.slug}-final`];
 
@@ -140,7 +143,10 @@ export function useFilterState(
     // Initialize all field keys as undefined so cleared fields are removed from URL
     for (const field of fields) {
       filters[field.slug] = undefined;
-      if (field.type === E_FIELD_TYPE.DATE) {
+      if (
+        field.type === E_FIELD_TYPE.DATE ||
+        field.type === E_FIELD_TYPE.CREATED_AT
+      ) {
         filters[`${field.slug}-initial`] = undefined;
         filters[`${field.slug}-final`] = undefined;
       }
@@ -153,6 +159,7 @@ export function useFilterState(
         [
           E_FIELD_TYPE.TEXT_SHORT.toString(),
           E_FIELD_TYPE.TEXT_LONG.toString(),
+          E_FIELD_TYPE.CREATOR.toString(),
         ].includes(field.type) &&
         value
       ) {
@@ -172,7 +179,10 @@ export function useFilterState(
         }
       }
 
-      if (field.type === E_FIELD_TYPE.DATE) {
+      if (
+        field.type === E_FIELD_TYPE.DATE ||
+        field.type === E_FIELD_TYPE.CREATED_AT
+      ) {
         const dateValue = filterValues[field.slug] as DatepickerValue | null;
 
         if (dateValue?.startDate) {
@@ -336,6 +346,34 @@ export function FilterFieldsForm({
                   [field.slug]: value,
                 }))
               }
+            />
+          )}
+
+          {field.type === E_FIELD_TYPE.CREATED_AT && (
+            <FilterDate
+              field={field}
+              value={filterValues[field.slug] ?? null}
+              onChange={(value) =>
+                setFilterValues((prev) => ({
+                  ...prev,
+                  [field.slug]: value,
+                }))
+              }
+            />
+          )}
+
+          {field.type === E_FIELD_TYPE.CREATOR && (
+            <FilterTextShort
+              field={field}
+              value={filterValues[field.slug] ?? ''}
+              onChange={(value) =>
+                setFilterValues((prev) => ({
+                  ...prev,
+                  [field.slug]: value,
+                }))
+              }
+              onRemove={() => removeFilter(field.slug)}
+              hasValue={Boolean(search[field.slug])}
             />
           )}
 

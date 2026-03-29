@@ -239,9 +239,7 @@ function TrashedItem({
               <form className="pt-4 pb-2">
                 <DialogFooter className="inline-flex w-full gap-2 justify-end">
                   <DialogClose asChild>
-                    <Button variant="outline">
-                      Cancelar
-                    </Button>
+                    <Button variant="outline">Cancelar</Button>
                   </DialogClose>
                   <Button
                     type="button"
@@ -400,10 +398,7 @@ function FieldManagementTabs(): React.JSX.Element {
         </TabsContent>
 
         <TabsContent value="filter">
-          <FieldManagementList
-            visibilityKey="showInFilter"
-            excludeNative
-          />
+          <FieldManagementList visibilityKey="showInFilter" />
         </TabsContent>
 
         <TabsContent value="form">

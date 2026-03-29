@@ -21,4 +21,5 @@ export {
   buildQuery,
   buildOrder,
   type QueryOrder,
+  transformRowContext,
 } from './builders';

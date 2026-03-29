@@ -2,16 +2,10 @@ import { Star } from 'lucide-react';
 import React from 'react';
 
 import { Button } from '@/components/ui/button';
-import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { useRowUpdateEvaluation } from '@/hooks/tanstack-query/use-row-update-evaluation';
 import { handleApiError } from '@/lib/handle-api-error';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IEvaluationSummary, IField, IRow } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-
-interface Evaluation {
-  value: number;
-  user: { _id: string };
-}
 
 interface TableRowEvaluationCellProps {
   size?: number;
@@ -32,21 +26,10 @@ export function TableRowEvaluationCell({
   field,
   tableSlug,
 }: TableRowEvaluationCellProps): React.JSX.Element {
-  const { data: user } = useProfileRead();
-
-  const data = Array.from<Evaluation>(row[field.slug] ?? []);
-
-  const userEvaluation = data.some(
-    (d) => d.user._id.toString() === user?._id.toString(),
-  );
-  const userEvaluationValue = data.find(
-    (d) => d.user._id.toString() === user?._id.toString(),
-  )?.value;
-
-  let average = 0;
-  if (data.length > 0) {
-    average = data.reduce((acc, curr) => acc + curr.value, 0) / data.length;
-  }
+  const summary = (row[field.slug] ?? {}) as IEvaluationSummary;
+  const average = summary._average ?? 0;
+  const userValue = summary._userValue ?? null;
+  const hasEvaluated = userValue !== null;
 
   const [hoverRating, setHoverRating] = React.useState(0);
 
@@ -57,8 +40,8 @@ export function TableRowEvaluationCell({
   });
 
   let displayRating = hoverRating || average;
-  if (userEvaluationValue != null) {
-    displayRating = userEvaluationValue;
+  if (userValue != null) {
+    displayRating = userValue;
   }
 
   return (
@@ -69,7 +52,7 @@ export function TableRowEvaluationCell({
       <div className="flex items-center gap-1">
         {Array.from({ length: MAX_RATING }, (_, index) => {
           const value = index + 1;
-          const isFilled = userEvaluation && value <= displayRating;
+          const isFilled = hasEvaluated && value <= displayRating;
 
           return (
             <Button
@@ -79,7 +62,6 @@ export function TableRowEvaluationCell({
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                if (!user?._id) return;
                 evaluation.mutate({
                   tableSlug,
                   rowId: row._id,

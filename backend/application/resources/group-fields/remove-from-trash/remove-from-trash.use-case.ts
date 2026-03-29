@@ -54,10 +54,7 @@ export default class GroupFieldRemoveFromTrashUseCase {
 
       if (!field.trashed)
         return left(
-          HTTPException.Conflict(
-            'Campo não está na lixeira',
-            'NOT_TRASHED',
-          ),
+          HTTPException.Conflict('Campo não está na lixeira', 'NOT_TRASHED'),
         );
 
       const updatedField = await this.fieldRepository.update({

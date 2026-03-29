@@ -7,3 +7,4 @@ export {
   buildOrder,
   type QueryOrder,
 } from './query-builder';
+export { transformRowContext } from './row-context-builder';

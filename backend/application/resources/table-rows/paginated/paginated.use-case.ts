@@ -10,6 +10,7 @@ import {
   buildPopulate,
   buildQuery,
   buildTable,
+  transformRowContext,
 } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -20,7 +21,7 @@ type Response = Either<
   Paginated<import('@application/core/entity.core').IRow>
 >;
 
-type Payload = TableRowPaginatedPayload;
+type Payload = TableRowPaginatedPayload & { user?: string };
 
 @Service()
 export default class TableRowPaginatedUseCase {
@@ -83,7 +84,11 @@ export default class TableRowPaginatedUseCase {
           }),
           _id: u?._id.toString(),
         };
-        return rowJson;
+        return transformRowContext(
+          rowJson,
+          table.fields as IField[],
+          payload.user,
+        );
       });
 
       // @ts-ignore

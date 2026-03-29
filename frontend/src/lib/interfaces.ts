@@ -335,6 +335,18 @@ export type IEvaluation = Merge<
   }
 >;
 
+export type IEvaluationSummary = {
+  _average: number;
+  _count: number;
+  _userValue: number | null;
+};
+
+export type IReactionSummary = {
+  _likeCount: number;
+  _unlikeCount: number;
+  _userReaction: string | null;
+};
+
 export type IHTTPException = {
   code: number;
   cause: string;

@@ -61,20 +61,14 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.REACTION) {
       populate.push({
         path: field.slug,
-        populate: {
-          path: 'user',
-          select: 'name email _id',
-        },
+        select: 'user type',
       });
     }
 
     if (field.type === E_FIELD_TYPE.EVALUATION) {
       populate.push({
         path: field.slug,
-        populate: {
-          path: 'user',
-          select: 'name email _id',
-        },
+        select: 'user value',
       });
     }
 

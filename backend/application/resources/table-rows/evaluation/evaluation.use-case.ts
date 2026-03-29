@@ -6,7 +6,11 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import {
+  buildPopulate,
+  buildTable,
+  transformRowContext,
+} from '@application/core/util.core';
 import { EvaluationContractRepository } from '@application/repositories/evaluation/evaluation-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -54,38 +58,52 @@ export default class TableRowEvaluationUseCase {
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
 
-      let evaluation = await this.evaluationRepository.findBy({
-        user: payload.user,
-        exact: true,
-      });
+      const existingIds: string[] =
+        row[payload.field]?.flatMap((r: ObjectId) => r?.toString()) ?? [];
 
-      if (!evaluation) {
-        evaluation = await this.evaluationRepository.create({
-          value: payload.value,
+      let oldEvaluationId: string | null = null;
+
+      for (const id of existingIds) {
+        const found = await this.evaluationRepository.findBy({
+          _id: id,
           user: payload.user,
+          exact: true,
         });
-      } else {
-        evaluation = await this.evaluationRepository.update({
-          _id: evaluation._id,
-          value: payload.value,
-        });
+        if (found) {
+          oldEvaluationId = found._id;
+          break;
+        }
       }
 
-      const evaluations =
-        row[payload.field]?.flatMap((r: ObjectId) => r?.toString()) ?? [];
-      const evaluationId = evaluation?._id?.toString();
+      const evaluation = await this.evaluationRepository.create({
+        value: payload.value,
+        user: payload.user,
+      });
 
-      if (!evaluations.includes(evaluationId))
-        await row.set(payload.field, [...evaluations, evaluationId]).save();
+      const evaluationId = evaluation._id.toString();
+
+      if (oldEvaluationId) {
+        const updatedIds = existingIds.map((id) =>
+          id === oldEvaluationId ? evaluationId : id,
+        );
+        await row.set(payload.field, updatedIds).save();
+        await this.evaluationRepository.delete(oldEvaluationId);
+      } else {
+        await row.set(payload.field, [...existingIds, evaluationId]).save();
+      }
 
       const populated = await row?.populate(populate);
 
-      return right({
+      const rowJson = {
         ...populated?.toJSON({
           flattenObjectIds: true,
         }),
         _id: populated?._id?.toString(),
-      });
+      };
+
+      return right(
+        transformRowContext(rowJson, table.fields as IField[], payload.user),
+      );
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
