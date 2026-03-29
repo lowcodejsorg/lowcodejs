@@ -61,7 +61,7 @@ export default class UserGroupPaginatedUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'LIST_USER_GROUP_PAGINATED_ERROR',
         ),
       );

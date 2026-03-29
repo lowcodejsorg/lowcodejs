@@ -77,6 +77,10 @@ export const TableRowShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table is not public'] },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string', enum: ['TABLE_NOT_PUBLIC'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -93,6 +97,10 @@ export const TableRowShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -107,6 +115,10 @@ export const TableRowShowSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['TABLE_NOT_FOUND', 'ROW_NOT_FOUND'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
       examples: [
@@ -126,6 +138,10 @@ export const TableRowShowSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['GET_ROW_TABLE_BY_ID_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },

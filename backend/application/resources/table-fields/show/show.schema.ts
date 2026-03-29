@@ -184,6 +184,10 @@ export const TableFieldShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -198,6 +202,10 @@ export const TableFieldShowSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['TABLE_NOT_FOUND', 'FIELD_NOT_FOUND'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
       examples: [
@@ -220,6 +228,10 @@ export const TableFieldShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['GET_FIELD_BY_ID_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

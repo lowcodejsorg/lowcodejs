@@ -28,7 +28,7 @@ export default class RequestCodeUseCase {
 
       if (!user)
         return left(
-          HTTPException.NotFound('Email not found', 'EMAIL_NOT_FOUND'),
+          HTTPException.NotFound('E-mail não encontrado', 'EMAIL_NOT_FOUND'),
         );
 
       const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -45,7 +45,7 @@ export default class RequestCodeUseCase {
     } catch (_error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'REQUEST_CODE_ERROR',
         ),
       );

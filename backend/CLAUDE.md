@@ -333,8 +333,12 @@ Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em 
 
 ## Error Handling
 
-- `HTTPException`: classe abstrata que estende Error, ~40 metodos factory estaticos (BadRequest, NotFound, Forbidden, etc.)
+- `HTTPException`: classe que estende Error, ~40 metodos factory estaticos (BadRequest, Unauthorized, NotFound, Forbidden, etc.)
 - Propriedades: `code` (HTTP status), `cause` (error code string), `message`, `errors?` (field-level)
+- **Todas as mensagens de erro devem ser em PT-BR**
+- `BadRequest` e `Unauthorized` aceitam `errors?: Record<string, string>` como 3o argumento para erros por campo
+- Controllers devem propagar errors: `...(error.errors && { errors: error.errors })`
+- Response schemas (`*.schema.ts`) devem incluir `errors` em todos os blocos de erro para que o Fastify nao remova a propriedade na serializacao
 - Global handler em kernel.ts captura:
   1. **HTTPException** -> retorna direto com code/cause/message/errors
   2. **ZodError** -> flatten para field errors, retorna 400 INVALID_PAYLOAD_FORMAT

@@ -28,7 +28,7 @@ export default class TableDeleteUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       // Excluir campos associados à tabela
@@ -47,7 +47,7 @@ export default class TableDeleteUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'DELETE_TABLE_ERROR',
         ),
       );

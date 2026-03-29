@@ -39,7 +39,7 @@ export default class StorageUploadUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'STORAGE_UPLOAD_ERROR',
         ),
       );

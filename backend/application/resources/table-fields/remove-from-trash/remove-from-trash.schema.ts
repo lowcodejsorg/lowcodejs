@@ -140,6 +140,10 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -155,6 +159,10 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['TABLE_NOT_FOUND', 'FIELD_NOT_FOUND'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
       examples: [
@@ -174,6 +182,10 @@ export const TableFieldRemoveFromTrashSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['REMOVE_FIELD_FROM_TRASH_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },

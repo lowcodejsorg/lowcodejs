@@ -105,6 +105,10 @@ export const GroupFieldListSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND', 'GROUP_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -114,6 +118,10 @@ export const GroupFieldListSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['LIST_GROUP_FIELDS_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

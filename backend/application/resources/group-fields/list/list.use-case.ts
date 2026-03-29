@@ -25,7 +25,7 @@ export default class GroupFieldListUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const targetGroup = table.groups?.find(
@@ -33,7 +33,7 @@ export default class GroupFieldListUseCase {
       );
       if (!targetGroup) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -41,7 +41,7 @@ export default class GroupFieldListUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'LIST_GROUP_FIELDS_ERROR',
         ),
       );

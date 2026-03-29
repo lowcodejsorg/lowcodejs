@@ -14,8 +14,14 @@ Enums, tipos e interfaces do dominio. Fonte unica de verdade para:
 
 ### `exception.core.ts`
 Classe `HTTPException` que extends `Error`. Factory methods estaticos para cada HTTP status:
-- `badRequest(400)`, `unauthorized(401)`, `forbidden(403)`, `notFound(404)`, `conflict(409)`, `internalServerError(500)`, etc
+- `BadRequest(message?, cause?, errors?)` - 400, aceita `errors` para erros de campo
+- `Unauthorized(message?, cause?, errors?)` - 401, aceita `errors` (ex: INVALID_CREDENTIALS com erros por campo)
+- `Forbidden(message?, cause?)` - 403
+- `NotFound(message?, cause?)` - 404
+- `Conflict(message?, cause?)` - 409
+- `InternalServerError(message?, cause?)` - 500
 - Estrutura: `{ message, code, cause, errors? }`
+- Todas as mensagens devem ser em PT-BR
 
 ### `either.core.ts`
 Pattern funcional para error handling:

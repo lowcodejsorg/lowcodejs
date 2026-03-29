@@ -81,6 +81,10 @@ export const SignUpSchema: FastifySchema = {
           type: 'string',
           enum: ['USER_ALREADY_EXISTS', 'GROUP_NOT_FOUND'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -90,6 +94,10 @@ export const SignUpSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['SIGN_UP_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

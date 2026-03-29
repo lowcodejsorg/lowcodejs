@@ -31,7 +31,7 @@ export default class GroupFieldUpdateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const targetGroup = table.groups?.find(
@@ -40,7 +40,7 @@ export default class GroupFieldUpdateUseCase {
 
       if (!targetGroup) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -51,13 +51,13 @@ export default class GroupFieldUpdateUseCase {
 
       if (!field)
         return left(
-          HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
       if (field.native && !this.canUpdateNativeField(payload, field)) {
         return left(
           HTTPException.Forbidden(
-            'Native fields can only have visibility and width updated',
+            'Campos nativos só podem ter visibilidade e largura atualizados',
             'NATIVE_FIELD_RESTRICTED',
           ),
         );
@@ -66,7 +66,7 @@ export default class GroupFieldUpdateUseCase {
       if (field.locked && !this.canUpdateLockedField(payload, field)) {
         return left(
           HTTPException.Forbidden(
-            'Field is locked and cannot be updated',
+            'Campo está bloqueado e não pode ser atualizado',
             'FIELD_LOCKED',
           ),
         );
@@ -130,7 +130,7 @@ export default class GroupFieldUpdateUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'UPDATE_GROUP_FIELD_ERROR',
         ),
       );

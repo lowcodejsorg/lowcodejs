@@ -37,6 +37,10 @@ export const GroupRowDeleteSchema: FastifySchema = {
             'ITEM_NOT_FOUND',
           ],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -46,6 +50,10 @@ export const GroupRowDeleteSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['DELETE_GROUP_ROW_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

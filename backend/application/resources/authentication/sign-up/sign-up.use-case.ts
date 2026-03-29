@@ -37,7 +37,7 @@ export default class SignUpUseCase {
 
       if (user)
         return left(
-          HTTPException.Conflict('User already exists', 'USER_ALREADY_EXISTS'),
+          HTTPException.Conflict('Usuário já existe', 'USER_ALREADY_EXISTS', { email: 'Usuário já existe' }),
         );
 
       const group = await this.userGroupRepository.findBy({
@@ -47,7 +47,7 @@ export default class SignUpUseCase {
 
       if (!group)
         return left(
-          HTTPException.Conflict('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.Conflict('Grupo não encontrado', 'GROUP_NOT_FOUND', { group: 'Grupo não encontrado' }),
         );
 
       const passwordHash = await this.passwordService.hash(payload.password);
@@ -77,7 +77,7 @@ export default class SignUpUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'SIGN_UP_ERROR',
         ),
       );

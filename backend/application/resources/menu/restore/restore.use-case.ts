@@ -24,11 +24,11 @@ export default class MenuRestoreUseCase {
       });
 
       if (!menu)
-        return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
+        return left(HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'));
 
       if (!menu.trashed)
         return left(
-          HTTPException.Conflict('Menu is not in trash', 'NOT_TRASHED'),
+          HTTPException.Conflict('Menu não está na lixeira', 'NOT_TRASHED'),
         );
 
       await this.menuRepository.update({
@@ -41,7 +41,7 @@ export default class MenuRestoreUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'RESTORE_MENU_ERROR',
         ),
       );

@@ -24,7 +24,7 @@ export default class MenuShowUseCase {
       });
 
       if (!menu)
-        return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
+        return left(HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'));
 
       const children = await this.menuRepository.findMany({
         parent: payload._id,
@@ -39,7 +39,7 @@ export default class MenuShowUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'GET_MENU_BY_ID_ERROR',
         ),
       );

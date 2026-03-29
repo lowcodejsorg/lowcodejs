@@ -25,14 +25,14 @@ export default class TableShowUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       return right(table);
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'GET_TABLE_BY_SLUG_ERROR',
         ),
       );

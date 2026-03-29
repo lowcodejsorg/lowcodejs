@@ -34,7 +34,7 @@ export default class MagicLinkUseCase {
       if (!token)
         return left(
           HTTPException.NotFound(
-            'Validation token not found',
+            'Token de validação não encontrado',
             'VALIDATION_TOKEN_NOT_FOUND',
           ),
         );
@@ -42,7 +42,7 @@ export default class MagicLinkUseCase {
       if (token.status === E_TOKEN_STATUS.VALIDATED)
         return left(
           HTTPException.Conflict(
-            'Validation token code already used',
+            'Token de validação já utilizado',
             'VALIDATION_TOKEN_ALREADY_USED',
           ),
         );
@@ -50,7 +50,7 @@ export default class MagicLinkUseCase {
       if (token.status === E_TOKEN_STATUS.EXPIRED)
         return left(
           HTTPException.Gone(
-            'Validation token code expired',
+            'Código expirado',
             'VALIDATION_TOKEN_EXPIRED',
           ),
         );
@@ -70,7 +70,7 @@ export default class MagicLinkUseCase {
 
         return left(
           HTTPException.Gone(
-            'Validation token code expired',
+            'Código expirado',
             'VALIDATION_TOKEN_EXPIRED',
           ),
         );
@@ -87,7 +87,7 @@ export default class MagicLinkUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
+        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
 
       if (user.status === E_USER_STATUS.INACTIVE) {
         await this.userRepository.update({
@@ -100,7 +100,7 @@ export default class MagicLinkUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'MAGIC_LINK_ERROR',
         ),
       );

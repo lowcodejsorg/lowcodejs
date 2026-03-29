@@ -464,6 +464,10 @@ export const TablePaginatedSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -482,6 +486,10 @@ export const TablePaginatedSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['TABLE_LIST_PAGINATED_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },

@@ -26,7 +26,7 @@ export default class GroupRowDeleteUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const groupField = table.fields?.find(
@@ -37,7 +37,7 @@ export default class GroupRowDeleteUseCase {
 
       if (!groupField) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -46,13 +46,13 @@ export default class GroupRowDeleteUseCase {
       const row = await build.findOne({ _id: payload.rowId });
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       // Encontra o subdocumento pelo itemId
       const subdoc = (row as any)[groupField.slug]?.id(payload.itemId);
 
       if (!subdoc)
-        return left(HTTPException.NotFound('Item not found', 'ITEM_NOT_FOUND'));
+        return left(HTTPException.NotFound('Item não encontrado', 'ITEM_NOT_FOUND'));
 
       // Remove o subdocumento
       subdoc.deleteOne();
@@ -64,7 +64,7 @@ export default class GroupRowDeleteUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'DELETE_GROUP_ROW_ERROR',
         ),
       );

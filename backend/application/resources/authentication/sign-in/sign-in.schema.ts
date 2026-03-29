@@ -81,6 +81,10 @@ export const SignInSchema: FastifySchema = {
             'AUTHENTICATION_REQUIRED',
           ],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -90,6 +94,10 @@ export const SignInSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['SIGN_IN_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

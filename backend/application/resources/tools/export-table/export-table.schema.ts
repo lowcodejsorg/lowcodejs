@@ -50,6 +50,10 @@ export const ExportTableSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number' },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -59,6 +63,10 @@ export const ExportTableSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number' },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

@@ -116,6 +116,10 @@ export const UserGroupPaginatedSchema: FastifySchema = {
         message: { type: 'string', enum: ['Autenticação necessária'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -125,6 +129,10 @@ export const UserGroupPaginatedSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['LIST_USER_GROUP_PAGINATED_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

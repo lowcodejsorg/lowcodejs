@@ -55,6 +55,7 @@ export default class GroupFieldCreateUseCase {
           HTTPException.Conflict(
             'Campo já existe no grupo',
             'FIELD_ALREADY_EXIST',
+            { name: 'Campo já existe no grupo' },
           ),
         );
       }

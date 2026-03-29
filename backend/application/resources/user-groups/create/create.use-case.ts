@@ -30,13 +30,15 @@ export default class UserGroupCreateUseCase {
 
       if (group)
         return left(
-          HTTPException.Conflict('Group already exists', 'GROUP_EXISTS'),
+          HTTPException.Conflict('Grupo já existe', 'GROUP_EXISTS', { name: 'Grupo já existe' }),
         );
 
       if (!(payload?.permissions?.length > 0))
         return left(
           HTTPException.BadRequest(
             'Ao menos uma permissão deve ser informada para o grupo de usuários',
+            undefined,
+            { permissions: 'Ao menos uma permissão deve ser informada para o grupo de usuários' },
           ),
         );
 
@@ -49,7 +51,7 @@ export default class UserGroupCreateUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'CREATE_USER_GROUP_ERROR',
         ),
       );

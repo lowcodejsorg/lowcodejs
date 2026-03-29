@@ -29,14 +29,14 @@ export default class ValidateCodeUseCase {
       if (!token)
         return left(
           HTTPException.NotFound(
-            'Validation token not found',
+            'Token de validação não encontrado',
             'VALIDATION_TOKEN_NOT_FOUND',
           ),
         );
 
       if (token.status === E_TOKEN_STATUS.EXPIRED)
         return left(
-          HTTPException.Gone('Code expired', 'VALIDATION_TOKEN_EXPIRED'),
+          HTTPException.Gone('Código expirado', 'VALIDATION_TOKEN_EXPIRED'),
         );
 
       const TIME_EXPIRATION_IN_MINUTES = 10;
@@ -54,7 +54,7 @@ export default class ValidateCodeUseCase {
 
         return left(
           HTTPException.Gone(
-            'Validation token code expired',
+            'Código expirado',
             'VALIDATION_TOKEN_EXPIRED',
           ),
         );
@@ -71,7 +71,7 @@ export default class ValidateCodeUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'VALIDATE_CODE_ERROR',
         ),
       );

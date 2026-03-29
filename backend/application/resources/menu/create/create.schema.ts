@@ -120,6 +120,10 @@ export const MenuCreateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -135,6 +139,10 @@ export const MenuCreateSchema: FastifySchema = {
           type: 'string',
           enum: ['TABLE_NOT_FOUND', 'PARENT_MENU_NOT_FOUND'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     409: {
@@ -144,6 +152,10 @@ export const MenuCreateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Menu already exists'] },
         code: { type: 'number', enum: [409] },
         cause: { type: 'string', enum: ['MENU_ALREADY_EXISTS'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -153,6 +165,10 @@ export const MenuCreateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['CREATE_MENU_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

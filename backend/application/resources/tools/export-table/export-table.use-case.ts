@@ -35,7 +35,7 @@ export default class ExportTableUseCase {
 
       if (!table) {
         return left(
-          HTTPException.NotFound('Tabela nao encontrada', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
       }
 

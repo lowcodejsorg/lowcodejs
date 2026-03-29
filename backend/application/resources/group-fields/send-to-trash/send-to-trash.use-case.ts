@@ -30,7 +30,7 @@ export default class GroupFieldSendToTrashUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const targetGroup = table.groups?.find(
@@ -38,7 +38,7 @@ export default class GroupFieldSendToTrashUseCase {
       );
       if (!targetGroup) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -49,13 +49,13 @@ export default class GroupFieldSendToTrashUseCase {
 
       if (!field)
         return left(
-          HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
       if (field.native) {
         return left(
           HTTPException.Forbidden(
-            'Native fields cannot be trashed',
+            'Campos nativos não podem ser enviados para a lixeira',
             'NATIVE_FIELD_CANNOT_BE_TRASHED',
           ),
         );
@@ -64,7 +64,7 @@ export default class GroupFieldSendToTrashUseCase {
       if (field.locked) {
         return left(
           HTTPException.Forbidden(
-            'Field is locked and cannot be trashed',
+            'Campo está bloqueado e não pode ser enviado para a lixeira',
             'FIELD_LOCKED',
           ),
         );
@@ -72,7 +72,7 @@ export default class GroupFieldSendToTrashUseCase {
 
       if (field.trashed)
         return left(
-          HTTPException.Conflict('Field already in trash', 'ALREADY_TRASHED'),
+          HTTPException.Conflict('Campo já está na lixeira', 'ALREADY_TRASHED'),
         );
 
       const updatedField = await this.fieldRepository.update({
@@ -117,7 +117,7 @@ export default class GroupFieldSendToTrashUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'SEND_GROUP_FIELD_TO_TRASH_ERROR',
         ),
       );

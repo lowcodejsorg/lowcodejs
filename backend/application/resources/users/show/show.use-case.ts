@@ -24,13 +24,13 @@ export default class UserShowUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
+        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
 
       return right(user);
     } catch (_error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'GET_USER_BY_ID_ERROR',
         ),
       );

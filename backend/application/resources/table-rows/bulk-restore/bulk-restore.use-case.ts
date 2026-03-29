@@ -24,7 +24,7 @@ export default class BulkRestoreUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const model = await buildTable(table);
@@ -38,7 +38,7 @@ export default class BulkRestoreUseCase {
     } catch {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'BULK_RESTORE_ROWS_ERROR',
         ),
       );

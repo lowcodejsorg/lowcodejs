@@ -18,7 +18,7 @@ export default class MenuReorderUseCase {
     try {
       if (payload.items.length === 0) {
         return left(
-          HTTPException.BadRequest('Items list is empty', 'INVALID_PARAMETERS'),
+          HTTPException.BadRequest('Lista de itens está vazia', 'INVALID_PARAMETERS'),
         );
       }
 
@@ -35,7 +35,7 @@ export default class MenuReorderUseCase {
         if (!menu) {
           return left(
             HTTPException.NotFound(
-              `Menu ${item._id} not found`,
+              `Menu ${item._id} não encontrado`,
               'MENU_NOT_FOUND',
             ),
           );
@@ -46,7 +46,7 @@ export default class MenuReorderUseCase {
         } else if (menu.parent !== commonParent) {
           return left(
             HTTPException.BadRequest(
-              'All items must share the same parent',
+              'Todos os itens devem compartilhar o mesmo pai',
               'INVALID_PARAMETERS',
             ),
           );
@@ -65,7 +65,7 @@ export default class MenuReorderUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'REORDER_MENU_ERROR',
         ),
       );

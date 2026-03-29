@@ -89,6 +89,10 @@ export const TableFieldAddCategorySchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     401: {
@@ -98,6 +102,10 @@ export const TableFieldAddCategorySchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     403: {
@@ -107,6 +115,10 @@ export const TableFieldAddCategorySchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [403] },
         cause: { type: 'string', enum: ['ACCESS_DENIED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -116,6 +128,10 @@ export const TableFieldAddCategorySchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -125,6 +141,10 @@ export const TableFieldAddCategorySchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['ADD_CATEGORY_OPTION_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

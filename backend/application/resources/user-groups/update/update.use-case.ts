@@ -28,7 +28,7 @@ export default class UserGroupUpdateUseCase {
       if (!group)
         return left(
           HTTPException.NotFound(
-            'Grupo de usuarios nao foi encontrado',
+            'Grupo de usuários não encontrado',
             'USER_GROUP_NOT_FOUND',
           ),
         );
@@ -36,7 +36,9 @@ export default class UserGroupUpdateUseCase {
       if (payload.permissions && payload.permissions.length === 0)
         return left(
           HTTPException.BadRequest(
-            'Ao menos uma permissao deve ser informada para o grupo de usuarios',
+            'Ao menos uma permissão deve ser informada para o grupo de usuários',
+            undefined,
+            { permissions: 'Ao menos uma permissão deve ser informada para o grupo de usuários' },
           ),
         );
 
@@ -46,7 +48,7 @@ export default class UserGroupUpdateUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'UPDATE_USER_GROUP_ERROR',
         ),
       );

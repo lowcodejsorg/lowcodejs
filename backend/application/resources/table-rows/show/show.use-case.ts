@@ -31,7 +31,7 @@ export default class TableRowShowUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const c = await buildTable(table);
@@ -47,7 +47,7 @@ export default class TableRowShowUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       const populated = await row.populate(populate);
 
@@ -64,7 +64,7 @@ export default class TableRowShowUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'GET_ROW_TABLE_BY_ID_ERROR',
         ),
       );

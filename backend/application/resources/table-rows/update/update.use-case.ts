@@ -37,7 +37,7 @@ export default class TableRowUpdateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const errors = validateRowPayload(payload, table.fields, table.groups, {
@@ -47,7 +47,7 @@ export default class TableRowUpdateUseCase {
       if (errors) {
         return left(
           HTTPException.BadRequest(
-            'Invalid request',
+            'Requisição inválida',
             'INVALID_PAYLOAD_FORMAT',
             errors,
           ),
@@ -66,7 +66,7 @@ export default class TableRowUpdateUseCase {
       const row = await build.findOne({ _id: payload._id }).populate(populate);
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       await row
         .set({
@@ -93,7 +93,7 @@ export default class TableRowUpdateUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'UPDATE_ROW_TABLE_ERROR',
         ),
       );

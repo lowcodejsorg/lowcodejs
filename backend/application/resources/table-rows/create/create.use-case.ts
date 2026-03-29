@@ -34,7 +34,7 @@ export default class TableRowCreateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const errors = validateRowPayload(payload, table.fields, table.groups);
@@ -42,7 +42,7 @@ export default class TableRowCreateUseCase {
       if (errors) {
         return left(
           HTTPException.BadRequest(
-            'Invalid request',
+            'Requisição inválida',
             'INVALID_PAYLOAD_FORMAT',
             errors,
           ),
@@ -79,7 +79,7 @@ export default class TableRowCreateUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'CREATE_ROW_ERROR',
         ),
       );

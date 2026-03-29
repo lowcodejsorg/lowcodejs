@@ -453,6 +453,10 @@ export const TableUpdateSchema: FastifySchema = {
           type: 'string',
           enum: ['INVALID_PARAMETERS', 'INVALID_FIELD_CONFIG'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     401: {
@@ -462,6 +466,10 @@ export const TableUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     409: {
@@ -471,6 +479,10 @@ export const TableUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table already exists'] },
         code: { type: 'number', enum: [409] },
         cause: { type: 'string', enum: ['TABLE_ALREADY_EXISTS'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -480,6 +492,10 @@ export const TableUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -496,6 +512,10 @@ export const TableUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['UPDATE_TABLE_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

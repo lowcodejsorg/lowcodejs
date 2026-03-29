@@ -91,6 +91,10 @@ export const StorageUploadSchema: FastifySchema = {
             'NO_FILES_PROVIDED',
           ],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     401: {
@@ -100,6 +104,10 @@ export const StorageUploadSchema: FastifySchema = {
         message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     413: {
@@ -110,6 +118,10 @@ export const StorageUploadSchema: FastifySchema = {
         message: { type: 'string', enum: ['Arquivo muito grande'] },
         code: { type: 'number', enum: [413] },
         cause: { type: 'string', enum: ['PAYLOAD_TOO_LARGE'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -119,6 +131,10 @@ export const StorageUploadSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['STORAGE_UPLOAD_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

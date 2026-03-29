@@ -35,7 +35,7 @@ export default class TableRowReactionUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const c = await buildTable(table);
@@ -50,7 +50,7 @@ export default class TableRowReactionUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       let reaction = await this.reactionRepository.findBy({
         user: payload.user,
@@ -88,7 +88,7 @@ export default class TableRowReactionUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'REACTION_ROW_TABLE_ERROR',
         ),
       );

@@ -34,8 +34,9 @@ export default class HTTPException extends Error {
   static Unauthorized(
     message = 'Unauthorized',
     cause = 'AUTHENTICATION_REQUIRED',
+    errors?: Record<string, string>,
   ): HTTPException {
-    return new HTTPException({ message, code: 401, cause });
+    return new HTTPException({ message, code: 401, cause, errors });
   }
 
   static PaymentRequired(
@@ -48,15 +49,17 @@ export default class HTTPException extends Error {
   static Forbidden(
     message = 'Forbidden',
     cause = 'ACCESS_DENIED',
+    errors?: Record<string, string>,
   ): HTTPException {
-    return new HTTPException({ message, code: 403, cause });
+    return new HTTPException({ message, code: 403, cause, errors });
   }
 
   static NotFound(
     message = 'Not Found',
     cause = 'RESOURCE_NOT_FOUND',
+    errors?: Record<string, string>,
   ): HTTPException {
-    return new HTTPException({ message, code: 404, cause });
+    return new HTTPException({ message, code: 404, cause, errors });
   }
 
   static MethodNotAllowed(
@@ -90,8 +93,9 @@ export default class HTTPException extends Error {
   static Conflict(
     message = 'Conflict',
     cause = 'CONFLICT_IN_REQUEST',
+    errors?: Record<string, string>,
   ): HTTPException {
-    return new HTTPException({ message, code: 409, cause });
+    return new HTTPException({ message, code: 409, cause, errors });
   }
 
   static Gone(message = 'Gone', cause = 'RESOURCE_GONE'): HTTPException {

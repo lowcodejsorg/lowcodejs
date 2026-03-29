@@ -26,6 +26,7 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
+import { createFieldErrorSetter } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient as queryClient } from '@/lib/query-client';
@@ -217,6 +218,12 @@ function FieldUpdateContent({
   const handleUpdateError = (error: Error): void => {
     handleApiError(error, {
       context: 'Erro ao atualizar o campo',
+      onFieldErrors: (errors) => {
+        const setFieldError = createFieldErrorSetter(form);
+        for (const [field, msg] of Object.entries(errors)) {
+          setFieldError(field, msg);
+        }
+      },
     });
   };
 

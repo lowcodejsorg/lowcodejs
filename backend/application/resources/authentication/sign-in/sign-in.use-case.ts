@@ -33,8 +33,12 @@ export default class SignInUseCase {
       if (!user)
         return left(
           HTTPException.Unauthorized(
-            'Credenciais invalidas',
+            'E-mail ou senha inválidos',
             'INVALID_CREDENTIALS',
+            {
+              email: 'E-mail ou senha inválidos',
+              password: 'E-mail ou senha inválidos',
+            },
           ),
         );
 
@@ -51,8 +55,12 @@ export default class SignInUseCase {
       if (!passwordDoesMatch)
         return left(
           HTTPException.Unauthorized(
-            'Credenciais invalidas',
+            'E-mail ou senha inválidos',
             'INVALID_CREDENTIALS',
+            {
+              email: 'E-mail ou senha inválidos',
+              password: 'E-mail ou senha inválidos',
+            },
           ),
         );
 
@@ -61,7 +69,7 @@ export default class SignInUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'SIGN_IN_ERROR',
         ),
       );

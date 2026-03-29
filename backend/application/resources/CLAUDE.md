@@ -46,4 +46,11 @@ Cada operacao (ex: `users/create/`) contem:
 - **Read**: 200, body com entidade ou Paginated
 - **Update**: 200, body com entidade atualizada
 - **Delete/Trash**: 200 ou null
-- **Erro**: `{ message, code, cause, errors? }`
+- **Erro**: `{ message, code, cause, errors? }` — mensagens sempre em PT-BR
+
+## Padrao de Erros
+
+- Mensagens de HTTPException devem ser em PT-BR
+- Controllers propagam errors via `...(error.errors && { errors: error.errors })`
+- Response schemas (`*.schema.ts`) incluem `errors: { type: 'object', additionalProperties: { type: 'string' } }` em todos os blocos de erro para evitar que o Fastify remova a propriedade na serializacao
+- `errors` e um mapa campo→mensagem usado pelo frontend para exibir erros nos formularios

@@ -24,7 +24,7 @@ export default class MenuDeleteUseCase {
       });
 
       if (!menu)
-        return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
+        return left(HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'));
 
       const childrenCount = await this.menuRepository.count({
         parent: menu._id,
@@ -34,7 +34,7 @@ export default class MenuDeleteUseCase {
       if (childrenCount > 0) {
         return left(
           HTTPException.Conflict(
-            'Menu has active children',
+            'Menu possui filhos ativos',
             'MENU_HAS_CHILDREN',
           ),
         );
@@ -50,7 +50,7 @@ export default class MenuDeleteUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'DELETE_MENU_ERROR',
         ),
       );

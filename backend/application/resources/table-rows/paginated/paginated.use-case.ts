@@ -38,7 +38,7 @@ export default class TableRowPaginatedUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const c = await buildTable(table);
@@ -97,7 +97,7 @@ export default class TableRowPaginatedUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'LIST_ROW_TABLE_PAGINATED_ERROR',
         ),
       );

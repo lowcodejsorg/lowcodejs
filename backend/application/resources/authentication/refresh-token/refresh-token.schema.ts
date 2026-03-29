@@ -27,6 +27,10 @@ export const RefreshTokenSchema: FastifySchema = {
           type: 'string',
           enum: ['MISSING_REFRESH_TOKEN', 'INVALID_REFRESH_TOKEN'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -48,6 +52,10 @@ export const RefreshTokenSchema: FastifySchema = {
         message: { type: 'string', enum: ['Usuário não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['USER_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -64,6 +72,10 @@ export const RefreshTokenSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['REFRESH_TOKEN_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {

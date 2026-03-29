@@ -376,6 +376,10 @@ export const TableFieldCreateSchema: FastifySchema = {
           type: 'string',
           enum: ['FIELD_ALREADY_EXIST', 'INVALID_PARAMETERS'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -392,6 +396,10 @@ export const TableFieldCreateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -401,6 +409,10 @@ export const TableFieldCreateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -417,6 +429,10 @@ export const TableFieldCreateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['CREATE_FIELD_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

@@ -174,7 +174,7 @@ kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
     );
 
     return response.status(400).send({
-      message: 'Invalid request',
+      message: 'Requisição inválida',
       code: 400,
       cause: 'INVALID_PAYLOAD_FORMAT',
       errors,
@@ -199,7 +199,7 @@ kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
     );
 
     return response.status(Number(error.statusCode)).send({
-      message: 'Invalid request',
+      message: 'Requisição inválida',
       code: error.statusCode,
       cause: 'INVALID_PAYLOAD_FORMAT',
       ...(Object.keys(errors).length > 0 && { errors }),
@@ -207,7 +207,7 @@ kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
   }
 
   return response.status(500).send({
-    message: 'Internal server error',
+    message: 'Erro interno do servidor',
     cause: 'SERVER_ERROR',
     code: 500,
   });

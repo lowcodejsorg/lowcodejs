@@ -36,7 +36,7 @@ export default class TableFieldCreateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const slug = slugify(payload.name, { lower: true, trim: true });
@@ -47,7 +47,7 @@ export default class TableFieldCreateUseCase {
 
       if (existFieldOnTable)
         return left(
-          HTTPException.Conflict('Field already exist', 'FIELD_ALREADY_EXIST'),
+          HTTPException.Conflict('Campo já existe', 'FIELD_ALREADY_EXIST', { name: 'Campo já existe' }),
         );
 
       let field = await this.fieldRepository.create({
@@ -114,7 +114,7 @@ export default class TableFieldCreateUseCase {
       console.error('Error creating field:', error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'CREATE_FIELD_ERROR',
         ),
       );

@@ -30,7 +30,7 @@ export default class TableRowRemoveFromTrashUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const c = await buildTable(table);
@@ -45,11 +45,11 @@ export default class TableRowRemoveFromTrashUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       if (!row.trashed)
         return left(
-          HTTPException.Conflict('Row is not in trash', 'NOT_TRASHED'),
+          HTTPException.Conflict('Registro não está na lixeira', 'NOT_TRASHED'),
         );
 
       await row.set({ trashed: false, trashedAt: null }).save();
@@ -65,7 +65,7 @@ export default class TableRowRemoveFromTrashUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'REMOVE_ROW_FROM_TRASH_ERROR',
         ),
       );

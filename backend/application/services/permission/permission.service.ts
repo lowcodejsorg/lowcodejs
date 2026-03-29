@@ -45,18 +45,18 @@ export default class PermissionService extends PermissionContractService {
       .lean();
 
     if (!user) {
-      throw HTTPException.Forbidden('User not found', 'USER_NOT_FOUND');
+      throw HTTPException.Forbidden('Usuário não encontrado', 'USER_NOT_FOUND');
     }
 
     if (user.status !== E_USER_STATUS.ACTIVE) {
-      throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
+      throw HTTPException.Forbidden('Usuário não está ativo', 'USER_NOT_ACTIVE');
     }
 
     const group = user.group as { permissions?: IPermission[] } | undefined;
 
     if (!group?.permissions || !Array.isArray(group.permissions)) {
       throw HTTPException.Forbidden(
-        'User group or permissions not found',
+        'Grupo ou permissões do usuário não encontrados',
         'PERMISSIONS_NOT_FOUND',
       );
     }
@@ -67,7 +67,7 @@ export default class PermissionService extends PermissionContractService {
 
     if (!hasPermission) {
       throw HTTPException.Forbidden(
-        `Permission denied. Required: ${permission}`,
+        `Permissão negada. Necessário: ${permission}`,
         'INSUFFICIENT_PERMISSIONS',
       );
     }
@@ -76,7 +76,7 @@ export default class PermissionService extends PermissionContractService {
   async checkUserIsActive(userId: string): Promise<void> {
     const userDoc = await UserModel.findOne({ _id: userId }).lean();
     if (!userDoc || userDoc.status !== E_USER_STATUS.ACTIVE) {
-      throw HTTPException.Forbidden('User is not active', 'USER_NOT_ACTIVE');
+      throw HTTPException.Forbidden('Usuário não está ativo', 'USER_NOT_ACTIVE');
     }
   }
 
@@ -110,7 +110,7 @@ export default class PermissionService extends PermissionContractService {
 
     if (!userId || !userRole) {
       throw HTTPException.Unauthorized(
-        'User not authenticated',
+        'Usuário não autenticado',
         'USER_NOT_AUTHENTICATED',
       );
     }
@@ -134,7 +134,7 @@ export default class PermissionService extends PermissionContractService {
 
     if (!table) {
       throw HTTPException.BadRequest(
-        'Table is required for this action',
+        'Tabela é obrigatória para esta ação',
         'TABLE_REQUIRED',
       );
     }
@@ -155,7 +155,7 @@ export default class PermissionService extends PermissionContractService {
     // Nao e dono/admin -> aplicar regras de visibilidade
     if (OWNER_ONLY_ACTIONS.includes(requiredPermission)) {
       throw HTTPException.Forbidden(
-        'Only table owner or administrators can perform this action',
+        'Apenas o proprietário ou administradores podem realizar esta ação',
         'OWNER_OR_ADMIN_REQUIRED',
       );
     }
@@ -175,12 +175,12 @@ export default class PermissionService extends PermissionContractService {
   ): void {
     switch (visibility) {
       case E_TABLE_VISIBILITY.PRIVATE:
-        throw HTTPException.Forbidden('This table is private', 'TABLE_PRIVATE');
+        throw HTTPException.Forbidden('Esta tabela é privada', 'TABLE_PRIVATE');
 
       case E_TABLE_VISIBILITY.RESTRICTED:
         if (requiredPermission === 'CREATE_ROW') {
           throw HTTPException.Forbidden(
-            'Only owner/administrators can create records in restricted tables',
+            'Apenas proprietário/administradores podem criar registros em tabelas restritas',
             'RESTRICTED_CREATE',
           );
         }
@@ -189,7 +189,7 @@ export default class PermissionService extends PermissionContractService {
       case E_TABLE_VISIBILITY.FORM:
         if (VIEW_PERMISSIONS.includes(requiredPermission)) {
           throw HTTPException.Forbidden(
-            'Only owner/administrators can view form tables',
+            'Apenas proprietário/administradores podem visualizar tabelas de formulário',
             'FORM_VIEW_RESTRICTED',
           );
         }

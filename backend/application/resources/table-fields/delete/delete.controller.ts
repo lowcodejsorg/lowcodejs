@@ -48,6 +48,7 @@ export default class TableFieldDeleteController {
         message: error.message,
         code: error.code,
         cause: error.cause,
+        ...(error.errors && { errors: error.errors }),
       });
     }
 

@@ -36,7 +36,7 @@ export default class TableFieldUpdateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const field = await this.fieldRepository.findBy({
@@ -46,13 +46,13 @@ export default class TableFieldUpdateUseCase {
 
       if (!field)
         return left(
-          HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
       if (field.native && payload.trashed) {
         return left(
           HTTPException.Forbidden(
-            'Native fields cannot be trashed',
+            'Campos nativos não podem ser enviados para a lixeira',
             'NATIVE_FIELD_CANNOT_BE_TRASHED',
           ),
         );
@@ -65,7 +65,7 @@ export default class TableFieldUpdateUseCase {
       ) {
         return left(
           HTTPException.Forbidden(
-            'Field is locked and cannot be updated',
+            'Campo está bloqueado e não pode ser atualizado',
             'FIELD_LOCKED',
           ),
         );
@@ -74,7 +74,7 @@ export default class TableFieldUpdateUseCase {
       if (field.native && !this.canUpdateNativeField(payload, field)) {
         return left(
           HTTPException.Forbidden(
-            'Native fields can only have visibility and width updated',
+            'Campos nativos só podem ter visibilidade e largura atualizados',
             'NATIVE_FIELD_RESTRICTED',
           ),
         );
@@ -86,7 +86,7 @@ export default class TableFieldUpdateUseCase {
       ) {
         return left(
           HTTPException.Conflict(
-            'Last active field, should not be sent to trash',
+            'Último campo ativo, não pode ser enviado para a lixeira',
             'LAST_ACTIVE_FIELD',
           ),
         );
@@ -180,7 +180,7 @@ export default class TableFieldUpdateUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'UPDATE_FIELD_TABLE_ERROR',
         ),
       );

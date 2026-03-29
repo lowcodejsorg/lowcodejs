@@ -437,6 +437,10 @@ export const TableShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table is not public'] },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string', enum: ['TABLE_NOT_PUBLIC'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -453,6 +457,10 @@ export const TableShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -462,6 +470,10 @@ export const TableShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -478,6 +490,10 @@ export const TableShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['GET_TABLE_BY_SLUG_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

@@ -44,6 +44,10 @@ export const MagicLinkSchema: FastifySchema = {
           type: 'string',
           enum: ['VALIDATION_TOKEN_NOT_FOUND', 'USER_NOT_FOUND'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -68,6 +72,10 @@ export const MagicLinkSchema: FastifySchema = {
         },
         code: { type: 'number', enum: [409] },
         cause: { type: 'string', enum: ['VALIDATION_TOKEN_ALREADY_USED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -84,6 +92,10 @@ export const MagicLinkSchema: FastifySchema = {
         message: { type: 'string', enum: ['Token de validação expirado'] },
         code: { type: 'number', enum: [410] },
         cause: { type: 'string', enum: ['VALIDATION_TOKEN_EXPIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -100,6 +112,10 @@ export const MagicLinkSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['MAGIC_LINK_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {

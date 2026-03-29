@@ -43,6 +43,10 @@ export const MenuReorderSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     401: {
@@ -52,6 +56,10 @@ export const MenuReorderSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -61,6 +69,10 @@ export const MenuReorderSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -70,6 +82,10 @@ export const MenuReorderSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

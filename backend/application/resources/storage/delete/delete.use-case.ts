@@ -22,7 +22,7 @@ export default class StorageDeleteUseCase {
 
       if (!storage) {
         return left(
-          HTTPException.NotFound('Storage not found', 'STORAGE_NOT_FOUND'),
+          HTTPException.NotFound('Arquivo não encontrado', 'STORAGE_NOT_FOUND'),
         );
       }
 
@@ -32,7 +32,7 @@ export default class StorageDeleteUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'STORAGE_DELETE_ERROR',
         ),
       );

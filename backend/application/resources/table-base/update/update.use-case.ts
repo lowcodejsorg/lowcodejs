@@ -38,7 +38,7 @@ export default class TableUpdateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       // Validar que apenas usuários ativos podem ser administradores
@@ -53,8 +53,9 @@ export default class TableUpdateUseCase {
         if (activeAdmins.length !== adminIds.length) {
           return left(
             HTTPException.BadRequest(
-              'All administrators must be active users',
+              'Todos os administradores devem ser usuários ativos',
               'INACTIVE_ADMINISTRATORS',
+              { administrators: 'Todos os administradores devem ser usuários ativos' },
             ),
           );
         }
@@ -79,8 +80,9 @@ export default class TableUpdateUseCase {
         if (existingTable) {
           return left(
             HTTPException.Conflict(
-              'Table already exists',
+              'Tabela já existe',
               'TABLE_ALREADY_EXISTS',
+              { name: 'Tabela já existe' },
             ),
           );
         }
@@ -156,7 +158,7 @@ export default class TableUpdateUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'UPDATE_TABLE_ERROR',
         ),
       );

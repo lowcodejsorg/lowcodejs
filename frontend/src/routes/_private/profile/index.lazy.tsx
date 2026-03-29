@@ -12,6 +12,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { createFieldErrorSetter } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
 import { toastError, toastSuccess } from '@/lib/toast';
@@ -94,6 +95,12 @@ function ProfileUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o perfil',
+        onFieldErrors: (errors) => {
+          const setFieldError = createFieldErrorSetter(form);
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
       });
     },
   });

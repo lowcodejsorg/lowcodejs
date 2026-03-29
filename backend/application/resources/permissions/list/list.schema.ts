@@ -32,6 +32,10 @@ export const PermissionListSchema: FastifySchema = {
         message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -48,6 +52,10 @@ export const PermissionListSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['LIST_PERMISSION_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {

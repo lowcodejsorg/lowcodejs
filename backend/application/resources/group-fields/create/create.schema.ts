@@ -148,6 +148,10 @@ export const GroupFieldCreateSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND', 'GROUP_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     409: {
@@ -157,6 +161,10 @@ export const GroupFieldCreateSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [409] },
         cause: { type: 'string', enum: ['FIELD_ALREADY_EXIST'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -166,6 +174,10 @@ export const GroupFieldCreateSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['CREATE_GROUP_FIELD_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

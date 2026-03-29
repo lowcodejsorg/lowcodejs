@@ -117,6 +117,10 @@ export const MenuShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -126,6 +130,10 @@ export const MenuShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Menu not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['MENU_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -135,6 +143,10 @@ export const MenuShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['GET_MENU_BY_ID_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

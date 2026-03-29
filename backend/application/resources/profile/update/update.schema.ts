@@ -153,6 +153,10 @@ export const ProfileUpdateSchema: FastifySchema = {
           type: 'string',
           enum: ['AUTHENTICATION_REQUIRED', 'INVALID_CREDENTIALS'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -169,6 +173,10 @@ export const ProfileUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Usuário não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['USER_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -178,6 +186,10 @@ export const ProfileUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['UPDATE_USER_PROFILE_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

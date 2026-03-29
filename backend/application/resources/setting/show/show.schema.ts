@@ -106,6 +106,10 @@ export const SettingShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Arquivo não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['SETTINGS_FILE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -122,6 +126,10 @@ export const SettingShowSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['SETTINGS_READ_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

@@ -30,7 +30,7 @@ export default class TableFieldRemoveFromTrashUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const field = await this.fieldRepository.findBy({
@@ -40,12 +40,12 @@ export default class TableFieldRemoveFromTrashUseCase {
 
       if (!field)
         return left(
-          HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
       if (!field.trashed)
         return left(
-          HTTPException.Conflict('Field is not in trash', 'NOT_TRASHED'),
+          HTTPException.Conflict('Campo não está na lixeira', 'NOT_TRASHED'),
         );
 
       const updatedField = await this.fieldRepository.update({
@@ -76,7 +76,7 @@ export default class TableFieldRemoveFromTrashUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'REMOVE_FIELD_FROM_TRASH_ERROR',
         ),
       );

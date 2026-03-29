@@ -60,7 +60,7 @@ export default class MenuPaginatedUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'LIST_MENU_PAGINATED_ERROR',
         ),
       );

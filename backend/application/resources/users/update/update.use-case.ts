@@ -28,7 +28,7 @@ export default class UserUpdateUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
+        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
 
       const updated = await this.userRepository.update({
         ...payload,
@@ -41,7 +41,7 @@ export default class UserUpdateUseCase {
     } catch (_error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'UPDATE_USER_ERROR',
         ),
       );

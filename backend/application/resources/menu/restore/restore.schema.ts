@@ -38,6 +38,10 @@ export const MenuRestoreSchema: FastifySchema = {
         message: { type: 'string', enum: ['Menu not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['MENU_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     409: {
@@ -47,6 +51,10 @@ export const MenuRestoreSchema: FastifySchema = {
         message: { type: 'string', enum: ['Menu is not in trash'] },
         code: { type: 'number', enum: [409] },
         cause: { type: 'string', enum: ['NOT_TRASHED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -56,6 +64,10 @@ export const MenuRestoreSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['RESTORE_MENU_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

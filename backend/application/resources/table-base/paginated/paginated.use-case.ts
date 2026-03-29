@@ -70,7 +70,7 @@ export default class TablePaginatedUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'TABLE_LIST_PAGINATED_ERROR',
         ),
       );

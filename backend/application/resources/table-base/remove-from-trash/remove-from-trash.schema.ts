@@ -280,6 +280,10 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -290,6 +294,10 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
         message: { type: 'string', enum: ['table not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['table_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -308,6 +316,10 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['REMOVE_table_FROM_TRASH_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },

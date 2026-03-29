@@ -26,11 +26,7 @@ export function handleApiError(
   >;
   const cause = errorData.cause;
 
-  if (
-    cause === 'INVALID_PAYLOAD_FORMAT' &&
-    errorData.errors &&
-    options.onFieldErrors
-  ) {
+  if (errorData.errors && options.onFieldErrors) {
     options.onFieldErrors(errorData.errors);
     return;
   }

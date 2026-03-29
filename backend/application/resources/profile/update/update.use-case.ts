@@ -28,7 +28,7 @@ export default class ProfileUpdateUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('User not found', 'USER_NOT_FOUND'));
+        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
 
       if (!payload.allowPasswordChange) {
         const updated = await this.userRepository.update({
@@ -49,8 +49,9 @@ export default class ProfileUpdateUseCase {
       if (!isMatch)
         return left(
           HTTPException.Unauthorized(
-            'Invalid credentials',
+            'Senha atual incorreta',
             'INVALID_CREDENTIALS',
+            { currentPassword: 'Senha atual incorreta' },
           ),
         );
 
@@ -70,7 +71,7 @@ export default class ProfileUpdateUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'UPDATE_USER_PROFILE_ERROR',
         ),
       );

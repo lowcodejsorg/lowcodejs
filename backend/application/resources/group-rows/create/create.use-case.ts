@@ -30,7 +30,7 @@ export default class GroupRowCreateUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       // Encontra o campo FIELD_GROUP correspondente
@@ -42,7 +42,7 @@ export default class GroupRowCreateUseCase {
 
       if (!groupField) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -50,7 +50,7 @@ export default class GroupRowCreateUseCase {
 
       if (!group) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -66,7 +66,7 @@ export default class GroupRowCreateUseCase {
       if (errors) {
         return left(
           HTTPException.BadRequest(
-            'Invalid request',
+            'Requisição inválida',
             'INVALID_PAYLOAD_FORMAT',
             errors,
           ),
@@ -81,7 +81,7 @@ export default class GroupRowCreateUseCase {
       const row = await build.findOne({ _id: payload.rowId });
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       // Remove _id do payload para que o Mongoose gere um novo
       const { _id, slug, rowId, groupSlug, ...itemData } = payload;
@@ -116,7 +116,7 @@ export default class GroupRowCreateUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'CREATE_GROUP_ROW_ERROR',
         ),
       );

@@ -21,6 +21,10 @@ export const SignOutSchema: FastifySchema = {
         message: { type: 'string', enum: ['Autenticação necessária'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {

@@ -47,6 +47,10 @@ export const ValidateCodeSchema: FastifySchema = {
         },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['VALIDATION_TOKEN_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -66,6 +70,10 @@ export const ValidateCodeSchema: FastifySchema = {
         },
         code: { type: 'number', enum: [410] },
         cause: { type: 'string', enum: ['VALIDATION_TOKEN_EXPIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -87,6 +95,10 @@ export const ValidateCodeSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['VALIDATE_CODE_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {

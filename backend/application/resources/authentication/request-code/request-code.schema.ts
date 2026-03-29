@@ -42,6 +42,10 @@ export const RequestCodeSchema: FastifySchema = {
         message: { type: 'string', enum: ['Formato de email inválido'] },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -58,6 +62,10 @@ export const RequestCodeSchema: FastifySchema = {
         message: { type: 'string', enum: ['Email não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['EMAIL_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -74,6 +82,10 @@ export const RequestCodeSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['INTERNAL_SERVER_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {

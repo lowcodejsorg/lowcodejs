@@ -50,6 +50,7 @@ export default class {
         message: error.message,
         code: error.code,
         cause: error.cause,
+        ...(error.errors && { errors: error.errors }),
       });
     }
 

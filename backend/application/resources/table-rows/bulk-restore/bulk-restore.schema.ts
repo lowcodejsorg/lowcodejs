@@ -50,6 +50,10 @@ export const BulkRestoreSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     401: {
@@ -59,6 +63,10 @@ export const BulkRestoreSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     403: {
@@ -68,6 +76,10 @@ export const BulkRestoreSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [403] },
         cause: { type: 'string' },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -77,6 +89,10 @@ export const BulkRestoreSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -86,6 +102,10 @@ export const BulkRestoreSchema: FastifySchema = {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['BULK_RESTORE_ROWS_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

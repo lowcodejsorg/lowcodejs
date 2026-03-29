@@ -363,6 +363,10 @@ export const TableFieldUpdateSchema: FastifySchema = {
         },
         code: { type: 'number', enum: [400] },
         cause: { type: 'string', enum: ['INVALID_PARAMETERS'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     401: {
@@ -372,6 +376,10 @@ export const TableFieldUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -386,6 +394,10 @@ export const TableFieldUpdateSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['TABLE_NOT_FOUND', 'FIELD_NOT_FOUND'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
       examples: [
@@ -409,6 +421,10 @@ export const TableFieldUpdateSchema: FastifySchema = {
           type: 'string',
           enum: ['LAST_ACTIVE_FIELD'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -427,6 +443,10 @@ export const TableFieldUpdateSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['UPDATE_FIELD_TABLE_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },

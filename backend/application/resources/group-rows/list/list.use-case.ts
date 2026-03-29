@@ -28,7 +28,7 @@ export default class GroupRowListUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const groupField = table.fields?.find(
@@ -39,7 +39,7 @@ export default class GroupRowListUseCase {
 
       if (!groupField) {
         return left(
-          HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+          HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
         );
       }
 
@@ -55,7 +55,7 @@ export default class GroupRowListUseCase {
         .populate(populate);
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       const rowJson = row.toJSON({ flattenObjectIds: true });
       maskPasswordFields(rowJson, table.fields as IField[]);
@@ -66,7 +66,7 @@ export default class GroupRowListUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'LIST_GROUP_ROWS_ERROR',
         ),
       );

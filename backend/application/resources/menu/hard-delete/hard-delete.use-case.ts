@@ -24,11 +24,11 @@ export default class MenuHardDeleteUseCase {
       });
 
       if (!menu)
-        return left(HTTPException.NotFound('Menu not found', 'MENU_NOT_FOUND'));
+        return left(HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'));
 
       if (!menu.trashed)
         return left(
-          HTTPException.Conflict('Menu is not in trash', 'NOT_TRASHED'),
+          HTTPException.Conflict('Menu não está na lixeira', 'NOT_TRASHED'),
         );
 
       await this.menuRepository.delete(menu._id);
@@ -37,7 +37,7 @@ export default class MenuHardDeleteUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'HARD_DELETE_MENU_ERROR',
         ),
       );

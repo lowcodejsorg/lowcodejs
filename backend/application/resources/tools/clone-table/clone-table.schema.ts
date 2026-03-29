@@ -78,6 +78,10 @@ export const CloneTableSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -87,6 +91,10 @@ export const CloneTableSchema: FastifySchema = {
         message: { type: 'string', enum: ['Tabela base não encontrada'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -96,6 +104,10 @@ export const CloneTableSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro ao clonar tabela'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['CLONE_TABLE_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

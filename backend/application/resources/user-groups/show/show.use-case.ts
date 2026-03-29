@@ -28,7 +28,7 @@ export default class UserGroupShowUseCase {
       if (!group)
         return left(
           HTTPException.NotFound(
-            'Grupo de usuarios nao encontrado',
+            'Grupo de usuários não encontrado',
             'USER_GROUP_NOT_FOUND',
           ),
         );
@@ -37,7 +37,7 @@ export default class UserGroupShowUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'GET_USER_GROUP_BY_ID_ERROR',
         ),
       );

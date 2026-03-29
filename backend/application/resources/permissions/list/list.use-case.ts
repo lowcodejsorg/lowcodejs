@@ -22,7 +22,7 @@ export default class PermissionListUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'LIST_PERMISSION_ERROR',
         ),
       );

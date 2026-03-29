@@ -25,12 +25,12 @@ export default class TableSendToTrashUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       if (table.trashed)
         return left(
-          HTTPException.Conflict('Table already in trash', 'ALREADY_TRASHED'),
+          HTTPException.Conflict('Tabela já está na lixeira', 'ALREADY_TRASHED'),
         );
 
       const updated = await this.tableRepository.update({
@@ -43,7 +43,7 @@ export default class TableSendToTrashUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'SEND_TABLE_TO_TRASH_ERROR',
         ),
       );

@@ -100,6 +100,10 @@ export const TableRowPaginatedSchema: FastifySchema = {
         message: { type: 'string', enum: ['Unauthorized'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -116,6 +120,10 @@ export const TableRowPaginatedSchema: FastifySchema = {
         message: { type: 'string', enum: ['Table not found'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['TABLE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
       examples: [
         {
@@ -134,6 +142,10 @@ export const TableRowPaginatedSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['LIST_ROW_TABLE_PAGINATED_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },

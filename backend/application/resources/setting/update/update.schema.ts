@@ -246,6 +246,10 @@ export const SettingUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -258,6 +262,10 @@ export const SettingUpdateSchema: FastifySchema = {
         },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['SETTINGS_FILE_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -272,6 +280,10 @@ export const SettingUpdateSchema: FastifySchema = {
         cause: {
           type: 'string',
           enum: ['SETTINGS_UPDATE_ERROR', 'FILE_WRITE_ERROR'],
+        },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
         },
       },
     },

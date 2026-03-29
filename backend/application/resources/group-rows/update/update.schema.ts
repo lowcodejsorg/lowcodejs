@@ -53,6 +53,10 @@ export const GroupRowUpdateSchema: FastifySchema = {
             'ITEM_NOT_FOUND',
           ],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -62,6 +66,10 @@ export const GroupRowUpdateSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['UPDATE_GROUP_ROW_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

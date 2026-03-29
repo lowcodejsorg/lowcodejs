@@ -63,7 +63,7 @@ export default class ImportTableUseCase {
       if (!payload.ownerId) {
         return left(
           HTTPException.BadRequest(
-            'Owner ID e obrigatorio',
+            'Owner ID é obrigatório',
             'OWNER_ID_REQUIRED',
           ),
         );
@@ -78,7 +78,7 @@ export default class ImportTableUseCase {
       if (!header || header.platform !== 'lowcodejs') {
         return left(
           HTTPException.BadRequest(
-            'Arquivo de importacao invalido. Plataforma nao reconhecida.',
+            'Arquivo de importação inválido. Plataforma não reconhecida.',
             'INVALID_PLATFORM',
           ),
         );
@@ -99,7 +99,7 @@ export default class ImportTableUseCase {
       if (existingTable) {
         return left(
           HTTPException.BadRequest(
-            'Ja existe uma tabela com este nome/slug',
+            'Já existe uma tabela com este nome/slug',
             'TABLE_SLUG_ALREADY_EXISTS',
           ),
         );
@@ -372,7 +372,7 @@ export default class ImportTableUseCase {
       // This is not supported in the current version
       return left(
         HTTPException.BadRequest(
-          'Importacao somente de dados requer a estrutura da tabela no arquivo',
+          'Importação somente de dados requer a estrutura da tabela no arquivo',
           'STRUCTURE_REQUIRED',
         ),
       );
@@ -380,7 +380,7 @@ export default class ImportTableUseCase {
       console.error(_error);
       return left(
         HTTPException.InternalServerError(
-          'Erro ao importar tabela',
+          'Erro interno do servidor',
           'IMPORT_TABLE_ERROR',
         ),
       );

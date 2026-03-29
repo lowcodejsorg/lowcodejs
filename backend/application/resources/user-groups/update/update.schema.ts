@@ -113,6 +113,10 @@ export const UserGroupUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Não autorizado'] },
         code: { type: 'number', enum: [401] },
         cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -122,6 +126,10 @@ export const UserGroupUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Grupo de usuários não encontrado'] },
         code: { type: 'number', enum: [404] },
         cause: { type: 'string', enum: ['USER_GROUP_NOT_FOUND'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -131,6 +139,10 @@ export const UserGroupUpdateSchema: FastifySchema = {
         message: { type: 'string', enum: ['Erro interno do servidor'] },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['UPDATE_USER_GROUP_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },

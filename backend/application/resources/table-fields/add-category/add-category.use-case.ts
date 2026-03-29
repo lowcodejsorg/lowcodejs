@@ -82,7 +82,7 @@ export default class TableFieldAddCategoryUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const field = await this.fieldRepository.findBy({
@@ -92,19 +92,19 @@ export default class TableFieldAddCategoryUseCase {
 
       if (!field)
         return left(
-          HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
       const inTable = table.fields.some((f) => f._id === field._id);
       if (!inTable)
         return left(
-          HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
       if (field.type !== E_FIELD_TYPE.CATEGORY) {
         return left(
           HTTPException.BadRequest(
-            'Field is not CATEGORY type',
+            'Campo não é do tipo CATEGORY',
             'INVALID_FIELD_TYPE',
           ),
         );
@@ -137,7 +137,7 @@ export default class TableFieldAddCategoryUseCase {
       if (!inserted) {
         return left(
           HTTPException.NotFound(
-            'Parent category not found',
+            'Categoria pai não encontrada',
             'PARENT_CATEGORY_NOT_FOUND',
           ),
         );
@@ -160,7 +160,7 @@ export default class TableFieldAddCategoryUseCase {
       console.error(error);
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'ADD_CATEGORY_OPTION_ERROR',
         ),
       );

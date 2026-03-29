@@ -35,7 +35,7 @@ export default class TableRowEvaluationUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       const c = await buildTable(table);
@@ -50,7 +50,7 @@ export default class TableRowEvaluationUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Row not found', 'ROW_NOT_FOUND'));
+        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
 
       let evaluation = await this.evaluationRepository.findBy({
         user: payload.user,
@@ -87,7 +87,7 @@ export default class TableRowEvaluationUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'EVALUATION_ROW_TABLE_ERROR',
         ),
       );

@@ -34,7 +34,7 @@ export function AuthenticationMiddleware(
       if (!accessToken) {
         if (options.optional) return;
         throw HTTPException.Unauthorized(
-          'Authentication required',
+          'Autenticação necessária',
           'AUTHENTICATION_REQUIRED',
         );
       }
@@ -48,7 +48,7 @@ export function AuthenticationMiddleware(
       ) {
         if (options.optional) return;
         throw HTTPException.Unauthorized(
-          'Authentication required',
+          'Autenticação necessária',
           'AUTHENTICATION_REQUIRED',
         );
       }
@@ -64,7 +64,7 @@ export function AuthenticationMiddleware(
       if (options.optional) return;
 
       throw HTTPException.Unauthorized(
-        'Authentication required',
+        'Autenticação necessária',
         'AUTHENTICATION_REQUIRED',
       );
     }

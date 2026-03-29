@@ -35,7 +35,10 @@ export default class TableCreateUseCase {
     try {
       if (!payload.owner)
         return left(
-          HTTPException.BadRequest('Owner required', 'OWNER_REQUIRED'),
+          HTTPException.BadRequest(
+            'Proprietário é obrigatório',
+            'OWNER_REQUIRED',
+          ),
         );
 
       const slug = slugify(payload.name, { lower: true, trim: true });
@@ -47,10 +50,7 @@ export default class TableCreateUseCase {
 
       if (existingTable)
         return left(
-          HTTPException.Conflict(
-            'Table already exists',
-            'TABLE_ALREADY_EXISTS',
-          ),
+          HTTPException.Conflict('Tabela já existe', 'TABLE_ALREADY_EXISTS', { name: 'Tabela já existe' }),
         );
 
       const nativeFields = await this.fieldRepository.createMany([
@@ -112,7 +112,7 @@ export default class TableCreateUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'CREATE_TABLE_ERROR',
         ),
       );

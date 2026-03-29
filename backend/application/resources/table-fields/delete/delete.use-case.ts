@@ -34,7 +34,7 @@ export default class TableFieldDeleteUseCase {
 
       if (!table)
         return left(
-          HTTPException.NotFound('Table not found', 'TABLE_NOT_FOUND'),
+          HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
       // Se foi fornecido um group slug, exclui o campo do grupo
@@ -43,7 +43,7 @@ export default class TableFieldDeleteUseCase {
         const targetGroup = table.groups?.find((g) => g.slug === groupSlug);
         if (!targetGroup) {
           return left(
-            HTTPException.NotFound('Group not found', 'GROUP_NOT_FOUND'),
+            HTTPException.NotFound('Grupo não encontrado', 'GROUP_NOT_FOUND'),
           );
         }
         return this.deleteFieldInGroup(payload, table, targetGroup);
@@ -56,13 +56,13 @@ export default class TableFieldDeleteUseCase {
 
       if (!field)
         return left(
-          HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'),
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
       if (!field.trashed)
         return left(
           HTTPException.Conflict(
-            'Field must be in trash before permanent deletion',
+            'Campo deve estar na lixeira antes da exclusão permanente',
             'FIELD_NOT_TRASHED',
           ),
         );
@@ -70,7 +70,7 @@ export default class TableFieldDeleteUseCase {
       if (field.native) {
         return left(
           HTTPException.Forbidden(
-            'Native fields cannot be permanently deleted',
+            'Campos nativos não podem ser excluídos permanentemente',
             'NATIVE_FIELD_CANNOT_BE_DELETED',
           ),
         );
@@ -79,7 +79,7 @@ export default class TableFieldDeleteUseCase {
       if (field.locked) {
         return left(
           HTTPException.Forbidden(
-            'Field is locked and cannot be permanently deleted',
+            'Campo está bloqueado e não pode ser excluído permanentemente',
             'FIELD_LOCKED',
           ),
         );
@@ -102,7 +102,7 @@ export default class TableFieldDeleteUseCase {
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
-          'Internal server error',
+          'Erro interno do servidor',
           'DELETE_FIELD_ERROR',
         ),
       );
@@ -120,12 +120,12 @@ export default class TableFieldDeleteUseCase {
     });
 
     if (!field)
-      return left(HTTPException.NotFound('Field not found', 'FIELD_NOT_FOUND'));
+      return left(HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'));
 
     if (!field.trashed)
       return left(
         HTTPException.Conflict(
-          'Field must be in trash before permanent deletion',
+          'Campo deve estar na lixeira antes da exclusão permanente',
           'FIELD_NOT_TRASHED',
         ),
       );

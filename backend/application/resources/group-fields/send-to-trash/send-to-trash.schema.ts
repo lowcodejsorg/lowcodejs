@@ -107,6 +107,10 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
           type: 'string',
           enum: ['NATIVE_FIELD_CANNOT_BE_TRASHED', 'FIELD_LOCKED'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     404: {
@@ -119,6 +123,10 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
           type: 'string',
           enum: ['TABLE_NOT_FOUND', 'GROUP_NOT_FOUND', 'FIELD_NOT_FOUND'],
         },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     409: {
@@ -128,6 +136,10 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [409] },
         cause: { type: 'string', enum: ['ALREADY_TRASHED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
     500: {
@@ -137,6 +149,10 @@ export const GroupFieldSendToTrashSchema: FastifySchema = {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
         cause: { type: 'string', enum: ['SEND_GROUP_FIELD_TO_TRASH_ERROR'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
       },
     },
   },
