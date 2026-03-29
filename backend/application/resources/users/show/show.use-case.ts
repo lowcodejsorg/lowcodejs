@@ -24,7 +24,9 @@ export default class UserShowUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'),
+        );
 
       return right(user);
     } catch (_error) {

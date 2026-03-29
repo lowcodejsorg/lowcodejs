@@ -73,6 +73,7 @@ export function useGroupFieldManagement(
     string | null
   >(null);
   const [deletingFieldId, setDeletingFieldId] = useState<string | null>(null);
+  const [restoringFieldId, setRestoringFieldId] = useState<string | null>(null);
   const [pendingWidthKey, setPendingWidthKey] = useState<WidthKey | null>(null);
 
   const tableSlug = table?.slug ?? '';
@@ -253,8 +254,84 @@ export function useGroupFieldManagement(
     });
   }
 
+  const restoreMutation = useMutation({
+    mutationFn: async (field: IField) => {
+      const route = `/tables/${tableSlug}/groups/${groupSlug}/fields/${field._id}/restore`;
+      const response = await API.patch<IField>(route);
+      return response.data;
+    },
+    onMutate: (field) => {
+      setRestoringFieldId(field._id);
+    },
+    onSuccess: (response) => {
+      queryClient.setQueryData<ITable>(
+        queryKeys.tables.detail(tableSlug),
+        (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            groups: old.groups.map((g) =>
+              g.slug === groupSlug
+                ? {
+                    ...g,
+                    fields: g.fields.map((f) =>
+                      f._id === response._id ? response : f,
+                    ),
+                  }
+                : g,
+            ),
+          };
+        },
+      );
+
+      queryClient.setQueryData<Paginated<ITable>>(
+        queryKeys.tables.list({ page: 1, perPage: 50 }),
+        (old) => {
+          if (!old) return old;
+          return {
+            meta: old.meta,
+            data: old.data.map((t) => {
+              if (t.slug !== tableSlug) return t;
+              return {
+                ...t,
+                groups: t.groups.map((g) =>
+                  g.slug === groupSlug
+                    ? {
+                        ...g,
+                        fields: g.fields.map((f) =>
+                          f._id === response._id ? response : f,
+                        ),
+                      }
+                    : g,
+                ),
+              };
+            }),
+          };
+        },
+      );
+
+      toastSuccess(
+        'Campo restaurado',
+        'O campo foi restaurado da lixeira com sucesso.',
+      );
+    },
+    onError: () => {
+      toastError(
+        'Erro ao restaurar campo',
+        'Não foi possível restaurar o campo da lixeira. Tente novamente.',
+      );
+    },
+    onSettled: () => {
+      setRestoringFieldId(null);
+    },
+  });
+
   function onDeleteField(field: IField): void {
     deleteMutation.mutate(field);
+  }
+
+  function onRestoreField(field: IField): void {
+    restoreMutation.mutate(field);
   }
 
   function onEditField(fieldId: string): void {
@@ -271,10 +348,12 @@ export function useGroupFieldManagement(
     onChangeWidth,
     onSaveOrder,
     onDeleteField,
+    onRestoreField,
     onEditField,
     togglingFieldId,
     changingWidthFieldId,
     deletingFieldId,
+    restoringFieldId,
     isSavingOrder: updateTable.isPending,
   };
 }

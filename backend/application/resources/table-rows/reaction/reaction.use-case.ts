@@ -50,7 +50,9 @@ export default class TableRowReactionUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       let reaction = await this.reactionRepository.findBy({
         user: payload.user,

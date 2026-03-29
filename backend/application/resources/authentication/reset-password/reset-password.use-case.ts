@@ -26,7 +26,9 @@ export default class UpdatePasswordRecoveryUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'),
+        );
 
       const hashedPassword = await this.passwordService.hash(payload.password);
 

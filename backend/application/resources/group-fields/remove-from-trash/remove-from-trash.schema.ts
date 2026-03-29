@@ -1,68 +1,24 @@
 import type { FastifySchema } from 'fastify';
 
-export const GroupFieldCreateSchema: FastifySchema = {
+export const GroupFieldRemoveFromTrashSchema: FastifySchema = {
   tags: ['Group Fields'],
-  summary: 'Create field in group',
+  summary: 'Restore group field from trash',
   description:
-    'Creates a new field inside a FIELD_GROUP. Automatically generates slug from name and rebuilds group and table schemas.',
+    'Restores a field within a FIELD_GROUP from trash. Sets trashed=false and re-enables display properties.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
-    required: ['slug', 'groupSlug'],
+    required: ['slug', 'groupSlug', 'fieldId'],
     properties: {
-      slug: {
-        type: 'string',
-        description: 'Table slug',
-      },
-      groupSlug: {
-        type: 'string',
-        description: 'Group slug within the table',
-      },
+      slug: { type: 'string', description: 'Table slug' },
+      groupSlug: { type: 'string', description: 'Group slug' },
+      fieldId: { type: 'string', description: 'Field ID to restore' },
     },
     additionalProperties: false,
   },
-  body: {
-    type: 'object',
-    required: ['name', 'type'],
-    properties: {
-      name: {
-        type: 'string',
-        description: 'Field name',
-      },
-      type: {
-        type: 'string',
-        enum: [
-          'TEXT_SHORT',
-          'TEXT_LONG',
-          'DROPDOWN',
-          'DATE',
-          'RELATIONSHIP',
-          'FILE',
-          'CATEGORY',
-          'USER',
-        ],
-        description: 'Field type',
-      },
-      required: { type: 'boolean', default: false },
-      multiple: { type: 'boolean', default: false },
-      showInFilter: { type: 'boolean', default: false },
-      showInForm: { type: 'boolean', default: false },
-      showInDetail: { type: 'boolean', default: false },
-      showInList: { type: 'boolean', default: false },
-      widthInForm: { type: 'number', nullable: true, default: 50 },
-      widthInList: { type: 'number', nullable: true, default: 10 },
-      widthInDetail: { type: 'number', nullable: true, default: 50 },
-      locked: { type: 'boolean', default: false },
-      format: { type: 'string', nullable: true, default: null },
-      defaultValue: { type: 'string', nullable: true, default: null },
-      dropdown: { type: 'array', nullable: true, default: [] },
-      relationship: { type: 'object', nullable: true, default: null },
-      category: { type: 'array', nullable: true, default: [] },
-    },
-  },
   response: {
-    201: {
-      description: 'Field created successfully in group',
+    200: {
+      description: 'Field restored from trash successfully',
       type: 'object',
       properties: {
         _id: { type: 'string' },
@@ -136,31 +92,21 @@ export const GroupFieldCreateSchema: FastifySchema = {
           },
         },
         trashed: { type: 'boolean' },
-        trashedAt: { type: 'string', nullable: true },
+        trashedAt: { type: 'string', format: 'date-time', nullable: true },
         createdAt: { type: 'string', format: 'date-time' },
         updatedAt: { type: 'string', format: 'date-time' },
       },
     },
-    403: {
-      description: 'Forbidden - Group field is in trash',
-      type: 'object',
-      properties: {
-        message: { type: 'string' },
-        code: { type: 'number', enum: [403] },
-        cause: { type: 'string', enum: ['GROUP_IS_TRASHED'] },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-        },
-      },
-    },
     404: {
-      description: 'Table or group not found',
+      description: 'Table, group, or field not found',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [404] },
-        cause: { type: 'string', enum: ['TABLE_NOT_FOUND', 'GROUP_NOT_FOUND'] },
+        cause: {
+          type: 'string',
+          enum: ['TABLE_NOT_FOUND', 'GROUP_NOT_FOUND', 'FIELD_NOT_FOUND'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -168,12 +114,12 @@ export const GroupFieldCreateSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Field already exists in group',
+      description: 'Field is not in trash',
       type: 'object',
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [409] },
-        cause: { type: 'string', enum: ['FIELD_ALREADY_EXIST'] },
+        cause: { type: 'string', enum: ['NOT_TRASHED'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -186,7 +132,10 @@ export const GroupFieldCreateSchema: FastifySchema = {
       properties: {
         message: { type: 'string' },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['CREATE_GROUP_FIELD_ERROR'] },
+        cause: {
+          type: 'string',
+          enum: ['REMOVE_GROUP_FIELD_FROM_TRASH_ERROR'],
+        },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

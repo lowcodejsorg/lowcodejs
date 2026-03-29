@@ -139,9 +139,7 @@ export function buildUpdateRowDefaultValues(
 
     switch (field.type) {
       case E_FIELD_TYPE.TEXT_SHORT:
-        if (field.format === E_FIELD_FORMAT.PASSWORD) {
-          defaults[field.slug] = '';
-        } else if (value) {
+        if (value) {
           defaults[field.slug] = value;
         } else {
           defaults[field.slug] = field.defaultValue ?? '';

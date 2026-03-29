@@ -28,7 +28,9 @@ export default class UserUpdateUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'),
+        );
 
       const updated = await this.userRepository.update({
         ...payload,

@@ -25,7 +25,9 @@ export default class PageShowUseCase {
       });
 
       if (!menu)
-        return left(HTTPException.NotFound('Página não encontrada', 'PAGE_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Página não encontrada', 'PAGE_NOT_FOUND'),
+        );
 
       return right(menu);
     } catch (error) {

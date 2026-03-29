@@ -53,10 +53,7 @@ export default class ValidateCodeUseCase {
         });
 
         return left(
-          HTTPException.Gone(
-            'Código expirado',
-            'VALIDATION_TOKEN_EXPIRED',
-          ),
+          HTTPException.Gone('Código expirado', 'VALIDATION_TOKEN_EXPIRED'),
         );
       }
 

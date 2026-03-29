@@ -18,7 +18,10 @@ export default class MenuReorderUseCase {
     try {
       if (payload.items.length === 0) {
         return left(
-          HTTPException.BadRequest('Lista de itens está vazia', 'INVALID_PARAMETERS'),
+          HTTPException.BadRequest(
+            'Lista de itens está vazia',
+            'INVALID_PARAMETERS',
+          ),
         );
       }
 

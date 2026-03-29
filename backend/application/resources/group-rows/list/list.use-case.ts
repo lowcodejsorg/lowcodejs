@@ -6,7 +6,6 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -55,10 +54,11 @@ export default class GroupRowListUseCase {
         .populate(populate);
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       const rowJson = row.toJSON({ flattenObjectIds: true });
-      maskPasswordFields(rowJson, table.fields as IField[]);
 
       const items = rowJson[groupField.slug] || [];
 

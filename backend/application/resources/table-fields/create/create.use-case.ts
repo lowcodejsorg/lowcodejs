@@ -47,7 +47,9 @@ export default class TableFieldCreateUseCase {
 
       if (existFieldOnTable)
         return left(
-          HTTPException.Conflict('Campo já existe', 'FIELD_ALREADY_EXIST', { name: 'Campo já existe' }),
+          HTTPException.Conflict('Campo já existe', 'FIELD_ALREADY_EXIST', {
+            name: 'Campo já existe',
+          }),
         );
 
       let field = await this.fieldRepository.create({

@@ -23,7 +23,9 @@ export default class RefreshTokenUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'),
+        );
 
       return right(user);
     } catch (_error) {

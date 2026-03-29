@@ -45,7 +45,9 @@ export default class TableRowRemoveFromTrashUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       if (!row.trashed)
         return left(

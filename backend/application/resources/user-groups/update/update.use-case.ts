@@ -38,7 +38,10 @@ export default class UserGroupUpdateUseCase {
           HTTPException.BadRequest(
             'Ao menos uma permissão deve ser informada para o grupo de usuários',
             undefined,
-            { permissions: 'Ao menos uma permissão deve ser informada para o grupo de usuários' },
+            {
+              permissions:
+                'Ao menos uma permissão deve ser informada para o grupo de usuários',
+            },
           ),
         );
 

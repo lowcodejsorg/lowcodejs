@@ -5,7 +5,6 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField, IMeta, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import {
   buildOrder,
   buildPopulate,
@@ -84,7 +83,6 @@ export default class TableRowPaginatedUseCase {
           }),
           _id: u?._id.toString(),
         };
-        maskPasswordFields(rowJson, table.fields as IField[]);
         return rowJson;
       });
 

@@ -30,7 +30,10 @@ export default class TableSendToTrashUseCase {
 
       if (table.trashed)
         return left(
-          HTTPException.Conflict('Tabela já está na lixeira', 'ALREADY_TRASHED'),
+          HTTPException.Conflict(
+            'Tabela já está na lixeira',
+            'ALREADY_TRASHED',
+          ),
         );
 
       const updated = await this.tableRepository.update({

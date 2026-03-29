@@ -50,7 +50,9 @@ export default class TableRowEvaluationUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       let evaluation = await this.evaluationRepository.findBy({
         user: payload.user,

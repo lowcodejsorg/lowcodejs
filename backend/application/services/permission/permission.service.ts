@@ -49,7 +49,10 @@ export default class PermissionService extends PermissionContractService {
     }
 
     if (user.status !== E_USER_STATUS.ACTIVE) {
-      throw HTTPException.Forbidden('Usuário não está ativo', 'USER_NOT_ACTIVE');
+      throw HTTPException.Forbidden(
+        'Usuário não está ativo',
+        'USER_NOT_ACTIVE',
+      );
     }
 
     const group = user.group as { permissions?: IPermission[] } | undefined;
@@ -76,7 +79,10 @@ export default class PermissionService extends PermissionContractService {
   async checkUserIsActive(userId: string): Promise<void> {
     const userDoc = await UserModel.findOne({ _id: userId }).lean();
     if (!userDoc || userDoc.status !== E_USER_STATUS.ACTIVE) {
-      throw HTTPException.Forbidden('Usuário não está ativo', 'USER_NOT_ACTIVE');
+      throw HTTPException.Forbidden(
+        'Usuário não está ativo',
+        'USER_NOT_ACTIVE',
+      );
     }
   }
 

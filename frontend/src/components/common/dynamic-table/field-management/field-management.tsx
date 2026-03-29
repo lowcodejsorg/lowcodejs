@@ -16,6 +16,7 @@ import {
 } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import {
+  ArchiveRestoreIcon,
   ArrowLeftIcon,
   EyeIcon,
   EyeOffIcon,
@@ -187,46 +188,103 @@ interface TrashedItemProps {
   field: IField;
   onEdit: () => void;
   onDelete: () => void;
+  onRestore: () => void;
   isDeleting?: boolean;
+  isRestoring?: boolean;
 }
 
 function TrashedItem({
   field,
   onEdit,
   onDelete,
+  onRestore,
   isDeleting,
+  isRestoring,
 }: TrashedItemProps): React.JSX.Element {
-  const [open, setOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [restoreOpen, setRestoreOpen] = useState(false);
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/50 p-3">
       <span className="text-sm text-muted-foreground">{field.name}</span>
       <div className="flex items-center gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8"
-          onClick={onEdit}
-          disabled={isDeleting}
-        >
-          <PencilIcon className="h-4 w-4" />
-        </Button>
         <Dialog
           modal
-          open={open}
-          onOpenChange={setOpen}
+          open={restoreOpen}
+          onOpenChange={setRestoreOpen}
         >
           <DialogTrigger asChild>
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-auto text-destructive hover:text-destructive gap-2 px-2"
-              disabled={isDeleting}
+              className="h-8 w-8 text-emerald-600 hover:text-emerald-600"
+              disabled={isRestoring || isDeleting}
+              title="Restaurar campo"
+            >
+              {isRestoring ? (
+                <LoaderCircleIcon className="h-4 w-4 animate-spin" />
+              ) : (
+                <ArchiveRestoreIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="py-4 px-6">
+            <DialogHeader>
+              <DialogTitle>Restaurar campo</DialogTitle>
+              <DialogDescription>
+                O campo será restaurado e voltará a ser exibido na lista,
+                formulário, detalhes e filtros.
+              </DialogDescription>
+            </DialogHeader>
+            <section>
+              <form className="pt-4 pb-2">
+                <DialogFooter className="inline-flex w-full gap-2 justify-end">
+                  <DialogClose asChild>
+                    <Button variant="outline">
+                      Cancelar
+                    </Button>
+                  </DialogClose>
+                  <Button
+                    type="button"
+                    disabled={isRestoring}
+                    onClick={() => {
+                      onRestore();
+                      setRestoreOpen(false);
+                    }}
+                  >
+                    {isRestoring ? (
+                      <LoaderCircleIcon className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <span>Confirmar</span>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </section>
+          </DialogContent>
+        </Dialog>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8"
+          onClick={onEdit}
+          disabled={isDeleting || isRestoring}
+        >
+          <PencilIcon className="h-4 w-4" />
+        </Button>
+        <Dialog
+          modal
+          open={deleteOpen}
+          onOpenChange={setDeleteOpen}
+        >
+          <DialogTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-destructive hover:text-destructive"
+              disabled={isDeleting || isRestoring}
               title="Excluir permanentemente"
             >
               <Trash2Icon className="h-4 w-4" />
-              <span className="text-destructive text-xs font-medium">
-                Excluir permanentemente
-              </span>
             </Button>
           </DialogTrigger>
           <DialogContent className="py-4 px-6">
@@ -248,9 +306,9 @@ function TrashedItem({
                   <Button
                     type="button"
                     disabled={isDeleting}
-                    onClick={async () => {
-                      await onDelete();
-                      setOpen(false);
+                    onClick={() => {
+                      onDelete();
+                      setDeleteOpen(false);
                     }}
                   >
                     {isDeleting ? (
@@ -524,8 +582,14 @@ interface TrashedListProps {
 function FieldManagementTrashedList({
   excludeNative,
 }: TrashedListProps): React.JSX.Element | null {
-  const { fields, onDeleteField, onEditField, deletingFieldId } =
-    useFieldManagement();
+  const {
+    fields,
+    onDeleteField,
+    onRestoreField,
+    onEditField,
+    deletingFieldId,
+    restoringFieldId,
+  } = useFieldManagement();
 
   const trashedFields = fields.filter(
     (f) => f.trashed && !(excludeNative && f.native),
@@ -543,7 +607,9 @@ function FieldManagementTrashedList({
           field={field}
           onEdit={() => onEditField(field._id)}
           onDelete={() => onDeleteField(field)}
+          onRestore={() => onRestoreField(field)}
           isDeleting={deletingFieldId === field._id}
+          isRestoring={restoringFieldId === field._id}
         />
       ))}
     </div>

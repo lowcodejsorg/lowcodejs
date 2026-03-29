@@ -28,7 +28,9 @@ export default class ProfileUpdateUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'),
+        );
 
       if (!payload.allowPasswordChange) {
         const updated = await this.userRepository.update({

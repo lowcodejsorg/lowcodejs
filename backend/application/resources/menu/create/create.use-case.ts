@@ -62,7 +62,9 @@ export default class MenuCreateUseCase {
 
       if (menu)
         return left(
-          HTTPException.Conflict('Menu já existe', 'MENU_ALREADY_EXISTS', { name: 'Menu já existe' }),
+          HTTPException.Conflict('Menu já existe', 'MENU_ALREADY_EXISTS', {
+            name: 'Menu já existe',
+          }),
         );
 
       if (
@@ -74,7 +76,10 @@ export default class MenuCreateUseCase {
             HTTPException.BadRequest(
               'ID da tabela é obrigatório para tipos tabela/formulário',
               'INVALID_PARAMETERS',
-              { table: 'ID da tabela é obrigatório para tipos tabela/formulário' },
+              {
+                table:
+                  'ID da tabela é obrigatório para tipos tabela/formulário',
+              },
             ),
           );
 
@@ -85,7 +90,9 @@ export default class MenuCreateUseCase {
 
         if (!table)
           return left(
-            HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND', { table: 'Tabela não encontrada' }),
+            HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND', {
+              table: 'Tabela não encontrada',
+            }),
           );
 
         if (payload.type === E_MENU_ITEM_TYPE.TABLE)

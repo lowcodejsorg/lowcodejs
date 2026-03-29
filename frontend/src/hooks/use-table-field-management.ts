@@ -116,6 +116,7 @@ export function useTableFieldManagement(
     string | null
   >(null);
   const [deletingFieldId, setDeletingFieldId] = useState<string | null>(null);
+  const [restoringFieldId, setRestoringFieldId] = useState<string | null>(null);
 
   const tableSlug = table?.slug ?? '';
   const fields = table?.fields ?? [];
@@ -298,8 +299,39 @@ export function useTableFieldManagement(
     });
   }
 
+  const restoreMutation = useMutation({
+    mutationFn: async (field: IField) => {
+      const route = `/tables/${tableSlug}/fields/${field._id}/restore`;
+      const response = await API.patch<IField>(route);
+      return response.data;
+    },
+    onMutate: (field) => {
+      setRestoringFieldId(field._id);
+    },
+    onSuccess: (response) => {
+      updateFieldInTableCache(queryClient, tableSlug, response);
+      toastSuccess(
+        'Campo restaurado',
+        'O campo foi restaurado da lixeira com sucesso.',
+      );
+    },
+    onError: () => {
+      toastError(
+        'Erro ao restaurar campo',
+        'Não foi possível restaurar o campo da lixeira. Tente novamente.',
+      );
+    },
+    onSettled: () => {
+      setRestoringFieldId(null);
+    },
+  });
+
   function onDeleteField(field: IField): void {
     deleteMutation.mutate(field);
+  }
+
+  function onRestoreField(field: IField): void {
+    restoreMutation.mutate(field);
   }
 
   function onEditField(fieldId: string): void {
@@ -315,10 +347,12 @@ export function useTableFieldManagement(
     onChangeWidth,
     onSaveOrder,
     onDeleteField,
+    onRestoreField,
     onEditField,
     togglingFieldId,
     changingWidthFieldId,
     deletingFieldId,
+    restoringFieldId,
     isSavingOrder: updateTable.isPending,
   };
 }

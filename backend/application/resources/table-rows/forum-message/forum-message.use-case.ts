@@ -91,7 +91,9 @@ export default class ForumMessageUseCase {
       const row = await c.findOne({ _id: payload._id });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       if (!this.canAccessChannel(row, config, payload.user))
         return left(
@@ -206,7 +208,9 @@ export default class ForumMessageUseCase {
       const row = await c.findOne({ _id: payload._id });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       if (!this.canAccessChannel(row, config, payload.user))
         return left(
@@ -360,7 +364,9 @@ export default class ForumMessageUseCase {
       const row = await c.findOne({ _id: payload._id });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       if (!this.canAccessChannel(row, config, payload.user))
         return left(
@@ -462,7 +468,9 @@ export default class ForumMessageUseCase {
       const row = await c.findOne({ _id: payload._id });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       if (!this.canAccessChannel(row, config, payload.user))
         return left(
@@ -799,7 +807,9 @@ export default class ForumMessageUseCase {
     );
 
     if (!updatedRow)
-      return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+      return left(
+        HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+      );
 
     await updatedRow.populate(params.populate);
     const rowJson = updatedRow.toJSON({

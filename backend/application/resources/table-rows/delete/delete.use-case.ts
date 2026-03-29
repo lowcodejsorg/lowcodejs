@@ -35,7 +35,9 @@ export default class TableRowDeleteUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       return right(null);
     } catch (error) {

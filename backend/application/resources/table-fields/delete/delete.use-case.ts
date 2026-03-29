@@ -120,7 +120,9 @@ export default class TableFieldDeleteUseCase {
     });
 
     if (!field)
-      return left(HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'));
+      return left(
+        HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
+      );
 
     if (!field.trashed)
       return left(

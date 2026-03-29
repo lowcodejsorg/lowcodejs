@@ -50,7 +50,9 @@ export default class TableCreateUseCase {
 
       if (existingTable)
         return left(
-          HTTPException.Conflict('Tabela já existe', 'TABLE_ALREADY_EXISTS', { name: 'Tabela já existe' }),
+          HTTPException.Conflict('Tabela já existe', 'TABLE_ALREADY_EXISTS', {
+            name: 'Tabela já existe',
+          }),
         );
 
       const nativeFields = await this.fieldRepository.createMany([

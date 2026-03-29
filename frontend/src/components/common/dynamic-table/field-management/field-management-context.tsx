@@ -23,10 +23,12 @@ export interface FieldManagementActions {
     orderedFieldIds: Array<string>,
   ) => void;
   onDeleteField: (field: IField) => void;
+  onRestoreField: (field: IField) => void;
   onEditField: (fieldId: string) => void;
   togglingFieldId: string | null;
   changingWidthFieldId: string | null;
   deletingFieldId: string | null;
+  restoringFieldId: string | null;
   isSavingOrder: boolean;
 }
 

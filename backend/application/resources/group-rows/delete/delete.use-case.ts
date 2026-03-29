@@ -46,13 +46,17 @@ export default class GroupRowDeleteUseCase {
       const row = await build.findOne({ _id: payload.rowId });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       // Encontra o subdocumento pelo itemId
       const subdoc = (row as any)[groupField.slug]?.id(payload.itemId);
 
       if (!subdoc)
-        return left(HTTPException.NotFound('Item não encontrado', 'ITEM_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Item não encontrado', 'ITEM_NOT_FOUND'),
+        );
 
       // Remove o subdocumento
       subdoc.deleteOne();

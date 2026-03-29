@@ -15,6 +15,7 @@ CRUD de campos dentro de grupos (FIELD_GROUP) de uma tabela.
 | show | GET | `/:slug/groups/:groupSlug/fields/:fieldId` | VIEW_FIELD |
 | update | PUT | `/:slug/groups/:groupSlug/fields/:fieldId` | UPDATE_FIELD |
 | send-to-trash | POST | `/:slug/groups/:groupSlug/fields/:fieldId/send-to-trash` | UPDATE_FIELD |
+| remove-from-trash | PATCH | `/:slug/groups/:groupSlug/fields/:fieldId/restore` | UPDATE_FIELD |
 
 ## Middlewares Comuns
 
@@ -29,6 +30,7 @@ CRUD de campos dentro de grupos (FIELD_GROUP) de uma tabela.
 ## Comportamento Chave
 
 - Campos sao embedded dentro de `table.groups[].fields[]`
-- Ao criar/atualizar/enviar para lixeira um campo, o schema do grupo e da tabela pai sao reconstruidos via `buildSchema()`
-- A tabela dinamica e reconstruida via `buildTable()` apos alteracoes (exceto send-to-trash e list)
+- Ao criar/atualizar/enviar para lixeira/restaurar um campo, o schema do grupo e da tabela pai sao reconstruidos via `buildSchema()`
+- A tabela dinamica e reconstruida via `buildTable()` apos alteracoes (exceto send-to-trash, remove-from-trash e list)
 - Campos nativos e locked possuem restricoes de atualizacao e nao podem ser enviados para lixeira
+- Nao e possivel criar campos em um grupo cujo campo FIELD_GROUP pai esteja na lixeira (retorna 403 GROUP_IS_TRASHED)

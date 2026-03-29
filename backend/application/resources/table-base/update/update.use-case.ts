@@ -55,7 +55,10 @@ export default class TableUpdateUseCase {
             HTTPException.BadRequest(
               'Todos os administradores devem ser usuários ativos',
               'INACTIVE_ADMINISTRATORS',
-              { administrators: 'Todos os administradores devem ser usuários ativos' },
+              {
+                administrators:
+                  'Todos os administradores devem ser usuários ativos',
+              },
             ),
           );
         }
@@ -79,11 +82,9 @@ export default class TableUpdateUseCase {
 
         if (existingTable) {
           return left(
-            HTTPException.Conflict(
-              'Tabela já existe',
-              'TABLE_ALREADY_EXISTS',
-              { name: 'Tabela já existe' },
-            ),
+            HTTPException.Conflict('Tabela já existe', 'TABLE_ALREADY_EXISTS', {
+              name: 'Tabela já existe',
+            }),
           );
         }
       }

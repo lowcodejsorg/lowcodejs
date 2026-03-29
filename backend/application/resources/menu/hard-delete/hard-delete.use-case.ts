@@ -24,7 +24,9 @@ export default class MenuHardDeleteUseCase {
       });
 
       if (!menu)
-        return left(HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'),
+        );
 
       if (!menu.trashed)
         return left(

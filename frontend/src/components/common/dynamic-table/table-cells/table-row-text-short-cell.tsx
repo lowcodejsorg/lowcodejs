@@ -16,7 +16,7 @@ export function TableRowTextShortCell({
     return (
       <p
         data-slot="table-row-text-short-cell"
-        className="text-muted-foreground text-sm max-w-sm truncate"
+        className="text-muted-foreground text-sm block truncate"
       >
         -
       </p>
@@ -27,7 +27,7 @@ export function TableRowTextShortCell({
     return (
       <p
         data-slot="table-row-text-short-cell"
-        className="text-muted-foreground text-sm max-w-sm truncate"
+        className="text-muted-foreground text-sm block truncate"
       >
         ••••••••
       </p>
@@ -39,7 +39,7 @@ export function TableRowTextShortCell({
       <a
         data-slot="table-row-text-short-cell"
         href={`mailto:${value}`}
-        className="text-sm max-w-sm truncate text-blue-600 hover:underline"
+        className="text-sm block truncate text-blue-600 hover:underline"
       >
         {value}
       </a>
@@ -53,7 +53,7 @@ export function TableRowTextShortCell({
         href={value}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm max-w-sm truncate text-blue-600 hover:underline"
+        className="text-sm block truncate text-blue-600 hover:underline"
       >
         {value}
       </a>
@@ -63,7 +63,7 @@ export function TableRowTextShortCell({
   return (
     <p
       data-slot="table-row-text-short-cell"
-      className="text-muted-foreground text-sm max-w-sm truncate"
+      className="text-muted-foreground text-sm block truncate"
     >
       {value}
     </p>

@@ -1,26 +1,21 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import {
-  E_FIELD_TYPE,
-  type IField as Entity,
-  type IField,
-} from '@application/core/entity.core';
+import type { IField, IField as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
+import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-import type { GroupFieldCreatePayload } from './create.validator';
+import type { GroupFieldRemoveFromTrashPayload } from './remove-from-trash.validator';
 
 type Response = Either<HTTPException, Entity>;
-type Payload = GroupFieldCreatePayload;
+type Payload = GroupFieldRemoveFromTrashPayload;
 
 @Service()
-export default class GroupFieldCreateUseCase {
+export default class GroupFieldRemoveFromTrashUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
@@ -47,50 +42,42 @@ export default class GroupFieldCreateUseCase {
         );
       }
 
-      // Verifica se o campo FIELD_GROUP pai está na lixeira
-      const parentField = table.fields.find(
-        (f) =>
-          f.type === E_FIELD_TYPE.FIELD_GROUP &&
-          f.group?.slug === payload.groupSlug,
-      );
-      if (parentField?.trashed) {
-        return left(
-          HTTPException.Forbidden(
-            'Não é possível criar campos em um grupo na lixeira',
-            'GROUP_IS_TRASHED',
-          ),
-        );
-      }
-
-      const slug = slugify(payload.name, { lower: true, trim: true });
-
-      // Verifica se o campo já existe no grupo
-      const existFieldInGroup = targetGroup.fields?.find(
-        (f) => f.slug === slug,
-      );
-
-      if (existFieldInGroup) {
-        return left(
-          HTTPException.Conflict(
-            'Campo já existe no grupo',
-            'FIELD_ALREADY_EXIST',
-            { name: 'Campo já existe no grupo' },
-          ),
-        );
-      }
-
-      // Cria o campo
-      const field = await this.fieldRepository.create({
-        ...payload,
-        slug,
-        group: null,
+      const field = await this.fieldRepository.findBy({
+        _id: payload.fieldId,
+        exact: true,
       });
 
-      // Atualiza o grupo com o novo campo e schema
+      if (!field)
+        return left(
+          HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
+        );
+
+      if (!field.trashed)
+        return left(
+          HTTPException.Conflict(
+            'Campo não está na lixeira',
+            'NOT_TRASHED',
+          ),
+        );
+
+      const updatedField = await this.fieldRepository.update({
+        _id: field._id,
+        showInList: true,
+        showInForm: true,
+        showInDetail: true,
+        showInFilter: true,
+        required: false,
+        trashed: false,
+        trashedAt: null,
+      });
+
+      // Atualiza o grupo com o campo atualizado
       const updatedGroups = table.groups.map((g) => {
         if (g.slug !== targetGroup.slug) return g;
 
-        const updatedFields = [...(g.fields || []), field];
+        const updatedFields = g.fields.map((f) =>
+          f._id === field._id ? updatedField : f,
+        );
         const groupSchema = buildSchema(updatedFields);
 
         return {
@@ -111,19 +98,12 @@ export default class GroupFieldCreateUseCase {
         administrators: table.administrators.flatMap((a) => a._id),
       });
 
-      await buildTable({
-        ...table,
-        _id: table._id,
-        _schema: parentSchema,
-        groups: updatedGroups,
-      });
-
-      return right(field);
+      return right(updatedField);
     } catch (error) {
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',
-          'CREATE_GROUP_FIELD_ERROR',
+          'REMOVE_GROUP_FIELD_FROM_TRASH_ERROR',
         ),
       );
     }

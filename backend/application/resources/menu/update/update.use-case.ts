@@ -36,7 +36,9 @@ export default class MenuUpdateUseCase {
       });
 
       if (!existingMenu)
-        return left(HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'),
+        );
 
       let finalSlug = payload.slug || existingMenu.slug;
       let parent = null;
@@ -115,11 +117,9 @@ export default class MenuUpdateUseCase {
 
         if (menuWithSameSlug && menuWithSameSlug._id !== payload._id)
           return left(
-            HTTPException.Conflict(
-              'Menu já existe',
-              'MENU_ALREADY_EXISTS',
-              { name: 'Menu já existe' },
-            ),
+            HTTPException.Conflict('Menu já existe', 'MENU_ALREADY_EXISTS', {
+              name: 'Menu já existe',
+            }),
           );
       }
 
@@ -133,7 +133,10 @@ export default class MenuUpdateUseCase {
             HTTPException.BadRequest(
               'ID da tabela é obrigatório para tipos tabela/formulário',
               'INVALID_PARAMETERS',
-              { table: 'ID da tabela é obrigatório para tipos tabela/formulário' },
+              {
+                table:
+                  'ID da tabela é obrigatório para tipos tabela/formulário',
+              },
             ),
           );
         }
@@ -145,7 +148,9 @@ export default class MenuUpdateUseCase {
 
         if (!table)
           return left(
-            HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND', { table: 'Tabela não encontrada' }),
+            HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND', {
+              table: 'Tabela não encontrada',
+            }),
           );
 
         if (payload.type === E_MENU_ITEM_TYPE.TABLE)

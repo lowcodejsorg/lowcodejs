@@ -49,10 +49,7 @@ export default class MagicLinkUseCase {
 
       if (token.status === E_TOKEN_STATUS.EXPIRED)
         return left(
-          HTTPException.Gone(
-            'Código expirado',
-            'VALIDATION_TOKEN_EXPIRED',
-          ),
+          HTTPException.Gone('Código expirado', 'VALIDATION_TOKEN_EXPIRED'),
         );
 
       const TIME_EXPIRATION_IN_MINUTES = 10;
@@ -69,10 +66,7 @@ export default class MagicLinkUseCase {
         });
 
         return left(
-          HTTPException.Gone(
-            'Código expirado',
-            'VALIDATION_TOKEN_EXPIRED',
-          ),
+          HTTPException.Gone('Código expirado', 'VALIDATION_TOKEN_EXPIRED'),
         );
       }
 
@@ -87,7 +81,9 @@ export default class MagicLinkUseCase {
       });
 
       if (!user)
-        return left(HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Usuário não encontrado', 'USER_NOT_FOUND'),
+        );
 
       if (user.status === E_USER_STATUS.INACTIVE) {
         await this.userRepository.update({

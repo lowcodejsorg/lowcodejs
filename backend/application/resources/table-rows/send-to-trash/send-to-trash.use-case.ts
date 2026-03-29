@@ -45,11 +45,16 @@ export default class TableRowSendToTrashUseCase {
       });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       if (row.trashed)
         return left(
-          HTTPException.Conflict('Registro já está na lixeira', 'ALREADY_TRASHED'),
+          HTTPException.Conflict(
+            'Registro já está na lixeira',
+            'ALREADY_TRASHED',
+          ),
         );
 
       await row

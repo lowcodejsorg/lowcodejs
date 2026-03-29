@@ -6,10 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import {
-  hashPasswordFields,
-  maskPasswordFields,
-} from '@application/core/row-password-helper.core';
+import { hashPasswordFields } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -81,7 +78,9 @@ export default class GroupRowCreateUseCase {
       const row = await build.findOne({ _id: payload.rowId });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       // Remove _id do payload para que o Mongoose gere um novo
       const { _id, slug, rowId, groupSlug, ...itemData } = payload;
@@ -104,8 +103,6 @@ export default class GroupRowCreateUseCase {
         ...row.toJSON({ flattenObjectIds: true }),
         _id: row._id?.toString(),
       };
-
-      maskPasswordFields(rowJson, table.fields as IField[]);
 
       // Retorna o último item adicionado
       const addedItems = (rowJson as any)[groupField.slug];

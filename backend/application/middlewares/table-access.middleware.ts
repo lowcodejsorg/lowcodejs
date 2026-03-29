@@ -52,7 +52,10 @@ export function TableAccessMiddleware(options: AccessOptions) {
         }).lean()) as unknown as ITable;
 
         if (!table) {
-          throw HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND');
+          throw HTTPException.NotFound(
+            'Tabela não encontrada',
+            'TABLE_NOT_FOUND',
+          );
         }
 
         request.table = table;

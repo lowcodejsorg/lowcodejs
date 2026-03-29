@@ -5,10 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import { type IField, type IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import {
-  hashPasswordFields,
-  maskPasswordFields,
-} from '@application/core/row-password-helper.core';
+import { hashPasswordFields } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -71,8 +68,6 @@ export default class TableRowCreateUseCase {
         }),
         _id: row?._id?.toString(),
       };
-
-      maskPasswordFields(rowJson, table.fields as IField[]);
 
       return right(rowJson);
     } catch (error) {

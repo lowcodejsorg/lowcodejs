@@ -27,7 +27,11 @@ export default class UserCreateUseCase {
     try {
       if (!payload.group)
         return left(
-          HTTPException.BadRequest('Grupo não informado', 'GROUP_NOT_INFORMED', { group: 'Grupo não informado' }),
+          HTTPException.BadRequest(
+            'Grupo não informado',
+            'GROUP_NOT_INFORMED',
+            { group: 'Grupo não informado' },
+          ),
         );
 
       const user = await this.userRepository.findBy({
@@ -37,7 +41,9 @@ export default class UserCreateUseCase {
 
       if (user)
         return left(
-          HTTPException.Conflict('Usuário já existe', 'USER_ALREADY_EXISTS', { email: 'Usuário já existe' }),
+          HTTPException.Conflict('Usuário já existe', 'USER_ALREADY_EXISTS', {
+            email: 'Usuário já existe',
+          }),
         );
 
       const passwordHash = await this.passwordService.hash(payload.password);

@@ -6,10 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import {
-  hashPasswordFields,
-  maskPasswordFields,
-} from '@application/core/row-password-helper.core';
+import { hashPasswordFields } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -81,13 +78,17 @@ export default class GroupRowUpdateUseCase {
       const row = await build.findOne({ _id: payload.rowId });
 
       if (!row)
-        return left(HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
 
       // Encontra o subdocumento pelo itemId
       const subdoc = (row as any)[groupField.slug]?.id(payload.itemId);
 
       if (!subdoc)
-        return left(HTTPException.NotFound('Item não encontrado', 'ITEM_NOT_FOUND'));
+        return left(
+          HTTPException.NotFound('Item não encontrado', 'ITEM_NOT_FOUND'),
+        );
 
       // Atualiza o subdocumento com os dados do payload
       const { slug, rowId, groupSlug, itemId, ...itemData } = payload;
@@ -103,7 +104,6 @@ export default class GroupRowUpdateUseCase {
       await row.populate(populate);
 
       const rowJson = row.toJSON({ flattenObjectIds: true });
-      maskPasswordFields(rowJson, table.fields as IField[]);
 
       // Retorna o item atualizado
       const items = rowJson[groupField.slug] || [];
