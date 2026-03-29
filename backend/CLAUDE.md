@@ -219,3 +219,217 @@ Para adicionar nova dependencia:
 1. Crie o contract (abstract class)
 2. Crie a implementacao
 3. Registre em `di-registry.ts` com `injectablesHolder.injectService(Contract, Implementation)`
+
+## Fluxo de Inicializacao do Servidor
+
+```
+bin/server.ts:
+1. MongooseConnect() - conecta ao MongoDB
+2. kernel.ready() - inicializa Fastify com todos os plugins
+3. kernel.listen({ port: Env.PORT, host: '0.0.0.0' })
+4. initChatSocket(httpServer, jwtDecode) - Socket.IO para chat
+```
+
+kernel.ts registra 9 plugins em ordem:
+
+1. CORS (origens dinamicas + fixas de ALLOWED_ORIGINS)
+2. Cookie (signed com COOKIE_SECRET)
+3. JWT (RS256 com chaves base64, expiry 24h)
+4. Multipart (limite 5MB)
+5. Static files (local) OU HTTP proxy (S3) - baseado em STORAGE_DRIVER
+6. Swagger/OpenAPI
+7. Scalar API reference (/documentation)
+8. WebSocket
+9. fastify-decorators bootstrap (carrega controllers)
+
+Global error handler: HTTPException -> ZodError -> FST_ERR_VALIDATION -> fallback 500
+
+Endpoint: /openapi.json
+
+## Variaveis de Ambiente
+
+Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em test.
+
+### Localizacao & Arquivos
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| LOCALE | pt-br | Enum: pt-br, en-us |
+| FILE_UPLOAD_MAX_SIZE | 5242880 | Limite em bytes |
+| FILE_UPLOAD_ACCEPTED | - | MIME types separados por ; |
+| FILE_UPLOAD_MAX_FILES_PER_UPLOAD | 10 | Maximo de arquivos por upload |
+| PAGINATION_PER_PAGE | 50 | Itens por pagina |
+
+### Banco de Dados
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| DATABASE_URL | obrigatorio | MongoDB connection string |
+| DB_NAME | lowcodejs | Nome do banco |
+
+### Email (SMTP)
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| EMAIL_PROVIDER_HOST | obrigatorio | Host SMTP |
+| EMAIL_PROVIDER_PORT | obrigatorio | Porta SMTP |
+| EMAIL_PROVIDER_USER | obrigatorio | Usuario SMTP |
+| EMAIL_PROVIDER_PASSWORD | obrigatorio | Senha SMTP |
+
+### JWT & Cookies
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| JWT_PUBLIC_KEY | obrigatorio | Chave publica RS256 em base64 |
+| JWT_PRIVATE_KEY | obrigatorio | Chave privada RS256 em base64 |
+| COOKIE_SECRET | obrigatorio | Secret para cookies assinados |
+| COOKIE_DOMAIN | opcional | Cross-subdomain |
+
+### Servidor
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| NODE_ENV | development | Ambiente |
+| PORT | 3000 | Porta HTTP |
+| APP_SERVER_URL | obrigatorio | URL publica do backend |
+| APP_CLIENT_URL | obrigatorio | URL publica do frontend |
+
+### Assets
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| LOGO_SMALL_URL | obrigatorio | URL do logo pequeno |
+| LOGO_LARGE_URL | obrigatorio | URL do logo grande |
+
+### CORS
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| ALLOWED_ORIGINS | https://lowcodejs.org;*.lowcodejs.org | Origens permitidas |
+
+### Storage
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| STORAGE_DRIVER | local | local ou s3 |
+| STORAGE_ENDPOINT | opcional | Endpoint S3 customizado |
+| STORAGE_REGION | us-east-1 | Regiao AWS |
+| STORAGE_BUCKET | opcional | Nome do bucket S3 |
+| STORAGE_ACCESS_KEY | opcional | AWS access key |
+| STORAGE_SECRET_KEY | opcional | AWS secret key |
+
+### Redis
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| REDIS_URL | redis://localhost:6379 | URL de conexao Redis |
+
+### AI/Chat
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| OPENAI_API_KEY | opcional | Chave da API OpenAI |
+| MCP_SERVER_URL | opcional | URL do servidor MCP |
+
+## Error Handling
+
+- `HTTPException`: classe abstrata que estende Error, ~40 metodos factory estaticos (BadRequest, NotFound, Forbidden, etc.)
+- Propriedades: `code` (HTTP status), `cause` (error code string), `message`, `errors?` (field-level)
+- Global handler em kernel.ts captura:
+  1. **HTTPException** -> retorna direto com code/cause/message/errors
+  2. **ZodError** -> flatten para field errors, retorna 400 INVALID_PAYLOAD_FORMAT
+  3. **FST_ERR_VALIDATION** -> flatten de erros AJV
+  4. **Fallback** -> 500 SERVER_ERROR
+
+## Infraestrutura de Testes
+
+| | Unit | E2E |
+|---|---|---|
+| Config | vitest.config.ts | vitest.e2e.config.ts |
+| Setup | test/setup.ts (reflect-metadata) | test/setup.e2e.ts (MongoDB por suite, DB unico test_{uuid}) |
+| Banco | In-memory repositories | MongoDB real |
+| Workers | Default | 1 (maxWorkers: 1) |
+| Timeout | Default | 60s |
+| Pattern | *.use-case.spec.ts | *.controller.spec.ts |
+| Runner | threads | forks |
+
+Helpers (`test/helpers/auth.helper.ts`):
+- `createAuthenticatedUser(overrides?)` - cria user + grupo Master + 12 permissoes, faz sign-in, retorna cookies + user
+- `cleanDatabase()` - deleta User e UserGroup
+
+## Build & Deploy
+
+- **Build**: `tsc -b && tsup` -> /build (ESM, ES2024, sem bundle de node_modules)
+- **Dev**: @swc-node/register para transpilacao rapida
+- 3 Dockerfiles:
+  - `Dockerfile-local`: node:22-alpine, npm run dev
+  - `Dockerfile-production`: node:22-alpine, copia /build, usuario non-root (1001), porta 3000
+  - `Dockerfile-coolify`: multi-stage otimizado
+
+## Socket.IO / Chat
+
+- Arquivo: `application/resources/chat/chat.socket.ts`
+- Auth: cookie accessToken (mesmo JWT do HTTP)
+- Integra MCP (Model Context Protocol) + OpenAI
+- Descobre tools do MCP server dinamicamente, converte para OpenAI tool definitions
+- Eventos emitidos: `status`, `ready`, `thinking`, `tool_call`, `tool_result`, `tool_error`, `message`, `error`
+- Processamento de arquivos: imagens -> base64 data URI, PDFs -> text extraction via pdf-parse
+- CORS: APP_CLIENT_URL + APP_SERVER_URL + ALLOWED_ORIGINS
+
+## Sandbox VM (Scripts de Usuario)
+
+- Arquivos: `application/core/table/` (executor.ts, handler.ts, sandbox.ts, field-resolver.ts, types.ts)
+- Timeout: 5s, VM Node isolada sem acesso a globals (require, fs, network bloqueados)
+- Valida sintaxe antes de executar
+
+### APIs Expostas
+
+| API | Metodos | Descricao |
+|-----|---------|-----------|
+| field | get(slug), set(slug, value), getAll() | Leitura/escrita de campos do registro |
+| context | action, moment, userId, isNew, table | Contexto de execucao (read-only, frozen) |
+| email | send(to[], subject, body), sendTemplate(to[], subject, message, data?) | Envio de email |
+| utils | today(), now(), formatDate(date, format?), sha256(text), uuid() | Utilitarios |
+| console | log(), warn(), error() | Logs capturados e retornados |
+
+### Context Values
+
+- **action**: novo_registro, editar_registro, excluir_registro, carregamento_formulario
+- **moment**: carregamento_formulario, antes_salvar, depois_salvar
+
+### Retorno
+
+`ExecutionResult { success, error?, logs[] }`
+
+Tipos de erro: syntax, runtime, timeout, unknown
+
+## Cookie/JWT
+
+- Algoritmo: RS256 com chaves base64 (JWT_PUBLIC_KEY, JWT_PRIVATE_KEY)
+- AccessToken: 24h, payload `{ sub, email, role, type: "ACCESS" }`
+- RefreshToken: 7d, payload `{ sub, type: "REFRESH" }`
+- Cookies: httpOnly, sameSite none(prod)/lax(dev), secure(prod), path /
+- COOKIE_DOMAIN opcional para cross-subdomain
+- Extracao: 1. Cookie value, 2. Authorization header (fallback)
+- Validacao: verifica type === ACCESS (rejeita REFRESH em rotas normais)
+
+## Configuracoes (config/)
+
+| Arquivo | Tecnologia | Detalhes |
+|---------|-----------|----------|
+| database.config.ts | Mongoose | autoCreate: true, dbName de ENV, importa todos os models |
+| storage.config.ts | Flydrive DriveManager | Local: _storage/ + URLs via APP_SERVER_URL/storage/. S3: AWS SDK |
+| redis.config.ts | ioredis | Conexao via REDIS_URL, error logging |
+| email.config.ts | Nodemailer | SMTP, auto-secure se porta 465, TLS obrigatorio |
+
+## Seeders
+
+Execucao: `database/seeders/main.ts` encontra `*.seed.ts`, ordena por nome (timestamp), executa sequencialmente.
+
+Comando: `npm run seed`
+
+| Seeder | Dados |
+|--------|-------|
+| 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW) |
+| 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED) com permissoes |
+| 1720465892-users.seed.ts | 5 usuarios de teste (admin, master, administrator, manager, registered) |

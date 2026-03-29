@@ -249,3 +249,281 @@ export const UserUpdateBodyValidator = UserBaseValidator.partial().extend({
 
 export type UserUpdatePayload = z.infer<typeof UserUpdateBodyValidator> & { _id: string };
 ```
+
+### Dynamic Payload Validation
+
+Build a Zod schema at runtime from an array of field definitions. Useful when fields are
+user-configured (e.g., form builders, dynamic tables) and cannot be known at compile time.
+
+```typescript
+import z, { type ZodTypeAny } from 'zod';
+
+interface IFieldDef {
+  slug: string;
+  type: string;
+  required: boolean;
+  multiple?: boolean;
+}
+
+export function buildDynamicSchema(
+  fieldDefinitions: Array<IFieldDef>,
+): z.ZodObject<Record<string, ZodTypeAny>> {
+  const shape: Record<string, ZodTypeAny> = {};
+
+  for (const field of fieldDefinitions) {
+    let schema: ZodTypeAny;
+
+    if (field.type === 'TEXT_SHORT') {
+      schema = z.string().trim();
+    } else if (field.type === 'TEXT_LONG') {
+      schema = z.string().trim();
+    } else if (field.type === 'INTEGER') {
+      schema = z.coerce.number().int();
+    } else if (field.type === 'DECIMAL') {
+      schema = z.coerce.number();
+    } else if (field.type === 'DATE') {
+      schema = z.coerce.date();
+    } else if (field.type === 'DROPDOWN') {
+      if (field.multiple) {
+        schema = z.array(z.string());
+      } else {
+        schema = z.string();
+      }
+    } else if (field.type === 'FILE') {
+      schema = z.any();
+    } else if (field.type === 'BOOLEAN') {
+      schema = z.boolean();
+    } else if (field.type === 'RELATIONSHIP') {
+      schema = z.string(); // ID reference
+    } else {
+      schema = z.any();
+    }
+
+    if (!field.required) {
+      schema = schema.optional();
+    }
+
+    shape[field.slug] = schema;
+  }
+
+  return z.object(shape);
+}
+
+export type DynamicPayload = z.infer<ReturnType<typeof buildDynamicSchema>>;
+```
+
+### Format-Specific Validators (Composable Refinements)
+
+Reusable Zod refinements for common field formats. Import and compose them into any schema.
+
+```typescript
+import z, { type ZodString } from 'zod';
+
+export const emailValidator = z.string().trim().email('Enter a valid email');
+
+export const phoneValidator = z
+  .string()
+  .trim()
+  .regex(/^\+?[1-9]\d{1,14}$/, 'Enter a valid international phone number');
+
+export const urlValidator = z.string().trim().url('Enter a valid URL');
+
+export const passwordValidator = z
+  .string()
+  .min(8, 'Password must be at least 8 characters')
+  .regex(/[A-Z]/, 'Must contain at least one uppercase letter')
+  .regex(/[a-z]/, 'Must contain at least one lowercase letter')
+  .regex(/[0-9]/, 'Must contain at least one number')
+  .regex(/[^A-Za-z0-9]/, 'Must contain at least one special character');
+
+function calculateCpfDigits(digits: Array<number>): boolean {
+  function calcDigit(slice: Array<number>, factor: number): number {
+    let sum = 0;
+    for (let i = 0; i < slice.length; i++) {
+      sum += slice[i] * (factor - i);
+    }
+    const remainder = sum % 11;
+    if (remainder < 2) {
+      return 0;
+    }
+    return 11 - remainder;
+  }
+
+  const first = calcDigit(digits.slice(0, 9), 10);
+  if (first !== digits[9]) {
+    return false;
+  }
+
+  const second = calcDigit(digits.slice(0, 10), 11);
+  if (second !== digits[10]) {
+    return false;
+  }
+
+  return true;
+}
+
+export const cpfValidator = z
+  .string()
+  .trim()
+  .refine((value) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length !== 11) {
+      return false;
+    }
+    const allSame = cleaned.split('').every((d) => d === cleaned[0]);
+    if (allSame) {
+      return false;
+    }
+    const digits = cleaned.split('').map(Number);
+    return calculateCpfDigits(digits);
+  }, 'Enter a valid CPF');
+
+function calculateCnpjDigits(digits: Array<number>): boolean {
+  function calcDigit(slice: Array<number>, weights: Array<number>): number {
+    let sum = 0;
+    for (let i = 0; i < slice.length; i++) {
+      sum += slice[i] * weights[i];
+    }
+    const remainder = sum % 11;
+    if (remainder < 2) {
+      return 0;
+    }
+    return 11 - remainder;
+  }
+
+  const firstWeights = [5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const first = calcDigit(digits.slice(0, 12), firstWeights);
+  if (first !== digits[12]) {
+    return false;
+  }
+
+  const secondWeights = [6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2];
+  const second = calcDigit(digits.slice(0, 13), secondWeights);
+  if (second !== digits[13]) {
+    return false;
+  }
+
+  return true;
+}
+
+export const cnpjValidator = z
+  .string()
+  .trim()
+  .refine((value) => {
+    const cleaned = value.replace(/\D/g, '');
+    if (cleaned.length !== 14) {
+      return false;
+    }
+    const allSame = cleaned.split('').every((d) => d === cleaned[0]);
+    if (allSame) {
+      return false;
+    }
+    const digits = cleaned.split('').map(Number);
+    return calculateCnpjDigits(digits);
+  }, 'Enter a valid CNPJ');
+
+type FormatName = 'email' | 'phone' | 'cpf' | 'cnpj' | 'url' | 'password';
+
+const FORMAT_MAP: Record<FormatName, z.ZodTypeAny> = {
+  email: emailValidator,
+  phone: phoneValidator,
+  cpf: cpfValidator,
+  cnpj: cnpjValidator,
+  url: urlValidator,
+  password: passwordValidator,
+};
+
+export function applyFormat(baseSchema: ZodString, format: FormatName): z.ZodTypeAny {
+  const formatSchema = FORMAT_MAP[format];
+  if (!formatSchema) {
+    return baseSchema;
+  }
+  return formatSchema;
+}
+```
+
+### Conditional Required Fields
+
+Patterns for fields that become required based on the value of another field or resource state.
+
+**Discriminated Union — shape changes by a literal field:**
+```typescript
+import z from 'zod';
+
+export const ResourceValidator = z.discriminatedUnion('status', [
+  z.object({
+    status: z.literal('active'),
+    name: z
+      .string({ message: 'Name is required when active' })
+      .trim()
+      .min(1, 'Name is required when active'),
+    description: z.string().trim().optional(),
+  }),
+  z.object({
+    status: z.literal('draft'),
+    name: z.string().trim().optional(),
+    description: z.string().trim().optional(),
+  }),
+]);
+
+export type ResourcePayload = z.infer<typeof ResourceValidator>;
+```
+
+**superRefine — cross-field conditional logic:**
+```typescript
+import z from 'zod';
+
+export const ConditionalValidator = z
+  .object({
+    status: z.enum(['active', 'inactive', 'draft']),
+    name: z.string().trim().optional(),
+    email: z.string().trim().optional(),
+    trashedAt: z.coerce.date().nullable().optional(),
+  })
+  .superRefine((data, ctx) => {
+    const isNotTrashed = !data.trashedAt;
+
+    if (data.status === 'active' && !data.name) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Name is required when status is active',
+        path: ['name'],
+      });
+    }
+
+    if (data.status === 'active' && !data.email) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Email is required when status is active',
+        path: ['email'],
+      });
+    }
+
+    if (isNotTrashed && !data.name) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Name is required for non-trashed resources',
+        path: ['name'],
+      });
+    }
+  });
+
+export type ConditionalPayload = z.infer<typeof ConditionalValidator>;
+```
+
+## Checklist
+
+Before delivering generated validators, verify:
+
+- [ ] No ternary operators — all branching uses if/else
+- [ ] All exports are named (no default exports)
+- [ ] TypeScript types are exported alongside schemas (`z.infer<typeof ...>`)
+- [ ] String fields have `.trim()`
+- [ ] Query parameters use `.coerce` for numeric values
+- [ ] Base validator exists and action-specific validators use `.extend()`
+- [ ] Error messages match the detected project language
+- [ ] File is placed at `resources/{entity}/{action}/{action}.validator.ts`
+- [ ] Dynamic schemas handle all supported field types with fallback to `z.any()`
+- [ ] Format validators (CPF, CNPJ, email, phone) use `.refine()` with proper algorithms
+- [ ] Conditional required fields use `discriminatedUnion` or `superRefine` (not inline ternaries)
+- [ ] `.optional()` is applied based on field definition, not hardcoded

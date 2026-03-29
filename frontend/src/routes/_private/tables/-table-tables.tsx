@@ -4,10 +4,12 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
+  CopyIcon,
   DownloadIcon,
   EllipsisIcon,
   EyeIcon,
   ImageOffIcon,
+  Share2Icon,
   TrashIcon,
 } from 'lucide-react';
 import React from 'react';
@@ -25,6 +27,7 @@ import {
 import { DataTableColumnHeader } from '@/components/common/data-table/data-table-column-header';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,6 +41,7 @@ import { useDataTable } from '@/hooks/use-data-table';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_VISIBILITY } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
+import { toastInfo } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 const ROUTE_ID = '/_private/tables/';
@@ -81,7 +85,7 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="mr-10">
-          <DropdownMenuLabel>Acoes</DropdownMenuLabel>
+          <DropdownMenuLabel>Ações</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           <DropdownMenuItem
@@ -96,6 +100,18 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
           >
             <EyeIcon className="size-4" />
             <span>Visualizar</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className="inline-flex space-x-1 w-full cursor-pointer"
+            onClick={() => {
+              const url = `${window.location.origin}/tables/${table.slug}`;
+              navigator.clipboard.writeText(url);
+              toastInfo('Link da tabela copiado');
+            }}
+          >
+            <Share2Icon className="size-4" />
+            <span>Compartilhar</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem
@@ -207,11 +223,28 @@ const columns: Array<ColumnDef<ITable, any>> = [
         routeId={ROUTE_ID}
       />
     ),
-    cell: ({ getValue }) => (
-      <code className="text-sm text-muted-foreground">
-        /{getValue() as string}
-      </code>
-    ),
+    cell: ({ getValue }): React.ReactElement => {
+      const slug = getValue() as string;
+      return (
+        <div className="flex items-center space-x-1">
+          <code className="text-sm text-muted-foreground">/{slug}</code>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="size-6"
+            onClick={(e) => {
+              e.stopPropagation();
+              const url = `${window.location.origin}/tables/${slug}`;
+              navigator.clipboard.writeText(url);
+              toastInfo('Link da tabela copiado');
+            }}
+          >
+            <CopyIcon className="size-3" />
+            <span className="sr-only">Copiar link</span>
+          </Button>
+        </div>
+      );
+    },
   },
   {
     id: 'visibility',

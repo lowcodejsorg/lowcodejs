@@ -20,7 +20,22 @@ export function InputSearch(): React.JSX.Element {
   const navigate = useNavigate();
 
   const [inputValue, setInputValue] = React.useState(search.search || '');
-  const hasSearchValue = search.search && search.search.length > 0;
+
+  const handleChange = (value: string): void => {
+    setInputValue(value);
+    if (value.trim().length === 0 && search.search) {
+      navigate({
+        // @ts-ignore
+        search: (state) => ({
+          ...state,
+          search: undefined,
+          page: 1,
+        }),
+      });
+    }
+  };
+
+  const hasSearchValue = inputValue.length > 0;
 
   const performSearch = (): void => {
     if (inputValue.trim().length > 0) {
@@ -29,6 +44,7 @@ export function InputSearch(): React.JSX.Element {
         search: (state) => ({
           ...state,
           search: inputValue.trim(),
+          page: 1,
         }),
       });
     }
@@ -41,6 +57,7 @@ export function InputSearch(): React.JSX.Element {
       search: (state) => ({
         ...state,
         search: undefined,
+        page: 1,
       }),
     });
   };
@@ -70,7 +87,7 @@ export function InputSearch(): React.JSX.Element {
 
         <InputGroupInput
           value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
+          onChange={(e) => handleChange(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
               e.preventDefault();

@@ -332,6 +332,146 @@ export default function UsersRoute() {
 }
 ```
 
+### Bulk Mutation Hook
+
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+import { toastSuccess, toastError } from '@/lib/toast';
+
+interface UseBulkTrashProps {
+  onSuccess?: () => void;
+}
+
+export function useBulkTrash({ onSuccess }: UseBulkTrashProps = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ ids, entitySlug }: { ids: Array<string>; entitySlug: string }) => {
+      const response = await api.patch(`/${entitySlug}/bulk-trash`, { ids });
+      return response.data;
+    },
+    onSuccess(_data, variables) {
+      toastSuccess(`${variables.ids.length} items moved to trash`);
+      queryClient.invalidateQueries({ queryKey: [variables.entitySlug] });
+      onSuccess?.();
+    },
+    onError() {
+      toastError('Failed to move items to trash');
+    },
+  });
+}
+
+export function useBulkRestore({ onSuccess }: UseBulkTrashProps = {}) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ ids, entitySlug }: { ids: Array<string>; entitySlug: string }) => {
+      const response = await api.patch(`/${entitySlug}/bulk-restore`, { ids });
+      return response.data;
+    },
+    onSuccess(_data, variables) {
+      toastSuccess(`${variables.ids.length} items restored`);
+      queryClient.invalidateQueries({ queryKey: [variables.entitySlug] });
+      onSuccess?.();
+    },
+    onError() {
+      toastError('Failed to restore items');
+    },
+  });
+}
+```
+
+### Nested Resource Hooks
+
+```typescript
+// Query keys with parent context
+export const groupFieldKeys = {
+  all: (parentId: string) => ['group-fields', parentId] as const,
+  list: (parentId: string) => [...groupFieldKeys.all(parentId), 'list'] as const,
+  detail: (parentId: string, id: string) =>
+    [...groupFieldKeys.all(parentId), id] as const,
+};
+
+// Nested list query
+export function groupFieldListOptions(parentId: string) {
+  return queryOptions({
+    queryKey: groupFieldKeys.list(parentId),
+    queryFn: async () => {
+      const response = await api.get(`/parents/${parentId}/children`);
+      return response.data;
+    },
+  });
+}
+
+// Nested create mutation with cascade invalidation
+export function useCreateGroupField(parentId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (payload: CreateGroupFieldPayload) => {
+      const response = await api.post(`/parents/${parentId}/children`, payload);
+      return response.data;
+    },
+    onSuccess() {
+      // Invalidate both parent and children queries
+      queryClient.invalidateQueries({ queryKey: groupFieldKeys.all(parentId) });
+      queryClient.invalidateQueries({ queryKey: ['parents', parentId] });
+    },
+  });
+}
+```
+
+### Reorder Mutation Hook
+
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { api } from '@/lib/api';
+
+interface ReorderItem {
+  id: string;
+  order: number;
+}
+
+export function useReorder(entityKey: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (items: Array<ReorderItem>) => {
+      const response = await api.patch(`/${entityKey}/reorder`, { items });
+      return response.data;
+    },
+    onMutate(items) {
+      // Optimistic update — reorder items in cache
+      const queryKey = [entityKey, 'list'];
+      const previous = queryClient.getQueryData(queryKey);
+
+      if (previous && Array.isArray((previous as any).data)) {
+        const data = [...(previous as any).data];
+        const orderMap = new Map(items.map((i) => [i.id, i.order]));
+        data.sort((a: any, b: any) => {
+          const orderA = orderMap.get(a._id) ?? a.order ?? 0;
+          const orderB = orderMap.get(b._id) ?? b.order ?? 0;
+          return orderA - orderB;
+        });
+        queryClient.setQueryData(queryKey, { ...(previous as any), data });
+      }
+
+      return { previous };
+    },
+    onError(_err, _vars, context) {
+      // Rollback on error
+      if (context?.previous) {
+        queryClient.setQueryData([entityKey, 'list'], context.previous);
+      }
+    },
+    onSettled() {
+      queryClient.invalidateQueries({ queryKey: [entityKey] });
+    },
+  });
+}
+```
+
 ## Checklist
 
 - [ ] Query keys with `as const` hierarchy
@@ -340,4 +480,7 @@ export default function UsersRoute() {
 - [ ] Mutation hooks with Props type pattern (Pick + Omit)
 - [ ] `setQueryData` for optimistic cache on create/update
 - [ ] `invalidateQueries` for list refresh on mutations
+- [ ] Bulk mutation hooks (bulk-trash, bulk-restore) with count toast
+- [ ] Nested resource hooks with composite query keys + cascade invalidation
+- [ ] Reorder mutation hook with optimistic update + rollback
 - [ ] No ternary operators

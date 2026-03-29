@@ -411,6 +411,361 @@ export function EntityListView({ data, fields, fieldOrder }: Props): React.JSX.E
 }
 ```
 
+### Extended Cell Renderers
+
+```tsx
+// URL cell — truncated with clickable link
+function UrlCell({ value }: { value: string }): React.JSX.Element {
+  if (!value) return <span className="text-muted-foreground">-</span>;
+  return (
+    <a
+      href={value}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="text-sm text-primary underline truncate block max-w-48"
+      title={value}
+    >
+      {value.replace(/^https?:\/\//, '').split('/')[0]}...
+    </a>
+  );
+}
+
+// Email cell — mailto link
+function EmailCell({ value }: { value: string }): React.JSX.Element {
+  if (!value) return <span className="text-muted-foreground">-</span>;
+  return (
+    <a href={`mailto:${value}`} className="text-sm text-primary underline truncate block">
+      {value}
+    </a>
+  );
+}
+
+// Phone cell — tel link
+function PhoneCell({ value }: { value: string }): React.JSX.Element {
+  if (!value) return <span className="text-muted-foreground">-</span>;
+  return (
+    <a href={`tel:${value}`} className="text-sm text-primary">
+      {value}
+    </a>
+  );
+}
+
+// Password cell — always masked
+function PasswordCell(): React.JSX.Element {
+  return <span className="text-sm tracking-widest">••••••</span>;
+}
+
+// Rating/stars cell
+function RatingCell({ value, max = 5 }: { value: number; max?: number }): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-0.5">
+      {Array.from({ length: max }, (_, i) => (
+        <span
+          key={i}
+          className={`text-sm ${i < value ? 'text-yellow-500' : 'text-muted-foreground/30'}`}
+        >
+          ★
+        </span>
+      ))}
+    </div>
+  );
+}
+
+// Avatar + name cell
+function UserCell({ name, avatar }: { name: string; avatar?: string }): React.JSX.Element {
+  return (
+    <div className="flex items-center gap-2">
+      <div className="h-6 w-6 shrink-0 rounded-full bg-muted flex items-center justify-center text-xs font-medium">
+        {avatar && <img src={avatar} alt="" className="h-full w-full rounded-full object-cover" />}
+        {!avatar && name.charAt(0).toUpperCase()}
+      </div>
+      <span className="text-sm truncate">{name}</span>
+    </div>
+  );
+}
+
+// File cell — icon with filename
+function FileLinkCell({ filename, url }: { filename: string; url?: string }): React.JSX.Element {
+  if (!filename) return <span className="text-muted-foreground">-</span>;
+  if (url) {
+    return (
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-1 text-sm text-primary underline truncate"
+      >
+        <FileIcon className="h-3 w-3 shrink-0" />
+        {filename}
+      </a>
+    );
+  }
+  return (
+    <span className="flex items-center gap-1 text-sm truncate">
+      <FileIcon className="h-3 w-3 shrink-0 text-muted-foreground" />
+      {filename}
+    </span>
+  );
+}
+
+// Badge cell — colored dropdown option
+function BadgeCell({
+  label,
+  color,
+}: {
+  label: string;
+  color?: string;
+}): React.JSX.Element {
+  return (
+    <span
+      className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+      style={{
+        backgroundColor: color ? `${color}20` : undefined,
+        color: color ?? undefined,
+      }}
+    >
+      {label}
+    </span>
+  );
+}
+
+// Rich text preview — stripped HTML
+function RichTextPreviewCell({ html }: { html: string }): React.JSX.Element {
+  const text = html.replace(/<[^>]*>/g, '').trim();
+  return (
+    <span className="text-sm text-muted-foreground line-clamp-2">
+      {text || '-'}
+    </span>
+  );
+}
+```
+
+### Bulk Operations Bar
+
+```tsx
+import { Trash2, RotateCcw, Download, X } from 'lucide-react';
+import type { Table } from '@tanstack/react-table';
+
+import { Button } from '@/components/ui/button';
+
+interface BulkActionBarProps<TData> {
+  table: Table<TData>;
+  onBulkTrash?: (ids: Array<string>) => void;
+  onBulkRestore?: (ids: Array<string>) => void;
+  onBulkExport?: (ids: Array<string>) => void;
+  getRowId: (row: TData) => string;
+}
+
+export function BulkActionBar<TData>({
+  table,
+  onBulkTrash,
+  onBulkRestore,
+  onBulkExport,
+  getRowId,
+}: BulkActionBarProps<TData>): React.JSX.Element | null {
+  const selectedRows = table.getSelectedRowModel().rows;
+
+  if (selectedRows.length === 0) return null;
+
+  const selectedIds = selectedRows.map((row) => getRowId(row.original));
+
+  function handleClearSelection(): void {
+    table.toggleAllRowsSelected(false);
+  }
+
+  return (
+    <div className="flex items-center gap-2 rounded-md border bg-muted/50 px-3 py-2">
+      <span className="text-sm font-medium">
+        {selectedRows.length} selected
+      </span>
+      <div className="h-4 w-px bg-border" />
+      {onBulkTrash && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onBulkTrash(selectedIds)}
+        >
+          <Trash2 className="mr-1 h-3 w-3" /> Trash
+        </Button>
+      )}
+      {onBulkRestore && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onBulkRestore(selectedIds)}
+        >
+          <RotateCcw className="mr-1 h-3 w-3" /> Restore
+        </Button>
+      )}
+      {onBulkExport && (
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => onBulkExport(selectedIds)}
+        >
+          <Download className="mr-1 h-3 w-3" /> Export
+        </Button>
+      )}
+      <div className="flex-1" />
+      <Button variant="ghost" size="sm" onClick={handleClearSelection}>
+        <X className="mr-1 h-3 w-3" /> Clear
+      </Button>
+    </div>
+  );
+}
+```
+
+### Inline Editing Cell
+
+```tsx
+import { useState, useRef, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+
+interface InlineEditCellProps {
+  value: string;
+  onSave: (newValue: string) => void;
+  editable?: boolean;
+}
+
+export function InlineEditCell({
+  value,
+  onSave,
+  editable = true,
+}: InlineEditCellProps): React.JSX.Element {
+  const [isEditing, setIsEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isEditing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [isEditing]);
+
+  if (!editable || !isEditing) {
+    return (
+      <span
+        className="text-sm cursor-pointer px-1 py-0.5 rounded hover:bg-muted min-w-8 inline-block"
+        onDoubleClick={() => {
+          if (editable) {
+            setDraft(value);
+            setIsEditing(true);
+          }
+        }}
+      >
+        {value || <span className="text-muted-foreground">-</span>}
+      </span>
+    );
+  }
+
+  function handleSave(): void {
+    setIsEditing(false);
+    if (draft !== value) {
+      onSave(draft);
+    }
+  }
+
+  return (
+    <Input
+      ref={inputRef}
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={handleSave}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') handleSave();
+        if (e.key === 'Escape') {
+          setDraft(value);
+          setIsEditing(false);
+        }
+      }}
+      className="h-7 text-sm px-1"
+    />
+  );
+}
+```
+
+### Keyboard Navigation Hook
+
+```typescript
+import { useCallback, useEffect, useRef } from 'react';
+import type { Table } from '@tanstack/react-table';
+
+interface UseTableKeyboardNavOptions<TData> {
+  table: Table<TData>;
+  containerRef: React.RefObject<HTMLElement | null>;
+  onRowActivate?: (row: TData) => void;
+}
+
+export function useTableKeyboardNavigation<TData>({
+  table,
+  containerRef,
+  onRowActivate,
+}: UseTableKeyboardNavOptions<TData>): void {
+  const activeCell = useRef<{ row: number; col: number }>({ row: 0, col: 0 });
+
+  const focusCell = useCallback(
+    (row: number, col: number) => {
+      const container = containerRef.current;
+      if (!container) return;
+      const cell = container.querySelector(
+        `[data-row="${row}"][data-col="${col}"]`,
+      ) as HTMLElement | null;
+      if (cell) {
+        cell.focus();
+        activeCell.current = { row, col };
+      }
+    },
+    [containerRef],
+  );
+
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    function handleKeyDown(e: KeyboardEvent): void {
+      const { row, col } = activeCell.current;
+      const rows = table.getRowModel().rows;
+      const cols = table.getVisibleFlatColumns();
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          if (row < rows.length - 1) focusCell(row + 1, col);
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          if (row > 0) focusCell(row - 1, col);
+          break;
+        case 'ArrowRight':
+          e.preventDefault();
+          if (col < cols.length - 1) focusCell(row, col + 1);
+          break;
+        case 'ArrowLeft':
+          e.preventDefault();
+          if (col > 0) focusCell(row, col - 1);
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (onRowActivate && rows[row]) {
+            onRowActivate(rows[row].original);
+          }
+          break;
+        case ' ':
+          e.preventDefault();
+          if (rows[row]) {
+            rows[row].toggleSelected();
+          }
+          break;
+      }
+    }
+
+    container.addEventListener('keydown', handleKeyDown);
+    return () => container.removeEventListener('keydown', handleKeyDown);
+  }, [table, containerRef, focusCell, onRowActivate]);
+}
+```
+
 ## Checklist
 
 - [ ] `useDataTable` hook with typed options
@@ -419,4 +774,8 @@ export function EntityListView({ data, fields, fieldOrder }: Props): React.JSX.E
 - [ ] Selection + actions columns
 - [ ] Persisted state with debounced localStorage
 - [ ] Server-side sorting/filtering/pagination (manual modes)
+- [ ] Extended cell renderers: URL (truncated), email, phone, password, rating, user avatar, file, badge, rich text preview
+- [ ] Bulk operations bar with trash/restore/export actions
+- [ ] Inline editing cell with double-click + Enter/Escape
+- [ ] Keyboard navigation (arrows + Enter + Space)
 - [ ] No ternary operators

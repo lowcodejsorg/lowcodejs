@@ -308,6 +308,236 @@ function EntityDetailPage(): React.JSX.Element {
 }
 ```
 
+### Resource Visibility Levels
+
+```typescript
+export enum Visibility {
+  PUBLIC = 'PUBLIC',
+  RESTRICTED = 'RESTRICTED',
+  PRIVATE = 'PRIVATE',
+  OPEN = 'OPEN',
+  FORM = 'FORM',
+}
+
+interface VisibilityUser {
+  isOwner: boolean;
+  isAuthenticated: boolean;
+}
+
+interface VisibilityGuardResult {
+  canView: boolean;
+  canCreate: boolean;
+  canEdit: boolean;
+  canDelete: boolean;
+  requiresAuth: boolean;
+}
+
+export function useVisibilityGuard(
+  visibility: Visibility,
+  user: VisibilityUser,
+): VisibilityGuardResult {
+  return useMemo(() => {
+    if (visibility === Visibility.PUBLIC) {
+      return {
+        canView: true,
+        canCreate: false,
+        canEdit: false,
+        canDelete: false,
+        requiresAuth: false,
+      };
+    }
+
+    if (visibility === Visibility.FORM) {
+      return {
+        canView: false,
+        canCreate: true,
+        canEdit: false,
+        canDelete: false,
+        requiresAuth: false,
+      };
+    }
+
+    if (visibility === Visibility.OPEN) {
+      return {
+        canView: true,
+        canCreate: true,
+        canEdit: false,
+        canDelete: false,
+        requiresAuth: false,
+      };
+    }
+
+    if (visibility === Visibility.RESTRICTED) {
+      return {
+        canView: true,
+        canCreate: false,
+        canEdit: false,
+        canDelete: false,
+        requiresAuth: true,
+      };
+    }
+
+    // PRIVATE
+    return {
+      canView: user.isOwner,
+      canCreate: false,
+      canEdit: user.isOwner,
+      canDelete: user.isOwner,
+      requiresAuth: true,
+    };
+  }, [visibility, user.isOwner]);
+}
+
+// Route guard factory for TanStack Router beforeLoad
+export function createVisibilityGuard(visibility: Visibility) {
+  return async function visibilityBeforeLoad({
+    context,
+  }: {
+    context: { queryClient: QueryClient };
+  }) {
+    if (
+      visibility === Visibility.PUBLIC ||
+      visibility === Visibility.OPEN ||
+      visibility === Visibility.FORM
+    ) {
+      return;
+    }
+
+    try {
+      const user = await context.queryClient.ensureQueryData(
+        profileDetailOptions(),
+      );
+      useAuthStore.getState().setUser(user);
+    } catch {
+      throw redirect({ to: '/' });
+    }
+  };
+}
+```
+
+### Collaboration Mode
+
+```typescript
+export enum CollaborationMode {
+  OPEN = 'OPEN',
+  RESTRICTED = 'RESTRICTED',
+}
+
+interface CollaborationUser {
+  _id: string;
+  isAuthenticated: boolean;
+  role?: string;
+}
+
+interface CollaborationResource {
+  owner: string | { _id: string };
+}
+
+interface CollaborationModeResult {
+  canEdit: boolean;
+}
+
+export function useCollaborationMode(
+  mode: CollaborationMode,
+  user: CollaborationUser,
+  resource: CollaborationResource | undefined,
+): CollaborationModeResult {
+  return useMemo(() => {
+    if (!user.isAuthenticated) {
+      return { canEdit: false };
+    }
+
+    if (mode === CollaborationMode.OPEN) {
+      return { canEdit: true };
+    }
+
+    // RESTRICTED: only owner or admin/master can edit
+    if (!resource) {
+      return { canEdit: false };
+    }
+
+    let ownerId = '';
+    if (typeof resource.owner === 'string') {
+      ownerId = resource.owner;
+    } else {
+      ownerId = resource.owner._id;
+    }
+
+    if (ownerId === user._id) {
+      return { canEdit: true };
+    }
+
+    if (user.role === 'MASTER' || user.role === 'ADMINISTRATOR') {
+      return { canEdit: true };
+    }
+
+    return { canEdit: false };
+  }, [mode, user._id, user.isAuthenticated, user.role, resource]);
+}
+
+// UI pattern: conditionally render Edit/Delete buttons
+// function ResourceActions({ resource }: { resource: Resource }): React.JSX.Element {
+//   const auth = useAuthStore();
+//   const { canEdit } = useCollaborationMode(
+//     resource.collaborationMode,
+//     { _id: auth.user._id, isAuthenticated: true, role: auth.user.role },
+//     resource,
+//   );
+//
+//   if (!canEdit) {
+//     return <></>;
+//   }
+//
+//   return (
+//     <div>
+//       <Button onClick={handleEdit}>Edit</Button>
+//       <Button variant="destructive" onClick={handleDelete}>Delete</Button>
+//     </div>
+//   );
+// }
+```
+
+### Optional Auth Route Guard
+
+```typescript
+// Route guard for routes that are conditionally public.
+// Fetch resource metadata FIRST, then decide if auth is needed.
+
+export const Route = createFileRoute('/_conditional-auth/$resourceId')({
+  beforeLoad: async ({ context, params }) => {
+    // Step 1: fetch resource metadata (public endpoint, no auth required)
+    let resource: { visibility: string } | null = null;
+    try {
+      resource = await context.queryClient.ensureQueryData(
+        resourceMetadataOptions(params.resourceId),
+      );
+    } catch {
+      throw redirect({ to: '/' });
+    }
+
+    // Step 2: if visibility is PUBLIC, OPEN, or FORM, skip auth entirely
+    if (
+      resource.visibility === 'PUBLIC' ||
+      resource.visibility === 'OPEN' ||
+      resource.visibility === 'FORM'
+    ) {
+      return;
+    }
+
+    // Step 3: otherwise, require authentication as normal
+    try {
+      const user = await context.queryClient.ensureQueryData(
+        profileDetailOptions(),
+      );
+      useAuthStore.getState().setUser(user);
+    } catch {
+      throw redirect({ to: '/' });
+    }
+  },
+  component: () => <Outlet />,
+});
+```
+
 ## Checklist
 
 - [ ] `usePermission()` hook with `can(action)` returning boolean
@@ -317,4 +547,8 @@ function EntityDetailPage(): React.JSX.Element {
 - [ ] Route guard in layout `beforeLoad`
 - [ ] Role-based static menus
 - [ ] Admin/master bypass all checks
+- [ ] `useVisibilityGuard()` with PUBLIC, RESTRICTED, PRIVATE, OPEN, FORM levels
+- [ ] `createVisibilityGuard()` route guard factory for visibility-based auth
+- [ ] `useCollaborationMode()` with OPEN and RESTRICTED modes
+- [ ] Conditional auth route guard (fetch resource metadata before auth decision)
 - [ ] No ternary operators

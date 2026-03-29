@@ -49,8 +49,11 @@ Before generating code, detect the project stack:
 | TEXT_SHORT / TEXT_LONG | InputGroup with clear button | Debounced text search |
 | DROPDOWN (single) | Select component | Exact match |
 | DROPDOWN (multiple) | Combobox with multi-select | Any match |
-| DATE | Date range picker | Between start/end |
+| DATE | Date range picker (start + end) | Between start/end |
 | CATEGORY | Tree list in Popover | Hierarchical select |
+| RELATIONSHIP | Async combobox (search related entity) | Match by related ID |
+| USER | User selector combobox | Match by user ID |
+| BOOLEAN | Toggle/switch | true/false/all |
 
 ## Templates
 
@@ -373,6 +376,360 @@ function EntityListPage(): React.JSX.Element {
 }
 ```
 
+### Date Range Filter
+
+```tsx
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Button } from '@/components/ui/button';
+
+interface DateRangeFilterProps {
+  label: string;
+  startValue: string | undefined;
+  endValue: string | undefined;
+  onStartChange: (value: string | undefined) => void;
+  onEndChange: (value: string | undefined) => void;
+}
+
+const DATE_PRESETS = [
+  { label: 'Today', getDates: () => { const d = new Date().toISOString().split('T')[0]; return { start: d, end: d }; } },
+  { label: 'This week', getDates: () => {
+    const now = new Date();
+    const start = new Date(now); start.setDate(now.getDate() - now.getDay());
+    return { start: start.toISOString().split('T')[0], end: now.toISOString().split('T')[0] };
+  }},
+  { label: 'This month', getDates: () => {
+    const now = new Date();
+    const start = new Date(now.getFullYear(), now.getMonth(), 1);
+    return { start: start.toISOString().split('T')[0], end: now.toISOString().split('T')[0] };
+  }},
+  { label: 'Last 30 days', getDates: () => {
+    const now = new Date();
+    const start = new Date(now); start.setDate(now.getDate() - 30);
+    return { start: start.toISOString().split('T')[0], end: now.toISOString().split('T')[0] };
+  }},
+];
+
+export function DateRangeFilter({
+  label,
+  startValue,
+  endValue,
+  onStartChange,
+  onEndChange,
+}: DateRangeFilterProps): React.JSX.Element {
+  return (
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="space-y-2">
+        <div className="flex gap-2">
+          <input
+            type="date"
+            value={startValue ?? ''}
+            onChange={(e) => onStartChange(e.target.value || undefined)}
+            className="flex h-9 w-full rounded-md border bg-transparent px-2 text-sm"
+            placeholder="Start"
+          />
+          <input
+            type="date"
+            value={endValue ?? ''}
+            onChange={(e) => onEndChange(e.target.value || undefined)}
+            className="flex h-9 w-full rounded-md border bg-transparent px-2 text-sm"
+            placeholder="End"
+          />
+        </div>
+        <div className="flex flex-wrap gap-1">
+          {DATE_PRESETS.map((preset) => (
+            <Button
+              key={preset.label}
+              variant="outline"
+              size="sm"
+              className="h-6 text-xs"
+              onClick={() => {
+                const { start, end } = preset.getDates();
+                onStartChange(start);
+                onEndChange(end);
+              }}
+            >
+              {preset.label}
+            </Button>
+          ))}
+        </div>
+      </div>
+    </Field>
+  );
+}
+```
+
+### Relationship/Reference Filter
+
+```tsx
+import { useState, useEffect } from 'react';
+import { Field, FieldLabel } from '@/components/ui/field';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Check, ChevronsUpDown, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface ReferenceFilterProps {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
+  searchFn: (query: string) => Promise<Array<{ id: string; label: string }>>;
+}
+
+export function ReferenceFilter({
+  label,
+  value,
+  onChange,
+  searchFn,
+}: ReferenceFilterProps): React.JSX.Element {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState<Array<{ id: string; label: string }>>([]);
+  const [selectedLabel, setSelectedLabel] = useState('');
+
+  useEffect(() => {
+    if (!query) {
+      setResults([]);
+      return;
+    }
+    const timeout = setTimeout(async () => {
+      const data = await searchFn(query);
+      setResults(data);
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [query, searchFn]);
+
+  return (
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            className="w-full justify-between text-sm font-normal"
+          >
+            {value ? selectedLabel || value : `Select ${label}...`}
+            <div className="flex items-center gap-1">
+              {value && (
+                <X
+                  className="h-3 w-3 text-muted-foreground hover:text-foreground"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChange(undefined);
+                    setSelectedLabel('');
+                  }}
+                />
+              )}
+              <ChevronsUpDown className="h-3 w-3 text-muted-foreground" />
+            </div>
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-2" align="start">
+          <Input
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder="Search..."
+            className="mb-2"
+          />
+          <div className="max-h-48 overflow-y-auto">
+            {results.length === 0 && query && (
+              <p className="text-center text-sm text-muted-foreground py-2">
+                No results
+              </p>
+            )}
+            {results.map((item) => (
+              <button
+                key={item.id}
+                className={cn(
+                  'flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-muted',
+                  value === item.id && 'bg-muted',
+                )}
+                onClick={() => {
+                  onChange(item.id);
+                  setSelectedLabel(item.label);
+                  setOpen(false);
+                }}
+              >
+                {value === item.id && <Check className="h-3 w-3" />}
+                {value !== item.id && <span className="w-3" />}
+                {item.label}
+              </button>
+            ))}
+          </div>
+        </PopoverContent>
+      </Popover>
+    </Field>
+  );
+}
+```
+
+### Boolean/Toggle Filter
+
+```tsx
+import { Field, FieldLabel } from '@/components/ui/field';
+
+interface BooleanFilterProps {
+  label: string;
+  value: string | undefined;
+  onChange: (value: string | undefined) => void;
+}
+
+export function BooleanFilter({
+  label,
+  value,
+  onChange,
+}: BooleanFilterProps): React.JSX.Element {
+  const options = [
+    { label: 'All', value: undefined },
+    { label: 'Yes', value: 'true' },
+    { label: 'No', value: 'false' },
+  ];
+
+  return (
+    <Field>
+      <FieldLabel>{label}</FieldLabel>
+      <div className="flex rounded-md border">
+        {options.map((opt) => (
+          <button
+            key={opt.label}
+            className={cn(
+              'flex-1 px-3 py-1.5 text-xs font-medium transition-colors',
+              'first:rounded-l-md last:rounded-r-md',
+              value === opt.value
+                ? 'bg-primary text-primary-foreground'
+                : 'hover:bg-muted',
+            )}
+            onClick={() => onChange(opt.value)}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </Field>
+  );
+}
+```
+
+### Global Search (Server-Side)
+
+```tsx
+import { useState, useEffect, useCallback } from 'react';
+import { Search, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+
+interface GlobalSearchProps {
+  value: string;
+  onChange: (value: string) => void;
+  placeholder?: string;
+  debounceMs?: number;
+}
+
+export function GlobalSearch({
+  value,
+  onChange,
+  placeholder = 'Search...',
+  debounceMs = 400,
+}: GlobalSearchProps): React.JSX.Element {
+  const [draft, setDraft] = useState(value);
+
+  // Sync external value → draft
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  // Debounce draft → onChange
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (draft !== value) {
+        onChange(draft);
+      }
+    }, debounceMs);
+    return () => clearTimeout(timeout);
+  }, [draft, debounceMs, onChange, value]);
+
+  return (
+    <div className="relative">
+      <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+      <Input
+        value={draft}
+        onChange={(e) => setDraft(e.target.value)}
+        placeholder={placeholder}
+        className="pl-8 pr-8"
+      />
+      {draft && (
+        <button
+          className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+          onClick={() => {
+            setDraft('');
+            onChange('');
+          }}
+        >
+          <X className="h-3 w-3" />
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+### Active Filters Bar
+
+```tsx
+import { X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
+interface ActiveFilter {
+  key: string;
+  label: string;
+  value: string;
+}
+
+interface ActiveFiltersBarProps {
+  filters: Array<ActiveFilter>;
+  onRemove: (key: string) => void;
+  onClearAll: () => void;
+}
+
+export function ActiveFiltersBar({
+  filters,
+  onRemove,
+  onClearAll,
+}: ActiveFiltersBarProps): React.JSX.Element | null {
+  if (filters.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b">
+      <span className="text-xs text-muted-foreground">Filters:</span>
+      {filters.map((filter) => (
+        <span
+          key={filter.key}
+          className="inline-flex items-center gap-1 rounded-full bg-muted px-2.5 py-0.5 text-xs"
+        >
+          <span className="font-medium">{filter.label}:</span>
+          <span>{filter.value}</span>
+          <button
+            className="ml-0.5 hover:text-destructive"
+            onClick={() => onRemove(filter.key)}
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </span>
+      ))}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-6 text-xs"
+        onClick={onClearAll}
+      >
+        Clear all
+      </Button>
+    </div>
+  );
+}
+```
+
 ## Checklist
 
 - [ ] Filter state in URL search params
@@ -381,4 +738,9 @@ function EntityListPage(): React.JSX.Element {
 - [ ] Field-type-based filter rendering (switch-case)
 - [ ] Active filter count badge
 - [ ] Clear all filters button
+- [ ] Date range filter with start/end pickers + preset ranges
+- [ ] Relationship/reference filter with async combobox search
+- [ ] Boolean/toggle filter with 3-state (All/Yes/No)
+- [ ] Global search with debounced server-side query
+- [ ] Active filters bar with removable chips
 - [ ] No ternary operators

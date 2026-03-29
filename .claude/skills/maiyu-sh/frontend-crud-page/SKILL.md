@@ -387,6 +387,201 @@ export default function EntitiesRoute() {
 }
 ```
 
+### Multi-View Detail Page (VIEW_MAP Pattern)
+
+```tsx
+import React, { Suspense } from 'react';
+import { createLazyFileRoute } from '@tanstack/react-router';
+import { useSuspenseQuery } from '@tanstack/react-query';
+
+const VIEW_MAP: Record<string, {
+  component: React.LazyExoticComponent<React.ComponentType<any>>;
+  skeleton: React.ComponentType;
+}> = {
+  LIST: {
+    component: React.lazy(() =>
+      import('./-list-view').then((m) => ({ default: m.ListView })),
+    ),
+    skeleton: ListViewSkeleton,
+  },
+  CARD: {
+    component: React.lazy(() =>
+      import('./-card-view').then((m) => ({ default: m.CardView })),
+    ),
+    skeleton: CardViewSkeleton,
+  },
+  KANBAN: {
+    component: React.lazy(() =>
+      import('./-kanban-view').then((m) => ({ default: m.KanbanView })),
+    ),
+    skeleton: ListViewSkeleton,
+  },
+  // Add more views as needed...
+};
+
+export const Route = createLazyFileRoute('/_private/{entities}/$entityId/')({
+  component: RouteComponent,
+});
+
+function RouteComponent(): React.JSX.Element {
+  const { entityId } = Route.useParams();
+  const { data } = useSuspenseQuery(entityDetailOptions(entityId));
+
+  const style = data.style ?? 'LIST';
+  const view = VIEW_MAP[style] ?? VIEW_MAP.LIST;
+  const ViewComponent = view.component;
+  const ViewSkeleton = view.skeleton;
+
+  return (
+    <Suspense fallback={<ViewSkeleton />}>
+      <ViewComponent data={data} />
+    </Suspense>
+  );
+}
+```
+
+### Soft-Delete Lifecycle Page (Trash Toggle)
+
+```tsx
+import { useState } from 'react';
+import { Trash2, RotateCcw, AlertTriangle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
+interface TrashToggleProps {
+  showTrashed: boolean;
+  onToggle: (showTrashed: boolean) => void;
+  trashedCount?: number;
+}
+
+export function TrashToggle({
+  showTrashed,
+  onToggle,
+  trashedCount,
+}: TrashToggleProps): React.JSX.Element {
+  return (
+    <Button
+      variant={showTrashed ? 'destructive' : 'outline'}
+      size="sm"
+      onClick={() => onToggle(!showTrashed)}
+    >
+      <Trash2 className="mr-1 h-3 w-3" />
+      {showTrashed ? 'Active items' : 'Trash'}
+      {!showTrashed && trashedCount && trashedCount > 0 && (
+        <span className="ml-1 rounded-full bg-destructive/10 px-1.5 text-xs text-destructive">
+          {trashedCount}
+        </span>
+      )}
+    </Button>
+  );
+}
+
+// Row actions change based on trash context
+interface TrashActionsProps {
+  isTrashed: boolean;
+  onRestore: () => void;
+  onHardDelete: () => void;
+  onSoftDelete: () => void;
+}
+
+export function TrashRowActions({
+  isTrashed,
+  onRestore,
+  onHardDelete,
+  onSoftDelete,
+}: TrashActionsProps): React.JSX.Element {
+  if (isTrashed) {
+    return (
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="sm" onClick={onRestore}>
+          <RotateCcw className="mr-1 h-3 w-3" /> Restore
+        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="sm" className="text-destructive">
+              <AlertTriangle className="mr-1 h-3 w-3" /> Delete forever
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Permanent deletion</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. The item will be permanently removed.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={onHardDelete}>
+                Delete permanently
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
+    );
+  }
+
+  return (
+    <Button variant="ghost" size="sm" onClick={onSoftDelete}>
+      <Trash2 className="mr-1 h-3 w-3" /> Move to trash
+    </Button>
+  );
+}
+```
+
+### Configuration Sub-Pages (Tabs Pattern)
+
+```tsx
+import { Outlet, Link, useMatch } from '@tanstack/react-router';
+import { cn } from '@/lib/utils';
+
+const CONFIG_TABS = [
+  { label: 'Fields', to: './' },
+  { label: 'Settings', to: './settings' },
+  { label: 'Permissions', to: './permissions' },
+  { label: 'Scripts', to: './scripts' },
+] as const;
+
+export function ConfigLayout(): React.JSX.Element {
+  return (
+    <div className="flex h-full flex-col">
+      <nav className="flex shrink-0 border-b">
+        {CONFIG_TABS.map((tab) => {
+          const isActive = !!useMatch({ to: tab.to, fuzzy: true });
+          return (
+            <Link
+              key={tab.to}
+              to={tab.to}
+              className={cn(
+                'px-4 py-2 text-sm font-medium border-b-2 -mb-px',
+                isActive
+                  ? 'border-primary text-primary'
+                  : 'border-transparent text-muted-foreground hover:text-foreground',
+              )}
+            >
+              {tab.label}
+            </Link>
+          );
+        })}
+      </nav>
+      <div className="flex-1 overflow-auto">
+        <Outlet />
+      </div>
+    </div>
+  );
+}
+```
+
 ## Checklist
 
 - [ ] Loader prefetches data with `ensureQueryData`
@@ -397,4 +592,7 @@ export default function EntitiesRoute() {
 - [ ] Permission checks (beforeLoad + usePermission)
 - [ ] Layout: header/content/footer with overflow handling
 - [ ] Footer with mode-appropriate buttons
+- [ ] Multi-view: VIEW_MAP with React.lazy + Suspense per style
+- [ ] Soft-delete lifecycle: trash toggle + restore/hard-delete actions + confirm dialog
+- [ ] Configuration sub-pages: tabs or sub-routes for resource config
 - [ ] No ternary operators

@@ -495,3 +495,634 @@ export class ResourceController {
   }
 }
 ```
+
+## Advanced Templates
+
+### Resource Access Middleware
+
+Fetches a resource by route param, checks its visibility level, and enforces granular permissions before injecting the resource into the request.
+
+**Fastify Implementation:**
+```typescript
+import type { FastifyRequest } from 'fastify';
+
+type VisibilityLevel = 'PUBLIC' | 'RESTRICTED' | 'PRIVATE' | 'OPEN' | 'FORM';
+
+interface ResourceDocument {
+  _id: string;
+  visibility: VisibilityLevel;
+  ownerId?: string;
+  [key: string]: unknown;
+}
+
+interface ResourceAccessOptions {
+  requiredPermission: string;
+  model: {
+    findByParam(paramValue: string): Promise<ResourceDocument | null>;
+  };
+  paramName?: string;
+}
+
+export function ResourceAccessMiddleware(options: ResourceAccessOptions) {
+  const { requiredPermission, model } = options;
+  let paramName: string;
+  if (options.paramName) {
+    paramName = options.paramName;
+  } else {
+    paramName = 'resourceId';
+  }
+
+  return async function (request: FastifyRequest): Promise<void> {
+    const params = request.params as Record<string, string>;
+    const paramValue = params[paramName];
+
+    if (!paramValue) {
+      throw HTTPException.BadRequest(
+        `Missing route parameter: ${paramName}`,
+        'MISSING_ROUTE_PARAM',
+      );
+    }
+
+    const resource = await model.findByParam(paramValue);
+
+    if (!resource) {
+      throw HTTPException.NotFound(
+        'Resource not found',
+        'RESOURCE_NOT_FOUND',
+      );
+    }
+
+    const visibility = resource.visibility;
+
+    if (visibility === 'PUBLIC') {
+      if (request.method === 'GET' || request.method === 'HEAD') {
+        request.resource = resource;
+        return;
+      }
+    }
+
+    if (visibility === 'FORM') {
+      if (request.method === 'POST' || request.method === 'PUT' || request.method === 'PATCH') {
+        request.resource = resource;
+        return;
+      }
+    }
+
+    if (visibility === 'OPEN') {
+      request.resource = resource;
+      return;
+    }
+
+    // RESTRICTED and PRIVATE require authentication
+    const user = request.user;
+
+    if (!user) {
+      throw HTTPException.Unauthorized(
+        'Authentication required to access this resource',
+        'AUTHENTICATION_REQUIRED',
+      );
+    }
+
+    if (visibility === 'PRIVATE') {
+      const isOwner = resource.ownerId === user.sub;
+      const isAdmin = user.role === 'MASTER' || user.role === 'ADMINISTRATOR';
+
+      if (!isOwner && !isAdmin) {
+        throw HTTPException.Forbidden(
+          'Access denied. This resource is private.',
+          'PRIVATE_RESOURCE_ACCESS_DENIED',
+        );
+      }
+
+      request.resource = resource;
+      return;
+    }
+
+    if (visibility === 'RESTRICTED') {
+      const isAdmin = user.role === 'MASTER' || user.role === 'ADMINISTRATOR';
+
+      if (isAdmin) {
+        request.resource = resource;
+        return;
+      }
+
+      const hasPermission = await checkPermission(user.sub, requiredPermission);
+
+      if (!hasPermission) {
+        throw HTTPException.Forbidden(
+          `Permission denied. Required: ${requiredPermission}`,
+          'INSUFFICIENT_PERMISSIONS',
+        );
+      }
+
+      request.resource = resource;
+      return;
+    }
+
+    // Fallback: deny access for unknown visibility levels
+    throw HTTPException.Forbidden(
+      'Access denied',
+      'ACCESS_DENIED',
+    );
+  };
+}
+```
+
+**Express Implementation:**
+```typescript
+import type { Request, Response, NextFunction } from 'express';
+
+type VisibilityLevel = 'PUBLIC' | 'RESTRICTED' | 'PRIVATE' | 'OPEN' | 'FORM';
+
+interface ResourceDocument {
+  _id: string;
+  visibility: VisibilityLevel;
+  ownerId?: string;
+  [key: string]: unknown;
+}
+
+interface ResourceAccessOptions {
+  requiredPermission: string;
+  model: {
+    findByParam(paramValue: string): Promise<ResourceDocument | null>;
+  };
+  paramName?: string;
+}
+
+export function ResourceAccessMiddleware(options: ResourceAccessOptions) {
+  const { requiredPermission, model } = options;
+  let paramName: string;
+  if (options.paramName) {
+    paramName = options.paramName;
+  } else {
+    paramName = 'resourceId';
+  }
+
+  return async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    const paramValue = req.params[paramName];
+
+    if (!paramValue) {
+      res.status(400).json({
+        message: `Missing route parameter: ${paramName}`,
+        code: 400,
+        cause: 'MISSING_ROUTE_PARAM',
+      });
+      return;
+    }
+
+    const resource = await model.findByParam(paramValue);
+
+    if (!resource) {
+      res.status(404).json({
+        message: 'Resource not found',
+        code: 404,
+        cause: 'RESOURCE_NOT_FOUND',
+      });
+      return;
+    }
+
+    const visibility = resource.visibility;
+
+    if (visibility === 'PUBLIC') {
+      if (req.method === 'GET' || req.method === 'HEAD') {
+        req.resource = resource;
+        return next();
+      }
+    }
+
+    if (visibility === 'FORM') {
+      if (req.method === 'POST' || req.method === 'PUT' || req.method === 'PATCH') {
+        req.resource = resource;
+        return next();
+      }
+    }
+
+    if (visibility === 'OPEN') {
+      req.resource = resource;
+      return next();
+    }
+
+    const user = req.user;
+
+    if (!user) {
+      res.status(401).json({
+        message: 'Authentication required to access this resource',
+        code: 401,
+        cause: 'AUTHENTICATION_REQUIRED',
+      });
+      return;
+    }
+
+    if (visibility === 'PRIVATE') {
+      const isOwner = resource.ownerId === user.sub;
+      const isAdmin = user.role === 'MASTER' || user.role === 'ADMINISTRATOR';
+
+      if (!isOwner && !isAdmin) {
+        res.status(403).json({
+          message: 'Access denied. This resource is private.',
+          code: 403,
+          cause: 'PRIVATE_RESOURCE_ACCESS_DENIED',
+        });
+        return;
+      }
+
+      req.resource = resource;
+      return next();
+    }
+
+    if (visibility === 'RESTRICTED') {
+      const isAdmin = user.role === 'MASTER' || user.role === 'ADMINISTRATOR';
+
+      if (isAdmin) {
+        req.resource = resource;
+        return next();
+      }
+
+      const hasPermission = await checkPermission(user.sub, requiredPermission);
+
+      if (!hasPermission) {
+        res.status(403).json({
+          message: `Permission denied. Required: ${requiredPermission}`,
+          code: 403,
+          cause: 'INSUFFICIENT_PERMISSIONS',
+        });
+        return;
+      }
+
+      req.resource = resource;
+      return next();
+    }
+
+    res.status(403).json({
+      message: 'Access denied',
+      code: 403,
+      cause: 'ACCESS_DENIED',
+    });
+  };
+}
+```
+
+### Optional Authentication Middleware
+
+Single middleware with a boolean flag that controls whether authentication is required or optional. When optional, missing/invalid tokens allow the request to continue without a user context.
+
+**Fastify Implementation:**
+```typescript
+import type { FastifyRequest } from 'fastify';
+
+interface AuthOptions {
+  optional: boolean;
+}
+
+interface TokenPayload {
+  sub: string;
+  email: string;
+  role: string;
+  type: string;
+}
+
+export function AuthMiddleware(options: AuthOptions) {
+  return async function (request: FastifyRequest): Promise<void> {
+    const token = extractToken(request);
+
+    if (!token) {
+      if (options.optional) {
+        request.user = null;
+        return;
+      }
+
+      throw HTTPException.Unauthorized(
+        'Authentication required',
+        'AUTHENTICATION_REQUIRED',
+      );
+    }
+
+    let decoded: TokenPayload | null;
+
+    try {
+      decoded = await verifyToken(token);
+    } catch (error) {
+      if (options.optional) {
+        request.user = null;
+        return;
+      }
+
+      throw HTTPException.Unauthorized(
+        'Invalid or expired token',
+        'INVALID_TOKEN',
+      );
+    }
+
+    if (!decoded) {
+      if (options.optional) {
+        request.user = null;
+        return;
+      }
+
+      throw HTTPException.Unauthorized(
+        'Invalid or expired token',
+        'INVALID_TOKEN',
+      );
+    }
+
+    request.user = {
+      sub: decoded.sub,
+      email: decoded.email,
+      role: decoded.role,
+      type: decoded.type,
+    };
+  };
+}
+
+function extractToken(request: FastifyRequest): string | null {
+  const cookieToken = request.cookies?.accessToken;
+
+  if (cookieToken) {
+    return String(cookieToken);
+  }
+
+  const authHeader = request.headers.authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7);
+  }
+
+  return null;
+}
+```
+
+**Express Implementation:**
+```typescript
+import type { Request, Response, NextFunction } from 'express';
+
+interface AuthOptions {
+  optional: boolean;
+}
+
+interface TokenPayload {
+  sub: string;
+  email: string;
+  role: string;
+  type: string;
+}
+
+export function AuthMiddleware(options: AuthOptions) {
+  return async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    const token = extractToken(req);
+
+    if (!token) {
+      if (options.optional) {
+        req.user = null;
+        return next();
+      }
+
+      res.status(401).json({
+        message: 'Authentication required',
+        code: 401,
+        cause: 'AUTHENTICATION_REQUIRED',
+      });
+      return;
+    }
+
+    let decoded: TokenPayload | null;
+
+    try {
+      decoded = await verifyToken(token);
+    } catch (error) {
+      if (options.optional) {
+        req.user = null;
+        return next();
+      }
+
+      res.status(401).json({
+        message: 'Invalid or expired token',
+        code: 401,
+        cause: 'INVALID_TOKEN',
+      });
+      return;
+    }
+
+    if (!decoded) {
+      if (options.optional) {
+        req.user = null;
+        return next();
+      }
+
+      res.status(401).json({
+        message: 'Invalid or expired token',
+        code: 401,
+        cause: 'INVALID_TOKEN',
+      });
+      return;
+    }
+
+    req.user = {
+      sub: decoded.sub,
+      email: decoded.email,
+      role: decoded.role,
+      type: decoded.type,
+    };
+    next();
+  };
+}
+
+function extractToken(req: Request): string | null {
+  const cookieToken = req.cookies?.accessToken;
+
+  if (cookieToken) {
+    return String(cookieToken);
+  }
+
+  const authHeader = req.headers.authorization;
+
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    return authHeader.slice(7);
+  }
+
+  return null;
+}
+```
+
+### Permission Matrix Middleware
+
+Defines a permission matrix mapping actions to required permissions, then checks if the user has ALL required permissions for the requested action. Includes admin/master role bypass.
+
+**Fastify Implementation:**
+```typescript
+import type { FastifyRequest } from 'fastify';
+
+type PermissionMatrix = Record<string, Array<string>>;
+
+interface PermissionOptions {
+  action: string;
+}
+
+const PERMISSION_MATRIX: PermissionMatrix = {
+  'create': ['RESOURCE_CREATE'],
+  'read': ['RESOURCE_READ'],
+  'update': ['RESOURCE_UPDATE'],
+  'delete': ['RESOURCE_DELETE'],
+  'manage': ['RESOURCE_CREATE', 'RESOURCE_UPDATE', 'RESOURCE_DELETE'],
+  'admin': ['RESOURCE_CREATE', 'RESOURCE_READ', 'RESOURCE_UPDATE', 'RESOURCE_DELETE', 'RESOURCE_ADMIN'],
+};
+
+export function PermissionMiddleware(options: PermissionOptions) {
+  const { action } = options;
+
+  return async function (request: FastifyRequest): Promise<void> {
+    const user = request.user;
+
+    if (!user) {
+      throw HTTPException.Unauthorized(
+        'Authentication required',
+        'AUTHENTICATION_REQUIRED',
+      );
+    }
+
+    // Admin/master bypass
+    if (user.role === 'MASTER' || user.role === 'ADMINISTRATOR') {
+      return;
+    }
+
+    const requiredPermissions = PERMISSION_MATRIX[action];
+
+    if (!requiredPermissions) {
+      throw HTTPException.Forbidden(
+        `Unknown action: ${action}`,
+        'UNKNOWN_ACTION',
+      );
+    }
+
+    const userPermissions = await getUserPermissions(user.sub);
+    const missingPermissions: Array<string> = [];
+
+    for (const permission of requiredPermissions) {
+      if (!userPermissions.includes(permission)) {
+        missingPermissions.push(permission);
+      }
+    }
+
+    if (missingPermissions.length > 0) {
+      throw HTTPException.Forbidden(
+        `Missing permissions: ${missingPermissions.join(', ')}`,
+        'INSUFFICIENT_PERMISSIONS',
+      );
+    }
+  };
+}
+
+async function getUserPermissions(userId: string): Promise<Array<string>> {
+  // Implement: fetch user permissions from database or cache
+  return [];
+}
+```
+
+**Express Implementation:**
+```typescript
+import type { Request, Response, NextFunction } from 'express';
+
+type PermissionMatrix = Record<string, Array<string>>;
+
+interface PermissionOptions {
+  action: string;
+}
+
+const PERMISSION_MATRIX: PermissionMatrix = {
+  'create': ['RESOURCE_CREATE'],
+  'read': ['RESOURCE_READ'],
+  'update': ['RESOURCE_UPDATE'],
+  'delete': ['RESOURCE_DELETE'],
+  'manage': ['RESOURCE_CREATE', 'RESOURCE_UPDATE', 'RESOURCE_DELETE'],
+  'admin': ['RESOURCE_CREATE', 'RESOURCE_READ', 'RESOURCE_UPDATE', 'RESOURCE_DELETE', 'RESOURCE_ADMIN'],
+};
+
+export function PermissionMiddleware(options: PermissionOptions) {
+  const { action } = options;
+
+  return async function (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    const user = req.user;
+
+    if (!user) {
+      res.status(401).json({
+        message: 'Authentication required',
+        code: 401,
+        cause: 'AUTHENTICATION_REQUIRED',
+      });
+      return;
+    }
+
+    // Admin/master bypass
+    if (user.role === 'MASTER' || user.role === 'ADMINISTRATOR') {
+      return next();
+    }
+
+    const requiredPermissions = PERMISSION_MATRIX[action];
+
+    if (!requiredPermissions) {
+      res.status(403).json({
+        message: `Unknown action: ${action}`,
+        code: 403,
+        cause: 'UNKNOWN_ACTION',
+      });
+      return;
+    }
+
+    const userPermissions = await getUserPermissions(user.sub);
+    const missingPermissions: Array<string> = [];
+
+    for (const permission of requiredPermissions) {
+      if (!userPermissions.includes(permission)) {
+        missingPermissions.push(permission);
+      }
+    }
+
+    if (missingPermissions.length > 0) {
+      res.status(403).json({
+        message: `Missing permissions: ${missingPermissions.join(', ')}`,
+        code: 403,
+        cause: 'INSUFFICIENT_PERMISSIONS',
+      });
+      return;
+    }
+
+    next();
+  };
+}
+
+async function getUserPermissions(userId: string): Promise<Array<string>> {
+  // Implement: fetch user permissions from database or cache
+  return [];
+}
+```
+
+## Checklist
+
+Before delivering any middleware, verify:
+
+- [ ] **Factory pattern**: middleware is a named factory function returning the handler, not a bare function
+- [ ] **Named exports only**: no `export default`, use `export function`
+- [ ] **No ternary operators**: all conditionals use if/else blocks
+- [ ] **TypeScript**: options interface is explicitly typed, return types are annotated
+- [ ] **Single responsibility**: middleware handles one concern (auth, access, rate limit, etc.)
+- [ ] **Request augmentation typed**: any properties added to `request`/`req` (e.g., `user`, `resource`) are typed via interface merging or generics
+- [ ] **Error responses use framework conventions**: Fastify throws HTTPException, Express sends `res.status().json()`, NestJS throws HttpException subclasses
+- [ ] **Visibility levels handled**: if resource access is involved, all five levels (PUBLIC, RESTRICTED, PRIVATE, OPEN, FORM) are addressed
+- [ ] **Admin bypass**: MASTER/ADMINISTRATOR roles skip permission checks where appropriate
+- [ ] **Optional auth pattern**: uses a single middleware with `optional` boolean flag, not two separate middlewares
+- [ ] **Permission matrix**: action-to-permissions mapping is a typed `Record`, not inline conditionals
+- [ ] **Missing permissions reported**: 403 responses list which specific permissions are missing
+- [ ] **Consistent error codes**: every error response includes both a human message and a machine-readable cause code
+- [ ] **File naming**: follows `{purpose}.middleware.ts` convention
+- [ ] **File placement**: middleware is placed in the detected middleware directory (e.g., `application/middlewares/`, `src/middlewares/`)

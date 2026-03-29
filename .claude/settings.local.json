@@ -57,7 +57,14 @@
       "Bash(/tmp/detailed_imports.sh:*)",
       "Bash(bash /tmp/detailed_imports.sh)",
       "Bash(xargs sed:*)",
-      "Bash(git:*)"
+      "Bash(git:*)",
+      "Bash(find /home/indio/Desktop/low-code-js -type f \\\\\\(-name Dockerfile* -o -name docker-compose* -o -name .dockerignore \\\\\\))",
+      "Bash(then echo:*)",
+      "Bash(fi)",
+      "Bash(for dir:*)",
+      "Bash(do basename:*)",
+      "Read(//home/indio/Desktop/low-code-js/**)",
+      "Bash(xargs -I {} basename {})"
     ]
   },
   "enableAllProjectMcpServers": true,

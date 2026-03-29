@@ -497,6 +497,477 @@ export class AuthController {
 }
 ```
 
+### Magic Link Flow
+
+**Use Case — `magic-link.use-case.ts`:**
+```typescript
+import crypto from 'node:crypto';
+import { type Either, left, right } from '@application/core/either.core';
+
+interface MagicLinkInput {
+  email: string;
+}
+
+interface MagicLinkResult {
+  token: string;
+  expiresAt: Date;
+}
+
+export const executeMagicLink = async (
+  payload: MagicLinkInput,
+  deps: { userRepo: UserRepo; tokenRepo: TokenRepo; emailService: EmailService },
+): Promise<Either<AppError, MagicLinkResult>> => {
+  const user = await deps.userRepo.findByEmail(payload.email);
+
+  if (!user) {
+    return left({ code: 404, message: 'User not found', cause: 'USER_NOT_FOUND' });
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+  await deps.tokenRepo.create({
+    userId: user._id,
+    token,
+    type: 'MAGIC_LINK',
+    expiresAt,
+    used: false,
+  });
+
+  await deps.emailService.sendMagicLink({
+    to: user.email,
+    link: `${process.env.APP_URL}/auth/magic-link?token=${token}`,
+  });
+
+  return right({ token, expiresAt });
+};
+```
+
+**Controller — `magic-link.controller.ts`:**
+```typescript
+// POST /authentication/magic-link
+export const magicLinkHandler = async (request: Request, response: Response): Promise<void> => {
+  const body = MagicLinkValidator.parse(request.body);
+  const result = await executeMagicLink(body, deps);
+
+  if (result.isLeft()) {
+    const error = result.value;
+    response.status(error.code).send({ message: error.message, cause: error.cause });
+    return;
+  }
+
+  response.status(200).send({ message: 'Magic link sent' });
+};
+```
+
+**Validate Use Case — `validate-magic-link.use-case.ts`:**
+```typescript
+import { type Either, left, right } from '@application/core/either.core';
+
+interface ValidateMagicLinkInput {
+  token: string;
+}
+
+export const executeValidateMagicLink = async (
+  payload: ValidateMagicLinkInput,
+  deps: { tokenRepo: TokenRepo; sessionService: SessionService },
+): Promise<Either<AppError, TokenPair>> => {
+  const record = await deps.tokenRepo.findByToken(payload.token);
+
+  if (!record) {
+    return left({ code: 401, message: 'Invalid token', cause: 'INVALID_TOKEN' });
+  }
+
+  if (record.used) {
+    return left({ code: 401, message: 'Token already used', cause: 'TOKEN_USED' });
+  }
+
+  if (record.expiresAt < new Date()) {
+    return left({ code: 401, message: 'Token expired', cause: 'TOKEN_EXPIRED' });
+  }
+
+  await deps.tokenRepo.markUsed(record._id);
+
+  const tokens = await deps.sessionService.createSession(record.userId);
+
+  return right(tokens);
+};
+```
+
+**Validate Controller — `validate-magic-link.controller.ts`:**
+```typescript
+// GET /authentication/magic-link?token=abc123
+export const validateMagicLinkHandler = async (request: Request, response: Response): Promise<void> => {
+  const token = request.query.token as string;
+
+  if (!token) {
+    response.status(400).send({ message: 'Token is required', cause: 'MISSING_TOKEN' });
+    return;
+  }
+
+  const result = await executeValidateMagicLink({ token }, deps);
+
+  if (result.isLeft()) {
+    const error = result.value;
+    response.status(error.code).send({ message: error.message, cause: error.cause });
+    return;
+  }
+
+  setCookieTokens(response, result.value);
+  response.status(200).send({ message: 'Authenticated' });
+};
+```
+
+### Verification Code Flow
+
+**Request Code Use Case — `request-code.use-case.ts`:**
+```typescript
+import crypto from 'node:crypto';
+import { type Either, left, right } from '@application/core/either.core';
+
+interface RequestCodeInput {
+  email: string;
+}
+
+interface RequestCodeResult {
+  expiresAt: Date;
+}
+
+export const executeRequestCode = async (
+  payload: RequestCodeInput,
+  deps: { userRepo: UserRepo; codeRepo: CodeRepo; emailService: EmailService },
+): Promise<Either<AppError, RequestCodeResult>> => {
+  const user = await deps.userRepo.findByEmail(payload.email);
+
+  if (!user) {
+    return left({ code: 404, message: 'User not found', cause: 'USER_NOT_FOUND' });
+  }
+
+  const code = crypto.randomInt(100000, 999999).toString();
+  const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+  await deps.codeRepo.create({
+    userId: user._id,
+    email: user.email,
+    code,
+    expiresAt,
+    used: false,
+  });
+
+  await deps.emailService.sendVerificationCode({
+    to: user.email,
+    code,
+  });
+
+  return right({ expiresAt });
+};
+```
+
+**Validate Code Use Case — `validate-code.use-case.ts`:**
+```typescript
+import { type Either, left, right } from '@application/core/either.core';
+
+interface ValidateCodeInput {
+  email: string;
+  code: string;
+}
+
+export const executeValidateCode = async (
+  payload: ValidateCodeInput,
+  deps: { codeRepo: CodeRepo },
+): Promise<Either<AppError, { verified: true }>> => {
+  const record = await deps.codeRepo.findByEmailAndCode(payload.email, payload.code);
+
+  if (!record) {
+    return left({ code: 401, message: 'Invalid code', cause: 'INVALID_CODE' });
+  }
+
+  if (record.used) {
+    return left({ code: 401, message: 'Code already used', cause: 'CODE_USED' });
+  }
+
+  if (record.expiresAt < new Date()) {
+    return left({ code: 401, message: 'Code expired', cause: 'CODE_EXPIRED' });
+  }
+
+  await deps.codeRepo.markUsed(record._id);
+
+  return right({ verified: true });
+};
+```
+
+**Request Code Controller — `request-code.controller.ts`:**
+```typescript
+// POST /authentication/request-code
+export const requestCodeHandler = async (request: Request, response: Response): Promise<void> => {
+  const body = RequestCodeValidator.parse(request.body);
+  const result = await executeRequestCode(body, deps);
+
+  if (result.isLeft()) {
+    const error = result.value;
+    response.status(error.code).send({ message: error.message, cause: error.cause });
+    return;
+  }
+
+  response.status(200).send({ message: 'Verification code sent' });
+};
+```
+
+**Validate Code Controller — `validate-code.controller.ts`:**
+```typescript
+// POST /authentication/validate-code
+export const validateCodeHandler = async (request: Request, response: Response): Promise<void> => {
+  const body = ValidateCodeValidator.parse(request.body);
+  const result = await executeValidateCode(body, deps);
+
+  if (result.isLeft()) {
+    const error = result.value;
+    response.status(error.code).send({ message: error.message, cause: error.cause });
+    return;
+  }
+
+  response.status(200).send({ message: 'Code verified', verified: true });
+};
+```
+
+### Password Reset Flow
+
+**Request Reset Use Case — `request-reset.use-case.ts`:**
+```typescript
+import crypto from 'node:crypto';
+import { type Either, left, right } from '@application/core/either.core';
+
+interface RequestResetInput {
+  email: string;
+}
+
+export const executeRequestReset = async (
+  payload: RequestResetInput,
+  deps: { userRepo: UserRepo; tokenRepo: TokenRepo; emailService: EmailService },
+): Promise<Either<AppError, { message: string }>> => {
+  const user = await deps.userRepo.findByEmail(payload.email);
+
+  if (!user) {
+    return left({ code: 404, message: 'User not found', cause: 'USER_NOT_FOUND' });
+  }
+
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+  await deps.tokenRepo.create({
+    userId: user._id,
+    token,
+    type: 'PASSWORD_RESET',
+    expiresAt,
+    used: false,
+  });
+
+  await deps.emailService.sendPasswordReset({
+    to: user.email,
+    link: `${process.env.APP_URL}/auth/reset-password?token=${token}`,
+  });
+
+  return right({ message: 'Reset email sent' });
+};
+```
+
+**Reset Password Use Case — `reset-password.use-case.ts`:**
+```typescript
+import bcrypt from 'bcryptjs';
+import { type Either, left, right } from '@application/core/either.core';
+
+interface ResetPasswordInput {
+  token: string;
+  newPassword: string;
+}
+
+export const executeResetPassword = async (
+  payload: ResetPasswordInput,
+  deps: { tokenRepo: TokenRepo; userRepo: UserRepo },
+): Promise<Either<AppError, { message: string }>> => {
+  const record = await deps.tokenRepo.findByToken(payload.token);
+
+  if (!record) {
+    return left({ code: 401, message: 'Invalid token', cause: 'INVALID_TOKEN' });
+  }
+
+  if (record.used) {
+    return left({ code: 401, message: 'Token already used', cause: 'TOKEN_USED' });
+  }
+
+  if (record.expiresAt < new Date()) {
+    return left({ code: 401, message: 'Token expired', cause: 'TOKEN_EXPIRED' });
+  }
+
+  const hashedPassword = await bcrypt.hash(payload.newPassword, 10);
+
+  await deps.userRepo.updatePassword(record.userId, hashedPassword);
+  await deps.tokenRepo.markUsed(record._id);
+
+  return right({ message: 'Password updated' });
+};
+```
+
+**Request Reset Controller — `request-reset.controller.ts`:**
+```typescript
+// POST /authentication/request-reset
+export const requestResetHandler = async (request: Request, response: Response): Promise<void> => {
+  const body = RequestResetValidator.parse(request.body);
+  const result = await executeRequestReset(body, deps);
+
+  if (result.isLeft()) {
+    const error = result.value;
+    response.status(error.code).send({ message: error.message, cause: error.cause });
+    return;
+  }
+
+  response.status(200).send({ message: 'Reset email sent' });
+};
+```
+
+**Reset Password Controller — `reset-password.controller.ts`:**
+```typescript
+// POST /authentication/reset-password
+export const resetPasswordHandler = async (request: Request, response: Response): Promise<void> => {
+  const body = ResetPasswordValidator.parse(request.body);
+  const result = await executeResetPassword(body, deps);
+
+  if (result.isLeft()) {
+    const error = result.value;
+    response.status(error.code).send({ message: error.message, cause: error.cause });
+    return;
+  }
+
+  response.status(200).send({ message: 'Password updated' });
+};
+```
+
+### Refresh Token Rotation
+
+**Use Case — `refresh-token.use-case.ts`:**
+```typescript
+import { type Either, left, right } from '@application/core/either.core';
+
+interface RefreshTokenInput {
+  refreshToken: string;
+}
+
+export const executeRefreshToken = async (
+  payload: RefreshTokenInput,
+  deps: { jwtService: JwtService; userRepo: UserRepo },
+): Promise<Either<AppError, TokenPair>> => {
+  const decoded = deps.jwtService.verify(payload.refreshToken);
+
+  if (!decoded) {
+    return left({ code: 401, message: 'Invalid refresh token', cause: 'INVALID_REFRESH_TOKEN' });
+  }
+
+  if (decoded.type !== 'REFRESH') {
+    return left({ code: 401, message: 'Invalid token type', cause: 'INVALID_TOKEN_TYPE' });
+  }
+
+  const user = await deps.userRepo.findById(decoded.sub);
+
+  if (!user) {
+    return left({ code: 401, message: 'User not found', cause: 'USER_NOT_FOUND' });
+  }
+
+  if (user.status !== 'active') {
+    return left({ code: 403, message: 'User is inactive', cause: 'USER_INACTIVE' });
+  }
+
+  // If user has a passwordChangedAt or tokenVersion, validate against token iat
+  if (user.passwordChangedAt) {
+    const tokenIssuedAt = new Date((decoded.iat || 0) * 1000);
+    if (tokenIssuedAt < user.passwordChangedAt) {
+      return left({ code: 401, message: 'Token invalidated by password change', cause: 'TOKEN_INVALIDATED' });
+    }
+  }
+
+  const newTokens = await deps.jwtService.createTokenPair(user);
+
+  return right(newTokens);
+};
+```
+
+**Controller — `refresh-token.controller.ts`:**
+```typescript
+// POST /authentication/refresh
+export const refreshTokenHandler = async (request: Request, response: Response): Promise<void> => {
+  const refreshToken = request.cookies.refreshToken;
+
+  if (!refreshToken) {
+    response.status(401).send({ message: 'Refresh token required', cause: 'MISSING_REFRESH_TOKEN' });
+    return;
+  }
+
+  const result = await executeRefreshToken({ refreshToken }, deps);
+
+  if (result.isLeft()) {
+    const error = result.value;
+    clearCookieTokens(response);
+    response.status(error.code).send({ message: error.message, cause: error.cause });
+    return;
+  }
+
+  setCookieTokens(response, result.value);
+  response.status(200).send({ message: 'Tokens refreshed' });
+};
+```
+
+### Session Invalidation on Password Change
+
+After a password update use-case succeeds, increment the user's `tokenVersion` or update `passwordChangedAt` so that all existing tokens become invalid. The auth middleware and refresh token flow must check this field against the token's `iat` claim.
+
+**Pattern:**
+```typescript
+// Inside the password update use-case, after hashing and saving the new password:
+await deps.userRepo.update(userId, {
+  password: hashedPassword,
+  passwordChangedAt: new Date(),
+});
+
+// --- OR, using a numeric tokenVersion: ---
+await deps.userRepo.incrementTokenVersion(userId);
+```
+
+**Auth middleware check:**
+```typescript
+// After decoding the JWT, before granting access:
+if (user.passwordChangedAt) {
+  const tokenIssuedAt = new Date((decoded.iat || 0) * 1000);
+  if (tokenIssuedAt < user.passwordChangedAt) {
+    // Token was issued before the password change — reject it
+    return left({ code: 401, message: 'Session invalidated', cause: 'SESSION_INVALIDATED' });
+  }
+}
+```
+
+### Role-Based Redirect After Login
+
+Map each role to its default route so the frontend can redirect after successful authentication.
+
+**Pattern:**
+```typescript
+export const ROLE_REDIRECT_MAP: Record<string, string> = {
+  ADMIN: '/dashboard',
+  MANAGER: '/dashboard',
+  EDITOR: '/tables',
+  VIEWER: '/tables',
+  REGISTERED: '/profile',
+};
+
+export const getRedirectForRole = (role: string): string => {
+  const redirect = ROLE_REDIRECT_MAP[role];
+
+  if (redirect) {
+    return redirect;
+  }
+
+  return '/';
+};
+```
+
 ## Env Vars Required
 
 Ensure these exist: `JWT_SECRET` (HS256) or `JWT_PUBLIC_KEY`+`JWT_PRIVATE_KEY` (RS256), `COOKIE_SECRET`, `COOKIE_DOMAIN` (optional).
@@ -511,3 +982,9 @@ Ensure these exist: `JWT_SECRET` (HS256) or `JWT_PUBLIC_KEY`+`JWT_PRIVATE_KEY` (
 - [ ] Sign-out: clear cookies
 - [ ] Passwords hashed, never returned in plain text
 - [ ] Either pattern for error handling (left/right)
+- [ ] Magic link flow: generate token, store with expiry, send email, validate and create session
+- [ ] Verification code flow: generate 6-digit code, store with expiry, send via email, validate and mark used
+- [ ] Password reset flow: generate reset token, send email, validate token, hash new password, invalidate token
+- [ ] Refresh token rotation: validate refresh JWT type, issue new token pair, check passwordChangedAt
+- [ ] Session invalidation on password change: update passwordChangedAt or increment tokenVersion
+- [ ] Role-based redirect map: ROLE_REDIRECT_MAP with getRedirectForRole helper

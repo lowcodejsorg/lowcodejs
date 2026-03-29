@@ -193,6 +193,93 @@ useAuthStore.getState().clear();
 | **Filters** | No | No | Search text, active page |
 | **Modals/dialogs** | No | No | Open state, selected item |
 
+### Sidebar/Panel Store
+
+```typescript
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+interface SidebarStore {
+  isOpen: boolean;
+  toggle: () => void;
+  open: () => void;
+  close: () => void;
+}
+
+export const useSidebarStore = create<SidebarStore>()(
+  persist(
+    (set) => ({
+      isOpen: true,
+      toggle: () => set((state) => ({ isOpen: !state.isOpen })),
+      open: () => set({ isOpen: true }),
+      close: () => set({ isOpen: false }),
+    }),
+    {
+      name: 'sidebar-state',
+      storage: createJSONStorage(() => {
+        if (typeof window === 'undefined') {
+          return { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+        }
+        return localStorage;
+      }),
+      partialize: (state) => ({ isOpen: state.isOpen }),
+    },
+  ),
+);
+```
+
+### UI Preferences Store
+
+```typescript
+import { create } from 'zustand';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+type Theme = 'light' | 'dark' | 'system';
+type Locale = 'pt-br' | 'en-us';
+type TableDensity = 'compact' | 'normal' | 'comfortable';
+
+interface UIPreferencesStore {
+  theme: Theme;
+  locale: Locale;
+  tableDensity: TableDensity;
+  sidebarOpen: boolean;
+  setTheme: (theme: Theme) => void;
+  setLocale: (locale: Locale) => void;
+  setTableDensity: (density: TableDensity) => void;
+  toggleSidebar: () => void;
+}
+
+export const useUIPreferencesStore = create<UIPreferencesStore>()(
+  persist(
+    (set) => ({
+      theme: 'system',
+      locale: 'pt-br',
+      tableDensity: 'normal',
+      sidebarOpen: true,
+      setTheme: (theme) => set({ theme }),
+      setLocale: (locale) => set({ locale }),
+      setTableDensity: (tableDensity) => set({ tableDensity }),
+      toggleSidebar: () => set((state) => ({ sidebarOpen: !state.sidebarOpen })),
+    }),
+    {
+      name: 'ui-preferences',
+      storage: createJSONStorage(() => {
+        if (typeof window === 'undefined') {
+          return { getItem: () => null, setItem: () => {}, removeItem: () => {} };
+        }
+        return localStorage;
+      }),
+      partialize: (state) => ({
+        theme: state.theme,
+        locale: state.locale,
+        tableDensity: state.tableDensity,
+        sidebarOpen: state.sidebarOpen,
+      }),
+    },
+  ),
+);
+```
+
 ## Checklist
 
 - [ ] Typed with `create<StoreType>()`
@@ -200,4 +287,6 @@ useAuthStore.getState().clear();
 - [ ] `hasHydrated` + `setHasHydrated` for hydration tracking
 - [ ] `partialize` excludes functions and derived values
 - [ ] Selectors in components: `useStore((state) => state.field)`
+- [ ] Sidebar/panel store with toggle + localStorage persist
+- [ ] UI preferences store (theme, locale, density, sidebar)
 - [ ] No ternary operators

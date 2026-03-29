@@ -346,3 +346,205 @@ export default class InMemoryEmailService extends EmailContractService {
   }
 }
 ```
+
+### Storage Service
+
+```typescript
+// storage-contract.service.ts
+export interface StorageResult {
+  filename: string;
+  url: string;
+  size: number;
+  mimeType: string;
+}
+
+export abstract class StorageServiceContract {
+  abstract upload(
+    file: { buffer: Buffer; mimetype: string; filename: string },
+    options?: { staticName?: string; resize?: { width: number; height: number } },
+  ): Promise<StorageResult>;
+  abstract delete(filename: string): Promise<void>;
+  abstract exists(filename: string): Promise<boolean>;
+  abstract getUrl(filename: string): string;
+}
+```
+
+```typescript
+// local-storage.service.ts
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import sharp from 'sharp';
+
+import { StorageServiceContract, type StorageResult } from './storage-contract.service';
+
+export class LocalStorageService extends StorageServiceContract {
+  private readonly basePath: string;
+  private readonly baseUrl: string;
+
+  constructor(basePath: string, baseUrl: string) {
+    super();
+    this.basePath = basePath;
+    this.baseUrl = baseUrl;
+  }
+
+  async upload(
+    file: { buffer: Buffer; mimetype: string; filename: string },
+    options?: { staticName?: string; resize?: { width: number; height: number } },
+  ): Promise<StorageResult> {
+    await fs.mkdir(this.basePath, { recursive: true });
+
+    const ext = path.extname(file.filename);
+    const name = options?.staticName ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const filename = `${name}${ext}`;
+    const filePath = path.join(this.basePath, filename);
+
+    let buffer = file.buffer;
+
+    // Optional image processing
+    if (options?.resize && file.mimetype.startsWith('image/')) {
+      buffer = await sharp(buffer)
+        .resize(options.resize.width, options.resize.height, { fit: 'inside', withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+    }
+
+    await fs.writeFile(filePath, buffer);
+
+    return {
+      filename,
+      url: this.getUrl(filename),
+      size: buffer.length,
+      mimeType: file.mimetype,
+    };
+  }
+
+  async delete(filename: string): Promise<void> {
+    const filePath = path.join(this.basePath, filename);
+    try {
+      await fs.unlink(filePath);
+    } catch {
+      // File may not exist
+    }
+  }
+
+  async exists(filename: string): Promise<boolean> {
+    try {
+      await fs.access(path.join(this.basePath, filename));
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  getUrl(filename: string): string {
+    return `${this.baseUrl}/storage/${filename}`;
+  }
+}
+```
+
+```typescript
+// s3-storage.service.ts — using Flydrive or AWS SDK
+import { StorageServiceContract, type StorageResult } from './storage-contract.service';
+
+export class S3StorageService extends StorageServiceContract {
+  private readonly bucket: string;
+  private readonly region: string;
+
+  constructor(bucket: string, region: string) {
+    super();
+    this.bucket = bucket;
+    this.region = region;
+  }
+
+  async upload(
+    file: { buffer: Buffer; mimetype: string; filename: string },
+    options?: { staticName?: string },
+  ): Promise<StorageResult> {
+    const key = options?.staticName ?? `${Date.now()}-${file.filename}`;
+
+    // Using Flydrive or AWS SDK
+    // await storage.put(key, file.buffer, { contentType: file.mimetype });
+
+    return {
+      filename: key,
+      url: this.getUrl(key),
+      size: file.buffer.length,
+      mimeType: file.mimetype,
+    };
+  }
+
+  async delete(filename: string): Promise<void> {
+    // await storage.delete(filename);
+  }
+
+  async exists(filename: string): Promise<boolean> {
+    // return await storage.exists(filename);
+    return false;
+  }
+
+  getUrl(filename: string): string {
+    return `https://${this.bucket}.s3.${this.region}.amazonaws.com/${filename}`;
+  }
+}
+```
+
+### Notification Service
+
+```typescript
+// notification-contract.service.ts
+export interface NotificationPayload {
+  to: string;
+  subject: string;
+  template: string;
+  data: Record<string, unknown>;
+}
+
+export interface NotificationResult {
+  success: boolean;
+  messageId?: string;
+}
+
+export abstract class NotificationServiceContract {
+  abstract send(payload: NotificationPayload): Promise<NotificationResult>;
+  abstract renderTemplate(template: string, data: Record<string, unknown>): Promise<string>;
+}
+```
+
+```typescript
+// email-notification.service.ts
+import ejs from 'ejs';
+import path from 'node:path';
+import nodemailer from 'nodemailer';
+
+import { NotificationServiceContract, type NotificationPayload, type NotificationResult } from './notification-contract.service';
+
+export class EmailNotificationService extends NotificationServiceContract {
+  private transporter: nodemailer.Transporter;
+  private templateDir: string;
+
+  constructor(smtpConfig: nodemailer.TransportOptions, templateDir: string) {
+    super();
+    this.transporter = nodemailer.createTransport(smtpConfig);
+    this.templateDir = templateDir;
+  }
+
+  async send(payload: NotificationPayload): Promise<NotificationResult> {
+    try {
+      const html = await this.renderTemplate(payload.template, payload.data);
+      const result = await this.transporter.sendMail({
+        to: payload.to,
+        subject: payload.subject,
+        html,
+      });
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      return { success: false };
+    }
+  }
+
+  async renderTemplate(template: string, data: Record<string, unknown>): Promise<string> {
+    const templatePath = path.join(this.templateDir, `${template}.ejs`);
+    return ejs.renderFile(templatePath, data);
+  }
+}
+```
