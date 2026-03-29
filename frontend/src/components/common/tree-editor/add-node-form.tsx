@@ -57,6 +57,7 @@ export const AddNodeForm: React.FC<AddNodeFormProps> = ({
   return (
     <div
       data-slot="add-node-form"
+      data-test-id="tree-add-node-form"
       className="rounded-md border bg-muted/20 p-3 space-y-3"
     >
       <div className="text-xs font-medium text-muted-foreground">
@@ -65,6 +66,7 @@ export const AddNodeForm: React.FC<AddNodeFormProps> = ({
 
       <div className="space-y-2">
         <Input
+          data-test-id="tree-add-node-input"
           value={label}
           onChange={(e) => setLabel(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -91,6 +93,7 @@ export const AddNodeForm: React.FC<AddNodeFormProps> = ({
 
       <div className="flex gap-2">
         <Button
+          data-test-id="tree-add-node-submit-btn"
           type="button"
           onClick={handleSave}
           disabled={!label.trim()}

@@ -37,6 +37,7 @@ export function TableFieldTypeSelect({
   return (
     <Field
       data-slot="table-field-type-select"
+      data-test-id="table-field-type-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

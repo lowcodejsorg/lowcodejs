@@ -21,7 +21,10 @@ export const CreateUserFormFields = withForm({
   },
   render: function Render({ form, isPending }) {
     return (
-      <section className="space-y-4 p-2">
+      <section
+        data-test-id="user-create-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* Campo Nome */}
         <form.AppField name="name">
           {(field) => (

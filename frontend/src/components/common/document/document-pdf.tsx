@@ -108,7 +108,7 @@ export function DocumentPdf({
   const renderedLeafIds = new Set<string>();
 
   return (
-    <Document data-slot="document-pdf">
+    <Document data-slot="document-pdf" data-test-id="document-pdf">
       <Page
         size="A4"
         style={styles.page}

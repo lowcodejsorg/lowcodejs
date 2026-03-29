@@ -26,6 +26,7 @@ export function TableFieldRelationshipFieldSelect({
   return (
     <Field
       data-slot="table-field-relationship-field-select"
+      data-test-id="table-field-relationship-field-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

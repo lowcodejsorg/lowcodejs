@@ -56,7 +56,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="table-detail-view-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -263,6 +263,7 @@ function TableUpdateContent({
               type="button"
               className="px-2 cursor-pointer max-w-40 w-full"
               size="sm"
+              data-test-id="table-edit-btn"
               onClick={() => setMode('edit')}
             >
               <PencilIcon className="size-4 mr-1" />
@@ -305,6 +306,7 @@ function TableUpdateContent({
       {mode === 'edit' && (
         <form
           id="table-update-form"
+          data-test-id="table-update-form"
           className="flex-1 flex flex-col min-h-0 overflow-auto"
           onSubmit={(e) => {
             e.preventDefault();
@@ -332,6 +334,7 @@ function TableUpdateContent({
                   variant="outline"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  data-test-id="table-update-cancel-btn"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -345,6 +348,7 @@ function TableUpdateContent({
                   form="table-update-form"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  data-test-id="table-update-submit-btn"
                   disabled={!canSubmit}
                 >
                   {isSubmitting && <Spinner />}

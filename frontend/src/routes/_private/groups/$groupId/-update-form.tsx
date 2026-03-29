@@ -41,12 +41,13 @@ export const UpdateGroupFormFields = withForm({
     const isDisabled = mode === 'show' || isPending;
 
     return (
-      <section className="space-y-4 p-2">
+      <section data-test-id="group-update-form-fields" className="space-y-4 p-2">
         {/* Campo Slug (read-only) */}
         <Field>
           <FieldLabel>Slug (identificador)</FieldLabel>
           <InputGroup>
             <InputGroupInput
+              data-test-id="group-slug-input"
               disabled
               type="text"
               value={RoleMapper[slug as keyof typeof RoleMapper] || slug}

@@ -44,6 +44,7 @@ export function PermissionMultiSelect({
   return (
     <Combobox
       data-slot="permission-multi-select"
+      data-test-id="permission-multi-select"
       items={items}
       multiple
       value={selectedPermissions}

@@ -47,6 +47,7 @@ export function TableMultiSelect({
   return (
     <Combobox
       data-slot="table-multi-select"
+      data-test-id="table-multi-select"
       items={items}
       multiple
       value={selectedTables}

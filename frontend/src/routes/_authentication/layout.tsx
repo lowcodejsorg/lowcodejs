@@ -17,5 +17,9 @@ export const Route = createFileRoute('/_authentication')({
       if (e && typeof e === 'object' && 'to' in e) throw e;
     }
   },
-  component: () => <Outlet />,
+  component: () => (
+    <div data-test-id="auth-layout">
+      <Outlet />
+    </div>
+  ),
 });

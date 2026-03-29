@@ -17,7 +17,7 @@ function DataTableBodyInner<TData>({
   emptyMessage,
 }: DataTableBodyProps<TData>): React.JSX.Element {
   return (
-    <TableBody data-slot="data-table-body">
+    <TableBody data-slot="data-table-body" data-test-id="data-table-body">
       {table.getRowModel().rows.length === 0 && (
         <TableRow>
           <TableCell
@@ -28,7 +28,7 @@ function DataTableBodyInner<TData>({
           </TableCell>
         </TableRow>
       )}
-      {table.getRowModel().rows.map((row) => {
+      {table.getRowModel().rows.map((row, index) => {
         let dataState: 'selected' | undefined = undefined;
         if (row.getIsSelected()) {
           dataState = 'selected';
@@ -37,6 +37,7 @@ function DataTableBodyInner<TData>({
         return (
           <TableRow
             key={row.id}
+            data-test-id={`table-row-${index}`}
             className={cn(onRowClick && 'cursor-pointer')}
             data-state={dataState}
             onClick={() => onRowClick?.(row.original)}

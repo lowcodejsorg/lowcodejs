@@ -16,7 +16,7 @@ export function StatCard({
   description,
 }: StatCardProps): React.JSX.Element {
   return (
-    <Card>
+    <Card data-test-id={`stat-card-${title}`}>
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}

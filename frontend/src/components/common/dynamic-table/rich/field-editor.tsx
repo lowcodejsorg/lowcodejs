@@ -52,6 +52,7 @@ export function FieldEditor({
   return (
     <Field
       data-slot="field-editor"
+      data-test-id="field-editor"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>

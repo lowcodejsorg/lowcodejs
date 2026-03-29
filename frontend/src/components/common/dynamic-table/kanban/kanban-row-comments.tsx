@@ -42,6 +42,7 @@ export function KanbanRowCommentsSection({
   return (
     <section
       data-slot="kanban-row-comments"
+      data-test-id="kanban-row-comments"
       className="mt-6 space-y-3"
     >
       <h3 className="text-sm font-semibold">Comentarios</h3>
@@ -159,6 +160,7 @@ export function KanbanRowCommentsSection({
 
       <div className="space-y-2">
         <Textarea
+          data-test-id="kanban-comment-input"
           value={commentText}
           onChange={(event) => onCommentTextChange(event.target.value)}
           placeholder="Escreva um comentario"
@@ -167,6 +169,7 @@ export function KanbanRowCommentsSection({
           <Button
             type="button"
             onClick={onAddComment}
+            data-test-id="kanban-comment-submit-btn"
             className="cursor-pointer"
           >
             Enviar comentario

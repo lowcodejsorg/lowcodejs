@@ -190,7 +190,7 @@ function RouteComponent(): React.JSX.Element {
     _create.status === 'pending' || _createGroupField.status === 'pending';
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="create-field-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -228,6 +228,7 @@ function RouteComponent(): React.JSX.Element {
       {/* Content */}
       <form
         id="field-create-form"
+        data-test-id="create-field-form"
         className="flex-1 flex flex-col min-h-0 overflow-auto"
         onSubmit={(e) => {
           e.preventDefault();
@@ -270,6 +271,7 @@ function RouteComponent(): React.JSX.Element {
                 type="submit"
                 form="field-create-form"
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                data-test-id="create-field-submit-btn"
                 disabled={!canSubmit}
               >
                 {isSubmitting && <Spinner />}

@@ -44,6 +44,7 @@ export function TableFieldFormatSelect({
   return (
     <Field
       data-slot="table-field-format-select"
+      data-test-id="table-field-format-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

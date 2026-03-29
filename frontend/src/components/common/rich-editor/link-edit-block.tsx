@@ -26,6 +26,7 @@ export function LinkEditBlock({
   return (
     <form
       data-slot="editor-link-edit-block"
+      data-test-id="rich-editor-link-edit"
       onSubmit={handleSubmit}
       className="flex flex-col gap-2 p-1"
     >

@@ -467,6 +467,7 @@ export const TreeEditor: React.FC<TreeEditorProps> = ({
   return (
     <div
       data-slot="tree-editor"
+      data-test-id="tree-node"
       className={cn('w-full', className)}
     >
       <div className="space-y-3">

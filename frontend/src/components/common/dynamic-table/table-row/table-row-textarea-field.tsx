@@ -38,6 +38,7 @@ export function TableRowTextareaField({
   return (
     <Field
       data-slot="table-row-textarea-field"
+      data-test-id="table-row-textarea"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -45,6 +46,7 @@ export function TableRowTextareaField({
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
       <Textarea
+        data-test-id="table-row-textarea"
         disabled={disabled}
         id={formField.name}
         name={formField.name}

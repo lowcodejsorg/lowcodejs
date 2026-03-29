@@ -27,7 +27,7 @@ function RouteComponent(): React.JSX.Element {
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="profile-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -39,6 +39,7 @@ function RouteComponent(): React.JSX.Element {
             className="px-2 cursor-pointer max-w-40 w-full"
             size="sm"
             onClick={() => setMode('edit')}
+            data-test-id="profile-edit-btn"
           >
             <PencilIcon className="size-4 mr-1" />
             <span>Editar</span>
@@ -179,6 +180,7 @@ function ProfileUpdateContent({
       {mode === 'edit' && (
         <form
           className="flex-1 flex flex-col min-h-0 overflow-auto"
+          data-test-id="profile-update-form"
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
@@ -208,6 +210,7 @@ function ProfileUpdateContent({
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={isSubmitting}
+                  data-test-id="profile-update-cancel-btn"
                   onClick={() => {
                     form.reset();
                     setMode('show');
@@ -221,6 +224,7 @@ function ProfileUpdateContent({
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                   disabled={!canSubmit}
+                  data-test-id="profile-update-submit-btn"
                   onClick={() => form.handleSubmit()}
                 >
                   {isSubmitting && <Spinner />}

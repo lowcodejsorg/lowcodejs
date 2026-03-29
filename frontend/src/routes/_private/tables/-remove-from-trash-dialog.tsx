@@ -63,7 +63,7 @@ export function TableRemoveFromTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6">
+      <DialogContent className="py-4 px-6" data-test-id="restore-table-dialog">
         <DialogHeader>
           <DialogTitle>Restaurar tabela da lixeira</DialogTitle>
           <DialogDescription>
@@ -80,6 +80,7 @@ export function TableRemoveFromTrashDialog({
               </DialogClose>
               <Button
                 type="button"
+                data-test-id="restore-table-confirm-btn"
                 disabled={removeFromTrash.status === 'pending'}
                 onClick={() => {
                   removeFromTrash.mutateAsync();

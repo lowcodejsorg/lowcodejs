@@ -80,7 +80,7 @@ export function RowRemoveFromTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6">
+      <DialogContent className="py-4 px-6" data-test-id="restore-row-dialog">
         <DialogHeader>
           <DialogTitle>Restaurar linha da lixeira</DialogTitle>
           <DialogDescription>
@@ -97,6 +97,7 @@ export function RowRemoveFromTrashDialog({
               </DialogClose>
               <Button
                 type="button"
+                data-test-id="restore-row-confirm-btn"
                 disabled={removeFromTrash.status === 'pending'}
                 onClick={() => {
                   removeFromTrash.mutateAsync();

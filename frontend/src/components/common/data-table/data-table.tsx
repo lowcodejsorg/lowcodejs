@@ -111,6 +111,7 @@ export function DataTable<TData>({
   const tableContent = (
     <div
       data-slot="data-table"
+      data-test-id="data-table"
       ref={scrollContainerRef}
       className={cn(
         'relative w-full overflow-x-auto',
@@ -120,6 +121,7 @@ export function DataTable<TData>({
     >
       <Table style={columnSizeVars}>
         <TableHeader
+          data-test-id="data-table-header"
           className={cn(stickyHeader && 'sticky top-0 bg-background z-20')}
         >
           {table.getHeaderGroups().map((headerGroup) => (
@@ -177,7 +179,7 @@ export function DataTable<TData>({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody data-test-id="data-table-body">
           {rows.length === 0 && (
             <TableRow>
               <TableCell
@@ -203,6 +205,7 @@ export function DataTable<TData>({
                 return (
                   <TableRow
                     key={row.id}
+                    data-test-id={`table-row-${virtualRow.index}`}
                     className={cn(onRowClick && 'cursor-pointer')}
                     data-state={
                       (row.getIsSelected() && 'selected') || undefined
@@ -267,6 +270,7 @@ export function DataTable<TData>({
             rows.map((row, rowIndex) => (
               <TableRow
                 key={row.id}
+                data-test-id={`table-row-${rowIndex}`}
                 className={cn(onRowClick && 'cursor-pointer')}
                 data-state={(row.getIsSelected() && 'selected') || undefined}
                 onClick={() => onRowClick?.(row.original)}

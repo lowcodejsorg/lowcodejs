@@ -38,10 +38,12 @@ export const InlineEditForm: React.FC<InlineEditFormProps> = ({
   return (
     <div
       data-slot="inline-editor-form"
+      data-test-id="tree-inline-editor"
       className="flex items-center gap-1 flex-1"
       onClick={(e) => e.stopPropagation()}
     >
       <Input
+        data-test-id="tree-inline-editor-input"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -50,6 +52,7 @@ export const InlineEditForm: React.FC<InlineEditFormProps> = ({
         autoFocus
       />
       <Button
+        data-test-id="tree-inline-editor-save-btn"
         type="button"
         size="sm"
         variant="ghost"

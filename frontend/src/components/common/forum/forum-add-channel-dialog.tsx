@@ -59,6 +59,7 @@ export function ForumAddChannelDialog({
   return (
     <Dialog
       data-slot="forum-add-channel-dialog"
+      data-test-id="forum-add-channel-dialog"
       open={open}
       onOpenChange={onOpenChange}
       modal={false}

@@ -76,6 +76,7 @@ export function GroupRowsDataTable({
   return (
     <div
       data-slot="group-rows-data-table"
+      data-test-id="group-rows-table"
       className="space-y-2"
     >
       <div className="flex items-center justify-between">

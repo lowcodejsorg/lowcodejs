@@ -45,6 +45,7 @@ export function GroupRowDeleteDialog({
   return (
     <Dialog
       data-slot="group-row-delete-dialog"
+      data-test-id="group-row-delete-dialog"
       open={open}
       onOpenChange={onOpenChange}
     >
@@ -68,6 +69,7 @@ export function GroupRowDeleteDialog({
           <Button
             type="button"
             variant="destructive"
+            data-test-id="group-row-delete-btn"
             disabled={_delete.status === 'pending'}
             onClick={() =>
               _delete.mutate({ tableSlug, rowId, groupSlug, itemId })

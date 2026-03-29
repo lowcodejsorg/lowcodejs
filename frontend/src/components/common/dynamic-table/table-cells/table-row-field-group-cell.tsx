@@ -55,6 +55,7 @@ export function TableRowFieldGroupCell({
   return (
     <Badge
       data-slot="table-row-field-group-cell"
+      data-test-id="field-group-cell"
       variant="secondary"
     >
       {total} {total === 1 && 'item'}

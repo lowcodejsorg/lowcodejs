@@ -107,7 +107,7 @@ export function ApiEndpointsModal({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <DialogContent className="w-full sm:max-w-[85vw] max-h-[85vh] overflow-y-auto">
+      <DialogContent className="w-full sm:max-w-[85vw] max-h-[85vh] overflow-y-auto" data-test-id="api-endpoints-modal">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <InfoIcon className="size-5" />

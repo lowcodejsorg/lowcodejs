@@ -44,6 +44,7 @@ export function FilterSidebar({
     return (
       <Sheet
         data-slot="filter-sidebar"
+        data-test-id="filter-sidebar"
         open={open}
         onOpenChange={onOpenChange}
       >
@@ -70,6 +71,7 @@ export function FilterSidebar({
 
           <SheetFooter className="flex-row w-full justify-end gap-4 px-0">
             <Button
+              data-test-id="filter-clear-btn"
               onClick={() => {
                 handleClear();
                 onOpenChange(false);
@@ -80,6 +82,7 @@ export function FilterSidebar({
               Limpar
             </Button>
             <Button
+              data-test-id="filter-submit-btn"
               onClick={() => {
                 handleSubmit();
                 onOpenChange(false);
@@ -96,6 +99,7 @@ export function FilterSidebar({
   return (
     <div
       data-slot="filter-sidebar"
+      data-test-id="filter-sidebar"
       className={cn(
         'shrink-0 transition-[width] duration-200 ease-linear overflow-hidden border-r',
         open && 'w-[280px]',
@@ -109,6 +113,7 @@ export function FilterSidebar({
             Filtros
           </h2>
           <Button
+            data-test-id="filter-close-btn"
             variant="ghost"
             size="icon-sm"
             onClick={() => onOpenChange(false)}
@@ -129,6 +134,7 @@ export function FilterSidebar({
 
         <div className="shrink-0 flex justify-end gap-2 px-4 py-3 border-t">
           <Button
+            data-test-id="filter-clear-btn"
             onClick={handleClear}
             type="button"
             size="sm"
@@ -137,6 +143,7 @@ export function FilterSidebar({
             Limpar
           </Button>
           <Button
+            data-test-id="filter-submit-btn"
             onClick={handleSubmit}
             size="sm"
           >

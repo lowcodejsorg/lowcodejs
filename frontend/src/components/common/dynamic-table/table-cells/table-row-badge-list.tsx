@@ -49,6 +49,7 @@ export function TableRowBadgeList<T>({
   return (
     <div
       data-slot="table-row-badge-list"
+      data-test-id="badge-list"
       className="inline-flex flex-wrap gap-1"
     >
       {values.map((value, index) => {

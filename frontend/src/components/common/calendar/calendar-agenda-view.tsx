@@ -17,6 +17,7 @@ export function CalendarAgendaView({
     return (
       <div
         data-slot="calendar-agenda-view"
+        data-test-id="calendar-agenda-view"
         className="p-6 text-sm text-muted-foreground"
       >
         Nenhum agendamento com data válida para exibir.
@@ -29,6 +30,7 @@ export function CalendarAgendaView({
   return (
     <div
       data-slot="calendar-agenda-view"
+      data-test-id="calendar-agenda-view"
       className="h-full overflow-auto"
     >
       <div className="divide-y">

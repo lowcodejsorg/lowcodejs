@@ -47,6 +47,7 @@ export function ForumSidebar({
   return (
     <aside
       data-slot="forum-sidebar"
+      data-test-id="forum-sidebar"
       className={cn(
         'fixed left-0 top-0 bottom-0 z-40 bg-background border-r h-svh flex flex-col relative md:sticky md:top-0 md:h-full md:inset-auto md:z-0',
         'transition-all duration-300',

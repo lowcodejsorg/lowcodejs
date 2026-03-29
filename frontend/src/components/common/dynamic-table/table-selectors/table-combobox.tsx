@@ -44,6 +44,7 @@ export function TableCombobox({
   return (
     <Combobox
       data-slot="table-combobox"
+      data-test-id="table-combobox"
       items={tables}
       value={selectedTable}
       onValueChange={(table: ITable | null) => {

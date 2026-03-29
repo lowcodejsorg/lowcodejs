@@ -2,7 +2,7 @@ import { InfoIcon } from 'lucide-react';
 
 export function SeparatorInfo(): React.JSX.Element {
   return (
-    <div className="bg-primary/10 border border-primary/20 rounded-md p-4">
+    <div className="bg-primary/10 border border-primary/20 rounded-md p-4" data-test-id="separator-info">
       <div className="flex items-start gap-3">
         <InfoIcon className="size-5 text-primary mt-0.5" />
         <div className="flex flex-col gap-1">

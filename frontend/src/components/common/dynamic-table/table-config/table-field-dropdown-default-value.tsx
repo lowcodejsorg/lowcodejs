@@ -41,6 +41,7 @@ export function TableFieldDropdownDefaultValue({
   return (
     <Field
       data-slot="table-field-dropdown-default-value"
+      data-test-id="table-field-dropdown-default-value"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>

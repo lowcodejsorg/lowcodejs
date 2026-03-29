@@ -36,6 +36,7 @@ export function CalendarMonthView({
   return (
     <div
       data-slot="calendar-month-view"
+      data-test-id="calendar-month-view"
       className="flex h-full min-h-0 flex-col"
     >
       <div className="grid grid-cols-7 border-b text-xs font-medium text-muted-foreground">

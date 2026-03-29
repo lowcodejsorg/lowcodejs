@@ -220,6 +220,7 @@ export function TableRowUserField({
     return (
       <Field
         data-slot="table-row-user-field"
+        data-test-id="table-row-user-select"
         data-invalid={isInvalid}
       >
         <FieldLabel htmlFor={formField.name}>
@@ -228,6 +229,7 @@ export function TableRowUserField({
         </FieldLabel>
         <div className="relative">
           <Combobox
+            data-test-id="table-row-user-select"
             items={items}
             multiple
             value={selectedUsers}
@@ -314,6 +316,7 @@ export function TableRowUserField({
   return (
     <Field
       data-slot="table-row-user-field"
+      data-test-id="table-row-user-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -322,6 +325,7 @@ export function TableRowUserField({
       </FieldLabel>
       <div className="relative">
         <Combobox
+          data-test-id="table-row-user-select"
           items={items}
           value={selectedUsers[0] ?? null}
           onValueChange={handleValueChange}

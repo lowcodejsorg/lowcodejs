@@ -116,7 +116,9 @@ export default class CloneTableUseCase {
         }
       }
 
-      const nonNativeFields = baseTable.fields.filter((f) => !f.native && !f.trashed);
+      const nonNativeFields = baseTable.fields.filter(
+        (f) => !f.native && !f.trashed,
+      );
 
       const { newFieldIds, fieldIdMap, clonedFields } =
         await this.cloneFields(nonNativeFields);

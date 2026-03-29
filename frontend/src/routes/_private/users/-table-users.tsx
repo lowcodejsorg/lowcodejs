@@ -137,6 +137,7 @@ export function TableUsers({ data, toolbarPortal }: Props): React.ReactElement {
       {toolbarPortal &&
         createPortal(<DataTableColumnToggle table={table} />, toolbarPortal)}
       <DataTable
+        data-test-id="users-table"
         table={table}
         onRowClick={(user) => {
           sidebar.setOpen(false);

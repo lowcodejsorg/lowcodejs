@@ -36,6 +36,7 @@ export function DocumentSidebarAddDialog({
   return (
     <Dialog
       data-slot="document-sidebar-add-dialog"
+      data-test-id="document-add-dialog"
       open={open}
       onOpenChange={onOpenChange}
     >
@@ -76,6 +77,7 @@ export function DocumentSidebarAddDialog({
               Cancelar
             </Button>
             <Button
+              data-test-id="document-add-btn"
               type="submit"
               disabled={!label.trim() || isPending}
             >

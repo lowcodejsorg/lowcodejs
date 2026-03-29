@@ -67,7 +67,7 @@ function RouteComponent(): React.JSX.Element {
   const isPending = _create.status === 'pending';
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="create-user-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -91,6 +91,7 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <form
+        data-test-id="create-user-form"
         className="flex-1 flex flex-col min-h-0 overflow-auto relative"
         onSubmit={(e) => {
           e.preventDefault();
@@ -110,6 +111,7 @@ function RouteComponent(): React.JSX.Element {
           children={([canSubmit, isSubmitting]) => (
             <div className="flex justify-end space-x-2">
               <Button
+                data-test-id="create-user-cancel-btn"
                 type="button"
                 variant="outline"
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
@@ -121,6 +123,7 @@ function RouteComponent(): React.JSX.Element {
                 <span>Cancelar</span>
               </Button>
               <Button
+                data-test-id="create-user-submit-btn"
                 type="button"
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                 disabled={!canSubmit}

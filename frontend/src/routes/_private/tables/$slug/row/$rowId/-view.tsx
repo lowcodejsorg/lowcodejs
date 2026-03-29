@@ -241,7 +241,7 @@ export function RowView({
   });
 
   return (
-    <section className="flex flex-col overflow-auto">
+    <section className="flex flex-col overflow-auto" data-test-id="row-detail-view">
       <DataTable
         table={tableInstance}
         enableColumnDragging

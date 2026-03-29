@@ -14,6 +14,7 @@ export function DatepickerMonths({
   return (
     <div
       data-slot="datepicker-months"
+      data-test-id="datepicker-months"
       className="p-2"
     >
       <div className="grid grid-cols-2 gap-2 mt-2">

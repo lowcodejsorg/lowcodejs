@@ -29,10 +29,12 @@ export function FieldTextarea({
   return (
     <Field
       data-slot="field-textarea"
+      data-test-id="field-textarea"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
       <Textarea
+        data-test-id="field-textarea"
         disabled={disabled}
         id={field.name}
         name={field.name}

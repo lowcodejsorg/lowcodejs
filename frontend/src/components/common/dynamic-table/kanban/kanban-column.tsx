@@ -79,6 +79,7 @@ export function KanbanColumn({
   return (
     <section
       data-slot="kanban-column"
+      data-test-id={`kanban-column-${option.id}`}
       ref={setNodeRef}
       style={{ ...style, ...columnStyle }}
       className={cn(

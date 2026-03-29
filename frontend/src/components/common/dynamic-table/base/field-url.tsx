@@ -33,6 +33,7 @@ export function FieldUrl({
   return (
     <Field
       data-slot="field-url"
+      data-test-id="field-url-input"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
@@ -40,6 +41,7 @@ export function FieldUrl({
       </FieldLabel>
       <InputGroup>
         <InputGroupInput
+          data-test-id="field-url-input"
           disabled={disabled}
           id={field.name}
           name={field.name}

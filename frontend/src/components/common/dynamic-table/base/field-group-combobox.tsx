@@ -23,12 +23,14 @@ export function FieldGroupCombobox({
   return (
     <Field
       data-slot="field-group-combobox"
+      data-test-id="field-group-combobox"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
         {label} {required && <span className="text-destructive">*</span>}
       </FieldLabel>
       <GroupCombobox
+        data-test-id="field-group-combobox"
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {

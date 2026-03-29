@@ -22,6 +22,7 @@ export function DatepickerYears({
   return (
     <div
       data-slot="datepicker-years"
+      data-test-id="datepicker-years"
       className="p-2"
     >
       {/* Years grid */}

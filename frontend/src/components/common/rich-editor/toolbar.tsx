@@ -55,6 +55,7 @@ export function EditorToolbar({
   return (
     <div
       data-slot="editor-toolbar"
+      data-test-id="rich-editor-toolbar"
       className="flex flex-wrap items-center gap-0.5 border-b px-1 py-1"
     >
       {/* Undo / Redo */}
@@ -86,12 +87,14 @@ export function EditorToolbar({
 
       {/* Inline Formatting */}
       <ToolbarButton
+        data-test-id="rich-editor-bold-btn"
         icon={Bold}
         tooltip="Negrito"
         action={() => editor.chain().focus().toggleBold().run()}
         isActive={editor.isActive('bold')}
       />
       <ToolbarButton
+        data-test-id="rich-editor-italic-btn"
         icon={Italic}
         tooltip="Itálico"
         action={() => editor.chain().focus().toggleItalic().run()}

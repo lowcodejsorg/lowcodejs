@@ -38,6 +38,7 @@ export function GroupRowFormDialog(
   return (
     <Sheet
       data-slot="group-row-form-dialog"
+      data-test-id="group-row-form-dialog"
       open={props.open}
       onOpenChange={props.onOpenChange}
     >
@@ -176,6 +177,7 @@ function GroupRowFormDialogContent({
           children={([canSubmit]) => (
             <Button
               type="button"
+              data-test-id="group-row-submit-btn"
               disabled={!canSubmit || isPending || isUploading}
               onClick={() => form.handleSubmit()}
             >

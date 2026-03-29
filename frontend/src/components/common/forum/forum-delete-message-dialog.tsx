@@ -24,6 +24,7 @@ export function ForumDeleteMessageDialog({
   return (
     <Dialog
       data-slot="forum-delete-message-dialog"
+      data-test-id="forum-delete-message-dialog"
       open={open}
       onOpenChange={onOpenChange}
     >

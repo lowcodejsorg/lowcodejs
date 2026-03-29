@@ -126,10 +126,12 @@ export function CalendarToolbar({
   return (
     <div
       data-slot="calendar-toolbar"
+      data-test-id="calendar-toolbar"
       className="flex flex-col gap-3 border-b p-3 sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="flex items-center gap-2">
         <Button
+          data-test-id="calendar-today-btn"
           variant="outline"
           size="sm"
           onClick={onToday}
@@ -138,6 +140,7 @@ export function CalendarToolbar({
           Hoje
         </Button>
         <Button
+          data-test-id="calendar-prev-btn"
           variant="ghost"
           size="icon-sm"
           onClick={onPrevious}
@@ -146,6 +149,7 @@ export function CalendarToolbar({
           <ChevronLeftIcon className="size-4" />
         </Button>
         <Button
+          data-test-id="calendar-next-btn"
           variant="ghost"
           size="icon-sm"
           onClick={onNext}

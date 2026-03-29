@@ -28,6 +28,7 @@ export function DocumentMain({
   return (
     <main
       data-slot="document-main"
+      data-test-id="document-main"
       className="p-4 w-full"
     >
       <div className="no-print mb-3 flex flex-wrap items-center gap-3 pr-10">

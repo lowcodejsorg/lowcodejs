@@ -144,6 +144,7 @@ export function DatepickerCalendar({
   return (
     <div
       data-slot="datepicker-calendar"
+      data-test-id="datepicker-calendar"
       className="w-70"
     >
       {/* Header with navigation */}
@@ -153,6 +154,7 @@ export function DatepickerCalendar({
           {view === 'days' && !hideNavigation && (
             <Button
               type="button"
+              data-test-id="datepicker-prev-btn"
               variant="ghost"
               size="icon"
               className="size-8 rounded-full"
@@ -206,6 +208,7 @@ export function DatepickerCalendar({
           {view === 'days' && !hideNavigation && (
             <Button
               type="button"
+              data-test-id="datepicker-next-btn"
               variant="ghost"
               size="icon"
               className="size-8 rounded-full"

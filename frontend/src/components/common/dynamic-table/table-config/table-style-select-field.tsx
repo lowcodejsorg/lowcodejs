@@ -42,6 +42,7 @@ export function TableStyleSelectField({
   return (
     <Field
       data-slot="table-style-select-field"
+      data-test-id="table-style-select-field"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

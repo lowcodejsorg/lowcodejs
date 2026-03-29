@@ -100,6 +100,7 @@ export function TableGroups({
       {toolbarPortal &&
         createPortal(<DataTableColumnToggle table={table} />, toolbarPortal)}
       <DataTable
+        data-test-id="groups-table"
         table={table}
         onRowClick={(group) => {
           sidebar.setOpen(false);

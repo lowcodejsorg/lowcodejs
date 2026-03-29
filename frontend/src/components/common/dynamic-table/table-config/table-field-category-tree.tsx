@@ -19,6 +19,7 @@ export function TableFieldCategoryTree({
   return (
     <Field
       data-slot="table-field-category-tree"
+      data-test-id="table-field-category-tree"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

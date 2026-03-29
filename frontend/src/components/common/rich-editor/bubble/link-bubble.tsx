@@ -47,6 +47,7 @@ export function LinkBubble({ editor }: LinkBubbleProps): React.JSX.Element {
     >
       <div
         data-slot="editor-link-bubble"
+        data-test-id="rich-editor-link-bubble"
         className="bubble-menu"
       >
         <LinkDisplay editor={editor} />

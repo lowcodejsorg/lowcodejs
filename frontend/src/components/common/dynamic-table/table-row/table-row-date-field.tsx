@@ -32,6 +32,7 @@ export function TableRowDateField({
   return (
     <Field
       data-slot="table-row-date-field"
+      data-test-id="table-row-date-input"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -39,6 +40,7 @@ export function TableRowDateField({
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
       <Datepicker
+        data-test-id="table-row-date-input"
         value={dateValue}
         onChange={(value) =>
           formField.handleChange(value?.startDate?.toISOString() ?? '')

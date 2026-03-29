@@ -46,6 +46,7 @@ export function KanbanCreateCardDialog({
     >
       <DialogContent
         data-slot="kanban-create-card-dialog"
+        data-test-id="kanban-create-card-dialog"
         className="w-[min(95vw,1400px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0"
       >
         <form
@@ -366,6 +367,7 @@ export function KanbanCreateCardDialog({
               <Button
                 type="submit"
                 disabled={isSubmitting}
+                data-test-id="kanban-create-card-btn"
                 className="cursor-pointer"
               >
                 Criar card

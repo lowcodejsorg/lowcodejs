@@ -53,7 +53,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="methods-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -191,6 +191,7 @@ function MethodsFormContent({
                 <Button
                   type="button"
                   className="w-full max-w-3xs"
+                  data-test-id="methods-submit-btn"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >

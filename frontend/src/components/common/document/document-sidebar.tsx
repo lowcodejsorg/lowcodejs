@@ -419,6 +419,7 @@ export function DocumentSidebar({
   return (
     <div
       data-slot="document-sidebar"
+      data-test-id="document-sidebar"
       className="relative h-full w-full"
     >
       <aside className="bg-background border-r h-full flex flex-col w-full overflow-hidden">

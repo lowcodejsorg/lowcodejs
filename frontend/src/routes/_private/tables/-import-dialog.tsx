@@ -244,7 +244,7 @@ export function TableImportDialog({ ...props }: Props): React.JSX.Element {
       onOpenChange={handleOpenChange}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6 max-w-lg">
+      <DialogContent className="py-4 px-6 max-w-lg" data-test-id="import-table-dialog">
         <DialogHeader>
           <DialogTitle>Importar tabela</DialogTitle>
           <DialogDescription>
@@ -352,6 +352,7 @@ export function TableImportDialog({ ...props }: Props): React.JSX.Element {
           </DialogClose>
           <Button
             type="button"
+            data-test-id="import-table-submit-btn"
             disabled={!canImport}
             onClick={() => {
               importTable.mutateAsync();

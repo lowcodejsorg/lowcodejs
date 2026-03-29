@@ -102,6 +102,7 @@ export function ForumMessagesList({
   return (
     <div
       data-slot="forum-messages-list"
+      data-test-id="forum-messages-list"
       ref={containerRef}
       className="flex-1 min-h-0 overflow-auto px-4 py-3 space-y-4"
     >

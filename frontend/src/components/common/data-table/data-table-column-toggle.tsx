@@ -23,6 +23,7 @@ export function DataTableColumnToggle<TData>({
       <DropdownMenuTrigger asChild>
         <Button
           data-slot="data-table-column-toggle"
+          data-test-id="column-toggle-btn"
           variant="outline"
           size="sm"
           className="h-8"
@@ -40,6 +41,7 @@ export function DataTableColumnToggle<TData>({
           .map((column) => (
             <DropdownMenuCheckboxItem
               key={column.id}
+              data-test-id={`column-toggle-${column.id}`}
               checked={column.getIsVisible()}
               onCheckedChange={(value) => column.toggleVisibility(!!value)}
             >

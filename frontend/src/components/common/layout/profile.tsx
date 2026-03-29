@@ -49,10 +49,12 @@ export function Profile(): React.JSX.Element {
   return (
     <DropdownMenu
       data-slot="profile"
+      data-test-id="profile-dropdown"
       modal={false}
     >
       <DropdownMenuTrigger asChild>
         <Button
+          data-test-id="profile-btn"
           variant="ghost"
           className="h-8 w-8 rounded-full p-0"
         >
@@ -85,6 +87,7 @@ export function Profile(): React.JSX.Element {
               >
                 <Link
                   to="/profile"
+                  data-test-id="profile-link"
                   className="flex items-center gap-2"
                 >
                   <User className="size-4 mr-2" />
@@ -96,6 +99,7 @@ export function Profile(): React.JSX.Element {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
+              data-test-id="logout-btn"
               onClick={() => signOut.mutateAsync()}
               className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
             >

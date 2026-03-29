@@ -332,6 +332,7 @@ export function FileUploadWithStorage({
   return (
     <FileUpload
       data-slot="file-upload-with-storage"
+      data-test-id="file-upload-with-storage"
       value={value}
       onValueChange={onValueChange}
       onUpload={onUpload}

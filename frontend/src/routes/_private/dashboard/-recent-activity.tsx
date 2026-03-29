@@ -13,7 +13,7 @@ const iconMap: Record<string, typeof Table> = {
 
 export function RecentActivity(): React.JSX.Element {
   return (
-    <Card>
+    <Card data-test-id="recent-activity">
       <CardHeader>
         <CardTitle>Atividades Recentes</CardTitle>
       </CardHeader>

@@ -81,7 +81,7 @@ export function RowSendToTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6">
+      <DialogContent className="py-4 px-6" data-test-id="trash-row-dialog">
         <DialogHeader>
           <DialogTitle>Enviar linha para a lixeira</DialogTitle>
           <DialogDescription>
@@ -98,6 +98,7 @@ export function RowSendToTrashDialog({
               </DialogClose>
               <Button
                 type="button"
+                data-test-id="trash-row-confirm-btn"
                 disabled={sendToTrash.status === 'pending'}
                 onClick={() => {
                   sendToTrash.mutateAsync();

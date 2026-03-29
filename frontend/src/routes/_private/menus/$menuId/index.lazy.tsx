@@ -50,7 +50,7 @@ function RouteComponent(): React.JSX.Element {
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="menu-detail-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -172,6 +172,7 @@ function MenuUpdateContent({
               asChild
             >
               <Button
+                data-test-id="menu-trash-btn"
                 type="button"
                 className="px-2 cursor-pointer"
                 size="sm"
@@ -204,6 +205,7 @@ function MenuUpdateContent({
               asChild
             >
               <Button
+                data-test-id="menu-delete-btn"
                 type="button"
                 className="px-2 cursor-pointer"
                 size="sm"
@@ -215,6 +217,7 @@ function MenuUpdateContent({
             </MenuDeleteDialog>
           )}
           <Button
+            data-test-id="menu-edit-btn"
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"
             size="sm"
@@ -251,6 +254,7 @@ function MenuUpdateContent({
 
       {mode === 'edit' && (
         <form
+          data-test-id="menu-update-form"
           className="flex-1 flex flex-col min-h-0 overflow-auto"
           onSubmit={(e) => {
             e.preventDefault();
@@ -274,6 +278,7 @@ function MenuUpdateContent({
             children={([canSubmit, isSubmitting]) => (
               <div className="flex justify-end gap-2">
                 <Button
+                  data-test-id="menu-update-cancel-btn"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -287,6 +292,7 @@ function MenuUpdateContent({
                   <span>Cancelar</span>
                 </Button>
                 <Button
+                  data-test-id="menu-update-submit-btn"
                   type="button"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"

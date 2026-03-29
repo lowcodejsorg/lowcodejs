@@ -79,6 +79,7 @@ export function GanttBar({
       <TooltipTrigger asChild>
         <div
           data-slot="gantt-bar"
+          data-test-id="gantt-bar"
           data-gantt-bar
           className={cn(
             'group/bar absolute top-1 rounded-sm shadow-sm transition-shadow',

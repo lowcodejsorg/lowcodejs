@@ -203,7 +203,7 @@ function RouteComponent(): React.JSX.Element {
     useChatSidebar();
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="table-detail-page">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <div className="inline-flex items-center space-x-2">
           {isAuthenticated && (

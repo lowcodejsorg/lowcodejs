@@ -10,6 +10,7 @@ export function DocumentPrintButton({
   return (
     <Button
       data-slot="document-print-button"
+      data-test-id="document-print-btn"
       onClick={onClick}
       variant="ghost"
       className="p-0 z-50 flex cursor-pointer items-center gap-2 absolute top-2 right-2 no-print"

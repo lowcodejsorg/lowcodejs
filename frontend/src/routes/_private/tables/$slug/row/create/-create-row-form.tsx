@@ -132,6 +132,7 @@ function CreateRowFormContent({
     <React.Fragment>
       <form
         className="flex-1 flex flex-col min-h-0 overflow-auto relative"
+        data-test-id="create-row-form"
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();
@@ -154,6 +155,7 @@ function CreateRowFormContent({
                 type="button"
                 variant="outline"
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                data-test-id="create-row-cancel-btn"
                 disabled={isSubmitting}
                 onClick={() => {
                   sidebar.setOpen(false);
@@ -169,6 +171,7 @@ function CreateRowFormContent({
               <Button
                 type="button"
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                data-test-id="create-row-submit-btn"
                 disabled={!canSubmit || isUploading}
                 onClick={() => form.handleSubmit()}
               >

@@ -127,7 +127,7 @@ export const UpdateSettingFormFields = withForm({
     };
 
     return (
-      <section className="space-y-4 p-2">
+      <section data-test-id="settings-update-form-fields" className="space-y-4 p-2">
         {/* Nome do Sistema */}
         <Card>
           <CardHeader>
@@ -179,6 +179,7 @@ export const UpdateSettingFormFields = withForm({
                     </FieldLabel>
                     <InputGroup>
                       <InputGroupInput
+                        data-test-id="settings-system-name-input"
                         disabled={isDisabled}
                         id={field.name}
                         name={field.name}
@@ -240,7 +241,7 @@ export const UpdateSettingFormFields = withForm({
                       value={field.state.value}
                       onValueChange={(value) => field.handleChange(value)}
                     >
-                      <SelectTrigger className="w-full max-w-xs">
+                      <SelectTrigger data-test-id="settings-locale-select" className="w-full max-w-xs">
                         <SelectValue placeholder="Selecione um idioma" />
                       </SelectTrigger>
                       <SelectContent>
@@ -292,7 +293,7 @@ export const UpdateSettingFormFields = withForm({
                         field.handleChange(value as 'local' | 's3')
                       }
                     >
-                      <SelectTrigger className="w-full max-w-xs">
+                      <SelectTrigger data-test-id="settings-storage-driver-select" className="w-full max-w-xs">
                         <SelectValue placeholder="Selecione o driver" />
                       </SelectTrigger>
                       <SelectContent>
@@ -462,6 +463,7 @@ export const UpdateSettingFormFields = withForm({
                       </div>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="settings-max-file-size-input"
                           disabled={isDisabled}
                           id={field.name}
                           name={field.name}
@@ -521,6 +523,7 @@ export const UpdateSettingFormFields = withForm({
                       </FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="settings-max-files-input"
                           disabled={isDisabled}
                           id={field.name}
                           name={field.name}
@@ -577,6 +580,7 @@ export const UpdateSettingFormFields = withForm({
                     </div>
                     <InputGroup>
                       <InputGroupInput
+                        data-test-id="settings-accepted-types-input"
                         disabled={isDisabled}
                         id={field.name}
                         name={field.name}
@@ -665,7 +669,7 @@ export const UpdateSettingFormFields = withForm({
                       value={field.state.value}
                       onValueChange={(value) => field.handleChange(value)}
                     >
-                      <SelectTrigger className="w-full max-w-xs">
+                      <SelectTrigger data-test-id="settings-pagination-select" className="w-full max-w-xs">
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>
@@ -706,6 +710,7 @@ export const UpdateSettingFormFields = withForm({
                 </div>
                 <InputGroup>
                   <InputGroupInput
+                    data-test-id="settings-database-url-input"
                     disabled
                     defaultValue={settingData.DATABASE_URL}
                     value={settingData.DATABASE_URL}
@@ -714,6 +719,7 @@ export const UpdateSettingFormFields = withForm({
                   />
                   <InputGroupAddon align="inline-end">
                     <InputGroupButton
+                      data-test-id="settings-database-url-toggle-btn"
                       type="button"
                       aria-label="toggle password visibility"
                       title="toggle password visibility"
@@ -815,6 +821,7 @@ export const UpdateSettingFormFields = withForm({
                       <FieldLabel htmlFor={field.name}>SMTP Host</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="settings-smtp-host-input"
                           disabled={isDisabled}
                           id={field.name}
                           name={field.name}
@@ -872,6 +879,7 @@ export const UpdateSettingFormFields = withForm({
                       <FieldLabel htmlFor={field.name}>SMTP Port</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="settings-smtp-port-input"
                           disabled={isDisabled}
                           id={field.name}
                           name={field.name}
@@ -904,6 +912,7 @@ export const UpdateSettingFormFields = withForm({
                     <FieldLabel htmlFor={field.name}>Email Username</FieldLabel>
                     <InputGroup>
                       <InputGroupInput
+                        data-test-id="settings-email-user-input"
                         disabled={isDisabled}
                         id={field.name}
                         name={field.name}
@@ -961,6 +970,7 @@ export const UpdateSettingFormFields = withForm({
                     </div>
                     <InputGroup>
                       <InputGroupInput
+                        data-test-id="settings-email-password-input"
                         disabled={isDisabled}
                         id={field.name}
                         name={field.name}
@@ -973,6 +983,7 @@ export const UpdateSettingFormFields = withForm({
                       />
                       <InputGroupAddon align="inline-end">
                         <InputGroupButton
+                          data-test-id="settings-email-password-toggle-btn"
                           disabled={isDisabled}
                           type="button"
                           aria-label="toggle password visibility"

@@ -102,6 +102,7 @@ export function TableRowFileField({
   return (
     <Field
       data-slot="table-row-file-field"
+      data-test-id="table-row-file-upload"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -109,6 +110,7 @@ export function TableRowFileField({
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
       <FileUploadWithStorage
+        data-test-id="table-row-file-upload"
         value={value.files}
         onValueChange={(files) => formField.handleChange({ ...value, files })}
         onStorageChange={(storages) =>

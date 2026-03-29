@@ -104,6 +104,7 @@ export function TableRowDropdownField({
     return (
       <Field
         data-slot="table-row-dropdown-field"
+        data-test-id="table-row-dropdown"
         data-invalid={isInvalid}
       >
         <FieldLabel htmlFor={formField.name}>
@@ -112,6 +113,7 @@ export function TableRowDropdownField({
         </FieldLabel>
 
         <Combobox
+          data-test-id="table-row-dropdown"
           items={items}
           multiple
           value={selectedOptions}
@@ -173,6 +175,7 @@ export function TableRowDropdownField({
   return (
     <Field
       data-slot="table-row-dropdown-field"
+      data-test-id="table-row-dropdown"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -181,6 +184,7 @@ export function TableRowDropdownField({
       </FieldLabel>
 
       <Combobox
+        data-test-id="table-row-dropdown"
         items={items}
         value={selectedOptions[0] ?? null}
         onValueChange={handleValueChange}

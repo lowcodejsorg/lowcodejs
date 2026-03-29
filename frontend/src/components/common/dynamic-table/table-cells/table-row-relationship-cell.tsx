@@ -34,6 +34,7 @@ export function TableRowRelationshipCell({
   return (
     <TableRowBadgeList
       data-slot="table-row-relationship-cell"
+      data-test-id="relationship-cell"
       values={values}
       renderLabel={(value) => value}
     />

@@ -28,6 +28,7 @@ export function TableRowUserCell({
   return (
     <p
       data-slot="table-row-user-cell"
+      data-test-id="user-cell"
       className="text-muted-foreground text-sm max-w-sm truncate"
     >
       {values.length > 0 && values.join(', ')}

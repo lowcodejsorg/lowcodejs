@@ -102,7 +102,7 @@ function RouteComponentContent(): React.JSX.Element {
   const isPending = _create.status === 'pending';
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="create-table-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -133,6 +133,7 @@ function RouteComponentContent(): React.JSX.Element {
         {!permission.isLoading && permission.can('CREATE_TABLE') && (
           <form
             className="flex-1 flex flex-col"
+            data-test-id="create-table-form"
             onSubmit={(e) => {
               e.preventDefault();
               form.handleSubmit();
@@ -157,6 +158,7 @@ function RouteComponentContent(): React.JSX.Element {
                   type="button"
                   variant="outline"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  data-test-id="create-table-cancel-btn"
                   disabled={isSubmitting}
                   onClick={() => {
                     navigate({
@@ -170,6 +172,7 @@ function RouteComponentContent(): React.JSX.Element {
                 <Button
                   type="button"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  data-test-id="create-table-submit-btn"
                   disabled={!canSubmit || isUploading}
                   onClick={() => form.handleSubmit()}
                 >

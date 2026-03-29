@@ -88,6 +88,7 @@ export function TableRowCategoryField({
   return (
     <Field
       data-slot="table-row-category-field"
+      data-test-id="table-row-category"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -97,6 +98,7 @@ export function TableRowCategoryField({
       <Popover>
         <PopoverTrigger asChild>
           <Button
+            data-test-id="table-row-category"
             variant="outline"
             disabled={disabled}
             className={cn(

@@ -301,10 +301,12 @@ export function Datepicker({
   return (
     <InputGroup
       data-slot="datepicker"
+      data-test-id="datepicker"
       data-disabled={disabled}
       className={className}
     >
       <InputGroupInput
+        data-test-id="datepicker-input"
         type="text"
         value={inputValue}
         onChange={handleInputChange}
@@ -330,6 +332,7 @@ export function Datepicker({
         >
           <PopoverTrigger asChild>
             <InputGroupButton
+              data-test-id="datepicker-calendar-btn"
               size="icon-xs"
               disabled={disabled || readOnly}
               aria-label="Abrir calendário"
@@ -364,6 +367,7 @@ export function Datepicker({
                   {/* Navigation - prev month */}
                   <button
                     type="button"
+                    data-test-id="datepicker-prev-btn"
                     onClick={handlePrevMonth}
                     className="absolute left-4 top-3 size-8 flex items-center justify-center rounded-full hover:bg-accent"
                   >
@@ -404,6 +408,7 @@ export function Datepicker({
                   {/* Navigation - next month */}
                   <button
                     type="button"
+                    data-test-id="datepicker-next-btn"
                     onClick={handleNextMonth}
                     className="absolute right-4 top-3 size-8 flex items-center justify-center rounded-full hover:bg-accent"
                   >

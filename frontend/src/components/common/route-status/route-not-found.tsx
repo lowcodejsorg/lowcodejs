@@ -8,6 +8,7 @@ export function RouteNotFound(): React.JSX.Element {
   return (
     <div
       data-slot="route-not-found"
+      data-test-id="route-not-found-page"
       className="min-h-[80vh] flex items-center justify-center px-4"
     >
       <Card className="max-w-md w-full text-center py-12">

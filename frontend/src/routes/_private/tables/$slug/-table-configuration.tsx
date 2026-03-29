@@ -172,12 +172,13 @@ export function TableConfigurationDropdown({
           disabled={table.status === 'pending'}
           className={cn('shadow-none p-1 h-auto')}
           variant="outline"
+          data-test-id="table-config-btn"
         >
           <Settings2Icon className="size-4" />
           <span>Configuração</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="mr-12 max-w-xs w-full">
+      <DropdownMenuContent className="mr-12 max-w-xs w-full" data-test-id="table-config-dropdown">
         {(permission.can('CREATE_FIELD') || permission.can('UPDATE_FIELD')) && (
           <DropdownMenuLabel>Campos</DropdownMenuLabel>
         )}
@@ -324,6 +325,7 @@ export function TableConfigurationDropdown({
               {table.data?.type === E_TABLE_TYPE.TABLE && (
                 <DropdownMenuItem
                   className="inline-flex space-x-1 w-full"
+                  data-test-id="api-endpoints-btn"
                   onClick={() => setApiModalOpen(true)}
                 >
                   <InfoIcon className="size-4" />

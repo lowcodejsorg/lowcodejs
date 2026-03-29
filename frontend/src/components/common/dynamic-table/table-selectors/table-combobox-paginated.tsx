@@ -67,6 +67,7 @@ export function TableComboboxPaginated({
   return (
     <Combobox
       data-slot="table-combobox-paginated"
+      data-test-id="table-combobox-paginated"
       items={tables}
       value={selectedTable}
       onValueChange={(table: ITable | null) => {

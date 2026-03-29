@@ -26,6 +26,7 @@ export function TableRowFileCell({
   return (
     <ul
       data-slot="table-row-file-cell"
+      data-test-id="file-cell"
       className={cn('space-y-1', isGallery && 'grid grid-cols-4 gap-1')}
     >
       {values.map((value) => {

@@ -802,6 +802,7 @@ export function KanbanRowDialog({
     >
       <DialogContent
         data-slot="kanban-row-dialog"
+        data-test-id="kanban-row-dialog"
         className="w-[min(75vw,1000px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0"
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] h-full min-h-0">
@@ -1247,6 +1248,7 @@ export function KanbanRowDialog({
               <Button
                 type="button"
                 variant="outline"
+                data-test-id="kanban-duplicate-btn"
                 onClick={handleDuplicate}
                 className="cursor-pointer"
               >
@@ -1257,6 +1259,7 @@ export function KanbanRowDialog({
                 <Button
                   type="button"
                   variant="destructive"
+                  data-test-id="kanban-delete-btn"
                   className="cursor-pointer"
                   onClick={() =>
                     trashRow.mutate({ slug: tableSlug, rowId: row._id })

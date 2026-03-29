@@ -39,7 +39,7 @@ function RouteComponent(): React.JSX.Element {
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="user-detail-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -61,6 +61,7 @@ function RouteComponent(): React.JSX.Element {
         </div>
         {mode === 'show' && (
           <Button
+            data-test-id="user-edit-btn"
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"
             size="sm"
@@ -188,6 +189,7 @@ function UserUpdateContent({
 
       {mode === 'edit' && (
         <form
+          data-test-id="user-update-form"
           className="flex-1 flex flex-col min-h-0 overflow-auto"
           onSubmit={(e) => {
             e.preventDefault();
@@ -212,6 +214,7 @@ function UserUpdateContent({
             children={([canSubmit, isSubmitting]) => (
               <div className="flex justify-end gap-2">
                 <Button
+                  data-test-id="user-update-cancel-btn"
                   type="button"
                   variant="outline"
                   size="sm"
@@ -226,6 +229,7 @@ function UserUpdateContent({
                   <span>Cancelar</span>
                 </Button>
                 <Button
+                  data-test-id="user-update-submit-btn"
                   type="button"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"

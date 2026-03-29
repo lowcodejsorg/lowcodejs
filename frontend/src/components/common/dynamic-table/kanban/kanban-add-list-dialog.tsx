@@ -38,6 +38,7 @@ export function KanbanAddListDialog({
     >
       <DialogContent
         data-slot="kanban-add-list-dialog"
+        data-test-id="kanban-add-list-dialog"
         className="max-w-md"
       >
         <form
@@ -99,6 +100,7 @@ export function KanbanAddListDialog({
             <Button
               type="submit"
               className="cursor-pointer"
+              data-test-id="kanban-add-list-btn"
               disabled={!label.trim() || isSubmitting}
             >
               Adicionar

@@ -108,6 +108,7 @@ export function TableRowRelationshipField({
     return (
       <Field
         data-slot="table-row-relationship-field"
+        data-test-id="table-row-relationship"
         data-invalid={isInvalid}
       >
         <FieldLabel htmlFor={formField.name}>
@@ -116,6 +117,7 @@ export function TableRowRelationshipField({
         </FieldLabel>
         <div className="relative">
           <Combobox
+            data-test-id="table-row-relationship"
             items={allItems}
             multiple
             value={selectedItems}
@@ -200,6 +202,7 @@ export function TableRowRelationshipField({
   return (
     <Field
       data-slot="table-row-relationship-field"
+      data-test-id="table-row-relationship"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -208,6 +211,7 @@ export function TableRowRelationshipField({
       </FieldLabel>
       <div className="relative">
         <Combobox
+          data-test-id="table-row-relationship"
           items={allItems}
           value={selectedItems[0] ?? null}
           onValueChange={handleValueChange}

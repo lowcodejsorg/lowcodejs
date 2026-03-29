@@ -29,6 +29,7 @@ export function KanbanRowQuickActions({
     <>
       <div
         data-slot="kanban-row-quick-actions"
+        data-test-id="kanban-row-quick-actions"
         className="mt-4 flex flex-wrap items-center gap-2"
       >
         <div className="flex -space-x-2">
@@ -47,6 +48,7 @@ export function KanbanRowQuickActions({
           type="button"
           variant="outline"
           size="sm"
+          data-test-id="kanban-edit-members-btn"
           onClick={() => setEditTarget('members')}
           className="!cursor-pointer"
         >

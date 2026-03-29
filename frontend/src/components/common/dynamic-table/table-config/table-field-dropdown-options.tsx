@@ -119,6 +119,7 @@ export function TableFieldDropdownOptions({
   return (
     <Field
       data-slot="table-field-dropdown-options"
+      data-test-id="table-field-dropdown-options"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
@@ -150,6 +151,7 @@ export function TableFieldDropdownOptions({
             type="button"
             variant="ghost"
             size="icon-sm"
+            data-test-id="table-field-dropdown-options-add-btn"
             onClick={handleAddOption}
             disabled={disabled || !inputValue.trim()}
           >

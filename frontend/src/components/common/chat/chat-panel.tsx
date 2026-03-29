@@ -118,6 +118,7 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
   return (
     <div
       data-slot="chat-panel"
+      data-test-id="chat-panel"
       className="flex h-full flex-col"
     >
       {/* Header */}
@@ -238,6 +239,7 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
             <Paperclip className="h-4 w-4" />
           </Button>
           <Textarea
+            data-test-id="chat-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
@@ -247,6 +249,7 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
             disabled={isLoading}
           />
           <Button
+            data-test-id="chat-send-btn"
             type="submit"
             size="icon"
             className="h-10 w-10 shrink-0"

@@ -101,7 +101,7 @@ function RouteComponent(): React.JSX.Element {
 
   // Success
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="row-detail-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -125,6 +125,7 @@ function RouteComponent(): React.JSX.Element {
           <Button
             variant="outline"
             className="shadow-none p-1 h-auto"
+            data-test-id="row-share-btn"
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
               toastInfo(

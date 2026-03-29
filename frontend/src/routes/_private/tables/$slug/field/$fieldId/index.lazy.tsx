@@ -73,7 +73,7 @@ function RouteComponent(): React.JSX.Element {
   }
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="field-detail-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">
@@ -107,6 +107,7 @@ function RouteComponent(): React.JSX.Element {
               type="button"
               className="px-2 cursor-pointer"
               size="sm"
+              data-test-id="field-edit-btn"
               onClick={() => setMode('edit')}
             >
               <PencilIcon className="size-4 mr-1" />
@@ -407,6 +408,7 @@ function FieldUpdateContent({
       {mode === 'edit' && (
         <form
           className="flex-1 flex flex-col min-h-0 overflow-auto"
+          data-test-id="field-update-form"
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
@@ -447,6 +449,7 @@ function FieldUpdateContent({
                   type="button"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  data-test-id="field-update-submit-btn"
                   disabled={!canSubmit}
                   onClick={() => form.handleSubmit()}
                 >

@@ -105,6 +105,7 @@ export const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
     >
       <div
         data-slot="tree-node-item"
+        data-test-id="tree-node-item"
         className={cn(
           'relative flex items-center gap-2 p-2 rounded-sm transition-colors cursor-pointer group',
           'hover:bg-accent text-sm',
@@ -193,6 +194,7 @@ export const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
                 {isSelected && (
                   <>
                     <Button
+                      data-test-id="tree-node-edit-btn"
                       type="button"
                       size="sm"
                       variant="ghost"
@@ -217,6 +219,7 @@ export const TreeNodeItem: React.FC<TreeNodeItemProps> = ({
                       <Plus className="w-3 h-3" />
                     </Button>
                     <Button
+                      data-test-id="tree-node-delete-btn"
                       type="button"
                       size="sm"
                       variant="ghost"

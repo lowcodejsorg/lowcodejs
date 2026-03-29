@@ -115,6 +115,7 @@ export function ColorPicker({
   return (
     <Popover
       data-slot="editor-color-picker"
+      data-test-id="rich-editor-color-picker"
       modal
       open={open}
       onOpenChange={setOpen}

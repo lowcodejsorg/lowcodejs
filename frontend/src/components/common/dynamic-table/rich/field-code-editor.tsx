@@ -51,7 +51,7 @@ export function FieldCodeEditor({
   const isValid = isValidIIFE(field.state.value);
 
   return (
-    <div data-slot="field-code-editor">
+    <div data-slot="field-code-editor" data-test-id="field-code-editor">
       <Suspense fallback={<CodeEditorSkeleton />}>
         <CodeEditor
           value={field.state.value}

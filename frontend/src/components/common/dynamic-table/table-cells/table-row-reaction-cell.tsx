@@ -33,6 +33,7 @@ export function TableRowReactionCell({
   return (
     <div
       data-slot="table-row-reaction-cell"
+      data-test-id="reaction-cell"
       className="inline-flex gap-1"
     >
       <Button

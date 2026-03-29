@@ -63,7 +63,10 @@ function SidebarMenuItemRecursive({
       >
         <SidebarMenuItem>
           <CollapsibleTrigger asChild>
-            <SidebarMenuButton tooltip={item.title}>
+            <SidebarMenuButton
+              data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+              tooltip={item.title}
+            >
               {item.icon && (
                 <item.icon
                   className="text-primary"
@@ -112,6 +115,7 @@ function SidebarMenuItemRecursive({
                       href={subUrl}
                       target="_blank"
                       rel="noopener noreferrer"
+                      data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
                       {subItem.icon && (
@@ -124,6 +128,7 @@ function SidebarMenuItemRecursive({
                   subItemLink = (
                     <Link
                       to={subUrl}
+                      data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
                       {subItem.icon && (
@@ -160,7 +165,10 @@ function SidebarMenuItemRecursive({
   ) {
     return (
       <SidebarMenuItem>
-        <SidebarMenuButton tooltip={item.title}>
+        <SidebarMenuButton
+          data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+          tooltip={item.title}
+        >
           {item.icon && (
             <item.icon
               className="text-primary"
@@ -184,6 +192,7 @@ function SidebarMenuItemRecursive({
         href={to}
         target="_blank"
         rel="noopener noreferrer"
+        data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
         {item.icon && (
@@ -199,6 +208,7 @@ function SidebarMenuItemRecursive({
     itemLink = (
       <Link
         to={to}
+        data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
         {item.icon && (
@@ -256,6 +266,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
   return (
     <Root
       data-slot="sidebar"
+      data-test-id="app-sidebar"
       // collapsible="icon"
       // variant="floating"
     >
@@ -268,7 +279,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
           />
         )}
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent data-test-id="sidebar-nav">
         {menu.map((props) => {
           // Se o grupo tem a flag isLoading, renderiza skeleton
           if (props.isLoading) {
@@ -318,6 +329,7 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton
+                    data-test-id="sidebar-logout-btn"
                     onClick={() => signOut.mutateAsync()}
                     className="w-full rounded-none cursor-pointer"
                   >

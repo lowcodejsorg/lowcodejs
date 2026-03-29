@@ -37,6 +37,7 @@ export function TableOrderSelectField({
   return (
     <Field
       data-slot="table-order-select-field"
+      data-test-id="table-order-select-field"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

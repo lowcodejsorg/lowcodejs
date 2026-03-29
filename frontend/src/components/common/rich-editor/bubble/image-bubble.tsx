@@ -17,6 +17,7 @@ export function ImageBubble({ editor }: ImageBubbleProps): React.JSX.Element {
     >
       <div
         data-slot="editor-image-bubble"
+        data-test-id="rich-editor-image-bubble"
         className="bubble-menu"
       >
         <ToolbarButton

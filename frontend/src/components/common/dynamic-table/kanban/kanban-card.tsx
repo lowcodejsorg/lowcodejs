@@ -32,6 +32,7 @@ export function KanbanCard({
   return (
     <button
       data-slot="kanban-card"
+      data-test-id={`kanban-card-${row._id}`}
       type="button"
       onClick={onClick}
       className="w-full text-left rounded-md border bg-background p-3 shadow-sm hover:shadow-md transition cursor-pointer"
@@ -134,6 +135,7 @@ export function KanbanSortableCard({
   return (
     <div
       data-slot="kanban-sortable-card"
+      data-test-id={`kanban-sortable-card-${row._id}`}
       ref={setNodeRef}
       style={style}
       className={cn(isDragging && 'opacity-70')}

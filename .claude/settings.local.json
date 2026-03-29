@@ -67,7 +67,8 @@
       "Bash(xargs -I {} basename {})",
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
-      "WebFetch(domain:mongoosejs.com)"
+      "WebFetch(domain:mongoosejs.com)",
+      "Bash(find /home/indio/Desktop/low-code-js/frontend/src -type f \\\\\\(-name *test* -o -name *spec* -o -name vitest* \\\\\\))"
     ]
   },
   "enableAllProjectMcpServers": true,

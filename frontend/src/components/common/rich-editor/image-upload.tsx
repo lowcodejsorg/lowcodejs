@@ -55,6 +55,7 @@ export function ImageUpload({
   return (
     <Dialog
       data-slot="editor-image-upload"
+      data-test-id="rich-editor-image-upload"
       open={open}
       onOpenChange={(v) => {
         setOpen(v);

@@ -35,6 +35,7 @@ export function TextBubble({ editor }: TextBubbleProps): React.JSX.Element {
     >
       <div
         data-slot="editor-text-bubble"
+        data-test-id="rich-editor-text-bubble"
         className="bubble-menu"
       >
         <ToolbarButton

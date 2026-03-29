@@ -56,6 +56,7 @@ export function DataTableColumnHeader({
   return (
     <div
       data-slot="data-table-column-header"
+      data-test-id={`column-header-${column?.id ?? orderKey ?? 'unknown'}`}
       className="inline-flex items-center"
     >
       {onTitleClick && (
@@ -93,6 +94,7 @@ export function DataTableColumnHeader({
           {orderKey && (
             <>
               <DropdownMenuItem
+                data-test-id="sort-asc-btn"
                 onClick={() => {
                   router.navigate({
                     // @ts-ignore Tanstack Router Navigate
@@ -107,6 +109,7 @@ export function DataTableColumnHeader({
                 <span>Crescente</span>
               </DropdownMenuItem>
               <DropdownMenuItem
+                data-test-id="sort-desc-btn"
                 onClick={() => {
                   router.navigate({
                     // @ts-ignore Tanstack Router Navigate

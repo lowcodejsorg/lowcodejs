@@ -20,6 +20,7 @@ export function KanbanUnassignedColumn({
   return (
     <section
       data-slot="kanban-unassigned-column"
+      data-test-id="kanban-unassigned-column"
       className="w-72 shrink-0 rounded-xl border bg-muted/30 overflow-hidden flex flex-col h-full min-h-0"
     >
       <div className="flex items-center justify-between border-b bg-background/60 px-4 py-3">

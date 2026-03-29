@@ -110,6 +110,7 @@ export function TableStyleViewDropdown({
   return (
     <DropdownMenu
       data-slot="table-style-view"
+      data-test-id="table-style-view"
       dir="ltr"
       modal={false}
     >

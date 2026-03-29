@@ -59,6 +59,7 @@ export function ForumEditChannelDialog({
   return (
     <Dialog
       data-slot="forum-edit-channel-dialog"
+      data-test-id="forum-edit-channel-dialog"
       open={open}
       onOpenChange={onOpenChange}
       modal={false}

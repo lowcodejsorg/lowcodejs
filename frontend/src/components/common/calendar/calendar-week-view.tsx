@@ -179,6 +179,7 @@ export function CalendarWeekView({
   return (
     <div
       data-slot="calendar-week-view"
+      data-test-id="calendar-week-view"
       className="flex h-full min-h-0 flex-col"
     >
       <div

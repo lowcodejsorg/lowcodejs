@@ -12,6 +12,7 @@ export function DataTableResizeHandle<TData>({
   return (
     <div
       data-slot="data-table-resize-handle"
+      data-test-id="resize-handle"
       onMouseDown={header.getResizeHandler()}
       onTouchStart={header.getResizeHandler()}
       onDoubleClick={() => header.column.resetSize()}

@@ -46,6 +46,7 @@ export function FieldPassword({
   return (
     <Field
       data-slot="field-password"
+      data-test-id="field-password-input"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
@@ -53,6 +54,7 @@ export function FieldPassword({
       </FieldLabel>
       <InputGroup>
         <InputGroupInput
+          data-test-id="field-password-input"
           disabled={disabled}
           id={field.name}
           name={field.name}
@@ -67,6 +69,7 @@ export function FieldPassword({
         />
         <InputGroupAddon align="inline-end">
           <InputGroupButton
+            data-test-id="field-password-toggle-btn"
             disabled={disabled}
             type="button"
             aria-label="toggle password visibility"

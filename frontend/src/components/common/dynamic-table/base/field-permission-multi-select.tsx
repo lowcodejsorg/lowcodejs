@@ -23,12 +23,14 @@ export function FieldPermissionMultiSelect({
   return (
     <Field
       data-slot="field-permission-multi-select"
+      data-test-id="field-permission-multi-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
         {label} {required && <span className="text-destructive">*</span>}
       </FieldLabel>
       <PermissionMultiSelect
+        data-test-id="field-permission-multi-select"
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {

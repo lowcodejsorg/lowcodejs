@@ -10,11 +10,12 @@ function RouteComponent(): React.JSX.Element {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-full items-center justify-center">
+    <div className="flex h-full items-center justify-center" data-test-id="new-table-page">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full px-4">
         {/* Criar a partir de modelo */}
         <button
           onClick={() => navigate({ to: '/tables/clone' })}
+          data-test-id="new-table-use-model-card"
           className="group flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-background p-10 text-center transition hover:border-primary hover:shadow-lg"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
@@ -32,6 +33,7 @@ function RouteComponent(): React.JSX.Element {
         {/* Criar do zero */}
         <button
           onClick={() => navigate({ to: '/tables/create' })}
+          data-test-id="new-table-create-card"
           className="group flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-background p-10 text-center transition hover:border-primary hover:shadow-lg"
         >
           <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">

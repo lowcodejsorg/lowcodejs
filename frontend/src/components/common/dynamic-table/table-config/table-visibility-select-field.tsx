@@ -29,6 +29,7 @@ export function TableVisibilitySelectField({
   return (
     <Field
       data-slot="table-visibility-select-field"
+      data-test-id="table-visibility-select-field"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

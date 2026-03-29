@@ -41,6 +41,7 @@ export function TableComboboxFilteredSafe({
   return (
     <Combobox
       data-slot="table-combobox-filtered"
+      data-test-id="table-combobox-filtered"
       items={options}
       value={selectedOption}
       onValueChange={(opt: SelectOption | null) => {

@@ -28,6 +28,7 @@ export function TableBubble({ editor }: TableBubbleProps): React.JSX.Element {
     >
       <div
         data-slot="editor-table-bubble"
+        data-test-id="rich-editor-table-bubble"
         className="bubble-menu"
       >
         <ToolbarButton

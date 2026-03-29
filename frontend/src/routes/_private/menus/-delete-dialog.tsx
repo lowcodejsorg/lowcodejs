@@ -68,7 +68,7 @@ export function MenuDeleteDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6">
+      <DialogContent className="py-4 px-6" data-test-id="delete-menu-dialog">
         <DialogHeader>
           <DialogTitle>Excluir menu permanentemente</DialogTitle>
           <DialogDescription>
@@ -85,6 +85,7 @@ export function MenuDeleteDialog({
                 </Button>
               </DialogClose>
               <Button
+                data-test-id="delete-menu-confirm-btn"
                 type="button"
                 disabled={deleteMenu.status === 'pending'}
                 onClick={() => {

@@ -16,6 +16,7 @@ export function RouteError({
   return (
     <div
       data-slot="route-error"
+      data-test-id="route-error-page"
       className="min-h-[80vh] flex items-center justify-center px-4"
     >
       <Card className="max-w-md w-full text-center py-12">
@@ -26,6 +27,7 @@ export function RouteError({
             {error.message || 'Ocorreu um erro inesperado. Tente novamente.'}
           </p>
           <Button
+            data-test-id="retry-btn"
             onClick={() => {
               resetErrorBoundary?.();
               router.invalidate();

@@ -91,6 +91,7 @@ function TableRowTextFieldDefault({
   return (
     <Field
       data-slot="table-row-text-field"
+      data-test-id="table-row-text-input"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>
@@ -99,6 +100,7 @@ function TableRowTextFieldDefault({
       </FieldLabel>
       <InputGroup data-disabled={disabled}>
         <InputGroupInput
+          data-test-id="table-row-text-input"
           disabled={disabled}
           id={formField.name}
           name={formField.name}

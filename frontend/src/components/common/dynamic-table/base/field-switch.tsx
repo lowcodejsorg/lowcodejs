@@ -24,6 +24,7 @@ export function FieldSwitch({
   return (
     <div
       data-slot="field-switch"
+      data-test-id="field-switch"
       className="flex flex-row items-center justify-between rounded-lg border p-3"
     >
       <div className="space-y-0.5">
@@ -35,6 +36,7 @@ export function FieldSwitch({
       <div className="inline-flex space-x-2 items-center">
         <span className="text-sm text-muted-foreground">{inactiveLabel}</span>
         <Switch
+          data-test-id="field-switch"
           id={field.name}
           aria-label={label}
           disabled={disabled}

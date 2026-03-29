@@ -18,13 +18,14 @@ export function TableRowTextLongCell({
   const isRenderedMarkdown = field.format === E_FIELD_FORMAT.RICH_TEXT;
 
   if (!value) {
-    return <span className="text-muted-foreground text-sm">-</span>;
+    return <span data-test-id="text-long-cell" className="text-muted-foreground text-sm">-</span>;
   }
 
   if (isRenderedMarkdown) {
     return (
       <ContentViewer
         data-slot="table-row-text-long-cell"
+        data-test-id="text-long-cell"
         content={value}
       />
     );
@@ -33,6 +34,7 @@ export function TableRowTextLongCell({
   return (
     <p
       data-slot="table-row-text-long-cell"
+      data-test-id="text-long-cell"
       className={cn('text-muted-foreground text-sm', className)}
     >
       {value}

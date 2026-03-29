@@ -19,6 +19,7 @@ export function ForumHeader({
   return (
     <div
       data-slot="forum-header"
+      data-test-id="forum-header"
       className="shrink-0 border-b p-3"
     >
       <div className="flex items-center justify-between">

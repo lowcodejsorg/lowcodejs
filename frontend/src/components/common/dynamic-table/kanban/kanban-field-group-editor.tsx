@@ -282,6 +282,7 @@ export function KanbanFieldGroupEditor({
     return (
       <div
         data-slot="kanban-field-group-editor"
+        data-test-id="kanban-field-group-editor"
         className="space-y-2"
       >
         <div className="flex items-center justify-between gap-2">
@@ -428,6 +429,7 @@ export function KanbanFieldGroupEditor({
   return (
     <div
       data-slot="kanban-field-group-editor"
+      data-test-id="kanban-field-group-editor"
       className="space-y-2"
     >
       <div className="flex items-center justify-between gap-2">

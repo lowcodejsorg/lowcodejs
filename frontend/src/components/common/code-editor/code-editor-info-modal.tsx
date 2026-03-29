@@ -38,6 +38,7 @@ export function CodeEditorInfoModal({
     <Dialog>
       <DialogTrigger asChild>
         <Button
+          data-test-id="code-editor-info-btn"
           type="button"
           variant="ghost"
           size="sm"
@@ -48,6 +49,7 @@ export function CodeEditorInfoModal({
       </DialogTrigger>
       <DialogContent
         data-slot="code-editor-info-modal"
+        data-test-id="code-editor-info-modal"
         className="flex flex-col py-4 px-6 gap-5 sm:max-w-[85vw] sm:max-h-[85vh]"
       >
         <DialogHeader>

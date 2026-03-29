@@ -122,6 +122,7 @@ export function MenuCombobox({
   return (
     <Combobox
       data-slot="menu-combobox"
+      data-test-id="menu-combobox"
       items={availableMenus}
       value={selectedMenu}
       onValueChange={(menu: IMenu | null) => {

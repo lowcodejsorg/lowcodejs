@@ -48,6 +48,7 @@ export function GroupCombobox({
   return (
     <Combobox
       data-slot="group-combobox"
+      data-test-id="group-combobox"
       items={items}
       value={selectedGroup}
       onValueChange={(group: IGroup | null) => {

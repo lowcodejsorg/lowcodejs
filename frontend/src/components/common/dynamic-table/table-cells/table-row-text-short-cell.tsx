@@ -15,7 +15,7 @@ export function TableRowTextShortCell({
   if (!value) {
     return (
       <p
-        data-slot="table-row-text-short-cell"
+        data-slot="table-row-text-short-cell" data-test-id="text-short-cell"
         className="text-muted-foreground text-sm block truncate"
       >
         -
@@ -26,7 +26,7 @@ export function TableRowTextShortCell({
   if (field.format === E_FIELD_FORMAT.PASSWORD) {
     return (
       <p
-        data-slot="table-row-text-short-cell"
+        data-slot="table-row-text-short-cell" data-test-id="text-short-cell"
         className="text-muted-foreground text-sm block truncate"
       >
         ••••••••
@@ -37,7 +37,7 @@ export function TableRowTextShortCell({
   if (field.format === E_FIELD_FORMAT.EMAIL) {
     return (
       <a
-        data-slot="table-row-text-short-cell"
+        data-slot="table-row-text-short-cell" data-test-id="text-short-cell"
         href={`mailto:${value}`}
         className="text-sm block truncate text-blue-600 hover:underline"
       >
@@ -49,7 +49,7 @@ export function TableRowTextShortCell({
   if (field.format === E_FIELD_FORMAT.URL) {
     return (
       <a
-        data-slot="table-row-text-short-cell"
+        data-slot="table-row-text-short-cell" data-test-id="text-short-cell"
         href={value}
         target="_blank"
         rel="noopener noreferrer"
@@ -62,7 +62,7 @@ export function TableRowTextShortCell({
 
   return (
     <p
-      data-slot="table-row-text-short-cell"
+      data-slot="table-row-text-short-cell" data-test-id="text-short-cell"
       className="text-muted-foreground text-sm block truncate"
     >
       {value}

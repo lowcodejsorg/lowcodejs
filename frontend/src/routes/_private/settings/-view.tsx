@@ -45,7 +45,7 @@ function getLocaleLabel(locale: string): string {
 
 export function SettingView({ data }: SettingViewProps): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2">
+    <section className="space-y-4 p-2" data-test-id="settings-view">
       {/* Nome do Sistema */}
       <Card>
         <CardHeader>

@@ -29,6 +29,7 @@ export function TableCollaborationSelectField({
   return (
     <Field
       data-slot="table-collaboration-select-field"
+      data-test-id="table-collaboration-select-field"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

@@ -269,6 +269,7 @@ export function TableMenus({
       {toolbarPortal &&
         createPortal(<DataTableColumnToggle table={table} />, toolbarPortal)}
       <DataTable
+        data-test-id="menus-table"
         table={table}
         onRowClick={(menu) => {
           sidebar.setOpen(false);

@@ -35,12 +35,14 @@ export function FieldFileUpload({
   return (
     <Field
       data-slot="field-file-upload"
+      data-test-id="field-file-upload"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
 
       {!showPreview && (
         <FileUploadWithStorage
+          data-test-id="field-file-upload"
           value={field.state.value}
           onValueChange={field.handleChange}
           onStorageChange={onStorageChange || ((): void => {})}

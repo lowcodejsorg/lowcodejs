@@ -74,7 +74,7 @@ export function TableSendToTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6">
+      <DialogContent className="py-4 px-6" data-test-id="trash-table-dialog">
         <DialogHeader>
           <DialogTitle>Enviar tabela para a lixeira</DialogTitle>
           <DialogDescription>
@@ -91,6 +91,7 @@ export function TableSendToTrashDialog({
               </DialogClose>
               <Button
                 type="button"
+                data-test-id="trash-table-confirm-btn"
                 disabled={sendToTrash.status === 'pending'}
                 onClick={() => {
                   sendToTrash.mutateAsync();

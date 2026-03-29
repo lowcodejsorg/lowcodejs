@@ -28,6 +28,7 @@ export function KanbanRowDescriptionSection({
   return (
     <section
       data-slot="kanban-row-description"
+      data-test-id="kanban-row-description"
       className="mt-6 space-y-2"
     >
       {!isEditing && <h3 className="text-sm font-semibold">Descrição</h3>}

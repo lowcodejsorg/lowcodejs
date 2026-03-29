@@ -19,7 +19,7 @@ const chartConfig = {
 
 export function ChartTables(): React.JSX.Element {
   return (
-    <Card>
+    <Card data-test-id="chart-tables">
       <CardHeader>
         <CardTitle>Tabelas Criadas por Mês</CardTitle>
       </CardHeader>

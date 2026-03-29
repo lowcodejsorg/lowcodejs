@@ -23,12 +23,14 @@ export function FieldUserMultiSelect({
   return (
     <Field
       data-slot="field-user-multi-select"
+      data-test-id="field-user-multi-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
         {label} {required && <span className="text-destructive">*</span>}
       </FieldLabel>
       <UserMultiSelect
+        data-test-id="field-user-multi-select"
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {

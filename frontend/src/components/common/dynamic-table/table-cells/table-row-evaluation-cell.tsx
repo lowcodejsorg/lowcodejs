@@ -47,6 +47,7 @@ export function TableRowEvaluationCell({
   return (
     <div
       data-slot="table-row-evaluation-cell"
+      data-test-id="evaluation-cell"
       className={cn('flex items-center gap-2', className)}
     >
       <div className="flex items-center gap-1">

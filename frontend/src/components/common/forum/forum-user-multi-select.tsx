@@ -83,6 +83,7 @@ export function ForumUserMultiSelect({
   return (
     <Combobox
       data-slot="forum-user-multi-select"
+      data-test-id="forum-user-multi-select"
       items={items}
       multiple
       value={selectedUsers}

@@ -203,7 +203,7 @@ export function TableDocumentView({
   }
 
   return (
-    <div className="flex h-[calc(100vh-64px)] relative w-full overflow-hidden">
+    <div className="flex h-[calc(100vh-64px)] relative w-full overflow-hidden" data-test-id="table-document-view">
       <DocumentPrintButton onClick={handlePrint} />
 
       {/* Sidebar */}

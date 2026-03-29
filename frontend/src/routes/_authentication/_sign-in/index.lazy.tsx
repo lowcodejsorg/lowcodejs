@@ -79,10 +79,11 @@ function RouteComponent(): React.JSX.Element {
   });
 
   return (
-    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+    <div data-test-id="sign-in-page" className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <form
+            data-test-id="sign-in-form"
             onSubmit={(e) => {
               e.preventDefault();
               form.handleSubmit();
@@ -100,6 +101,7 @@ function RouteComponent(): React.JSX.Element {
                   Não possui uma conta?{' '}
                   <Link
                     to="/sign-up"
+                    data-test-id="sign-up-link"
                     className="underline underline-offset-2"
                   >
                     Clique aqui
@@ -117,6 +119,7 @@ function RouteComponent(): React.JSX.Element {
                       <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="sign-in-email-input"
                           id={field.name}
                           name={field.name}
                           placeholder="exemplo@mail.com"
@@ -149,6 +152,7 @@ function RouteComponent(): React.JSX.Element {
                       <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="sign-in-password-input"
                           id={field.name}
                           name={field.name}
                           type={showPassword ? 'text' : 'password'}
@@ -163,6 +167,7 @@ function RouteComponent(): React.JSX.Element {
                         </InputGroupAddon>
                         <InputGroupAddon align="inline-end">
                           <InputGroupButton
+                            data-test-id="sign-in-password-toggle-btn"
                             type="button"
                             aria-label="toggle password visibility"
                             title="toggle password visibility"
@@ -184,6 +189,7 @@ function RouteComponent(): React.JSX.Element {
               />
               <Field>
                 <Button
+                  data-test-id="sign-in-submit-btn"
                   type="submit"
                   className="w-full"
                   disabled={signInMutation.status === 'pending'}

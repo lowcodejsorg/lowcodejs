@@ -15,6 +15,7 @@ export function ChatMessage({ message }: ChatMessageProps): React.JSX.Element {
   return (
     <div
       data-slot="chat-message"
+      data-test-id="chat-message"
       className={cn(
         'flex gap-2',
         isUser && 'justify-end',

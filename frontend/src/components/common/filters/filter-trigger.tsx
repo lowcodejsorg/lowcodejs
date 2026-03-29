@@ -22,6 +22,7 @@ export function FilterTrigger({
       className="relative"
     >
       <Button
+        data-test-id="filter-trigger-btn"
         className={cn('shadow-none p-1 h-auto', isOpen && 'bg-accent')}
         variant="outline"
         onClick={onClick}

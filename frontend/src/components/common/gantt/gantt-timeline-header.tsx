@@ -94,6 +94,7 @@ export function GanttTimelineHeader({
   return (
     <div
       data-slot="gantt-timeline-header"
+      data-test-id="gantt-timeline-header"
       className="sticky top-0 z-10 border-b bg-background"
       style={{ height: headerHeight }}
     >

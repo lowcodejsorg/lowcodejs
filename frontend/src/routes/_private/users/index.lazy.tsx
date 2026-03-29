@@ -73,7 +73,7 @@ function RouteComponent(): React.JSX.Element {
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="users-page">
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Usuários</h1>
         <div className="inline-flex items-center gap-2">
@@ -84,6 +84,7 @@ function RouteComponent(): React.JSX.Element {
             isOpen={filterOpen}
           />
           <Button
+            data-test-id="create-user-btn"
             onClick={() => {
               sidebar.setOpen(false);
               router.navigate({

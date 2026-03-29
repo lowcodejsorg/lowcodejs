@@ -34,11 +34,16 @@ export function Header({
   return (
     <header
       data-slot="header"
+      data-test-id="app-header"
       className="w-full py-4 inline-flex gap-2 px-4 justify-center border-b "
     >
-      <nav className="container max-w-full items-center inline-flex justify-between gap-4 h-8">
+      <nav
+        data-test-id="header-nav"
+        className="container max-w-full items-center inline-flex justify-between gap-4 h-8"
+      >
         {isAuthenticated && (
           <SidebarTrigger
+            data-test-id="sidebar-trigger-btn"
             className="cursor-pointer rounded-sm shadow-none h-full w-8"
             variant="outline"
             size="icon"

@@ -58,6 +58,7 @@ export function CodeEditor({
   return (
     <div
       data-slot="code-editor"
+      data-test-id="code-editor"
       className="flex flex-col gap-2"
     >
       <div className="flex items-center gap-2">

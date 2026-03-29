@@ -49,6 +49,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
       <SheetTrigger asChild>
         <div className="relative">
           <Button
+            data-test-id="filter-trigger-btn"
             className={cn('shadow-none p-1 h-auto')}
             variant="outline"
           >
@@ -84,13 +85,14 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
 
           <SheetFooter className="flex-row w-full justify-end gap-4 px-0">
             <Button
+              data-test-id="filter-clear-btn"
               onClick={handleClear}
               type="button"
               className="shadow-none border bg-transparent border-destructive text-destructive hover:bg-destructive/20"
             >
               Limpar
             </Button>
-            <Button onClick={handleSubmit}>Pesquisar</Button>
+            <Button data-test-id="filter-submit-btn" onClick={handleSubmit}>Pesquisar</Button>
           </SheetFooter>
         </div>
       </SheetContent>

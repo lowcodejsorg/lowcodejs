@@ -28,6 +28,7 @@ export function TableLayoutFieldSelect({
   return (
     <Field
       data-slot="table-layout-field-select"
+      data-test-id="table-layout-field-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>

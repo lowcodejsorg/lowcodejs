@@ -623,12 +623,14 @@ function FileUploadRoot(props: FileUploadRootProps): React.JSX.Element {
         <RootPrimitive
           data-disabled={dataDisabled}
           data-slot="file-upload"
+          data-test-id="file-upload"
           dir={dir}
           {...rootProps}
           className={cn('relative flex flex-col gap-2', className)}
         >
           {children}
           <input
+            data-test-id="file-upload-input"
             type="file"
             id={inputId}
             aria-labelledby={labelId}

@@ -110,6 +110,7 @@ export function UserMultiSelect({
   return (
     <Combobox
       data-slot="user-multi-select"
+      data-test-id="user-multi-select"
       items={items}
       multiple
       value={selectedUsers as Array<IUser>}

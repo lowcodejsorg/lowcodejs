@@ -106,10 +106,11 @@ function RouteComponent(): React.JSX.Element {
   });
 
   return (
-    <div className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
+    <div data-test-id="sign-up-page" className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <form
+            data-test-id="sign-up-form"
             onSubmit={(e) => {
               e.preventDefault();
               form.handleSubmit();
@@ -127,6 +128,7 @@ function RouteComponent(): React.JSX.Element {
                   Já possui uma conta?{' '}
                   <Link
                     to="/"
+                    data-test-id="sign-in-link"
                     className="underline underline-offset-2"
                   >
                     Faça login
@@ -144,6 +146,7 @@ function RouteComponent(): React.JSX.Element {
                       <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="sign-up-name-input"
                           id={field.name}
                           name={field.name}
                           type="text"
@@ -175,6 +178,7 @@ function RouteComponent(): React.JSX.Element {
                       <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="sign-up-email-input"
                           id={field.name}
                           name={field.name}
                           type="email"
@@ -205,6 +209,7 @@ function RouteComponent(): React.JSX.Element {
                       <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="sign-up-password-input"
                           id={field.name}
                           name={field.name}
                           type={showPassword ? 'text' : 'password'}
@@ -219,6 +224,7 @@ function RouteComponent(): React.JSX.Element {
                         </InputGroupAddon>
                         <InputGroupAddon align="inline-end">
                           <InputGroupButton
+                            data-test-id="sign-up-password-toggle-btn"
                             type="button"
                             aria-label="toggle password visibility"
                             title="toggle password visibility"
@@ -250,6 +256,7 @@ function RouteComponent(): React.JSX.Element {
                       </FieldLabel>
                       <InputGroup>
                         <InputGroupInput
+                          data-test-id="sign-up-confirm-password-input"
                           id={field.name}
                           name={field.name}
                           type={showConfirmPassword ? 'text' : 'password'}
@@ -264,6 +271,7 @@ function RouteComponent(): React.JSX.Element {
                         </InputGroupAddon>
                         <InputGroupAddon align="inline-end">
                           <InputGroupButton
+                            data-test-id="sign-up-confirm-password-toggle-btn"
                             type="button"
                             aria-label="toggle password visibility"
                             title="toggle password visibility"
@@ -287,6 +295,7 @@ function RouteComponent(): React.JSX.Element {
               />
               <Field>
                 <Button
+                  data-test-id="sign-up-submit-btn"
                   type="submit"
                   className="w-full"
                   disabled={signUpMutation.status === 'pending'}

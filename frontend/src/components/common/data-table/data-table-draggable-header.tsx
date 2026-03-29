@@ -50,6 +50,7 @@ export function DataTableDraggableHeader<TData>({
       {canDrag && !isPinned && (
         <button
           type="button"
+          data-test-id={`drag-handle-${header.column.id}`}
           className={cn(
             'opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing',
             'p-0.5 -ml-1 rounded hover:bg-muted transition-opacity',

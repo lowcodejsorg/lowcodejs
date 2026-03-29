@@ -29,6 +29,7 @@ export function KanbanRowExtraFieldsSection({
   return (
     <section
       data-slot="kanban-row-extra-fields"
+      data-test-id="kanban-row-extra-fields"
       className="mt-6 space-y-4"
     >
       <h3 className="text-sm font-semibold">Campos adicionais</h3>

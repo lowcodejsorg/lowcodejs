@@ -420,7 +420,7 @@ export function TableListView({
   });
 
   return (
-    <>
+    <div data-test-id="table-list-view">
       <DataTable
         table={table}
         enableVirtualization
@@ -529,6 +529,6 @@ export function TableListView({
           </section>
         </DialogContent>
       </Dialog>
-    </>
+    </div>
   );
 }

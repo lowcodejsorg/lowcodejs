@@ -62,6 +62,7 @@ export function ForumComposer({
   return (
     <div
       data-slot="forum-composer"
+      data-test-id="forum-composer"
       className={cn(
         'shrink-0 border-t',
         composerLayout === 'side' &&
@@ -152,6 +153,7 @@ export function ForumComposer({
           showHint={composerLayout === 'side'}
         />
         <Button
+          data-test-id="forum-send-btn"
           type="button"
           onClick={onSend}
           className="cursor-pointer w-full"

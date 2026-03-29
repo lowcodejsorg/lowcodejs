@@ -781,7 +781,7 @@ export function TableKanbanView({
         items={orderedListOptions.map((opt) => opt.id)}
         strategy={horizontalListSortingStrategy}
       >
-        <div className="flex gap-4 h-full overflow-x-auto p-2">
+        <div className="flex gap-4 h-full overflow-x-auto p-2" data-test-id="table-kanban-view">
           {orderedListOptions.map((option) => (
             <KanbanColumn
               key={option.id}

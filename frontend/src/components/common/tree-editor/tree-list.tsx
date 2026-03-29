@@ -242,6 +242,7 @@ export const TreeList: React.FC<TreeListProps> = ({
   return (
     <div
       data-slot="tree-list"
+      data-test-id="tree-list"
       className={cn('space-y-1', className)}
     >
       {data.map((node) => (

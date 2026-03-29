@@ -18,6 +18,7 @@ export function AccessDenied(): React.JSX.Element {
   return (
     <Empty
       data-slot="access-denied"
+      data-test-id="access-denied-page"
       className="from-muted/50 to-background h-full bg-linear-to-b from-30%"
     >
       <EmptyHeader>

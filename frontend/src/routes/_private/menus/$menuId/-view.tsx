@@ -12,7 +12,7 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
     data.type;
 
   return (
-    <section className="space-y-4 p-2">
+    <section className="space-y-4 p-2" data-test-id="menu-detail-view">
       <div className="space-y-1">
         <p className="text-sm font-medium">Nome</p>
         <p className="text-sm text-muted-foreground">{data.name || '-'}</p>

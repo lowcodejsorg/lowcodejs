@@ -86,6 +86,7 @@ export function InputSearch(): React.JSX.Element {
         </InputGroupAddon>
 
         <InputGroupInput
+          data-test-id="search-input"
           value={inputValue}
           onChange={(e) => handleChange(e.target.value)}
           onKeyDown={(e) => {
@@ -101,6 +102,7 @@ export function InputSearch(): React.JSX.Element {
         <InputGroupAddon align="inline-end">
           {hasSearchValue && (
             <InputGroupButton
+              data-test-id="search-clear-btn"
               onClick={clearSearch}
               variant="ghost"
               size="icon-xs"
@@ -112,6 +114,7 @@ export function InputSearch(): React.JSX.Element {
 
           {!hasSearchValue && (
             <InputGroupButton
+              data-test-id="search-submit-btn"
               onClick={performSearch}
               variant="ghost"
               size="icon-xs"

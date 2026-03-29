@@ -92,7 +92,7 @@ function RouteComponent(): React.JSX.Element {
     useChatSidebar();
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="tables-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Tabelas</h1>
@@ -125,6 +125,7 @@ function RouteComponent(): React.JSX.Element {
             <Button
               className="disabled:cursor-not-allowed"
               size={'sm'}
+              data-test-id="create-table-btn"
               onClick={() => {
                 sidebar.setOpen(false);
                 router.navigate({

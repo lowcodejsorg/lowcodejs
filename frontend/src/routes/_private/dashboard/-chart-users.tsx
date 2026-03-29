@@ -28,7 +28,7 @@ const chartConfig = {
 
 export function ChartUsers(): React.JSX.Element {
   return (
-    <Card>
+    <Card data-test-id="chart-users">
       <CardHeader>
         <CardTitle>Usuários por Status</CardTitle>
       </CardHeader>

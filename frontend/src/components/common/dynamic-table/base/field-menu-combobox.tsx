@@ -26,11 +26,13 @@ export function FieldMenuCombobox({
   return (
     <Field
       data-slot="field-menu-combobox"
+      data-test-id="field-menu-combobox"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
       <InputGroup>
         <MenuCombobox
+          data-test-id="field-menu-combobox"
           disabled={disabled}
           value={field.state.value}
           onValueChange={(value) => {

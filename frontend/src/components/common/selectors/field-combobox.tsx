@@ -40,6 +40,7 @@ export function FieldCombobox({
   return (
     <Combobox
       data-slot="field-combobox"
+      data-test-id="field-combobox"
       items={fields}
       value={selectedField}
       onValueChange={(field: IField | null) => {

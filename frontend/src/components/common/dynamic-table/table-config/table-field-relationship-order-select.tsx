@@ -33,6 +33,7 @@ export function TableFieldRelationshipOrderSelect({
   return (
     <Field
       data-slot="table-field-relationship-order-select"
+      data-test-id="table-field-relationship-order-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>

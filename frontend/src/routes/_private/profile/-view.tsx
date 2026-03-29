@@ -6,7 +6,7 @@ interface ProfileViewProps {
 
 export function ProfileView({ data }: ProfileViewProps): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2">
+    <section className="space-y-4 p-2" data-test-id="profile-view">
       <div className="space-y-1">
         <p className="text-sm font-medium">Nome</p>
         <p className="text-sm text-muted-foreground">{data.name || '-'}</p>

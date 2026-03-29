@@ -29,6 +29,7 @@ export function CalendarDeleteDialog({
   return (
     <Dialog
       data-slot="calendar-delete-dialog"
+      data-test-id="calendar-delete-dialog"
       open={open}
       onOpenChange={onOpenChange}
       modal
@@ -54,6 +55,7 @@ export function CalendarDeleteDialog({
             Cancelar
           </Button>
           <Button
+            data-test-id="calendar-delete-btn"
             type="button"
             variant="destructive"
             className="cursor-pointer"

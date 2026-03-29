@@ -39,6 +39,7 @@ export function Pagination({
   return (
     <section
       data-slot="pagination"
+      data-test-id="pagination"
       className="flex flex-col lg:flex-row w-full justify-between shrink-0 gap-2"
     >
       <div className="inline-flex gap-2 items-center ">
@@ -49,7 +50,10 @@ export function Pagination({
             onPerPageChange(Number(value));
           }}
         >
-          <SelectTrigger className="w-45">
+          <SelectTrigger
+            data-test-id="pagination-per-page-select"
+            className="w-45"
+          >
             <SelectValue placeholder="Selecione uma opção" />
           </SelectTrigger>
           <SelectContent>
@@ -76,6 +80,7 @@ export function Pagination({
         <PaginationContent className="justify-between w-45 ">
           <PaginationItem>
             <Button
+              data-test-id="pagination-first-btn"
               variant="ghost"
               size="icon"
               className="border"
@@ -87,6 +92,7 @@ export function Pagination({
           </PaginationItem>
           <PaginationItem>
             <Button
+              data-test-id="pagination-prev-btn"
               variant="ghost"
               size="icon"
               className="border"
@@ -98,6 +104,7 @@ export function Pagination({
           </PaginationItem>
           <PaginationItem>
             <Button
+              data-test-id="pagination-next-btn"
               variant="ghost"
               size="icon"
               className="border"
@@ -109,6 +116,7 @@ export function Pagination({
           </PaginationItem>
           <PaginationItem>
             <Button
+              data-test-id="pagination-last-btn"
               variant="ghost"
               size="icon"
               className="border"

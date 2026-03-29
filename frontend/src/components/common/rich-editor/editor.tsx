@@ -443,6 +443,7 @@ export function Editor({
   return (
     <div
       data-slot="editor"
+      data-test-id="rich-editor"
       className={cn('w-full', variantClass, className)}
     >
       {showModeToggle && availableModes.length > 1 && (

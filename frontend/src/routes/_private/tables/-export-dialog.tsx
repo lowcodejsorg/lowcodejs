@@ -84,7 +84,7 @@ export function TableExportDialog({
         asChild
         {...props}
       />
-      <DialogContent className="py-4 px-6 max-w-md">
+      <DialogContent className="py-4 px-6 max-w-md" data-test-id="export-table-dialog">
         <DialogHeader>
           <DialogTitle>Exportar tabela</DialogTitle>
           <DialogDescription>
@@ -138,6 +138,7 @@ export function TableExportDialog({
           </DialogClose>
           <Button
             type="button"
+            data-test-id="export-table-submit-btn"
             disabled={!canExport || exportTable.status === 'pending'}
             onClick={() => {
               exportTable.mutateAsync();

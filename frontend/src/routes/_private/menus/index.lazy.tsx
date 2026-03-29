@@ -62,7 +62,7 @@ function RouteComponent(): React.JSX.Element {
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden">
+    <div className="flex flex-col h-full overflow-hidden" data-test-id="menus-page">
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium">Gestão de Menus</h1>
@@ -75,6 +75,7 @@ function RouteComponent(): React.JSX.Element {
             isOpen={filterOpen}
           />
           <Button
+            data-test-id="create-menu-btn"
             className="disabled:cursor-not-allowed"
             onClick={() => {
               sidebar.setOpen(false);

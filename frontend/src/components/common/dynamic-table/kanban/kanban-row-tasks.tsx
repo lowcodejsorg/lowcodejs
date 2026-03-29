@@ -36,6 +36,7 @@ export function KanbanRowTasksSection({
   return (
     <section
       data-slot="kanban-row-tasks"
+      data-test-id="kanban-row-tasks"
       className="mt-6 space-y-3"
     >
       <h3 className="text-sm font-semibold">Tarefas</h3>

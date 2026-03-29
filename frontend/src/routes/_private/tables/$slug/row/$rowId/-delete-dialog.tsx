@@ -75,7 +75,7 @@ export function RowDeleteDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6">
+      <DialogContent className="py-4 px-6" data-test-id="delete-row-dialog">
         <DialogHeader>
           <DialogTitle>Excluir registro permanentemente</DialogTitle>
           <DialogDescription>
@@ -93,6 +93,7 @@ export function RowDeleteDialog({
               </DialogClose>
               <Button
                 type="button"
+                data-test-id="delete-row-confirm-btn"
                 disabled={deleteRow.status === 'pending'}
                 onClick={() => {
                   deleteRow.mutateAsync();

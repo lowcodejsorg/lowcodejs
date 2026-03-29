@@ -240,6 +240,7 @@ export function CalendarEventDialog({
   return (
     <Dialog
       data-slot="calendar-event-dialog"
+      data-test-id="calendar-event-dialog"
       open={open}
       onOpenChange={onOpenChange}
       modal={false}
@@ -632,6 +633,7 @@ export function CalendarEventDialog({
                 Cancelar
               </Button>
               <Button
+                data-test-id="calendar-event-submit-btn"
                 type="submit"
                 className="cursor-pointer"
                 disabled={!canSubmit || isPending}

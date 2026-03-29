@@ -25,6 +25,7 @@ export function FieldBooleanSwitch({
   return (
     <div
       data-slot="field-boolean-switch"
+      data-test-id="field-boolean-switch"
       className={cn(
         'flex flex-row items-center justify-between rounded-lg border p-3',
         className,
@@ -39,6 +40,7 @@ export function FieldBooleanSwitch({
       <div className="inline-flex space-x-2 items-center">
         <span className="text-sm text-muted-foreground">{noLabel}</span>
         <Switch
+          data-test-id="field-boolean-switch"
           id={field.name}
           aria-label={label}
           disabled={disabled}

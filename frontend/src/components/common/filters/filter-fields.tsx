@@ -286,11 +286,13 @@ export function FilterFieldsForm({
   return (
     <section
       data-slot="filter-fields"
+      data-test-id="filter-fields"
       className="flex flex-col gap-4 w-full"
     >
       {fields.map((field) => (
         <div
           key={field.slug}
+          data-test-id={`filter-${field.slug}`}
           className="flex w-full flex-col relative"
         >
           {field.type === E_FIELD_TYPE.TEXT_SHORT && (
@@ -413,6 +415,7 @@ export function FilterTextShort({
       <FieldLabel>{field.name}</FieldLabel>
       <InputGroup>
         <InputGroupInput
+          data-test-id={`filter-input-${field.slug}`}
           type="text"
           placeholder={`Filtrar por ${field.name.toLowerCase()}`}
           value={value}
@@ -423,6 +426,7 @@ export function FilterTextShort({
         <InputGroupAddon align="inline-end">
           {hasValue && (
             <InputGroupButton
+              data-test-id={`filter-clear-${field.slug}`}
               onClick={onRemove}
               variant="ghost"
               size="icon-xs"
@@ -530,6 +534,7 @@ export function FilterDropdown({
     <Field>
       <FieldLabel>{field.name}</FieldLabel>
       <Select
+        data-test-id={`filter-select-${field.slug}`}
         value={singleValue}
         onValueChange={(v) => {
           if (v) {
@@ -572,6 +577,7 @@ export function FilterDate({
     <Field data-slot="filter-date">
       <FieldLabel>{field.name}</FieldLabel>
       <Datepicker
+        data-test-id={`filter-date-${field.slug}`}
         value={value}
         onChange={onChange}
         useRange={false}
@@ -611,6 +617,7 @@ export function FilterCategory({
       <Popover>
         <PopoverTrigger asChild>
           <Button
+            data-test-id={`filter-category-${field.slug}`}
             variant="outline"
             className={cn(
               'w-full justify-start text-left font-normal',

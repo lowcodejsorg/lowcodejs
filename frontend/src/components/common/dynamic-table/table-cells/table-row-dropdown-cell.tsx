@@ -19,6 +19,7 @@ export function TableRowDropdownCell({
   return (
     <TableRowBadgeList
       data-slot="table-row-dropdown-cell"
+      data-test-id="dropdown-cell"
       values={items}
       renderLabel={(value) => value?.label}
       getKey={(value) => value?.id ?? ''}

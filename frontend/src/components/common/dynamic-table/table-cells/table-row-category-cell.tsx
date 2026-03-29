@@ -18,6 +18,7 @@ export function TableRowCategoryCell({
   return (
     <TableRowBadgeList
       data-slot="table-row-category-cell"
+      data-test-id="category-cell"
       values={items}
       renderLabel={(item) => item?.label}
       getKey={(item) => item?.id ?? ''}

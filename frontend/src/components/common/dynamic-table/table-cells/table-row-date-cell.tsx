@@ -23,6 +23,7 @@ export function TableRowDateCell({
   return (
     <p
       data-slot="table-row-date-cell"
+      data-test-id="date-cell"
       className="text-muted-foreground text-sm"
     >
       {displayValue}

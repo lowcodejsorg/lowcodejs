@@ -83,7 +83,7 @@ export function FilteredTableComboboxField({
 
   if (status === 'pending') {
     return (
-      <Field data-slot="filtered-table-combobox-field">
+      <Field data-slot="filtered-table-combobox-field" data-test-id="filtered-table-combobox-field">
         <FieldLabel>
           {label} {required && <span className="text-destructive">*</span>}
         </FieldLabel>
@@ -96,7 +96,7 @@ export function FilteredTableComboboxField({
 
   if (options.length === 0) {
     return (
-      <Field data-slot="filtered-table-combobox-field">
+      <Field data-slot="filtered-table-combobox-field" data-test-id="filtered-table-combobox-field">
         <FieldLabel>
           {label} {required && <span className="text-destructive">*</span>}
         </FieldLabel>
@@ -114,6 +114,7 @@ export function FilteredTableComboboxField({
   return (
     <Field
       data-slot="filtered-table-combobox-field"
+      data-test-id="filtered-table-combobox-field"
       data-invalid={isInvalid}
     >
       <FieldLabel>

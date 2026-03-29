@@ -184,6 +184,7 @@ function UpdateRowFormContent({
             type="button"
             className="px-2 cursor-pointer max-w-40 w-full"
             size="sm"
+            data-test-id="row-edit-btn"
             onClick={() => setMode('edit')}
           >
             <PencilIcon className="size-4 mr-1" />
@@ -223,6 +224,7 @@ function UpdateRowFormContent({
       {mode === 'edit' && (
         <form
           className="flex-1 flex flex-col min-h-0 overflow-auto"
+          data-test-id="update-row-form"
           onSubmit={(e) => {
             e.preventDefault();
             form.handleSubmit();
@@ -249,6 +251,7 @@ function UpdateRowFormContent({
                   variant="outline"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  data-test-id="update-row-cancel-btn"
                   disabled={isSubmitting}
                   onClick={() => {
                     form.reset();
@@ -261,6 +264,7 @@ function UpdateRowFormContent({
                   type="button"
                   size="sm"
                   className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                  data-test-id="update-row-submit-btn"
                   disabled={!canSubmit || isUploading}
                   onClick={() => form.handleSubmit()}
                 >

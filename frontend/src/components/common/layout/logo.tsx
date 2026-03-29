@@ -7,6 +7,7 @@ export function Logo({ className }: { className?: string }): React.JSX.Element {
   return (
     <img
       data-slot="logo"
+      data-test-id="app-logo"
       src={`${baseUrl}/storage/logo-large.webp`}
       alt="Logo"
       className={className}

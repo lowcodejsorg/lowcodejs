@@ -137,6 +137,7 @@ export function TableRowFieldGroupField({
   return (
     <Field
       data-slot="table-row-field-group-field"
+      data-test-id="table-row-field-group"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={formField.name}>

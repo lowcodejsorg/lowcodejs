@@ -25,12 +25,14 @@ export function FieldTableMultiSelect({
   return (
     <Field
       data-slot="field-table-multi-select"
+      data-test-id="field-table-multi-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
         {label} {required && <span className="text-destructive">*</span>}
       </FieldLabel>
       <TableMultiSelect
+        data-test-id="field-table-multi-select"
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {

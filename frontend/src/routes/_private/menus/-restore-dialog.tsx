@@ -57,7 +57,7 @@ export function MenuRestoreDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6">
+      <DialogContent className="py-4 px-6" data-test-id="restore-menu-dialog">
         <DialogHeader>
           <DialogTitle>Restaurar menu da lixeira</DialogTitle>
           <DialogDescription>
@@ -73,6 +73,7 @@ export function MenuRestoreDialog({
                 </Button>
               </DialogClose>
               <Button
+                data-test-id="restore-menu-confirm-btn"
                 type="button"
                 disabled={restore.status === 'pending'}
                 onClick={() => {

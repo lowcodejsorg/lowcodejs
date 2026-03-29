@@ -33,6 +33,7 @@ export function FieldText({
   return (
     <Field
       data-slot="field-text"
+      data-test-id="field-text-input"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
@@ -41,6 +42,7 @@ export function FieldText({
       </FieldLabel>
       <InputGroup>
         <InputGroupInput
+          data-test-id="field-text-input"
           disabled={disabled}
           id={field.name}
           name={field.name}

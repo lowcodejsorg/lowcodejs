@@ -15,6 +15,7 @@ export function ChatTrigger({
   return (
     <Button
       data-slot="chat-trigger"
+      data-test-id="chat-trigger-btn"
       variant={((): 'default' | 'outline' => {
         if (isOpen) {
           return 'default';

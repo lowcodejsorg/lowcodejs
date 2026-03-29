@@ -32,12 +32,14 @@ export function FieldMenuTypeSelect({
   return (
     <Field
       data-slot="field-menu-type-select"
+      data-test-id="field-menu-type-select"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>
         {label} {required && <span className="text-destructive">*</span>}
       </FieldLabel>
       <Select
+        data-test-id="field-menu-type-select"
         disabled={disabled}
         value={field.state.value}
         aria-label={label}

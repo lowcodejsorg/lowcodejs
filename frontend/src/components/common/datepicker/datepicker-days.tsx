@@ -159,6 +159,7 @@ export function DatepickerDays({
   return (
     <div
       data-slot="datepicker-days"
+      data-test-id="datepicker-days"
       className="p-2"
     >
       {/* Weekday headers */}

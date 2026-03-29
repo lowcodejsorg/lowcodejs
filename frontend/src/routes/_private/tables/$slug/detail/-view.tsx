@@ -28,7 +28,7 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
 
   return (
     <React.Fragment>
-      <section className="space-y-4 p-2">
+      <section className="space-y-4 p-2" data-test-id="table-detail-view">
         {/* Logo */}
         <div className="space-y-1">
           <p className="text-sm font-medium">Logo</p>

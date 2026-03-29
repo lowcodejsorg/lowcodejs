@@ -14,6 +14,7 @@ export const TreeEditorHeader: React.FC<TreeEditorHeaderProps> = ({
   return (
     <CardHeader
       data-slot="tree-editor-header"
+      data-test-id="tree-editor-header"
       className="pb-4"
     >
       <CardTitle className="flex items-center justify-between">
@@ -24,6 +25,7 @@ export const TreeEditorHeader: React.FC<TreeEditorHeaderProps> = ({
           </span>
         </div>
         <Button
+          data-test-id="tree-editor-add-btn"
           type="button"
           onClick={onAddRootNode}
           size="sm"

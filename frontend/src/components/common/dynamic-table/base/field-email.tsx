@@ -33,11 +33,13 @@ export function FieldEmail({
   return (
     <Field
       data-slot="field-email"
+      data-test-id="field-email-input"
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
       <InputGroup>
         <InputGroupInput
+          data-test-id="field-email-input"
           disabled={disabled}
           id={field.name}
           name={field.name}

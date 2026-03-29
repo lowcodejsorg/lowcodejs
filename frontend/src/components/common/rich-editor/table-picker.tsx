@@ -43,6 +43,7 @@ export function TablePicker({
   return (
     <Popover
       data-slot="editor-table-picker"
+      data-test-id="rich-editor-table-picker"
       modal
       open={open}
       onOpenChange={setOpen}

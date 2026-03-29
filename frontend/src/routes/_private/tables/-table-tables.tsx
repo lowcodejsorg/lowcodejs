@@ -339,7 +339,7 @@ export function TableTables({
   });
 
   return (
-    <>
+    <div data-test-id="tables-table">
       {toolbarPortal &&
         createPortal(<DataTableColumnToggle table={table} />, toolbarPortal)}
       <DataTable
@@ -352,6 +352,6 @@ export function TableTables({
           });
         }}
       />
-    </>
+    </div>
   );
 }

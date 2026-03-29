@@ -101,7 +101,7 @@ function PrivateLayout(): React.JSX.Element {
   return (
     <SidebarProvider>
       <Sidebar menu={menu} />
-      <SidebarInset className="relative flex flex-col h-screen w-screen overflow-hidden flex-1 px-4 sm:px-2">
+      <SidebarInset className="relative flex flex-col h-screen w-screen overflow-hidden flex-1 px-4 sm:px-2" data-test-id="private-layout">
         <Header routesWithoutSearchInput={routesWithoutSearchInput} />
         <QueryErrorResetBoundary>
           {({ reset }) => (

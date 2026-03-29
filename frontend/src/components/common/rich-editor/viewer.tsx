@@ -18,6 +18,7 @@ export function ContentViewer({
     return (
       <div
         data-slot="editor-viewer"
+        data-test-id="rich-editor-viewer"
         className={cn('prose prose-sm max-w-none', className)}
       >
         <p className="text-muted-foreground">Sem conteudo</p>
@@ -28,6 +29,7 @@ export function ContentViewer({
   return (
     <div
       data-slot="editor-viewer"
+      data-test-id="rich-editor-viewer"
       className={cn('prose prose-sm max-w-none dark:prose-invert', className)}
     >
       <Markdown

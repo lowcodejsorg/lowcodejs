@@ -23,6 +23,7 @@ export function LoadError({
   return (
     <Empty
       data-slot="load-error"
+      data-test-id="load-error-page"
       className="from-muted/50 to-background h-full bg-linear-to-b from-30%"
     >
       <EmptyHeader>
@@ -34,6 +35,7 @@ export function LoadError({
       </EmptyHeader>
       <EmptyContent>
         <Button
+          data-test-id="retry-btn"
           variant="outline"
           size="sm"
           onClick={() => {
