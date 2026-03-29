@@ -27,6 +27,7 @@ vi.mock('@application/core/util.core', () => ({
   }),
   buildPopulate: vi.fn().mockResolvedValue([]),
   buildSchema: vi.fn().mockReturnValue({}),
+  transformRowContext: vi.fn().mockImplementation((row) => row),
 }));
 
 let tableInMemoryRepository: TableInMemoryRepository;

@@ -38,7 +38,7 @@ describe('User Show Use Case', () => {
     if (result.isLeft()) {
       expect(result.value.code).toBe(404);
       expect(result.value.cause).toBe('USER_NOT_FOUND');
-      expect(result.value.message).toBe('User not found');
+      expect(result.value.message).toBe('Usuário não encontrado');
     }
   });
 

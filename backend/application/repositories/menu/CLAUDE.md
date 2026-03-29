@@ -15,7 +15,8 @@ Repositorio da entidade Menu (itens de navegacao do sistema).
 | Metodo | Retorno | Descricao |
 |--------|---------|-----------|
 | `create(payload)` | `IMenu` | Cria menu com name, slug, type, table, parent, url, html, owner, order |
-| `findBy(payload)` | `IMenu \| null` | Busca por _id, slug ou parent (exact flag, trashed filter) |
+| `findById(_id, options?)` | `IMenu \| null` | Busca por _id (options.trashed para filtro soft-delete) |
+| `findBySlug(slug, options?)` | `IMenu \| null` | Busca por slug (options.trashed para filtro soft-delete) |
 | `findMany(payload)` | `IMenu[]` | Query com paginacao, search, trashed, parent, sort |
 | `update(payload)` | `IMenu` | Atualiza por _id (campos parciais + trashed) |
 | `delete(_id)` | `void` | Remove menu |

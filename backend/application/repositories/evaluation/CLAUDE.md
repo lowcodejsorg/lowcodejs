@@ -15,7 +15,7 @@ Repositorio da entidade Evaluation (avaliacoes/ratings em registros de tabela).
 | Metodo | Retorno | Descricao |
 |--------|---------|-----------|
 | `create(payload)` | `IEvaluation` | Cria avaliacao com value (nota) e user (ref string) |
-| `findBy(payload)` | `IEvaluation \| null` | Busca por _id ou user (exact flag) |
+| `findByIdAndUser(_id, user, options?)` | `IEvaluation \| null` | Busca por _id e user |
 | `findMany(payload)` | `IEvaluation[]` | Query com paginacao e filtro por user |
 | `update(payload)` | `IEvaluation` | Atualiza por _id (campos parciais) |
 | `delete(_id)` | `void` | Remove avaliacao |

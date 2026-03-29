@@ -15,7 +15,8 @@ Repositorio da entidade Table (tabelas dinamicas do low-code).
 | Metodo | Retorno | Descricao |
 |--------|---------|-----------|
 | `create(payload)` | `ITable` | Cria tabela com schema, campos, metodos, visibilidade |
-| `findBy(payload)` | `ITable \| null` | Busca por _id ou slug (exact flag) |
+| `findById(_id, options?)` | `ITable \| null` | Busca por _id |
+| `findBySlug(slug, options?)` | `ITable \| null` | Busca por slug |
 | `findMany(payload)` | `ITable[]` | Query com paginacao, search, filtros |
 | `update(payload)` | `ITable` | Atualiza por _id (campos parciais) |
 | `updateMany(payload)` | `void` | Atualiza multiplas tabelas por _ids (style, visibility, collaboration) |

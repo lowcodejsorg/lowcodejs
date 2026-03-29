@@ -15,7 +15,8 @@ Repositorio da entidade Permission (permissoes RBAC do sistema).
 | Metodo | Retorno | Descricao |
 |--------|---------|-----------|
 | `create(payload)` | `IPermission` | Cria permissao com name, slug, description |
-| `findBy(payload)` | `IPermission \| null` | Busca por _id ou slug (exact flag) |
+| `findById(_id, options?)` | `IPermission \| null` | Busca por _id |
+| `findBySlug(slug, options?)` | `IPermission \| null` | Busca por slug |
 | `findMany(payload)` | `IPermission[]` | Query com paginacao e search |
 | `update(payload)` | `IPermission` | Atualiza por _id (campos parciais) |
 | `delete(_id)` | `void` | Remove permissao |

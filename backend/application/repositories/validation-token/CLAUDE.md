@@ -15,7 +15,8 @@ Repositorio da entidade ValidationToken (tokens de validacao para magic link e r
 | Metodo | Retorno | Descricao |
 |--------|---------|-----------|
 | `create(payload)` | `IValidationToken` | Cria token com code, status e user (ref string) |
-| `findBy(payload)` | `IValidationToken \| null` | Busca por _id, code ou user (exact flag) |
+| `findById(_id, options?)` | `IValidationToken \| null` | Busca por _id |
+| `findByCode(code, options?)` | `IValidationToken \| null` | Busca por code |
 | `findMany(payload)` | `IValidationToken[]` | Query com paginacao, filtro por user e status |
 | `update(payload)` | `IValidationToken` | Atualiza por _id (campos parciais) |
 | `delete(_id)` | `void` | Remove token |

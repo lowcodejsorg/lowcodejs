@@ -86,8 +86,8 @@ backend/
 - Contract: classe abstrata definindo interface
 - Mongoose: implementacao concreta
 - InMemory: para testes unitarios
-- Metodos padrao: `create`, `findBy`, `findMany`, `update`, `delete`, `count`
-- Payloads tipados (CreatePayload, UpdatePayload, FindByPayload, QueryPayload)
+- Metodos padrao: `create`, `findById`, `findByX`, `findMany`, `update`, `delete`, `count`
+- Payloads tipados (CreatePayload, UpdatePayload, QueryPayload, FindOptions)
 
 ### Service (`*-contract.service.ts` + implementacao)
 - Cross-cutting concerns: email, storage
@@ -118,7 +118,8 @@ return response.status(200).send(result.value);
 // Contract (abstrata)
 abstract class UserContractRepository {
   abstract create(payload: UserCreatePayload): Promise<IUser>;
-  abstract findBy(payload: UserFindByPayload): Promise<IUser | null>;
+  abstract findById(_id: string, options?: FindOptions): Promise<IUser | null>;
+  abstract findByEmail(email: string, options?: FindOptions): Promise<IUser | null>;
 }
 
 // DI Registry (di-registry.ts)

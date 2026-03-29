@@ -15,7 +15,8 @@ Repositorio da entidade User (usuarios do sistema).
 | Metodo | Retorno | Descricao |
 |--------|---------|-----------|
 | `create(payload)` | `IUser` | Cria usuario com name, email, password, group, status |
-| `findBy(payload)` | `IUser \| null` | Busca por _id ou email (exact flag) |
+| `findById(_id, options?)` | `IUser \| null` | Busca por _id |
+| `findByEmail(email, options?)` | `IUser \| null` | Busca por email |
 | `findMany(payload)` | `IUser[]` | Query com paginacao, search, filtro por status/trashed, sort |
 | `update(payload)` | `IUser` | Atualiza por _id (campos parciais) |
 | `delete(_id)` | `void` | Remove usuario |
@@ -25,5 +26,5 @@ Repositorio da entidade User (usuarios do sistema).
 
 - `UserCreatePayload` - name, email, password, group (ref string), status opcional
 - `UserUpdatePayload` - _id + campos parciais
-- `UserFindByPayload` - _id ou email + exact flag
+- `FindOptions` (entity.core) - trashed opcional
 - `UserQueryPayload` - page, perPage, search, user (com role), _ids, status, trashed, sort

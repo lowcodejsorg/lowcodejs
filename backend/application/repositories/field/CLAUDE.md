@@ -16,7 +16,8 @@ Repositorio da entidade Field (campos de tabelas dinamicas).
 |--------|---------|-----------|
 | `create(payload)` | `IField` | Cria campo com tipo, formato, visibilidade, validacao |
 | `createMany(payloads)` | `IField[]` | Cria multiplos campos de uma vez |
-| `findBy(payload)` | `IField \| null` | Busca por _id ou slug (exact flag) |
+| `findById(_id, options?)` | `IField \| null` | Busca por _id |
+| `findBySlug(slug, options?)` | `IField \| null` | Busca por slug |
 | `findMany(payload)` | `IField[]` | Query com paginacao, search, filtro por type e _ids |
 | `update(payload)` | `IField` | Atualiza por _id (campos parciais + trashed) |
 | `delete(_id)` | `void` | Remove campo |

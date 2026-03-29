@@ -15,7 +15,8 @@ Cada entidade possui 3 arquivos:
 |--------|-----------|
 | `create(payload)` | Cria documento |
 | `createMany(payloads)` | Cria multiplos (quando aplicavel) |
-| `findBy(payload)` | Busca por _id ou slug |
+| `findById(_id, options?)` | Busca por _id |
+| `findByX(x, options?)` | Busca por campo unico (slug, email, code, filename) |
 | `findMany(payload)` | Query com search, paginacao, filtros |
 | `update(payload)` | Atualiza por _id |
 | `updateMany(payload)` | Atualiza multiplos (quando aplicavel) |
@@ -27,7 +28,7 @@ Cada entidade possui 3 arquivos:
 Cada contract define seus proprios tipos:
 - `{Entity}CreatePayload` - dados para criacao
 - `{Entity}UpdatePayload` - _id + campos parciais
-- `{Entity}FindByPayload` - _id ou slug + exact flag
+- `FindOptions` - trashed (opcional, de entity.core)
 - `{Entity}QueryPayload` - page, perPage, search, trashed, sort, filtros especificos
 
 ## Entidades com Repository
