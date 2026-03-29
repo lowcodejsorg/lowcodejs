@@ -55,7 +55,7 @@ describe('User Create Use Case', () => {
   });
 
   it('deve retornar erro CREATE_USER_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userInMemoryRepository, 'findByEmail').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

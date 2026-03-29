@@ -4,6 +4,7 @@ import type {
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  FindOptions,
   IGroupConfiguration,
   ILayoutFields,
   ITable,
@@ -45,11 +46,6 @@ export type TableUpdatePayload = Merge<
   }
 >;
 
-export type TableFindByPayload = Merge<
-  Partial<Pick<ITable, '_id' | 'slug'>>,
-  { exact: boolean }
->;
-
 export type TableQueryPayload = {
   page?: number;
   perPage?: number;
@@ -74,7 +70,11 @@ export type TableUpdateManyPayload = {
 
 export abstract class TableContractRepository {
   abstract create(payload: TableCreatePayload): Promise<ITable>;
-  abstract findBy(payload: TableFindByPayload): Promise<ITable | null>;
+  abstract findById(_id: string, options?: FindOptions): Promise<ITable | null>;
+  abstract findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<ITable | null>;
   abstract findMany(payload?: TableQueryPayload): Promise<ITable[]>;
   abstract update(payload: TableUpdatePayload): Promise<ITable>;
   abstract updateMany(payload: TableUpdateManyPayload): Promise<void>;

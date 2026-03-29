@@ -21,10 +21,9 @@ export default class ValidateCodeUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const token = await this.validationTokenRepository.findBy({
-        code: payload.code,
-        exact: true,
-      });
+      const token = await this.validationTokenRepository.findByCode(
+        payload.code,
+      );
 
       if (!token)
         return left(

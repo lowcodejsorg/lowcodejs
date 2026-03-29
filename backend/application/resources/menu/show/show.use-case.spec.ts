@@ -71,7 +71,7 @@ describe('Menu Show Use Case', () => {
   });
 
   it('deve retornar erro GET_MENU_BY_ID_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(menuInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

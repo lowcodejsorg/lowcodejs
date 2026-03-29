@@ -1,5 +1,9 @@
 /* eslint-disable no-unused-vars */
-import type { IEvaluation, Merge } from '@application/core/entity.core';
+import type {
+  FindOptions,
+  IEvaluation,
+  Merge,
+} from '@application/core/entity.core';
 
 export type EvaluationCreatePayload = Merge<
   Pick<IEvaluation, 'value'>,
@@ -11,11 +15,6 @@ export type EvaluationUpdatePayload = Merge<
   Partial<EvaluationCreatePayload>
 >;
 
-export type EvaluationFindByPayload = Merge<
-  Partial<Pick<IEvaluation, '_id'>>,
-  { user?: string; exact: boolean }
->;
-
 export type EvaluationQueryPayload = {
   page?: number;
   perPage?: number;
@@ -24,8 +23,10 @@ export type EvaluationQueryPayload = {
 
 export abstract class EvaluationContractRepository {
   abstract create(payload: EvaluationCreatePayload): Promise<IEvaluation>;
-  abstract findBy(
-    payload: EvaluationFindByPayload,
+  abstract findByIdAndUser(
+    _id: string,
+    user: string,
+    options?: FindOptions,
   ): Promise<IEvaluation | null>;
   abstract findMany(payload?: EvaluationQueryPayload): Promise<IEvaluation[]>;
   abstract update(payload: EvaluationUpdatePayload): Promise<IEvaluation>;

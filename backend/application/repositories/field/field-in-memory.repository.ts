@@ -1,9 +1,8 @@
-import type { IField } from '@application/core/entity.core';
+import type { FindOptions, IField } from '@application/core/entity.core';
 
 import type {
   FieldContractRepository,
   FieldCreatePayload,
-  FieldFindByPayload,
   FieldQueryPayload,
   FieldUpdatePayload,
 } from './field-contract.repository';
@@ -37,18 +36,25 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
     return fields;
   }
 
-  async findBy({
-    _id,
-    slug,
-    exact = false,
-  }: FieldFindByPayload): Promise<IField | null> {
-    const field = this.items.find((f) => {
-      if (exact) {
-        return (_id ? f._id === _id : true) && (slug ? f.slug === slug : true);
-      }
-      return f._id === _id || f.slug === slug;
+  async findById(_id: string, options?: FindOptions): Promise<IField | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
-    return field ?? null;
+    return item ?? null;
+  }
+
+  async findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<IField | null> {
+    const item = this.items.find((i) => {
+      if (i.slug !== slug) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(payload?: FieldQueryPayload): Promise<IField[]> {

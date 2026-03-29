@@ -43,10 +43,7 @@ export default class TableCreateUseCase {
 
       const slug = slugify(payload.name, { lower: true, trim: true });
 
-      const existingTable = await this.tableRepository.findBy({
-        slug,
-        exact: true,
-      });
+      const existingTable = await this.tableRepository.findBySlug(slug);
 
       if (existingTable)
         return left(

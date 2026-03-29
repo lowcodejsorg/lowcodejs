@@ -68,7 +68,9 @@
       "mcp__plugin_context7_context7__resolve-library-id",
       "mcp__plugin_context7_context7__query-docs",
       "WebFetch(domain:mongoosejs.com)",
-      "Bash(find /home/indio/Desktop/low-code-js/frontend/src -type f \\\\\\(-name *test* -o -name *spec* -o -name vitest* \\\\\\))"
+      "Bash(find /home/indio/Desktop/low-code-js/frontend/src -type f \\\\\\(-name *test* -o -name *spec* -o -name vitest* \\\\\\))",
+      "Bash(sed -i \"s/vi.spyOn\\(userGroupInMemoryRepository, ''findBy''\\)/vi.spyOn\\(userGroupInMemoryRepository, ''findBySlug''\\)/\" user-groups/create/create.use-case.spec.ts)",
+      "Bash(sed -i \"s/vi.spyOn\\(userGroupInMemoryRepository, ''findBy''\\)/vi.spyOn\\(userGroupInMemoryRepository, ''findById''\\)/\" user-groups/show/show.use-case.spec.ts user-groups/update/update.use-case.spec.ts)"
     ]
   },
   "enableAllProjectMcpServers": true,

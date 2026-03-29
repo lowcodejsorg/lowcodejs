@@ -30,10 +30,7 @@ export default class SignUpUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const user = await this.userRepository.findBy({
-        email: payload.email,
-        exact: true,
-      });
+      const user = await this.userRepository.findByEmail(payload.email);
 
       if (user)
         return left(
@@ -42,10 +39,9 @@ export default class SignUpUseCase {
           }),
         );
 
-      const group = await this.userGroupRepository.findBy({
-        slug: E_ROLE.REGISTERED,
-        exact: true,
-      });
+      const group = await this.userGroupRepository.findBySlug(
+        E_ROLE.REGISTERED,
+      );
 
       if (!group)
         return left(

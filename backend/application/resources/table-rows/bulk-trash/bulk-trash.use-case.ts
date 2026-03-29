@@ -17,10 +17,7 @@ export default class BulkTrashUseCase {
 
   async execute(payload: BulkTrashPayload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(

@@ -31,10 +31,7 @@ export default class TableUpdateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -75,10 +72,7 @@ export default class TableUpdateUseCase {
 
       // Verificar unicidade do novo slug
       if (slugChanged) {
-        const existingTable = await this.tableRepository.findBy({
-          slug: newSlug,
-          exact: true,
-        });
+        const existingTable = await this.tableRepository.findBySlug(newSlug);
 
         if (existingTable) {
           return left(

@@ -95,7 +95,7 @@ describe('Sign In Use Case', () => {
   });
 
   it('deve retornar erro SIGN_IN_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userInMemoryRepository, 'findByEmail').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

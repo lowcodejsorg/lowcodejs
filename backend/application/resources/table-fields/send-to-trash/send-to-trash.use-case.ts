@@ -23,20 +23,14 @@ export default class TableFieldSendToTrashUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
-      const field = await this.fieldRepository.findBy({
-        _id: payload._id,
-        exact: true,
-      });
+      const field = await this.fieldRepository.findById(payload._id);
 
       if (!field)
         return left(

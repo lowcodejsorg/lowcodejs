@@ -91,10 +91,7 @@ export default class ImportTableUseCase {
       });
 
       // Check slug uniqueness
-      const existingTable = await this.tableRepository.findBy({
-        slug: newSlug,
-        exact: true,
-      });
+      const existingTable = await this.tableRepository.findBySlug(newSlug);
 
       if (existingTable) {
         return left(
@@ -338,10 +335,7 @@ export default class ImportTableUseCase {
 
         // 7. Import data if available
         if (data && data.rows && data.rows.length > 0 && newTable) {
-          const fullTable = await this.tableRepository.findBy({
-            _id: newTable._id,
-            exact: true,
-          });
+          const fullTable = await this.tableRepository.findById(newTable._id);
 
           if (fullTable) {
             const model = await buildTable(fullTable);
@@ -391,10 +385,9 @@ export default class ImportTableUseCase {
     // For RELATIONSHIP fields, try to resolve the table reference
     let relationship = null;
     if (exportedField.relationship) {
-      const relatedTable = await this.tableRepository.findBy({
-        slug: exportedField.relationship.tableSlug,
-        exact: true,
-      });
+      const relatedTable = await this.tableRepository.findBySlug(
+        exportedField.relationship.tableSlug,
+      );
 
       if (relatedTable) {
         const relatedField = relatedTable.fields.find(

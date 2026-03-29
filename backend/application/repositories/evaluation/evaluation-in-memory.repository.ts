@@ -1,9 +1,12 @@
-import type { IEvaluation, IUser } from '@application/core/entity.core';
+import type {
+  FindOptions,
+  IEvaluation,
+  IUser,
+} from '@application/core/entity.core';
 
 import type {
   EvaluationContractRepository,
   EvaluationCreatePayload,
-  EvaluationFindByPayload,
   EvaluationQueryPayload,
   EvaluationUpdatePayload,
 } from './evaluation-contract.repository';
@@ -25,21 +28,18 @@ export default class EvaluationInMemoryRepository implements EvaluationContractR
     return evaluation;
   }
 
-  async findBy({
-    _id,
-    user,
-    exact = false,
-  }: EvaluationFindByPayload): Promise<IEvaluation | null> {
-    const evaluation = this.items.find((e) => {
-      if (exact) {
-        return (
-          (_id ? e._id === _id : true) &&
-          (user ? (e.user as IUser)?._id === user : true)
-        );
-      }
-      return e._id === _id || (e.user as IUser)?._id === user;
+  async findByIdAndUser(
+    _id: string,
+    user: string,
+    options?: FindOptions,
+  ): Promise<IEvaluation | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if ((i.user as IUser)?._id !== user) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
-    return evaluation ?? null;
+    return item ?? null;
   }
 
   async findMany(payload?: EvaluationQueryPayload): Promise<IEvaluation[]> {

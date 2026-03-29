@@ -66,7 +66,7 @@ describe('Table Row Delete Use Case', () => {
   });
 
   it('deve retornar erro DELETE_ROW_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

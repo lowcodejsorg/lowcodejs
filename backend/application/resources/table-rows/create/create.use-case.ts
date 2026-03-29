@@ -24,10 +24,7 @@ export default class TableRowCreateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(

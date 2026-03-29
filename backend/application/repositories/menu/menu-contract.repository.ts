@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import type { IMenu, Merge } from '@application/core/entity.core';
+import type { FindOptions, IMenu, Merge } from '@application/core/entity.core';
 
 export type MenuCreatePayload = Merge<
   Pick<IMenu, 'name' | 'slug' | 'type'>,
@@ -14,11 +14,6 @@ export type MenuUpdatePayload = Merge<
   }
 >;
 
-export type MenuFindByPayload = Merge<
-  Partial<Pick<IMenu, '_id' | 'slug' | 'parent'>>,
-  { trashed?: boolean; exact: boolean }
->;
-
 export type MenuQueryPayload = {
   page?: number;
   perPage?: number;
@@ -30,7 +25,11 @@ export type MenuQueryPayload = {
 
 export abstract class MenuContractRepository {
   abstract create(payload: MenuCreatePayload): Promise<IMenu>;
-  abstract findBy(payload: MenuFindByPayload): Promise<IMenu | null>;
+  abstract findById(_id: string, options?: FindOptions): Promise<IMenu | null>;
+  abstract findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<IMenu | null>;
   abstract findMany(payload?: MenuQueryPayload): Promise<IMenu[]>;
   abstract update(payload: MenuUpdatePayload): Promise<IMenu>;
   abstract delete(_id: string): Promise<void>;

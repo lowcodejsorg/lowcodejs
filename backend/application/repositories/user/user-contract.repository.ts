@@ -2,6 +2,7 @@
 import type {
   E_ROLE,
   E_USER_STATUS,
+  FindOptions,
   IUser,
   Merge,
   ValueOf,
@@ -17,11 +18,6 @@ export type UserUpdatePayload = Merge<
   { group?: string; status?: ValueOf<typeof E_USER_STATUS> }
 >;
 
-export type UserFindByPayload = Merge<
-  Partial<Pick<IUser, '_id' | 'email'>>,
-  { exact: boolean }
->;
-
 export type UserQueryPayload = {
   page?: number;
   perPage?: number;
@@ -35,7 +31,11 @@ export type UserQueryPayload = {
 
 export abstract class UserContractRepository {
   abstract create(payload: UserCreatePayload): Promise<IUser>;
-  abstract findBy(payload: UserFindByPayload): Promise<IUser | null>;
+  abstract findById(_id: string, options?: FindOptions): Promise<IUser | null>;
+  abstract findByEmail(
+    email: string,
+    options?: FindOptions,
+  ): Promise<IUser | null>;
   abstract findMany(payload?: UserQueryPayload): Promise<IUser[]>;
   abstract update(payload: UserUpdatePayload): Promise<IUser>;
   abstract delete(_id: string): Promise<void>;

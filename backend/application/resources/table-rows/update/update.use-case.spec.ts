@@ -80,7 +80,7 @@ describe('Table Row Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_ROW_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

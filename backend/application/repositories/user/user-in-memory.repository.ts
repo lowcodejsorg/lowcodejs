@@ -1,9 +1,12 @@
-import { E_USER_STATUS, type IUser } from '@application/core/entity.core';
+import {
+  E_USER_STATUS,
+  type FindOptions,
+  type IUser,
+} from '@application/core/entity.core';
 
 import type {
   UserContractRepository,
   UserCreatePayload,
-  UserFindByPayload,
   UserQueryPayload,
   UserUpdatePayload,
 } from './user-contract.repository';
@@ -26,22 +29,25 @@ export default class UserInMemoryRepository implements UserContractRepository {
     return user;
   }
 
-  async findBy({
-    _id,
-    email,
-    exact,
-  }: UserFindByPayload): Promise<IUser | null> {
-    const user = this.items.find((_user) => {
-      if (exact) {
-        return (
-          (_id ? _user._id === _id : true) &&
-          (email ? _user.email === email : true)
-        );
-      }
-      return _user._id === _id || _user.email === email;
+  async findById(_id: string, options?: FindOptions): Promise<IUser | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
+    return item ?? null;
+  }
 
-    return user ?? null;
+  async findByEmail(
+    email: string,
+    options?: FindOptions,
+  ): Promise<IUser | null> {
+    const item = this.items.find((i) => {
+      if (i.email !== email) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(payload?: UserQueryPayload): Promise<IUser[]> {

@@ -41,7 +41,7 @@ describe('Refresh Token Use Case', () => {
   });
 
   it('deve retornar erro REFRESH_TOKEN_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

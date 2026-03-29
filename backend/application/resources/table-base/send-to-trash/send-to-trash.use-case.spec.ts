@@ -79,7 +79,7 @@ describe('Table Send To Trash Use Case', () => {
   });
 
   it('deve retornar erro SEND_TABLE_TO_TRASH_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

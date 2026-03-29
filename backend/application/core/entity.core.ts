@@ -21,6 +21,8 @@ export type Merge<T, U> = {
 
 export type ValueOf<T> = T[keyof T];
 
+export type FindOptions = { trashed?: boolean };
+
 export const E_TOKEN_STATUS = {
   REQUESTED: 'REQUESTED',
   EXPIRED: 'EXPIRED',

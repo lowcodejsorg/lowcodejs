@@ -80,7 +80,7 @@ describe('Table Row Remove From Trash Use Case', () => {
   });
 
   it('deve retornar erro REMOVE_ROW_FROM_TRASH_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

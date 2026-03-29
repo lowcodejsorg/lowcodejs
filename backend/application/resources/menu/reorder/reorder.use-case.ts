@@ -29,10 +29,8 @@ export default class MenuReorderUseCase {
       let commonParent: string | null | undefined;
 
       for (const item of payload.items) {
-        const menu = await this.menuRepository.findBy({
-          _id: item._id,
+        const menu = await this.menuRepository.findById(item._id, {
           trashed: false,
-          exact: true,
         });
 
         if (!menu) {

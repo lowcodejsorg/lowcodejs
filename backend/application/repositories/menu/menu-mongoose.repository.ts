@@ -2,13 +2,13 @@ import { Service } from 'fastify-decorators';
 import mongoose from 'mongoose';
 
 import type { IMenu } from '@application/core/entity.core';
+import type { FindOptions } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Menu as Model } from '@application/model/menu.model';
 
 import type {
   MenuContractRepository,
   MenuCreatePayload,
-  MenuFindByPayload,
   MenuQueryPayload,
   MenuUpdatePayload,
 } from './menu-contract.repository';
@@ -59,33 +59,25 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     return this.transform(populated);
   }
 
-  async findBy({
-    exact = false,
-    trashed,
-    ...payload
-  }: MenuFindByPayload): Promise<IMenu | null> {
-    const conditions: Record<string, unknown>[] = [];
-
-    if (payload._id) conditions.push({ _id: payload._id });
-    if (payload.slug) conditions.push({ slug: payload.slug });
-    if (payload.parent !== undefined)
-      conditions.push({ parent: payload.parent });
-
-    if (conditions.length === 0) {
-      throw new Error('At least one query is required');
+  async findById(_id: string, options?: FindOptions): Promise<IMenu | null> {
+    const where: Record<string, unknown> = { _id };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
     }
 
-    const baseConds =
-      trashed !== undefined ? [...conditions, { trashed }] : conditions;
+    const menu = await Model.findOne(where).populate(this.populateOptions);
+    if (!menu) return null;
 
-    const whereClause = exact
-      ? { $and: baseConds }
-      : { ...(baseConds.length > 1 ? { $or: baseConds } : baseConds[0]) };
+    return this.transform(menu);
+  }
 
-    const menu = await Model.findOne(whereClause).populate(
-      this.populateOptions,
-    );
+  async findBySlug(slug: string, options?: FindOptions): Promise<IMenu | null> {
+    const where: Record<string, unknown> = { slug };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
+    }
 
+    const menu = await Model.findOne(where).populate(this.populateOptions);
     if (!menu) return null;
 
     return this.transform(menu);

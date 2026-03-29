@@ -1,9 +1,8 @@
-import type { IPermission } from '@application/core/entity.core';
+import type { FindOptions, IPermission } from '@application/core/entity.core';
 
 import type {
   PermissionContractRepository,
   PermissionCreatePayload,
-  PermissionFindByPayload,
   PermissionQueryPayload,
   PermissionUpdatePayload,
 } from './permission-contract.repository';
@@ -24,18 +23,28 @@ export default class PermissionInMemoryRepository implements PermissionContractR
     return permission;
   }
 
-  async findBy({
-    _id,
-    slug,
-    exact = false,
-  }: PermissionFindByPayload): Promise<IPermission | null> {
-    const permission = this.items.find((p) => {
-      if (exact) {
-        return (_id ? p._id === _id : true) && (slug ? p.slug === slug : true);
-      }
-      return p._id === _id || p.slug === slug;
+  async findById(
+    _id: string,
+    options?: FindOptions,
+  ): Promise<IPermission | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
-    return permission ?? null;
+    return item ?? null;
+  }
+
+  async findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<IPermission | null> {
+    const item = this.items.find((i) => {
+      if (i.slug !== slug) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(payload?: PermissionQueryPayload): Promise<IPermission[]> {

@@ -28,10 +28,7 @@ export default class ExportTableUseCase {
     payload: ExportTableUseCasePayload,
   ): Promise<ExportTableResponse> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table) {
         return left(

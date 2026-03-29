@@ -25,10 +25,7 @@ export default class SignInUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const user = await this.userRepository.findBy({
-        email: payload.email,
-        exact: true,
-      });
+      const user = await this.userRepository.findByEmail(payload.email);
 
       if (!user)
         return left(

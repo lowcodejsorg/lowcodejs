@@ -29,10 +29,8 @@ export default class MenuUpdateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const existingMenu = await this.menuRepository.findBy({
-        _id: payload._id,
+      const existingMenu = await this.menuRepository.findById(payload._id, {
         trashed: false,
-        exact: true,
       });
 
       if (!existingMenu)
@@ -71,10 +69,8 @@ export default class MenuUpdateUseCase {
             );
           }
 
-          parent = await this.menuRepository.findBy({
-            _id: payload.parent,
+          parent = await this.menuRepository.findById(payload.parent, {
             trashed: false,
-            exact: true,
           });
 
           if (!parent)
@@ -92,11 +88,10 @@ export default class MenuUpdateUseCase {
           });
         }
       } else if (existingMenu.parent) {
-        const currentParent = await this.menuRepository.findBy({
-          _id: existingMenu.parent,
-          trashed: false,
-          exact: true,
-        });
+        const currentParent = await this.menuRepository.findById(
+          existingMenu.parent,
+          { trashed: false },
+        );
         if (currentParent) {
           finalSlug = slugify(
             finalSlug.concat('-').concat(currentParent.slug),
@@ -109,11 +104,10 @@ export default class MenuUpdateUseCase {
       }
 
       if (finalSlug !== existingMenu.slug) {
-        const menuWithSameSlug = await this.menuRepository.findBy({
-          slug: finalSlug,
-          trashed: false,
-          exact: true,
-        });
+        const menuWithSameSlug = await this.menuRepository.findBySlug(
+          finalSlug,
+          { trashed: false },
+        );
 
         if (menuWithSameSlug && menuWithSameSlug._id !== payload._id)
           return left(
@@ -141,10 +135,7 @@ export default class MenuUpdateUseCase {
           );
         }
 
-        const table = await this.tableRepository.findBy({
-          _id: payload.table,
-          exact: true,
-        });
+        const table = await this.tableRepository.findById(payload.table);
 
         if (!table)
           return left(

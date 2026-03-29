@@ -1,12 +1,12 @@
 import { Service } from 'fastify-decorators';
 
 import type { IValidationToken } from '@application/core/entity.core';
+import type { FindOptions } from '@application/core/entity.core';
 import { ValidationToken as Model } from '@application/model/validation-token.model';
 
 import type {
   ValidationTokenContractRepository,
   ValidationTokenCreatePayload,
-  ValidationTokenFindByPayload,
   ValidationTokenQueryPayload,
   ValidationTokenUpdatePayload,
 } from './validation-token-contract.repository';
@@ -46,26 +46,31 @@ export default class ValidationTokenMongooseRepository implements ValidationToke
     return this.transform(populated);
   }
 
-  async findBy({
-    exact = false,
-    ...payload
-  }: ValidationTokenFindByPayload): Promise<IValidationToken | null> {
-    const conditions: Record<string, unknown>[] = [];
-
-    if (payload._id) conditions.push({ _id: payload._id });
-    if (payload.user) conditions.push({ user: payload.user });
-    if (payload.code) conditions.push({ code: payload.code });
-
-    if (conditions.length === 0) {
-      throw new Error('At least one query is required');
+  async findById(
+    _id: string,
+    options?: FindOptions,
+  ): Promise<IValidationToken | null> {
+    const where: Record<string, unknown> = { _id };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
     }
 
-    const whereClause = exact ? { $and: conditions } : { $or: conditions };
+    const token = await Model.findOne(where).populate(this.populateOptions);
+    if (!token) return null;
 
-    const token = await Model.findOne(whereClause).populate(
-      this.populateOptions,
-    );
+    return this.transform(token);
+  }
 
+  async findByCode(
+    code: string,
+    options?: FindOptions,
+  ): Promise<IValidationToken | null> {
+    const where: Record<string, unknown> = { code };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
+    }
+
+    const token = await Model.findOne(where).populate(this.populateOptions);
     if (!token) return null;
 
     return this.transform(token);

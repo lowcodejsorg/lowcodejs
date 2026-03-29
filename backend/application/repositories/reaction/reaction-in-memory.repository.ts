@@ -1,9 +1,12 @@
-import type { IReaction, IUser } from '@application/core/entity.core';
+import type {
+  FindOptions,
+  IReaction,
+  IUser,
+} from '@application/core/entity.core';
 
 import type {
   ReactionContractRepository,
   ReactionCreatePayload,
-  ReactionFindByPayload,
   ReactionQueryPayload,
   ReactionUpdatePayload,
 } from './reaction-contract.repository';
@@ -25,21 +28,18 @@ export default class ReactionInMemoryRepository implements ReactionContractRepos
     return reaction;
   }
 
-  async findBy({
-    _id,
-    user,
-    exact = false,
-  }: ReactionFindByPayload): Promise<IReaction | null> {
-    const reaction = this.items.find((r) => {
-      if (exact) {
-        return (
-          (_id ? r._id === _id : true) &&
-          (user ? (r.user as IUser)?._id === user : true)
-        );
-      }
-      return r._id === _id || (r.user as IUser)?._id === user;
+  async findByIdAndUser(
+    _id: string,
+    user: string,
+    options?: FindOptions,
+  ): Promise<IReaction | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if ((i.user as IUser)?._id !== user) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
-    return reaction ?? null;
+    return item ?? null;
   }
 
   async findMany(payload?: ReactionQueryPayload): Promise<IReaction[]> {

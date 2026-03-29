@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import type {
   E_REACTION_TYPE,
+  FindOptions,
   IReaction,
   Merge,
   ValueOf,
@@ -16,11 +17,6 @@ export type ReactionUpdatePayload = Merge<
   Partial<ReactionCreatePayload>
 >;
 
-export type ReactionFindByPayload = Merge<
-  Partial<Pick<IReaction, '_id'>>,
-  { user?: string; exact: boolean }
->;
-
 export type ReactionQueryPayload = {
   page?: number;
   perPage?: number;
@@ -30,7 +26,11 @@ export type ReactionQueryPayload = {
 
 export abstract class ReactionContractRepository {
   abstract create(payload: ReactionCreatePayload): Promise<IReaction>;
-  abstract findBy(payload: ReactionFindByPayload): Promise<IReaction | null>;
+  abstract findByIdAndUser(
+    _id: string,
+    user: string,
+    options?: FindOptions,
+  ): Promise<IReaction | null>;
   abstract findMany(payload?: ReactionQueryPayload): Promise<IReaction[]>;
   abstract update(payload: ReactionUpdatePayload): Promise<IReaction>;
   abstract delete(_id: string): Promise<void>;

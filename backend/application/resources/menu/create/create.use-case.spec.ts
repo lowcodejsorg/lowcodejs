@@ -110,7 +110,7 @@ describe('Menu Create Use Case', () => {
   });
 
   it('deve retornar erro CREATE_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(menuInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

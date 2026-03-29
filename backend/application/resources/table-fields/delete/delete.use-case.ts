@@ -27,10 +27,7 @@ export default class TableFieldDeleteUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -49,10 +46,7 @@ export default class TableFieldDeleteUseCase {
         return this.deleteFieldInGroup(payload, table, targetGroup);
       }
 
-      const field = await this.fieldRepository.findBy({
-        _id: payload._id,
-        exact: true,
-      });
+      const field = await this.fieldRepository.findById(payload._id);
 
       if (!field)
         return left(
@@ -114,10 +108,7 @@ export default class TableFieldDeleteUseCase {
     parentTable: ITable,
     targetGroup: IGroupConfiguration,
   ): Promise<Response> {
-    const field = await this.fieldRepository.findBy({
-      _id: payload._id,
-      exact: true,
-    });
+    const field = await this.fieldRepository.findById(payload._id);
 
     if (!field)
       return left(

@@ -174,7 +174,7 @@ describe('Table Field Create Use Case', () => {
   });
 
   it('deve retornar erro CREATE_FIELD_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

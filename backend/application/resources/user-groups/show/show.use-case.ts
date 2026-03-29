@@ -20,10 +20,7 @@ export default class UserGroupShowUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const group = await this.userGroupRepository.findBy({
-        _id: payload._id,
-        exact: true,
-      });
+      const group = await this.userGroupRepository.findById(payload._id);
 
       if (!group)
         return left(

@@ -18,10 +18,8 @@ export default class PageShowUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const menu = await this.menuRepository.findBy({
-        slug: payload.slug,
+      const menu = await this.menuRepository.findBySlug(payload.slug, {
         trashed: false,
-        exact: true,
       });
 
       if (!menu)

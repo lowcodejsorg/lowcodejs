@@ -3,6 +3,7 @@ import type {
   E_TABLE_STYLE,
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
+  FindOptions,
   IField,
   IStorage,
   ITable,
@@ -12,7 +13,6 @@ import type {
 import type {
   TableContractRepository,
   TableCreatePayload,
-  TableFindByPayload,
   TableQueryPayload,
   TableUpdateManyPayload,
   TableUpdatePayload,
@@ -73,18 +73,25 @@ export default class TableInMemoryRepository implements TableContractRepository 
     return table;
   }
 
-  async findBy({
-    _id,
-    slug,
-    exact = false,
-  }: TableFindByPayload): Promise<ITable | null> {
-    const table = this.items.find((t) => {
-      if (exact) {
-        return (_id ? t._id === _id : true) && (slug ? t.slug === slug : true);
-      }
-      return t._id === _id || t.slug === slug;
+  async findById(_id: string, options?: FindOptions): Promise<ITable | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
-    return table ?? null;
+    return item ?? null;
+  }
+
+  async findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<ITable | null> {
+    const item = this.items.find((i) => {
+      if (i.slug !== slug) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(payload?: TableQueryPayload): Promise<ITable[]> {

@@ -76,9 +76,10 @@ describe('Validate Code Use Case', () => {
   });
 
   it('deve retornar erro VALIDATE_CODE_ERROR quando houver falha', async () => {
-    vi.spyOn(validationTokenInMemoryRepository, 'findBy').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    vi.spyOn(
+      validationTokenInMemoryRepository,
+      'findByCode',
+    ).mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({ code: '123456' });
 

@@ -2,13 +2,13 @@ import { Service } from 'fastify-decorators';
 import mongoose from 'mongoose';
 
 import type { ITable } from '@application/core/entity.core';
+import type { FindOptions } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Table as Model } from '@application/model/table.model';
 
 import type {
   TableContractRepository,
   TableCreatePayload,
-  TableFindByPayload,
   TableQueryPayload,
   TableUpdateManyPayload,
   TableUpdatePayload,
@@ -64,25 +64,28 @@ export default class TableMongooseRepository implements TableContractRepository 
     return this.transform(populated);
   }
 
-  async findBy({
-    exact = false,
-    ...payload
-  }: TableFindByPayload): Promise<ITable | null> {
-    const conditions: Record<string, unknown>[] = [];
-
-    if (payload._id) conditions.push({ _id: payload._id });
-    if (payload.slug) conditions.push({ slug: payload.slug });
-
-    if (conditions.length === 0) {
-      throw new Error('At least one query is required');
+  async findById(_id: string, options?: FindOptions): Promise<ITable | null> {
+    const where: Record<string, unknown> = { _id };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
     }
 
-    const whereClause = exact ? { $and: conditions } : { $or: conditions };
+    const table = await Model.findOne(where).populate(this.populateOptions);
+    if (!table) return null;
 
-    const table = await Model.findOne(whereClause).populate(
-      this.populateOptions,
-    );
+    return this.transform(table);
+  }
 
+  async findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<ITable | null> {
+    const where: Record<string, unknown> = { slug };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
+    }
+
+    const table = await Model.findOne(where).populate(this.populateOptions);
     if (!table) return null;
 
     return this.transform(table);

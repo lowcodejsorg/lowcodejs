@@ -165,9 +165,10 @@ describe('Magic Link Use Case', () => {
   });
 
   it('deve retornar erro MAGIC_LINK_ERROR quando houver falha', async () => {
-    vi.spyOn(validationTokenInMemoryRepository, 'findBy').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    vi.spyOn(
+      validationTokenInMemoryRepository,
+      'findByCode',
+    ).mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({ code: 'some-code' });
 

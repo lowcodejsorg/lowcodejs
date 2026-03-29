@@ -31,10 +31,7 @@ export default class TableRowPaginatedUseCase {
     try {
       const skip = (payload.page - 1) * payload.perPage;
 
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(

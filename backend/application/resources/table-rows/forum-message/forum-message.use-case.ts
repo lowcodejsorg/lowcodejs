@@ -56,10 +56,7 @@ export default class ForumMessageUseCase {
 
   async create(payload: ForumMessageCreatePayload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -173,10 +170,7 @@ export default class ForumMessageUseCase {
 
   async update(payload: ForumMessageUpdatePayload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -329,10 +323,7 @@ export default class ForumMessageUseCase {
 
   async remove(payload: ForumMessageDeletePayload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -427,10 +418,7 @@ export default class ForumMessageUseCase {
     payload: ForumMessageMentionReadPayload,
   ): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(

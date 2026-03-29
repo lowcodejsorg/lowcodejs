@@ -17,10 +17,8 @@ export default class MenuDeleteUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const menu = await this.menuRepository.findBy({
-        _id: payload._id,
+      const menu = await this.menuRepository.findById(payload._id, {
         trashed: false,
-        exact: true,
       });
 
       if (!menu)

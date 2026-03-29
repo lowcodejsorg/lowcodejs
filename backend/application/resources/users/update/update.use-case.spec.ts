@@ -82,7 +82,7 @@ describe('User Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_USER_ERROR (500) em falha de DB', async () => {
-    vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

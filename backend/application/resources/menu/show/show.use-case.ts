@@ -18,10 +18,7 @@ export default class MenuShowUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const menu = await this.menuRepository.findBy({
-        _id: payload._id,
-        exact: true,
-      });
+      const menu = await this.menuRepository.findById(payload._id);
 
       if (!menu)
         return left(

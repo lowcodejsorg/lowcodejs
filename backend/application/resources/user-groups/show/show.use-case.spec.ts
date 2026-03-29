@@ -40,7 +40,7 @@ describe('UserGroup Show Use Case', () => {
   });
 
   it('deve retornar erro GET_USER_GROUP_BY_ID_ERROR quando houver falha', async () => {
-    vi.spyOn(userGroupInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userGroupInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

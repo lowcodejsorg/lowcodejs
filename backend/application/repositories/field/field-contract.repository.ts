@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import type {
   E_FIELD_TYPE,
+  FindOptions,
   IField,
   Merge,
   ValueOf,
@@ -38,11 +39,6 @@ export type FieldUpdatePayload = Merge<
   }
 >;
 
-export type FieldFindByPayload = Merge<
-  Partial<Pick<IField, '_id' | 'slug'>>,
-  { exact: boolean }
->;
-
 export type FieldQueryPayload = {
   page?: number;
   perPage?: number;
@@ -54,7 +50,11 @@ export type FieldQueryPayload = {
 export abstract class FieldContractRepository {
   abstract create(payload: FieldCreatePayload): Promise<IField>;
   abstract createMany(payloads: FieldCreatePayload[]): Promise<IField[]>;
-  abstract findBy(payload: FieldFindByPayload): Promise<IField | null>;
+  abstract findById(_id: string, options?: FindOptions): Promise<IField | null>;
+  abstract findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<IField | null>;
   abstract findMany(payload?: FieldQueryPayload): Promise<IField[]>;
   abstract update(payload: FieldUpdatePayload): Promise<IField>;
   abstract delete(_id: string): Promise<void>;

@@ -34,10 +34,7 @@ export default class UserCreateUseCase {
           ),
         );
 
-      const user = await this.userRepository.findBy({
-        email: payload.email,
-        exact: true,
-      });
+      const user = await this.userRepository.findByEmail(payload.email);
 
       if (user)
         return left(

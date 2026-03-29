@@ -75,7 +75,7 @@ describe('Table Row Show Use Case', () => {
   });
 
   it('deve retornar erro GET_ROW_TABLE_BY_ID_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

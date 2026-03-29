@@ -85,10 +85,9 @@ export default class CloneTableUseCase {
         return await createCalendarTemplate(payload, templateDeps);
       }
 
-      const baseTable = await this.tableRepository.findBy({
-        _id: payload.baseTableId,
-        exact: true,
-      });
+      const baseTable = await this.tableRepository.findById(
+        payload.baseTableId,
+      );
 
       if (!baseTable) {
         return left(

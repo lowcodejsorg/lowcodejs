@@ -1,9 +1,8 @@
-import type { IMenu } from '@application/core/entity.core';
+import type { FindOptions, IMenu } from '@application/core/entity.core';
 
 import type {
   MenuContractRepository,
   MenuCreatePayload,
-  MenuFindByPayload,
   MenuQueryPayload,
   MenuUpdatePayload,
 } from './menu-contract.repository';
@@ -30,29 +29,22 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     return menu;
   }
 
-  async findBy({
-    _id,
-    slug,
-    parent,
-    trashed,
-    exact = false,
-  }: MenuFindByPayload): Promise<IMenu | null> {
-    const menu = this.items.find((m) => {
-      if (exact) {
-        return (
-          (_id ? m._id === _id : true) &&
-          (slug ? m.slug === slug : true) &&
-          (parent !== undefined ? m.parent === parent : true) &&
-          (trashed !== undefined ? m.trashed === trashed : true)
-        );
-      }
-      return (
-        (m._id === _id || m.slug === slug || m.parent === parent) &&
-        (trashed !== undefined ? m.trashed === trashed : true)
-      );
+  async findById(_id: string, options?: FindOptions): Promise<IMenu | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
+    return item ?? null;
+  }
 
-    return menu ?? null;
+  async findBySlug(slug: string, options?: FindOptions): Promise<IMenu | null> {
+    const item = this.items.find((i) => {
+      if (i.slug !== slug) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(payload?: MenuQueryPayload): Promise<IMenu[]> {

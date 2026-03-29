@@ -43,7 +43,7 @@ describe('User Show Use Case', () => {
   });
 
   it('deve retornar erro GET_USER_BY_ID_ERROR (500) em falha de DB', async () => {
-    vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

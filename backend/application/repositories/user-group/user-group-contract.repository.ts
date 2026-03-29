@@ -1,6 +1,7 @@
 /* eslint-disable no-unused-vars */
 import type {
   E_ROLE,
+  FindOptions,
   IGroup,
   IUser,
   Merge,
@@ -20,11 +21,6 @@ export type UserGroupUpdatePayload = Merge<
   Partial<UserGroupCreatePayload>
 >;
 
-export type UserGroupFindByPayload = Merge<
-  Partial<Pick<IGroup, '_id' | 'slug'>>,
-  { exact: boolean }
->;
-
 export type UserGroupQueryPayload = {
   page?: number;
   perPage?: number;
@@ -35,7 +31,11 @@ export type UserGroupQueryPayload = {
 
 export abstract class UserGroupContractRepository {
   abstract create(payload: UserGroupCreatePayload): Promise<IGroup>;
-  abstract findBy(payload: UserGroupFindByPayload): Promise<IGroup | null>;
+  abstract findById(_id: string, options?: FindOptions): Promise<IGroup | null>;
+  abstract findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<IGroup | null>;
   abstract findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]>;
   abstract update(payload: UserGroupUpdatePayload): Promise<IGroup>;
   abstract delete(_id: string): Promise<void>;

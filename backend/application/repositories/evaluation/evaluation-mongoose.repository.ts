@@ -1,12 +1,12 @@
 import { Service } from 'fastify-decorators';
 
 import type { IEvaluation } from '@application/core/entity.core';
+import type { FindOptions } from '@application/core/entity.core';
 import { Evaluation as Model } from '@application/model/evaluation.model';
 
 import type {
   EvaluationContractRepository,
   EvaluationCreatePayload,
-  EvaluationFindByPayload,
   EvaluationQueryPayload,
   EvaluationUpdatePayload,
 } from './evaluation-contract.repository';
@@ -38,25 +38,19 @@ export default class EvaluationMongooseRepository implements EvaluationContractR
     return this.transform(populated);
   }
 
-  async findBy({
-    exact = false,
-    ...payload
-  }: EvaluationFindByPayload): Promise<IEvaluation | null> {
-    const conditions: Record<string, unknown>[] = [];
-
-    if (payload._id) conditions.push({ _id: payload._id });
-    if (payload.user) conditions.push({ user: payload.user });
-
-    if (conditions.length === 0) {
-      throw new Error('At least one query is required');
+  async findByIdAndUser(
+    _id: string,
+    user: string,
+    options?: FindOptions,
+  ): Promise<IEvaluation | null> {
+    const where: Record<string, unknown> = { _id, user };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
     }
 
-    const whereClause = exact ? { $and: conditions } : { $or: conditions };
-
-    const evaluation = await Model.findOne(whereClause).populate(
+    const evaluation = await Model.findOne(where).populate(
       this.populateOptions,
     );
-
     if (!evaluation) return null;
 
     return this.transform(evaluation);

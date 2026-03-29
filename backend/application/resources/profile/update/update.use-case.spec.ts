@@ -104,7 +104,7 @@ describe('Profile Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_USER_PROFILE_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

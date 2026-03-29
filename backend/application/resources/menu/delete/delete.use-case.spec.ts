@@ -24,10 +24,8 @@ describe('Menu Delete Use Case', () => {
 
     expect(result.isRight()).toBe(true);
 
-    const trashed = await menuInMemoryRepository.findBy({
-      _id: created._id,
+    const trashed = await menuInMemoryRepository.findById(created._id, {
       trashed: true,
-      exact: true,
     });
     expect(trashed?.trashed).toBe(true);
     expect(trashed?.trashedAt).toBeTruthy();
@@ -67,7 +65,7 @@ describe('Menu Delete Use Case', () => {
   });
 
   it('deve retornar erro DELETE_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(menuInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

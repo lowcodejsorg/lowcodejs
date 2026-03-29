@@ -1,5 +1,6 @@
 import {
   E_ROLE,
+  type FindOptions,
   type IGroup,
   type IPermission,
 } from '@application/core/entity.core';
@@ -7,7 +8,6 @@ import {
 import type {
   UserGroupContractRepository,
   UserGroupCreatePayload,
-  UserGroupFindByPayload,
   UserGroupQueryPayload,
   UserGroupUpdatePayload,
 } from './user-group-contract.repository';
@@ -30,19 +30,25 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     return group;
   }
 
-  async findBy({
-    _id,
-    slug,
-    exact = false,
-  }: UserGroupFindByPayload): Promise<IGroup | null> {
-    const group = this.items.find((g) => {
-      if (exact) {
-        return (_id ? g._id === _id : true) && (slug ? g.slug === slug : true);
-      }
-      return g._id === _id || g.slug === slug;
+  async findById(_id: string, options?: FindOptions): Promise<IGroup | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
+    return item ?? null;
+  }
 
-    return group ?? null;
+  async findBySlug(
+    slug: string,
+    options?: FindOptions,
+  ): Promise<IGroup | null> {
+    const item = this.items.find((i) => {
+      if (i.slug !== slug) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {

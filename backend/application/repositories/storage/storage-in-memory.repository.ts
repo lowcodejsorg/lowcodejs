@@ -1,9 +1,8 @@
-import type { IStorage } from '@application/core/entity.core';
+import type { FindOptions, IStorage } from '@application/core/entity.core';
 
 import type {
   StorageContractRepository,
   StorageCreatePayload,
-  StorageFindByPayload,
   StorageQueryPayload,
   StorageUpdatePayload,
 } from './storage-contract.repository';
@@ -39,21 +38,25 @@ export default class StorageInMemoryRepository implements StorageContractReposit
     return storages;
   }
 
-  async findBy({
-    _id,
-    filename,
-    exact = false,
-  }: StorageFindByPayload): Promise<IStorage | null> {
-    const storage = this.items.find((s) => {
-      if (exact) {
-        return (
-          (_id ? s._id === _id : true) &&
-          (filename ? s.filename === filename : true)
-        );
-      }
-      return s._id === _id || s.filename === filename;
+  async findById(_id: string, options?: FindOptions): Promise<IStorage | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
-    return storage ?? null;
+    return item ?? null;
+  }
+
+  async findByFilename(
+    filename: string,
+    options?: FindOptions,
+  ): Promise<IStorage | null> {
+    const item = this.items.find((i) => {
+      if (i.filename !== filename) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(payload?: StorageQueryPayload): Promise<IStorage[]> {

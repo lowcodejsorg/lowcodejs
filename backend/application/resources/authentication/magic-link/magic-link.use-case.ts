@@ -26,10 +26,9 @@ export default class MagicLinkUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const token = await this.validationTokenRepository.findBy({
-        code: payload.code,
-        exact: true,
-      });
+      const token = await this.validationTokenRepository.findByCode(
+        payload.code,
+      );
 
       if (!token)
         return left(
@@ -75,10 +74,7 @@ export default class MagicLinkUseCase {
         status: E_TOKEN_STATUS.VALIDATED,
       });
 
-      const user = await this.userRepository.findBy({
-        _id: token.user?._id,
-        exact: true,
-      });
+      const user = await this.userRepository.findById(token.user?._id);
 
       if (!user)
         return left(

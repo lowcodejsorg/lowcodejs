@@ -33,10 +33,8 @@ export default class MenuCreateUseCase {
       let parent = null;
 
       if (payload.parent) {
-        parent = await this.menuRepository.findBy({
-          _id: payload.parent,
+        parent = await this.menuRepository.findById(payload.parent, {
           trashed: false,
-          exact: true,
         });
 
         if (!parent)
@@ -54,10 +52,8 @@ export default class MenuCreateUseCase {
         });
       }
 
-      const menu = await this.menuRepository.findBy({
-        slug,
+      const menu = await this.menuRepository.findBySlug(slug, {
         trashed: false,
-        exact: true,
       });
 
       if (menu)
@@ -83,10 +79,7 @@ export default class MenuCreateUseCase {
             ),
           );
 
-        const table = await this.tableRepository.findBy({
-          _id: payload.table,
-          exact: true,
-        });
+        const table = await this.tableRepository.findById(payload.table);
 
         if (!table)
           return left(

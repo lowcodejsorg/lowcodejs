@@ -32,10 +32,7 @@ export default class TableRowEvaluationUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -64,11 +61,10 @@ export default class TableRowEvaluationUseCase {
       let oldEvaluationId: string | null = null;
 
       for (const id of existingIds) {
-        const found = await this.evaluationRepository.findBy({
-          _id: id,
-          user: payload.user,
-          exact: true,
-        });
+        const found = await this.evaluationRepository.findByIdAndUser(
+          id,
+          payload.user,
+        );
         if (found) {
           oldEvaluationId = found._id;
           break;

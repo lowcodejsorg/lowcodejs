@@ -32,10 +32,7 @@ export default class TableRowReactionUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -64,11 +61,10 @@ export default class TableRowReactionUseCase {
       let oldReactionId: string | null = null;
 
       for (const id of existingIds) {
-        const found = await this.reactionRepository.findBy({
-          _id: id,
-          user: payload.user,
-          exact: true,
-        });
+        const found = await this.reactionRepository.findByIdAndUser(
+          id,
+          payload.user,
+        );
         if (found) {
           oldReactionId = found._id;
           break;

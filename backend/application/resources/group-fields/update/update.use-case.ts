@@ -24,10 +24,7 @@ export default class GroupFieldUpdateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBy({
-        slug: payload.slug,
-        exact: true,
-      });
+      const table = await this.tableRepository.findBySlug(payload.slug);
 
       if (!table)
         return left(
@@ -44,10 +41,7 @@ export default class GroupFieldUpdateUseCase {
         );
       }
 
-      const field = await this.fieldRepository.findBy({
-        _id: payload.fieldId,
-        exact: true,
-      });
+      const field = await this.fieldRepository.findById(payload.fieldId);
 
       if (!field)
         return left(

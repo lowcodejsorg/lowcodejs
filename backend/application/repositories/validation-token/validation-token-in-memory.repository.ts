@@ -1,9 +1,12 @@
-import type { IUser, IValidationToken } from '@application/core/entity.core';
+import type {
+  FindOptions,
+  IUser,
+  IValidationToken,
+} from '@application/core/entity.core';
 
 import type {
   ValidationTokenContractRepository,
   ValidationTokenCreatePayload,
-  ValidationTokenFindByPayload,
   ValidationTokenQueryPayload,
   ValidationTokenUpdatePayload,
 } from './validation-token-contract.repository';
@@ -28,23 +31,28 @@ export default class ValidationTokenInMemoryRepository implements ValidationToke
     return token;
   }
 
-  async findBy({
-    _id,
-    user,
-    code,
-    exact = false,
-  }: ValidationTokenFindByPayload): Promise<IValidationToken | null> {
-    const token = this.items.find((t) => {
-      if (exact) {
-        return (
-          (_id ? t._id === _id : true) &&
-          (user ? t.user._id === user : true) &&
-          (code ? t.code === code : true)
-        );
-      }
-      return t._id === _id || t.user._id === user || t.code === code;
+  async findById(
+    _id: string,
+    options?: FindOptions,
+  ): Promise<IValidationToken | null> {
+    const item = this.items.find((i) => {
+      if (i._id !== _id) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
     });
-    return token ?? null;
+    return item ?? null;
+  }
+
+  async findByCode(
+    code: string,
+    options?: FindOptions,
+  ): Promise<IValidationToken | null> {
+    const item = this.items.find((i) => {
+      if (i.code !== code) return false;
+      if (options?.trashed !== undefined) return i.trashed === options.trashed;
+      return true;
+    });
+    return item ?? null;
   }
 
   async findMany(

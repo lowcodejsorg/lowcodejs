@@ -61,7 +61,7 @@ describe('Clone Table Use Case', () => {
   });
 
   it('deve retornar erro CLONE_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(tableInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

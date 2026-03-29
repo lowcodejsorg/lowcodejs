@@ -46,7 +46,7 @@ describe('Request Code Use Case', () => {
   });
 
   it('deve retornar erro REQUEST_CODE_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findBy').mockRejectedValueOnce(
+    vi.spyOn(userInMemoryRepository, 'findByEmail').mockRejectedValueOnce(
       new Error('Database error'),
     );
 

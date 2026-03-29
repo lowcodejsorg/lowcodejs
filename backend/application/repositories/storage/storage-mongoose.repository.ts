@@ -1,13 +1,13 @@
 import { Service } from 'fastify-decorators';
 
 import type { IStorage } from '@application/core/entity.core';
+import type { FindOptions } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Storage as Model } from '@application/model/storage.model';
 
 import type {
   StorageContractRepository,
   StorageCreatePayload,
-  StorageFindByPayload,
   StorageQueryPayload,
   StorageUpdatePayload,
 } from './storage-contract.repository';
@@ -45,23 +45,28 @@ export default class StorageMongooseRepository implements StorageContractReposit
     return storages.map((s) => this.transform(s));
   }
 
-  async findBy({
-    exact = false,
-    ...payload
-  }: StorageFindByPayload): Promise<IStorage | null> {
-    const conditions: Record<string, unknown>[] = [];
-
-    if (payload._id) conditions.push({ _id: payload._id });
-    if (payload.filename) conditions.push({ filename: payload.filename });
-
-    if (conditions.length === 0) {
-      throw new Error('At least one query is required');
+  async findById(_id: string, options?: FindOptions): Promise<IStorage | null> {
+    const where: Record<string, unknown> = { _id };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
     }
 
-    const whereClause = exact ? { $and: conditions } : { $or: conditions };
+    const storage = await Model.findOne(where);
+    if (!storage) return null;
 
-    const storage = await Model.findOne(whereClause);
+    return this.transform(storage);
+  }
 
+  async findByFilename(
+    filename: string,
+    options?: FindOptions,
+  ): Promise<IStorage | null> {
+    const where: Record<string, unknown> = { filename };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
+    }
+
+    const storage = await Model.findOne(where);
     if (!storage) return null;
 
     return this.transform(storage);

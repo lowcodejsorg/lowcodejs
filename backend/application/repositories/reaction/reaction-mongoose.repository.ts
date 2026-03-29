@@ -1,12 +1,12 @@
 import { Service } from 'fastify-decorators';
 
 import type { IReaction } from '@application/core/entity.core';
+import type { FindOptions } from '@application/core/entity.core';
 import { Reaction as Model } from '@application/model/reaction.model';
 
 import type {
   ReactionContractRepository,
   ReactionCreatePayload,
-  ReactionFindByPayload,
   ReactionQueryPayload,
   ReactionUpdatePayload,
 } from './reaction-contract.repository';
@@ -39,25 +39,17 @@ export default class ReactionMongooseRepository implements ReactionContractRepos
     return this.transform(populated);
   }
 
-  async findBy({
-    exact = false,
-    ...payload
-  }: ReactionFindByPayload): Promise<IReaction | null> {
-    const conditions: Record<string, unknown>[] = [];
-
-    if (payload._id) conditions.push({ _id: payload._id });
-    if (payload.user) conditions.push({ user: payload.user });
-
-    if (conditions.length === 0) {
-      throw new Error('At least one query is required');
+  async findByIdAndUser(
+    _id: string,
+    user: string,
+    options?: FindOptions,
+  ): Promise<IReaction | null> {
+    const where: Record<string, unknown> = { _id, user };
+    if (options?.trashed !== undefined) {
+      where.trashed = options.trashed;
     }
 
-    const whereClause = exact ? { $and: conditions } : { $or: conditions };
-
-    const reaction = await Model.findOne(whereClause).populate(
-      this.populateOptions,
-    );
-
+    const reaction = await Model.findOne(where).populate(this.populateOptions);
     if (!reaction) return null;
 
     return this.transform(reaction);

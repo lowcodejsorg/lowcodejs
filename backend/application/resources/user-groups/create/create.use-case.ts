@@ -23,10 +23,7 @@ export default class UserGroupCreateUseCase {
     try {
       const slug = slugify(payload.name, { trim: true, lower: true });
 
-      const group = await this.userGroupRepository.findBy({
-        slug,
-        exact: true,
-      });
+      const group = await this.userGroupRepository.findBySlug(slug);
 
       if (group)
         return left(

@@ -1,5 +1,9 @@
 /* eslint-disable no-unused-vars */
-import type { IPermission, Merge } from '@application/core/entity.core';
+import type {
+  FindOptions,
+  IPermission,
+  Merge,
+} from '@application/core/entity.core';
 
 export type PermissionCreatePayload = Pick<
   IPermission,
@@ -11,11 +15,6 @@ export type PermissionUpdatePayload = Merge<
   Partial<PermissionCreatePayload>
 >;
 
-export type PermissionFindByPayload = Merge<
-  Partial<Pick<IPermission, '_id' | 'slug'>>,
-  { exact: boolean }
->;
-
 export type PermissionQueryPayload = {
   page?: number;
   perPage?: number;
@@ -24,8 +23,13 @@ export type PermissionQueryPayload = {
 
 export abstract class PermissionContractRepository {
   abstract create(payload: PermissionCreatePayload): Promise<IPermission>;
-  abstract findBy(
-    payload: PermissionFindByPayload,
+  abstract findById(
+    _id: string,
+    options?: FindOptions,
+  ): Promise<IPermission | null>;
+  abstract findBySlug(
+    slug: string,
+    options?: FindOptions,
   ): Promise<IPermission | null>;
   abstract findMany(payload?: PermissionQueryPayload): Promise<IPermission[]>;
   abstract update(payload: PermissionUpdatePayload): Promise<IPermission>;
