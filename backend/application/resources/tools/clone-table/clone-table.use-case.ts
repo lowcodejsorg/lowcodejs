@@ -116,7 +116,7 @@ export default class CloneTableUseCase {
         }
       }
 
-      const nonNativeFields = baseTable.fields.filter((f) => !f.native);
+      const nonNativeFields = baseTable.fields.filter((f) => !f.native && !f.trashed);
 
       const { newFieldIds, fieldIdMap, clonedFields } =
         await this.cloneFields(nonNativeFields);
@@ -264,6 +264,8 @@ export default class CloneTableUseCase {
       const groupFields: IField[] = [];
 
       for (const field of group.fields ?? []) {
+        if (field.trashed) continue;
+
         const existingId = fieldIdMap[field._id];
         if (existingId) {
           const mapped = clonedFieldMap.get(existingId);
