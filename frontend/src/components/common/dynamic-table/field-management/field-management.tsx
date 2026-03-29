@@ -338,7 +338,12 @@ function FieldManagementRoot({
 }: RootProps): React.JSX.Element {
   return (
     <FieldManagementProvider value={actions}>
-      <div data-test-id="field-management" className="flex flex-col h-full overflow-hidden">{children}</div>
+      <div
+        data-test-id="field-management"
+        className="flex flex-col h-full overflow-hidden"
+      >
+        {children}
+      </div>
     </FieldManagementProvider>
   );
 }

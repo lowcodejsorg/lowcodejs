@@ -80,7 +80,10 @@ export function RowRemoveFromTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6" data-test-id="restore-row-dialog">
+      <DialogContent
+        className="py-4 px-6"
+        data-test-id="restore-row-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Restaurar linha da lixeira</DialogTitle>
           <DialogDescription>

@@ -13,7 +13,10 @@ export const Route = createLazyFileRoute('/_private/dashboard/')({
 
 function RouteComponent(): React.JSX.Element {
   return (
-    <div className="flex flex-col h-full overflow-hidden" data-test-id="dashboard-page">
+    <div
+      className="flex flex-col h-full overflow-hidden"
+      data-test-id="dashboard-page"
+    >
       <div className="shrink-0 p-4 border-b">
         <h1 className="text-2xl font-semibold">Dashboard</h1>
       </div>

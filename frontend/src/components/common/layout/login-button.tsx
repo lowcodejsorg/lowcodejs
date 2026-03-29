@@ -13,7 +13,10 @@ export function LoginButton(): React.JSX.Element {
       variant="outline"
       size="sm"
     >
-      <Link to="/" data-test-id="login-link">
+      <Link
+        to="/"
+        data-test-id="login-link"
+      >
         <LogIn className="size-4 mr-2" />
         Entrar
       </Link>

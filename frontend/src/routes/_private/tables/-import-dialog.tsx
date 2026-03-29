@@ -244,7 +244,10 @@ export function TableImportDialog({ ...props }: Props): React.JSX.Element {
       onOpenChange={handleOpenChange}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6 max-w-lg" data-test-id="import-table-dialog">
+      <DialogContent
+        className="py-4 px-6 max-w-lg"
+        data-test-id="import-table-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Importar tabela</DialogTitle>
           <DialogDescription>

@@ -92,7 +92,12 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
             >
               Limpar
             </Button>
-            <Button data-test-id="filter-submit-btn" onClick={handleSubmit}>Pesquisar</Button>
+            <Button
+              data-test-id="filter-submit-btn"
+              onClick={handleSubmit}
+            >
+              Pesquisar
+            </Button>
           </SheetFooter>
         </div>
       </SheetContent>

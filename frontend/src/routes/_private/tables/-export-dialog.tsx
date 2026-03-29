@@ -84,7 +84,10 @@ export function TableExportDialog({
         asChild
         {...props}
       />
-      <DialogContent className="py-4 px-6 max-w-md" data-test-id="export-table-dialog">
+      <DialogContent
+        className="py-4 px-6 max-w-md"
+        data-test-id="export-table-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Exportar tabela</DialogTitle>
           <DialogDescription>

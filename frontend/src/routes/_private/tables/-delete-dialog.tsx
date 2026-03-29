@@ -70,7 +70,10 @@ export function TableDeleteDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6" data-test-id="delete-table-dialog">
+      <DialogContent
+        className="py-4 px-6"
+        data-test-id="delete-table-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Excluir tabela permanentemente</DialogTitle>
           <DialogDescription>
@@ -82,7 +85,10 @@ export function TableDeleteDialog({
           <form className="pt-4 pb-2">
             <DialogFooter className="inline-flex w-full gap-2 justify-end">
               <DialogClose asChild>
-                <Button className="bg-destructive hover:bg-destructive" data-test-id="delete-table-cancel-btn">
+                <Button
+                  className="bg-destructive hover:bg-destructive"
+                  data-test-id="delete-table-cancel-btn"
+                >
                   Cancelar
                 </Button>
               </DialogClose>

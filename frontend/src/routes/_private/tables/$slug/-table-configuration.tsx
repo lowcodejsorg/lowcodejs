@@ -178,7 +178,10 @@ export function TableConfigurationDropdown({
           <span>Configuração</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="mr-12 max-w-xs w-full" data-test-id="table-config-dropdown">
+      <DropdownMenuContent
+        className="mr-12 max-w-xs w-full"
+        data-test-id="table-config-dropdown"
+      >
         {(permission.can('CREATE_FIELD') || permission.can('UPDATE_FIELD')) && (
           <DropdownMenuLabel>Campos</DropdownMenuLabel>
         )}

@@ -62,7 +62,10 @@ export const CloneTableFormFields = withForm({
     }
 
     return (
-      <section data-test-id="table-clone-form-fields" className="space-y-4 p-2">
+      <section
+        data-test-id="table-clone-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* Campo Nome */}
         <form.AppField
           name="name"
@@ -183,7 +186,10 @@ function ModelSelectField({
         }}
         disabled={disabled}
       >
-        <SelectTrigger data-test-id="clone-model-select" className={cn(isInvalid && 'border-destructive')}>
+        <SelectTrigger
+          data-test-id="clone-model-select"
+          className={cn(isInvalid && 'border-destructive')}
+        >
           <SelectValue placeholder="Selecione o modelo..." />
         </SelectTrigger>
         <SelectContent>

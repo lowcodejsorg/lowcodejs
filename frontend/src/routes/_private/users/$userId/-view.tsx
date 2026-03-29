@@ -8,7 +8,10 @@ interface UserViewProps {
 
 export function UserView({ data }: UserViewProps): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2" data-test-id="user-detail-view">
+    <section
+      className="space-y-4 p-2"
+      data-test-id="user-detail-view"
+    >
       <div className="space-y-1">
         <p className="text-sm font-medium">Nome</p>
         <p className="text-sm text-muted-foreground">{data.name || '-'}</p>

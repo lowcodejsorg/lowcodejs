@@ -81,7 +81,10 @@ export function RowSendToTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6" data-test-id="trash-row-dialog">
+      <DialogContent
+        className="py-4 px-6"
+        data-test-id="trash-row-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Enviar linha para a lixeira</DialogTitle>
           <DialogDescription>

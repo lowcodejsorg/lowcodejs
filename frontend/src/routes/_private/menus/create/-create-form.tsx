@@ -30,7 +30,10 @@ export const CreateMenuFormFields = withForm({
   },
   render: function Render({ form, isPending, menuType }) {
     return (
-      <section data-test-id="menu-create-form-fields" className="space-y-4 p-2">
+      <section
+        data-test-id="menu-create-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* Campo Nome */}
         <form.AppField
           name="name"

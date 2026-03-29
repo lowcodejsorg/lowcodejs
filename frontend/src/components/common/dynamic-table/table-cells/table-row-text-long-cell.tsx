@@ -18,7 +18,14 @@ export function TableRowTextLongCell({
   const isRenderedMarkdown = field.format === E_FIELD_FORMAT.RICH_TEXT;
 
   if (!value) {
-    return <span data-test-id="text-long-cell" className="text-muted-foreground text-sm">-</span>;
+    return (
+      <span
+        data-test-id="text-long-cell"
+        className="text-muted-foreground text-sm"
+      >
+        -
+      </span>
+    );
   }
 
   if (isRenderedMarkdown) {

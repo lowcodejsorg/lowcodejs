@@ -92,7 +92,10 @@ function RouteComponent(): React.JSX.Element {
     useChatSidebar();
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" data-test-id="tables-page">
+    <div
+      className="flex flex-col h-full overflow-hidden"
+      data-test-id="tables-page"
+    >
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Tabelas</h1>

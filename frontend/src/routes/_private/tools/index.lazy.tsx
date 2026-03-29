@@ -81,7 +81,10 @@ function RouteComponent(): React.JSX.Element {
   };
 
   return (
-    <div className={`flex flex-col h-full overflow-hidden`} data-test-id="tools-page">
+    <div
+      className={`flex flex-col h-full overflow-hidden`}
+      data-test-id="tools-page"
+    >
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <h1 className="text-xl font-medium">Ferramentas do Sistema</h1>

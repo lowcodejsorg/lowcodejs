@@ -29,7 +29,10 @@ export function TableComboboxField({
   // Se não houver tabelas, mostrar mensagem
   if (status === 'success' && tables?.length === 0) {
     return (
-      <Field data-slot="table-combobox-field" data-test-id="table-combobox-field">
+      <Field
+        data-slot="table-combobox-field"
+        data-test-id="table-combobox-field"
+      >
         <FieldLabel htmlFor={field.name}>
           {label} {required && <span className="text-destructive">*</span>}
         </FieldLabel>

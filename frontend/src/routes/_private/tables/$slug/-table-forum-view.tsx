@@ -1275,7 +1275,10 @@ export function TableForumView({
     : null;
 
   return (
-    <div className="flex h-full min-h-0 overflow-hidden" data-test-id="table-forum-view">
+    <div
+      className="flex h-full min-h-0 overflow-hidden"
+      data-test-id="table-forum-view"
+    >
       <ForumSidebar
         rows={rowsState}
         activeRowId={activeRowId}

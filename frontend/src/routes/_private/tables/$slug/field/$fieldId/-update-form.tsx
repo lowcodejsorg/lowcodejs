@@ -106,7 +106,10 @@ export const UpdateFieldFormFields = withForm({
     const lockNonOptions = isLocked && isDropdown;
 
     return (
-      <section data-test-id="field-update-form-fields" className="space-y-4 p-2">
+      <section
+        data-test-id="field-update-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
         <form.AppField
           name="name"

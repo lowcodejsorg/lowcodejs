@@ -41,7 +41,10 @@ export const UpdateGroupFormFields = withForm({
     const isDisabled = mode === 'show' || isPending;
 
     return (
-      <section data-test-id="group-update-form-fields" className="space-y-4 p-2">
+      <section
+        data-test-id="group-update-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* Campo Slug (read-only) */}
         <Field>
           <FieldLabel>Slug (identificador)</FieldLabel>

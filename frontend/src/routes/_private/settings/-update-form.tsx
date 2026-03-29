@@ -127,7 +127,10 @@ export const UpdateSettingFormFields = withForm({
     };
 
     return (
-      <section data-test-id="settings-update-form-fields" className="space-y-4 p-2">
+      <section
+        data-test-id="settings-update-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* Nome do Sistema */}
         <Card>
           <CardHeader>
@@ -241,7 +244,10 @@ export const UpdateSettingFormFields = withForm({
                       value={field.state.value}
                       onValueChange={(value) => field.handleChange(value)}
                     >
-                      <SelectTrigger data-test-id="settings-locale-select" className="w-full max-w-xs">
+                      <SelectTrigger
+                        data-test-id="settings-locale-select"
+                        className="w-full max-w-xs"
+                      >
                         <SelectValue placeholder="Selecione um idioma" />
                       </SelectTrigger>
                       <SelectContent>
@@ -293,7 +299,10 @@ export const UpdateSettingFormFields = withForm({
                         field.handleChange(value as 'local' | 's3')
                       }
                     >
-                      <SelectTrigger data-test-id="settings-storage-driver-select" className="w-full max-w-xs">
+                      <SelectTrigger
+                        data-test-id="settings-storage-driver-select"
+                        className="w-full max-w-xs"
+                      >
                         <SelectValue placeholder="Selecione o driver" />
                       </SelectTrigger>
                       <SelectContent>
@@ -669,7 +678,10 @@ export const UpdateSettingFormFields = withForm({
                       value={field.state.value}
                       onValueChange={(value) => field.handleChange(value)}
                     >
-                      <SelectTrigger data-test-id="settings-pagination-select" className="w-full max-w-xs">
+                      <SelectTrigger
+                        data-test-id="settings-pagination-select"
+                        className="w-full max-w-xs"
+                      >
                         <SelectValue placeholder="Selecione" />
                       </SelectTrigger>
                       <SelectContent>

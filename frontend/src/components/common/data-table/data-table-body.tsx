@@ -17,7 +17,10 @@ function DataTableBodyInner<TData>({
   emptyMessage,
 }: DataTableBodyProps<TData>): React.JSX.Element {
   return (
-    <TableBody data-slot="data-table-body" data-test-id="data-table-body">
+    <TableBody
+      data-slot="data-table-body"
+      data-test-id="data-table-body"
+    >
       {table.getRowModel().rows.length === 0 && (
         <TableRow>
           <TableCell

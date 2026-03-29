@@ -222,7 +222,10 @@ export function TableCalendarView({
     !resolvedFields.endField;
 
   return (
-    <div className="flex h-full min-h-0 flex-col" data-test-id="table-calendar-view">
+    <div
+      className="flex h-full min-h-0 flex-col"
+      data-test-id="table-calendar-view"
+    >
       <CalendarToolbar
         currentDate={currentDate}
         viewMode={viewMode}

@@ -74,7 +74,10 @@ export function TableSendToTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6" data-test-id="trash-table-dialog">
+      <DialogContent
+        className="py-4 px-6"
+        data-test-id="trash-table-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Enviar tabela para a lixeira</DialogTitle>
           <DialogDescription>

@@ -190,7 +190,10 @@ function RouteComponent(): React.JSX.Element {
     _create.status === 'pending' || _createGroupField.status === 'pending';
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" data-test-id="create-field-page">
+    <div
+      className="flex flex-col h-full overflow-hidden"
+      data-test-id="create-field-page"
+    >
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">

@@ -68,7 +68,10 @@ export function MenuSendToTrashDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6" data-test-id="trash-menu-dialog">
+      <DialogContent
+        className="py-4 px-6"
+        data-test-id="trash-menu-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Enviar menu para a lixeira</DialogTitle>
           <DialogDescription>

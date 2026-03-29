@@ -75,7 +75,10 @@ export function RowDeleteDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6" data-test-id="delete-row-dialog">
+      <DialogContent
+        className="py-4 px-6"
+        data-test-id="delete-row-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Excluir registro permanentemente</DialogTitle>
           <DialogDescription>

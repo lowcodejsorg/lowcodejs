@@ -39,7 +39,10 @@ function RouteComponent(): React.JSX.Element {
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" data-test-id="group-detail-page">
+    <div
+      className="flex flex-col h-full overflow-hidden"
+      data-test-id="group-detail-page"
+    >
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">

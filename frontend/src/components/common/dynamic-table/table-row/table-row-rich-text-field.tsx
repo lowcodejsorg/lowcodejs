@@ -53,7 +53,10 @@ export function TableRowRichTextField({
 
   if (disabled) {
     return (
-      <Field data-slot="table-row-rich-text-field" data-test-id="table-row-rich-text">
+      <Field
+        data-slot="table-row-rich-text-field"
+        data-test-id="table-row-rich-text"
+      >
         <FieldLabel>{field.name}</FieldLabel>
         <div className="border rounded-md p-4 bg-muted min-h-25">
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>

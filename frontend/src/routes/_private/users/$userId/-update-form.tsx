@@ -42,7 +42,10 @@ export const UpdateUserFormFields = withForm({
     const isDisabled = mode === 'show' || isPending;
 
     return (
-      <section data-test-id="user-update-form-fields" className="space-y-4 p-2">
+      <section
+        data-test-id="user-update-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* Campo Nome */}
         <form.AppField name="name">
           {(field) => (

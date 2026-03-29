@@ -46,7 +46,10 @@ export const CreateTableFormFields = withForm({
   },
   render: function Render({ form, isPending }) {
     return (
-      <section data-test-id="table-create-form-fields" className="space-y-4 p-2">
+      <section
+        data-test-id="table-create-form-fields"
+        className="space-y-4 p-2"
+      >
         {/* Campo Logo */}
         <form.AppField name="logoFile">
           {(field) => (

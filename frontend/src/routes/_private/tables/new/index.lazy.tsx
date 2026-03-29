@@ -10,7 +10,10 @@ function RouteComponent(): React.JSX.Element {
   const navigate = useNavigate();
 
   return (
-    <div className="flex h-full items-center justify-center" data-test-id="new-table-page">
+    <div
+      className="flex h-full items-center justify-center"
+      data-test-id="new-table-page"
+    >
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full px-4">
         {/* Criar a partir de modelo */}
         <button

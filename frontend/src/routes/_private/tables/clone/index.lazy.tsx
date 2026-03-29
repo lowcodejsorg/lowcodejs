@@ -76,7 +76,10 @@ function RouteComponent(): React.JSX.Element {
   const isPending = _clone.status === 'pending';
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" data-test-id="clone-table-page">
+    <div
+      className="flex flex-col h-full overflow-hidden"
+      data-test-id="clone-table-page"
+    >
       {/* Header */}
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
         <div className="inline-flex items-center space-x-2">

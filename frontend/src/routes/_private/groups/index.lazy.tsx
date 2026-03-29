@@ -64,7 +64,10 @@ function RouteComponent(): React.JSX.Element {
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
   return (
-    <div className="flex flex-col h-full overflow-hidden" data-test-id="groups-page">
+    <div
+      className="flex flex-col h-full overflow-hidden"
+      data-test-id="groups-page"
+    >
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Grupos</h1>
         <div className="inline-flex items-center gap-2">

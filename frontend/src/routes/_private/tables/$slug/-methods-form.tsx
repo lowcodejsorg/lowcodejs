@@ -39,7 +39,10 @@ export const MethodsFormFields = withForm({
   },
   render: function Render({ form, table }) {
     return (
-      <div className="p-2" data-test-id="methods-form">
+      <div
+        className="p-2"
+        data-test-id="methods-form"
+      >
         <p className="text-sm text-muted-foreground mb-4">
           Configure scripts JavaScript que serão executados em diferentes
           momentos do ciclo de vida do registro.

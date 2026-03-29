@@ -197,7 +197,10 @@ export function TableMosaicView({
   );
 
   return (
-    <div className="gap-x-4 columns-1 sm:columns-2 lg:columns-3 xl:columns-4" data-test-id="table-mosaic-view">
+    <div
+      className="gap-x-4 columns-1 sm:columns-2 lg:columns-3 xl:columns-4"
+      data-test-id="table-mosaic-view"
+    >
       {data.map((row) => (
         <article
           key={row._id}

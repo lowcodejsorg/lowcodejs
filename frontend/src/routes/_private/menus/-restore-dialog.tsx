@@ -57,7 +57,10 @@ export function MenuRestoreDialog({
       onOpenChange={setOpen}
     >
       <DialogTrigger {...props} />
-      <DialogContent className="py-4 px-6" data-test-id="restore-menu-dialog">
+      <DialogContent
+        className="py-4 px-6"
+        data-test-id="restore-menu-dialog"
+      >
         <DialogHeader>
           <DialogTitle>Restaurar menu da lixeira</DialogTitle>
           <DialogDescription>

@@ -197,7 +197,10 @@ export function TableCardView({
   );
 
   return (
-    <div className="divide-y divide-border/50" data-test-id="table-card-view">
+    <div
+      className="divide-y divide-border/50"
+      data-test-id="table-card-view"
+    >
       {data.map((row) => (
         <article
           key={row._id}

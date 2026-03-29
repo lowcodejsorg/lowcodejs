@@ -211,7 +211,10 @@ export function RowFormFields({
   tableSlug: _tableSlug,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
-    <section className="flex flex-wrap gap-4 p-2" data-test-id="create-row-fields">
+    <section
+      className="flex flex-wrap gap-4 p-2"
+      data-test-id="create-row-fields"
+    >
       {fields.map((field) => {
         // Skip native fields (_id, creator, createdAt)
         if (field.native) return null;

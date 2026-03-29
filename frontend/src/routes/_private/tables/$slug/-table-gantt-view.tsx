@@ -411,7 +411,10 @@ export function TableGanttView({
   };
 
   return (
-    <div className="flex h-full min-h-0 flex-col" data-test-id="table-gantt-view">
+    <div
+      className="flex h-full min-h-0 flex-col"
+      data-test-id="table-gantt-view"
+    >
       {/* Toolbar com filtros e zoom */}
       <GanttToolbar
         zoom={zoom}
