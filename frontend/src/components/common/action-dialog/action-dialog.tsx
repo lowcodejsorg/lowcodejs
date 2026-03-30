@@ -1,5 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
+import type { QueryKey } from '@tanstack/react-query';
 import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 
@@ -14,52 +15,55 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
-import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
 
-type TableDeleteDialogProps = React.ComponentProps<typeof DialogTrigger> & {
-  slug: string;
+export interface ActionDialogConfig {
+  mutationFn: () => Promise<void>;
+  invalidateKeys: Array<QueryKey>;
+  toast: { title: string; description: string };
+  navigation?: { to: string; search: Record<string, unknown> };
+  errorContext: string;
+  title: string;
+  description: string;
+  testId: string;
+  confirmTestId?: string;
+  cancelTestId?: string;
+}
+
+export type ActionDialogProps = React.ComponentProps<typeof DialogTrigger> & {
+  config: ActionDialogConfig;
 };
 
-export function TableDeleteDialog({
-  slug,
+export function ActionDialog({
+  config,
   ...props
-}: TableDeleteDialogProps): React.JSX.Element {
+}: ActionDialogProps): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const navigate = useNavigate();
 
-  const deleteTable = useMutation({
-    mutationFn: async function () {
-      const route = '/tables/'.concat(slug);
-      await API.delete(route);
-    },
+  const mutation = useMutation({
+    mutationFn: config.mutationFn,
     onSuccess() {
       setOpen(false);
 
-      QueryClient.invalidateQueries({
-        queryKey: queryKeys.tables.detail(slug),
-      });
+      for (const key of config.invalidateKeys) {
+        QueryClient.invalidateQueries({ queryKey: key });
+      }
 
-      QueryClient.invalidateQueries({
-        queryKey: queryKeys.tables.lists(),
-      });
+      toastSuccess(config.toast.title, config.toast.description);
 
-      toastSuccess(
-        'Tabela excluída permanentemente!',
-        'A tabela foi excluída permanentemente',
-      );
-
-      navigate({
-        to: '/tables',
-        replace: true,
-        search: { page: 1, perPage: 50 },
-      });
+      if (config.navigation) {
+        navigate({
+          to: config.navigation.to,
+          replace: true,
+          search: config.navigation.search as any,
+        });
+      }
     },
     onError(error) {
-      handleApiError(error, { context: 'Erro ao excluir tabela' });
+      handleApiError(error, { context: config.errorContext });
     },
   });
 
@@ -72,14 +76,11 @@ export function TableDeleteDialog({
       <DialogTrigger {...props} />
       <DialogContent
         className="py-4 px-6"
-        data-test-id="delete-table-dialog"
+        data-test-id={config.testId}
       >
         <DialogHeader>
-          <DialogTitle>Excluir tabela permanentemente</DialogTitle>
-          <DialogDescription>
-            Essa ação é irreversível. A tabela será excluída permanentemente e
-            não poderá ser recuperada.
-          </DialogDescription>
+          <DialogTitle>{config.title}</DialogTitle>
+          <DialogDescription>{config.description}</DialogDescription>
         </DialogHeader>
         <section>
           <form className="pt-4 pb-2">
@@ -87,23 +88,23 @@ export function TableDeleteDialog({
               <DialogClose asChild>
                 <Button
                   className="bg-destructive hover:bg-destructive"
-                  data-test-id="delete-table-cancel-btn"
+                  data-test-id={config.cancelTestId}
                 >
                   Cancelar
                 </Button>
               </DialogClose>
               <Button
                 type="button"
-                data-test-id="delete-table-confirm-btn"
-                disabled={deleteTable.status === 'pending'}
+                data-test-id={config.confirmTestId}
+                disabled={mutation.status === 'pending'}
                 onClick={() => {
-                  deleteTable.mutateAsync();
+                  mutation.mutateAsync();
                 }}
               >
-                {deleteTable.status === 'pending' && (
+                {mutation.status === 'pending' && (
                   <LoaderCircleIcon className="size-4 animate-spin" />
                 )}
-                {!(deleteTable.status === 'pending') && <span>Confirmar</span>}
+                {!(mutation.status === 'pending') && <span>Confirmar</span>}
               </Button>
             </DialogFooter>
           </form>

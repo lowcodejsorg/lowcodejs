@@ -11,9 +11,7 @@ import {
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import { MenuDeleteDialog } from './-delete-dialog';
-import { MenuRestoreDialog } from './-restore-dialog';
-import { MenuSendToTrashDialog } from './-send-to-trash-dialog';
+import { ActionDialog } from '@/components/common/action-dialog';
 
 import {
   DataTable,
@@ -30,7 +28,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useDataTable } from '@/hooks/use-data-table';
+import { API } from '@/lib/api';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
@@ -115,17 +115,64 @@ function ActionsCell({ menu }: { menu: IMenu }): React.JSX.Element {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <MenuDeleteDialog
+      <ActionDialog
         ref={menuDeleteButtonRef}
-        menuId={menu._id}
+        config={{
+          mutationFn: async function () {
+            await API.delete('/menu/'.concat(menu._id).concat('/permanent'));
+          },
+          invalidateKeys: [queryKeys.menus.all],
+          toast: {
+            title: 'Menu excluído permanentemente!',
+            description: 'O menu foi excluído permanentemente',
+          },
+          navigation: { to: '/menus', search: { page: 1, perPage: 50 } },
+          errorContext: 'Erro ao excluir menu',
+          title: 'Excluir menu permanentemente',
+          description:
+            'Essa ação é irreversível. O menu será excluído permanentemente e não poderá ser recuperado.',
+          testId: 'delete-menu-dialog',
+          confirmTestId: 'delete-menu-confirm-btn',
+        }}
       />
-      <MenuRestoreDialog
+      <ActionDialog
         ref={menuRestoreButtonRef}
-        menuId={menu._id}
+        config={{
+          mutationFn: async function () {
+            await API.patch('/menu/'.concat(menu._id).concat('/restore'));
+          },
+          invalidateKeys: [queryKeys.menus.all],
+          toast: {
+            title: 'Menu restaurado!',
+            description: 'O menu foi restaurado da lixeira',
+          },
+          errorContext: 'Erro ao restaurar menu da lixeira',
+          title: 'Restaurar menu da lixeira',
+          description:
+            'Ao confirmar essa ação, o menu será restaurado da lixeira',
+          testId: 'restore-menu-dialog',
+          confirmTestId: 'restore-menu-confirm-btn',
+        }}
       />
-      <MenuSendToTrashDialog
+      <ActionDialog
         ref={menuSendToTrashButtonRef}
-        menuId={menu._id}
+        config={{
+          mutationFn: async function () {
+            await API.delete('/menu/'.concat(menu._id));
+          },
+          invalidateKeys: [queryKeys.menus.all],
+          toast: {
+            title: 'Menu enviado para lixeira!',
+            description: 'O menu foi movido para a lixeira',
+          },
+          navigation: { to: '/menus', search: { page: 1, perPage: 50 } },
+          errorContext: 'Erro ao enviar menu para lixeira',
+          title: 'Enviar menu para a lixeira',
+          description:
+            'Ao confirmar essa ação, o menu será enviado para a lixeira',
+          testId: 'trash-menu-dialog',
+          confirmTestId: 'trash-menu-confirm-btn',
+        }}
       />
     </div>
   );

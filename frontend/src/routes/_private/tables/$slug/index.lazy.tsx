@@ -17,17 +17,20 @@ import React from 'react';
 import { TableExportDialog } from '../-export-dialog';
 
 import { RowEmptyTrashDialog } from './-empty-trash-dialog';
-import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
-import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
-import { TableDocumentViewSkeleton } from './-table-document-view-skeleton';
-import { TableForumViewSkeleton } from './-table-forum-view-skeleton';
-import { TableGanttViewSkeleton } from './-table-gantt-view-skeleton';
-import { TableGridViewSkeleton } from './-table-grid-view-skeleton';
-import { TableKanbanViewSkeleton } from './-table-kanban-view-skeleton';
-import { TableListViewSkeleton } from './-table-list-view-skeleton';
-import { TableMosaicViewSkeleton } from './-table-mosaic-view-skeleton';
-import { TableSkeleton } from './-table-skeleton';
+
+import {
+  TableCalendarViewSkeleton,
+  TableCardViewSkeleton,
+  TableDocumentViewSkeleton,
+  TableForumViewSkeleton,
+  TableGanttViewSkeleton,
+  TableGridViewSkeleton,
+  TableKanbanViewSkeleton,
+  TableListViewSkeleton,
+  TableMosaicViewSkeleton,
+  TableSkeleton,
+} from '@/components/common/table-views';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
@@ -52,6 +55,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
+import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { toastInfo } from '@/lib/toast';
@@ -72,51 +76,57 @@ const VIEW_MAP: Record<
   [E_TABLE_STYLE.LIST]: {
     skeleton: TableListViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-list-view').then((m) => ({ default: m.TableListView })),
+      import('@/components/common/table-views/table-list-view').then((m) => ({
+        default: m.TableListView,
+      })),
     ),
   },
   [E_TABLE_STYLE.GALLERY]: {
     skeleton: TableGridViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-grid-view').then((m) => ({ default: m.TableGridView })),
+      import('@/components/common/table-views/table-grid-view').then((m) => ({
+        default: m.TableGridView,
+      })),
     ),
   },
   [E_TABLE_STYLE.DOCUMENT]: {
     skeleton: TableDocumentViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-document-view').then((m) => ({
-        default: m.TableDocumentView,
-      })),
+      import('@/components/common/table-views/table-document-view').then(
+        (m) => ({ default: m.TableDocumentView }),
+      ),
     ),
     extraProps: true,
   },
   [E_TABLE_STYLE.CARD]: {
     skeleton: TableCardViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-card-view').then((m) => ({ default: m.TableCardView })),
+      import('@/components/common/table-views/table-card-view').then((m) => ({
+        default: m.TableCardView,
+      })),
     ),
   },
   [E_TABLE_STYLE.MOSAIC]: {
     skeleton: TableMosaicViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-mosaic-view').then((m) => ({
-        default: m.TableMosaicView,
-      })),
+      import('@/components/common/table-views/table-mosaic-view').then(
+        (m) => ({ default: m.TableMosaicView }),
+      ),
     ),
   },
   [E_TABLE_STYLE.KANBAN]: {
     skeleton: TableKanbanViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-kanban-view').then((m) => ({
-        default: m.TableKanbanView,
-      })),
+      import('@/components/common/table-views/table-kanban-view').then(
+        (m) => ({ default: m.TableKanbanView }),
+      ),
     ),
     extraProps: true,
   },
   [E_TABLE_STYLE.FORUM]: {
     skeleton: TableForumViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-forum-view').then((m) => ({
+      import('@/components/common/table-views/table-forum-view').then((m) => ({
         default: m.TableForumView,
       })),
     ),
@@ -125,16 +135,16 @@ const VIEW_MAP: Record<
   [E_TABLE_STYLE.CALENDAR]: {
     skeleton: TableCalendarViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-calendar-view').then((m) => ({
-        default: m.TableCalendarView,
-      })),
+      import('@/components/common/table-views/table-calendar-view').then(
+        (m) => ({ default: m.TableCalendarView }),
+      ),
     ),
     extraProps: true,
   },
   [E_TABLE_STYLE.GANTT]: {
     skeleton: TableGanttViewSkeleton,
     view: React.lazy(() =>
-      import('./-table-gantt-view').then((m) => ({
+      import('@/components/common/table-views/table-gantt-view').then((m) => ({
         default: m.TableGanttView,
       })),
     ),
@@ -182,20 +192,8 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const sidebar = useSidebar();
 
-  const [filterOpen, setFilterOpen] = React.useState(() => {
-    try {
-      return localStorage.getItem('filter-sidebar-open') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  const handleFilterOpenChange = React.useCallback((open: boolean) => {
-    setFilterOpen(open);
-    try {
-      localStorage.setItem('filter-sidebar-open', String(open));
-    } catch {}
-  }, []);
+  const { open: filterOpen, onOpenChange: handleFilterOpenChange } =
+    useFilterSidebar();
 
   const filterFields = table.data?.fields.filter((f) => f.showInFilter) ?? [];
   const activeFiltersCount = getActiveFiltersCount(filterFields, search);

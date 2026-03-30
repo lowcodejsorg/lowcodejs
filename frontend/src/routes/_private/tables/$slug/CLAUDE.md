@@ -36,16 +36,11 @@ visualizacao via `E_TABLE_STYLE`, carregados com lazy loading.
 | `-methods-form.tsx`        | Formulario | Campos de codigo IIFE para hooks onLoad, beforeSave, afterSave          |
 | `methods.tsx`              | Loader     | Carrega tableDetail para rota de metodos                                |
 | `methods.lazy.tsx`         | Componente | Pagina de edicao de metodos com tabs                                    |
-| `-table-list-view.tsx`     | View       | DataTable com colunas dinamicas, selecao em lote, acoes por row         |
-| `-table-grid-view.tsx`     | View       | Cards em grid com campos dinamicos baseados em layoutFields             |
-| `-table-document-view.tsx` | View       | Visualizacao de documento com sidebar, TOC e exportacao PDF             |
-| `-table-card-view.tsx`     | View       | Cards compactos com campos dinamicos                                    |
-| `-table-mosaic-view.tsx`   | View       | Layout tipo mosaico com campos dinamicos                                |
-| `-table-kanban-view.tsx`   | View       | Quadro kanban com drag-and-drop (dnd-kit), colunas por dropdown         |
-| `-table-forum-view.tsx`    | View       | Forum com canais, mensagens e documentos                                |
-| `-table-calendar-view.tsx` | View       | Calendario com modos mes, semana e agenda                               |
-| `-table-gantt-view.tsx`    | View       | Grafico Gantt com timeline e barras arrastaveis                         |
-| `-table-*-skeleton.tsx`    | Skeletons  | Um skeleton para cada modo de visualizacao                              |
+
+
+> **Nota**: Os 9 componentes de view (`table-*-view.tsx`) e seus skeletons foram
+> movidos para `@/components/common/table-views/`. Sao carregados via
+> `React.lazy` no `VIEW_MAP` deste arquivo.
 
 ## Paginacao
 

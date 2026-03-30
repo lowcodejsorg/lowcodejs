@@ -19,11 +19,9 @@ import {
 import React from 'react';
 import { createPortal } from 'react-dom';
 
-import { TableDeleteDialog } from './-delete-dialog';
 import { TableExportDialog } from './-export-dialog';
-import { TableRemoveFromTrashDialog } from './-remove-from-trash-dialog';
-import { TableSendToTrashDialog } from './-send-to-trash-dialog';
 
+import { ActionDialog } from '@/components/common/action-dialog';
 import {
   DataTable,
   DataTableColumnToggle,
@@ -188,17 +186,74 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
         slug={table.slug}
         tableName={table.name}
       />
-      <TableDeleteDialog
+      <ActionDialog
         ref={tableDeleteButtonRef}
-        slug={table.slug}
+        config={{
+          mutationFn: async function () {
+            await API.delete('/tables/'.concat(table.slug));
+          },
+          invalidateKeys: [
+            queryKeys.tables.detail(table.slug),
+            queryKeys.tables.lists(),
+          ],
+          toast: {
+            title: 'Tabela excluída permanentemente!',
+            description: 'A tabela foi excluída permanentemente',
+          },
+          navigation: { to: '/tables', search: { page: 1, perPage: 50 } },
+          errorContext: 'Erro ao excluir tabela',
+          title: 'Excluir tabela permanentemente',
+          description:
+            'Essa ação é irreversível. A tabela será excluída permanentemente e não poderá ser recuperada.',
+          testId: 'delete-table-dialog',
+          cancelTestId: 'delete-table-cancel-btn',
+          confirmTestId: 'delete-table-confirm-btn',
+        }}
       />
-      <TableRemoveFromTrashDialog
+      <ActionDialog
         ref={tableRemoveFromTrashButtonRef}
-        slug={table.slug}
+        config={{
+          mutationFn: async function () {
+            await API.patch('/tables/'.concat(table.slug).concat('/restore'));
+          },
+          invalidateKeys: [
+            queryKeys.tables.detail(table.slug),
+            queryKeys.tables.lists(),
+          ],
+          toast: {
+            title: 'Tabela restaurada!',
+            description: 'A tabela foi restaurada da lixeira',
+          },
+          errorContext: 'Erro ao restaurar tabela da lixeira',
+          title: 'Restaurar tabela da lixeira',
+          description:
+            'Ao confirmar essa ação, a tabela será restaurada da lixeira',
+          testId: 'restore-table-dialog',
+          confirmTestId: 'restore-table-confirm-btn',
+        }}
       />
-      <TableSendToTrashDialog
+      <ActionDialog
         ref={tableSendToTrashButtonRef}
-        slug={table.slug}
+        config={{
+          mutationFn: async function () {
+            await API.patch('/tables/'.concat(table.slug).concat('/trash'));
+          },
+          invalidateKeys: [
+            queryKeys.tables.detail(table.slug),
+            queryKeys.tables.lists(),
+          ],
+          toast: {
+            title: 'Tabela enviada para lixeira!',
+            description: 'A tabela foi movida para a lixeira',
+          },
+          navigation: { to: '/tables', search: { page: 1, perPage: 50 } },
+          errorContext: 'Erro ao enviar tabela para lixeira',
+          title: 'Enviar tabela para a lixeira',
+          description:
+            'Ao confirmar essa ação, a tabela será enviada para a lixeira',
+          testId: 'trash-table-dialog',
+          confirmTestId: 'trash-table-confirm-btn',
+        }}
       />
     </div>
   );

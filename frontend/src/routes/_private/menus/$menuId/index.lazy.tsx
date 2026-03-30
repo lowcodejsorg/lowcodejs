@@ -13,19 +13,18 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { MenuDeleteDialog } from '../-delete-dialog';
-import { MenuRestoreDialog } from '../-restore-dialog';
-import { MenuSendToTrashDialog } from '../-send-to-trash-dialog';
-
 import type { MenuUpdateFormValues } from './-update-form';
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { MenuView } from './-view';
 
+import { ActionDialog } from '@/components/common/action-dialog';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { menuDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
+import { API } from '@/lib/api';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { createFieldErrorSetter } from '@/lib/form-utils';
@@ -170,9 +169,28 @@ function MenuUpdateContent({
       {mode === 'show' && (
         <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
           {!data.trashed && (
-            <MenuSendToTrashDialog
-              menuId={data._id}
+            <ActionDialog
               asChild
+              config={{
+                mutationFn: async function () {
+                  await API.delete('/menu/'.concat(data._id));
+                },
+                invalidateKeys: [queryKeys.menus.all],
+                toast: {
+                  title: 'Menu enviado para lixeira!',
+                  description: 'O menu foi movido para a lixeira',
+                },
+                navigation: {
+                  to: '/menus',
+                  search: { page: 1, perPage: 50 },
+                },
+                errorContext: 'Erro ao enviar menu para lixeira',
+                title: 'Enviar menu para a lixeira',
+                description:
+                  'Ao confirmar essa ação, o menu será enviado para a lixeira',
+                testId: 'trash-menu-dialog',
+                confirmTestId: 'trash-menu-confirm-btn',
+              }}
             >
               <Button
                 data-test-id="menu-trash-btn"
@@ -184,12 +202,29 @@ function MenuUpdateContent({
                 <TrashIcon className="size-4 mr-1" />
                 <span>Enviar para lixeira</span>
               </Button>
-            </MenuSendToTrashDialog>
+            </ActionDialog>
           )}
           {data.trashed && (
-            <MenuRestoreDialog
-              menuId={data._id}
+            <ActionDialog
               asChild
+              config={{
+                mutationFn: async function () {
+                  await API.patch(
+                    '/menu/'.concat(data._id).concat('/restore'),
+                  );
+                },
+                invalidateKeys: [queryKeys.menus.all],
+                toast: {
+                  title: 'Menu restaurado!',
+                  description: 'O menu foi restaurado da lixeira',
+                },
+                errorContext: 'Erro ao restaurar menu da lixeira',
+                title: 'Restaurar menu da lixeira',
+                description:
+                  'Ao confirmar essa ação, o menu será restaurado da lixeira',
+                testId: 'restore-menu-dialog',
+                confirmTestId: 'restore-menu-confirm-btn',
+              }}
             >
               <Button
                 type="button"
@@ -200,12 +235,33 @@ function MenuUpdateContent({
                 <ArchiveRestoreIcon className="size-4 mr-1" />
                 <span>Restaurar</span>
               </Button>
-            </MenuRestoreDialog>
+            </ActionDialog>
           )}
           {data.trashed && (
-            <MenuDeleteDialog
-              menuId={data._id}
+            <ActionDialog
               asChild
+              config={{
+                mutationFn: async function () {
+                  await API.delete(
+                    '/menu/'.concat(data._id).concat('/permanent'),
+                  );
+                },
+                invalidateKeys: [queryKeys.menus.all],
+                toast: {
+                  title: 'Menu excluído permanentemente!',
+                  description: 'O menu foi excluído permanentemente',
+                },
+                navigation: {
+                  to: '/menus',
+                  search: { page: 1, perPage: 50 },
+                },
+                errorContext: 'Erro ao excluir menu',
+                title: 'Excluir menu permanentemente',
+                description:
+                  'Essa ação é irreversível. O menu será excluído permanentemente e não poderá ser recuperado.',
+                testId: 'delete-menu-dialog',
+                confirmTestId: 'delete-menu-confirm-btn',
+              }}
             >
               <Button
                 data-test-id="menu-delete-btn"
@@ -217,7 +273,7 @@ function MenuUpdateContent({
                 <TrashIcon className="size-4 mr-1" />
                 <span>Excluir permanentemente</span>
               </Button>
-            </MenuDeleteDialog>
+            </ActionDialog>
           )}
           <Button
             data-test-id="menu-edit-btn"

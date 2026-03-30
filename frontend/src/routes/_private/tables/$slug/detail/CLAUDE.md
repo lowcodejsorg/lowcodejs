@@ -36,5 +36,5 @@ visualizacao (show) e edicao (edit).
 
 ## Acoes de Lixeira
 
-- Reutiliza dialogs do diretorio pai: `TableSendToTrashDialog`,
-  `TableRemoveFromTrashDialog`, `TableDeleteDialog`
+- Usa `ActionDialog` de `@/components/common/action-dialog` para acoes de
+  trash/restore/delete

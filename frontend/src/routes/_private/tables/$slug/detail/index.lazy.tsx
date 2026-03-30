@@ -11,14 +11,11 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { TableDeleteDialog } from '../../-delete-dialog';
-import { TableRemoveFromTrashDialog } from '../../-remove-from-trash-dialog';
-import { TableSendToTrashDialog } from '../../-send-to-trash-dialog';
-
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 import { TableView } from './-view';
 
+import { ActionDialog } from '@/components/common/action-dialog';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
@@ -26,8 +23,10 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -217,9 +216,33 @@ function TableUpdateContent({
       {mode === 'show' && (
         <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
           {!data.trashed && permission.can('REMOVE_TABLE') && (
-            <TableSendToTrashDialog
-              slug={data.slug}
+            <ActionDialog
               asChild
+              config={{
+                mutationFn: async function () {
+                  await API.patch(
+                    '/tables/'.concat(data.slug).concat('/trash'),
+                  );
+                },
+                invalidateKeys: [
+                  queryKeys.tables.detail(data.slug),
+                  queryKeys.tables.lists(),
+                ],
+                toast: {
+                  title: 'Tabela enviada para lixeira!',
+                  description: 'A tabela foi movida para a lixeira',
+                },
+                navigation: {
+                  to: '/tables',
+                  search: { page: 1, perPage: 50 },
+                },
+                errorContext: 'Erro ao enviar tabela para lixeira',
+                title: 'Enviar tabela para a lixeira',
+                description:
+                  'Ao confirmar essa ação, a tabela será enviada para a lixeira',
+                testId: 'trash-table-dialog',
+                confirmTestId: 'trash-table-confirm-btn',
+              }}
             >
               <Button
                 type="button"
@@ -229,12 +252,32 @@ function TableUpdateContent({
                 <TrashIcon className="size-4" />
                 <span>Enviar para lixeira</span>
               </Button>
-            </TableSendToTrashDialog>
+            </ActionDialog>
           )}
           {data.trashed && permission.can('UPDATE_TABLE') && (
-            <TableRemoveFromTrashDialog
-              slug={data.slug}
+            <ActionDialog
               asChild
+              config={{
+                mutationFn: async function () {
+                  await API.patch(
+                    '/tables/'.concat(data.slug).concat('/restore'),
+                  );
+                },
+                invalidateKeys: [
+                  queryKeys.tables.detail(data.slug),
+                  queryKeys.tables.lists(),
+                ],
+                toast: {
+                  title: 'Tabela restaurada!',
+                  description: 'A tabela foi restaurada da lixeira',
+                },
+                errorContext: 'Erro ao restaurar tabela da lixeira',
+                title: 'Restaurar tabela da lixeira',
+                description:
+                  'Ao confirmar essa ação, a tabela será restaurada da lixeira',
+                testId: 'restore-table-dialog',
+                confirmTestId: 'restore-table-confirm-btn',
+              }}
             >
               <Button
                 type="button"
@@ -244,12 +287,35 @@ function TableUpdateContent({
                 <ArchiveRestoreIcon className="size-4" />
                 <span>Restaurar</span>
               </Button>
-            </TableRemoveFromTrashDialog>
+            </ActionDialog>
           )}
           {data.trashed && permission.can('REMOVE_TABLE') && (
-            <TableDeleteDialog
-              slug={data.slug}
+            <ActionDialog
               asChild
+              config={{
+                mutationFn: async function () {
+                  await API.delete('/tables/'.concat(data.slug));
+                },
+                invalidateKeys: [
+                  queryKeys.tables.detail(data.slug),
+                  queryKeys.tables.lists(),
+                ],
+                toast: {
+                  title: 'Tabela excluída permanentemente!',
+                  description: 'A tabela foi excluída permanentemente',
+                },
+                navigation: {
+                  to: '/tables',
+                  search: { page: 1, perPage: 50 },
+                },
+                errorContext: 'Erro ao excluir tabela',
+                title: 'Excluir tabela permanentemente',
+                description:
+                  'Essa ação é irreversível. A tabela será excluída permanentemente e não poderá ser recuperada.',
+                testId: 'delete-table-dialog',
+                cancelTestId: 'delete-table-cancel-btn',
+                confirmTestId: 'delete-table-confirm-btn',
+              }}
             >
               <Button
                 type="button"
@@ -259,7 +325,7 @@ function TableUpdateContent({
                 <TrashIcon className="size-4" />
                 <span>Excluir permanentemente</span>
               </Button>
-            </TableDeleteDialog>
+            </ActionDialog>
           )}
           {!data.trashed && permission.can('UPDATE_TABLE') && (
             <Button

@@ -5,7 +5,11 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { hashPasswordFields, maskPasswordFields, stripMaskedPasswordFields } from '@application/core/row-password-helper.core';
+import {
+  hashPasswordFields,
+  maskPasswordFields,
+  stripMaskedPasswordFields,
+} from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 // import TableFieldRowValidation from '@application/core/table-field-row-validation.exception';
 import { buildPopulate, buildTable } from '@application/core/util.core';

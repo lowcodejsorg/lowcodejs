@@ -72,7 +72,10 @@
       "Bash(sed -i \"s/vi.spyOn\\(userGroupInMemoryRepository, ''findBy''\\)/vi.spyOn\\(userGroupInMemoryRepository, ''findBySlug''\\)/\" user-groups/create/create.use-case.spec.ts)",
       "Bash(sed -i \"s/vi.spyOn\\(userGroupInMemoryRepository, ''findBy''\\)/vi.spyOn\\(userGroupInMemoryRepository, ''findById''\\)/\" user-groups/show/show.use-case.spec.ts user-groups/update/update.use-case.spec.ts)",
       "mcp__ide__getDiagnostics",
-      "Bash(do if:*)"
+      "Bash(do if:*)",
+      "Bash(wc -l /home/indio/Desktop/low-code-js/frontend/src/routes/_private/dashboard/-*.tsx /home/indio/Desktop/low-code-js/frontend/src/routes/_private/dashboard/-*.ts)",
+      "Bash(SRC=\"/home/indio/Desktop/low-code-js/frontend/src/routes/_private/tables/$slug\")",
+      "Bash(rm \"$SRC\"/-table-*-view.tsx \"$SRC\"/-table-*-view-skeleton.tsx \"$SRC\"/-table-skeleton.tsx)"
     ]
   },
   "enableAllProjectMcpServers": true,

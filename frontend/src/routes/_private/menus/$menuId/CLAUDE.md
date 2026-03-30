@@ -47,11 +47,12 @@ No modo `show`, os mesmos campos sao exibidos como texto via `MenuView`. O campo
 ## Acoes no modo show
 
 - **Editar** -- alterna para modo edit
-- **Enviar para lixeira** -- dialog `MenuSendToTrashDialog` (visivel se nao esta
-  na lixeira)
-- **Restaurar** -- dialog `MenuRestoreDialog` (visivel se esta na lixeira)
-- **Excluir permanentemente** -- dialog `MenuDeleteDialog` (visivel se esta na
-  lixeira)
+- **Enviar para lixeira** -- `ActionDialog` (visivel se nao esta na lixeira)
+- **Restaurar** -- `ActionDialog` (visivel se esta na lixeira)
+- **Excluir permanentemente** -- `ActionDialog` (visivel se esta na lixeira)
+
+Todos os dialogs de acao usam `ActionDialog` de
+`@/components/common/action-dialog`.
 
 ## Fluxo
 

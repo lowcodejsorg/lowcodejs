@@ -17,10 +17,10 @@ colunas (nome, slug, tipo, criado por, criado em).
 | `index.lazy.tsx`            | Componente principal: header com TrashButton/FilterTrigger/botao criar, FilterSidebar, TableMenus e Pagination                                  |
 | `-table-menus.tsx`          | Tabela DataTable com colunas (nome, slug, tipo, criado por, criado em, acoes), dropdown de acoes por linha                                      |
 | `-table-menus-skeleton.tsx` | Skeleton de carregamento da tabela                                                                                                              |
-| `-delete-dialog.tsx`        | Dialog de exclusao permanente -- `DELETE /menu/:id/permanent`, invalida `queryKeys.menus.all`                                                   |
-| `-restore-dialog.tsx`       | Dialog de restauracao da lixeira -- `PATCH /menu/:id/restore`                                                                                   |
-| `-send-to-trash-dialog.tsx` | Dialog de envio para lixeira -- `DELETE /menu/:id` (soft delete)                                                                                |
 | `-separator-info.tsx`       | Banner informativo exibido quando o tipo do menu e SEPARATOR                                                                                    |
+
+> **Nota**: Dialogs de delete/restore/trash foram substituidos pelo componente
+> generico `ActionDialog` de `@/components/common/action-dialog`.
 
 ## Subdiretorios
 

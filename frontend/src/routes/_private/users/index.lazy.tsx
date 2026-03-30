@@ -16,6 +16,8 @@ import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
+import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
+import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
 import { useAuthStore } from '@/stores/authentication';
@@ -25,9 +27,7 @@ export const Route = createLazyFileRoute('/_private/users/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(
-    null,
-  );
+  const { toolbarRef, toolbarNode } = useToolbarPortal();
   const auth = useAuthStore();
 
   const search = useSearch({
@@ -46,20 +46,8 @@ function RouteComponent(): React.JSX.Element {
     }),
   );
 
-  const [filterOpen, setFilterOpen] = React.useState(() => {
-    try {
-      return localStorage.getItem('filter-sidebar-open') === 'true';
-    } catch {
-      return false;
-    }
-  });
-
-  const handleFilterOpenChange = React.useCallback((open: boolean) => {
-    setFilterOpen(open);
-    try {
-      localStorage.setItem('filter-sidebar-open', String(open));
-    } catch {}
-  }, []);
+  const { open: filterOpen, onOpenChange: handleFilterOpenChange } =
+    useFilterSidebar();
 
   const fieldFilters: Array<IFilterField> = [
     {
@@ -80,7 +68,7 @@ function RouteComponent(): React.JSX.Element {
       <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
         <h1 className="text-2xl font-medium ">Usuários</h1>
         <div className="inline-flex items-center gap-2">
-          <div ref={setToolbarNode} />
+          <div ref={toolbarRef} />
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
             onClick={() => handleFilterOpenChange(!filterOpen)}

@@ -17,9 +17,6 @@ filtros, importacao/exportacao e acoes de lixeira.
 | `index.lazy.tsx`                | Componente         | Layout com header, FilterSidebar, TableTables, ChatSidebar e Pagination                                        |
 | `-table-tables.tsx`             | Componente privado | DataTable com colunas: nome, slug, visibilidade, criado por, criado em, acoes                                  |
 | `-table-tables-skeleton.tsx`    | Skeleton           | Skeleton da tabela de listagem                                                                                 |
-| `-delete-dialog.tsx`            | Dialog             | Exclusao permanente de tabela (DELETE `/tables/:slug`)                                                         |
-| `-send-to-trash-dialog.tsx`     | Dialog             | Enviar tabela para lixeira (PATCH `/tables/:slug/trash`)                                                       |
-| `-remove-from-trash-dialog.tsx` | Dialog             | Restaurar tabela da lixeira (PATCH `/tables/:slug/restore`)                                                    |
 | `-export-dialog.tsx`            | Dialog             | Exportar tabela como JSON (estrutura, dados ou ambos) via POST `/tools/export-table`                           |
 | `-import-dialog.tsx`            | Dialog             | Importar tabela de arquivo JSON exportado via POST `/tools/import-table`                                       |
 

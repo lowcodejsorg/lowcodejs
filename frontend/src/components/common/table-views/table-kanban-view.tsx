@@ -18,7 +18,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
 
-import { buildDefaultValues, buildPayload } from './row/create/-create-form';
+import { buildDefaultValues, buildPayload } from '@/routes/_private/tables/$slug/row/create/-create-form';
 
 import {
   KanbanAddListDialog,

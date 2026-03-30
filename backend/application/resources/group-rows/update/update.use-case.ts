@@ -6,7 +6,11 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { hashPasswordFields, maskPasswordFields, stripMaskedPasswordFields } from '@application/core/row-password-helper.core';
+import {
+  hashPasswordFields,
+  maskPasswordFields,
+  stripMaskedPasswordFields,
+} from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
