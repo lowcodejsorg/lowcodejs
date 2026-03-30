@@ -94,6 +94,10 @@ export function useGroupFieldUpdate(
         },
       );
 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(variables.tableSlug),
+      });
+
       props.onSuccess?.(response);
     },
     onError: props.onError,

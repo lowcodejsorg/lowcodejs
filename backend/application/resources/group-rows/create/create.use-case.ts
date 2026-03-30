@@ -79,12 +79,15 @@ export default class GroupRowCreateUseCase {
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
 
-      // Remove _id do payload para que o Mongoose gere um novo
+      // Remove campos de controle do payload para que o Mongoose gere um novo _id
       const { _id, slug, rowId, groupSlug, ...itemData } = payload;
 
-      // Push o novo item no array embedded
+      // Push o novo item no array embedded com creator
       const groupData = (row as any)[groupField.slug] || [];
-      groupData.push(itemData);
+      groupData.push({
+        ...itemData,
+        creator: itemData.creator ?? null,
+      });
       row.set(groupField.slug, groupData);
 
       await row.save();

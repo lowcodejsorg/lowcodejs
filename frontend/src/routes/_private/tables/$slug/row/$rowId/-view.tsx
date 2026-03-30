@@ -1,12 +1,5 @@
-import type { ColumnDef } from '@tanstack/react-table';
-import {
-  ArrowDownIcon,
-  ArrowUpIcon,
-  ChevronsLeftRightIcon,
-} from 'lucide-react';
 import React from 'react';
 
-import { DataTable } from '@/components/common/data-table';
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -18,14 +11,6 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
-import { Button } from '@/components/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useDataTable } from '@/hooks/use-data-table';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 
@@ -158,10 +143,6 @@ export function RowView({
   tableSlug,
   table,
 }: RowViewProps): React.JSX.Element {
-  const [sortState, setSortState] = React.useState<
-    Record<string, 'asc' | 'desc' | undefined>
-  >({});
-
   const visibleFields = React.useMemo(
     () => fields.filter((f) => f.showInDetail),
     [fields],
@@ -177,78 +158,22 @@ export function RowView({
     [visibleFields],
   );
 
-  const columns = React.useMemo((): Array<ColumnDef<IRow, any>> => {
-    return mainFields.map((field) => ({
-      id: field._id,
-      accessorFn: (row) => row[field.slug],
-      size: field.widthInList ?? undefined,
-      header: (): React.JSX.Element => {
-        const currentSort = sortState[field._id];
-        return (
-          <div className="inline-flex items-center">
-            <Button
-              className="h-auto px-2 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent cursor-default"
-              variant="link"
-            >
-              {field.name}
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  className="h-auto px-1 py-1 border-none shadow-none bg-transparent hover:bg-transparent dark:bg-transparent"
-                  variant="outline"
-                  size="sm"
-                >
-                  {currentSort === 'asc' && <ArrowUpIcon className="size-4" />}
-                  {currentSort === 'desc' && (
-                    <ArrowDownIcon className="size-4" />
-                  )}
-                  {!currentSort && (
-                    <ChevronsLeftRightIcon className="size-4 rotate-90" />
-                  )}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  onClick={() =>
-                    setSortState((prev) => ({ ...prev, [field._id]: 'asc' }))
-                  }
-                >
-                  <ArrowUpIcon />
-                  <span>Crescente</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() =>
-                    setSortState((prev) => ({ ...prev, [field._id]: 'desc' }))
-                  }
-                >
-                  <ArrowDownIcon />
-                  <span>Decrescente</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        );
-      },
-      cell: ({ row }) => renderCell(field, row.original, tableSlug),
-    }));
-  }, [mainFields, tableSlug, sortState]);
-
-  const tableInstance = useDataTable({
-    data: [data],
-    columns,
-    getRowId: (row) => row._id,
-  });
-
   return (
     <section
       className="flex flex-col overflow-auto"
       data-test-id="row-detail-view"
     >
-      <DataTable
-        table={tableInstance}
-        enableColumnDragging
-      />
+      <div className="space-y-4 p-2">
+        {mainFields.map((field) => (
+          <div
+            key={field._id}
+            className="space-y-1"
+          >
+            <p className="text-sm font-medium">{field.name}</p>
+            {renderCell(field, data, tableSlug)}
+          </div>
+        ))}
+      </div>
 
       {data.trashed && (
         <div className="rounded-md border border-amber-500 p-3 bg-amber-50 m-2">

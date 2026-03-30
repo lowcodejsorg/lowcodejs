@@ -121,6 +121,14 @@ export async function buildPopulate(
           });
         }
 
+        if (groupField.type === E_FIELD_TYPE.CREATOR) {
+          populate.push({
+            path: `${field.slug}.${groupField.slug}`,
+            model: 'User',
+            select: 'name email _id',
+          });
+        }
+
         if (groupField.type === E_FIELD_TYPE.FILE) {
           populate.push({
             path: `${field.slug}.${groupField.slug}`,

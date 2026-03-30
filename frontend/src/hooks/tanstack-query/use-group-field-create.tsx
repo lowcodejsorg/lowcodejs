@@ -49,6 +49,10 @@ export function useGroupFieldCreate(
         queryKey: queryKeys.tables.lists(),
       });
 
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(variables.tableSlug),
+      });
+
       props.onSuccess?.(response);
     },
     onError: props.onError,

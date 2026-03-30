@@ -210,7 +210,7 @@ export function TableConfigurationDropdown({
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                  {activeFields.length > 1 && (
+                  {activeFields.length > 0 && (
                     <>
                       <DropdownMenuItem
                         className="inline-flex space-x-1 w-full"

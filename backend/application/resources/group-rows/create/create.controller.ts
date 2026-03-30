@@ -38,6 +38,7 @@ export default class {
     const result = await this.useCase.execute({
       ...(request.body as Record<string, any>),
       ...params,
+      ...(request?.user?.sub && { creator: request.user.sub }),
     });
 
     if (result.isLeft()) {
