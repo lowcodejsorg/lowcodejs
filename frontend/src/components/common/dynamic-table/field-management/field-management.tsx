@@ -456,6 +456,27 @@ function FieldManagementList({
   const [fields, setFields] = useState<Array<IField>>(activeFields);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const hasChangesRef = useRef(false);
+  const fieldsRef = useRef<Array<IField>>(fields);
+
+  useEffect(() => {
+    hasChangesRef.current = hasChanges;
+  }, [hasChanges]);
+
+  useEffect(() => {
+    fieldsRef.current = fields;
+  }, [fields]);
+
+  // Auto-save on unmount (tab switch)
+  useEffect(() => {
+    return (): void => {
+      if (hasChangesRef.current) {
+        const orderedIds = fieldsRef.current.map((f) => f._id);
+        onSaveOrder(visibilityKey, orderedIds);
+      }
+    };
+  }, [onSaveOrder, visibilityKey]);
+
   let widthKey: 'widthInForm' | 'widthInList' | 'widthInDetail' | undefined;
   if (visibilityKey === 'showInForm') {
     widthKey = 'widthInForm';
