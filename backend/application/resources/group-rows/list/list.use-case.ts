@@ -6,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -58,6 +59,12 @@ export default class GroupRowListUseCase {
       const rowJson = row.toJSON({ flattenObjectIds: true });
 
       const items = rowJson[groupField.slug] || [];
+
+      const group = table.groups?.find((g) => g.slug === payload.groupSlug);
+      const groupFields = group?.fields || [];
+      for (const item of items) {
+        maskPasswordFields(item, groupFields as IField[]);
+      }
 
       return right(items);
     } catch (error) {

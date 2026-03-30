@@ -57,7 +57,8 @@ export function TableRowTextShortCell({
         href={value}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm block truncate text-blue-600 hover:underline"
+        title={value}
+        className="text-sm block truncate max-w-[250px] text-blue-600 hover:underline"
       >
         {value}
       </a>

@@ -38,9 +38,9 @@ import { cn } from '@/lib/utils';
 const ROUTE_ID = '/_private/menus/';
 
 const TypeMapper = {
-  [E_MENU_ITEM_TYPE.PAGE]: 'Pagina',
+  [E_MENU_ITEM_TYPE.PAGE]: 'Página',
   [E_MENU_ITEM_TYPE.TABLE]: 'Tabela',
-  [E_MENU_ITEM_TYPE.FORM]: 'Formulario',
+  [E_MENU_ITEM_TYPE.FORM]: 'Formulário',
   [E_MENU_ITEM_TYPE.EXTERNAL]: 'Link Externo',
   [E_MENU_ITEM_TYPE.SEPARATOR]: 'Separador',
 };
@@ -63,7 +63,7 @@ function ActionsCell({ menu }: { menu: IMenu }): React.JSX.Element {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="mr-10">
-          <DropdownMenuLabel>Acoes</DropdownMenuLabel>
+          <DropdownMenuLabel>Ações</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           <DropdownMenuItem

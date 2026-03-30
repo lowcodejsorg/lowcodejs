@@ -5,7 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { hashPasswordFields } from '@application/core/row-password-helper.core';
+import { hashPasswordFields, maskPasswordFields, stripMaskedPasswordFields } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 // import TableFieldRowValidation from '@application/core/table-field-row-validation.exception';
 import { buildPopulate, buildTable } from '@application/core/util.core';
@@ -48,6 +48,7 @@ export default class TableRowUpdateUseCase {
         );
       }
 
+      stripMaskedPasswordFields(payload, table.fields as IField[]);
       await hashPasswordFields(payload, table.fields as IField[]);
 
       const build = await buildTable(table);
@@ -81,6 +82,8 @@ export default class TableRowUpdateUseCase {
         }),
         _id: row?._id?.toString(),
       };
+
+      maskPasswordFields(rowJson, table.fields as IField[]);
 
       // @ts-ignore
       return right(rowJson);

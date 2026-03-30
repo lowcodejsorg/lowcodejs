@@ -5,6 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import {
   buildPopulate,
   buildTable,
@@ -59,6 +60,8 @@ export default class TableRowShowUseCase {
         }),
         _id: populated?._id?.toString(),
       };
+
+      maskPasswordFields(rowJson, table.fields as IField[]);
 
       return right(
         transformRowContext(rowJson, table.fields as IField[], payload.user),

@@ -76,8 +76,8 @@ const VISIBILITY_CONFIG: Record<
   [E_TABLE_VISIBILITY.PRIVATE]: { label: 'Privada', variant: 'destructive' },
   [E_TABLE_VISIBILITY.RESTRICTED]: { label: 'Restrita', variant: 'secondary' },
   [E_TABLE_VISIBILITY.OPEN]: { label: 'Aberta', variant: 'default' },
-  [E_TABLE_VISIBILITY.PUBLIC]: { label: 'Publica', variant: 'outline' },
-  [E_TABLE_VISIBILITY.FORM]: { label: 'Formulario', variant: 'secondary' },
+  [E_TABLE_VISIBILITY.PUBLIC]: { label: 'Pública', variant: 'outline' },
+  [E_TABLE_VISIBILITY.FORM]: { label: 'Formulário', variant: 'secondary' },
 };
 
 function ActionsCell({ table }: { table: ITable }): React.JSX.Element {

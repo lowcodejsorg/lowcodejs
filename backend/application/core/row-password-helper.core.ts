@@ -25,6 +25,23 @@ export async function hashPasswordFields(
   }
 }
 
+export function stripMaskedPasswordFields(
+  payload: Record<string, any>,
+  fields: IField[],
+): void {
+  const passwordFields = fields.filter(
+    (f) =>
+      f.type === E_FIELD_TYPE.TEXT_SHORT &&
+      f.format === E_FIELD_FORMAT.PASSWORD,
+  );
+  for (const pf of passwordFields) {
+    const val = payload[pf.slug];
+    if (val === undefined || val === null || val === '' || val === '••••••••') {
+      delete payload[pf.slug];
+    }
+  }
+}
+
 export function maskPasswordFields(
   row: Record<string, any>,
   fields: IField[],

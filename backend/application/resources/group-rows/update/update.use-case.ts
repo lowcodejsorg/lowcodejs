@@ -6,7 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { hashPasswordFields } from '@application/core/row-password-helper.core';
+import { hashPasswordFields, maskPasswordFields, stripMaskedPasswordFields } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -67,7 +67,8 @@ export default class GroupRowUpdateUseCase {
         );
       }
 
-      // Hash password fields se necessário
+      // Remove campos PASSWORD mascarados/vazios e hash dos novos
+      stripMaskedPasswordFields(payload, groupFields as IField[]);
       await hashPasswordFields(payload, groupFields as IField[]);
 
       const build = await buildTable(table);
@@ -107,6 +108,10 @@ export default class GroupRowUpdateUseCase {
       const updatedItem = items.find(
         (i: any) => i._id?.toString() === payload.itemId,
       );
+
+      if (updatedItem) {
+        maskPasswordFields(updatedItem, groupFields as IField[]);
+      }
 
       return right(updatedItem || rowJson);
     } catch (error) {

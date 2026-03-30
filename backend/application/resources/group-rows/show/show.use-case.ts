@@ -6,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -64,6 +65,10 @@ export default class GroupRowShowUseCase {
         return left(
           HTTPException.NotFound('Item não encontrado', 'ITEM_NOT_FOUND'),
         );
+
+      const group = table.groups?.find((g) => g.slug === payload.groupSlug);
+      const groupFields = group?.fields || [];
+      maskPasswordFields(item, groupFields as IField[]);
 
       return right(item);
     } catch (error) {

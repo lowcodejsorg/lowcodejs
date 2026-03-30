@@ -3,7 +3,7 @@
 **Projeto:** LowcodeJS
 **Ambiente:** develop
 **Data de inicio:** 08/03/2026
-**Ultima atualizacao:** 28/03/2026
+**Ultima atualizacao:** 30/03/2026
 **Responsavel pelos testes:** Lauriana
 
 ---
@@ -656,4 +656,78 @@
 
 ## 22. Implementar
 
-- [ ] Quando o campo for enviado para a lixeira, o mesmo deve ficar como **nao obrigatorio**
+- [x] Quando o campo for enviado para a lixeira, o mesmo deve ficar como **nao obrigatorio** — ✅ Implementado (`send-to-trash` define `required: false`)
+
+---
+
+## 23. Resumo de Pendencias Conhecidas
+
+| ID  | Tipo        | Descricao                                                    | Status     |
+| --- | ----------- | ------------------------------------------------------------ | ---------- |
+| P01 | ❌ Bug      | Campo Password perde o valor apos edicao de registro         | Aberto     |
+| P02 | ❌ Bug      | Campo URL nao trunca texto longo na listagem                 | Aberto     |
+| P03 | ❌ Bug      | Modelos Mosaico e Galeria apresentam erro ao abrir registros | Aberto     |
+| P04 | ❌ Bug      | Edicao do nome de Grupo de Campos nao reflete na interface   | Aberto     |
+| P05 | ✅ Resolvido | ~~Clonagem de tabela inclui campos da lixeira~~ — Codigo filtra campos com !f.trashed | Resolvido |
+| P06 | ❌ Bug      | Campo Data nao possui filtro por periodo implementado        | Aberto     |
+| P07 | ❌ Bug      | Opcao "Exibir na lista" apresenta bug visual                 | Aberto     |
+| P08 | ❌ Ausente  | Sem opcao de excluir grupo de permissao                      | Aberto     |
+| P09 | ✅ Resolvido | ~~Sem opcao de excluir menu~~ — Backend ja tem trash/restore/hard-delete | Implementado |
+| P10 | ❌ Ausente  | Consulta por relacionamento nao funciona                     | Aberto     |
+| P11 | ✅ Resolvido | ~~Sem botao compartilhar link~~ — Acao "Compartilhar" copia link para clipboard | Implementado |
+| P12 | ⚠️ Ajuste   | Troca de senha nao invalida sessao ativa                     | Aberto     |
+| P13 | ⚠️ Ajuste   | Ortografia "Acoes" incorreta                                 | Aberto     |
+| P14 | 🔁 Reteste  | Busca de listas restrita a pagina atual — backend ja suporta busca global | Reteste |
+| P15 | ⚠️ Ajuste   | Textos em ingles na interface                                | Aberto     |
+| P16 | ✅ Resolvido | ~~Campo enviado a lixeira deve se tornar nao obrigatorio~~ — send-to-trash define required: false | Implementado |
+| P17 | 🔁 Reteste | ~~Restauracao de grupos de campos da lixeira~~ — Backend tem endpoint restore implementado | Reteste |
+| P18 | ❌ Bug      | Funcao maskPasswordFields() no backend existe mas nao e chamada — hash exposto na API | Aberto |
+| P19 | ❌ Ausente  | Dashboard utiliza dados mock em vez de dados reais da API    | Aberto     |
+| P20 | 🆕 Melhoria | Campo arquivo: salvar URL relativa no banco (base + relativo para migracao) | Aberto |
+| P21 | 🆕 Melhoria | Grupo de campos: replicar interface de tabelas na pagina de detalhes | Aberto |
+| P22 | 🆕 Melhoria | Grupo de campos: visibilidade configuravel na tela de edicao do campo | Aberto |
+| P23 | ⚠️ Ajuste   | Menu: ordenacao dentro do mesmo nivel hierarquico via dropdown "Exibir depois de" | Aberto |
+| P24 | 🆕 Melhoria | Menu: definir opcao como home do sistema                     | Aberto     |
+| P25 | 🆕 Melhoria | Configuracao para ativar/desativar assistente de IA          | Aberto     |
+| P26 | 🆕 Melhoria | Migrations automaticas a cada nova instalacao                | Aberto     |
+| P27 | 🆕 Melhoria | Migrar storage para MinIO                                    | Aberto     |
+| P28 | ❌ Bug      | Campo Criador nao aparece no Grupo de Campos                 | Aguardando |
+| P29 | ❌ Bug      | Largura de campo no grupo de campos nao reflete na listagem  | Aberto     |
+| P30 | ❌ Bug      | Texto rico com cor branca mostra codigo HTML ao visualizar    | Aberto     |
+| P31 | ❌ Bug      | Tag nao permite alterar a cor                                | Aberto     |
+| P32 | ❌ Bug      | Ordenacao de campos nativos nao reflete em detalhes          | Aberto     |
+| P33 | ❌ Bug      | Dados persistidos apos exclusao permanente — registros antigos voltam ao recriar com mesmo nome | Aberto |
+| P34 | ❌ Bug      | Botao voltar na edicao de tabela redireciona para listagem geral | Aberto |
+| P35 | 🔁 Reteste | Editar descricao redireciona para menu geral — report 22/03 indica correcao | Reteste |
+| P36 | ❌ Bug      | Erro React minified ao abrir aplicacao — atrapalha Cypress   | Aberto     |
+| P37 | ⚠️ Ajuste   | Visibilidade "Publica" e "Formulario" sem acentuacao         | Aberto     |
+| P38 | 🆕 Melhoria | Permitir alterar slug da tabela (minusculo, normalizado, unico) | Aberto |
+| P39 | 🆕 Melhoria | Opcao dropdown editavel (duplo clique, propagar para registros) | Aberto |
+| P40 | 🆕 Melhoria | Esvaziar lixeira para todas as tabelas                       | Aberto     |
+| P41 | 🆕 Melhoria | IDs para campos dos formularios (slug-tabela-slug-campo)     | Aberto     |
+| P42 | 🆕 Melhoria | Markdown para texto longo e pagina com toggle codigo/formatado | Aberto |
+| P43 | 🔁 Reteste | Configuracao campos default para layouts — report 22/03 indica mapeamento | Reteste |
+| P44 | 🆕 Melhoria | Valor default para campos (dropdown e demais)                | Aberto     |
+| P45 | 🆕 Melhoria | Campo relacionamento: adicionar novo registro inline via modal | Aberto |
+| P46 | 🆕 Melhoria | Campo dropdown: permitir usuario inserir novas tags          | Aberto     |
+| P47 | 🆕 Melhoria | Import/Export via CSV                                        | Aberto     |
+| P48 | 🆕 Melhoria | Notificacoes e Websocket (tempo real)                        | Aberto     |
+| P49 | 🆕 Melhoria | Formularios de gestao: 2 campos por linha                    | Aberto     |
+| P50 | 🆕 Melhoria | Ao criar campo, exibir no final da lista                     | Aberto     |
+| P51 | ⚠️ Ajuste   | Mensagem de campo duplicado nao exibida                      | Aberto     |
+| P52 | 🆕 Melhoria | Link "Esqueceu a senha" na tela de login                     | Aberto     |
+| P53 | 🆕 Melhoria | Filtros em barra lateral estilo e-commerce                   | Aberto     |
+| P54 | 🆕 Melhoria | 2 conexoes MongoDB (nativas vs dados do usuario)             | Aberto     |
+| P55 | 🆕 Melhoria | Tabelas/campos via arquivo de migrations                     | Aberto     |
+| P56 | 🆕 Melhoria | Agendamentos CRON/Jobs                                       | Aberto     |
+| P57 | 🆕 Melhoria | User Metadata — tabela estender metadados do usuario         | Aberto     |
+| P58 | 🆕 Melhoria | Dicas do campo (tooltip no formulario)                       | Aberto     |
+| P59 | 🆕 Melhoria | Log de acoes dos usuarios                                    | Aberto     |
+| P60 | 🆕 Melhoria | Tabela e campos multilinguais                                | Aberto     |
+| P61 | 🆕 Melhoria | Campos nativos para grupo de campos (ID, Created-by, Created-date) | Aberto |
+| P62 | 🆕 Melhoria | Detalhes: definicao de tamanho de largura                    | Aberto     |
+| P63 | 🆕 Melhoria | Referencia a IA e MCP no site                                | Aberto     |
+| P64 | 🆕 Melhoria | Referencia ao Headless CMS no site                           | Aberto     |
+| P65 | 🆕 Melhoria | Configurar Docker nos ambientes Coolify                      | Aberto     |
+| P66 | 🆕 Melhoria | Configurar Redis                                             | Aberto     |
+| P67 | 🆕 Melhoria | Configurar Websocket                                         | Aberto     |

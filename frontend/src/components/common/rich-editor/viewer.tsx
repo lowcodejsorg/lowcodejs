@@ -26,6 +26,12 @@ export function ContentViewer({
     );
   }
 
+  // Remove estilos de cor branca/muito clara que ficam invisiveis em fundo claro
+  const sanitizedContent = content.replace(
+    /style="[^"]*color:\s*(?:#fff(?:fff)?|white|rgb\(\s*255\s*,\s*255\s*,\s*255\s*\))[^"]*"/gi,
+    '',
+  );
+
   return (
     <div
       data-slot="editor-viewer"
@@ -36,7 +42,7 @@ export function ContentViewer({
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw, rehypeHighlight]}
       >
-        {content}
+        {sanitizedContent}
       </Markdown>
     </div>
   );

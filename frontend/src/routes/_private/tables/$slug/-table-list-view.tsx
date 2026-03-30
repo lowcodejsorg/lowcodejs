@@ -116,7 +116,7 @@ function RowActionsCell({
         </DropdownMenuTrigger>
 
         <DropdownMenuContent className="mr-10">
-          <DropdownMenuLabel>Acoes</DropdownMenuLabel>
+          <DropdownMenuLabel>Ações</DropdownMenuLabel>
           <DropdownMenuSeparator />
 
           <DropdownMenuItem

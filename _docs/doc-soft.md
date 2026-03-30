@@ -3,7 +3,7 @@
 **Projeto:** LowcodeJS
 **Ambiente de Referencia:** develop
 **Versao do documento:** 2.0
-**Data:** 28/03/2026
+**Data:** 30/03/2026
 **Baseado em:** Codebase atual (backend + frontend)
 
 ---
@@ -349,6 +349,30 @@ O **LowcodeJS** e uma plataforma low-code que permite criar, gerenciar e visuali
 | RF-164 | O sistema deve validar tipo e tamanho do arquivo conforme configuracoes      |
 | RF-165 | O sistema deve gerar URLs virtuais para acesso aos arquivos                  |
 
+### RF-Novos — Requisitos Identificados no Backlog
+
+| ID     | Requisito                                                                                                      |
+| ------ | -------------------------------------------------------------------------------------------------------------- |
+| RF-166 | O sistema deve mascarar campos de senha nas respostas da API, nunca retornando o hash ao cliente                |
+| RF-167 | O campo arquivo deve armazenar apenas a URL relativa no banco; a URL base deve ser configuravel (migracao)     |
+| RF-168 | O sistema deve permitir alterar o slug de uma tabela (minusculo, normalizado, unico)                           |
+| RF-169 | As opcoes de um campo dropdown devem ser editaveis (duplo clique) com propagacao para registros existentes      |
+| RF-170 | O campo relacionamento deve permitir adicionar novo registro inline via modal                                  |
+| RF-171 | O campo dropdown deve oferecer opcao de permitir usuario inserir novas tags                                    |
+| RF-172 | O sistema deve suportar importacao e exportacao de dados via CSV                                               |
+| RF-173 | O sistema deve suportar agendamentos automaticos (CRON/Jobs)                                                   |
+| RF-174 | O sistema deve permitir estender metadados do usuario via grupo de campos (User Metadata)                      |
+| RF-175 | Campos devem ter campo opcional de dica (tooltip) exibido no formulario de adicionar/editar                    |
+| RF-176 | O sistema deve registrar log de acoes dos usuarios                                                             |
+| RF-177 | O sistema deve suportar campos e tabelas multilinguais (nome do campo associado a idioma)                      |
+| RF-178 | O sistema deve ter configuracao para ativar/desativar o assistente de IA                                       |
+| RF-179 | O sistema deve permitir esvaziar a lixeira em massa para todas as tabelas                                      |
+| RF-180 | Campos devem suportar valor default configuravel (dropdown e demais tipos)                                     |
+| RF-181 | A tela de login deve conter link "Esqueceu a senha" para recuperacao                                           |
+| RF-182 | O sistema deve permitir definir uma opcao de menu como home do sistema                                         |
+| RF-183 | Ao excluir permanentemente uma tabela, o sistema deve excluir tambem todos os registros associados             |
+| RF-184 | O campo arquivo deve usar URL base + URL relativo definida na configuracao para facilitar migracao             |
+
 ---
 
 ## 4. Requisitos Nao Funcionais
@@ -403,6 +427,16 @@ O **LowcodeJS** e uma plataforma low-code que permite criar, gerenciar e visuali
 | RNF-024 | O backend deve seguir arquitetura em camadas: Controller > Use Case > Repository               |
 | RNF-025 | O backend deve usar Either pattern (Left = erro, Right = sucesso) nos use cases                |
 
+### RNF – Novos Requisitos Nao Funcionais
+
+| ID      | Requisito                                                                                           |
+| ------- | --------------------------------------------------------------------------------------------------- |
+| RNF-026 | Formularios administrativos devem exibir 2 campos por linha                                        |
+| RNF-027 | Todos os campos de formularios devem ter id no formato slug-tabela-slug-campo                       |
+| RNF-028 | Novos campos criados devem aparecer no final da lista de campos                                    |
+| RNF-029 | Filtros devem abrir em barra lateral (estilo e-commerce)                                           |
+| RNF-030 | O dashboard deve exibir dados reais da API, nao dados mock                                         |
+
 ---
 
 ## 5. Regras de Negocio
@@ -435,6 +469,10 @@ O **LowcodeJS** e uma plataforma low-code que permite criar, gerenciar e visuali
 | RN-24 | REGISTERED pode apenas VIEW + CREATE_ROW                                                                                |
 | RN-25 | Os modelos disponiveis para clonagem sao configurados em Settings (MODEL_CLONE_TABLES)                                 |
 | RN-26 | Soft delete: todas as entidades usam `trashed` (boolean) + `trashedAt` (Date) — dados nunca sao hard-deleted por padrao |
+| RN-27 | Ao excluir permanentemente uma tabela, o sistema deve excluir tambem todos os registros (dados) associados |
+| RN-28 | O campo arquivo deve armazenar apenas a URL relativa no banco; a URL base e configuravel               |
+| RN-29 | Ao criar um campo, ele deve aparecer no final da lista de campos existentes                             |
+| RN-30 | Campos do tipo dropdown devem gerar cores automaticas para novas tags                                   |
 
 ---
 
@@ -736,6 +774,8 @@ O **LowcodeJS** e uma plataforma low-code que permite criar, gerenciar e visuali
 | Obter grupo          | GET    | `/group-fields/:_id`                      |
 | Atualizar grupo      | PATCH  | `/group-fields/:_id`                      |
 | Enviar para lixeira  | PATCH  | `/group-fields/:_id/send-to-trash`        |
+| Restaurar da lixeira | PATCH  | `/group-fields/:_id/restore`            |
+| Excluir permanente   | DELETE | `/group-fields/:_id`                    |
 
 ### Servico de Linhas de Grupo
 
@@ -988,16 +1028,66 @@ Setting (Configuracoes — documento unico)
 | P02 | ❌ Bug      | Campo URL nao trunca texto longo na exibicao (falta "...")                        | Aberto |
 | P03 | ❌ Bug      | Modelos Mosaico e Galeria apresentam erro ao abrir registros                      | Aberto |
 | P04 | ❌ Bug      | Edicao do nome de Grupo de Campos salva no banco mas nao reflete na interface     | Aberto |
-| P05 | ❌ Bug      | Clonagem de tabela inclui campos da lixeira indevidamente                         | Aberto |
+| P05 | ✅ Resolvido | ~~Clonagem de tabela inclui campos da lixeira~~ — Codigo filtra campos com !f.trashed | Resolvido |
 | P06 | ❌ Bug      | Campo Data nao possui filtro por periodo implementado                             | Aberto |
 | P07 | ❌ Bug      | Exibicao de campos ("Exibir na lista") apresenta bug visual                       | Aberto |
 | P08 | ❌ Ausente  | Nao ha opcao de excluir grupo de permissao                                        | Aberto |
 | P09 | ✅ Resolvido | ~~Nao ha opcao de excluir menu~~ — Backend possui trash/restore/hard-delete       | Implementado |
 | P10 | ❌ Ausente  | Campo Relacionamento: consulta por relacionamento nao existe ou nao funciona      | Aberto |
-| P11 | ❌ Ausente  | Nao ha botao de compartilhar link na listagem de tabelas                          | Aberto |
+| P11 | ✅ Resolvido | ~~Sem botao compartilhar link~~ — Acao "Compartilhar" copia link para clipboard | Implementado |
 | P12 | ⚠️ Ajuste   | Alterar senha nao invalida sessao ativa do usuario                                | Aberto |
 | P13 | ⚠️ Ajuste   | Ortografia incorreta: "Acoes" precisa ser corrigida                               | Aberto |
-| P14 | ⚠️ Ajuste   | Busca de listas e restrita a pagina atual — deve ser global                       | Aberto |
+| P14 | 🔁 Reteste  | Busca de listas restrita a pagina atual — backend ja suporta busca global        | Reteste |
 | P15 | ⚠️ Ajuste   | Textos e labels em ingles precisam ser traduzidos para portugues                  | Aberto |
-| P16 | 🆕 Melhoria | Campo enviado para lixeira deve ser automaticamente definido como nao obrigatorio | Aberto |
-| P17 | 🆕 Melhoria | Fluxo de restauracao de grupos de campos da lixeira precisa ser implementado      | Aberto |
+| P16 | ✅ Resolvido | ~~Campo enviado a lixeira deve se tornar nao obrigatorio~~ — send-to-trash define required: false | Implementado |
+| P17 | 🔁 Reteste | ~~Restauracao de grupos de campos da lixeira~~ — Backend tem endpoint restore implementado | Reteste |
+| P18 | ❌ Bug      | Funcao maskPasswordFields() no backend existe mas nao e chamada — hash exposto na API          | Aberto     |
+| P19 | ❌ Ausente  | Dashboard utiliza dados mock em vez de dados reais da API                                       | Aberto     |
+| P20 | 🆕 Melhoria | Campo arquivo: salvar URL relativa no banco (base + relativo para facilitar migracao)           | Aberto     |
+| P21 | 🆕 Melhoria | Grupo de campos: replicar interface de tabelas na pagina de detalhes                            | Aberto     |
+| P22 | 🆕 Melhoria | Grupo de campos: visibilidade configuravel na tela de edicao do campo                           | Aberto     |
+| P23 | ⚠️ Ajuste   | Menu: ordenacao dentro do mesmo nivel hierarquico via dropdown "Exibir depois de"               | Aberto     |
+| P24 | 🆕 Melhoria | Menu: definir opcao como home do sistema                                                        | Aberto     |
+| P25 | 🆕 Melhoria | Configuracao para ativar/desativar assistente de IA                                             | Aberto     |
+| P26 | 🆕 Melhoria | Migrations automaticas a cada nova instalacao                                                   | Aberto     |
+| P27 | 🆕 Melhoria | Migrar storage para MinIO                                                                       | Aberto     |
+| P28 | ❌ Bug      | Campo Criador nao aparece no Grupo de Campos                                                    | Aguardando |
+| P29 | ❌ Bug      | Largura de campo no grupo de campos nao reflete na listagem                                     | Aberto     |
+| P30 | ❌ Bug      | Texto rico com cor branca mostra codigo HTML ao visualizar                                      | Aberto     |
+| P31 | ❌ Bug      | Tag nao permite alterar a cor                                                                   | Aberto     |
+| P32 | ❌ Bug      | Ordenacao de campos nativos nao reflete na visualizacao de detalhes                             | Aberto     |
+| P33 | ❌ Bug      | Dados persistidos apos exclusao permanente — registros antigos voltam ao recriar com mesmo nome | Aberto     |
+| P34 | ❌ Bug      | Botao voltar na edicao de tabela redireciona para listagem geral                                | Aberto     |
+| P35 | 🔁 Reteste | Editar descricao redireciona para menu geral — report 22/03 indica correcao                    | Reteste    |
+| P36 | ❌ Bug      | Erro React minified ao abrir aplicacao — atrapalha testes automatizados Cypress                 | Aberto     |
+| P37 | ⚠️ Ajuste   | Visibilidade "Publica" e "Formulario" sem acentuacao na interface                               | Aberto     |
+| P38 | 🆕 Melhoria | Permitir alterar slug da tabela (minusculo, normalizado, unico)                                 | Aberto     |
+| P39 | 🆕 Melhoria | Opcao dropdown editavel (duplo clique, propagar para registros existentes)                       | Aberto     |
+| P40 | 🆕 Melhoria | Esvaziar lixeira para todas as tabelas inclusive a Tabela das Tabelas                           | Aberto     |
+| P41 | 🆕 Melhoria | IDs para todos os campos dos formularios (formato: slug-tabela-slug-campo)                      | Aberto     |
+| P42 | 🆕 Melhoria | Markdown para texto longo e pagina com toggle codigo/formatado                                  | Aberto     |
+| P43 | 🔁 Reteste | Configuracao campos default para layouts — report 22/03 indica mapeamento em andamento          | Reteste    |
+| P44 | 🆕 Melhoria | Valor default para campos (dropdown e demais)                                                   | Aberto     |
+| P45 | 🆕 Melhoria | Campo relacionamento: adicionar novo registro inline via modal                                  | Aberto     |
+| P46 | 🆕 Melhoria | Campo dropdown: permitir usuario inserir novas tags                                             | Aberto     |
+| P47 | 🆕 Melhoria | Import/Export via CSV                                                                           | Aberto     |
+| P48 | 🆕 Melhoria | Notificacoes e Websocket (tempo real)                                                           | Aberto     |
+| P49 | 🆕 Melhoria | Formularios de gestao: 2 campos por linha                                                       | Aberto     |
+| P50 | 🆕 Melhoria | Ao criar campo, exibir no final da lista                                                        | Aberto     |
+| P51 | ⚠️ Ajuste   | Mensagem de campo duplicado nao exibida                                                         | Aberto     |
+| P52 | 🆕 Melhoria | Link "Esqueceu a senha" na tela de login                                                        | Aberto     |
+| P53 | 🆕 Melhoria | Filtros em barra lateral estilo e-commerce                                                      | Aberto     |
+| P54 | 🆕 Melhoria | 2 conexoes MongoDB (colecoes nativas vs dados do usuario)                                       | Aberto     |
+| P55 | 🆕 Melhoria | Tabelas/campos via arquivo de migrations                                                        | Aberto     |
+| P56 | 🆕 Melhoria | Agendamentos CRON/Jobs                                                                          | Aberto     |
+| P57 | 🆕 Melhoria | User Metadata — tabela estender metadados do usuario via grupo de campos                        | Aberto     |
+| P58 | 🆕 Melhoria | Dicas do campo (tooltip no formulario de adicionar/editar)                                      | Aberto     |
+| P59 | 🆕 Melhoria | Log de acoes dos usuarios                                                                       | Aberto     |
+| P60 | 🆕 Melhoria | Tabela e campos multilinguais (string nome com suporte a varios idiomas)                        | Aberto     |
+| P61 | 🆕 Melhoria | Campos nativos para grupo de campos (ID, Created-by, Created-date)                              | Aberto     |
+| P62 | 🆕 Melhoria | Detalhes: definicao de tamanho de largura                                                       | Aberto     |
+| P63 | 🆕 Melhoria | Referencia a IA e MCP no site                                                                   | Aberto     |
+| P64 | 🆕 Melhoria | Referencia ao Headless CMS no site                                                              | Aberto     |
+| P65 | 🆕 Melhoria | Configurar Docker nos ambientes Coolify                                                         | Aberto     |
+| P66 | 🆕 Melhoria | Configurar Redis                                                                                | Aberto     |
+| P67 | 🆕 Melhoria | Configurar Websocket                                                                            | Aberto     |

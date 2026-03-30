@@ -402,6 +402,19 @@ export const TableFieldCreateSchema: FastifySchema = {
         },
       },
     },
+    409: {
+      description: 'Conflict - Field with same slug already exists in table',
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number', enum: [409] },
+        cause: { type: 'string', enum: ['FIELD_ALREADY_EXIST'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
+    },
     404: {
       description: 'Not found - Table with specified slug does not exist',
       type: 'object',

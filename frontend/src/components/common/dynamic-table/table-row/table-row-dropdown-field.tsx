@@ -203,6 +203,8 @@ export function TableRowDropdownField({
               <ComboboxItem
                 key={opt.value}
                 value={opt}
+                className="mb-1 last:mb-0"
+                style={badgeStyleFromColor(opt.color)}
               >
                 {opt.label}
               </ComboboxItem>

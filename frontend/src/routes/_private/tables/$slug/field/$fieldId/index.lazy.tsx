@@ -281,6 +281,11 @@ function FieldUpdateContent({
         },
       );
 
+      // Invalidar cache da tabela para refletir mudancas em groups (ex: nome do grupo)
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(slug),
+      });
+
       handleUpdateSuccess(response);
     },
     onError: handleUpdateError,

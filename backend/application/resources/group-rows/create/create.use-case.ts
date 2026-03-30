@@ -6,7 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { hashPasswordFields } from '@application/core/row-password-helper.core';
+import { hashPasswordFields, maskPasswordFields } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { buildPopulate, buildTable } from '@application/core/util.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -107,6 +107,10 @@ export default class GroupRowCreateUseCase {
       // Retorna o último item adicionado
       const addedItems = (rowJson as any)[groupField.slug];
       const lastItem = addedItems?.[addedItems.length - 1];
+
+      if (lastItem) {
+        maskPasswordFields(lastItem, groupFields as IField[]);
+      }
 
       return right(lastItem || rowJson);
     } catch (error) {

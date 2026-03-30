@@ -4,7 +4,7 @@
 **Ambiente:** develop
 **Versao:** 2.0
 **Data de inicio:** 08/03/2026
-**Ultima atualizacao:** 28/03/2026
+**Ultima atualizacao:** 30/03/2026
 **Responsavel:** Lauriana
 **Baseado em:** Documentacao de Software LowcodeJS v2.0
 
@@ -39,6 +39,9 @@
 25. [Testes de Regressao](#25-testes-de-regressão)
 26. [Testes de Interface e Compatibilidade](#26-testes-de-interface-e-compatibilidade)
 27. [Resumo de Pendencias Conhecidas](#27-resumo-de-pendências-conhecidas)
+28. [Backlog de Bugs e Ajustes](#28-backlog-de-bugs-e-ajustes)
+29. [Backlog de Melhorias](#29-backlog-de-melhorias)
+30. [Itens Resolvidos](#30-itens-resolvidos)
 
 ---
 
@@ -790,18 +793,26 @@
 | TC-373 | P02      | Verificar truncamento de URL longa em campo URL                        | URL exibida com "..." na listagem                 | ⏭️     |
 | TC-374 | P03      | Abrir registro nos modelos Mosaico e Galeria                           | Registro abre sem erro                            | ⏭️     |
 | TC-375 | P04      | Editar nome de grupo de campos e verificar na interface                | Novo nome exibido corretamente na tela            | ⏭️     |
-| TC-376 | P05      | Clonar tabela e verificar ausencia de campos da lixeira                | Campos deletados nao aparecem na clonagem         | ⏭️     |
+| TC-376 | P05      | Clonar tabela e verificar ausencia de campos da lixeira                | Campos deletados nao aparecem na clonagem         | ✅     |
 | TC-377 | P06      | Filtrar registros por periodo em campo Data                            | Filtro por periodo funciona corretamente          | ⏭️     |
 | TC-378 | P07      | Verificar exibicao visual da opcao "Exibir na lista"                   | Sem bugs de layout na configuracao de campos      | ⏭️     |
 | TC-379 | P08      | Excluir grupo de permissao                                             | Opcao disponivel e funcionando                    | ⏭️     |
 | TC-380 | P10      | Consultar registros por relacionamento                                 | Opcao disponivel e filtrando corretamente         | ⏭️     |
-| TC-381 | P11      | Compartilhar link de tabela pela listagem                              | Opcao disponivel e link copiado corretamente      | ⏭️     |
+| TC-381 | P11      | Compartilhar link de tabela pela listagem                              | Opcao disponivel e link copiado corretamente      | ✅     |
 | TC-382 | P12      | Alterar senha — verificar invalidacao de sessao ativa                  | Usuario perde o acesso imediatamente              | ⏭️     |
 | TC-383 | P13      | Verificar ortografia "Acoes" no menu de acoes                          | Escrito com acento correto                        | ⏭️     |
 | TC-384 | P14      | Busca global de listas sem paginacao manual                            | Busca encontra lista em qualquer pagina           | ⏭️     |
 | TC-385 | P15      | Verificar textos da interface — todos em portugues                     | Nenhum texto em ingles na interface               | ⏭️     |
-| TC-386 | P16      | Enviar campo obrigatorio para lixeira e verificar obrigatoriedade      | Campo passa a ser nao obrigatorio automaticamente | ⏭️     |
+| TC-386 | P16      | Enviar campo obrigatorio para lixeira e verificar obrigatoriedade      | Campo passa a ser nao obrigatorio automaticamente | ✅     |
 | TC-387 | P17      | Restaurar grupo de campos da lixeira                                   | Fluxo de restauracao disponivel e funcional       | ⏭️     |
+| TC-397 | P18      | Verificar que campo Password nao retorna hash na resposta da API                   | Hash de senha nao presente nas respostas          | ⏭️     |
+| TC-398 | P19      | Verificar que dashboard exibe dados reais (nao mock)                                | Graficos e cards refletem dados do banco           | ⏭️     |
+| TC-399 | P28      | Verificar campo Criador no Grupo de Campos                                          | Campo Criador exibido corretamente                 | ⏭️     |
+| TC-400 | P29      | Verificar largura de campo no grupo de campos refletida na listagem                 | Largura aplicada conforme configurado              | ⏭️     |
+| TC-401 | P33      | Excluir tabela permanentemente e recriar com mesmo nome — sem dados antigos          | Nova tabela criada vazia                           | ⏭️     |
+| TC-402 | P34      | Botao voltar na edicao de tabela deve retornar a propria tabela                      | Redirecionamento para a tabela editada             | ⏭️     |
+| TC-403 | P35      | Editar descricao e verificar retorno a tabela                                        | Retorno para pagina da tabela apos salvar          | ⏭️     |
+| TC-404 | P36      | Verificar console sem erro React minified ao abrir aplicacao                         | Sem erros de React no console                      | ⏭️     |
 
 ---
 
@@ -829,16 +840,199 @@
 | P02 | ❌ Bug      | Campo URL nao trunca texto longo na listagem                 | Aberto     |
 | P03 | ❌ Bug      | Modelos Mosaico e Galeria apresentam erro ao abrir registros | Aberto     |
 | P04 | ❌ Bug      | Edicao do nome de Grupo de Campos nao reflete na interface   | Aberto     |
-| P05 | ❌ Bug      | Clonagem de tabela inclui campos da lixeira indevidamente    | Aberto     |
+| P05 | ✅ Resolvido | ~~Clonagem de tabela inclui campos da lixeira~~ — Codigo filtra campos com !f.trashed | Resolvido |
 | P06 | ❌ Bug      | Campo Data nao possui filtro por periodo implementado        | Aberto     |
 | P07 | ❌ Bug      | Opcao "Exibir na lista" apresenta bug visual                 | Aberto     |
 | P08 | ❌ Ausente  | Sem opcao de excluir grupo de permissao                      | Aberto     |
 | P09 | ✅ Resolvido | ~~Sem opcao de excluir menu~~ — Backend ja tem trash/restore/hard-delete | Implementado |
 | P10 | ❌ Ausente  | Consulta por relacionamento nao funciona                     | Aberto     |
-| P11 | ❌ Ausente  | Sem botao para compartilhar link de tabela                   | Aberto     |
+| P11 | ✅ Resolvido | ~~Sem botao compartilhar link~~ — Acao "Compartilhar" copia link para clipboard | Implementado |
 | P12 | ⚠️ Ajuste   | Troca de senha nao invalida sessao ativa                     | Aberto     |
 | P13 | ⚠️ Ajuste   | Ortografia "Acoes" incorreta                                 | Aberto     |
-| P14 | ⚠️ Ajuste   | Busca de listas restrita a pagina atual                      | Aberto     |
+| P14 | 🔁 Reteste  | Busca de listas restrita a pagina atual — backend ja suporta busca global | Reteste    |
 | P15 | ⚠️ Ajuste   | Textos em ingles na interface                                | Aberto     |
-| P16 | 🆕 Melhoria | Campo enviado a lixeira deve se tornar nao obrigatorio       | Aberto     |
-| P17 | 🆕 Melhoria | Restauracao de grupos de campos da lixeira nao implementada  | Aberto     |
+| P16 | ✅ Resolvido | ~~Campo enviado a lixeira deve se tornar nao obrigatorio~~ — send-to-trash define required: false | Implementado |
+| P17 | 🔁 Reteste | ~~Restauracao de grupos de campos da lixeira~~ — Backend tem endpoint restore implementado | Reteste |
+| P18 | ❌ Bug      | Funcao maskPasswordFields() no backend existe mas nao e chamada — hash de senha exposto na API | Aberto     |
+| P19 | ❌ Ausente  | Dashboard utiliza dados mock em vez de dados reais da API                                       | Aberto     |
+| P20 | 🆕 Melhoria | Campo arquivo: salvar URL relativa no banco (base + relativo para facilitar migracao)           | Aberto     |
+| P21 | 🆕 Melhoria | Grupo de campos: replicar interface de tabelas na pagina de detalhes                            | Aberto     |
+| P22 | 🆕 Melhoria | Grupo de campos: visibilidade configuravel na tela de edicao do campo                           | Aberto     |
+| P23 | ⚠️ Ajuste   | Menu: ordenacao dentro do mesmo nivel hierarquico via dropdown "Exibir depois de"               | Aberto     |
+| P24 | 🆕 Melhoria | Menu: definir opcao como home do sistema                                                        | Aberto     |
+| P25 | 🆕 Melhoria | Configuracao para ativar/desativar assistente de IA                                             | Aberto     |
+| P26 | 🆕 Melhoria | Migrations automaticas a cada nova instalacao                                                   | Aberto     |
+| P27 | 🆕 Melhoria | Migrar storage para MinIO                                                                       | Aberto     |
+| P28 | ❌ Bug      | Campo Criador nao aparece no Grupo de Campos                                                    | Aguardando |
+| P29 | ❌ Bug      | Largura de campo no grupo de campos nao reflete na listagem                                     | Aberto     |
+| P30 | ❌ Bug      | Texto rico com cor branca mostra codigo HTML ao visualizar                                      | Aberto     |
+| P31 | ❌ Bug      | Tag nao permite alterar a cor                                                                   | Aberto     |
+| P32 | ❌ Bug      | Ordenacao de campos nativos nao reflete na visualizacao de detalhes                             | Aberto     |
+| P33 | ❌ Bug      | Dados persistidos apos exclusao permanente — registros antigos voltam ao recriar com mesmo nome | Aberto     |
+| P34 | ❌ Bug      | Botao voltar na edicao de tabela redireciona para listagem geral                                | Aberto     |
+| P35 | 🔁 Reteste | Editar descricao redireciona para menu geral — report 22/03 indica correcao de redirecionamento | Reteste   |
+| P36 | ❌ Bug      | Erro React minified ao abrir aplicacao — atrapalha testes automatizados Cypress                 | Aberto     |
+| P37 | ⚠️ Ajuste   | Visibilidade "Publica" e "Formulario" sem acentuacao na interface                               | Aberto     |
+| P38 | 🆕 Melhoria | Permitir alterar slug da tabela (minusculo, normalizado, unico)                                 | Aberto     |
+| P39 | 🆕 Melhoria | Opcao dropdown editavel (duplo clique, propagar para registros existentes)                       | Aberto     |
+| P40 | 🆕 Melhoria | Esvaziar lixeira para todas as tabelas inclusive a Tabela das Tabelas                           | Aberto     |
+| P41 | 🆕 Melhoria | IDs para todos os campos dos formularios (formato: slug-tabela-slug-campo)                      | Aberto     |
+| P42 | 🆕 Melhoria | Markdown para texto longo e pagina com toggle codigo/formatado                                  | Aberto     |
+| P43 | 🔁 Reteste | Configuracao campos default para layouts — report 22/03 indica mapeamento em andamento          | Reteste    |
+| P44 | 🆕 Melhoria | Valor default para campos (dropdown e demais)                                                   | Aberto     |
+| P45 | 🆕 Melhoria | Campo relacionamento: adicionar novo registro inline via modal                                  | Aberto     |
+| P46 | 🆕 Melhoria | Campo dropdown: permitir usuario inserir novas tags                                             | Aberto     |
+| P47 | 🆕 Melhoria | Import/Export via CSV                                                                           | Aberto     |
+| P48 | 🆕 Melhoria | Notificacoes e Websocket (tempo real)                                                           | Aberto     |
+| P49 | 🆕 Melhoria | Formularios de gestao: 2 campos por linha                                                       | Aberto     |
+| P50 | 🆕 Melhoria | Ao criar campo, exibir no final da lista                                                        | Aberto     |
+| P51 | ⚠️ Ajuste   | Mensagem de campo duplicado nao exibida                                                         | Aberto     |
+| P52 | 🆕 Melhoria | Link "Esqueceu a senha" na tela de login                                                        | Aberto     |
+| P53 | 🆕 Melhoria | Filtros em barra lateral estilo e-commerce                                                      | Aberto     |
+| P54 | 🆕 Melhoria | 2 conexoes MongoDB (colecoes nativas vs dados do usuario)                                       | Aberto     |
+| P55 | 🆕 Melhoria | Tabelas/campos via arquivo de migrations                                                        | Aberto     |
+| P56 | 🆕 Melhoria | Agendamentos CRON/Jobs                                                                          | Aberto     |
+| P57 | 🆕 Melhoria | User Metadata — tabela estender metadados do usuario via grupo de campos                        | Aberto     |
+| P58 | 🆕 Melhoria | Dicas do campo (tooltip no formulario de adicionar/editar)                                      | Aberto     |
+| P59 | 🆕 Melhoria | Log de acoes dos usuarios                                                                       | Aberto     |
+| P60 | 🆕 Melhoria | Tabela e campos multilinguais (string nome com suporte a varios idiomas)                        | Aberto     |
+| P61 | 🆕 Melhoria | Campos nativos para grupo de campos (ID, Created-by, Created-date)                              | Aberto     |
+| P62 | 🆕 Melhoria | Detalhes: definicao de tamanho de largura                                                       | Aberto     |
+| P63 | 🆕 Melhoria | Referencia a IA e MCP no site                                                                   | Aberto     |
+| P64 | 🆕 Melhoria | Referencia ao Headless CMS no site                                                              | Aberto     |
+| P65 | 🆕 Melhoria | Configurar Docker nos ambientes Coolify                                                         | Aberto     |
+| P66 | 🆕 Melhoria | Configurar Redis                                                                                | Aberto     |
+| P67 | 🆕 Melhoria | Configurar Websocket                                                                            | Aberto     |
+
+---
+
+## 28. Backlog de Bugs e Ajustes
+
+### Bugs Confirmados
+
+| ID  | Descricao | Reportado por | Status |
+| --- | --------- | ------------- | ------ |
+| P18 | Funcao `maskPasswordFields()` no backend nao e chamada — hash de senha exposto na API | Analise de codigo | Aberto |
+| P19 | Dashboard utiliza dados mock em vez de dados reais da API | Analise de codigo | Aberto |
+| P28 | Campo Criador nao aparece no Grupo de Campos | Lauriana | Aguardando |
+| P29 | Largura de campo no grupo de campos nao reflete na listagem | Lauriana | Aberto |
+| P30 | Texto rico com cor branca mostra codigo HTML ao visualizar | Lauriana | Aberto |
+| P31 | Tag nao permite alterar a cor | Lauriana | Aberto |
+| P32 | Ordenacao de campos nativos nao reflete na visualizacao de detalhes | Lauriana | Aberto |
+| P33 | Dados persistidos apos exclusao permanente de tabela — registros antigos voltam ao recriar com mesmo nome | Lauriana/Marcel | Aberto |
+| P34 | Botao voltar na edicao de tabela redireciona para listagem geral | Lauriana | Aberto |
+| P35 | Editar descricao da tabela redireciona para menu geral | Lauriana | Aberto |
+| P36 | Erro React minified ao abrir aplicacao (atrapalha Cypress) | Lauriana | Aberto |
+
+### Ajustes Pendentes
+
+| ID  | Descricao | Reportado por | Status |
+| --- | --------- | ------------- | ------ |
+| P23 | Menu: ordenacao dentro do mesmo nivel hierarquico via dropdown "Exibir depois de" | Equipe | Aberto |
+| P37 | Visibilidade "Publica" e "Formulario" sem acentuacao | Lauriana | Aberto |
+| P51 | Mensagem de campo duplicado nao exibida | Lauriana | Aberto |
+
+---
+
+## 29. Backlog de Melhorias
+
+### Infraestrutura
+
+| ID  | Descricao | Prioridade |
+| --- | --------- | ---------- |
+| P26 | Migrations automaticas a cada nova instalacao | Alta |
+| P27 | Migrar storage para MinIO | Alta |
+| P54 | 2 conexoes MongoDB (nativas vs dados do usuario) | Media |
+| P55 | Tabelas/campos via arquivo de migrations | Media |
+| P56 | Agendamentos CRON/Jobs | Media |
+| P65 | Configurar Docker Coolify | Alta |
+| P66 | Configurar Redis | Alta |
+| P67 | Configurar Websocket | Alta |
+
+### Campos e Formularios
+
+| ID  | Descricao | Prioridade |
+| --- | --------- | ---------- |
+| P20 | Campo arquivo: salvar URL relativa no banco (base + relativo para migracao) | Alta |
+| P38 | Permitir alterar slug da tabela | Media |
+| P39 | Opcao dropdown editavel (duplo clique, propagar para registros existentes) | Media |
+| P44 | Valor default para campos (dropdown e demais) | Media |
+| P45 | Campo relacionamento: adicionar novo registro inline via modal | Media |
+| P46 | Campo dropdown: permitir usuario inserir novas tags | Media |
+| P50 | Ao criar campo, exibir no final da lista | Baixa |
+| P58 | Dicas do campo (tooltip no formulario) | Baixa |
+| P61 | Campos nativos para grupo de campos (ID, Created-by, Created-date) | Media |
+| P62 | Detalhes: definicao de tamanho de largura | Media |
+
+### Interface e Usabilidade
+
+| ID  | Descricao | Prioridade |
+| --- | --------- | ---------- |
+| P41 | IDs para todos os campos dos formularios (formato: slug-tabela-slug-campo) | Media |
+| P42 | Markdown para texto longo e pagina (editor simples vs rich text com toggle codigo) | Media |
+| P43 | Configuracao de campos default para layouts (titulo, descricao, cover por tipo) | Media |
+| P47 | Import/Export via CSV | Media |
+| P49 | Formularios de gestao: 2 campos por linha | Baixa |
+| P52 | Link "Esqueceu a senha" na tela de login | Media |
+| P53 | Filtros em barra lateral (estilo e-commerce) | Baixa |
+
+### Menus
+
+| ID  | Descricao | Prioridade |
+| --- | --------- | ---------- |
+| P23 | Ordenacao dentro do mesmo nivel hierarquico via dropdown "Exibir depois de" | Media |
+| P24 | Definir opcao do menu como home do sistema | Media |
+
+### Grupo de Campos
+
+| ID  | Descricao | Prioridade |
+| --- | --------- | ---------- |
+| P21 | Replicar interface de tabelas na pagina de detalhes do grupo | Alta |
+| P22 | Visibilidade configuravel na tela de edicao do campo | Media |
+
+### Funcionalidades Novas
+
+| ID  | Descricao | Prioridade |
+| --- | --------- | ---------- |
+| P25 | Configuracao para ativar/desativar assistente de IA | Media |
+| P40 | Esvaziar lixeira para todas as tabelas (inclusive Tabela das Tabelas) | Media |
+| P48 | Notificacoes e Websocket (tempo real) | Alta |
+| P57 | User Metadata — tabela estender metadados do usuario via grupo de campos | Baixa |
+| P59 | Log de acoes dos usuarios | Media |
+| P60 | Tabela e campos multilinguais | Baixa |
+
+### Site
+
+| ID  | Descricao | Prioridade |
+| --- | --------- | ---------- |
+| P63 | Referencia a IA e MCP no site | Media |
+| P64 | Referencia ao Headless CMS no site | Media |
+
+---
+
+## 30. Itens Resolvidos
+
+| Descricao | Resolvido por | Data | Evidencia |
+| --------- | ------------- | ---- | --------- |
+| Cross-browser CORS | Jhollyfer | 24/02/2026 | Variaveis de ambiente com origens permitidas |
+| Bloqueio de duplicidade de arquivos no upload | Jhollyfer | 19/02/2026 | Validacao de duplicidade no mesmo registro |
+| Coluna "Criado por" na listagem de tabelas | Jhollyfer | 19/02/2026 | Coluna adicionada na listagem geral |
+| Cache cookies Chrome impedindo autenticacao | Jhollyfer | 12/02/2026 | Camada de verificacao extra no backend |
+| Campos nativos ocultos no gerenciar campos | Jhollyfer | 12/02/2026 | Campos nativos removidos da visualizacao |
+| Valor default tamanho campo (10% lista, 50% form) | Jhollyfer | 12/02/2026 | Valores padrao definidos |
+| Dropdown de largura substituido por input 0-100 | Jhollyfer | 12/02/2026 | Campo numerico de 0 a 100 |
+| Perfil usuario logado na listagem de usuarios | Jhollyfer | 18/02/2026 | Usuario logado adicionado a lista |
+| Botoes excluir definitivamente tabelas | Jhollyfer | 12/02/2026 | Trash/restore/hard-delete implementados |
+| Dropdown sem opcoes (campos nativos) | Jhollyfer | 18/02/2026 | Corrigido apos refinamento campos nativos |
+| Galeria com imagem destaque e 2 colunas | Jhollyfer | 13/02/2026 | Layout com imagem acima e campos abaixo |
+| Ordenacao padrao lista (ASC/DESC) | Jhollyfer | 23/02/2026 | Movido para edicao da tabela |
+| Salvar automaticamente ao mudar de aba (ordenacao) | Jhollyfer | 29/03/2026 | Commit d463c50 |
+| Site correcoes (acentuacao, portugues, layout) | Jhollyfer | 10/03/2026 | Site atualizado |
+| Clone de tabela nao inclui campos da lixeira (P05) | Jhollyfer | — | Filtro `!f.trashed` no use-case |
+| Botao compartilhar link de tabela (P11) | Jhollyfer | — | Acao "Compartilhar" no frontend |
+| Campo enviado a lixeira fica nao obrigatorio (P16) | Jhollyfer | — | `required: false` no send-to-trash |
+| Menu com trash/restore/hard-delete (P09) | Jhollyfer | — | Endpoints implementados |
+| Grupo de campos migrado para nova abordagem | Jhollyfer | 29/03/2026 | Gerenciamento na tela de detalhes do registro |
+| Redirecionamento apos editar descricao da tabela (P35) | Jhollyfer | 22/03/2026 | Redirecionamento para pagina da tabela |
+| Mapeamento campos para tipos de layout (P43) | Jhollyfer | 22/03/2026 | Campos definidos para cada tipo de layout |
+| Mapeamento criador em grupo de campos | Jhollyfer | 29/03/2026 | Commit f62da18 |
