@@ -102,7 +102,14 @@ export default class TableFieldUpdateUseCase {
         _id: field._id,
         slug,
         group: normalizedGroup,
-        ...(payload.trashed && { trashed: payload.trashed }),
+        ...(payload.trashed && {
+          trashed: payload.trashed,
+          required: false,
+          showInList: false,
+          showInForm: false,
+          showInDetail: false,
+          showInFilter: false,
+        }),
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
       });
 

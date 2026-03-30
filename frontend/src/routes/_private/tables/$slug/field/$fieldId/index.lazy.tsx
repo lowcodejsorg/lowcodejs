@@ -335,7 +335,7 @@ function FieldUpdateContent({
       } = {
         name: value.name,
         type: value.type as keyof typeof E_FIELD_TYPE,
-        required: value.required,
+        required: value.trashed ? false : value.required,
         multiple: value.multiple,
         showInFilter: value.showInFilter,
         showInForm: value.showInForm,

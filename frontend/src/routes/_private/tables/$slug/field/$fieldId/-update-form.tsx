@@ -91,6 +91,10 @@ export const UpdateFieldFormFields = withForm({
       form.store,
       (state) => state.values.dropdown,
     );
+    const isTrashed = useStore(
+      form.store,
+      (state) => state.values.trashed,
+    );
 
     const showMultiple =
       isDropdown ||
@@ -420,7 +424,7 @@ export const UpdateFieldFormFields = withForm({
               <field.FieldBooleanSwitch
                 label="Obrigatoriedade"
                 description="Este campo é obrigatório?"
-                disabled={isDisabled || lockNonOptions}
+                disabled={isDisabled || lockNonOptions || isTrashed}
               />
             )}
           </form.AppField>
