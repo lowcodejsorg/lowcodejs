@@ -91,10 +91,7 @@ export const UpdateFieldFormFields = withForm({
       form.store,
       (state) => state.values.dropdown,
     );
-    const isTrashed = useStore(
-      form.store,
-      (state) => state.values.trashed,
-    );
+    const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
     const showMultiple =
       isDropdown ||
