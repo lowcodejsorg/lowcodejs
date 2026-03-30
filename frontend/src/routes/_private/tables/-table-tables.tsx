@@ -1,3 +1,4 @@
+import { useMutation } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
 import { format } from 'date-fns';
@@ -9,8 +10,11 @@ import {
   EllipsisIcon,
   EyeIcon,
   ImageOffIcon,
+  LoaderCircleIcon,
   Share2Icon,
+  Trash2Icon,
   TrashIcon,
+  XIcon,
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -28,6 +32,16 @@ import { DataTableColumnHeader } from '@/components/common/data-table/data-table
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -37,11 +51,17 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useSidebar } from '@/components/ui/sidebar';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useDataTable } from '@/hooks/use-data-table';
-import { useTablePermission } from '@/hooks/use-table-permission';
+import {
+  usePermission,
+  useTablePermission,
+} from '@/hooks/use-table-permission';
+import { API } from '@/lib/api';
 import { E_TABLE_VISIBILITY } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
-import { toastInfo } from '@/lib/toast';
+import { QueryClient } from '@/lib/query-client';
+import { toastInfo, toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 const ROUTE_ID = '/_private/tables/';
@@ -318,25 +338,148 @@ const columns: Array<ColumnDef<ITable, any>> = [
 interface Props {
   data: Array<ITable>;
   toolbarPortal: HTMLDivElement | null;
+  isTrashView: boolean;
 }
 
 export function TableTables({
   data,
   toolbarPortal,
+  isTrashView,
 }: Props): React.ReactElement {
   const sidebar = useSidebar();
   const router = useRouter();
+  const permission = usePermission();
+  const canRemoveTable = permission.can('REMOVE_TABLE');
+  const canUpdateTable = permission.can('UPDATE_TABLE');
+  const canSelect = canRemoveTable || canUpdateTable;
+
+  const [showConfirmDialog, setShowConfirmDialog] = React.useState(false);
+  const [dialogAction, setDialogAction] = React.useState<
+    'trash' | 'restore' | 'delete'
+  >('trash');
+
+  const allColumns = React.useMemo(() => {
+    const cols: Array<ColumnDef<ITable, any>> = [];
+
+    if (canSelect) {
+      cols.push({
+        id: '_select',
+        size: 40,
+        enableResizing: false,
+        enableHiding: false,
+        header: ({ table: t }) => (
+          <Checkbox
+            checked={
+              t.getIsAllPageRowsSelected() ||
+              (t.getIsSomePageRowsSelected() && 'indeterminate')
+            }
+            onCheckedChange={(value) => t.toggleAllPageRowsSelected(!!value)}
+            aria-label="Selecionar todas"
+          />
+        ),
+        cell: ({ row }) => (
+          <div onClick={(e) => e.stopPropagation()}>
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label="Selecionar linha"
+            />
+          </div>
+        ),
+      });
+    }
+
+    cols.push(...columns);
+    return cols;
+  }, [canSelect]);
 
   const table = useDataTable({
     data,
-    columns,
+    columns: allColumns,
     getRowId: (row) => row._id,
+    enableRowSelection: canSelect,
     enableColumnResizing: true,
     persistKey: 'admin:tables',
     initialColumnPinning: {
+      left: canSelect ? ['_select'] : [],
       right: ['actions'],
     },
   });
+
+  const selectedRows = table.getSelectedRowModel().rows;
+  const selectedCount = selectedRows.length;
+  const selectedIds = selectedRows.map((r) => r.id);
+
+  const bulkTrash = useMutation({
+    mutationFn: async function (ids: Array<string>) {
+      const response = await API.patch<{ modified: number }>(
+        '/tables/bulk-trash',
+        { ids },
+      );
+      return response.data;
+    },
+    onSuccess(result) {
+      setShowConfirmDialog(false);
+      table.resetRowSelection();
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.tables.lists(),
+      });
+      toastSuccess(
+        result.modified === 1
+          ? '1 tabela enviada para lixeira!'
+          : `${result.modified} tabelas enviadas para lixeira!`,
+        'As tabelas foram movidas para a lixeira',
+      );
+    },
+  });
+
+  const bulkRestore = useMutation({
+    mutationFn: async function (ids: Array<string>) {
+      const response = await API.patch<{ modified: number }>(
+        '/tables/bulk-restore',
+        { ids },
+      );
+      return response.data;
+    },
+    onSuccess(result) {
+      setShowConfirmDialog(false);
+      table.resetRowSelection();
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.tables.lists(),
+      });
+      toastSuccess(
+        result.modified === 1
+          ? '1 tabela restaurada!'
+          : `${result.modified} tabelas restauradas!`,
+        'As tabelas foram restauradas da lixeira',
+      );
+    },
+  });
+
+  const bulkDelete = useMutation({
+    mutationFn: async function (slugs: Array<string>) {
+      let deleted = 0;
+      for (const slug of slugs) {
+        await API.delete('/tables/'.concat(slug));
+        deleted++;
+      }
+      return { deleted };
+    },
+    onSuccess(result) {
+      setShowConfirmDialog(false);
+      table.resetRowSelection();
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.tables.lists(),
+      });
+      toastSuccess(
+        result.deleted === 1
+          ? '1 tabela excluída permanentemente!'
+          : `${result.deleted} tabelas excluídas permanentemente!`,
+      );
+    },
+  });
+
+  const selectedSlugs = selectedRows.map((r) => r.original.slug);
 
   return (
     <div data-test-id="tables-table">
@@ -352,6 +495,138 @@ export function TableTables({
           });
         }}
       />
+
+      {selectedCount > 0 && (
+        <div className="sticky bottom-4 mx-auto flex w-fit items-center gap-3 rounded-lg border bg-background px-4 py-2 shadow-lg">
+          <span className="text-sm font-medium">
+            {selectedCount === 1
+              ? '1 tabela selecionada'
+              : `${selectedCount} tabelas selecionadas`}
+          </span>
+          {isTrashView ? (
+            <React.Fragment>
+              {canUpdateTable && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    setDialogAction('restore');
+                    setShowConfirmDialog(true);
+                  }}
+                >
+                  <ArchiveRestoreIcon className="size-4" />
+                  <span>Restaurar</span>
+                </Button>
+              )}
+              {canRemoveTable && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setDialogAction('delete');
+                    setShowConfirmDialog(true);
+                  }}
+                >
+                  <Trash2Icon className="size-4" />
+                  <span>Excluir permanentemente</span>
+                </Button>
+              )}
+            </React.Fragment>
+          ) : (
+            canRemoveTable && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={() => {
+                  setDialogAction('trash');
+                  setShowConfirmDialog(true);
+                }}
+              >
+                <Trash2Icon className="size-4" />
+                <span>Enviar para lixeira</span>
+              </Button>
+            )
+          )}
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => table.resetRowSelection()}
+          >
+            <XIcon className="size-4" />
+          </Button>
+        </div>
+      )}
+
+      <Dialog
+        modal
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
+      >
+        <DialogContent className="py-4 px-6">
+          <DialogHeader>
+            <DialogTitle>
+              {dialogAction === 'trash' && 'Enviar tabelas para a lixeira'}
+              {dialogAction === 'restore' && 'Restaurar tabelas da lixeira'}
+              {dialogAction === 'delete' && 'Excluir tabelas permanentemente'}
+            </DialogTitle>
+            <DialogDescription>
+              {dialogAction === 'trash' &&
+                (selectedCount === 1
+                  ? 'Ao confirmar essa ação, 1 tabela será enviada para a lixeira.'
+                  : `Ao confirmar essa ação, ${selectedCount} tabelas serão enviadas para a lixeira.`)}
+              {dialogAction === 'restore' &&
+                (selectedCount === 1
+                  ? 'Ao confirmar essa ação, 1 tabela será restaurada da lixeira.'
+                  : `Ao confirmar essa ação, ${selectedCount} tabelas serão restauradas da lixeira.`)}
+              {dialogAction === 'delete' &&
+                (selectedCount === 1
+                  ? 'Essa ação é irreversível. 1 tabela será excluída permanentemente, incluindo seus campos e registros.'
+                  : `Essa ação é irreversível. ${selectedCount} tabelas serão excluídas permanentemente, incluindo seus campos e registros.`)}
+            </DialogDescription>
+          </DialogHeader>
+          <section>
+            <form className="pt-4 pb-2">
+              <DialogFooter className="inline-flex w-full gap-2 justify-end">
+                <DialogClose asChild>
+                  <Button className="bg-destructive hover:bg-destructive">
+                    Cancelar
+                  </Button>
+                </DialogClose>
+                <Button
+                  type="button"
+                  disabled={
+                    bulkTrash.status === 'pending' ||
+                    bulkRestore.status === 'pending' ||
+                    bulkDelete.status === 'pending'
+                  }
+                  onClick={() => {
+                    if (dialogAction === 'trash') {
+                      bulkTrash.mutateAsync(selectedIds);
+                    }
+                    if (dialogAction === 'restore') {
+                      bulkRestore.mutateAsync(selectedIds);
+                    }
+                    if (dialogAction === 'delete') {
+                      bulkDelete.mutateAsync(selectedSlugs);
+                    }
+                  }}
+                >
+                  {(bulkTrash.status === 'pending' ||
+                    bulkRestore.status === 'pending' ||
+                    bulkDelete.status === 'pending') && (
+                    <LoaderCircleIcon className="size-4 animate-spin" />
+                  )}
+                  {!(
+                    bulkTrash.status === 'pending' ||
+                    bulkRestore.status === 'pending' ||
+                    bulkDelete.status === 'pending'
+                  ) && <span>Confirmar</span>}
+                </Button>
+              </DialogFooter>
+            </form>
+          </section>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

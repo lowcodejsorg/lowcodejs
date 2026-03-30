@@ -8,6 +8,7 @@ import {
 import { UploadIcon } from 'lucide-react';
 import React from 'react';
 
+import { TableEmptyTrashDialog } from './-empty-trash-dialog';
 import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
@@ -101,6 +102,9 @@ function RouteComponent(): React.JSX.Element {
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
           <div ref={setToolbarNode} />
+          {permission.can('REMOVE_TABLE') && search.trashed && (
+            <TableEmptyTrashDialog />
+          )}
           {permission.can('REMOVE_TABLE') && <TrashButton />}
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
@@ -154,6 +158,7 @@ function RouteComponent(): React.JSX.Element {
           <TableTables
             data={data.data}
             toolbarPortal={toolbarNode}
+            isTrashView={Boolean(search.trashed)}
           />
         </div>
         <ChatSidebar

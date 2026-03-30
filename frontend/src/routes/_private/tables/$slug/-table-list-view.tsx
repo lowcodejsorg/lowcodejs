@@ -419,6 +419,32 @@ export function TableListView({
     },
   });
 
+  const bulkDelete = useMutation({
+    mutationFn: async function (ids: Array<string>) {
+      const route = '/tables/'.concat(slug).concat('/rows/bulk-delete');
+      const response = await API.delete<{ deleted: number }>(route, {
+        data: { ids },
+      });
+      return response.data;
+    },
+    onSuccess(result) {
+      setShowConfirmDialog(false);
+      table.resetRowSelection();
+      QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
+      toastSuccess(
+        result.deleted === 1
+          ? '1 registro excluído permanentemente!'
+          : `${result.deleted} registros excluídos permanentemente!`,
+      );
+    },
+  });
+
+  const [dialogAction, setDialogAction] = React.useState<
+    'trash' | 'restore' | 'delete'
+  >('trash');
+
   return (
     <div data-test-id="table-list-view">
       <DataTable
@@ -442,19 +468,40 @@ export function TableListView({
               : `${selectedCount} registros selecionados`}
           </span>
           {isTrashView ? (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowConfirmDialog(true)}
-            >
-              <ArchiveRestoreIcon className="size-4" />
-              <span>Restaurar</span>
-            </Button>
+            <React.Fragment>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDialogAction('restore');
+                  setShowConfirmDialog(true);
+                }}
+              >
+                <ArchiveRestoreIcon className="size-4" />
+                <span>Restaurar</span>
+              </Button>
+              {canRemoveRow && (
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={() => {
+                    setDialogAction('delete');
+                    setShowConfirmDialog(true);
+                  }}
+                >
+                  <Trash2Icon className="size-4" />
+                  <span>Excluir permanentemente</span>
+                </Button>
+              )}
+            </React.Fragment>
           ) : (
             <Button
               variant="destructive"
               size="sm"
-              onClick={() => setShowConfirmDialog(true)}
+              onClick={() => {
+                setDialogAction('trash');
+                setShowConfirmDialog(true);
+              }}
             >
               <Trash2Icon className="size-4" />
               <span>Enviar para lixeira</span>
@@ -478,18 +525,23 @@ export function TableListView({
         <DialogContent className="py-4 px-6">
           <DialogHeader>
             <DialogTitle>
-              {isTrashView
-                ? 'Restaurar registros da lixeira'
-                : 'Enviar registros para a lixeira'}
+              {dialogAction === 'trash' && 'Enviar registros para a lixeira'}
+              {dialogAction === 'restore' && 'Restaurar registros da lixeira'}
+              {dialogAction === 'delete' && 'Excluir registros permanentemente'}
             </DialogTitle>
             <DialogDescription>
-              {isTrashView
-                ? selectedCount === 1
-                  ? 'Ao confirmar essa acao, 1 registro sera restaurado da lixeira.'
-                  : `Ao confirmar essa acao, ${selectedCount} registros serao restaurados da lixeira.`
-                : selectedCount === 1
-                  ? 'Ao confirmar essa acao, 1 registro sera enviado para a lixeira.'
-                  : `Ao confirmar essa acao, ${selectedCount} registros serao enviados para a lixeira.`}
+              {dialogAction === 'trash' &&
+                (selectedCount === 1
+                  ? 'Ao confirmar essa ação, 1 registro será enviado para a lixeira.'
+                  : `Ao confirmar essa ação, ${selectedCount} registros serão enviados para a lixeira.`)}
+              {dialogAction === 'restore' &&
+                (selectedCount === 1
+                  ? 'Ao confirmar essa ação, 1 registro será restaurado da lixeira.'
+                  : `Ao confirmar essa ação, ${selectedCount} registros serão restaurados da lixeira.`)}
+              {dialogAction === 'delete' &&
+                (selectedCount === 1
+                  ? 'Essa ação é irreversível. 1 registro será excluído permanentemente.'
+                  : `Essa ação é irreversível. ${selectedCount} registros serão excluídos permanentemente.`)}
             </DialogDescription>
           </DialogHeader>
           <section>
@@ -503,26 +555,32 @@ export function TableListView({
                 <Button
                   type="button"
                   disabled={
-                    isTrashView
-                      ? bulkRestore.status === 'pending'
-                      : bulkTrash.status === 'pending'
+                    bulkTrash.status === 'pending' ||
+                    bulkRestore.status === 'pending' ||
+                    bulkDelete.status === 'pending'
                   }
                   onClick={() => {
-                    if (isTrashView) {
-                      bulkRestore.mutateAsync(selectedIds);
-                    } else {
+                    if (dialogAction === 'trash') {
                       bulkTrash.mutateAsync(selectedIds);
+                    }
+                    if (dialogAction === 'restore') {
+                      bulkRestore.mutateAsync(selectedIds);
+                    }
+                    if (dialogAction === 'delete') {
+                      bulkDelete.mutateAsync(selectedIds);
                     }
                   }}
                 >
-                  {(isTrashView
-                    ? bulkRestore.status === 'pending'
-                    : bulkTrash.status === 'pending') && (
+                  {(bulkTrash.status === 'pending' ||
+                    bulkRestore.status === 'pending' ||
+                    bulkDelete.status === 'pending') && (
                     <LoaderCircleIcon className="size-4 animate-spin" />
                   )}
-                  {!(isTrashView
-                    ? bulkRestore.status === 'pending'
-                    : bulkTrash.status === 'pending') && <span>Confirmar</span>}
+                  {!(
+                    bulkTrash.status === 'pending' ||
+                    bulkRestore.status === 'pending' ||
+                    bulkDelete.status === 'pending'
+                  ) && <span>Confirmar</span>}
                 </Button>
               </DialogFooter>
             </form>

@@ -173,17 +173,22 @@ export default class TableMongooseRepository implements TableContractRepository 
   async updateMany({
     _ids,
     type,
+    filterTrashed,
     data,
-  }: TableUpdateManyPayload): Promise<void> {
+  }: TableUpdateManyPayload): Promise<number> {
     const where: Record<string, unknown> = { _id: { $in: _ids } };
     if (type) where.type = type;
+    if (filterTrashed !== undefined) where.trashed = filterTrashed;
 
     const updateData: Record<string, unknown> = {};
     if (data.visibility) updateData['visibility'] = data.visibility;
     if (data.style) updateData['style'] = data.style;
     if (data.collaboration) updateData['collaboration'] = data.collaboration;
+    if (data.trashed !== undefined) updateData['trashed'] = data.trashed;
+    if (data.trashedAt !== undefined) updateData['trashedAt'] = data.trashedAt;
 
-    await Model.updateMany(where, { $set: updateData });
+    const result = await Model.updateMany(where, { $set: updateData });
+    return result.modifiedCount;
   }
 
   async delete(_id: string): Promise<void> {

@@ -16,6 +16,7 @@ import React from 'react';
 
 import { TableExportDialog } from '../-export-dialog';
 
+import { RowEmptyTrashDialog } from './-empty-trash-dialog';
 import { TableCalendarViewSkeleton } from './-table-calendar-view-skeleton';
 import { TableCardViewSkeleton } from './-table-card-view-skeleton';
 import { TableConfigurationDropdown } from './-table-configuration';
@@ -255,6 +256,9 @@ function RouteComponent(): React.JSX.Element {
               onClick={() => handleFilterOpenChange(!filterOpen)}
               isOpen={filterOpen}
             />
+          )}
+          {permission.can('REMOVE_ROW') && search.trashed && (
+            <RowEmptyTrashDialog slug={slug} />
           )}
           {permission.can('UPDATE_ROW') && <TrashButton />}
 

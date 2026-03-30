@@ -61,10 +61,13 @@ export type TableQueryPayload = {
 export type TableUpdateManyPayload = {
   _ids: string[];
   type?: ValueOf<typeof E_TABLE_TYPE>;
+  filterTrashed?: boolean;
   data: {
     style?: ValueOf<typeof E_TABLE_STYLE>;
     visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
     collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
+    trashed?: boolean;
+    trashedAt?: Date | null;
   };
 };
 
@@ -77,7 +80,7 @@ export abstract class TableContractRepository {
   ): Promise<ITable | null>;
   abstract findMany(payload?: TableQueryPayload): Promise<ITable[]>;
   abstract update(payload: TableUpdatePayload): Promise<ITable>;
-  abstract updateMany(payload: TableUpdateManyPayload): Promise<void>;
+  abstract updateMany(payload: TableUpdateManyPayload): Promise<number>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: TableQueryPayload): Promise<number>;
   abstract renameSlug(oldSlug: string, newSlug: string): Promise<void>;

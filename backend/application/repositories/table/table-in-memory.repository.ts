@@ -188,20 +188,29 @@ export default class TableInMemoryRepository implements TableContractRepository 
   async updateMany({
     _ids,
     type,
+    filterTrashed,
     data,
-  }: TableUpdateManyPayload): Promise<void> {
+  }: TableUpdateManyPayload): Promise<number> {
     let filtered = this.items.filter((t) => _ids.includes(t._id));
 
     if (type) {
       filtered = filtered.filter((t) => t.type === type);
     }
 
+    if (filterTrashed !== undefined) {
+      filtered = filtered.filter((t) => t.trashed === filterTrashed);
+    }
+
     for (const table of filtered) {
       if (data.visibility) table.visibility = data.visibility;
       if (data.style) table.style = data.style;
       if (data.collaboration) table.collaboration = data.collaboration;
+      if (data.trashed !== undefined) table.trashed = data.trashed;
+      if (data.trashedAt !== undefined) table.trashedAt = data.trashedAt;
       table.updatedAt = new Date();
     }
+
+    return filtered.length;
   }
 
   async delete(_id: string): Promise<void> {
