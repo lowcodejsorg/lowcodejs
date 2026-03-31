@@ -84,6 +84,14 @@ export const SettingShowSchema: FastifySchema = {
           description: 'URL do logo grande',
           examples: ['/assets/logo-large.webp'],
         },
+        OPENAI_API_KEY: {
+          type: 'string',
+          description: 'Chave da API OpenAI para o assistente IA',
+        },
+        AI_ASSISTANT_ENABLED: {
+          type: 'boolean',
+          description: 'Habilitar ou desabilitar o assistente IA',
+        },
       },
       examples: [
         {

@@ -1,5 +1,6 @@
 import {
   createLazyFileRoute,
+  getRouteApi,
   useParams,
   useRouter,
   useSearch,
@@ -59,6 +60,8 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
+
+const rootApi = getRouteApi('__root__');
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/')({
   component: RouteComponent,
@@ -152,6 +155,7 @@ const VIEW_MAP: Record<
 };
 
 function RouteComponent(): React.JSX.Element {
+  const { aiAssistantEnabled } = rootApi.useLoaderData();
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = Boolean(user);
 
@@ -273,10 +277,12 @@ function RouteComponent(): React.JSX.Element {
             </Button>
           </TableExportDialog>
           <TableConfigurationDropdown tableSlug={slug} />
-          <ChatTrigger
-            onClick={() => handleChatOpenChange(!chatOpen)}
-            isOpen={chatOpen}
-          />
+          {aiAssistantEnabled && (
+            <ChatTrigger
+              onClick={() => handleChatOpenChange(!chatOpen)}
+              isOpen={chatOpen}
+            />
+          )}
 
           {permission.can('CREATE_ROW') &&
             (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) > 0 && (
@@ -395,10 +401,12 @@ function RouteComponent(): React.JSX.Element {
               );
             })()}
         </div>
-        <ChatSidebar
-          open={chatOpen}
-          onOpenChange={handleChatOpenChange}
-        />
+        {aiAssistantEnabled && (
+          <ChatSidebar
+            open={chatOpen}
+            onOpenChange={handleChatOpenChange}
+          />
+        )}
       </div>
 
       {!shouldDisablePagination && (

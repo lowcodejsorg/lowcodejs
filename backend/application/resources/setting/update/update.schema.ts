@@ -122,6 +122,15 @@ export const SettingUpdateSchema: FastifySchema = {
           minLength: 'A senha de email é obrigatória',
         },
       },
+      OPENAI_API_KEY: {
+        type: 'string',
+        nullable: true,
+        description: 'Chave da API OpenAI para o assistente IA',
+      },
+      AI_ASSISTANT_ENABLED: {
+        type: 'boolean',
+        description: 'Habilitar ou desabilitar o assistente IA',
+      },
       LOGO_SMALL_URL: {
         type: 'string',
         nullable: true,
@@ -208,6 +217,14 @@ export const SettingUpdateSchema: FastifySchema = {
         EMAIL_PROVIDER_PASSWORD: {
           type: 'string',
           description: 'Senha do servidor de email',
+        },
+        OPENAI_API_KEY: {
+          type: 'string',
+          description: 'Chave da API OpenAI para o assistente IA',
+        },
+        AI_ASSISTANT_ENABLED: {
+          type: 'boolean',
+          description: 'Habilitar ou desabilitar o assistente IA',
         },
         LOGO_SMALL_URL: {
           type: 'string',

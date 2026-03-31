@@ -1,4 +1,5 @@
 import {
+  BotIcon,
   DatabaseIcon,
   FileTextIcon,
   ImageIcon,
@@ -214,6 +215,36 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             ) : (
               <p className="text-sm text-muted-foreground">-</p>
             )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Assistente IA */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BotIcon className="w-5 h-5" />
+            Assistente IA
+          </CardTitle>
+          <CardDescription>
+            Configurações do assistente de inteligência artificial
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Status</p>
+            {data.AI_ASSISTANT_ENABLED && (
+              <Badge variant="default">Habilitado</Badge>
+            )}
+            {!data.AI_ASSISTANT_ENABLED && (
+              <Badge variant="destructive">Desabilitado</Badge>
+            )}
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Chave da API OpenAI</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {data.OPENAI_API_KEY ? '••••••••' : '-'}
+            </p>
           </div>
         </CardContent>
       </Card>

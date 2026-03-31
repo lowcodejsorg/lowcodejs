@@ -437,6 +437,8 @@ export type ISetting = {
   EMAIL_PROVIDER_PORT: number;
   EMAIL_PROVIDER_USER: string;
   EMAIL_PROVIDER_PASSWORD?: string;
+  OPENAI_API_KEY?: string;
+  AI_ASSISTANT_ENABLED: boolean;
 };
 
 export const E_TABLE_PERMISSION = {

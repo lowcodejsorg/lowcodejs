@@ -86,15 +86,19 @@ export function initChatSocket(
     const user = decoded;
 
     // --- Validar configuração ---
-    if (!Env.OPENAI_API_KEY || !Env.MCP_SERVER_URL) {
+    const aiEnabled = process.env.AI_ASSISTANT_ENABLED === 'true';
+    const openaiKey = process.env.OPENAI_API_KEY || Env.OPENAI_API_KEY;
+    const mcpUrl = Env.MCP_SERVER_URL;
+
+    if (!aiEnabled || !openaiKey || !mcpUrl) {
       socket.emit(E_CHAT_EVENT.ERROR, {
-        message: 'OPENAI_API_KEY ou MCP_SERVER_URL não configurados.',
+        message: 'Assistente IA não está habilitado ou não está configurado.',
       });
       socket.disconnect();
       return;
     }
 
-    const openaiClient = new OpenAI({ apiKey: Env.OPENAI_API_KEY });
+    const openaiClient = new OpenAI({ apiKey: openaiKey });
 
     let mcpClient: Client | null = null;
 
@@ -105,7 +109,7 @@ export function initChatSocket(
       });
 
       const transport = new StreamableHTTPClientTransport(
-        new URL(Env.MCP_SERVER_URL),
+        new URL(mcpUrl),
         {
           requestInit: {
             headers: {

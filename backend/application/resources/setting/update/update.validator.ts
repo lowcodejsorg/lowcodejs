@@ -43,6 +43,8 @@ export const SettingUpdateBodyValidator = z.object({
     .string({ message: 'A senha de email é obrigatória' })
     .min(1, 'A senha de email é obrigatória')
     .trim(),
+  OPENAI_API_KEY: z.string().trim().optional(),
+  AI_ASSISTANT_ENABLED: z.boolean().optional(),
   LOGO_SMALL_URL: z
     .string({ message: 'A URL do logo pequeno deve ser um texto' })
     .trim()

@@ -24,6 +24,7 @@ export default class SettingInMemoryRepository implements SettingContractReposit
         EMAIL_PROVIDER_HOST: '',
         EMAIL_PROVIDER_PORT: 587,
         EMAIL_PROVIDER_USER: '',
+        AI_ASSISTANT_ENABLED: false,
         ...payload,
       } as unknown as ISetting;
     } else {

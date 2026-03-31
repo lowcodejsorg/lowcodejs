@@ -22,6 +22,8 @@ const Schema = new mongoose.Schema(
     EMAIL_PROVIDER_PORT: { type: Number },
     EMAIL_PROVIDER_USER: { type: String },
     EMAIL_PROVIDER_PASSWORD: { type: String },
+    OPENAI_API_KEY: { type: String },
+    AI_ASSISTANT_ENABLED: { type: Boolean, default: false },
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },

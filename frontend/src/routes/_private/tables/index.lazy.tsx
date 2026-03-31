@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   createLazyFileRoute,
+  getRouteApi,
   useNavigate,
   useRouter,
   useSearch,
@@ -29,11 +30,14 @@ import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
 import { E_FIELD_TYPE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
 
+const rootApi = getRouteApi('__root__');
+
 export const Route = createLazyFileRoute('/_private/tables/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
+  const { aiAssistantEnabled } = rootApi.useLoaderData();
   const { toolbarRef, toolbarNode } = useToolbarPortal();
   const search = useSearch({
     from: '/_private/tables/',
@@ -111,10 +115,12 @@ function RouteComponent(): React.JSX.Element {
             </TableImportDialog>
           )}
 
-          <ChatTrigger
-            onClick={() => handleChatOpenChange(!chatOpen)}
-            isOpen={chatOpen}
-          />
+          {aiAssistantEnabled && (
+            <ChatTrigger
+              onClick={() => handleChatOpenChange(!chatOpen)}
+              isOpen={chatOpen}
+            />
+          )}
 
           {permission.can('CREATE_TABLE') && (
             <Button
@@ -149,10 +155,12 @@ function RouteComponent(): React.JSX.Element {
             isTrashView={Boolean(search.trashed)}
           />
         </div>
-        <ChatSidebar
-          open={chatOpen}
-          onOpenChange={handleChatOpenChange}
-        />
+        {aiAssistantEnabled && (
+          <ChatSidebar
+            open={chatOpen}
+            onOpenChange={handleChatOpenChange}
+          />
+        )}
       </div>
 
       {/* footer */}

@@ -123,6 +123,8 @@ function SettingUpdateContent({
       EMAIL_PROVIDER_PORT: String(data.EMAIL_PROVIDER_PORT),
       EMAIL_PROVIDER_USER: data.EMAIL_PROVIDER_USER,
       EMAIL_PROVIDER_PASSWORD: data.EMAIL_PROVIDER_PASSWORD,
+      OPENAI_API_KEY: data.OPENAI_API_KEY || '',
+      AI_ASSISTANT_ENABLED: data.AI_ASSISTANT_ENABLED ?? false,
       logoSmallFile: [] as Array<File>,
       logoLargeFile: [] as Array<File>,
     },
@@ -153,6 +155,8 @@ function SettingUpdateContent({
         EMAIL_PROVIDER_PORT: Number(value.EMAIL_PROVIDER_PORT),
         EMAIL_PROVIDER_USER: value.EMAIL_PROVIDER_USER.trim(),
         EMAIL_PROVIDER_PASSWORD: value.EMAIL_PROVIDER_PASSWORD.trim(),
+        OPENAI_API_KEY: value.OPENAI_API_KEY?.trim() || undefined,
+        AI_ASSISTANT_ENABLED: value.AI_ASSISTANT_ENABLED,
       };
 
       await _update.mutateAsync(payload);

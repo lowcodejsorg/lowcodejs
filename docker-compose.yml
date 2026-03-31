@@ -110,7 +110,7 @@ services:
       start_period: 10s
 
   mcp:
-    image: ${DOCKER_USERNAME}/lowcodejs-mcp:${MCP_IMAGE_TAG:-latest}
+    image: ${DOCKER_USERNAME}/lowcodejs-mcp:latest
     container_name: low-code-js-mcp
     restart: unless-stopped
     ports:

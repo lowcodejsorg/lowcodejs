@@ -1,4 +1,5 @@
 import {
+  BotIcon,
   DatabaseIcon,
   EyeClosedIcon,
   EyeIcon,
@@ -57,6 +58,8 @@ export const SettingUpdateSchema = z.object({
   EMAIL_PROVIDER_PORT: z.string(),
   EMAIL_PROVIDER_USER: z.string(),
   EMAIL_PROVIDER_PASSWORD: z.string(),
+  OPENAI_API_KEY: z.string(),
+  AI_ASSISTANT_ENABLED: z.boolean(),
   logoSmallFile: z.array(z.instanceof(File)),
   logoLargeFile: z.array(z.instanceof(File)),
 });
@@ -78,6 +81,8 @@ export type SettingUpdateFormValues = Merge<
     EMAIL_PROVIDER_PORT: string;
     EMAIL_PROVIDER_USER: string;
     EMAIL_PROVIDER_PASSWORD: string;
+    OPENAI_API_KEY: string;
+    AI_ASSISTANT_ENABLED: boolean;
   },
   { logoSmallFile: Array<File>; logoLargeFile: Array<File> }
 >;
@@ -97,6 +102,8 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   EMAIL_PROVIDER_PORT: '587',
   EMAIL_PROVIDER_USER: '',
   EMAIL_PROVIDER_PASSWORD: '',
+  OPENAI_API_KEY: '',
+  AI_ASSISTANT_ENABLED: false,
   logoSmallFile: [],
   logoLargeFile: [],
 };
@@ -114,6 +121,7 @@ export const UpdateSettingFormFields = withForm({
     const [show, setShow] = React.useState({
       databaseUrl: false,
       emailPassword: false,
+      openaiApiKey: false,
     });
 
     const formatFileSize = (bytes: number): string => {
@@ -692,6 +700,88 @@ export const UpdateSettingFormFields = withForm({
                         <SelectItem value="50">50</SelectItem>
                       </SelectContent>
                     </Select>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+          </CardContent>
+        </Card>
+
+        {/* Assistente IA */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BotIcon className="w-5 h-5" />
+              Assistente IA
+            </CardTitle>
+            <CardDescription>
+              Configure o assistente de inteligência artificial
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Toggle AI */}
+            <form.AppField name="AI_ASSISTANT_ENABLED">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Habilitar Assistente IA"
+                  description="Ativa o chat com inteligência artificial na plataforma"
+                  disabled={isDisabled}
+                  yesLabel="Ativo"
+                  noLabel="Inativo"
+                />
+              )}
+            </form.AppField>
+
+            {/* OpenAI API Key */}
+            <form.Field
+              name="OPENAI_API_KEY"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Chave da API OpenAI
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Necessária para o funcionamento do assistente IA
+                    </div>
+                    <InputGroup>
+                      <InputGroupInput
+                        data-test-id="settings-openai-api-key-input"
+                        disabled={isDisabled}
+                        id={field.name}
+                        name={field.name}
+                        type={show.openaiApiKey ? 'text' : 'password'}
+                        placeholder="sk-..."
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                      <InputGroupAddon align="inline-end">
+                        <InputGroupButton
+                          data-test-id="settings-openai-api-key-toggle-btn"
+                          disabled={isDisabled}
+                          type="button"
+                          aria-label="toggle api key visibility"
+                          title="toggle api key visibility"
+                          onClick={() =>
+                            setShow((state) => ({
+                              ...state,
+                              openaiApiKey: !state.openaiApiKey,
+                            }))
+                          }
+                        >
+                          {show.openaiApiKey && <EyeClosedIcon />}
+                          {!show.openaiApiKey && <EyeIcon />}
+                        </InputGroupButton>
+                      </InputGroupAddon>
+                    </InputGroup>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}

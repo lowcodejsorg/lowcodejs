@@ -27,16 +27,19 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
         return {
           systemName: data.SYSTEM_NAME || 'LowCodeJs',
           systemDescription: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
+          aiAssistantEnabled: data.AI_ASSISTANT_ENABLED ?? false,
         };
       }
       return {
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
+        aiAssistantEnabled: false,
       };
     } catch {
       return {
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
+        aiAssistantEnabled: false,
       };
     }
   },
@@ -54,6 +57,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       appUrl,
       systemName: settings.systemName,
       systemDescription: settings.systemDescription,
+      aiAssistantEnabled: settings.aiAssistantEnabled,
     };
   },
   component: RootDocument,
