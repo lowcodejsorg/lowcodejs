@@ -108,16 +108,13 @@ export function initChatSocket(
         message: 'Conectando ao servidor MCP...',
       });
 
-      const transport = new StreamableHTTPClientTransport(
-        new URL(mcpUrl),
-        {
-          requestInit: {
-            headers: {
-              'X-Access-Token': accessToken,
-            },
+      const transport = new StreamableHTTPClientTransport(new URL(mcpUrl), {
+        requestInit: {
+          headers: {
+            'X-Access-Token': accessToken,
           },
         },
-      );
+      });
 
       mcpClient = new Client({
         name: 'lowcodejs-chat',
@@ -205,7 +202,7 @@ export function initChatSocket(
             socket.emit(E_CHAT_EVENT.THINKING);
 
             const response = await openaiClient.chat.completions.create({
-              model: 'gpt-4.1-mini',
+              model: 'gpt-5-mini',
               messages,
               tools: openaiTools,
             });
