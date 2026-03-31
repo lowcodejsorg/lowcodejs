@@ -11,14 +11,14 @@ filtros, importacao/exportacao e acoes de lixeira.
 
 ## Arquivos
 
-| Arquivo                         | Tipo               | Descricao                                                                                                      |
-| ------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
-| `index.tsx`                     | Loader             | Valida search params (page, perPage, search, trashed, visibility, owner, order-\*), carrega `tableListOptions` |
-| `index.lazy.tsx`                | Componente         | Layout com header, FilterSidebar, TableTables, ChatSidebar e Pagination                                        |
-| `-table-tables.tsx`             | Componente privado | DataTable com colunas: nome, slug, visibilidade, criado por, criado em, acoes                                  |
-| `-table-tables-skeleton.tsx`    | Skeleton           | Skeleton da tabela de listagem                                                                                 |
-| `-export-dialog.tsx`            | Dialog             | Exportar tabela como JSON (estrutura, dados ou ambos) via POST `/tools/export-table`                           |
-| `-import-dialog.tsx`            | Dialog             | Importar tabela de arquivo JSON exportado via POST `/tools/import-table`                                       |
+| Arquivo                      | Tipo               | Descricao                                                                                                      |
+| ---------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------- |
+| `index.tsx`                  | Loader             | Valida search params (page, perPage, search, trashed, visibility, owner, order-\*), carrega `tableListOptions` |
+| `index.lazy.tsx`             | Componente         | Layout com header, FilterSidebar, TableTables, ChatSidebar e Pagination                                        |
+| `-table-tables.tsx`          | Componente privado | DataTable com colunas: nome, slug, visibilidade, criado por, criado em, acoes                                  |
+| `-table-tables-skeleton.tsx` | Skeleton           | Skeleton da tabela de listagem                                                                                 |
+| `-export-dialog.tsx`         | Dialog             | Exportar tabela como JSON (estrutura, dados ou ambos) via POST `/tools/export-table`                           |
+| `-import-dialog.tsx`         | Dialog             | Importar tabela de arquivo JSON exportado via POST `/tools/import-table`                                       |
 
 ## Visibilidades (E_TABLE_VISIBILITY)
 

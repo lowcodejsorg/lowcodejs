@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query';
-import { useNavigate } from '@tanstack/react-router';
 import type { QueryKey } from '@tanstack/react-query';
+import { useNavigate } from '@tanstack/react-router';
 import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 

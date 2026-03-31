@@ -19,6 +19,15 @@ import { TableExportDialog } from '../-export-dialog';
 import { RowEmptyTrashDialog } from './-empty-trash-dialog';
 import { TableConfigurationDropdown } from './-table-configuration';
 
+import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
+import { ChatTrigger } from '@/components/common/chat/chat-trigger';
+import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
+import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
+import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
+import { FilterTrigger } from '@/components/common/filters/filter-trigger';
+import { LoginButton } from '@/components/common/layout/login-button';
+import { Pagination } from '@/components/common/pagination';
+import { LoadError } from '@/components/common/route-status/load-error';
 import {
   TableCalendarViewSkeleton,
   TableCardViewSkeleton,
@@ -31,16 +40,6 @@ import {
   TableMosaicViewSkeleton,
   TableSkeleton,
 } from '@/components/common/table-views';
-
-import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
-import { ChatTrigger } from '@/components/common/chat/chat-trigger';
-import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
-import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
-import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
-import { FilterTrigger } from '@/components/common/filters/filter-trigger';
-import { LoginButton } from '@/components/common/layout/login-button';
-import { Pagination } from '@/components/common/pagination';
-import { LoadError } from '@/components/common/route-status/load-error';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import {
@@ -109,17 +108,17 @@ const VIEW_MAP: Record<
   [E_TABLE_STYLE.MOSAIC]: {
     skeleton: TableMosaicViewSkeleton,
     view: React.lazy(() =>
-      import('@/components/common/table-views/table-mosaic-view').then(
-        (m) => ({ default: m.TableMosaicView }),
-      ),
+      import('@/components/common/table-views/table-mosaic-view').then((m) => ({
+        default: m.TableMosaicView,
+      })),
     ),
   },
   [E_TABLE_STYLE.KANBAN]: {
     skeleton: TableKanbanViewSkeleton,
     view: React.lazy(() =>
-      import('@/components/common/table-views/table-kanban-view').then(
-        (m) => ({ default: m.TableKanbanView }),
-      ),
+      import('@/components/common/table-views/table-kanban-view').then((m) => ({
+        default: m.TableKanbanView,
+      })),
     ),
     extraProps: true,
   },

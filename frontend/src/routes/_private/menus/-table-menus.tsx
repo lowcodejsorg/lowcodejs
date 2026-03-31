@@ -12,7 +12,6 @@ import React from 'react';
 import { createPortal } from 'react-dom';
 
 import { ActionDialog } from '@/components/common/action-dialog';
-
 import {
   DataTable,
   DataTableColumnToggle,

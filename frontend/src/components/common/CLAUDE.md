@@ -8,7 +8,7 @@ API e estado de aplicacao.
 
 | Diretorio        | Descricao                                                                                                                | Dependencias-chave                        |
 | ---------------- | ------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
-| `action-dialog/` | Dialogo generico de confirmacao para acoes destrutivas/reversivas (delete, trash, restore)                                | TanStack Query, TanStack Router           |
+| `action-dialog/` | Dialogo generico de confirmacao para acoes destrutivas/reversivas (delete, trash, restore)                               | TanStack Query, TanStack Router           |
 | `calendar/`      | Visualizacao de calendario (mes, semana, agenda) com dialogs de evento                                                   | date-fns, TanStack Form                   |
 | `chat/`          | Chat em tempo real com assistente IA via WebSocket                                                                       | useChatSocket, react-markdown             |
 | `code-editor/`   | Editor Monaco para scripts JS (hooks beforeSave/afterSave/onLoad)                                                        | @monaco-editor/react                      |
@@ -24,7 +24,7 @@ API e estado de aplicacao.
 | `rich-editor/`   | Editor de texto rico (TipTap) com toolbar, bubbles, upload de imagem                                                     | TipTap, upload                            |
 | `route-status/`  | Telas de status/erro (403, 404, erro, loading)                                                                           | TanStack Router                           |
 | `selectors/`     | Comboboxes e multi-selects de dominio (campo, grupo, menu, permissao, usuario)                                           | Combobox UI, hooks de query               |
-| `table-views/`   | 9 modos de visualizacao de tabelas dinamicas (list, kanban, forum, calendar, gantt, document, grid, card, mosaic)         | dynamic-table, calendar, gantt, forum     |
+| `table-views/`   | 9 modos de visualizacao de tabelas dinamicas (list, kanban, forum, calendar, gantt, document, grid, card, mosaic)        | dynamic-table, calendar, gantt, forum     |
 | `tree-editor/`   | Editor de arvore hierarquica com inline editing e DnD                                                                    | -                                         |
 
 ## Arquivos raiz

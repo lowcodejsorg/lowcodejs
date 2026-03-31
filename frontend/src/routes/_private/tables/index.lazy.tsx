@@ -24,8 +24,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
-import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
 import { usePermission } from '@/hooks/use-table-permission';
+import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
 import { E_FIELD_TYPE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
 

@@ -37,7 +37,6 @@ visualizacao via `E_TABLE_STYLE`, carregados com lazy loading.
 | `methods.tsx`              | Loader     | Carrega tableDetail para rota de metodos                                |
 | `methods.lazy.tsx`         | Componente | Pagina de edicao de metodos com tabs                                    |
 
-
 > **Nota**: Os 9 componentes de view (`table-*-view.tsx`) e seus skeletons foram
 > movidos para `@/components/common/table-views/`. Sao carregados via
 > `React.lazy` no `VIEW_MAP` deste arquivo.

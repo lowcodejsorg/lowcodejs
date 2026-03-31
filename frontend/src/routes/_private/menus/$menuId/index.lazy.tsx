@@ -24,8 +24,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { menuDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
-import { API } from '@/lib/api';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { API } from '@/lib/api';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { createFieldErrorSetter } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
@@ -209,9 +209,7 @@ function MenuUpdateContent({
               asChild
               config={{
                 mutationFn: async function () {
-                  await API.patch(
-                    '/menu/'.concat(data._id).concat('/restore'),
-                  );
+                  await API.patch('/menu/'.concat(data._id).concat('/restore'));
                 },
                 invalidateKeys: [queryKeys.menus.all],
                 toast: {

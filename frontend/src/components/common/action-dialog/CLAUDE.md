@@ -1,15 +1,15 @@
 # Action Dialog
 
 Componente generico de dialogo de confirmacao para acoes destrutivas ou
-reversivas. Encapsula o padrao de Dialog + useMutation + invalidacao de queries +
-toast + navegacao opcional.
+reversivas. Encapsula o padrao de Dialog + useMutation + invalidacao de
+queries + toast + navegacao opcional.
 
 ## Arquivos
 
-| Arquivo             | Descricao                                                 |
-| ------------------- | --------------------------------------------------------- |
-| `index.ts`          | Barrel export                                             |
-| `action-dialog.tsx` | Componente ActionDialog com config de mutacao e feedback   |
+| Arquivo             | Descricao                                                |
+| ------------------- | -------------------------------------------------------- |
+| `index.ts`          | Barrel export                                            |
+| `action-dialog.tsx` | Componente ActionDialog com config de mutacao e feedback |
 
 ## Dependencias principais
 

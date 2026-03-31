@@ -18,8 +18,6 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
 
-import { buildDefaultValues, buildPayload } from '@/routes/_private/tables/$slug/row/create/-create-form';
-
 import {
   KanbanAddListDialog,
   KanbanCard,
@@ -47,6 +45,10 @@ import {
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
 import { toastError, toastSuccess } from '@/lib/toast';
+import {
+  buildDefaultValues,
+  buildPayload,
+} from '@/routes/_private/tables/$slug/row/create/-create-form';
 import { useAuthStore } from '@/stores/authentication';
 
 interface Props {
