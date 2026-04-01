@@ -235,6 +235,12 @@ export type ProfileUpdatePayload = {
 export type SettingUpdatePayload = Partial<{
   SYSTEM_NAME: string;
   LOCALE: string;
+  STORAGE_DRIVER: 'local' | 's3';
+  STORAGE_ENDPOINT: string;
+  STORAGE_REGION: string;
+  STORAGE_BUCKET: string;
+  STORAGE_ACCESS_KEY: string;
+  STORAGE_SECRET_KEY: string;
   FILE_UPLOAD_MAX_SIZE: number;
   FILE_UPLOAD_ACCEPTED: string;
   FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;

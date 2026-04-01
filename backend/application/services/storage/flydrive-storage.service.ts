@@ -19,7 +19,9 @@ export default class FlyDriveStorageService extends StorageContractService {
   ];
 
   private get disk(): ReturnType<typeof drive.use> {
-    return drive.use();
+    const driver =
+      (process.env.STORAGE_DRIVER as 'local' | 's3') || 'local';
+    return drive.use(driver);
   }
 
   private isProcessableImage(mimetype: string): boolean {

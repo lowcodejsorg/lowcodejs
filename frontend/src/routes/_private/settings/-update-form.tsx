@@ -29,6 +29,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group';
+import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -36,6 +37,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import type { ISetting, IStorage, Merge } from '@/lib/interfaces';
 
@@ -47,6 +49,11 @@ export const SettingUpdateSchema = z.object({
     .max(100, 'O nome do sistema deve ter no máximo 100 caracteres'),
   LOCALE: z.string().min(1, 'O idioma é obrigatório'),
   STORAGE_DRIVER: z.enum(['local', 's3']),
+  STORAGE_ENDPOINT: z.string(),
+  STORAGE_REGION: z.string(),
+  STORAGE_BUCKET: z.string(),
+  STORAGE_ACCESS_KEY: z.string(),
+  STORAGE_SECRET_KEY: z.string(),
   LOGO_SMALL_URL: z.string().nullable(),
   LOGO_LARGE_URL: z.string().nullable(),
   FILE_UPLOAD_MAX_SIZE: z.string(),
@@ -70,6 +77,11 @@ export type SettingUpdateFormValues = Merge<
     SYSTEM_NAME: string;
     LOCALE: string;
     STORAGE_DRIVER: 'local' | 's3';
+    STORAGE_ENDPOINT: string;
+    STORAGE_REGION: string;
+    STORAGE_BUCKET: string;
+    STORAGE_ACCESS_KEY: string;
+    STORAGE_SECRET_KEY: string;
     LOGO_SMALL_URL: string | null;
     LOGO_LARGE_URL: string | null;
     FILE_UPLOAD_MAX_SIZE: string;
@@ -91,6 +103,11 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   SYSTEM_NAME: 'LowCodeJs',
   LOCALE: 'pt-br',
   STORAGE_DRIVER: 'local',
+  STORAGE_ENDPOINT: '',
+  STORAGE_REGION: 'us-east-1',
+  STORAGE_BUCKET: '',
+  STORAGE_ACCESS_KEY: '',
+  STORAGE_SECRET_KEY: '',
   LOGO_SMALL_URL: null,
   LOGO_LARGE_URL: null,
   FILE_UPLOAD_MAX_SIZE: '10485760',
@@ -122,6 +139,8 @@ export const UpdateSettingFormFields = withForm({
       databaseUrl: false,
       emailPassword: false,
       openaiApiKey: false,
+      storageAccessKey: false,
+      storageSecretKey: false,
     });
 
     const formatFileSize = (bytes: number): string => {
@@ -288,41 +307,280 @@ export const UpdateSettingFormFields = withForm({
               Configure o driver de armazenamento de arquivos
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* Toggle S3/MinIO */}
             <form.Field
               name="STORAGE_DRIVER"
               children={(field) => {
+                const isS3 = field.state.value === 's3';
                 return (
                   <Field>
                     <FieldLabel htmlFor={field.name}>
-                      Driver de armazenamento
+                      Habilitar S3 / MinIO
                     </FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
-                      Alterar o driver requer reinício do servidor
+                      Ativa o armazenamento remoto via S3/MinIO. Alterar o driver
+                      requer reinício do servidor para servir arquivos
                     </div>
-                    <Select
-                      disabled={isDisabled}
-                      value={field.state.value}
-                      onValueChange={(value) =>
-                        field.handleChange(value as 'local' | 's3')
-                      }
-                    >
-                      <SelectTrigger
-                        data-test-id="settings-storage-driver-select"
-                        className="w-full max-w-xs"
-                      >
-                        <SelectValue placeholder="Selecione o driver" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="local">
-                          Local (filesystem)
-                        </SelectItem>
-                        <SelectItem value="s3">
-                          S3 (MinIO, AWS, R2, etc.)
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">
+                        {isS3 ? 'Ativo' : 'Inativo'}
+                      </span>
+                      <Switch
+                        data-test-id="settings-storage-driver-switch"
+                        checked={isS3}
+                        onCheckedChange={(checked) =>
+                          field.handleChange(checked ? 's3' : 'local')
+                        }
+                        disabled={isDisabled}
+                      />
+                    </div>
                   </Field>
+                );
+              }}
+            />
+
+            {/* Campos S3 condicionais */}
+            <form.Subscribe
+              selector={(state) => state.values.STORAGE_DRIVER}
+              children={(storageDriver) => {
+                if (storageDriver !== 's3') return null;
+                return (
+                  <div className="space-y-4 border-t pt-4">
+                    {/* Endpoint */}
+                    <form.Field
+                      name="STORAGE_ENDPOINT"
+                      children={(field) => {
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid;
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              Endpoint
+                            </FieldLabel>
+                            <div className="text-sm text-muted-foreground mb-2">
+                              URL do servidor S3/MinIO (ex:
+                              http://minio:9000)
+                            </div>
+                            <Input
+                              data-test-id="settings-storage-endpoint-input"
+                              disabled={isDisabled}
+                              id={field.name}
+                              name={field.name}
+                              placeholder="http://minio:9000"
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                            />
+                            {isInvalid && (
+                              <FieldError
+                                errors={field.state.meta.errors}
+                              />
+                            )}
+                          </Field>
+                        );
+                      }}
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Região */}
+                      <form.Field
+                        name="STORAGE_REGION"
+                        children={(field) => {
+                          const isInvalid =
+                            field.state.meta.isTouched &&
+                            !field.state.meta.isValid;
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                Região
+                              </FieldLabel>
+                              <Input
+                                data-test-id="settings-storage-region-input"
+                                disabled={isDisabled}
+                                id={field.name}
+                                name={field.name}
+                                placeholder="us-east-1"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                              />
+                              {isInvalid && (
+                                <FieldError
+                                  errors={field.state.meta.errors}
+                                />
+                              )}
+                            </Field>
+                          );
+                        }}
+                      />
+
+                      {/* Bucket */}
+                      <form.Field
+                        name="STORAGE_BUCKET"
+                        children={(field) => {
+                          const isInvalid =
+                            field.state.meta.isTouched &&
+                            !field.state.meta.isValid;
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                Bucket
+                              </FieldLabel>
+                              <Input
+                                data-test-id="settings-storage-bucket-input"
+                                disabled={isDisabled}
+                                id={field.name}
+                                name={field.name}
+                                placeholder="my-bucket"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                              />
+                              {isInvalid && (
+                                <FieldError
+                                  errors={field.state.meta.errors}
+                                />
+                              )}
+                            </Field>
+                          );
+                        }}
+                      />
+                    </div>
+
+                    {/* Access Key */}
+                    <form.Field
+                      name="STORAGE_ACCESS_KEY"
+                      children={(field) => {
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid;
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              Access Key
+                            </FieldLabel>
+                            <InputGroup>
+                              <InputGroupInput
+                                data-test-id="settings-storage-access-key-input"
+                                disabled={isDisabled}
+                                id={field.name}
+                                name={field.name}
+                                type={
+                                  show.storageAccessKey
+                                    ? 'text'
+                                    : 'password'
+                                }
+                                placeholder="Access Key"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                aria-invalid={isInvalid}
+                              />
+                              <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                  data-test-id="settings-storage-access-key-toggle-btn"
+                                  disabled={isDisabled}
+                                  type="button"
+                                  aria-label="toggle access key visibility"
+                                  title="toggle access key visibility"
+                                  onClick={() =>
+                                    setShow((state) => ({
+                                      ...state,
+                                      storageAccessKey:
+                                        !state.storageAccessKey,
+                                    }))
+                                  }
+                                >
+                                  {show.storageAccessKey && (
+                                    <EyeClosedIcon />
+                                  )}
+                                  {!show.storageAccessKey && <EyeIcon />}
+                                </InputGroupButton>
+                              </InputGroupAddon>
+                            </InputGroup>
+                            {isInvalid && (
+                              <FieldError
+                                errors={field.state.meta.errors}
+                              />
+                            )}
+                          </Field>
+                        );
+                      }}
+                    />
+
+                    {/* Secret Key */}
+                    <form.Field
+                      name="STORAGE_SECRET_KEY"
+                      children={(field) => {
+                        const isInvalid =
+                          field.state.meta.isTouched &&
+                          !field.state.meta.isValid;
+                        return (
+                          <Field data-invalid={isInvalid}>
+                            <FieldLabel htmlFor={field.name}>
+                              Secret Key
+                            </FieldLabel>
+                            <InputGroup>
+                              <InputGroupInput
+                                data-test-id="settings-storage-secret-key-input"
+                                disabled={isDisabled}
+                                id={field.name}
+                                name={field.name}
+                                type={
+                                  show.storageSecretKey
+                                    ? 'text'
+                                    : 'password'
+                                }
+                                placeholder="Secret Key"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                aria-invalid={isInvalid}
+                              />
+                              <InputGroupAddon align="inline-end">
+                                <InputGroupButton
+                                  data-test-id="settings-storage-secret-key-toggle-btn"
+                                  disabled={isDisabled}
+                                  type="button"
+                                  aria-label="toggle secret key visibility"
+                                  title="toggle secret key visibility"
+                                  onClick={() =>
+                                    setShow((state) => ({
+                                      ...state,
+                                      storageSecretKey:
+                                        !state.storageSecretKey,
+                                    }))
+                                  }
+                                >
+                                  {show.storageSecretKey && (
+                                    <EyeClosedIcon />
+                                  )}
+                                  {!show.storageSecretKey && <EyeIcon />}
+                                </InputGroupButton>
+                              </InputGroupAddon>
+                            </InputGroup>
+                            {isInvalid && (
+                              <FieldError
+                                errors={field.state.meta.errors}
+                              />
+                            )}
+                          </Field>
+                        );
+                      }}
+                    />
+                  </div>
                 );
               }}
             />

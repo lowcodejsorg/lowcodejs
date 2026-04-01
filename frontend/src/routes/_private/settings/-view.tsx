@@ -2,6 +2,7 @@ import {
   BotIcon,
   DatabaseIcon,
   FileTextIcon,
+  HardDriveIcon,
   ImageIcon,
   Languages,
   MailIcon,
@@ -89,6 +90,59 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
               {getLocaleLabel(data.LOCALE)}
             </p>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Armazenamento */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <HardDriveIcon className="w-5 h-5" />
+            Armazenamento
+          </CardTitle>
+          <CardDescription>
+            Configuração do driver de armazenamento de arquivos
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Driver</p>
+            {data.STORAGE_DRIVER === 's3' ? (
+              <Badge variant="default">S3 / MinIO</Badge>
+            ) : (
+              <Badge variant="secondary">Local</Badge>
+            )}
+          </div>
+          {data.STORAGE_DRIVER === 's3' && (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Endpoint</p>
+                  <p className="text-sm text-muted-foreground">
+                    {data.STORAGE_ENDPOINT || '-'}
+                  </p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-medium">Região</p>
+                  <p className="text-sm text-muted-foreground">
+                    {data.STORAGE_REGION || 'us-east-1'}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Bucket</p>
+                <p className="text-sm text-muted-foreground">
+                  {data.STORAGE_BUCKET || '-'}
+                </p>
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-medium">Credenciais</p>
+                <p className="text-sm text-muted-foreground font-mono">
+                  {data.STORAGE_ACCESS_KEY ? '••••••••' : '-'}
+                </p>
+              </div>
+            </>
+          )}
         </CardContent>
       </Card>
 

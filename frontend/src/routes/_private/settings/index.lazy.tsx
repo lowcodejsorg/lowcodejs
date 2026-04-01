@@ -110,6 +110,11 @@ function SettingUpdateContent({
       SYSTEM_NAME: data.SYSTEM_NAME || 'LowCodeJs',
       LOCALE: data.LOCALE,
       STORAGE_DRIVER: data.STORAGE_DRIVER || 'local',
+      STORAGE_ENDPOINT: data.STORAGE_ENDPOINT || '',
+      STORAGE_REGION: data.STORAGE_REGION || 'us-east-1',
+      STORAGE_BUCKET: data.STORAGE_BUCKET || '',
+      STORAGE_ACCESS_KEY: data.STORAGE_ACCESS_KEY || '',
+      STORAGE_SECRET_KEY: data.STORAGE_SECRET_KEY || '',
       LOGO_SMALL_URL: data.LOGO_SMALL_URL,
       LOGO_LARGE_URL: data.LOGO_LARGE_URL,
       FILE_UPLOAD_MAX_SIZE: String(data.FILE_UPLOAD_MAX_SIZE),
@@ -139,6 +144,26 @@ function SettingUpdateContent({
         SYSTEM_NAME: value.SYSTEM_NAME.trim(),
         LOCALE: value.LOCALE.trim(),
         STORAGE_DRIVER: value.STORAGE_DRIVER,
+        STORAGE_ENDPOINT:
+          value.STORAGE_DRIVER === 's3'
+            ? value.STORAGE_ENDPOINT?.trim() || undefined
+            : undefined,
+        STORAGE_REGION:
+          value.STORAGE_DRIVER === 's3'
+            ? value.STORAGE_REGION?.trim() || 'us-east-1'
+            : undefined,
+        STORAGE_BUCKET:
+          value.STORAGE_DRIVER === 's3'
+            ? value.STORAGE_BUCKET?.trim() || undefined
+            : undefined,
+        STORAGE_ACCESS_KEY:
+          value.STORAGE_DRIVER === 's3'
+            ? value.STORAGE_ACCESS_KEY?.trim() || undefined
+            : undefined,
+        STORAGE_SECRET_KEY:
+          value.STORAGE_DRIVER === 's3'
+            ? value.STORAGE_SECRET_KEY?.trim() || undefined
+            : undefined,
         LOGO_SMALL_URL: value.LOGO_SMALL_URL ?? undefined,
         LOGO_LARGE_URL: value.LOGO_LARGE_URL ?? undefined,
         FILE_UPLOAD_MAX_SIZE: Number(value.FILE_UPLOAD_MAX_SIZE),

@@ -14,6 +14,11 @@ export const SettingUpdateBodyValidator = z.object({
       message: 'O driver de storage deve ser local ou s3',
     })
     .optional(),
+  STORAGE_ENDPOINT: z.string().trim().optional(),
+  STORAGE_REGION: z.string().trim().optional(),
+  STORAGE_BUCKET: z.string().trim().optional(),
+  STORAGE_ACCESS_KEY: z.string().trim().optional(),
+  STORAGE_SECRET_KEY: z.string().trim().optional(),
   FILE_UPLOAD_MAX_SIZE: z.coerce
     .number({ message: 'O tamanho máximo de arquivo deve ser um número' })
     .min(1, 'O tamanho máximo de arquivo deve ser maior que zero'),

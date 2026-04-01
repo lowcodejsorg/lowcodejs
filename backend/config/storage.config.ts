@@ -9,7 +9,7 @@ import { Env } from '@start/env';
 const APP_SERVER_URL = Env.APP_SERVER_URL;
 
 export const drive = new DriveManager({
-  default: Env.STORAGE_DRIVER as 'local' | 's3',
+  default: (process.env.STORAGE_DRIVER as 'local' | 's3') || 'local',
   services: {
     local: () =>
       new FSDriver({
@@ -27,12 +27,12 @@ export const drive = new DriveManager({
     s3: () =>
       new S3Driver({
         credentials: {
-          accessKeyId: Env.STORAGE_ACCESS_KEY!,
-          secretAccessKey: Env.STORAGE_SECRET_KEY!,
+          accessKeyId: process.env.STORAGE_ACCESS_KEY!,
+          secretAccessKey: process.env.STORAGE_SECRET_KEY!,
         },
-        region: Env.STORAGE_REGION,
-        bucket: Env.STORAGE_BUCKET!,
-        endpoint: Env.STORAGE_ENDPOINT,
+        region: process.env.STORAGE_REGION || 'us-east-1',
+        bucket: process.env.STORAGE_BUCKET!,
+        endpoint: process.env.STORAGE_ENDPOINT,
         forcePathStyle: true,
         visibility: 'public',
         supportsACL: false,
