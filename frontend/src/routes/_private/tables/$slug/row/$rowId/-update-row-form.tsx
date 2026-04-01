@@ -80,8 +80,8 @@ function UpdateRowFormContent({
   );
 
   const viewFields = React.useMemo(
-    () => [...baseFields].sort(sortByOrder(table.fieldOrderList)),
-    [baseFields, table.fieldOrderList],
+    () => [...baseFields].sort(sortByOrder(table.fieldOrderForm)),
+    [baseFields, table.fieldOrderForm],
   );
 
   const form = useAppForm({

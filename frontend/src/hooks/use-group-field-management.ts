@@ -344,6 +344,8 @@ export function useGroupFieldManagement(
 
   return {
     fields,
+    fieldOrderList: [],
+    fieldOrderForm: [],
     onToggleVisibility,
     onChangeWidth,
     onSaveOrder,

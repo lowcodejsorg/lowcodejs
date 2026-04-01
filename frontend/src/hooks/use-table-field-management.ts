@@ -277,7 +277,11 @@ export function useTableFieldManagement(
   ): void {
     if (!table) return;
 
-    const isForm = visibilityKey === 'showInForm';
+    if (visibilityKey === 'showInFilter') return;
+
+    const isFormOrder =
+      visibilityKey === 'showInForm' || visibilityKey === 'showInDetail';
+
     updateTable.mutate({
       slug: table.slug,
       name: table.name,
@@ -286,8 +290,8 @@ export function useTableFieldManagement(
       visibility: table.visibility,
       style: table.style,
       collaboration: table.collaboration,
-      fieldOrderList: isForm ? table.fieldOrderList : orderedFieldIds,
-      fieldOrderForm: isForm ? orderedFieldIds : table.fieldOrderForm,
+      fieldOrderList: isFormOrder ? table.fieldOrderList : orderedFieldIds,
+      fieldOrderForm: isFormOrder ? orderedFieldIds : table.fieldOrderForm,
       administrators: table.administrators.flatMap((admin) => admin._id),
       fields: table.fields.flatMap((f) => f._id),
       methods: {
@@ -343,6 +347,8 @@ export function useTableFieldManagement(
 
   return {
     fields,
+    fieldOrderList: table?.fieldOrderList ?? [],
+    fieldOrderForm: table?.fieldOrderForm ?? [],
     onToggleVisibility,
     onChangeWidth,
     onSaveOrder,

@@ -12,6 +12,8 @@ export type WidthKey = 'widthInForm' | 'widthInList' | 'widthInDetail';
 
 export interface FieldManagementActions {
   fields: Array<IField>;
+  fieldOrderList: Array<string>;
+  fieldOrderForm: Array<string>;
   onToggleVisibility: (
     field: IField,
     visibilityKey: VisibilityKey,

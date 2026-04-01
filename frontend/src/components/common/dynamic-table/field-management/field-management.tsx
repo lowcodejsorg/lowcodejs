@@ -436,6 +436,8 @@ function FieldManagementList({
 }: ListProps): React.JSX.Element {
   const {
     fields: allFields,
+    fieldOrderList,
+    fieldOrderForm,
     onToggleVisibility,
     onChangeWidth,
     onSaveOrder,
@@ -453,7 +455,24 @@ function FieldManagementList({
       f.type !== E_FIELD_TYPE.TRASHED_AT,
   );
 
-  const [fields, setFields] = useState<Array<IField>>(activeFields);
+  const orderArray = React.useMemo(() => {
+    if (visibilityKey === 'showInList') return fieldOrderList;
+    if (visibilityKey === 'showInForm' || visibilityKey === 'showInDetail') {
+      return fieldOrderForm;
+    }
+    return [];
+  }, [visibilityKey, fieldOrderList, fieldOrderForm]);
+
+  const sortedActiveFields = React.useMemo(() => {
+    if (orderArray.length === 0) return activeFields;
+    return [...activeFields].sort((a, b) => {
+      const idxA = orderArray.indexOf(a._id);
+      const idxB = orderArray.indexOf(b._id);
+      return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+    });
+  }, [activeFields, orderArray]);
+
+  const [fields, setFields] = useState<Array<IField>>(sortedActiveFields);
   const [hasChanges, setHasChanges] = useState(false);
 
   const hasChangesRef = useRef(false);
