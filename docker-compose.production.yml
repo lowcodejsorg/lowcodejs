@@ -74,8 +74,6 @@ services:
     depends_on:
       mongo:
         condition: service_healthy
-      minio:
-        condition: service_healthy
       redis:
         condition: service_healthy
     networks:
@@ -136,6 +134,7 @@ services:
       - "traefik.http.routers.${ENVIRONMENT}-app.middlewares=${ENVIRONMENT}-app-headers"
 
   minio:
+    profiles: ["s3"]
     image: minio/minio:latest
     restart: unless-stopped
     mem_limit: 256m
@@ -198,6 +197,7 @@ services:
       start_period: 10s
 
   mcp:
+    profiles: ["ai"]
     image: ${DOCKER_USERNAME}/lowcodejs-mcp:latest
     restart: unless-stopped
     mem_limit: 128m

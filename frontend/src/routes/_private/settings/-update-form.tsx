@@ -23,13 +23,13 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Input } from '@/components/ui/input';
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
 } from '@/components/ui/input-group';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -319,8 +319,8 @@ export const UpdateSettingFormFields = withForm({
                       Habilitar S3 / MinIO
                     </FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
-                      Ativa o armazenamento remoto via S3/MinIO. Alterar o driver
-                      requer reinício do servidor para servir arquivos
+                      Ativa o armazenamento remoto via S3/MinIO. Alterar o
+                      driver requer reinício do servidor para servir arquivos
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">
@@ -360,8 +360,7 @@ export const UpdateSettingFormFields = withForm({
                               Endpoint
                             </FieldLabel>
                             <div className="text-sm text-muted-foreground mb-2">
-                              URL do servidor S3/MinIO (ex:
-                              http://minio:9000)
+                              URL do servidor S3/MinIO (ex: http://minio:9000)
                             </div>
                             <Input
                               data-test-id="settings-storage-endpoint-input"
@@ -376,9 +375,7 @@ export const UpdateSettingFormFields = withForm({
                               }
                             />
                             {isInvalid && (
-                              <FieldError
-                                errors={field.state.meta.errors}
-                              />
+                              <FieldError errors={field.state.meta.errors} />
                             )}
                           </Field>
                         );
@@ -411,9 +408,7 @@ export const UpdateSettingFormFields = withForm({
                                 }
                               />
                               {isInvalid && (
-                                <FieldError
-                                  errors={field.state.meta.errors}
-                                />
+                                <FieldError errors={field.state.meta.errors} />
                               )}
                             </Field>
                           );
@@ -445,9 +440,7 @@ export const UpdateSettingFormFields = withForm({
                                 }
                               />
                               {isInvalid && (
-                                <FieldError
-                                  errors={field.state.meta.errors}
-                                />
+                                <FieldError errors={field.state.meta.errors} />
                               )}
                             </Field>
                           );
@@ -474,9 +467,7 @@ export const UpdateSettingFormFields = withForm({
                                 id={field.name}
                                 name={field.name}
                                 type={
-                                  show.storageAccessKey
-                                    ? 'text'
-                                    : 'password'
+                                  show.storageAccessKey ? 'text' : 'password'
                                 }
                                 placeholder="Access Key"
                                 value={field.state.value}
@@ -496,22 +487,17 @@ export const UpdateSettingFormFields = withForm({
                                   onClick={() =>
                                     setShow((state) => ({
                                       ...state,
-                                      storageAccessKey:
-                                        !state.storageAccessKey,
+                                      storageAccessKey: !state.storageAccessKey,
                                     }))
                                   }
                                 >
-                                  {show.storageAccessKey && (
-                                    <EyeClosedIcon />
-                                  )}
+                                  {show.storageAccessKey && <EyeClosedIcon />}
                                   {!show.storageAccessKey && <EyeIcon />}
                                 </InputGroupButton>
                               </InputGroupAddon>
                             </InputGroup>
                             {isInvalid && (
-                              <FieldError
-                                errors={field.state.meta.errors}
-                              />
+                              <FieldError errors={field.state.meta.errors} />
                             )}
                           </Field>
                         );
@@ -537,9 +523,7 @@ export const UpdateSettingFormFields = withForm({
                                 id={field.name}
                                 name={field.name}
                                 type={
-                                  show.storageSecretKey
-                                    ? 'text'
-                                    : 'password'
+                                  show.storageSecretKey ? 'text' : 'password'
                                 }
                                 placeholder="Secret Key"
                                 value={field.state.value}
@@ -559,22 +543,17 @@ export const UpdateSettingFormFields = withForm({
                                   onClick={() =>
                                     setShow((state) => ({
                                       ...state,
-                                      storageSecretKey:
-                                        !state.storageSecretKey,
+                                      storageSecretKey: !state.storageSecretKey,
                                     }))
                                   }
                                 >
-                                  {show.storageSecretKey && (
-                                    <EyeClosedIcon />
-                                  )}
+                                  {show.storageSecretKey && <EyeClosedIcon />}
                                   {!show.storageSecretKey && <EyeIcon />}
                                 </InputGroupButton>
                               </InputGroupAddon>
                             </InputGroup>
                             {isInvalid && (
-                              <FieldError
-                                errors={field.state.meta.errors}
-                              />
+                              <FieldError errors={field.state.meta.errors} />
                             )}
                           </Field>
                         );

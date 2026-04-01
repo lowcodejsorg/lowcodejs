@@ -53,3 +53,6 @@ jobs:
       EMAIL_PROVIDER_HOST: ${{ secrets.EMAIL_PROVIDER_HOST }}
       EMAIL_PROVIDER_PORT: ${{ secrets.EMAIL_PROVIDER_PORT }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      COMPOSE_PROFILES: ${{ secrets.COMPOSE_PROFILES }}
+      MINIO_ROOT_USER: ${{ secrets.MINIO_ROOT_USER }}
+      MINIO_ROOT_PASSWORD: ${{ secrets.MINIO_ROOT_PASSWORD }}
