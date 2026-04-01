@@ -35,6 +35,12 @@ on:
         required: true
       OPENAI_API_KEY:
         required: false
+      COMPOSE_PROFILES:
+        required: false
+      MINIO_ROOT_USER:
+        required: false
+      MINIO_ROOT_PASSWORD:
+        required: false
 
 jobs:
   deploy:
