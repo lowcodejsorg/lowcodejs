@@ -271,7 +271,7 @@ export function DocumentRow({
             if (visibleExtra.length === 0) return null;
             if (visibleExtra.length === 1)
               return (
-                <div>
+                <div className="mt-2">
                   <span className="text-xs font-medium text-muted-foreground">
                     {visibleExtra[0].name}
                   </span>
@@ -279,7 +279,7 @@ export function DocumentRow({
                 </div>
               );
             return (
-              <Collapsible>
+              <Collapsible className="mt-2">
                 <CollapsibleTrigger className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground cursor-pointer transition-colors [&[data-state=open]>svg]:rotate-180">
                   <ChevronDownIcon className="size-3.5 transition-transform" />
                   Mais informações
