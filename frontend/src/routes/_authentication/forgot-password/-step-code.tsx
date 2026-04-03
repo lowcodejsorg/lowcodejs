@@ -47,7 +47,7 @@ export function StepCode({
   const [codeValue, setCodeValue] = useState('');
   const [codeError, setCodeError] = useState<string | null>(null);
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent): Promise<void> {
     e.preventDefault();
     const result = CodeSchema.safeParse({ code: codeValue });
     if (!result.success) {
@@ -61,7 +61,7 @@ export function StepCode({
     onNext(codeValue);
   }
 
-  async function handleResend() {
+  async function handleResend(): Promise<void> {
     setResendPending(true);
     await new Promise((r) => setTimeout(r, 600));
     setResendPending(false);

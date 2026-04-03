@@ -40,8 +40,7 @@ function InputOTPSlot({
   ...props
 }: React.ComponentProps<'div'> & { index: number }) {
   const inputOTPContext = React.useContext(OTPInputContext);
-  const { char, hasFakeCaret, isActive } =
-    inputOTPContext?.slots[index] ?? {};
+  const { char, hasFakeCaret, isActive } = inputOTPContext?.slots[index] ?? {};
 
   return (
     <div
@@ -65,11 +64,13 @@ function InputOTPSlot({
   );
 }
 
-function InputOTPSeparator({
-  ...props
-}: React.ComponentProps<'div'>) {
+function InputOTPSeparator({ ...props }: React.ComponentProps<'div'>) {
   return (
-    <div data-slot="input-otp-separator" role="separator" {...props}>
+    <div
+      data-slot="input-otp-separator"
+      role="separator"
+      {...props}
+    >
       <MinusIcon />
     </div>
   );

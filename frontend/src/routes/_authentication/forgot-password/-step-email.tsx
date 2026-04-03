@@ -84,18 +84,14 @@ export function StepEmail({
                     placeholder="exemplo@mail.com"
                     value={field.state.value.trim()}
                     onBlur={field.handleBlur}
-                    onChange={(e) =>
-                      field.handleChange(e.target.value.trim())
-                    }
+                    onChange={(e) => field.handleChange(e.target.value.trim())}
                     aria-invalid={isInvalid}
                   />
                   <InputGroupAddon>
                     <MailIcon />
                   </InputGroupAddon>
                 </InputGroup>
-                {isInvalid && (
-                  <FieldError errors={field.state.meta.errors} />
-                )}
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
             );
           }}
@@ -114,7 +110,10 @@ export function StepEmail({
         </Field>
 
         <FieldDescription className="text-center">
-          <Link to="/" className="inline-flex items-center gap-1">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1"
+          >
             <ArrowLeftIcon className="h-3 w-3" />
             Voltar para o login
           </Link>

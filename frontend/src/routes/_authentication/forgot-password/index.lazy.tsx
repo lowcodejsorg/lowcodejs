@@ -5,9 +5,7 @@ import { StepCode } from './-step-code';
 import { StepEmail } from './-step-email';
 import { StepPassword } from './-step-password';
 
-export const Route = createLazyFileRoute(
-  '/_authentication/forgot-password/',
-)({
+export const Route = createLazyFileRoute('/_authentication/forgot-password/')({
   component: RouteComponent,
 });
 
@@ -18,16 +16,16 @@ function RouteComponent(): React.JSX.Element {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState('');
 
-  function handleEmailNext(submittedEmail: string) {
+  function handleEmailNext(submittedEmail: string): void {
     setEmail(submittedEmail);
     setStep('code');
   }
 
-  function handleCodeNext(_code: string) {
+  function handleCodeNext(_code: string): void {
     setStep('password');
   }
 
-  function handleSuccess() {
+  function handleSuccess(): void {
     router.navigate({ to: '/', replace: true });
   }
 

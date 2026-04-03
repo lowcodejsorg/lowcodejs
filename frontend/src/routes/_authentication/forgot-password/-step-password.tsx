@@ -84,7 +84,9 @@ export function StepPassword({
           >
             <Logo className="h-8" />
           </Link>
-          <FieldDescription>Crie uma nova senha para sua conta</FieldDescription>
+          <FieldDescription>
+            Crie uma nova senha para sua conta
+          </FieldDescription>
         </div>
 
         <form.Field
@@ -126,9 +128,7 @@ export function StepPassword({
                     </InputGroupButton>
                   </InputGroupAddon>
                 </InputGroup>
-                {isInvalid && (
-                  <FieldError errors={field.state.meta.errors} />
-                )}
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
             );
           }}
@@ -142,7 +142,9 @@ export function StepPassword({
 
             return (
               <Field data-invalid={isInvalid}>
-                <FieldLabel htmlFor={field.name}>Confirmar nova senha</FieldLabel>
+                <FieldLabel htmlFor={field.name}>
+                  Confirmar nova senha
+                </FieldLabel>
                 <InputGroup>
                   <InputGroupInput
                     data-test-id="forgot-password-confirm-password-input"
@@ -166,16 +168,16 @@ export function StepPassword({
                       title="toggle confirm password visibility"
                       size="icon-xs"
                       className="cursor-pointer"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                     >
                       {!showConfirmPassword && <EyeIcon />}
                       {showConfirmPassword && <EyeClosedIcon />}
                     </InputGroupButton>
                   </InputGroupAddon>
                 </InputGroup>
-                {isInvalid && (
-                  <FieldError errors={field.state.meta.errors} />
-                )}
+                {isInvalid && <FieldError errors={field.state.meta.errors} />}
               </Field>
             );
           }}
@@ -194,7 +196,10 @@ export function StepPassword({
         </Field>
 
         <FieldDescription className="text-center">
-          <Link to="/" className="inline-flex items-center gap-1">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1"
+          >
             <ArrowLeftIcon className="h-3 w-3" />
             Voltar para o login
           </Link>
