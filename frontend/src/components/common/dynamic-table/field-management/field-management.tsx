@@ -550,13 +550,17 @@ function FieldManagementList({
         f.type !== E_FIELD_TYPE.TRASHED_AT,
     );
 
-    setFields((prev) =>
-      prev.map((pf) => {
+    setFields((prev) => {
+      const updatedPrev = prev.map((pf) => {
         const found = updated.find((uf) => uf._id === pf._id);
         if (found) return found;
         return pf;
-      }),
-    );
+      });
+      const newFields = updated.filter(
+        (uf) => !prev.some((pf) => pf._id === uf._id),
+      );
+      return [...updatedPrev, ...newFields];
+    });
   }, [allFields, excludeNative]);
 
   return (

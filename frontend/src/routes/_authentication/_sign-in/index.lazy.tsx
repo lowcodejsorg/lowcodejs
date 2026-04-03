@@ -190,6 +190,16 @@ function RouteComponent(): React.JSX.Element {
                   );
                 }}
               />
+
+              <FieldDescription className="-mt-3">
+                  <Link
+                    to="/forgot-password"
+                    data-test-id="sign-up-link"
+                    className="underline underline-offset-2"
+                  >
+                    Esqueceu senha?
+                  </Link>
+                </FieldDescription>
               <Field>
                 <Button
                   data-test-id="sign-in-submit-btn"
