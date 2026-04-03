@@ -1,6 +1,6 @@
 # Storage
 
-Upload e exclusao de arquivos. Usa FlyDrive para abstracoes de storage (local/S3).
+Upload e exclusao de arquivos. Usa AWS SDK (S3/MinIO) + fs nativo (local).
 
 ## Base Route
 
@@ -16,12 +16,12 @@ Upload e exclusao de arquivos. Usa FlyDrive para abstracoes de storage (local/S3
 ## Repositorios e Servicos Utilizados
 
 - `StorageContractRepository` - CRUD de registros de storage no banco
-- `FlyDriveStorageService` - upload/delete fisico de arquivos (local ou S3)
+- `StorageService` - upload/delete fisico de arquivos (local ou S3)
 
 ## Comportamento Chave
 
 - Upload aceita multipart files (multiplos arquivos por requisicao)
-- Cada arquivo e salvo no disco/S3 via FlyDrive e registrado no banco
+- Cada arquivo e salvo no disco/S3 via SDK S3/fs e registrado no banco
 - Delete remove o registro do banco E o arquivo fisico
 - Query param `staticName` permite definir nome fixo para o arquivo
 - A operacao de "update" na pasta update/ e na verdade o upload (POST /storage)

@@ -12,7 +12,7 @@ Servicos para concerns cross-cutting. Mesmo pattern de Contract + Implementation
 
 Registrado no DI: `injectablesHolder.injectService(EmailContractService, NodemailerEmailService)`
 
-## Storage Service (`flydrive-storage.service.ts`)
+## Storage Service (`storage.service.ts`)
 
 | Metodo | Descricao |
 |--------|-----------|

@@ -17,4 +17,5 @@ export abstract class StorageContractService {
   ): Promise<StorageUploadResponse>;
   abstract delete(filename: string): Promise<boolean>;
   abstract exists(filename: string): Promise<boolean>;
+  abstract ensureBucket(): Promise<void>;
 }

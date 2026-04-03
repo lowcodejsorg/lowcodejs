@@ -35,31 +35,24 @@ lowcodejs/
 
 | Servico | Profile | Tecnologia   | Porta      | Descricao                      |
 | ------- | ------- | ------------ | ---------- | ------------------------------ |
-| minio   | `s3`    | MinIO        | 9000/9001  | Storage S3-compativel          |
 | mcp     | `ai`    | MCP Server   | 3001       | Assistente IA (Chat + OpenAI)  |
 
 ```bash
 # Core apenas
 docker compose up -d
 
-# Com MinIO
-docker compose --profile s3 up -d
-
 # Com Assistente IA
 docker compose --profile ai up -d
-
-# Tudo
-docker compose --profile s3 --profile ai up -d
 ```
 
 ## Configuracao via Settings UI
 
 O usuario MASTER pode configurar pela interface (menu Configuracoes):
 
-- **Armazenamento S3/MinIO**: toggle ativar/desativar + endpoint, regiao, bucket, credenciais
+- **Armazenamento S3**: toggle ativar/desativar + endpoint, regiao, bucket, credenciais (usuario configura seu proprio S3 externo)
 - **Assistente IA**: toggle ativar/desativar + chave OpenAI
 
-Quando desativados: storage usa filesystem local (`_storage/`), chat fica indisponivel.
+Quando S3 desativado: storage usa filesystem local (`_storage/`). Quando IA desativada: chat fica indisponivel.
 
 ## Deploy (CI/CD)
 
@@ -67,7 +60,7 @@ Quando desativados: storage usa filesystem local (`_storage/`), chat fica indisp
 - **deployment branches**: build + docker push + deploy VPS via SSH
 - Branches de deploy: develop, demo, intranet, homolog, saneago, lab-gestor, net-labic, admin-labic
 - Configuracao por branch em `.github/deploy-config.json`
-- Profiles controlados via secret `COMPOSE_PROFILES` (ex: `s3,ai`)
+- Profiles controlados via secret `COMPOSE_PROFILES` (ex: `ai`)
 
 ## Comandos Essenciais
 

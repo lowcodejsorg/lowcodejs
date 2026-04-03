@@ -92,6 +92,30 @@ export const SettingShowSchema: FastifySchema = {
           type: 'boolean',
           description: 'Habilitar ou desabilitar o assistente IA',
         },
+        STORAGE_DRIVER: {
+          type: 'string',
+          description: 'Driver de armazenamento (local ou S3/MinIO)',
+        },
+        STORAGE_ENDPOINT: {
+          type: 'string',
+          description: 'Endpoint do servidor S3/MinIO',
+        },
+        STORAGE_REGION: {
+          type: 'string',
+          description: 'Região do S3',
+        },
+        STORAGE_BUCKET: {
+          type: 'string',
+          description: 'Nome do bucket S3',
+        },
+        STORAGE_ACCESS_KEY: {
+          type: 'string',
+          description: 'Chave de acesso S3',
+        },
+        STORAGE_SECRET_KEY: {
+          type: 'string',
+          description: 'Chave secreta S3',
+        },
       },
       examples: [
         {

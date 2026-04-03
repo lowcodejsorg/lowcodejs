@@ -13,12 +13,12 @@ Faz upload de um ou mais arquivos para o storage.
    - Para cada arquivo: faz upload via service.upload(part, staticName)
    - Cria registros em lote via storageRepository.createMany
    - Retorna array de IStorage criados
-4. Repository: StorageContractRepository (createMany), FlyDriveStorageService (upload)
+4. Repository: StorageContractRepository (createMany), StorageService (upload)
 
 ## Regras de Negocio
 - Aceita multiplos arquivos em uma unica requisicao (multipart)
 - O parametro staticName permite definir um nome fixo para o arquivo (sobrescreve nomes automaticos)
-- Cada arquivo e salvo fisicamente via FlyDrive e registrado no banco
+- Cada arquivo e salvo fisicamente via SDK e registrado no banco
 - Retorna 201 com array de registros de storage criados
 
 ## Erros Possiveis

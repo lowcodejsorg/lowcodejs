@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Service } from 'fastify-decorators';
+import { Inject, Service } from 'fastify-decorators';
 import mongoose from 'mongoose';
 
 import type { Either } from '@application/core/either.core';
@@ -9,6 +9,7 @@ import {
   SettingContractRepository,
   SettingUpdatePayload,
 } from '@application/repositories/setting/setting-contract.repository';
+import { StorageContractService } from '@application/services/storage/storage-contract.service';
 
 const BUILTIN_TEMPLATE_IDS = new Set([
   'KANBAN_TEMPLATE',
@@ -21,6 +22,9 @@ type Response = Either<HTTPException, Record<string, unknown>>;
 
 @Service()
 export default class SettingUpdateUseCase {
+  @Inject(StorageContractService)
+  private readonly storageService!: StorageContractService;
+
   constructor(private readonly settingRepository: SettingContractRepository) {}
 
   async execute(payload: SettingUpdatePayload): Promise<Response> {
@@ -37,6 +41,10 @@ export default class SettingUpdateUseCase {
 
       for (const [key, value] of Object.entries(payload)) {
         process.env[key] = String(value);
+      }
+
+      if (payload.STORAGE_DRIVER === 's3') {
+        await this.storageService.ensureBucket();
       }
 
       return right({

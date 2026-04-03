@@ -33,4 +33,8 @@ export default class InMemoryStorageService extends StorageContractService {
   async exists(filename: string): Promise<boolean> {
     return this.files.has(filename);
   }
+
+  async ensureBucket(): Promise<void> {
+    // noop para testes
+  }
 }

@@ -37,9 +37,7 @@ on:
         required: false
       COMPOSE_PROFILES:
         required: false
-      MINIO_ROOT_USER:
-        required: false
-      MINIO_ROOT_PASSWORD:
+      STORAGE_DRIVER:
         required: false
 
 jobs:
@@ -133,9 +131,7 @@ jobs:
             LOGO_LARGE_URL=https://${{ steps.config.outputs.api_host }}/storage/logo-large.webp
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             REDIS_URL=redis://${{ inputs.branch }}-lowcodejs-redis-1:6379
-            STORAGE_DRIVER=local
-            MINIO_ROOT_USER=${{ secrets.MINIO_ROOT_USER }}
-            MINIO_ROOT_PASSWORD=${{ secrets.MINIO_ROOT_PASSWORD }}
+            STORAGE_DRIVER=${{ secrets.STORAGE_DRIVER || 'local' }}
             COMPOSE_PROFILES=${{ secrets.COMPOSE_PROFILES }}
             EOF
 

@@ -72,6 +72,9 @@ export function FileUploadWithStorage({
   const [isProcessing, setIsProcessing] = React.useState(false);
   const seededInitialStoragesRef = React.useRef(false);
 
+  const onStorageChangeRef = React.useRef(onStorageChange);
+  onStorageChangeRef.current = onStorageChange;
+
   const upload = useMutation({
     mutationFn: async function (files: Array<File>) {
       const formData = new FormData();
@@ -111,9 +114,8 @@ export function FileUploadWithStorage({
           }
         }
 
-        // Defer onStorageChange to avoid setState during render
         const storages = dedupeStorages(Array.from(newStorageFiles.values()));
-        queueMicrotask(() => onStorageChange(storages));
+        queueMicrotask(() => onStorageChangeRef.current(storages));
 
         return newStorageFiles;
       });
@@ -157,9 +159,8 @@ export function FileUploadWithStorage({
           const newMap = new Map(prev);
           newMap.delete(fileToRemove);
 
-          // Defer onStorageChange to avoid setState during render
           const remaining = dedupeStorages(Array.from(newMap.values()));
-          queueMicrotask(() => onStorageChange(remaining));
+          queueMicrotask(() => onStorageChangeRef.current(remaining));
 
           return newMap;
         });

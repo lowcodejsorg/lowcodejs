@@ -1,8 +1,8 @@
 import 'reflect-metadata';
 
+import { GetObjectCommand } from '@aws-sdk/client-s3';
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
-import httpProxy from '@fastify/http-proxy';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import _static from '@fastify/static';
@@ -18,6 +18,7 @@ import z, { ZodError } from 'zod';
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
+import { getS3Client, getStorageDriver } from '@config/storage.config';
 import { Env } from '@start/env';
 
 function matchOrigin(origin: string, pattern: string): boolean {
@@ -131,20 +132,47 @@ kernel.register(multipart, {
   },
 });
 
-if (Env.STORAGE_DRIVER === 's3') {
-  kernel.register(httpProxy, {
-    upstream: Env.STORAGE_ENDPOINT!,
-    prefix: '/storage',
-    rewritePrefix: `/${Env.STORAGE_BUCKET}`,
-    http2: false,
-    httpMethods: ['GET'],
-  });
-} else {
-  kernel.register(_static, {
-    root: join(process.cwd(), '_storage'),
-    prefix: '/storage/',
-  });
-}
+kernel.register(_static, {
+  root: join(process.cwd(), '_storage'),
+  prefix: '/storage/',
+  decorateReply: true,
+});
+
+kernel.addHook('onRequest', async (request, reply) => {
+  if (!request.url.startsWith('/storage/')) return;
+  if (getStorageDriver() !== 's3') return;
+
+  const key = request.url.replace('/storage/', '');
+  const bucket = process.env.STORAGE_BUCKET!;
+
+  console.info(`[Storage S3] GET ${key} -> ${process.env.STORAGE_ENDPOINT}/${bucket}`);
+
+  try {
+    const response = await getS3Client().send(
+      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    );
+
+    console.info(
+      `[Storage S3] OK ${key} (${response.ContentType}, ${response.ContentLength} bytes)`,
+    );
+
+    reply.header(
+      'content-type',
+      response.ContentType || 'application/octet-stream',
+    );
+    reply.header('cache-control', 'public, max-age=31536000');
+
+    if (response.ContentLength) {
+      reply.header('content-length', response.ContentLength);
+    }
+
+    reply.send(response.Body);
+    return reply;
+  } catch {
+    console.info(`[Storage S3] ${key} não encontrado no S3, tentando local...`);
+    // fallback: deixa @fastify/static servir do filesystem local
+  }
+});
 
 kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
   console.error(JSON.stringify(error, null, 2));

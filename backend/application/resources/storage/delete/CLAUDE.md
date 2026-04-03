@@ -13,7 +13,7 @@ Remove um arquivo do storage (banco + arquivo fisico).
    - Se nao encontrou, retorna 404
    - Remove o arquivo fisico via service.delete(storage.filename)
    - Retorna null
-4. Repository: StorageContractRepository (delete), FlyDriveStorageService (delete)
+4. Repository: StorageContractRepository (delete), StorageService (delete)
 
 ## Regras de Negocio
 - Remove tanto o registro no banco quanto o arquivo fisico no storage

@@ -61,8 +61,8 @@ services:
       STORAGE_ENDPOINT: http://${ENVIRONMENT}-lowcodejs-minio-1:9000
       STORAGE_REGION: ${STORAGE_REGION:-us-east-1}
       STORAGE_BUCKET: ${STORAGE_BUCKET:-lowcodejs}
-      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-${MINIO_ROOT_USER}}
-      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:-${MINIO_ROOT_PASSWORD}}
+      STORAGE_ACCESS_KEY: ${STORAGE_ACCESS_KEY:-}
+      STORAGE_SECRET_KEY: ${STORAGE_SECRET_KEY:-}
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -132,41 +132,6 @@ services:
       - "traefik.http.middlewares.${ENVIRONMENT}-app-headers.headers.customResponseHeaders.Pragma=no-cache"
       - "traefik.http.middlewares.${ENVIRONMENT}-app-headers.headers.customResponseHeaders.Expires=0"
       - "traefik.http.routers.${ENVIRONMENT}-app.middlewares=${ENVIRONMENT}-app-headers"
-
-  minio:
-    profiles: ["s3"]
-    image: minio/minio:latest
-    restart: unless-stopped
-    mem_limit: 256m
-    command: server /data --console-address ":9001"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
-      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    volumes:
-      - minio-volume:/data
-    networks:
-      - traefik-network
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
-    healthcheck:
-      test: ["CMD", "mc", "ready", "local"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.${ENVIRONMENT}-minio-api.rule=Host(`storage.${ENVIRONMENT}.lowcodejs.org`)"
-      - "traefik.http.routers.${ENVIRONMENT}-minio-api.entrypoints=websecure"
-      - "traefik.http.routers.${ENVIRONMENT}-minio-api.tls.certresolver=myresolver"
-      - "traefik.http.services.${ENVIRONMENT}-minio-api.loadbalancer.server.port=9000"
-      - "traefik.http.routers.${ENVIRONMENT}-minio-console.rule=Host(`minio.${ENVIRONMENT}.lowcodejs.org`)"
-      - "traefik.http.routers.${ENVIRONMENT}-minio-console.entrypoints=websecure"
-      - "traefik.http.routers.${ENVIRONMENT}-minio-console.tls.certresolver=myresolver"
-      - "traefik.http.services.${ENVIRONMENT}-minio-console.loadbalancer.server.port=9001"
 
   redis:
     image: redis:7-alpine
@@ -238,8 +203,6 @@ volumes:
   redis-volume:
     driver: local
   storage-api-volume:
-    driver: local
-  minio-volume:
     driver: local
   # app-public-volume:
   #   driver: local

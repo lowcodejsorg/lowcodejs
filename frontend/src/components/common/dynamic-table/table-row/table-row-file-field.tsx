@@ -112,9 +112,11 @@ export function TableRowFileField({
       <FileUploadWithStorage
         data-test-id="table-row-file-upload"
         value={value.files}
-        onValueChange={(files) => formField.handleChange({ ...value, files })}
+        onValueChange={(files) =>
+          formField.handleChange((prev: FileValue) => ({ ...prev, files }))
+        }
         onStorageChange={(storages) =>
-          formField.handleChange({ ...value, storages })
+          formField.handleChange((prev: FileValue) => ({ ...prev, storages }))
         }
         initialStorages={initialStorages}
         maxFiles={maxFiles}

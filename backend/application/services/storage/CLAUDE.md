@@ -7,7 +7,7 @@ Servico de armazenamento fisico de arquivos (upload, delete, exists).
 | Arquivo | Descricao |
 |---------|-----------|
 | `storage-contract.service.ts` | Classe abstrata com tipo StorageUploadResponse |
-| `flydrive-storage.service.ts` | Implementacao com Flydrive (local ou S3) |
+| `storage.service.ts` | Implementacao com AWS SDK (S3/MinIO) + fs nativo (local) |
 | `in-memory-storage.service.ts` | Mock para testes |
 
 ## Metodos

@@ -41,6 +41,7 @@ async function syncSettingsFromDatabase(): Promise<void> {
     }
   }
   console.info('Settings synced from database');
+  console.info(`Storage driver: ${process.env.STORAGE_DRIVER || 'local'}`);
 }
 
 async function start(): Promise<void> {

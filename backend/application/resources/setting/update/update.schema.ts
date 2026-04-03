@@ -147,6 +147,37 @@ export const SettingUpdateSchema: FastifySchema = {
           type: 'A URL do logo grande deve ser um texto',
         },
       },
+      STORAGE_DRIVER: {
+        type: 'string',
+        enum: ['local', 's3'],
+        nullable: true,
+        description: 'Driver de armazenamento (local ou S3/MinIO)',
+      },
+      STORAGE_ENDPOINT: {
+        type: 'string',
+        nullable: true,
+        description: 'Endpoint do servidor S3/MinIO',
+      },
+      STORAGE_REGION: {
+        type: 'string',
+        nullable: true,
+        description: 'Região do S3',
+      },
+      STORAGE_BUCKET: {
+        type: 'string',
+        nullable: true,
+        description: 'Nome do bucket S3',
+      },
+      STORAGE_ACCESS_KEY: {
+        type: 'string',
+        nullable: true,
+        description: 'Chave de acesso S3',
+      },
+      STORAGE_SECRET_KEY: {
+        type: 'string',
+        nullable: true,
+        description: 'Chave secreta S3',
+      },
     },
     additionalProperties: false,
     errorMessage: {
@@ -233,6 +264,30 @@ export const SettingUpdateSchema: FastifySchema = {
         LOGO_LARGE_URL: {
           type: 'string',
           description: 'URL do logo grande',
+        },
+        STORAGE_DRIVER: {
+          type: 'string',
+          description: 'Driver de armazenamento (local ou S3/MinIO)',
+        },
+        STORAGE_ENDPOINT: {
+          type: 'string',
+          description: 'Endpoint do servidor S3/MinIO',
+        },
+        STORAGE_REGION: {
+          type: 'string',
+          description: 'Região do S3',
+        },
+        STORAGE_BUCKET: {
+          type: 'string',
+          description: 'Nome do bucket S3',
+        },
+        STORAGE_ACCESS_KEY: {
+          type: 'string',
+          description: 'Chave de acesso S3',
+        },
+        STORAGE_SECRET_KEY: {
+          type: 'string',
+          description: 'Chave secreta S3',
         },
       },
     },

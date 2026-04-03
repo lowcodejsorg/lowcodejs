@@ -5,7 +5,7 @@ import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
-import { StorageUploadSchema } from './update.schema';
+import { StorageUploadSchema } from './upload.schema';
 import StorageUploadUseCase from './upload.use-case';
 import { StorageUploadQueryValidator } from './upload.validator';
 
