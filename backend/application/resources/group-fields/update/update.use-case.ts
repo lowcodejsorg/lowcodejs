@@ -10,10 +10,26 @@ import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
+import { normalizeDefaultValue } from '@application/resources/table-fields/table-field-base.schema';
 import type { GroupFieldUpdatePayload } from './update.validator';
 
 type Response = Either<HTTPException, Entity>;
 type Payload = GroupFieldUpdatePayload;
+
+function isDefaultValueEqual(
+  a: string | string[] | null | undefined,
+  b: string | string[] | null | undefined,
+): boolean {
+  if (a === b) return true;
+  if (a == null && b == null) return true;
+  if (a == null || b == null) return false;
+  if (typeof a === 'string' && typeof b === 'string') return a === b;
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    return a.every((v, i) => v === b[i]);
+  }
+  return false;
+}
 
 @Service()
 export default class GroupFieldUpdateUseCase {
@@ -78,6 +94,10 @@ export default class GroupFieldUpdateUseCase {
 
       const updatedField = await this.fieldRepository.update({
         ...payload,
+        defaultValue: normalizeDefaultValue(
+          payload.type,
+          payload.defaultValue,
+        ),
         _id: field._id,
         slug,
         group: normalizedGroup,
@@ -147,7 +167,8 @@ export default class GroupFieldUpdateUseCase {
     if (payload.required !== field.required) return false;
     if (payload.multiple !== field.multiple) return false;
     if (payload.format !== field.format) return false;
-    if (payload.defaultValue !== field.defaultValue) return false;
+    if (!isDefaultValueEqual(payload.defaultValue, field.defaultValue))
+      return false;
 
     // relationship: comparar por _id
     const payloadRelId = payload.relationship?.table?._id ?? null;
@@ -180,7 +201,8 @@ export default class GroupFieldUpdateUseCase {
     if (payload.required !== field.required) return false;
     if (payload.multiple !== field.multiple) return false;
     if (payload.format !== field.format) return false;
-    if (payload.defaultValue !== field.defaultValue) return false;
+    if (!isDefaultValueEqual(payload.defaultValue, field.defaultValue))
+      return false;
 
     // relationship: comparar por _id
     const payloadRelId = payload.relationship?.table?._id ?? null;

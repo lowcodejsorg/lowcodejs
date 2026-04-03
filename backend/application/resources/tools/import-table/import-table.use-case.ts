@@ -37,7 +37,7 @@ type ExportedField = {
   widthInForm: number | null;
   widthInList: number | null;
   widthInDetail: number | null;
-  defaultValue: string | null;
+  defaultValue: string | string[] | null;
   locked?: boolean;
   relationship: {
     tableSlug: string;

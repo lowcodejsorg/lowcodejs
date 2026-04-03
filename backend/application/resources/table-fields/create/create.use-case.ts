@@ -15,6 +15,7 @@ import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
+import { normalizeDefaultValue } from '../table-field-base.schema';
 import type { TableFieldCreatePayload } from './create.validator';
 
 type Response = Either<HTTPException, Entity>;
@@ -51,6 +52,7 @@ export default class TableFieldCreateUseCase {
 
       let field = await this.fieldRepository.create({
         ...payload,
+        defaultValue: normalizeDefaultValue(payload.type, payload.defaultValue),
         slug,
         group: null,
       });

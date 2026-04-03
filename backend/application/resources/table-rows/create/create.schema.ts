@@ -39,7 +39,7 @@ export const TableRowCreateSchema: FastifySchema = {
     ],
     properties: {
       field_slug_example: {
-        oneOf: [
+        anyOf: [
           {
             type: 'string',
             description: 'For TEXT_SHORT, TEXT_LONG, DROPDOWN fields',

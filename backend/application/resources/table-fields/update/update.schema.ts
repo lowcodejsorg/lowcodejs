@@ -114,8 +114,11 @@ export const TableFieldUpdateSchema: FastifySchema = {
         description: 'Field format',
       },
       defaultValue: {
-        type: 'string',
-        nullable: true,
+        anyOf: [
+          { type: 'string' },
+          { type: 'array', items: { type: 'string' } },
+          { type: 'null' },
+        ],
         default: null,
         description: 'Default field value',
       },
@@ -273,8 +276,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
           description: 'Field format',
         },
         defaultValue: {
-          type: 'string',
-          nullable: true,
+          anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }],
           description: 'Default field value',
         },
         dropdown: {

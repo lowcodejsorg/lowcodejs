@@ -50,6 +50,19 @@ export type CreateRowDefaultValue = Record<
   string,
   RowFieldValue | Array<Record<string, RowFieldValue>>
 >;
+function toDefaultArray(value: string | string[] | null): string[] {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value) return [value];
+  return [];
+}
+
+function toDefaultSearchableOptions(
+  value: string | string[] | null,
+): Array<{ value: string; label: string }> {
+  const ids = toDefaultArray(value);
+  return ids.map((id) => ({ value: id, label: '' }));
+}
+
 export function buildCreateRowDefaultValues(
   fields: Array<IField>,
 ): CreateRowDefaultValue {
@@ -76,20 +89,27 @@ export function buildCreateRowDefaultValues(
         defaults[field.slug] = field.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DATE:
-        defaults[field.slug] = '';
+        if (typeof field.defaultValue === 'string' && field.defaultValue) {
+          defaults[field.slug] = field.defaultValue;
+        } else {
+          defaults[field.slug] = '';
+        }
         break;
       case E_FIELD_TYPE.DROPDOWN:
-        // Se o campo tem valor padrão definido, pré-selecionar
-        defaults[field.slug] = field.defaultValue ? [field.defaultValue] : [];
+      case E_FIELD_TYPE.CATEGORY: {
+        const arr = toDefaultArray(field.defaultValue);
+        defaults[field.slug] = arr.length > 0 ? arr : [];
         break;
+      }
       case E_FIELD_TYPE.FILE:
         defaults[field.slug] = { storages: [], files: [] };
         break;
       case E_FIELD_TYPE.RELATIONSHIP:
-      case E_FIELD_TYPE.CATEGORY:
-      case E_FIELD_TYPE.USER:
-        defaults[field.slug] = [];
+      case E_FIELD_TYPE.USER: {
+        const opts = toDefaultSearchableOptions(field.defaultValue);
+        defaults[field.slug] = opts.length > 0 ? opts : [];
         break;
+      }
       // @ts-ignore
       case E_FIELD_TYPE.EVALUATION:
         defaults[field.slug] = [];
@@ -141,13 +161,20 @@ export function buildUpdateRowDefaultValues(
       case E_FIELD_TYPE.TEXT_SHORT:
         if (value) {
           defaults[field.slug] = value;
+        } else if (typeof field.defaultValue === 'string') {
+          defaults[field.slug] = field.defaultValue;
         } else {
-          defaults[field.slug] = field.defaultValue ?? '';
+          defaults[field.slug] = '';
         }
         break;
       case E_FIELD_TYPE.TEXT_LONG:
-        if (value) defaults[field.slug] = value;
-        else defaults[field.slug] = field.defaultValue ?? '';
+        if (value) {
+          defaults[field.slug] = value;
+        } else if (typeof field.defaultValue === 'string') {
+          defaults[field.slug] = field.defaultValue;
+        } else {
+          defaults[field.slug] = '';
+        }
         break;
       case E_FIELD_TYPE.DROPDOWN: {
         const options = toArray<string>(value);
@@ -244,7 +271,11 @@ export function mountRowValue(value: FieldValue, field: IField): RowPayload {
       return null; // System-managed, should not be in payloads
     case E_FIELD_TYPE.TEXT_SHORT:
     case E_FIELD_TYPE.TEXT_LONG:
-      if (value === '' && field.defaultValue !== null)
+      if (
+        value === '' &&
+        typeof field.defaultValue === 'string' &&
+        field.defaultValue !== null
+      )
         return field.defaultValue;
 
       if (value !== '' && value !== null) {

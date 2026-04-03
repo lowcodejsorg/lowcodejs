@@ -110,8 +110,7 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                 description: 'Field is locked and cannot be modified',
               },
               defaultValue: {
-                type: 'string',
-                nullable: true,
+                anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }],
                 description: 'Default field value',
               },
               relationship: {

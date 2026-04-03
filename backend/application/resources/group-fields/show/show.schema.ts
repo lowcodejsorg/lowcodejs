@@ -36,7 +36,7 @@ export const GroupFieldShowSchema: FastifySchema = {
         locked: { type: 'boolean' },
         native: { type: 'boolean' },
         format: { type: 'string', nullable: true },
-        defaultValue: { type: 'string', nullable: true },
+        defaultValue: { anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }] },
         dropdown: {
           type: 'array',
           nullable: true,

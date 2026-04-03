@@ -255,11 +255,28 @@ function getFieldDefault(field: IField): any {
     case E_FIELD_TYPE.TEXT_LONG:
       return field.defaultValue ?? '';
     case E_FIELD_TYPE.DATE:
+      if (typeof field.defaultValue === 'string' && field.defaultValue) {
+        return field.defaultValue;
+      }
       return '';
     case E_FIELD_TYPE.DROPDOWN:
+      if (Array.isArray(field.defaultValue) && field.defaultValue.length > 0) {
+        return field.defaultValue;
+      }
+      return [];
     case E_FIELD_TYPE.CATEGORY:
+      if (Array.isArray(field.defaultValue) && field.defaultValue.length > 0) {
+        return field.defaultValue;
+      }
+      return [];
     case E_FIELD_TYPE.RELATIONSHIP:
     case E_FIELD_TYPE.USER:
+      if (Array.isArray(field.defaultValue) && field.defaultValue.length > 0) {
+        return field.defaultValue.map((id: string) => ({
+          value: id,
+          label: '',
+        }));
+      }
       return [];
     case E_FIELD_TYPE.FILE:
       return { storages: [], files: [] };

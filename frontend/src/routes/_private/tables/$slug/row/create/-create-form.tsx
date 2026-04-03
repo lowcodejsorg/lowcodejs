@@ -7,6 +7,18 @@ type SearchableOption = {
   label: string;
 };
 
+function toDefaultArray(value: string | string[] | null): string[] {
+  if (Array.isArray(value)) return value;
+  if (typeof value === 'string' && value) return [value];
+  return [];
+}
+
+function toDefaultSearchableOptions(
+  value: string | string[] | null,
+): Array<SearchableOption> {
+  return toDefaultArray(value).map((id) => ({ value: id, label: '' }));
+}
+
 // Helper: Build default values based on table fields
 export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
   const defaults: Record<string, any> = {};
@@ -20,10 +32,17 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
         defaults[field.slug] = field.defaultValue ?? '';
         break;
       case E_FIELD_TYPE.DROPDOWN:
-        defaults[field.slug] = []; // Always array
+      case E_FIELD_TYPE.CATEGORY: {
+        const arr = toDefaultArray(field.defaultValue);
+        defaults[field.slug] = arr.length > 0 ? arr : [];
         break;
+      }
       case E_FIELD_TYPE.DATE:
-        defaults[field.slug] = '';
+        if (typeof field.defaultValue === 'string' && field.defaultValue) {
+          defaults[field.slug] = field.defaultValue;
+        } else {
+          defaults[field.slug] = '';
+        }
         break;
       case E_FIELD_TYPE.FILE:
         defaults[field.slug] = {
@@ -32,14 +51,11 @@ export function buildDefaultValues(fields: Array<IField>): Record<string, any> {
         };
         break;
       case E_FIELD_TYPE.RELATIONSHIP:
-        defaults[field.slug] = [];
+      case E_FIELD_TYPE.USER: {
+        const opts = toDefaultSearchableOptions(field.defaultValue);
+        defaults[field.slug] = opts.length > 0 ? opts : [];
         break;
-      case E_FIELD_TYPE.CATEGORY:
-        defaults[field.slug] = []; // Always array
-        break;
-      case E_FIELD_TYPE.USER:
-        defaults[field.slug] = []; // Always array of {value, label}
-        break;
+      }
       default:
         defaults[field.slug] = '';
     }

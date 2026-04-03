@@ -91,6 +91,14 @@ export const UpdateFieldFormFields = withForm({
       form.store,
       (state) => state.values.dropdown,
     );
+    const categoryOptions = useStore(
+      form.store,
+      (state) => state.values.category,
+    );
+    const relationshipFieldSlug = useStore(
+      form.store,
+      (state) => state.values.relationship.fieldSlug,
+    );
     const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
     const showMultiple =
@@ -297,6 +305,18 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {/* Campo Valor Padrão (DATE) */}
+        {isDate && (
+          <form.AppField name="defaultValue">
+            {(field) => (
+              <field.TableFieldDateDefaultValue
+                label="Valor padrão"
+                disabled={isDisabled || lockAllControls}
+              />
+            )}
+          </form.AppField>
+        )}
+
         {/* Campo Tabela de Relacionamento */}
         {isRelationship && (
           <form.AppField
@@ -379,6 +399,20 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {/* Campo Valor Padrão (RELATIONSHIP) */}
+        {isRelationship && relationshipTableSlug && relationshipFieldSlug && (
+          <form.AppField name="defaultValue">
+            {(field) => (
+              <field.TableFieldRelationshipDefaultValue
+                label="Valor padrão"
+                disabled={isDisabled || lockAllControls}
+                tableSlug={relationshipTableSlug}
+                fieldSlug={relationshipFieldSlug}
+              />
+            )}
+          </form.AppField>
+        )}
+
         {/* Campo Categoria (Tree) */}
         {isCategory && (
           <form.AppField
@@ -396,6 +430,31 @@ export const UpdateFieldFormFields = withForm({
               <field.TableFieldCategoryTree
                 label="Estrutura da categoria"
                 required
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Campo Valor Padrão (CATEGORY) */}
+        {isCategory && categoryOptions.length > 0 && (
+          <form.AppField name="defaultValue">
+            {(field) => (
+              <field.TableFieldCategoryDefaultValue
+                label="Valor padrão"
+                disabled={isDisabled || lockAllControls}
+                categories={categoryOptions}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Campo Valor Padrão (USER) */}
+        {isUser && (
+          <form.AppField name="defaultValue">
+            {(field) => (
+              <field.TableFieldUserDefaultValue
+                label="Valor padrão"
+                disabled={isDisabled || lockAllControls}
               />
             )}
           </form.AppField>

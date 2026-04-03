@@ -27,6 +27,32 @@ import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { createFieldErrorSetter } from '@/lib/form-utils';
+
+function normalizeDefaultValue(
+  type: string,
+  defaultValue: string | string[],
+): string | string[] | null {
+  const arrayTypes: Array<string> = [
+    E_FIELD_TYPE.DROPDOWN,
+    E_FIELD_TYPE.CATEGORY,
+    E_FIELD_TYPE.USER,
+    E_FIELD_TYPE.RELATIONSHIP,
+  ];
+
+  if (arrayTypes.includes(type)) {
+    if (Array.isArray(defaultValue)) {
+      return defaultValue.length > 0 ? defaultValue : null;
+    }
+    if (defaultValue) return [defaultValue];
+    return null;
+  }
+
+  // TEXT_SHORT, TEXT_LONG, DATE → string
+  if (Array.isArray(defaultValue)) {
+    return defaultValue.length > 0 ? defaultValue[0] : null;
+  }
+  return defaultValue || null;
+}
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient as queryClient } from '@/lib/query-client';
@@ -301,7 +327,9 @@ function FieldUpdateContent({
       name: data.name,
       type: data.type as string,
       format: data.format ?? '',
-      defaultValue: data.defaultValue ?? '',
+      defaultValue: Array.isArray(data.defaultValue)
+        ? (data.defaultValue[0] ?? '')
+        : (data.defaultValue ?? ''),
       dropdown: (data.dropdown ?? []).map((d) => ({
         id: d.id,
         label: d.label,
@@ -351,7 +379,7 @@ function FieldUpdateContent({
         format: value.format
           ? (value.format as ValueOf<typeof E_FIELD_FORMAT>)
           : null,
-        defaultValue: value.defaultValue || null,
+        defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
         relationship: hasRelationship
           ? {

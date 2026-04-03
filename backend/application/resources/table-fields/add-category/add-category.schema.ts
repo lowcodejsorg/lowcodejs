@@ -73,7 +73,7 @@ export const TableFieldAddCategorySchema: FastifySchema = {
             widthInDetail: { type: 'number', nullable: true },
             locked: { type: 'boolean' },
             native: { type: 'boolean' },
-            defaultValue: { type: 'string', nullable: true },
+            defaultValue: { anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }] },
             relationship: { type: 'object', nullable: true },
             dropdown: { type: 'array', nullable: true },
             category: { type: 'array', nullable: true },

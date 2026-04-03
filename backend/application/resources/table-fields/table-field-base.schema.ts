@@ -45,7 +45,10 @@ export const FieldWidthInDetailSchema = z
   .nullable()
   .default(50);
 export const FieldLockedSchema = z.boolean().default(false);
-export const FieldDefaultValueSchema = z.string().nullable().default(null);
+export const FieldDefaultValueSchema = z
+  .union([z.string(), z.array(z.string())])
+  .nullable()
+  .default(null);
 export const FieldRelationshipSchema = Relationship.nullable().default(null);
 export const FieldDropdownSchema = z.array(Dropdown).default([]);
 export const FieldCategorySchema = z.array(Category).default([]);
@@ -60,6 +63,52 @@ export const FieldGroupSchema = z
   ])
   .nullable()
   .default(null);
+
+// Tipos que armazenam defaultValue como string[]
+const ARRAY_DEFAULT_VALUE_TYPES = new Set([
+  'DROPDOWN',
+  'CATEGORY',
+  'USER',
+  'RELATIONSHIP',
+]);
+
+// Tipos que armazenam defaultValue como string
+const STRING_DEFAULT_VALUE_TYPES = new Set(['TEXT_SHORT', 'TEXT_LONG', 'DATE']);
+
+/**
+ * Normaliza defaultValue para a estrutura correta baseado no tipo do campo:
+ * - TEXT_SHORT, TEXT_LONG, DATE → string | null
+ * - DROPDOWN, CATEGORY, USER, RELATIONSHIP → string[] | null
+ * - Outros → null
+ */
+export function normalizeDefaultValue(
+  type: string,
+  defaultValue: string | string[] | null | undefined,
+): string | string[] | null {
+  if (defaultValue === null || defaultValue === undefined) return null;
+
+  if (ARRAY_DEFAULT_VALUE_TYPES.has(type)) {
+    if (Array.isArray(defaultValue)) {
+      return defaultValue.length > 0 ? defaultValue : null;
+    }
+    if (typeof defaultValue === 'string' && defaultValue) {
+      return [defaultValue];
+    }
+    return null;
+  }
+
+  if (STRING_DEFAULT_VALUE_TYPES.has(type)) {
+    if (typeof defaultValue === 'string' && defaultValue) {
+      return defaultValue;
+    }
+    if (Array.isArray(defaultValue) && defaultValue.length > 0) {
+      return defaultValue[0];
+    }
+    return null;
+  }
+
+  return null;
+}
 
 // Schema para body de criação/atualização de campos
 export const TableFieldBaseSchema = z.object({

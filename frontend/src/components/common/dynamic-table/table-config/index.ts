@@ -1,8 +1,12 @@
 export { FilteredTableComboboxField } from './filtered-table-combobox-field';
 export { TableCollaborationSelectField } from './table-collaboration-select-field';
 export { TableComboboxField } from './table-combobox-field';
+export { TableFieldCategoryDefaultValue } from './table-field-category-default-value';
 export { TableFieldCategoryTree } from './table-field-category-tree';
+export { TableFieldDateDefaultValue } from './table-field-date-default-value';
 export { TableFieldDropdownDefaultValue } from './table-field-dropdown-default-value';
+export { TableFieldRelationshipDefaultValue } from './table-field-relationship-default-value';
+export { TableFieldUserDefaultValue } from './table-field-user-default-value';
 export { TableFieldDropdownOptions } from './table-field-dropdown-options';
 export { TableFieldFormatSelect } from './table-field-format-select';
 export { TableFieldRelationshipFieldSelect } from './table-field-relationship-field-select';

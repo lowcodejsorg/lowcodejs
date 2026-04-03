@@ -106,8 +106,11 @@ export const TableFieldCreateSchema: FastifySchema = {
         examples: ['EMAIL', 'dd/MM/yyyy', 'DECIMAL'],
       },
       defaultValue: {
-        type: 'string',
-        nullable: true,
+        anyOf: [
+          { type: 'string' },
+          { type: 'array', items: { type: 'string' } },
+          { type: 'null' },
+        ],
         default: null,
         description: 'Default field value',
       },
@@ -275,8 +278,7 @@ export const TableFieldCreateSchema: FastifySchema = {
           description: 'Field format',
         },
         defaultValue: {
-          type: 'string',
-          nullable: true,
+          anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }],
           description: 'Default field value',
         },
         dropdown: {

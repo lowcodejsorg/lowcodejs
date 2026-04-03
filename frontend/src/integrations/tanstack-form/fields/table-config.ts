@@ -3,8 +3,12 @@
  */
 export { TableCollaborationSelectField } from '@/components/common/dynamic-table/table-config/table-collaboration-select-field';
 export { TableComboboxField } from '@/components/common/dynamic-table/table-config/table-combobox-field';
+export { TableFieldCategoryDefaultValue } from '@/components/common/dynamic-table/table-config/table-field-category-default-value';
 export { TableFieldCategoryTree } from '@/components/common/dynamic-table/table-config/table-field-category-tree';
+export { TableFieldDateDefaultValue } from '@/components/common/dynamic-table/table-config/table-field-date-default-value';
 export { TableFieldDropdownDefaultValue } from '@/components/common/dynamic-table/table-config/table-field-dropdown-default-value';
+export { TableFieldRelationshipDefaultValue } from '@/components/common/dynamic-table/table-config/table-field-relationship-default-value';
+export { TableFieldUserDefaultValue } from '@/components/common/dynamic-table/table-config/table-field-user-default-value';
 export { TableFieldDropdownOptions } from '@/components/common/dynamic-table/table-config/table-field-dropdown-options';
 export { TableFieldFormatSelect } from '@/components/common/dynamic-table/table-config/table-field-format-select';
 export { TableFieldRelationshipFieldSelect } from '@/components/common/dynamic-table/table-config/table-field-relationship-field-select';

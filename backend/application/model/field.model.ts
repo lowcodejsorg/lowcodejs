@@ -162,7 +162,7 @@ export const Schema = new mongoose.Schema(
       default: false,
     },
     defaultValue: {
-      type: String,
+      type: mongoose.Schema.Types.Mixed,
       default: null,
     },
     relationship: {

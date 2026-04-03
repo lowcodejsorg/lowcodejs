@@ -54,7 +54,14 @@ export const GroupFieldCreateSchema: FastifySchema = {
       widthInDetail: { type: 'number', nullable: true, default: 50 },
       locked: { type: 'boolean', default: false },
       format: { type: 'string', nullable: true, default: null },
-      defaultValue: { type: 'string', nullable: true, default: null },
+      defaultValue: {
+        anyOf: [
+          { type: 'string' },
+          { type: 'array', items: { type: 'string' } },
+          { type: 'null' },
+        ],
+        default: null,
+      },
       dropdown: { type: 'array', nullable: true, default: [] },
       relationship: { type: 'object', nullable: true, default: null },
       category: { type: 'array', nullable: true, default: [] },
@@ -81,7 +88,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
         locked: { type: 'boolean' },
         native: { type: 'boolean' },
         format: { type: 'string', nullable: true },
-        defaultValue: { type: 'string', nullable: true },
+        defaultValue: { anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }] },
         dropdown: {
           type: 'array',
           nullable: true,

@@ -173,7 +173,7 @@ export type IField = Merge<
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
-    defaultValue: string | null;
+    defaultValue: string | string[] | null;
     locked?: boolean;
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;

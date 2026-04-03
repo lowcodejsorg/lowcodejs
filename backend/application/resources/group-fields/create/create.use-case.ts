@@ -14,6 +14,7 @@ import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
+import { normalizeDefaultValue } from '@application/resources/table-fields/table-field-base.schema';
 import type { GroupFieldCreatePayload } from './create.validator';
 
 type Response = Either<HTTPException, Entity>;
@@ -79,6 +80,7 @@ export default class GroupFieldCreateUseCase {
       // Cria o campo
       const field = await this.fieldRepository.create({
         ...payload,
+        defaultValue: normalizeDefaultValue(payload.type, payload.defaultValue),
         slug,
         group: null,
       });
