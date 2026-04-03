@@ -28,8 +28,8 @@ import BcryptPasswordService from '@application/services/password/bcrypt-passwor
 import { PasswordContractService } from '@application/services/password/password-contract.service';
 import { PermissionContractService } from '@application/services/permission/permission-contract.service';
 import PermissionService from '@application/services/permission/permission.service';
-import StorageService from '@application/services/storage/storage.service';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
+import StorageService from '@application/services/storage/storage.service';
 
 /**
  * Registro explícito de dependências.

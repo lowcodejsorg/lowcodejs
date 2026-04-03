@@ -310,9 +310,26 @@ export function FileUploadWithStorage({
     [value],
   );
 
+  const findStorageForFile = React.useCallback(
+    (file: File): IStorage | undefined => {
+      const direct = storageFiles.get(file);
+      if (direct) return direct;
+
+      for (const [mapFile, storage] of storageFiles.entries()) {
+        if (mapFile.name === file.name && mapFile.size === file.size) {
+          return storage;
+        }
+      }
+
+      return undefined;
+    },
+    [storageFiles],
+  );
+
   const handleRemoveFile = React.useCallback(
     (file: File) => {
-      const storage = storageFiles.get(file);
+      const storage = findStorageForFile(file);
+
       if (storage) {
         remove.mutateAsync({ storage });
       }
@@ -322,7 +339,7 @@ export function FileUploadWithStorage({
         onValueChange(updatedFiles);
       }
     },
-    [storageFiles, value, onValueChange, remove],
+    [findStorageForFile, value, onValueChange, remove],
   );
 
   let triggerButtonSize: 'icon-sm' | 'sm' = 'sm';

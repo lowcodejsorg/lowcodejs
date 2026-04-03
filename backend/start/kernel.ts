@@ -145,7 +145,9 @@ kernel.addHook('onRequest', async (request, reply) => {
   const key = request.url.replace('/storage/', '');
   const bucket = process.env.STORAGE_BUCKET!;
 
-  console.info(`[Storage S3] GET ${key} -> ${process.env.STORAGE_ENDPOINT}/${bucket}`);
+  console.info(
+    `[Storage S3] GET ${key} -> ${process.env.STORAGE_ENDPOINT}/${bucket}`,
+  );
 
   try {
     const response = await getS3Client().send(
