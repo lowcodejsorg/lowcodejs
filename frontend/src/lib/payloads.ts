@@ -115,6 +115,8 @@ export type TableUpdatePayload = {
   administrators?: Array<string>;
   fieldOrderList?: Array<string>;
   fieldOrderForm?: Array<string>;
+  fieldOrderFilter?: Array<string>;
+  fieldOrderDetail?: Array<string>;
   methods?: TableMethodPayload;
   order?: { field: string; direction: 'asc' | 'desc' } | null;
   fields?: Array<string>;
@@ -148,7 +150,7 @@ export type FieldConfigurationPayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
-  defaultValue?: string | string[] | null;
+  defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
@@ -172,7 +174,7 @@ export type FieldCreatePayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
-  defaultValue?: string | string[] | null;
+  defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
@@ -197,7 +199,7 @@ export type FieldUpdatePayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
-  defaultValue?: string | string[] | null;
+  defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };

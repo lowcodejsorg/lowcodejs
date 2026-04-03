@@ -16,6 +16,7 @@ import { FieldContractRepository } from '@application/repositories/field/field-c
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import { normalizeDefaultValue } from '../table-field-base.schema';
+
 import type { TableFieldCreatePayload } from './create.validator';
 
 type Response = Either<HTTPException, Entity>;
@@ -98,6 +99,8 @@ export default class TableFieldCreateUseCase {
         administrators: table.administrators.flatMap((a) => a._id),
         fieldOrderList: [...(table.fieldOrderList ?? []), field._id],
         fieldOrderForm: [...(table.fieldOrderForm ?? []), field._id],
+        fieldOrderFilter: [...(table.fieldOrderFilter ?? []), field._id],
+        fieldOrderDetail: [...(table.fieldOrderDetail ?? []), field._id],
       });
 
       await buildTable({

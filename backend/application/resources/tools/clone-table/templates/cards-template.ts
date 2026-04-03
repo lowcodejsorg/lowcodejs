@@ -31,7 +31,7 @@ export async function createCardsTemplate(
     trim: true,
   });
 
-  const { fields, orderList, orderForm } = await buildCardsFields(
+  const { fields, orderList, orderForm, orderFilter, orderDetail } = await buildCardsFields(
     deps.fieldRepository,
   );
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
@@ -54,6 +54,8 @@ export async function createCardsTemplate(
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
+    fieldOrderFilter: [...nativeFieldIds, ...orderFilter],
+    fieldOrderDetail: [...nativeFieldIds, ...orderDetail],
     methods: {
       onLoad: { code: null },
       beforeSave: { code: null },
@@ -75,11 +77,15 @@ export async function buildCardsFields(
   fields: IField[];
   orderList: string[];
   orderForm: string[];
+  orderFilter: string[];
+  orderDetail: string[];
 }> {
   const base = await buildSimpleMediaFields(fieldRepository);
   return {
     fields: [...base.fields],
     orderList: [...base.orderList],
     orderForm: [...base.orderForm],
+    orderFilter: [...base.orderFilter],
+    orderDetail: [...base.orderDetail],
   };
 }

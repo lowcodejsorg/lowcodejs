@@ -198,7 +198,16 @@ function RouteComponent(): React.JSX.Element {
   const { open: filterOpen, onOpenChange: handleFilterOpenChange } =
     useFilterSidebar();
 
-  const filterFields = table.data?.fields.filter((f) => f.showInFilter) ?? [];
+  const filterFields = React.useMemo(() => {
+    const filtered = (table.data?.fields ?? []).filter((f) => f.showInFilter);
+    const order = table.data?.fieldOrderFilter ?? [];
+    if (order.length === 0) return filtered;
+    return [...filtered].sort((a, b) => {
+      const idxA = order.indexOf(a._id);
+      const idxB = order.indexOf(b._id);
+      return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
+    });
+  }, [table.data?.fields, table.data?.fieldOrderFilter]);
   const activeFiltersCount = getActiveFiltersCount(filterFields, search);
 
   const { open: chatOpen, onOpenChange: handleChatOpenChange } =

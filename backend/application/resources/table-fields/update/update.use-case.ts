@@ -16,6 +16,7 @@ import { FieldContractRepository } from '@application/repositories/field/field-c
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import { normalizeDefaultValue } from '../table-field-base.schema';
+
 import type { TableFieldUpdatePayload } from './update.validator';
 
 type Response = Either<HTTPException, Entity>;
@@ -115,10 +116,7 @@ export default class TableFieldUpdateUseCase {
 
       let updatedField = await this.fieldRepository.update({
         ...payload,
-        defaultValue: normalizeDefaultValue(
-          payload.type,
-          payload.defaultValue,
-        ),
+        defaultValue: normalizeDefaultValue(payload.type, payload.defaultValue),
         _id: field._id,
         slug,
         group: normalizedGroup,

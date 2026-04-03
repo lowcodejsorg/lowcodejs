@@ -84,9 +84,7 @@ export function TableFieldUserDefaultValue({
           disabled={disabled}
         >
           <ComboboxInput
-            placeholder={
-              selectedUser?.name ?? 'Sem valor padrão'
-            }
+            placeholder={selectedUser?.name ?? 'Sem valor padrão'}
             showClear={!!value}
             className={cn(isInvalid && 'border-destructive')}
           />
@@ -100,7 +98,10 @@ export function TableFieldUserDefaultValue({
             {!isLoading && (
               <ComboboxList>
                 {(user: IUser): React.ReactNode => (
-                  <ComboboxItem key={user._id} value={user}>
+                  <ComboboxItem
+                    key={user._id}
+                    value={user}
+                  >
                     <div className="flex flex-1 flex-col">
                       <span className="font-medium">{user.name}</span>
                       <span className="text-muted-foreground text-sm">

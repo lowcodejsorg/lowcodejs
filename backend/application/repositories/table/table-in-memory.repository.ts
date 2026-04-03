@@ -46,6 +46,8 @@ export default class TableInMemoryRepository implements TableContractRepository 
       owner: { _id: payload.owner } as IUser,
       fieldOrderList: payload.fieldOrderList ?? [],
       fieldOrderForm: payload.fieldOrderForm ?? [],
+      fieldOrderFilter: payload.fieldOrderFilter ?? [],
+      fieldOrderDetail: payload.fieldOrderDetail ?? [],
       methods: payload.methods ?? {
         onLoad: { code: null },
         beforeSave: { code: null },
@@ -167,6 +169,12 @@ export default class TableInMemoryRepository implements TableContractRepository 
     }
     if (payload.fieldOrderForm !== undefined) {
       table.fieldOrderForm = payload.fieldOrderForm;
+    }
+    if (payload.fieldOrderFilter !== undefined) {
+      table.fieldOrderFilter = payload.fieldOrderFilter;
+    }
+    if (payload.fieldOrderDetail !== undefined) {
+      table.fieldOrderDetail = payload.fieldOrderDetail;
     }
     if (payload.groups !== undefined) {
       table.groups = payload.groups;

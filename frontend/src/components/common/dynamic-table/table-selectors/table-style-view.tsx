@@ -85,6 +85,8 @@ export function TableStyleViewDropdown({
       administrators: table.data.administrators.flatMap((a) => a._id),
       fieldOrderList: table.data.fieldOrderList ?? [],
       fieldOrderForm: table.data.fieldOrderForm ?? [],
+      fieldOrderFilter: table.data.fieldOrderFilter ?? [],
+      fieldOrderDetail: table.data.fieldOrderDetail ?? [],
       order: (table.data.order?.field && table.data.order) || null,
       methods: table.data.methods,
       layoutFields: table.data.layoutFields,

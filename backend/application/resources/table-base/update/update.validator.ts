@@ -5,6 +5,8 @@ import { Merge } from '@application/core/entity.core';
 import {
   TableAdministratorsSchema,
   TableCollaborationSchema,
+  TableFieldOrderDetailSchema,
+  TableFieldOrderFilterSchema,
   TableFieldOrderFormSchema,
   TableFieldOrderListSchema,
   TableLayoutFieldsSchema,
@@ -32,6 +34,8 @@ export const TableUpdateBodyValidator = z.object({
   administrators: TableAdministratorsSchema,
   fieldOrderList: TableFieldOrderListSchema,
   fieldOrderForm: TableFieldOrderFormSchema,
+  fieldOrderFilter: TableFieldOrderFilterSchema,
+  fieldOrderDetail: TableFieldOrderDetailSchema,
   methods: TableMethodSchema,
   order: TableOrderSchema,
   layoutFields: TableLayoutFieldsSchema.optional(),

@@ -47,6 +47,14 @@ export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
 
 export const TableFieldOrderFormSchema = z.array(z.string().trim()).default([]);
 
+export const TableFieldOrderFilterSchema = z
+  .array(z.string().trim())
+  .default([]);
+
+export const TableFieldOrderDetailSchema = z
+  .array(z.string().trim())
+  .default([]);
+
 export const TableOrderSchema = z
   .object({
     field: z.string().trim(),

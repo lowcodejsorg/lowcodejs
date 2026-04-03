@@ -105,6 +105,14 @@ export default class ExportTableUseCase {
       .map((id) => fieldSlugMap.get(id))
       .filter(Boolean) as string[];
 
+    const fieldOrderFilter = (table.fieldOrderFilter || [])
+      .map((id) => fieldSlugMap.get(id))
+      .filter(Boolean) as string[];
+
+    const fieldOrderDetail = (table.fieldOrderDetail || [])
+      .map((id) => fieldSlugMap.get(id))
+      .filter(Boolean) as string[];
+
     return {
       name: table.name,
       slug: table.slug,
@@ -116,6 +124,8 @@ export default class ExportTableUseCase {
       groups: exportedGroups,
       fieldOrderList,
       fieldOrderForm,
+      fieldOrderFilter,
+      fieldOrderDetail,
       layoutFields: table.layoutFields
         ? this.exportLayoutFields(table.layoutFields, fieldSlugMap)
         : {},

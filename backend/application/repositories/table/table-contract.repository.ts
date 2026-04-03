@@ -29,6 +29,8 @@ export type TableCreatePayload = Merge<
     owner: string;
     fieldOrderList?: string[];
     fieldOrderForm?: string[];
+    fieldOrderFilter?: string[];
+    fieldOrderDetail?: string[];
     methods?: ITableMethod;
     groups?: IGroupConfiguration[];
     order?: { field: string; direction: 'asc' | 'desc' } | null;

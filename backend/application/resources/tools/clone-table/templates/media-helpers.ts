@@ -11,6 +11,8 @@ export async function buildSimpleMediaFields(
   fields: IField[];
   orderList: string[];
   orderForm: string[];
+  orderFilter: string[];
+  orderDetail: string[];
 }> {
   const createdFields: IField[] = [];
 
@@ -112,9 +114,15 @@ export async function buildSimpleMediaFields(
 
   const orderForm = [titleField._id, descriptionField._id, imageField._id];
 
+  const orderFilter = [titleField._id];
+
+  const orderDetail = [titleField._id, descriptionField._id, imageField._id];
+
   return {
     fields: createdFields,
     orderList,
     orderForm,
+    orderFilter,
+    orderDetail,
   };
 }

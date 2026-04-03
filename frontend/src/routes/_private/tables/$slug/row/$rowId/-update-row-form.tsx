@@ -79,10 +79,11 @@ function UpdateRowFormContent({
     [baseFields, table.fieldOrderForm],
   );
 
-  const viewFields = React.useMemo(
-    () => [...baseFields].sort(sortByOrder(table.fieldOrderForm)),
-    [baseFields, table.fieldOrderForm],
-  );
+  const viewFields = React.useMemo(() => {
+    const detailOrder = table.fieldOrderDetail ?? [];
+    const order = detailOrder.length > 0 ? detailOrder : table.fieldOrderForm;
+    return [...baseFields].sort(sortByOrder(order));
+  }, [baseFields, table.fieldOrderDetail, table.fieldOrderForm]);
 
   const form = useAppForm({
     defaultValues: buildUpdateRowDefaultValues(data, formFields),

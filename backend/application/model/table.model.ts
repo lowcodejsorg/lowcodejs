@@ -119,6 +119,14 @@ export const Schema = new mongoose.Schema(
       type: [String],
       default: [],
     },
+    fieldOrderFilter: {
+      type: [String],
+      default: [],
+    },
+    fieldOrderDetail: {
+      type: [String],
+      default: [],
+    },
     methods: {
       type: Methods,
       default: {

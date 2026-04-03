@@ -189,6 +189,8 @@ function TableUpdateContent({
         collaboration: value.collaboration,
         fieldOrderList: data.fieldOrderList,
         fieldOrderForm: data.fieldOrderForm,
+        fieldOrderFilter: data.fieldOrderFilter,
+        fieldOrderDetail: data.fieldOrderDetail,
         administrators: value.administrators,
         methods: {
           ...data.methods,

@@ -14,6 +14,8 @@ export interface FieldManagementActions {
   fields: Array<IField>;
   fieldOrderList: Array<string>;
   fieldOrderForm: Array<string>;
+  fieldOrderFilter: Array<string>;
+  fieldOrderDetail: Array<string>;
   onToggleVisibility: (
     field: IField,
     visibilityKey: VisibilityKey,

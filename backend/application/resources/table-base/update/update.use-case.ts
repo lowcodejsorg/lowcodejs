@@ -103,6 +103,8 @@ export default class TableUpdateUseCase {
         collaboration: payload.collaboration ?? table.collaboration,
         fieldOrderList: payload.fieldOrderList ?? table.fieldOrderList,
         fieldOrderForm: payload.fieldOrderForm ?? table.fieldOrderForm,
+        fieldOrderFilter: payload.fieldOrderFilter ?? table.fieldOrderFilter,
+        fieldOrderDetail: payload.fieldOrderDetail ?? table.fieldOrderDetail,
         administrators:
           payload.administrators ?? table.administrators.flatMap((a) => a._id),
         order: payload.order !== undefined ? payload.order : table.order,

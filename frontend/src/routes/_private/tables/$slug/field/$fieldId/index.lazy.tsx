@@ -27,11 +27,15 @@ import { API } from '@/lib/api';
 import type { E_FIELD_FORMAT } from '@/lib/constant';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
+import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
+import { QueryClient as queryClient } from '@/lib/query-client';
+import { toastSuccess, toastWarning } from '@/lib/toast';
 
 function normalizeDefaultValue(
   type: string,
-  defaultValue: string | string[],
-): string | string[] | null {
+  defaultValue: string | Array<string>,
+): string | Array<string> | null {
   const arrayTypes: Array<string> = [
     E_FIELD_TYPE.DROPDOWN,
     E_FIELD_TYPE.CATEGORY,
@@ -53,10 +57,6 @@ function normalizeDefaultValue(
   }
   return defaultValue || null;
 }
-import { handleApiError } from '@/lib/handle-api-error';
-import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
-import { QueryClient as queryClient } from '@/lib/query-client';
-import { toastSuccess, toastWarning } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_private/tables/$slug/field/$fieldId/',

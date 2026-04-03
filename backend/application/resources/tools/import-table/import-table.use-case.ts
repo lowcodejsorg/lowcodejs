@@ -304,6 +304,14 @@ export default class ImportTableUseCase {
           .map((slug: string) => slugToFieldId.get(slug))
           .filter(Boolean) as string[];
 
+        const fieldOrderFilter = (structure.fieldOrderFilter || [])
+          .map((slug: string) => slugToFieldId.get(slug))
+          .filter(Boolean) as string[];
+
+        const fieldOrderDetail = (structure.fieldOrderDetail || [])
+          .map((slug: string) => slugToFieldId.get(slug))
+          .filter(Boolean) as string[];
+
         // 6. Build schema and create table
         const _schema = buildSchema(allCreatedFields, groups);
 
@@ -322,6 +330,8 @@ export default class ImportTableUseCase {
           owner: payload.ownerId,
           fieldOrderList,
           fieldOrderForm,
+          fieldOrderFilter,
+          fieldOrderDetail,
           methods: structure.methods || {
             onLoad: { code: null },
             beforeSave: { code: null },

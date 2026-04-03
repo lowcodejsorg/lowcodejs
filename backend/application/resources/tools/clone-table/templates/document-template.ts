@@ -31,7 +31,7 @@ export async function createDocumentTemplate(
     trim: true,
   });
 
-  const { fields, orderList, orderForm } = await buildDocumentFields(
+  const { fields, orderList, orderForm, orderFilter, orderDetail } = await buildDocumentFields(
     deps.fieldRepository,
   );
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
@@ -54,6 +54,8 @@ export async function createDocumentTemplate(
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
+    fieldOrderFilter: [...nativeFieldIds, ...orderFilter],
+    fieldOrderDetail: [...nativeFieldIds, ...orderDetail],
     methods: {
       onLoad: { code: null },
       beforeSave: { code: null },
@@ -75,6 +77,8 @@ export async function buildDocumentFields(
   fields: IField[];
   orderList: string[];
   orderForm: string[];
+  orderFilter: string[];
+  orderDetail: string[];
 }> {
   const createdFields: IField[] = [];
 
@@ -176,9 +180,15 @@ export async function buildDocumentFields(
 
   const orderForm = [titleField._id, indexField._id, textField._id];
 
+  const orderFilter = [indexField._id, titleField._id];
+
+  const orderDetail = [titleField._id, indexField._id, textField._id];
+
   return {
     fields: createdFields,
     orderList,
     orderForm,
+    orderFilter,
+    orderDetail,
   };
 }

@@ -7,14 +7,14 @@ type SearchableOption = {
   label: string;
 };
 
-function toDefaultArray(value: string | string[] | null): string[] {
+function toDefaultArray(value: string | Array<string> | null): Array<string> {
   if (Array.isArray(value)) return value;
   if (typeof value === 'string' && value) return [value];
   return [];
 }
 
 function toDefaultSearchableOptions(
-  value: string | string[] | null,
+  value: string | Array<string> | null,
 ): Array<SearchableOption> {
   return toDefaultArray(value).map((id) => ({ value: id, label: '' }));
 }

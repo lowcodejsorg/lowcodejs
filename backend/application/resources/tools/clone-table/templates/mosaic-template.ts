@@ -31,7 +31,7 @@ export async function createMosaicTemplate(
     trim: true,
   });
 
-  const { fields, orderList, orderForm } = await buildMosaicFields(
+  const { fields, orderList, orderForm, orderFilter, orderDetail } = await buildMosaicFields(
     deps.fieldRepository,
   );
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
@@ -54,6 +54,8 @@ export async function createMosaicTemplate(
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
+    fieldOrderFilter: [...nativeFieldIds, ...orderFilter],
+    fieldOrderDetail: [...nativeFieldIds, ...orderDetail],
     methods: {
       onLoad: { code: null },
       beforeSave: { code: null },
@@ -75,6 +77,8 @@ export async function buildMosaicFields(
   fields: IField[];
   orderList: string[];
   orderForm: string[];
+  orderFilter: string[];
+  orderDetail: string[];
 }> {
   return await buildSimpleMediaFields(fieldRepository);
 }

@@ -151,6 +151,8 @@ function MethodsFormContent({
         administrators: data.administrators.flatMap((a) => a._id),
         fieldOrderList: data.fieldOrderList,
         fieldOrderForm: data.fieldOrderForm,
+        fieldOrderFilter: data.fieldOrderFilter,
+        fieldOrderDetail: data.fieldOrderDetail,
         methods: {
           onLoad: {
             code: value.onLoad || null,

@@ -186,6 +186,14 @@ export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
 
 export const TableFieldOrderFormSchema = z.array(z.string().trim()).default([]);
 
+export const TableFieldOrderFilterSchema = z
+  .array(z.string().trim())
+  .default([]);
+
+export const TableFieldOrderDetailSchema = z
+  .array(z.string().trim())
+  .default([]);
+
 export const TableCreateBodySchema = z.object({
   name: z
     .string()
@@ -204,6 +212,8 @@ export const TableCreateBodySchema = z.object({
   administrators: TableAdministratorsSchema.optional(),
   fieldOrderList: TableFieldOrderListSchema.optional(),
   fieldOrderForm: TableFieldOrderFormSchema.optional(),
+  fieldOrderFilter: TableFieldOrderFilterSchema.optional(),
+  fieldOrderDetail: TableFieldOrderDetailSchema.optional(),
 });
 
 export const TableMethodSchema = z.object({
@@ -236,6 +246,8 @@ export const TableUpdateBodySchema = z.object({
   administrators: TableAdministratorsSchema,
   fieldOrderList: TableFieldOrderListSchema,
   fieldOrderForm: TableFieldOrderFormSchema,
+  fieldOrderFilter: TableFieldOrderFilterSchema,
+  fieldOrderDetail: TableFieldOrderDetailSchema,
   methods: TableMethodSchema,
 });
 

@@ -32,7 +32,7 @@ export async function createCalendarTemplate(
     trim: true,
   });
 
-  const { fields, groups, orderList, orderForm } = await buildCalendarFields(
+  const { fields, groups, orderList, orderForm, orderFilter, orderDetail } = await buildCalendarFields(
     deps.fieldRepository,
   );
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
@@ -55,6 +55,8 @@ export async function createCalendarTemplate(
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
+    fieldOrderFilter: [...nativeFieldIds, ...orderFilter],
+    fieldOrderDetail: [...nativeFieldIds, ...orderDetail],
     methods: {
       onLoad: { code: null },
       beforeSave: { code: null },
@@ -78,6 +80,8 @@ export async function buildCalendarFields(
   groups: IGroupConfiguration[];
   orderList: string[];
   orderForm: string[];
+  orderFilter: string[];
+  orderDetail: string[];
 }> {
   const createdFields: IField[] = [];
 
@@ -340,6 +344,22 @@ export async function buildCalendarFields(
       descriptionField._id,
     ],
     orderForm: [
+      titleField._id,
+      descriptionField._id,
+      startField._id,
+      endField._id,
+      colorField._id,
+      participantsField._id,
+      reminderGroupField._id,
+    ],
+    orderFilter: [
+      titleField._id,
+      startField._id,
+      endField._id,
+      colorField._id,
+      participantsField._id,
+    ],
+    orderDetail: [
       titleField._id,
       descriptionField._id,
       startField._id,

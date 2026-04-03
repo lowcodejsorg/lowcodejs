@@ -277,10 +277,22 @@ export function useTableFieldManagement(
   ): void {
     if (!table) return;
 
-    if (visibilityKey === 'showInFilter') return;
+    const orderPayload = {
+      fieldOrderList: table.fieldOrderList,
+      fieldOrderForm: table.fieldOrderForm,
+      fieldOrderFilter: table.fieldOrderFilter,
+      fieldOrderDetail: table.fieldOrderDetail,
+    };
 
-    const isFormOrder =
-      visibilityKey === 'showInForm' || visibilityKey === 'showInDetail';
+    if (visibilityKey === 'showInList') {
+      orderPayload.fieldOrderList = orderedFieldIds;
+    } else if (visibilityKey === 'showInForm') {
+      orderPayload.fieldOrderForm = orderedFieldIds;
+    } else if (visibilityKey === 'showInFilter') {
+      orderPayload.fieldOrderFilter = orderedFieldIds;
+    } else if (visibilityKey === 'showInDetail') {
+      orderPayload.fieldOrderDetail = orderedFieldIds;
+    }
 
     updateTable.mutate({
       slug: table.slug,
@@ -290,8 +302,7 @@ export function useTableFieldManagement(
       visibility: table.visibility,
       style: table.style,
       collaboration: table.collaboration,
-      fieldOrderList: isFormOrder ? table.fieldOrderList : orderedFieldIds,
-      fieldOrderForm: isFormOrder ? orderedFieldIds : table.fieldOrderForm,
+      ...orderPayload,
       administrators: table.administrators.flatMap((admin) => admin._id),
       fields: table.fields.flatMap((f) => f._id),
       methods: {
@@ -349,6 +360,8 @@ export function useTableFieldManagement(
     fields,
     fieldOrderList: table?.fieldOrderList ?? [],
     fieldOrderForm: table?.fieldOrderForm ?? [],
+    fieldOrderFilter: table?.fieldOrderFilter ?? [],
+    fieldOrderDetail: table?.fieldOrderDetail ?? [],
     onToggleVisibility,
     onChangeWidth,
     onSaveOrder,

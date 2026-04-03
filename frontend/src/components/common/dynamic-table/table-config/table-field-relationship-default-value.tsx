@@ -118,7 +118,10 @@ export function TableFieldRelationshipDefaultValue({
             {!isLoading && (
               <ComboboxList>
                 {(row: IRow): React.ReactNode => (
-                  <ComboboxItem key={row._id} value={row}>
+                  <ComboboxItem
+                    key={row._id}
+                    value={row}
+                  >
                     {getRowLabel(row)}
                   </ComboboxItem>
                 )}

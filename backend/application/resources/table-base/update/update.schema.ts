@@ -81,6 +81,16 @@ export const TableUpdateSchema: FastifySchema = {
         default: [],
         description: 'Field order for form view',
       },
+      fieldOrderFilter: {
+        type: 'array',
+        items: { type: 'string' },
+        default: [],
+      },
+      fieldOrderDetail: {
+        type: 'array',
+        items: { type: 'string' },
+        default: [],
+      },
       order: {
         anyOf: [
           { type: 'null' },
@@ -207,7 +217,11 @@ export const TableUpdateSchema: FastifySchema = {
                 description: 'Field is native',
               },
               defaultValue: {
-                anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }],
+                anyOf: [
+                  { type: 'string' },
+                  { type: 'array', items: { type: 'string' } },
+                  { type: 'null' },
+                ],
                 description: 'Default field value',
               },
               relationship: {
@@ -299,6 +313,14 @@ export const TableUpdateSchema: FastifySchema = {
           items: { type: 'string' },
           description: 'Field order for form view',
         },
+        fieldOrderFilter: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        fieldOrderDetail: {
+          type: 'array',
+          items: { type: 'string' },
+        },
         type: {
           type: 'string',
           enum: ['TABLE', 'FIELD_GROUP'],
@@ -370,7 +392,13 @@ export const TableUpdateSchema: FastifySchema = {
                     widthInDetail: { type: 'number', nullable: true },
                     locked: { type: 'boolean' },
                     native: { type: 'boolean' },
-                    defaultValue: { anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }] },
+                    defaultValue: {
+                      anyOf: [
+                        { type: 'string' },
+                        { type: 'array', items: { type: 'string' } },
+                        { type: 'null' },
+                      ],
+                    },
                     relationship: { type: 'object', nullable: true },
                     dropdown: { type: 'array', nullable: true },
                     category: { type: 'array', nullable: true },

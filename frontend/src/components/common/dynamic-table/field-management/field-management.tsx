@@ -438,6 +438,8 @@ function FieldManagementList({
     fields: allFields,
     fieldOrderList,
     fieldOrderForm,
+    fieldOrderFilter,
+    fieldOrderDetail,
     onToggleVisibility,
     onChangeWidth,
     onSaveOrder,
@@ -457,11 +459,11 @@ function FieldManagementList({
 
   const orderArray = React.useMemo(() => {
     if (visibilityKey === 'showInList') return fieldOrderList;
-    if (visibilityKey === 'showInForm' || visibilityKey === 'showInDetail') {
-      return fieldOrderForm;
-    }
+    if (visibilityKey === 'showInForm') return fieldOrderForm;
+    if (visibilityKey === 'showInFilter') return fieldOrderFilter;
+    if (visibilityKey === 'showInDetail') return fieldOrderDetail;
     return [];
-  }, [visibilityKey, fieldOrderList, fieldOrderForm]);
+  }, [visibilityKey, fieldOrderList, fieldOrderForm, fieldOrderFilter, fieldOrderDetail]);
 
   const sortedActiveFields = React.useMemo(() => {
     if (orderArray.length === 0) return activeFields;

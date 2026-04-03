@@ -38,8 +38,8 @@ export const Route = createLazyFileRoute(
 
 function normalizeDefaultValue(
   type: string,
-  defaultValue: string | string[],
-): string | string[] | null {
+  defaultValue: string | Array<string>,
+): string | Array<string> | null {
   const arrayTypes: Array<string> = [
     E_FIELD_TYPE.DROPDOWN,
     E_FIELD_TYPE.CATEGORY,

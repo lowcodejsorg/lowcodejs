@@ -145,14 +145,15 @@ export function RowView({
 }: RowViewProps): React.JSX.Element {
   const visibleFields = React.useMemo(() => {
     const filtered = fields.filter((f) => f.showInDetail);
-    const order = table?.fieldOrderForm ?? [];
+    const detailOrder = table?.fieldOrderDetail ?? [];
+    const order = detailOrder.length > 0 ? detailOrder : (table?.fieldOrderForm ?? []);
     if (order.length === 0) return filtered;
     return [...filtered].sort((a, b) => {
       const idxA = order.indexOf(a._id);
       const idxB = order.indexOf(b._id);
       return (idxA === -1 ? Infinity : idxA) - (idxB === -1 ? Infinity : idxB);
     });
-  }, [fields, table?.fieldOrderForm]);
+  }, [fields, table?.fieldOrderDetail, table?.fieldOrderForm]);
 
   const mainFields = React.useMemo(
     () => visibleFields.filter((f) => f.type !== E_FIELD_TYPE.FIELD_GROUP),

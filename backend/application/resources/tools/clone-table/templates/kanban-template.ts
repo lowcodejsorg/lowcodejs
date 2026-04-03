@@ -32,7 +32,7 @@ export async function createKanbanTemplate(
     trim: true,
   });
 
-  const { fields, groups, orderList, orderForm } = await buildKanbanFields(
+  const { fields, groups, orderList, orderForm, orderFilter, orderDetail } = await buildKanbanFields(
     deps.fieldRepository,
   );
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
@@ -55,6 +55,8 @@ export async function createKanbanTemplate(
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
+    fieldOrderFilter: [...nativeFieldIds, ...orderFilter],
+    fieldOrderDetail: [...nativeFieldIds, ...orderDetail],
     methods: {
       onLoad: { code: null },
       beforeSave: {
@@ -130,6 +132,8 @@ export async function buildKanbanFields(
   groups: IGroupConfiguration[];
   orderList: string[];
   orderForm: string[];
+  orderFilter: string[];
+  orderDetail: string[];
 }> {
   const createdFields: IField[] = [];
 
@@ -669,10 +673,22 @@ export async function buildKanbanFields(
     commentsGroupField._id,
   ];
 
+  const orderFilter = [
+    titleField._id,
+    listField._id,
+    membersField._id,
+    startDateField._id,
+    dueDateField._id,
+  ];
+
+  const orderDetail = orderForm;
+
   return {
     fields: createdFields,
     groups,
     orderList,
     orderForm,
+    orderFilter,
+    orderDetail,
   };
 }

@@ -50,14 +50,14 @@ export type CreateRowDefaultValue = Record<
   string,
   RowFieldValue | Array<Record<string, RowFieldValue>>
 >;
-function toDefaultArray(value: string | string[] | null): string[] {
+function toDefaultArray(value: string | Array<string> | null): Array<string> {
   if (Array.isArray(value)) return value;
   if (typeof value === 'string' && value) return [value];
   return [];
 }
 
 function toDefaultSearchableOptions(
-  value: string | string[] | null,
+  value: string | Array<string> | null,
 ): Array<{ value: string; label: string }> {
   const ids = toDefaultArray(value);
   return ids.map((id) => ({ value: id, label: '' }));
@@ -196,7 +196,7 @@ export function buildUpdateRowDefaultValues(
       case E_FIELD_TYPE.RELATIONSHIP: {
         const rows = toArray<IRow>(value);
         const relConfig = field.relationship;
-        const labelField = relConfig?.field.slug ?? '_id';
+        const labelField = relConfig?.field?.slug ?? '_id';
 
         defaults[field.slug] = rows.map((row) => ({
           value: row._id,

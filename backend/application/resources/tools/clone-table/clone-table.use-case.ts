@@ -145,6 +145,16 @@ export default class CloneTableUseCase {
         combinedFieldIdMap,
       );
 
+      const orderFilter = this.remapFieldIds(
+        baseTable.fieldOrderFilter,
+        combinedFieldIdMap,
+      );
+
+      const orderDetail = this.remapFieldIds(
+        baseTable.fieldOrderDetail,
+        combinedFieldIdMap,
+      );
+
       const createPayload: TableCreatePayload = {
         _schema,
         name: payload.name,
@@ -160,6 +170,8 @@ export default class CloneTableUseCase {
         owner: payload.ownerId,
         fieldOrderList: orderList,
         fieldOrderForm: orderForm,
+        fieldOrderFilter: orderFilter,
+        fieldOrderDetail: orderDetail,
         methods: baseTable.methods,
         groups: clonedGroups,
       };

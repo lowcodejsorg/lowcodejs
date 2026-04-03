@@ -32,7 +32,7 @@ export async function createForumTemplate(
     trim: true,
   });
 
-  const { fields, groups, orderList, orderForm } = await buildForumFields(
+  const { fields, groups, orderList, orderForm, orderFilter, orderDetail } = await buildForumFields(
     deps.fieldRepository,
   );
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
@@ -55,6 +55,8 @@ export async function createForumTemplate(
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
+    fieldOrderFilter: [...nativeFieldIds, ...orderFilter],
+    fieldOrderDetail: [...nativeFieldIds, ...orderDetail],
     methods: {
       onLoad: { code: null },
       beforeSave: {
@@ -174,6 +176,8 @@ export async function buildForumFields(
   groups: IGroupConfiguration[];
   orderList: string[];
   orderForm: string[];
+  orderFilter: string[];
+  orderDetail: string[];
 }> {
   const createdFields: IField[] = [];
 
@@ -610,10 +614,19 @@ export async function buildForumFields(
     messagesGroupField._id,
   ];
 
+  const orderFilter = [
+    channelField._id,
+    channelPrivacyField._id,
+    channelMembersField._id,
+  ];
+  const orderDetail = orderForm;
+
   return {
     fields: createdFields,
     groups,
     orderList,
     orderForm,
+    orderFilter,
+    orderDetail,
   };
 }

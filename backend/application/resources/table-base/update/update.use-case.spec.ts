@@ -46,6 +46,8 @@ describe('Table Update Use Case', () => {
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
+      fieldOrderFilter: [],
+      fieldOrderDetail: [],
     });
 
     const result = await sut.execute({
@@ -69,6 +71,8 @@ describe('Table Update Use Case', () => {
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderForm: [],
       fieldOrderList: [],
+      fieldOrderFilter: [],
+      fieldOrderDetail: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });
@@ -102,6 +106,8 @@ describe('Table Update Use Case', () => {
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderForm: [],
       fieldOrderList: [],
+      fieldOrderFilter: [],
+      fieldOrderDetail: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });
@@ -126,6 +132,8 @@ describe('Table Update Use Case', () => {
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderList: [],
       fieldOrderForm: [],
+      fieldOrderFilter: [],
+      fieldOrderDetail: [],
     });
 
     const result = await sut.execute({
@@ -149,6 +157,8 @@ describe('Table Update Use Case', () => {
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderForm: [],
       fieldOrderList: [],
+      fieldOrderFilter: [],
+      fieldOrderDetail: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });
@@ -186,6 +196,8 @@ describe('Table Update Use Case', () => {
       collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderForm: [],
       fieldOrderList: [],
+      fieldOrderFilter: [],
+      fieldOrderDetail: [],
       visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });

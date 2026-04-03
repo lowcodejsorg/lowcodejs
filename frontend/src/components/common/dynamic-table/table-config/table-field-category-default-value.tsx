@@ -89,7 +89,10 @@ export function TableFieldCategoryDefaultValue({
             <span className="text-muted-foreground">Sem valor padrão</span>
           </SelectItem>
           {flatOptions.map((opt) => (
-            <SelectItem key={opt.id} value={opt.id}>
+            <SelectItem
+              key={opt.id}
+              value={opt.id}
+            >
               {opt.label}
             </SelectItem>
           ))}

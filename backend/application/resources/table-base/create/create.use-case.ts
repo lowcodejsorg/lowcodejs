@@ -95,6 +95,8 @@ export default class TableCreateUseCase {
         visibility: payload.visibility ?? E_TABLE_VISIBILITY.RESTRICTED,
         fieldOrderForm: [],
         fieldOrderList: [],
+        fieldOrderFilter: [],
+        fieldOrderDetail: [],
       });
 
       await this.tableRepository.update({
@@ -102,6 +104,8 @@ export default class TableCreateUseCase {
         fields: nativeFieldIds,
         fieldOrderList: nativeFieldIds,
         fieldOrderForm: nativeFieldIds,
+        fieldOrderFilter: nativeFieldIds,
+        fieldOrderDetail: nativeFieldIds,
       });
 
       return right({

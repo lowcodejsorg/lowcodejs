@@ -13,8 +13,8 @@ import HTTPException from '@application/core/exception.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-
 import { normalizeDefaultValue } from '@application/resources/table-fields/table-field-base.schema';
+
 import type { GroupFieldCreatePayload } from './create.validator';
 
 type Response = Either<HTTPException, Entity>;

@@ -9,8 +9,8 @@ import HTTPException from '@application/core/exception.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-
 import { normalizeDefaultValue } from '@application/resources/table-fields/table-field-base.schema';
+
 import type { GroupFieldUpdatePayload } from './update.validator';
 
 type Response = Either<HTTPException, Entity>;
@@ -94,10 +94,7 @@ export default class GroupFieldUpdateUseCase {
 
       const updatedField = await this.fieldRepository.update({
         ...payload,
-        defaultValue: normalizeDefaultValue(
-          payload.type,
-          payload.defaultValue,
-        ),
+        defaultValue: normalizeDefaultValue(payload.type, payload.defaultValue),
         _id: field._id,
         slug,
         group: normalizedGroup,

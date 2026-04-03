@@ -278,7 +278,11 @@ export const TableFieldCreateSchema: FastifySchema = {
           description: 'Field format',
         },
         defaultValue: {
-          anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }],
+          anyOf: [
+            { type: 'string' },
+            { type: 'array', items: { type: 'string' } },
+            { type: 'null' },
+          ],
           description: 'Default field value',
         },
         dropdown: {

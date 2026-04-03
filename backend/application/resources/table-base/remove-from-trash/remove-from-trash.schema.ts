@@ -110,7 +110,11 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                 description: 'Field is locked and cannot be modified',
               },
               defaultValue: {
-                anyOf: [{ type: 'string' }, { type: 'array', items: { type: 'string' } }, { type: 'null' }],
+                anyOf: [
+                  { type: 'string' },
+                  { type: 'array', items: { type: 'string' } },
+                  { type: 'null' },
+                ],
                 description: 'Default field value',
               },
               relationship: {
@@ -226,6 +230,14 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
           type: 'array',
           items: { type: 'string' },
           description: 'Field order for form view',
+        },
+        fieldOrderFilter: {
+          type: 'array',
+          items: { type: 'string' },
+        },
+        fieldOrderDetail: {
+          type: 'array',
+          items: { type: 'string' },
         },
         type: {
           type: 'string',

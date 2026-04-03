@@ -173,7 +173,7 @@ export type IField = Merge<
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
-    defaultValue: string | string[] | null;
+    defaultValue: string | Array<string> | null;
     locked?: boolean;
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
@@ -242,6 +242,8 @@ export type ITable = Merge<
     owner: IUser;
     fieldOrderList: Array<string>;
     fieldOrderForm: Array<string>;
+    fieldOrderFilter: Array<string>;
+    fieldOrderDetail: Array<string>;
     methods: ITableMethod;
     groups: Array<IGroupConfiguration>;
     order: { field: string; direction: 'asc' | 'desc' } | null;

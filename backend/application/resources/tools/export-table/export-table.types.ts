@@ -60,6 +60,8 @@ export type ExportedStructure = {
   groups: ExportedGroup[];
   fieldOrderList: string[];
   fieldOrderForm: string[];
+  fieldOrderFilter: string[];
+  fieldOrderDetail: string[];
   layoutFields: Record<string, string | null>;
   methods: {
     onLoad: { code: string | null };
