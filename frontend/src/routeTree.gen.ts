@@ -22,6 +22,7 @@ import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/i
 import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index'
 import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index'
 import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index'
+import { Route as AuthenticationForgotPasswordIndexRouteImport } from './routes/_authentication/forgot-password/index'
 import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authentication/_sign-in/index'
 import { Route as PrivatePagesSlugRouteImport } from './routes/_private/pages/$slug'
 import { Route as PrivateUsersCreateIndexRouteImport } from './routes/_private/users/create/index'
@@ -124,6 +125,16 @@ const AuthenticationSignUpIndexRoute =
     getParentRoute: () => AuthenticationLayoutRoute,
   } as any).lazy(() =>
     import('./routes/_authentication/sign-up/index.lazy').then((d) => d.Route),
+  )
+const AuthenticationForgotPasswordIndexRoute =
+  AuthenticationForgotPasswordIndexRouteImport.update({
+    id: '/forgot-password/',
+    path: '/forgot-password/',
+    getParentRoute: () => AuthenticationLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authentication/forgot-password/index.lazy').then(
+      (d) => d.Route,
+    ),
   )
 const AuthenticationSignInIndexRoute =
   AuthenticationSignInIndexRouteImport.update({
@@ -297,6 +308,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/pages/$slug': typeof PrivatePagesSlugRoute
   '/': typeof AuthenticationSignInIndexRoute
+  '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute
   '/sign-up': typeof AuthenticationSignUpIndexRoute
   '/dashboard': typeof PrivateDashboardIndexRoute
   '/groups': typeof PrivateGroupsIndexRoute
@@ -330,6 +342,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/pages/$slug': typeof PrivatePagesSlugRoute
   '/': typeof AuthenticationSignInIndexRoute
+  '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute
   '/sign-up': typeof AuthenticationSignUpIndexRoute
   '/dashboard': typeof PrivateDashboardIndexRoute
   '/groups': typeof PrivateGroupsIndexRoute
@@ -366,6 +379,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_private/pages/$slug': typeof PrivatePagesSlugRoute
   '/_authentication/_sign-in/': typeof AuthenticationSignInIndexRoute
+  '/_authentication/forgot-password/': typeof AuthenticationForgotPasswordIndexRoute
   '/_authentication/sign-up/': typeof AuthenticationSignUpIndexRoute
   '/_private/dashboard/': typeof PrivateDashboardIndexRoute
   '/_private/groups/': typeof PrivateGroupsIndexRoute
@@ -401,6 +415,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/pages/$slug'
     | '/'
+    | '/forgot-password'
     | '/sign-up'
     | '/dashboard'
     | '/groups'
@@ -434,6 +449,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/pages/$slug'
     | '/'
+    | '/forgot-password'
     | '/sign-up'
     | '/dashboard'
     | '/groups'
@@ -469,6 +485,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/_private/pages/$slug'
     | '/_authentication/_sign-in/'
+    | '/_authentication/forgot-password/'
     | '/_authentication/sign-up/'
     | '/_private/dashboard/'
     | '/_private/groups/'
@@ -596,6 +613,13 @@ declare module '@tanstack/react-router' {
       path: '/sign-up'
       fullPath: '/sign-up'
       preLoaderRoute: typeof AuthenticationSignUpIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
+    '/_authentication/forgot-password/': {
+      id: '/_authentication/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthenticationForgotPasswordIndexRouteImport
       parentRoute: typeof AuthenticationLayoutRoute
     }
     '/_authentication/_sign-in/': {
@@ -743,11 +767,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticationLayoutRouteChildren {
   AuthenticationSignInIndexRoute: typeof AuthenticationSignInIndexRoute
+  AuthenticationForgotPasswordIndexRoute: typeof AuthenticationForgotPasswordIndexRoute
   AuthenticationSignUpIndexRoute: typeof AuthenticationSignUpIndexRoute
 }
 
 const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
   AuthenticationSignInIndexRoute: AuthenticationSignInIndexRoute,
+  AuthenticationForgotPasswordIndexRoute:
+    AuthenticationForgotPasswordIndexRoute,
   AuthenticationSignUpIndexRoute: AuthenticationSignUpIndexRoute,
 }
 

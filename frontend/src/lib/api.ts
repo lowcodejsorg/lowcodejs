@@ -36,7 +36,10 @@ API.interceptors.request.use(async (config) => {
 });
 
 const isPublicPath = (path: string): boolean =>
-  path === '/' || path === '/sign-up' || path.startsWith('/tables/');
+  path === '/' ||
+  path === '/sign-up' ||
+  path === '/forgot-password' ||
+  path.startsWith('/tables/');
 
 API.interceptors.response.use(
   (response) => response,
