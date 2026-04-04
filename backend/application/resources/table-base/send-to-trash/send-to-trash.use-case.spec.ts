@@ -19,6 +19,9 @@ describe('Table Send To Trash Use Case', () => {
   });
 
   it('deve enviar tabela para lixeira com sucesso', async () => {
+    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
+    const updateSpy = vi.spyOn(tableInMemoryRepository, 'update');
+
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -36,16 +39,21 @@ describe('Table Send To Trash Use Case', () => {
     const result = await sut.execute({ slug: 'clientes' });
 
     expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
+    expect(updateSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
     const result = await sut.execute({ slug: 'non-existent' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    expect(result.value.message).toBe('Tabela não encontrada');
   });
 
   it('deve retornar erro ALREADY_TRASHED quando tabela ja estiver na lixeira', async () => {
@@ -72,10 +80,11 @@ describe('Table Send To Trash Use Case', () => {
     const result = await sut.execute({ slug: 'clientes' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(409);
-      expect(result.value.cause).toBe('ALREADY_TRASHED');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('ALREADY_TRASHED');
+    expect(result.value.message).toBe('Tabela já está na lixeira');
   });
 
   it('deve retornar erro SEND_TABLE_TO_TRASH_ERROR quando houver falha', async () => {
@@ -86,9 +95,10 @@ describe('Table Send To Trash Use Case', () => {
     const result = await sut.execute({ slug: 'some-slug' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('SEND_TABLE_TO_TRASH_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('SEND_TABLE_TO_TRASH_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

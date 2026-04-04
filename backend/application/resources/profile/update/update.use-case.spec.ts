@@ -17,6 +17,9 @@ describe('Profile Update Use Case', () => {
   });
 
   it('deve atualizar o perfil do usuario sem alterar senha', async () => {
+    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
+    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
+
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -32,14 +35,19 @@ describe('Profile Update Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('John Updated');
-      expect(result.value.email).toBe('john.updated@example.com');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.name).toBe('John Updated');
+    expect(result.value.email).toBe('john.updated@example.com');
+    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
+    expect(updateSpy).toHaveBeenCalledOnce();
   });
 
   it('deve atualizar o perfil e senha quando senha atual estiver correta', async () => {
     const hashedPassword = await passwordService.hash('old_password');
+    const compareSpy = vi.spyOn(passwordService, 'compare');
+    const hashSpy = vi.spyOn(passwordService, 'hash');
+
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -57,10 +65,12 @@ describe('Profile Update Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('John Updated');
-      expect(result.value.password).not.toBe(hashedPassword);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.name).toBe('John Updated');
+    expect(result.value.password).not.toBe(hashedPassword);
+    expect(compareSpy).toHaveBeenCalledWith('old_password', hashedPassword);
+    expect(hashSpy).toHaveBeenCalledWith('new_password');
   });
 
   it('deve retornar erro INVALID_CREDENTIALS quando senha atual estiver incorreta', async () => {
@@ -82,10 +92,11 @@ describe('Profile Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(401);
-      expect(result.value.cause).toBe('INVALID_CREDENTIALS');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(401);
+    expect(result.value.cause).toBe('INVALID_CREDENTIALS');
+    expect(result.value.message).toBe('Senha atual incorreta');
   });
 
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existe', async () => {
@@ -97,10 +108,11 @@ describe('Profile Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('USER_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('USER_NOT_FOUND');
+    expect(result.value.message).toBe('Usuário não encontrado');
   });
 
   it('deve retornar erro UPDATE_USER_PROFILE_ERROR quando houver falha', async () => {
@@ -116,9 +128,10 @@ describe('Profile Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('UPDATE_USER_PROFILE_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('UPDATE_USER_PROFILE_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

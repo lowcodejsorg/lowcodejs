@@ -10,6 +10,8 @@ import { PermissionContractRepository } from '@application/repositories/permissi
 import PermissionMongooseRepository from '@application/repositories/permission/permission-mongoose.repository';
 import { ReactionContractRepository } from '@application/repositories/reaction/reaction-contract.repository';
 import ReactionMongooseRepository from '@application/repositories/reaction/reaction-mongoose.repository';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
+import RowMongooseRepository from '@application/repositories/row/row-mongoose.repository';
 import { SettingContractRepository } from '@application/repositories/setting/setting-contract.repository';
 import SettingMongooseRepository from '@application/repositories/setting/setting-mongoose.repository';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
@@ -55,6 +57,8 @@ export function registerDependencies(): void {
     PermissionContractRepository,
     PermissionMongooseRepository,
   );
+
+  injectablesHolder.injectService(RowContractRepository, RowMongooseRepository);
 
   injectablesHolder.injectService(
     ReactionContractRepository,

@@ -1,26 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
-import { StorageContractService } from '@application/services/storage/storage-contract.service';
+import InMemoryStorageService from '@application/services/storage/in-memory-storage.service';
 
 import StorageDeleteUseCase from './delete.use-case';
 
 let storageInMemoryRepository: StorageInMemoryRepository;
-let storageService: StorageContractService;
+let storageService: InMemoryStorageService;
 let sut: StorageDeleteUseCase;
 
 describe('Storage Delete Use Case', () => {
   beforeEach(() => {
     storageInMemoryRepository = new StorageInMemoryRepository();
-    storageService = {
-      upload: vi.fn(),
-      delete: vi.fn().mockResolvedValue(true),
-      exists: vi.fn(),
-    } as unknown as StorageContractService;
+    storageService = new InMemoryStorageService();
     sut = new StorageDeleteUseCase(storageInMemoryRepository, storageService);
   });
 
   it('deve deletar arquivo com sucesso', async () => {
+    const deleteSpy = vi.spyOn(storageInMemoryRepository, 'delete');
+    const serviceDeleteSpy = vi.spyOn(storageService, 'delete');
+
     const storage = await storageInMemoryRepository.create({
       filename: 'random-name.webp',
       originalName: 'test.jpg',
@@ -31,19 +30,22 @@ describe('Storage Delete Use Case', () => {
     const result = await sut.execute({ _id: storage._id });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value).toBeNull();
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value).toBeNull();
+    expect(deleteSpy).toHaveBeenCalledWith(storage._id);
+    expect(serviceDeleteSpy).toHaveBeenCalledWith('random-name.webp');
   });
 
   it('deve retornar erro STORAGE_NOT_FOUND quando arquivo nao existir', async () => {
     const result = await sut.execute({ _id: 'non-existent-id' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('STORAGE_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('STORAGE_NOT_FOUND');
+    expect(result.value.message).toBe('Arquivo não encontrado');
   });
 
   it('deve retornar erro STORAGE_DELETE_ERROR quando houver falha', async () => {
@@ -54,9 +56,10 @@ describe('Storage Delete Use Case', () => {
     const result = await sut.execute({ _id: 'some-id' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('STORAGE_DELETE_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('STORAGE_DELETE_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

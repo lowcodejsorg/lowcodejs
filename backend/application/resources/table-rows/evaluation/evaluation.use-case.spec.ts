@@ -6,47 +6,35 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import EvaluationInMemoryRepository from '@application/repositories/evaluation/evaluation-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableRowEvaluationUseCase from './evaluation.use-case';
 
-const { mockRow } = vi.hoisted(() => ({
-  mockRow: {
-    _id: { toString: (): string => 'row-id' },
-    toJSON: (): Record<string, unknown> => ({ _id: 'row-id', nome: 'Test' }),
-    populate: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    save: vi.fn().mockResolvedValue(undefined),
-    ratings: [],
-  },
-}));
-
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    findOne: vi.fn().mockResolvedValue(mockRow),
-  }),
-  buildPopulate: vi.fn().mockResolvedValue([]),
-  buildSchema: vi.fn().mockReturnValue({}),
+vi.mock('@application/core/builders', () => ({
   transformRowContext: vi.fn().mockImplementation((row) => row),
 }));
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let evaluationInMemoryRepository: EvaluationInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
 let sut: TableRowEvaluationUseCase;
 
 describe('Table Row Evaluation Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     evaluationInMemoryRepository = new EvaluationInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
     sut = new TableRowEvaluationUseCase(
       tableInMemoryRepository,
       evaluationInMemoryRepository,
+      rowInMemoryRepository,
     );
     vi.clearAllMocks();
   });
 
   it('deve adicionar avaliacao com sucesso', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -60,9 +48,14 @@ describe('Table Row Evaluation Use Case', () => {
       fieldOrderForm: [],
     });
 
+    const row = await rowInMemoryRepository.create({
+      table,
+      data: { ratings: [] },
+    });
+
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
       field: 'ratings',
       value: 5,
       user: 'user-id',
@@ -72,7 +65,7 @@ describe('Table Row Evaluation Use Case', () => {
   });
 
   it('deve atualizar avaliacao existente', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -86,14 +79,19 @@ describe('Table Row Evaluation Use Case', () => {
       fieldOrderForm: [],
     });
 
-    await evaluationInMemoryRepository.create({
+    const evaluation = await evaluationInMemoryRepository.create({
       value: 3,
       user: 'user-id',
     });
 
+    const row = await rowInMemoryRepository.create({
+      table,
+      data: { ratings: [evaluation._id] },
+    });
+
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
       field: 'ratings',
       value: 5,
       user: 'user-id',

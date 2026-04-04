@@ -7,17 +7,24 @@ import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { maskPasswordFields } from '@application/core/row-password-helper.core';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { GroupRowShowPayload } from './show.validator';
 
-type Response = Either<HTTPException, Record<string, any>>;
+type Response = Either<HTTPException, Record<string, unknown>>;
 type Payload = GroupRowShowPayload;
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
 
 @Service()
 export default class GroupRowShowUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -40,26 +47,39 @@ export default class GroupRowShowUseCase {
         );
       }
 
-      const build = await buildTable(table);
-
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-
-      const row = await build
-        .findOne({ _id: payload.rowId })
-        .populate(populate);
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload.rowId },
+      });
 
       if (!row)
         return left(
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
 
-      const rowJson = row.toJSON({ flattenObjectIds: true });
+      const rawItems = row[groupField.slug];
+      let item: Record<string, unknown> | undefined;
 
-      const items = rowJson[groupField.slug] || [];
-      const item = items.find((i: any) => i._id?.toString() === payload.itemId);
+      if (Array.isArray(rawItems)) {
+        for (const candidate of rawItems) {
+          if (!isRecord(candidate)) {
+            continue;
+          }
+          const id = candidate._id;
+          if (typeof id === 'string' && id === payload.itemId) {
+            item = candidate;
+            break;
+          }
+          if (
+            isRecord(id) &&
+            typeof id.toString === 'function' &&
+            id.toString() === payload.itemId
+          ) {
+            item = candidate;
+            break;
+          }
+        }
+      }
 
       if (!item)
         return left(
@@ -67,8 +87,8 @@ export default class GroupRowShowUseCase {
         );
 
       const group = table.groups?.find((g) => g.slug === payload.groupSlug);
-      const groupFields = group?.fields || [];
-      maskPasswordFields(item, groupFields as IField[]);
+      const groupFields: IField[] = group?.fields || [];
+      maskPasswordFields(item, groupFields);
 
       return right(item);
     } catch (error) {

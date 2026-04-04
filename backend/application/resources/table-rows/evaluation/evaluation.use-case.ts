@@ -1,17 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import type { ObjectId } from 'mongoose';
 
+import { transformRowContext } from '@application/core/builders';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import {
-  buildPopulate,
-  buildTable,
-  transformRowContext,
-} from '@application/core/util.core';
 import { EvaluationContractRepository } from '@application/repositories/evaluation/evaluation-contract.repository';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { TableRowEvaluationPayload } from './evaluation.validator';
@@ -28,6 +23,7 @@ export default class TableRowEvaluationUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly evaluationRepository: EvaluationContractRepository,
+    private readonly rowRepository: RowContractRepository,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -39,15 +35,9 @@ export default class TableRowEvaluationUseCase {
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
-      const c = await buildTable(table);
-
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-
-      const row = await c.findOne({
-        _id: payload._id,
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
       });
 
       if (!row)
@@ -55,8 +45,10 @@ export default class TableRowEvaluationUseCase {
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
 
-      const existingIds: string[] =
-        row[payload.field]?.flatMap((r: ObjectId) => r?.toString()) ?? [];
+      const fieldValue = row[payload.field];
+      const existingIds: string[] = Array.isArray(fieldValue)
+        ? fieldValue.flatMap((r: { toString(): string }) => r?.toString())
+        : [];
 
       let oldEvaluationId: string | null = null;
 
@@ -78,28 +70,32 @@ export default class TableRowEvaluationUseCase {
 
       const evaluationId = evaluation._id.toString();
 
+      let updatedRow: import('@application/core/entity.core').IRow;
+
       if (oldEvaluationId) {
-        const updatedIds = existingIds.map((id) =>
-          id === oldEvaluationId ? evaluationId : id,
-        );
-        await row.set(payload.field, updatedIds).save();
+        const updatedIds = existingIds.map((id) => {
+          if (id === oldEvaluationId) {
+            return evaluationId;
+          }
+          return id;
+        });
+        updatedRow = await this.rowRepository.setFieldAndSave({
+          table,
+          _id: payload._id,
+          field: payload.field,
+          value: updatedIds,
+        });
         await this.evaluationRepository.delete(oldEvaluationId);
       } else {
-        await row.set(payload.field, [...existingIds, evaluationId]).save();
+        updatedRow = await this.rowRepository.setFieldAndSave({
+          table,
+          _id: payload._id,
+          field: payload.field,
+          value: [...existingIds, evaluationId],
+        });
       }
 
-      const populated = await row?.populate(populate);
-
-      const rowJson = {
-        ...populated?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: populated?._id?.toString(),
-      };
-
-      return right(
-        transformRowContext(rowJson, table.fields as IField[], payload.user),
-      );
+      return right(transformRowContext(updatedRow, table.fields, payload.user));
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

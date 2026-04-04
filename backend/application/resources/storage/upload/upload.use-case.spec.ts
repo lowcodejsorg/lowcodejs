@@ -1,70 +1,81 @@
-/* eslint-disable @typescript-eslint/explicit-function-return-type */
+import type { MultipartFile } from '@fastify/multipart';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
-import { StorageContractService } from '@application/services/storage/storage-contract.service';
+import InMemoryStorageService from '@application/services/storage/in-memory-storage.service';
 
 import StorageUploadUseCase from './upload.use-case';
 
 let storageInMemoryRepository: StorageInMemoryRepository;
-let storageService: StorageContractService;
+let storageService: InMemoryStorageService;
 let sut: StorageUploadUseCase;
+
+function createMockFile(filename: string): MultipartFile {
+  return {
+    filename,
+    mimetype: 'image/jpeg',
+    encoding: '7bit',
+    type: 'file',
+    fieldname: 'file',
+    file: {} as unknown as import('node:stream').Readable,
+    fields: {},
+    toBuffer: vi.fn(),
+  } as unknown as MultipartFile;
+}
 
 describe('Storage Upload Use Case', () => {
   beforeEach(() => {
     storageInMemoryRepository = new StorageInMemoryRepository();
-    storageService = {
-      upload: vi.fn().mockResolvedValue({
-        filename: 'random-name.webp',
-        originalName: 'test.jpg',
-        size: 1024,
-        mimetype: 'image/webp',
-      }),
-      delete: vi.fn().mockResolvedValue(true),
-      exists: vi.fn(),
-    } as unknown as StorageContractService;
+    storageService = new InMemoryStorageService();
     sut = new StorageUploadUseCase(storageInMemoryRepository, storageService);
   });
 
   it('deve fazer upload de arquivos com sucesso', async () => {
-    const mockFiles = async function* () {
-      yield { filename: 'test.jpg' } as any;
-    };
+    const uploadSpy = vi.spyOn(storageService, 'upload');
+    const createManySpy = vi.spyOn(storageInMemoryRepository, 'createMany');
+
+    async function* mockFiles(): AsyncIterableIterator<MultipartFile> {
+      yield createMockFile('test.jpg');
+    }
 
     const result = await sut.execute(mockFiles());
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value).toHaveLength(1);
-      expect(result.value[0].filename).toBe('random-name.webp');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value).toHaveLength(1);
+    expect(uploadSpy).toHaveBeenCalledOnce();
+    expect(createManySpy).toHaveBeenCalledOnce();
   });
 
   it('deve fazer upload de multiplos arquivos', async () => {
-    const mockFiles = async function* () {
-      yield { filename: 'test1.jpg' } as any;
-      yield { filename: 'test2.jpg' } as any;
-    };
+    const uploadSpy = vi.spyOn(storageService, 'upload');
+
+    async function* mockFiles(): AsyncIterableIterator<MultipartFile> {
+      yield createMockFile('test1.jpg');
+      yield createMockFile('test2.jpg');
+    }
 
     const result = await sut.execute(mockFiles());
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value).toHaveLength(2);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value).toHaveLength(2);
+    expect(uploadSpy).toHaveBeenCalledTimes(2);
   });
 
   it('deve retornar lista vazia quando nao houver arquivos', async () => {
-    const mockFiles = async function* () {
+    async function* mockFiles(): AsyncIterableIterator<MultipartFile> {
       // sem arquivos
-    };
+    }
 
     const result = await sut.execute(mockFiles());
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value).toHaveLength(0);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value).toHaveLength(0);
   });
 
   it('deve retornar erro STORAGE_UPLOAD_ERROR quando houver falha', async () => {
@@ -72,16 +83,17 @@ describe('Storage Upload Use Case', () => {
       new Error('Upload error'),
     );
 
-    const mockFiles = async function* () {
-      yield { filename: 'test.jpg' } as any;
-    };
+    async function* mockFiles(): AsyncIterableIterator<MultipartFile> {
+      yield createMockFile('test.jpg');
+    }
 
     const result = await sut.execute(mockFiles());
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('STORAGE_UPLOAD_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('STORAGE_UPLOAD_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

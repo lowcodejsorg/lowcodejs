@@ -18,6 +18,10 @@ describe('User Update Use Case', () => {
   });
 
   it('deve atualizar usuario com sucesso (sem password)', async () => {
+    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
+    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
+    const hashSpy = vi.spyOn(passwordService, 'hash');
+
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -34,13 +38,20 @@ describe('User Update Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('John Updated');
-      expect(result.value.email).toBe('john.updated@example.com');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.name).toBe('John Updated');
+    expect(result.value.email).toBe('john.updated@example.com');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
+    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+    expect(hashSpy).not.toHaveBeenCalled();
   });
 
   it('deve atualizar usuario com nova senha (hasheada)', async () => {
+    const hashSpy = vi.spyOn(passwordService, 'hash');
+    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
+
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -58,13 +69,41 @@ describe('User Update Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.password).not.toBe('newpassword');
-      expect(result.value.password).not.toBe('oldpassword');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.password).not.toBe('newpassword');
+    expect(result.value.password).not.toBe('oldpassword');
+    expect(result.value.password).toBe('hashed_newpassword');
+
+    expect(hashSpy).toHaveBeenCalledTimes(1);
+    expect(hashSpy).toHaveBeenCalledWith('newpassword');
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('deve permitir alterar status do usuario', async () => {
+    const created = await userInMemoryRepository.create({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123',
+      group: 'group-id',
+    });
+
+    const result = await sut.execute({
+      _id: created._id,
+      name: 'John Doe',
+      email: 'john@example.com',
+      group: 'group-id',
+      status: E_USER_STATUS.INACTIVE,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.status).toBe(E_USER_STATUS.INACTIVE);
   });
 
   it('deve retornar erro USER_NOT_FOUND (404) quando usuario nao existe', async () => {
+    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
+    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
+
     const result = await sut.execute({
       _id: 'non-existent-id',
       name: 'John Doe',
@@ -74,17 +113,19 @@ describe('User Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('USER_NOT_FOUND');
-      expect(result.value.message).toBe('Usuário não encontrado');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('USER_NOT_FOUND');
+    expect(result.value.message).toBe('Usuário não encontrado');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
+    expect(updateSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro UPDATE_USER_ERROR (500) em falha de DB', async () => {
-    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    const findByIdSpy = vi
+      .spyOn(userInMemoryRepository, 'findById')
+      .mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({
       _id: 'any-id',
@@ -95,9 +136,11 @@ describe('User Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('UPDATE_USER_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('UPDATE_USER_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
   });
 });

@@ -3,64 +3,64 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField } from '@application/core/entity.core';
+import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { TableRowRemoveFromTrashPayload } from './remove-from-trash.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').IRow
->;
+type Response = Either<HTTPException, IRow>;
 
 type Payload = TableRowRemoveFromTrashPayload;
 
 @Service()
 export default class TableRowRemoveFromTrashUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
-      const c = await buildTable(table);
-
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-
-      const row = await c.findOne({
-        _id: payload._id,
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+        populate: false,
       });
 
-      if (!row)
+      if (!row) {
         return left(
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
+      }
 
-      if (!row.trashed)
+      if (!row.trashed) {
         return left(
           HTTPException.Conflict('Registro não está na lixeira', 'NOT_TRASHED'),
         );
+      }
 
-      await row.set({ trashed: false, trashedAt: null }).save();
+      const updated = await this.rowRepository.restoreFromTrash(
+        table,
+        payload._id,
+      );
 
-      const populated = await row.populate(populate);
+      if (!updated) {
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
+      }
 
-      return right({
-        ...populated.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: populated._id.toString(),
-      });
+      return right(updated);
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

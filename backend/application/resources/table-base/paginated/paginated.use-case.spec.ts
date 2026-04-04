@@ -20,6 +20,9 @@ describe('Table Paginated Use Case', () => {
   });
 
   it('deve retornar lista vazia quando nao houver tabelas', async () => {
+    const findManySpy = vi.spyOn(tableInMemoryRepository, 'findMany');
+    const countSpy = vi.spyOn(tableInMemoryRepository, 'count');
+
     const result = await sut.execute({
       page: 1,
       perPage: 20,
@@ -30,10 +33,12 @@ describe('Table Paginated Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.data).toHaveLength(0);
-      expect(result.value.meta.total).toBe(0);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.data).toHaveLength(0);
+    expect(result.value.meta.total).toBe(0);
+    expect(findManySpy).toHaveBeenCalled();
+    expect(countSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar lista de tabelas paginada', async () => {
@@ -77,10 +82,10 @@ describe('Table Paginated Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.data).toHaveLength(2);
-      expect(result.value.meta.total).toBe(2);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.data).toHaveLength(2);
+    expect(result.value.meta.total).toBe(2);
   });
 
   it('deve retornar metadata de paginacao correto', async () => {
@@ -111,12 +116,12 @@ describe('Table Paginated Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.data).toHaveLength(10);
-      expect(result.value.meta.total).toBe(25);
-      expect(result.value.meta.lastPage).toBe(3);
-      expect(result.value.meta.firstPage).toBe(1);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.data).toHaveLength(10);
+    expect(result.value.meta.total).toBe(25);
+    expect(result.value.meta.lastPage).toBe(3);
+    expect(result.value.meta.firstPage).toBe(1);
   });
 
   it('deve filtrar por busca', async () => {
@@ -161,10 +166,10 @@ describe('Table Paginated Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.data).toHaveLength(1);
-      expect(result.value.data[0].name).toBe('Clientes');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.data).toHaveLength(1);
+    expect(result.value.data[0].name).toBe('Clientes');
   });
 
   it('deve retornar erro TABLE_LIST_PAGINATED_ERROR quando houver falha', async () => {
@@ -182,9 +187,10 @@ describe('Table Paginated Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('TABLE_LIST_PAGINATED_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('TABLE_LIST_PAGINATED_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

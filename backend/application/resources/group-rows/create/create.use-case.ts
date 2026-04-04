@@ -11,15 +11,27 @@ import {
   maskPasswordFields,
 } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-type Response = Either<HTTPException, Record<string, any>>;
-type Payload = { [x: string]: any };
+type Response = Either<HTTPException, Record<string, unknown>>;
+type Payload = Record<string, unknown> & {
+  slug: string;
+  rowId: string;
+  groupSlug: string;
+  creator?: string | null;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
 
 @Service()
 export default class GroupRowCreateUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -52,13 +64,9 @@ export default class GroupRowCreateUseCase {
       }
 
       // Valida os campos do item contra os campos do grupo
-      const groupFields = group.fields || [];
+      const groupFields: IField[] = group.fields || [];
 
-      const errors = validateRowPayload(
-        payload,
-        groupFields as IField[],
-        table.groups,
-      );
+      const errors = validateRowPayload(payload, groupFields, table.groups);
 
       if (errors) {
         return left(
@@ -71,51 +79,41 @@ export default class GroupRowCreateUseCase {
       }
 
       // Hash password fields se necessário
-      await hashPasswordFields(payload, groupFields as IField[]);
-
-      const build = await buildTable(table);
-
-      const row = await build.findOne({ _id: payload.rowId });
-
-      if (!row)
-        return left(
-          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
-        );
+      await hashPasswordFields(payload, groupFields);
 
       // Remove campos de controle do payload para que o Mongoose gere um novo _id
       const { _id, slug, rowId, groupSlug, ...itemData } = payload;
 
-      // Push o novo item no array embedded com creator
-      const groupData = (row as any)[groupField.slug] || [];
-      groupData.push({
-        ...itemData,
-        creator: itemData.creator ?? null,
+      const row = await this.rowRepository.addGroupItem({
+        table,
+        rowId: payload.rowId,
+        groupFieldSlug: groupField.slug,
+        data: {
+          ...itemData,
+          creator: itemData.creator || null,
+        },
       });
-      row.set(groupField.slug, groupData);
-
-      await row.save();
-
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-
-      await row.populate(populate);
-
-      const rowJson = {
-        ...row.toJSON({ flattenObjectIds: true }),
-        _id: row._id?.toString(),
-      };
 
       // Retorna o último item adicionado
-      const addedItems = (rowJson as any)[groupField.slug];
-      const lastItem = addedItems?.[addedItems.length - 1];
+      const groupItems = row[groupField.slug];
+      let lastItem: Record<string, unknown> | undefined;
 
-      if (lastItem) {
-        maskPasswordFields(lastItem, groupFields as IField[]);
+      if (Array.isArray(groupItems) && groupItems.length > 0) {
+        const candidate = groupItems[groupItems.length - 1];
+        if (isRecord(candidate)) {
+          lastItem = candidate;
+        }
       }
 
-      return right(lastItem || rowJson);
+      if (lastItem) {
+        maskPasswordFields(lastItem, groupFields);
+      }
+
+      if (lastItem) {
+        return right(lastItem);
+      }
+
+      return right(row);
     } catch (error) {
       console.error(error);
       return left(

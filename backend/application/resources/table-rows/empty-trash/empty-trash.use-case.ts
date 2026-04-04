@@ -4,7 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
-import { buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 type Payload = { slug: string };
@@ -12,22 +12,24 @@ type Response = Either<HTTPException, { deleted: number }>;
 
 @Service()
 export default class EmptyTrashUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
-      const model = await buildTable(table);
+      const deleted = await this.rowRepository.emptyTrash(table);
 
-      const result = await model.deleteMany({ trashed: true });
-
-      return right({ deleted: result.deletedCount });
+      return right({ deleted });
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

@@ -3,69 +3,51 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField } from '@application/core/entity.core';
+import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { maskPasswordFields } from '@application/core/row-password-helper.core';
-import {
-  buildPopulate,
-  buildTable,
-  transformRowContext,
-} from '@application/core/util.core';
+import { transformRowContext } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { TableRowShowPayload } from './show.validator';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').IRow
->;
+type Response = Either<HTTPException, IRow>;
 
 type Payload = TableRowShowPayload & { user?: string };
 
 @Service()
 export default class TableRowShowUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
-      const c = await buildTable(table);
-
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-        table.slug,
-      );
-
-      const row = await c.findOne({
-        _id: payload._id,
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+        includeReverseRelationships: true,
       });
 
-      if (!row)
+      if (!row) {
         return left(
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
+      }
 
-      const populated = await row.populate(populate);
+      maskPasswordFields(row, table.fields);
 
-      const rowJson = {
-        ...populated?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: populated?._id?.toString(),
-      };
-
-      maskPasswordFields(rowJson, table.fields as IField[]);
-
-      return right(
-        transformRowContext(rowJson, table.fields as IField[], payload.user),
-      );
+      return right(transformRowContext(row, table.fields, payload.user));
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

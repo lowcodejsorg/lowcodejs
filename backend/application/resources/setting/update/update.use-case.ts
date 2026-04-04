@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
 import { Inject, Service } from 'fastify-decorators';
-import mongoose from 'mongoose';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
+import { isValidObjectId } from '@application/core/object-id.util';
 import {
   SettingContractRepository,
   SettingUpdatePayload,
@@ -31,9 +31,7 @@ export default class SettingUpdateUseCase {
     try {
       if (Array.isArray(payload.MODEL_CLONE_TABLES)) {
         payload.MODEL_CLONE_TABLES = payload.MODEL_CLONE_TABLES.filter(
-          (id) =>
-            !BUILTIN_TEMPLATE_IDS.has(id) &&
-            mongoose.Types.ObjectId.isValid(id),
+          (id) => !BUILTIN_TEMPLATE_IDS.has(id) && isValidObjectId(id),
         );
       }
 

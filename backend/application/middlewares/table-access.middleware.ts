@@ -8,7 +8,8 @@ import {
   type ValueOf,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { Table as TableModel } from '@application/model/table.model';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
 import type { PermissionContractService } from '@application/services/permission/permission-contract.service';
 import PermissionService from '@application/services/permission/permission.service';
 
@@ -31,6 +32,10 @@ export function TableAccessMiddleware(options: AccessOptions) {
     const permissionService =
       getInstanceByToken<PermissionContractService>(PermissionService);
 
+    const tableRepository = getInstanceByToken<TableContractRepository>(
+      TableMongooseRepository,
+    );
+
     // 1. Validar parametro slug
     const params = ParamsSchema.safeParse(request.params);
     if (!params.success) {
@@ -47,17 +52,16 @@ export function TableAccessMiddleware(options: AccessOptions) {
 
     if (slug && requiredPermission !== E_TABLE_PERMISSION.CREATE_TABLE) {
       if (!table) {
-        table = (await TableModel.findOne({
-          slug,
-        }).lean()) as unknown as ITable;
+        const found = await tableRepository.findBySlug(slug);
 
-        if (!table) {
+        if (!found) {
           throw HTTPException.NotFound(
             'Tabela não encontrada',
             'TABLE_NOT_FOUND',
           );
         }
 
+        table = found;
         request.table = table;
       }
     }

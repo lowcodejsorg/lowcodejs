@@ -14,6 +14,8 @@ describe('Setting Update Use Case', () => {
   });
 
   it('deve atualizar configurações com sucesso', async () => {
+    const updateSpy = vi.spyOn(settingInMemoryRepository, 'update');
+
     const result = await sut.execute({
       LOCALE: 'en-us',
       FILE_UPLOAD_MAX_SIZE: 5242880,
@@ -25,15 +27,16 @@ describe('Setting Update Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.LOCALE).toBe('en-us');
-      expect(result.value.FILE_UPLOAD_MAX_SIZE).toBe(5242880);
-      expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual(['jpg', 'png', 'pdf']);
-      expect(result.value.MODEL_CLONE_TABLES).toEqual([
-        '507f1f77bcf86cd799439011',
-        '507f1f77bcf86cd799439012',
-      ]);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.LOCALE).toBe('en-us');
+    expect(result.value.FILE_UPLOAD_MAX_SIZE).toBe(5242880);
+    expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual(['jpg', 'png', 'pdf']);
+    expect(result.value.MODEL_CLONE_TABLES).toEqual([
+      '507f1f77bcf86cd799439011',
+      '507f1f77bcf86cd799439012',
+    ]);
+    expect(updateSpy).toHaveBeenCalledOnce();
   });
 
   it('deve atualizar process.env com os novos valores', async () => {
@@ -54,9 +57,10 @@ describe('Setting Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('SETTINGS_UPDATE_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('SETTINGS_UPDATE_ERROR');
+    expect(result.value.message).toBe('Erro ao atualizar configurações');
   });
 });

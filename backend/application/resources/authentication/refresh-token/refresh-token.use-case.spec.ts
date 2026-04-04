@@ -14,6 +14,8 @@ describe('Refresh Token Use Case', () => {
   });
 
   it('deve retornar usuario quando refresh token for valido', async () => {
+    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
+
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -24,33 +26,43 @@ describe('Refresh Token Use Case', () => {
     const result = await sut.execute({ _id: user._id });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value._id).toBe(user._id);
-      expect(result.value.email).toBe('john@example.com');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value._id).toBe(user._id);
+    expect(result.value.email).toBe('john@example.com');
+    expect(result.value.name).toBe('John Doe');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
+    expect(findByIdSpy).toHaveBeenCalledWith(user._id);
   });
 
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existir', async () => {
+    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
+
     const result = await sut.execute({ _id: 'non-existent-id' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('USER_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('USER_NOT_FOUND');
+    expect(result.value.message).toBe('Usuário não encontrado');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
+    expect(findByIdSpy).toHaveBeenCalledWith('non-existent-id');
   });
 
   it('deve retornar erro REFRESH_TOKEN_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    const findByIdSpy = vi
+      .spyOn(userInMemoryRepository, 'findById')
+      .mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({ _id: 'some-id' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('REFRESH_TOKEN_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('REFRESH_TOKEN_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
   });
 });

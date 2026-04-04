@@ -14,6 +14,9 @@ describe('UserGroup Update Use Case', () => {
   });
 
   it('deve atualizar um grupo de usuarios com sucesso', async () => {
+    const findByIdSpy = vi.spyOn(userGroupInMemoryRepository, 'findById');
+    const updateSpy = vi.spyOn(userGroupInMemoryRepository, 'update');
+
     const created = await userGroupInMemoryRepository.create({
       name: 'Administradores',
       slug: 'administradores',
@@ -22,31 +25,31 @@ describe('UserGroup Update Use Case', () => {
 
     const result = await sut.execute({
       _id: created._id,
-      // name: 'Super Administradores',
       permissions: ['permission-1', 'permission-2'],
       description: 'Group description',
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      // expect(result.value.name).toBe('Super Administradores');
-      expect(result.value.permissions).toHaveLength(2);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.permissions).toHaveLength(2);
+    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
+    expect(updateSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro USER_GROUP_NOT_FOUND quando grupo nao existe', async () => {
     const result = await sut.execute({
       _id: 'non-existent-id',
-      // name: 'Updated',
       permissions: ['permission-1'],
       description: 'Group description',
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('USER_GROUP_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('USER_GROUP_NOT_FOUND');
+    expect(result.value.message).toBe('Grupo de usuários não encontrado');
   });
 
   it('deve retornar erro quando nao informar permissoes', async () => {
@@ -58,15 +61,17 @@ describe('UserGroup Update Use Case', () => {
 
     const result = await sut.execute({
       _id: created._id,
-      // name: 'Updated',
       permissions: [],
       description: 'Group description',
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(400);
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(400);
+    expect(result.value.message).toBe(
+      'Ao menos uma permissão deve ser informada para o grupo de usuários',
+    );
   });
 
   it('deve retornar erro UPDATE_USER_GROUP_ERROR quando houver falha', async () => {
@@ -76,15 +81,15 @@ describe('UserGroup Update Use Case', () => {
 
     const result = await sut.execute({
       _id: 'some-id',
-      // name: 'Updated',
       permissions: ['permission-1'],
       description: 'Group description',
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('UPDATE_USER_GROUP_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('UPDATE_USER_GROUP_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

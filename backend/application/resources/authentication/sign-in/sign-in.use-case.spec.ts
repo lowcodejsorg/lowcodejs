@@ -18,6 +18,9 @@ describe('Sign In Use Case', () => {
   });
 
   it('deve autenticar usuario com credenciais validas', async () => {
+    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
+    const compareSpy = vi.spyOn(passwordService, 'compare');
+
     const hashedPassword = await passwordService.hash('password123');
     await userInMemoryRepository.create({
       name: 'John Doe',
@@ -32,24 +35,38 @@ describe('Sign In Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.email).toBe('john@example.com');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.email).toBe('john@example.com');
+    expect(result.value.name).toBe('John Doe');
+    expect(result.value.status).toBe(E_USER_STATUS.ACTIVE);
+
+    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
+    expect(findByEmailSpy).toHaveBeenCalledWith('john@example.com');
+    expect(compareSpy).toHaveBeenCalledTimes(1);
+    expect(compareSpy).toHaveBeenCalledWith('password123', hashedPassword);
   });
 
   it('deve retornar erro 401 quando email nao existir', async () => {
+    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
+
     const result = await sut.execute({
       email: 'nonexistent@example.com',
       password: 'password123',
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(401);
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(401);
+    expect(result.value.cause).toBe('INVALID_CREDENTIALS');
+    expect(result.value.message).toBe('E-mail ou senha inválidos');
+
+    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
+    expect(findByEmailSpy).toHaveBeenCalledWith('nonexistent@example.com');
   });
 
   it('deve retornar erro 401 quando senha estiver incorreta', async () => {
+    const compareSpy = vi.spyOn(passwordService, 'compare');
+
     const hashedPassword = await passwordService.hash('correct_password');
     await userInMemoryRepository.create({
       name: 'John Doe',
@@ -64,9 +81,13 @@ describe('Sign In Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(401);
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(401);
+    expect(result.value.cause).toBe('INVALID_CREDENTIALS');
+    expect(result.value.message).toBe('E-mail ou senha inválidos');
+
+    expect(compareSpy).toHaveBeenCalledTimes(1);
+    expect(compareSpy).toHaveBeenCalledWith('wrong_password', hashedPassword);
   });
 
   it('deve retornar erro 401 quando usuario estiver inativo', async () => {
@@ -89,15 +110,40 @@ describe('Sign In Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(401);
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(401);
+    expect(result.value.cause).toBe('USER_INACTIVE');
+    expect(result.value.message).toBe('Usuário inativo');
+  });
+
+  it('nao deve chamar passwordService.compare quando usuario esta inativo', async () => {
+    const compareSpy = vi.spyOn(passwordService, 'compare');
+
+    const hashedPassword = await passwordService.hash('password123');
+    const user = await userInMemoryRepository.create({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: hashedPassword,
+      group: 'group-id',
+    });
+
+    await userInMemoryRepository.update({
+      _id: user._id,
+      status: E_USER_STATUS.INACTIVE,
+    });
+
+    await sut.execute({
+      email: 'john@example.com',
+      password: 'password123',
+    });
+
+    expect(compareSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro SIGN_IN_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findByEmail').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    const findByEmailSpy = vi
+      .spyOn(userInMemoryRepository, 'findByEmail')
+      .mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({
       email: 'john@example.com',
@@ -105,9 +151,11 @@ describe('Sign In Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('SIGN_IN_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('SIGN_IN_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
+
+    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
   });
 });

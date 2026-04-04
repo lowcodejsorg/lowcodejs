@@ -1,32 +1,36 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import type { Either } from '@application/core/either.core';
-import { left, right } from '@application/core/either.core';
-import type { IField, IMeta, Paginated } from '@application/core/entity.core';
-import HTTPException from '@application/core/exception.core';
-import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import {
   buildOrder,
-  buildPopulate,
   buildQuery,
-  buildTable,
   transformRowContext,
-} from '@application/core/util.core';
+} from '@application/core/builders';
+import type { Either } from '@application/core/either.core';
+import { left, right } from '@application/core/either.core';
+import type {
+  IField,
+  IMeta,
+  IRow,
+  Paginated,
+} from '@application/core/entity.core';
+import HTTPException from '@application/core/exception.core';
+import { maskPasswordFields } from '@application/core/row-password-helper.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { TableRowPaginatedPayload } from './paginated.validator';
 
-type Response = Either<
-  HTTPException,
-  Paginated<import('@application/core/entity.core').IRow>
->;
+type Response = Either<HTTPException, Paginated<IRow>>;
 
 type Payload = TableRowPaginatedPayload & { user?: string };
 
 @Service()
 export default class TableRowPaginatedUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -34,12 +38,11 @@ export default class TableRowPaginatedUseCase {
 
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
-
-      const c = await buildTable(table);
+      }
 
       const query = await buildQuery(
         payload,
@@ -50,20 +53,16 @@ export default class TableRowPaginatedUseCase {
 
       const order = buildOrder(payload, table.fields, table.order);
 
-      const populate = await buildPopulate(
-        table.fields,
-        table.groups,
-        table.slug,
-      );
+      const rows = await this.rowRepository.findMany({
+        table,
+        query,
+        skip,
+        limit: payload.perPage,
+        sort: order,
+        includeReverseRelationships: true,
+      });
 
-      const rows = await c
-        .find(query)
-        .populate(populate)
-        .skip(skip)
-        .limit(payload.perPage)
-        .sort(order);
-
-      const total = await c.countDocuments(query);
+      const total = await this.rowRepository.count(table, query);
 
       const lastPage = Math.ceil(total / payload.perPage);
 
@@ -75,22 +74,11 @@ export default class TableRowPaginatedUseCase {
         firstPage: total > 0 ? 1 : 0,
       };
 
-      const data = rows?.map((u) => {
-        const rowJson = {
-          ...u?.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: u?._id.toString(),
-        };
-        maskPasswordFields(rowJson, table.fields as IField[]);
-        return transformRowContext(
-          rowJson,
-          table.fields as IField[],
-          payload.user,
-        );
+      const data = rows.map((row) => {
+        maskPasswordFields(row, table.fields);
+        return transformRowContext(row, table.fields, payload.user);
       });
 
-      // @ts-ignore
       return right({
         meta,
         data,

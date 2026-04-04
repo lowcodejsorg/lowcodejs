@@ -14,6 +14,8 @@ describe('User Show Use Case', () => {
   });
 
   it('deve retornar usuario quando encontrado', async () => {
+    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
+
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -24,35 +26,43 @@ describe('User Show Use Case', () => {
     const result = await sut.execute({ _id: created._id });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value._id).toBe(created._id);
-      expect(result.value.name).toBe('John Doe');
-      expect(result.value.email).toBe('john@example.com');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value._id).toBe(created._id);
+    expect(result.value.name).toBe('John Doe');
+    expect(result.value.email).toBe('john@example.com');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
+    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
   });
 
   it('deve retornar erro USER_NOT_FOUND (404) quando usuario nao existe', async () => {
+    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
+
     const result = await sut.execute({ _id: 'non-existent-id' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('USER_NOT_FOUND');
-      expect(result.value.message).toBe('Usuário não encontrado');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('USER_NOT_FOUND');
+    expect(result.value.message).toBe('Usuário não encontrado');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
+    expect(findByIdSpy).toHaveBeenCalledWith('non-existent-id');
   });
 
   it('deve retornar erro GET_USER_BY_ID_ERROR (500) em falha de DB', async () => {
-    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    const findByIdSpy = vi
+      .spyOn(userInMemoryRepository, 'findById')
+      .mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({ _id: 'any-id' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('GET_USER_BY_ID_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('GET_USER_BY_ID_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
+
+    expect(findByIdSpy).toHaveBeenCalledTimes(1);
   });
 });

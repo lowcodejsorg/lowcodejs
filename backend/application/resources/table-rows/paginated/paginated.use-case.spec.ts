@@ -5,53 +5,35 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableRowPaginatedUseCase from './paginated.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    find: vi.fn().mockReturnValue({
-      populate: vi.fn().mockReturnThis(),
-      skip: vi.fn().mockReturnThis(),
-      limit: vi.fn().mockReturnThis(),
-      sort: vi.fn().mockResolvedValue([
-        {
-          toJSON: (): Record<string, unknown> => ({
-            _id: 'row-1',
-            nome: 'Test 1',
-          }),
-          _id: { toString: (): string => 'row-1' },
-        },
-        {
-          toJSON: (): Record<string, unknown> => ({
-            _id: 'row-2',
-            nome: 'Test 2',
-          }),
-          _id: { toString: (): string => 'row-2' },
-        },
-      ]),
-    }),
-    countDocuments: vi.fn().mockResolvedValue(2),
-  }),
-  buildPopulate: vi.fn().mockResolvedValue([]),
-  buildQuery: vi.fn().mockResolvedValue({}),
-  buildOrder: vi.fn().mockReturnValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
-  transformRowContext: vi.fn().mockImplementation((row) => row),
-}));
+vi.mock('@application/core/builders', async (importOriginal) => {
+  const original =
+    await importOriginal<typeof import('@application/core/builders')>();
+  return {
+    ...original,
+    buildQuery: vi.fn().mockResolvedValue({}),
+    buildOrder: vi.fn().mockReturnValue({}),
+    transformRowContext: vi.fn().mockImplementation((row) => row),
+  };
+});
 
 let tableInMemoryRepository: TableInMemoryRepository;
+let rowRepository: RowInMemoryRepository;
 let sut: TableRowPaginatedUseCase;
 
 describe('Table Row Paginated Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
-    sut = new TableRowPaginatedUseCase(tableInMemoryRepository);
+    rowRepository = new RowInMemoryRepository();
+    sut = new TableRowPaginatedUseCase(tableInMemoryRepository, rowRepository);
   });
 
   it('deve retornar lista de rows paginada', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -64,6 +46,9 @@ describe('Table Row Paginated Use Case', () => {
       fieldOrderList: [],
       fieldOrderForm: [],
     });
+
+    await rowRepository.create({ table, data: { nome: 'Test 1' } });
+    await rowRepository.create({ table, data: { nome: 'Test 2' } });
 
     const result = await sut.execute({
       slug: 'clientes',

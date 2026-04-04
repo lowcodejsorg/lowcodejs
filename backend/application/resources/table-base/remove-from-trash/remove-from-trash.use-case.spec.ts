@@ -19,6 +19,9 @@ describe('Table Remove From Trash Use Case', () => {
   });
 
   it('deve remover tabela da lixeira com sucesso', async () => {
+    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
+    const updateSpy = vi.spyOn(tableInMemoryRepository, 'update');
+
     const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -42,20 +45,23 @@ describe('Table Remove From Trash Use Case', () => {
     const result = await sut.execute({ slug: 'clientes' });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.trashed).toBe(false);
-      expect(result.value.trashedAt).toBeNull();
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.trashed).toBe(false);
+    expect(result.value.trashedAt).toBeNull();
+    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
+    expect(updateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
     const result = await sut.execute({ slug: 'non-existent' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    expect(result.value.message).toBe('Tabela não encontrada');
   });
 
   it('deve retornar erro NOT_TRASHED quando tabela nao estiver na lixeira', async () => {
@@ -76,10 +82,11 @@ describe('Table Remove From Trash Use Case', () => {
     const result = await sut.execute({ slug: 'clientes' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(409);
-      expect(result.value.cause).toBe('NOT_TRASHED');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('NOT_TRASHED');
+    expect(result.value.message).toBe('Tabela não está na lixeira');
   });
 
   it('deve retornar erro REMOVE_TABLE_FROM_TRASH_ERROR quando houver falha', async () => {
@@ -90,9 +97,10 @@ describe('Table Remove From Trash Use Case', () => {
     const result = await sut.execute({ slug: 'some-slug' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('REMOVE_TABLE_FROM_TRASH_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('REMOVE_TABLE_FROM_TRASH_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

@@ -14,6 +14,9 @@ describe('UserGroup Create Use Case', () => {
   });
 
   it('deve criar um grupo de usuarios com sucesso', async () => {
+    const createSpy = vi.spyOn(userGroupInMemoryRepository, 'create');
+    const findBySlugSpy = vi.spyOn(userGroupInMemoryRepository, 'findBySlug');
+
     const result = await sut.execute({
       name: 'Administradores',
       description: 'Grupo de administradores',
@@ -21,11 +24,13 @@ describe('UserGroup Create Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('Administradores');
-      expect(result.value.slug).toBe('administradores');
-      expect(result.value.permissions).toHaveLength(2);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.name).toBe('Administradores');
+    expect(result.value.slug).toBe('administradores');
+    expect(result.value.permissions).toHaveLength(2);
+    expect(findBySlugSpy).toHaveBeenCalledWith('administradores');
+    expect(createSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro GROUP_EXISTS quando slug ja existe', async () => {
@@ -42,10 +47,11 @@ describe('UserGroup Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(409);
-      expect(result.value.cause).toBe('GROUP_EXISTS');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('GROUP_EXISTS');
+    expect(result.value.message).toBe('Grupo já existe');
   });
 
   it('deve retornar erro quando nao informar permissoes', async () => {
@@ -56,9 +62,12 @@ describe('UserGroup Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(400);
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(400);
+    expect(result.value.message).toBe(
+      'Ao menos uma permissão deve ser informada para o grupo de usuários',
+    );
   });
 
   it('deve retornar erro CREATE_USER_GROUP_ERROR quando houver falha', async () => {
@@ -73,9 +82,10 @@ describe('UserGroup Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('CREATE_USER_GROUP_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('CREATE_USER_GROUP_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

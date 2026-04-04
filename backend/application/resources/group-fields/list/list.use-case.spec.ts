@@ -1,0 +1,152 @@
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  E_TABLE_COLLABORATION,
+  E_TABLE_STYLE,
+  E_TABLE_VISIBILITY,
+} from '@application/core/entity.core';
+import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+
+import GroupFieldListUseCase from './list.use-case';
+
+let tableRepository: TableInMemoryRepository;
+let fieldRepository: FieldInMemoryRepository;
+let sut: GroupFieldListUseCase;
+
+const TABLE_DEFAULTS = {
+  _schema: {},
+  fields: [],
+  owner: 'owner-id',
+  administrators: [],
+  style: E_TABLE_STYLE.LIST,
+  visibility: E_TABLE_VISIBILITY.RESTRICTED,
+  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+  fieldOrderList: [],
+  fieldOrderForm: [],
+};
+
+describe('Group Field List Use Case', () => {
+  beforeEach(() => {
+    tableRepository = new TableInMemoryRepository();
+    fieldRepository = new FieldInMemoryRepository();
+    sut = new GroupFieldListUseCase(tableRepository);
+  });
+
+  it('deve listar campos do grupo', async () => {
+    const field1 = await fieldRepository.create({
+      name: 'Rua',
+      slug: 'rua',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      locked: false,
+      native: false,
+      required: false,
+      category: [],
+      dropdown: [],
+      defaultValue: null,
+      format: E_FIELD_FORMAT.ALPHA_NUMERIC,
+      group: null,
+      multiple: false,
+      relationship: null,
+      widthInForm: 50,
+      widthInList: 10,
+      widthInDetail: null,
+    });
+
+    const field2 = await fieldRepository.create({
+      name: 'Numero',
+      slug: 'numero',
+      type: E_FIELD_TYPE.TEXT_SHORT,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: true,
+      locked: false,
+      native: false,
+      required: false,
+      category: [],
+      dropdown: [],
+      defaultValue: null,
+      format: E_FIELD_FORMAT.INTEGER,
+      group: null,
+      multiple: false,
+      relationship: null,
+      widthInForm: 50,
+      widthInList: 10,
+      widthInDetail: null,
+    });
+
+    await tableRepository.create({
+      ...TABLE_DEFAULTS,
+      name: 'Clientes',
+      slug: 'clientes',
+      groups: [
+        {
+          slug: 'endereco',
+          name: 'Endereco',
+          fields: [field1, field2],
+          _schema: {},
+        },
+      ],
+    });
+
+    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      groupSlug: 'endereco',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value).toHaveLength(2);
+    expect(result.value[0].slug).toBe('rua');
+    expect(result.value[1].slug).toBe('numero');
+
+    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
+    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
+  });
+
+  it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
+    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
+
+    const result = await sut.execute({
+      slug: 'inexistente',
+      groupSlug: 'endereco',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    expect(result.value.message).toBe('Tabela não encontrada');
+
+    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('deve retornar GROUP_NOT_FOUND quando grupo nao existe', async () => {
+    await tableRepository.create({
+      ...TABLE_DEFAULTS,
+      name: 'Clientes',
+      slug: 'clientes',
+      groups: [],
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      groupSlug: 'inexistente',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('GROUP_NOT_FOUND');
+    expect(result.value.message).toBe('Grupo não encontrado');
+  });
+});

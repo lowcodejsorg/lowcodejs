@@ -16,6 +16,12 @@ describe('Validate Code Use Case', () => {
   });
 
   it('deve validar codigo com sucesso', async () => {
+    const findByCodeSpy = vi.spyOn(
+      validationTokenInMemoryRepository,
+      'findByCode',
+    );
+    const updateSpy = vi.spyOn(validationTokenInMemoryRepository, 'update');
+
     await validationTokenInMemoryRepository.create({
       code: '123456',
       status: E_TOKEN_STATUS.REQUESTED,
@@ -25,22 +31,50 @@ describe('Validate Code Use Case', () => {
     const result = await sut.execute({ code: '123456' });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.user._id).toBe('user-id');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.user._id).toBe('user-id');
+
+    expect(findByCodeSpy).toHaveBeenCalledTimes(1);
+    expect(findByCodeSpy).toHaveBeenCalledWith('123456');
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('deve marcar token como VALIDATED apos validacao bem-sucedida', async () => {
+    const updateSpy = vi.spyOn(validationTokenInMemoryRepository, 'update');
+
+    const token = await validationTokenInMemoryRepository.create({
+      code: '123456',
+      status: E_TOKEN_STATUS.REQUESTED,
+      user: 'user-id',
+    });
+
+    await sut.execute({ code: '123456' });
+
+    expect(updateSpy).toHaveBeenCalledWith({
+      _id: token._id,
+      status: E_TOKEN_STATUS.VALIDATED,
+    });
   });
 
   it('deve retornar erro VALIDATION_TOKEN_NOT_FOUND quando codigo nao existir', async () => {
+    const findByCodeSpy = vi.spyOn(
+      validationTokenInMemoryRepository,
+      'findByCode',
+    );
+
     const result = await sut.execute({ code: 'invalid-code' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('VALIDATION_TOKEN_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('VALIDATION_TOKEN_NOT_FOUND');
+    expect(result.value.message).toBe('Token de validação não encontrado');
+
+    expect(findByCodeSpy).toHaveBeenCalledTimes(1);
+    expect(findByCodeSpy).toHaveBeenCalledWith('invalid-code');
   });
 
-  it('deve retornar erro CODE_EXPIRED quando token ja estiver expirado', async () => {
+  it('deve retornar erro VALIDATION_TOKEN_EXPIRED quando token ja estiver expirado', async () => {
     await validationTokenInMemoryRepository.create({
       code: '123456',
       status: E_TOKEN_STATUS.EXPIRED,
@@ -50,43 +84,60 @@ describe('Validate Code Use Case', () => {
     const result = await sut.execute({ code: '123456' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(410);
-      expect(result.value.cause).toBe('VALIDATION_TOKEN_EXPIRED');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(410);
+    expect(result.value.cause).toBe('VALIDATION_TOKEN_EXPIRED');
+    expect(result.value.message).toBe('Código expirado');
   });
 
   it('deve retornar erro VALIDATION_TOKEN_EXPIRED quando codigo tiver mais de 10 minutos', async () => {
+    const updateSpy = vi.spyOn(validationTokenInMemoryRepository, 'update');
+
     const token = await validationTokenInMemoryRepository.create({
       code: '123456',
       status: E_TOKEN_STATUS.REQUESTED,
       user: 'user-id',
     });
 
-    // Simular token criado há 15 minutos
+    // Simular token criado ha 15 minutos
     Object.assign(token, { createdAt: subMinutes(new Date(), 15) });
 
     const result = await sut.execute({ code: '123456' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(410);
-      expect(result.value.cause).toBe('VALIDATION_TOKEN_EXPIRED');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(410);
+    expect(result.value.cause).toBe('VALIDATION_TOKEN_EXPIRED');
+    expect(result.value.message).toBe('Código expirado');
+
+    expect(updateSpy).toHaveBeenCalledTimes(1);
+    expect(updateSpy).toHaveBeenCalledWith({
+      _id: token._id,
+      status: E_TOKEN_STATUS.EXPIRED,
+    });
+  });
+
+  it('nao deve chamar update quando token nao e encontrado', async () => {
+    const updateSpy = vi.spyOn(validationTokenInMemoryRepository, 'update');
+
+    await sut.execute({ code: 'invalid-code' });
+
+    expect(updateSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro VALIDATE_CODE_ERROR quando houver falha', async () => {
-    vi.spyOn(
-      validationTokenInMemoryRepository,
-      'findByCode',
-    ).mockRejectedValueOnce(new Error('Database error'));
+    const findByCodeSpy = vi
+      .spyOn(validationTokenInMemoryRepository, 'findByCode')
+      .mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({ code: '123456' });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('VALIDATE_CODE_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('VALIDATE_CODE_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
+
+    expect(findByCodeSpy).toHaveBeenCalledTimes(1);
   });
 });

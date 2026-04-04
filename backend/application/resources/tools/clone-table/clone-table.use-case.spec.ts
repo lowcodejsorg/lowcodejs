@@ -20,6 +20,9 @@ describe('Clone Table Use Case', () => {
   });
 
   it('deve clonar uma tabela com sucesso', async () => {
+    const findByIdSpy = vi.spyOn(tableInMemoryRepository, 'findById');
+    const createSpy = vi.spyOn(tableInMemoryRepository, 'create');
+
     const baseTable = await tableInMemoryRepository.create({
       name: 'Tabela Original',
       slug: 'tabela-original',
@@ -39,11 +42,13 @@ describe('Clone Table Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.table.name).toBe('Tabela Clonada');
-      expect(result.value.table.slug).toBe('tabela-clonada');
-      expect(result.value.table._id).not.toBe(baseTable._id);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.table.name).toBe('Tabela Clonada');
+    expect(result.value.table.slug).toBe('tabela-clonada');
+    expect(result.value.table._id).not.toBe(baseTable._id);
+    expect(findByIdSpy).toHaveBeenCalledWith(baseTable._id);
+    expect(createSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela base nao existe', async () => {
@@ -54,10 +59,11 @@ describe('Clone Table Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    expect(result.value.message).toBe('Tabela base não encontrada');
   });
 
   it('deve retornar erro CLONE_TABLE_ERROR quando houver falha', async () => {
@@ -72,10 +78,11 @@ describe('Clone Table Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('CLONE_TABLE_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('CLONE_TABLE_ERROR');
+    expect(result.value.message).toBe('Erro ao clonar tabela');
   });
 
   it('deve gerar novo owner na tabela clonada', async () => {
@@ -98,10 +105,25 @@ describe('Clone Table Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.table.owner).toEqual({
-        _id: 'new-owner-id',
-      });
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.table.owner).toEqual({
+      _id: 'new-owner-id',
+    });
+  });
+
+  it('deve retornar erro OWNER_ID_REQUIRED quando ownerId nao for informado', async () => {
+    const result = await sut.execute({
+      baseTableId: 'some-id',
+      name: 'Nova Tabela',
+      ownerId: '',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('OWNER_ID_REQUIRED');
+    expect(result.value.message).toBe('Owner ID é obrigatório');
   });
 });

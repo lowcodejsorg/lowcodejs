@@ -5,29 +5,25 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableRowDeleteUseCase from './delete.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    findOneAndDelete: vi.fn().mockResolvedValue({ _id: 'row-id' }),
-  }),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
+let rowRepository: RowInMemoryRepository;
 let sut: TableRowDeleteUseCase;
 
 describe('Table Row Delete Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
-    sut = new TableRowDeleteUseCase(tableInMemoryRepository);
+    rowRepository = new RowInMemoryRepository();
+    sut = new TableRowDeleteUseCase(tableInMemoryRepository, rowRepository);
     vi.clearAllMocks();
   });
 
   it('deve deletar row com sucesso', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -41,9 +37,14 @@ describe('Table Row Delete Use Case', () => {
       fieldOrderForm: [],
     });
 
+    const row = await rowRepository.create({
+      table,
+      data: { nome: 'Test' },
+    });
+
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
     });
 
     expect(result.isRight()).toBe(true);

@@ -79,7 +79,7 @@ export default class GroupFieldRemoveFromTrashUseCase {
       });
 
       // Reconstrói o schema da tabela pai com os grupos atualizados
-      const parentSchema = buildSchema(table.fields as IField[], updatedGroups);
+      const parentSchema = buildSchema(table.fields, updatedGroups);
 
       await this.tableRepository.update({
         _id: table._id,

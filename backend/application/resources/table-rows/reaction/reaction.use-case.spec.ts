@@ -7,47 +7,35 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import ReactionInMemoryRepository from '@application/repositories/reaction/reaction-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableRowReactionUseCase from './reaction.use-case';
 
-const { mockRow } = vi.hoisted(() => ({
-  mockRow: {
-    _id: { toString: (): string => 'row-id' },
-    toJSON: (): Record<string, unknown> => ({ _id: 'row-id', nome: 'Test' }),
-    populate: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    save: vi.fn().mockResolvedValue(undefined),
-    likes: [],
-  },
-}));
-
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    findOne: vi.fn().mockResolvedValue(mockRow),
-  }),
-  buildPopulate: vi.fn().mockResolvedValue([]),
-  buildSchema: vi.fn().mockReturnValue({}),
+vi.mock('@application/core/builders', () => ({
   transformRowContext: vi.fn().mockImplementation((row) => row),
 }));
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let reactionInMemoryRepository: ReactionInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
 let sut: TableRowReactionUseCase;
 
 describe('Table Row Reaction Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     reactionInMemoryRepository = new ReactionInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
     sut = new TableRowReactionUseCase(
       tableInMemoryRepository,
       reactionInMemoryRepository,
+      rowInMemoryRepository,
     );
     vi.clearAllMocks();
   });
 
   it('deve adicionar reacao com sucesso', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -61,9 +49,14 @@ describe('Table Row Reaction Use Case', () => {
       fieldOrderForm: [],
     });
 
+    const row = await rowInMemoryRepository.create({
+      table,
+      data: { likes: [] },
+    });
+
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
       field: 'likes',
       type: E_REACTION_TYPE.LIKE,
       user: 'user-id',
@@ -73,7 +66,7 @@ describe('Table Row Reaction Use Case', () => {
   });
 
   it('deve atualizar reacao existente', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -87,14 +80,19 @@ describe('Table Row Reaction Use Case', () => {
       fieldOrderForm: [],
     });
 
-    await reactionInMemoryRepository.create({
+    const reaction = await reactionInMemoryRepository.create({
       type: E_REACTION_TYPE.LIKE,
       user: 'user-id',
     });
 
+    const row = await rowInMemoryRepository.create({
+      table,
+      data: { likes: [reaction._id] },
+    });
+
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
       field: 'likes',
       type: E_REACTION_TYPE.UNLIKE,
       user: 'user-id',

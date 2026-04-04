@@ -34,6 +34,10 @@ describe('Table Field Update Use Case', () => {
   });
 
   it('deve atualizar campo com sucesso', async () => {
+    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
+    const fieldFindByIdSpy = vi.spyOn(fieldInMemoryRepository, 'findById');
+    const fieldUpdateSpy = vi.spyOn(fieldInMemoryRepository, 'update');
+
     const field = await fieldInMemoryRepository.create({
       name: 'Nome',
       slug: 'nome',
@@ -97,11 +101,14 @@ describe('Table Field Update Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('Nome Atualizado');
-      expect(result.value.required).toBe(false);
-      expect(result.value.widthInForm).toBe(75);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.name).toBe('Nome Atualizado');
+    expect(result.value.required).toBe(false);
+    expect(result.value.widthInForm).toBe(75);
+    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
+    expect(fieldFindByIdSpy).toHaveBeenCalledWith(field._id);
+    expect(fieldUpdateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -131,10 +138,11 @@ describe('Table Field Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    expect(result.value.message).toBe('Tabela não encontrada');
   });
 
   it('deve retornar erro FIELD_NOT_FOUND quando campo nao existir', async () => {
@@ -178,10 +186,11 @@ describe('Table Field Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('FIELD_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('FIELD_NOT_FOUND');
+    expect(result.value.message).toBe('Campo não encontrado');
   });
 
   it('deve retornar erro LAST_ACTIVE_FIELD quando tentar enviar unico campo para lixeira', async () => {
@@ -248,10 +257,13 @@ describe('Table Field Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(409);
-      expect(result.value.cause).toBe('LAST_ACTIVE_FIELD');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('LAST_ACTIVE_FIELD');
+    expect(result.value.message).toBe(
+      'Último campo ativo, não pode ser enviado para a lixeira',
+    );
   });
 
   it('deve retornar erro UPDATE_FIELD_TABLE_ERROR quando houver falha', async () => {
@@ -285,9 +297,10 @@ describe('Table Field Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('UPDATE_FIELD_TABLE_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('UPDATE_FIELD_TABLE_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

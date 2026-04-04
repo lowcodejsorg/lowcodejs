@@ -5,39 +5,25 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableRowShowUseCase from './show.use-case';
 
-const { mockRow } = vi.hoisted(() => ({
-  mockRow: {
-    toJSON: (): Record<string, unknown> => ({ _id: 'row-id', nome: 'Test' }),
-    _id: { toString: (): string => 'row-id' },
-    populate: vi.fn().mockReturnThis(),
-  },
-}));
-
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    findOne: vi.fn().mockResolvedValue(mockRow),
-  }),
-  buildPopulate: vi.fn().mockResolvedValue([]),
-  buildSchema: vi.fn().mockReturnValue({}),
-  transformRowContext: vi.fn().mockImplementation((row) => row),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
+let rowRepository: RowInMemoryRepository;
 let sut: TableRowShowUseCase;
 
 describe('Table Row Show Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
-    sut = new TableRowShowUseCase(tableInMemoryRepository);
+    rowRepository = new RowInMemoryRepository();
+    sut = new TableRowShowUseCase(tableInMemoryRepository, rowRepository);
     vi.clearAllMocks();
   });
 
   it('deve retornar row existente', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -51,9 +37,14 @@ describe('Table Row Show Use Case', () => {
       fieldOrderForm: [],
     });
 
+    const row = await rowRepository.create({
+      table,
+      data: { nome: 'Test' },
+    });
+
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
     });
 
     expect(result.isRight()).toBe(true);

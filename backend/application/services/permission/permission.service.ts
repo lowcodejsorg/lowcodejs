@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import {
@@ -5,11 +6,10 @@ import {
   E_TABLE_PERMISSION,
   E_TABLE_VISIBILITY,
   E_USER_STATUS,
-  type IPermission,
   type ValueOf,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { User as UserModel } from '@application/model/user.model';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
 import type {
   AccessCheckInput,
@@ -31,18 +31,17 @@ const OWNER_ONLY_ACTIONS = [
 
 @Service()
 export default class PermissionService extends PermissionContractService {
+  constructor(private readonly userRepository: UserContractRepository) {
+    super();
+  }
+
   async checkUserHasPermission(
     userId: string,
     permission: ValueOf<typeof E_TABLE_PERMISSION>,
   ): Promise<void> {
     const permissionSlug = E_TABLE_PERMISSION[permission];
 
-    const user = await UserModel.findOne({ _id: userId })
-      .populate({
-        path: 'group',
-        populate: { path: 'permissions' },
-      })
-      .lean();
+    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw HTTPException.Forbidden('Usuário não encontrado', 'USER_NOT_FOUND');
@@ -55,16 +54,14 @@ export default class PermissionService extends PermissionContractService {
       );
     }
 
-    const group = user.group as { permissions?: IPermission[] } | undefined;
-
-    if (!group?.permissions || !Array.isArray(group.permissions)) {
+    if (!user.group?.permissions || !Array.isArray(user.group.permissions)) {
       throw HTTPException.Forbidden(
         'Grupo ou permissões do usuário não encontrados',
         'PERMISSIONS_NOT_FOUND',
       );
     }
 
-    const hasPermission = group.permissions.some(
+    const hasPermission = user.group.permissions.some(
       (p) => p.slug === permissionSlug,
     );
 
@@ -77,8 +74,9 @@ export default class PermissionService extends PermissionContractService {
   }
 
   async checkUserIsActive(userId: string): Promise<void> {
-    const userDoc = await UserModel.findOne({ _id: userId }).lean();
-    if (!userDoc || userDoc.status !== E_USER_STATUS.ACTIVE) {
+    const user = await this.userRepository.findById(userId);
+
+    if (!user || user.status !== E_USER_STATUS.ACTIVE) {
       throw HTTPException.Forbidden(
         'Usuário não está ativo',
         'USER_NOT_ACTIVE',

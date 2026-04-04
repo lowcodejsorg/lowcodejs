@@ -34,6 +34,9 @@ describe('Table Update Use Case', () => {
   });
 
   it('deve atualizar tabela com sucesso', async () => {
+    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
+    const updateSpy = vi.spyOn(tableInMemoryRepository, 'update');
+
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -78,10 +81,12 @@ describe('Table Update Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('Clientes Atualizado');
-      expect(result.value.style).toBe(E_TABLE_STYLE.GALLERY);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.name).toBe('Clientes Atualizado');
+    expect(result.value.style).toBe(E_TABLE_STYLE.GALLERY);
+    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
+    expect(updateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -113,10 +118,11 @@ describe('Table Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    expect(result.value.message).toBe('Tabela não encontrada');
   });
 
   it('deve retornar erro INACTIVE_ADMINISTRATORS quando admin estiver inativo', async () => {
@@ -164,10 +170,13 @@ describe('Table Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(400);
-      expect(result.value.cause).toBe('INACTIVE_ADMINISTRATORS');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('INACTIVE_ADMINISTRATORS');
+    expect(result.value.message).toBe(
+      'Todos os administradores devem ser usuários ativos',
+    );
   });
 
   it('deve retornar erro UPDATE_TABLE_ERROR quando houver falha', async () => {
@@ -203,9 +212,10 @@ describe('Table Update Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('UPDATE_TABLE_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('UPDATE_TABLE_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

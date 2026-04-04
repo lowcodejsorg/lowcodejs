@@ -5,7 +5,7 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type { GroupRowDeletePayload } from './delete.validator';
@@ -15,7 +15,10 @@ type Payload = GroupRowDeletePayload;
 
 @Service()
 export default class GroupRowDeleteUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -38,27 +41,29 @@ export default class GroupRowDeleteUseCase {
         );
       }
 
-      const build = await buildTable(table);
+      // Verifica se a row existe
+      const existingRow = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload.rowId },
+      });
 
-      const row = await build.findOne({ _id: payload.rowId });
-
-      if (!row)
+      if (!existingRow)
         return left(
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
 
-      // Encontra o subdocumento pelo itemId
-      const subdoc = (row as any)[groupField.slug]?.id(payload.itemId);
+      // Remove o subdocumento
+      const deleted = await this.rowRepository.deleteGroupItem({
+        table,
+        rowId: payload.rowId,
+        groupFieldSlug: groupField.slug,
+        itemId: payload.itemId,
+      });
 
-      if (!subdoc)
+      if (!deleted)
         return left(
           HTTPException.NotFound('Item não encontrado', 'ITEM_NOT_FOUND'),
         );
-
-      // Remove o subdocumento
-      subdoc.deleteOne();
-
-      await row.save();
 
       return right(null);
     } catch (error) {

@@ -5,65 +5,60 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableRowRemoveFromTrashUseCase from './remove-from-trash.use-case';
 
-const { mockRow } = vi.hoisted(() => ({
-  mockRow: {
-    _id: { toString: (): string => 'row-id' },
-    trashed: true,
-    toJSON: (): Record<string, unknown> => ({
-      _id: 'row-id',
-      nome: 'Test',
-      trashed: false,
-    }),
-    populate: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    save: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    findOne: vi.fn().mockResolvedValue(mockRow),
-  }),
-  buildPopulate: vi.fn().mockResolvedValue([]),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
 let sut: TableRowRemoveFromTrashUseCase;
+
+const TABLE_PAYLOAD = {
+  name: 'Clientes',
+  slug: 'clientes',
+  _schema: {},
+  fields: [],
+  owner: 'owner-id',
+  administrators: [],
+  style: E_TABLE_STYLE.LIST,
+  visibility: E_TABLE_VISIBILITY.RESTRICTED,
+  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+  fieldOrderList: [],
+  fieldOrderForm: [],
+};
 
 describe('Table Row Remove From Trash Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
-    sut = new TableRowRemoveFromTrashUseCase(tableInMemoryRepository);
+    rowInMemoryRepository = new RowInMemoryRepository();
+    sut = new TableRowRemoveFromTrashUseCase(
+      tableInMemoryRepository,
+      rowInMemoryRepository,
+    );
     vi.clearAllMocks();
-    mockRow.trashed = true;
   });
 
   it('deve remover row da lixeira com sucesso', async () => {
-    await tableInMemoryRepository.create({
-      name: 'Clientes',
-      slug: 'clientes',
-      _schema: {},
-      fields: [],
-      owner: 'owner-id',
-      administrators: [],
-      style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-      fieldOrderList: [],
-      fieldOrderForm: [],
+    const table = await tableInMemoryRepository.create(TABLE_PAYLOAD);
+
+    const row = await rowInMemoryRepository.create({
+      table,
+      data: { nome: 'Test' },
     });
+
+    await rowInMemoryRepository.sendToTrash(table, row._id);
 
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
     });
 
     expect(result.isRight()).toBe(true);
+
+    if (result.isRight()) {
+      expect(result.value.trashed).toBe(false);
+    }
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -76,6 +71,41 @@ describe('Table Row Remove From Trash Use Case', () => {
     if (result.isLeft()) {
       expect(result.value.code).toBe(404);
       expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    }
+  });
+
+  it('deve retornar erro ROW_NOT_FOUND quando registro nao existir', async () => {
+    await tableInMemoryRepository.create(TABLE_PAYLOAD);
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: 'non-existent-id',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(404);
+      expect(result.value.cause).toBe('ROW_NOT_FOUND');
+    }
+  });
+
+  it('deve retornar erro NOT_TRASHED quando registro nao estiver na lixeira', async () => {
+    const table = await tableInMemoryRepository.create(TABLE_PAYLOAD);
+
+    const row = await rowInMemoryRepository.create({
+      table,
+      data: { nome: 'Test' },
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      _id: row._id,
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(409);
+      expect(result.value.cause).toBe('NOT_TRASHED');
     }
   });
 

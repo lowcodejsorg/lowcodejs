@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField } from '@application/core/entity.core';
+import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   hashPasswordFields,
@@ -11,32 +11,32 @@ import {
   stripMaskedPasswordFields,
 } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
-// import TableFieldRowValidation from '@application/core/table-field-row-validation.exception';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').IRow
->;
+type Response = Either<HTTPException, IRow>;
 
-// type Payload = TableRowUpdatePayload;
-type Payload = {
-  [x: string]: any;
+type Payload = Record<string, unknown> & {
+  slug: string;
+  _id: string;
 };
 
 @Service()
 export default class TableRowUpdateUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
       const errors = validateRowPayload(payload, table.fields, table.groups, {
         skipMissing: true,
@@ -52,45 +52,24 @@ export default class TableRowUpdateUseCase {
         );
       }
 
-      stripMaskedPasswordFields(payload, table.fields as IField[]);
-      await hashPasswordFields(payload, table.fields as IField[]);
+      stripMaskedPasswordFields(payload, table.fields);
+      await hashPasswordFields(payload, table.fields);
 
-      const build = await buildTable(table);
+      const row = await this.rowRepository.update({
+        table,
+        _id: payload._id,
+        data: payload,
+      });
 
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-
-      const row = await build.findOne({ _id: payload._id }).populate(populate);
-
-      if (!row)
+      if (!row) {
         return left(
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
+      }
 
-      await row
-        .set({
-          ...row.toJSON({
-            flattenObjectIds: true,
-          }),
-          ...payload,
-        })
-        .save();
+      maskPasswordFields(row, table.fields);
 
-      await row.populate(populate);
-
-      const rowJson = {
-        ...row.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: row?._id?.toString(),
-      };
-
-      maskPasswordFields(rowJson, table.fields as IField[]);
-
-      // @ts-ignore
-      return right(rowJson);
+      return right(row);
     } catch (error) {
       return left(
         HTTPException.InternalServerError(

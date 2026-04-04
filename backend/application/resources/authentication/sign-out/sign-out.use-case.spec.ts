@@ -13,8 +13,14 @@ describe('Sign Out Use Case', () => {
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.message).toBe('Successfully signed out');
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.message).toBe('Successfully signed out');
+  });
+
+  it('deve sempre retornar Right (nunca Left)', async () => {
+    const result = await sut.execute();
+
+    expect(result.isLeft()).toBe(false);
+    expect(result.isRight()).toBe(true);
   });
 });

@@ -32,6 +32,9 @@ describe('Table Field Create Use Case', () => {
   });
 
   it('deve criar campo com sucesso', async () => {
+    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
+    const createSpy = vi.spyOn(fieldInMemoryRepository, 'create');
+
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -69,11 +72,13 @@ describe('Table Field Create Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('Nome');
-      expect(result.value.slug).toBe('nome');
-      expect(result.value.type).toBe(E_FIELD_TYPE.TEXT_SHORT);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.name).toBe('Nome');
+    expect(result.value.slug).toBe('nome');
+    expect(result.value.type).toBe(E_FIELD_TYPE.TEXT_SHORT);
+    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
+    expect(createSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -100,10 +105,11 @@ describe('Table Field Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(404);
-      expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(404);
+    expect(result.value.cause).toBe('TABLE_NOT_FOUND');
+    expect(result.value.message).toBe('Tabela não encontrada');
   });
 
   it('deve retornar erro FIELD_ALREADY_EXIST quando campo ja existir', async () => {
@@ -134,7 +140,7 @@ describe('Table Field Create Use Case', () => {
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
-      fields: [field] as any,
+      fields: [field],
       owner: 'owner-id',
       administrators: [],
       style: E_TABLE_STYLE.LIST,
@@ -167,10 +173,11 @@ describe('Table Field Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(409);
-      expect(result.value.cause).toBe('FIELD_ALREADY_EXIST');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('FIELD_ALREADY_EXIST');
+    expect(result.value.message).toBe('Campo já existe');
   });
 
   it('deve retornar erro CREATE_FIELD_ERROR quando houver falha', async () => {
@@ -201,9 +208,10 @@ describe('Table Field Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('CREATE_FIELD_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('CREATE_FIELD_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
   });
 });

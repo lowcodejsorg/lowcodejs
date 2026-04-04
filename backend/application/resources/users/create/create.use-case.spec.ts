@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { E_USER_STATUS } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
@@ -16,7 +17,11 @@ describe('User Create Use Case', () => {
     sut = new UserCreateUseCase(userInMemoryRepository, passwordService);
   });
 
-  it('deve criar um usuário com sucesso', async () => {
+  it('deve criar um usuario com sucesso', async () => {
+    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
+    const createSpy = vi.spyOn(userInMemoryRepository, 'create');
+    const hashSpy = vi.spyOn(passwordService, 'hash');
+
     const result = await sut.execute({
       name: 'John Doe',
       email: 'john@example.com',
@@ -25,20 +30,50 @@ describe('User Create Use Case', () => {
     });
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.name).toBe('John Doe');
-      expect(result.value.email).toBe('john@example.com');
-      expect(result.value.password).not.toBe('password123'); // deve estar hasheado
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.name).toBe('John Doe');
+    expect(result.value.email).toBe('john@example.com');
+    expect(result.value.password).not.toBe('password123');
+    expect(result.value.password).toBe('hashed_password123');
+    expect(result.value.status).toBe(E_USER_STATUS.ACTIVE);
+
+    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
+    expect(findByEmailSpy).toHaveBeenCalledWith('john@example.com');
+    expect(hashSpy).toHaveBeenCalledTimes(1);
+    expect(hashSpy).toHaveBeenCalledWith('password123');
+    expect(createSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('deve retornar erro GROUP_NOT_INFORMED quando group nao for informado', async () => {
+    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
+
+    const result = await sut.execute({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123',
+      group: '',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('GROUP_NOT_INFORMED');
+    expect(result.value.message).toBe('Grupo não informado');
+
+    expect(findByEmailSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro USER_ALREADY_EXISTS quando email ja existe', async () => {
+    const createSpy = vi.spyOn(userInMemoryRepository, 'create');
+
     await userInMemoryRepository.create({
       name: 'Existing User',
       email: 'existing@example.com',
       password: 'password123',
       group: 'group-id',
     });
+
+    createSpy.mockClear();
 
     const result = await sut.execute({
       name: 'New User',
@@ -48,16 +83,18 @@ describe('User Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(409);
-      expect(result.value.cause).toBe('USER_ALREADY_EXISTS');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('USER_ALREADY_EXISTS');
+    expect(result.value.message).toBe('Usuário já existe');
+
+    expect(createSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro CREATE_USER_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findByEmail').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    const findByEmailSpy = vi
+      .spyOn(userInMemoryRepository, 'findByEmail')
+      .mockRejectedValueOnce(new Error('Database error'));
 
     const result = await sut.execute({
       name: 'John Doe',
@@ -67,9 +104,11 @@ describe('User Create Use Case', () => {
     });
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('CREATE_USER_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('CREATE_USER_ERROR');
+    expect(result.value.message).toBe('Erro interno do servidor');
+
+    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
   });
 });

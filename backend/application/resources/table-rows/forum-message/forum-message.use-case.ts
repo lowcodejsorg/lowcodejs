@@ -8,11 +8,12 @@ import {
   E_FIELD_TYPE,
   E_TABLE_STYLE,
   type IField,
+  type IGroupConfiguration,
   type IRow,
   type ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { EmailContractService } from '@application/services/email/email-contract.service';
@@ -46,12 +47,17 @@ type ForumConfig = {
   messageReactionsSlug: string;
 };
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null;
+}
+
 @Service()
 export default class ForumMessageUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly emailService: EmailContractService,
+    private readonly rowRepository: RowContractRepository,
   ) {}
 
   async create(payload: ForumMessageCreatePayload): Promise<Response> {
@@ -80,12 +86,10 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const c = await buildTable(table);
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-      const row = await c.findOne({ _id: payload._id });
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+      });
 
       if (!row)
         return left(
@@ -100,10 +104,14 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const text = typeof payload.text === 'string' ? payload.text : '';
-      const attachments = Array.isArray(payload.attachments)
-        ? payload.attachments.filter(Boolean)
-        : [];
+      let text = '';
+      if (typeof payload.text === 'string') {
+        text = payload.text;
+      }
+      let attachments: string[] = [];
+      if (Array.isArray(payload.attachments)) {
+        attachments = payload.attachments.filter(Boolean);
+      }
 
       if (!this.hasMessageContent(text, attachments))
         return left(
@@ -113,9 +121,10 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const mentions = Array.isArray(payload.mentions)
-        ? payload.mentions.filter(Boolean)
-        : [];
+      let mentions: string[] = [];
+      if (Array.isArray(payload.mentions)) {
+        mentions = payload.mentions.filter(Boolean);
+      }
       const replyTo = payload.replyTo ?? null;
       const mentionEmails = await this.resolveMentionEmails(
         mentions,
@@ -124,38 +133,34 @@ export default class ForumMessageUseCase {
       await this.sendMentionNotification(mentionEmails);
 
       const nextMessages = this.getMessages(row, config.messagesSlug);
-      nextMessages.push({
+      const newMessage: Record<string, unknown> = {
         [config.messageIdSlug]: randomUUID(),
         [config.messageTextSlug]: text,
         [config.messageAuthorSlug]: [payload.user],
         [config.messageDateSlug]: new Date().toISOString(),
         [config.messageAttachmentsSlug]: attachments,
         [config.messageMentionsSlug]: mentions,
-        ...(config.messageMentionEmailsSlug
-          ? {
-              [config.messageMentionEmailsSlug]:
-                this.serializeStringList(mentionEmails),
-            }
-          : {}),
-        ...(config.messageMentionNotifiedSlug
-          ? {
-              [config.messageMentionNotifiedSlug]:
-                this.serializeStringList(mentionEmails),
-            }
-          : {}),
-        ...(config.messageMentionSeenSlug
-          ? { [config.messageMentionSeenSlug]: [] }
-          : {}),
         [config.messageReplySlug]: replyTo,
         [config.messageReactionsSlug]: '[]',
-      });
+      };
+      if (config.messageMentionEmailsSlug) {
+        newMessage[config.messageMentionEmailsSlug] =
+          this.serializeStringList(mentionEmails);
+      }
+      if (config.messageMentionNotifiedSlug) {
+        newMessage[config.messageMentionNotifiedSlug] =
+          this.serializeStringList(mentionEmails);
+      }
+      if (config.messageMentionSeenSlug) {
+        newMessage[config.messageMentionSeenSlug] = [];
+      }
+      nextMessages.push(newMessage);
 
       return this.persistMessagesAndReturnRow({
-        model: c,
+        table,
         rowId: payload._id,
         messagesSlug: config.messagesSlug,
         nextMessages,
-        populate,
       });
     } catch (error) {
       console.error('[ForumMessageUseCase.create]', error);
@@ -194,12 +199,10 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const c = await buildTable(table);
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-      const row = await c.findOne({ _id: payload._id });
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+      });
 
       if (!row)
         return left(
@@ -242,13 +245,21 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const nextText =
-        typeof payload.text === 'string'
-          ? payload.text
-          : String(currentMessage?.[config.messageTextSlug] ?? '');
-      const nextAttachments = Array.isArray(payload.attachments)
-        ? payload.attachments.filter(Boolean)
-        : this.normalizeIdList(currentMessage?.[config.messageAttachmentsSlug]);
+      let nextText: string;
+      if (typeof payload.text === 'string') {
+        nextText = payload.text;
+      } else {
+        nextText = String(currentMessage?.[config.messageTextSlug] ?? '');
+      }
+
+      let nextAttachments: string[];
+      if (Array.isArray(payload.attachments)) {
+        nextAttachments = payload.attachments.filter(Boolean);
+      } else {
+        nextAttachments = this.normalizeIdList(
+          currentMessage?.[config.messageAttachmentsSlug],
+        );
+      }
 
       if (!this.hasMessageContent(nextText, nextAttachments))
         return left(
@@ -258,57 +269,67 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const nextMentions = Array.isArray(payload.mentions)
-        ? payload.mentions.filter(Boolean)
-        : this.normalizeIdList(currentMessage?.[config.messageMentionsSlug]);
+      let nextMentions: string[];
+      if (Array.isArray(payload.mentions)) {
+        nextMentions = payload.mentions.filter(Boolean);
+      } else {
+        nextMentions = this.normalizeIdList(
+          currentMessage?.[config.messageMentionsSlug],
+        );
+      }
+
       const mentionEmails = await this.resolveMentionEmails(
         nextMentions,
         payload.user,
       );
-      const alreadyNotified = config.messageMentionNotifiedSlug
-        ? this.normalizeEmailList(
-            currentMessage?.[config.messageMentionNotifiedSlug],
-          )
-        : [];
+      let alreadyNotified: string[] = [];
+      if (config.messageMentionNotifiedSlug) {
+        alreadyNotified = this.normalizeEmailList(
+          currentMessage?.[config.messageMentionNotifiedSlug],
+        );
+      }
       const alreadyNotifiedSet = new Set(alreadyNotified);
       const newRecipients = mentionEmails.filter(
         (email) => !alreadyNotifiedSet.has(email),
       );
       await this.sendMentionNotification(newRecipients);
 
-      const nextReplyTo =
-        payload.replyTo !== undefined
-          ? payload.replyTo
-          : ((currentMessage?.[config.messageReplySlug] as string | null) ??
-            null);
+      let nextReplyTo: string | null;
+      if (payload.replyTo !== undefined) {
+        nextReplyTo = payload.replyTo;
+      } else {
+        const currentReply = currentMessage?.[config.messageReplySlug];
+        if (typeof currentReply === 'string') {
+          nextReplyTo = currentReply;
+        } else {
+          nextReplyTo = null;
+        }
+      }
 
-      nextMessages[messageIndex] = {
+      const updatedMessage: Record<string, unknown> = {
         ...currentMessage,
         [config.messageTextSlug]: nextText,
         [config.messageAttachmentsSlug]: nextAttachments,
         [config.messageMentionsSlug]: nextMentions,
-        ...(config.messageMentionEmailsSlug
-          ? {
-              [config.messageMentionEmailsSlug]:
-                this.serializeStringList(mentionEmails),
-            }
-          : {}),
-        ...(config.messageMentionNotifiedSlug
-          ? {
-              [config.messageMentionNotifiedSlug]: this.serializeStringList(
-                Array.from(new Set([...alreadyNotified, ...newRecipients])),
-              ),
-            }
-          : {}),
         [config.messageReplySlug]: nextReplyTo,
       };
+      if (config.messageMentionEmailsSlug) {
+        updatedMessage[config.messageMentionEmailsSlug] =
+          this.serializeStringList(mentionEmails);
+      }
+      if (config.messageMentionNotifiedSlug) {
+        updatedMessage[config.messageMentionNotifiedSlug] =
+          this.serializeStringList(
+            Array.from(new Set([...alreadyNotified, ...newRecipients])),
+          );
+      }
+      nextMessages[messageIndex] = updatedMessage;
 
       return this.persistMessagesAndReturnRow({
-        model: c,
+        table,
         rowId: payload._id,
         messagesSlug: config.messagesSlug,
         nextMessages,
-        populate,
       });
     } catch (error) {
       console.error('[ForumMessageUseCase.update]', error);
@@ -347,12 +368,10 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const c = await buildTable(table);
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-      const row = await c.findOne({ _id: payload._id });
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+      });
 
       if (!row)
         return left(
@@ -397,11 +416,10 @@ export default class ForumMessageUseCase {
 
       nextMessages.splice(messageIndex, 1);
       return this.persistMessagesAndReturnRow({
-        model: c,
+        table,
         rowId: payload._id,
         messagesSlug: config.messagesSlug,
         nextMessages,
-        populate,
       });
     } catch (error) {
       console.error('[ForumMessageUseCase.remove]', error);
@@ -448,12 +466,10 @@ export default class ForumMessageUseCase {
           ),
         );
 
-      const c = await buildTable(table);
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-      const row = await c.findOne({ _id: payload._id });
+      const row = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+      });
 
       if (!row)
         return left(
@@ -507,22 +523,14 @@ export default class ForumMessageUseCase {
           [config.messageMentionSeenSlug]: [...seenIds, payload.user],
         };
         return this.persistMessagesAndReturnRow({
-          model: c,
+          table,
           rowId: payload._id,
           messagesSlug: config.messagesSlug,
           nextMessages,
-          populate,
         });
       }
-      await row.populate(populate);
-      const rowJson = row.toJSON({
-        flattenObjectIds: true,
-      }) as unknown as IRow;
 
-      return right({
-        ...rowJson,
-        _id: row._id?.toString() ?? '',
-      });
+      return right(row);
     } catch (error) {
       console.error('[ForumMessageUseCase.markMentionRead]', error);
       return left(
@@ -535,9 +543,7 @@ export default class ForumMessageUseCase {
   }
 
   private resolveForumConfig(table: ITable): ForumConfig | null {
-    const fields = Array.isArray(table.fields)
-      ? (table.fields as IField[])
-      : [];
+    const fields = Array.isArray(table.fields) ? table.fields : [];
     const messagesField =
       fields.find((field) => field.slug === 'mensagens') ??
       fields.find((field) => field.type === E_FIELD_TYPE.FIELD_GROUP);
@@ -567,22 +573,22 @@ export default class ForumMessageUseCase {
     ];
 
     const groupSlug = messagesField.group?.slug;
-    const group = Array.isArray(table.groups)
-      ? table.groups.find((item) => item?.slug === groupSlug)
-      : null;
+    let group: IGroupConfiguration | null | undefined = null;
+    if (Array.isArray(table.groups)) {
+      group = table.groups.find((item) => item?.slug === groupSlug);
+    }
 
-    const groupFieldsRaw = Array.isArray(group?.fields) ? group?.fields : [];
-    const actualGroupFields =
-      groupFieldsRaw.length > 0 &&
-      typeof groupFieldsRaw[0] === 'object' &&
-      groupFieldsRaw[0] !== null &&
-      'slug' in groupFieldsRaw[0]
-        ? (groupFieldsRaw as IField[])
-        : [];
-    const groupFields =
-      actualGroupFields.length > 0
-        ? (groupFieldsRaw as IField[])
-        : fallbackGroupFields;
+    let actualGroupFields: IField[] = [];
+    if (group && Array.isArray(group.fields) && group.fields.length > 0) {
+      actualGroupFields = group.fields;
+    }
+
+    let groupFields: Array<Pick<IField, 'slug' | 'type'>>;
+    if (actualGroupFields.length > 0) {
+      groupFields = actualGroupFields;
+    } else {
+      groupFields = fallbackGroupFields;
+    }
 
     const findGroupField = (
       slug: string,
@@ -633,11 +639,16 @@ export default class ForumMessageUseCase {
       this.normalizeId(row['creator']) ?? this.normalizeId(row.creator);
     if (creatorId === userId) return true;
 
-    const isPrivate = config.channelPrivacySlug
-      ? String(row[config.channelPrivacySlug] ?? '')
+    let isPrivate: boolean;
+    if (config.channelPrivacySlug) {
+      isPrivate =
+        String(row[config.channelPrivacySlug] ?? '')
           .trim()
-          .toLowerCase() === 'privado'
-      : Boolean(config.channelMembersSlug);
+          .toLowerCase() === 'privado';
+    } else {
+      isPrivate = Boolean(config.channelMembersSlug);
+    }
+
     if (!isPrivate) return true;
 
     if (!config.channelMembersSlug) return false;
@@ -654,11 +665,12 @@ export default class ForumMessageUseCase {
 
     if (!Array.isArray(value)) return [];
 
-    return value.map((message) =>
-      message && typeof message === 'object'
-        ? ({ ...message } as Record<string, unknown>)
-        : {},
-    );
+    return value.map((message) => {
+      if (isRecord(message)) {
+        return { ...message };
+      }
+      return {};
+    });
   }
 
   private getMessageAuthorId(value: unknown): string | null {
@@ -668,17 +680,19 @@ export default class ForumMessageUseCase {
 
   private normalizeId(value: unknown): string | null {
     if (typeof value === 'string' && value.trim()) return value.trim();
-    if (value && typeof value === 'object' && '_id' in value) {
-      const id = (value as { _id?: unknown })._id;
-      if (typeof id === 'string' && id.trim()) return id.trim();
-      if (id && typeof id === 'object' && 'toString' in id) {
-        const parsed = String(id);
+    if (isRecord(value)) {
+      if ('_id' in value) {
+        const id = value._id;
+        if (typeof id === 'string' && id.trim()) return id.trim();
+        if (isRecord(id) && 'toString' in id) {
+          const parsed = String(id);
+          if (parsed && parsed !== '[object Object]') return parsed;
+        }
+      }
+      if ('toString' in value) {
+        const parsed = String(value);
         if (parsed && parsed !== '[object Object]') return parsed;
       }
-    }
-    if (value && typeof value === 'object' && 'toString' in value) {
-      const parsed = String(value);
-      if (parsed && parsed !== '[object Object]') return parsed;
     }
     return null;
   }
@@ -691,7 +705,10 @@ export default class ForumMessageUseCase {
     }
 
     const id = this.normalizeId(value);
-    return id ? [id] : [];
+    if (id) {
+      return [id];
+    }
+    return [];
   }
 
   private normalizeEmailList(value: unknown): string[] {
@@ -715,7 +732,14 @@ export default class ForumMessageUseCase {
         }
       }
     }
-    const values = Array.isArray(value) ? value : value ? [value] : [];
+    let values: unknown[];
+    if (Array.isArray(value)) {
+      values = value;
+    } else if (value) {
+      values = [value];
+    } else {
+      values = [];
+    }
     return values
       .map((item) =>
         String(item ?? '')
@@ -782,16 +806,15 @@ export default class ForumMessageUseCase {
   }
 
   private async persistMessagesAndReturnRow(params: {
-    model: Awaited<ReturnType<typeof buildTable>>;
+    table: ITable;
     rowId: string;
     messagesSlug: string;
     nextMessages: Array<Record<string, unknown>>;
-    populate: Awaited<ReturnType<typeof buildPopulate>>;
   }): Promise<Response> {
-    const updatedRow = await params.model.findOneAndUpdate(
+    const updatedRow = await this.rowRepository.findOneAndUpdate(
+      params.table,
       { _id: params.rowId },
       { $set: { [params.messagesSlug]: params.nextMessages } },
-      { new: true },
     );
 
     if (!updatedRow)
@@ -799,14 +822,6 @@ export default class ForumMessageUseCase {
         HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
       );
 
-    await updatedRow.populate(params.populate);
-    const rowJson = updatedRow.toJSON({
-      flattenObjectIds: true,
-    }) as unknown as IRow;
-
-    return right({
-      ...rowJson,
-      _id: updatedRow._id?.toString() ?? '',
-    });
+    return right(updatedRow);
   }
 }

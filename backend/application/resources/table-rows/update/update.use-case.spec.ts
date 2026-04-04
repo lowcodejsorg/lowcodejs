@@ -5,42 +5,25 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import TableRowUpdateUseCase from './update.use-case';
 
-const { mockRow } = vi.hoisted(() => ({
-  mockRow: {
-    toJSON: (): Record<string, unknown> => ({ _id: 'row-id', nome: 'Test' }),
-    _id: { toString: (): string => 'row-id' },
-    populate: vi.fn().mockReturnThis(),
-    set: vi.fn().mockReturnThis(),
-    save: vi.fn().mockResolvedValue(undefined),
-  },
-}));
-
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    findOne: vi.fn().mockReturnValue({
-      populate: vi.fn().mockResolvedValue(mockRow),
-    }),
-  }),
-  buildPopulate: vi.fn().mockResolvedValue([]),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
+let rowRepository: RowInMemoryRepository;
 let sut: TableRowUpdateUseCase;
 
 describe('Table Row Update Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
-    sut = new TableRowUpdateUseCase(tableInMemoryRepository);
+    rowRepository = new RowInMemoryRepository();
+    sut = new TableRowUpdateUseCase(tableInMemoryRepository, rowRepository);
     vi.clearAllMocks();
   });
 
   it('deve atualizar row com sucesso', async () => {
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -54,9 +37,14 @@ describe('Table Row Update Use Case', () => {
       fieldOrderForm: [],
     });
 
+    const row = await rowRepository.create({
+      table,
+      data: { nome: 'Original Name' },
+    });
+
     const result = await sut.execute({
       slug: 'clientes',
-      _id: 'row-id',
+      _id: row._id,
       nome: 'Updated Name',
     });
 

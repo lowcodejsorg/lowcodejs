@@ -56,6 +56,8 @@ describe('Setting Show Use Case', () => {
   });
 
   it('deve retornar configurações do banco quando existem', async () => {
+    const getSpy = vi.spyOn(settingInMemoryRepository, 'get');
+
     await settingInMemoryRepository.update({
       LOCALE: 'en-us',
       FILE_UPLOAD_MAX_SIZE: 5242880,
@@ -66,36 +68,40 @@ describe('Setting Show Use Case', () => {
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.LOCALE).toBe('en-us');
-      expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual(['jpg', 'png']);
-      expect(result.value.MODEL_CLONE_TABLES).toEqual([
-        kanbanTemplate,
-        cardsTemplate,
-        mosaicTemplate,
-        documentTemplate,
-        forumTemplate,
-        calendarTemplate,
-        'table1',
-        'table2',
-      ]);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.LOCALE).toBe('en-us');
+    expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual(['jpg', 'png']);
+    expect(result.value.MODEL_CLONE_TABLES).toEqual([
+      kanbanTemplate,
+      cardsTemplate,
+      mosaicTemplate,
+      documentTemplate,
+      forumTemplate,
+      calendarTemplate,
+      'table1',
+      'table2',
+    ]);
+    expect(getSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar process.env quando não há configurações no banco', async () => {
+    const getSpy = vi.spyOn(settingInMemoryRepository, 'get');
+
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
-    if (result.isRight()) {
-      expect(result.value.MODEL_CLONE_TABLES).toEqual([
-        kanbanTemplate,
-        cardsTemplate,
-        mosaicTemplate,
-        documentTemplate,
-        forumTemplate,
-        calendarTemplate,
-      ]);
-    }
+    if (!result.isRight()) throw new Error('Expected right');
+
+    expect(result.value.MODEL_CLONE_TABLES).toEqual([
+      kanbanTemplate,
+      cardsTemplate,
+      mosaicTemplate,
+      documentTemplate,
+      forumTemplate,
+      calendarTemplate,
+    ]);
+    expect(getSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro SETTINGS_READ_ERROR quando houver falha', async () => {
@@ -106,9 +112,10 @@ describe('Setting Show Use Case', () => {
     const result = await sut.execute();
 
     expect(result.isLeft()).toBe(true);
-    if (result.isLeft()) {
-      expect(result.value.code).toBe(500);
-      expect(result.value.cause).toBe('SETTINGS_READ_ERROR');
-    }
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(500);
+    expect(result.value.cause).toBe('SETTINGS_READ_ERROR');
+    expect(result.value.message).toBe('Erro ao buscar configurações');
   });
 });
