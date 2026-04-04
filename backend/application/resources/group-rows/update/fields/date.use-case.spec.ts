@@ -1,0 +1,179 @@
+import { beforeEach, describe, expect, it } from 'vitest';
+
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
+import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import { makeDateField } from '@test/helpers/field-factory.helper';
+import { makeTableWithGroup } from '@test/helpers/table-factory.helper';
+
+import GroupRowUpdateUseCase from '../update.use-case';
+
+let tableRepository: TableInMemoryRepository;
+let rowRepository: RowInMemoryRepository;
+let sut: GroupRowUpdateUseCase;
+
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+async function createRowWithGroupItem(
+  table: Record<string, unknown>,
+  groupSlug: string,
+  itemData: Record<string, unknown>,
+) {
+  const row = await rowRepository.create({
+    table: table as any,
+    data: { [groupSlug]: [] },
+  });
+
+  const rowWithItem = await rowRepository.addGroupItem({
+    table: table as any,
+    rowId: row._id,
+    groupFieldSlug: groupSlug,
+    data: itemData,
+  });
+
+  const items = rowWithItem[groupSlug] as Array<Record<string, unknown>>;
+  const itemId = items[items.length - 1]._id as string;
+
+  return { row, rowWithItem, itemId };
+}
+
+describe('Group Row Update - DATE', () => {
+  beforeEach(() => {
+    tableRepository = new TableInMemoryRepository();
+    rowRepository = new RowInMemoryRepository();
+    sut = new GroupRowUpdateUseCase(tableRepository, rowRepository);
+  });
+
+  it('deve atualizar item com data ISO valida', async () => {
+    const field = makeDateField({ slug: 'prazo' });
+    const table = await makeTableWithGroup(
+      tableRepository,
+      'itens',
+      [field],
+      [],
+      { slug: 'pedidos' },
+    );
+
+    const { row, itemId } = await createRowWithGroupItem(table, 'itens', {
+      prazo: '2024-01-15T10:30:00.000Z',
+    });
+
+    const result = await sut.execute({
+      slug: 'pedidos',
+      rowId: row._id,
+      groupSlug: 'itens',
+      itemId,
+      prazo: '2024-06-20T14:00:00.000Z',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.prazo).toBe('2024-06-20T14:00:00.000Z');
+  });
+
+  it('deve aceitar data sem horario', async () => {
+    const field = makeDateField({ slug: 'prazo' });
+    const table = await makeTableWithGroup(
+      tableRepository,
+      'itens',
+      [field],
+      [],
+      { slug: 'pedidos' },
+    );
+
+    const { row, itemId } = await createRowWithGroupItem(table, 'itens', {
+      prazo: '2024-01-15',
+    });
+
+    const result = await sut.execute({
+      slug: 'pedidos',
+      rowId: row._id,
+      groupSlug: 'itens',
+      itemId,
+      prazo: '2024-06-20',
+    });
+
+    expect(result.isRight()).toBe(true);
+  });
+
+  it('deve rejeitar data invalida', async () => {
+    const field = makeDateField({ slug: 'prazo' });
+    const table = await makeTableWithGroup(
+      tableRepository,
+      'itens',
+      [field],
+      [],
+      { slug: 'pedidos' },
+    );
+
+    const { row, itemId } = await createRowWithGroupItem(table, 'itens', {
+      prazo: '2024-01-15',
+    });
+
+    const result = await sut.execute({
+      slug: 'pedidos',
+      rowId: row._id,
+      groupSlug: 'itens',
+      itemId,
+      prazo: 'not-a-date',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('INVALID_PAYLOAD_FORMAT');
+  });
+
+  it('deve rejeitar quando valor nao e string', async () => {
+    const field = makeDateField({ slug: 'prazo' });
+    const table = await makeTableWithGroup(
+      tableRepository,
+      'itens',
+      [field],
+      [],
+      { slug: 'pedidos' },
+    );
+
+    const { row, itemId } = await createRowWithGroupItem(table, 'itens', {
+      prazo: '2024-01-15',
+    });
+
+    const result = await sut.execute({
+      slug: 'pedidos',
+      rowId: row._id,
+      groupSlug: 'itens',
+      itemId,
+      prazo: 1705312200000,
+    });
+
+    expect(result.isLeft()).toBe(true);
+  });
+
+  it('deve permitir update parcial sem campo obrigatorio (skipMissing)', async () => {
+    const prazoField = makeDateField({ slug: 'prazo', required: true });
+    const inicioField = makeDateField({
+      slug: 'inicio',
+      name: 'Inicio',
+      required: true,
+    });
+    const table = await makeTableWithGroup(
+      tableRepository,
+      'itens',
+      [prazoField, inicioField],
+      [],
+      { slug: 'pedidos' },
+    );
+
+    const { row, itemId } = await createRowWithGroupItem(table, 'itens', {
+      prazo: '2024-01-15',
+      inicio: '2024-01-10',
+    });
+
+    const result = await sut.execute({
+      slug: 'pedidos',
+      rowId: row._id,
+      groupSlug: 'itens',
+      itemId,
+      prazo: '2024-06-20',
+    });
+
+    expect(result.isRight()).toBe(true);
+  });
+});
