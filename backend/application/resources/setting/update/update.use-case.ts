@@ -50,7 +50,8 @@ export default class SettingUpdateUseCase {
         FILE_UPLOAD_ACCEPTED: updated.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
         // MODEL_CLONE_TABLES já vem populado do repository
       });
-    } catch (_error) {
+    } catch (error) {
+      console.error('[setting > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro ao atualizar configurações',

@@ -71,10 +71,11 @@ export default class SignUpUseCase {
             body,
           }),
         )
-        .catch(console.error);
+        .catch(() => {});
 
       return right(created);
     } catch (error) {
+      console.error('[authentication > sign-up][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

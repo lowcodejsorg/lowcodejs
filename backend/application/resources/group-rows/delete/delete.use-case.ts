@@ -67,7 +67,7 @@ export default class GroupRowDeleteUseCase {
 
       return right(null);
     } catch (error) {
-      console.error(error);
+      console.error('[group-rows > delete][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

@@ -92,6 +92,7 @@ export default class GroupRowShowUseCase {
 
       return right(item);
     } catch (error) {
+      console.error('[group-rows > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

@@ -35,6 +35,7 @@ export default class BulkDeleteUseCase {
 
       return right({ deleted });
     } catch (error) {
+      console.error('[table-rows > bulk-delete][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

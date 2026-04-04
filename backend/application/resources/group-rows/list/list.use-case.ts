@@ -76,6 +76,7 @@ export default class GroupRowListUseCase {
 
       return right(items);
     } catch (error) {
+      console.error('[group-rows > list][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

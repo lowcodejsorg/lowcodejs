@@ -39,6 +39,7 @@ export default class MenuRestoreUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[menu > restore][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

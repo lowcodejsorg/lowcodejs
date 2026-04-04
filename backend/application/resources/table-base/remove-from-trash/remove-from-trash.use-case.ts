@@ -38,6 +38,7 @@ export default class TableRemoveFromTrashUseCase {
 
       return right(updated);
     } catch (error) {
+      console.error('[table-base > remove-from-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

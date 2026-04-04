@@ -51,6 +51,7 @@ export default class UserGroupCreateUseCase {
 
       return right(created);
     } catch (error) {
+      console.error('[user-groups > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

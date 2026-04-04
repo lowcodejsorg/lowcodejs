@@ -36,6 +36,7 @@ export default class UpdatePasswordRecoveryUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[authentication > reset-password][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

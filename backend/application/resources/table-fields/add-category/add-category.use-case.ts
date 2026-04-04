@@ -151,7 +151,7 @@ export default class TableFieldAddCategoryUseCase {
         field: updatedField,
       });
     } catch (error) {
-      console.error(error);
+      console.error('[table-fields > add-category][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

@@ -97,6 +97,7 @@ export default class TableRowEvaluationUseCase {
 
       return right(transformRowContext(updatedRow, table.fields, payload.user));
     } catch (error) {
+      console.error('[table-rows > evaluation][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

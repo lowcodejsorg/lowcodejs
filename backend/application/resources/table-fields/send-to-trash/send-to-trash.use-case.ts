@@ -86,6 +86,7 @@ export default class TableFieldSendToTrashUseCase {
 
       return right(updatedField);
     } catch (error) {
+      console.error('[table-fields > send-to-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

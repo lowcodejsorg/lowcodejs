@@ -58,6 +58,7 @@ export default class MenuPaginatedUseCase {
         data: menus,
       });
     } catch (error) {
+      console.error('[menu > paginated][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

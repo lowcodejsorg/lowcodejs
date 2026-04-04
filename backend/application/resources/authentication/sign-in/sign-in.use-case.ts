@@ -63,7 +63,7 @@ export default class SignInUseCase {
 
       return right(user);
     } catch (error) {
-      console.error(error);
+      console.error('[authentication > sign-in][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

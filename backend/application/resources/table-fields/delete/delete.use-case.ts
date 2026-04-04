@@ -94,6 +94,7 @@ export default class TableFieldDeleteUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[table-fields > delete][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

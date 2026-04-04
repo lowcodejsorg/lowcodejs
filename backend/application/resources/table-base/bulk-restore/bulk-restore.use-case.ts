@@ -27,6 +27,7 @@ export default class BulkRestoreUseCase {
 
       return right({ modified });
     } catch (error) {
+      console.error('[table-base > bulk-restore][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

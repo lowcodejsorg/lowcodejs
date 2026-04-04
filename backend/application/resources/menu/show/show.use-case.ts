@@ -36,6 +36,7 @@ export default class MenuShowUseCase {
         children,
       });
     } catch (error) {
+      console.error('[menu > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

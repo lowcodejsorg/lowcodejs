@@ -48,6 +48,7 @@ export default class MenuDeleteUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[menu > delete][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

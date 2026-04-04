@@ -90,6 +90,7 @@ export default class MagicLinkUseCase {
 
       return right(user);
     } catch (error) {
+      console.error('[authentication > magic-link][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

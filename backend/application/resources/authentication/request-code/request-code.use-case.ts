@@ -49,10 +49,9 @@ export default class RequestCodeUseCase {
         body: html,
       });
 
-      console.log(r, code);
-
       return right(null);
-    } catch (_error) {
+    } catch (error) {
+      console.error('[authentication > request-code][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

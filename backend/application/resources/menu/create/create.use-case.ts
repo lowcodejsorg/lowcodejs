@@ -114,6 +114,7 @@ export default class MenuCreateUseCase {
 
       return right(created);
     } catch (error) {
+      console.error('[menu > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

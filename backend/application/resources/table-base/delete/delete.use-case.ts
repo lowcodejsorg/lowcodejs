@@ -42,6 +42,7 @@ export default class TableDeleteUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[table-base > delete][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

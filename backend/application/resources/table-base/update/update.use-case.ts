@@ -153,6 +153,7 @@ export default class TableUpdateUseCase {
 
       return right(updated);
     } catch (error) {
+      console.error('[table-base > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

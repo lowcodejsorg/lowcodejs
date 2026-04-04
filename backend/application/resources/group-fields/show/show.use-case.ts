@@ -47,6 +47,7 @@ export default class GroupFieldShowUseCase {
 
       return right(field);
     } catch (error) {
+      console.error('[group-fields > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

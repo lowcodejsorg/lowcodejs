@@ -35,6 +35,7 @@ export default class BulkTrashUseCase {
 
       return right({ modified });
     } catch (error) {
+      console.error('[table-rows > bulk-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

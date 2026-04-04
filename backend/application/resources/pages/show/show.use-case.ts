@@ -29,6 +29,7 @@ export default class PageShowUseCase {
 
       return right(menu);
     } catch (error) {
+      console.error('[pages > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

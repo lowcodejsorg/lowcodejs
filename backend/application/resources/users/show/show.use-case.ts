@@ -26,7 +26,8 @@ export default class UserShowUseCase {
         );
 
       return right(user);
-    } catch (_error) {
+    } catch (error) {
+      console.error('[users > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

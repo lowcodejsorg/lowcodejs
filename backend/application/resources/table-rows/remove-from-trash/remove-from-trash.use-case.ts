@@ -62,6 +62,7 @@ export default class TableRowRemoveFromTrashUseCase {
 
       return right(updated);
     } catch (error) {
+      console.error('[table-rows > remove-from-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

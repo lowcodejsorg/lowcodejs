@@ -64,6 +64,7 @@ export default class MenuReorderUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[menu > reorder][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

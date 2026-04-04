@@ -109,6 +109,7 @@ export default class GroupFieldSendToTrashUseCase {
 
       return right(updatedField);
     } catch (error) {
+      console.error('[group-fields > send-to-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

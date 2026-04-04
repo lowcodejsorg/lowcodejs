@@ -37,7 +37,7 @@ export default class StorageUploadUseCase {
 
       return right(storages);
     } catch (error) {
-      console.error(error);
+      console.error('[storage > upload][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

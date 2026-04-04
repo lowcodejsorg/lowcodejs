@@ -37,7 +37,8 @@ export default class UserUpdateUseCase {
       });
 
       return right(updated);
-    } catch (_error) {
+    } catch (error) {
+      console.error('[users > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

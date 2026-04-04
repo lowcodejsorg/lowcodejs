@@ -163,7 +163,7 @@ export default class ForumMessageUseCase {
         nextMessages,
       });
     } catch (error) {
-      console.error('[ForumMessageUseCase.create]', error);
+      console.error('[table-rows > forum-message][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
@@ -332,7 +332,7 @@ export default class ForumMessageUseCase {
         nextMessages,
       });
     } catch (error) {
-      console.error('[ForumMessageUseCase.update]', error);
+      console.error('[table-rows > forum-message][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
@@ -422,7 +422,7 @@ export default class ForumMessageUseCase {
         nextMessages,
       });
     } catch (error) {
-      console.error('[ForumMessageUseCase.remove]', error);
+      console.error('[table-rows > forum-message][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',
@@ -532,7 +532,7 @@ export default class ForumMessageUseCase {
 
       return right(row);
     } catch (error) {
-      console.error('[ForumMessageUseCase.markMentionRead]', error);
+      console.error('[table-rows > forum-message][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Internal server error',

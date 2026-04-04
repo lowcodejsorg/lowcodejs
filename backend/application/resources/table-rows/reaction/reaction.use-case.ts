@@ -97,6 +97,7 @@ export default class TableRowReactionUseCase {
 
       return right(transformRowContext(updatedRow, table.fields, payload.user));
     } catch (error) {
+      console.error('[table-rows > reaction][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

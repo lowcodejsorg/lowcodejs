@@ -357,7 +357,7 @@ export default class ImportTableUseCase {
                 await doc.collection.insertOne(doc.toObject());
                 importedRowCount++;
               } catch (rowError) {
-                console.error('Erro ao importar row:', rowError);
+                console.error('[tools > import-table][error]:', rowError);
                 // Continue importing other rows
               }
             }
@@ -380,8 +380,8 @@ export default class ImportTableUseCase {
           'STRUCTURE_REQUIRED',
         ),
       );
-    } catch (_error) {
-      console.error(_error);
+    } catch (error) {
+      console.error('[tools > import-table][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

@@ -49,6 +49,7 @@ export default class TableRowShowUseCase {
 
       return right(transformRowContext(row, table.fields, payload.user));
     } catch (error) {
+      console.error('[table-rows > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

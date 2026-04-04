@@ -68,6 +68,7 @@ export default class ProfileUpdateUseCase {
 
       return right(updated);
     } catch (error) {
+      console.error('[profile > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

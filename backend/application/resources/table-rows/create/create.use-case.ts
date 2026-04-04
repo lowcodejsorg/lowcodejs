@@ -62,8 +62,8 @@ export default class TableRowCreateUseCase {
       maskPasswordFields(row, table.fields);
 
       return right(row);
-    } catch (_error) {
-      console.error(_error);
+    } catch (error) {
+      console.error('[table-rows > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

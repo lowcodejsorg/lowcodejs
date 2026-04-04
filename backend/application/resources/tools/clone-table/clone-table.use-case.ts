@@ -182,7 +182,8 @@ export default class CloneTableUseCase {
         table: newTable,
         fieldIdMap: combinedFieldIdMap,
       });
-    } catch (_error) {
+    } catch (error) {
+      console.error('[tools > clone-table][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro ao clonar tabela',

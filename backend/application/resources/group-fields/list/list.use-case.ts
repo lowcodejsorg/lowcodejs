@@ -36,6 +36,7 @@ export default class GroupFieldListUseCase {
 
       return right(targetGroup.fields || []);
     } catch (error) {
+      console.error('[group-fields > list][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

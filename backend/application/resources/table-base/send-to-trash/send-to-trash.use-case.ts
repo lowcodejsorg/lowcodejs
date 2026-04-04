@@ -41,6 +41,7 @@ export default class TableSendToTrashUseCase {
 
       return right(updated);
     } catch (error) {
+      console.error('[table-base > send-to-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

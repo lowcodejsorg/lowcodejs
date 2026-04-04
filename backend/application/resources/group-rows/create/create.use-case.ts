@@ -115,7 +115,7 @@ export default class GroupRowCreateUseCase {
 
       return right(row);
     } catch (error) {
-      console.error(error);
+      console.error('[group-rows > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

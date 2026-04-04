@@ -113,6 +113,7 @@ export default class TableCreateUseCase {
         fields: nativeFields,
       });
     } catch (error) {
+      console.error('[table-base > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

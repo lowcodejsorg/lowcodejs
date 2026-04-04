@@ -27,6 +27,7 @@ export default class TableShowUseCase {
 
       return right(table);
     } catch (error) {
+      console.error('[table-base > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

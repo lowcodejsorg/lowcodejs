@@ -62,8 +62,8 @@ export default class ExportTableUseCase {
       }
 
       return right(result);
-    } catch (_error) {
-      console.error(_error);
+    } catch (error) {
+      console.error('[tools > export-table][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro ao exportar tabela',

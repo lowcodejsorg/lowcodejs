@@ -178,6 +178,7 @@ export default class MenuUpdateUseCase {
 
       return right(updated);
     } catch (error) {
+      console.error('[menu > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

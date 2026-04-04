@@ -31,6 +31,7 @@ export default class EmptyTrashUseCase {
 
       return right({ deleted });
     } catch (error) {
+      console.error('[table-rows > empty-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

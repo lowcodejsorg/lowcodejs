@@ -48,7 +48,8 @@ export default class UserPaginatedUseCase {
         meta,
         data: users,
       });
-    } catch (_error) {
+    } catch (error) {
+      console.error('[users > paginated][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

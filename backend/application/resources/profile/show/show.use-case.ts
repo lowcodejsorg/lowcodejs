@@ -25,6 +25,7 @@ export default class ProfileShowUseCase {
 
       return right(user);
     } catch (error) {
+      console.error('[profile > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

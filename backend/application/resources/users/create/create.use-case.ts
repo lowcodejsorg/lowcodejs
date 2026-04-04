@@ -52,7 +52,8 @@ export default class UserCreateUseCase {
       });
 
       return right(created);
-    } catch (_error) {
+    } catch (error) {
+      console.error('[users > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

@@ -32,6 +32,7 @@ export default class UserGroupListUseCase {
 
       return right(groups);
     } catch (error) {
+      console.error('[user-groups > list][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

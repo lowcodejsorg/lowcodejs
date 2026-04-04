@@ -76,7 +76,8 @@
       "Bash(wc -l /home/indio/Desktop/low-code-js/frontend/src/routes/_private/dashboard/-*.tsx /home/indio/Desktop/low-code-js/frontend/src/routes/_private/dashboard/-*.ts)",
       "Bash(SRC=\"/home/indio/Desktop/low-code-js/frontend/src/routes/_private/tables/$slug\")",
       "Bash(rm \"$SRC\"/-table-*-view.tsx \"$SRC\"/-table-*-view-skeleton.tsx \"$SRC\"/-table-skeleton.tsx)",
-      "Bash(docker compose:*)"
+      "Bash(docker compose:*)",
+      "Bash(xargs -0 -I{} sh -c 'if grep -q \"} catch \\(error\\) {\" \"{}\"; then sed -i \"/} catch \\(error\\) {/{n;s/^/      console.error\\(error\\);\\\\n/}\" \"{}\"; echo \"OK {}\"; fi')"
     ]
   },
   "enableAllProjectMcpServers": true,

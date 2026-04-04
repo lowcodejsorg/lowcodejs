@@ -71,6 +71,7 @@ export default class TableRowUpdateUseCase {
 
       return right(row);
     } catch (error) {
+      console.error('[table-rows > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

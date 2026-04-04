@@ -30,6 +30,7 @@ export default class StorageDeleteUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[storage > delete][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

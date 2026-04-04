@@ -84,7 +84,7 @@ export default class TableRowPaginatedUseCase {
         data,
       });
     } catch (error) {
-      console.error(error);
+      console.error('[table-rows > paginated][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

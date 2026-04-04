@@ -145,7 +145,7 @@ export default class GroupFieldUpdateUseCase {
 
       return right(updatedField);
     } catch (error) {
-      console.error(error);
+      console.error('[group-fields > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

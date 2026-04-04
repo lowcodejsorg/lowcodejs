@@ -38,6 +38,7 @@ export default class TableFieldShowUseCase {
 
       return right(field);
     } catch (error) {
+      console.error('[table-fields > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

@@ -119,6 +119,7 @@ export default class GroupFieldCreateUseCase {
 
       return right(field);
     } catch (error) {
+      console.error('[group-fields > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

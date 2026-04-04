@@ -59,6 +59,7 @@ export default class UserGroupPaginatedUseCase {
         data: groups,
       });
     } catch (error) {
+      console.error('[user-groups > paginated][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

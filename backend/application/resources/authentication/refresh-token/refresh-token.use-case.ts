@@ -25,7 +25,8 @@ export default class RefreshTokenUseCase {
         );
 
       return right(user);
-    } catch (_error) {
+    } catch (error) {
+      console.error('[authentication > refresh-token][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

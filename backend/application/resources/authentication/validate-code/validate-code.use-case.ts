@@ -65,6 +65,7 @@ export default class ValidateCodeUseCase {
         user: token.user,
       });
     } catch (error) {
+      console.error('[authentication > validate-code][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

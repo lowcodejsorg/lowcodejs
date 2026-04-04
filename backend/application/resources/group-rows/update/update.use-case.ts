@@ -165,7 +165,7 @@ export default class GroupRowUpdateUseCase {
 
       return right(row);
     } catch (error) {
-      console.error(error);
+      console.error('[group-rows > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

@@ -127,7 +127,8 @@ export default class SettingShowUseCase {
             : []),
         ],
       });
-    } catch (_error) {
+    } catch (error) {
+      console.error('[setting > show][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro ao buscar configurações',

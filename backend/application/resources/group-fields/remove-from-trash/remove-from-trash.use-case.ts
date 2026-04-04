@@ -91,6 +91,7 @@ export default class GroupFieldRemoveFromTrashUseCase {
 
       return right(updatedField);
     } catch (error) {
+      console.error('[group-fields > remove-from-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

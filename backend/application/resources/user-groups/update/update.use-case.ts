@@ -46,6 +46,7 @@ export default class UserGroupUpdateUseCase {
 
       return right(updated);
     } catch (error) {
+      console.error('[user-groups > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

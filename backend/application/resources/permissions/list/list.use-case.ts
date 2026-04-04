@@ -20,6 +20,7 @@ export default class PermissionListUseCase {
       const permissions = await this.permissionRepository.findMany();
       return right(permissions);
     } catch (error) {
+      console.error('[permissions > list][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

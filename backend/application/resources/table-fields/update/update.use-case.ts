@@ -196,7 +196,7 @@ export default class TableFieldUpdateUseCase {
 
       return right(updatedField);
     } catch (error) {
-      console.error(error);
+      console.error('[table-fields > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

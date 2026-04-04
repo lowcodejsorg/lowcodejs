@@ -35,6 +35,7 @@ export default class MenuHardDeleteUseCase {
 
       return right(null);
     } catch (error) {
+      console.error('[menu > hard-delete][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',
