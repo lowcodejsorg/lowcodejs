@@ -173,7 +173,7 @@ function MenuUpdateContent({
               asChild
               config={{
                 mutationFn: async function () {
-                  await API.delete('/menu/'.concat(data._id));
+                  await API.patch('/menu/'.concat(data._id).concat('/trash'));
                 },
                 invalidateKeys: [queryKeys.menus.all],
                 toast: {
@@ -240,9 +240,7 @@ function MenuUpdateContent({
               asChild
               config={{
                 mutationFn: async function () {
-                  await API.delete(
-                    '/menu/'.concat(data._id).concat('/permanent'),
-                  );
+                  await API.delete('/menu/'.concat(data._id));
                 },
                 invalidateKeys: [queryKeys.menus.all],
                 toast: {

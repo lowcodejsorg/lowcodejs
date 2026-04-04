@@ -8,7 +8,7 @@ import { User } from '@application/model/user.model';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 
-describe('E2E Menu Delete Controller', () => {
+describe('E2E Menu Send To Trash Controller', () => {
   beforeEach(async () => {
     await kernel.ready();
     await User.deleteMany({});
@@ -20,8 +20,8 @@ describe('E2E Menu Delete Controller', () => {
     await kernel.close();
   });
 
-  describe('DELETE /menu/:_id', () => {
-    it('deve deletar menu com sucesso', async () => {
+  describe('PATCH /menu/:_id/trash', () => {
+    it('deve enviar menu para a lixeira com sucesso', async () => {
       const { cookies } = await createAuthenticatedUser();
 
       const menu = await Menu.create({
@@ -35,7 +35,7 @@ describe('E2E Menu Delete Controller', () => {
       });
 
       const response = await supertest(kernel.server)
-        .delete(`/menu/${menu._id}`)
+        .patch(`/menu/${menu._id}/trash`)
         .set('Cookie', cookies);
 
       expect(response.statusCode).toBe(200);

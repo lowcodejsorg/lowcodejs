@@ -1,6 +1,6 @@
 # Menu
 
-CRUD completo de itens de menu com suporte a hierarquia (parent/children), soft delete, hard delete, restore e reordenacao.
+CRUD completo de itens de menu com suporte a hierarquia (parent/children), send-to-trash, delete permanente, remove-from-trash e reordenacao.
 
 ## Base Route
 
@@ -15,9 +15,9 @@ CRUD completo de itens de menu com suporte a hierarquia (parent/children), soft 
 | paginated | GET | `/menu/paginated` | Auth only |
 | show | GET | `/menu/:_id` | Auth only |
 | update | PATCH | `/menu/:_id` | Auth only |
-| delete | DELETE | `/menu/:_id` | Auth only (soft delete) |
-| hard-delete | DELETE | `/menu/:_id/permanent` | Auth only |
-| restore | PATCH | `/menu/:_id/restore` | Auth only |
+| send-to-trash | PATCH | `/menu/:_id/trash` | Auth only (soft delete) |
+| delete | DELETE | `/menu/:_id` | Auth only (exclusao permanente) |
+| remove-from-trash | PATCH | `/menu/:_id/restore` | Auth only |
 | reorder | PATCH | `/menu/reorder` | Auth only |
 
 ## Middlewares Comuns
@@ -45,6 +45,7 @@ Nao usa TableAccessMiddleware (nao e recurso de tabela).
 - Hierarquia: menus podem ter parent (referencia a outro menu)
 - Slug e gerado automaticamente a partir do nome; se tiver parent, concatena com slug do pai
 - Ordenacao: campo `order` (int) determina posicao entre irmaos
-- Soft delete: marca trashed=true/trashedAt, nao permite deletar menu com filhos ativos
-- Hard delete: somente para menus ja na lixeira, remove permanentemente
+- Send-to-trash: marca trashed=true/trashedAt via update, nao permite enviar para lixeira menu com filhos ativos
+- Delete: exclusao permanente, somente para menus ja na lixeira
+- Remove-from-trash: restaura da lixeira via update (trashed=false, trashedAt=null)
 - Protecao contra referencia circular no update

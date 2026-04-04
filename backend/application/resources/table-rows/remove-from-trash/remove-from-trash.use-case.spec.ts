@@ -47,7 +47,7 @@ describe('Table Row Remove From Trash Use Case', () => {
       data: { nome: 'Test' },
     });
 
-    await rowInMemoryRepository.sendToTrash(table, row._id);
+    await rowInMemoryRepository.update({ table, _id: row._id, data: { trashed: true, trashedAt: new Date() } });
 
     const result = await sut.execute({
       slug: 'clientes',

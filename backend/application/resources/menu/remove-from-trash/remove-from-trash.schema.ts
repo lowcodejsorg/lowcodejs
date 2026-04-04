@@ -1,8 +1,8 @@
 import type { FastifySchema } from 'fastify';
 
-export const MenuRestoreSchema: FastifySchema = {
+export const MenuRemoveFromTrashSchema: FastifySchema = {
   tags: ['Menu'],
-  summary: 'Restaurar menu da lixeira',
+  summary: 'Remover menu da lixeira',
   description:
     'Restaura um item de menu da lixeira, tornando-o ativo novamente.',
   security: [{ cookieAuth: [] }],
@@ -28,7 +28,7 @@ export const MenuRestoreSchema: FastifySchema = {
   },
   response: {
     200: {
-      description: 'Menu restaurado com sucesso',
+      description: 'Menu removido da lixeira com sucesso',
       type: 'null',
     },
     404: {
@@ -63,7 +63,7 @@ export const MenuRestoreSchema: FastifySchema = {
       properties: {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['RESTORE_MENU_ERROR'] },
+        cause: { type: 'string', enum: ['REMOVE_FROM_TRASH_MENU_ERROR'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

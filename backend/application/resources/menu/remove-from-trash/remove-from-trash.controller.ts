@@ -3,9 +3,9 @@ import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
-import { MenuRestoreSchema } from './restore.schema';
-import MenuRestoreUseCase from './restore.use-case';
-import { MenuRestoreParamValidator } from './restore.validator';
+import { MenuRemoveFromTrashSchema } from './remove-from-trash.schema';
+import MenuRemoveFromTrashUseCase from './remove-from-trash.use-case';
+import { MenuRemoveFromTrashParamValidator } from './remove-from-trash.validator';
 
 @Controller({
   route: '/menu',
@@ -13,8 +13,8 @@ import { MenuRestoreParamValidator } from './restore.validator';
 export default class {
   constructor(
     // eslint-disable-next-line no-unused-vars
-    private readonly useCase: MenuRestoreUseCase = getInstanceByToken(
-      MenuRestoreUseCase,
+    private readonly useCase: MenuRemoveFromTrashUseCase = getInstanceByToken(
+      MenuRemoveFromTrashUseCase,
     ),
   ) {}
 
@@ -26,11 +26,11 @@ export default class {
           optional: false,
         }),
       ],
-      schema: MenuRestoreSchema,
+      schema: MenuRemoveFromTrashSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = MenuRestoreParamValidator.parse(request.params);
+    const params = MenuRemoveFromTrashParamValidator.parse(request.params);
 
     const result = await this.useCase.execute(params);
 

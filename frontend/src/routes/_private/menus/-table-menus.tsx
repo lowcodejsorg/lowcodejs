@@ -118,7 +118,7 @@ function ActionsCell({ menu }: { menu: IMenu }): React.JSX.Element {
         ref={menuDeleteButtonRef}
         config={{
           mutationFn: async function () {
-            await API.delete('/menu/'.concat(menu._id).concat('/permanent'));
+            await API.delete('/menu/'.concat(menu._id));
           },
           invalidateKeys: [queryKeys.menus.all],
           toast: {
@@ -157,7 +157,7 @@ function ActionsCell({ menu }: { menu: IMenu }): React.JSX.Element {
         ref={menuSendToTrashButtonRef}
         config={{
           mutationFn: async function () {
-            await API.delete('/menu/'.concat(menu._id));
+            await API.patch('/menu/'.concat(menu._id).concat('/trash'));
           },
           invalidateKeys: [queryKeys.menus.all],
           toast: {

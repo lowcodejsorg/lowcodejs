@@ -1,10 +1,10 @@
 import type { FastifySchema } from 'fastify';
 
-export const MenuHardDeleteSchema: FastifySchema = {
+export const MenuSendToTrashSchema: FastifySchema = {
   tags: ['Menu'],
-  summary: 'Excluir menu permanentemente',
+  summary: 'Enviar menu para a lixeira (soft delete)',
   description:
-    'Exclui permanentemente um item de menu que está na lixeira. Esta ação não pode ser desfeita.',
+    'Move um item de menu para a lixeira. Impede exclusão de menus com filhos ativos.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -28,8 +28,35 @@ export const MenuHardDeleteSchema: FastifySchema = {
   },
   response: {
     200: {
-      description: 'Menu excluído permanentemente com sucesso',
+      description: 'Menu movido para lixeira com sucesso',
       type: 'null',
+    },
+    400: {
+      description: 'Requisição inválida - Falha na validação',
+      type: 'object',
+      properties: {
+        message: { type: 'string', description: 'Mensagem de erro' },
+        code: { type: 'number', enum: [400] },
+        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+          description: 'Erros de validação por campo',
+        },
+      },
+    },
+    401: {
+      description: 'Não autorizado - Autenticação necessária',
+      type: 'object',
+      properties: {
+        message: { type: 'string', enum: ['Não autorizado'] },
+        code: { type: 'number', enum: [401] },
+        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
+        errors: {
+          type: 'object',
+          additionalProperties: { type: 'string' },
+        },
+      },
     },
     404: {
       description: 'Menu não encontrado',
@@ -45,12 +72,12 @@ export const MenuHardDeleteSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Menu não está na lixeira',
+      description: 'Menu possui filhos ativos',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Menu is not in trash'] },
+        message: { type: 'string', enum: ['Menu has active children'] },
         code: { type: 'number', enum: [409] },
-        cause: { type: 'string', enum: ['NOT_TRASHED'] },
+        cause: { type: 'string', enum: ['MENU_HAS_CHILDREN'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },
@@ -63,7 +90,7 @@ export const MenuHardDeleteSchema: FastifySchema = {
       properties: {
         message: { type: 'string', enum: ['Internal server error'] },
         code: { type: 'number', enum: [500] },
-        cause: { type: 'string', enum: ['HARD_DELETE_MENU_ERROR'] },
+        cause: { type: 'string', enum: ['SEND_TO_TRASH_MENU_ERROR'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

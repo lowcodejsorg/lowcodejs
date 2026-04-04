@@ -52,9 +52,9 @@ describe('Bulk Delete Use Case', () => {
       data: { nome: 'Cliente 3' },
     });
 
-    await rowInMemoryRepository.sendToTrash(table, row1._id);
-    await rowInMemoryRepository.sendToTrash(table, row2._id);
-    await rowInMemoryRepository.sendToTrash(table, row3._id);
+    await rowInMemoryRepository.update({ table, _id: row1._id, data: { trashed: true, trashedAt: new Date() } });
+    await rowInMemoryRepository.update({ table, _id: row2._id, data: { trashed: true, trashedAt: new Date() } });
+    await rowInMemoryRepository.update({ table, _id: row3._id, data: { trashed: true, trashedAt: new Date() } });
 
     const bulkDeleteSpy = vi.spyOn(rowInMemoryRepository, 'bulkDelete');
 

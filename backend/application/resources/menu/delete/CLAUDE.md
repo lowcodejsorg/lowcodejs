@@ -1,6 +1,6 @@
-# Delete Menu (Soft Delete)
+# Delete Menu (Exclusao Permanente)
 
-Envia um menu para a lixeira (soft delete).
+Remove permanentemente um menu que ja esta na lixeira.
 
 ## Endpoint
 `DELETE /menu/:_id` | Auth: Yes | Permission: nenhuma especifica
@@ -9,25 +9,24 @@ Envia um menu para a lixeira (soft delete).
 1. Middleware: AuthenticationMiddleware (obrigatorio)
 2. Validator: MenuDeleteParamValidator - campos: _id (string, required, min 1)
 3. UseCase:
-   - Busca o menu pelo _id (nao-trashed)
-   - Conta filhos ativos (nao-trashed) do menu
-   - Se tem filhos ativos, bloqueia a exclusao
-   - Marca trashed=true e trashedAt=now via menuRepository.update
+   - Busca o menu pelo _id (trashed: true)
+   - Verifica se o menu esta na lixeira (trashed=true)
+   - Remove permanentemente via menuRepository.delete
    - Retorna null
-4. Repository: MenuContractRepository (findBy, count, update)
+4. Repository: MenuContractRepository (findById, delete)
 
 ## Regras de Negocio
-- NAO permite deletar menu que possui filhos ativos (nao-trashed)
-- E um soft delete: marca trashed=true e trashedAt com data atual
+- Somente menus que ja estao na lixeira (trashed=true) podem ser excluidos permanentemente
+- Remove o documento permanentemente do banco de dados
 - Retorna 200 com body null
 
 ## Erros Possiveis
 | Code | Cause | Quando |
 |------|-------|--------|
-| 404 | MENU_NOT_FOUND | Menu nao encontrado ou ja esta na lixeira |
-| 409 | MENU_HAS_CHILDREN | Menu possui filhos ativos |
+| 404 | MENU_NOT_FOUND | Menu nao encontrado |
+| 409 | NOT_TRASHED | Menu nao esta na lixeira |
 | 500 | DELETE_MENU_ERROR | Erro interno |
 
 ## Testes
 - Unit: `delete.use-case.spec.ts`
-- E2E: `delete.controller.spec.ts`
+- E2E: nao existe ainda

@@ -2,9 +2,9 @@ import type { FastifySchema } from 'fastify';
 
 export const MenuDeleteSchema: FastifySchema = {
   tags: ['Menu'],
-  summary: 'Excluir menu por ID (soft delete)',
+  summary: 'Excluir menu permanentemente',
   description:
-    'Move um item de menu para a lixeira. Impede exclusão de separadores com filhos ativos.',
+    'Exclui permanentemente um item de menu que está na lixeira. Esta ação não pode ser desfeita.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -28,35 +28,8 @@ export const MenuDeleteSchema: FastifySchema = {
   },
   response: {
     200: {
-      description: 'Menu movido para lixeira com sucesso',
+      description: 'Menu excluído permanentemente com sucesso',
       type: 'null',
-    },
-    400: {
-      description: 'Requisição inválida - Falha na validação',
-      type: 'object',
-      properties: {
-        message: { type: 'string', description: 'Mensagem de erro' },
-        code: { type: 'number', enum: [400] },
-        cause: { type: 'string', enum: ['INVALID_PAYLOAD_FORMAT'] },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-          description: 'Erros de validação por campo',
-        },
-      },
-    },
-    401: {
-      description: 'Não autorizado - Autenticação necessária',
-      type: 'object',
-      properties: {
-        message: { type: 'string', enum: ['Não autorizado'] },
-        code: { type: 'number', enum: [401] },
-        cause: { type: 'string', enum: ['AUTHENTICATION_REQUIRED'] },
-        errors: {
-          type: 'object',
-          additionalProperties: { type: 'string' },
-        },
-      },
     },
     404: {
       description: 'Menu não encontrado',
@@ -72,12 +45,12 @@ export const MenuDeleteSchema: FastifySchema = {
       },
     },
     409: {
-      description: 'Menu possui filhos ativos',
+      description: 'Menu não está na lixeira',
       type: 'object',
       properties: {
-        message: { type: 'string', enum: ['Menu has active children'] },
+        message: { type: 'string', enum: ['Menu is not in trash'] },
         code: { type: 'number', enum: [409] },
-        cause: { type: 'string', enum: ['MENU_HAS_CHILDREN'] },
+        cause: { type: 'string', enum: ['NOT_TRASHED'] },
         errors: {
           type: 'object',
           additionalProperties: { type: 'string' },

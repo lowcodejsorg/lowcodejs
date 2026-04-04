@@ -83,17 +83,7 @@ export abstract class RowContractRepository {
 
   abstract deleteOne(table: RowTableContext, _id: string): Promise<boolean>;
 
-  // ── Trash ─────────────────────────────────────────────────
-
-  abstract sendToTrash(
-    table: RowTableContext,
-    _id: string,
-  ): Promise<IRow | null>;
-
-  abstract restoreFromTrash(
-    table: RowTableContext,
-    _id: string,
-  ): Promise<IRow | null>;
+  // ── Trash (bulk) ──────────────────────────────────────────
 
   abstract bulkTrash(payload: RowBulkUpdatePayload): Promise<number>;
 

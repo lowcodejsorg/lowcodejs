@@ -51,8 +51,8 @@ describe('Bulk Restore Use Case', () => {
       data: { nome: 'Cliente 2' },
     });
 
-    await rowInMemoryRepository.sendToTrash(table, row1._id);
-    await rowInMemoryRepository.sendToTrash(table, row2._id);
+    await rowInMemoryRepository.update({ table, _id: row1._id, data: { trashed: true, trashedAt: new Date() } });
+    await rowInMemoryRepository.update({ table, _id: row2._id, data: { trashed: true, trashedAt: new Date() } });
 
     const bulkRestoreSpy = vi.spyOn(rowInMemoryRepository, 'bulkRestore');
 

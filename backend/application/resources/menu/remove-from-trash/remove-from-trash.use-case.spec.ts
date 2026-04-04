@@ -2,18 +2,18 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 
-import MenuRestoreUseCase from './restore.use-case';
+import MenuRemoveFromTrashUseCase from './remove-from-trash.use-case';
 
 let menuInMemoryRepository: MenuInMemoryRepository;
-let sut: MenuRestoreUseCase;
+let sut: MenuRemoveFromTrashUseCase;
 
-describe('Menu Restore Use Case', () => {
+describe('Menu Remove From Trash Use Case', () => {
   beforeEach(() => {
     menuInMemoryRepository = new MenuInMemoryRepository();
-    sut = new MenuRestoreUseCase(menuInMemoryRepository);
+    sut = new MenuRemoveFromTrashUseCase(menuInMemoryRepository);
   });
 
-  it('deve restaurar menu da lixeira com sucesso', async () => {
+  it('deve remover menu da lixeira com sucesso', async () => {
     const menu = await menuInMemoryRepository.create({
       name: 'Dashboard',
       slug: 'dashboard',
@@ -76,7 +76,7 @@ describe('Menu Restore Use Case', () => {
     expect(result.value.cause).toBe('NOT_TRASHED');
   });
 
-  it('deve retornar erro RESTORE_MENU_ERROR quando houver falha', async () => {
+  it('deve retornar erro REMOVE_FROM_TRASH_MENU_ERROR quando houver falha', async () => {
     vi.spyOn(menuInMemoryRepository, 'findById').mockRejectedValueOnce(
       new Error('Database error'),
     );
@@ -86,6 +86,6 @@ describe('Menu Restore Use Case', () => {
     expect(result.isLeft()).toBe(true);
     if (!result.isLeft()) throw new Error('Expected left');
     expect(result.value.code).toBe(500);
-    expect(result.value.cause).toBe('RESTORE_MENU_ERROR');
+    expect(result.value.cause).toBe('REMOVE_FROM_TRASH_MENU_ERROR');
   });
 });

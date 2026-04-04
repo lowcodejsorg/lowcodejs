@@ -6,19 +6,19 @@ import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
-import type { MenuRestorePayload } from './restore.validator';
+import type { MenuSendToTrashPayload } from './send-to-trash.validator';
 
 type Response = Either<HTTPException, null>;
-type Payload = MenuRestorePayload;
+type Payload = MenuSendToTrashPayload;
 
 @Service()
-export default class MenuRestoreUseCase {
+export default class MenuSendToTrashUseCase {
   constructor(private readonly menuRepository: MenuContractRepository) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
       const menu = await this.menuRepository.findById(payload._id, {
-        trashed: true,
+        trashed: false,
       });
 
       if (!menu)
@@ -26,24 +26,33 @@ export default class MenuRestoreUseCase {
           HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'),
         );
 
-      if (!menu.trashed)
+      const childrenCount = await this.menuRepository.count({
+        parent: menu._id,
+        trashed: false,
+      });
+
+      if (childrenCount > 0) {
         return left(
-          HTTPException.Conflict('Menu não está na lixeira', 'NOT_TRASHED'),
+          HTTPException.Conflict(
+            'Menu possui filhos ativos',
+            'MENU_HAS_CHILDREN',
+          ),
         );
+      }
 
       await this.menuRepository.update({
         _id: menu._id,
-        trashed: false,
-        trashedAt: null,
+        trashed: true,
+        trashedAt: new Date(),
       });
 
       return right(null);
     } catch (error) {
-      console.error('[menu > restore][error]:', error);
+      console.error('[menu > send-to-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',
-          'RESTORE_MENU_ERROR',
+          'SEND_TO_TRASH_MENU_ERROR',
         ),
       );
     }

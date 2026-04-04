@@ -6,13 +6,13 @@ import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 
-import type { MenuHardDeletePayload } from './hard-delete.validator';
+import type { MenuRemoveFromTrashPayload } from './remove-from-trash.validator';
 
 type Response = Either<HTTPException, null>;
-type Payload = MenuHardDeletePayload;
+type Payload = MenuRemoveFromTrashPayload;
 
 @Service()
-export default class MenuHardDeleteUseCase {
+export default class MenuRemoveFromTrashUseCase {
   constructor(private readonly menuRepository: MenuContractRepository) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -31,15 +31,19 @@ export default class MenuHardDeleteUseCase {
           HTTPException.Conflict('Menu não está na lixeira', 'NOT_TRASHED'),
         );
 
-      await this.menuRepository.delete(menu._id);
+      await this.menuRepository.update({
+        _id: menu._id,
+        trashed: false,
+        trashedAt: null,
+      });
 
       return right(null);
     } catch (error) {
-      console.error('[menu > hard-delete][error]:', error);
+      console.error('[menu > remove-from-trash][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',
-          'HARD_DELETE_MENU_ERROR',
+          'REMOVE_FROM_TRASH_MENU_ERROR',
         ),
       );
     }

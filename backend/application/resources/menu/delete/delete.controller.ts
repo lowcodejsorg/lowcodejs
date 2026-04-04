@@ -3,6 +3,7 @@ import { Controller, DELETE, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
+import { MenuDeleteSchema } from './delete.schema';
 import MenuDeleteUseCase from './delete.use-case';
 import { MenuDeleteParamValidator } from './delete.validator';
 
@@ -25,6 +26,7 @@ export default class {
           optional: false,
         }),
       ],
+      schema: MenuDeleteSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {

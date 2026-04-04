@@ -148,36 +148,7 @@ export default class RowMongooseRepository extends RowContractRepository {
     return result !== null;
   }
 
-  // ── Trash ─────────────────────────────────────────────────
-
-  async sendToTrash(table: RowTableContext, _id: string): Promise<IRow | null> {
-    const model = await this.getModel(table);
-    const populate = await this.getPopulate(table, false);
-
-    const row = await model.findOne({ _id });
-    if (!row) return null;
-
-    await row.set({ trashed: true, trashedAt: new Date() }).save();
-    await row.populate(populate);
-
-    return this.transformRow(row);
-  }
-
-  async restoreFromTrash(
-    table: RowTableContext,
-    _id: string,
-  ): Promise<IRow | null> {
-    const model = await this.getModel(table);
-    const populate = await this.getPopulate(table, false);
-
-    const row = await model.findOne({ _id });
-    if (!row) return null;
-
-    await row.set({ trashed: false, trashedAt: null }).save();
-    await row.populate(populate);
-
-    return this.transformRow(row);
-  }
+  // ── Trash (bulk) ──────────────────────────────────────────
 
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {
     const model = await this.getModel(payload.table);

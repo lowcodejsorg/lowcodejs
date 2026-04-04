@@ -18,7 +18,7 @@ export default class MenuDeleteUseCase {
   async execute(payload: Payload): Promise<Response> {
     try {
       const menu = await this.menuRepository.findById(payload._id, {
-        trashed: false,
+        trashed: true,
       });
 
       if (!menu)
@@ -26,25 +26,12 @@ export default class MenuDeleteUseCase {
           HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'),
         );
 
-      const childrenCount = await this.menuRepository.count({
-        parent: menu._id,
-        trashed: false,
-      });
-
-      if (childrenCount > 0) {
+      if (!menu.trashed)
         return left(
-          HTTPException.Conflict(
-            'Menu possui filhos ativos',
-            'MENU_HAS_CHILDREN',
-          ),
+          HTTPException.Conflict('Menu não está na lixeira', 'NOT_TRASHED'),
         );
-      }
 
-      await this.menuRepository.update({
-        _id: menu._id,
-        trashed: true,
-        trashedAt: new Date(),
-      });
+      await this.menuRepository.delete(menu._id);
 
       return right(null);
     } catch (error) {

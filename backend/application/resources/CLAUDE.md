@@ -24,7 +24,7 @@ Cada operacao (ex: `users/create/`) contem:
 | `table-rows/` | `/tables/:slug/rows` | create, paginated, show, update, delete, send-to-trash, remove-from-trash, bulk-trash, bulk-restore, reaction, evaluation, forum-message | Misto | Row (dinamico) |
 | `group-fields/` | `/tables/:slug/groups/:groupSlug/fields` | create, list, show, update, send-to-trash | Sim | Field (embedded) |
 | `group-rows/` | `/tables/:slug/rows/:rowId/groups/:groupSlug` | create, list, show, update, delete | Sim | Row (embedded) |
-| `menu/` | `/menu` | create, list, paginated, show, update, delete, hard-delete, restore, reorder | Sim | Menu |
+| `menu/` | `/menu` | create, list, paginated, show, update, send-to-trash, delete, remove-from-trash, reorder | Sim | Menu |
 | `permissions/` | `/permissions` | list | Sim | Permission |
 | `profile/` | `/profile` | show, update | Sim | User |
 | `setting/` | `/setting` | show, update | Misto | Setting |

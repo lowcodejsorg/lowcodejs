@@ -1,11 +1,11 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, DELETE, getInstanceByToken } from 'fastify-decorators';
+import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 
-import { MenuHardDeleteSchema } from './hard-delete.schema';
-import MenuHardDeleteUseCase from './hard-delete.use-case';
-import { MenuHardDeleteParamValidator } from './hard-delete.validator';
+import { MenuSendToTrashSchema } from './send-to-trash.schema';
+import MenuSendToTrashUseCase from './send-to-trash.use-case';
+import { MenuSendToTrashParamValidator } from './send-to-trash.validator';
 
 @Controller({
   route: '/menu',
@@ -13,24 +13,24 @@ import { MenuHardDeleteParamValidator } from './hard-delete.validator';
 export default class {
   constructor(
     // eslint-disable-next-line no-unused-vars
-    private readonly useCase: MenuHardDeleteUseCase = getInstanceByToken(
-      MenuHardDeleteUseCase,
+    private readonly useCase: MenuSendToTrashUseCase = getInstanceByToken(
+      MenuSendToTrashUseCase,
     ),
   ) {}
 
-  @DELETE({
-    url: '/:_id/permanent',
+  @PATCH({
+    url: '/:_id/trash',
     options: {
       onRequest: [
         AuthenticationMiddleware({
           optional: false,
         }),
       ],
-      schema: MenuHardDeleteSchema,
+      schema: MenuSendToTrashSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const params = MenuHardDeleteParamValidator.parse(request.params);
+    const params = MenuSendToTrashParamValidator.parse(request.params);
 
     const result = await this.useCase.execute(params);
 

@@ -52,7 +52,11 @@ export default class TableRowSendToTrashUseCase {
         );
       }
 
-      const updated = await this.rowRepository.sendToTrash(table, payload._id);
+      const updated = await this.rowRepository.update({
+        table,
+        _id: payload._id,
+        data: { trashed: true, trashedAt: new Date() },
+      });
 
       if (!updated) {
         return left(

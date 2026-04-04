@@ -128,34 +128,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
     return true;
   }
 
-  // ── Trash ─────────────────────────────────────────────────
-
-  async sendToTrash(table: RowTableContext, _id: string): Promise<IRow | null> {
-    const collection = this.getCollection(table.slug);
-    const row = collection.find((item) => item._id === _id);
-
-    if (!row) return null;
-
-    row.trashed = true;
-    row.trashedAt = new Date();
-
-    return { ...row };
-  }
-
-  async restoreFromTrash(
-    table: RowTableContext,
-    _id: string,
-  ): Promise<IRow | null> {
-    const collection = this.getCollection(table.slug);
-    const row = collection.find((item) => item._id === _id);
-
-    if (!row) return null;
-
-    row.trashed = false;
-    row.trashedAt = null;
-
-    return { ...row };
-  }
+  // ── Trash (bulk) ──────────────────────────────────────────
 
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {
     const collection = this.getCollection(payload.table.slug);

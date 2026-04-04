@@ -49,10 +49,11 @@ export default class TableRowRemoveFromTrashUseCase {
         );
       }
 
-      const updated = await this.rowRepository.restoreFromTrash(
+      const updated = await this.rowRepository.update({
         table,
-        payload._id,
-      );
+        _id: payload._id,
+        data: { trashed: false, trashedAt: null },
+      });
 
       if (!updated) {
         return left(
