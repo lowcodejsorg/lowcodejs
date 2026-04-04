@@ -2,20 +2,24 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import ValidationTokenInMemoryRepository from '@application/repositories/validation-token/validation-token-in-memory.repository';
+import InMemoryEmailService from '@application/services/email/in-memory-email.service';
 
 import RequestCodeUseCase from './request-code.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let validationTokenInMemoryRepository: ValidationTokenInMemoryRepository;
+let emailInMemoryService: InMemoryEmailService;
 let sut: RequestCodeUseCase;
 
 describe('Request Code Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
     validationTokenInMemoryRepository = new ValidationTokenInMemoryRepository();
+    emailInMemoryService = new InMemoryEmailService();
     sut = new RequestCodeUseCase(
       userInMemoryRepository,
       validationTokenInMemoryRepository,
+      emailInMemoryService,
     );
   });
 

@@ -12,12 +12,7 @@ import { useAuthStore } from '@/stores/authentication';
 
 type UseAuthenticationResetPasswordProps = Pick<
   Omit<
-    UseMutationOptions<
-      void,
-      AxiosError | Error,
-      ResetPasswordPayload,
-      unknown
-    >,
+    UseMutationOptions<void, AxiosError | Error, ResetPasswordPayload, unknown>,
     'mutationFn'
   >,
   'onSuccess' | 'onError'
