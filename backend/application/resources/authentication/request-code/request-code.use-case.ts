@@ -6,6 +6,7 @@ import { E_TOKEN_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { ValidationTokenContractRepository } from '@application/repositories/validation-token/validation-token-contract.repository';
+import { EmailContractService } from '@application/services/email/email-contract.service';
 
 import type { RequestCodePayload } from './request-code.validator';
 
@@ -17,6 +18,7 @@ export default class RequestCodeUseCase {
   constructor(
     private readonly userRepository: UserContractRepository,
     private readonly validationTokenRepository: ValidationTokenContractRepository,
+    private readonly emailService: EmailContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -36,7 +38,18 @@ export default class RequestCodeUseCase {
         user: user._id,
       });
 
-      // enviar e-mail
+      const html = await this.emailService.buildTemplate({
+        template: 'recovery-code',
+        data: { name: user.name, code },
+      });
+
+      const r = await this.emailService.sendEmail({
+        to: [user.email],
+        subject: 'Recuperação de senha - Código de verificação',
+        body: html,
+      });
+
+      console.log(r, code);
 
       return right(null);
     } catch (_error) {

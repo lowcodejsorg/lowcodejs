@@ -31,9 +31,8 @@ export async function createMosaicTemplate(
     trim: true,
   });
 
-  const { fields, orderList, orderForm, orderFilter, orderDetail } = await buildMosaicFields(
-    deps.fieldRepository,
-  );
+  const { fields, orderList, orderForm, orderFilter, orderDetail } =
+    await buildMosaicFields(deps.fieldRepository);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 

@@ -1,33 +1,80 @@
-import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
-import React, { useState } from 'react';
+import { useForm } from '@tanstack/react-form';
+import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
+import { ArrowLeftIcon, MailIcon } from 'lucide-react';
+import React from 'react';
+import * as z from 'zod';
 
-import { StepCode } from './-step-code';
-import { StepEmail } from './-step-email';
-import { StepPassword } from './-step-password';
+import { Logo } from '@/components/common/layout/logo';
+import { Button } from '@/components/ui/button';
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldGroup,
+  FieldLabel,
+} from '@/components/ui/field';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group';
+import { Spinner } from '@/components/ui/spinner';
+import { useAuthenticationRequestCode } from '@/hooks/tanstack-query/use-authentication-request-code';
+import { createFieldErrorSetter } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
+import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_authentication/forgot-password/')({
   component: RouteComponent,
 });
 
-type Step = 'email' | 'code' | 'password';
+const EmailSchema = z.object({
+  email: z.email('Digite um email válido'),
+});
 
 function RouteComponent(): React.JSX.Element {
   const router = useRouter();
-  const [step, setStep] = useState<Step>('email');
-  const [email, setEmail] = useState('');
 
-  function handleEmailNext(submittedEmail: string): void {
-    setEmail(submittedEmail);
-    setStep('code');
-  }
+  const requestCodeMutation = useAuthenticationRequestCode({
+    onSuccess() {
+      toastSuccess(
+        'Código enviado!',
+        'Verifique seu e-mail para obter o código.',
+      );
+      router.navigate({
+        to: '/forgot-password/validate-code',
+        search: { email: form.state.values.email },
+      });
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Erro ao enviar código',
+        onFieldErrors: (errors) => {
+          const setFieldError = createFieldErrorSetter(form);
+          for (const [field, msg] of Object.entries(errors)) {
+            setFieldError(field, msg);
+          }
+        },
+        causeHandlers: {
+          EMAIL_NOT_FOUND: () => {
+            const setFieldError = createFieldErrorSetter(form);
+            setFieldError('email', 'E-mail não encontrado');
+          },
+        },
+      });
+    },
+  });
 
-  function handleCodeNext(_code: string): void {
-    setStep('password');
-  }
-
-  function handleSuccess(): void {
-    router.navigate({ to: '/', replace: true });
-  }
+  const form = useForm({
+    defaultValues: { email: '' },
+    validators: {
+      onChange: EmailSchema,
+      onSubmit: EmailSchema,
+    },
+    onSubmit: async function ({ value }) {
+      await requestCodeMutation.mutateAsync(value);
+    },
+  });
 
   return (
     <div
@@ -36,15 +83,84 @@ function RouteComponent(): React.JSX.Element {
     >
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
-          {step === 'email' && <StepEmail onNext={handleEmailNext} />}
-          {step === 'code' && (
-            <StepCode
-              email={email}
-              onNext={handleCodeNext}
-              onBack={() => setStep('email')}
-            />
-          )}
-          {step === 'password' && <StepPassword onSuccess={handleSuccess} />}
+          <form
+            data-test-id="forgot-password-email-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <FieldGroup>
+              <div className="flex flex-col items-center gap-2 text-center">
+                <Link
+                  to="/"
+                  className="flex flex-col items-center gap-2 font-medium"
+                >
+                  <Logo className="h-8" />
+                </Link>
+                <FieldDescription>
+                  Digite seu e-mail para receber o código de verificação
+                </FieldDescription>
+              </div>
+
+              <form.Field
+                name="email"
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
+                      <InputGroup>
+                        <InputGroupInput
+                          data-test-id="forgot-password-email-input"
+                          id={field.name}
+                          name={field.name}
+                          type="email"
+                          placeholder="exemplo@mail.com"
+                          value={field.state.value.trim()}
+                          onBlur={field.handleBlur}
+                          onChange={(e) =>
+                            field.handleChange(e.target.value.trim())
+                          }
+                          aria-invalid={isInvalid}
+                        />
+                        <InputGroupAddon>
+                          <MailIcon />
+                        </InputGroupAddon>
+                      </InputGroup>
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
+              <Field>
+                <Button
+                  data-test-id="forgot-password-send-btn"
+                  type="submit"
+                  className="w-full"
+                  disabled={requestCodeMutation.status === 'pending'}
+                >
+                  {requestCodeMutation.status === 'pending' && <Spinner />}
+                  <span>Enviar código</span>
+                </Button>
+
+                <FieldDescription className="text-center">
+                  <Link
+                    to="/"
+                    className="inline-flex items-center gap-1"
+                  >
+                    <ArrowLeftIcon className="h-3 w-3" />
+                    Voltar para o login
+                  </Link>
+                </FieldDescription>
+              </Field>
+            </FieldGroup>
+          </form>
         </div>
       </div>
     </div>

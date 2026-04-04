@@ -46,8 +46,13 @@ export default class NodemailerEmailService extends EmailContractService {
         return { success: false, message: 'Nenhum email válido fornecido' };
       }
 
+      console.log('Enviando email para:', {
+        from: options.from ?? NodemailerEmailProviderConfig.auth?.user,
+        to: validEmails.join(', '),
+      });
+
       const result = await this.transporter.sendMail({
-        from: options.from,
+        from: options.from ?? NodemailerEmailProviderConfig.auth?.user,
         to: validEmails.join(', '),
         subject: options.subject,
         html: options.body,

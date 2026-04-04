@@ -32,9 +32,8 @@ export async function createCalendarTemplate(
     trim: true,
   });
 
-  const { fields, groups, orderList, orderForm, orderFilter, orderDetail } = await buildCalendarFields(
-    deps.fieldRepository,
-  );
+  const { fields, groups, orderList, orderForm, orderFilter, orderDetail } =
+    await buildCalendarFields(deps.fieldRepository);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 

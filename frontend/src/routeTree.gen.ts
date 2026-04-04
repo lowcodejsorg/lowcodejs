@@ -35,6 +35,8 @@ import { Route as PrivateMenusCreateIndexRouteImport } from './routes/_private/m
 import { Route as PrivateMenusMenuIdIndexRouteImport } from './routes/_private/menus/$menuId/index'
 import { Route as PrivateGroupsCreateIndexRouteImport } from './routes/_private/groups/create/index'
 import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private/groups/$groupId/index'
+import { Route as AuthenticationForgotPasswordValidateCodeIndexRouteImport } from './routes/_authentication/forgot-password/validate-code/index'
+import { Route as AuthenticationForgotPasswordResetPasswordIndexRouteImport } from './routes/_authentication/forgot-password/reset-password/index'
 import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods'
 import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index'
 import { Route as PrivateTablesSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/field/management'
@@ -224,6 +226,26 @@ const PrivateGroupsGroupIdIndexRoute =
   } as any).lazy(() =>
     import('./routes/_private/groups/$groupId/index.lazy').then((d) => d.Route),
   )
+const AuthenticationForgotPasswordValidateCodeIndexRoute =
+  AuthenticationForgotPasswordValidateCodeIndexRouteImport.update({
+    id: '/forgot-password/validate-code/',
+    path: '/forgot-password/validate-code/',
+    getParentRoute: () => AuthenticationLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authentication/forgot-password/validate-code/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
+const AuthenticationForgotPasswordResetPasswordIndexRoute =
+  AuthenticationForgotPasswordResetPasswordIndexRouteImport.update({
+    id: '/forgot-password/reset-password/',
+    path: '/forgot-password/reset-password/',
+    getParentRoute: () => AuthenticationLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_authentication/forgot-password/reset-password/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugMethodsRoute =
   PrivateTablesSlugMethodsRouteImport.update({
     id: '/tables/$slug/methods',
@@ -319,6 +341,8 @@ export interface FileRoutesByFullPath {
   '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
+  '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
   '/groups/create': typeof PrivateGroupsCreateIndexRoute
   '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
@@ -353,6 +377,8 @@ export interface FileRoutesByTo {
   '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
+  '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
   '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
   '/groups/create': typeof PrivateGroupsCreateIndexRoute
   '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
@@ -390,6 +416,8 @@ export interface FileRoutesById {
   '/_private/tools/': typeof PrivateToolsIndexRoute
   '/_private/users/': typeof PrivateUsersIndexRoute
   '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
+  '/_authentication/forgot-password/reset-password/': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  '/_authentication/forgot-password/validate-code/': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
   '/_private/groups/$groupId/': typeof PrivateGroupsGroupIdIndexRoute
   '/_private/groups/create/': typeof PrivateGroupsCreateIndexRoute
   '/_private/menus/$menuId/': typeof PrivateMenusMenuIdIndexRoute
@@ -426,6 +454,8 @@ export interface FileRouteTypes {
     | '/tools'
     | '/users'
     | '/tables/$slug/methods'
+    | '/forgot-password/reset-password'
+    | '/forgot-password/validate-code'
     | '/groups/$groupId'
     | '/groups/create'
     | '/menus/$menuId'
@@ -460,6 +490,8 @@ export interface FileRouteTypes {
     | '/tools'
     | '/users'
     | '/tables/$slug/methods'
+    | '/forgot-password/reset-password'
+    | '/forgot-password/validate-code'
     | '/groups/$groupId'
     | '/groups/create'
     | '/menus/$menuId'
@@ -496,6 +528,8 @@ export interface FileRouteTypes {
     | '/_private/tools/'
     | '/_private/users/'
     | '/_private/tables/$slug/methods'
+    | '/_authentication/forgot-password/reset-password/'
+    | '/_authentication/forgot-password/validate-code/'
     | '/_private/groups/$groupId/'
     | '/_private/groups/create/'
     | '/_private/menus/$menuId/'
@@ -706,6 +740,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateGroupsGroupIdIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_authentication/forgot-password/validate-code/': {
+      id: '/_authentication/forgot-password/validate-code/'
+      path: '/forgot-password/validate-code'
+      fullPath: '/forgot-password/validate-code'
+      preLoaderRoute: typeof AuthenticationForgotPasswordValidateCodeIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
+    '/_authentication/forgot-password/reset-password/': {
+      id: '/_authentication/forgot-password/reset-password/'
+      path: '/forgot-password/reset-password'
+      fullPath: '/forgot-password/reset-password'
+      preLoaderRoute: typeof AuthenticationForgotPasswordResetPasswordIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
     '/_private/tables/$slug/methods': {
       id: '/_private/tables/$slug/methods'
       path: '/tables/$slug/methods'
@@ -769,6 +817,8 @@ interface AuthenticationLayoutRouteChildren {
   AuthenticationSignInIndexRoute: typeof AuthenticationSignInIndexRoute
   AuthenticationForgotPasswordIndexRoute: typeof AuthenticationForgotPasswordIndexRoute
   AuthenticationSignUpIndexRoute: typeof AuthenticationSignUpIndexRoute
+  AuthenticationForgotPasswordResetPasswordIndexRoute: typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  AuthenticationForgotPasswordValidateCodeIndexRoute: typeof AuthenticationForgotPasswordValidateCodeIndexRoute
 }
 
 const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
@@ -776,6 +826,10 @@ const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
   AuthenticationForgotPasswordIndexRoute:
     AuthenticationForgotPasswordIndexRoute,
   AuthenticationSignUpIndexRoute: AuthenticationSignUpIndexRoute,
+  AuthenticationForgotPasswordResetPasswordIndexRoute:
+    AuthenticationForgotPasswordResetPasswordIndexRoute,
+  AuthenticationForgotPasswordValidateCodeIndexRoute:
+    AuthenticationForgotPasswordValidateCodeIndexRoute,
 }
 
 const AuthenticationLayoutRouteWithChildren =

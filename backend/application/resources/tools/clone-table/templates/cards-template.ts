@@ -31,9 +31,8 @@ export async function createCardsTemplate(
     trim: true,
   });
 
-  const { fields, orderList, orderForm, orderFilter, orderDetail } = await buildCardsFields(
-    deps.fieldRepository,
-  );
+  const { fields, orderList, orderForm, orderFilter, orderDetail } =
+    await buildCardsFields(deps.fieldRepository);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 

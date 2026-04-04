@@ -1,6 +1,6 @@
 import { useForm } from '@tanstack/react-form';
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
-import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
+import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, LockIcon } from 'lucide-react';
 import React, { useState } from 'react';
 import * as z from 'zod';
 
@@ -20,40 +20,51 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
-import { useAuthenticationSignIn } from '@/hooks/tanstack-query/use-authentication-sign-in';
+import { useAuthenticationResetPassword } from '@/hooks/tanstack-query/use-authentication-reset-password';
 import { createFieldErrorSetter } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
-import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
 import { toastSuccess } from '@/lib/toast';
 
-export const Route = createLazyFileRoute('/_authentication/_sign-in/')({
+export const Route = createLazyFileRoute(
+  '/_authentication/forgot-password/reset-password/',
+)({
   component: RouteComponent,
 });
 
-const FormSignInSchema = z.object({
-  email: z.email('Digite um email válido'),
-  password: z
-    .string({ message: 'A senha é obrigatória' })
-    .min(1, 'A senha é obrigatória'),
-});
+const passwordRegex =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>])/;
+
+const PasswordSchema = z
+  .object({
+    password: z
+      .string({ message: 'A senha é obrigatória' })
+      .min(6, 'A senha deve ter no mínimo 6 caracteres')
+      .regex(
+        passwordRegex,
+        'A senha deve conter: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
+      ),
+    confirmPassword: z
+      .string({ message: 'A confirmação de senha é obrigatória' })
+      .min(1, 'A confirmação de senha é obrigatória'),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: 'As senhas não coincidem',
+    path: ['confirmPassword'],
+  });
 
 function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  const signInMutation = useAuthenticationSignIn({
-    onSuccess(response) {
-      const role = response.group.slug.toUpperCase();
-
-      const route = ROLE_DEFAULT_ROUTE[role];
-
-      router.navigate({ to: route, replace: true });
-
-      toastSuccess('Login realizado com sucesso!', 'Seja bem-vindo!');
+  const resetPasswordMutation = useAuthenticationResetPassword({
+    onSuccess() {
+      toastSuccess('Senha redefinida!', 'Faça login com sua nova senha.');
+      router.navigate({ to: '/', replace: true });
     },
     onError(error) {
       handleApiError(error, {
-        context: 'Erro ao fazer login',
+        context: 'Erro ao redefinir senha',
         onFieldErrors: (errors) => {
           const setFieldError = createFieldErrorSetter(form);
           for (const [field, msg] of Object.entries(errors)) {
@@ -66,27 +77,29 @@ function RouteComponent(): React.JSX.Element {
 
   const form = useForm({
     defaultValues: {
-      email: '',
       password: '',
+      confirmPassword: '',
     },
     validators: {
-      onChange: FormSignInSchema,
-      onSubmit: FormSignInSchema,
+      onChange: PasswordSchema,
+      onSubmit: PasswordSchema,
     },
-    onSubmit: async function ({ value: payload }) {
-      await signInMutation.mutateAsync(payload);
+    onSubmit: async function ({ value }) {
+      await resetPasswordMutation.mutateAsync({
+        password: value.password,
+      });
     },
   });
 
   return (
     <div
-      data-test-id="sign-in-page"
+      data-test-id="forgot-password-reset-page"
       className="bg-background flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10"
     >
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           <form
-            data-test-id="sign-in-form"
+            data-test-id="forgot-password-new-password-form"
             onSubmit={(e) => {
               e.preventDefault();
               form.handleSubmit();
@@ -101,49 +114,9 @@ function RouteComponent(): React.JSX.Element {
                   <Logo className="h-8" />
                 </Link>
                 <FieldDescription>
-                  Não possui uma conta?{' '}
-                  <Link
-                    to="/sign-up"
-                    data-test-id="sign-up-link"
-                    className="underline underline-offset-2"
-                  >
-                    Clique aqui
-                  </Link>
+                  Crie uma nova senha para sua conta
                 </FieldDescription>
               </div>
-              <form.Field
-                name="email"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
-
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
-                      <InputGroup>
-                        <InputGroupInput
-                          data-test-id="sign-in-email-input"
-                          id={field.name}
-                          name={field.name}
-                          placeholder="exemplo@mail.com"
-                          value={field.state.value.trim()}
-                          onBlur={field.handleBlur}
-                          onChange={(e) =>
-                            field.handleChange(e.target.value.trim())
-                          }
-                          aria-invalid={isInvalid}
-                        />
-                        <InputGroupAddon>
-                          <MailIcon />
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
 
               <form.Field
                 name="password"
@@ -153,10 +126,10 @@ function RouteComponent(): React.JSX.Element {
 
                   return (
                     <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>Nova senha</FieldLabel>
                       <InputGroup>
                         <InputGroupInput
-                          data-test-id="sign-in-password-input"
+                          data-test-id="forgot-password-password-input"
                           id={field.name}
                           name={field.name}
                           type={showPassword ? 'text' : 'password'}
@@ -171,7 +144,7 @@ function RouteComponent(): React.JSX.Element {
                         </InputGroupAddon>
                         <InputGroupAddon align="inline-end">
                           <InputGroupButton
-                            data-test-id="sign-in-password-toggle-btn"
+                            data-test-id="forgot-password-password-toggle-btn"
                             type="button"
                             aria-label="toggle password visibility"
                             title="toggle password visibility"
@@ -192,24 +165,75 @@ function RouteComponent(): React.JSX.Element {
                 }}
               />
 
+              <form.Field
+                name="confirmPassword"
+                children={(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor={field.name}>
+                        Confirmar nova senha
+                      </FieldLabel>
+                      <InputGroup>
+                        <InputGroupInput
+                          data-test-id="forgot-password-confirm-password-input"
+                          id={field.name}
+                          name={field.name}
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          placeholder="••••••••"
+                          value={field.state.value}
+                          onBlur={field.handleBlur}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                          aria-invalid={isInvalid}
+                        />
+                        <InputGroupAddon>
+                          <LockIcon />
+                        </InputGroupAddon>
+                        <InputGroupAddon align="inline-end">
+                          <InputGroupButton
+                            data-test-id="forgot-password-confirm-password-toggle-btn"
+                            type="button"
+                            aria-label="toggle confirm password visibility"
+                            title="toggle confirm password visibility"
+                            size="icon-xs"
+                            className="cursor-pointer"
+                            onClick={() =>
+                              setShowConfirmPassword(!showConfirmPassword)
+                            }
+                          >
+                            {!showConfirmPassword && <EyeIcon />}
+                            {showConfirmPassword && <EyeClosedIcon />}
+                          </InputGroupButton>
+                        </InputGroupAddon>
+                      </InputGroup>
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              />
+
               <Field>
                 <Button
-                  data-test-id="sign-in-submit-btn"
+                  data-test-id="forgot-password-submit-btn"
                   type="submit"
                   className="w-full"
-                  disabled={signInMutation.status === 'pending'}
+                  disabled={resetPasswordMutation.status === 'pending'}
                 >
-                  {signInMutation.status === 'pending' && <Spinner />}
-                  <span>Entrar</span>
+                  {resetPasswordMutation.status === 'pending' && <Spinner />}
+                  <span>Redefinir senha</span>
                 </Button>
 
-                <FieldDescription className="text-right">
+                <FieldDescription className="text-center">
                   <Link
-                    to="/forgot-password"
-                    data-test-id="sign-up-link"
-                    className="underline underline-offset-2"
+                    to="/"
+                    className="inline-flex items-center gap-1"
                   >
-                    Esqueceu senha?
+                    <ArrowLeftIcon className="h-3 w-3" />
+                    Voltar para o login
                   </Link>
                 </FieldDescription>
               </Field>

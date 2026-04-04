@@ -32,9 +32,8 @@ export async function createForumTemplate(
     trim: true,
   });
 
-  const { fields, groups, orderList, orderForm, orderFilter, orderDetail } = await buildForumFields(
-    deps.fieldRepository,
-  );
+  const { fields, groups, orderList, orderForm, orderFilter, orderDetail } =
+    await buildForumFields(deps.fieldRepository);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 

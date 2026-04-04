@@ -146,7 +146,8 @@ export function RowView({
   const visibleFields = React.useMemo(() => {
     const filtered = fields.filter((f) => f.showInDetail);
     const detailOrder = table?.fieldOrderDetail ?? [];
-    const order = detailOrder.length > 0 ? detailOrder : (table?.fieldOrderForm ?? []);
+    const order =
+      detailOrder.length > 0 ? detailOrder : (table?.fieldOrderForm ?? []);
     if (order.length === 0) return filtered;
     return [...filtered].sort((a, b) => {
       const idxA = order.indexOf(a._id);
