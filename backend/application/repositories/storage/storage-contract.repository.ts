@@ -35,6 +35,6 @@ export abstract class StorageContractRepository {
   ): Promise<IStorage | null>;
   abstract findMany(payload?: StorageQueryPayload): Promise<IStorage[]>;
   abstract update(payload: StorageUpdatePayload): Promise<IStorage>;
-  abstract delete(_id: string): Promise<IStorage | null>;
+  abstract delete(_id: string): Promise<void>;
   abstract count(payload?: StorageQueryPayload): Promise<number>;
 }

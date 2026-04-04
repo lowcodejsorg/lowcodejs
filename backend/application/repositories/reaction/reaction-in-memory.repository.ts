@@ -72,13 +72,9 @@ export default class ReactionInMemoryRepository implements ReactionContractRepos
   }
 
   async delete(_id: string): Promise<void> {
-    const reaction = this.items.find((r) => r._id === _id);
-    if (!reaction) throw new Error('Reaction not found');
-    Object.assign(reaction, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((r) => r._id === _id);
+    if (index === -1) throw new Error('Reaction not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: ReactionQueryPayload): Promise<number> {

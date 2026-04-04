@@ -77,13 +77,9 @@ export default class PermissionInMemoryRepository implements PermissionContractR
   }
 
   async delete(_id: string): Promise<void> {
-    const permission = this.items.find((p) => p._id === _id);
-    if (!permission) throw new Error('Permission not found');
-    Object.assign(permission, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((p) => p._id === _id);
+    if (index === -1) throw new Error('Permission not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: PermissionQueryPayload): Promise<number> {

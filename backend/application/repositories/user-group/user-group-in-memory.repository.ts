@@ -86,13 +86,9 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   }
 
   async delete(_id: string): Promise<void> {
-    const group = this.items.find((g) => g._id === _id);
-    if (!group) throw new Error('UserGroup not found');
-    Object.assign(group, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((g) => g._id === _id);
+    if (index === -1) throw new Error('UserGroup not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: UserGroupQueryPayload): Promise<number> {

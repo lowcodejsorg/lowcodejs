@@ -103,10 +103,8 @@ export default class StorageMongooseRepository implements StorageContractReposit
     return this.transform(storage);
   }
 
-  async delete(_id: string): Promise<IStorage | null> {
-    const storage = await Model.findByIdAndDelete(_id);
-    if (!storage) return null;
-    return this.transform(storage);
+  async delete(_id: string): Promise<void> {
+    await Model.deleteOne({ _id });
   }
 
   async count(payload?: StorageQueryPayload): Promise<number> {

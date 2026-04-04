@@ -115,10 +115,7 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
   }
 
   async delete(_id: string): Promise<void> {
-    await Model.updateOne(
-      { _id },
-      { $set: { trashed: true, trashedAt: new Date() } },
-    );
+    await Model.deleteOne({ _id });
   }
 
   async count(payload?: UserGroupQueryPayload): Promise<number> {

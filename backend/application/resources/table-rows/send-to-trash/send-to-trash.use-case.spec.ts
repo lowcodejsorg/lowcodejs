@@ -95,7 +95,11 @@ describe('Table Row Send To Trash Use Case', () => {
       data: { nome: 'Test' },
     });
 
-    await rowInMemoryRepository.update({ table, _id: row._id, data: { trashed: true, trashedAt: new Date() } });
+    await rowInMemoryRepository.update({
+      table,
+      _id: row._id,
+      data: { trashed: true, trashedAt: new Date() },
+    });
 
     const result = await sut.execute({
       slug: 'clientes',

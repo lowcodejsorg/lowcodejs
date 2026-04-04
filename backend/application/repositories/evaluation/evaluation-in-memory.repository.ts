@@ -71,13 +71,9 @@ export default class EvaluationInMemoryRepository implements EvaluationContractR
   }
 
   async delete(_id: string): Promise<void> {
-    const evaluation = this.items.find((e) => e._id === _id);
-    if (!evaluation) throw new Error('Evaluation not found');
-    Object.assign(evaluation, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((e) => e._id === _id);
+    if (index === -1) throw new Error('Evaluation not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: EvaluationQueryPayload): Promise<number> {

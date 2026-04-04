@@ -18,7 +18,7 @@ export default class StorageDeleteUseCase {
 
   async execute({ _id }: { _id: string }): Promise<Response> {
     try {
-      const storage = await this.storageRepository.delete(_id);
+      const storage = await this.storageRepository.findById(_id);
 
       if (!storage) {
         return left(
@@ -26,6 +26,7 @@ export default class StorageDeleteUseCase {
         );
       }
 
+      await this.storageRepository.delete(_id);
       await this.service.delete(storage.filename);
 
       return right(null);

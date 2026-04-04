@@ -93,11 +93,10 @@ export default class StorageInMemoryRepository implements StorageContractReposit
     return storage;
   }
 
-  async delete(_id: string): Promise<IStorage | null> {
+  async delete(_id: string): Promise<void> {
     const index = this.items.findIndex((s) => s._id === _id);
-    if (index === -1) return null;
-    const [storage] = this.items.splice(index, 1);
-    return storage;
+    if (index === -1) throw new Error('Storage not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: StorageQueryPayload): Promise<number> {

@@ -88,13 +88,9 @@ export default class ValidationTokenInMemoryRepository implements ValidationToke
   }
 
   async delete(_id: string): Promise<void> {
-    const token = this.items.find((t) => t._id === _id);
-    if (!token) throw new Error('ValidationToken not found');
-    Object.assign(token, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((t) => t._id === _id);
+    if (index === -1) throw new Error('ValidationToken not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: ValidationTokenQueryPayload): Promise<number> {

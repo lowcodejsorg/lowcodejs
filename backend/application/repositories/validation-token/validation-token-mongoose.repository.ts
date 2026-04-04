@@ -116,10 +116,7 @@ export default class ValidationTokenMongooseRepository implements ValidationToke
   }
 
   async delete(_id: string): Promise<void> {
-    await Model.updateOne(
-      { _id },
-      { $set: { trashed: true, trashedAt: new Date() } },
-    );
+    await Model.deleteOne({ _id });
   }
 
   async count(payload?: ValidationTokenQueryPayload): Promise<number> {

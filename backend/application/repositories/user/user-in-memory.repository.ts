@@ -95,13 +95,9 @@ export default class UserInMemoryRepository implements UserContractRepository {
   }
 
   async delete(_id: string): Promise<void> {
-    const user = this.items.find((u) => u._id === _id);
-    if (!user) throw new Error('User not found');
-    Object.assign(user, {
-      trashed: true,
-      trashedAt: new Date(),
-      updatedAt: new Date(),
-    });
+    const index = this.items.findIndex((u) => u._id === _id);
+    if (index === -1) throw new Error('User not found');
+    this.items.splice(index, 1);
   }
 
   async count(payload?: UserQueryPayload): Promise<number> {

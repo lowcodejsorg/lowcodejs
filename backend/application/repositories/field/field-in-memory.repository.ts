@@ -92,7 +92,9 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   }
 
   async delete(_id: string): Promise<void> {
-    await this.update({ _id, trashed: true, trashedAt: new Date() });
+    const index = this.items.findIndex((f) => f._id === _id);
+    if (index === -1) throw new Error('Field not found');
+    this.items.splice(index, 1);
   }
 
   async deleteMany(_ids: string[]): Promise<void> {
