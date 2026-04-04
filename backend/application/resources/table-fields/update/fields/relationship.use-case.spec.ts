@@ -5,7 +5,9 @@ import {
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
+  type IField,
 } from '@application/core/entity.core';
+import type { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
@@ -23,6 +25,7 @@ let fieldInMemoryRepository: FieldInMemoryRepository;
 let sut: TableFieldUpdateUseCase;
 
 const FIELD_DEFAULTS = {
+  name: 'Produtos',
   slug: 'produtos',
   type: E_FIELD_TYPE.RELATIONSHIP,
   showInList: true,
@@ -46,17 +49,16 @@ const FIELD_DEFAULTS = {
   widthInForm: 50,
   widthInList: 10,
   widthInDetail: null,
-};
+} satisfies FieldCreatePayload;
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 async function createFieldAndTable(
   fieldRepo: FieldInMemoryRepository,
   tableRepo: TableInMemoryRepository,
-  fieldOverrides: Record<string, unknown> = {},
+  fieldOverrides: Partial<IField> = {},
 ) {
   const field = await fieldRepo.create({
     ...FIELD_DEFAULTS,
-    name: 'Produtos',
     ...fieldOverrides,
   });
 
@@ -81,36 +83,32 @@ async function createFieldAndTable(
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function buildUpdatePayload(
-  field: Record<string, unknown>,
+  field: IField,
   overrides: Record<string, unknown> = {},
 ) {
   return {
     slug: 'pedidos',
-    _id: field._id as string,
-    name: field.name as string,
-    type: field.type as string,
-    format: field.format as string | null,
-    required: field.required as boolean,
-    multiple: field.multiple as boolean,
-    defaultValue: field.defaultValue as string | string[] | null,
-    relationship: field.relationship as {
-      table: { _id: string; slug: string };
-      field: { _id: string; slug: string };
-      order: string;
-    } | null,
-    dropdown: field.dropdown as [],
-    category: field.category as [],
-    group: field.group as null,
+    _id: field._id,
+    name: field.name,
+    type: field.type,
+    format: field.format,
+    required: field.required,
+    multiple: field.multiple,
+    defaultValue: field.defaultValue,
+    relationship: field.relationship,
+    dropdown: field.dropdown,
+    category: field.category,
+    group: field.group,
     trashed: false,
     trashedAt: null,
     locked: false,
-    showInList: field.showInList as boolean,
-    showInForm: field.showInForm as boolean,
-    showInDetail: field.showInDetail as boolean,
-    showInFilter: field.showInFilter as boolean,
-    widthInForm: field.widthInForm as number | null,
-    widthInList: field.widthInList as number | null,
-    widthInDetail: field.widthInDetail as number | null,
+    showInList: field.showInList,
+    showInForm: field.showInForm,
+    showInDetail: field.showInDetail,
+    showInFilter: field.showInFilter,
+    widthInForm: field.widthInForm,
+    widthInList: field.widthInList,
+    widthInDetail: field.widthInDetail,
     ...overrides,
   };
 }

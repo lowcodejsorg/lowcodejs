@@ -77,7 +77,9 @@
       "Bash(SRC=\"/home/indio/Desktop/low-code-js/frontend/src/routes/_private/tables/$slug\")",
       "Bash(rm \"$SRC\"/-table-*-view.tsx \"$SRC\"/-table-*-view-skeleton.tsx \"$SRC\"/-table-skeleton.tsx)",
       "Bash(docker compose:*)",
-      "Bash(xargs -0 -I{} sh -c 'if grep -q \"} catch \\(error\\) {\" \"{}\"; then sed -i \"/} catch \\(error\\) {/{n;s/^/      console.error\\(error\\);\\\\n/}\" \"{}\"; echo \"OK {}\"; fi')"
+      "Bash(xargs -0 -I{} sh -c 'if grep -q \"} catch \\(error\\) {\" \"{}\"; then sed -i \"/} catch \\(error\\) {/{n;s/^/      console.error\\(error\\);\\\\n/}\" \"{}\"; echo \"OK {}\"; fi')",
+      "Bash(sed -i \"s|import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';|import type { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';\\\\nimport FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';|\" application/resources/table-fields/update/fields/relationship.use-case.spec.ts)",
+      "Bash(sed -i 's/  widthInDetail: null,\\\\n};/  widthInDetail: null,\\\\n} satisfies FieldCreatePayload;/' application/resources/table-fields/update/fields/relationship.use-case.spec.ts)"
     ]
   },
   "enableAllProjectMcpServers": true,

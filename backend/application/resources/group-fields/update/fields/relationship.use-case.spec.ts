@@ -6,6 +6,7 @@ import {
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
+import type { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
@@ -57,7 +58,7 @@ const FIELD_CREATE_PAYLOAD = {
   widthInForm: 50,
   widthInList: 10,
   widthInDetail: null,
-};
+} satisfies FieldCreatePayload;
 
 const UPDATE_PAYLOAD_BASE = {
   slug: 'pedidos',
