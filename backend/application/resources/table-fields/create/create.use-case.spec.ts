@@ -136,11 +136,11 @@ describe('Table Field Create Use Case', () => {
       widthInDetail: null,
     });
 
-    await tableInMemoryRepository.create({
+    const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
-      fields: [field],
+      fields: [field._id],
       owner: 'owner-id',
       administrators: [],
       style: E_TABLE_STYLE.LIST,
@@ -149,6 +149,7 @@ describe('Table Field Create Use Case', () => {
       fieldOrderList: [],
       fieldOrderForm: [],
     });
+    table.fields = [field];
 
     const result = await sut.execute({
       slug: 'clientes',

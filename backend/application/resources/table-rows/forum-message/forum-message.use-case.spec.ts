@@ -84,7 +84,7 @@ const FORUM_TABLE_PAYLOAD = {
   name: 'Canal Geral',
   slug: 'canal-geral',
   _schema: {},
-  fields: [MESSAGES_FIELD],
+  fields: [MESSAGES_FIELD._id],
   owner: 'owner-id',
   administrators: [],
   style: E_TABLE_STYLE.FORUM,
@@ -94,6 +94,18 @@ const FORUM_TABLE_PAYLOAD = {
   fieldOrderForm: [],
   groups: [GROUP_CONFIG],
 };
+
+async function createForumTable(
+  repo: TableInMemoryRepository,
+  overrides?: Record<string, unknown>,
+): Promise<import('@application/core/entity.core').ITable> {
+  const payload = overrides
+    ? { ...FORUM_TABLE_PAYLOAD, ...overrides }
+    : FORUM_TABLE_PAYLOAD;
+  const table = await repo.create(payload);
+  table.fields = [MESSAGES_FIELD];
+  return table;
+}
 
 const USER_ID = 'user-123';
 
@@ -140,7 +152,7 @@ describe('Forum Message Use Case', () => {
   // ── create ──────────────────────────────────────────────
 
   it('deve criar mensagem com sucesso', async () => {
-    const table = await tableInMemoryRepository.create(FORUM_TABLE_PAYLOAD);
+    const table = await createForumTable(tableInMemoryRepository);
 
     const row = await rowInMemoryRepository.create({
       table,
@@ -195,8 +207,7 @@ describe('Forum Message Use Case', () => {
   });
 
   it('deve retornar FORUM_TABLE_REQUIRED quando tabela nao e FORUM', async () => {
-    await tableInMemoryRepository.create({
-      ...FORUM_TABLE_PAYLOAD,
+    await createForumTable(tableInMemoryRepository, {
       slug: 'tabela-lista',
       style: E_TABLE_STYLE.LIST,
     });
@@ -216,7 +227,7 @@ describe('Forum Message Use Case', () => {
   });
 
   it('deve retornar ROW_NOT_FOUND quando registro nao existe', async () => {
-    await tableInMemoryRepository.create(FORUM_TABLE_PAYLOAD);
+    await createForumTable(tableInMemoryRepository);
 
     const findOneSpy = vi.spyOn(rowInMemoryRepository, 'findOne');
 
@@ -236,7 +247,7 @@ describe('Forum Message Use Case', () => {
   });
 
   it('deve retornar FORUM_MESSAGE_EMPTY quando mensagem sem conteudo', async () => {
-    const table = await tableInMemoryRepository.create(FORUM_TABLE_PAYLOAD);
+    const table = await createForumTable(tableInMemoryRepository);
 
     const row = await rowInMemoryRepository.create({
       table,
@@ -280,7 +291,7 @@ describe('Forum Message Use Case', () => {
   // ── update ──────────────────────────────────────────────
 
   it('deve atualizar mensagem com sucesso', async () => {
-    const table = await tableInMemoryRepository.create(FORUM_TABLE_PAYLOAD);
+    const table = await createForumTable(tableInMemoryRepository);
 
     const messageId = 'msg-uuid-123';
 
@@ -323,7 +334,7 @@ describe('Forum Message Use Case', () => {
   });
 
   it('deve retornar FORUM_MESSAGE_AUTHOR_REQUIRED quando nao e o autor', async () => {
-    const table = await tableInMemoryRepository.create(FORUM_TABLE_PAYLOAD);
+    const table = await createForumTable(tableInMemoryRepository);
 
     const messageId = 'msg-uuid-456';
     const authorId = 'author-original';
@@ -365,7 +376,7 @@ describe('Forum Message Use Case', () => {
   // ── remove ──────────────────────────────────────────────
 
   it('deve deletar mensagem com sucesso', async () => {
-    const table = await tableInMemoryRepository.create(FORUM_TABLE_PAYLOAD);
+    const table = await createForumTable(tableInMemoryRepository);
 
     const messageId = 'msg-uuid-789';
 

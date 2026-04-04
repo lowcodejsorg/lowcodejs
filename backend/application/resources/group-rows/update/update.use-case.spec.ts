@@ -101,13 +101,15 @@ const GROUP_CONFIG = {
 };
 
 async function createTableWithGroup(): Promise<ITable> {
-  return tableRepository.create({
+  const table = await tableRepository.create({
     ...TABLE_DEFAULTS,
     name: 'Pedidos',
     slug: 'pedidos',
-    fields: [GROUP_FIELD],
+    fields: [GROUP_FIELD._id],
     groups: [GROUP_CONFIG],
   });
+  table.fields = [GROUP_FIELD];
+  return table;
 }
 
 async function createRowWithItems(table: ITable): Promise<{

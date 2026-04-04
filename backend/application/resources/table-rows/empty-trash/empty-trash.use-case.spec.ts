@@ -81,10 +81,10 @@ describe('Empty Trash Use Case', () => {
   });
 
   it('deve retornar deleted: 0 quando lixeira vazia', async () => {
-    await tableInMemoryRepository.create(TABLE_PAYLOAD);
+    const table = await tableInMemoryRepository.create(TABLE_PAYLOAD);
 
     await rowInMemoryRepository.create({
-      table: { slug: 'clientes' },
+      table,
       data: { nome: 'Cliente 1' },
     });
 
