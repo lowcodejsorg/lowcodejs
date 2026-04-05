@@ -1,10 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
 
-import { RoutePending } from '@/components/common/route-status/route-pending';
+import { PageSkeleton } from './-page-skeleton';
+
 import { pageDetailOptions } from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createFileRoute('/_private/pages/$slug')({
-  pendingComponent: RoutePending,
+  pendingComponent: PageSkeleton,
   loader: async ({ context, params }) => {
     await context.queryClient.ensureQueryData(pageDetailOptions(params.slug));
   },

@@ -5,12 +5,12 @@ import {
   CloneTableFormFields,
   cloneTableFormDefaultValues,
 } from './-clone-form';
+import { CloneFormSkeleton } from './-clone-form-skeleton';
 
 import { FormFooter } from '@/components/common/form-footer';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -20,15 +20,6 @@ import { toastSuccess } from '@/lib/toast';
 export const Route = createLazyFileRoute('/_private/tables/clone/')({
   component: RouteComponent,
 });
-
-function CloneFormSkeleton(): React.JSX.Element {
-  return (
-    <div className="p-4 space-y-4">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-    </div>
-  );
-}
 
 function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();

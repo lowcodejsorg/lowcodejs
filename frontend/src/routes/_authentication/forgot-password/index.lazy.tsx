@@ -7,6 +7,13 @@ import * as z from 'zod';
 import { Logo } from '@/components/common/layout/logo';
 import { Button } from '@/components/ui/button';
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
   Field,
   FieldDescription,
   FieldError,
@@ -83,84 +90,99 @@ function RouteComponent(): React.JSX.Element {
     >
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
-          <form
-            data-test-id="forgot-password-email-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit();
-            }}
+          <Link
+            to="/"
+            className="flex flex-col items-center gap-2 font-medium"
           >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <Link
-                  to="/"
-                  className="flex flex-col items-center gap-2 font-medium"
-                >
-                  <Logo className="h-8" />
-                </Link>
-                <FieldDescription>
-                  Digite seu e-mail para receber o código de verificação
-                </FieldDescription>
-              </div>
+            <Logo className="h-8" />
+          </Link>
 
-              <form.Field
-                name="email"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl font-semibold">
+                Recuperar senha
+              </CardTitle>
+              <CardDescription>
+                Digite seu e-mail para receber o código de verificação
+              </CardDescription>
+            </CardHeader>
 
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
-                      <InputGroup>
-                        <InputGroupInput
-                          data-test-id="forgot-password-email-input"
-                          id={field.name}
-                          name={field.name}
-                          type="email"
-                          placeholder="exemplo@mail.com"
-                          value={field.state.value.trim()}
-                          onBlur={field.handleBlur}
-                          onChange={(e) =>
-                            field.handleChange(e.target.value.trim())
-                          }
-                          aria-invalid={isInvalid}
-                        />
-                        <InputGroupAddon>
-                          <MailIcon />
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
+            <CardContent>
+              <form
+                data-test-id="forgot-password-email-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  form.handleSubmit();
                 }}
-              />
+              >
+                <FieldGroup>
+                  <form.Field
+                    name="email"
+                    children={(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched &&
+                        !field.state.meta.isValid;
 
-              <Field>
-                <Button
-                  data-test-id="forgot-password-send-btn"
-                  type="submit"
-                  className="w-full"
-                  disabled={requestCodeMutation.status === 'pending'}
-                >
-                  {requestCodeMutation.status === 'pending' && <Spinner />}
-                  <span>Enviar código</span>
-                </Button>
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>
+                            E-mail
+                          </FieldLabel>
+                          <InputGroup>
+                            <InputGroupInput
+                              data-test-id="forgot-password-email-input"
+                              id={field.name}
+                              name={field.name}
+                              type="email"
+                              placeholder="exemplo@mail.com"
+                              value={field.state.value.trim()}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value.trim())
+                              }
+                              aria-invalid={isInvalid}
+                            />
+                            <InputGroupAddon>
+                              <MailIcon />
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  />
 
-                <FieldDescription className="text-center">
-                  <Link
-                    to="/"
-                    className="inline-flex items-center gap-1"
-                  >
-                    <ArrowLeftIcon className="h-3 w-3" />
-                    Voltar para o login
-                  </Link>
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-          </form>
+                  <Field>
+                    <Button
+                      data-test-id="forgot-password-send-btn"
+                      type="submit"
+                      className="w-full"
+                      disabled={requestCodeMutation.status === 'pending'}
+                    >
+                      {requestCodeMutation.status === 'pending' && (
+                        <Spinner />
+                      )}
+                      <span>Enviar código</span>
+                    </Button>
+                  </Field>
+                </FieldGroup>
+              </form>
+            </CardContent>
+          </Card>
+
+          <div className="text-center text-sm">
+            <FieldDescription>
+              <Link
+                to="/"
+                className="inline-flex items-center gap-1"
+              >
+                <ArrowLeftIcon className="h-3 w-3" />
+                Voltar para o login
+              </Link>
+            </FieldDescription>
+          </div>
         </div>
       </div>
     </div>

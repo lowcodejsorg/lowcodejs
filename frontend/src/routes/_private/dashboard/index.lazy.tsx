@@ -17,7 +17,12 @@ function RouteComponent(): React.JSX.Element {
   return (
     <PageShell data-test-id="dashboard-page">
       <PageShell.Header>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            Visão geral do sistema
+          </p>
+        </div>
       </PageShell.Header>
 
       <PageShell.Content className="p-4 space-y-4">

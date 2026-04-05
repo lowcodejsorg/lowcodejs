@@ -16,12 +16,17 @@ export function StatCard({
   description,
 }: StatCardProps): React.JSX.Element {
   return (
-    <Card data-test-id={`stat-card-${title}`}>
+    <Card
+      data-test-id={`stat-card-${title}`}
+      className="transition-shadow duration-200 hover:shadow-md"
+    >
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+          <Icon className="h-4 w-4 text-primary" />
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <div className="text-2xl font-bold">

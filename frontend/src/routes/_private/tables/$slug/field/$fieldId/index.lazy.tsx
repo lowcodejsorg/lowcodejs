@@ -8,6 +8,7 @@ import {
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
 
+import { FieldDetailSkeleton } from './-field-detail-skeleton';
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
 import { FieldView } from './-view';
 
@@ -17,7 +18,6 @@ import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
 import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-update';
@@ -85,13 +85,7 @@ function RouteComponent(): React.JSX.Element {
 
   // Loading enquanto verifica permissão
   if (table.status === 'pending' || permission.isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
+    return <FieldDetailSkeleton />;
   }
 
   // Mostrar erro se não tem permissão
@@ -166,10 +160,8 @@ function RouteComponent(): React.JSX.Element {
           />
         )}
         {_read.status === 'pending' && (
-          <div className="p-2 space-y-4">
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
-            <Skeleton className="h-10 w-full" />
+          <div className="p-4">
+            <FieldDetailSkeleton />
           </div>
         )}
         {_read.status === 'success' && (

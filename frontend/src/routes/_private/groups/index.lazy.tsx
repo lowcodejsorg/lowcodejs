@@ -67,7 +67,10 @@ function RouteComponent(): React.JSX.Element {
   return (
     <PageShell data-test-id="groups-page">
       <PageShell.Header>
-        <h1 className="text-2xl font-medium">Grupos</h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-medium">Grupos</h1>
+          <p className="text-sm text-muted-foreground">Gerencie os grupos de permissão</p>
+        </div>
         <div className="inline-flex items-center gap-2">
           <div ref={setToolbarNode} />
           <FilterTrigger

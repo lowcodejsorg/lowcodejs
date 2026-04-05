@@ -10,13 +10,13 @@ import {
   FieldCreateSchema,
   fieldCreateFormDefaultValues,
 } from './-create-form';
+import { CreateFieldSkeleton } from './-create-field-skeleton';
 
 import { FormFooter } from '@/components/common/form-footer';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldCreate } from '@/hooks/tanstack-query/use-field-create';
 import { useGroupFieldCreate } from '@/hooks/tanstack-query/use-group-field-create';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
@@ -186,13 +186,7 @@ function RouteComponent(): React.JSX.Element {
 
   // Loading enquanto verifica permissão
   if (table.status === 'pending' || permission.isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
+    return <CreateFieldSkeleton />;
   }
 
   // Mostrar erro se não tem permissão

@@ -76,7 +76,10 @@ function RouteComponent(): React.JSX.Element {
   return (
     <PageShell data-test-id="users-page">
       <PageShell.Header>
-        <h1 className="text-2xl font-medium">Usuários</h1>
+        <div className="space-y-1">
+          <h1 className="text-2xl font-medium">Usuários</h1>
+          <p className="text-sm text-muted-foreground">Gerencie os usuários do sistema</p>
+        </div>
         <div className="inline-flex items-center gap-2">
           <div ref={setToolbarNode} />
           <FilterTrigger

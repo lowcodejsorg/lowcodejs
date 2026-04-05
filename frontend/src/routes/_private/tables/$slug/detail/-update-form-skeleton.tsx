@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function UpdateTableFormSkeleton(): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2">
+    <section className="space-y-4 p-4">
       <Skeleton className="h-32 w-full" /> {/* Logo */}
       <Skeleton className="h-10 w-full" /> {/* Nome */}
       <Skeleton className="h-24 w-full" /> {/* Descrição */}

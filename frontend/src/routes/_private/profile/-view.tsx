@@ -1,3 +1,7 @@
+import { UserIcon, UsersIcon } from 'lucide-react';
+
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { IUser } from '@/lib/interfaces';
 
 interface ProfileViewProps {
@@ -7,30 +11,64 @@ interface ProfileViewProps {
 export function ProfileView({ data }: ProfileViewProps): React.JSX.Element {
   return (
     <section
-      className="space-y-4 p-2"
+      className="space-y-6 p-4"
       data-test-id="profile-view"
     >
-      <div className="space-y-1">
-        <p className="text-sm font-medium">Nome</p>
-        <p className="text-sm text-muted-foreground">{data.name || '-'}</p>
-      </div>
+      {/* Dados Pessoais */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <UserIcon className="h-4 w-4 text-primary" />
+            </div>
+            Dados Pessoais
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Nome
+            </p>
+            <p className="text-sm font-medium">{data.name || '-'}</p>
+          </div>
 
-      <div className="space-y-1">
-        <p className="text-sm font-medium">E-mail</p>
-        <p className="text-sm text-muted-foreground">{data.email || '-'}</p>
-      </div>
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              E-mail
+            </p>
+            <p className="text-sm font-medium">{data.email || '-'}</p>
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="space-y-1">
-        <p className="text-sm font-medium">Grupo</p>
-        <div className="rounded-lg border p-4 bg-muted/50">
-          <div className="space-y-2">
-            <p className="font-medium">{data.group.name}</p>
-            <p className="text-sm text-muted-foreground">
+      {/* Grupo */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <UsersIcon className="h-4 w-4 text-primary" />
+            </div>
+            Grupo
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Nome do Grupo
+            </p>
+            <Badge variant="secondary">{data.group.name}</Badge>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Descrição
+            </p>
+            <p className="text-sm font-medium">
               {data.group.description || 'Sem descrição disponível'}
             </p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </section>
   );
 }

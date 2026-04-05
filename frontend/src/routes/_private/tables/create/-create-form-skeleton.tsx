@@ -6,24 +6,11 @@ import {
 } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export function UpdateGroupFormSkeleton(): React.JSX.Element {
+export function CreateTableFormSkeleton(): React.JSX.Element {
   return (
     <section className="space-y-4 p-4">
-      {/* Campo Slug */}
-      <Field>
-        <FieldLabel>
-          <Skeleton className="h-4 w-32" />
-        </FieldLabel>
-        <InputGroup>
-          <InputGroupInput
-            disabled
-            className="opacity-50"
-          />
-          <InputGroupAddon>
-            <Skeleton className="size-5 rounded" />
-          </InputGroupAddon>
-        </InputGroup>
-      </Field>
+      {/* Upload de logo */}
+      <Skeleton className="h-32 w-full rounded-md" />
 
       {/* Campo Nome */}
       <Field>
@@ -41,25 +28,20 @@ export function UpdateGroupFormSkeleton(): React.JSX.Element {
         </InputGroup>
       </Field>
 
-      {/* Campo Descrição */}
+      {/* Campo Estilo */}
       <Field>
         <FieldLabel>
-          <Skeleton className="h-4 w-32" />
+          <Skeleton className="h-4 w-40" />
         </FieldLabel>
-        <Skeleton className="h-20 w-full rounded-md" />
+        <Skeleton className="h-10 w-full rounded-md" />
       </Field>
 
-      {/* Campo Permissões */}
+      {/* Campo Visibilidade */}
       <Field>
         <FieldLabel>
           <Skeleton className="h-4 w-24" />
         </FieldLabel>
         <Skeleton className="h-10 w-full rounded-md" />
-      </Field>
-
-      {/* Botão */}
-      <Field className="inline-flex justify-end flex-1 items-end">
-        <Skeleton className="h-10 w-full max-w-3xs rounded-md" />
       </Field>
     </section>
   );

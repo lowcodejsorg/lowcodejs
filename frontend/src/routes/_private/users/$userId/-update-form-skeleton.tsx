@@ -9,7 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function UpdateUserFormSkeleton(): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2">
+    <section className="space-y-4 p-4">
       {/* Campo Nome */}
       <Field>
         <FieldLabel>

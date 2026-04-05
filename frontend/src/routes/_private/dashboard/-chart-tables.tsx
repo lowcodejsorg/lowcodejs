@@ -2,7 +2,13 @@ import { Bar, BarChart, XAxis, YAxis } from 'recharts';
 
 import { mockTablesPerMonth } from './-mock-data';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   ChartContainer,
   ChartTooltip,
@@ -22,6 +28,7 @@ export function ChartTables(): React.JSX.Element {
     <Card data-test-id="chart-tables">
       <CardHeader>
         <CardTitle>Tabelas Criadas por Mês</CardTitle>
+        <CardDescription>Quantidade de tabelas criadas nos últimos meses</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
@@ -47,7 +54,7 @@ export function ChartTables(): React.JSX.Element {
             <Bar
               dataKey="tables"
               fill="var(--chart-1)"
-              radius={4}
+              radius={6}
             />
           </BarChart>
         </ChartContainer>

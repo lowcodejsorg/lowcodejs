@@ -7,6 +7,13 @@ import * as z from 'zod';
 import { Logo } from '@/components/common/layout/logo';
 import { Button } from '@/components/ui/button';
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import {
   Field,
   FieldDescription,
   FieldError,
@@ -85,136 +92,161 @@ function RouteComponent(): React.JSX.Element {
     >
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
-          <form
-            data-test-id="sign-in-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              form.handleSubmit();
-            }}
+          <Link
+            to="/"
+            className="flex flex-col items-center gap-2 font-medium"
           >
-            <FieldGroup>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <Link
-                  to="/"
-                  className="flex flex-col items-center gap-2 font-medium"
-                >
-                  <Logo className="h-8" />
-                </Link>
-                <FieldDescription>
-                  Não possui uma conta?{' '}
-                  <Link
-                    to="/sign-up"
-                    data-test-id="sign-up-link"
-                    className="underline underline-offset-2"
-                  >
-                    Clique aqui
-                  </Link>
-                </FieldDescription>
-              </div>
-              <form.Field
-                name="email"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
+            <Logo className="h-8" />
+          </Link>
 
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
-                      <InputGroup>
-                        <InputGroupInput
-                          data-test-id="sign-in-email-input"
-                          id={field.name}
-                          name={field.name}
-                          placeholder="exemplo@mail.com"
-                          value={field.state.value.trim()}
-                          onBlur={field.handleBlur}
-                          onChange={(e) =>
-                            field.handleChange(e.target.value.trim())
-                          }
-                          aria-invalid={isInvalid}
-                        />
-                        <InputGroupAddon>
-                          <MailIcon />
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
+          <Card>
+            <CardHeader className="text-center">
+              <CardTitle className="text-xl font-semibold">
+                Entrar
+              </CardTitle>
+              <CardDescription>
+                Faça login para acessar a plataforma
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent>
+              <form
+                data-test-id="sign-in-form"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  form.handleSubmit();
                 }}
-              />
+              >
+                <FieldGroup>
+                  <form.Field
+                    name="email"
+                    children={(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched &&
+                        !field.state.meta.isValid;
 
-              <form.Field
-                name="password"
-                children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>
+                            E-mail
+                          </FieldLabel>
+                          <InputGroup>
+                            <InputGroupInput
+                              data-test-id="sign-in-email-input"
+                              id={field.name}
+                              name={field.name}
+                              placeholder="exemplo@mail.com"
+                              value={field.state.value.trim()}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value.trim())
+                              }
+                              aria-invalid={isInvalid}
+                            />
+                            <InputGroupAddon>
+                              <MailIcon />
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  />
 
-                  return (
-                    <Field data-invalid={isInvalid}>
-                      <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
-                      <InputGroup>
-                        <InputGroupInput
-                          data-test-id="sign-in-password-input"
-                          id={field.name}
-                          name={field.name}
-                          type={showPassword ? 'text' : 'password'}
-                          placeholder="••••••••"
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => field.handleChange(e.target.value)}
-                          aria-invalid={isInvalid}
-                        />
-                        <InputGroupAddon>
-                          <LockIcon />
-                        </InputGroupAddon>
-                        <InputGroupAddon align="inline-end">
-                          <InputGroupButton
-                            data-test-id="sign-in-password-toggle-btn"
-                            type="button"
-                            aria-label="toggle password visibility"
-                            title="toggle password visibility"
-                            size="icon-xs"
-                            className="cursor-pointer"
-                            onClick={() => setShowPassword(!showPassword)}
-                          >
-                            {!showPassword && <EyeIcon />}
-                            {showPassword && <EyeClosedIcon />}
-                          </InputGroupButton>
-                        </InputGroupAddon>
-                      </InputGroup>
-                      {isInvalid && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </Field>
-                  );
-                }}
-              />
+                  <form.Field
+                    name="password"
+                    children={(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched &&
+                        !field.state.meta.isValid;
 
-              <Field>
-                <Button
-                  data-test-id="sign-in-submit-btn"
-                  type="submit"
-                  className="w-full"
-                  disabled={signInMutation.status === 'pending'}
-                >
-                  {signInMutation.status === 'pending' && <Spinner />}
-                  <span>Entrar</span>
-                </Button>
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>
+                            Senha
+                          </FieldLabel>
+                          <InputGroup>
+                            <InputGroupInput
+                              data-test-id="sign-in-password-input"
+                              id={field.name}
+                              name={field.name}
+                              type={showPassword ? 'text' : 'password'}
+                              placeholder="••••••••"
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              aria-invalid={isInvalid}
+                            />
+                            <InputGroupAddon>
+                              <LockIcon />
+                            </InputGroupAddon>
+                            <InputGroupAddon align="inline-end">
+                              <InputGroupButton
+                                data-test-id="sign-in-password-toggle-btn"
+                                type="button"
+                                aria-label="toggle password visibility"
+                                title="toggle password visibility"
+                                size="icon-xs"
+                                className="cursor-pointer"
+                                onClick={() =>
+                                  setShowPassword(!showPassword)
+                                }
+                              >
+                                {!showPassword && <EyeIcon />}
+                                {showPassword && <EyeClosedIcon />}
+                              </InputGroupButton>
+                            </InputGroupAddon>
+                          </InputGroup>
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  />
 
-                <FieldDescription className="text-right">
-                  <Link
-                    to="/forgot-password"
-                    data-test-id="sign-up-link"
-                    className="underline underline-offset-2"
-                  >
-                    Esqueceu senha?
-                  </Link>
-                </FieldDescription>
-              </Field>
-            </FieldGroup>
-          </form>
+                  <Field>
+                    <Button
+                      data-test-id="sign-in-submit-btn"
+                      type="submit"
+                      className="w-full"
+                      disabled={signInMutation.status === 'pending'}
+                    >
+                      {signInMutation.status === 'pending' && <Spinner />}
+                      <span>Entrar</span>
+                    </Button>
+
+                    <FieldDescription className="text-right">
+                      <Link
+                        to="/forgot-password"
+                        data-test-id="sign-up-link"
+                        className="underline underline-offset-2"
+                      >
+                        Esqueceu senha?
+                      </Link>
+                    </FieldDescription>
+                  </Field>
+                </FieldGroup>
+              </form>
+            </CardContent>
+          </Card>
+
+          <div className="text-center text-sm">
+            <FieldDescription>
+              Não possui uma conta?{' '}
+              <Link
+                to="/sign-up"
+                data-test-id="sign-up-link"
+                className="underline underline-offset-2"
+              >
+                Clique aqui
+              </Link>
+            </FieldDescription>
+          </div>
         </div>
       </div>
     </div>

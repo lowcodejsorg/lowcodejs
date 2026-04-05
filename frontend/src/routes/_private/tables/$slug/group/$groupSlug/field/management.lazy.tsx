@@ -5,11 +5,12 @@ import {
 } from '@tanstack/react-router';
 import React from 'react';
 
+import { FieldManagementSkeleton } from '../../../field/-field-management-skeleton';
+
 import { FieldManagement } from '@/components/common/dynamic-table/field-management/field-management';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useGroupFieldManagement } from '@/hooks/use-group-field-management';
 import { useTablePermission } from '@/hooks/use-table-permission';
@@ -31,13 +32,7 @@ function GroupFieldManagementPage(): React.JSX.Element {
   const actions = useGroupFieldManagement(table.data, groupSlug);
 
   if (table.status === 'pending' || permission.isLoading) {
-    return (
-      <div className="p-4 space-y-4">
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-        <Skeleton className="h-10 w-full" />
-      </div>
-    );
+    return <FieldManagementSkeleton />;
   }
 
   if (!permission.can('UPDATE_FIELD')) {

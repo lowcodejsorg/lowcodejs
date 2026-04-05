@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import z from 'zod';
 
+import { FieldDetailSkeleton } from './-field-detail-skeleton';
+
 import {
   fieldDetailOptions,
   groupFieldDetailOptions,
@@ -8,6 +10,7 @@ import {
 } from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
+  pendingComponent: FieldDetailSkeleton,
   validateSearch: z.object({
     group: z.string().optional(),
   }),

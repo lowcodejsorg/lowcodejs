@@ -22,7 +22,7 @@ export default class {
     options: {
       onRequest: [
         AuthenticationMiddleware({
-          optional: true,
+          optional: false,
         }),
       ],
       schema: SettingShowSchema,

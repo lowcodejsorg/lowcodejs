@@ -9,6 +9,7 @@ import {
   TableCreateSchema,
   tableCreateFormDefaultValues,
 } from './-create-form';
+import { CreateTableFormSkeleton } from './-create-form-skeleton';
 
 import {
   UploadingProvider,
@@ -18,7 +19,6 @@ import { FormFooter } from '@/components/common/form-footer';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -29,15 +29,6 @@ import { toastSuccess } from '@/lib/toast';
 export const Route = createLazyFileRoute('/_private/tables/create/')({
   component: RouteComponent,
 });
-
-function CreateFormSkeleton(): React.JSX.Element {
-  return (
-    <div className="p-4 space-y-4">
-      <Skeleton className="h-10 w-full" />
-      <Skeleton className="h-10 w-full" />
-    </div>
-  );
-}
 
 function RouteComponent(): React.JSX.Element {
   return (
@@ -121,7 +112,7 @@ function RouteComponentContent(): React.JSX.Element {
 
       {/* Content */}
       <PageShell.Content>
-        {permission.isLoading && <CreateFormSkeleton />}
+        {permission.isLoading && <CreateTableFormSkeleton />}
         {!permission.isLoading && !permission.can('CREATE_TABLE') && (
           <AccessDenied />
         )}

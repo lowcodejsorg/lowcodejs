@@ -6,11 +6,11 @@ import {
 import React from 'react';
 
 import { CreateRowForm } from './-create-row-form';
+import { CreateRowSkeleton } from './-create-row-skeleton';
 
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { cn } from '@/lib/utils';
 
@@ -54,7 +54,7 @@ function RouteComponent(): React.JSX.Element {
             'flex-1 flex flex-col min-h-0 overflow-auto relative',
         )}
       >
-        {table.status === 'pending' && <Spinner />}
+        {table.status === 'pending' && <CreateRowSkeleton />}
         {table.status === 'error' && (
           <LoadError
             refetch={table.refetch}

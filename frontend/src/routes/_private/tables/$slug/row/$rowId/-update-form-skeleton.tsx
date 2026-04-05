@@ -4,7 +4,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export function UpdateRowFormSkeleton(): React.JSX.Element {
   return (
-    <section className="space-y-4 p-2">
+    <section className="space-y-4 p-4">
       {/* Simular 4 campos de texto */}
       {[1, 2, 3, 4].map((i) => (
         <Field key={i}>

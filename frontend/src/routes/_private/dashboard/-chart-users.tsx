@@ -2,7 +2,13 @@ import { Pie, PieChart } from 'recharts';
 
 import { mockUsersByStatus } from './-mock-data';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   ChartContainer,
   ChartLegend,
@@ -31,6 +37,7 @@ export function ChartUsers(): React.JSX.Element {
     <Card data-test-id="chart-users">
       <CardHeader>
         <CardTitle>Usuários por Status</CardTitle>
+        <CardDescription>Distribuição de usuários ativos e inativos</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer
