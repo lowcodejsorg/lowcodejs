@@ -27,6 +27,7 @@ import { getActiveFiltersCount } from '@/components/common/filters/filter-fields
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
 import { LoginButton } from '@/components/common/layout/login-button';
+import { PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { LoadError } from '@/components/common/route-status/load-error';
 import {
@@ -214,11 +215,8 @@ function RouteComponent(): React.JSX.Element {
     useChatSidebar();
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="table-detail-page"
-    >
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
+    <PageShell data-test-id="table-detail-page">
+      <PageShell.Header>
         <div className="inline-flex items-center space-x-2">
           {isAuthenticated && (
             <Button
@@ -312,7 +310,7 @@ function RouteComponent(): React.JSX.Element {
               </Button>
             )}
         </div>
-      </div>
+      </PageShell.Header>
 
       <div className="flex-1 flex flex-row min-h-0">
         {table.status === 'success' && filterFields.length > 0 && (
@@ -322,7 +320,7 @@ function RouteComponent(): React.JSX.Element {
             onOpenChange={handleFilterOpenChange}
           />
         )}
-        <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+        <PageShell.Content>
           {table.status === 'pending' && <TableSkeleton />}
           {table.status === 'success' &&
             rows.status === 'pending' &&
@@ -409,7 +407,7 @@ function RouteComponent(): React.JSX.Element {
                 </React.Suspense>
               );
             })()}
-        </div>
+        </PageShell.Content>
         {aiAssistantEnabled && (
           <ChatSidebar
             open={chatOpen}
@@ -419,7 +417,7 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {!shouldDisablePagination && (
-        <div className="shrink-0 border-t p-2">
+        <PageShell.Footer>
           <Pagination
             meta={rows.data?.meta ?? MetaDefault}
             page={search.page}
@@ -443,8 +441,8 @@ function RouteComponent(): React.JSX.Element {
               });
             }}
           />
-        </div>
+        </PageShell.Footer>
       )}
-    </div>
+    </PageShell>
   );
 }

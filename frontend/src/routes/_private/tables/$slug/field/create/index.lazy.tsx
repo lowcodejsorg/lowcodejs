@@ -4,7 +4,6 @@ import {
   useParams,
   useSearch,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
 
 import {
   CreateFieldFormFields,
@@ -12,12 +11,12 @@ import {
   fieldCreateFormDefaultValues,
 } from './-create-form';
 
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
-import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import { useFieldCreate } from '@/hooks/tanstack-query/use-field-create';
 import { useGroupFieldCreate } from '@/hooks/tanstack-query/use-group-field-create';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
@@ -215,35 +214,28 @@ function RouteComponent(): React.JSX.Element {
   const isPending =
     _create.status === 'pending' || _createGroupField.status === 'pending';
 
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="create-field-page"
-    >
+    <PageShell data-test-id="create-field-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(false);
-              navigate({
-                to: '/tables/$slug',
-                replace: true,
-                params: { slug },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">
-            {defaultFieldType === E_FIELD_TYPE.FIELD_GROUP
+      <PageShell.Header borderBottom={false}>
+        <PageHeader
+          onBack={goBack}
+          title={
+            defaultFieldType === E_FIELD_TYPE.FIELD_GROUP
               ? 'Novo grupo de campos'
-              : 'Novo campo'}
-          </h1>
-        </div>
-      </div>
+              : 'Novo campo'
+          }
+        />
+      </PageShell.Header>
 
       {/* Info text for field group */}
       {defaultFieldType === E_FIELD_TYPE.FIELD_GROUP && (
@@ -275,41 +267,14 @@ function RouteComponent(): React.JSX.Element {
       </form>
 
       {/* Footer */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              <Button
-                type="button"
-                variant="outline"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                disabled={isSubmitting}
-                onClick={() => {
-                  sidebar.setOpen(false);
-                  navigate({
-                    to: '/tables/$slug',
-                    replace: true,
-                    params: { slug },
-                  });
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                type="submit"
-                form="field-create-form"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                data-test-id="create-field-submit-btn"
-                disabled={!canSubmit}
-              >
-                {isSubmitting && <Spinner />}
-                <span>Criar</span>
-              </Button>
-            </div>
-          )}
+      <PageShell.Footer>
+        <FormFooter
+          form={form}
+          onCancel={goBack}
+          submitLabel="Criar"
+          submitTestId="create-field-submit-btn"
         />
-      </div>
-    </div>
+      </PageShell.Footer>
+    </PageShell>
   );
 }

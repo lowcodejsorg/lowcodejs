@@ -53,10 +53,10 @@ export function UploadingProvider({
 }
 
 export function useUploadingContext(): UploadingContextValue | null {
-  return React.useContext(UploadingContext);
+  return React.use(UploadingContext);
 }
 
 export function useIsUploading(): boolean {
-  const ctx = React.useContext(UploadingContext);
+  const ctx = React.use(UploadingContext);
   return ctx?.isUploading ?? false;
 }

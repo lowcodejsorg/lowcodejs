@@ -12,12 +12,11 @@ import { TableGroups } from './-table-groups';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
+import { PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { groupListOptions } from '@/hooks/tanstack-query/_query-options';
-import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
-import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
 
@@ -26,7 +25,9 @@ export const Route = createLazyFileRoute('/_private/groups/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const { toolbarRef, toolbarNode } = useToolbarPortal();
+  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(
+    null,
+  );
   const search = useSearch({
     from: '/_private/groups/',
   });
@@ -37,8 +38,20 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(groupListOptions(search));
 
-  const { open: filterOpen, onOpenChange: handleFilterOpenChange } =
-    useFilterSidebar();
+  const [filterOpen, setFilterOpen] = React.useState(() => {
+    try {
+      return localStorage.getItem('filter-sidebar-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleFilterOpenChange = React.useCallback((open: boolean) => {
+    setFilterOpen(open);
+    try {
+      localStorage.setItem('filter-sidebar-open', String(open));
+    } catch {}
+  }, []);
 
   const fieldFilters: Array<IFilterField> = [
     {
@@ -52,14 +65,11 @@ function RouteComponent(): React.JSX.Element {
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="groups-page"
-    >
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
-        <h1 className="text-2xl font-medium ">Grupos</h1>
+    <PageShell data-test-id="groups-page">
+      <PageShell.Header>
+        <h1 className="text-2xl font-medium">Grupos</h1>
         <div className="inline-flex items-center gap-2">
-          <div ref={toolbarRef} />
+          <div ref={setToolbarNode} />
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
             onClick={() => handleFilterOpenChange(!filterOpen)}
@@ -79,7 +89,7 @@ function RouteComponent(): React.JSX.Element {
             <span>Novo Grupo</span>
           </Button>
         </div>
-      </div>
+      </PageShell.Header>
 
       <div className="flex-1 flex flex-row min-h-0">
         <FilterSidebar
@@ -87,15 +97,15 @@ function RouteComponent(): React.JSX.Element {
           open={filterOpen}
           onOpenChange={handleFilterOpenChange}
         />
-        <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+        <PageShell.Content>
           <TableGroups
             data={data.data}
             toolbarPortal={toolbarNode}
           />
-        </div>
+        </PageShell.Content>
       </div>
 
-      <div className="shrink-0 border-t p-2">
+      <PageShell.Footer>
         <Pagination
           meta={data.meta}
           page={search.page}
@@ -107,7 +117,7 @@ function RouteComponent(): React.JSX.Element {
             navigate({ search: (prev) => ({ ...prev, perPage, page: 1 }) })
           }
         />
-      </div>
-    </div>
+      </PageShell.Footer>
+    </PageShell>
   );
 }

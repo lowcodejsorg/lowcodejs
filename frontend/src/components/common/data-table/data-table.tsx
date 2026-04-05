@@ -40,6 +40,24 @@ interface DataTableProps<TData> {
   enableColumnDragging?: boolean;
 }
 
+export type InteractiveDataTableProps<TData> = Omit<
+  DataTableProps<TData>,
+  'enableVirtualization' | 'enableKeyboardNavigation' | 'enableColumnDragging'
+>;
+
+export function InteractiveDataTable<TData>(
+  props: InteractiveDataTableProps<TData>,
+): React.JSX.Element {
+  return (
+    <DataTable
+      {...props}
+      enableVirtualization
+      enableKeyboardNavigation
+      enableColumnDragging
+    />
+  );
+}
+
 export function DataTable<TData>({
   table,
   stickyHeader = true,

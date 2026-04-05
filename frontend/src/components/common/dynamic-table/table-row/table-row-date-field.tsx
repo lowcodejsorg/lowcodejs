@@ -1,4 +1,4 @@
-import { Datepicker } from '@/components/common/datepicker';
+import { SingleDatepicker } from '@/components/common/datepicker';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_FIELD_FORMAT } from '@/lib/constant';
@@ -39,7 +39,7 @@ export function TableRowDateField({
         {field.name}
         {isRequired && <span className="text-destructive"> *</span>}
       </FieldLabel>
-      <Datepicker
+      <SingleDatepicker
         data-test-id="table-row-date-input"
         value={dateValue}
         onChange={(value) =>
@@ -48,8 +48,6 @@ export function TableRowDateField({
         displayFormat={formatString}
         placeholder={(field.format ?? E_FIELD_FORMAT.DD_MM_YYYY).toUpperCase()}
         disabled={disabled}
-        useRange={false}
-        asSingle
         className={cn(
           disabled && 'pointer-events-none opacity-50',
           isInvalid && 'border-destructive',

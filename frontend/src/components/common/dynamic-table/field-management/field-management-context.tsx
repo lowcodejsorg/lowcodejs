@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react';
+import { createContext, use } from 'react';
 
 import type { IField } from '@/lib/interfaces';
 
@@ -43,7 +43,7 @@ const FieldManagementContext = createContext<FieldManagementActions | null>(
 export const FieldManagementProvider = FieldManagementContext.Provider;
 
 export function useFieldManagement(): FieldManagementActions {
-  const context = useContext(FieldManagementContext);
+  const context = use(FieldManagementContext);
   if (!context) {
     throw new Error(
       'useFieldManagement must be used within FieldManagement.Root',

@@ -5,18 +5,19 @@ import {
   useParams,
   useSearch,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
+import { PencilIcon } from 'lucide-react';
 import React from 'react';
 
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
 import { FieldView } from './-view';
 
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useFieldRead } from '@/hooks/tanstack-query/use-field-read';
 import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-update';
@@ -98,52 +99,46 @@ function RouteComponent(): React.JSX.Element {
     return <AccessDenied />;
   }
 
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="field-detail-page"
-    >
+    <PageShell data-test-id="field-detail-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(false);
-              navigate({
-                to: '/tables/$slug',
-                replace: true,
-                params: { slug },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">
-            {_read.status === 'success' &&
+      <PageShell.Header borderBottom={false}>
+        <PageHeader
+          onBack={goBack}
+          title={
+            _read.status === 'success' &&
             _read.data.type === E_FIELD_TYPE.FIELD_GROUP
               ? 'Detalhes do grupo de campos'
-              : 'Detalhes do campo'}
-          </h1>
-        </div>
-        {_read.status === 'success' &&
-          mode === 'show' &&
-          permission.can('UPDATE_FIELD') &&
-          !(_read.data as IField & { trashed?: boolean }).trashed &&
-          (!_read.data.locked || _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
-            <Button
-              type="button"
-              className="px-2 cursor-pointer"
-              size="sm"
-              data-test-id="field-edit-btn"
-              onClick={() => setMode('edit')}
-            >
-              <PencilIcon className="size-4 mr-1" />
-              <span>Editar</span>
-            </Button>
-          )}
-      </div>
+              : 'Detalhes do campo'
+          }
+        >
+          {_read.status === 'success' &&
+            mode === 'show' &&
+            permission.can('UPDATE_FIELD') &&
+            !(_read.data as IField & { trashed?: boolean }).trashed &&
+            (!_read.data.locked || _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
+              <Button
+                type="button"
+                className="px-2 cursor-pointer"
+                size="sm"
+                data-test-id="field-edit-btn"
+                onClick={() => setMode('edit')}
+              >
+                <PencilIcon className="size-4 mr-1" />
+                <span>Editar</span>
+              </Button>
+            )}
+        </PageHeader>
+      </PageShell.Header>
 
       {/* Info text for field group */}
       {_read.status === 'success' &&
@@ -162,7 +157,7 @@ function RouteComponent(): React.JSX.Element {
       )}
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         {_read.status === 'error' && (
           <LoadError
             message="Houve um erro ao buscar dados do campo"
@@ -185,8 +180,8 @@ function RouteComponent(): React.JSX.Element {
             groupSlug={groupSlug}
           />
         )}
-      </div>
-    </div>
+      </PageShell.Content>
+    </PageShell>
   );
 }
 
@@ -426,7 +421,7 @@ function FieldUpdateContent({
 
       {/* Footer - Show Mode */}
       {mode === 'show' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
+        <PageShell.Footer className="bg-sidebar">
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -438,7 +433,7 @@ function FieldUpdateContent({
               <span>Voltar</span>
             </Button>
           </div>
-        </div>
+        </PageShell.Footer>
       )}
 
       {mode === 'edit' && (
@@ -463,39 +458,17 @@ function FieldUpdateContent({
 
       {/* Footer */}
       {mode === 'edit' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    form.reset();
-                    setMode('show');
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="field-update-submit-btn"
-                  disabled={!canSubmit}
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Salvar</span>
-                </Button>
-              </div>
-            )}
+        <PageShell.Footer className="bg-sidebar">
+          <FormFooter
+            form={form}
+            onCancel={() => {
+              form.reset();
+              setMode('show');
+            }}
+            submitLabel="Salvar"
+            submitTestId="field-update-submit-btn"
           />
-        </div>
+        </PageShell.Footer>
       )}
     </>
   );

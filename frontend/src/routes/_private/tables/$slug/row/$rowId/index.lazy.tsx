@@ -4,13 +4,14 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
-import { ArrowLeftIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
+import { Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
 
 import { UpdateRowFormSkeleton } from './-update-form-skeleton';
 import { UpdateRowForm } from './-update-row-form';
 
 import { LoginButton } from '@/components/common/layout/login-button';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
 import {
@@ -99,32 +100,24 @@ function RouteComponent(): React.JSX.Element {
     );
   }
 
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    router.navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
   // Success
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="row-detail-page"
-    >
+    <PageShell data-test-id="row-detail-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          {isAuthenticated && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              onClick={() => {
-                sidebar.setOpen(false);
-                router.navigate({
-                  to: '/tables/$slug',
-                  replace: true,
-                  params: { slug },
-                });
-              }}
-            >
-              <ArrowLeftIcon />
-            </Button>
-          )}
-          <h1 className="text-xl font-medium">Detalhes do registro</h1>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader
+          onBack={isAuthenticated ? goBack : undefined}
+          title="Detalhes do registro"
+        >
           <Button
             variant="outline"
             className="shadow-none p-1 h-auto"
@@ -140,13 +133,13 @@ function RouteComponent(): React.JSX.Element {
             <Share2Icon />
             <span className="sr-only">Compartilhar</span>
           </Button>
-        </div>
-      </div>
+        </PageHeader>
+      </PageShell.Header>
 
       <UpdateRowForm
         table={table.data}
         data={row.data}
       />
-    </div>
+    </PageShell>
   );
 }

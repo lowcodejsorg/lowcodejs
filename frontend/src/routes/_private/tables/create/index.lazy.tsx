@@ -3,7 +3,6 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
 
 import {
   CreateTableFormFields,
@@ -15,11 +14,11 @@ import {
   UploadingProvider,
   useIsUploading,
 } from '@/components/common/file-upload/uploading-context';
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
-import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -101,34 +100,24 @@ function RouteComponentContent(): React.JSX.Element {
 
   const isPending = _create.status === 'pending';
 
+  const goBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/tables',
+      replace: true,
+      search: { page: 1, perPage: 50 },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="create-table-page"
-    >
+    <PageShell data-test-id="create-table-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/tables',
-                replace: true,
-                search: { page: 1, perPage: 50 },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Nova tabela</h1>
-        </div>
-      </div>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader title="Nova tabela" onBack={goBack} />
+      </PageShell.Header>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         {permission.isLoading && <CreateFormSkeleton />}
         {!permission.isLoading && !permission.can('CREATE_TABLE') && (
           <AccessDenied />
@@ -148,45 +137,26 @@ function RouteComponentContent(): React.JSX.Element {
             />
           </form>
         )}
-      </div>
+      </PageShell.Content>
 
       {/* Footer com botões */}
       {!permission.isLoading && permission.can('CREATE_TABLE') && (
-        <div className="shrink-0 border-t p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="create-table-cancel-btn"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    navigate({
-                      to: '/tables',
-                      search: { page: 1, perPage: 50 },
-                    });
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  type="button"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="create-table-submit-btn"
-                  disabled={!canSubmit || isUploading}
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Criar</span>
-                </Button>
-              </div>
-            )}
+        <PageShell.Footer>
+          <FormFooter
+            form={form}
+            cancelTestId="create-table-cancel-btn"
+            submitTestId="create-table-submit-btn"
+            submitLabel="Criar"
+            submitDisabled={isUploading}
+            onCancel={() => {
+              navigate({
+                to: '/tables',
+                search: { page: 1, perPage: 50 },
+              });
+            }}
           />
-        </div>
+        </PageShell.Footer>
       )}
-    </div>
+    </PageShell>
   );
 }

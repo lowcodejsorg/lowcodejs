@@ -234,7 +234,7 @@ function useStoreContext(consumerName: string): {
   dispatch: (action: StoreAction) => void;
   subscribe: (listener: () => void) => () => boolean;
 } {
-  const context = React.useContext(StoreContext);
+  const context = React.use(StoreContext);
   if (!context) {
     throw new Error(`\`${consumerName}\` must be used within \`${ROOT_NAME}\``);
   }
@@ -280,7 +280,7 @@ const FileUploadContext = React.createContext<FileUploadContextValue | null>(
 );
 
 function useFileUploadContext(consumerName: string): FileUploadContextValue {
-  const context = React.useContext(FileUploadContext);
+  const context = React.use(FileUploadContext);
   if (!context) {
     throw new Error(`\`${consumerName}\` must be used within \`${ROOT_NAME}\``);
   }
@@ -979,7 +979,7 @@ const FileUploadItemContext =
 function useFileUploadItemContext(
   consumerName: string,
 ): FileUploadItemContextValue {
-  const context = React.useContext(FileUploadItemContext);
+  const context = React.use(FileUploadItemContext);
   if (!context) {
     throw new Error(`\`${consumerName}\` must be used within \`${ITEM_NAME}\``);
   }

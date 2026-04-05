@@ -7,7 +7,6 @@ import {
 import { useStore } from '@tanstack/react-store';
 import {
   ArchiveRestoreIcon,
-  ArrowLeftIcon,
   PencilIcon,
   TrashIcon,
 } from 'lucide-react';
@@ -18,9 +17,10 @@ import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { MenuView } from './-view';
 
 import { ActionDialog } from '@/components/common/action-dialog';
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { menuDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
@@ -48,41 +48,27 @@ function RouteComponent(): React.JSX.Element {
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
-  return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="menu-detail-page"
-    >
-      {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/menus',
-                replace: true,
-                search: { page: 1, perPage: 50 },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Detalhes do menu</h1>
-        </div>
-      </div>
+  const goBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/menus',
+      replace: true,
+      search: { page: 1, perPage: 50 },
+    });
+  };
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        <MenuUpdateContent
-          data={data}
-          mode={mode}
-          setMode={setMode}
-        />
-      </div>
-    </div>
+  return (
+    <PageShell data-test-id="menu-detail-page">
+      <PageShell.Header borderBottom={false}>
+        <PageHeader onBack={goBack} title="Detalhes do menu" />
+      </PageShell.Header>
+
+      <MenuUpdateContent
+        data={data}
+        mode={mode}
+        setMode={setMode}
+      />
+    </PageShell>
   );
 }
 
@@ -285,14 +271,13 @@ function MenuUpdateContent({
       )}
 
       {mode === 'show' && (
-        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+        <PageShell.Content>
           <MenuView data={data} />
-        </div>
+        </PageShell.Content>
       )}
 
-      {/* Footer - Show Mode */}
       {mode === 'show' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
+        <PageShell.Footer className="bg-sidebar">
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -304,63 +289,41 @@ function MenuUpdateContent({
               <span>Voltar</span>
             </Button>
           </div>
-        </div>
+        </PageShell.Footer>
       )}
 
       {mode === 'edit' && (
-        <form
-          data-test-id="menu-update-form"
-          className="flex-1 flex flex-col min-h-0 overflow-auto"
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-        >
-          <UpdateMenuFormFields
+        <PageShell.Content>
+          <form
+            data-test-id="menu-update-form"
+            className="flex-1 flex flex-col min-h-0 overflow-auto"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <UpdateMenuFormFields
+              form={form}
+              isPending={isPending}
+              mode={mode}
+              menuType={menuType}
+            />
+          </form>
+        </PageShell.Content>
+      )}
+
+      {mode === 'edit' && (
+        <PageShell.Footer className="bg-sidebar">
+          <FormFooter
             form={form}
-            isPending={isPending}
-            mode={mode}
-            menuType={menuType}
+            onCancel={() => {
+              form.reset();
+              setMode('show');
+            }}
+            submitTestId="menu-update-submit-btn"
+            cancelTestId="menu-update-cancel-btn"
           />
-        </form>
-      )}
-
-      {/* Footer */}
-      {mode === 'edit' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end gap-2">
-                <Button
-                  data-test-id="menu-update-cancel-btn"
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    form.reset();
-                    setMode('show');
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  data-test-id="menu-update-submit-btn"
-                  type="button"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={!canSubmit}
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Salvar</span>
-                </Button>
-              </div>
-            )}
-          />
-        </div>
+        </PageShell.Footer>
       )}
     </>
   );

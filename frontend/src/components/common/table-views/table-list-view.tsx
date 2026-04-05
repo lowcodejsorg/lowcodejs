@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { DataTable } from '@/components/common/data-table';
+import { InteractiveDataTable } from '@/components/common/data-table';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -447,11 +447,8 @@ export function TableListView({
 
   return (
     <div data-test-id="table-list-view">
-      <DataTable
+      <InteractiveDataTable
         table={table}
-        enableVirtualization
-        enableColumnDragging
-        enableKeyboardNavigation
         onRowClick={(row) => {
           router.navigate({
             to: '/tables/$slug/row/$rowId',

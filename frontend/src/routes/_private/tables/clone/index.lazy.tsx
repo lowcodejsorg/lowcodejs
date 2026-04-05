@@ -1,5 +1,4 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
 
 import {
   CloneTableBodySchema,
@@ -7,11 +6,11 @@ import {
   cloneTableFormDefaultValues,
 } from './-clone-form';
 
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
-import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Spinner } from '@/components/ui/spinner';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -75,36 +74,27 @@ function RouteComponent(): React.JSX.Element {
 
   const isPending = _clone.status === 'pending';
 
+  const goBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/tables/new',
+      replace: true,
+      search: { page: 1, perPage: 50 },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="clone-table-page"
-    >
+    <PageShell data-test-id="clone-table-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/tables/new',
-                replace: true,
-                search: { page: 1, perPage: 50 },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">
-            Criar nova tabela utilizando modelo
-          </h1>
-        </div>
-      </div>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader
+          title="Criar nova tabela utilizando modelo"
+          onBack={goBack}
+        />
+      </PageShell.Header>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         {permission.isLoading && <CloneFormSkeleton />}
         {!permission.isLoading && !permission.can('CREATE_TABLE') && (
           <AccessDenied />
@@ -124,42 +114,22 @@ function RouteComponent(): React.JSX.Element {
             />
           </form>
         )}
-      </div>
+      </PageShell.Content>
 
       {/* Footer com botões */}
       {!permission.isLoading && permission.can('CREATE_TABLE') && (
-        <div className="shrink-0 border-t p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end space-x-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="clone-table-cancel-btn"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    router.navigate({ to: '/tables/new' });
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  type="button"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="clone-table-submit-btn"
-                  disabled={!canSubmit}
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Criar</span>
-                </Button>
-              </div>
-            )}
+        <PageShell.Footer>
+          <FormFooter
+            form={form}
+            cancelTestId="clone-table-cancel-btn"
+            submitTestId="clone-table-submit-btn"
+            submitLabel="Criar"
+            onCancel={() => {
+              router.navigate({ to: '/tables/new' });
+            }}
           />
-        </div>
+        </PageShell.Footer>
       )}
-    </div>
+    </PageShell>
   );
 }

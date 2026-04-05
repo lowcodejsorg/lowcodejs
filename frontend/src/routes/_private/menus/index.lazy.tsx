@@ -12,13 +12,12 @@ import { TableMenus } from './-table-menus';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
+import { PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { menuListOptions } from '@/hooks/tanstack-query/_query-options';
-import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
-import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
 import { E_FIELD_TYPE, MetaDefault } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
 
@@ -27,7 +26,9 @@ export const Route = createLazyFileRoute('/_private/menus/')({
 });
 
 function RouteComponent(): React.JSX.Element {
-  const { toolbarRef, toolbarNode } = useToolbarPortal();
+  const [toolbarNode, setToolbarNode] = React.useState<HTMLDivElement | null>(
+    null,
+  );
   const search = useSearch({ from: '/_private/menus/' });
   const sidebar = useSidebar();
   const router = useRouter();
@@ -35,8 +36,20 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(menuListOptions(search));
 
-  const { open: filterOpen, onOpenChange: handleFilterOpenChange } =
-    useFilterSidebar();
+  const [filterOpen, setFilterOpen] = React.useState(() => {
+    try {
+      return localStorage.getItem('filter-sidebar-open') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const handleFilterOpenChange = React.useCallback((open: boolean) => {
+    setFilterOpen(open);
+    try {
+      localStorage.setItem('filter-sidebar-open', String(open));
+    } catch {}
+  }, []);
 
   const fieldFilters: Array<IFilterField> = [
     {
@@ -50,15 +63,11 @@ function RouteComponent(): React.JSX.Element {
   const activeFiltersCount = getActiveFiltersCount(fieldFilters, search);
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="menus-page"
-    >
-      {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
+    <PageShell data-test-id="menus-page">
+      <PageShell.Header>
         <h1 className="text-2xl font-medium">Gestão de Menus</h1>
         <div className="inline-flex items-center gap-2">
-          <div ref={toolbarRef} />
+          <div ref={setToolbarNode} />
           <TrashButton />
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
@@ -79,25 +88,23 @@ function RouteComponent(): React.JSX.Element {
             <span>Novo Menu</span>
           </Button>
         </div>
-      </div>
+      </PageShell.Header>
 
-      {/* Content */}
       <div className="flex-1 flex flex-row min-h-0">
         <FilterSidebar
           fields={fieldFilters}
           open={filterOpen}
           onOpenChange={handleFilterOpenChange}
         />
-        <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+        <PageShell.Content>
           <TableMenus
             data={data.data}
             toolbarPortal={toolbarNode}
           />
-        </div>
+        </PageShell.Content>
       </div>
 
-      {/* Footer */}
-      <div className="shrink-0 border-t p-2">
+      <PageShell.Footer>
         <Pagination
           meta={data.meta ?? MetaDefault}
           page={search.page}
@@ -109,7 +116,7 @@ function RouteComponent(): React.JSX.Element {
             navigate({ search: (prev) => ({ ...prev, perPage, page: 1 }) })
           }
         />
-      </div>
-    </div>
+      </PageShell.Footer>
+    </PageShell>
   );
 }

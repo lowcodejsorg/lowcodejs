@@ -7,21 +7,20 @@ import { mockStats } from './-mock-data';
 import { RecentActivity } from './-recent-activity';
 import { StatCard } from './-stat-card';
 
+import { PageShell } from '@/components/common/page-shell';
+
 export const Route = createLazyFileRoute('/_private/dashboard/')({
   component: RouteComponent,
 });
 
 function RouteComponent(): React.JSX.Element {
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="dashboard-page"
-    >
-      <div className="shrink-0 p-4 border-b">
+    <PageShell data-test-id="dashboard-page">
+      <PageShell.Header>
         <h1 className="text-2xl font-semibold">Dashboard</h1>
-      </div>
+      </PageShell.Header>
 
-      <div className="flex-1 overflow-auto p-4 space-y-4">
+      <PageShell.Content className="p-4 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard
             title="Total de Tabelas"
@@ -52,7 +51,7 @@ function RouteComponent(): React.JSX.Element {
         </div>
 
         <RecentActivity />
-      </div>
-    </div>
+      </PageShell.Content>
+    </PageShell>
   );
 }

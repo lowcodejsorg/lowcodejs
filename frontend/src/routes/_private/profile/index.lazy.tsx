@@ -7,8 +7,9 @@ import type { ProfileUpdateFormValues } from './-update-form';
 import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
 import { ProfileView } from './-view';
 
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateProfile } from '@/hooks/tanstack-query/use-profile-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -27,38 +28,34 @@ function RouteComponent(): React.JSX.Element {
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="profile-page"
-    >
+    <PageShell data-test-id="profile-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <h1 className="text-xl font-medium">Perfil do usuário</h1>
-        </div>
-        {mode === 'show' && (
-          <Button
-            type="button"
-            className="px-2 cursor-pointer max-w-40 w-full"
-            size="sm"
-            onClick={() => setMode('edit')}
-            data-test-id="profile-edit-btn"
-          >
-            <PencilIcon className="size-4 mr-1" />
-            <span>Editar</span>
-          </Button>
-        )}
-      </div>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader title="Perfil do usuário">
+          {mode === 'show' && (
+            <Button
+              type="button"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              size="sm"
+              onClick={() => setMode('edit')}
+              data-test-id="profile-edit-btn"
+            >
+              <PencilIcon className="size-4 mr-1" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </PageHeader>
+      </PageShell.Header>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         <ProfileUpdateContent
           data={data}
           mode={mode}
           setMode={setMode}
         />
-      </div>
-    </div>
+      </PageShell.Content>
+    </PageShell>
   );
 }
 
@@ -165,7 +162,7 @@ function ProfileUpdateContent({
 
       {/* Footer - Show Mode */}
       {mode === 'show' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
+        <PageShell.Footer className="bg-sidebar">
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -177,7 +174,7 @@ function ProfileUpdateContent({
               <span>Voltar</span>
             </Button>
           </div>
-        </div>
+        </PageShell.Footer>
       )}
 
       {mode === 'edit' && (
@@ -202,41 +199,18 @@ function ProfileUpdateContent({
 
       {/* Footer */}
       {mode === 'edit' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={isSubmitting}
-                  data-test-id="profile-update-cancel-btn"
-                  onClick={() => {
-                    form.reset();
-                    setMode('show');
-                    setAllowPasswordChange(false);
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={!canSubmit}
-                  data-test-id="profile-update-submit-btn"
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Salvar</span>
-                </Button>
-              </div>
-            )}
+        <PageShell.Footer className="bg-sidebar">
+          <FormFooter
+            form={form}
+            cancelTestId="profile-update-cancel-btn"
+            submitTestId="profile-update-submit-btn"
+            onCancel={() => {
+              form.reset();
+              setMode('show');
+              setAllowPasswordChange(false);
+            }}
           />
-        </div>
+        </PageShell.Footer>
       )}
     </>
   );

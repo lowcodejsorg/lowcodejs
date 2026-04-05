@@ -3,13 +3,13 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
 
 import {
   MethodsFormFields,
   tableMethodsFormDefaultValues,
 } from './-methods-form';
 
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
@@ -52,34 +52,24 @@ function RouteComponent(): React.JSX.Element {
     return <AccessDenied />;
   }
 
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    router.navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="methods-page"
-    >
+    <PageShell data-test-id="methods-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/tables/$slug',
-                replace: true,
-                params: { slug },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Métodos da tabela</h1>
-        </div>
-      </div>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader onBack={goBack} title="Métodos da tabela" />
+      </PageShell.Header>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         {table.status === 'error' && (
           <LoadError
             message="Erro ao buscar dados da tabela"
@@ -92,8 +82,8 @@ function RouteComponent(): React.JSX.Element {
             tableSlug={slug}
           />
         )}
-      </div>
-    </div>
+      </PageShell.Content>
+    </PageShell>
   );
 }
 
@@ -188,7 +178,7 @@ function MethodsFormContent({
 
       {/* Footer com botões */}
       {canEdit && (
-        <div className="shrink-0 border-t p-2">
+        <PageShell.Footer>
           <form.Subscribe
             selector={(state) => [state.canSubmit, state.isSubmitting]}
             children={([canSubmit, isSubmitting]) => (
@@ -206,7 +196,7 @@ function MethodsFormContent({
               </div>
             )}
           />
-        </div>
+        </PageShell.Footer>
       )}
     </>
   );

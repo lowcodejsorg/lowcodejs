@@ -3,17 +3,15 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
-
 import {
   CreateUserFormFields,
   UserCreateSchema,
   userFormDefaultValues,
 } from './-create-form';
 
-import { Button } from '@/components/ui/button';
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { useCreateUser } from '@/hooks/tanstack-query/use-user-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { createFieldErrorSetter } from '@/lib/form-utils';
@@ -66,79 +64,44 @@ function RouteComponent(): React.JSX.Element {
 
   const isPending = _create.status === 'pending';
 
+  const goBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/users',
+      replace: true,
+      search: { page: 1, perPage: 50 },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="create-user-page"
-    >
-      {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/users',
-                replace: true,
-                search: { page: 1, perPage: 50 },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Criar novo usuário</h1>
-        </div>
-      </div>
+    <PageShell data-test-id="create-user-page">
+      <PageShell.Header>
+        <PageHeader onBack={goBack} title="Criar novo usuário" />
+      </PageShell.Header>
 
-      {/* Content */}
-      <form
-        data-test-id="create-user-form"
-        className="flex-1 flex flex-col min-h-0 overflow-auto relative"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <CreateUserFormFields
+      <PageShell.Content>
+        <form
+          data-test-id="create-user-form"
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <CreateUserFormFields
+            form={form}
+            isPending={isPending}
+          />
+        </form>
+      </PageShell.Content>
+
+      <PageShell.Footer>
+        <FormFooter
           form={form}
-          isPending={isPending}
+          onCancel={() => navigate({ to: '/users', search: { page: 1, perPage: 50 } })}
+          submitLabel="Criar"
         />
-      </form>
-
-      {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              <Button
-                data-test-id="create-user-cancel-btn"
-                type="button"
-                variant="outline"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                disabled={isSubmitting}
-                onClick={() => {
-                  navigate({ to: '/users', search: { page: 1, perPage: 50 } });
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                data-test-id="create-user-submit-btn"
-                type="button"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                disabled={!canSubmit}
-                onClick={() => form.handleSubmit()}
-              >
-                {isSubmitting && <Spinner />}
-                <span>Criar</span>
-              </Button>
-            </div>
-          )}
-        />
-      </div>
-    </div>
+      </PageShell.Footer>
+    </PageShell>
   );
 }

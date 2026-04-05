@@ -5,7 +5,6 @@ import {
 } from '@tanstack/react-router';
 import {
   ArchiveRestoreIcon,
-  ArrowLeftIcon,
   PencilIcon,
   TrashIcon,
 } from 'lucide-react';
@@ -16,11 +15,12 @@ import { UpdateTableFormSkeleton } from './-update-form-skeleton';
 import { TableView } from './-view';
 
 import { ActionDialog } from '@/components/common/action-dialog';
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
@@ -54,34 +54,24 @@ function RouteComponent(): React.JSX.Element {
     return <AccessDenied />;
   }
 
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    router.navigate({
+      to: '/tables/$slug',
+      params: { slug },
+      replace: true,
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="table-detail-view-page"
-    >
+    <PageShell data-test-id="table-detail-view-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/tables/$slug',
-                params: { slug },
-                replace: true,
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Detalhes da tabela</h1>
-        </div>
-      </div>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader onBack={goBack} title="Detalhes da tabela" />
+      </PageShell.Header>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         {_read.status === 'error' && (
           <LoadError
             message="Erro ao buscar dados da tabela"
@@ -96,8 +86,8 @@ function RouteComponent(): React.JSX.Element {
             permission={permission}
           />
         )}
-      </div>
-    </div>
+      </PageShell.Content>
+    </PageShell>
   );
 }
 
@@ -352,7 +342,7 @@ function TableUpdateContent({
 
       {/* Footer - Show Mode */}
       {mode === 'show' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
+        <PageShell.Footer className="bg-sidebar">
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -371,7 +361,7 @@ function TableUpdateContent({
               <span>Voltar</span>
             </Button>
           </div>
-        </div>
+        </PageShell.Footer>
       )}
 
       {mode === 'edit' && (
@@ -395,40 +385,18 @@ function TableUpdateContent({
 
       {/* Footer */}
       {mode === 'edit' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="table-update-cancel-btn"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    form.reset();
-                    setMode('show');
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  type="submit"
-                  form="table-update-form"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="table-update-submit-btn"
-                  disabled={!canSubmit}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Salvar</span>
-                </Button>
-              </div>
-            )}
+        <PageShell.Footer className="bg-sidebar">
+          <FormFooter
+            form={form}
+            onCancel={() => {
+              form.reset();
+              setMode('show');
+            }}
+            submitLabel="Salvar"
+            submitTestId="table-update-submit-btn"
+            cancelTestId="table-update-cancel-btn"
           />
-        </div>
+        </PageShell.Footer>
       )}
     </>
   );

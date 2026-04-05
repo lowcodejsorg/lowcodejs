@@ -1,13 +1,11 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
 
-import { TableMenusSkeleton } from './-table-menus-skeleton';
-
+import { DataTableSkeleton } from '@/components/common/data-table';
 import { menuListOptions } from '@/hooks/tanstack-query/_query-options';
 import { createRouteHead } from '@/lib/seo';
 
 const defaultSearch = { page: 1, perPage: 50 };
-const headers = ['Nome', 'Slug', 'Tipo', 'Criado por', 'Criado em'];
 
 export const Route = createFileRoute('/_private/menus/')({
   beforeLoad: async () => {
@@ -19,7 +17,16 @@ export const Route = createFileRoute('/_private/menus/')({
     }
   },
   head: createRouteHead({ title: 'Menus' }),
-  pendingComponent: () => <TableMenusSkeleton headers={headers} />,
+  pendingComponent: () => (
+    <DataTableSkeleton headers={['Nome', 'Slug', 'Tipo', 'Criado por', 'Criado em']}>
+      <DataTableSkeleton.Cell width="w-40" />
+      <DataTableSkeleton.Cell width="w-35" />
+      <DataTableSkeleton.Cell width="w-24" height="h-6" rounded="rounded-full" />
+      <DataTableSkeleton.Cell width="w-28" />
+      <DataTableSkeleton.Cell width="w-36" />
+      <DataTableSkeleton.ActionCell />
+    </DataTableSkeleton>
+  ),
   validateSearch: z.object({
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),

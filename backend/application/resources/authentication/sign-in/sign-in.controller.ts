@@ -30,8 +30,6 @@ export default class {
     const payload = SignInBodyValidator.parse(request.body);
     const result = await this.useCase.execute(payload);
 
-    console.log(JSON.stringify(result, null, 2));
-
     if (result.isLeft()) {
       const error = result.value;
 

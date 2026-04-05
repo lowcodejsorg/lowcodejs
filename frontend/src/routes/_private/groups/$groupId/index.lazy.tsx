@@ -4,16 +4,17 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon, PencilIcon } from 'lucide-react';
+import { PencilIcon } from 'lucide-react';
 import React from 'react';
 
 import type { GroupUpdateFormValues } from './-update-form';
 import { GroupUpdateSchema, UpdateGroupFormFields } from './-update-form';
 import { GroupView } from './-view';
 
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { groupDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateGroup } from '@/hooks/tanstack-query/use-group-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -38,53 +39,40 @@ function RouteComponent(): React.JSX.Element {
 
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
-  return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="group-detail-page"
-    >
-      {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/groups',
-                replace: true,
-                search: { page: 1, perPage: 50 },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Detalhes do grupo</h1>
-        </div>
-        {mode === 'show' && (
-          <Button
-            data-test-id="group-edit-btn"
-            type="button"
-            className="px-2 cursor-pointer max-w-40 w-full"
-            size="sm"
-            onClick={() => setMode('edit')}
-          >
-            <PencilIcon className="size-4 mr-1" />
-            <span>Editar</span>
-          </Button>
-        )}
-      </div>
+  const goBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/groups',
+      replace: true,
+      search: { page: 1, perPage: 50 },
+    });
+  };
 
-      {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
-        <GroupUpdateContent
-          data={data}
-          mode={mode}
-          setMode={setMode}
-        />
-      </div>
-    </div>
+  return (
+    <PageShell data-test-id="group-detail-page">
+      <PageShell.Header borderBottom={false}>
+        <PageHeader onBack={goBack} title="Detalhes do grupo">
+          {mode === 'show' && (
+            <Button
+              data-test-id="group-edit-btn"
+              type="button"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              size="sm"
+              onClick={() => setMode('edit')}
+            >
+              <PencilIcon className="size-4 mr-1" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </PageHeader>
+      </PageShell.Header>
+
+      <GroupUpdateContent
+        data={data}
+        mode={mode}
+        setMode={setMode}
+      />
+    </PageShell>
   );
 }
 
@@ -159,14 +147,13 @@ function GroupUpdateContent({
   return (
     <>
       {mode === 'show' && (
-        <div className="flex-1 flex flex-col min-h-0 overflow-auto">
+        <PageShell.Content>
           <GroupView data={data} />
-        </div>
+        </PageShell.Content>
       )}
 
-      {/* Footer - Show Mode */}
       {mode === 'show' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
+        <PageShell.Footer className="bg-sidebar">
           <div className="flex justify-end gap-2">
             <Button
               type="button"
@@ -178,62 +165,41 @@ function GroupUpdateContent({
               <span>Voltar</span>
             </Button>
           </div>
-        </div>
+        </PageShell.Footer>
       )}
 
       {mode === 'edit' && (
-        <form
-          data-test-id="group-update-form"
-          className="flex-1 flex flex-col min-h-0 overflow-auto"
-          onSubmit={(e) => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-        >
-          <UpdateGroupFormFields
+        <PageShell.Content>
+          <form
+            data-test-id="group-update-form"
+            className="flex-1 flex flex-col min-h-0 overflow-auto"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <UpdateGroupFormFields
+              form={form}
+              isPending={isPending}
+              mode={mode}
+              slug={data.slug}
+            />
+          </form>
+        </PageShell.Content>
+      )}
+
+      {mode === 'edit' && (
+        <PageShell.Footer className="bg-sidebar">
+          <FormFooter
             form={form}
-            isPending={isPending}
-            mode={mode}
-            slug={data.slug}
+            onCancel={() => {
+              form.reset();
+              setMode('show');
+            }}
+            submitTestId="group-update-submit-btn"
+            cancelTestId="group-update-cancel-btn"
           />
-        </form>
-      )}
-
-      {mode === 'edit' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end gap-2">
-                <Button
-                  data-test-id="group-update-cancel-btn"
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    form.reset();
-                    setMode('show');
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  data-test-id="group-update-submit-btn"
-                  type="button"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={!canSubmit}
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Salvar</span>
-                </Button>
-              </div>
-            )}
-          />
-        </div>
+        </PageShell.Footer>
       )}
     </>
   );

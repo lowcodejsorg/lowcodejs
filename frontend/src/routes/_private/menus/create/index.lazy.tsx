@@ -4,7 +4,6 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import { ArrowLeftIcon } from 'lucide-react';
 
 import {
   CreateMenuFormFields,
@@ -12,9 +11,9 @@ import {
   menuFormDefaultValues,
 } from './-create-form';
 
-import { Button } from '@/components/ui/button';
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { useSidebar } from '@/components/ui/sidebar';
-import { Spinner } from '@/components/ui/spinner';
 import { useCreateMenu } from '@/hooks/tanstack-query/use-menu-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
@@ -76,80 +75,45 @@ function RouteComponent(): React.JSX.Element {
     | ValueOf<typeof E_MENU_ITEM_TYPE>
     | '';
 
+  const goBack = (): void => {
+    sidebar.setOpen(true);
+    router.navigate({
+      to: '/menus',
+      replace: true,
+      search: { page: 1, perPage: 50 },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="create-menu-page"
-    >
-      {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(true);
-              router.navigate({
-                to: '/menus',
-                replace: true,
-                search: { page: 1, perPage: 50 },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Criar novo menu</h1>
-        </div>
-      </div>
+    <PageShell data-test-id="create-menu-page">
+      <PageShell.Header>
+        <PageHeader onBack={goBack} title="Criar novo menu" />
+      </PageShell.Header>
 
-      {/* Content */}
-      <form
-        data-test-id="create-menu-form"
-        className="flex-1 flex flex-col min-h-0 overflow-auto relative"
-        onSubmit={(e) => {
-          e.preventDefault();
-          form.handleSubmit();
-        }}
-      >
-        <CreateMenuFormFields
+      <PageShell.Content>
+        <form
+          data-test-id="create-menu-form"
+          className="flex-1 flex flex-col min-h-0 overflow-auto"
+          onSubmit={(e) => {
+            e.preventDefault();
+            form.handleSubmit();
+          }}
+        >
+          <CreateMenuFormFields
+            form={form}
+            isPending={isPending}
+            menuType={menuType}
+          />
+        </form>
+      </PageShell.Content>
+
+      <PageShell.Footer>
+        <FormFooter
           form={form}
-          isPending={isPending}
-          menuType={menuType}
+          onCancel={() => navigate({ to: '/menus', search: { page: 1, perPage: 50 } })}
+          submitLabel="Criar"
         />
-      </form>
-
-      {/* Footer com botões */}
-      <div className="shrink-0 border-t p-2">
-        <form.Subscribe
-          selector={(state) => [state.canSubmit, state.isSubmitting]}
-          children={([canSubmit, isSubmitting]) => (
-            <div className="flex justify-end space-x-2">
-              <Button
-                data-test-id="create-menu-cancel-btn"
-                type="button"
-                variant="outline"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                disabled={isSubmitting}
-                onClick={() => {
-                  navigate({ to: '/menus', search: { page: 1, perPage: 50 } });
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                data-test-id="create-menu-submit-btn"
-                type="button"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                disabled={!canSubmit}
-                onClick={() => form.handleSubmit()}
-              >
-                {isSubmitting && <Spinner />}
-                <span>Criar</span>
-              </Button>
-            </div>
-          )}
-        />
-      </div>
-    </div>
+      </PageShell.Footer>
+    </PageShell>
   );
 }

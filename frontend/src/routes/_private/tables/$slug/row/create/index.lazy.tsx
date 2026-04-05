@@ -3,13 +3,12 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import { ArrowLeftIcon } from 'lucide-react';
 import React from 'react';
 
 import { CreateRowForm } from './-create-row-form';
 
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { LoadError } from '@/components/common/route-status/load-error';
-import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
@@ -29,31 +28,21 @@ function RouteComponent(): React.JSX.Element {
 
   const table = useReadTable({ slug });
 
+  const goBack = (): void => {
+    sidebar.setOpen(false);
+    router.navigate({
+      to: '/tables/$slug',
+      replace: true,
+      params: { slug },
+    });
+  };
+
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="create-row-page"
-    >
+    <PageShell data-test-id="create-row-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/tables/$slug',
-                replace: true,
-                params: { slug },
-              });
-            }}
-          >
-            <ArrowLeftIcon />
-          </Button>
-          <h1 className="text-xl font-medium">Novo registro</h1>
-        </div>
-      </div>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader onBack={goBack} title="Novo registro" />
+      </PageShell.Header>
 
       {/* Content */}
       <div
@@ -72,6 +61,6 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {table.status === 'success' && <CreateRowForm table={table.data} />}
-    </div>
+    </PageShell>
   );
 }

@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Datepicker } from '@/components/common/datepicker';
+import { SingleDatepicker } from '@/components/common/datepicker';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
@@ -45,15 +45,13 @@ export function TableFieldDateDefaultValue({
       data-invalid={isInvalid}
     >
       <FieldLabel htmlFor={field.name}>{label}</FieldLabel>
-      <Datepicker
+      <SingleDatepicker
         data-test-id="table-field-date-default-value-picker"
         value={dateValue}
         onChange={handleChange}
         displayFormat="dd/MM/yyyy"
         placeholder="Sem valor padrão"
         disabled={disabled}
-        useRange={false}
-        asSingle
         className={cn(
           disabled && 'pointer-events-none opacity-50',
           isInvalid && 'border-destructive',

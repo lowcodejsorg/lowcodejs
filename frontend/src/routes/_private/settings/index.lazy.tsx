@@ -10,8 +10,9 @@ import {
   UploadingProvider,
   useIsUploading,
 } from '@/components/common/file-upload/uploading-context';
+import { FormFooter } from '@/components/common/form-footer';
+import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Button } from '@/components/ui/button';
-import { Spinner } from '@/components/ui/spinner';
 import { settingOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateSetting } from '@/hooks/tanstack-query/use-setting-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -30,31 +31,27 @@ function RouteComponent(): React.JSX.Element {
   const [mode, setMode] = React.useState<'show' | 'edit'>('show');
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="settings-page"
-    >
+    <PageShell data-test-id="settings-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1">
-        <div className="inline-flex items-center space-x-2">
-          <h1 className="text-xl font-medium">Configurações do Sistema</h1>
-        </div>
-        {mode === 'show' && (
-          <Button
-            type="button"
-            className="px-2 cursor-pointer max-w-40 w-full"
-            size="sm"
-            onClick={() => setMode('edit')}
-            data-test-id="settings-edit-btn"
-          >
-            <PencilIcon className="size-4 mr-1" />
-            <span>Editar</span>
-          </Button>
-        )}
-      </div>
+      <PageShell.Header borderBottom={false}>
+        <PageHeader title="Configurações do Sistema">
+          {mode === 'show' && (
+            <Button
+              type="button"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              size="sm"
+              onClick={() => setMode('edit')}
+              data-test-id="settings-edit-btn"
+            >
+              <PencilIcon className="size-4 mr-1" />
+              <span>Editar</span>
+            </Button>
+          )}
+        </PageHeader>
+      </PageShell.Header>
 
       {/* Content */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         <UploadingProvider>
           <SettingUpdateContent
             data={data}
@@ -62,8 +59,8 @@ function RouteComponent(): React.JSX.Element {
             setMode={setMode}
           />
         </UploadingProvider>
-      </div>
-    </div>
+      </PageShell.Content>
+    </PageShell>
   );
 }
 
@@ -218,40 +215,18 @@ function SettingUpdateContent({
 
       {/* Footer */}
       {mode === 'edit' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={isSubmitting}
-                  data-test-id="settings-update-cancel-btn"
-                  onClick={() => {
-                    form.reset();
-                    setMode('show');
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  disabled={!canSubmit || isUploading}
-                  data-test-id="settings-update-submit-btn"
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Salvar</span>
-                </Button>
-              </div>
-            )}
+        <PageShell.Footer className="bg-sidebar">
+          <FormFooter
+            form={form}
+            cancelTestId="settings-update-cancel-btn"
+            submitTestId="settings-update-submit-btn"
+            submitDisabled={isUploading}
+            onCancel={() => {
+              form.reset();
+              setMode('show');
+            }}
           />
-        </div>
+        </PageShell.Footer>
       )}
     </>
   );

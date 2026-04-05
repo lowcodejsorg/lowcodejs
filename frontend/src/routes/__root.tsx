@@ -10,7 +10,7 @@ import { Toaster } from 'sonner';
 
 import { RouteError } from '@/components/common/route-status/route-error';
 import { RouteNotFound } from '@/components/common/route-status/route-not-found';
-import RoutePending from '@/components/common/route-status/route-pending';
+import { RoutePending } from '@/components/common/route-status/route-pending';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { getApiBaseUrl, getAppBaseUrl } from '@/lib/get-api-config';
 import type { RouterContext } from '@/router';

@@ -95,6 +95,43 @@ export interface DatepickerProps {
   separator?: string; // separator in input (default: "~")
 }
 
+export type SingleDatepickerProps = Omit<
+  DatepickerProps,
+  'asSingle' | 'useRange' | 'separator'
+>;
+
+export type RangeDatepickerProps = Omit<
+  DatepickerProps,
+  'asSingle' | 'useRange'
+> & {
+  dualCalendar?: boolean;
+};
+
+export function SingleDatepicker(
+  props: SingleDatepickerProps,
+): React.JSX.Element {
+  return (
+    <Datepicker
+      {...props}
+      asSingle
+      useRange={false}
+    />
+  );
+}
+
+export function RangeDatepicker({
+  dualCalendar = true,
+  ...props
+}: RangeDatepickerProps): React.JSX.Element {
+  return (
+    <Datepicker
+      {...props}
+      asSingle={false}
+      useRange={dualCalendar}
+    />
+  );
+}
+
 export function Datepicker({
   value,
   onChange,

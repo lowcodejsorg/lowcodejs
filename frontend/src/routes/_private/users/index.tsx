@@ -1,13 +1,11 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
 
-import { TableUsersSkeleton } from './-table-users-skeleton';
-
+import { DataTableSkeleton } from '@/components/common/data-table';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
 import { createRouteHead } from '@/lib/seo';
 
 const defaultSearch = { page: 1, perPage: 50 };
-const headers = ['Nome', 'E-mail', 'Papel', 'Status'];
 
 export const Route = createFileRoute('/_private/users/')({
   beforeLoad: async () => {
@@ -19,7 +17,15 @@ export const Route = createFileRoute('/_private/users/')({
     }
   },
   head: createRouteHead({ title: 'Usuários' }),
-  pendingComponent: () => <TableUsersSkeleton headers={headers} />,
+  pendingComponent: () => (
+    <DataTableSkeleton headers={['Nome', 'E-mail', 'Papel', 'Status']}>
+      <DataTableSkeleton.Cell width="w-45" />
+      <DataTableSkeleton.Cell width="w-50" />
+      <DataTableSkeleton.Cell width="w-25" />
+      <DataTableSkeleton.Cell width="w-20" height="h-6" rounded="rounded-full" />
+      <DataTableSkeleton.ActionCell />
+    </DataTableSkeleton>
+  ),
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),

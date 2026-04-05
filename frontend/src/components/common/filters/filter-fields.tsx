@@ -4,7 +4,7 @@ import { format, parseISO } from 'date-fns';
 import { TextIcon, XIcon } from 'lucide-react';
 import React from 'react';
 
-import { Datepicker } from '@/components/common/datepicker';
+import { RangeDatepicker } from '@/components/common/datepicker';
 import type { DatepickerValue } from '@/components/common/datepicker';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { TreeList } from '@/components/common/tree-editor/tree-list';
@@ -576,12 +576,11 @@ export function FilterDate({
   return (
     <Field data-slot="filter-date">
       <FieldLabel>{field.name}</FieldLabel>
-      <Datepicker
+      <RangeDatepicker
         data-test-id={`filter-date-${field.slug}`}
         value={value}
         onChange={onChange}
-        useRange={false}
-        asSingle={false}
+        dualCalendar={false}
         placeholder="Selecione o período"
       />
     </Field>

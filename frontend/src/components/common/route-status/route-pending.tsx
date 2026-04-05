@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react';
 
-export default function RoutePending(): React.JSX.Element {
+export function RoutePending(): React.JSX.Element {
   return (
     <div
       data-slot="route-pending"

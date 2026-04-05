@@ -29,7 +29,7 @@ export default async function Seed(): Promise<void> {
 
   const password = await bcrypt.hash('10203040', 6);
 
-  console.log({ password });
+  console.info({ password });
 
   const payload: Payload[] = [
     {

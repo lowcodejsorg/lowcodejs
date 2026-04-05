@@ -1,13 +1,11 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
 
-import { TableGroupsSkeleton } from './-table-groups-skeleton';
-
+import { DataTableSkeleton } from '@/components/common/data-table';
 import { groupListOptions } from '@/hooks/tanstack-query/_query-options';
 import { createRouteHead } from '@/lib/seo';
 
 const defaultSearch = { page: 1, perPage: 50 };
-const headers = ['Nome', 'Slug', 'Descrição'];
 
 export const Route = createFileRoute('/_private/groups/')({
   beforeLoad: async () => {
@@ -19,7 +17,13 @@ export const Route = createFileRoute('/_private/groups/')({
     }
   },
   head: createRouteHead({ title: 'Grupos' }),
-  pendingComponent: () => <TableGroupsSkeleton headers={headers} />,
+  pendingComponent: () => (
+    <DataTableSkeleton headers={['Nome', 'Slug', 'Descrição']}>
+      <DataTableSkeleton.Cell width="w-37.5" />
+      <DataTableSkeleton.Cell width="w-62.5" />
+      <DataTableSkeleton.ActionCell />
+    </DataTableSkeleton>
+  ),
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),

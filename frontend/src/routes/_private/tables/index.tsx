@@ -1,14 +1,21 @@
 import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
 
-import { TableTablesSkeleton } from './-table-tables-skeleton';
-
+import { DataTableSkeleton } from '@/components/common/data-table';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
 
 const defaultSearch = { page: 1, perPage: 50 };
 
 export const Route = createFileRoute('/_private/tables/')({
-  pendingComponent: () => <TableTablesSkeleton />,
+  pendingComponent: () => (
+    <DataTableSkeleton headers={['Tabela', 'Link (slug)', 'Visibilidade', 'Criado por', 'Criado em']}>
+      <DataTableSkeleton.Cell width="w-40" />
+      <DataTableSkeleton.Cell width="w-32" />
+      <DataTableSkeleton.Cell width="w-36" />
+      <DataTableSkeleton.Cell width="w-36" />
+      <DataTableSkeleton.ActionCell />
+    </DataTableSkeleton>
+  ),
   validateSearch: z.object({
     search: z.string().optional(),
     page: z.coerce.number().default(1),

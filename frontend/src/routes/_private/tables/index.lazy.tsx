@@ -14,6 +14,7 @@ import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
+import { PageShell } from '@/components/common/page-shell';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
@@ -85,12 +86,9 @@ function RouteComponent(): React.JSX.Element {
     useChatSidebar();
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="tables-page"
-    >
+    <PageShell data-test-id="tables-page">
       {/* Header */}
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
+      <PageShell.Header>
         <h1 className="text-2xl font-medium ">Tabelas</h1>
         <div className="inline-flex items-center gap-2">
           <div ref={toolbarRef} />
@@ -139,7 +137,7 @@ function RouteComponent(): React.JSX.Element {
             </Button>
           )}
         </div>
-      </div>
+      </PageShell.Header>
 
       {/* content */}
       <div className="flex-1 flex flex-row min-h-0">
@@ -164,7 +162,7 @@ function RouteComponent(): React.JSX.Element {
       </div>
 
       {/* footer */}
-      <div className="shrink-0 border-t p-2">
+      <PageShell.Footer>
         <Pagination
           meta={data.meta}
           page={search.page}
@@ -176,7 +174,7 @@ function RouteComponent(): React.JSX.Element {
             navigate({ search: (prev) => ({ ...prev, perPage, page: 1 }) })
           }
         />
-      </div>
-    </div>
+      </PageShell.Footer>
+    </PageShell>
   );
 }

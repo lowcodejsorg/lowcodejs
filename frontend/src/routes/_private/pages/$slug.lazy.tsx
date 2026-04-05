@@ -1,6 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useParams } from '@tanstack/react-router';
 
+import { PageShell } from '@/components/common/page-shell';
 import { ContentViewer } from '@/components/common/rich-editor';
 import { pageDetailOptions } from '@/hooks/tanstack-query/_query-options';
 
@@ -16,19 +17,16 @@ function RouteComponent(): React.JSX.Element {
   const { data: page } = useSuspenseQuery(pageDetailOptions(slug));
 
   return (
-    <div
-      className="flex flex-col h-full overflow-hidden"
-      data-test-id="custom-page"
-    >
-      <div className="shrink-0 p-2 flex flex-row justify-between gap-1 border-b">
+    <PageShell data-test-id="custom-page">
+      <PageShell.Header>
         <h1 className="text-2xl font-medium ">{page?.name ?? ''}</h1>
-      </div>
+      </PageShell.Header>
 
-      <div className="flex-1 flex flex-col min-h-0 overflow-auto relative">
+      <PageShell.Content>
         <ContentViewer content={page?.html ?? ''} />
-      </div>
+      </PageShell.Content>
 
-      <div className="shrink-0 border-t p-2"></div>
-    </div>
+      <PageShell.Footer />
+    </PageShell>
   );
 }
