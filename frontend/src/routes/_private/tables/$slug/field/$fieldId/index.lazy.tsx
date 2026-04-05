@@ -125,7 +125,8 @@ function RouteComponent(): React.JSX.Element {
             mode === 'show' &&
             permission.can('UPDATE_FIELD') &&
             !(_read.data as IField & { trashed?: boolean }).trashed &&
-            (!_read.data.locked || _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
+            (!_read.data.locked ||
+              _read.data.type === E_FIELD_TYPE.DROPDOWN) && (
               <Button
                 type="button"
                 className="px-2 cursor-pointer"

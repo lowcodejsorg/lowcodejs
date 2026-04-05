@@ -3,6 +3,7 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router';
+
 import {
   CreateUserFormFields,
   UserCreateSchema,
@@ -76,7 +77,10 @@ function RouteComponent(): React.JSX.Element {
   return (
     <PageShell data-test-id="create-user-page">
       <PageShell.Header>
-        <PageHeader onBack={goBack} title="Criar novo usuário" />
+        <PageHeader
+          onBack={goBack}
+          title="Criar novo usuário"
+        />
       </PageShell.Header>
 
       <PageShell.Content>
@@ -98,7 +102,9 @@ function RouteComponent(): React.JSX.Element {
       <PageShell.Footer>
         <FormFooter
           form={form}
-          onCancel={() => navigate({ to: '/users', search: { page: 1, perPage: 50 } })}
+          onCancel={() =>
+            navigate({ to: '/users', search: { page: 1, perPage: 50 } })
+          }
           submitLabel="Criar"
         />
       </PageShell.Footer>

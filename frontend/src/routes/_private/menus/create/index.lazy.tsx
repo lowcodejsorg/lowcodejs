@@ -87,7 +87,10 @@ function RouteComponent(): React.JSX.Element {
   return (
     <PageShell data-test-id="create-menu-page">
       <PageShell.Header>
-        <PageHeader onBack={goBack} title="Criar novo menu" />
+        <PageHeader
+          onBack={goBack}
+          title="Criar novo menu"
+        />
       </PageShell.Header>
 
       <PageShell.Content>
@@ -110,7 +113,9 @@ function RouteComponent(): React.JSX.Element {
       <PageShell.Footer>
         <FormFooter
           form={form}
-          onCancel={() => navigate({ to: '/menus', search: { page: 1, perPage: 50 } })}
+          onCancel={() =>
+            navigate({ to: '/menus', search: { page: 1, perPage: 50 } })
+          }
           submitLabel="Criar"
         />
       </PageShell.Footer>

@@ -113,7 +113,10 @@ function RouteComponentContent(): React.JSX.Element {
     <PageShell data-test-id="create-table-page">
       {/* Header */}
       <PageShell.Header borderBottom={false}>
-        <PageHeader title="Nova tabela" onBack={goBack} />
+        <PageHeader
+          title="Nova tabela"
+          onBack={goBack}
+        />
       </PageShell.Header>
 
       {/* Content */}

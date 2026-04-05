@@ -51,7 +51,10 @@ function RouteComponent(): React.JSX.Element {
   return (
     <PageShell data-test-id="user-detail-page">
       <PageShell.Header borderBottom={false}>
-        <PageHeader onBack={goBack} title="Detalhes do usuário">
+        <PageHeader
+          onBack={goBack}
+          title="Detalhes do usuário"
+        >
           {mode === 'show' && (
             <Button
               data-test-id="user-edit-btn"

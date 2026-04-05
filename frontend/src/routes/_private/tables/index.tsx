@@ -8,7 +8,15 @@ const defaultSearch = { page: 1, perPage: 50 };
 
 export const Route = createFileRoute('/_private/tables/')({
   pendingComponent: () => (
-    <DataTableSkeleton headers={['Tabela', 'Link (slug)', 'Visibilidade', 'Criado por', 'Criado em']}>
+    <DataTableSkeleton
+      headers={[
+        'Tabela',
+        'Link (slug)',
+        'Visibilidade',
+        'Criado por',
+        'Criado em',
+      ]}
+    >
       <DataTableSkeleton.Cell width="w-40" />
       <DataTableSkeleton.Cell width="w-32" />
       <DataTableSkeleton.Cell width="w-36" />

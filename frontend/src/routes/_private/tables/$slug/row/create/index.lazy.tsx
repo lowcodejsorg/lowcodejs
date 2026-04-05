@@ -41,7 +41,10 @@ function RouteComponent(): React.JSX.Element {
     <PageShell data-test-id="create-row-page">
       {/* Header */}
       <PageShell.Header borderBottom={false}>
-        <PageHeader onBack={goBack} title="Novo registro" />
+        <PageHeader
+          onBack={goBack}
+          title="Novo registro"
+        />
       </PageShell.Header>
 
       {/* Content */}

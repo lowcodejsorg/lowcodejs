@@ -14,11 +14,11 @@ import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
-import { PageShell } from '@/components/common/page-shell';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
+import { PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';

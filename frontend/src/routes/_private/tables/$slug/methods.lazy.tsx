@@ -65,7 +65,10 @@ function RouteComponent(): React.JSX.Element {
     <PageShell data-test-id="methods-page">
       {/* Header */}
       <PageShell.Header borderBottom={false}>
-        <PageHeader onBack={goBack} title="Métodos da tabela" />
+        <PageHeader
+          onBack={goBack}
+          title="Métodos da tabela"
+        />
       </PageShell.Header>
 
       {/* Content */}

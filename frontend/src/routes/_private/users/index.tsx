@@ -22,7 +22,11 @@ export const Route = createFileRoute('/_private/users/')({
       <DataTableSkeleton.Cell width="w-45" />
       <DataTableSkeleton.Cell width="w-50" />
       <DataTableSkeleton.Cell width="w-25" />
-      <DataTableSkeleton.Cell width="w-20" height="h-6" rounded="rounded-full" />
+      <DataTableSkeleton.Cell
+        width="w-20"
+        height="h-6"
+        rounded="rounded-full"
+      />
       <DataTableSkeleton.ActionCell />
     </DataTableSkeleton>
   ),

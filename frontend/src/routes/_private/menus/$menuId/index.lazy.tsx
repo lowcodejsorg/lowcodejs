@@ -5,11 +5,7 @@ import {
   useRouter,
 } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
-import {
-  ArchiveRestoreIcon,
-  PencilIcon,
-  TrashIcon,
-} from 'lucide-react';
+import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
 import type { MenuUpdateFormValues } from './-update-form';
@@ -60,7 +56,10 @@ function RouteComponent(): React.JSX.Element {
   return (
     <PageShell data-test-id="menu-detail-page">
       <PageShell.Header borderBottom={false}>
-        <PageHeader onBack={goBack} title="Detalhes do menu" />
+        <PageHeader
+          onBack={goBack}
+          title="Detalhes do menu"
+        />
       </PageShell.Header>
 
       <MenuUpdateContent

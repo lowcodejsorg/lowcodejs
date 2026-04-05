@@ -3,11 +3,7 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
-import {
-  ArchiveRestoreIcon,
-  PencilIcon,
-  TrashIcon,
-} from 'lucide-react';
+import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
@@ -67,7 +63,10 @@ function RouteComponent(): React.JSX.Element {
     <PageShell data-test-id="table-detail-view-page">
       {/* Header */}
       <PageShell.Header borderBottom={false}>
-        <PageHeader onBack={goBack} title="Detalhes da tabela" />
+        <PageHeader
+          onBack={goBack}
+          title="Detalhes da tabela"
+        />
       </PageShell.Header>
 
       {/* Content */}

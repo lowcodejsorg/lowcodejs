@@ -61,7 +61,10 @@ function PageShellContent({
   return (
     <div
       data-slot="page-shell-content"
-      className={cn('flex-1 flex flex-col min-h-0 overflow-auto relative', className)}
+      className={cn(
+        'flex-1 flex flex-col min-h-0 overflow-auto relative',
+        className,
+      )}
       {...props}
     >
       {children}

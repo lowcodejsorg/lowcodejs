@@ -5,7 +5,10 @@ import { cn } from '@/lib/utils';
 interface FormFooterProps {
   form: {
     Subscribe: React.ComponentType<{
-      selector: (state: { canSubmit: boolean; isSubmitting: boolean }) => [boolean, boolean];
+      selector: (state: {
+        canSubmit: boolean;
+        isSubmitting: boolean;
+      }) => [boolean, boolean];
       children: (value: [boolean, boolean]) => React.ReactNode;
     }>;
     handleSubmit: () => void;
@@ -30,7 +33,10 @@ export function FormFooter({
   className,
 }: FormFooterProps): React.JSX.Element {
   return (
-    <div data-slot="form-footer" className={className}>
+    <div
+      data-slot="form-footer"
+      className={className}
+    >
       <form.Subscribe
         selector={(state) => [state.canSubmit, state.isSubmitting]}
         children={([canSubmit, isSubmitting]) => (

@@ -53,7 +53,10 @@ function DataTableSkeletonRoot({
   className,
 }: DataTableSkeletonProps): React.JSX.Element {
   return (
-    <Table data-slot="data-table-skeleton" className={className}>
+    <Table
+      data-slot="data-table-skeleton"
+      className={className}
+    >
       <TableHeader className="sticky top-0 bg-background z-10">
         <TableRow>
           {headers.map((head) => (
