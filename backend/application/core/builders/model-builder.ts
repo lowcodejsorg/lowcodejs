@@ -93,8 +93,6 @@ export async function buildTable(
 
   if (!table?._schema) throw new Error('Table schema not found');
 
-  if (mongoose.models[table.slug]) delete mongoose.models[table.slug];
-
   const schemaDefinition: Record<string, any> = {};
 
   for (const [key, value] of Object.entries(table._schema)) {
@@ -211,12 +209,12 @@ export async function buildTable(
     });
   }
 
-  const model = (mongoose.models[table?.slug] ||
-    mongoose.model<Entity>(
-      table?.slug,
-      schema,
-      table?.slug,
-    )) as mongoose.Model<Entity>;
+  delete mongoose.models[table.slug];
+  const model = mongoose.model<Entity>(
+    table.slug,
+    schema,
+    table.slug,
+  ) as mongoose.Model<Entity>;
 
   await model?.createCollection();
 

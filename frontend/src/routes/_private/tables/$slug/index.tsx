@@ -1,12 +1,12 @@
 import { createFileRoute } from '@tanstack/react-router';
 import z from 'zod';
 
+import { TableSkeleton } from '@/components/common/table-views';
 import {
   rowListOptions,
   tableDetailOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { createRouteHead } from '@/lib/seo';
-import { TableSkeleton } from '@/components/common/table-views';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
