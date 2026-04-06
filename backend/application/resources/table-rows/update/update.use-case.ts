@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type { IField } from '@application/core/entity.core';
+import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   hashPasswordFields,
@@ -11,34 +11,34 @@ import {
   stripMaskedPasswordFields,
 } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
-// import TableFieldRowValidation from '@application/core/table-field-row-validation.exception';
 import { executeScript } from '@application/core/table/handler';
 import type { FieldDefinition } from '@application/core/table/types';
-import { buildPopulate, buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-type Response = Either<
-  HTTPException,
-  import('@application/core/entity.core').IRow
->;
+type Response = Either<HTTPException, IRow>;
 
-// type Payload = TableRowUpdatePayload;
-type Payload = {
-  [x: string]: any;
+type Payload = Record<string, unknown> & {
+  slug: string;
+  _id: string;
 };
 
 @Service()
 export default class TableRowUpdateUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
       const errors = validateRowPayload(payload, table.fields, table.groups, {
         skipMissing: true,
@@ -54,47 +54,42 @@ export default class TableRowUpdateUseCase {
         );
       }
 
-      stripMaskedPasswordFields(payload, table.fields as IField[]);
-      await hashPasswordFields(payload, table.fields as IField[]);
-
-      const build = await buildTable(table);
-
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
-
-      const row = await build.findOne({ _id: payload._id }).populate(populate);
-
-      if (!row)
-        return left(
-          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
-        );
-
-      const populatedJson = row.toJSON({ flattenObjectIds: true });
-
-      const mergedData: Record<string, any> = {
-        ...populatedJson,
-        ...payload,
-      };
+      stripMaskedPasswordFields(payload, table.fields);
+      await hashPasswordFields(payload, table.fields);
 
       const beforeSaveCode = table.methods?.beforeSave?.code;
       if (beforeSaveCode) {
-        const fields = table.fields as IField[];
-        const fieldDefs: FieldDefinition[] = fields.map((f) => ({
+        const existing = await this.rowRepository.findOne({
+          table,
+          query: { _id: payload._id },
+        });
+
+        if (!existing) {
+          return left(
+            HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+          );
+        }
+
+        const fieldDefs: FieldDefinition[] = table.fields.map((f) => ({
           slug: f.slug,
           type: f.type,
           name: f.name,
-          dropdown: f.dropdown ?? undefined,
+          dropdown: f.dropdown,
         }));
 
         const userFieldSlugs = new Set(
-          fields.filter((f) => f.type === 'USER').map((f) => f.slug),
+          table.fields.filter((f) => f.type === 'USER').map((f) => f.slug),
         );
+
+        const mergedData: Record<string, any> = {
+          ...existing,
+          ...payload,
+        };
+
         const scriptDoc: Record<string, any> = { ...mergedData };
         for (const slug of userFieldSlugs) {
           if (slug in payload) {
-            scriptDoc[slug] = populatedJson[slug];
+            scriptDoc[slug] = existing[slug];
           }
         }
 
@@ -106,7 +101,7 @@ export default class TableRowUpdateUseCase {
           context: {
             userAction: 'editar_registro',
             executionMoment: 'antes_salvar',
-            userId: payload.creator ?? undefined,
+            userId: typeof payload.creator === 'string' ? payload.creator : undefined,
             isNew: false,
             tableInfo: {
               _id: table._id?.toString() ?? '',
@@ -132,27 +127,28 @@ export default class TableRowUpdateUseCase {
 
         for (const key of Object.keys(scriptDoc)) {
           if (!userFieldSlugs.has(key)) {
-            mergedData[key] = scriptDoc[key];
+            payload[key] = scriptDoc[key];
           }
         }
       }
 
-      await row.set(mergedData).save();
+      const row = await this.rowRepository.update({
+        table,
+        _id: payload._id,
+        data: payload,
+      });
 
-      await row.populate(populate);
+      if (!row) {
+        return left(
+          HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+        );
+      }
 
-      const rowJson = {
-        ...row.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: row?._id?.toString(),
-      };
+      maskPasswordFields(row, table.fields);
 
-      maskPasswordFields(rowJson, table.fields as IField[]);
-
-      // @ts-ignore
-      return right(rowJson);
+      return right(row);
     } catch (error) {
+      console.error('[table-rows > update][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',

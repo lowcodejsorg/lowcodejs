@@ -3,7 +3,7 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import { type IField, type IRow } from '@application/core/entity.core';
+import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import {
   hashPasswordFields,
@@ -12,30 +12,33 @@ import {
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { executeScript } from '@application/core/table/handler';
 import type { FieldDefinition } from '@application/core/table/types';
-import { buildPopulate, buildTable } from '@application/core/util.core';
 import { User } from '@application/model/user.model';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 type Response = Either<HTTPException, IRow>;
 
-// type Payload = TableRowCreatePayload;
-
-type Payload = {
-  [x: string]: any;
+type Payload = Record<string, unknown> & {
+  slug: string;
+  creator?: string | null;
 };
 
 @Service()
 export default class TableRowCreateUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
       const errors = validateRowPayload(payload, table.fields, table.groups);
 
@@ -49,14 +52,7 @@ export default class TableRowCreateUseCase {
         );
       }
 
-      await hashPasswordFields(payload, table.fields as IField[]);
-
-      const build = await buildTable(table);
-
-      const populate = await buildPopulate(
-        table.fields as IField[],
-        table.groups,
-      );
+      await hashPasswordFields(payload, table.fields);
 
       const createData: Record<string, any> = {
         ...payload,
@@ -65,17 +61,17 @@ export default class TableRowCreateUseCase {
 
       const beforeSaveCode = table.methods?.beforeSave?.code;
       if (beforeSaveCode) {
-        const fields = table.fields as IField[];
-        const fieldDefs: FieldDefinition[] = fields.map((f) => ({
+        const fieldDefs: FieldDefinition[] = table.fields.map((f) => ({
           slug: f.slug,
           type: f.type,
           name: f.name,
-          dropdown: f.dropdown ?? undefined,
+          dropdown: f.dropdown,
         }));
 
-        const userFieldSlugs = fields
+        const userFieldSlugs = table.fields
           .filter((f) => f.type === 'USER')
           .map((f) => f.slug);
+
         const scriptDoc: Record<string, any> = { ...createData };
 
         if (userFieldSlugs.length > 0) {
@@ -151,22 +147,16 @@ export default class TableRowCreateUseCase {
         }
       }
 
-      const created = await build.create(createData);
+      const row = await this.rowRepository.create({
+        table,
+        data: createData,
+      });
 
-      const row = await created.populate(populate);
+      maskPasswordFields(row, table.fields);
 
-      const rowJson = {
-        ...row?.toJSON({
-          flattenObjectIds: true,
-        }),
-        _id: row?._id?.toString(),
-      };
-
-      maskPasswordFields(rowJson, table.fields as IField[]);
-
-      return right(rowJson);
+      return right(row);
     } catch (error) {
-      console.error(error);
+      console.error('[table-rows > create][error]:', error);
       return left(
         HTTPException.InternalServerError(
           'Erro interno do servidor',
