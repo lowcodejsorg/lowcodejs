@@ -252,6 +252,7 @@ export function TableDocumentView({
           getLeafLabel={getLeafLabel}
           getHeadingLevel={getHeadingLevel}
           categorySlug={categoryField?.slug ?? 'category'}
+          selectedCategoryId={selectedCategoryId}
         />
       </div>
     </div>

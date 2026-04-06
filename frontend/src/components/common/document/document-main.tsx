@@ -1,5 +1,12 @@
+import { useParams, useRouter } from '@tanstack/react-router';
+import { PlusIcon } from 'lucide-react';
+
+import { DocumentHeadingRow } from './document-heading-row';
 import { DocumentRow } from './document-row';
 
+import { Button } from '@/components/ui/button';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import type { DocBlock } from '@/lib/document-helpers';
 import { getRowLeafId } from '@/lib/document-helpers';
 import type { IRow } from '@/lib/interfaces';
@@ -13,6 +20,7 @@ interface DocumentMainProps {
   getLeafLabel: (row: IRow) => string | null;
   getHeadingLevel: (row: IRow) => number;
   categorySlug: string;
+  selectedCategoryId?: string | null;
 }
 
 export function DocumentMain({
@@ -24,7 +32,16 @@ export function DocumentMain({
   getLeafLabel,
   getHeadingLevel,
   categorySlug,
+  selectedCategoryId,
 }: DocumentMainProps): React.JSX.Element {
+  const router = useRouter();
+  const { slug } = useParams({
+    from: '/_private/tables/$slug/',
+  });
+
+  const table = useReadTable({ slug });
+  const permission = useTablePermission(table.data);
+
   return (
     <main
       data-slot="document-main"
@@ -71,8 +88,41 @@ export function DocumentMain({
         </div>
       )}
       {rows.length === 0 && (
-        <div className="text-sm text-muted-foreground">
-          Nenhum registro encontrado para este filtro.
+        <div>
+          {filterLabel && selectedCategoryId && (
+            <DocumentHeadingRow
+              id={`sec-${selectedCategoryId}`}
+              level={2}
+              actions={
+                permission.can('CREATE_ROW') ? (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="size-7 cursor-pointer opacity-40 hover:opacity-100"
+                    aria-label="Adicionar registro nesta seção"
+                    onClick={() => {
+                      router.navigate({
+                        to: '/tables/$slug/row/create',
+                        params: { slug },
+                        search: {
+                          categoryId: selectedCategoryId,
+                          categorySlug,
+                        },
+                      });
+                    }}
+                  >
+                    <PlusIcon className="size-4" />
+                  </Button>
+                ) : undefined
+              }
+            >
+              {filterLabel}
+            </DocumentHeadingRow>
+          )}
+          <div className="text-sm text-muted-foreground mt-2">
+            Nenhum registro encontrado para este filtro.
+          </div>
         </div>
       )}
     </main>

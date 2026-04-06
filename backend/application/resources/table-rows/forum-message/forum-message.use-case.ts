@@ -17,6 +17,7 @@ import { RowContractRepository } from '@application/repositories/row/row-contrac
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { EmailContractService } from '@application/services/email/email-contract.service';
+import { Env } from '@start/env';
 
 import type {
   ForumMessageCreatePayload,
@@ -130,7 +131,14 @@ export default class ForumMessageUseCase {
         mentions,
         payload.user,
       );
-      await this.sendMentionNotification(mentionEmails);
+      const channelName = String(row['canal'] ?? '');
+      await this.sendMentionNotification({
+        emails: mentionEmails,
+        channelName,
+        messageText: text,
+        tableName: table.name,
+        tableSlug: table.slug,
+      });
 
       const nextMessages = this.getMessages(row, config.messagesSlug);
       const newMessage: Record<string, unknown> = {
@@ -292,7 +300,14 @@ export default class ForumMessageUseCase {
       const newRecipients = mentionEmails.filter(
         (email) => !alreadyNotifiedSet.has(email),
       );
-      await this.sendMentionNotification(newRecipients);
+      const updateChannelName = String(row['canal'] ?? '');
+      await this.sendMentionNotification({
+        emails: newRecipients,
+        channelName: updateChannelName,
+        messageText: nextText,
+        tableName: table.name,
+        tableSlug: table.slug,
+      });
 
       let nextReplyTo: string | null;
       if (payload.replyTo !== undefined) {
@@ -771,13 +786,44 @@ export default class ForumMessageUseCase {
     );
   }
 
-  private async sendMentionNotification(emails: string[]): Promise<void> {
-    if (emails.length === 0) return;
+  private async sendMentionNotification(opts: {
+    emails: string[];
+    channelName?: string;
+    messageText?: string;
+    tableName?: string;
+    tableSlug?: string;
+  }): Promise<void> {
+    if (opts.emails.length === 0) return;
     try {
+      const snippet = opts.messageText
+        ? opts.messageText
+            .replace(/<[^>]*>/g, '')
+            .replace(/&nbsp;/g, ' ')
+            .trim()
+            .slice(0, 200)
+        : '';
+
+      const data: Record<string, string> = {};
+      if (opts.tableName) data['Tabela'] = opts.tableName;
+      if (opts.channelName) data['Canal'] = opts.channelName;
+      if (snippet)
+        data['Mensagem'] = snippet + (snippet.length >= 200 ? '...' : '');
+      if (opts.tableSlug) {
+        data['Acessar'] = Env.APP_CLIENT_URL + '/tables/' + opts.tableSlug;
+      }
+
+      const body = await this.emailService.buildTemplate({
+        template: 'notification',
+        data: {
+          title: 'Você foi mencionado em um canal',
+          message: 'Você recebeu uma menção em uma mensagem do fórum.',
+          data,
+        },
+      });
       await this.emailService.sendEmail({
-        to: emails,
+        to: opts.emails,
         subject: 'Você foi mencionado em um canal',
-        body: 'Você recebeu uma menção em uma mensagem do fórum.',
+        body,
       });
     } catch {
       // Keep forum message flow resilient even if email provider fails.

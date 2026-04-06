@@ -74,6 +74,7 @@ export interface FieldApi {
   get(slug: string): any;
   set(slug: string, value: any): void;
   getAll(): Record<string, any>;
+  getLabel(slug: string, value?: string): string;
 }
 
 export interface ContextApi {
@@ -81,6 +82,7 @@ export interface ContextApi {
   readonly moment: ExecutionMoment;
   readonly userId: string;
   readonly isNew: boolean;
+  readonly appUrl: string;
   readonly table: TableInfo;
 }
 
