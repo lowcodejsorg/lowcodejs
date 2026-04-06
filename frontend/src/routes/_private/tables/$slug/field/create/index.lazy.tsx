@@ -5,12 +5,12 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 
+import { CreateFieldSkeleton } from './-create-field-skeleton';
 import {
   CreateFieldFormFields,
   FieldCreateSchema,
   fieldCreateFormDefaultValues,
 } from './-create-form';
-import { CreateFieldSkeleton } from './-create-field-skeleton';
 
 import { FormFooter } from '@/components/common/form-footer';
 import { PageHeader, PageShell } from '@/components/common/page-shell';

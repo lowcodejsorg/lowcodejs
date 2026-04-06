@@ -1,7 +1,6 @@
+import { PageShell } from '@/components/common/page-shell';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
-
-import { PageShell } from '@/components/common/page-shell';
 
 function StatCardSkeleton(): React.JSX.Element {
   return (

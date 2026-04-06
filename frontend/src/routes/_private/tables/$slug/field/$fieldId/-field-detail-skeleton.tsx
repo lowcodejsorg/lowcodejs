@@ -1,3 +1,4 @@
+import { PageShell } from '@/components/common/page-shell';
 import { Field, FieldLabel } from '@/components/ui/field';
 import {
   InputGroup,
@@ -5,8 +6,6 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
-
-import { PageShell } from '@/components/common/page-shell';
 
 export function FieldDetailSkeleton(): React.JSX.Element {
   return (

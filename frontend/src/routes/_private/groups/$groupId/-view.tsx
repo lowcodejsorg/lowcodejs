@@ -1,12 +1,7 @@
 import { ShieldCheckIcon, UsersIcon } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { E_ROLE } from '@/lib/constant';
 import type { IGroup } from '@/lib/interfaces';
 

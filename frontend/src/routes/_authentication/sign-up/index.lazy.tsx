@@ -128,9 +128,7 @@ function RouteComponent(): React.JSX.Element {
 
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-xl font-semibold">
-                Cadastro
-              </CardTitle>
+              <CardTitle className="text-xl font-semibold">Cadastro</CardTitle>
               <CardDescription>
                 Crie sua conta para acessar a plataforma
               </CardDescription>
@@ -149,14 +147,11 @@ function RouteComponent(): React.JSX.Element {
                     name="name"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
 
                       return (
                         <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>
-                            Nome
-                          </FieldLabel>
+                          <FieldLabel htmlFor={field.name}>Nome</FieldLabel>
                           <InputGroup>
                             <InputGroupInput
                               data-test-id="sign-up-name-input"
@@ -186,14 +181,11 @@ function RouteComponent(): React.JSX.Element {
                     name="email"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
 
                       return (
                         <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>
-                            E-mail
-                          </FieldLabel>
+                          <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
                           <InputGroup>
                             <InputGroupInput
                               data-test-id="sign-up-email-input"
@@ -223,13 +215,10 @@ function RouteComponent(): React.JSX.Element {
                     name="password"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
                       return (
                         <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>
-                            Senha
-                          </FieldLabel>
+                          <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
                           <InputGroup>
                             <InputGroupInput
                               data-test-id="sign-up-password-input"
@@ -255,9 +244,7 @@ function RouteComponent(): React.JSX.Element {
                                 title="toggle password visibility"
                                 size="icon-xs"
                                 className="cursor-pointer"
-                                onClick={() =>
-                                  setShowPassword(!showPassword)
-                                }
+                                onClick={() => setShowPassword(!showPassword)}
                               >
                                 {!showPassword && <EyeIcon />}
                                 {showPassword && <EyeClosedIcon />}
@@ -275,8 +262,7 @@ function RouteComponent(): React.JSX.Element {
                     name="confirmPassword"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
                       return (
                         <Field data-invalid={isInvalid}>
                           <FieldLabel htmlFor={field.name}>
@@ -287,9 +273,7 @@ function RouteComponent(): React.JSX.Element {
                               data-test-id="sign-up-confirm-password-input"
                               id={field.name}
                               name={field.name}
-                              type={
-                                showConfirmPassword ? 'text' : 'password'
-                              }
+                              type={showConfirmPassword ? 'text' : 'password'}
                               placeholder="••••••••"
                               value={field.state.value}
                               onBlur={field.handleBlur}
@@ -310,9 +294,7 @@ function RouteComponent(): React.JSX.Element {
                                 size="icon-xs"
                                 className="cursor-pointer"
                                 onClick={() =>
-                                  setShowConfirmPassword(
-                                    !showConfirmPassword,
-                                  )
+                                  setShowConfirmPassword(!showConfirmPassword)
                                 }
                               >
                                 {!showConfirmPassword && <EyeIcon />}

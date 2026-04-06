@@ -101,9 +101,7 @@ function RouteComponent(): React.JSX.Element {
 
           <Card>
             <CardHeader className="text-center">
-              <CardTitle className="text-xl font-semibold">
-                Entrar
-              </CardTitle>
+              <CardTitle className="text-xl font-semibold">Entrar</CardTitle>
               <CardDescription>
                 Faça login para acessar a plataforma
               </CardDescription>
@@ -122,14 +120,11 @@ function RouteComponent(): React.JSX.Element {
                     name="email"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
 
                       return (
                         <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>
-                            E-mail
-                          </FieldLabel>
+                          <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
                           <InputGroup>
                             <InputGroupInput
                               data-test-id="sign-in-email-input"
@@ -159,14 +154,11 @@ function RouteComponent(): React.JSX.Element {
                     name="password"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
 
                       return (
                         <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>
-                            Senha
-                          </FieldLabel>
+                          <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
                           <InputGroup>
                             <InputGroupInput
                               data-test-id="sign-in-password-input"
@@ -192,9 +184,7 @@ function RouteComponent(): React.JSX.Element {
                                 title="toggle password visibility"
                                 size="icon-xs"
                                 className="cursor-pointer"
-                                onClick={() =>
-                                  setShowPassword(!showPassword)
-                                }
+                                onClick={() => setShowPassword(!showPassword)}
                               >
                                 {!showPassword && <EyeIcon />}
                                 {showPassword && <EyeClosedIcon />}

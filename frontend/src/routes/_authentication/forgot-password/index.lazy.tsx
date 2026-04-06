@@ -120,14 +120,11 @@ function RouteComponent(): React.JSX.Element {
                     name="email"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
 
                       return (
                         <Field data-invalid={isInvalid}>
-                          <FieldLabel htmlFor={field.name}>
-                            E-mail
-                          </FieldLabel>
+                          <FieldLabel htmlFor={field.name}>E-mail</FieldLabel>
                           <InputGroup>
                             <InputGroupInput
                               data-test-id="forgot-password-email-input"
@@ -161,9 +158,7 @@ function RouteComponent(): React.JSX.Element {
                       className="w-full"
                       disabled={requestCodeMutation.status === 'pending'}
                     >
-                      {requestCodeMutation.status === 'pending' && (
-                        <Spinner />
-                      )}
+                      {requestCodeMutation.status === 'pending' && <Spinner />}
                       <span>Enviar código</span>
                     </Button>
                   </Field>

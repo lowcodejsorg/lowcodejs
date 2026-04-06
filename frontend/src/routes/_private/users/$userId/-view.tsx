@@ -1,12 +1,7 @@
 import { ShieldIcon, UserIcon } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { E_USER_STATUS } from '@/lib/constant';
 import type { IUser } from '@/lib/interfaces';
 

@@ -28,7 +28,9 @@ export function ChartTables(): React.JSX.Element {
     <Card data-test-id="chart-tables">
       <CardHeader>
         <CardTitle>Tabelas Criadas por Mês</CardTitle>
-        <CardDescription>Quantidade de tabelas criadas nos últimos meses</CardDescription>
+        <CardDescription>
+          Quantidade de tabelas criadas nos últimos meses
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer

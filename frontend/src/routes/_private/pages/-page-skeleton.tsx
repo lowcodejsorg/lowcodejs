@@ -1,6 +1,5 @@
-import { Skeleton } from '@/components/ui/skeleton';
-
 import { PageShell } from '@/components/common/page-shell';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export function PageSkeleton(): React.JSX.Element {
   return (

@@ -67,7 +67,9 @@ function RouteComponent(): React.JSX.Element {
       <PageShell.Header>
         <div className="space-y-1">
           <h1 className="text-2xl font-medium">Gestão de Menus</h1>
-          <p className="text-sm text-muted-foreground">Gerencie os itens de menu e navegação</p>
+          <p className="text-sm text-muted-foreground">
+            Gerencie os itens de menu e navegação
+          </p>
         </div>
         <div className="inline-flex items-center gap-2">
           <div ref={setToolbarNode} />

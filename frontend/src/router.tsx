@@ -18,6 +18,7 @@ export const getRouter = () => {
     context: { queryClient },
     defaultPreload: 'intent',
     defaultPreloadStaleTime: 0,
+    defaultPendingMs: 0,
     scrollRestoration: true,
     defaultStructuralSharing: true,
     Wrap: (props: { children: React.ReactNode }) => {

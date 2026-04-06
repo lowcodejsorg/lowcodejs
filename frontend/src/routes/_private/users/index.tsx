@@ -54,6 +54,10 @@ export const Route = createFileRoute('/_private/users/')({
     'order-created-at': search['order-created-at'],
   }),
   loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(userListOptions(deps));
+    const { useAuthStore } = await import('@/stores/authentication');
+    const authenticated = useAuthStore.getState().user?._id;
+    await context.queryClient.ensureQueryData(
+      userListOptions({ ...deps, authenticated }),
+    );
   },
 });

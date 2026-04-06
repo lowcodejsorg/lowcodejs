@@ -37,7 +37,9 @@ export function ChartUsers(): React.JSX.Element {
     <Card data-test-id="chart-users">
       <CardHeader>
         <CardTitle>Usuários por Status</CardTitle>
-        <CardDescription>Distribuição de usuários ativos e inativos</CardDescription>
+        <CardDescription>
+          Distribuição de usuários ativos e inativos
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer

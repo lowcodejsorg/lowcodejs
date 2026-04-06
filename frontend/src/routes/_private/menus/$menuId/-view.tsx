@@ -85,9 +85,7 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                   Tabela
                 </p>
-                <p className="text-sm font-medium">
-                  {data.table?.name || '-'}
-                </p>
+                <p className="text-sm font-medium">{data.table?.name || '-'}</p>
               </div>
             )}
 
