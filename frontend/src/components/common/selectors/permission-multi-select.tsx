@@ -103,9 +103,9 @@ export function PermissionMultiSelect({
               >
                 <div className="flex flex-1 flex-col">
                   <span className="font-medium">
-                  {PERMISSION_LABEL_MAPPER[permission.slug] ??
-                    permission.name}
-                </span>
+                    {PERMISSION_LABEL_MAPPER[permission.slug] ??
+                      permission.name}
+                  </span>
                   {permission.description && (
                     <span className="text-muted-foreground text-sm">
                       {permission.description}

@@ -8,7 +8,7 @@ export const Route = createFileRoute(
   '/_private/tables/$slug/group/$groupSlug/field/management',
 )({
   pendingComponent: FieldManagementSkeleton,
-  loader: async ({ context, params }) => {
-    await context.queryClient.ensureQueryData(tableDetailOptions(params.slug));
+  loader: ({ context, params }) => {
+    context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
   },
 });

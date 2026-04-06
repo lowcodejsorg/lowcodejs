@@ -15,25 +15,16 @@ export const Route = createFileRoute('/_private/tables/$slug/field/$fieldId/')({
     group: z.string().optional(),
   }),
   loaderDeps: ({ search }) => ({ group: search.group }),
-  loader: async ({ context, params, deps }) => {
-    const tablePromise = context.queryClient.ensureQueryData(
-      tableDetailOptions(params.slug),
-    );
-
+  loader: ({ context, params, deps }) => {
+    context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
     if (deps.group) {
-      await Promise.all([
-        tablePromise,
-        context.queryClient.ensureQueryData(
-          groupFieldDetailOptions(params.slug, deps.group, params.fieldId),
-        ),
-      ]);
+      context.queryClient.prefetchQuery(
+        groupFieldDetailOptions(params.slug, deps.group, params.fieldId),
+      );
     } else {
-      await Promise.all([
-        tablePromise,
-        context.queryClient.ensureQueryData(
-          fieldDetailOptions(params.slug, params.fieldId),
-        ),
-      ]);
+      context.queryClient.prefetchQuery(
+        fieldDetailOptions(params.slug, params.fieldId),
+      );
     }
   },
 });

@@ -10,15 +10,13 @@ import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/row/$rowId/')({
   pendingComponent: UpdateRowFormSkeleton,
-  loader: async ({ context, params }) => {
+  loader: ({ context, params }) => {
     const isAuthenticated = Boolean(useAuthStore.getState().user);
     if (!isAuthenticated) return;
 
-    await Promise.all([
-      context.queryClient.ensureQueryData(tableDetailOptions(params.slug)),
-      context.queryClient.ensureQueryData(
-        rowDetailOptions(params.slug, params.rowId),
-      ),
-    ]);
+    context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
+    context.queryClient.prefetchQuery(
+      rowDetailOptions(params.slug, params.rowId),
+    );
   },
 });

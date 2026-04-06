@@ -4,6 +4,7 @@ import z from 'zod';
 import { DataTableSkeleton } from '@/components/common/data-table';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
 import { createRouteHead } from '@/lib/seo';
+import { useAuthStore } from '@/stores/authentication';
 
 const defaultSearch = { page: 1, perPage: 50 };
 
@@ -53,10 +54,9 @@ export const Route = createFileRoute('/_private/users/')({
     'order-status': search['order-status'],
     'order-created-at': search['order-created-at'],
   }),
-  loader: async ({ context, deps }) => {
-    const { useAuthStore } = await import('@/stores/authentication');
+  loader: ({ context, deps }) => {
     const authenticated = useAuthStore.getState().user?._id;
-    await context.queryClient.ensureQueryData(
+    context.queryClient.prefetchQuery(
       userListOptions({ ...deps, authenticated }),
     );
   },

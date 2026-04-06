@@ -11,7 +11,7 @@ export const Route = createFileRoute('/_private/tables/$slug/row/create/')({
     categoryId: z.string().optional(),
     categorySlug: z.string().optional(),
   }),
-  loader: async ({ context, params }) => {
-    await context.queryClient.ensureQueryData(tableDetailOptions(params.slug));
+  loader: ({ context, params }) => {
+    context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
   },
 });

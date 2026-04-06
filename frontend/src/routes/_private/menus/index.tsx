@@ -66,7 +66,7 @@ export const Route = createFileRoute('/_private/menus/')({
     'order-created-at': search['order-created-at'],
     'order-owner': search['order-owner'],
   }),
-  loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(menuListOptions(deps));
+  loader: ({ context, deps }) => {
+    context.queryClient.prefetchQuery(menuListOptions(deps));
   },
 });

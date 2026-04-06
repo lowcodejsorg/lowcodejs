@@ -63,7 +63,7 @@ export const Route = createFileRoute('/_private/tables/')({
     'order-visibility': search['order-visibility'],
     'order-owner': search['order-owner'],
   }),
-  loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(tableListOptions(deps));
+  loader: ({ context, deps }) => {
+    context.queryClient.prefetchQuery(tableListOptions(deps));
   },
 });

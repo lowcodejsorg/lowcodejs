@@ -6,7 +6,7 @@ import { pageDetailOptions } from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createFileRoute('/_private/pages/$slug')({
   pendingComponent: PageSkeleton,
-  loader: async ({ context, params }) => {
-    await context.queryClient.ensureQueryData(pageDetailOptions(params.slug));
+  loader: ({ context, params }) => {
+    context.queryClient.prefetchQuery(pageDetailOptions(params.slug));
   },
 });

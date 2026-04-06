@@ -16,7 +16,7 @@ export const Route = createFileRoute('/_private/settings/')({
   },
   head: createRouteHead({ title: 'Configurações' }),
   pendingComponent: UpdateSettingFormSkeleton,
-  loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(settingOptions());
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(settingOptions());
   },
 });

@@ -43,7 +43,7 @@ export const Route = createFileRoute('/_private/groups/')({
     'order-description': search['order-description'],
     'order-created-at': search['order-created-at'],
   }),
-  loader: async ({ context, deps }) => {
-    await context.queryClient.ensureQueryData(groupListOptions(deps));
+  loader: ({ context, deps }) => {
+    context.queryClient.prefetchQuery(groupListOptions(deps));
   },
 });

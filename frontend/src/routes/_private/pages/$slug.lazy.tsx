@@ -2,7 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useParams } from '@tanstack/react-router';
 
 import { PageShell } from '@/components/common/page-shell';
-import { ContentViewer } from '@/components/common/rich-editor';
+import { ContentViewer } from '@/components/common/rich-editor/viewer';
 import { pageDetailOptions } from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createLazyFileRoute('/_private/pages/$slug')({

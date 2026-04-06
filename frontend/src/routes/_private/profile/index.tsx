@@ -8,7 +8,7 @@ import { createRouteHead } from '@/lib/seo';
 export const Route = createFileRoute('/_private/profile/')({
   head: createRouteHead({ title: 'Perfil' }),
   pendingComponent: UpdateProfileFormSkeleton,
-  loader: async ({ context }) => {
-    await context.queryClient.ensureQueryData(profileDetailOptions());
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(profileDetailOptions());
   },
 });

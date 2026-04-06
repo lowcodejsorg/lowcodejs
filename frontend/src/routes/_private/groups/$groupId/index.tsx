@@ -6,9 +6,7 @@ import { groupDetailOptions } from '@/hooks/tanstack-query/_query-options';
 
 export const Route = createFileRoute('/_private/groups/$groupId/')({
   pendingComponent: UpdateGroupFormSkeleton,
-  loader: async ({ context, params }) => {
-    await context.queryClient.ensureQueryData(
-      groupDetailOptions(params.groupId),
-    );
+  loader: ({ context, params }) => {
+    context.queryClient.prefetchQuery(groupDetailOptions(params.groupId));
   },
 });

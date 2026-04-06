@@ -28,13 +28,11 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
       z.union([z.enum(['asc', 'desc']).optional(), z.string().optional()]),
     ),
   loaderDeps: ({ search }) => search,
-  loader: async ({ context, params, deps }) => {
+  loader: ({ context, params, deps }) => {
     const isAuthenticated = Boolean(useAuthStore.getState().user);
-    if (!isAuthenticated) return; // componente trata via hooks
+    if (!isAuthenticated) return;
 
-    await Promise.all([
-      context.queryClient.ensureQueryData(tableDetailOptions(params.slug)),
-      context.queryClient.ensureQueryData(rowListOptions(params.slug, deps)),
-    ]);
+    context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
+    context.queryClient.prefetchQuery(rowListOptions(params.slug, deps));
   },
 });
