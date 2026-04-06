@@ -10,7 +10,6 @@ const defaultSearch = { page: 1, perPage: 50 };
 
 export const Route = createFileRoute('/_private/users/')({
   beforeLoad: async () => {
-    const { useAuthStore } = await import('@/stores/authentication');
     const role = useAuthStore.getState().user?.group?.slug?.toUpperCase();
     if (!['MASTER', 'ADMINISTRATOR'].includes(role ?? '')) {
       const { redirect } = await import('@tanstack/react-router');
