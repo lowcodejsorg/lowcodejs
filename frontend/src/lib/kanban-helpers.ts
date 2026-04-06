@@ -16,6 +16,7 @@ export const TEMPLATE_FIELD_SLUGS = new Set([
   'data-de-vencimento',
   'porcentagem-concluida',
   'concluido-notificado',
+  'status-anterior',
   'lista',
   'etiquetas',
   'tarefas',

@@ -57,7 +57,94 @@ export async function createCalendarTemplate(
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
     methods: {
       onLoad: { code: null },
-      beforeSave: { code: null },
+      beforeSave: {
+        code: `
+(async () => {
+  var titulo = field.get('titulo') || 'Sem título';
+  var inicio = field.get('data-inicio');
+  var termino = field.get('data-termino');
+  var inicioFmt = inicio ? utils.formatDate(new Date(inicio), 'dd/MM/yyyy HH:mm') : '-';
+  var terminoFmt = termino ? utils.formatDate(new Date(termino), 'dd/MM/yyyy HH:mm') : '-';
+  var tabela = context.table.name || '';
+  var link = context.appUrl + '/tables/' + context.table.slug;
+
+  var participantes = field.get('participantes') || [];
+  var emails = Array.isArray(participantes)
+    ? participantes
+        .map(function (p) {
+          if (p && typeof p === 'object') return p.email || null;
+          if (typeof p === 'string' && p.includes('@')) return p;
+          return null;
+        })
+        .filter(Boolean)
+    : [];
+
+  var prevRaw = field.get('participantes-notificados') || '[]';
+  var prev = [];
+  try {
+    prev = Array.isArray(prevRaw) ? prevRaw : JSON.parse(prevRaw);
+  } catch (e) {
+    prev = [];
+  }
+  var prevSet = new Set(prev.filter(Boolean));
+  var newEmails = emails.filter(function (e) { return !prevSet.has(e); });
+
+  if (newEmails.length > 0) {
+    var detalhes = {};
+    if (tabela) detalhes['Tabela'] = tabela;
+    detalhes['Evento'] = titulo;
+    detalhes['Início'] = inicioFmt;
+    detalhes['Término'] = terminoFmt;
+    detalhes['Acessar'] = link;
+    await email.sendTemplate(
+      newEmails,
+      'Você foi adicionado a um evento',
+      'Você foi adicionado como participante em um evento do calendário.',
+      detalhes
+    );
+    field.set(
+      'participantes-notificados',
+      JSON.stringify([...prevSet, ...newEmails])
+    );
+  }
+
+  if (!context.isNew && emails.length > 0) {
+    var datasRaw = field.get('datas-anteriores') || '{}';
+    var datasAnteriores = {};
+    try {
+      datasAnteriores = typeof datasRaw === 'string' ? JSON.parse(datasRaw) : datasRaw;
+    } catch (e) {
+      datasAnteriores = {};
+    }
+
+    var inicioStr = inicio ? String(inicio) : '';
+    var terminoStr = termino ? String(termino) : '';
+    var inicioAnterior = datasAnteriores.inicio || '';
+    var terminoAnterior = datasAnteriores.termino || '';
+
+    if ((inicioStr && inicioStr !== inicioAnterior) || (terminoStr && terminoStr !== terminoAnterior)) {
+      var detalhesReag = {};
+      if (tabela) detalhesReag['Tabela'] = tabela;
+      detalhesReag['Evento'] = titulo;
+      detalhesReag['Novo início'] = inicioFmt;
+      detalhesReag['Novo término'] = terminoFmt;
+      detalhesReag['Acessar'] = link;
+      await email.sendTemplate(
+        emails,
+        'Evento reagendado: ' + titulo,
+        'O evento foi reagendado para um novo horário.',
+        detalhesReag
+      );
+    }
+  }
+
+  field.set('datas-anteriores', JSON.stringify({
+    inicio: inicio ? String(inicio) : '',
+    termino: termino ? String(termino) : ''
+  }));
+})();
+        `.trim(),
+      },
       afterSave: { code: null },
     },
     groups,
@@ -245,6 +332,50 @@ export async function buildCalendarFields(
     group: null,
     widthInForm: 100,
     widthInList: 50,
+    widthInDetail: null,
+  });
+
+  await createField({
+    name: 'Participantes notificados',
+    slug: 'participantes-notificados',
+    type: E_FIELD_TYPE.TEXT_LONG,
+    required: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.PLAIN_TEXT,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: null,
+    widthInList: null,
+    widthInDetail: null,
+  });
+
+  await createField({
+    name: 'Datas anteriores',
+    slug: 'datas-anteriores',
+    type: E_FIELD_TYPE.TEXT_LONG,
+    required: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.PLAIN_TEXT,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: null,
+    widthInList: null,
     widthInDetail: null,
   });
 

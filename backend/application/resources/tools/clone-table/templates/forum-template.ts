@@ -60,76 +60,47 @@ export async function createForumTemplate(
       beforeSave: {
         code: `
 (async () => {
-  const messages = field.get('mensagens');
-  if (!Array.isArray(messages) || messages.length === 0) return;
+  var canal = field.get('canal') || 'Sem nome';
+  var tabela = context.table.name || '';
+  var link = context.appUrl + '/tables/' + context.table.slug;
 
-  const nextMessages = await Promise.all(
-    messages.map(async (message) => {
-      if (!message || typeof message !== 'object') return message;
+  var membros = field.get('membros') || [];
+  var emails = Array.isArray(membros)
+    ? membros
+        .map(function (m) {
+          if (m && typeof m === 'object') return m.email || null;
+          if (typeof m === 'string' && m.includes('@')) return m;
+          return null;
+        })
+        .filter(Boolean)
+    : [];
 
-      const mentionEmails = Array.isArray(message['mencoes-emails'])
-        ? message['mencoes-emails']
-            .map((item) => String(item || '').trim().toLowerCase())
-            .filter(Boolean)
-        : (() => {
-            const raw = typeof message['mencoes-emails'] === 'string'
-              ? message['mencoes-emails'].trim()
-              : '';
-            if (!raw) return [];
-            try {
-              const parsed = JSON.parse(raw);
-              return Array.isArray(parsed)
-                ? parsed
-                    .map((item) => String(item || '').trim().toLowerCase())
-                    .filter(Boolean)
-                : [];
-            } catch {
-              return [];
-            }
-          })();
+  var prevRaw = field.get('membros-notificados') || '[]';
+  var prev = [];
+  try {
+    prev = Array.isArray(prevRaw) ? prevRaw : JSON.parse(prevRaw);
+  } catch (e) {
+    prev = [];
+  }
+  var prevSet = new Set(prev.filter(Boolean));
+  var newEmails = emails.filter(function (e) { return !prevSet.has(e); });
 
-      const alreadyNotified = Array.isArray(message['mencoes-notificadas'])
-        ? message['mencoes-notificadas']
-            .map((item) => String(item || '').trim().toLowerCase())
-            .filter(Boolean)
-        : (() => {
-            const raw = typeof message['mencoes-notificadas'] === 'string'
-              ? message['mencoes-notificadas'].trim()
-              : '';
-            if (!raw) return [];
-            try {
-              const parsed = JSON.parse(raw);
-              return Array.isArray(parsed)
-                ? parsed
-                    .map((item) => String(item || '').trim().toLowerCase())
-                    .filter(Boolean)
-                : [];
-            } catch {
-              return [];
-            }
-          })();
-
-      const notifiedSet = new Set(alreadyNotified);
-      const newRecipients = mentionEmails.filter((email) => !notifiedSet.has(email));
-
-      if (newRecipients.length > 0) {
-        await email.send(
-          newRecipients,
-          'Você foi mencionado em um canal',
-          'Você recebeu uma menção em uma mensagem do fórum.'
-        );
-      }
-
-      return {
-        ...message,
-        'mencoes-notificadas': JSON.stringify(
-          Array.from(new Set([...alreadyNotified, ...newRecipients]))
-        ),
-      };
-    })
-  );
-
-  field.set('mensagens', nextMessages);
+  if (newEmails.length > 0) {
+    var detalhes = {};
+    if (tabela) detalhes['Tabela'] = tabela;
+    detalhes['Canal'] = canal;
+    detalhes['Acessar'] = link;
+    await email.sendTemplate(
+      newEmails,
+      'Você foi adicionado a um canal',
+      'Você foi adicionado como membro em um canal do fórum.',
+      detalhes
+    );
+    field.set(
+      'membros-notificados',
+      JSON.stringify([...prevSet, ...newEmails])
+    );
+  }
 })();
         `.trim(),
       },
@@ -293,6 +264,28 @@ export async function buildForumFields(
     group: null,
     widthInForm: 100,
     widthInList: 100,
+    widthInDetail: null,
+  });
+
+  await createField({
+    name: 'Membros notificados',
+    slug: 'membros-notificados',
+    type: E_FIELD_TYPE.TEXT_LONG,
+    required: false,
+    multiple: false,
+    format: E_FIELD_FORMAT.PLAIN_TEXT,
+    showInList: false,
+    showInForm: false,
+    showInDetail: false,
+    showInFilter: false,
+    defaultValue: null,
+    locked: true,
+    relationship: null,
+    dropdown: [],
+    category: [],
+    group: null,
+    widthInForm: null,
+    widthInList: null,
     widthInDetail: null,
   });
 
