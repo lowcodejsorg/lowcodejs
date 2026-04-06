@@ -94,7 +94,8 @@ export function buildPayload(
           const id = Array.isArray(existing)
             ? (existing[0] ?? null)
             : (existing ?? null);
-          payload[field.slug] = id as string | null;
+          // Always array, but limit to 1 item
+          payload[field.slug] = id ? [id] : [];
         }
         break;
       }
