@@ -5,19 +5,19 @@ salvar, integrado ao estado do TanStack Form.
 
 ## Arquivos
 
-| Arquivo           | Descrição                                                            |
-| ----------------- | -------------------------------------------------------------------- |
-| `form-footer.tsx` | Componente principal (compound component com `form.Subscribe`)       |
-| `index.ts`        | Barrel export                                                        |
+| Arquivo           | Descrição                                                      |
+| ----------------- | -------------------------------------------------------------- |
+| `form-footer.tsx` | Componente principal (compound component com `form.Subscribe`) |
+| `index.ts`        | Barrel export                                                  |
 
 ## Props
 
-| Prop          | Tipo                        | Default      | Descrição                           |
-| ------------- | --------------------------- | ------------ | ----------------------------------- |
-| `form`        | TanStack Form instance      | —            | Instância do form para subscrição   |
-| `onCancel`    | `() => void`                | —            | Callback do botão cancelar          |
-| `submitLabel` | `string`                    | `"Salvar"`   | Label do botão de submit            |
-| `cancelLabel` | `string`                    | `"Cancelar"` | Label do botão de cancelar          |
+| Prop          | Tipo                   | Default      | Descrição                         |
+| ------------- | ---------------------- | ------------ | --------------------------------- |
+| `form`        | TanStack Form instance | —            | Instância do form para subscrição |
+| `onCancel`    | `() => void`           | —            | Callback do botão cancelar        |
+| `submitLabel` | `string`               | `"Salvar"`   | Label do botão de submit          |
+| `cancelLabel` | `string`               | `"Cancelar"` | Label do botão de cancelar        |
 
 ## Padrão de Uso
 

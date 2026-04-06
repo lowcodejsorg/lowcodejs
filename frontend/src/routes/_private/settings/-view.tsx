@@ -52,7 +52,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       data-test-id="settings-view"
     >
       {/* Nome do Sistema */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TypeIcon className="w-5 h-5" />
@@ -73,7 +73,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Idioma do Sistema */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Languages className="w-5 h-5" />
@@ -94,7 +94,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Armazenamento */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <HardDriveIcon className="w-5 h-5" />
@@ -147,7 +147,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Logos */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="w-5 h-5" />
@@ -186,7 +186,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Upload de Arquivos */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <UploadIcon className="w-5 h-5" />
@@ -223,7 +223,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Paginação */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <FileTextIcon className="w-5 h-5" />
@@ -242,7 +242,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Modelo de Tabelas */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DatabaseIcon className="w-5 h-5" />
@@ -274,7 +274,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Assistente IA */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <BotIcon className="w-5 h-5" />
@@ -304,7 +304,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Banco de Dados */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <DatabaseIcon className="w-5 h-5" />
@@ -323,7 +323,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
       </Card>
 
       {/* Servidor de Email */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MailIcon className="w-5 h-5" />

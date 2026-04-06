@@ -16,65 +16,65 @@ export default async function Seed(): Promise<void> {
 
   const PAYLOAD_PERMISSION_SEEDER: PayloadPermissionSeeder[] = [
     {
-      name: 'Create table',
+      name: 'Criar tabela',
       slug: E_TABLE_PERMISSION.CREATE_TABLE,
-      description: 'Allows creating a new table',
+      description: 'Permite criar uma nova tabela',
     },
     {
-      name: 'Update table',
+      name: 'Editar tabela',
       slug: E_TABLE_PERMISSION.UPDATE_TABLE,
-      description: 'Allows updating data of an existing table.',
+      description: 'Permite editar dados de uma tabela existente',
     },
     {
-      name: 'Remove table',
+      name: 'Remover tabela',
       slug: E_TABLE_PERMISSION.REMOVE_TABLE,
-      description: 'Allows removing or deleting existing tables.',
+      description: 'Permite remover ou excluir tabelas existentes',
     },
     {
-      name: 'View table',
+      name: 'Visualizar tabela',
       slug: E_TABLE_PERMISSION.VIEW_TABLE,
-      description: 'Allows viewing and listening existing tables',
+      description: 'Permite visualizar tabelas existentes',
     },
     {
-      name: 'Create field',
+      name: 'Criar campo',
       slug: E_TABLE_PERMISSION.CREATE_FIELD,
-      description: 'Allows creating a field in an existing table',
+      description: 'Permite criar um campo em uma tabela existente',
     },
     {
-      name: 'Update field',
+      name: 'Editar campo',
       slug: E_TABLE_PERMISSION.UPDATE_FIELD,
-      description: 'Allows updating field data in an existing table',
+      description: 'Permite editar dados de um campo em uma tabela existente',
     },
     {
-      name: 'Remove field',
+      name: 'Remover campo',
       slug: E_TABLE_PERMISSION.REMOVE_FIELD,
-      description: 'Allows removing or deleting fields from an existing table.',
+      description: 'Permite remover ou excluir campos de uma tabela existente',
     },
     {
-      name: 'View field',
+      name: 'Visualizar campo',
       slug: E_TABLE_PERMISSION.VIEW_FIELD,
-      description:
-        'Allows viewing and listening fields from an existing table.',
+      description: 'Permite visualizar campos de uma tabela existente',
     },
     {
-      name: 'Create row',
+      name: 'Criar registro',
       slug: E_TABLE_PERMISSION.CREATE_ROW,
-      description: 'Allows creating new rows in an existing table',
+      description: 'Permite criar novos registros em uma tabela existente',
     },
     {
-      name: 'Update row',
+      name: 'Editar registro',
       slug: E_TABLE_PERMISSION.UPDATE_ROW,
-      description: 'Allows updating row data in an existing table.',
+      description:
+        'Permite editar dados de um registro em uma tabela existente',
     },
     {
-      name: 'Remove row',
+      name: 'Remover registro',
       slug: E_TABLE_PERMISSION.REMOVE_ROW,
-      description: 'Allows removing rows from an existing table.',
+      description: 'Permite remover registros de uma tabela existente',
     },
     {
-      name: 'View row',
+      name: 'Visualizar registro',
       slug: E_TABLE_PERMISSION.VIEW_ROW,
-      description: 'Allows viewing and listening rows from an existing table.',
+      description: 'Permite visualizar registros de uma tabela existente',
     },
   ];
 

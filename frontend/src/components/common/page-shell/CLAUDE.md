@@ -5,20 +5,20 @@ header, conteúdo e footer.
 
 ## Arquivos
 
-| Arquivo          | Descrição                                              |
-| ---------------- | ------------------------------------------------------ |
-| `page-shell.tsx` | Compound component com Root, Header, Content, Footer   |
-| `index.ts`       | Barrel export                                          |
+| Arquivo          | Descrição                                            |
+| ---------------- | ---------------------------------------------------- |
+| `page-shell.tsx` | Compound component com Root, Header, Content, Footer |
+| `index.ts`       | Barrel export                                        |
 
 ## Sub-componentes (Compound Pattern)
 
-| Sub-componente      | Classe base                            | Descrição                             |
-| ------------------- | -------------------------------------- | ------------------------------------- |
-| `PageShell` (Root)  | `flex flex-col h-full overflow-hidden` | Container principal                   |
-| `PageShell.Header`  | `shrink-0` + border-bottom opcional   | Cabeçalho fixo com título e ações     |
-| `PageShell.Content` | `flex-1 min-h-0 overflow-auto`        | Área de conteúdo scrollável           |
-| `PageShell.Footer`  | `shrink-0` + border-top               | Rodapé fixo (paginação, ações globais)|
-| `PageHeader`        | Título + botão de voltar opcional      | Cabeçalho de página com navegação     |
+| Sub-componente      | Classe base                            | Descrição                              |
+| ------------------- | -------------------------------------- | -------------------------------------- |
+| `PageShell` (Root)  | `flex flex-col h-full overflow-hidden` | Container principal                    |
+| `PageShell.Header`  | `shrink-0` + border-bottom opcional    | Cabeçalho fixo com título e ações      |
+| `PageShell.Content` | `flex-1 min-h-0 overflow-auto`         | Área de conteúdo scrollável            |
+| `PageShell.Footer`  | `shrink-0` + border-top                | Rodapé fixo (paginação, ações globais) |
+| `PageHeader`        | Título + botão de voltar opcional      | Cabeçalho de página com navegação      |
 
 ## Padrão de Uso
 

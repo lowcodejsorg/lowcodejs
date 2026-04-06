@@ -21,7 +21,7 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
       data-test-id="menu-detail-view"
     >
       {/* Informações do Menu */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -69,7 +69,7 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
 
       {/* Configuração */}
       {data.type !== E_MENU_ITEM_TYPE.SEPARATOR && (
-        <Card>
+        <Card className="shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">

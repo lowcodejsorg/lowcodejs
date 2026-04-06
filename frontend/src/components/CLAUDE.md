@@ -4,10 +4,10 @@ Dois grupos de componentes com responsabilidades distintas.
 
 ## Estrutura
 
-| Diretório | Responsabilidade                                                                    |
-| --------- | ----------------------------------------------------------------------------------- |
-| `ui/`     | Design system: 34 componentes base (shadcn/Radix UI) sem lógica de negócio        |
-| `common/` | Componentes de negócio: 16 subdiretórios com funcionalidades da plataforma          |
+| Diretório | Responsabilidade                                                           |
+| --------- | -------------------------------------------------------------------------- |
+| `ui/`     | Design system: 34 componentes base (shadcn/Radix UI) sem lógica de negócio |
+| `common/` | Componentes de negócio: 16 subdiretórios com funcionalidades da plataforma |
 
 ## Padrão `ui/`
 

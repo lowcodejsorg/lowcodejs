@@ -9,9 +9,9 @@ validação do código OTP.
 
 ## Arquivos
 
-| Arquivo          | Descrição                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------- |
-| `index.tsx`      | Route config: `beforeLoad` verifica se o usuário completou a etapa de validação de código |
+| Arquivo          | Descrição                                                                                      |
+| ---------------- | ---------------------------------------------------------------------------------------------- |
+| `index.tsx`      | Route config: `beforeLoad` verifica se o usuário completou a etapa de validação de código      |
 | `index.lazy.tsx` | Formulário com campos "Nova senha" e "Confirmar senha", chama `useAuthenticationResetPassword` |
 
 ## Comportamento

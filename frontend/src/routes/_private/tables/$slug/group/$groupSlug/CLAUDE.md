@@ -9,9 +9,9 @@ Rota para gerenciar os campos dentro de um grupo específico (campo do tipo
 
 ## Arquivos
 
-| Arquivo                     | Descrição                                                                                              |
-| --------------------------- | ------------------------------------------------------------------------------------------------------ |
-| `field/management.tsx`      | Route config: `pendingComponent` com `FieldManagementSkeleton`, loader carrega `tableDetailOptions`   |
+| Arquivo                     | Descrição                                                                                                     |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| `field/management.tsx`      | Route config: `pendingComponent` com `FieldManagementSkeleton`, loader carrega `tableDetailOptions`           |
 | `field/management.lazy.tsx` | Componente: verifica permissão `UPDATE_FIELD`, localiza o grupo pelo `groupSlug`, renderiza `FieldManagement` |
 
 ## Comportamento
@@ -25,7 +25,7 @@ Rota para gerenciar os campos dentro de um grupo específico (campo do tipo
 
 ## Diferença de Scope
 
-| Hook                         | Escopo                                      |
-| ---------------------------- | ------------------------------------------- |
-| `useTableFieldManagement`    | Todos os campos da tabela                   |
-| `useGroupFieldManagement`    | Campos dentro de um FIELD_GROUP específico  |
+| Hook                      | Escopo                                     |
+| ------------------------- | ------------------------------------------ |
+| `useTableFieldManagement` | Todos os campos da tabela                  |
+| `useGroupFieldManagement` | Campos dentro de um FIELD_GROUP específico |

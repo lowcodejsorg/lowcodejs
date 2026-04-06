@@ -156,6 +156,21 @@ export const E_TABLE_PERMISSION = {
   VIEW_ROW: 'VIEW_ROW',
 } as const;
 
+export const PERMISSION_LABEL_MAPPER: Record<string, string> = {
+  [E_TABLE_PERMISSION.CREATE_TABLE]: 'Criar tabela',
+  [E_TABLE_PERMISSION.UPDATE_TABLE]: 'Editar tabela',
+  [E_TABLE_PERMISSION.REMOVE_TABLE]: 'Remover tabela',
+  [E_TABLE_PERMISSION.VIEW_TABLE]: 'Visualizar tabela',
+  [E_TABLE_PERMISSION.CREATE_FIELD]: 'Criar campo',
+  [E_TABLE_PERMISSION.UPDATE_FIELD]: 'Editar campo',
+  [E_TABLE_PERMISSION.REMOVE_FIELD]: 'Remover campo',
+  [E_TABLE_PERMISSION.VIEW_FIELD]: 'Visualizar campo',
+  [E_TABLE_PERMISSION.CREATE_ROW]: 'Criar registro',
+  [E_TABLE_PERMISSION.UPDATE_ROW]: 'Editar registro',
+  [E_TABLE_PERMISSION.REMOVE_ROW]: 'Remover registro',
+  [E_TABLE_PERMISSION.VIEW_ROW]: 'Visualizar registro',
+};
+
 // ============== OPTIONS PARA SELECTS ==============
 export const FIELD_TYPE_OPTIONS = [
   { label: 'Texto curto', value: E_FIELD_TYPE.TEXT_SHORT },

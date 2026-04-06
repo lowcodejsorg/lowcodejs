@@ -23,7 +23,7 @@ export function UserView({ data }: UserViewProps): React.JSX.Element {
       className="space-y-6 p-4"
       data-test-id="user-detail-view"
     >
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -49,7 +49,7 @@ export function UserView({ data }: UserViewProps): React.JSX.Element {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">

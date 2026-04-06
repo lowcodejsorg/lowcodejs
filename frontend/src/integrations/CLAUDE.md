@@ -4,10 +4,10 @@ Setup e configuração das integrações com TanStack Form e TanStack Query.
 
 ## Subdiretórios
 
-| Diretório        | Responsabilidade                                                              |
-| ---------------- | ----------------------------------------------------------------------------- |
-| `tanstack-form/` | `createFormHook` com 40 field components, contexts, hook de validação        |
-| `tanstack-query/` | `QueryClientProvider`, devtools panel                                        |
+| Diretório         | Responsabilidade                                                      |
+| ----------------- | --------------------------------------------------------------------- |
+| `tanstack-form/`  | `createFormHook` com 40 field components, contexts, hook de validação |
+| `tanstack-query/` | `QueryClientProvider`, devtools panel                                 |
 
 ## tanstack-form/
 

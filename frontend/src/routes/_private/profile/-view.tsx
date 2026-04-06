@@ -15,7 +15,7 @@ export function ProfileView({ data }: ProfileViewProps): React.JSX.Element {
       data-test-id="profile-view"
     >
       {/* Dados Pessoais */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -42,7 +42,7 @@ export function ProfileView({ data }: ProfileViewProps): React.JSX.Element {
       </Card>
 
       {/* Grupo */}
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">

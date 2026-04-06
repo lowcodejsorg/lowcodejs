@@ -2,7 +2,7 @@ import { ShieldCheckIcon, UsersIcon } from 'lucide-react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { E_ROLE } from '@/lib/constant';
+import { E_ROLE, PERMISSION_LABEL_MAPPER } from '@/lib/constant';
 import type { IGroup } from '@/lib/interfaces';
 
 const RoleMapper = {
@@ -30,7 +30,7 @@ function renderPermissions(
           key={permission._id}
           variant="secondary"
         >
-          {permission.name}
+          {PERMISSION_LABEL_MAPPER[permission.slug] ?? permission.name}
         </Badge>
       ))}
     </div>
@@ -43,7 +43,7 @@ export function GroupView({ data }: GroupViewProps): React.JSX.Element {
       className="space-y-6 p-4"
       data-test-id="group-detail-view"
     >
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
@@ -80,7 +80,7 @@ export function GroupView({ data }: GroupViewProps): React.JSX.Element {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">

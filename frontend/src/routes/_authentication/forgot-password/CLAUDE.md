@@ -9,9 +9,9 @@ Fluxo multi-etapas para recuperação de senha: solicitar código → validar c�
 
 ## Arquivos
 
-| Arquivo          | Descrição                                                                                            |
-| ---------------- | ---------------------------------------------------------------------------------------------------- |
-| `index.tsx`      | Route config com `createRouteHead({ title: 'Recuperar Senha' })`                                   |
+| Arquivo          | Descrição                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `index.tsx`      | Route config com `createRouteHead({ title: 'Recuperar Senha' })`                                                        |
 | `index.lazy.tsx` | Formulário de e-mail: valida formato, chama `useAuthenticationRequestCode`, navega para validate-code com e-mail na URL |
 
 ## Fluxo Completo
@@ -27,10 +27,10 @@ Fluxo multi-etapas para recuperação de senha: solicitar código → validar c�
 
 ## Subdiretórios
 
-| Diretório         | Descrição                                          |
-| ----------------- | -------------------------------------------------- |
-| `validate-code/`  | Validação do código OTP recebido por e-mail        |
-| `reset-password/` | Formulário de nova senha após validação do código  |
+| Diretório         | Descrição                                         |
+| ----------------- | ------------------------------------------------- |
+| `validate-code/`  | Validação do código OTP recebido por e-mail       |
+| `reset-password/` | Formulário de nova senha após validação do código |
 
 ## Padrões
 

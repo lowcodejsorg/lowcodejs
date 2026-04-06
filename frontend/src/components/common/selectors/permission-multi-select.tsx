@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/combobox';
 import { Spinner } from '@/components/ui/spinner';
 import { usePermissionRead } from '@/hooks/tanstack-query/use-permission-read';
+import { PERMISSION_LABEL_MAPPER } from '@/lib/constant';
 import type { IPermission } from '@/lib/interfaces';
 
 interface PermissionMultiSelectProps {
@@ -51,7 +52,9 @@ export function PermissionMultiSelect({
       onValueChange={(newPermissions: Array<IPermission>) => {
         onValueChange?.(newPermissions.map((p) => p._id));
       }}
-      itemToStringLabel={(permission: IPermission) => permission.name}
+      itemToStringLabel={(permission: IPermission) =>
+        PERMISSION_LABEL_MAPPER[permission.slug] ?? permission.name
+      }
       disabled={disabled}
     >
       <ComboboxChips
@@ -69,9 +72,13 @@ export function PermissionMultiSelect({
                 {selectedValue.map((permission) => (
                   <ComboboxChip
                     key={permission._id}
-                    aria-label={permission.name}
+                    aria-label={
+                      PERMISSION_LABEL_MAPPER[permission.slug] ??
+                      permission.name
+                    }
                   >
-                    {permission.name}
+                    {PERMISSION_LABEL_MAPPER[permission.slug] ??
+                      permission.name}
                   </ComboboxChip>
                 ))}
                 <ComboboxChipsInput placeholder={chipsPlaceholder} />
@@ -95,7 +102,10 @@ export function PermissionMultiSelect({
                 value={permission}
               >
                 <div className="flex flex-1 flex-col">
-                  <span className="font-medium">{permission.name}</span>
+                  <span className="font-medium">
+                  {PERMISSION_LABEL_MAPPER[permission.slug] ??
+                    permission.name}
+                </span>
                   {permission.description && (
                     <span className="text-muted-foreground text-sm">
                       {permission.description}
