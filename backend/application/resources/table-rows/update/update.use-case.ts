@@ -101,7 +101,8 @@ export default class TableRowUpdateUseCase {
           context: {
             userAction: 'editar_registro',
             executionMoment: 'antes_salvar',
-            userId: typeof payload.creator === 'string' ? payload.creator : undefined,
+            userId:
+              typeof payload.creator === 'string' ? payload.creator : undefined,
             isNew: false,
             tableInfo: {
               _id: table._id?.toString() ?? '',
