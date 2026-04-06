@@ -6,10 +6,12 @@ import {
   tableDetailOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { createRouteHead } from '@/lib/seo';
+import { TableSkeleton } from '@/components/common/table-views';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
   head: createRouteHead({ title: 'Tabela' }),
+  pendingComponent: () => <TableSkeleton />,
   validateSearch: z
     .object({
       page: z.coerce.number().default(1),
