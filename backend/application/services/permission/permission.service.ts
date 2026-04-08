@@ -6,10 +6,10 @@ import {
   E_TABLE_PERMISSION,
   E_TABLE_VISIBILITY,
   E_USER_STATUS,
+  type IUser,
   type ValueOf,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
 import type {
   AccessCheckInput,
@@ -31,17 +31,11 @@ const OWNER_ONLY_ACTIONS = [
 
 @Service()
 export default class PermissionService extends PermissionContractService {
-  constructor(private readonly userRepository: UserContractRepository) {
-    super();
-  }
-
   async checkUserHasPermission(
-    userId: string,
+    user: IUser | null,
     permission: ValueOf<typeof E_TABLE_PERMISSION>,
   ): Promise<void> {
     const permissionSlug = E_TABLE_PERMISSION[permission];
-
-    const user = await this.userRepository.findById(userId);
 
     if (!user) {
       throw HTTPException.Forbidden('Usuário não encontrado', 'USER_NOT_FOUND');
@@ -73,9 +67,7 @@ export default class PermissionService extends PermissionContractService {
     }
   }
 
-  async checkUserIsActive(userId: string): Promise<void> {
-    const user = await this.userRepository.findById(userId);
-
+  async checkUserIsActive(user: IUser | null): Promise<void> {
     if (!user || user.status !== E_USER_STATUS.ACTIVE) {
       throw HTTPException.Forbidden(
         'Usuário não está ativo',
@@ -110,7 +102,7 @@ export default class PermissionService extends PermissionContractService {
   }
 
   async checkTableAccess(input: AccessCheckInput): Promise<AccessCheckResult> {
-    const { table, userId, userRole, requiredPermission } = input;
+    const { table, userId, userRole, user, requiredPermission } = input;
 
     if (!userId || !userRole) {
       throw HTTPException.Unauthorized(
@@ -126,13 +118,13 @@ export default class PermissionService extends PermissionContractService {
 
     // ADMINISTRATOR tem acesso total (se ativo)
     if (userRole === E_ROLE.ADMINISTRATOR) {
-      await this.checkUserIsActive(userId);
+      await this.checkUserIsActive(user ?? null);
       return { allowed: true };
     }
 
     // CREATE_TABLE: apenas verificar permissao do grupo
     if (requiredPermission === E_TABLE_PERMISSION.CREATE_TABLE) {
-      await this.checkUserHasPermission(userId, requiredPermission);
+      await this.checkUserHasPermission(user ?? null, requiredPermission);
       return { allowed: true };
     }
 
@@ -152,7 +144,7 @@ export default class PermissionService extends PermissionContractService {
 
     // Dono/admin da tabela -> acesso total (se ativo)
     if (isOwner || isTableAdmin) {
-      await this.checkUserIsActive(userId);
+      await this.checkUserIsActive(user ?? null);
       return { allowed: true, ownership };
     }
 
@@ -168,7 +160,7 @@ export default class PermissionService extends PermissionContractService {
     this.checkVisibilityRules(visibility, requiredPermission);
 
     // Verificar permissao no grupo
-    await this.checkUserHasPermission(userId, requiredPermission);
+    await this.checkUserHasPermission(user ?? null, requiredPermission);
 
     return { allowed: true, ownership };
   }

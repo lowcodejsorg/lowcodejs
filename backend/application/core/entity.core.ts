@@ -1,4 +1,3 @@
-import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 
 /**
  * Make some property optional an type
@@ -337,6 +336,30 @@ export type IField = Merge<
     category: ICategory[];
     group: IFieldConfigurationGroup | null;
   }
+>;
+
+export type FieldCreatePayload = Pick<
+  IField,
+  | 'name'
+  | 'slug'
+  | 'type'
+  | 'required'
+  | 'multiple'
+  | 'format'
+  | 'showInFilter'
+  | 'showInForm'
+  | 'showInDetail'
+  | 'showInList'
+  | 'widthInForm'
+  | 'widthInList'
+  | 'widthInDetail'
+  | 'locked'
+  | 'native'
+  | 'defaultValue'
+  | 'relationship'
+  | 'dropdown'
+  | 'category'
+  | 'group'
 >;
 
 export type IRow = Merge<Base, Record<string, any>>;

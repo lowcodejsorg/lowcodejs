@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import { makeTextLongField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
@@ -10,13 +11,15 @@ import TableRowCreateUseCase from '../create.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let userRepository: UserInMemoryRepository;
 let sut: TableRowCreateUseCase;
 
 describe('Table Row Create - TEXT_LONG', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowCreateUseCase(tableRepository, rowRepository);
+    userRepository = new UserInMemoryRepository();
+    sut = new TableRowCreateUseCase(tableRepository, rowRepository, userRepository);
   });
 
   it('deve criar row com texto longo valido', async () => {

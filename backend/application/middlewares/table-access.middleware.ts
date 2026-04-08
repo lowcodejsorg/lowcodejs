@@ -5,11 +5,14 @@ import z from 'zod';
 import {
   E_TABLE_PERMISSION,
   type ITable,
+  type IUser,
   type ValueOf,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import UserMongooseRepository from '@application/repositories/user/user-mongoose.repository';
 import type { PermissionContractService } from '@application/services/permission/permission-contract.service';
 import PermissionService from '@application/services/permission/permission.service';
 
@@ -66,11 +69,22 @@ export function TableAccessMiddleware(options: AccessOptions) {
       }
     }
 
-    // 3. Verificar acesso publico (visitante sem auth)
+    // 3. Buscar usuario autenticado para verificacao de permissoes
+    let user: IUser | null = null;
+
+    if (request.user?.sub) {
+      const userRepository = getInstanceByToken<UserContractRepository>(
+        UserMongooseRepository,
+      );
+      user = await userRepository.findById(request.user.sub);
+    }
+
+    // 4. Verificar acesso publico (visitante sem auth)
     const accessInput = {
       table,
       userId: request.user?.sub,
       userRole: request.user?.role,
+      user,
       requiredPermission,
       httpMethod: request.method,
     };
@@ -79,7 +93,7 @@ export function TableAccessMiddleware(options: AccessOptions) {
       return;
     }
 
-    // 4. Verificar permissoes completas
+    // 5. Verificar permissoes completas
     const result = await permissionService.checkTableAccess(accessInput);
 
     if (result.ownership) {

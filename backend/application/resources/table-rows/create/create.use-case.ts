@@ -12,9 +12,9 @@ import {
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { executeScript } from '@application/core/table/handler';
 import type { FieldDefinition } from '@application/core/table/types';
-import { User } from '@application/model/user.model';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 
 type Response = Either<HTTPException, IRow>;
 
@@ -28,6 +28,7 @@ export default class TableRowCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly userRepository: UserContractRepository,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -60,6 +61,7 @@ export default class TableRowCreateUseCase {
       };
 
       const beforeSaveCode = table.methods?.beforeSave?.code;
+
       if (beforeSaveCode) {
         const fieldDefs: FieldDefinition[] = table.fields.map((f) => ({
           slug: f.slug,
@@ -86,13 +88,11 @@ export default class TableRowCreateUseCase {
           }
 
           if (allUserIds.length > 0) {
-            const users = await User.find(
-              { _id: { $in: allUserIds } },
-              { _id: 1, name: 1, email: 1 },
-            ).lean();
-            const userMap = new Map(
-              users.map((u: any) => [u._id.toString(), u]),
-            );
+            const users = await this.userRepository.findMany({
+              _ids: allUserIds,
+            });
+
+            const userMap = new Map(users.map((u) => [u._id.toString(), u]));
 
             for (const slug of userFieldSlugs) {
               const val = createData[slug];

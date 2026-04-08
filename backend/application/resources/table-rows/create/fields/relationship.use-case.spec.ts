@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import { makeRelationshipField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
@@ -18,13 +19,15 @@ const RELATIONSHIP_CONFIG = {
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let userRepository: UserInMemoryRepository;
 let sut: TableRowCreateUseCase;
 
 describe('Table Row Create - RELATIONSHIP', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowCreateUseCase(tableRepository, rowRepository);
+    userRepository = new UserInMemoryRepository();
+    sut = new TableRowCreateUseCase(tableRepository, rowRepository, userRepository);
   });
 
   it('deve criar row com array de ObjectIds validos', async () => {

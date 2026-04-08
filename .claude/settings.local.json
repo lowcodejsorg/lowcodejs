@@ -82,7 +82,10 @@
       "Bash(sed -i 's/  widthInDetail: null,\\\\n};/  widthInDetail: null,\\\\n} satisfies FieldCreatePayload;/' application/resources/table-fields/update/fields/relationship.use-case.spec.ts)",
       "Bash(./node_modules/.bin/tsc --noEmit --pretty)",
       "Bash(read dir:*)",
-      "Bash([ -f \"$dir/CLAUDE.md\" ])"
+      "Bash([ -f \"$dir/CLAUDE.md\" ])",
+      "Bash(bash /tmp/audit_imports.sh)",
+      "Bash(chmod +x /tmp/audit.sh)",
+      "Bash(bash /tmp/audit.sh)"
     ]
   },
   "enableAllProjectMcpServers": true,

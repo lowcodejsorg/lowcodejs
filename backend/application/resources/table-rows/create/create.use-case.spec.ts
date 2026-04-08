@@ -7,18 +7,21 @@ import {
 } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 
 import TableRowCreateUseCase from './create.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let userRepository: UserInMemoryRepository;
 let sut: TableRowCreateUseCase;
 
 describe('Table Row Create Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowCreateUseCase(tableInMemoryRepository, rowRepository);
+    userRepository = new UserInMemoryRepository();
+    sut = new TableRowCreateUseCase(tableInMemoryRepository, rowRepository, userRepository);
   });
 
   it('deve criar row com sucesso', async () => {

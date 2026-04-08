@@ -1,35 +1,14 @@
 /* eslint-disable no-unused-vars */
 import type {
   E_FIELD_TYPE,
+  FieldCreatePayload,
   FindOptions,
   IField,
   Merge,
   ValueOf,
 } from '@application/core/entity.core';
 
-export type FieldCreatePayload = Pick<
-  IField,
-  | 'name'
-  | 'slug'
-  | 'type'
-  | 'required'
-  | 'multiple'
-  | 'format'
-  | 'showInFilter'
-  | 'showInForm'
-  | 'showInDetail'
-  | 'showInList'
-  | 'widthInForm'
-  | 'widthInList'
-  | 'widthInDetail'
-  | 'locked'
-  | 'native'
-  | 'defaultValue'
-  | 'relationship'
-  | 'dropdown'
-  | 'category'
-  | 'group'
->;
+export type { FieldCreatePayload };
 
 export type FieldUpdatePayload = Merge<
   Pick<IField, '_id'>,
