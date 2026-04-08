@@ -40,7 +40,7 @@ export default class TableFieldCreateUseCase {
 
       const slug = slugify(payload.name, { lower: true, trim: true });
 
-      const existFieldOnTable = table.fields?.find(
+      const existFieldOnTable = table?.fields?.some(
         (field) => field.slug === slug,
       );
 
@@ -85,6 +85,7 @@ export default class TableFieldCreateUseCase {
       }
 
       const fields = [...(table.fields ?? []), field];
+
       const _schema = buildSchema(fields, groups);
 
       await this.tableRepository.update({

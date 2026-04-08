@@ -1,7 +1,9 @@
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import type { IStorage } from '@/lib/interfaces';
+import { fileExtensionsToAccept } from '@/lib/utils';
 
 interface FieldFileUploadProps {
   label: string;
@@ -19,8 +21,8 @@ interface FieldFileUploadProps {
 export function FieldFileUpload({
   label,
   accept,
-  maxFiles = 1,
-  maxSize = 4 * 1024 * 1024,
+  maxFiles,
+  maxSize,
   placeholder,
   shouldDeleteFromStorage,
   onStorageChange,
@@ -31,6 +33,16 @@ export function FieldFileUpload({
   const field = useFieldContext<Array<File>>();
   const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
   const errorId = `${field.name}-error`;
+
+  const { data: settings } = useSettingRead();
+
+  const resolvedMaxSize = maxSize ?? settings?.FILE_UPLOAD_MAX_SIZE ?? 4 * 1024 * 1024;
+  const resolvedMaxFiles = maxFiles ?? settings?.FILE_UPLOAD_MAX_FILES_PER_UPLOAD ?? 1;
+  const resolvedAccept: string | undefined =
+    accept ??
+    (settings?.FILE_UPLOAD_ACCEPTED && settings.FILE_UPLOAD_ACCEPTED.length > 0
+      ? fileExtensionsToAccept(settings.FILE_UPLOAD_ACCEPTED)
+      : undefined);
 
   return (
     <Field
@@ -46,9 +58,9 @@ export function FieldFileUpload({
           value={field.state.value}
           onValueChange={field.handleChange}
           onStorageChange={onStorageChange || ((): void => {})}
-          accept={accept}
-          maxFiles={maxFiles}
-          maxSize={maxSize}
+          accept={resolvedAccept}
+          maxFiles={resolvedMaxFiles}
+          maxSize={resolvedMaxSize}
           placeholder={placeholder}
           shouldDeleteFromStorage={shouldDeleteFromStorage}
         />

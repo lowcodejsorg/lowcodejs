@@ -4,8 +4,9 @@ import { FileUploadWithStorage } from '@/components/common/file-upload/file-uplo
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import type { IField, IStorage } from '@/lib/interfaces';
-import { cn } from '@/lib/utils';
+import { cn, fileExtensionsToAccept } from '@/lib/utils';
 
 interface TableRowFileFieldProps {
   field: IField;
@@ -47,6 +48,15 @@ export function TableRowFileField({
     'storages' in rawValue
       ? rawValue
       : { files: [], storages: [] };
+
+  const { data: settings } = useSettingRead();
+
+  const resolvedMaxSize = settings?.FILE_UPLOAD_MAX_SIZE ?? 5 * 1024 * 1024;
+
+  const resolvedAccept: string | undefined =
+    settings?.FILE_UPLOAD_ACCEPTED && settings.FILE_UPLOAD_ACCEPTED.length > 0
+      ? fileExtensionsToAccept(settings.FILE_UPLOAD_ACCEPTED)
+      : undefined;
 
   const [isLoadingFiles, setIsLoadingFiles] = React.useState(false);
   const [initialStorages] = React.useState<Array<IStorage>>(
@@ -96,7 +106,7 @@ export function TableRowFileField({
 
   let maxFiles = 1;
   if (field.multiple) {
-    maxFiles = 10;
+    maxFiles = settings?.FILE_UPLOAD_MAX_FILES_PER_UPLOAD ?? 10;
   }
 
   return (
@@ -120,6 +130,8 @@ export function TableRowFileField({
         }
         initialStorages={initialStorages}
         maxFiles={maxFiles}
+        maxSize={resolvedMaxSize}
+        accept={resolvedAccept}
         className={cn(disabled && 'pointer-events-none opacity-50')}
       />
       {isInvalid && (

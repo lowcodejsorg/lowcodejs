@@ -8,7 +8,7 @@ import { Sidebar } from '@/components/common/layout/sidebar';
 import { RouteError } from '@/components/common/route-status/route-error';
 import { RoutePending } from '@/components/common/route-status/route-pending';
 import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
-import { profileDetailOptions } from '@/hooks/tanstack-query/_query-options';
+import { profileDetailOptions, settingOptions } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import { E_ROLE } from '@/lib/constant';
 import { useAuthStore } from '@/stores/authentication';
@@ -27,6 +27,7 @@ export const Route = createFileRoute('/_private')({
         profileDetailOptions(),
       );
       useAuthStore.getState().setUser(user);
+      context.queryClient.prefetchQuery(settingOptions());
     } catch {
       useAuthStore.getState().clear();
 

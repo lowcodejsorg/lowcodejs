@@ -2,11 +2,27 @@ import { createFileRoute, stripSearchParams } from '@tanstack/react-router';
 import z from 'zod';
 
 import { DataTableSkeleton } from '@/components/common/data-table';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
+import type { ISetting } from '@/lib/interfaces';
 
 const defaultSearch = { page: 1, perPage: 50 };
 
 export const Route = createFileRoute('/_private/tables/')({
+  beforeLoad: async ({ context, location }) => {
+    const hasExplicitPerPage = location.searchStr.includes('perPage');
+    if (!hasExplicitPerPage) {
+      const settings = context.queryClient.getQueryData<ISetting>(queryKeys.settings.all);
+      if (settings && settings.PAGINATION_PER_PAGE !== 50) {
+        const { redirect } = await import('@tanstack/react-router');
+        throw redirect({
+          to: '/tables',
+          search: (prev) => ({ ...prev, perPage: settings.PAGINATION_PER_PAGE }),
+          replace: true,
+        });
+      }
+    }
+  },
   pendingComponent: () => (
     <DataTableSkeleton
       headers={[
