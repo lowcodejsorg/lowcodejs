@@ -20,12 +20,17 @@ export const Route = createFileRoute('/_private/users/')({
 
     const hasExplicitPerPage = location.searchStr.includes('perPage');
     if (!hasExplicitPerPage) {
-      const settings = context.queryClient.getQueryData<ISetting>(queryKeys.settings.all);
+      const settings = context.queryClient.getQueryData<ISetting>(
+        queryKeys.settings.all,
+      );
       if (settings && settings.PAGINATION_PER_PAGE !== 50) {
         const { redirect } = await import('@tanstack/react-router');
         throw redirect({
           to: '/users',
-          search: (prev) => ({ ...prev, perPage: settings.PAGINATION_PER_PAGE }),
+          search: (prev) => ({
+            ...prev,
+            perPage: settings.PAGINATION_PER_PAGE,
+          }),
           replace: true,
         });
       }

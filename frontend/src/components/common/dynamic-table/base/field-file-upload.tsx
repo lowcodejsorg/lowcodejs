@@ -1,7 +1,7 @@
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
-import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
+import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IStorage } from '@/lib/interfaces';
 import { fileExtensionsToAccept } from '@/lib/utils';
 
@@ -36,8 +36,10 @@ export function FieldFileUpload({
 
   const { data: settings } = useSettingRead();
 
-  const resolvedMaxSize = maxSize ?? settings?.FILE_UPLOAD_MAX_SIZE ?? 4 * 1024 * 1024;
-  const resolvedMaxFiles = maxFiles ?? settings?.FILE_UPLOAD_MAX_FILES_PER_UPLOAD ?? 1;
+  const resolvedMaxSize =
+    maxSize ?? settings?.FILE_UPLOAD_MAX_SIZE ?? 4 * 1024 * 1024;
+  const resolvedMaxFiles =
+    maxFiles ?? settings?.FILE_UPLOAD_MAX_FILES_PER_UPLOAD ?? 1;
   const resolvedAccept: string | undefined =
     accept ??
     (settings?.FILE_UPLOAD_ACCEPTED && settings.FILE_UPLOAD_ACCEPTED.length > 0
