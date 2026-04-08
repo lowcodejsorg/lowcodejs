@@ -67,6 +67,16 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
       }
       return result;
     },
+
+    getLabel(slug: string, value?: string): string {
+      const fieldDef = findFieldDef(slug);
+      const val = value ?? String(resolveFieldValue(doc, slug) ?? '');
+      if (!fieldDef?.dropdown || !Array.isArray(fieldDef.dropdown)) return val;
+      const option = fieldDef.dropdown.find(
+        (opt: any) => opt.id === val || opt.label === val,
+      );
+      return option?.label ?? val;
+    },
   };
 
   // Build context API (read-only)
@@ -75,6 +85,7 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
     moment: context.executionMoment,
     userId: context.userId ?? '',
     isNew: context.isNew ?? false,
+    appUrl: Env.APP_CLIENT_URL,
     table: Object.freeze(
       context.tableInfo ?? {
         _id: '',
@@ -106,7 +117,7 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
           body,
           subject,
           to,
-          from: Env.EMAIL_PROVIDER_USER,
+          from: Env.EMAIL_PROVIDER_USER || 'noreply@lowcodejs.org',
         });
 
         return {
@@ -150,7 +161,7 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
           body,
           subject,
           to,
-          from: Env.EMAIL_PROVIDER_USER,
+          from: Env.EMAIL_PROVIDER_USER || 'noreply@lowcodejs.org',
         });
 
         return {

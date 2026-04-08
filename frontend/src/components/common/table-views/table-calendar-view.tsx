@@ -83,6 +83,7 @@ export function TableCalendarView({
         !field.trashed &&
         !field.native &&
         !baseFieldIds.has(field._id) &&
+        field.showInForm !== false &&
         field.type !== E_FIELD_TYPE.REACTION &&
         field.type !== E_FIELD_TYPE.EVALUATION,
     );

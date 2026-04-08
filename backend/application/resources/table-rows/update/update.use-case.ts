@@ -11,6 +11,8 @@ import {
   stripMaskedPasswordFields,
 } from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { executeScript } from '@application/core/table/handler';
+import type { FieldDefinition } from '@application/core/table/types';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
@@ -54,6 +56,82 @@ export default class TableRowUpdateUseCase {
 
       stripMaskedPasswordFields(payload, table.fields);
       await hashPasswordFields(payload, table.fields);
+
+      const beforeSaveCode = table.methods?.beforeSave?.code;
+      if (beforeSaveCode) {
+        const existing = await this.rowRepository.findOne({
+          table,
+          query: { _id: payload._id },
+        });
+
+        if (!existing) {
+          return left(
+            HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+          );
+        }
+
+        const fieldDefs: FieldDefinition[] = table.fields.map((f) => ({
+          slug: f.slug,
+          type: f.type,
+          name: f.name,
+          dropdown: f.dropdown,
+        }));
+
+        const userFieldSlugs = new Set(
+          table.fields.filter((f) => f.type === 'USER').map((f) => f.slug),
+        );
+
+        const mergedData: Record<string, any> = {
+          ...existing,
+          ...payload,
+        };
+
+        const scriptDoc: Record<string, any> = { ...mergedData };
+        for (const slug of userFieldSlugs) {
+          if (slug in payload) {
+            scriptDoc[slug] = existing[slug];
+          }
+        }
+
+        const result = await executeScript({
+          code: beforeSaveCode,
+          doc: scriptDoc,
+          tableSlug: table.slug,
+          fields: fieldDefs,
+          context: {
+            userAction: 'editar_registro',
+            executionMoment: 'antes_salvar',
+            userId:
+              typeof payload.creator === 'string' ? payload.creator : undefined,
+            isNew: false,
+            tableInfo: {
+              _id: table._id?.toString() ?? '',
+              name: table.name,
+              slug: table.slug,
+            },
+          },
+        });
+
+        if (result.logs.length > 0) {
+          console.log(
+            `[beforeSave][${table.slug}] logs:`,
+            result.logs.join('\n'),
+          );
+        }
+
+        if (!result.success) {
+          console.error(
+            `[beforeSave][${table.slug}] error:`,
+            result.error?.message,
+          );
+        }
+
+        for (const key of Object.keys(scriptDoc)) {
+          if (!userFieldSlugs.has(key)) {
+            payload[key] = scriptDoc[key];
+          }
+        }
+      }
 
       const row = await this.rowRepository.update({
         table,
