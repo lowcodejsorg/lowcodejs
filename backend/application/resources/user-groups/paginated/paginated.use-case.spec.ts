@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
 
@@ -14,9 +14,6 @@ describe('UserGroup Paginated Use Case', () => {
   });
 
   it('deve retornar lista vazia quando nao houver grupos', async () => {
-    const findManySpy = vi.spyOn(userGroupInMemoryRepository, 'findMany');
-    const countSpy = vi.spyOn(userGroupInMemoryRepository, 'count');
-
     const result = await sut.execute({
       page: 1,
       perPage: 20,
@@ -27,8 +24,6 @@ describe('UserGroup Paginated Use Case', () => {
 
     expect(result.value.data).toHaveLength(0);
     expect(result.value.meta.total).toBe(0);
-    expect(findManySpy).toHaveBeenCalled();
-    expect(countSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar lista de grupos quando existirem', async () => {

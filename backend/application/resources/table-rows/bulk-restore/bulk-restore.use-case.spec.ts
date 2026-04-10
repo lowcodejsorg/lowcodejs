@@ -62,8 +62,6 @@ describe('Bulk Restore Use Case', () => {
       data: { trashed: true, trashedAt: new Date() },
     });
 
-    const bulkRestoreSpy = vi.spyOn(rowInMemoryRepository, 'bulkRestore');
-
     const result = await sut.execute({
       slug: 'clientes',
       ids: [row1._id, row2._id],
@@ -73,16 +71,22 @@ describe('Bulk Restore Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value.modified).toBe(2);
-    expect(bulkRestoreSpy).toHaveBeenCalledTimes(1);
-    expect(bulkRestoreSpy).toHaveBeenCalledWith({
+
+    const restored1 = await rowInMemoryRepository.findOne({
       table,
-      ids: [row1._id, row2._id],
+      query: { _id: row1._id },
     });
+    const restored2 = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row2._id },
+    });
+    expect(restored1?.trashed).toBe(false);
+    expect(restored1?.trashedAt).toBeNull();
+    expect(restored2?.trashed).toBe(false);
+    expect(restored2?.trashedAt).toBeNull();
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'non-existent',
       ids: ['id-1', 'id-2'],
@@ -93,7 +97,6 @@ describe('Bulk Restore Use Case', () => {
 
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar modified: 0 quando nenhum registro na lixeira', async () => {

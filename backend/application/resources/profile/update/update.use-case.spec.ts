@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
@@ -17,9 +17,6 @@ describe('Profile Update Use Case', () => {
   });
 
   it('deve atualizar o perfil do usuario sem alterar senha', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
-
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -39,14 +36,11 @@ describe('Profile Update Use Case', () => {
 
     expect(result.value.name).toBe('John Updated');
     expect(result.value.email).toBe('john.updated@example.com');
-    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
-    expect(updateSpy).toHaveBeenCalledOnce();
+    expect(result.value.password).toBe('hashed_password');
   });
 
   it('deve atualizar o perfil e senha quando senha atual estiver correta', async () => {
     const hashedPassword = await passwordService.hash('old_password');
-    const compareSpy = vi.spyOn(passwordService, 'compare');
-    const hashSpy = vi.spyOn(passwordService, 'hash');
 
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
@@ -69,8 +63,7 @@ describe('Profile Update Use Case', () => {
 
     expect(result.value.name).toBe('John Updated');
     expect(result.value.password).not.toBe(hashedPassword);
-    expect(compareSpy).toHaveBeenCalledWith('old_password', hashedPassword);
-    expect(hashSpy).toHaveBeenCalledWith('new_password');
+    expect(result.value.password).toBe('hashed_new_password');
   });
 
   it('deve retornar erro INVALID_CREDENTIALS quando senha atual estiver incorreta', async () => {

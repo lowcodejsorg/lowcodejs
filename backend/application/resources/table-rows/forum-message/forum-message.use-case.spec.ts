@@ -159,11 +159,6 @@ describe('Forum Message Use Case', () => {
       data: { creator: USER_ID, mensagens: [] },
     });
 
-    const findOneAndUpdateSpy = vi.spyOn(
-      rowInMemoryRepository,
-      'findOneAndUpdate',
-    );
-
     const result = await sut.create({
       slug: 'canal-geral',
       _id: row._id,
@@ -174,14 +169,13 @@ describe('Forum Message Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
-    expect(findOneAndUpdateSpy).toHaveBeenCalledTimes(1);
-    const updateArgs = findOneAndUpdateSpy.mock.calls[0];
-    expect(updateArgs[1]).toEqual({ _id: row._id });
-
-    const setData = updateArgs[2] as { $set: Record<string, unknown> };
-    const messages = setData.$set['mensagens'] as Array<
-      Record<string, unknown>
-    >;
+    const updatedRow = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row._id },
+    });
+    const messages = (updatedRow as Record<string, unknown> | null)?.[
+      'mensagens'
+    ] as Array<Record<string, unknown>>;
     expect(Array.isArray(messages)).toBe(true);
     expect(messages.length).toBe(1);
     expect(messages[0]['texto']).toBe('Ola mundo!');
@@ -189,8 +183,6 @@ describe('Forum Message Use Case', () => {
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-
     const result = await sut.create({
       slug: 'non-existent',
       _id: 'row-id',
@@ -203,7 +195,6 @@ describe('Forum Message Use Case', () => {
 
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar FORUM_TABLE_REQUIRED quando tabela nao e FORUM', async () => {
@@ -229,8 +220,6 @@ describe('Forum Message Use Case', () => {
   it('deve retornar ROW_NOT_FOUND quando registro nao existe', async () => {
     await createForumTable(tableInMemoryRepository);
 
-    const findOneSpy = vi.spyOn(rowInMemoryRepository, 'findOne');
-
     const result = await sut.create({
       slug: 'canal-geral',
       _id: 'non-existent-row',
@@ -243,7 +232,6 @@ describe('Forum Message Use Case', () => {
 
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('ROW_NOT_FOUND');
-    expect(findOneSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar FORUM_MESSAGE_EMPTY quando mensagem sem conteudo', async () => {
@@ -315,11 +303,6 @@ describe('Forum Message Use Case', () => {
       },
     });
 
-    const findOneAndUpdateSpy = vi.spyOn(
-      rowInMemoryRepository,
-      'findOneAndUpdate',
-    );
-
     const result = await sut.update({
       slug: 'canal-geral',
       _id: row._id,
@@ -331,7 +314,14 @@ describe('Forum Message Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
-    expect(findOneAndUpdateSpy).toHaveBeenCalledTimes(1);
+    const updatedRow = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row._id },
+    });
+    const messages = (updatedRow as Record<string, unknown> | null)?.[
+      'mensagens'
+    ] as Array<Record<string, unknown>>;
+    expect(messages[0]['texto']).toBe('Texto atualizado');
   });
 
   it('deve retornar FORUM_MESSAGE_AUTHOR_REQUIRED quando nao e o autor', async () => {
@@ -400,11 +390,6 @@ describe('Forum Message Use Case', () => {
       },
     });
 
-    const findOneAndUpdateSpy = vi.spyOn(
-      rowInMemoryRepository,
-      'findOneAndUpdate',
-    );
-
     const result = await sut.remove({
       slug: 'canal-geral',
       _id: row._id,
@@ -415,13 +400,13 @@ describe('Forum Message Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
-    expect(findOneAndUpdateSpy).toHaveBeenCalledTimes(1);
-
-    const updateArgs = findOneAndUpdateSpy.mock.calls[0];
-    const setData = updateArgs[2] as { $set: Record<string, unknown> };
-    const messages = setData.$set['mensagens'] as Array<
-      Record<string, unknown>
-    >;
+    const updatedRow = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row._id },
+    });
+    const messages = (updatedRow as Record<string, unknown> | null)?.[
+      'mensagens'
+    ] as Array<Record<string, unknown>>;
     expect(messages.length).toBe(0);
   });
 });

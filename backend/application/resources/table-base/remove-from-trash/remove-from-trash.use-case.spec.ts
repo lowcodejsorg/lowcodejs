@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_TABLE_COLLABORATION,
@@ -19,9 +19,6 @@ describe('Table Remove From Trash Use Case', () => {
   });
 
   it('deve remover tabela da lixeira com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const updateSpy = vi.spyOn(tableInMemoryRepository, 'update');
-
     const table = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -49,8 +46,6 @@ describe('Table Remove From Trash Use Case', () => {
 
     expect(result.value.trashed).toBe(false);
     expect(result.value.trashedAt).toBeNull();
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(updateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {

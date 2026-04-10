@@ -52,8 +52,6 @@ describe('Bulk Trash Use Case', () => {
       data: { nome: 'Cliente 3' },
     });
 
-    const bulkTrashSpy = vi.spyOn(rowInMemoryRepository, 'bulkTrash');
-
     const result = await sut.execute({
       slug: 'clientes',
       ids: [row1._id, row2._id, row3._id],
@@ -63,16 +61,25 @@ describe('Bulk Trash Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value.modified).toBe(3);
-    expect(bulkTrashSpy).toHaveBeenCalledTimes(1);
-    expect(bulkTrashSpy).toHaveBeenCalledWith({
+
+    const trashed1 = await rowInMemoryRepository.findOne({
       table,
-      ids: [row1._id, row2._id, row3._id],
+      query: { _id: row1._id },
     });
+    const trashed2 = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row2._id },
+    });
+    const trashed3 = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row3._id },
+    });
+    expect(trashed1?.trashed).toBe(true);
+    expect(trashed2?.trashed).toBe(true);
+    expect(trashed3?.trashed).toBe(true);
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'non-existent',
       ids: ['id-1', 'id-2'],
@@ -83,8 +90,6 @@ describe('Bulk Trash Use Case', () => {
 
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
-    expect(findBySlugSpy).toHaveBeenCalledWith('non-existent');
   });
 
   it('deve retornar modified: 0 quando nenhum registro encontrado', async () => {

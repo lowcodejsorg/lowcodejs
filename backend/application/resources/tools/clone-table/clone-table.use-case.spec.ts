@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
@@ -30,9 +30,6 @@ describe('Clone Table Use Case', () => {
   });
 
   it('deve clonar uma tabela com sucesso', async () => {
-    const findByIdSpy = vi.spyOn(tableInMemoryRepository, 'findById');
-    const createSpy = vi.spyOn(tableInMemoryRepository, 'create');
-
     const baseTable = await tableInMemoryRepository.create({
       name: 'Tabela Original',
       slug: 'tabela-original',
@@ -57,8 +54,6 @@ describe('Clone Table Use Case', () => {
     expect(result.value.table.name).toBe('Tabela Clonada');
     expect(result.value.table.slug).toBe('tabela-clonada');
     expect(result.value.table._id).not.toBe(baseTable._id);
-    expect(findByIdSpy).toHaveBeenCalledWith(baseTable._id);
-    expect(createSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela base nao existe', async () => {

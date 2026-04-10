@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
 
@@ -14,9 +14,6 @@ describe('UserGroup Create Use Case', () => {
   });
 
   it('deve criar um grupo de usuarios com sucesso', async () => {
-    const createSpy = vi.spyOn(userGroupInMemoryRepository, 'create');
-    const findBySlugSpy = vi.spyOn(userGroupInMemoryRepository, 'findBySlug');
-
     const result = await sut.execute({
       name: 'Administradores',
       description: 'Grupo de administradores',
@@ -29,8 +26,11 @@ describe('UserGroup Create Use Case', () => {
     expect(result.value.name).toBe('Administradores');
     expect(result.value.slug).toBe('administradores');
     expect(result.value.permissions).toHaveLength(2);
-    expect(findBySlugSpy).toHaveBeenCalledWith('administradores');
-    expect(createSpy).toHaveBeenCalledOnce();
+
+    const persisted =
+      await userGroupInMemoryRepository.findBySlug('administradores');
+    expect(persisted).not.toBeNull();
+    expect(persisted?.name).toBe('Administradores');
   });
 
   it('deve retornar erro GROUP_EXISTS quando slug ja existe', async () => {

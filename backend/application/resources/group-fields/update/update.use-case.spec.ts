@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -83,9 +83,6 @@ describe('Group Field Update Use Case', () => {
       ],
     });
 
-    const updateFieldSpy = vi.spyOn(fieldRepository, 'update');
-    const updateTableSpy = vi.spyOn(tableRepository, 'update');
-
     const result = await sut.execute({
       slug: 'clientes',
       groupSlug: 'endereco',
@@ -117,13 +114,12 @@ describe('Group Field Update Use Case', () => {
     expect(result.value.name).toBe('Avenida');
     expect(result.value.slug).toBe('avenida');
 
-    expect(updateFieldSpy).toHaveBeenCalledTimes(1);
-    expect(updateTableSpy).toHaveBeenCalledTimes(1);
+    const updatedField = await fieldRepository.findById(field._id);
+    expect(updatedField?.name).toBe('Avenida');
+    expect(updatedField?.slug).toBe('avenida');
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'inexistente',
       groupSlug: 'endereco',
@@ -155,8 +151,6 @@ describe('Group Field Update Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
     expect(result.value.message).toBe('Tabela não encontrada');
-
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar GROUP_NOT_FOUND quando grupo nao existe', async () => {
@@ -215,8 +209,6 @@ describe('Group Field Update Use Case', () => {
       ],
     });
 
-    const findByIdSpy = vi.spyOn(fieldRepository, 'findById');
-
     const result = await sut.execute({
       slug: 'clientes',
       groupSlug: 'endereco',
@@ -248,9 +240,6 @@ describe('Group Field Update Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('FIELD_NOT_FOUND');
     expect(result.value.message).toBe('Campo não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith('campo-inexistente');
   });
 
   it('deve retornar UPDATE_GROUP_FIELD_ERROR quando repository falha', async () => {

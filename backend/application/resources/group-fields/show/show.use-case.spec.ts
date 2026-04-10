@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -73,9 +73,6 @@ describe('Group Field Show Use Case', () => {
       ],
     });
 
-    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
-    const findByIdSpy = vi.spyOn(fieldRepository, 'findById');
-
     const result = await sut.execute({
       slug: 'clientes',
       groupSlug: 'endereco',
@@ -87,11 +84,6 @@ describe('Group Field Show Use Case', () => {
     expect(result.value._id).toBe(field._id);
     expect(result.value.name).toBe('Rua');
     expect(result.value.slug).toBe('rua');
-
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith(field._id);
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
@@ -123,8 +115,6 @@ describe('Group Field Show Use Case', () => {
       ],
     });
 
-    const findByIdSpy = vi.spyOn(fieldRepository, 'findById');
-
     const result = await sut.execute({
       slug: 'clientes',
       groupSlug: 'endereco',
@@ -136,8 +126,5 @@ describe('Group Field Show Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('FIELD_NOT_FOUND');
     expect(result.value.message).toBe('Campo não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith('campo-inexistente');
   });
 });

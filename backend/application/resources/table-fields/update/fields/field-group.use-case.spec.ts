@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_TYPE,
@@ -168,8 +168,6 @@ describe('Table Field Update - FIELD_GROUP', () => {
   });
 
   it('deve atualizar slug do grupo na tabela', async () => {
-    const updateSpy = vi.spyOn(tableInMemoryRepository, 'update');
-
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -200,11 +198,10 @@ describe('Table Field Update - FIELD_GROUP', () => {
       widthInDetail: null,
     });
 
-    expect(updateSpy).toHaveBeenCalled();
-    const updatePayload = updateSpy.mock.calls[0][0];
-    expect(updatePayload.groups).toBeDefined();
+    const updatedTable = await tableInMemoryRepository.findBySlug('pedidos');
+    expect(updatedTable?.groups).toBeDefined();
 
-    const updatedGroup = updatePayload.groups!.find(
+    const updatedGroup = updatedTable!.groups!.find(
       (g: { slug: string }) => g.slug === 'materiais',
     );
     expect(updatedGroup).toBeDefined();

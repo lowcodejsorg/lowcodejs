@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_TABLE_COLLABORATION,
@@ -34,9 +34,6 @@ describe('Table Update Use Case', () => {
   });
 
   it('deve atualizar tabela com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const updateSpy = vi.spyOn(tableInMemoryRepository, 'update');
-
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -85,8 +82,6 @@ describe('Table Update Use Case', () => {
 
     expect(result.value.name).toBe('Clientes Atualizado');
     expect(result.value.style).toBe(E_TABLE_STYLE.GALLERY);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(updateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {

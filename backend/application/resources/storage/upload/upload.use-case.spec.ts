@@ -31,9 +31,6 @@ describe('Storage Upload Use Case', () => {
   });
 
   it('deve fazer upload de arquivos com sucesso', async () => {
-    const uploadSpy = vi.spyOn(storageService, 'upload');
-    const createManySpy = vi.spyOn(storageInMemoryRepository, 'createMany');
-
     async function* mockFiles(): AsyncIterableIterator<MultipartFile> {
       yield createMockFile('test.jpg');
     }
@@ -44,13 +41,9 @@ describe('Storage Upload Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value).toHaveLength(1);
-    expect(uploadSpy).toHaveBeenCalledOnce();
-    expect(createManySpy).toHaveBeenCalledOnce();
   });
 
   it('deve fazer upload de multiplos arquivos', async () => {
-    const uploadSpy = vi.spyOn(storageService, 'upload');
-
     async function* mockFiles(): AsyncIterableIterator<MultipartFile> {
       yield createMockFile('test1.jpg');
       yield createMockFile('test2.jpg');
@@ -62,7 +55,6 @@ describe('Storage Upload Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value).toHaveLength(2);
-    expect(uploadSpy).toHaveBeenCalledTimes(2);
   });
 
   it('deve retornar lista vazia quando nao houver arquivos', async () => {

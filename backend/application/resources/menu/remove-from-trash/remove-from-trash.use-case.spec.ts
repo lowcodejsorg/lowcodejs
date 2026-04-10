@@ -26,19 +26,11 @@ describe('Menu Remove From Trash Use Case', () => {
       trashedAt: new Date(),
     });
 
-    const updateSpy = vi.spyOn(menuInMemoryRepository, 'update');
-
     const result = await sut.execute({ _id: menu._id });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
-    expect(updateSpy).toHaveBeenCalledTimes(1);
-    expect(updateSpy).toHaveBeenCalledWith({
-      _id: menu._id,
-      trashed: false,
-      trashedAt: null,
-    });
 
     const restored = await menuInMemoryRepository.findById(menu._id);
     expect(restored).not.toBeNull();

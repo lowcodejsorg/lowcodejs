@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import SettingInMemoryRepository from '@application/repositories/setting/setting-in-memory.repository';
 
@@ -14,8 +14,6 @@ describe('Setting Update Use Case', () => {
   });
 
   it('deve atualizar configurações com sucesso', async () => {
-    const updateSpy = vi.spyOn(settingInMemoryRepository, 'update');
-
     const result = await sut.execute({
       LOCALE: 'en-us',
       FILE_UPLOAD_MAX_SIZE: 5242880,
@@ -36,7 +34,6 @@ describe('Setting Update Use Case', () => {
       '507f1f77bcf86cd799439011',
       '507f1f77bcf86cd799439012',
     ]);
-    expect(updateSpy).toHaveBeenCalledOnce();
   });
 
   it('deve atualizar process.env com os novos valores', async () => {

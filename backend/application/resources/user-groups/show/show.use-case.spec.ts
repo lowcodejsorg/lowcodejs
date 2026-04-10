@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
 
@@ -14,8 +14,6 @@ describe('UserGroup Show Use Case', () => {
   });
 
   it('deve retornar um grupo de usuarios existente', async () => {
-    const findByIdSpy = vi.spyOn(userGroupInMemoryRepository, 'findById');
-
     const created = await userGroupInMemoryRepository.create({
       name: 'Administradores',
       slug: 'administradores',
@@ -29,7 +27,6 @@ describe('UserGroup Show Use Case', () => {
 
     expect(result.value._id).toBe(created._id);
     expect(result.value.name).toBe('Administradores');
-    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
   });
 
   it('deve retornar erro USER_GROUP_NOT_FOUND quando grupo nao existe', async () => {

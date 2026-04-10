@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -73,17 +73,16 @@ describe('Table Field Delete Use Case', () => {
       fieldOrderForm: [],
     });
 
-    const deleteFieldSpy = vi.spyOn(fieldInMemoryRepository, 'delete');
-    const updateTableSpy = vi.spyOn(tableInMemoryRepository, 'update');
-
     const result = await sut.execute({ slug: 'clientes', _id: field._id });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
-    expect(deleteFieldSpy).toHaveBeenCalledTimes(1);
-    expect(deleteFieldSpy).toHaveBeenCalledWith(field._id);
-    expect(updateTableSpy).toHaveBeenCalledTimes(1);
+
+    const foundField = await fieldInMemoryRepository.findById(field._id);
+    expect(foundField).toBeNull();
+    const updatedTable = await tableInMemoryRepository.findBySlug('clientes');
+    expect(updatedTable?.fields).not.toContain(field._id);
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {

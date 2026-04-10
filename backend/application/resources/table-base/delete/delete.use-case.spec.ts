@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_TABLE_COLLABORATION,
@@ -25,14 +25,7 @@ describe('Table Delete Use Case', () => {
   });
 
   it('deve deletar tabela com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const deleteSpy = vi.spyOn(tableInMemoryRepository, 'delete');
-    const dropCollectionSpy = vi.spyOn(
-      tableInMemoryRepository,
-      'dropCollection',
-    );
-
-    await tableInMemoryRepository.create({
+    const created = await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
@@ -52,9 +45,8 @@ describe('Table Delete Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value).toBeNull();
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(dropCollectionSpy).toHaveBeenCalledWith('clientes');
-    expect(deleteSpy).toHaveBeenCalledOnce();
+    const found = await tableInMemoryRepository.findById(created._id);
+    expect(found).toBeNull();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {

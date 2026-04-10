@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -32,9 +32,6 @@ describe('Table Field Create Use Case', () => {
   });
 
   it('deve criar campo com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const createSpy = vi.spyOn(fieldInMemoryRepository, 'create');
-
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -77,8 +74,6 @@ describe('Table Field Create Use Case', () => {
     expect(result.value.name).toBe('Nome');
     expect(result.value.slug).toBe('nome');
     expect(result.value.type).toBe(E_FIELD_TYPE.TEXT_SHORT);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(createSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {

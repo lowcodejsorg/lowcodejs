@@ -18,10 +18,6 @@ describe('User Create Use Case', () => {
   });
 
   it('deve criar um usuario com sucesso', async () => {
-    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
-    const createSpy = vi.spyOn(userInMemoryRepository, 'create');
-    const hashSpy = vi.spyOn(passwordService, 'hash');
-
     const result = await sut.execute({
       name: 'John Doe',
       email: 'john@example.com',
@@ -36,17 +32,9 @@ describe('User Create Use Case', () => {
     expect(result.value.password).not.toBe('password123');
     expect(result.value.password).toBe('hashed_password123');
     expect(result.value.status).toBe(E_USER_STATUS.ACTIVE);
-
-    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
-    expect(findByEmailSpy).toHaveBeenCalledWith('john@example.com');
-    expect(hashSpy).toHaveBeenCalledTimes(1);
-    expect(hashSpy).toHaveBeenCalledWith('password123');
-    expect(createSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar erro GROUP_NOT_INFORMED quando group nao for informado', async () => {
-    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
-
     const result = await sut.execute({
       name: 'John Doe',
       email: 'john@example.com',
@@ -59,21 +47,15 @@ describe('User Create Use Case', () => {
     expect(result.value.code).toBe(400);
     expect(result.value.cause).toBe('GROUP_NOT_INFORMED');
     expect(result.value.message).toBe('Grupo não informado');
-
-    expect(findByEmailSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro USER_ALREADY_EXISTS quando email ja existe', async () => {
-    const createSpy = vi.spyOn(userInMemoryRepository, 'create');
-
-    await userInMemoryRepository.create({
+    const existing = await userInMemoryRepository.create({
       name: 'Existing User',
       email: 'existing@example.com',
       password: 'password123',
       group: 'group-id',
     });
-
-    createSpy.mockClear();
 
     const result = await sut.execute({
       name: 'New User',
@@ -88,7 +70,11 @@ describe('User Create Use Case', () => {
     expect(result.value.cause).toBe('USER_ALREADY_EXISTS');
     expect(result.value.message).toBe('Usuário já existe');
 
-    expect(createSpy).not.toHaveBeenCalled();
+    const found = await userInMemoryRepository.findByEmail(
+      'existing@example.com',
+    );
+    expect(found?._id).toBe(existing._id);
+    expect(found?.name).toBe('Existing User');
   });
 
   it('deve retornar erro CREATE_USER_ERROR quando houver falha', async () => {

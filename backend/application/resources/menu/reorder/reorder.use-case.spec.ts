@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 
@@ -28,8 +28,6 @@ describe('Menu Reorder Use Case', () => {
       order: 1,
     });
 
-    const updateSpy = vi.spyOn(menuInMemoryRepository, 'update');
-
     const result = await sut.execute({
       items: [
         { _id: menu1._id, order: 1 },
@@ -40,7 +38,6 @@ describe('Menu Reorder Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
-    expect(updateSpy).toHaveBeenCalledTimes(2);
 
     const updatedMenu1 = await menuInMemoryRepository.findById(menu1._id);
     const updatedMenu2 = await menuInMemoryRepository.findById(menu2._id);

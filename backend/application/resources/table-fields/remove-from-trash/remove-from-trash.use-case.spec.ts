@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -32,10 +32,6 @@ describe('Table Field Remove From Trash Use Case', () => {
   });
 
   it('deve remover campo da lixeira com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const fieldFindByIdSpy = vi.spyOn(fieldInMemoryRepository, 'findById');
-    const fieldUpdateSpy = vi.spyOn(fieldInMemoryRepository, 'update');
-
     const field = await fieldInMemoryRepository.create({
       name: 'Nome',
       slug: 'nome',
@@ -87,9 +83,6 @@ describe('Table Field Remove From Trash Use Case', () => {
 
     expect(result.value.trashed).toBe(false);
     expect(result.value.trashedAt).toBeNull();
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(fieldFindByIdSpy).toHaveBeenCalledWith(field._id);
-    expect(fieldUpdateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {

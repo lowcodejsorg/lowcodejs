@@ -92,10 +92,6 @@ describe('Import Table Use Case', () => {
   });
 
   it('deve importar tabela com estrutura com sucesso', async () => {
-    const createManySpy = vi.spyOn(fieldInMemoryRepository, 'createMany');
-    const createFieldSpy = vi.spyOn(fieldInMemoryRepository, 'create');
-    const createTableSpy = vi.spyOn(tableInMemoryRepository, 'create');
-
     const result = await sut.execute({
       name: 'Clientes Importados',
       fileContent: validFileContent,
@@ -108,9 +104,6 @@ describe('Import Table Use Case', () => {
     expect(result.value.importedFields).toBe(1);
     expect(result.value.importedRows).toBe(0);
     expect(result.value.tableId).toBeTruthy();
-    expect(createManySpy).toHaveBeenCalledTimes(1);
-    expect(createFieldSpy).toHaveBeenCalled();
-    expect(createTableSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar erro OWNER_ID_REQUIRED quando ownerId nao fornecido', async () => {

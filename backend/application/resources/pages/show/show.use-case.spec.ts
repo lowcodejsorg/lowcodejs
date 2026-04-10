@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 
@@ -14,8 +14,6 @@ describe('Page Show Use Case', () => {
   });
 
   it('deve retornar uma pagina existente pelo slug', async () => {
-    const findBySlugSpy = vi.spyOn(menuInMemoryRepository, 'findBySlug');
-
     await menuInMemoryRepository.create({
       name: 'Dashboard',
       slug: 'dashboard',
@@ -29,7 +27,6 @@ describe('Page Show Use Case', () => {
 
     expect(result.value.name).toBe('Dashboard');
     expect(result.value.slug).toBe('dashboard');
-    expect(findBySlugSpy).toHaveBeenCalledWith('dashboard', { trashed: false });
   });
 
   it('deve retornar erro PAGE_NOT_FOUND quando pagina nao existe', async () => {

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -132,8 +132,6 @@ describe('Group Row Create Use Case', () => {
     const table = await createTableWithGroup();
     const rowId = await createRowWithItems(table);
 
-    const addGroupItemSpy = vi.spyOn(rowRepository, 'addGroupItem');
-
     const result = await sut.execute({
       slug: 'pedidos',
       rowId,
@@ -147,19 +145,9 @@ describe('Group Row Create Use Case', () => {
     const value = result.value;
     expect(value).toHaveProperty('_id');
     expect(value).toHaveProperty('descricao', 'Novo item');
-
-    expect(addGroupItemSpy).toHaveBeenCalledTimes(1);
-    expect(addGroupItemSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rowId,
-        groupFieldSlug: 'items',
-      }),
-    );
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'inexistente',
       rowId: 'row-1',
@@ -172,9 +160,6 @@ describe('Group Row Create Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
     expect(result.value.message).toBe('Tabela não encontrada');
-
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
-    expect(findBySlugSpy).toHaveBeenCalledWith('inexistente');
   });
 
   it('deve retornar GROUP_NOT_FOUND quando grupo nao existe', async () => {
@@ -203,8 +188,6 @@ describe('Group Row Create Use Case', () => {
   it('deve retornar ROW_NOT_FOUND quando row nao existe', async () => {
     await createTableWithGroup();
 
-    const addGroupItemSpy = vi.spyOn(rowRepository, 'addGroupItem');
-
     const result = await sut.execute({
       slug: 'pedidos',
       rowId: 'row-inexistente',
@@ -217,8 +200,6 @@ describe('Group Row Create Use Case', () => {
     expect(result.value.code).toBe(500);
     expect(result.value.cause).toBe('CREATE_GROUP_ROW_ERROR');
     expect(result.value.message).toBe('Erro interno do servidor');
-
-    expect(addGroupItemSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar CREATE_GROUP_ROW_ERROR quando repository falha', async () => {

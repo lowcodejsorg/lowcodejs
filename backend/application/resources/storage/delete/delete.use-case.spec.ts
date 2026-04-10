@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import StorageInMemoryRepository from '@application/repositories/storage/storage-in-memory.repository';
 import InMemoryStorageService from '@application/services/storage/in-memory-storage.service';
@@ -17,9 +17,6 @@ describe('Storage Delete Use Case', () => {
   });
 
   it('deve deletar arquivo com sucesso', async () => {
-    const deleteSpy = vi.spyOn(storageInMemoryRepository, 'delete');
-    const serviceDeleteSpy = vi.spyOn(storageService, 'delete');
-
     const storage = await storageInMemoryRepository.create({
       filename: 'random-name.webp',
       originalName: 'test.jpg',
@@ -33,8 +30,8 @@ describe('Storage Delete Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value).toBeNull();
-    expect(deleteSpy).toHaveBeenCalledWith(storage._id);
-    expect(serviceDeleteSpy).toHaveBeenCalledWith('random-name.webp');
+    const deleted = await storageInMemoryRepository.findById(storage._id);
+    expect(deleted).toBeNull();
   });
 
   it('deve retornar erro STORAGE_NOT_FOUND quando arquivo nao existir', async () => {

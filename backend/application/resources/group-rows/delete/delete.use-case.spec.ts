@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -130,8 +130,6 @@ describe('Group Row Delete Use Case', () => {
     const table = await createTableWithGroup();
     const { rowId, itemId } = await createRowWithItems(table);
 
-    const deleteGroupItemSpy = vi.spyOn(rowRepository, 'deleteGroupItem');
-
     const result = await sut.execute({
       slug: 'pedidos',
       rowId,
@@ -143,19 +141,17 @@ describe('Group Row Delete Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
 
-    expect(deleteGroupItemSpy).toHaveBeenCalledTimes(1);
-    expect(deleteGroupItemSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        rowId,
-        groupFieldSlug: 'items',
-        itemId,
-      }),
-    );
+    const updatedRow = await rowRepository.findOne({
+      table,
+      query: { _id: rowId },
+    });
+    const items = ((updatedRow as Record<string, unknown>)?.items ?? []) as {
+      _id: string;
+    }[];
+    expect(items.find((item) => item._id === itemId)).toBeUndefined();
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'inexistente',
       rowId: 'row-1',
@@ -168,9 +164,6 @@ describe('Group Row Delete Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
     expect(result.value.message).toBe('Tabela não encontrada');
-
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
-    expect(findBySlugSpy).toHaveBeenCalledWith('inexistente');
   });
 
   it('deve retornar GROUP_NOT_FOUND quando grupo nao existe', async () => {
@@ -199,8 +192,6 @@ describe('Group Row Delete Use Case', () => {
   it('deve retornar ROW_NOT_FOUND quando row nao existe', async () => {
     await createTableWithGroup();
 
-    const findOneSpy = vi.spyOn(rowRepository, 'findOne');
-
     const result = await sut.execute({
       slug: 'pedidos',
       rowId: 'row-inexistente',
@@ -213,8 +204,6 @@ describe('Group Row Delete Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('ROW_NOT_FOUND');
     expect(result.value.message).toBe('Registro não encontrado');
-
-    expect(findOneSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar ITEM_NOT_FOUND quando item nao existe', async () => {
