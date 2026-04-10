@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -8,28 +8,25 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
 import ExportTableUseCase from './export-table.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildSchema: vi.fn().mockReturnValue({}),
-  buildTable: vi.fn().mockResolvedValue({
-    find: vi.fn().mockReturnValue({
-      lean: vi.fn().mockResolvedValue([]),
-    }),
-  }),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
 let sut: ExportTableUseCase;
 
 describe('Export Table Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
-    sut = new ExportTableUseCase(tableInMemoryRepository);
+    rowInMemoryRepository = new RowInMemoryRepository();
+    sut = new ExportTableUseCase(
+      tableInMemoryRepository,
+      rowInMemoryRepository,
+    );
   });
 
   it('deve exportar estrutura da tabela com sucesso', async () => {
@@ -68,8 +65,6 @@ describe('Export Table Use Case', () => {
       fieldOrderForm: [],
     });
 
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'clientes',
       exportType: 'structure',
@@ -86,8 +81,6 @@ describe('Export Table Use Case', () => {
     expect(result.value.header.exportType).toBe('structure');
     expect(result.value.structure).toBeTruthy();
     expect(result.value.data).toBeUndefined();
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
   });
 
   it('deve exportar dados da tabela com sucesso', async () => {
@@ -163,7 +156,8 @@ describe('Export Table Use Case', () => {
   });
 
   it('deve retornar erro EXPORT_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

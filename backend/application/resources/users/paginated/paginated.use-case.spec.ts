@@ -15,9 +15,6 @@ describe('User Paginated Use Case', () => {
   });
 
   it('deve retornar lista vazia quando nao houver usuarios', async () => {
-    const findManySpy = vi.spyOn(userInMemoryRepository, 'findMany');
-    const countSpy = vi.spyOn(userInMemoryRepository, 'count');
-
     const result = await sut.execute({
       page: 1,
       perPage: 20,
@@ -29,14 +26,9 @@ describe('User Paginated Use Case', () => {
     expect(result.value.meta.total).toBe(0);
     expect(result.value.meta.firstPage).toBe(0);
     expect(result.value.meta.lastPage).toBe(0);
-
-    expect(findManySpy).toHaveBeenCalled();
-    expect(countSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar lista de usuarios quando existirem', async () => {
-    const countSpy = vi.spyOn(userInMemoryRepository, 'count');
-
     for (let i = 0; i < 5; i++) {
       await userInMemoryRepository.create({
         name: `User ${i + 1}`,
@@ -58,8 +50,6 @@ describe('User Paginated Use Case', () => {
     expect(result.value.meta.page).toBe(1);
     expect(result.value.meta.perPage).toBe(20);
     expect(result.value.meta.firstPage).toBe(1);
-
-    expect(countSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar meta com paginacao correta', async () => {

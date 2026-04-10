@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -62,19 +62,12 @@ describe('Table Field Show Use Case', () => {
       fieldOrderForm: [],
     });
 
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const findByIdSpy = vi.spyOn(fieldInMemoryRepository, 'findById');
-
     const result = await sut.execute({ slug: 'clientes', _id: field._id });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value._id).toBe(field._id);
     expect(result.value.name).toBe('Nome');
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith(field._id);
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -116,7 +109,8 @@ describe('Table Field Show Use Case', () => {
   });
 
   it('deve retornar erro GET_FIELD_BY_ID_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

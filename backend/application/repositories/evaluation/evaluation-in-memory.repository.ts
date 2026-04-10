@@ -12,7 +12,20 @@ import type {
 } from './evaluation-contract.repository';
 
 export default class EvaluationInMemoryRepository implements EvaluationContractRepository {
-  private items: IEvaluation[] = [];
+  items: IEvaluation[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(payload: EvaluationCreatePayload): Promise<IEvaluation> {
     const evaluation: IEvaluation = {

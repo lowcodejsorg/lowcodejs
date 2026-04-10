@@ -6,14 +6,10 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import {
-  hashPasswordFields,
-  maskPasswordFields,
-  stripMaskedPasswordFields,
-} from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 
 type Response = Either<HTTPException, Record<string, unknown>>;
 type Payload = Record<string, unknown> & {
@@ -32,6 +28,7 @@ export default class GroupRowUpdateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly rowPasswordService: RowPasswordContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -81,8 +78,8 @@ export default class GroupRowUpdateUseCase {
       }
 
       // Remove campos PASSWORD mascarados/vazios e hash dos novos
-      stripMaskedPasswordFields(payload, groupFields);
-      await hashPasswordFields(payload, groupFields);
+      this.rowPasswordService.stripMasked(payload, groupFields);
+      await this.rowPasswordService.hash(payload, groupFields);
 
       // Verifica se a row existe
       const existingRow = await this.rowRepository.findOne({
@@ -156,7 +153,7 @@ export default class GroupRowUpdateUseCase {
       }
 
       if (updatedItem) {
-        maskPasswordFields(updatedItem, groupFields);
+        this.rowPasswordService.mask(updatedItem, groupFields);
       }
 
       if (updatedItem) {

@@ -12,9 +12,9 @@ import {
   type IField,
   type IGroupConfiguration,
 } from '@application/core/entity.core';
-import { buildSchema } from '@application/core/util.core';
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import type { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import type { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type {
   CloneTableDeps,
@@ -33,11 +33,14 @@ export async function createCalendarTemplate(
   });
 
   const { fields, groups, orderList, orderForm, orderFilter, orderDetail } =
-    await buildCalendarFields(deps.fieldRepository);
+    await buildCalendarFields(deps.fieldRepository, deps.tableSchemaService);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = buildSchema([...nativeFields, ...fields], groups);
+  const _schema = deps.tableSchemaService.computeSchema(
+    [...nativeFields, ...fields],
+    groups,
+  );
 
   const createPayload: TableCreatePayload = {
     _schema,
@@ -161,6 +164,7 @@ export async function createCalendarTemplate(
 
 export async function buildCalendarFields(
   fieldRepository: FieldContractRepository,
+  tableSchemaService: TableSchemaContractService,
 ): Promise<{
   fields: IField[];
   groups: IGroupConfiguration[];
@@ -437,7 +441,10 @@ export async function buildCalendarFields(
     slug: reminderGroupSlug,
     name: 'Lembrete',
     fields: [reminderUnitField, reminderValueField],
-    _schema: buildSchema([reminderUnitField, reminderValueField]),
+    _schema: tableSchemaService.computeSchema([
+      reminderUnitField,
+      reminderValueField,
+    ]),
   };
 
   const reminderGroupField = await createField({

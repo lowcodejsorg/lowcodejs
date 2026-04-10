@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -8,36 +8,35 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldUpdateUseCase from './update.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    updateMany: vi.fn().mockResolvedValue(undefined),
-  }),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldUpdateUseCase;
 
 describe('Table Field Update Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
+
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableFieldUpdateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      rowInMemoryRepository,
+      tableSchemaService,
     );
   });
 
   it('deve atualizar campo com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const fieldFindByIdSpy = vi.spyOn(fieldInMemoryRepository, 'findById');
-    const fieldUpdateSpy = vi.spyOn(fieldInMemoryRepository, 'update');
-
     const field = await fieldInMemoryRepository.create({
       name: 'Nome',
       slug: 'nome',
@@ -106,9 +105,6 @@ describe('Table Field Update Use Case', () => {
     expect(result.value.name).toBe('Nome Atualizado');
     expect(result.value.required).toBe(false);
     expect(result.value.widthInForm).toBe(75);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(fieldFindByIdSpy).toHaveBeenCalledWith(field._id);
-    expect(fieldUpdateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -267,7 +263,8 @@ describe('Table Field Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_FIELD_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

@@ -1,7 +1,12 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import { buildPopulate, buildTable } from '@application/core/builders';
+import {
+  buildOrder,
+  buildPopulate,
+  buildQuery,
+  buildTable,
+} from '@application/core/builders';
 import type { IRow } from '@application/core/entity.core';
 
 interface SubdocArray<T = unknown> extends Array<T> {
@@ -104,21 +109,40 @@ export default class RowMongooseRepository extends RowContractRepository {
       payload.includeReverseRelationships || false,
     );
 
+    const query = await buildQuery(
+      payload.rawFilters ?? {},
+      payload.table.fields ?? [],
+      payload.table.groups,
+      payload.table.slug,
+    );
+
+    const sort = buildOrder(
+      payload.rawFilters ?? {},
+      payload.table.fields ?? [],
+      payload.table.order,
+    );
+
     const rows = await model
-      .find(payload.query)
+      .find(query)
       .populate(populate)
       .skip(payload.skip)
       .limit(payload.limit)
-      .sort(payload.sort);
+      .sort(sort);
 
     return rows.map((row) => this.transformRow(row));
   }
 
   async count(
     table: RowTableContext,
-    query: Record<string, unknown>,
+    rawFilters?: Record<string, unknown>,
   ): Promise<number> {
     const model = await this.getModel(table);
+    const query = await buildQuery(
+      rawFilters ?? {},
+      table.fields ?? [],
+      table.groups,
+      table.slug,
+    );
     return model.countDocuments(query);
   }
 
@@ -286,5 +310,36 @@ export default class RowMongooseRepository extends RowContractRepository {
     await row.populate(populate);
 
     return this.transformRow(row);
+  }
+
+  // ── Infrastructure-level ops (table/import/export tools) ──
+
+  async renameField(
+    table: RowTableContext,
+    oldSlug: string,
+    newSlug: string,
+  ): Promise<void> {
+    const model = await this.getModel(table);
+    await model.updateMany({}, { $rename: { [oldSlug]: newSlug } });
+  }
+
+  async findAllRaw(table: RowTableContext): Promise<Record<string, unknown>[]> {
+    const model = await this.getModel(table);
+    return model.find({ trashed: { $ne: true } }).lean() as Promise<
+      Record<string, unknown>[]
+    >;
+  }
+
+  async insertRaw(
+    table: RowTableContext,
+    row: Record<string, unknown>,
+    creator?: string,
+  ): Promise<void> {
+    const model = await this.getModel(table);
+    const doc = new model(row);
+    if (creator) {
+      (doc as any).creator = creator;
+    }
+    await doc.collection.insertOne((doc as any).toObject());
   }
 }

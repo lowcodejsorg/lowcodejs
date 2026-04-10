@@ -5,10 +5,10 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { maskPasswordFields } from '@application/core/row-password-helper.core';
-import { transformRowContext } from '@application/core/util.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 
 import type { TableRowShowPayload } from './show.validator';
 
@@ -21,6 +21,8 @@ export default class TableRowShowUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly rowPasswordService: RowPasswordContractService,
+    private readonly rowContextService: RowContextContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -45,9 +47,11 @@ export default class TableRowShowUseCase {
         );
       }
 
-      maskPasswordFields(row, table.fields);
+      this.rowPasswordService.mask(row, table.fields);
 
-      return right(transformRowContext(row, table.fields, payload.user));
+      return right(
+        this.rowContextService.transform(row, table.fields, payload.user),
+      );
     } catch (error) {
       console.error('[table-rows > show][error]:', error);
       return left(

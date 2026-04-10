@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
+import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import { makeTextShortWithFormat } from '@test/helpers/field-factory.helper';
 import { makeTableWithGroup } from '@test/helpers/table-factory.helper';
 
@@ -10,13 +12,24 @@ import TableRowUpdateUseCase from '../update.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
+let scriptExecutionService: InMemoryScriptExecutionService;
 let sut: TableRowUpdateUseCase;
 
 describe('Table Row Update - FIELD_GROUP', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowUpdateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    scriptExecutionService = new InMemoryScriptExecutionService();
+
+    sut = new TableRowUpdateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+      scriptExecutionService,
+    );
   });
 
   it('deve atualizar row com array de objetos validos para o grupo', async () => {

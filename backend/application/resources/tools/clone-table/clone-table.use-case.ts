@@ -5,12 +5,13 @@ import slugify from 'slugify';
 import { left, right } from '@application/core/either.core';
 import { FIELD_NATIVE_LIST, type IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import {
   TableContractRepository,
   TableCreatePayload,
 } from '@application/repositories/table/table-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import {
   CALENDAR_TEMPLATE_ID,
@@ -39,12 +40,16 @@ export default class CloneTableUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly rowRepository: RowContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   private getTemplateDeps(): CloneTableDeps {
     return {
       tableRepository: this.tableRepository,
       fieldRepository: this.fieldRepository,
+      rowRepository: this.rowRepository,
+      tableSchemaService: this.tableSchemaService,
     };
   }
 
@@ -130,7 +135,7 @@ export default class CloneTableUseCase {
         combinedFieldIdMap,
       );
 
-      const _schema = buildSchema(
+      const _schema = this.tableSchemaService.computeSchema(
         [...nativeFields, ...clonedFields],
         clonedGroups,
       );
@@ -318,7 +323,7 @@ export default class CloneTableUseCase {
         slug: group.slug,
         name: group.name,
         fields: groupFields,
-        _schema: buildSchema(groupFields),
+        _schema: this.tableSchemaService.computeSchema(groupFields),
       });
     }
 

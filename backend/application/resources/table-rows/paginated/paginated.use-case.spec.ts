@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_TABLE_COLLABORATION,
@@ -7,29 +7,31 @@ import {
 } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowContextService from '@application/services/row-context/in-memory-row-context.service';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 
 import TableRowPaginatedUseCase from './paginated.use-case';
 
-vi.mock('@application/core/builders', async (importOriginal) => {
-  const original =
-    await importOriginal<typeof import('@application/core/builders')>();
-  return {
-    ...original,
-    buildQuery: vi.fn().mockResolvedValue({}),
-    buildOrder: vi.fn().mockReturnValue({}),
-    transformRowContext: vi.fn().mockImplementation((row) => row),
-  };
-});
-
 let tableInMemoryRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
+let rowContextService: InMemoryRowContextService;
 let sut: TableRowPaginatedUseCase;
 
 describe('Table Row Paginated Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowPaginatedUseCase(tableInMemoryRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    rowContextService = new InMemoryRowContextService();
+
+    sut = new TableRowPaginatedUseCase(
+      tableInMemoryRepository,
+      rowRepository,
+      rowPasswordService,
+      rowContextService,
+    );
   });
 
   it('deve retornar lista de rows paginada', async () => {
@@ -78,7 +80,8 @@ describe('Table Row Paginated Use Case', () => {
   });
 
   it('deve retornar erro LIST_ROW_TABLE_PAGINATED_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

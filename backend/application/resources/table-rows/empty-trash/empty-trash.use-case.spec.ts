@@ -63,21 +63,26 @@ describe('Empty Trash Use Case', () => {
       data: { trashed: true, trashedAt: new Date() },
     });
 
-    const emptyTrashSpy = vi.spyOn(rowInMemoryRepository, 'emptyTrash');
-
     const result = await sut.execute({ slug: 'clientes' });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value.deleted).toBe(2);
-    expect(emptyTrashSpy).toHaveBeenCalledTimes(1);
-    expect(emptyTrashSpy).toHaveBeenCalledWith(table);
+
+    const remaining1 = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row1._id },
+    });
+    const remaining2 = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row2._id },
+    });
+    expect(remaining1).toBeNull();
+    expect(remaining2).toBeNull();
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-
     const result = await sut.execute({ slug: 'non-existent' });
 
     expect(result.isLeft()).toBe(true);
@@ -85,7 +90,6 @@ describe('Empty Trash Use Case', () => {
 
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar deleted: 0 quando lixeira vazia', async () => {
@@ -105,7 +109,8 @@ describe('Empty Trash Use Case', () => {
   });
 
   it('deve retornar EMPTY_TRASH_ROW_ERROR quando repository falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

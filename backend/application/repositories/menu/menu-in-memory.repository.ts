@@ -8,7 +8,20 @@ import type {
 } from './menu-contract.repository';
 
 export default class MenuInMemoryRepository implements MenuContractRepository {
-  private items: IMenu[] = [];
+  items: IMenu[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(payload: MenuCreatePayload): Promise<IMenu> {
     const menu: IMenu = {
@@ -30,6 +43,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
   }
 
   async findById(_id: string, options?: FindOptions): Promise<IMenu | null> {
+    this._checkError('findById');
     const item = this.items.find((i) => {
       if (i._id !== _id) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -39,6 +53,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
   }
 
   async findBySlug(slug: string, options?: FindOptions): Promise<IMenu | null> {
+    this._checkError('findBySlug');
     const item = this.items.find((i) => {
       if (i.slug !== slug) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -48,6 +63,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
   }
 
   async findMany(payload?: MenuQueryPayload): Promise<IMenu[]> {
+    this._checkError('findMany');
     let filtered = this.items;
 
     const trashed = payload?.trashed ?? false;
@@ -82,6 +98,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
   }
 
   async update({ _id, ...payload }: MenuUpdatePayload): Promise<IMenu> {
+    this._checkError('update');
     const menu = this.items.find((m) => m._id === _id);
     if (!menu) throw new Error('Menu not found');
     Object.assign(menu, payload, { updatedAt: new Date() });
@@ -89,12 +106,14 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
   }
 
   async delete(_id: string): Promise<void> {
+    this._checkError('delete');
     const index = this.items.findIndex((m) => m._id === _id);
     if (index === -1) throw new Error('Menu not found');
     this.items.splice(index, 1);
   }
 
   async count(payload?: MenuQueryPayload): Promise<number> {
+    this._checkError('count');
     const filtered = await this.findMany({
       ...payload,
       page: undefined,

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_TYPE,
@@ -8,27 +8,29 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableCreateUseCase from './create.use-case';
 
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableCreateUseCase;
 
 describe('Table Create Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableCreateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
   it('deve criar tabela com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const createManySpy = vi.spyOn(fieldInMemoryRepository, 'createMany');
-
     const result = await sut.execute({
       name: 'Clientes',
       owner: 'owner-id',
@@ -39,8 +41,6 @@ describe('Table Create Use Case', () => {
 
     expect(result.value.name).toBe('Clientes');
     expect(result.value.slug).toBe('clientes');
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(createManySpy).toHaveBeenCalledOnce();
 
     // Deve criar 5 campos nativos + 1 campo "Nome" padrão
     const fields = result.value.fields;
@@ -133,7 +133,8 @@ describe('Table Create Use Case', () => {
   });
 
   it('deve retornar erro CREATE_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

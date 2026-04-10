@@ -5,16 +5,12 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import {
-  hashPasswordFields,
-  maskPasswordFields,
-} from '@application/core/row-password-helper.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
-import { executeScript } from '@application/core/table/handler';
-import type { FieldDefinition } from '@application/core/table/types';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 
 type Response = Either<HTTPException, IRow>;
 
@@ -29,6 +25,8 @@ export default class TableRowCreateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
     private readonly userRepository: UserContractRepository,
+    private readonly rowPasswordService: RowPasswordContractService,
+    private readonly scriptExecutionService: ScriptExecutionContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -53,7 +51,7 @@ export default class TableRowCreateUseCase {
         );
       }
 
-      await hashPasswordFields(payload, table.fields);
+      await this.rowPasswordService.hash(payload, table.fields);
 
       const createData: Record<string, any> = {
         ...payload,
@@ -63,7 +61,7 @@ export default class TableRowCreateUseCase {
       const beforeSaveCode = table.methods?.beforeSave?.code;
 
       if (beforeSaveCode) {
-        const fieldDefs: FieldDefinition[] = table.fields.map((f) => ({
+        const fieldDefs = table.fields.map((f) => ({
           slug: f.slug,
           type: f.type,
           name: f.name,
@@ -107,7 +105,7 @@ export default class TableRowCreateUseCase {
           }
         }
 
-        const result = await executeScript({
+        const result = await this.scriptExecutionService.execute({
           code: beforeSaveCode,
           doc: scriptDoc,
           tableSlug: table.slug,
@@ -152,7 +150,7 @@ export default class TableRowCreateUseCase {
         data: createData,
       });
 
-      maskPasswordFields(row, table.fields);
+      this.rowPasswordService.mask(row, table.fields);
 
       return right(row);
     } catch (error) {

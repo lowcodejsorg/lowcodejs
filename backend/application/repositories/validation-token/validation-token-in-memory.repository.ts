@@ -12,7 +12,20 @@ import type {
 } from './validation-token-contract.repository';
 
 export default class ValidationTokenInMemoryRepository implements ValidationTokenContractRepository {
-  private items: IValidationToken[] = [];
+  items: IValidationToken[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(
     payload: ValidationTokenCreatePayload,

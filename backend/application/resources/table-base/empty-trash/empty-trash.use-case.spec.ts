@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -68,24 +68,16 @@ describe('Empty Trash Tables Use Case', () => {
       trashedAt: new Date(),
     });
 
-    const deleteManyFieldsSpy = vi.spyOn(fieldInMemoryRepository, 'deleteMany');
-    const dropCollectionSpy = vi.spyOn(
-      tableInMemoryRepository,
-      'dropCollection',
-    );
-    const deleteTableSpy = vi.spyOn(tableInMemoryRepository, 'delete');
-
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.deleted).toBe(1);
-    expect(deleteManyFieldsSpy).toHaveBeenCalledTimes(1);
-    expect(deleteManyFieldsSpy).toHaveBeenCalledWith([field._id]);
-    expect(dropCollectionSpy).toHaveBeenCalledTimes(1);
-    expect(dropCollectionSpy).toHaveBeenCalledWith('clientes');
-    expect(deleteTableSpy).toHaveBeenCalledTimes(1);
-    expect(deleteTableSpy).toHaveBeenCalledWith(table._id);
+
+    const foundTable = await tableInMemoryRepository.findById(table._id);
+    expect(foundTable).toBeNull();
+    const foundField = await fieldInMemoryRepository.findById(field._id);
+    expect(foundField).toBeNull();
   });
 
   it('deve retornar 0 deletados quando lixeira esta vazia', async () => {
@@ -119,7 +111,8 @@ describe('Empty Trash Tables Use Case', () => {
   });
 
   it('deve retornar erro EMPTY_TRASH_TABLES_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

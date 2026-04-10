@@ -8,7 +8,20 @@ import type {
 } from './permission-contract.repository';
 
 export default class PermissionInMemoryRepository implements PermissionContractRepository {
-  private items: IPermission[] = [];
+  items: IPermission[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(payload: PermissionCreatePayload): Promise<IPermission> {
     const permission: IPermission = {
@@ -48,6 +61,7 @@ export default class PermissionInMemoryRepository implements PermissionContractR
   }
 
   async findMany(payload?: PermissionQueryPayload): Promise<IPermission[]> {
+    this._checkError('findMany');
     let filtered = this.items;
 
     if (payload?.search) {

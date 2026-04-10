@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 
@@ -14,8 +14,6 @@ describe('Profile Show Use Case', () => {
   });
 
   it('deve retornar o perfil do usuario existente', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -31,7 +29,6 @@ describe('Profile Show Use Case', () => {
     expect(result.value._id).toBe(created._id);
     expect(result.value.name).toBe('John Doe');
     expect(result.value.email).toBe('john@example.com');
-    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
   });
 
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existe', async () => {
@@ -46,7 +43,8 @@ describe('Profile Show Use Case', () => {
   });
 
   it('deve retornar erro GET_USER_PROFILE_ERROR quando houver falha', async () => {
-    vi.spyOn(userInMemoryRepository, 'findById').mockRejectedValueOnce(
+    userInMemoryRepository.simulateError(
+      'findById',
       new Error('Database error'),
     );
 

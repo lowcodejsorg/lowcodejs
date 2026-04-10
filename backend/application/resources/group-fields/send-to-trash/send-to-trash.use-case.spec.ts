@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -9,16 +9,13 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import GroupFieldSendToTrashUseCase from './send-to-trash.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue(undefined),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: GroupFieldSendToTrashUseCase;
 
 const TABLE_DEFAULTS = {
@@ -60,7 +57,13 @@ describe('Group Field Send To Trash Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    sut = new GroupFieldSendToTrashUseCase(tableRepository, fieldRepository);
+    tableSchemaService = new TableSchemaInMemoryService();
+
+    sut = new GroupFieldSendToTrashUseCase(
+      tableRepository,
+      fieldRepository,
+      tableSchemaService,
+    );
   });
 
   it('deve enviar campo para lixeira', async () => {
@@ -80,9 +83,6 @@ describe('Group Field Send To Trash Use Case', () => {
       ],
     });
 
-    const updateFieldSpy = vi.spyOn(fieldRepository, 'update');
-    const updateTableSpy = vi.spyOn(tableRepository, 'update');
-
     const result = await sut.execute({
       slug: 'clientes',
       groupSlug: 'endereco',
@@ -97,14 +97,9 @@ describe('Group Field Send To Trash Use Case', () => {
     expect(result.value.showInDetail).toBe(false);
     expect(result.value.showInFilter).toBe(false);
     expect(result.value.required).toBe(false);
-
-    expect(updateFieldSpy).toHaveBeenCalledTimes(1);
-    expect(updateTableSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'inexistente',
       groupSlug: 'endereco',
@@ -116,8 +111,6 @@ describe('Group Field Send To Trash Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
     expect(result.value.message).toBe('Tabela não encontrada');
-
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar FIELD_NOT_FOUND quando campo nao existe', async () => {
@@ -135,8 +128,6 @@ describe('Group Field Send To Trash Use Case', () => {
       ],
     });
 
-    const findByIdSpy = vi.spyOn(fieldRepository, 'findById');
-
     const result = await sut.execute({
       slug: 'clientes',
       groupSlug: 'endereco',
@@ -148,9 +139,6 @@ describe('Group Field Send To Trash Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('FIELD_NOT_FOUND');
     expect(result.value.message).toBe('Campo não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith('campo-inexistente');
   });
 
   it('deve retornar ALREADY_TRASHED quando campo ja esta na lixeira', async () => {

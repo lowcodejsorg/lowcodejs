@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -9,24 +9,25 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldDeleteUseCase from './delete.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldDeleteUseCase;
 
 describe('Table Field Delete Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableFieldDeleteUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -72,17 +73,16 @@ describe('Table Field Delete Use Case', () => {
       fieldOrderForm: [],
     });
 
-    const deleteFieldSpy = vi.spyOn(fieldInMemoryRepository, 'delete');
-    const updateTableSpy = vi.spyOn(tableInMemoryRepository, 'update');
-
     const result = await sut.execute({ slug: 'clientes', _id: field._id });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
-    expect(deleteFieldSpy).toHaveBeenCalledTimes(1);
-    expect(deleteFieldSpy).toHaveBeenCalledWith(field._id);
-    expect(updateTableSpy).toHaveBeenCalledTimes(1);
+
+    const foundField = await fieldInMemoryRepository.findById(field._id);
+    expect(foundField).toBeNull();
+    const updatedTable = await tableInMemoryRepository.findBySlug('clientes');
+    expect(updatedTable?.fields).not.toContain(field._id);
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -270,7 +270,8 @@ describe('Table Field Delete Use Case', () => {
   });
 
   it('deve retornar erro DELETE_FIELD_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

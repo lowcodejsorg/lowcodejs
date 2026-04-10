@@ -11,9 +11,10 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import { normalizeDefaultValue } from '../table-field-base.schema';
 
@@ -42,6 +43,8 @@ export default class TableFieldUpdateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly rowRepository: RowContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -166,7 +169,7 @@ export default class TableFieldUpdateUseCase {
         f._id === field._id ? updatedField : f,
       );
 
-      const _schema = buildSchema(fields, groups);
+      const _schema = this.tableSchemaService.computeSchema(fields, groups);
 
       await this.tableRepository.update({
         _id: table._id,
@@ -178,20 +181,13 @@ export default class TableFieldUpdateUseCase {
       });
 
       if (oldSlug !== slug) {
-        const collection = await buildTable({
+        await this.tableSchemaService.syncModel({
           ...table,
           _id: table._id,
           _schema,
           groups,
         });
-        await collection.updateMany(
-          {},
-          {
-            $rename: {
-              [oldSlug]: slug,
-            },
-          },
-        );
+        await this.rowRepository.renameField(table, oldSlug, slug);
       }
 
       return right(updatedField);

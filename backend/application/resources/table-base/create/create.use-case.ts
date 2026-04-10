@@ -15,9 +15,9 @@ import {
   type ITable as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type { TableCreatePayload } from './create.validator';
 
@@ -29,6 +29,7 @@ export default class TableCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -80,7 +81,7 @@ export default class TableCreateUseCase {
 
       const nativeFieldIds = nativeFields.flatMap((f) => f._id);
 
-      const _schema = buildSchema(nativeFields);
+      const _schema = this.tableSchemaService.computeSchema(nativeFields);
 
       const created = await this.tableRepository.create({
         ...payload,

@@ -1,13 +1,13 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import { transformRowContext } from '@application/core/builders';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { ReactionContractRepository } from '@application/repositories/reaction/reaction-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
 
 import type { TableRowReactionPayload } from './reaction.validator';
 
@@ -24,6 +24,7 @@ export default class TableRowReactionUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly reactionRepository: ReactionContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly rowContextService: RowContextContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -95,7 +96,13 @@ export default class TableRowReactionUseCase {
         });
       }
 
-      return right(transformRowContext(updatedRow, table.fields, payload.user));
+      return right(
+        this.rowContextService.transform(
+          updatedRow,
+          table.fields,
+          payload.user,
+        ),
+      );
     } catch (error) {
       console.error('[table-rows > reaction][error]:', error);
       return left(

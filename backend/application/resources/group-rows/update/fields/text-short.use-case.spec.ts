@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
 import {
   makePasswordField,
   makeTextShortWithFormat,
@@ -13,6 +14,7 @@ import GroupRowUpdateUseCase from '../update.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: BcryptRowPasswordService;
 let sut: GroupRowUpdateUseCase;
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -43,7 +45,13 @@ describe('Group Row Update - TEXT_SHORT', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowUpdateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new BcryptRowPasswordService();
+
+    sut = new GroupRowUpdateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   // ─── ALPHA_NUMERIC ───

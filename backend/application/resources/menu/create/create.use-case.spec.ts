@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -110,7 +110,8 @@ describe('Menu Create Use Case', () => {
   });
 
   it('deve retornar erro CREATE_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    menuInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

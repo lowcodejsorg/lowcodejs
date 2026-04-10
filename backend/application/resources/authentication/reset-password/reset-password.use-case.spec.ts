@@ -20,10 +20,6 @@ describe('Reset Password Use Case', () => {
   });
 
   it('deve atualizar senha com sucesso', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-    const hashSpy = vi.spyOn(passwordService, 'hash');
-    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
-
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -40,15 +36,8 @@ describe('Reset Password Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
 
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith(user._id);
-    expect(hashSpy).toHaveBeenCalledTimes(1);
-    expect(hashSpy).toHaveBeenCalledWith('new_password');
-    expect(updateSpy).toHaveBeenCalledTimes(1);
-    expect(updateSpy).toHaveBeenCalledWith({
-      _id: user._id,
-      password: 'hashed_new_password',
-    });
+    const updated = await userInMemoryRepository.findById(user._id);
+    expect(updated?.password).toBe('hashed_new_password');
   });
 
   it('deve armazenar senha hasheada e nao em texto plano', async () => {
@@ -72,9 +61,6 @@ describe('Reset Password Use Case', () => {
   });
 
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existir', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-    const hashSpy = vi.spyOn(passwordService, 'hash');
-
     const result = await sut.execute({
       _id: 'non-existent-id',
       password: 'new_password',
@@ -85,9 +71,6 @@ describe('Reset Password Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('USER_NOT_FOUND');
     expect(result.value.message).toBe('Usuário não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(hashSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro UPDATE_PASSWORD_ERROR quando houver falha', async () => {

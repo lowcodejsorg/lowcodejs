@@ -14,8 +14,6 @@ describe('User Show Use Case', () => {
   });
 
   it('deve retornar usuario quando encontrado', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -30,14 +28,9 @@ describe('User Show Use Case', () => {
     expect(result.value._id).toBe(created._id);
     expect(result.value.name).toBe('John Doe');
     expect(result.value.email).toBe('john@example.com');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
   });
 
   it('deve retornar erro USER_NOT_FOUND (404) quando usuario nao existe', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-
     const result = await sut.execute({ _id: 'non-existent-id' });
 
     expect(result.isLeft()).toBe(true);
@@ -45,9 +38,6 @@ describe('User Show Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('USER_NOT_FOUND');
     expect(result.value.message).toBe('Usuário não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith('non-existent-id');
   });
 
   it('deve retornar erro GET_USER_BY_ID_ERROR (500) em falha de DB', async () => {

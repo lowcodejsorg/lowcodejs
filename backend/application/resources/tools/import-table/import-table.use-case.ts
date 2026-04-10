@@ -11,12 +11,13 @@ import {
   type ILayoutFields,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import {
   TableContractRepository,
   type TableCreatePayload,
 } from '@application/repositories/table/table-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type {
   ImportTableResponse,
@@ -54,6 +55,8 @@ export default class ImportTableUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly rowRepository: RowContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(
@@ -270,7 +273,8 @@ export default class ImportTableUseCase {
             importedFieldCount++;
           }
 
-          const groupSchema = buildSchema(groupFields);
+          const groupSchema =
+            this.tableSchemaService.computeSchema(groupFields);
 
           groups.push({
             slug: exportedGroup.slug,
@@ -313,7 +317,10 @@ export default class ImportTableUseCase {
           .filter(Boolean) as string[];
 
         // 6. Build schema and create table
-        const _schema = buildSchema(allCreatedFields, groups);
+        const _schema = this.tableSchemaService.computeSchema(
+          allCreatedFields,
+          groups,
+        );
 
         const createPayload: TableCreatePayload = {
           _schema,
@@ -348,13 +355,13 @@ export default class ImportTableUseCase {
           const fullTable = await this.tableRepository.findById(newTable._id);
 
           if (fullTable) {
-            const model = await buildTable(fullTable);
-
             for (const row of data.rows) {
               try {
-                const doc = new model(row);
-                doc.creator = payload.ownerId as any;
-                await doc.collection.insertOne(doc.toObject());
+                await this.rowRepository.insertRaw(
+                  fullTable,
+                  row,
+                  payload.ownerId,
+                );
                 importedRowCount++;
               } catch (rowError) {
                 console.error('[tools > import-table][error]:', rowError);

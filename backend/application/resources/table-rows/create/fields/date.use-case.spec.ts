@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
+import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import { makeDateField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
@@ -11,6 +13,8 @@ import TableRowCreateUseCase from '../create.use-case';
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
 let userRepository: UserInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
+let scriptExecutionService: InMemoryScriptExecutionService;
 let sut: TableRowCreateUseCase;
 
 describe('Table Row Create - DATE', () => {
@@ -18,7 +22,17 @@ describe('Table Row Create - DATE', () => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
     userRepository = new UserInMemoryRepository();
-    sut = new TableRowCreateUseCase(tableRepository, rowRepository, userRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    scriptExecutionService = new InMemoryScriptExecutionService();
+
+    sut = new TableRowCreateUseCase(
+      tableRepository,
+      rowRepository,
+      userRepository,
+      rowPasswordService,
+      scriptExecutionService,
+    );
   });
 
   it('deve criar row com data ISO valida', async () => {
