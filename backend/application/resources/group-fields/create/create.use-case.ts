@@ -10,10 +10,10 @@ import {
   type IField,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { normalizeDefaultValue } from '@application/resources/table-fields/table-field-base.schema';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type { GroupFieldCreatePayload } from './create.validator';
 
@@ -25,6 +25,7 @@ export default class GroupFieldCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -90,7 +91,8 @@ export default class GroupFieldCreateUseCase {
         if (g.slug !== targetGroup.slug) return g;
 
         const updatedFields = [...(g.fields || []), field];
-        const groupSchema = buildSchema(updatedFields);
+        const groupSchema =
+          this.tableSchemaService.computeSchema(updatedFields);
 
         return {
           ...g,
@@ -100,7 +102,10 @@ export default class GroupFieldCreateUseCase {
       });
 
       // Reconstrói o schema da tabela pai com os grupos atualizados
-      const parentSchema = buildSchema(table.fields, updatedGroups);
+      const parentSchema = this.tableSchemaService.computeSchema(
+        table.fields,
+        updatedGroups,
+      );
 
       await this.tableRepository.update({
         _id: table._id,
@@ -110,7 +115,7 @@ export default class GroupFieldCreateUseCase {
         administrators: table.administrators.flatMap((a) => a._id),
       });
 
-      await buildTable({
+      await this.tableSchemaService.syncModel({
         ...table,
         _id: table._id,
         _schema: parentSchema,

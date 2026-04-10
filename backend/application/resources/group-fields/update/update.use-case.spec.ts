@@ -9,16 +9,13 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import GroupFieldUpdateUseCase from './update.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue(undefined),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: GroupFieldUpdateUseCase;
 
 const TABLE_DEFAULTS = {
@@ -60,7 +57,13 @@ describe('Group Field Update Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    sut = new GroupFieldUpdateUseCase(tableRepository, fieldRepository);
+    tableSchemaService = new TableSchemaInMemoryService();
+
+    sut = new GroupFieldUpdateUseCase(
+      tableRepository,
+      fieldRepository,
+      tableSchemaService,
+    );
   });
 
   it('deve atualizar campo do grupo com sucesso', async () => {
@@ -251,9 +254,7 @@ describe('Group Field Update Use Case', () => {
   });
 
   it('deve retornar UPDATE_GROUP_FIELD_ERROR quando repository falha', async () => {
-    vi.spyOn(tableRepository, 'findBySlug').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    tableRepository.simulateError('findBySlug', new Error('Database error'));
 
     const result = await sut.execute({
       slug: 'clientes',

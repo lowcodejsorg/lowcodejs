@@ -116,7 +116,8 @@ describe('Table Field Show Use Case', () => {
   });
 
   it('deve retornar erro GET_FIELD_BY_ID_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

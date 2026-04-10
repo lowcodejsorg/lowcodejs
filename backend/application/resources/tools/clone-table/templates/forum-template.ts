@@ -12,9 +12,9 @@ import {
   type IField,
   type IGroupConfiguration,
 } from '@application/core/entity.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import type { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import type { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type {
   CloneTableDeps,
@@ -33,11 +33,14 @@ export async function createForumTemplate(
   });
 
   const { fields, groups, orderList, orderForm, orderFilter, orderDetail } =
-    await buildForumFields(deps.fieldRepository);
+    await buildForumFields(deps.fieldRepository, deps.tableSchemaService);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = buildSchema([...nativeFields, ...fields], groups);
+  const _schema = deps.tableSchemaService.computeSchema(
+    [...nativeFields, ...fields],
+    groups,
+  );
 
   const createPayload: TableCreatePayload = {
     _schema,
@@ -117,19 +120,21 @@ export async function createForumTemplate(
   const privacyField = fields.find((field) => field.slug === 'privacidade');
   const membersField = fields.find((field) => field.slug === 'membros');
   if (channelField) {
-    const model = await buildTable(newTable);
-    await model.create({
-      [channelField.slug]: 'Bem-vindos',
-      ...(descriptionField && {
-        [descriptionField.slug]: 'Canal inicial',
-      }),
-      ...(privacyField && {
-        [privacyField.slug]: 'publico',
-      }),
-      ...(membersField && {
-        [membersField.slug]: [],
-      }),
-      creator: payload.ownerId,
+    await deps.rowRepository.create({
+      table: newTable,
+      data: {
+        [channelField.slug]: 'Bem-vindos',
+        ...(descriptionField && {
+          [descriptionField.slug]: 'Canal inicial',
+        }),
+        ...(privacyField && {
+          [privacyField.slug]: 'publico',
+        }),
+        ...(membersField && {
+          [membersField.slug]: [],
+        }),
+        creator: payload.ownerId,
+      },
     });
   }
 
@@ -141,6 +146,7 @@ export async function createForumTemplate(
 
 export async function buildForumFields(
   fieldRepository: FieldContractRepository,
+  tableSchemaService: TableSchemaContractService,
 ): Promise<{
   fields: IField[];
   groups: IGroupConfiguration[];
@@ -552,7 +558,7 @@ export async function buildForumFields(
       messageReplyField,
       messageReactionsField,
     ],
-    _schema: buildSchema([
+    _schema: tableSchemaService.computeSchema([
       messageIdField,
       messageTextField,
       messageAuthorField,

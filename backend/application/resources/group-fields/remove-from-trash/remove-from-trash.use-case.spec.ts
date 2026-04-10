@@ -9,16 +9,13 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import GroupFieldRemoveFromTrashUseCase from './remove-from-trash.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue(undefined),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: GroupFieldRemoveFromTrashUseCase;
 
 const TABLE_DEFAULTS = {
@@ -60,9 +57,12 @@ describe('Group Field Remove From Trash Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new GroupFieldRemoveFromTrashUseCase(
       tableRepository,
       fieldRepository,
+      tableSchemaService,
     );
   });
 

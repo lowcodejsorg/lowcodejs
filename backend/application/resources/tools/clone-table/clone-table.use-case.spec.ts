@@ -1,21 +1,31 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import CloneTableUseCase from './clone-table.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: CloneTableUseCase;
 
 describe('Clone Table Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
+
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new CloneTableUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      rowInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -67,7 +77,8 @@ describe('Clone Table Use Case', () => {
   });
 
   it('deve retornar erro CLONE_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findById').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findById',
       new Error('Database error'),
     );
 

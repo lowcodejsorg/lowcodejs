@@ -102,7 +102,8 @@ describe('Bulk Trash Use Case', () => {
   });
 
   it('deve retornar BULK_TRASH_ROW_ERROR quando repository falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

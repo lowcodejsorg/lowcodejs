@@ -314,7 +314,8 @@ describe('Table Field Add Category Use Case', () => {
   });
 
   it('deve retornar erro ADD_CATEGORY_OPTION_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

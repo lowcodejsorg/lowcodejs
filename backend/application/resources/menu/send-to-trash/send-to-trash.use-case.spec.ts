@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 
@@ -65,7 +65,8 @@ describe('Menu Send To Trash Use Case', () => {
   });
 
   it('deve retornar erro SEND_TO_TRASH_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findById').mockRejectedValueOnce(
+    menuInMemoryRepository.simulateError(
+      'findById',
       new Error('Database error'),
     );
 

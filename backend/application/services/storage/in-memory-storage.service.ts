@@ -5,11 +5,25 @@ import { StorageContractService } from './storage-contract.service';
 
 export default class InMemoryStorageService extends StorageContractService {
   private files: Map<string, StorageUploadResponse> = new Map();
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async upload(
     part: MultipartFile,
     staticName?: string,
   ): Promise<StorageUploadResponse> {
+    this._checkError('upload');
     const name =
       staticName ?? Math.floor(Math.random() * 100000000)?.toString();
     const originalExt = part.filename?.split('.').pop() ?? 'bin';

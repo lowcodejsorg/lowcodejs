@@ -10,17 +10,13 @@ import {
 import type { ITable } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 
 import GroupRowListUseCase from './list.use-case';
 
-vi.mock('@application/core/row-password-helper.core', () => ({
-  hashPasswordFields: vi.fn().mockResolvedValue(undefined),
-  maskPasswordFields: vi.fn(),
-  stripMaskedPasswordFields: vi.fn(),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
 let sut: GroupRowListUseCase;
 
 const TABLE_DEFAULTS = {
@@ -127,7 +123,13 @@ describe('Group Row List Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowListUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    sut = new GroupRowListUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   it('deve listar itens do grupo', async () => {

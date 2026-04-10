@@ -8,7 +8,7 @@ import type {
 } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildTable } from '@application/core/util.core';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import type {
@@ -22,7 +22,10 @@ import type {
 
 @Service()
 export default class ExportTableUseCase {
-  constructor(private readonly tableRepository: TableContractRepository) {}
+  constructor(
+    private readonly tableRepository: TableContractRepository,
+    private readonly rowRepository: RowContractRepository,
+  ) {}
 
   async execute(
     payload: ExportTableUseCasePayload,
@@ -184,9 +187,7 @@ export default class ExportTableUseCase {
   private async exportData(
     table: import('@application/core/entity.core').ITable,
   ): Promise<{ totalRows: number; rows: Record<string, unknown>[] }> {
-    const model = await buildTable(table);
-
-    const rows = await model.find({ trashed: { $ne: true } }).lean();
+    const rows = await this.rowRepository.findAllRaw(table);
 
     const nonNativeFields = table.fields.filter((f) => !f.native);
     const fieldSlugs = new Set(nonNativeFields.map((f) => f.slug));
@@ -198,7 +199,7 @@ export default class ExportTableUseCase {
       }
     }
 
-    const exportedRows = rows.map((row: any) => {
+    const exportedRows = rows.map((row) => {
       const exportedRow: Record<string, unknown> = {};
 
       for (const field of nonNativeFields) {

@@ -9,7 +9,6 @@ import {
   FIELD_NATIVE_LIST,
   type IField,
 } from '@application/core/entity.core';
-import { buildSchema } from '@application/core/util.core';
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import type { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
 
@@ -36,7 +35,10 @@ export async function createMosaicTemplate(
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = buildSchema([...nativeFields, ...fields]);
+  const _schema = deps.tableSchemaService.computeSchema([
+    ...nativeFields,
+    ...fields,
+  ]);
 
   const createPayload: TableCreatePayload = {
     _schema,

@@ -10,20 +10,13 @@ import {
 import type { ITable } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 
 import GroupRowUpdateUseCase from './update.use-case';
 
-vi.mock('@application/core/row-payload-validator.core', () => ({
-  validateRowPayload: vi.fn().mockReturnValue(null),
-}));
-vi.mock('@application/core/row-password-helper.core', () => ({
-  hashPasswordFields: vi.fn().mockResolvedValue(undefined),
-  maskPasswordFields: vi.fn(),
-  stripMaskedPasswordFields: vi.fn(),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
 let sut: GroupRowUpdateUseCase;
 
 const TABLE_DEFAULTS = {
@@ -132,7 +125,13 @@ describe('Group Row Update Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowUpdateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    sut = new GroupRowUpdateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   it('deve atualizar item do grupo com sucesso', async () => {
@@ -252,9 +251,7 @@ describe('Group Row Update Use Case', () => {
   });
 
   it('deve retornar UPDATE_GROUP_ROW_ERROR quando repository falha', async () => {
-    vi.spyOn(tableRepository, 'findBySlug').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    tableRepository.simulateError('findBySlug', new Error('Database error'));
 
     const result = await sut.execute({
       slug: 'pedidos',

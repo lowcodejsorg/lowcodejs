@@ -104,7 +104,8 @@ describe('UserGroup Paginated Use Case', () => {
   });
 
   it('deve retornar erro LIST_USER_GROUP_PAGINATED_ERROR quando houver falha', async () => {
-    vi.spyOn(userGroupInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    userGroupInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

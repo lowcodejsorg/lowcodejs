@@ -30,8 +30,16 @@ import BcryptPasswordService from '@application/services/password/bcrypt-passwor
 import { PasswordContractService } from '@application/services/password/password-contract.service';
 import { PermissionContractService } from '@application/services/permission/permission-contract.service';
 import PermissionService from '@application/services/permission/permission.service';
+import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
+import RowContextService from '@application/services/row-context/row-context.service';
+import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import NodeVmScriptExecutionService from '@application/services/script-execution/node-vm-script-execution.service';
+import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
 import StorageService from '@application/services/storage/storage.service';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import TableSchemaMongooseService from '@application/services/table-schema/table-schema-mongoose.service';
 
 /**
  * Registro explícito de dependências.
@@ -105,4 +113,21 @@ export function registerDependencies(): void {
   );
 
   injectablesHolder.injectService(PermissionContractService, PermissionService);
+
+  injectablesHolder.injectService(
+    TableSchemaContractService,
+    TableSchemaMongooseService,
+  );
+
+  injectablesHolder.injectService(
+    RowPasswordContractService,
+    BcryptRowPasswordService,
+  );
+
+  injectablesHolder.injectService(
+    ScriptExecutionContractService,
+    NodeVmScriptExecutionService,
+  );
+
+  injectablesHolder.injectService(RowContextContractService, RowContextService);
 }

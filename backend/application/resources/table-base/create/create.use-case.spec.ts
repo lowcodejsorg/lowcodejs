@@ -8,20 +8,25 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableCreateUseCase from './create.use-case';
 
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableCreateUseCase;
 
 describe('Table Create Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableCreateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -133,7 +138,8 @@ describe('Table Create Use Case', () => {
   });
 
   it('deve retornar erro CREATE_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

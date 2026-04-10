@@ -11,9 +11,9 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import { normalizeDefaultValue } from '../table-field-base.schema';
 
@@ -27,6 +27,7 @@ export default class TableFieldCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -66,7 +67,8 @@ export default class TableFieldCreateUseCase {
           FIELD_GROUP_NATIVE_LIST,
         );
 
-        const groupSchema = buildSchema(nativeGroupFields);
+        const groupSchema =
+          this.tableSchemaService.computeSchema(nativeGroupFields);
 
         // Adiciona grupo em groups da tabela pai
         const newGroup: IGroupConfiguration = {
@@ -86,7 +88,7 @@ export default class TableFieldCreateUseCase {
 
       const fields = [...(table.fields ?? []), field];
 
-      const _schema = buildSchema(fields, groups);
+      const _schema = this.tableSchemaService.computeSchema(fields, groups);
 
       await this.tableRepository.update({
         _id: table._id,
@@ -104,7 +106,7 @@ export default class TableFieldCreateUseCase {
         fieldOrderDetail: [...(table.fieldOrderDetail ?? []), field._id],
       });
 
-      await buildTable({
+      await this.tableSchemaService.syncModel({
         ...table,
         _id: table._id,
         _schema: {

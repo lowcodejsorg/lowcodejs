@@ -6,18 +6,11 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import ImportTableUseCase from './import-table.use-case';
-
-vi.mock('@application/core/util.core', () => ({
-  buildSchema: vi.fn().mockReturnValue({}),
-  buildTable: vi.fn().mockResolvedValue({
-    find: vi.fn().mockReturnValue({
-      lean: vi.fn().mockResolvedValue([]),
-    }),
-  }),
-}));
 
 vi.mock('slugify', () => ({
   default: vi.fn((name: string) => name.toLowerCase().replace(/\s+/g, '-')),
@@ -25,6 +18,8 @@ vi.mock('slugify', () => ({
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: ImportTableUseCase;
 
 const validFileContent = {
@@ -84,9 +79,15 @@ describe('Import Table Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
+
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new ImportTableUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      rowInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -207,7 +208,8 @@ describe('Import Table Use Case', () => {
   });
 
   it('deve retornar erro IMPORT_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

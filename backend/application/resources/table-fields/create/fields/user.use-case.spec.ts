@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_TYPE,
@@ -8,16 +8,13 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldCreateUseCase from '../create.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldCreateUseCase;
 
 const BASE_PAYLOAD = {
@@ -43,7 +40,13 @@ describe('Table Field Create - USER', () => {
   beforeEach(async () => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    sut = new TableFieldCreateUseCase(tableRepository, fieldRepository);
+    tableSchemaService = new TableSchemaInMemoryService();
+
+    sut = new TableFieldCreateUseCase(
+      tableRepository,
+      fieldRepository,
+      tableSchemaService,
+    );
 
     await tableRepository.create({
       name: 'Tarefas',

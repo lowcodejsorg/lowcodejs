@@ -9,16 +9,13 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import GroupFieldSendToTrashUseCase from './send-to-trash.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue(undefined),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: GroupFieldSendToTrashUseCase;
 
 const TABLE_DEFAULTS = {
@@ -60,7 +57,13 @@ describe('Group Field Send To Trash Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    sut = new GroupFieldSendToTrashUseCase(tableRepository, fieldRepository);
+    tableSchemaService = new TableSchemaInMemoryService();
+
+    sut = new GroupFieldSendToTrashUseCase(
+      tableRepository,
+      fieldRepository,
+      tableSchemaService,
+    );
   });
 
   it('deve enviar campo para lixeira', async () => {

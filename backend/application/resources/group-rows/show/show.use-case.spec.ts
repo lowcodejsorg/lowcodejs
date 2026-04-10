@@ -10,17 +10,13 @@ import {
 import type { ITable } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 
 import GroupRowShowUseCase from './show.use-case';
 
-vi.mock('@application/core/row-password-helper.core', () => ({
-  hashPasswordFields: vi.fn().mockResolvedValue(undefined),
-  maskPasswordFields: vi.fn(),
-  stripMaskedPasswordFields: vi.fn(),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
 let sut: GroupRowShowUseCase;
 
 const TABLE_DEFAULTS = {
@@ -129,7 +125,13 @@ describe('Group Row Show Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowShowUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    sut = new GroupRowShowUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   it('deve retornar item especifico do grupo', async () => {

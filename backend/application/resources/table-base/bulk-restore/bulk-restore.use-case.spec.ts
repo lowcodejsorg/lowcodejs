@@ -110,7 +110,8 @@ describe('Bulk Restore Tables Use Case', () => {
   });
 
   it('deve retornar erro BULK_RESTORE_TABLES_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'updateMany').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'updateMany',
       new Error('Database error'),
     );
 

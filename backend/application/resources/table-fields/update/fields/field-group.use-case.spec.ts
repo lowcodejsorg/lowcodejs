@@ -7,19 +7,16 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldUpdateUseCase from '../update.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    updateMany: vi.fn().mockResolvedValue(undefined),
-  }),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldUpdateUseCase;
 
 const FIELD_DEFAULTS = {
@@ -85,9 +82,15 @@ describe('Table Field Update - FIELD_GROUP', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
+
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableFieldUpdateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      rowInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -130,9 +133,7 @@ describe('Table Field Update - FIELD_GROUP', () => {
     expect(result.value.group!.slug).toBe('produtos');
   });
 
-  it('deve chamar buildTable quando slug muda', async () => {
-    const { buildTable } = await import('@application/core/util.core');
-
+  it('deve chamar syncModel quando slug muda', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -163,7 +164,7 @@ describe('Table Field Update - FIELD_GROUP', () => {
       widthInDetail: null,
     });
 
-    expect(buildTable).toHaveBeenCalled();
+    expect(tableSchemaService.syncModelCallCount).toBeGreaterThanOrEqual(1);
   });
 
   it('deve atualizar slug do grupo na tabela', async () => {

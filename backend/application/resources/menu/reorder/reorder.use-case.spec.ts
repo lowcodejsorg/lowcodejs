@@ -112,7 +112,8 @@ describe('Menu Reorder Use Case', () => {
   });
 
   it('deve retornar erro REORDER_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findById').mockRejectedValueOnce(
+    menuInMemoryRepository.simulateError(
+      'findById',
       new Error('Database error'),
     );
 

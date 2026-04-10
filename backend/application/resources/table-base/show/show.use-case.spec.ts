@@ -57,7 +57,8 @@ describe('Table Show Use Case', () => {
   });
 
   it('deve retornar erro GET_TABLE_BY_SLUG_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

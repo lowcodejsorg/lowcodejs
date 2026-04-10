@@ -77,7 +77,8 @@ describe('Menu Remove From Trash Use Case', () => {
   });
 
   it('deve retornar erro REMOVE_FROM_TRASH_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findById').mockRejectedValueOnce(
+    menuInMemoryRepository.simulateError(
+      'findById',
       new Error('Database error'),
     );
 

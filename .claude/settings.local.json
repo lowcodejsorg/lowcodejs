@@ -85,7 +85,20 @@
       "Bash([ -f \"$dir/CLAUDE.md\" ])",
       "Bash(bash /tmp/audit_imports.sh)",
       "Bash(chmod +x /tmp/audit.sh)",
-      "Bash(bash /tmp/audit.sh)"
+      "Bash(bash /tmp/audit.sh)",
+      "Bash(sed 's/:.*$//')",
+      "Bash(sed -i 's|import type { FieldContractRepository } from '\\\\''@application/repositories/field/field-contract.repository'\\\\'';|import type { FieldContractRepository } from '\\\\''@application/repositories/field/field-contract.repository'\\\\'';\\\\nimport type { TableSchemaContractService } from '\\\\''@application/services/table-schema/table-schema-contract.service'\\\\'';|' /home/indio/Desktop/low-code-js/backend/application/resources/tools/clone-table/templates/forum-template.ts)",
+      "Bash(sed -i 's|    await buildForumFields\\(deps.fieldRepository\\);|    await buildForumFields\\(deps.fieldRepository, deps.tableSchemaService\\);|' /home/indio/Desktop/low-code-js/backend/application/resources/tools/clone-table/templates/forum-template.ts)",
+      "Bash(sed -i 's|import type { FieldContractRepository } from '\\\\''@application/repositories/field/field-contract.repository'\\\\'';|import type { FieldContractRepository } from '\\\\''@application/repositories/field/field-contract.repository'\\\\'';\\\\nimport type { TableSchemaContractService } from '\\\\''@application/services/table-schema/table-schema-contract.service'\\\\'';|' /home/indio/Desktop/low-code-js/backend/application/resources/tools/clone-table/templates/kanban-template.ts)",
+      "Bash(sed -i 's|    await buildKanbanFields\\(deps.fieldRepository\\);|    await buildKanbanFields\\(deps.fieldRepository, deps.tableSchemaService\\);|' /home/indio/Desktop/low-code-js/backend/application/resources/tools/clone-table/templates/kanban-template.ts)",
+      "Bash(sed -i 's|import type { FieldContractRepository } from '\\\\''@application/repositories/field/field-contract.repository'\\\\'';|import type { FieldContractRepository } from '\\\\''@application/repositories/field/field-contract.repository'\\\\'';\\\\nimport type { TableSchemaContractService } from '\\\\''@application/services/table-schema/table-schema-contract.service'\\\\'';|' /home/indio/Desktop/low-code-js/backend/application/resources/tools/clone-table/templates/calendar-template.ts)",
+      "Bash(sed -n '38,42p' /home/indio/Desktop/low-code-js/backend/application/resources/tools/clone-table/templates/forum-template.ts)",
+      "Bash(sed -n '38,42p' /home/indio/Desktop/low-code-js/backend/application/resources/tools/clone-table/templates/calendar-template.ts)",
+      "Bash(sed -n '25,40p' /home/indio/Desktop/low-code-js/backend/application/resources/table-fields/create/create.use-case.spec.ts)",
+      "Bash(sed -n '25,40p' /home/indio/Desktop/low-code-js/backend/application/resources/table-fields/send-to-trash/send-to-trash.use-case.spec.ts)",
+      "Bash(sed -n '30,40p' /home/indio/Desktop/low-code-js/backend/application/resources/table-fields/update/update.use-case.spec.ts)",
+      "Bash(sed -n '20,30p' /home/indio/Desktop/low-code-js/backend/application/resources/tools/export-table/export-table.use-case.spec.ts)",
+      "Bash(perl:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -173,7 +173,8 @@ describe('Table Paginated Use Case', () => {
   });
 
   it('deve retornar erro TABLE_LIST_PAGINATED_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

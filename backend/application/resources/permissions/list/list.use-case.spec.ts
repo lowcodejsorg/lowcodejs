@@ -49,7 +49,8 @@ describe('Permission List Use Case', () => {
   });
 
   it('deve retornar erro LIST_PERMISSION_ERROR quando houver falha', async () => {
-    vi.spyOn(permissionInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    permissionInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

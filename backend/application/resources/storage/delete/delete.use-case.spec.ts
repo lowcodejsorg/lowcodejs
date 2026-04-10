@@ -49,7 +49,8 @@ describe('Storage Delete Use Case', () => {
   });
 
   it('deve retornar erro STORAGE_DELETE_ERROR quando houver falha', async () => {
-    vi.spyOn(storageInMemoryRepository, 'findById').mockRejectedValueOnce(
+    storageInMemoryRepository.simulateError(
+      'findById',
       new Error('Database error'),
     );
 

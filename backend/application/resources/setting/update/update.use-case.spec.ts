@@ -48,7 +48,8 @@ describe('Setting Update Use Case', () => {
   });
 
   it('deve retornar erro SETTINGS_UPDATE_ERROR quando houver falha', async () => {
-    vi.spyOn(settingInMemoryRepository, 'update').mockRejectedValueOnce(
+    settingInMemoryRepository.simulateError(
+      'update',
       new Error('Database error'),
     );
 

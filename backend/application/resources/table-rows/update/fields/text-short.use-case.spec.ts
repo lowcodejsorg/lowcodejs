@@ -1,9 +1,11 @@
 import bcrypt from 'bcryptjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
+import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import {
   makePasswordField,
   makeTextShortWithFormat,
@@ -14,13 +16,24 @@ import TableRowUpdateUseCase from '../update.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: BcryptRowPasswordService;
+let scriptExecutionService: InMemoryScriptExecutionService;
 let sut: TableRowUpdateUseCase;
 
 describe('Table Row Update - TEXT_SHORT', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowUpdateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new BcryptRowPasswordService();
+
+    scriptExecutionService = new InMemoryScriptExecutionService();
+
+    sut = new TableRowUpdateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+      scriptExecutionService,
+    );
   });
 
   // ─── ALPHA_NUMERIC ───
@@ -400,14 +413,6 @@ describe('Table Row Update - TEXT_SHORT', () => {
         data: { senha: await bcrypt.hash('senha-antiga', 12) },
       });
 
-      // Intercepta o valor antes da mascara
-      let hashedValue: string | undefined;
-      const originalUpdate = rowRepository.update.bind(rowRepository);
-      vi.spyOn(rowRepository, 'update').mockImplementation(async (payload) => {
-        hashedValue = payload.data.senha as string;
-        return originalUpdate(payload);
-      });
-
       const result = await sut.execute({
         slug: 'usuarios',
         _id: row._id,
@@ -417,13 +422,21 @@ describe('Table Row Update - TEXT_SHORT', () => {
       expect(result.isRight()).toBe(true);
       if (!result.isRight()) throw new Error('Expected right');
 
-      // Valor que foi pro repositorio deve ser hash bcrypt
-      expect(hashedValue).toBeDefined();
+      // Valor armazenado deve ser hash bcrypt da nova senha
+      const stored = await rowRepository.findOne({
+        table,
+        query: { _id: row._id },
+      });
+      expect(stored).toBeDefined();
       const isHashed =
-        hashedValue!.startsWith('$2a$') || hashedValue!.startsWith('$2b$');
+        (stored!.senha as string).startsWith('$2a$') ||
+        (stored!.senha as string).startsWith('$2b$');
       expect(isHashed).toBe(true);
 
-      const matches = await bcrypt.compare('nova-senha-123', hashedValue!);
+      const matches = await bcrypt.compare(
+        'nova-senha-123',
+        stored!.senha as string,
+      );
       expect(matches).toBe(true);
     });
 

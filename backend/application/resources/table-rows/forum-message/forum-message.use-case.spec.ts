@@ -270,7 +270,8 @@ describe('Forum Message Use Case', () => {
   });
 
   it('deve retornar FORUM_MESSAGE_CREATE_ERROR quando repository falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

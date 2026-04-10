@@ -27,10 +27,11 @@ export type RowFindOnePayload = {
 
 export type RowFindManyPayload = {
   table: RowTableContext;
-  query: Record<string, unknown>;
+  rawFilters?: Record<string, unknown>;
   skip: number;
   limit: number;
-  sort: Record<string, -1 | 1 | 'asc' | 'ascending' | 'desc' | 'descending'>;
+  sortField?: string;
+  sortDirection?: 'asc' | 'desc';
   includeReverseRelationships?: boolean;
 };
 
@@ -76,7 +77,7 @@ export abstract class RowContractRepository {
 
   abstract count(
     table: RowTableContext,
-    query: Record<string, unknown>,
+    rawFilters?: Record<string, unknown>,
   ): Promise<number>;
 
   abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
@@ -121,4 +122,22 @@ export abstract class RowContractRepository {
     filter: Record<string, unknown>,
     update: Record<string, unknown>,
   ): Promise<IRow | null>;
+
+  // ── Infrastructure-level ops (table/import/export tools) ──
+
+  abstract renameField(
+    table: RowTableContext,
+    oldSlug: string,
+    newSlug: string,
+  ): Promise<void>;
+
+  abstract findAllRaw(
+    table: RowTableContext,
+  ): Promise<Record<string, unknown>[]>;
+
+  abstract insertRaw(
+    table: RowTableContext,
+    row: Record<string, unknown>,
+    creator?: string,
+  ): Promise<void>;
 }

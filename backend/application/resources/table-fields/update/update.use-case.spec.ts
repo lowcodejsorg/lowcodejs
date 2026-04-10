@@ -8,28 +8,31 @@ import {
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
+import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldUpdateUseCase from './update.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({
-    updateMany: vi.fn().mockResolvedValue(undefined),
-  }),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let rowInMemoryRepository: RowInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldUpdateUseCase;
 
 describe('Table Field Update Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    rowInMemoryRepository = new RowInMemoryRepository();
+
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableFieldUpdateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      rowInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -267,7 +270,8 @@ describe('Table Field Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_FIELD_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

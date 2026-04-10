@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import { makeTextLongField } from '@test/helpers/field-factory.helper';
 import { makeTableWithGroup } from '@test/helpers/table-factory.helper';
 
@@ -10,13 +11,20 @@ import GroupRowCreateUseCase from '../create.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
 let sut: GroupRowCreateUseCase;
 
 describe('Group Row Create - TEXT_LONG', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowCreateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    sut = new GroupRowCreateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   it('deve criar item no grupo com texto longo valido', async () => {

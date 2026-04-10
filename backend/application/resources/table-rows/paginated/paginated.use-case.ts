@@ -1,23 +1,14 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import {
-  buildOrder,
-  buildQuery,
-  transformRowContext,
-} from '@application/core/builders';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type {
-  IField,
-  IMeta,
-  IRow,
-  Paginated,
-} from '@application/core/entity.core';
+import type { IMeta, IRow, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 
 import type { TableRowPaginatedPayload } from './paginated.validator';
 
@@ -30,6 +21,8 @@ export default class TableRowPaginatedUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly rowPasswordService: RowPasswordContractService,
+    private readonly rowContextService: RowContextContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -44,25 +37,15 @@ export default class TableRowPaginatedUseCase {
         );
       }
 
-      const query = await buildQuery(
-        payload,
-        table.fields,
-        table.groups,
-        table.slug,
-      );
-
-      const order = buildOrder(payload, table.fields, table.order);
-
       const rows = await this.rowRepository.findMany({
         table,
-        query,
+        rawFilters: payload,
         skip,
         limit: payload.perPage,
-        sort: order,
         includeReverseRelationships: true,
       });
 
-      const total = await this.rowRepository.count(table, query);
+      const total = await this.rowRepository.count(table, payload);
 
       const lastPage = Math.ceil(total / payload.perPage);
 
@@ -75,8 +58,12 @@ export default class TableRowPaginatedUseCase {
       };
 
       const data = rows.map((row) => {
-        maskPasswordFields(row, table.fields);
-        return transformRowContext(row, table.fields, payload.user);
+        this.rowPasswordService.mask(row, table.fields);
+        return this.rowContextService.transform(
+          row,
+          table.fields,
+          payload.user,
+        );
       });
 
       return right({

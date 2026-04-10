@@ -43,7 +43,8 @@ describe('UserGroup List Use Case', () => {
   });
 
   it('deve retornar erro LIST_USER_GROUP_ERROR quando houver falha', async () => {
-    vi.spyOn(userGroupInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    userGroupInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

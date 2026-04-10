@@ -12,7 +12,20 @@ import type {
 } from './user-contract.repository';
 
 export default class UserInMemoryRepository implements UserContractRepository {
-  private items: IUser[] = [];
+  items: IUser[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(payload: UserCreatePayload): Promise<IUser> {
     const user: IUser = {
@@ -30,6 +43,7 @@ export default class UserInMemoryRepository implements UserContractRepository {
   }
 
   async findById(_id: string, options?: FindOptions): Promise<IUser | null> {
+    this._checkError('findById');
     const item = this.items.find((i) => {
       if (i._id !== _id) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -42,6 +56,7 @@ export default class UserInMemoryRepository implements UserContractRepository {
     email: string,
     options?: FindOptions,
   ): Promise<IUser | null> {
+    this._checkError('findByEmail');
     const item = this.items.find((i) => {
       if (i.email !== email) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -51,6 +66,7 @@ export default class UserInMemoryRepository implements UserContractRepository {
   }
 
   async findMany(payload?: UserQueryPayload): Promise<IUser[]> {
+    this._checkError('findMany');
     let filtered = this.items;
 
     // Filtro por trashed
@@ -88,6 +104,7 @@ export default class UserInMemoryRepository implements UserContractRepository {
   }
 
   async update({ _id, ...payload }: UserUpdatePayload): Promise<IUser> {
+    this._checkError('update');
     const updated = this.items.find((user) => user._id === _id);
     if (!updated) throw new Error('User not found');
     Object.assign(updated, payload, { updatedAt: new Date() });
@@ -95,12 +112,14 @@ export default class UserInMemoryRepository implements UserContractRepository {
   }
 
   async delete(_id: string): Promise<void> {
+    this._checkError('delete');
     const index = this.items.findIndex((u) => u._id === _id);
     if (index === -1) throw new Error('User not found');
     this.items.splice(index, 1);
   }
 
   async count(payload?: UserQueryPayload): Promise<number> {
+    this._checkError('count');
     const filtered = await this.findMany({
       ...payload,
       page: undefined,

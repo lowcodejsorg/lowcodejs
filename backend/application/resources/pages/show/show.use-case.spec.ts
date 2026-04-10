@@ -44,7 +44,8 @@ describe('Page Show Use Case', () => {
   });
 
   it('deve retornar erro GET_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    menuInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

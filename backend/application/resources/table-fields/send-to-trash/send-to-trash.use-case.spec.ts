@@ -9,20 +9,25 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldSendToTrashUseCase from './send-to-trash.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldSendToTrashUseCase;
 
 describe('Table Field Send To Trash Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableFieldSendToTrashUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -179,7 +184,8 @@ describe('Table Field Send To Trash Use Case', () => {
   });
 
   it('deve retornar erro SEND_FIELD_TO_TRASH_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

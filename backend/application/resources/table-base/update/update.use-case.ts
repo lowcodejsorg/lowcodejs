@@ -11,10 +11,10 @@ import {
   type ITable as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildTable } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type { TableUpdatePayload } from './update.validator';
 
@@ -27,6 +27,7 @@ export default class TableUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -133,7 +134,7 @@ export default class TableUpdateUseCase {
         }
       }
 
-      await buildTable(updated);
+      await this.tableSchemaService.syncModel(updated);
 
       // Reconstruir tabelas que têm RELATIONSHIP apontando para esta
       if (slugChanged) {
@@ -141,12 +142,12 @@ export default class TableUpdateUseCase {
           await this.fieldRepository.findByRelationshipTableId(table._id);
 
         if (pointingFields.length > 0) {
-          const pointingFieldIds = pointingFields.map((f) => f._id);
+          const pointingFieldIds = pointingFields.flatMap((f) => f._id);
           const relatedTables =
             await this.tableRepository.findByFieldIds(pointingFieldIds);
 
           for (const relatedTable of relatedTables) {
-            await buildTable(relatedTable);
+            await this.tableSchemaService.syncModel(relatedTable);
           }
         }
       }

@@ -5,9 +5,9 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField, IField as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type { GroupFieldSendToTrashPayload } from './send-to-trash.validator';
 
@@ -19,6 +19,7 @@ export default class GroupFieldSendToTrashUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -87,7 +88,8 @@ export default class GroupFieldSendToTrashUseCase {
         const updatedFields = g.fields.map((f) =>
           f._id === field._id ? updatedField : f,
         );
-        const groupSchema = buildSchema(updatedFields);
+        const groupSchema =
+          this.tableSchemaService.computeSchema(updatedFields);
 
         return {
           ...g,
@@ -97,7 +99,10 @@ export default class GroupFieldSendToTrashUseCase {
       });
 
       // Reconstrói o schema da tabela pai com os grupos atualizados
-      const parentSchema = buildSchema(table.fields, updatedGroups);
+      const parentSchema = this.tableSchemaService.computeSchema(
+        table.fields,
+        updatedGroups,
+      );
 
       await this.tableRepository.update({
         _id: table._id,

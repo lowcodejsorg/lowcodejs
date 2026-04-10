@@ -105,9 +105,7 @@ describe('Setting Show Use Case', () => {
   });
 
   it('deve retornar erro SETTINGS_READ_ERROR quando houver falha', async () => {
-    vi.spyOn(settingInMemoryRepository, 'get').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    settingInMemoryRepository.simulateError('get', new Error('Database error'));
 
     const result = await sut.execute();
 

@@ -9,16 +9,13 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldCreateUseCase from '../create.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldCreateUseCase;
 
 const BASE_PAYLOAD = {
@@ -44,7 +41,13 @@ describe('Table Field Create - FIELD_GROUP', () => {
   beforeEach(async () => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    sut = new TableFieldCreateUseCase(tableRepository, fieldRepository);
+    tableSchemaService = new TableSchemaInMemoryService();
+
+    sut = new TableFieldCreateUseCase(
+      tableRepository,
+      fieldRepository,
+      tableSchemaService,
+    );
 
     await tableRepository.create({
       name: 'Pedidos',
@@ -120,9 +123,7 @@ describe('Table Field Create - FIELD_GROUP', () => {
     expect(updatePayload.group).toEqual({ slug: 'enderecos' });
   });
 
-  it('deve reconstruir tabela via buildTable', async () => {
-    const { buildTable } = await import('@application/core/util.core');
-
+  it('deve reconstruir tabela via syncModel', async () => {
     await sut.execute({
       ...BASE_PAYLOAD,
       slug: 'pedidos',
@@ -130,6 +131,6 @@ describe('Table Field Create - FIELD_GROUP', () => {
       type: E_FIELD_TYPE.FIELD_GROUP,
     });
 
-    expect(buildTable).toHaveBeenCalled();
+    expect(tableSchemaService.syncModelCallCount).toBeGreaterThanOrEqual(1);
   });
 });

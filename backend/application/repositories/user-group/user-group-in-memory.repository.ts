@@ -13,7 +13,20 @@ import type {
 } from './user-group-contract.repository';
 
 export default class UserGroupInMemoryRepository implements UserGroupContractRepository {
-  private items: IGroup[] = [];
+  items: IGroup[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(payload: UserGroupCreatePayload): Promise<IGroup> {
     const group: IGroup = {
@@ -31,6 +44,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   }
 
   async findById(_id: string, options?: FindOptions): Promise<IGroup | null> {
+    this._checkError('findById');
     const item = this.items.find((i) => {
       if (i._id !== _id) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -43,6 +57,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     slug: string,
     options?: FindOptions,
   ): Promise<IGroup | null> {
+    this._checkError('findBySlug');
     const item = this.items.find((i) => {
       if (i.slug !== slug) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -52,6 +67,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   }
 
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
+    this._checkError('findMany');
     let filtered = this.items;
 
     if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
@@ -79,6 +95,7 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   }
 
   async update({ _id, ...payload }: UserGroupUpdatePayload): Promise<IGroup> {
+    this._checkError('update');
     const group = this.items.find((g) => g._id === _id);
     if (!group) throw new Error('UserGroup not found');
     Object.assign(group, payload, { updatedAt: new Date() });
@@ -86,12 +103,14 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   }
 
   async delete(_id: string): Promise<void> {
+    this._checkError('delete');
     const index = this.items.findIndex((g) => g._id === _id);
     if (index === -1) throw new Error('UserGroup not found');
     this.items.splice(index, 1);
   }
 
   async count(payload?: UserGroupQueryPayload): Promise<number> {
+    this._checkError('count');
     const filtered = await this.findMany({
       ...payload,
       page: undefined,

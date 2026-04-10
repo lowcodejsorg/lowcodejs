@@ -6,9 +6,9 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { maskPasswordFields } from '@application/core/row-password-helper.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 
 import type { GroupRowShowPayload } from './show.validator';
 
@@ -24,6 +24,7 @@ export default class GroupRowShowUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly rowPasswordService: RowPasswordContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -88,7 +89,7 @@ export default class GroupRowShowUseCase {
 
       const group = table.groups?.find((g) => g.slug === payload.groupSlug);
       const groupFields: IField[] = group?.fields || [];
-      maskPasswordFields(item, groupFields);
+      this.rowPasswordService.mask(item, groupFields);
 
       return right(item);
     } catch (error) {

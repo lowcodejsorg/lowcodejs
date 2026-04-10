@@ -104,7 +104,8 @@ describe('Bulk Trash Tables Use Case', () => {
   });
 
   it('deve retornar erro BULK_TRASH_TABLES_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'updateMany').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'updateMany',
       new Error('Database error'),
     );
 

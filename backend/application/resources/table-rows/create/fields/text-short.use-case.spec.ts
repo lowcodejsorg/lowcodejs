@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
+import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import {
   makePasswordField,
   makeTextShortWithFormat,
@@ -16,6 +18,8 @@ import TableRowCreateUseCase from '../create.use-case';
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
 let userRepository: UserInMemoryRepository;
+let rowPasswordService: BcryptRowPasswordService;
+let scriptExecutionService: InMemoryScriptExecutionService;
 let sut: TableRowCreateUseCase;
 
 describe('Table Row Create - TEXT_SHORT', () => {
@@ -23,7 +27,17 @@ describe('Table Row Create - TEXT_SHORT', () => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
     userRepository = new UserInMemoryRepository();
-    sut = new TableRowCreateUseCase(tableRepository, rowRepository, userRepository);
+    rowPasswordService = new BcryptRowPasswordService();
+
+    scriptExecutionService = new InMemoryScriptExecutionService();
+
+    sut = new TableRowCreateUseCase(
+      tableRepository,
+      rowRepository,
+      userRepository,
+      rowPasswordService,
+      scriptExecutionService,
+    );
   });
 
   // ─── ALPHA_NUMERIC ───
@@ -332,14 +346,8 @@ describe('Table Row Create - TEXT_SHORT', () => {
   describe('formato PASSWORD', () => {
     it('deve criar row e hashear a senha com bcrypt', async () => {
       const field = makePasswordField({ slug: 'senha' });
-      await makeTable(tableRepository, [field], { slug: 'usuarios' });
-
-      // Intercepta o valor antes da mascara
-      let hashedValue: string | undefined;
-      const originalCreate = rowRepository.create.bind(rowRepository);
-      vi.spyOn(rowRepository, 'create').mockImplementation(async (payload) => {
-        hashedValue = payload.data.senha as string;
-        return originalCreate(payload);
+      const table = await makeTable(tableRepository, [field], {
+        slug: 'usuarios',
       });
 
       const result = await sut.execute({
@@ -354,13 +362,21 @@ describe('Table Row Create - TEXT_SHORT', () => {
       // Retorno deve estar mascarado
       expect(result.value.senha).toBe('••••••••');
 
-      // Valor que foi pro repositorio deve ser hash bcrypt
-      expect(hashedValue).toBeDefined();
+      // Valor armazenado no repositorio deve ser hash bcrypt
+      const stored = await rowRepository.findOne({
+        table,
+        query: { _id: result.value._id },
+      });
+      expect(stored).toBeDefined();
       const isHashed =
-        hashedValue!.startsWith('$2a$') || hashedValue!.startsWith('$2b$');
+        (stored!.senha as string).startsWith('$2a$') ||
+        (stored!.senha as string).startsWith('$2b$');
       expect(isHashed).toBe(true);
 
-      const matches = await bcrypt.compare('minha-senha-123', hashedValue!);
+      const matches = await bcrypt.compare(
+        'minha-senha-123',
+        stored!.senha as string,
+      );
       expect(matches).toBe(true);
     });
 
@@ -394,17 +410,11 @@ describe('Table Row Create - TEXT_SHORT', () => {
 
     it('nao deve hashear valor ja hasheado', async () => {
       const field = makePasswordField({ slug: 'senha' });
-      await makeTable(tableRepository, [field], { slug: 'usuarios' });
+      const table = await makeTable(tableRepository, [field], {
+        slug: 'usuarios',
+      });
 
       const preHashed = await bcrypt.hash('original', 12);
-
-      // Intercepta valor que vai pro repositorio
-      let savedValue: string | undefined;
-      const originalCreate = rowRepository.create.bind(rowRepository);
-      vi.spyOn(rowRepository, 'create').mockImplementation(async (payload) => {
-        savedValue = payload.data.senha as string;
-        return originalCreate(payload);
-      });
 
       const result = await sut.execute({
         slug: 'usuarios',
@@ -415,8 +425,12 @@ describe('Table Row Create - TEXT_SHORT', () => {
       expect(result.isRight()).toBe(true);
       if (!result.isRight()) throw new Error('Expected right');
 
-      // Deve manter o mesmo hash, nao re-hashear
-      expect(savedValue).toBe(preHashed);
+      // Valor armazenado deve ser o mesmo hash, nao re-hasheado
+      const stored = await rowRepository.findOne({
+        table,
+        query: { _id: result.value._id },
+      });
+      expect(stored!.senha).toBe(preHashed);
     });
 
     it('nao deve hashear mascara', async () => {

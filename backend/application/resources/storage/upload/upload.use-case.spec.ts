@@ -79,9 +79,7 @@ describe('Storage Upload Use Case', () => {
   });
 
   it('deve retornar erro STORAGE_UPLOAD_ERROR quando houver falha', async () => {
-    vi.spyOn(storageService, 'upload').mockRejectedValueOnce(
-      new Error('Upload error'),
-    );
+    storageService.simulateError('upload', new Error('Upload error'));
 
     async function* mockFiles(): AsyncIterableIterator<MultipartFile> {
       yield createMockFile('test.jpg');

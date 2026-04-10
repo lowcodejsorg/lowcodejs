@@ -8,17 +8,14 @@ import {
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableUpdateUseCase from './update.use-case';
-
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let userInMemoryRepository: UserInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableUpdateUseCase;
 
 describe('Table Update Use Case', () => {
@@ -26,10 +23,13 @@ describe('Table Update Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     userInMemoryRepository = new UserInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableUpdateUseCase(
       tableInMemoryRepository,
       userInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
@@ -180,7 +180,8 @@ describe('Table Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

@@ -13,12 +13,6 @@ import TableInMemoryRepository from '@application/repositories/table/table-in-me
 
 import GroupRowDeleteUseCase from './delete.use-case';
 
-vi.mock('@application/core/row-password-helper.core', () => ({
-  hashPasswordFields: vi.fn().mockResolvedValue(undefined),
-  maskPasswordFields: vi.fn(),
-  stripMaskedPasswordFields: vi.fn(),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
 let sut: GroupRowDeleteUseCase;
@@ -242,9 +236,7 @@ describe('Group Row Delete Use Case', () => {
   });
 
   it('deve retornar DELETE_GROUP_ROW_ERROR quando repository falha', async () => {
-    vi.spyOn(tableRepository, 'findBySlug').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    tableRepository.simulateError('findBySlug', new Error('Database error'));
 
     const result = await sut.execute({
       slug: 'pedidos',
