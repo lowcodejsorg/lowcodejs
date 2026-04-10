@@ -26,15 +26,11 @@ describe('Menu Delete Use Case', () => {
       trashedAt: new Date(),
     });
 
-    const deleteSpy = vi.spyOn(menuInMemoryRepository, 'delete');
-
     const result = await sut.execute({ _id: menu._id });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
-    expect(deleteSpy).toHaveBeenCalledTimes(1);
-    expect(deleteSpy).toHaveBeenCalledWith(menu._id);
 
     const deleted = await menuInMemoryRepository.findById(menu._id, {
       trashed: true,
@@ -72,7 +68,8 @@ describe('Menu Delete Use Case', () => {
   });
 
   it('deve retornar erro DELETE_MENU_ERROR quando houver falha', async () => {
-    vi.spyOn(menuInMemoryRepository, 'findById').mockRejectedValueOnce(
+    menuInMemoryRepository.simulateError(
+      'findById',
       new Error('Database error'),
     );
 

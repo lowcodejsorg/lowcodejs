@@ -9,9 +9,9 @@ import type {
   ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { buildSchema } from '@application/core/util.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type { TableFieldDeletePayload } from './delete.validator';
 
@@ -23,6 +23,7 @@ export default class TableFieldDeleteUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
+    private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -81,7 +82,9 @@ export default class TableFieldDeleteUseCase {
 
       // Remove o campo da tabela e reconstrói o schema
       const remainingFields = table.fields.filter((f) => f._id !== field._id);
-      const _schema = buildSchema(remainingFields as IField[]);
+      const _schema = this.tableSchemaService.computeSchema(
+        remainingFields as IField[],
+      );
 
       await this.tableRepository.update({
         _id: table._id,
@@ -129,7 +132,9 @@ export default class TableFieldDeleteUseCase {
       if (g.slug !== targetGroup.slug) return g;
 
       const updatedFields = g.fields.filter((f) => f._id !== field._id);
-      const groupSchema = buildSchema(updatedFields as IField[]);
+      const groupSchema = this.tableSchemaService.computeSchema(
+        updatedFields as IField[],
+      );
 
       return {
         ...g,
@@ -139,7 +144,7 @@ export default class TableFieldDeleteUseCase {
     });
 
     // Reconstrói o schema da tabela pai com os grupos atualizados
-    const parentSchema = buildSchema(
+    const parentSchema = this.tableSchemaService.computeSchema(
       parentTable.fields as IField[],
       updatedGroups,
     );

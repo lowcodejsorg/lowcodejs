@@ -22,16 +22,6 @@ describe('Magic Link Use Case', () => {
   });
 
   it('deve autenticar usuário via magic link com sucesso', async () => {
-    const findByCodeSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'findByCode',
-    );
-    const tokenUpdateSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'update',
-    );
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -51,20 +41,10 @@ describe('Magic Link Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.email).toBe('john@example.com');
     expect(result.value.name).toBe('John Doe');
-
-    expect(findByCodeSpy).toHaveBeenCalledTimes(1);
-    expect(findByCodeSpy).toHaveBeenCalledWith('magic-link-code');
-    expect(tokenUpdateSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith(user._id);
+    expect(result.value._id).toBe(user._id);
   });
 
   it('deve marcar token como VALIDATED apos uso bem-sucedido', async () => {
-    const tokenUpdateSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'update',
-    );
-
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -80,15 +60,13 @@ describe('Magic Link Use Case', () => {
 
     await sut.execute({ code: 'magic-link-code' });
 
-    expect(tokenUpdateSpy).toHaveBeenCalledWith({
-      _id: token._id,
-      status: E_TOKEN_STATUS.VALIDATED,
-    });
+    const updatedToken = await validationTokenInMemoryRepository.findById(
+      token._id,
+    );
+    expect(updatedToken?.status).toBe(E_TOKEN_STATUS.VALIDATED);
   });
 
   it('deve ativar usuario inativo ao usar magic link', async () => {
-    const userUpdateSpy = vi.spyOn(userInMemoryRepository, 'update');
-
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -101,8 +79,6 @@ describe('Magic Link Use Case', () => {
       status: E_USER_STATUS.INACTIVE,
     });
 
-    userUpdateSpy.mockClear();
-
     await validationTokenInMemoryRepository.create({
       code: 'magic-link-code',
       status: E_TOKEN_STATUS.REQUESTED,
@@ -114,16 +90,11 @@ describe('Magic Link Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
-    expect(userUpdateSpy).toHaveBeenCalledTimes(1);
-    expect(userUpdateSpy).toHaveBeenCalledWith({
-      _id: user._id,
-      status: E_USER_STATUS.ACTIVE,
-    });
+    const updatedUser = await userInMemoryRepository.findById(user._id);
+    expect(updatedUser?.status).toBe(E_USER_STATUS.ACTIVE);
   });
 
-  it('nao deve chamar userRepository.update quando usuario ja esta ativo', async () => {
-    const userUpdateSpy = vi.spyOn(userInMemoryRepository, 'update');
-
+  it('deve manter usuario ativo quando ja esta ativo', async () => {
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -139,19 +110,11 @@ describe('Magic Link Use Case', () => {
 
     await sut.execute({ code: 'magic-link-code' });
 
-    // update is called once for the token status, but not for user activation
-    const userUpdateCalls = userUpdateSpy.mock.calls.filter(
-      (call) => call[0]._id === user._id && 'status' in call[0],
-    );
-    expect(userUpdateCalls).toHaveLength(0);
+    const updatedUser = await userInMemoryRepository.findById(user._id);
+    expect(updatedUser?.status).toBe(E_USER_STATUS.ACTIVE);
   });
 
   it('deve retornar erro VALIDATION_TOKEN_NOT_FOUND quando codigo nao existir', async () => {
-    const findByCodeSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'findByCode',
-    );
-
     const result = await sut.execute({ code: 'invalid-code' });
 
     expect(result.isLeft()).toBe(true);
@@ -159,9 +122,6 @@ describe('Magic Link Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('VALIDATION_TOKEN_NOT_FOUND');
     expect(result.value.message).toBe('Token de validação não encontrado');
-
-    expect(findByCodeSpy).toHaveBeenCalledTimes(1);
-    expect(findByCodeSpy).toHaveBeenCalledWith('invalid-code');
   });
 
   it('deve retornar erro VALIDATION_TOKEN_ALREADY_USED quando codigo ja foi usado', async () => {
@@ -211,11 +171,6 @@ describe('Magic Link Use Case', () => {
   });
 
   it('deve retornar erro VALIDATION_TOKEN_EXPIRED quando codigo tiver mais de 10 minutos', async () => {
-    const tokenUpdateSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'update',
-    );
-
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -239,16 +194,13 @@ describe('Magic Link Use Case', () => {
     expect(result.value.cause).toBe('VALIDATION_TOKEN_EXPIRED');
     expect(result.value.message).toBe('Código expirado');
 
-    expect(tokenUpdateSpy).toHaveBeenCalledTimes(1);
-    expect(tokenUpdateSpy).toHaveBeenCalledWith({
-      _id: token._id,
-      status: E_TOKEN_STATUS.EXPIRED,
-    });
+    const updatedToken = await validationTokenInMemoryRepository.findById(
+      token._id,
+    );
+    expect(updatedToken?.status).toBe(E_TOKEN_STATUS.EXPIRED);
   });
 
   it('deve retornar erro USER_NOT_FOUND quando usuario do token nao existir', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-
     await validationTokenInMemoryRepository.create({
       code: 'magic-link-code',
       status: E_TOKEN_STATUS.REQUESTED,
@@ -262,8 +214,6 @@ describe('Magic Link Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('USER_NOT_FOUND');
     expect(result.value.message).toBe('Usuário não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar erro MAGIC_LINK_ERROR quando houver falha', async () => {

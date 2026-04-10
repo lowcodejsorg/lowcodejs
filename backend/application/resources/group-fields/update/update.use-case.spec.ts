@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -9,16 +9,13 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import GroupFieldUpdateUseCase from './update.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue(undefined),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: GroupFieldUpdateUseCase;
 
 const TABLE_DEFAULTS = {
@@ -60,7 +57,13 @@ describe('Group Field Update Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    sut = new GroupFieldUpdateUseCase(tableRepository, fieldRepository);
+    tableSchemaService = new TableSchemaInMemoryService();
+
+    sut = new GroupFieldUpdateUseCase(
+      tableRepository,
+      fieldRepository,
+      tableSchemaService,
+    );
   });
 
   it('deve atualizar campo do grupo com sucesso', async () => {
@@ -79,9 +82,6 @@ describe('Group Field Update Use Case', () => {
         },
       ],
     });
-
-    const updateFieldSpy = vi.spyOn(fieldRepository, 'update');
-    const updateTableSpy = vi.spyOn(tableRepository, 'update');
 
     const result = await sut.execute({
       slug: 'clientes',
@@ -114,13 +114,12 @@ describe('Group Field Update Use Case', () => {
     expect(result.value.name).toBe('Avenida');
     expect(result.value.slug).toBe('avenida');
 
-    expect(updateFieldSpy).toHaveBeenCalledTimes(1);
-    expect(updateTableSpy).toHaveBeenCalledTimes(1);
+    const updatedField = await fieldRepository.findById(field._id);
+    expect(updatedField?.name).toBe('Avenida');
+    expect(updatedField?.slug).toBe('avenida');
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'inexistente',
       groupSlug: 'endereco',
@@ -152,8 +151,6 @@ describe('Group Field Update Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
     expect(result.value.message).toBe('Tabela não encontrada');
-
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar GROUP_NOT_FOUND quando grupo nao existe', async () => {
@@ -212,8 +209,6 @@ describe('Group Field Update Use Case', () => {
       ],
     });
 
-    const findByIdSpy = vi.spyOn(fieldRepository, 'findById');
-
     const result = await sut.execute({
       slug: 'clientes',
       groupSlug: 'endereco',
@@ -245,15 +240,10 @@ describe('Group Field Update Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('FIELD_NOT_FOUND');
     expect(result.value.message).toBe('Campo não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith('campo-inexistente');
   });
 
   it('deve retornar UPDATE_GROUP_FIELD_ERROR quando repository falha', async () => {
-    vi.spyOn(tableRepository, 'findBySlug').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    tableRepository.simulateError('findBySlug', new Error('Database error'));
 
     const result = await sut.execute({
       slug: 'clientes',

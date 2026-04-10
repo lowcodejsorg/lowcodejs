@@ -1,24 +1,20 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_VISIBILITY,
-  FIELD_GROUP_NATIVE_LIST,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldCreateUseCase from '../create.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let fieldRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldCreateUseCase;
 
 const BASE_PAYLOAD = {
@@ -44,7 +40,13 @@ describe('Table Field Create - FIELD_GROUP', () => {
   beforeEach(async () => {
     tableRepository = new TableInMemoryRepository();
     fieldRepository = new FieldInMemoryRepository();
-    sut = new TableFieldCreateUseCase(tableRepository, fieldRepository);
+    tableSchemaService = new TableSchemaInMemoryService();
+
+    sut = new TableFieldCreateUseCase(
+      tableRepository,
+      fieldRepository,
+      tableSchemaService,
+    );
 
     await tableRepository.create({
       name: 'Pedidos',
@@ -62,8 +64,6 @@ describe('Table Field Create - FIELD_GROUP', () => {
   });
 
   it('deve criar campo FIELD_GROUP e gerar grupo com campos nativos', async () => {
-    const createManySpy = vi.spyOn(fieldRepository, 'createMany');
-
     const result = await sut.execute({
       ...BASE_PAYLOAD,
       slug: 'pedidos',
@@ -76,15 +76,9 @@ describe('Table Field Create - FIELD_GROUP', () => {
     expect(result.value.type).toBe(E_FIELD_TYPE.FIELD_GROUP);
     expect(result.value.group).not.toBeNull();
     expect(result.value.group!.slug).toBe('itens');
-
-    // Deve ter chamado createMany com os campos nativos do grupo
-    expect(createManySpy).toHaveBeenCalledOnce();
-    expect(createManySpy).toHaveBeenCalledWith(FIELD_GROUP_NATIVE_LIST);
   });
 
   it('deve adicionar grupo em table.groups', async () => {
-    const updateSpy = vi.spyOn(tableRepository, 'update');
-
     await sut.execute({
       ...BASE_PAYLOAD,
       slug: 'pedidos',
@@ -92,37 +86,30 @@ describe('Table Field Create - FIELD_GROUP', () => {
       type: E_FIELD_TYPE.FIELD_GROUP,
     });
 
-    expect(updateSpy).toHaveBeenCalledOnce();
-    const updatePayload = updateSpy.mock.calls[0][0];
-
-    // Verifica que groups foi passado no update
-    expect(updatePayload.groups).toBeDefined();
-    expect(updatePayload.groups).toHaveLength(1);
-    expect(updatePayload.groups![0].slug).toBe('produtos');
-    expect(updatePayload.groups![0].name).toBe('Produtos');
-    expect(updatePayload.groups![0].fields).toBeDefined();
-    expect(updatePayload.groups![0].fields.length).toBeGreaterThanOrEqual(5);
+    const updatedTable = await tableRepository.findBySlug('pedidos');
+    expect(updatedTable?.groups).toBeDefined();
+    expect(updatedTable?.groups).toHaveLength(1);
+    expect(updatedTable!.groups![0].slug).toBe('produtos');
+    expect(updatedTable!.groups![0].name).toBe('Produtos');
+    expect(updatedTable!.groups![0].fields).toBeDefined();
+    expect(updatedTable!.groups![0].fields.length).toBeGreaterThanOrEqual(5);
   });
 
   it('deve atualizar o campo com group.slug apos criacao', async () => {
-    const fieldUpdateSpy = vi.spyOn(fieldRepository, 'update');
-
-    await sut.execute({
+    const result = await sut.execute({
       ...BASE_PAYLOAD,
       slug: 'pedidos',
       name: 'Enderecos',
       type: E_FIELD_TYPE.FIELD_GROUP,
     });
 
-    // O use-case faz fieldRepository.update({ _id, group: { slug } })
-    expect(fieldUpdateSpy).toHaveBeenCalledOnce();
-    const updatePayload = fieldUpdateSpy.mock.calls[0][0];
-    expect(updatePayload.group).toEqual({ slug: 'enderecos' });
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    const created = await fieldRepository.findById(result.value._id);
+    expect(created?.group).toEqual({ slug: 'enderecos' });
   });
 
-  it('deve reconstruir tabela via buildTable', async () => {
-    const { buildTable } = await import('@application/core/util.core');
-
+  it('deve reconstruir tabela via syncModel', async () => {
     await sut.execute({
       ...BASE_PAYLOAD,
       slug: 'pedidos',
@@ -130,6 +117,6 @@ describe('Table Field Create - FIELD_GROUP', () => {
       type: E_FIELD_TYPE.FIELD_GROUP,
     });
 
-    expect(buildTable).toHaveBeenCalled();
+    expect(tableSchemaService.syncModelCallCount).toBeGreaterThanOrEqual(1);
   });
 });

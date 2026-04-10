@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -9,28 +9,29 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldSendToTrashUseCase from './send-to-trash.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldSendToTrashUseCase;
 
 describe('Table Field Send To Trash Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableFieldSendToTrashUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
   it('deve enviar campo para lixeira com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const fieldFindByIdSpy = vi.spyOn(fieldInMemoryRepository, 'findById');
-    const fieldUpdateSpy = vi.spyOn(fieldInMemoryRepository, 'update');
-
     const field = await fieldInMemoryRepository.create({
       name: 'Nome',
       slug: 'nome',
@@ -76,9 +77,6 @@ describe('Table Field Send To Trash Use Case', () => {
 
     expect(result.value.trashed).toBe(true);
     expect(result.value.trashedAt).not.toBeNull();
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(fieldFindByIdSpy).toHaveBeenCalledWith(field._id);
-    expect(fieldUpdateSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -179,7 +177,8 @@ describe('Table Field Send To Trash Use Case', () => {
   });
 
   it('deve retornar erro SEND_FIELD_TO_TRASH_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

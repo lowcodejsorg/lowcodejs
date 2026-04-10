@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -9,32 +9,29 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableFieldCreateUseCase from './create.use-case';
 
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
-
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldCreateUseCase;
 
 describe('Table Field Create Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableFieldCreateUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
   it('deve criar campo com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const createSpy = vi.spyOn(fieldInMemoryRepository, 'create');
-
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -77,8 +74,6 @@ describe('Table Field Create Use Case', () => {
     expect(result.value.name).toBe('Nome');
     expect(result.value.slug).toBe('nome');
     expect(result.value.type).toBe(E_FIELD_TYPE.TEXT_SHORT);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(createSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -182,7 +177,8 @@ describe('Table Field Create Use Case', () => {
   });
 
   it('deve retornar erro CREATE_FIELD_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

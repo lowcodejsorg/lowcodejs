@@ -12,7 +12,20 @@ import type {
 } from './reaction-contract.repository';
 
 export default class ReactionInMemoryRepository implements ReactionContractRepository {
-  private items: IReaction[] = [];
+  items: IReaction[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(payload: ReactionCreatePayload): Promise<IReaction> {
     const reaction: IReaction = {

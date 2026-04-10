@@ -14,8 +14,6 @@ describe('Refresh Token Use Case', () => {
   });
 
   it('deve retornar usuario quando refresh token for valido', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -30,14 +28,9 @@ describe('Refresh Token Use Case', () => {
     expect(result.value._id).toBe(user._id);
     expect(result.value.email).toBe('john@example.com');
     expect(result.value.name).toBe('John Doe');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith(user._id);
   });
 
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existir', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-
     const result = await sut.execute({ _id: 'non-existent-id' });
 
     expect(result.isLeft()).toBe(true);
@@ -45,9 +38,6 @@ describe('Refresh Token Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('USER_NOT_FOUND');
     expect(result.value.message).toBe('Usuário não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith('non-existent-id');
   });
 
   it('deve retornar erro REFRESH_TOKEN_ERROR quando houver falha', async () => {

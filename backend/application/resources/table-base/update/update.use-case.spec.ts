@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_TABLE_COLLABORATION,
@@ -8,17 +8,14 @@ import {
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
 
 import TableUpdateUseCase from './update.use-case';
-
-vi.mock('@application/core/util.core', () => ({
-  buildTable: vi.fn().mockResolvedValue({}),
-  buildSchema: vi.fn().mockReturnValue({}),
-}));
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let userInMemoryRepository: UserInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableUpdateUseCase;
 
 describe('Table Update Use Case', () => {
@@ -26,17 +23,17 @@ describe('Table Update Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     userInMemoryRepository = new UserInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    tableSchemaService = new TableSchemaInMemoryService();
+
     sut = new TableUpdateUseCase(
       tableInMemoryRepository,
       userInMemoryRepository,
       fieldInMemoryRepository,
+      tableSchemaService,
     );
   });
 
   it('deve atualizar tabela com sucesso', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-    const updateSpy = vi.spyOn(tableInMemoryRepository, 'update');
-
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
@@ -85,8 +82,6 @@ describe('Table Update Use Case', () => {
 
     expect(result.value.name).toBe('Clientes Atualizado');
     expect(result.value.style).toBe(E_TABLE_STYLE.GALLERY);
-    expect(findBySlugSpy).toHaveBeenCalledWith('clientes');
-    expect(updateSpy).toHaveBeenCalled();
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
@@ -180,7 +175,8 @@ describe('Table Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

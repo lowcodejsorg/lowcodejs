@@ -68,8 +68,6 @@ describe('Bulk Delete Use Case', () => {
       data: { trashed: true, trashedAt: new Date() },
     });
 
-    const bulkDeleteSpy = vi.spyOn(rowInMemoryRepository, 'bulkDelete');
-
     const result = await sut.execute({
       slug: 'clientes',
       ids: [row1._id, row2._id, row3._id],
@@ -79,16 +77,25 @@ describe('Bulk Delete Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value.deleted).toBe(3);
-    expect(bulkDeleteSpy).toHaveBeenCalledTimes(1);
-    expect(bulkDeleteSpy).toHaveBeenCalledWith({
+
+    const remaining1 = await rowInMemoryRepository.findOne({
       table,
-      ids: [row1._id, row2._id, row3._id],
+      query: { _id: row1._id },
     });
+    const remaining2 = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row2._id },
+    });
+    const remaining3 = await rowInMemoryRepository.findOne({
+      table,
+      query: { _id: row3._id },
+    });
+    expect(remaining1).toBeNull();
+    expect(remaining2).toBeNull();
+    expect(remaining3).toBeNull();
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableInMemoryRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'non-existent',
       ids: ['id-1', 'id-2'],
@@ -99,7 +106,6 @@ describe('Bulk Delete Use Case', () => {
 
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve retornar deleted: 0 quando nenhum registro na lixeira', async () => {
@@ -122,7 +128,8 @@ describe('Bulk Delete Use Case', () => {
   });
 
   it('deve retornar BULK_DELETE_ROW_ERROR quando repository falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

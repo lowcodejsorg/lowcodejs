@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import { makeCategoryField } from '@test/helpers/field-factory.helper';
 import { makeTableWithGroup } from '@test/helpers/table-factory.helper';
 
@@ -18,6 +19,7 @@ const CATEGORIES = [
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
 let sut: GroupRowUpdateUseCase;
 
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
@@ -48,7 +50,13 @@ describe('Group Row Update - CATEGORY', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowUpdateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    sut = new GroupRowUpdateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   it('deve atualizar item com array de strings valido', async () => {

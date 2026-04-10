@@ -19,9 +19,23 @@ import type {
 } from './table-contract.repository';
 
 export default class TableInMemoryRepository implements TableContractRepository {
-  private items: ITable[] = [];
+  items: ITable[] = [];
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   async create(payload: TableCreatePayload): Promise<ITable> {
+    this._checkError('create');
     const table: ITable = {
       _id: crypto.randomUUID(),
       _schema: payload._schema ?? {},
@@ -76,6 +90,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
   }
 
   async findById(_id: string, options?: FindOptions): Promise<ITable | null> {
+    this._checkError('findById');
     const item = this.items.find((i) => {
       if (i._id !== _id) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -88,6 +103,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
     slug: string,
     options?: FindOptions,
   ): Promise<ITable | null> {
+    this._checkError('findBySlug');
     const item = this.items.find((i) => {
       if (i.slug !== slug) return false;
       if (options?.trashed !== undefined) return i.trashed === options.trashed;
@@ -97,6 +113,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
   }
 
   async findMany(payload?: TableQueryPayload): Promise<ITable[]> {
+    this._checkError('findMany');
     let filtered = this.items;
 
     // Filtro de trashed
@@ -138,6 +155,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
   }
 
   async update({ _id, ...payload }: TableUpdatePayload): Promise<ITable> {
+    this._checkError('update');
     const table = this.items.find((t) => t._id === _id);
     if (!table) throw new Error('Table not found');
 
@@ -199,6 +217,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
     filterTrashed,
     data,
   }: TableUpdateManyPayload): Promise<number> {
+    this._checkError('updateMany');
     let filtered = this.items.filter((t) => _ids.includes(t._id));
 
     if (type) {
@@ -222,12 +241,14 @@ export default class TableInMemoryRepository implements TableContractRepository 
   }
 
   async delete(_id: string): Promise<void> {
+    this._checkError('delete');
     const index = this.items.findIndex((t) => t._id === _id);
     if (index === -1) throw new Error('Table not found');
     this.items.splice(index, 1);
   }
 
   async count(payload?: TableQueryPayload): Promise<number> {
+    this._checkError('count');
     const filtered = await this.findMany({
       ...payload,
       page: undefined,

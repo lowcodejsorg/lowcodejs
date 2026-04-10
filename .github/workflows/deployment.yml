@@ -4,6 +4,10 @@ on:
   push:
     branches: [develop, demo, intranet, homolog, saneago, lab-gestor, net-labic, admin-labic]
 
+permissions:
+  contents: read
+  packages: write
+
 jobs:
   test-backend:
     uses: ./.github/workflows/deployment-test-backend.yml

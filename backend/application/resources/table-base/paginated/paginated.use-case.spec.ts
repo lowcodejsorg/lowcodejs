@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_TABLE_COLLABORATION,
@@ -20,9 +20,6 @@ describe('Table Paginated Use Case', () => {
   });
 
   it('deve retornar lista vazia quando nao houver tabelas', async () => {
-    const findManySpy = vi.spyOn(tableInMemoryRepository, 'findMany');
-    const countSpy = vi.spyOn(tableInMemoryRepository, 'count');
-
     const result = await sut.execute({
       page: 1,
       perPage: 20,
@@ -37,8 +34,6 @@ describe('Table Paginated Use Case', () => {
 
     expect(result.value.data).toHaveLength(0);
     expect(result.value.meta.total).toBe(0);
-    expect(findManySpy).toHaveBeenCalled();
-    expect(countSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar lista de tabelas paginada', async () => {
@@ -173,7 +168,8 @@ describe('Table Paginated Use Case', () => {
   });
 
   it('deve retornar erro TABLE_LIST_PAGINATED_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

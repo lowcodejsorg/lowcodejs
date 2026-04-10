@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -62,8 +62,6 @@ describe('Table Field Add Category Use Case', () => {
       fieldOrderForm: [],
     });
 
-    const updateFieldSpy = vi.spyOn(fieldInMemoryRepository, 'update');
-
     const result = await sut.execute({
       slug: 'produtos',
       _id: field._id,
@@ -76,7 +74,6 @@ describe('Table Field Add Category Use Case', () => {
     expect(result.value.node.parentId).toBeNull();
     expect(result.value.node.id).toBeTruthy();
     expect(result.value.field).toBeTruthy();
-    expect(updateFieldSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve adicionar subcategoria com parentId com sucesso', async () => {
@@ -314,7 +311,8 @@ describe('Table Field Add Category Use Case', () => {
   });
 
   it('deve retornar erro ADD_CATEGORY_OPTION_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

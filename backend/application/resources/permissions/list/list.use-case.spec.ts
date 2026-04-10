@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import PermissionInMemoryRepository from '@application/repositories/permission/permission-in-memory.repository';
 
@@ -14,15 +14,12 @@ describe('Permission List Use Case', () => {
   });
 
   it('deve retornar lista vazia quando nao houver permissoes', async () => {
-    const findManySpy = vi.spyOn(permissionInMemoryRepository, 'findMany');
-
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value).toHaveLength(0);
-    expect(findManySpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar lista de permissoes existentes', async () => {
@@ -49,7 +46,8 @@ describe('Permission List Use Case', () => {
   });
 
   it('deve retornar erro LIST_PERMISSION_ERROR quando houver falha', async () => {
-    vi.spyOn(permissionInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    permissionInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

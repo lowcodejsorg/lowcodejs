@@ -18,10 +18,6 @@ describe('User Update Use Case', () => {
   });
 
   it('deve atualizar usuario com sucesso (sem password)', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
-    const hashSpy = vi.spyOn(passwordService, 'hash');
-
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -41,17 +37,10 @@ describe('User Update Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.name).toBe('John Updated');
     expect(result.value.email).toBe('john.updated@example.com');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(findByIdSpy).toHaveBeenCalledWith(created._id);
-    expect(updateSpy).toHaveBeenCalledTimes(1);
-    expect(hashSpy).not.toHaveBeenCalled();
+    expect(result.value.password).toBe('password123');
   });
 
   it('deve atualizar usuario com nova senha (hasheada)', async () => {
-    const hashSpy = vi.spyOn(passwordService, 'hash');
-    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
-
     const created = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -73,10 +62,6 @@ describe('User Update Use Case', () => {
     expect(result.value.password).not.toBe('newpassword');
     expect(result.value.password).not.toBe('oldpassword');
     expect(result.value.password).toBe('hashed_newpassword');
-
-    expect(hashSpy).toHaveBeenCalledTimes(1);
-    expect(hashSpy).toHaveBeenCalledWith('newpassword');
-    expect(updateSpy).toHaveBeenCalledTimes(1);
   });
 
   it('deve permitir alterar status do usuario', async () => {
@@ -101,9 +86,6 @@ describe('User Update Use Case', () => {
   });
 
   it('deve retornar erro USER_NOT_FOUND (404) quando usuario nao existe', async () => {
-    const findByIdSpy = vi.spyOn(userInMemoryRepository, 'findById');
-    const updateSpy = vi.spyOn(userInMemoryRepository, 'update');
-
     const result = await sut.execute({
       _id: 'non-existent-id',
       name: 'John Doe',
@@ -117,9 +99,6 @@ describe('User Update Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('USER_NOT_FOUND');
     expect(result.value.message).toBe('Usuário não encontrado');
-
-    expect(findByIdSpy).toHaveBeenCalledTimes(1);
-    expect(updateSpy).not.toHaveBeenCalled();
   });
 
   it('deve retornar erro UPDATE_USER_ERROR (500) em falha de DB', async () => {

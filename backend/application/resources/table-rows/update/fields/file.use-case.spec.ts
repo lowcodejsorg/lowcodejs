@@ -2,6 +2,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
+import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import { makeFileField } from '@test/helpers/field-factory.helper';
 import { makeTable } from '@test/helpers/table-factory.helper';
 
@@ -12,13 +14,24 @@ const VALID_OBJECT_ID_2 = '507f1f77bcf86cd799439022';
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
+let scriptExecutionService: InMemoryScriptExecutionService;
 let sut: TableRowUpdateUseCase;
 
 describe('Table Row Update - FILE', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowUpdateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    scriptExecutionService = new InMemoryScriptExecutionService();
+
+    sut = new TableRowUpdateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+      scriptExecutionService,
+    );
   });
 
   it('deve atualizar row com array de ObjectIds validos', async () => {

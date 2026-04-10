@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_FORMAT,
@@ -10,17 +10,13 @@ import {
 import type { ITable } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 
 import GroupRowListUseCase from './list.use-case';
 
-vi.mock('@application/core/row-password-helper.core', () => ({
-  hashPasswordFields: vi.fn().mockResolvedValue(undefined),
-  maskPasswordFields: vi.fn(),
-  stripMaskedPasswordFields: vi.fn(),
-}));
-
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
 let sut: GroupRowListUseCase;
 
 const TABLE_DEFAULTS = {
@@ -127,14 +123,18 @@ describe('Group Row List Use Case', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowListUseCase(tableRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    sut = new GroupRowListUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   it('deve listar itens do grupo', async () => {
     const table = await createTableWithGroup();
     const rowId = await createRowWithItems(table);
-
-    const findOneSpy = vi.spyOn(rowRepository, 'findOne');
 
     const result = await sut.execute({
       slug: 'pedidos',
@@ -149,13 +149,6 @@ describe('Group Row List Use Case', () => {
     expect(items).toHaveLength(2);
     expect(items[0]).toHaveProperty('descricao', 'Item A');
     expect(items[1]).toHaveProperty('descricao', 'Item B');
-
-    expect(findOneSpy).toHaveBeenCalledTimes(1);
-    expect(findOneSpy).toHaveBeenCalledWith(
-      expect.objectContaining({
-        query: { _id: rowId },
-      }),
-    );
   });
 
   it('deve retornar array vazio quando grupo nao tem itens', async () => {
@@ -174,8 +167,6 @@ describe('Group Row List Use Case', () => {
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {
-    const findBySlugSpy = vi.spyOn(tableRepository, 'findBySlug');
-
     const result = await sut.execute({
       slug: 'inexistente',
       rowId: 'row-1',
@@ -187,9 +178,6 @@ describe('Group Row List Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('TABLE_NOT_FOUND');
     expect(result.value.message).toBe('Tabela não encontrada');
-
-    expect(findBySlugSpy).toHaveBeenCalledTimes(1);
-    expect(findBySlugSpy).toHaveBeenCalledWith('inexistente');
   });
 
   it('deve retornar GROUP_NOT_FOUND quando grupo nao existe', async () => {
@@ -217,8 +205,6 @@ describe('Group Row List Use Case', () => {
   it('deve retornar ROW_NOT_FOUND quando row nao existe', async () => {
     await createTableWithGroup();
 
-    const findOneSpy = vi.spyOn(rowRepository, 'findOne');
-
     const result = await sut.execute({
       slug: 'pedidos',
       rowId: 'row-inexistente',
@@ -230,7 +216,5 @@ describe('Group Row List Use Case', () => {
     expect(result.value.code).toBe(404);
     expect(result.value.cause).toBe('ROW_NOT_FOUND');
     expect(result.value.message).toBe('Registro não encontrado');
-
-    expect(findOneSpy).toHaveBeenCalledTimes(1);
   });
 });

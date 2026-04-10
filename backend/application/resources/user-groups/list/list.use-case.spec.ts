@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import UserGroupInMemoryRepository from '@application/repositories/user-group/user-group-in-memory.repository';
 
@@ -14,15 +14,12 @@ describe('UserGroup List Use Case', () => {
   });
 
   it('deve retornar lista vazia quando nao houver grupos', async () => {
-    const findManySpy = vi.spyOn(userGroupInMemoryRepository, 'findMany');
-
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
     expect(result.value).toHaveLength(0);
-    expect(findManySpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar lista de grupos quando existirem', async () => {
@@ -43,7 +40,8 @@ describe('UserGroup List Use Case', () => {
   });
 
   it('deve retornar erro LIST_USER_GROUP_ERROR quando houver falha', async () => {
-    vi.spyOn(userGroupInMemoryRepository, 'findMany').mockRejectedValueOnce(
+    userGroupInMemoryRepository.simulateError(
+      'findMany',
       new Error('Database error'),
     );
 

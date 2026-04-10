@@ -7,18 +7,31 @@ import {
 } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
+import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 
 import TableRowUpdateUseCase from './update.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
+let scriptExecutionService: InMemoryScriptExecutionService;
 let sut: TableRowUpdateUseCase;
 
 describe('Table Row Update Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowUpdateUseCase(tableInMemoryRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    scriptExecutionService = new InMemoryScriptExecutionService();
+
+    sut = new TableRowUpdateUseCase(
+      tableInMemoryRepository,
+      rowRepository,
+      rowPasswordService,
+      scriptExecutionService,
+    );
     vi.clearAllMocks();
   });
 
@@ -68,7 +81,8 @@ describe('Table Row Update Use Case', () => {
   });
 
   it('deve retornar erro UPDATE_ROW_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

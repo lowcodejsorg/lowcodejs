@@ -7,18 +7,31 @@ import {
 } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowContextService from '@application/services/row-context/in-memory-row-context.service';
+import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 
 import TableRowShowUseCase from './show.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: InMemoryRowPasswordService;
+let rowContextService: InMemoryRowContextService;
 let sut: TableRowShowUseCase;
 
 describe('Table Row Show Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new TableRowShowUseCase(tableInMemoryRepository, rowRepository);
+    rowPasswordService = new InMemoryRowPasswordService();
+
+    rowContextService = new InMemoryRowContextService();
+
+    sut = new TableRowShowUseCase(
+      tableInMemoryRepository,
+      rowRepository,
+      rowPasswordService,
+      rowContextService,
+    );
     vi.clearAllMocks();
   });
 
@@ -67,7 +80,8 @@ describe('Table Row Show Use Case', () => {
   });
 
   it('deve retornar erro GET_ROW_TABLE_BY_ID_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

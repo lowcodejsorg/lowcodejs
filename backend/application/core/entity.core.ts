@@ -1,4 +1,3 @@
-
 /**
  * Make some property optional an type
  *

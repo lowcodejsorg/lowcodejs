@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_TABLE_COLLABORATION,
@@ -59,22 +59,18 @@ describe('Bulk Restore Tables Use Case', () => {
       trashedAt: new Date(),
     });
 
-    const updateManySpy = vi.spyOn(tableInMemoryRepository, 'updateMany');
-
     const result = await sut.execute({ ids: [table1._id, table2._id] });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.modified).toBe(2);
-    expect(updateManySpy).toHaveBeenCalledTimes(1);
-    expect(updateManySpy).toHaveBeenCalledWith({
-      _ids: [table1._id, table2._id],
-      filterTrashed: true,
-      data: {
-        trashed: false,
-        trashedAt: null,
-      },
-    });
+
+    const restored1 = await tableInMemoryRepository.findById(table1._id);
+    const restored2 = await tableInMemoryRepository.findById(table2._id);
+    expect(restored1?.trashed).toBe(false);
+    expect(restored1?.trashedAt).toBeNull();
+    expect(restored2?.trashed).toBe(false);
+    expect(restored2?.trashedAt).toBeNull();
   });
 
   it('deve retornar 0 modificados quando IDs nao existem', async () => {
@@ -110,7 +106,8 @@ describe('Bulk Restore Tables Use Case', () => {
   });
 
   it('deve retornar erro BULK_RESTORE_TABLES_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'updateMany').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'updateMany',
       new Error('Database error'),
     );
 

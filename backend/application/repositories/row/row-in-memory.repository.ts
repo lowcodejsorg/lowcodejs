@@ -17,6 +17,19 @@ import { RowContractRepository } from './row-contract.repository';
 
 export default class RowInMemoryRepository extends RowContractRepository {
   private collections = new Map<string, IRow[]>();
+  private _forcedErrors = new Map<string, Error>();
+
+  simulateError(method: string, error: Error): void {
+    this._forcedErrors.set(method, error);
+  }
+
+  private _checkError(method: string): void {
+    const err = this._forcedErrors.get(method);
+    if (err) {
+      this._forcedErrors.delete(method);
+      throw err;
+    }
+  }
 
   private getCollection(slug: string): IRow[] {
     if (!this.collections.has(slug)) {
@@ -44,7 +57,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
     } as IRow;
 
     collection.push(row);
-    return row;
+    return { ...row };
   }
 
   async findOne(payload: RowFindOnePayload): Promise<IRow | null> {
@@ -64,25 +77,26 @@ export default class RowInMemoryRepository extends RowContractRepository {
   async findMany(payload: RowFindManyPayload): Promise<IRow[]> {
     const collection = this.getCollection(payload.table.slug);
 
-    let result = collection.filter((item) => {
-      for (const [key, value] of Object.entries(payload.query)) {
-        if ((item as Record<string, unknown>)[key] !== value) return false;
+    const rawFilters = payload.rawFilters ?? {};
+    const result = collection.filter((item) => {
+      const row = item as Record<string, unknown>;
+      if (row['trashed'] === true) return false;
+      for (const [key, value] of Object.entries(rawFilters)) {
+        if (
+          key === 'page' ||
+          key === 'perPage' ||
+          key === 'slug' ||
+          key === 'public' ||
+          key === 'search' ||
+          key === 'trashed' ||
+          String(key).startsWith('order-')
+        ) {
+          continue;
+        }
+        if (row[key] !== value) return false;
       }
       return true;
     });
-
-    if (payload.sort) {
-      const entries = Object.entries(payload.sort);
-      if (entries.length > 0) {
-        const [sortKey, sortDir] = entries[0];
-        result.sort((a, b) => {
-          const aVal = String((a as Record<string, unknown>)[sortKey] || '');
-          const bVal = String((b as Record<string, unknown>)[sortKey] || '');
-          if (sortDir === 1) return aVal.localeCompare(bVal);
-          return bVal.localeCompare(aVal);
-        });
-      }
-    }
 
     return result
       .slice(payload.skip, payload.skip + payload.limit)
@@ -91,13 +105,27 @@ export default class RowInMemoryRepository extends RowContractRepository {
 
   async count(
     table: RowTableContext,
-    query: Record<string, unknown>,
+    rawFilters?: Record<string, unknown>,
   ): Promise<number> {
     const collection = this.getCollection(table.slug);
+    const filters = rawFilters ?? {};
 
     return collection.filter((item) => {
-      for (const [key, value] of Object.entries(query)) {
-        if ((item as Record<string, unknown>)[key] !== value) return false;
+      const row = item as Record<string, unknown>;
+      if (row['trashed'] === true) return false;
+      for (const [key, value] of Object.entries(filters)) {
+        if (
+          key === 'page' ||
+          key === 'perPage' ||
+          key === 'slug' ||
+          key === 'public' ||
+          key === 'search' ||
+          key === 'trashed' ||
+          String(key).startsWith('order-')
+        ) {
+          continue;
+        }
+        if (row[key] !== value) return false;
       }
       return true;
     }).length;
@@ -221,7 +249,7 @@ export default class RowInMemoryRepository extends RowContractRepository {
     (row as Record<string, unknown>)[payload.groupFieldSlug] = groupData;
     row.updatedAt = new Date();
 
-    return { ...row };
+    return JSON.parse(JSON.stringify(row)) as IRow;
   }
 
   async updateGroupItem(
@@ -298,5 +326,47 @@ export default class RowInMemoryRepository extends RowContractRepository {
 
     row.updatedAt = new Date();
     return { ...row };
+  }
+
+  // ── Infrastructure-level ops (table/import/export tools) ──
+
+  async renameField(
+    table: RowTableContext,
+    oldSlug: string,
+    newSlug: string,
+  ): Promise<void> {
+    const collection = this.getCollection(table.slug);
+    for (const row of collection) {
+      const record = row as Record<string, unknown>;
+      if (Object.prototype.hasOwnProperty.call(record, oldSlug)) {
+        record[newSlug] = record[oldSlug];
+        delete record[oldSlug];
+      }
+    }
+  }
+
+  async findAllRaw(table: RowTableContext): Promise<Record<string, unknown>[]> {
+    const collection = this.getCollection(table.slug);
+    return collection
+      .filter((row) => !row.trashed)
+      .map((row) => ({ ...row })) as Record<string, unknown>[];
+  }
+
+  async insertRaw(
+    table: RowTableContext,
+    row: Record<string, unknown>,
+    creator?: string,
+  ): Promise<void> {
+    const collection = this.getCollection(table.slug);
+    const newRow: IRow = {
+      _id: randomUUID(),
+      ...row,
+      creator: creator ?? null,
+      trashed: false,
+      trashedAt: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as IRow;
+    collection.push(newRow);
   }
 }

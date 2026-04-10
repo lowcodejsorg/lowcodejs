@@ -1,9 +1,10 @@
 import bcrypt from 'bcryptjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
 import {
   makePasswordField,
   makeTextShortWithFormat,
@@ -14,13 +15,20 @@ import GroupRowCreateUseCase from '../create.use-case';
 
 let tableRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
+let rowPasswordService: BcryptRowPasswordService;
 let sut: GroupRowCreateUseCase;
 
 describe('Group Row Create - TEXT_SHORT', () => {
   beforeEach(() => {
     tableRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
-    sut = new GroupRowCreateUseCase(tableRepository, rowRepository);
+    rowPasswordService = new BcryptRowPasswordService();
+
+    sut = new GroupRowCreateUseCase(
+      tableRepository,
+      rowRepository,
+      rowPasswordService,
+    );
   });
 
   // ─── ALPHA_NUMERIC ───
@@ -531,17 +539,6 @@ describe('Group Row Create - TEXT_SHORT', () => {
         data: { itens: [] },
       });
 
-      // Intercepta o valor antes da mascara
-      let hashedValue: string | undefined;
-      const originalAddGroupItem =
-        rowRepository.addGroupItem.bind(rowRepository);
-      vi.spyOn(rowRepository, 'addGroupItem').mockImplementation(
-        async (payload) => {
-          hashedValue = payload.data.senha as string;
-          return originalAddGroupItem(payload);
-        },
-      );
-
       const result = await sut.execute({
         slug: 'pedidos',
         rowId: row._id,
@@ -555,13 +552,21 @@ describe('Group Row Create - TEXT_SHORT', () => {
       // Retorno deve estar mascarado
       expect(result.value.senha).toBe('••••••••');
 
-      // Valor que foi pro repositorio deve ser hash bcrypt
-      expect(hashedValue).toBeDefined();
+      // Valor armazenado no repositorio deve ser hash bcrypt
+      const storedRow = await rowRepository.findOne({
+        table,
+        query: { _id: row._id },
+      });
+      const storedItem = (storedRow!.itens as Record<string, unknown>[])[0];
       const isHashed =
-        hashedValue!.startsWith('$2a$') || hashedValue!.startsWith('$2b$');
+        (storedItem.senha as string).startsWith('$2a$') ||
+        (storedItem.senha as string).startsWith('$2b$');
       expect(isHashed).toBe(true);
 
-      const matches = await bcrypt.compare('minha-senha-123', hashedValue!);
+      const matches = await bcrypt.compare(
+        'minha-senha-123',
+        storedItem.senha as string,
+      );
       expect(matches).toBe(true);
     });
 

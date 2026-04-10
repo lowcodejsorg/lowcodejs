@@ -12,9 +12,9 @@ import {
   type IField,
   type IGroupConfiguration,
 } from '@application/core/entity.core';
-import { buildSchema } from '@application/core/util.core';
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import type { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import type { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type {
   CloneTableDeps,
@@ -33,11 +33,14 @@ export async function createKanbanTemplate(
   });
 
   const { fields, groups, orderList, orderForm, orderFilter, orderDetail } =
-    await buildKanbanFields(deps.fieldRepository);
+    await buildKanbanFields(deps.fieldRepository, deps.tableSchemaService);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = buildSchema([...nativeFields, ...fields], groups);
+  const _schema = deps.tableSchemaService.computeSchema(
+    [...nativeFields, ...fields],
+    groups,
+  );
 
   const createPayload: TableCreatePayload = {
     _schema,
@@ -167,6 +170,7 @@ export async function createKanbanTemplate(
 
 export async function buildKanbanFields(
   fieldRepository: FieldContractRepository,
+  tableSchemaService: TableSchemaContractService,
 ): Promise<{
   fields: IField[];
   groups: IGroupConfiguration[];
@@ -616,7 +620,7 @@ export async function buildKanbanFields(
     slug: attachmentsGroupSlug,
     name: 'Anexos',
     fields: [attachmentFileField, attachmentAuthorField, attachmentDateField],
-    _schema: buildSchema([
+    _schema: tableSchemaService.computeSchema([
       attachmentFileField,
       attachmentAuthorField,
       attachmentDateField,
@@ -627,14 +631,14 @@ export async function buildKanbanFields(
     slug: tasksGroupSlug,
     name: 'Tarefas',
     fields: [taskTitleField, taskDoneField],
-    _schema: buildSchema([taskTitleField, taskDoneField]),
+    _schema: tableSchemaService.computeSchema([taskTitleField, taskDoneField]),
   };
 
   const commentsGroup: IGroupConfiguration = {
     slug: commentsGroupSlug,
     name: 'Comentários',
     fields: [commentTextField, commentAuthorField, commentDateField],
-    _schema: buildSchema([
+    _schema: tableSchemaService.computeSchema([
       commentTextField,
       commentAuthorField,
       commentDateField,

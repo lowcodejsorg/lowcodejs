@@ -9,16 +9,14 @@ import {
 import ReactionInMemoryRepository from '@application/repositories/reaction/reaction-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryRowContextService from '@application/services/row-context/in-memory-row-context.service';
 
 import TableRowReactionUseCase from './reaction.use-case';
-
-vi.mock('@application/core/builders', () => ({
-  transformRowContext: vi.fn().mockImplementation((row) => row),
-}));
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let reactionInMemoryRepository: ReactionInMemoryRepository;
 let rowInMemoryRepository: RowInMemoryRepository;
+let rowContextService: InMemoryRowContextService;
 let sut: TableRowReactionUseCase;
 
 describe('Table Row Reaction Use Case', () => {
@@ -26,10 +24,13 @@ describe('Table Row Reaction Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     reactionInMemoryRepository = new ReactionInMemoryRepository();
     rowInMemoryRepository = new RowInMemoryRepository();
+    rowContextService = new InMemoryRowContextService();
+
     sut = new TableRowReactionUseCase(
       tableInMemoryRepository,
       reactionInMemoryRepository,
       rowInMemoryRepository,
+      rowContextService,
     );
     vi.clearAllMocks();
   });
@@ -118,7 +119,8 @@ describe('Table Row Reaction Use Case', () => {
   });
 
   it('deve retornar erro REACTION_ROW_TABLE_ERROR quando houver falha', async () => {
-    vi.spyOn(tableInMemoryRepository, 'findBySlug').mockRejectedValueOnce(
+    tableInMemoryRepository.simulateError(
+      'findBySlug',
       new Error('Database error'),
     );
 

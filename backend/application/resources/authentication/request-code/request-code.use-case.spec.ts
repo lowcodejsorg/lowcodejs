@@ -24,15 +24,7 @@ describe('Request Code Use Case', () => {
   });
 
   it('deve criar codigo de validacao com sucesso', async () => {
-    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
-    const createTokenSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'create',
-    );
-    const buildTemplateSpy = vi.spyOn(emailInMemoryService, 'buildTemplate');
-    const sendEmailSpy = vi.spyOn(emailInMemoryService, 'sendEmail');
-
-    await userInMemoryRepository.create({
+    const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
@@ -45,19 +37,16 @@ describe('Request Code Use Case', () => {
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toBeNull();
 
-    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
-    expect(findByEmailSpy).toHaveBeenCalledWith('john@example.com');
-    expect(createTokenSpy).toHaveBeenCalledTimes(1);
-    expect(buildTemplateSpy).toHaveBeenCalledTimes(1);
-    expect(sendEmailSpy).toHaveBeenCalledTimes(1);
+    const tokens = validationTokenInMemoryRepository.items.filter(
+      (t) => t.user._id === user._id,
+    );
+    expect(tokens).toHaveLength(1);
+    const emails = emailInMemoryService.getEmails();
+    expect(emails).toHaveLength(1);
+    expect(emails[0].to).toContain('john@example.com');
   });
 
   it('deve gerar codigo numerico de 6 digitos', async () => {
-    const createTokenSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'create',
-    );
-
     await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -67,20 +56,14 @@ describe('Request Code Use Case', () => {
 
     await sut.execute({ email: 'john@example.com' });
 
-    expect(createTokenSpy).toHaveBeenCalledTimes(1);
-    const callArg = createTokenSpy.mock.calls[0][0];
-    expect(callArg.code).toMatch(/^\d{6}$/);
-    expect(Number(callArg.code)).toBeGreaterThanOrEqual(100000);
-    expect(Number(callArg.code)).toBeLessThanOrEqual(999999);
+    const tokens = validationTokenInMemoryRepository.items;
+    expect(tokens).toHaveLength(1);
+    expect(tokens[0].code).toMatch(/^\d{6}$/);
+    expect(Number(tokens[0].code)).toBeGreaterThanOrEqual(100000);
+    expect(Number(tokens[0].code)).toBeLessThanOrEqual(999999);
   });
 
   it('deve retornar erro EMAIL_NOT_FOUND quando email nao existir', async () => {
-    const findByEmailSpy = vi.spyOn(userInMemoryRepository, 'findByEmail');
-    const createTokenSpy = vi.spyOn(
-      validationTokenInMemoryRepository,
-      'create',
-    );
-
     const result = await sut.execute({ email: 'nonexistent@example.com' });
 
     expect(result.isLeft()).toBe(true);
@@ -89,8 +72,7 @@ describe('Request Code Use Case', () => {
     expect(result.value.cause).toBe('EMAIL_NOT_FOUND');
     expect(result.value.message).toBe('E-mail não encontrado');
 
-    expect(findByEmailSpy).toHaveBeenCalledTimes(1);
-    expect(createTokenSpy).not.toHaveBeenCalled();
+    expect(validationTokenInMemoryRepository.items).toHaveLength(0);
   });
 
   it('deve retornar erro REQUEST_CODE_ERROR quando houver falha', async () => {

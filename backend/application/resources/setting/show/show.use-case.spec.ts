@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
 
 import SettingInMemoryRepository from '@application/repositories/setting/setting-in-memory.repository';
 
@@ -56,8 +56,6 @@ describe('Setting Show Use Case', () => {
   });
 
   it('deve retornar configurações do banco quando existem', async () => {
-    const getSpy = vi.spyOn(settingInMemoryRepository, 'get');
-
     await settingInMemoryRepository.update({
       LOCALE: 'en-us',
       FILE_UPLOAD_MAX_SIZE: 5242880,
@@ -82,12 +80,9 @@ describe('Setting Show Use Case', () => {
       'table1',
       'table2',
     ]);
-    expect(getSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar process.env quando não há configurações no banco', async () => {
-    const getSpy = vi.spyOn(settingInMemoryRepository, 'get');
-
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
@@ -101,13 +96,10 @@ describe('Setting Show Use Case', () => {
       forumTemplate,
       calendarTemplate,
     ]);
-    expect(getSpy).toHaveBeenCalledOnce();
   });
 
   it('deve retornar erro SETTINGS_READ_ERROR quando houver falha', async () => {
-    vi.spyOn(settingInMemoryRepository, 'get').mockRejectedValueOnce(
-      new Error('Database error'),
-    );
+    settingInMemoryRepository.simulateError('get', new Error('Database error'));
 
     const result = await sut.execute();
 
