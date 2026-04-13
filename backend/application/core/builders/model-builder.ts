@@ -62,7 +62,10 @@ export async function findReverseRelationships(
 
   for (const table of tables) {
     const matchingFields = reverseFields.filter((rf) =>
-      table.fields.some((fId: any) => fId.toString() === rf._id.toString()),
+      table.fields.some(
+        (fId: mongoose.Types.ObjectId | string) =>
+          fId.toString() === rf._id.toString(),
+      ),
     );
 
     for (const field of matchingFields) {
@@ -94,7 +97,7 @@ export async function buildTable(
 
   if (!table?._schema) throw new Error('Table schema not found');
 
-  const schemaDefinition: Record<string, any> = {};
+  const schemaDefinition: Record<string, unknown> = {};
 
   for (const [key, value] of Object.entries(table._schema)) {
     if (Array.isArray(value) && value[0]?.type === 'Embedded') {
@@ -112,7 +115,7 @@ export async function buildTable(
         }
       }
 
-      const subSchemaDefinition: Record<string, any> = {};
+      const subSchemaDefinition: Record<string, unknown> = {};
 
       for (const [subKey, subValue] of Object.entries(embeddedSchema)) {
         subSchemaDefinition[subKey] = subValue;
@@ -152,12 +155,12 @@ export async function buildTable(
   // ===== ADICIONA OS MIDDLEWARES AQUI =====
 
   if (table?.methods?.beforeSave?.code) {
-    schema.pre('save', async function (next) {
+    schema.pre('save', async function (next): Promise<void> {
       const result = await executeScript({
         code: table?.methods?.beforeSave?.code!,
         doc: this,
         tableSlug: table.slug,
-        fields: mapFieldsForSandbox(table.fields as IField[]),
+        fields: mapFieldsForSandbox((table.fields ?? []) as IField[]),
         context: {
           userAction: this.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'antes_salvar',
@@ -180,12 +183,12 @@ export async function buildTable(
   }
 
   if (table?.methods?.afterSave?.code) {
-    schema.post('save', async function (doc, next) {
+    schema.post('save', async function (doc, next): Promise<void> {
       const result = await executeScript({
         code: table?.methods?.afterSave?.code!,
         doc,
         tableSlug: table.slug,
-        fields: mapFieldsForSandbox(table.fields as IField[]),
+        fields: mapFieldsForSandbox((table.fields ?? []) as IField[]),
         context: {
           userAction: doc.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'depois_salvar',
