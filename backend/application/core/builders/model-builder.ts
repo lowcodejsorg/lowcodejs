@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
+import { getDataConnection } from '@config/database.config';
 
 import type {
   IField,
@@ -209,14 +210,17 @@ export async function buildTable(
     });
   }
 
-  delete mongoose.models[table.slug];
-  const model = mongoose.model<Entity>(
+  const conn = getDataConnection();
+  if (conn.models[table.slug]) {
+    conn.deleteModel(table.slug);
+  }
+  const model = conn.model<Entity>(
     table.slug,
     schema,
     table.slug,
-  ) as mongoose.Model<Entity>;
+  );
 
-  await model?.createCollection();
+  await model.createCollection();
 
   return model;
 }
