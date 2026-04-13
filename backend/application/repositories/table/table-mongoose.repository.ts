@@ -1,10 +1,10 @@
 import { Service } from 'fastify-decorators';
-import mongoose from 'mongoose';
 
 import type { ITable } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Table as Model } from '@application/model/table.model';
+import { getDataConnection } from '@config/database.config';
 
 import type {
   TableContractRepository,
@@ -201,24 +201,26 @@ export default class TableMongooseRepository implements TableContractRepository 
   }
 
   async dropCollection(slug: string): Promise<void> {
-    const db = mongoose.connection.db!;
+    const conn = getDataConnection();
+    const db = conn.db!;
 
     const collections = await db.listCollections({ name: slug }).toArray();
     if (collections.length > 0) {
       await db.dropCollection(slug);
     }
 
-    if (mongoose.models[slug]) {
-      delete mongoose.models[slug];
+    if (conn.models[slug]) {
+      conn.deleteModel(slug);
     }
   }
 
   async renameSlug(oldSlug: string, newSlug: string): Promise<void> {
-    const db = mongoose.connection.db!;
+    const conn = getDataConnection();
+    const db = conn.db!;
     await db.renameCollection(oldSlug, newSlug);
 
-    if (mongoose.models[oldSlug]) {
-      delete mongoose.models[oldSlug];
+    if (conn.models[oldSlug]) {
+      conn.deleteModel(oldSlug);
     }
   }
 
