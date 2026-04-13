@@ -17,7 +17,8 @@ const EnvSchema = z.object({
   PAGINATION_PER_PAGE: z.coerce.number().default(50),
 
   DATABASE_URL: z.string().trim(),
-  DB_NAME: z.string().trim().default('lowcodejs'),
+  DB_DATABASE: z.string().trim().default('lowcodejs'),
+  DB_DATA_DATABASE: z.string().trim().default('lowcodejs_data'),
 
   EMAIL_PROVIDER_PASSWORD: z.string().trim(),
   EMAIL_PROVIDER_HOST: z.string().trim(),
