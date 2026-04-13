@@ -15,7 +15,8 @@
     "test:e2e": "vitest --config vitest.e2e.config.ts",
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint . --ext .ts --fix"
+    "lint": "eslint . --ext .ts --fix",
+    "migrate:dual-connection": "node --import @swc-node/register/esm-register database/migrations/migrate-dual-connection.ts"
   },
   "keywords": [],
   "author": "",
