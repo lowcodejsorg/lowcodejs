@@ -124,6 +124,38 @@ export const E_TABLE_COLLABORATION = {
   RESTRICTED: 'RESTRICTED',
 } as const;
 
+// ─── NOVO SISTEMA DE PERMISSOES ────────────────────────────────────
+
+export const E_SYSTEM_PERMISSION = {
+  VIEW_TABLES: 'VIEW_TABLES',
+  CREATE_TABLES: 'CREATE_TABLES',
+  UPDATE_TABLES: 'UPDATE_TABLES',
+  REMOVE_TABLES: 'REMOVE_TABLES',
+  USERS: 'USERS',
+  MENU: 'MENU',
+  USER_GROUPS: 'USER_GROUPS',
+  SETTINGS: 'SETTINGS',
+  TOOLS: 'TOOLS',
+  PLUGINS: 'PLUGINS',
+} as const;
+
+export const E_COLLABORATION_PROFILE = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  EDITOR: 'EDITOR',
+  CONTRIBUTOR: 'CONTRIBUTOR',
+  VIEWER: 'VIEWER',
+} as const;
+
+export const E_TABLE_ACTION_VALUE = {
+  PUBLIC: 'PUBLIC',
+  NOBODY: 'NOBODY',
+} as const;
+
+export const E_FIELD_VISIBILITY_VALUE = {
+  HIDDEN: 'HIDDEN',
+} as const;
+
 export const E_JWT_TYPE = {
   ACCESS: 'ACCESS',
   REFRESH: 'REFRESH',
@@ -143,7 +175,6 @@ export const E_CHAT_EVENT = {
 export type IJWTPayload = {
   sub: string;
   email: string;
-  role: ValueOf<typeof E_ROLE>;
   type: ValueOf<typeof E_JWT_TYPE>;
 };
 
@@ -184,6 +215,11 @@ export type IPermission = Merge<
   }
 >;
 
+export type ISystemPermissions = Record<
+  ValueOf<typeof E_SYSTEM_PERMISSION>,
+  boolean
+>;
+
 export type IGroup = Merge<
   Base,
   {
@@ -191,6 +227,9 @@ export type IGroup = Merge<
     slug: string;
     description: string | null;
     permissions: IPermission[];
+    encompasses: IGroup[];
+    systemPermissions: ISystemPermissions;
+    immutable: boolean;
   }
 >;
 
@@ -206,7 +245,7 @@ export type IUser = Merge<
     email: string;
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
-    group: IGroup;
+    groups: IGroup[];
   }
 >;
 
@@ -262,6 +301,11 @@ export type ILayoutFields = {
   reminder: string | null;
 };
 
+export type ITableCollaborator = {
+  user: IUser | string;
+  profile: ValueOf<typeof E_COLLABORATION_PROFILE>;
+};
+
 export type ITable = Merge<
   Base,
   {
@@ -273,9 +317,17 @@ export type ITable = Merge<
     fields: IField[];
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
-    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators: IUser[];
+    viewTable: string;
+    updateTable: string;
+    createField: string;
+    updateField: string;
+    removeField: string;
+    viewField: string;
+    createRow: string;
+    updateRow: string;
+    removeRow: string;
+    viewRow: string;
+    collaborators: ITableCollaborator[];
     owner: IUser;
     fieldOrderList: string[];
     fieldOrderForm: string[];
@@ -320,10 +372,9 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
-    showInFilter: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInList: boolean;
+    visibilityList: string;
+    visibilityForm: string;
+    visibilityDetail: string;
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
@@ -345,10 +396,9 @@ export type FieldCreatePayload = Pick<
   | 'required'
   | 'multiple'
   | 'format'
-  | 'showInFilter'
-  | 'showInForm'
-  | 'showInDetail'
-  | 'showInList'
+  | 'visibilityList'
+  | 'visibilityForm'
+  | 'visibilityDetail'
   | 'widthInForm'
   | 'widthInList'
   | 'widthInDetail'
@@ -443,6 +493,7 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | string | null;
     order: number;
+    visibility: string;
   }
 >;
 
@@ -490,7 +541,11 @@ export const E_TABLE_PERMISSION = {
   VIEW_ROW: 'VIEW_ROW',
 } as const;
 
-export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
+export const HIDDEN = E_FIELD_VISIBILITY_VALUE.HIDDEN;
+
+export const buildFieldNativeList = (
+  defaultGroupId: string,
+): FieldCreatePayload[] => [
   {
     name: 'ID',
     slug: '_id',
@@ -500,10 +555,9 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
-    showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    visibilityList: HIDDEN,
+    visibilityForm: HIDDEN,
+    visibilityDetail: HIDDEN,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -522,10 +576,9 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
-    showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    visibilityList: defaultGroupId,
+    visibilityForm: HIDDEN,
+    visibilityDetail: defaultGroupId,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -544,10 +597,9 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
-    showInList: true,
-    showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    visibilityList: defaultGroupId,
+    visibilityForm: HIDDEN,
+    visibilityDetail: defaultGroupId,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -566,10 +618,9 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
-    showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    visibilityList: HIDDEN,
+    visibilityForm: HIDDEN,
+    visibilityDetail: HIDDEN,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -588,10 +639,9 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
-    showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    visibilityList: HIDDEN,
+    visibilityForm: HIDDEN,
+    visibilityDetail: HIDDEN,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -603,7 +653,12 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
   },
 ];
 
-export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
+export const FIELD_NATIVE_LIST: FieldCreatePayload[] =
+  buildFieldNativeList(HIDDEN);
+
+export const buildFieldGroupNativeList = (
+  defaultGroupId: string,
+): FieldCreatePayload[] => [
   {
     name: 'ID',
     slug: '_id',
@@ -613,10 +668,9 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
-    showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    visibilityList: HIDDEN,
+    visibilityForm: HIDDEN,
+    visibilityDetail: HIDDEN,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -635,10 +689,9 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: true,
-    showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    visibilityList: defaultGroupId,
+    visibilityForm: HIDDEN,
+    visibilityDetail: defaultGroupId,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -657,10 +710,9 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.DD_MM_YYYY_HH_MM_SS,
-    showInList: true,
-    showInFilter: true,
-    showInForm: false,
-    showInDetail: true,
+    visibilityList: defaultGroupId,
+    visibilityForm: HIDDEN,
+    visibilityDetail: defaultGroupId,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -679,10 +731,9 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
-    showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    visibilityList: HIDDEN,
+    visibilityForm: HIDDEN,
+    visibilityDetail: HIDDEN,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -701,10 +752,9 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     required: false,
     multiple: false,
     format: null,
-    showInList: false,
-    showInFilter: false,
-    showInForm: false,
-    showInDetail: false,
+    visibilityList: HIDDEN,
+    visibilityForm: HIDDEN,
+    visibilityDetail: HIDDEN,
     widthInForm: null,
     widthInList: 10,
     widthInDetail: null,
@@ -715,3 +765,6 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
 ];
+
+export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] =
+  buildFieldGroupNativeList(HIDDEN);
