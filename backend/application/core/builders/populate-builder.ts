@@ -99,11 +99,11 @@ export async function buildPopulate(
         );
 
         const relationshipFields = getRelationship(
-          relationshipTable?.fields as IField[],
+          relationshipTable?.fields ?? [],
         );
         const relationshipPopulate = await buildPopulate(
           relationshipFields,
-          relationshipTable?.groups as IGroupConfiguration[],
+          relationshipTable?.groups ?? [],
           undefined,
           conn,
         );
@@ -197,8 +197,8 @@ export async function buildPopulate(
           conn,
         );
 
-        const relationshipSlugs = (sourceTable.fields as IField[])
-          .filter(
+        const populatedFields: IField[] = sourceTable.fields ?? [];
+        const relationshipSlugs = populatedFields.filter(
             (f) =>
               f.type === E_FIELD_TYPE.RELATIONSHIP && f.slug !== rel.fieldSlug,
           )
@@ -209,11 +209,17 @@ export async function buildPopulate(
           ...(relationshipSlugs.length > 0 && {
             select: relationshipSlugs.join(' '),
           }),
-          transform: (doc: any) => {
-            if (!doc) return doc;
-            const obj = doc.toObject ? doc.toObject() : { ...doc };
-            delete obj[rel.fieldSlug];
-            return obj;
+          transform: (doc: unknown): Record<string, unknown> | null => {
+            if (!doc || typeof doc !== 'object') return null;
+            const record: Record<string, unknown> = {};
+            Object.assign(record, doc);
+            if ('toObject' in doc && typeof doc.toObject === 'function') {
+              const plain: Record<string, unknown> = doc.toObject();
+              delete plain[rel.fieldSlug];
+              return plain;
+            }
+            delete record[rel.fieldSlug];
+            return record;
           },
         });
       }
