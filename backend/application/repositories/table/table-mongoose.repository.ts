@@ -141,10 +141,12 @@ export default class TableMongooseRepository implements TableContractRepository 
       ]);
 
       const populated = await Model.populate(docs, this.populateOptions);
-      return populated.map((doc: any) => ({
-        ...doc,
-        _id: doc._id.toString(),
-      }));
+      return populated.map(
+        (doc: Record<string, unknown>): ITable => ({
+          ...doc,
+          _id: doc._id ? String(doc._id) : '',
+        }),
+      );
     }
 
     const tables = await Model.find(where)
