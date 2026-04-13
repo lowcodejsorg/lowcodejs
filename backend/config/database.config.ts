@@ -15,6 +15,11 @@ import '@application/model/validation-token.model';
 let dataConnection: mongoose.Connection;
 
 export function getDataConnection(): mongoose.Connection {
+  if (!dataConnection) {
+    throw new Error(
+      'Data connection not initialized. Call MongooseConnect() first.',
+    );
+  }
   return dataConnection;
 }
 
