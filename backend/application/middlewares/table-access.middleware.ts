@@ -83,7 +83,6 @@ export function TableAccessMiddleware(options: AccessOptions) {
     const accessInput = {
       table,
       userId: request.user?.sub,
-      userRole: request.user?.role,
       user,
       requiredPermission,
       httpMethod: request.method,

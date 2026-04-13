@@ -10,12 +10,12 @@ import type {
 
 export type UserCreatePayload = Merge<
   Pick<IUser, 'name' | 'email' | 'password'>,
-  { group: string; status?: ValueOf<typeof E_USER_STATUS> }
+  { groups: string[]; status?: ValueOf<typeof E_USER_STATUS> }
 >;
 
 export type UserUpdatePayload = Merge<
   Merge<Pick<IUser, '_id'>, Partial<UserCreatePayload>>,
-  { group?: string; status?: ValueOf<typeof E_USER_STATUS> }
+  { groups?: string[]; status?: ValueOf<typeof E_USER_STATUS> }
 >;
 
 export type UserQueryPayload = {

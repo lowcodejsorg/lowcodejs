@@ -12,7 +12,6 @@ export type AccessCheckResult = {
 export type AccessCheckInput = {
   table?: ITable;
   userId?: string;
-  userRole?: string;
   user?: IUser | null;
   requiredPermission: ValueOf<typeof E_TABLE_PERMISSION>;
   httpMethod: string;

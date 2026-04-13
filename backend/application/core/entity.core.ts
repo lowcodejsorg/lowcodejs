@@ -317,6 +317,7 @@ export type ITable = Merge<
     fields: IField[];
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
+    // Novo sistema de permissoes (10 acoes)
     viewTable: string;
     updateTable: string;
     createField: string;
@@ -328,6 +329,10 @@ export type ITable = Merge<
     removeRow: string;
     viewRow: string;
     collaborators: ITableCollaborator[];
+    // Campos legados (presentes no MongoDB ate a migracao)
+    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
+    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
+    administrators?: IUser[];
     owner: IUser;
     fieldOrderList: string[];
     fieldOrderForm: string[];

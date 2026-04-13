@@ -1,4 +1,4 @@
-import { Service } from 'fastify-decorators';
+import { Inject, Service } from 'fastify-decorators';
 
 import {
   E_ROLE,
@@ -9,6 +9,7 @@ import {
   type ValueOf,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { GroupResolutionContractService } from '@application/services/group-resolution/group-resolution-contract.service';
 
 import type {
   AccessCheckInput,
@@ -30,6 +31,9 @@ const OWNER_ONLY_ACTIONS = [
 
 @Service()
 export default class PermissionService extends PermissionContractService {
+  @Inject(GroupResolutionContractService)
+  private readonly groupResolutionService!: GroupResolutionContractService;
+
   async checkUserHasPermission(
     user: IUser | null,
     permission: ValueOf<typeof E_TABLE_PERMISSION>,
@@ -47,14 +51,9 @@ export default class PermissionService extends PermissionContractService {
       );
     }
 
-    if (!user.group?.permissions || !Array.isArray(user.group.permissions)) {
-      throw HTTPException.Forbidden(
-        'Grupo ou permissões do usuário não encontrados',
-        'PERMISSIONS_NOT_FOUND',
-      );
-    }
-
-    const hasPermission = user.group.permissions.some(
+    const groups = this.groupResolutionService.resolveUserGroups(user);
+    const allPermissions = groups.flatMap((g) => g.permissions ?? []);
+    const hasPermission = allPermissions.some(
       (p) => p.slug === permissionSlug,
     );
 
@@ -79,7 +78,6 @@ export default class PermissionService extends PermissionContractService {
     const { table, requiredPermission, httpMethod } = input;
     if (!table) return false;
 
-    // Tabela publica + GET view
     if (
       table.visibility === E_TABLE_VISIBILITY.PUBLIC &&
       httpMethod === 'GET' &&
@@ -88,7 +86,6 @@ export default class PermissionService extends PermissionContractService {
       return true;
     }
 
-    // Tabela form + POST CREATE_ROW
     if (
       table.visibility === E_TABLE_VISIBILITY.FORM &&
       httpMethod === 'POST' &&
@@ -101,27 +98,27 @@ export default class PermissionService extends PermissionContractService {
   }
 
   async checkTableAccess(input: AccessCheckInput): Promise<AccessCheckResult> {
-    const { table, userId, userRole, user, requiredPermission } = input;
+    const { table, userId, user, requiredPermission } = input;
 
-    if (!userId || !userRole) {
+    if (!userId) {
       throw HTTPException.Unauthorized(
         'Usuário não autenticado',
         'USER_NOT_AUTHENTICATED',
       );
     }
 
-    // MASTER tem acesso total
-    if (userRole === E_ROLE.MASTER) {
+    if (user && this.groupResolutionService.isMasterUser(user)) {
       return { allowed: true };
     }
 
-    // ADMINISTRATOR tem acesso total (se ativo)
-    if (userRole === E_ROLE.ADMINISTRATOR) {
+    const isAdminRole =
+      user?.groups?.some((g) => g.slug === E_ROLE.ADMINISTRATOR) ?? false;
+
+    if (isAdminRole) {
       await this.checkUserIsActive(user ?? null);
       return { allowed: true };
     }
 
-    // CREATE_TABLE: apenas verificar permissao do grupo
     if (requiredPermission === E_TABLE_PERMISSION.CREATE_TABLE) {
       await this.checkUserHasPermission(user ?? null, requiredPermission);
       return { allowed: true };
@@ -134,20 +131,19 @@ export default class PermissionService extends PermissionContractService {
       );
     }
 
-    // Verificar ownership
     const isOwner = userId === table.owner?.toString();
-    const isTableAdmin = table.administrators?.some(
-      (a) => a?.toString() === userId,
-    );
+    const isTableAdmin = table.collaborators?.some((c) => {
+      const collaboratorId =
+        typeof c.user === 'string' ? c.user : c.user?._id?.toString();
+      return collaboratorId === userId && c.profile === 'ADMIN';
+    });
     const ownership = { isOwner, isAdministrator: !!isTableAdmin };
 
-    // Dono/admin da tabela -> acesso total (se ativo)
     if (isOwner || isTableAdmin) {
       await this.checkUserIsActive(user ?? null);
       return { allowed: true, ownership };
     }
 
-    // Nao e dono/admin -> aplicar regras de visibilidade
     if (OWNER_ONLY_ACTIONS.includes(requiredPermission)) {
       throw HTTPException.Forbidden(
         'Apenas o proprietário ou administradores podem realizar esta ação',
@@ -158,7 +154,6 @@ export default class PermissionService extends PermissionContractService {
     const visibility = table.visibility || E_TABLE_VISIBILITY.RESTRICTED;
     this.checkVisibilityRules(visibility, requiredPermission);
 
-    // Verificar permissao no grupo
     await this.checkUserHasPermission(user ?? null, requiredPermission);
 
     return { allowed: true, ownership };
@@ -168,31 +163,31 @@ export default class PermissionService extends PermissionContractService {
     visibility: string,
     requiredPermission: string,
   ): void {
-    switch (visibility) {
-      case E_TABLE_VISIBILITY.PRIVATE:
+    const rules: Record<string, (() => void) | undefined> = {
+      [E_TABLE_VISIBILITY.PRIVATE]: () => {
         throw HTTPException.Forbidden('Esta tabela é privada', 'TABLE_PRIVATE');
-
-      case E_TABLE_VISIBILITY.RESTRICTED:
+      },
+      [E_TABLE_VISIBILITY.RESTRICTED]: () => {
         if (requiredPermission === 'CREATE_ROW') {
           throw HTTPException.Forbidden(
             'Apenas proprietário/administradores podem criar registros em tabelas restritas',
             'RESTRICTED_CREATE',
           );
         }
-        break;
-
-      case E_TABLE_VISIBILITY.FORM:
+      },
+      [E_TABLE_VISIBILITY.FORM]: () => {
         if (VIEW_PERMISSIONS.includes(requiredPermission)) {
           throw HTTPException.Forbidden(
             'Apenas proprietário/administradores podem visualizar tabelas de formulário',
             'FORM_VIEW_RESTRICTED',
           );
         }
-        break;
+      },
+    };
 
-      case E_TABLE_VISIBILITY.OPEN:
-      case E_TABLE_VISIBILITY.PUBLIC:
-        break;
+    const rule = rules[visibility];
+    if (rule) {
+      rule();
     }
   }
 }

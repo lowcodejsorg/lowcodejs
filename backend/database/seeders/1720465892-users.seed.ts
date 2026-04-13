@@ -6,16 +6,14 @@ import { User } from '@application/model/user.model';
 
 type BasePayload = Omit<
   import('@application/core/entity.core').IUser,
-  '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt' | 'group'
+  '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt' | 'groups'
 >;
 
 type Payload = BasePayload & {
-  group: string;
+  groups: string[];
 };
 
 export default async function Seed(): Promise<void> {
-  // await User.deleteMany({});
-
   const groups = await UserGroup.find();
 
   const masterGroup = groups.find((g) => g.slug === E_ROLE.MASTER);
@@ -34,49 +32,47 @@ export default async function Seed(): Promise<void> {
   const payload: Payload[] = [
     {
       name: 'admin',
-      group: administratorGroup?._id?.toString() as string,
+      groups: [administratorGroup?._id?.toString() || ''],
       email: 'admin@admin.com',
       password: await bcrypt.hash('admin', 6),
       status: E_USER_STATUS.ACTIVE,
     },
     {
       name: 'master',
-      group: masterGroup?._id?.toString() as string,
+      groups: [masterGroup?._id?.toString() || ''],
       email: 'master@lowcodejs.org',
       password,
       status: E_USER_STATUS.ACTIVE,
     },
     {
       name: 'administrator',
-      group: administratorGroup?._id?.toString() as string,
+      groups: [administratorGroup?._id?.toString() || ''],
       email: 'administrator@lowcodejs.org',
       password,
       status: E_USER_STATUS.ACTIVE,
     },
     {
       name: 'manager',
-      group: managerGroup?._id?.toString() as string,
+      groups: [managerGroup?._id?.toString() || ''],
       email: 'manager@lowcodejs.org',
       password,
       status: E_USER_STATUS.ACTIVE,
     },
 
     {
-      name: ' registered',
-      group: registeredGroup?._id?.toString() as string,
+      name: 'registered',
+      groups: [registeredGroup?._id?.toString() || ''],
       email: 'registered@lowcodejs.org',
       password,
       status: E_USER_STATUS.ACTIVE,
     },
   ];
 
-  // await User.insertMany(payload);
-
   await User.bulkWrite(
     payload.map(({ email, ...rest }) => ({
       updateOne: {
         filter: { email },
-        update: { $set: { email, ...rest } as any },
+        update: { $set: { email, ...rest } },
         upsert: true,
       },
     })),
