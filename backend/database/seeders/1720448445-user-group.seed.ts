@@ -24,7 +24,9 @@ type Payload = Omit<
 };
 
 function buildSystemPermissions(
-  enabled: Array<(typeof E_SYSTEM_PERMISSION)[keyof typeof E_SYSTEM_PERMISSION]>,
+  enabled: Array<
+    (typeof E_SYSTEM_PERMISSION)[keyof typeof E_SYSTEM_PERMISSION]
+  >,
 ): ISystemPermissions {
   const permissions = {} as ISystemPermissions;
 
