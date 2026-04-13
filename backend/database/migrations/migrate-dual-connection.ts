@@ -21,6 +21,12 @@ const DB_DATABASE = process.env.DB_DATABASE || 'lowcodejs';
 const DB_DATA_DATABASE = process.env.DB_DATA_DATABASE || 'lowcodejs_data';
 const DROP_SOURCE = process.argv.includes('--drop-source');
 
+function isMongoDuplicateKeyError(
+  e: unknown,
+): e is Error & { code: number } {
+  return e instanceof Error && 'code' in e;
+}
+
 async function migrate(): Promise<void> {
   if (!DATABASE_URL) {
     console.error('DATABASE_URL is required');
@@ -95,11 +101,7 @@ async function migrate(): Promise<void> {
     try {
       await targetCol.insertMany(docs, { ordered: false });
     } catch (error: unknown) {
-      if (
-        error instanceof Error &&
-        'code' in error &&
-        (error as Record<string, unknown>).code === 11000
-      ) {
+      if (isMongoDuplicateKeyError(error) && error.code === 11000) {
         console.info(
           `  [partial] ${slug} — some duplicates skipped (${count} docs)`,
         );
@@ -127,7 +129,7 @@ async function migrate(): Promise<void> {
   await targetConn.close();
 }
 
-migrate().catch((error) => {
+migrate().catch((error: unknown): void => {
   console.error('Migration failed:', error);
   process.exit(1);
 });
