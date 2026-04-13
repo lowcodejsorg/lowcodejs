@@ -14,7 +14,10 @@ import type {
 
 @Service()
 export default class UserGroupMongooseRepository implements UserGroupContractRepository {
-  private readonly populateOptions = [{ path: 'permissions' }];
+  private readonly populateOptions = [
+    { path: 'permissions' },
+    { path: 'encompasses' },
+  ];
 
   private async buildWhereClause(
     payload?: UserGroupQueryPayload,

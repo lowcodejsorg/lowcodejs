@@ -22,15 +22,25 @@ export default class UserGroupUpdateUseCase {
     try {
       const group = await this.userGroupRepository.findById(payload._id);
 
-      if (!group)
+      if (!group) {
         return left(
           HTTPException.NotFound(
             'Grupo de usuários não encontrado',
             'USER_GROUP_NOT_FOUND',
           ),
         );
+      }
 
-      if (payload.permissions && payload.permissions.length === 0)
+      if (group.immutable) {
+        return left(
+          HTTPException.Forbidden(
+            'Este grupo é imutável e não pode ser editado',
+            'GROUP_IMMUTABLE',
+          ),
+        );
+      }
+
+      if (payload.permissions && payload.permissions.length === 0) {
         return left(
           HTTPException.BadRequest(
             'Ao menos uma permissão deve ser informada para o grupo de usuários',
@@ -41,6 +51,27 @@ export default class UserGroupUpdateUseCase {
             },
           ),
         );
+      }
+
+      if (payload.encompasses && payload.encompasses.length > 0) {
+        const hasCycle = await this.detectCycle(
+          payload._id,
+          payload.encompasses,
+        );
+
+        if (hasCycle) {
+          return left(
+            HTTPException.BadRequest(
+              'Referência circular detectada na cadeia de grupos englobados',
+              'ENCOMPASSES_CYCLE_DETECTED',
+              {
+                encompasses:
+                  'Referência circular detectada na cadeia de grupos englobados',
+              },
+            ),
+          );
+        }
+      }
 
       const updated = await this.userGroupRepository.update(payload);
 
@@ -54,5 +85,39 @@ export default class UserGroupUpdateUseCase {
         ),
       );
     }
+  }
+
+  private async detectCycle(
+    currentGroupId: string,
+    newEncompasses: string[],
+  ): Promise<boolean> {
+    const visited = new Set<string>();
+    visited.add(currentGroupId);
+
+    const queue = [...newEncompasses];
+
+    while (queue.length > 0) {
+      const groupId = queue.shift();
+      if (!groupId) continue;
+
+      if (visited.has(groupId)) {
+        return true;
+      }
+
+      visited.add(groupId);
+
+      const group = await this.userGroupRepository.findById(groupId);
+
+      if (group?.encompasses) {
+        for (const encompassed of group.encompasses) {
+          const id = encompassed._id?.toString();
+          if (id) {
+            queue.push(id);
+          }
+        }
+      }
+    }
+
+    return false;
   }
 }

@@ -3,6 +3,7 @@ import type {
   E_ROLE,
   FindOptions,
   IGroup,
+  ISystemPermissions,
   IUser,
   Merge,
   ValueOf,
@@ -13,6 +14,9 @@ export type UserGroupCreatePayload = Merge<
   {
     description?: string | null;
     permissions: string[];
+    encompasses?: string[];
+    systemPermissions?: Partial<ISystemPermissions>;
+    immutable?: boolean;
   }
 >;
 
