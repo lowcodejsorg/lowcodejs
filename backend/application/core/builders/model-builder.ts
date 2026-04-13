@@ -160,7 +160,7 @@ export async function buildTable(
         code: table?.methods?.beforeSave?.code!,
         doc: this,
         tableSlug: table.slug,
-        fields: mapFieldsForSandbox((table.fields ?? []) as IField[]),
+        fields: mapFieldsForSandbox(table.fields ?? []),
         context: {
           userAction: this.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'antes_salvar',
@@ -188,7 +188,7 @@ export async function buildTable(
         code: table?.methods?.afterSave?.code!,
         doc,
         tableSlug: table.slug,
-        fields: mapFieldsForSandbox((table.fields ?? []) as IField[]),
+        fields: mapFieldsForSandbox(table.fields ?? []),
         context: {
           userAction: doc.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'depois_salvar',
