@@ -154,7 +154,6 @@ export default class TableFieldDeleteUseCase {
       _schema: parentSchema,
       groups: updatedGroups,
       owner: parentTable.owner._id,
-      administrators: parentTable.administrators.flatMap((a) => a._id),
     });
 
     await this.fieldRepository.delete(field._id);

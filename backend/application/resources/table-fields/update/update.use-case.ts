@@ -177,7 +177,6 @@ export default class TableFieldUpdateUseCase {
         fields: fields.flatMap((f) => f._id),
         groups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       if (oldSlug !== slug) {

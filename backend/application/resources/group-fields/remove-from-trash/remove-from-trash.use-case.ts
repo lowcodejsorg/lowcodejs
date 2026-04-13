@@ -54,10 +54,9 @@ export default class GroupFieldRemoveFromTrashUseCase {
 
       const updatedField = await this.fieldRepository.update({
         _id: field._id,
-        showInList: true,
-        showInForm: true,
-        showInDetail: true,
-        showInFilter: true,
+        visibilityList: 'HIDDEN',
+        visibilityForm: 'HIDDEN',
+        visibilityDetail: 'HIDDEN',
         required: false,
         trashed: false,
         trashedAt: null,
@@ -91,7 +90,6 @@ export default class GroupFieldRemoveFromTrashUseCase {
         _schema: parentSchema,
         groups: updatedGroups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       return right(updatedField);

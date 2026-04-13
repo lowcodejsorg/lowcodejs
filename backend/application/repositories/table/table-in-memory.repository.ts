@@ -1,8 +1,6 @@
 import type {
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FindOptions,
   IField,
   IStorage,
@@ -18,7 +16,9 @@ import type {
   TableUpdatePayload,
 } from './table-contract.repository';
 
-export default class TableInMemoryRepository implements TableContractRepository {
+export default class TableInMemoryRepository
+  implements TableContractRepository
+{
   items: ITable[] = [];
   private _forcedErrors = new Map<string, Error>();
 
@@ -48,15 +48,20 @@ export default class TableInMemoryRepository implements TableContractRepository 
       ),
       type: payload.type ?? ('TABLE' as typeof E_TABLE_TYPE.TABLE),
       style: payload.style ?? ('LIST' as typeof E_TABLE_STYLE.LIST),
-      visibility:
-        payload.visibility ??
-        ('RESTRICTED' as typeof E_TABLE_VISIBILITY.RESTRICTED),
-      collaboration:
-        payload.collaboration ??
-        ('RESTRICTED' as typeof E_TABLE_COLLABORATION.RESTRICTED),
-      administrators: (payload.administrators ?? []).map(
-        (a) => ({ _id: a }) as IUser,
-      ),
+      viewTable: payload.viewTable ?? 'NOBODY',
+      updateTable: payload.updateTable ?? 'NOBODY',
+      createField: payload.createField ?? 'NOBODY',
+      updateField: payload.updateField ?? 'NOBODY',
+      removeField: payload.removeField ?? 'NOBODY',
+      viewField: payload.viewField ?? 'NOBODY',
+      createRow: payload.createRow ?? 'NOBODY',
+      updateRow: payload.updateRow ?? 'NOBODY',
+      removeRow: payload.removeRow ?? 'NOBODY',
+      viewRow: payload.viewRow ?? 'NOBODY',
+      collaborators: (payload.collaborators ?? []).map((c) => ({
+        user: { _id: c.user } as IUser,
+        profile: c.profile,
+      })),
       owner: { _id: payload.owner } as IUser,
       fieldOrderList: payload.fieldOrderList ?? [],
       fieldOrderForm: payload.fieldOrderForm ?? [],
@@ -116,14 +121,12 @@ export default class TableInMemoryRepository implements TableContractRepository 
     this._checkError('findMany');
     let filtered = this.items;
 
-    // Filtro de trashed
     if (payload?.trashed !== undefined) {
       filtered = filtered.filter((t) => t.trashed === payload.trashed);
     } else {
       filtered = filtered.filter((t) => !t.trashed);
     }
 
-    // Filtro por múltiplos IDs
     if (payload?._ids && payload._ids.length > 0) {
       filtered = filtered.filter((t) => payload._ids!.includes(t._id));
     }
@@ -165,38 +168,39 @@ export default class TableInMemoryRepository implements TableContractRepository 
     if (payload.fields !== undefined) {
       table.fields = payload.fields.map((f) => ({ _id: f }) as IField);
     }
-    if (payload.administrators !== undefined) {
-      table.administrators = payload.administrators.map(
-        (a) => ({ _id: a }) as IUser,
-      );
+    if (payload.collaborators !== undefined) {
+      table.collaborators = payload.collaborators.map((c) => ({
+        user: { _id: c.user } as IUser,
+        profile: c.profile,
+      }));
     }
     if (payload.owner !== undefined) {
       table.owner = { _id: payload.owner } as IUser;
     }
-    if (payload.style !== undefined) {
-      table.style = payload.style;
-    }
-    if (payload.visibility !== undefined) {
-      table.visibility = payload.visibility;
-    }
-    if (payload.collaboration !== undefined) {
-      table.collaboration = payload.collaboration;
-    }
-    if (payload.fieldOrderList !== undefined) {
+    if (payload.style !== undefined) table.style = payload.style;
+    if (payload.viewTable !== undefined) table.viewTable = payload.viewTable;
+    if (payload.updateTable !== undefined)
+      table.updateTable = payload.updateTable;
+    if (payload.createField !== undefined)
+      table.createField = payload.createField;
+    if (payload.updateField !== undefined)
+      table.updateField = payload.updateField;
+    if (payload.removeField !== undefined)
+      table.removeField = payload.removeField;
+    if (payload.viewField !== undefined) table.viewField = payload.viewField;
+    if (payload.createRow !== undefined) table.createRow = payload.createRow;
+    if (payload.updateRow !== undefined) table.updateRow = payload.updateRow;
+    if (payload.removeRow !== undefined) table.removeRow = payload.removeRow;
+    if (payload.viewRow !== undefined) table.viewRow = payload.viewRow;
+    if (payload.fieldOrderList !== undefined)
       table.fieldOrderList = payload.fieldOrderList;
-    }
-    if (payload.fieldOrderForm !== undefined) {
+    if (payload.fieldOrderForm !== undefined)
       table.fieldOrderForm = payload.fieldOrderForm;
-    }
-    if (payload.fieldOrderFilter !== undefined) {
+    if (payload.fieldOrderFilter !== undefined)
       table.fieldOrderFilter = payload.fieldOrderFilter;
-    }
-    if (payload.fieldOrderDetail !== undefined) {
+    if (payload.fieldOrderDetail !== undefined)
       table.fieldOrderDetail = payload.fieldOrderDetail;
-    }
-    if (payload.groups !== undefined) {
-      table.groups = payload.groups;
-    }
+    if (payload.groups !== undefined) table.groups = payload.groups;
     if (payload.name !== undefined) table.name = payload.name;
     if (payload.description !== undefined)
       table.description = payload.description;
@@ -229,9 +233,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
     }
 
     for (const table of filtered) {
-      if (data.visibility) table.visibility = data.visibility;
       if (data.style) table.style = data.style;
-      if (data.collaboration) table.collaboration = data.collaboration;
       if (data.trashed !== undefined) table.trashed = data.trashed;
       if (data.trashedAt !== undefined) table.trashedAt = data.trashedAt;
       table.updatedAt = new Date();
@@ -259,7 +261,7 @@ export default class TableInMemoryRepository implements TableContractRepository 
 
   // eslint-disable-next-line no-unused-vars
   async dropCollection(_slug: string): Promise<void> {
-    // No-op em memória — os registros não existem separadamente
+    // No-op em memoria
   }
 
   async renameSlug(oldSlug: string, newSlug: string): Promise<void> {

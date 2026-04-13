@@ -5,8 +5,6 @@ import slugify from 'slugify';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
-  E_FIELD_TYPE,
-  E_TABLE_TYPE,
   E_USER_STATUS,
   type ITable as Entity,
 } from '@application/core/entity.core';
@@ -34,28 +32,29 @@ export default class TableUpdateUseCase {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
-      if (!table)
+      if (!table) {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
-      // Validar que apenas usuários ativos podem ser administradores
-      if (payload.administrators && payload.administrators.length > 0) {
-        const adminIds = payload.administrators;
-        const activeAdmins = await this.userRepository.findMany({
-          _ids: adminIds,
+      // Validar que colaboradores referenciados sao usuarios ativos
+      if (payload.collaborators && payload.collaborators.length > 0) {
+        const userIds = payload.collaborators.map((c) => c.user);
+        const activeUsers = await this.userRepository.findMany({
+          _ids: userIds,
           status: E_USER_STATUS.ACTIVE,
           trashed: false,
         });
 
-        if (activeAdmins.length !== adminIds.length) {
+        if (activeUsers.length !== userIds.length) {
           return left(
             HTTPException.BadRequest(
-              'Todos os administradores devem ser usuários ativos',
-              'INACTIVE_ADMINISTRATORS',
+              'Todos os colaboradores devem ser usuários ativos',
+              'INACTIVE_COLLABORATORS',
               {
-                administrators:
-                  'Todos os administradores devem ser usuários ativos',
+                collaborators:
+                  'Todos os colaboradores devem ser usuários ativos',
               },
             ),
           );
@@ -84,7 +83,7 @@ export default class TableUpdateUseCase {
         }
       }
 
-      // Renomear coleção e atualizar referências nos campos RELATIONSHIP
+      // Renomear colecao e atualizar referencias nos campos RELATIONSHIP
       if (slugChanged) {
         await this.tableRepository.renameSlug(oldSlug, newSlug);
         await this.fieldRepository.updateRelationshipTableSlug(
@@ -93,50 +92,34 @@ export default class TableUpdateUseCase {
         );
       }
 
-      // Mapear propriedades populadas para strings (IDs)
       const updated = await this.tableRepository.update({
         _id: table._id,
         ...payload,
         slug: newSlug,
-        owner: table.owner._id,
+        owner: payload.owner ?? table.owner._id,
         style: payload.style ?? table.style,
-        visibility: payload.visibility ?? table.visibility,
-        collaboration: payload.collaboration ?? table.collaboration,
+        viewTable: payload.viewTable ?? table.viewTable,
+        updateTable: payload.updateTable ?? table.updateTable,
+        createField: payload.createField ?? table.createField,
+        updateField: payload.updateField ?? table.updateField,
+        removeField: payload.removeField ?? table.removeField,
+        viewField: payload.viewField ?? table.viewField,
+        createRow: payload.createRow ?? table.createRow,
+        updateRow: payload.updateRow ?? table.updateRow,
+        removeRow: payload.removeRow ?? table.removeRow,
+        viewRow: payload.viewRow ?? table.viewRow,
+        collaborators: payload.collaborators ?? [],
         fieldOrderList: payload.fieldOrderList ?? table.fieldOrderList,
         fieldOrderForm: payload.fieldOrderForm ?? table.fieldOrderForm,
         fieldOrderFilter: payload.fieldOrderFilter ?? table.fieldOrderFilter,
         fieldOrderDetail: payload.fieldOrderDetail ?? table.fieldOrderDetail,
-        administrators:
-          payload.administrators ?? table.administrators.flatMap((a) => a._id),
         order: payload.order !== undefined ? payload.order : table.order,
         layoutFields: payload.layoutFields ?? table.layoutFields,
       });
 
-      // Propagar visibilidade para grupos de campos (FIELD_GROUP)
-      if (payload.visibility) {
-        const fieldIds = table.fields?.flatMap((f) => f._id) ?? [];
-
-        const fieldGroupFields = await this.fieldRepository.findMany({
-          _ids: fieldIds,
-          type: E_FIELD_TYPE.FIELD_GROUP,
-        });
-
-        const groupIds = fieldGroupFields
-          .map((f) => f.group?._id)
-          .filter((id): id is string => Boolean(id));
-
-        if (groupIds.length > 0) {
-          await this.tableRepository.updateMany({
-            _ids: groupIds,
-            type: E_TABLE_TYPE.FIELD_GROUP,
-            data: { visibility: payload.visibility },
-          });
-        }
-      }
-
       await this.tableSchemaService.syncModel(updated);
 
-      // Reconstruir tabelas que têm RELATIONSHIP apontando para esta
+      // Reconstruir tabelas que tem RELATIONSHIP apontando para esta
       if (slugChanged) {
         const pointingFields =
           await this.fieldRepository.findByRelationshipTableId(table._id);
