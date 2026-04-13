@@ -6,6 +6,12 @@ import { normalize } from '@application/core/util.core';
 import { Table as Model } from '@application/model/table.model';
 import { getDataConnection } from '@config/database.config';
 
+function assertITable(value: Record<string, unknown>): asserts value is ITable {
+  if (!value['_id'] && !value['slug']) {
+    throw new Error('Invalid table object');
+  }
+}
+
 import type {
   TableContractRepository,
   TableCreatePayload,
@@ -141,12 +147,15 @@ export default class TableMongooseRepository implements TableContractRepository 
       ]);
 
       const populated = await Model.populate(docs, this.populateOptions);
-      return populated.map(
-        (doc: Record<string, unknown>): ITable => ({
-          ...doc,
-          _id: doc._id ? String(doc._id) : '',
-        }),
-      );
+      return populated.map((doc): ITable => {
+        const plain: Record<string, unknown> =
+          typeof doc.toJSON === 'function'
+            ? doc.toJSON({ flattenObjectIds: true })
+            : { ...doc };
+        plain['_id'] = plain['_id'] ? String(plain['_id']) : '';
+        assertITable(plain);
+        return plain;
+      });
     }
 
     const tables = await Model.find(where)

@@ -31,7 +31,7 @@ export async function buildPopulate(
   groups?: IGroupConfiguration[],
   tableSlug?: string,
   conn?: mongoose.Connection,
-): Promise<{ path: string; model?: string; select?: string }[]> {
+): Promise<mongoose.PopulateOptions[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
 
@@ -198,7 +198,8 @@ export async function buildPopulate(
         );
 
         const populatedFields: IField[] = sourceTable.fields ?? [];
-        const relationshipSlugs = populatedFields.filter(
+        const relationshipSlugs = populatedFields
+          .filter(
             (f) =>
               f.type === E_FIELD_TYPE.RELATIONSHIP && f.slug !== rel.fieldSlug,
           )

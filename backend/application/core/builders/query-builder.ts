@@ -51,7 +51,7 @@ export async function buildQuery(
       payload[slug]
     ) {
       query[slug] = {
-        $regex: normalize(payload[slug]?.toString()),
+        $regex: normalize(String(payload[slug])),
         $options: 'i',
       };
     }
@@ -65,7 +65,7 @@ export async function buildQuery(
       payload[slug]
     ) {
       query[slug] = {
-        $in: payload[slug]?.toString().split(','),
+        $in: String(payload[slug]).split(','),
       };
     }
 
@@ -75,17 +75,20 @@ export async function buildQuery(
     ) {
       const initialKey = `${slug}-initial`;
       const finalKey = `${slug}-final`;
+      const dateFilter: { $gte?: Date; $lte?: Date } = {};
 
       if (payload[initialKey]) {
         const initial = new Date(String(payload[initialKey]));
-        query[field.slug] = query[field.slug] || {};
-        query[field.slug].$gte = new Date(initial.setUTCHours(0, 0, 0, 0));
+        dateFilter.$gte = new Date(initial.setUTCHours(0, 0, 0, 0));
       }
 
       if (payload[finalKey]) {
         const final = new Date(String(payload[finalKey]));
-        query[field.slug] = query[field.slug] || {};
-        query[field.slug].$lte = new Date(final.setUTCHours(23, 59, 59, 999));
+        dateFilter.$lte = new Date(final.setUTCHours(23, 59, 59, 999));
+      }
+
+      if (dateFilter.$gte || dateFilter.$lte) {
+        query[field.slug] = dateFilter;
       }
     }
   }
@@ -119,7 +122,7 @@ export async function buildQuery(
           groupField.type === E_FIELD_TYPE.TEXT_LONG
         ) {
           query[embeddedPath] = {
-            $regex: normalize(payload[payloadKey]?.toString()),
+            $regex: normalize(String(payload[payloadKey])),
             $options: 'i',
           };
         }
@@ -132,28 +135,27 @@ export async function buildQuery(
           groupField.type === E_FIELD_TYPE.CREATOR
         ) {
           query[embeddedPath] = {
-            $in: payload[payloadKey]?.toString().split(','),
+            $in: String(payload[payloadKey]).split(','),
           };
         }
 
         if (groupField.type === E_FIELD_TYPE.DATE) {
           const initialKey = `${payloadKey}-initial`;
           const finalKey = `${payloadKey}-final`;
+          const dateFilter: { $gte?: Date; $lte?: Date } = {};
 
           if (payload[initialKey]) {
             const initial = new Date(String(payload[initialKey]));
-            query[embeddedPath] = query[embeddedPath] || {};
-            query[embeddedPath].$gte = new Date(
-              initial.setUTCHours(0, 0, 0, 0),
-            );
+            dateFilter.$gte = new Date(initial.setUTCHours(0, 0, 0, 0));
           }
 
           if (payload[finalKey]) {
             const final = new Date(String(payload[finalKey]));
-            query[embeddedPath] = query[embeddedPath] || {};
-            query[embeddedPath].$lte = new Date(
-              final.setUTCHours(23, 59, 59, 999),
-            );
+            dateFilter.$lte = new Date(final.setUTCHours(23, 59, 59, 999));
+          }
+
+          if (dateFilter.$gte || dateFilter.$lte) {
+            query[embeddedPath] = dateFilter;
           }
         }
       }
@@ -161,6 +163,7 @@ export async function buildQuery(
   }
 
   if (search) {
+    const searchStr = String(search);
     const searchQuery: Query[] = [];
 
     for (const field of fields.filter(
@@ -173,7 +176,7 @@ export async function buildQuery(
         const slug = String(field.slug?.toString());
         searchQuery.push({
           [slug]: {
-            $regex: normalize(search),
+            $regex: normalize(searchStr),
             $options: 'i',
           },
         });
@@ -197,7 +200,7 @@ export async function buildQuery(
             const embeddedPath = `${field.slug}.${groupField.slug}`;
             searchQuery.push({
               [embeddedPath]: {
-                $regex: normalize(search),
+                $regex: normalize(searchStr),
                 $options: 'i',
               },
             });
@@ -220,7 +223,7 @@ export async function buildQuery(
     for (const rel of reverseRelationships) {
       if (!payload[rel.virtualName]) continue;
 
-      const filterIds = payload[rel.virtualName].toString().split(',');
+      const filterIds = String(payload[rel.virtualName]).split(',');
 
       const db = conn?.db ?? mongoose.connection.db!;
       const sourceCollection = db.collection(rel.sourceTableSlug);
@@ -259,9 +262,11 @@ export async function buildQuery(
             }
           : { _id: { $in: [] } };
 
-      query = query.$and
-        ? { $and: [...query.$and, idCondition] }
-        : { $and: [query, idCondition] };
+      if (Array.isArray(query.$and)) {
+        query = { $and: [...query.$and, idCondition] };
+      } else {
+        query = { $and: [query, idCondition] };
+      }
     }
   }
 

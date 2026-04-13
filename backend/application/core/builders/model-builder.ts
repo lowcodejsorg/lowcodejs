@@ -13,8 +13,7 @@ import { E_FIELD_TYPE } from '../entity.core';
 import { executeScript } from '../table/handler';
 import type { FieldDefinition } from '../table/types';
 
-interface Entity
-  extends Omit<IRow, '_id'>, mongoose.Document<Omit<IRow, '_id'>> {
+interface Entity extends Omit<IRow, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;
 }
 
@@ -62,10 +61,7 @@ export async function findReverseRelationships(
 
   for (const table of tables) {
     const matchingFields = reverseFields.filter((rf) =>
-      table.fields.some(
-        (fId: mongoose.Types.ObjectId | string) =>
-          fId.toString() === rf._id.toString(),
-      ),
+      table.fields.some((fId) => fId.toString() === rf._id.toString()),
     );
 
     for (const field of matchingFields) {
@@ -97,7 +93,7 @@ export async function buildTable(
 
   if (!table?._schema) throw new Error('Table schema not found');
 
-  const schemaDefinition: Record<string, unknown> = {};
+  const schemaDefinition: mongoose.SchemaDefinition = {};
 
   for (const [key, value] of Object.entries(table._schema)) {
     if (Array.isArray(value) && value[0]?.type === 'Embedded') {
@@ -115,7 +111,7 @@ export async function buildTable(
         }
       }
 
-      const subSchemaDefinition: Record<string, unknown> = {};
+      const subSchemaDefinition: mongoose.SchemaDefinition = {};
 
       for (const [subKey, subValue] of Object.entries(embeddedSchema)) {
         subSchemaDefinition[subKey] = subValue;

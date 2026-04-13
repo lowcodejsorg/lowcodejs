@@ -47,6 +47,12 @@ function hasToJSON(value: unknown): value is MongooseDocWithToJSON {
   return isRecord(value) && typeof value['toJSON'] === 'function';
 }
 
+function assertIRow(value: Record<string, unknown>): asserts value is IRow {
+  if (typeof value['_id'] !== 'string') {
+    throw new Error('Invalid row: _id must be string');
+  }
+}
+
 @Service()
 export default class RowMongooseRepository extends RowContractRepository {
   private async getModel(
@@ -83,6 +89,7 @@ export default class RowMongooseRepository extends RowContractRepository {
     }
 
     json['_id'] = id;
+    assertIRow(json);
     return json;
   }
 
