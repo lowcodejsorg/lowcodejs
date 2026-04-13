@@ -2,6 +2,8 @@
 import type { RootFilterQuery, SortOrder } from 'mongoose';
 import mongoose from 'mongoose';
 
+import { getDataConnection } from '@config/database.config';
+
 import type { IField, IGroupConfiguration, IRow } from '../entity.core';
 import { E_FIELD_TYPE } from '../entity.core';
 
@@ -221,7 +223,7 @@ export async function buildQuery(
 
       const filterIds = payload[rel.virtualName].toString().split(',');
 
-      const db = mongoose.connection.db!;
+      const db = getDataConnection().db!;
       const sourceCollection = db.collection(rel.sourceTableSlug);
 
       const sourceRecords = await sourceCollection
