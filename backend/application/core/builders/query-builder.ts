@@ -7,7 +7,7 @@ import { E_FIELD_TYPE } from '../entity.core';
 
 import { findReverseRelationships } from './model-builder';
 
-type Query = Record<string, any>;
+type Query = Record<string, unknown>;
 
 export function normalize(search: string): string {
   const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
