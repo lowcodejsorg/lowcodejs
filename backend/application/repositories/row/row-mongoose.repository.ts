@@ -33,6 +33,20 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function isSubdocArray(value: unknown): value is SubdocArray {
+  if (!Array.isArray(value)) return false;
+  return 'id' in value && typeof value.id === 'function';
+}
+
+interface MongooseDocWithToJSON {
+  toJSON(opts: { flattenObjectIds: boolean }): Record<string, unknown>;
+  _id: { toString(): string };
+}
+
+function hasToJSON(value: unknown): value is MongooseDocWithToJSON {
+  return isRecord(value) && typeof value['toJSON'] === 'function';
+}
+
 @Service()
 export default class RowMongooseRepository extends RowContractRepository {
   private async getModel(
@@ -55,8 +69,8 @@ export default class RowMongooseRepository extends RowContractRepository {
   private transformRow(doc: unknown): IRow {
     let json: Record<string, unknown>;
 
-    if (isRecord(doc) && typeof doc['toJSON'] === 'function') {
-      json = (doc['toJSON'] as Function)({ flattenObjectIds: true });
+    if (hasToJSON(doc)) {
+      json = doc.toJSON({ flattenObjectIds: true });
     } else if (isRecord(doc)) {
       json = { ...doc };
     } else {
@@ -68,10 +82,8 @@ export default class RowMongooseRepository extends RowContractRepository {
       id = String(doc['_id']);
     }
 
-    return {
-      ...json,
-      _id: id,
-    } as IRow;
+    json['_id'] = id;
+    return json;
   }
 
   // ── Core CRUD ─────────────────────────────────────────────
@@ -263,12 +275,11 @@ export default class RowMongooseRepository extends RowContractRepository {
 
     const subdocArray = row.get(payload.groupFieldSlug);
 
-    if (!subdocArray || !Array.isArray(subdocArray)) {
+    if (!isSubdocArray(subdocArray)) {
       throw new Error('Group field not found');
     }
 
-    const typedArray = subdocArray as unknown as SubdocArray;
-    const subdoc = typedArray.id(payload.itemId);
+    const subdoc = subdocArray.id(payload.itemId);
     if (!subdoc) throw new Error('Item not found');
 
     subdoc.set(payload.data);
@@ -287,10 +298,9 @@ export default class RowMongooseRepository extends RowContractRepository {
     if (!row) return false;
 
     const subdocArray = row.get(payload.groupFieldSlug);
-    if (!subdocArray || !Array.isArray(subdocArray)) return false;
+    if (!isSubdocArray(subdocArray)) return false;
 
-    const typedArray = subdocArray as unknown as SubdocArray;
-    const subdoc = typedArray.id(payload.itemId);
+    const subdoc = subdocArray.id(payload.itemId);
     if (!subdoc) return false;
 
     subdoc.deleteOne();
@@ -330,9 +340,8 @@ export default class RowMongooseRepository extends RowContractRepository {
 
   async findAllRaw(table: RowTableContext): Promise<Record<string, unknown>[]> {
     const model = await this.getModel(table);
-    return model.find({ trashed: { $ne: true } }).lean() as Promise<
-      Record<string, unknown>[]
-    >;
+    const docs = await model.find({ trashed: { $ne: true } }).lean();
+    return docs.map((doc): Record<string, unknown> => ({ ...doc }));
   }
 
   async insertRaw(
@@ -341,10 +350,7 @@ export default class RowMongooseRepository extends RowContractRepository {
     creator?: string,
   ): Promise<void> {
     const model = await this.getModel(table);
-    const doc = new model(row);
-    if (creator) {
-      (doc as any).creator = creator;
-    }
-    await doc.collection.insertOne((doc as any).toObject());
+    const doc = new model({ ...row, ...(creator ? { creator } : {}) });
+    await doc.collection.insertOne(doc.toObject());
   }
 }
