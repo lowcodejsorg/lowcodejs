@@ -15,10 +15,9 @@ export type ExportedField = {
   required: boolean;
   multiple: boolean;
   format: string | null;
-  showInFilter: boolean;
-  showInForm: boolean;
-  showInDetail: boolean;
-  showInList: boolean;
+  visibilityForm: string;
+  visibilityDetail: string;
+  visibilityList: string;
   widthInForm: number | null;
   widthInList: number | null;
   defaultValue: string | string[] | null;

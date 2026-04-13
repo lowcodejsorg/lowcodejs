@@ -31,10 +31,9 @@ type ExportedField = {
   required: boolean;
   multiple: boolean;
   format: string | null;
-  showInFilter: boolean;
-  showInForm: boolean;
-  showInDetail: boolean;
-  showInList: boolean;
+  visibilityForm: string;
+  visibilityDetail: string;
+  visibilityList: string;
   widthInForm: number | null;
   widthInList: number | null;
   widthInDetail: number | null;
@@ -145,10 +144,9 @@ export default class ImportTableUseCase {
             required: false,
             multiple: false,
             format: null,
-            showInList: true,
-            showInForm: true,
-            showInDetail: true,
-            showInFilter: false,
+            visibilityList: 'HIDDEN',
+            visibilityForm: 'HIDDEN',
+            visibilityDetail: 'HIDDEN',
             widthInForm: null,
             widthInList: null,
             widthInDetail: null,
@@ -175,10 +173,9 @@ export default class ImportTableUseCase {
               required: false,
               multiple: false,
               format: null,
-              showInList: false,
-              showInFilter: false,
-              showInForm: false,
-              showInDetail: false,
+              visibilityList: 'HIDDEN',
+              visibilityForm: 'HIDDEN',
+              visibilityDetail: 'HIDDEN',
               widthInForm: null,
               widthInList: 10,
               widthInDetail: null,
@@ -197,10 +194,9 @@ export default class ImportTableUseCase {
               required: false,
               multiple: false,
               format: 'dd/MM/yyyy HH:mm:ss' as const,
-              showInList: true,
-              showInFilter: false,
-              showInForm: false,
-              showInDetail: true,
+              visibilityList: 'HIDDEN',
+              visibilityForm: 'HIDDEN',
+              visibilityDetail: 'HIDDEN',
               widthInForm: null,
               widthInList: 10,
               widthInDetail: null,
@@ -219,10 +215,9 @@ export default class ImportTableUseCase {
               required: false,
               multiple: false,
               format: null,
-              showInList: false,
-              showInFilter: false,
-              showInForm: false,
-              showInDetail: false,
+              visibilityList: 'HIDDEN',
+              visibilityForm: 'HIDDEN',
+              visibilityDetail: 'HIDDEN',
               widthInForm: null,
               widthInList: 10,
               widthInDetail: null,
@@ -241,10 +236,9 @@ export default class ImportTableUseCase {
               required: false,
               multiple: false,
               format: null,
-              showInList: false,
-              showInFilter: false,
-              showInForm: false,
-              showInDetail: false,
+              visibilityList: 'HIDDEN',
+              visibilityForm: 'HIDDEN',
+              visibilityDetail: 'HIDDEN',
               widthInForm: null,
               widthInList: 10,
               widthInDetail: null,
@@ -436,10 +430,9 @@ export default class ImportTableUseCase {
       required: exportedField.required,
       multiple: exportedField.multiple,
       format: exportedField.format as any,
-      showInList: exportedField.showInList,
-      showInForm: exportedField.showInForm,
-      showInDetail: exportedField.showInDetail,
-      showInFilter: exportedField.showInFilter,
+      visibilityList: exportedField.visibilityList,
+      visibilityForm: exportedField.visibilityForm,
+      visibilityDetail: exportedField.visibilityDetail,
       widthInForm: exportedField.widthInForm,
       widthInList: exportedField.widthInList,
       widthInDetail: exportedField.widthInDetail,

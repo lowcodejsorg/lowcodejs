@@ -125,21 +125,17 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_FIELD_FORMAT),
       default: null,
     },
-    showInFilter: {
-      type: Boolean,
-      default: false,
+    visibilityList: {
+      type: String,
+      default: 'HIDDEN',
     },
-    showInForm: {
-      type: Boolean,
-      default: false,
+    visibilityForm: {
+      type: String,
+      default: 'HIDDEN',
     },
-    showInDetail: {
-      type: Boolean,
-      default: false,
-    },
-    showInList: {
-      type: Boolean,
-      default: false,
+    visibilityDetail: {
+      type: String,
+      default: 'HIDDEN',
     },
     widthInForm: {
       type: Number,

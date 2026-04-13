@@ -102,10 +102,9 @@ export default class GroupFieldUpdateUseCase {
         ...(payload.trashed && {
           trashed: payload.trashed,
           required: false,
-          showInList: false,
-          showInForm: false,
-          showInDetail: false,
-          showInFilter: false,
+          visibilityList: 'HIDDEN',
+          visibilityForm: 'HIDDEN',
+          visibilityDetail: 'HIDDEN',
         }),
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
       });

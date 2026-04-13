@@ -96,10 +96,9 @@ export async function buildDocumentFields(
     required: boolean;
     multiple: boolean;
     format: IField['format'];
-    showInList: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInFilter: boolean;
+    visibilityList: string;
+    visibilityForm: string;
+    visibilityDetail: string;
     defaultValue: IField['defaultValue'];
     locked: boolean;
     relationship: IField['relationship'];
@@ -124,10 +123,9 @@ export async function buildDocumentFields(
     required: true,
     multiple: false,
     format: null,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: true,
+    visibilityList: 'HIDDEN',
+    visibilityForm: 'HIDDEN',
+    visibilityDetail: 'HIDDEN',
     defaultValue: null,
     locked: false,
     relationship: null,
@@ -146,10 +144,9 @@ export async function buildDocumentFields(
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.ALPHA_NUMERIC,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: true,
+    visibilityList: 'HIDDEN',
+    visibilityForm: 'HIDDEN',
+    visibilityDetail: 'HIDDEN',
     defaultValue: null,
     locked: false,
     relationship: null,
@@ -168,10 +165,9 @@ export async function buildDocumentFields(
     required: true,
     multiple: false,
     format: E_FIELD_FORMAT.RICH_TEXT,
-    showInList: false,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: false,
+    visibilityList: 'HIDDEN',
+    visibilityForm: 'HIDDEN',
+    visibilityDetail: 'HIDDEN',
     defaultValue: null,
     locked: false,
     relationship: null,

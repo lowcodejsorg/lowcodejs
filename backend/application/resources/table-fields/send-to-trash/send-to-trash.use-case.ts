@@ -63,10 +63,9 @@ export default class TableFieldSendToTrashUseCase {
 
       const updatedField = await this.fieldRepository.update({
         _id: field._id,
-        showInList: false,
-        showInForm: false,
-        showInDetail: false,
-        showInFilter: false,
+        visibilityList: 'HIDDEN',
+        visibilityForm: 'HIDDEN',
+        visibilityDetail: 'HIDDEN',
         required: false,
         trashed: true,
         trashedAt: new Date(),
