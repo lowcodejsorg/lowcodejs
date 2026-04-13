@@ -1,4 +1,8 @@
+import { Evaluation } from '@application/model/evaluation.model';
+import { Reaction } from '@application/model/reaction.model';
+import { Storage } from '@application/model/storage.model';
 import { Table } from '@application/model/table.model';
+import { User } from '@application/model/user.model';
 
 import type { IField, IGroupConfiguration } from '../entity.core';
 import { E_FIELD_TYPE } from '../entity.core';
@@ -45,7 +49,7 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.USER) {
       populate.push({
         path: field.slug,
-        model: 'User',
+        model: User,
         select: 'name email _id',
       });
     }
@@ -53,7 +57,7 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.CREATOR) {
       populate.push({
         path: field.slug,
-        model: 'User',
+        model: User,
         select: 'name email _id',
       });
     }
@@ -61,6 +65,7 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.REACTION) {
       populate.push({
         path: field.slug,
+        model: Reaction,
         select: 'user type',
       });
     }
@@ -68,6 +73,7 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.EVALUATION) {
       populate.push({
         path: field.slug,
+        model: Evaluation,
         select: 'user value',
       });
     }
@@ -116,7 +122,7 @@ export async function buildPopulate(
         if (groupField.type === E_FIELD_TYPE.USER) {
           populate.push({
             path: `${field.slug}.${groupField.slug}`,
-            model: 'User',
+            model: User,
             select: 'name email _id',
           });
         }
@@ -124,7 +130,7 @@ export async function buildPopulate(
         if (groupField.type === E_FIELD_TYPE.CREATOR) {
           populate.push({
             path: `${field.slug}.${groupField.slug}`,
-            model: 'User',
+            model: User,
             select: 'name email _id',
           });
         }
@@ -132,7 +138,7 @@ export async function buildPopulate(
         if (groupField.type === E_FIELD_TYPE.FILE) {
           populate.push({
             path: `${field.slug}.${groupField.slug}`,
-            model: 'Storage',
+            model: Storage,
           });
         }
 
