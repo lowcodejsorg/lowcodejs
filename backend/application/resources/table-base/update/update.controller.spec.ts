@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -11,6 +10,7 @@ import {
 } from '@application/core/entity.core';
 import { buildSchema, buildTable } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
+import { getDataConnection } from '@config/database.config';
 import { Table } from '@application/model/table.model';
 import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
@@ -28,14 +28,15 @@ describe('E2E Table Update Controller', () => {
     await Field.deleteMany({});
 
     // Limpar coleções dinâmicas que possam ter ficado de testes anteriores
-    const db = mongoose.connection.db!;
+    const conn = getDataConnection();
+    const db = conn.db!;
     for (const slug of ['my-table', 'updated-table']) {
       const exists = await db.listCollections({ name: slug }).toArray();
       if (exists.length > 0) {
         await db.dropCollection(slug);
       }
-      if (mongoose.models[slug]) {
-        delete mongoose.models[slug];
+      if (conn.models[slug]) {
+        conn.deleteModel(slug);
       }
     }
   });

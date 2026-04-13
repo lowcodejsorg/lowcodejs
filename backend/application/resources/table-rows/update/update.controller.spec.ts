@@ -1,6 +1,7 @@
-import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
+
+import { getDataConnection } from '@config/database.config';
 
 import {
   E_FIELD_TYPE,
@@ -28,12 +29,11 @@ describe('E2E Table Row Update Controller', () => {
     await Field.deleteMany({});
 
     // Cleanup dynamic collections
-    const collections = await mongoose.connection.db
-      ?.listCollections()
-      .toArray();
+    const dataDb = getDataConnection().db;
+    const collections = await dataDb?.listCollections().toArray();
     for (const collection of collections || []) {
       if (collection.name.startsWith('table_')) {
-        await mongoose.connection.db?.dropCollection(collection.name);
+        await dataDb?.dropCollection(collection.name);
       }
     }
   });

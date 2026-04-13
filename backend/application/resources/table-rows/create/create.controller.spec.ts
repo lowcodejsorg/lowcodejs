@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -16,6 +15,7 @@ import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import { getDataConnection } from '@config/database.config';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 
@@ -28,12 +28,11 @@ describe('E2E Table Row Create Controller', () => {
     await Field.deleteMany({});
 
     // Cleanup dynamic collections
-    const collections = await mongoose.connection.db
-      ?.listCollections()
-      .toArray();
+    const dataDb = getDataConnection().db;
+    const collections = await dataDb?.listCollections().toArray();
     for (const collection of collections || []) {
       if (collection.name.startsWith('table_')) {
-        await mongoose.connection.db?.dropCollection(collection.name);
+        await dataDb?.dropCollection(collection.name);
       }
     }
   });
