@@ -1,8 +1,6 @@
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { getDataConnection } from '@config/database.config';
-
 import {
   E_FIELD_TYPE,
   E_TABLE_COLLABORATION,
@@ -19,6 +17,7 @@ import { FieldCreatePayload } from '@application/repositories/field/field-contra
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
+import { cleanDynamicCollections } from '@test/helpers/database.helper';
 
 describe('E2E Table Row Paginated Controller', () => {
   beforeEach(async () => {
@@ -28,14 +27,7 @@ describe('E2E Table Row Paginated Controller', () => {
     await Table.deleteMany({});
     await Field.deleteMany({});
 
-    // Cleanup dynamic collections
-    const dataDb = getDataConnection().db;
-    const collections = await dataDb?.listCollections().toArray();
-    for (const collection of collections || []) {
-      if (collection.name.startsWith('table_')) {
-        await dataDb?.dropCollection(collection.name);
-      }
-    }
+    await cleanDynamicCollections();
   });
 
   afterAll(async () => {
