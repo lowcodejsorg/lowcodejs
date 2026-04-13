@@ -33,6 +33,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
       url: payload.url ?? null,
       html: payload.html ?? null,
       order: payload.order ?? 0,
+      visibility: payload.visibility ?? 'NOBODY',
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,

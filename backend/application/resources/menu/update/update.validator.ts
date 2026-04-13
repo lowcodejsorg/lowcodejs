@@ -29,6 +29,10 @@ export const MenuUpdateBodyValidator = z
       .optional(),
     url: z.string({ message: 'A URL deve ser um texto' }).nullable().optional(),
     order: z.number().int().min(0).optional(),
+    visibility: z
+      .string({ message: 'A visibilidade deve ser um texto' })
+      .trim()
+      .optional(),
   })
   .transform((payload) => {
     return {

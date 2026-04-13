@@ -55,6 +55,8 @@ export const Schema = new mongoose.Schema(
 
     order: { type: Number, default: 0 },
 
+    visibility: { type: String, default: 'NOBODY' },
+
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },

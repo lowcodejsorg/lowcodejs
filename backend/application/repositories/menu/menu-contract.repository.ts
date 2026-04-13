@@ -3,7 +3,12 @@ import type { FindOptions, IMenu, Merge } from '@application/core/entity.core';
 
 export type MenuCreatePayload = Merge<
   Pick<IMenu, 'name' | 'slug' | 'type'>,
-  Partial<Pick<IMenu, 'table' | 'parent' | 'url' | 'html' | 'owner' | 'order'>>
+  Partial<
+    Pick<
+      IMenu,
+      'table' | 'parent' | 'url' | 'html' | 'owner' | 'order' | 'visibility'
+    >
+  >
 >;
 
 export type MenuUpdatePayload = Merge<
