@@ -15,6 +15,7 @@ import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import { getDataConnection } from '@config/database.config';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 import { dropDynamicCollections } from '@test/helpers/database.helper';
@@ -91,11 +92,14 @@ describe('E2E Table Update Controller', () => {
       const table = await Table.create(tablePayload);
 
       // Criar a coleção dinâmica para que o rename funcione
-      await buildTable({
-        ...table.toJSON(),
-        _id: table._id.toString(),
-        fields: [{ ...field.toJSON(), _id: field._id.toString() }],
-      });
+      await buildTable(
+        {
+          ...table.toJSON(),
+          _id: table._id.toString(),
+          fields: [{ ...field.toJSON(), _id: field._id.toString() }],
+        },
+        getDataConnection(),
+      );
 
       const response = await supertest(kernel.server)
         .put(`/tables/${table.slug}`)

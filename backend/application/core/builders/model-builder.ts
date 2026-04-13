@@ -2,7 +2,6 @@ import mongoose from 'mongoose';
 
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
-import { getDataConnection } from '@config/database.config';
 
 import type {
   IField,
@@ -89,6 +88,7 @@ export async function buildTable(
     import('@application/core/entity.core').ITable,
     '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
   >,
+  conn: mongoose.Connection,
 ): Promise<mongoose.Model<Entity>> {
   if (!table?.slug) throw new Error('Table slug not found');
 
@@ -210,15 +210,10 @@ export async function buildTable(
     });
   }
 
-  const conn = getDataConnection();
   if (conn.models[table.slug]) {
     conn.deleteModel(table.slug);
   }
-  const model = conn.model<Entity>(
-    table.slug,
-    schema,
-    table.slug,
-  );
+  const model = conn.model<Entity>(table.slug, schema, table.slug);
 
   await model.createCollection();
 

@@ -8,6 +8,7 @@ import {
   buildTable,
 } from '@application/core/builders';
 import type { IRow } from '@application/core/entity.core';
+import { getDataConnection } from '@config/database.config';
 
 interface SubdocArray<T = unknown> extends Array<T> {
   id(
@@ -37,17 +38,18 @@ export default class RowMongooseRepository extends RowContractRepository {
   private async getModel(
     table: RowTableContext,
   ): ReturnType<typeof buildTable> {
-    return buildTable(table);
+    return buildTable(table, getDataConnection());
   }
 
   private async getPopulate(
     table: RowTableContext,
     includeReverse: boolean,
   ): ReturnType<typeof buildPopulate> {
+    const conn = getDataConnection();
     if (includeReverse) {
-      return buildPopulate(table.fields, table.groups, table.slug);
+      return buildPopulate(table.fields, table.groups, table.slug, conn);
     }
-    return buildPopulate(table.fields, table.groups);
+    return buildPopulate(table.fields, table.groups, undefined, conn);
   }
 
   private transformRow(doc: unknown): IRow {
@@ -109,11 +111,13 @@ export default class RowMongooseRepository extends RowContractRepository {
       payload.includeReverseRelationships || false,
     );
 
+    const conn = getDataConnection();
     const query = await buildQuery(
       payload.rawFilters ?? {},
       payload.table.fields ?? [],
       payload.table.groups,
       payload.table.slug,
+      conn,
     );
 
     const sort = buildOrder(
@@ -142,6 +146,7 @@ export default class RowMongooseRepository extends RowContractRepository {
       table.fields ?? [],
       table.groups,
       table.slug,
+      getDataConnection(),
     );
     return model.countDocuments(query);
   }

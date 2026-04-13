@@ -2,8 +2,6 @@
 import type { RootFilterQuery, SortOrder } from 'mongoose';
 import mongoose from 'mongoose';
 
-import { getDataConnection } from '@config/database.config';
-
 import type { IField, IGroupConfiguration, IRow } from '../entity.core';
 import { E_FIELD_TYPE } from '../entity.core';
 
@@ -36,6 +34,7 @@ export async function buildQuery(
   fields: IField[] = [],
   groups?: IGroupConfiguration[],
   tableSlug?: string,
+  conn?: mongoose.Connection,
 ): Promise<Query> {
   let query: Query = {
     trashed: trashed === 'true' ? true : { $ne: true },
@@ -223,7 +222,7 @@ export async function buildQuery(
 
       const filterIds = payload[rel.virtualName].toString().split(',');
 
-      const db = getDataConnection().db!;
+      const db = conn?.db ?? mongoose.connection.db!;
       const sourceCollection = db.collection(rel.sourceTableSlug);
 
       const sourceRecords = await sourceCollection

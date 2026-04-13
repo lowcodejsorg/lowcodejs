@@ -1,3 +1,5 @@
+import type mongoose from 'mongoose';
+
 import { Evaluation } from '@application/model/evaluation.model';
 import { Reaction } from '@application/model/reaction.model';
 import { Storage } from '@application/model/storage.model';
@@ -28,6 +30,7 @@ export async function buildPopulate(
   fields?: IField[],
   groups?: IGroupConfiguration[],
   tableSlug?: string,
+  conn?: mongoose.Connection,
 ): Promise<{ path: string; model?: string; select?: string }[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
@@ -84,13 +87,16 @@ export async function buildPopulate(
         _id: relationshipTableId,
       });
 
-      if (relationshipTable) {
-        await buildTable({
-          ...relationshipTable.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: relationshipTable._id.toString(),
-        });
+      if (relationshipTable && conn) {
+        await buildTable(
+          {
+            ...relationshipTable.toJSON({
+              flattenObjectIds: true,
+            }),
+            _id: relationshipTable._id.toString(),
+          },
+          conn,
+        );
 
         const relationshipFields = getRelationship(
           relationshipTable?.fields as IField[],
@@ -98,6 +104,8 @@ export async function buildPopulate(
         const relationshipPopulate = await buildPopulate(
           relationshipFields,
           relationshipTable?.groups as IGroupConfiguration[],
+          undefined,
+          conn,
         );
 
         populate.push({
@@ -150,11 +158,14 @@ export async function buildPopulate(
               _id: relationshipTableId,
             });
 
-            if (relationshipTable) {
-              await buildTable({
-                ...relationshipTable.toJSON({ flattenObjectIds: true }),
-                _id: relationshipTable._id.toString(),
-              });
+            if (relationshipTable && conn) {
+              await buildTable(
+                {
+                  ...relationshipTable.toJSON({ flattenObjectIds: true }),
+                  _id: relationshipTable._id.toString(),
+                },
+                conn,
+              );
 
               populate.push({
                 path: `${field.slug}.${groupField.slug}`,
@@ -177,11 +188,14 @@ export async function buildPopulate(
         trashed: { $ne: true },
       }).populate('fields');
 
-      if (sourceTable) {
-        await buildTable({
-          ...sourceTable.toJSON({ flattenObjectIds: true }),
-          _id: sourceTable._id.toString(),
-        });
+      if (sourceTable && conn) {
+        await buildTable(
+          {
+            ...sourceTable.toJSON({ flattenObjectIds: true }),
+            _id: sourceTable._id.toString(),
+          },
+          conn,
+        );
 
         const relationshipSlugs = (sourceTable.fields as IField[])
           .filter(
