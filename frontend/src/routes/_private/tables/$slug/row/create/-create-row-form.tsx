@@ -49,7 +49,7 @@ function CreateRowFormContent({
   const fields = React.useMemo(() => {
     const order = table.fieldOrderForm;
     return table.fields
-      .filter((f) => !f.trashed && f.showInForm)
+      .filter((f) => !f.trashed && f.visibilityForm !== 'HIDDEN')
       .sort((a, b) => {
         const idxA = order.indexOf(a._id);
         const idxB = order.indexOf(b._id);

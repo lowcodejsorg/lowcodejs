@@ -55,7 +55,7 @@ function RouteComponent(): React.JSX.Element {
           onBack={goBack}
           title="Detalhes do grupo"
         >
-          {mode === 'show' && (
+          {mode === 'show' && !data.immutable && (
             <Button
               data-test-id="group-edit-btn"
               type="button"
@@ -131,6 +131,8 @@ function GroupUpdateContent({
       name: data.name,
       description: data.description ?? '',
       permissions: data.permissions.map((p) => p._id),
+      encompasses: data.encompasses.map((g) => g._id),
+      systemPermissions: data.systemPermissions,
     } satisfies GroupUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: GroupUpdateSchema, onSubmit: GroupUpdateSchema },
@@ -141,6 +143,8 @@ function GroupUpdateContent({
         ...value,
         _id: data._id,
         description: value.description || null,
+        encompasses: value.encompasses,
+        systemPermissions: value.systemPermissions,
       });
     },
   });
@@ -186,6 +190,8 @@ function GroupUpdateContent({
               isPending={isPending}
               mode={mode}
               slug={data.slug}
+              immutable={data.immutable}
+              currentGroupId={data._id}
             />
           </form>
         </PageShell.Content>

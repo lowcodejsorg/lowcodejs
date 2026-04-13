@@ -323,13 +323,16 @@ export function TableForumView({
     if (!currentUserId) return false;
     const ownerId = normalizeId(table.owner);
     if (ownerId && ownerId === currentUserId) return true;
-    const adminIds = Array.isArray(table.administrators)
-      ? table.administrators
-          .map((admin) => normalizeId(admin))
+    const collaboratorIds = Array.isArray(table.collaborators)
+      ? table.collaborators
+          .map((c) => {
+            if (typeof c.user === 'string') return c.user;
+            return normalizeId(c.user);
+          })
           .filter((id): id is string => Boolean(id))
       : [];
-    return adminIds.includes(currentUserId);
-  }, [currentUserId, table.administrators, table.owner]);
+    return collaboratorIds.includes(currentUserId);
+  }, [currentUserId, table.collaborators, table.owner]);
 
   React.useEffect(() => {
     if (rowsState.length === 0) {

@@ -84,7 +84,7 @@ function RouteComponentContent(): React.JSX.Element {
         name: value.name.trim(),
         logo: value.logo,
         style: value.style,
-        visibility: value.visibility,
+        viewTable: value.viewTable,
       });
     },
   });

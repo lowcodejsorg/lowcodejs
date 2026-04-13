@@ -65,6 +65,8 @@ function RouteComponent(): React.JSX.Element {
         name: value.name,
         description: value.description || null,
         permissions: value.permissions,
+        encompasses: value.encompasses,
+        systemPermissions: value.systemPermissions,
       });
     },
   });

@@ -3,10 +3,9 @@ import { createContext, use } from 'react';
 import type { IField } from '@/lib/interfaces';
 
 export type VisibilityKey =
-  | 'showInFilter'
-  | 'showInForm'
-  | 'showInDetail'
-  | 'showInList';
+  | 'visibilityList'
+  | 'visibilityForm'
+  | 'visibilityDetail';
 
 export type WidthKey = 'widthInForm' | 'widthInList' | 'widthInDetail';
 

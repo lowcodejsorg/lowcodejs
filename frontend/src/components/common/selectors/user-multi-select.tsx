@@ -72,7 +72,7 @@ export function UserMultiSelect({
         email: '',
         password: '',
         status: E_USER_STATUS.ACTIVE,
-        group: null as unknown as IUser['group'],
+        groups: [],
       };
     });
   }, [selectedCache, users, value]);

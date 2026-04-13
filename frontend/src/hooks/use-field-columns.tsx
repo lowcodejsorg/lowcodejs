@@ -166,7 +166,7 @@ export function useFieldColumns({
 
   return React.useMemo(() => {
     const sorted = fields
-      .filter((f) => f.showInList && !f.trashed)
+      .filter((f) => f.visibilityList !== 'HIDDEN' && !f.trashed)
       .sort((a, b) => {
         const idxA = fieldOrder.indexOf(a._id);
         const idxB = fieldOrder.indexOf(b._id);

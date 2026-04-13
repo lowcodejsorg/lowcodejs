@@ -1,10 +1,7 @@
 import React from 'react';
 
-import { Badge } from '@/components/ui/badge';
 import {
-  TABLE_COLLABORATION_OPTIONS,
   TABLE_STYLE_OPTIONS,
-  TABLE_VISIBILITY_OPTIONS,
 } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
 
@@ -18,13 +15,18 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
     TABLE_STYLE_OPTIONS.find((opt) => opt.value === data.style)?.label ||
     data.style;
 
-  const visibilityLabel =
-    TABLE_VISIBILITY_OPTIONS.find((opt) => opt.value === data.visibility)
-      ?.label || data.visibility;
-
-  const collaborationLabel =
-    TABLE_COLLABORATION_OPTIONS.find((opt) => opt.value === data.collaboration)
-      ?.label || data.collaboration;
+  const ACTION_LABELS: Array<{ key: keyof ITable; label: string }> = [
+    { key: 'viewTable', label: 'Visualizar tabela' },
+    { key: 'updateTable', label: 'Editar tabela' },
+    { key: 'createField', label: 'Criar campo' },
+    { key: 'updateField', label: 'Editar campo' },
+    { key: 'removeField', label: 'Remover campo' },
+    { key: 'viewField', label: 'Visualizar campo' },
+    { key: 'createRow', label: 'Criar registro' },
+    { key: 'updateRow', label: 'Editar registro' },
+    { key: 'removeRow', label: 'Remover registro' },
+    { key: 'viewRow', label: 'Visualizar registro' },
+  ];
 
   return (
     <React.Fragment>
@@ -66,16 +68,18 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
           <p className="text-sm text-muted-foreground">{styleLabel}</p>
         </div>
 
-        {/* Visibilidade */}
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Visibilidade</p>
-          <p className="text-sm text-muted-foreground">{visibilityLabel}</p>
-        </div>
-
-        {/* Colaboração */}
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Colaboração</p>
-          <p className="text-sm text-muted-foreground">{collaborationLabel}</p>
+        {/* Permissões de acesso */}
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Permissões de acesso</p>
+          {ACTION_LABELS.map((item) => (
+            <div
+              key={item.key}
+              className="flex justify-between text-sm"
+            >
+              <span className="text-muted-foreground">{item.label}</span>
+              <span>{String(data[item.key] ?? '-')}</span>
+            </div>
+          ))}
         </div>
 
         {/* Ordenação padrão */}
@@ -88,24 +92,7 @@ export function TableView({ data }: TableViewProps): React.JSX.Element {
           </p>
         </div>
 
-        {/* Administradores */}
-        <div className="space-y-1">
-          <p className="text-sm font-medium">Administradores</p>
-          {data.administrators.length > 0 ? (
-            <div className="flex flex-wrap gap-1">
-              {data.administrators.map((admin) => (
-                <Badge
-                  key={typeof admin === 'string' ? admin : admin._id}
-                  variant="secondary"
-                >
-                  {typeof admin === 'string' ? admin : admin.name}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">-</p>
-          )}
-        </div>
+        {/* TODO: Adicionar seção de collaborators */}
       </section>
     </React.Fragment>
   );

@@ -12,7 +12,8 @@ const defaultSearch = { page: 1, perPage: 50 };
 export const Route = createFileRoute('/_private/menus/')({
   beforeLoad: async ({ context, location }) => {
     const { useAuthStore } = await import('@/stores/authentication');
-    const role = useAuthStore.getState().user?.group?.slug?.toUpperCase();
+    const userGroups = useAuthStore.getState().user?.groups ?? [];
+    const role = userGroups[0]?.slug?.toUpperCase();
     if (!['MASTER', 'ADMINISTRATOR'].includes(role ?? '')) {
       const { redirect } = await import('@tanstack/react-router');
       throw redirect({ to: '/tables' });

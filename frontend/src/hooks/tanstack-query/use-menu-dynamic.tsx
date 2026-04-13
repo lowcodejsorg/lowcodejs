@@ -13,7 +13,7 @@ import { useMenuReadList } from './use-menu-read-list';
 
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
-import { getStaticMenusByRole } from '@/lib/menu/menu';
+import { getStaticMenusByPermissions } from '@/lib/menu/menu';
 import type { MenuGroupItem, MenuItem, MenuRoute } from '@/lib/menu/menu-route';
 
 // Mapeamento de ícones por tipo de menu
@@ -168,7 +168,7 @@ function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
 /**
  * Hook para obter menus dinâmicos combinados com menus estáticos
  */
-export function useMenuDynamic(role: string): {
+export function useMenuDynamic(permissions: Record<string, boolean>): {
   menu: Array<MenuGroupItem>;
   isLoading: boolean;
 } {
@@ -194,8 +194,8 @@ export function useMenuDynamic(role: string): {
 
   // 4. Obter menus estáticos baseados no role (before e after)
   const { before: staticMenusBefore, after: staticMenusAfter } = useMemo(() => {
-    return getStaticMenusByRole(role);
-  }, [role]);
+    return getStaticMenusByPermissions(permissions);
+  }, [permissions]);
 
   // 5. Combinar: Tabelas → Dinâmicos → Conta/Sistema
   const combinedMenu = useMemo(() => {

@@ -42,10 +42,9 @@ function buildGroupFieldPayload(
     type: field.type,
     required: field.required,
     multiple: field.multiple,
-    showInFilter: field.showInFilter,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
-    showInList: field.showInList,
+    visibilityList: field.visibilityList,
+    visibilityForm: field.visibilityForm,
+    visibilityDetail: field.visibilityDetail,
     widthInForm: field.widthInForm ?? 50,
     widthInList: field.widthInList ?? 10,
     widthInDetail: field.widthInDetail ?? 50,
@@ -188,12 +187,13 @@ export function useGroupFieldManagement(
   ): void {
     setTogglingFieldId(field._id);
     setPendingWidthKey(null);
+    const newVisibility = newValue ? 'PUBLIC' : 'HIDDEN';
     groupFieldUpdate.mutate({
       tableSlug,
       groupSlug,
       fieldId: field._id,
       data: buildGroupFieldPayload(field, groupSlug, {
-        [visibilityKey]: newValue,
+        [visibilityKey]: newVisibility,
       }),
     });
   }
@@ -237,14 +237,11 @@ export function useGroupFieldManagement(
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      visibility: table.visibility,
       style: table.style,
-      collaboration: table.collaboration,
       fieldOrderList: table.fieldOrderList,
       fieldOrderForm: table.fieldOrderForm,
       fieldOrderFilter: table.fieldOrderFilter,
       fieldOrderDetail: table.fieldOrderDetail,
-      administrators: table.administrators.flatMap((admin) => admin._id),
       groups: updatedGroups,
       fields: table.fields.flatMap((f) => f._id),
       methods: {

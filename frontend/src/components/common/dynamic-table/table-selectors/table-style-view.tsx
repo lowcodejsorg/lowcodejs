@@ -80,9 +80,7 @@ export function TableStyleViewDropdown({
       description: table.data.description ?? null,
       logo: table.data.logo?._id ?? null,
       style,
-      visibility: table.data.visibility,
-      collaboration: table.data.collaboration,
-      administrators: table.data.administrators.flatMap((a) => a._id),
+      // TODO: collaborators will be handled separately
       fieldOrderList: table.data.fieldOrderList ?? [],
       fieldOrderForm: table.data.fieldOrderForm ?? [],
       fieldOrderFilter: table.data.fieldOrderFilter ?? [],

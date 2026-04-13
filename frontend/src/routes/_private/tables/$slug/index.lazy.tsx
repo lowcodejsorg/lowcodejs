@@ -200,7 +200,7 @@ function RouteComponent(): React.JSX.Element {
     useFilterSidebar();
 
   const filterFields = React.useMemo(() => {
-    const filtered = (table.data?.fields ?? []).filter((f) => f.showInFilter);
+    const filtered = (table.data?.fields ?? []).filter((f) => f.visibilityList !== 'HIDDEN');
     const order = table.data?.fieldOrderFilter ?? [];
     if (order.length === 0) return filtered;
     return [...filtered].sort((a, b) => {

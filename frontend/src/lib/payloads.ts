@@ -4,10 +4,8 @@ import type {
   E_MENU_ITEM_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   E_USER_STATUS,
 } from './constant';
 import type { Merge, ValueOf } from './interfaces';
@@ -41,7 +39,7 @@ export type UserCreatePayload = {
   name: string;
   email: string;
   password: string;
-  group: string;
+  groups: Array<string>;
 };
 
 export type UserUpdatePayload = {
@@ -49,7 +47,7 @@ export type UserUpdatePayload = {
   name?: string;
   email?: string;
   password?: string;
-  group?: string;
+  groups?: Array<string>;
   status?: ValueOf<typeof E_USER_STATUS>;
 };
 
@@ -58,6 +56,8 @@ export type UserGroupCreatePayload = {
   name: string;
   description?: string | null;
   permissions: Array<string>;
+  encompasses: Array<string>;
+  systemPermissions: Record<string, boolean>;
 };
 
 export type UserGroupUpdatePayload = {
@@ -65,6 +65,8 @@ export type UserGroupUpdatePayload = {
   name?: string;
   description?: string | null;
   permissions?: Array<string>;
+  encompasses?: Array<string>;
+  systemPermissions?: Record<string, boolean>;
 };
 
 // ============== MENU ==============
@@ -76,6 +78,7 @@ export type MenuCreatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  visibility?: string;
 };
 
 export type MenuUpdatePayload = {
@@ -87,6 +90,7 @@ export type MenuUpdatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  visibility?: string;
 };
 
 // ============== TABLE ==============
@@ -95,7 +99,17 @@ export type TableCreatePayload = {
   owner?: string;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
-  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
+  viewTable?: string;
+  updateTable?: string;
+  createField?: string;
+  updateField?: string;
+  removeField?: string;
+  viewField?: string;
+  createRow?: string;
+  updateRow?: string;
+  removeRow?: string;
+  viewRow?: string;
+  collaborators?: Array<{ user: string; profile: string }>;
 };
 
 export type TableMethodPayload = {
@@ -110,9 +124,17 @@ export type TableUpdatePayload = {
   description?: string | null;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
-  visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-  collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
-  administrators?: Array<string>;
+  viewTable?: string;
+  updateTable?: string;
+  createField?: string;
+  updateField?: string;
+  removeField?: string;
+  viewField?: string;
+  createRow?: string;
+  updateRow?: string;
+  removeRow?: string;
+  viewRow?: string;
+  collaborators?: Array<{ user: string; profile: string }>;
   fieldOrderList?: Array<string>;
   fieldOrderForm?: Array<string>;
   fieldOrderFilter?: Array<string>;
@@ -144,10 +166,9 @@ export type FieldConfigurationPayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
-  showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
+  visibilityList?: string;
+  visibilityForm?: string;
+  visibilityDetail?: string;
   widthInForm?: number | null;
   widthInList?: number | null;
   defaultValue?: string | Array<string> | null;
@@ -168,10 +189,9 @@ export type FieldCreatePayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
-  showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
+  visibilityList?: string;
+  visibilityForm?: string;
+  visibilityDetail?: string;
   widthInForm?: number | null;
   widthInList?: number | null;
   defaultValue?: string | Array<string> | null;
@@ -193,10 +213,9 @@ export type FieldUpdatePayload = {
   required?: boolean;
   multiple?: boolean;
   format?: ValueOf<typeof E_FIELD_FORMAT> | null;
-  showInFilter?: boolean;
-  showInForm?: boolean;
-  showInDetail?: boolean;
-  showInList?: boolean;
+  visibilityList?: string;
+  visibilityForm?: string;
+  visibilityDetail?: string;
   widthInForm?: number | null;
   widthInList?: number | null;
   defaultValue?: string | Array<string> | null;

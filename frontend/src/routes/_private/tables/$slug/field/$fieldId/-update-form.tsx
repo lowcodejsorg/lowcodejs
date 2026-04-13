@@ -21,10 +21,9 @@ export const FieldUpdateSchema = z.object({
   }),
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
-  showInFilter: z.boolean().default(false),
-  showInForm: z.boolean().default(false),
-  showInDetail: z.boolean().default(false),
-  showInList: z.boolean().default(false),
+  visibilityList: z.string().default('PUBLIC'),
+  visibilityForm: z.string().default('PUBLIC'),
+  visibilityDetail: z.string().default('PUBLIC'),
   required: z.boolean().default(false),
   trashed: z.boolean().default(false),
   widthInForm: z.number().default(50),
@@ -48,10 +47,9 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   },
   category: [],
   multiple: false,
-  showInFilter: false,
-  showInForm: false,
-  showInDetail: false,
-  showInList: false,
+  visibilityList: 'PUBLIC',
+  visibilityForm: 'PUBLIC',
+  visibilityDetail: 'PUBLIC',
   required: false,
   trashed: false,
   widthInForm: 50,
@@ -485,6 +483,43 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Visibilidade */}
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Visibilidade
+          </p>
+
+          <form.AppField name="visibilityList">
+            {(field) => (
+              <field.FieldText
+                label="Visibilidade na listagem"
+                placeholder="ID do grupo, PUBLIC ou HIDDEN"
+                disabled={isDisabled || lockAllControls}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="visibilityForm">
+            {(field) => (
+              <field.FieldText
+                label="Visibilidade no formulário"
+                placeholder="ID do grupo, PUBLIC ou HIDDEN"
+                disabled={isDisabled || lockAllControls}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="visibilityDetail">
+            {(field) => (
+              <field.FieldText
+                label="Visibilidade nos detalhes"
+                placeholder="ID do grupo, PUBLIC ou HIDDEN"
+                disabled={isDisabled || lockAllControls}
+              />
+            )}
+          </form.AppField>
+        </div>
 
         {/* Campo Lixeira */}
         <form.AppField name="trashed">

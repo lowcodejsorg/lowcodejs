@@ -83,18 +83,25 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
             {data.required ? 'Obrigatório' : 'Opcional'}
           </Badge>
           {data.multiple && <Badge variant="outline">Múltiplos valores</Badge>}
-          {data.showInList && (
-            <Badge variant="outline">Exibir em listagem</Badge>
-          )}
-          {data.showInFilter && (
-            <Badge variant="outline">Permitir filtro</Badge>
-          )}
-          {data.showInForm && (
-            <Badge variant="outline">Exibir em formulários</Badge>
-          )}
-          {data.showInDetail && (
-            <Badge variant="outline">Exibir em detalhes</Badge>
-          )}
+        </div>
+      </div>
+
+      {/* Visibilidade */}
+      <div className="space-y-2">
+        <p className="text-sm font-medium">Visibilidade</p>
+        <div className="flex flex-col gap-1 text-sm">
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Listagem</span>
+            <span>{data.visibilityList ?? '-'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Formulário</span>
+            <span>{data.visibilityForm ?? '-'}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-muted-foreground">Detalhes</span>
+            <span>{data.visibilityDetail ?? '-'}</span>
+          </div>
         </div>
       </div>
 

@@ -110,7 +110,7 @@ function UserUpdateContent({
       email: data.email,
       password: '',
       status: data.status,
-      group: data.group._id,
+      groups: data.groups.map((g) => g._id),
     } satisfies UserUpdateFormValues,
     validators: {
       onChange: UserUpdateSchema,

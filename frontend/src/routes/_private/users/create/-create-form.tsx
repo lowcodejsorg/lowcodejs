@@ -11,7 +11,7 @@ export const userFormDefaultValues: UserFormType = {
   name: '',
   email: '',
   password: '',
-  group: '',
+  groups: [],
 };
 
 export const CreateUserFormFields = withForm({
@@ -59,12 +59,12 @@ export const CreateUserFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo Grupo */}
-        <form.AppField name="group">
+        {/* Campo Grupos */}
+        <form.AppField name="groups">
           {(field) => (
-            <field.FieldGroupCombobox
-              label="Grupo"
-              placeholder="Selecione um grupo..."
+            <field.FieldGroupMultiSelect
+              label="Grupos"
+              placeholder="Selecione os grupos..."
               disabled={isPending}
               required
             />

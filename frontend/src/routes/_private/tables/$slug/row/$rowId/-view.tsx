@@ -144,7 +144,7 @@ export function RowView({
   table,
 }: RowViewProps): React.JSX.Element {
   const visibleFields = React.useMemo(() => {
-    const filtered = fields.filter((f) => f.showInDetail);
+    const filtered = fields.filter((f) => f.visibilityDetail !== 'HIDDEN');
     const detailOrder = table?.fieldOrderDetail ?? [];
     const order =
       detailOrder.length > 0 ? detailOrder : (table?.fieldOrderForm ?? []);

@@ -49,22 +49,32 @@ const columns: Array<ColumnDef<IUser, any>> = [
     ),
   },
   {
-    id: 'group',
-    accessorFn: (row) => row.group,
-    meta: { label: 'Grupo' },
+    id: 'groups',
+    accessorFn: (row) => row.groups,
+    meta: { label: 'Grupos' },
     header: () => (
       <DataTableColumnHeader
-        title="Grupo"
+        title="Grupos"
         orderKey="order-group"
         routeId={ROUTE_ID}
       />
     ),
-    cell: ({ getValue }): React.ReactElement | string => {
-      const group = getValue() as IUser['group'];
-      if (group.slug in USER_GROUP_MAPPER) {
-        return USER_GROUP_MAPPER[group.slug as keyof typeof USER_GROUP_MAPPER];
-      }
-      return group.slug;
+    cell: ({ row }): React.ReactElement => {
+      const { groups } = row.original;
+      return (
+        <div className="flex flex-wrap gap-1">
+          {groups.map((group) => (
+            <Badge
+              key={group._id}
+              variant="outline"
+            >
+              {USER_GROUP_MAPPER[
+                group.slug as keyof typeof USER_GROUP_MAPPER
+              ] || group.slug}
+            </Badge>
+          ))}
+        </div>
+      );
     },
   },
   {

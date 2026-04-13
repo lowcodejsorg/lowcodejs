@@ -26,10 +26,9 @@ function buildFieldPayload(
     type: field.type,
     required: field.required,
     multiple: field.multiple,
-    showInFilter: field.showInFilter,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
-    showInList: field.showInList,
+    visibilityList: field.visibilityList,
+    visibilityForm: field.visibilityForm,
+    visibilityDetail: field.visibilityDetail,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
     widthInDetail: field.widthInDetail,
@@ -58,10 +57,9 @@ function buildFieldPayload(
 }
 
 const VISIBILITY_LABELS: Record<VisibilityKey, string> = {
-  showInList: 'listagem',
-  showInFilter: 'filtros',
-  showInForm: 'formulários',
-  showInDetail: 'detalhes',
+  visibilityList: 'listagem',
+  visibilityForm: 'formulários',
+  visibilityDetail: 'detalhes',
 };
 
 function updateFieldInTableCache(
@@ -141,9 +139,10 @@ export function useTableFieldManagement(
       newValue: boolean;
     }) => {
       const route = `/tables/${tableSlug}/fields/${field._id}`;
+      const newVisibility = newValue ? 'PUBLIC' : 'HIDDEN';
       const response = await API.put<IField>(
         route,
-        buildFieldPayload(field, { [visibilityKey]: newValue }),
+        buildFieldPayload(field, { [visibilityKey]: newVisibility }),
       );
       return { data: response.data, visibilityKey };
     },
@@ -153,7 +152,7 @@ export function useTableFieldManagement(
     onSuccess: ({ data: response, visibilityKey }) => {
       updateFieldInTableCache(queryClient, tableSlug, response);
       const label = VISIBILITY_LABELS[visibilityKey];
-      if (response[visibilityKey]) {
+      if (response[visibilityKey] !== 'HIDDEN') {
         toastSuccess(`Campo visível em ${label}`);
       } else {
         toastSuccess(`Campo oculto em ${label}`);
@@ -284,13 +283,11 @@ export function useTableFieldManagement(
       fieldOrderDetail: table.fieldOrderDetail,
     };
 
-    if (visibilityKey === 'showInList') {
+    if (visibilityKey === 'visibilityList') {
       orderPayload.fieldOrderList = orderedFieldIds;
-    } else if (visibilityKey === 'showInForm') {
+    } else if (visibilityKey === 'visibilityForm') {
       orderPayload.fieldOrderForm = orderedFieldIds;
-    } else if (visibilityKey === 'showInFilter') {
-      orderPayload.fieldOrderFilter = orderedFieldIds;
-    } else if (visibilityKey === 'showInDetail') {
+    } else if (visibilityKey === 'visibilityDetail') {
       orderPayload.fieldOrderDetail = orderedFieldIds;
     }
 
@@ -299,11 +296,8 @@ export function useTableFieldManagement(
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,
-      visibility: table.visibility,
       style: table.style,
-      collaboration: table.collaboration,
       ...orderPayload,
-      administrators: table.administrators.flatMap((admin) => admin._id),
       fields: table.fields.flatMap((f) => f._id),
       methods: {
         ...table.methods,

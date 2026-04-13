@@ -15,6 +15,7 @@ export type MenuUpdateFormValues = {
   html: string;
   url: string;
   parent: string;
+  visibility: string;
 };
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
@@ -24,6 +25,7 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   html: '',
   url: '',
   parent: '',
+  visibility: 'PUBLIC',
 };
 
 export const UpdateMenuFormFields = withForm({
@@ -202,6 +204,17 @@ export const UpdateMenuFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Campo Visibilidade */}
+        <form.AppField name="visibility">
+          {(field) => (
+            <field.FieldText
+              label="Visibilidade"
+              placeholder="ID do grupo, PUBLIC ou NOBODY"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
 
         {/* Info para tipo SEPARATOR */}
         {menuType === E_MENU_ITEM_TYPE.SEPARATOR && <SeparatorInfo />}

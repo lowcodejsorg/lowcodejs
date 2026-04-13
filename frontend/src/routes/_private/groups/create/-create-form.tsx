@@ -11,6 +11,8 @@ export const groupFormDefaultValues: GroupFormType = {
   name: '',
   description: '',
   permissions: [],
+  encompasses: [],
+  systemPermissions: {},
 };
 
 export const CreateGroupFormFields = withForm({
@@ -88,6 +90,27 @@ export const CreateGroupFormFields = withForm({
               placeholder="Selecione as permissões..."
               disabled={isPending}
               required
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo Permissões do Sistema */}
+        <form.AppField name="systemPermissions">
+          {(field) => (
+            <field.FieldSystemPermissionCheckboxes
+              label="Permissões do Sistema"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo Abrange (grupos englobados) */}
+        <form.AppField name="encompasses">
+          {(field) => (
+            <field.FieldGroupMultiSelect
+              label="Abrange"
+              placeholder="Selecione os grupos englobados..."
+              disabled={isPending}
             />
           )}
         </form.AppField>

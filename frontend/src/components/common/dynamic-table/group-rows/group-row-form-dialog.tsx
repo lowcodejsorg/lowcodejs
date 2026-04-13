@@ -66,7 +66,7 @@ function GroupRowFormDialogContent({
   const isUploading = useIsUploading();
 
   const visibleFields = React.useMemo(
-    () => groupFields.filter((f) => f.showInForm),
+    () => groupFields.filter((f) => f.visibilityForm !== 'HIDDEN'),
     [groupFields],
   );
 

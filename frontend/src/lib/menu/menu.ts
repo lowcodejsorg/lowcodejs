@@ -8,90 +8,54 @@ import {
   WrenchIcon,
 } from 'lucide-react';
 
-import type { MenuRoute } from './menu-route';
+import type { MenuItem, MenuRoute } from './menu-route';
 
-import { E_ROLE } from '@/lib/constant';
-
-export const getStaticMenusByRole = (
-  role: string,
+export const getStaticMenusByPermissions = (
+  permissions: Record<string, boolean>,
 ): { before: MenuRoute; after: MenuRoute } => {
-  switch (role) {
-    case E_ROLE.MASTER:
-      return {
-        before: [],
-        after: [
-          {
-            title: 'Sistema',
-            items: [
-              { title: 'Tabelas', url: '/tables', icon: TableIcon },
-              {
-                title: 'Configurações',
-                url: '/settings',
-                icon: SettingsIcon,
-              },
-              { title: 'Menus', url: '/menus', icon: MenuIcon },
-              { title: 'Grupos', url: '/groups', icon: GroupIcon },
-              { title: 'Usuários', url: '/users', icon: UsersIcon },
-              { title: 'Ferramentas', url: '/tools', icon: WrenchIcon },
-            ],
-          },
-          {
-            title: 'Conta',
-            items: [{ title: 'Perfil', url: '/profile', icon: UserIcon }],
-          },
-        ],
-      };
+  const systemItems: Array<MenuItem> = [];
 
-    case E_ROLE.ADMINISTRATOR: {
-      return {
-        before: [],
-        after: [
-          {
-            title: 'Sistema',
-            items: [
-              { title: 'Tabelas', url: '/tables', icon: TableIcon },
-              { title: 'Menus', url: '/menus', icon: MenuIcon },
-              { title: 'Usuários', url: '/users', icon: UsersIcon },
-            ],
-          },
-          {
-            title: 'Conta',
-            items: [{ title: 'Perfil', url: '/profile', icon: UserIcon }],
-          },
-        ],
-      };
-    }
-    case E_ROLE.MANAGER: {
-      return {
-        before: [],
-        after: [
-          {
-            title: 'Sistema',
-            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
-          },
-          {
-            title: 'Conta',
-            items: [{ title: 'Perfil', url: '/profile', icon: UserIcon }],
-          },
-        ],
-      };
-    }
-    case E_ROLE.REGISTERED:
-      return {
-        before: [],
-        after: [
-          {
-            title: 'Sistema',
-            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
-          },
-          {
-            title: 'Conta',
-            items: [{ title: 'Perfil', url: '/profile', icon: UserIcon }],
-          },
-        ],
-      };
+  systemItems.push({ title: 'Tabelas', url: '/tables', icon: TableIcon });
 
-    default:
-      return { before: [], after: [] };
+  if (permissions.SETTINGS === true) {
+    systemItems.push({
+      title: 'Configurações',
+      url: '/settings',
+      icon: SettingsIcon,
+    });
   }
+
+  if (permissions.MENU === true) {
+    systemItems.push({ title: 'Menus', url: '/menus', icon: MenuIcon });
+  }
+
+  if (permissions.USER_GROUPS === true) {
+    systemItems.push({ title: 'Grupos', url: '/groups', icon: GroupIcon });
+  }
+
+  if (permissions.USERS === true) {
+    systemItems.push({ title: 'Usuários', url: '/users', icon: UsersIcon });
+  }
+
+  if (permissions.TOOLS === true) {
+    systemItems.push({
+      title: 'Ferramentas',
+      url: '/tools',
+      icon: WrenchIcon,
+    });
+  }
+
+  return {
+    before: [],
+    after: [
+      {
+        title: 'Sistema',
+        items: systemItems,
+      },
+      {
+        title: 'Conta',
+        items: [{ title: 'Perfil', url: '/profile', icon: UserIcon }],
+      },
+    ],
+  };
 };

@@ -41,32 +41,43 @@ export function ProfileView({ data }: ProfileViewProps): React.JSX.Element {
         </CardContent>
       </Card>
 
-      {/* Grupo */}
+      {/* Grupos */}
       <Card className="shadow-none">
         <CardHeader>
           <CardTitle className="flex items-center gap-3">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
               <UsersIcon className="h-4 w-4 text-primary" />
             </div>
-            Grupo
+            Grupos
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Nome do Grupo
+          {data.groups.length === 0 && (
+            <p className="text-sm text-muted-foreground">
+              Nenhum grupo atribuído
             </p>
-            <Badge variant="secondary">{data.group.name}</Badge>
-          </div>
-
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Descrição
-            </p>
-            <p className="text-sm font-medium">
-              {data.group.description || 'Sem descrição disponível'}
-            </p>
-          </div>
+          )}
+          {data.groups.map((group) => (
+            <div
+              key={group._id}
+              className="space-y-2"
+            >
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Nome do Grupo
+                </p>
+                <Badge variant="secondary">{group.name}</Badge>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                  Descrição
+                </p>
+                <p className="text-sm font-medium">
+                  {group.description || 'Sem descrição disponível'}
+                </p>
+              </div>
+            </div>
+          ))}
         </CardContent>
       </Card>
     </section>

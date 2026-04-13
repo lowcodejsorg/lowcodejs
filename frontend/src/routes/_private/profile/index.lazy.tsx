@@ -192,7 +192,7 @@ function ProfileUpdateContent({
             mode={mode}
             allowPasswordChange={allowPasswordChange}
             onAllowPasswordChangeChange={setAllowPasswordChange}
-            groupData={data.group}
+            groupsData={data.groups}
           />
         </form>
       )}

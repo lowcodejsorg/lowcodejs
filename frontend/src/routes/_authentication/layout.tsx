@@ -15,8 +15,7 @@ export const Route = createFileRoute('/_authentication')({
         profileDetailOptions(),
       );
       if (user) {
-        const role = user.group?.slug?.toUpperCase() ?? 'REGISTERED';
-        throw redirect({ to: ROLE_DEFAULT_ROUTE[role] ?? '/tables' });
+        throw redirect({ to: ROLE_DEFAULT_ROUTE });
       }
     } catch (e) {
       if (e && typeof e === 'object' && 'to' in e) throw e;
