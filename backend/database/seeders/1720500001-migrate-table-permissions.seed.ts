@@ -97,22 +97,24 @@ export default async function Seed(): Promise<void> {
 
   let migratedCount = 0;
 
+  function collectAdminIds(raw: Record<string, unknown>): string[] {
+    if (!Array.isArray(raw.administrators)) return [];
+    return raw.administrators.map(String);
+  }
+
   for (const table of tables) {
     const raw: Record<string, unknown> = table.toObject();
     const visibility = String(raw.visibility || 'RESTRICTED');
-    const adminIds = Array.isArray(raw.administrators)
-      ? raw.administrators.map(String)
-      : [];
 
     const mapFn = VISIBILITY_ACTION_MAP[visibility];
     if (!mapFn) continue;
 
     const actionValues = mapFn(registeredGroupId);
+    const ownerId = raw.owner ? String(raw.owner) : null;
 
-    const collaborators = adminIds.map((userId) => ({
-      user: userId,
-      profile: 'ADMIN',
-    }));
+    const collaborators = collectAdminIds(raw)
+      .filter((userId) => userId !== ownerId)
+      .map((userId) => ({ user: userId, profile: 'ADMIN' }));
 
     await Table.updateOne(
       { _id: table._id },
