@@ -37,6 +37,12 @@ const Group = new mongoose.Schema(
   },
 );
 
+function isFieldVisibilityValue(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  if (value === 'HIDDEN') return true;
+  return mongoose.Types.ObjectId.isValid(value);
+}
+
 function isCategoryNode(
   item: unknown,
 ): item is { id: string; label: string; children: unknown[] } {
@@ -126,14 +132,29 @@ export const Schema = new mongoose.Schema(
     visibilityList: {
       type: String,
       default: 'HIDDEN',
+      validate: {
+        validator: isFieldVisibilityValue,
+        message:
+          'Field.visibilityList deve ser "HIDDEN" ou um ObjectId de grupo valido',
+      },
     },
     visibilityForm: {
       type: String,
       default: 'HIDDEN',
+      validate: {
+        validator: isFieldVisibilityValue,
+        message:
+          'Field.visibilityForm deve ser "HIDDEN" ou um ObjectId de grupo valido',
+      },
     },
     visibilityDetail: {
       type: String,
       default: 'HIDDEN',
+      validate: {
+        validator: isFieldVisibilityValue,
+        message:
+          'Field.visibilityDetail deve ser "HIDDEN" ou um ObjectId de grupo valido',
+      },
     },
     widthInForm: {
       type: Number,
