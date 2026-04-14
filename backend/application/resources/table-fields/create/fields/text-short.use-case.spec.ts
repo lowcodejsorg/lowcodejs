@@ -3,9 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -19,10 +17,9 @@ let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldCreateUseCase;
 
 const BASE_PAYLOAD = {
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
-  showInFilter: false,
+  visibilityList: 'HIDDEN',
+  visibilityForm: 'HIDDEN',
+  visibilityDetail: 'HIDDEN',
   locked: false,
   required: false,
   category: [],
@@ -44,10 +41,8 @@ async function createTable(repo: TableInMemoryRepository, slug = 'clientes') {
     _schema: {},
     fields: [],
     owner: 'owner-id',
-    administrators: [],
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+    viewTable: 'NOBODY',
     fieldOrderList: [],
     fieldOrderForm: [],
   });
@@ -258,18 +253,16 @@ describe('Table Field Create - TEXT_SHORT', () => {
       name: 'Campo Interno',
       type: E_FIELD_TYPE.TEXT_SHORT,
       format: E_FIELD_FORMAT.ALPHA_NUMERIC,
-      showInList: false,
-      showInForm: true,
-      showInDetail: false,
-      showInFilter: true,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
     });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
-    expect(result.value.showInForm).toBe(true);
-    expect(result.value.showInDetail).toBe(false);
-    expect(result.value.showInFilter).toBe(true);
+    expect(result.value.visibilityList).toBe('HIDDEN');
+    expect(result.value.visibilityForm).toBe('HIDDEN');
+    expect(result.value.visibilityDetail).toBe('HIDDEN');
   });
 
   it('deve gerar slug automaticamente a partir do nome', async () => {

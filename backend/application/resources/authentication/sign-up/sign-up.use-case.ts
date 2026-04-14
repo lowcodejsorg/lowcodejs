@@ -55,7 +55,7 @@ export default class SignUpUseCase {
       const created = await this.userRepository.create({
         ...payload,
         password: passwordHash,
-        group: group._id,
+        groups: [group._id],
         status: E_USER_STATUS.ACTIVE,
       });
 

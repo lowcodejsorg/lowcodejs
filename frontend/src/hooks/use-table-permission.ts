@@ -8,6 +8,8 @@ import { useAuthStore } from '@/stores/authentication';
 export type TableAction =
   | 'VIEW_TABLE'
   | 'UPDATE_TABLE'
+  | 'REMOVE_TABLE'
+  | 'CREATE_TABLE'
   | 'CREATE_FIELD'
   | 'UPDATE_FIELD'
   | 'REMOVE_FIELD'
@@ -20,6 +22,8 @@ export type TableAction =
 const ACTION_FIELD_MAP = {
   VIEW_TABLE: 'viewTable',
   UPDATE_TABLE: 'updateTable',
+  REMOVE_TABLE: 'updateTable',
+  CREATE_TABLE: 'updateTable',
   CREATE_FIELD: 'createField',
   UPDATE_FIELD: 'updateField',
   REMOVE_FIELD: 'removeField',

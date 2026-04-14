@@ -24,7 +24,7 @@ describe('Reset Password Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'old_password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
@@ -45,7 +45,7 @@ describe('Reset Password Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'old_password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await sut.execute({

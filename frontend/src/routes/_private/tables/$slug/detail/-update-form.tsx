@@ -3,11 +3,7 @@ import React from 'react';
 import { z } from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import {
-  E_FIELD_TYPE,
-  E_TABLE_STYLE,
-  TABLE_NAME_REGEX,
-} from '@/lib/constant';
+import { E_FIELD_TYPE, E_TABLE_STYLE, TABLE_NAME_REGEX } from '@/lib/constant';
 import type { IField, ILayoutFields, ITable } from '@/lib/interfaces';
 import { getAllowedTableStyles } from '@/lib/table-style';
 

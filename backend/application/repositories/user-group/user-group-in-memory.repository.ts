@@ -1,5 +1,4 @@
 import {
-  E_ROLE,
   E_SYSTEM_PERMISSION,
   type FindOptions,
   type IGroup,
@@ -87,10 +86,6 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
     this._checkError('findMany');
     let filtered = this.items;
-
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
-      filtered = filtered.filter((g) => g.slug !== E_ROLE.MASTER);
-    }
 
     if (payload?.search) {
       const search = payload.search.toLowerCase();

@@ -26,7 +26,11 @@ export const TableStyleSchema = z
   ])
   .default(E_TABLE_STYLE.LIST);
 
-export const TableActionValueSchema = z.string().trim().min(1).default('NOBODY');
+export const TableActionValueSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .default('NOBODY');
 
 export const TableCollaboratorSchema = z.object({
   user: z.string().trim().min(1),

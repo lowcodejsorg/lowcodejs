@@ -3,10 +3,8 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import { buildSchema } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
@@ -39,12 +37,11 @@ describe('E2E Table Field Remove From Trash Controller', () => {
         category: [],
         dropdown: [],
         defaultValue: null,
-        showInFilter: false,
-        showInForm: true,
-        showInDetail: true,
+        visibilityForm: 'HIDDEN',
+        visibilityDetail: 'HIDDEN',
         format: null,
         group: null,
-        showInList: true,
+        visibilityList: 'HIDDEN',
         multiple: false,
         required: false,
         relationship: null,
@@ -64,12 +61,10 @@ describe('E2E Table Field Remove From Trash Controller', () => {
 
       const tablePayload: TableCreatePayload = {
         owner: user._id,
-        administrators: [],
-        collaboration: E_TABLE_COLLABORATION.OPEN,
         fieldOrderForm: [],
         fieldOrderList: [],
         style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.PUBLIC,
+        viewTable: 'NOBODY',
         name: 'My Table',
         slug: 'my-table',
         fields: [field._id.toString()],

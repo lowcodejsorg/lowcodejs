@@ -16,9 +16,7 @@ import type {
   TableUpdatePayload,
 } from './table-contract.repository';
 
-export default class TableInMemoryRepository
-  implements TableContractRepository
-{
+export default class TableInMemoryRepository implements TableContractRepository {
   items: ITable[] = [];
   private _forcedErrors = new Map<string, Error>();
 

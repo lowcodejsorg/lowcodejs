@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { E_ROLE, type IUser } from '@application/core/entity.core';
+import { type IUser } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 
 import UserPaginatedUseCase from './paginated.use-case';
@@ -34,7 +34,7 @@ describe('User Paginated Use Case', () => {
         name: `User ${i + 1}`,
         email: `user${i + 1}@example.com`,
         password: 'password123',
-        group: 'group-id',
+        groups: ['group-id'],
       });
     }
 
@@ -58,7 +58,7 @@ describe('User Paginated Use Case', () => {
         name: `User ${i + 1}`,
         email: `user${i + 1}@example.com`,
         password: 'password123',
-        group: 'group-id',
+        groups: ['group-id'],
       });
     }
 
@@ -83,7 +83,7 @@ describe('User Paginated Use Case', () => {
         name: `User ${i + 1}`,
         email: `user${i + 1}@example.com`,
         password: 'password123',
-        group: 'group-id',
+        groups: ['group-id'],
       });
     }
 
@@ -104,7 +104,7 @@ describe('User Paginated Use Case', () => {
       name: 'Logged User',
       email: 'logged@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     for (let i = 0; i < 3; i++) {
@@ -112,14 +112,14 @@ describe('User Paginated Use Case', () => {
         name: `User ${i + 1}`,
         email: `user${i + 1}@example.com`,
         password: 'password123',
-        group: 'group-id',
+        groups: ['group-id'],
       });
     }
 
     const result = await sut.execute({
       page: 1,
       perPage: 20,
-      user: { _id: loggedUser._id, role: E_ROLE.MASTER },
+      user: { _id: loggedUser._id },
     });
 
     expect(result.isRight()).toBe(true);

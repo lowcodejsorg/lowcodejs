@@ -26,7 +26,7 @@ describe('Magic Link Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await validationTokenInMemoryRepository.create({
@@ -49,7 +49,7 @@ describe('Magic Link Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const token = await validationTokenInMemoryRepository.create({
@@ -71,7 +71,7 @@ describe('Magic Link Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await userInMemoryRepository.update({
@@ -99,7 +99,7 @@ describe('Magic Link Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await validationTokenInMemoryRepository.create({
@@ -129,7 +129,7 @@ describe('Magic Link Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await validationTokenInMemoryRepository.create({
@@ -152,7 +152,7 @@ describe('Magic Link Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await validationTokenInMemoryRepository.create({
@@ -175,7 +175,7 @@ describe('Magic Link Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const token = await validationTokenInMemoryRepository.create({

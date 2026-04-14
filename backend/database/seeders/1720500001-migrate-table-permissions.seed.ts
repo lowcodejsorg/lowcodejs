@@ -2,7 +2,11 @@ import { E_ROLE } from '@application/core/entity.core';
 import { Table } from '@application/model/table.model';
 import { UserGroup } from '@application/model/user-group.model';
 
-const VISIBILITY_ACTION_MAP = {
+const VISIBILITY_ACTION_MAP: Record<
+  string,
+  // eslint-disable-next-line no-unused-vars
+  (registeredGroupId: string) => Record<string, string>
+> = {
   PUBLIC: (registeredGroupId: string): Record<string, string> => ({
     viewTable: 'PUBLIC',
     viewField: 'PUBLIC',

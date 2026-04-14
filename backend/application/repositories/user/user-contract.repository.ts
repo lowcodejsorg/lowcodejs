@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import type {
-  E_ROLE,
   E_USER_STATUS,
   FindOptions,
   IUser,
@@ -22,7 +21,7 @@ export type UserQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
-  user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+  user?: Pick<IUser, '_id'>;
   _ids?: string[];
   status?: ValueOf<typeof E_USER_STATUS>;
   trashed?: boolean;

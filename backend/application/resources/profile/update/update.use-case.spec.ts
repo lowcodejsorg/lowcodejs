@@ -21,7 +21,7 @@ describe('Profile Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'hashed_password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
@@ -46,7 +46,7 @@ describe('Profile Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: hashedPassword,
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
@@ -72,7 +72,7 @@ describe('Profile Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: hashedPassword,
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({

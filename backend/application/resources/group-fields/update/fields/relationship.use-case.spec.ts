@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-} from '@application/core/entity.core';
+import { E_FIELD_TYPE, E_TABLE_STYLE } from '@application/core/entity.core';
 import type { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -22,10 +17,8 @@ const TABLE_DEFAULTS = {
   _schema: {},
   fields: [],
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+  viewTable: 'NOBODY',
   fieldOrderList: [],
   fieldOrderForm: [],
 };
@@ -34,10 +27,9 @@ const FIELD_CREATE_PAYLOAD = {
   name: 'Produto',
   slug: 'produto',
   type: E_FIELD_TYPE.RELATIONSHIP,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
-  showInFilter: false,
+  visibilityList: 'HIDDEN',
+  visibilityForm: 'HIDDEN',
+  visibilityDetail: 'HIDDEN',
   locked: false,
   native: false,
   required: false,
@@ -107,10 +99,9 @@ describe('Group Field Update - RELATIONSHIP', () => {
       type: E_FIELD_TYPE.RELATIONSHIP,
       required: false,
       multiple: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: false,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: null,
@@ -152,10 +143,9 @@ describe('Group Field Update - RELATIONSHIP', () => {
       type: E_FIELD_TYPE.RELATIONSHIP,
       required: false,
       multiple: true,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: false,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: null,

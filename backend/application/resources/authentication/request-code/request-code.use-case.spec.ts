@@ -28,7 +28,7 @@ describe('Request Code Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({ email: 'john@example.com' });
@@ -51,7 +51,7 @@ describe('Request Code Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await sut.execute({ email: 'john@example.com' });

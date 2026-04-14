@@ -1,12 +1,10 @@
 /* eslint-disable no-unused-vars */
 import type {
-  E_ROLE,
   FindOptions,
   IGroup,
   ISystemPermissions,
   IUser,
   Merge,
-  ValueOf,
 } from '@application/core/entity.core';
 
 export type UserGroupCreatePayload = Merge<
@@ -29,7 +27,7 @@ export type UserGroupQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
-  user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+  user?: Pick<IUser, '_id'>;
   sort?: Record<string, 'asc' | 'desc'>;
 };
 

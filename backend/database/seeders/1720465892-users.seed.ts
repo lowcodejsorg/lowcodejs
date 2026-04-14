@@ -68,14 +68,13 @@ export default async function Seed(): Promise<void> {
     },
   ];
 
-  await User.bulkWrite(
-    payload.map(({ email, ...rest }) => ({
-      updateOne: {
-        filter: { email },
-        update: { $set: { email, ...rest } },
-        upsert: true,
-      },
-    })),
-  );
+  for (const { email, ...rest } of payload) {
+    await User.updateOne(
+      { email },
+      { $set: { email, ...rest } },
+      { upsert: true },
+    );
+  }
+
   console.info('🌱 \x1b[32m Users \x1b[0m');
 }

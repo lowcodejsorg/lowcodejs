@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-} from '@application/core/entity.core';
+import { E_FIELD_TYPE, E_TABLE_STYLE } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
@@ -21,10 +16,8 @@ const TABLE_DEFAULTS = {
   _schema: {},
   fields: [],
   owner: 'owner-id',
-  administrators: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+  viewTable: 'NOBODY',
   fieldOrderList: [],
   fieldOrderForm: [],
 };
@@ -33,10 +26,9 @@ const FIELD_CREATE_PAYLOAD = {
   name: 'Status',
   slug: 'status',
   type: E_FIELD_TYPE.DROPDOWN,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
-  showInFilter: false,
+  visibilityList: 'HIDDEN',
+  visibilityForm: 'HIDDEN',
+  visibilityDetail: 'HIDDEN',
   locked: false,
   native: false,
   required: false,
@@ -105,10 +97,9 @@ describe('Group Field Update - DROPDOWN', () => {
       name: 'Status',
       type: E_FIELD_TYPE.DROPDOWN,
       required: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: false,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: null,
@@ -149,10 +140,9 @@ describe('Group Field Update - DROPDOWN', () => {
       name: 'Status',
       type: E_FIELD_TYPE.DROPDOWN,
       required: true,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: false,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: null,

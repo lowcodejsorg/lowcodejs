@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-} from '@application/core/entity.core';
+import { E_FIELD_TYPE, E_TABLE_STYLE } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
@@ -18,10 +13,9 @@ let tableSchemaService: TableSchemaInMemoryService;
 let sut: TableFieldCreateUseCase;
 
 const BASE_PAYLOAD = {
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
-  showInFilter: false,
+  visibilityList: 'HIDDEN',
+  visibilityForm: 'HIDDEN',
+  visibilityDetail: 'HIDDEN',
   locked: false,
   required: false,
   category: [],
@@ -54,10 +48,8 @@ describe('Table Field Create - FIELD_GROUP', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      viewTable: 'NOBODY',
       fieldOrderList: [],
       fieldOrderForm: [],
     });

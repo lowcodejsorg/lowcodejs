@@ -15,11 +15,12 @@ export default async function Seed(): Promise<void> {
   let migratedCount = 0;
 
   for (const user of usersWithOldGroup) {
-    const oldGroup = (user as Record<string, unknown>).group;
+    const raw: Record<string, unknown> = user.toObject();
+    const oldGroup = raw.group;
 
     if (!oldGroup) continue;
 
-    const existingGroups = (user as Record<string, unknown>).groups;
+    const existingGroups = raw.groups;
 
     if (Array.isArray(existingGroups) && existingGroups.length > 0) {
       continue;

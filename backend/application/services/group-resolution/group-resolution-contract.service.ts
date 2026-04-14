@@ -23,10 +23,7 @@ export abstract class GroupResolutionContractService {
   /**
    * Verifica se o usuario pertence a um grupo especifico (incluindo via engloba)
    */
-  abstract userBelongsToGroup(
-    user: IUser,
-    targetGroupId: string,
-  ): boolean;
+  abstract userBelongsToGroup(user: IUser, targetGroupId: string): boolean;
 
   /**
    * Verifica se o usuario possui uma permissao global do sistema

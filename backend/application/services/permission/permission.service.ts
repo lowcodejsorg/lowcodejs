@@ -53,9 +53,7 @@ export default class PermissionService extends PermissionContractService {
 
     const groups = this.groupResolutionService.resolveUserGroups(user);
     const allPermissions = groups.flatMap((g) => g.permissions ?? []);
-    const hasPermission = allPermissions.some(
-      (p) => p.slug === permissionSlug,
-    );
+    const hasPermission = allPermissions.some((p) => p.slug === permissionSlug);
 
     if (!hasPermission) {
       throw HTTPException.Forbidden(

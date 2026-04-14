@@ -34,7 +34,7 @@ describe('E2E User Create Controller', () => {
           name: 'New User',
           email: 'newuser@example.com',
           password: 'S3nha@123A',
-          group: group._id.toString(),
+          groups: [group._id.toString()],
         });
 
       expect(response.statusCode).toBe(201);

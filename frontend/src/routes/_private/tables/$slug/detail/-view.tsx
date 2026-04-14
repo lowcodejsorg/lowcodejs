@@ -1,8 +1,6 @@
 import React from 'react';
 
-import {
-  TABLE_STYLE_OPTIONS,
-} from '@/lib/constant';
+import { TABLE_STYLE_OPTIONS } from '@/lib/constant';
 import type { ITable } from '@/lib/interfaces';
 
 interface TableViewProps {

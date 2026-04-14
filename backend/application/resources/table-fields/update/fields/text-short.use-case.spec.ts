@@ -3,9 +3,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   type IField,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
@@ -24,10 +22,9 @@ let sut: TableFieldUpdateUseCase;
 const FIELD_DEFAULTS = {
   slug: 'nome',
   type: E_FIELD_TYPE.TEXT_SHORT,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
-  showInFilter: true,
+  visibilityList: 'HIDDEN',
+  visibilityForm: 'HIDDEN',
+  visibilityDetail: 'HIDDEN',
   locked: false,
   native: false,
   required: false,
@@ -61,10 +58,8 @@ async function createFieldAndTable(
     _schema: {},
     fields: [field._id],
     owner: 'owner-id',
-    administrators: [],
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+    viewTable: 'NOBODY',
     fieldOrderList: [],
     fieldOrderForm: [],
   });
@@ -95,10 +90,9 @@ function buildUpdatePayload(
     trashed: false,
     trashedAt: null,
     locked: false,
-    showInList: field.showInList,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
-    showInFilter: field.showInFilter,
+    visibilityList: field.visibilityList,
+    visibilityForm: field.visibilityForm,
+    visibilityDetail: field.visibilityDetail,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
     widthInDetail: field.widthInDetail,
@@ -308,21 +302,24 @@ describe('Table Field Update - TEXT_SHORT', () => {
     expect(result.value.required).toBe(true);
   });
 
-  it('deve mudar visibilidade showInList false para true e showInForm true para false', async () => {
+  it('deve mudar visibilidade visibilityList HIDDEN para group e visibilityForm group para HIDDEN', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
-      { showInList: false, showInForm: true },
+      { visibilityList: 'HIDDEN', visibilityForm: 'group-id' },
     );
 
     const result = await sut.execute(
-      buildUpdatePayload(field, { showInList: true, showInForm: false }),
+      buildUpdatePayload(field, {
+        visibilityList: 'group-id',
+        visibilityForm: 'HIDDEN',
+      }),
     );
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(true);
-    expect(result.value.showInForm).toBe(false);
+    expect(result.value.visibilityList).toBe('group-id');
+    expect(result.value.visibilityForm).toBe('HIDDEN');
   });
 
   it('deve mudar widthInForm 50 para 75 e widthInList 10 para 30', async () => {
@@ -374,7 +371,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
   // --- CAMPO NATIVE ---
 
-  it('campo NATIVE deve permitir mudar showInList e widthInList', async () => {
+  it('campo NATIVE deve permitir mudar visibilityList e widthInList', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -397,10 +394,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
-      showInList: false,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: true,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 30,
       widthInDetail: null,
@@ -408,7 +404,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
+    expect(result.value.visibilityList).toBe('HIDDEN');
     expect(result.value.widthInList).toBe(30);
   });
 
@@ -435,10 +431,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
-      showInFilter: field.showInFilter,
+      visibilityList: field.visibilityList,
+      visibilityForm: field.visibilityForm,
+      visibilityDetail: field.visibilityDetail,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
       widthInDetail: field.widthInDetail,
@@ -473,10 +468,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
-      showInFilter: field.showInFilter,
+      visibilityList: field.visibilityList,
+      visibilityForm: field.visibilityForm,
+      visibilityDetail: field.visibilityDetail,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
       widthInDetail: field.widthInDetail,
@@ -511,10 +505,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: true,
       trashedAt: null,
       locked: false,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
-      showInFilter: field.showInFilter,
+      visibilityList: field.visibilityList,
+      visibilityForm: field.visibilityForm,
+      visibilityDetail: field.visibilityDetail,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
       widthInDetail: field.widthInDetail,
@@ -528,7 +521,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
   // --- CAMPO LOCKED ---
 
-  it('campo LOCKED deve permitir mudar showInList', async () => {
+  it('campo LOCKED deve permitir mudar visibilityList', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -551,10 +544,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: true,
-      showInList: false,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
-      showInFilter: field.showInFilter,
+      visibilityList: 'HIDDEN',
+      visibilityForm: field.visibilityForm,
+      visibilityDetail: field.visibilityDetail,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
       widthInDetail: field.widthInDetail,
@@ -562,7 +554,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
+    expect(result.value.visibilityList).toBe('HIDDEN');
   });
 
   it('campo LOCKED deve rejeitar mudar name com FIELD_LOCKED', async () => {
@@ -588,10 +580,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: true,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
-      showInFilter: field.showInFilter,
+      visibilityList: field.visibilityList,
+      visibilityForm: field.visibilityForm,
+      visibilityDetail: field.visibilityDetail,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
       widthInDetail: field.widthInDetail,
@@ -626,10 +617,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       trashed: false,
       trashedAt: null,
       locked: true,
-      showInList: field.showInList,
-      showInForm: field.showInForm,
-      showInDetail: field.showInDetail,
-      showInFilter: field.showInFilter,
+      visibilityList: field.visibilityList,
+      visibilityForm: field.visibilityForm,
+      visibilityDetail: field.visibilityDetail,
       widthInForm: field.widthInForm,
       widthInList: field.widthInList,
       widthInDetail: field.widthInDetail,

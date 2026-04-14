@@ -71,9 +71,7 @@ export function UserView({ data }: UserViewProps): React.JSX.Element {
               Grupos
             </p>
             <div className="flex flex-wrap gap-1">
-              {data.groups.length === 0 && (
-                <Badge variant="outline">-</Badge>
-              )}
+              {data.groups.length === 0 && <Badge variant="outline">-</Badge>}
               {data.groups.map((group) => (
                 <Badge
                   key={group._id}

@@ -18,7 +18,7 @@ describe('Refresh Token Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({ _id: user._id });

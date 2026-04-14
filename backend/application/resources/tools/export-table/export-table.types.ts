@@ -53,8 +53,16 @@ export type ExportedStructure = {
   slug: string;
   description: string | null;
   style: string;
-  visibility: string;
-  collaboration: string;
+  viewTable: string;
+  updateTable: string;
+  createField: string;
+  updateField: string;
+  removeField: string;
+  viewField: string;
+  createRow: string;
+  updateRow: string;
+  removeRow: string;
+  viewRow: string;
   fields: ExportedField[];
   groups: ExportedGroup[];
   fieldOrderList: string[];

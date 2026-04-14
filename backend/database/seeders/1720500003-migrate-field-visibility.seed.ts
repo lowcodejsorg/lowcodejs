@@ -31,7 +31,7 @@ export default async function Seed(): Promise<void> {
   let migratedCount = 0;
 
   for (const field of fields) {
-    const raw = field as Record<string, unknown>;
+    const raw: Record<string, unknown> = field.toObject();
 
     const visibilityList =
       raw.showInList === true ? registeredGroupId : 'HIDDEN';

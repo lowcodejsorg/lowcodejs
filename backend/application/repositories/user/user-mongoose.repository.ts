@@ -1,6 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import { E_ROLE, type IUser } from '@application/core/entity.core';
+import type { IUser } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { User as Model } from '@application/model/user.model';
@@ -41,15 +41,6 @@ export default class UserMongooseRepository implements UserContractRepository {
     // Filtro por status
     if (payload?.status) {
       where.status = payload.status;
-    }
-
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
-      const UserGroupModel = Model.db.model('UserGroup');
-      const masterGroup = await UserGroupModel.findOne({ slug: E_ROLE.MASTER });
-
-      if (masterGroup) {
-        where.groups = { $nin: [masterGroup._id] };
-      }
     }
 
     if (payload?.search) {

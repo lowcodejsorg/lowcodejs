@@ -33,7 +33,7 @@ describe('E2E User Update Controller', () => {
         .send({
           name: 'Updated Name',
           email: user.email,
-          group: group._id.toString(),
+          groups: [group._id.toString()],
           password: 'S3nha@123A',
           status: E_USER_STATUS.ACTIVE,
         });

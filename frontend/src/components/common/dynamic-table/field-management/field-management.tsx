@@ -456,12 +456,7 @@ function FieldManagementList({
     if (visibilityKey === 'visibilityForm') return fieldOrderForm;
     if (visibilityKey === 'visibilityDetail') return fieldOrderDetail;
     return [];
-  }, [
-    visibilityKey,
-    fieldOrderList,
-    fieldOrderForm,
-    fieldOrderDetail,
-  ]);
+  }, [visibilityKey, fieldOrderList, fieldOrderForm, fieldOrderDetail]);
 
   const sortedActiveFields = React.useMemo(() => {
     if (orderArray.length === 0) return activeFields;

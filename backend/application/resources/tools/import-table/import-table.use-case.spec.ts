@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-} from '@application/core/entity.core';
+import { E_TABLE_STYLE } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -37,8 +33,7 @@ const validFileContent = {
     slug: 'clientes',
     description: null,
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+    viewTable: 'NOBODY',
     fields: [
       {
         name: 'Nome',
@@ -47,10 +42,9 @@ const validFileContent = {
         required: true,
         multiple: false,
         format: 'ALPHA_NUMERIC',
-        showInFilter: true,
-        showInForm: true,
-        showInDetail: true,
-        showInList: true,
+        visibilityList: 'HIDDEN',
+        visibilityForm: 'HIDDEN',
+        visibilityDetail: 'HIDDEN',
         widthInForm: null,
         widthInList: null,
         widthInDetail: null,
@@ -147,10 +141,8 @@ describe('Import Table Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      viewTable: 'NOBODY',
       fieldOrderList: [],
       fieldOrderForm: [],
     });

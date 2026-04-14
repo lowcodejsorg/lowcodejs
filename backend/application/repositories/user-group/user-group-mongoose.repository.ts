@@ -1,7 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import { E_ROLE, type IGroup } from '@application/core/entity.core';
-import type { FindOptions } from '@application/core/entity.core';
+import type { FindOptions, IGroup } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { UserGroup as Model } from '@application/model/user-group.model';
 
@@ -23,10 +22,6 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
     payload?: UserGroupQueryPayload,
   ): Promise<Record<string, unknown>> {
     const where: Record<string, unknown> = {};
-
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
-      where.slug = { $ne: E_ROLE.MASTER };
-    }
 
     if (payload?.search) {
       where.$or = [
