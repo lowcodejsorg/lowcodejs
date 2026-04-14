@@ -14,6 +14,7 @@ import {
 } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import {
+  resolveUserGroupIds,
   resolveUserGroups,
   resolveUserSystemPermissions,
 } from '@/hooks/use-table-permission';
@@ -78,7 +79,8 @@ function PrivateLayout(): React.JSX.Element {
     };
   }
 
-  const { menu } = useMenuDynamic(effectivePermissions);
+  const effectiveGroupIds = resolveUserGroupIds(userGroups);
+  const { menu } = useMenuDynamic(effectivePermissions, effectiveGroupIds);
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',

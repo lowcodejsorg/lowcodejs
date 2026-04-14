@@ -28,6 +28,23 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
 type MenuWithChildren = IMenu & { children?: Array<MenuWithChildren> };
 
 /**
+ * Decide se o item do menu fica visivel para o usuario atual.
+ * Sentinela PUBLIC libera para todos. NOBODY bloqueia. Caso contrario,
+ * exige que o groupId esteja no conjunto resolvido do usuario (encompasses
+ * ja aplicado no chamador via resolveUserGroupIds).
+ */
+function isMenuVisible(
+  menu: IMenu,
+  effectiveGroupIds: Set<string>,
+): boolean {
+  const visibility = menu.visibility;
+  if (!visibility) return true;
+  if (visibility === 'PUBLIC') return true;
+  if (visibility === 'NOBODY') return false;
+  return effectiveGroupIds.has(visibility);
+}
+
+/**
  * Função para construir a árvore hierárquica de menus
  */
 function buildMenuTree(menus: Array<IMenu>): Array<MenuWithChildren> {
@@ -168,19 +185,27 @@ function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
 /**
  * Hook para obter menus dinâmicos combinados com menus estáticos
  */
-export function useMenuDynamic(permissions: Record<string, boolean>): {
+export function useMenuDynamic(
+  permissions: Record<string, boolean>,
+  effectiveGroupIds?: Array<string>,
+): {
   menu: Array<MenuGroupItem>;
   isLoading: boolean;
 } {
   // 1. Buscar menus dinâmicos da API
   const { data: dynamicMenusData, isLoading } = useMenuReadList();
 
+  const effectiveSet = useMemo(
+    () => new Set(effectiveGroupIds ?? []),
+    [effectiveGroupIds],
+  );
+
   // Normalizar os dados - pode ser array direto ou { data: [] }
   const menuData = useMemo(() => {
     if (!dynamicMenusData) return [];
-    if (Array.isArray(dynamicMenusData)) return dynamicMenusData;
-    return [];
-  }, [dynamicMenusData]);
+    if (!Array.isArray(dynamicMenusData)) return [];
+    return dynamicMenusData.filter((menu) => isMenuVisible(menu, effectiveSet));
+  }, [dynamicMenusData, effectiveSet]);
 
   // 2. Construir árvore hierárquica
   const dynamicMenuTree = useMemo(() => {
