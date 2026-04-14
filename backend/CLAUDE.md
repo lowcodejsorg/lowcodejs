@@ -276,6 +276,7 @@ Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em 
 | EMAIL_PROVIDER_PORT | obrigatorio | Porta SMTP |
 | EMAIL_PROVIDER_USER | obrigatorio | Usuario SMTP |
 | EMAIL_PROVIDER_PASSWORD | obrigatorio | Senha SMTP |
+| EMAIL_PROVIDER_FROM | opcional | Remetente (MAIL FROM). Obrigatorio quando o usuario SMTP nao e um email valido (AWS SES, SendGrid "apikey", etc.). Fallback: EMAIL_PROVIDER_USER |
 
 ### JWT & Cookies
 
