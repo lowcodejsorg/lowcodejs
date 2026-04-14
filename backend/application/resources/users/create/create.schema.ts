@@ -64,7 +64,8 @@ export const UserCreateSchema: FastifySchema = {
   },
   response: {
     201: {
-      description: 'User created successfully with populated groups information',
+      description:
+        'User created successfully with populated groups information',
       type: 'object',
       properties: {
         _id: { type: 'string', description: 'User ID' },
