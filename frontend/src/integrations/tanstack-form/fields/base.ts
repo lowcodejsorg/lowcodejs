@@ -10,6 +10,7 @@ export { FieldMenuCombobox } from '@/components/common/dynamic-table/base/field-
 export { FieldMenuTypeSelect } from '@/components/common/dynamic-table/base/field-menu-type-select';
 export { FieldPassword } from '@/components/common/dynamic-table/base/field-password';
 export { FieldPermissionMultiSelect } from '@/components/common/dynamic-table/base/field-permission-multi-select';
+export { FieldPermissionSelect } from '@/components/common/dynamic-table/base/field-permission-select';
 export { FieldSwitch } from '@/components/common/dynamic-table/base/field-switch';
 export { FieldSystemPermissionCheckboxes } from '@/components/common/dynamic-table/base/field-system-permission-checkboxes';
 export { FieldTableMultiSelect } from '@/components/common/dynamic-table/base/field-table-multi-select';
