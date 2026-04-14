@@ -1,22 +1,73 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import { E_TABLE_STYLE } from '@application/core/entity.core';
+import {
+  E_ROLE,
+  E_TABLE_STYLE,
+  E_USER_STATUS,
+  type IGroup,
+} from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import GroupResolutionService from '@application/services/group-resolution/group-resolution.service';
 
 import TableDeleteUseCase from './delete.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
+let userInMemoryRepository: UserInMemoryRepository;
+let groupResolutionService: GroupResolutionService;
 let sut: TableDeleteUseCase;
+let masterUserId: string;
+
+const MASTER_GROUP: IGroup = {
+  _id: 'master-group-id',
+  name: 'Master',
+  slug: E_ROLE.MASTER,
+  description: '',
+  permissions: [],
+  encompasses: [],
+  systemPermissions: {
+    VIEW_TABLES: true,
+    CREATE_TABLES: true,
+    UPDATE_TABLES: true,
+    REMOVE_TABLES: true,
+    USERS: true,
+    MENU: true,
+    USER_GROUPS: true,
+    SETTINGS: true,
+    TOOLS: true,
+    PLUGINS: true,
+  },
+  immutable: true,
+  createdAt: new Date(),
+  updatedAt: new Date(),
+  trashed: false,
+  trashedAt: null,
+};
 
 describe('Table Delete Use Case', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
+    userInMemoryRepository = new UserInMemoryRepository();
+    groupResolutionService = new GroupResolutionService();
+
+    const created = await userInMemoryRepository.create({
+      name: 'Master',
+      email: 'master@test.com',
+      password: 'hash',
+      groups: [MASTER_GROUP._id],
+    });
+    created.groups = [MASTER_GROUP];
+    created.status = E_USER_STATUS.ACTIVE;
+    masterUserId = created._id;
+
     sut = new TableDeleteUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
+      userInMemoryRepository,
+      groupResolutionService,
     );
   });
 
@@ -33,7 +84,10 @@ describe('Table Delete Use Case', () => {
       fieldOrderForm: [],
     });
 
-    const result = await sut.execute({ slug: 'clientes' });
+    const result = await sut.execute({
+      slug: 'clientes',
+      _currentUserId: masterUserId,
+    });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
@@ -44,7 +98,10 @@ describe('Table Delete Use Case', () => {
   });
 
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
-    const result = await sut.execute({ slug: 'non-existent' });
+    const result = await sut.execute({
+      slug: 'non-existent',
+      _currentUserId: masterUserId,
+    });
 
     expect(result.isLeft()).toBe(true);
     if (!result.isLeft()) throw new Error('Expected left');
@@ -60,7 +117,10 @@ describe('Table Delete Use Case', () => {
       new Error('Database error'),
     );
 
-    const result = await sut.execute({ slug: 'some-slug' });
+    const result = await sut.execute({
+      slug: 'some-slug',
+      _currentUserId: masterUserId,
+    });
 
     expect(result.isLeft()).toBe(true);
     if (!result.isLeft()) throw new Error('Expected left');
