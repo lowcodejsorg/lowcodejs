@@ -1,12 +1,19 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import type { ITable, IUser, ValueOf } from '@application/core/entity.core';
-import type { E_TABLE_PERMISSION } from '@application/core/entity.core';
+import type {
+  E_COLLABORATION_PROFILE,
+  E_TABLE_PERMISSION,
+  ITable,
+  IUser,
+  ValueOf,
+} from '@application/core/entity.core';
 
 export type AccessCheckResult = {
   allowed: boolean;
   ownership?: { isOwner: boolean; isAdministrator: boolean };
+  profile?: ValueOf<typeof E_COLLABORATION_PROFILE>;
+  ownOnly?: boolean;
 };
 
 export type AccessCheckInput = {
@@ -38,8 +45,9 @@ export abstract class PermissionContractService {
   abstract isPublicAccess(input: AccessCheckInput): boolean;
 
   /**
-   * Verifica permissoes de acesso completas para usuario autenticado
-   * Lanca HTTPException se nao autorizado
+   * Verifica permissoes de acesso completas para usuario autenticado.
+   * Lanca HTTPException se nao autorizado. Retorna ownOnly=true quando o
+   * perfil do colaborador exigir row-level security (contributor).
    */
   abstract checkTableAccess(
     input: AccessCheckInput,
