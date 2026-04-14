@@ -16,7 +16,7 @@ export default class ValidationTokenMongooseRepository implements ValidationToke
   private readonly populateOptions = [
     {
       path: 'user',
-      populate: { path: 'group', populate: { path: 'permissions' } },
+      populate: { path: 'groups', populate: { path: 'permissions' } },
     },
   ];
 
