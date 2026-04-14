@@ -38,6 +38,29 @@ export default class TableUpdateUseCase {
         );
       }
 
+      if (payload.owner) {
+        const currentOwnerId =
+          typeof table.owner === 'string'
+            ? table.owner
+            : table.owner?._id?.toString();
+        if (payload.owner !== currentOwnerId) {
+          const newOwner = await this.userRepository.findById(payload.owner);
+          if (
+            !newOwner ||
+            newOwner.status !== E_USER_STATUS.ACTIVE ||
+            newOwner.trashed === true
+          ) {
+            return left(
+              HTTPException.BadRequest(
+                'Usuário de owner inválido ou inativo',
+                'INVALID_OWNER',
+                { owner: 'Usuário de owner inválido ou inativo' },
+              ),
+            );
+          }
+        }
+      }
+
       // Validar que colaboradores referenciados sao usuarios ativos
       if (payload.collaborators && payload.collaborators.length > 0) {
         const userIds = payload.collaborators.map((c) => c.user);
