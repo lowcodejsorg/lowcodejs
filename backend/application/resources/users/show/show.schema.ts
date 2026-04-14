@@ -24,13 +24,16 @@ export const UserShowSchema: FastifySchema = {
         _id: { type: 'string' },
         name: { type: 'string' },
         email: { type: 'string' },
-        group: {
-          type: 'object',
-          properties: {
-            _id: { type: 'string' },
-            name: { type: 'string' },
-            slug: { type: 'string' },
-            description: { type: 'string' },
+        groups: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { type: 'string' },
+              slug: { type: 'string' },
+              description: { type: 'string' },
+            },
           },
         },
         status: { type: 'string' },

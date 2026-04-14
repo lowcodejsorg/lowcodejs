@@ -8,7 +8,7 @@ export const UserCreateSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['name', 'email', 'password', 'group'],
+    required: ['name', 'email', 'password', 'groups'],
     properties: {
       name: {
         type: 'string',
@@ -40,13 +40,14 @@ export const UserCreateSchema: FastifySchema = {
             'A senha deve conter ao menos: 1 maiúscula, 1 minúscula, 1 número e 1 especial',
         },
       },
-      group: {
-        type: 'string',
-        minLength: 1,
-        description: 'User group ID',
+      groups: {
+        type: 'array',
+        minItems: 1,
+        items: { type: 'string', minLength: 1 },
+        description: 'Lista de IDs dos grupos do usuário',
         errorMessage: {
-          type: 'O grupo deve ser um texto',
-          minLength: 'O grupo é obrigatório',
+          type: 'Os grupos devem ser um array',
+          minItems: 'Ao menos um grupo é obrigatório',
         },
       },
     },
@@ -56,14 +57,14 @@ export const UserCreateSchema: FastifySchema = {
         name: 'O nome é obrigatório',
         email: 'O email é obrigatório',
         password: 'A senha é obrigatória',
-        group: 'O grupo é obrigatório',
+        groups: 'Ao menos um grupo é obrigatório',
       },
       additionalProperties: 'Campos extras não são permitidos',
     },
   },
   response: {
     201: {
-      description: 'User created successfully with populated group information',
+      description: 'User created successfully with populated groups information',
       type: 'object',
       properties: {
         _id: { type: 'string', description: 'User ID' },
@@ -73,26 +74,29 @@ export const UserCreateSchema: FastifySchema = {
           format: 'email',
           description: 'User email',
         },
-        group: {
-          type: 'object',
-          description: 'User group details (populated)',
-          properties: {
-            _id: { type: 'string', description: 'Group ID' },
-            name: { type: 'string', description: 'Group name' },
-            slug: { type: 'string', description: 'Group slug' },
-            description: {
-              type: 'string',
-              description: 'Group description',
-            },
-            permissions: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string' },
-                  name: { type: 'string' },
-                  slug: { type: 'string' },
-                  description: { type: 'string' },
+        groups: {
+          type: 'array',
+          description: 'User groups details (populated)',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string', description: 'Group ID' },
+              name: { type: 'string', description: 'Group name' },
+              slug: { type: 'string', description: 'Group slug' },
+              description: {
+                type: 'string',
+                description: 'Group description',
+              },
+              permissions: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string' },
+                    name: { type: 'string' },
+                    slug: { type: 'string' },
+                    description: { type: 'string' },
+                  },
                 },
               },
             },
@@ -109,7 +113,7 @@ export const UserCreateSchema: FastifySchema = {
     },
     400: {
       description:
-        'Bad request - Missing group parameter or Zod validation failed',
+        'Bad request - Missing groups parameter or Zod validation failed',
       type: 'object',
       properties: {
         message: {
@@ -119,7 +123,7 @@ export const UserCreateSchema: FastifySchema = {
         code: { type: 'number', enum: [400] },
         cause: {
           type: 'string',
-          enum: ['GROUP_NOT_INFORMED', 'INVALID_PAYLOAD_FORMAT'],
+          enum: ['GROUPS_NOT_INFORMED', 'INVALID_PAYLOAD_FORMAT'],
         },
         errors: {
           type: 'object',
@@ -129,9 +133,9 @@ export const UserCreateSchema: FastifySchema = {
       },
       examples: [
         {
-          message: 'Group not informed',
+          message: 'Groups not informed',
           code: 400,
-          cause: 'GROUP_NOT_INFORMED',
+          cause: 'GROUPS_NOT_INFORMED',
         },
       ],
     },

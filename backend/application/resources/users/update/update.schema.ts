@@ -45,13 +45,14 @@ export const UserUpdateSchema: FastifySchema = {
           format: 'Digite um email válido',
         },
       },
-      group: {
-        type: 'string',
-        minLength: 1,
-        description: 'Updated user group ID',
+      groups: {
+        type: 'array',
+        minItems: 1,
+        items: { type: 'string', minLength: 1 },
+        description: 'Lista de IDs dos grupos do usuário',
         errorMessage: {
-          type: 'O grupo deve ser um texto',
-          minLength: 'O grupo é obrigatório',
+          type: 'Os grupos devem ser um array',
+          minItems: 'Ao menos um grupo é obrigatório',
         },
       },
       password: {
@@ -89,12 +90,15 @@ export const UserUpdateSchema: FastifySchema = {
         _id: { type: 'string' },
         name: { type: 'string' },
         email: { type: 'string' },
-        group: {
-          type: 'object',
-          properties: {
-            _id: { type: 'string' },
-            name: { type: 'string' },
-            slug: { type: 'string' },
+        groups: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { type: 'string' },
+              slug: { type: 'string' },
+            },
           },
         },
         status: { type: 'string' },

@@ -82,23 +82,26 @@ export const ProfileUpdateSchema: FastifySchema = {
           enum: ['ACTIVE', 'INACTIVE'],
           description: 'Status do usuário',
         },
-        group: {
-          type: 'object',
-          description: 'Grupo do usuário atualizado com permissões populadas',
-          properties: {
-            _id: { type: 'string' },
-            name: { type: 'string' },
-            slug: { type: 'string' },
-            description: { type: 'string', nullable: true },
-            permissions: {
-              type: 'array',
-              items: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string' },
-                  name: { type: 'string' },
-                  slug: { type: 'string' },
-                  description: { type: 'string', nullable: true },
+        groups: {
+          type: 'array',
+          description: 'Grupos do usuário atualizados com permissões populadas',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string' },
+              name: { type: 'string' },
+              slug: { type: 'string' },
+              description: { type: 'string', nullable: true },
+              permissions: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string' },
+                    name: { type: 'string' },
+                    slug: { type: 'string' },
+                    description: { type: 'string', nullable: true },
+                  },
                 },
               },
             },
