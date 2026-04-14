@@ -24,6 +24,16 @@ interface FieldApi {
    * @returns Object with all field slugs and values
    */
   getAll(): Record<string, any>;
+
+  /**
+   * Gets the display label of a dropdown field value.
+   * For dropdown fields, resolves the option label by value.
+   * For non-dropdown fields (or unknown values), returns the raw value as string.
+   * @param slug - The field slug
+   * @param value - Optional value to resolve; when omitted, resolves the current value of the field
+   * @returns The resolved label, or the raw value as string
+   */
+  getLabel(slug: string, value?: string): string;
 }
 
 // ====== CONTEXT API ======
@@ -49,6 +59,8 @@ interface ContextApi {
   readonly userId: string;
   /** Whether this is a new record */
   readonly isNew: boolean;
+  /** Public URL of the frontend application (APP_CLIENT_URL) */
+  readonly appUrl: string;
   /** Information about the current table */
   readonly table: TableInfo;
 }

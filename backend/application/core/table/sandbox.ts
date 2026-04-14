@@ -117,7 +117,6 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
           body,
           subject,
           to,
-          from: Env.EMAIL_PROVIDER_USER || 'noreply@lowcodejs.org',
         });
 
         return {
@@ -161,7 +160,6 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
           body,
           subject,
           to,
-          from: Env.EMAIL_PROVIDER_USER || 'noreply@lowcodejs.org',
         });
 
         return {
