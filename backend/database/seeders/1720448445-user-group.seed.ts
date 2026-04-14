@@ -38,8 +38,6 @@ function buildSystemPermissions(
 }
 
 export default async function Seed(): Promise<void> {
-  await UserGroup.deleteMany({});
-
   const permissions: Merge<PayloadPermissionSeeder, { _id: string }>[] =
     await Permission.find();
 
@@ -134,11 +132,31 @@ export default async function Seed(): Promise<void> {
     },
   ];
 
-  const createdGroups = await UserGroup.insertMany(payload);
-
   const groupMap: Record<string, string> = {};
-  for (const g of createdGroups) {
-    groupMap[g.slug] = g._id.toString();
+  for (const data of payload) {
+    const {
+      name,
+      slug,
+      description,
+      permissions: groupPermissions,
+      systemPermissions,
+      immutable,
+    } = data;
+    const group = await UserGroup.findOneAndUpdate(
+      { slug },
+      {
+        $set: {
+          name,
+          slug,
+          description,
+          permissions: groupPermissions,
+          systemPermissions,
+          immutable,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    groupMap[group.slug] = group._id.toString();
   }
 
   await UserGroup.findOneAndUpdate(
