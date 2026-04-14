@@ -492,9 +492,9 @@ export const UpdateFieldFormFields = withForm({
 
           <form.AppField name="visibilityList">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Visibilidade na listagem"
-                placeholder="ID do grupo, PUBLIC ou HIDDEN"
+                mode="field"
                 disabled={isDisabled || lockAllControls}
               />
             )}
@@ -502,9 +502,9 @@ export const UpdateFieldFormFields = withForm({
 
           <form.AppField name="visibilityForm">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Visibilidade no formulário"
-                placeholder="ID do grupo, PUBLIC ou HIDDEN"
+                mode="field"
                 disabled={isDisabled || lockAllControls}
               />
             )}
@@ -512,9 +512,9 @@ export const UpdateFieldFormFields = withForm({
 
           <form.AppField name="visibilityDetail">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Visibilidade nos detalhes"
-                placeholder="ID do grupo, PUBLIC ou HIDDEN"
+                mode="field"
                 disabled={isDisabled || lockAllControls}
               />
             )}
