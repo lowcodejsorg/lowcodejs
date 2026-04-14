@@ -264,7 +264,9 @@ export default class PermissionService extends PermissionContractService {
 
   private resolveUserProfile(
     isOwner: boolean,
-    collaborator: { profile: ValueOf<typeof E_COLLABORATION_PROFILE> } | undefined,
+    collaborator:
+      | { profile: ValueOf<typeof E_COLLABORATION_PROFILE> }
+      | undefined,
   ): ValueOf<typeof E_COLLABORATION_PROFILE> | undefined {
     if (isOwner) return E_COLLABORATION_PROFILE.OWNER;
     if (collaborator) return collaborator.profile;

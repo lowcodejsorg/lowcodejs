@@ -38,7 +38,10 @@ export default class TableDeleteUseCase {
         payload._currentUserId,
       );
 
-      if (!currentUser || !this.groupResolutionService.isMasterUser(currentUser)) {
+      if (
+        !currentUser ||
+        !this.groupResolutionService.isMasterUser(currentUser)
+      ) {
         return left(
           HTTPException.Forbidden(
             'Apenas o grupo MASTER pode excluir tabelas permanentemente',

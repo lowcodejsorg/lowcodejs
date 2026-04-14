@@ -21,7 +21,10 @@ function resolveGroupSlugLabel(slug: string): string {
   return RoleMapper[slug] ?? slug ?? '-';
 }
 
-function resolveEncompassesLabel(group: { slug: string; name: string }): string {
+function resolveEncompassesLabel(group: {
+  slug: string;
+  name: string;
+}): string {
   const mapped: Record<string, string> = USER_GROUP_MAPPER;
   return mapped[group.slug] ?? group.name;
 }

@@ -33,10 +33,7 @@ type MenuWithChildren = IMenu & { children?: Array<MenuWithChildren> };
  * exige que o groupId esteja no conjunto resolvido do usuario (encompasses
  * ja aplicado no chamador via resolveUserGroupIds).
  */
-function isMenuVisible(
-  menu: IMenu,
-  effectiveGroupIds: Set<string>,
-): boolean {
+function isMenuVisible(menu: IMenu, effectiveGroupIds: Set<string>): boolean {
   const visibility = menu.visibility;
   if (!visibility) return true;
   if (visibility === 'PUBLIC') return true;
