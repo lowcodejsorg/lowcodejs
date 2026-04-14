@@ -18,7 +18,12 @@ export default class BulkTrashUseCase {
     private readonly rowRepository: RowContractRepository,
   ) {}
 
-  async execute(payload: BulkTrashPayload): Promise<Response> {
+  async execute(
+    payload: BulkTrashPayload & {
+      _ownOnly?: boolean;
+      _currentUserId?: string;
+    },
+  ): Promise<Response> {
     try {
       const table = await this.tableRepository.findBySlug(payload.slug);
 
@@ -28,10 +33,34 @@ export default class BulkTrashUseCase {
         );
       }
 
-      const modified = await this.rowRepository.bulkTrash({
-        table,
-        ids: payload.ids,
-      });
+      let ids = payload.ids;
+      if (payload._ownOnly === true) {
+        if (!payload._currentUserId) {
+          return left(
+            HTTPException.Forbidden(
+              'Usuário não identificado para row-level security',
+              'OWN_ROW_ONLY',
+            ),
+          );
+        }
+
+        const currentUserId = payload._currentUserId;
+        const checks = await Promise.all(
+          payload.ids.map(async (id) => {
+            const row = await this.rowRepository.findOne({
+              table,
+              query: { _id: id },
+              populate: false,
+            });
+            if (!row) return null;
+            if (String(row.creator ?? '') !== currentUserId) return null;
+            return id;
+          }),
+        );
+        ids = checks.filter((id): id is string => id !== null);
+      }
+
+      const modified = await this.rowRepository.bulkTrash({ table, ids });
 
       return right({ modified });
     } catch (error) {

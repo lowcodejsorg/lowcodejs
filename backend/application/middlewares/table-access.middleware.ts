@@ -98,5 +98,10 @@ export function TableAccessMiddleware(options: AccessOptions) {
     if (result.ownership) {
       request.ownership = result.ownership;
     }
+
+    request.permissionContext = {
+      profile: result.profile,
+      ownOnly: result.ownOnly,
+    };
   };
 }

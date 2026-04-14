@@ -10,7 +10,10 @@ import { TableContractRepository } from '@application/repositories/table/table-c
 import type { TableRowDeletePayload } from './delete.validator';
 
 type Response = Either<HTTPException, null>;
-type Payload = TableRowDeletePayload;
+type Payload = TableRowDeletePayload & {
+  _ownOnly?: boolean;
+  _currentUserId?: string;
+};
 
 @Service()
 export default class TableRowDeleteUseCase {
@@ -27,6 +30,30 @@ export default class TableRowDeleteUseCase {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
+
+      if (payload._ownOnly === true) {
+        const existing = await this.rowRepository.findOne({
+          table,
+          query: { _id: payload._id },
+          populate: false,
+        });
+
+        if (!existing) {
+          return left(
+            HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+          );
+        }
+
+        const creatorId = String(existing.creator ?? '');
+        if (!payload._currentUserId || creatorId !== payload._currentUserId) {
+          return left(
+            HTTPException.Forbidden(
+              'Apenas o criador do registro pode removê-lo',
+              'OWN_ROW_ONLY',
+            ),
+          );
+        }
       }
 
       const deleted = await this.rowRepository.deleteOne(table, payload._id);

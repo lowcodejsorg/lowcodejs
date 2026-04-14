@@ -40,7 +40,12 @@ export default class {
     const params = BulkTrashParamsValidator.parse(request.params);
     const body = BulkTrashBodyValidator.parse(request.body);
 
-    const result = await this.useCase.execute({ ...params, ...body });
+    const result = await this.useCase.execute({
+      ...params,
+      ...body,
+      _ownOnly: request.permissionContext?.ownOnly === true,
+      _currentUserId: request.user?.sub,
+    });
 
     if (result.isLeft()) {
       const error = result.value;
