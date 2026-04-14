@@ -20,7 +20,7 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_USER_STATUS),
       default: E_USER_STATUS.INACTIVE,
     },
-    group: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
+    groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' }],
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },

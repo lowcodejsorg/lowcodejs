@@ -97,7 +97,7 @@ function SortableManagementItem({
     opacity: opacityValue,
   };
 
-  const isVisible = field[visibilityKey];
+  const isVisible = field[visibilityKey] !== 'HIDDEN';
   let currentWidth: number | null = null;
   if (widthKey) {
     currentWidth = field[widthKey] ?? 50;
@@ -385,9 +385,8 @@ function FieldManagementTabs(): React.JSX.Element {
         defaultValue="display"
         className="w-full max-w-6xl mx-auto"
       >
-        <TabsList className="grid w-full grid-cols-5 mb-4">
+        <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="display">Lista</TabsTrigger>
-          <TabsTrigger value="filter">Filtros</TabsTrigger>
           <TabsTrigger value="form">Formulários</TabsTrigger>
           <TabsTrigger value="detail">Detalhes</TabsTrigger>
           <TabsTrigger
@@ -399,22 +398,18 @@ function FieldManagementTabs(): React.JSX.Element {
         </TabsList>
 
         <TabsContent value="display">
-          <FieldManagementList visibilityKey="showInList" />
-        </TabsContent>
-
-        <TabsContent value="filter">
-          <FieldManagementList visibilityKey="showInFilter" />
+          <FieldManagementList visibilityKey="visibilityList" />
         </TabsContent>
 
         <TabsContent value="form">
           <FieldManagementList
-            visibilityKey="showInForm"
+            visibilityKey="visibilityForm"
             excludeNative
           />
         </TabsContent>
 
         <TabsContent value="detail">
-          <FieldManagementList visibilityKey="showInDetail" />
+          <FieldManagementList visibilityKey="visibilityDetail" />
         </TabsContent>
 
         <TabsContent value="trashed">
@@ -438,7 +433,6 @@ function FieldManagementList({
     fields: allFields,
     fieldOrderList,
     fieldOrderForm,
-    fieldOrderFilter,
     fieldOrderDetail,
     onToggleVisibility,
     onChangeWidth,
@@ -458,18 +452,11 @@ function FieldManagementList({
   );
 
   const orderArray = React.useMemo(() => {
-    if (visibilityKey === 'showInList') return fieldOrderList;
-    if (visibilityKey === 'showInForm') return fieldOrderForm;
-    if (visibilityKey === 'showInFilter') return fieldOrderFilter;
-    if (visibilityKey === 'showInDetail') return fieldOrderDetail;
+    if (visibilityKey === 'visibilityList') return fieldOrderList;
+    if (visibilityKey === 'visibilityForm') return fieldOrderForm;
+    if (visibilityKey === 'visibilityDetail') return fieldOrderDetail;
     return [];
-  }, [
-    visibilityKey,
-    fieldOrderList,
-    fieldOrderForm,
-    fieldOrderFilter,
-    fieldOrderDetail,
-  ]);
+  }, [visibilityKey, fieldOrderList, fieldOrderForm, fieldOrderDetail]);
 
   const sortedActiveFields = React.useMemo(() => {
     if (orderArray.length === 0) return activeFields;
@@ -505,11 +492,11 @@ function FieldManagementList({
   }, [onSaveOrder, visibilityKey]);
 
   let widthKey: 'widthInForm' | 'widthInList' | 'widthInDetail' | undefined;
-  if (visibilityKey === 'showInForm') {
+  if (visibilityKey === 'visibilityForm') {
     widthKey = 'widthInForm';
-  } else if (visibilityKey === 'showInList') {
+  } else if (visibilityKey === 'visibilityList') {
     widthKey = 'widthInList';
-  } else if (visibilityKey === 'showInDetail') {
+  } else if (visibilityKey === 'visibilityDetail') {
     widthKey = 'widthInDetail';
   }
 
@@ -540,7 +527,8 @@ function FieldManagementList({
 
   function handleToggleVisibility(field: IField): void {
     const currentValue = field[visibilityKey];
-    onToggleVisibility(field, visibilityKey, !currentValue);
+    const isCurrentlyVisible = currentValue !== 'HIDDEN';
+    onToggleVisibility(field, visibilityKey, !isCurrentlyVisible);
   }
 
   function handleWidthChange(field: IField, newWidth: number): void {

@@ -100,7 +100,11 @@
       "Bash(sed -n '20,30p' /home/indio/Desktop/low-code-js/backend/application/resources/tools/export-table/export-table.use-case.spec.ts)",
       "Bash(perl:*)",
       "Bash(awk -F: '{sum+=$2} END {print \"total lines:\",sum}')",
-      "Read(//home/indio/.claude/projects/-home-indio-Desktop-low-code-js/b873fee7-0366-4bfe-9dfa-cd0e74df3933/subagents/**)"
+      "Read(//home/indio/.claude/projects/-home-indio-Desktop-low-code-js/b873fee7-0366-4bfe-9dfa-cd0e74df3933/subagents/**)",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\" && head -30 {}')",
+      "Bash(echo \"exit=$?\")",
+      "Bash(echo \"=== EXIT=$? ===\")",
+      "Bash(rm:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

@@ -126,10 +126,9 @@ export default class TableFieldUpdateUseCase {
         ...(payload.trashed && {
           trashed: payload.trashed,
           required: false,
-          showInList: false,
-          showInForm: false,
-          showInDetail: false,
-          showInFilter: false,
+          visibilityList: 'HIDDEN',
+          visibilityForm: 'HIDDEN',
+          visibilityDetail: 'HIDDEN',
         }),
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
       });
@@ -177,7 +176,6 @@ export default class TableFieldUpdateUseCase {
         fields: fields.flatMap((f) => f._id),
         groups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       if (oldSlug !== slug) {

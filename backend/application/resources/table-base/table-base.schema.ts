@@ -1,9 +1,8 @@
 import z from 'zod';
 
 import {
-  E_TABLE_COLLABORATION,
+  E_COLLABORATION_PROFILE,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 
 export const GroupConfigurationSchema = z.object({
@@ -27,21 +26,26 @@ export const TableStyleSchema = z
   ])
   .default(E_TABLE_STYLE.LIST);
 
-export const TableVisibilitySchema = z
-  .enum([
-    E_TABLE_VISIBILITY.PUBLIC,
-    E_TABLE_VISIBILITY.RESTRICTED,
-    E_TABLE_VISIBILITY.OPEN,
-    E_TABLE_VISIBILITY.FORM,
-    E_TABLE_VISIBILITY.PRIVATE,
-  ])
-  .default(E_TABLE_VISIBILITY.PUBLIC);
+export const TableActionValueSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .default('NOBODY');
 
-export const TableCollaborationSchema = z
-  .enum([E_TABLE_COLLABORATION.OPEN, E_TABLE_COLLABORATION.RESTRICTED])
-  .default(E_TABLE_COLLABORATION.OPEN);
+export const TableCollaboratorSchema = z.object({
+  user: z.string().trim().min(1),
+  profile: z.enum([
+    E_COLLABORATION_PROFILE.OWNER,
+    E_COLLABORATION_PROFILE.ADMIN,
+    E_COLLABORATION_PROFILE.EDITOR,
+    E_COLLABORATION_PROFILE.CONTRIBUTOR,
+    E_COLLABORATION_PROFILE.VIEWER,
+  ]),
+});
 
-export const TableAdministratorsSchema = z.array(z.string()).default([]);
+export const TableCollaboratorsSchema = z
+  .array(TableCollaboratorSchema)
+  .default([]);
 
 export const TableFieldOrderListSchema = z.array(z.string().trim()).default([]);
 

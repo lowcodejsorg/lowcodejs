@@ -56,7 +56,6 @@ export function AuthenticationMiddleware(
       request.user = {
         sub: accessTokenDecoded.sub,
         email: accessTokenDecoded.email,
-        role: accessTokenDecoded.role,
         type: E_JWT_TYPE.ACCESS,
       };
     } catch (error) {

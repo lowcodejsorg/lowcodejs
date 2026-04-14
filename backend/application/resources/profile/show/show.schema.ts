@@ -23,37 +23,40 @@ export const ProfileShowSchema: FastifySchema = {
           enum: ['ACTIVE', 'INACTIVE'],
           description: 'Status da conta do usuário',
         },
-        group: {
-          type: 'object',
-          description: 'Grupo do usuário com permissões populadas',
-          properties: {
-            _id: { type: 'string', description: 'ID do grupo' },
-            name: { type: 'string', description: 'Nome do grupo' },
-            slug: { type: 'string', description: 'Slug do grupo' },
-            description: {
-              type: 'string',
-              nullable: true,
-              description: 'Descrição do grupo',
-            },
-            permissions: {
-              type: 'array',
-              description: 'Array de permissões atribuídas ao grupo',
-              items: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string', description: 'ID da permissão' },
-                  name: { type: 'string', description: 'Nome da permissão' },
-                  slug: { type: 'string', description: 'Slug da permissão' },
-                  description: {
-                    type: 'string',
-                    nullable: true,
-                    description: 'Descrição da permissão',
+        groups: {
+          type: 'array',
+          description: 'Grupos do usuário com permissões populadas',
+          items: {
+            type: 'object',
+            properties: {
+              _id: { type: 'string', description: 'ID do grupo' },
+              name: { type: 'string', description: 'Nome do grupo' },
+              slug: { type: 'string', description: 'Slug do grupo' },
+              description: {
+                type: 'string',
+                nullable: true,
+                description: 'Descrição do grupo',
+              },
+              permissions: {
+                type: 'array',
+                description: 'Array de permissões atribuídas ao grupo',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string', description: 'ID da permissão' },
+                    name: { type: 'string', description: 'Nome da permissão' },
+                    slug: { type: 'string', description: 'Slug da permissão' },
+                    description: {
+                      type: 'string',
+                      nullable: true,
+                      description: 'Descrição da permissão',
+                    },
                   },
                 },
               },
+              createdAt: { type: 'string', format: 'date-time' },
+              updatedAt: { type: 'string', format: 'date-time' },
             },
-            createdAt: { type: 'string', format: 'date-time' },
-            updatedAt: { type: 'string', format: 'date-time' },
           },
         },
         createdAt: {

@@ -89,6 +89,9 @@ export type IGroup = Merge<
     slug: string;
     description: string | null;
     permissions: Array<IPermission>;
+    encompasses: Array<IGroup>;
+    systemPermissions: Record<string, boolean>;
+    immutable: boolean;
   }
 >;
 
@@ -99,7 +102,7 @@ export type IUser = Merge<
     email: string;
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
-    group: IGroup;
+    groups: Array<IGroup>;
   }
 >;
 
@@ -131,6 +134,7 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | null;
     order: number;
+    visibility: string;
   }
 >;
 
@@ -166,10 +170,9 @@ export type IField = Merge<
     required: boolean;
     multiple: boolean;
     format: ValueOf<typeof E_FIELD_FORMAT> | null;
-    showInFilter: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInList: boolean;
+    visibilityList: string;
+    visibilityForm: string;
+    visibilityDetail: string;
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
@@ -236,9 +239,19 @@ export type ITable = Merge<
     fields: Array<IField>;
     type: ValueOf<typeof E_TABLE_TYPE>;
     style: ValueOf<typeof E_TABLE_STYLE>;
-    visibility: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators: Array<IUser>;
+    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
+    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
+    viewTable: string;
+    updateTable: string;
+    createField: string;
+    updateField: string;
+    removeField: string;
+    viewField: string;
+    createRow: string;
+    updateRow: string;
+    removeRow: string;
+    viewRow: string;
+    collaborators: Array<{ user: IUser | string; profile: string }>;
     owner: IUser;
     fieldOrderList: Array<string>;
     fieldOrderForm: Array<string>;

@@ -168,7 +168,7 @@ export function DocumentRow({
       (field) =>
         !field.trashed &&
         !field.native &&
-        field.showInDetail &&
+        field.visibilityDetail !== 'HIDDEN' &&
         !docBlockSlugs.has(field.slug) &&
         field.slug !== categorySlug,
     );

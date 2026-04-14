@@ -56,6 +56,13 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
             </div>
           )}
 
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Visibilidade
+            </p>
+            <p className="text-sm font-medium">{data.visibility || '-'}</p>
+          </div>
+
           {data.type === E_MENU_ITEM_TYPE.SEPARATOR && (
             <div className="rounded-md border p-3 bg-muted/50">
               <p className="text-sm text-muted-foreground">

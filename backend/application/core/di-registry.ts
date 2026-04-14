@@ -26,6 +26,8 @@ import { ValidationTokenContractRepository } from '@application/repositories/val
 import ValidationTokenMongooseRepository from '@application/repositories/validation-token/validation-token-mongoose.repository';
 import { EmailContractService } from '@application/services/email/email-contract.service';
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import { GroupResolutionContractService } from '@application/services/group-resolution/group-resolution-contract.service';
+import GroupResolutionService from '@application/services/group-resolution/group-resolution.service';
 import BcryptPasswordService from '@application/services/password/bcrypt-password.service';
 import { PasswordContractService } from '@application/services/password/password-contract.service';
 import { PermissionContractService } from '@application/services/permission/permission-contract.service';
@@ -130,4 +132,9 @@ export function registerDependencies(): void {
   );
 
   injectablesHolder.injectService(RowContextContractService, RowContextService);
+
+  injectablesHolder.injectService(
+    GroupResolutionContractService,
+    GroupResolutionService,
+  );
 }

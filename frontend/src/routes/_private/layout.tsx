@@ -13,7 +13,11 @@ import {
   settingOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
-import { E_ROLE } from '@/lib/constant';
+import {
+  resolveUserGroupIds,
+  resolveUserGroups,
+  resolveUserSystemPermissions,
+} from '@/hooks/use-table-permission';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private')({
@@ -51,9 +55,32 @@ export const Route = createFileRoute('/_private')({
 function PrivateLayout(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
   const isAuthenticated = Boolean(user);
-  const role = user?.group?.slug?.toUpperCase() ?? E_ROLE.REGISTERED;
 
-  const { menu } = useMenuDynamic(role);
+  const userGroups = user?.groups ?? [];
+  const resolvedGroups = resolveUserGroups(userGroups);
+  const isMaster = resolvedGroups.some((g) => g.slug === 'MASTER');
+  const systemPermissions = resolveUserSystemPermissions(userGroups);
+
+  // MASTER recebe todas as permissoes
+  let effectivePermissions = systemPermissions;
+  if (isMaster) {
+    effectivePermissions = {
+      SETTINGS: true,
+      USERS: true,
+      MENU: true,
+      USER_GROUPS: true,
+      TOOLS: true,
+      VIEW_TABLES: true,
+      CREATE_TABLES: true,
+      UPDATE_TABLES: true,
+      REMOVE_TABLES: true,
+      PLUGINS: true,
+      ...systemPermissions,
+    };
+  }
+
+  const effectiveGroupIds = resolveUserGroupIds(userGroups);
+  const { menu } = useMenuDynamic(effectivePermissions, effectiveGroupIds);
 
   const routesWithoutSearchInput: Array<string | RegExp> = [
     '/',

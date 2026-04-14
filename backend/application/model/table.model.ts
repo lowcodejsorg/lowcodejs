@@ -1,10 +1,9 @@
 import mongoose from 'mongoose';
 
 import {
-  E_TABLE_COLLABORATION,
+  E_COLLABORATION_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   Merge,
   type ITable as Core,
 } from '@application/core/entity.core';
@@ -90,20 +89,23 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_TABLE_STYLE),
       default: E_TABLE_STYLE.LIST,
     },
-    visibility: {
-      type: String,
-      enum: Object.values(E_TABLE_VISIBILITY),
-      default: E_TABLE_VISIBILITY.RESTRICTED,
-    },
-    collaboration: {
-      type: String,
-      enum: Object.values(E_TABLE_COLLABORATION),
-      default: E_TABLE_COLLABORATION.RESTRICTED,
-    },
-    administrators: [
+    viewTable: { type: String, default: 'NOBODY' },
+    updateTable: { type: String, default: 'NOBODY' },
+    createField: { type: String, default: 'NOBODY' },
+    updateField: { type: String, default: 'NOBODY' },
+    removeField: { type: String, default: 'NOBODY' },
+    viewField: { type: String, default: 'NOBODY' },
+    createRow: { type: String, default: 'NOBODY' },
+    updateRow: { type: String, default: 'NOBODY' },
+    removeRow: { type: String, default: 'NOBODY' },
+    viewRow: { type: String, default: 'NOBODY' },
+    collaborators: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        profile: {
+          type: String,
+          enum: Object.values(E_COLLABORATION_PROFILE),
+        },
       },
     ],
     owner: {

@@ -1,9 +1,8 @@
 /* eslint-disable no-unused-vars */
 import type {
-  E_TABLE_COLLABORATION,
+  E_COLLABORATION_PROFILE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FindOptions,
   IGroupConfiguration,
   ILayoutFields,
@@ -23,9 +22,20 @@ export type TableCreatePayload = Merge<
     fields?: string[];
     type?: ValueOf<typeof E_TABLE_TYPE>;
     style?: ValueOf<typeof E_TABLE_STYLE>;
-    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
-    administrators?: string[];
+    viewTable?: string;
+    updateTable?: string;
+    createField?: string;
+    updateField?: string;
+    removeField?: string;
+    viewField?: string;
+    createRow?: string;
+    updateRow?: string;
+    removeRow?: string;
+    viewRow?: string;
+    collaborators?: Array<{
+      user: string;
+      profile: ValueOf<typeof E_COLLABORATION_PROFILE>;
+    }>;
     owner: string;
     fieldOrderList?: string[];
     fieldOrderForm?: string[];
@@ -56,7 +66,6 @@ export type TableQueryPayload = {
   owner?: string;
   trashed?: boolean;
   _ids?: string[];
-  visibility?: string;
   sort?: Record<string, 'asc' | 'desc'>;
 };
 
@@ -66,8 +75,6 @@ export type TableUpdateManyPayload = {
   filterTrashed?: boolean;
   data: {
     style?: ValueOf<typeof E_TABLE_STYLE>;
-    visibility?: ValueOf<typeof E_TABLE_VISIBILITY>;
-    collaboration?: ValueOf<typeof E_TABLE_COLLABORATION>;
     trashed?: boolean;
     trashedAt?: Date | null;
   };

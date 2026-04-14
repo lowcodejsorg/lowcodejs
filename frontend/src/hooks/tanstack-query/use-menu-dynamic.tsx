@@ -13,7 +13,7 @@ import { useMenuReadList } from './use-menu-read-list';
 
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
-import { getStaticMenusByRole } from '@/lib/menu/menu';
+import { getStaticMenusByPermissions } from '@/lib/menu/menu';
 import type { MenuGroupItem, MenuItem, MenuRoute } from '@/lib/menu/menu-route';
 
 // Mapeamento de ícones por tipo de menu
@@ -26,6 +26,20 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
 
 // Tipo para menu com children
 type MenuWithChildren = IMenu & { children?: Array<MenuWithChildren> };
+
+/**
+ * Decide se o item do menu fica visivel para o usuario atual.
+ * Sentinela PUBLIC libera para todos. NOBODY bloqueia. Caso contrario,
+ * exige que o groupId esteja no conjunto resolvido do usuario (encompasses
+ * ja aplicado no chamador via resolveUserGroupIds).
+ */
+function isMenuVisible(menu: IMenu, effectiveGroupIds: Set<string>): boolean {
+  const visibility = menu.visibility;
+  if (!visibility) return true;
+  if (visibility === 'PUBLIC') return true;
+  if (visibility === 'NOBODY') return false;
+  return effectiveGroupIds.has(visibility);
+}
 
 /**
  * Função para construir a árvore hierárquica de menus
@@ -168,19 +182,27 @@ function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
 /**
  * Hook para obter menus dinâmicos combinados com menus estáticos
  */
-export function useMenuDynamic(role: string): {
+export function useMenuDynamic(
+  permissions: Record<string, boolean>,
+  effectiveGroupIds?: Array<string>,
+): {
   menu: Array<MenuGroupItem>;
   isLoading: boolean;
 } {
   // 1. Buscar menus dinâmicos da API
   const { data: dynamicMenusData, isLoading } = useMenuReadList();
 
+  const effectiveSet = useMemo(
+    () => new Set(effectiveGroupIds ?? []),
+    [effectiveGroupIds],
+  );
+
   // Normalizar os dados - pode ser array direto ou { data: [] }
   const menuData = useMemo(() => {
     if (!dynamicMenusData) return [];
-    if (Array.isArray(dynamicMenusData)) return dynamicMenusData;
-    return [];
-  }, [dynamicMenusData]);
+    if (!Array.isArray(dynamicMenusData)) return [];
+    return dynamicMenusData.filter((menu) => isMenuVisible(menu, effectiveSet));
+  }, [dynamicMenusData, effectiveSet]);
 
   // 2. Construir árvore hierárquica
   const dynamicMenuTree = useMemo(() => {
@@ -194,8 +216,8 @@ export function useMenuDynamic(role: string): {
 
   // 4. Obter menus estáticos baseados no role (before e after)
   const { before: staticMenusBefore, after: staticMenusAfter } = useMemo(() => {
-    return getStaticMenusByRole(role);
-  }, [role]);
+    return getStaticMenusByPermissions(permissions);
+  }, [permissions]);
 
   // 5. Combinar: Tabelas → Dinâmicos → Conta/Sistema
   const combinedMenu = useMemo(() => {

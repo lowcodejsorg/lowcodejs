@@ -126,6 +126,7 @@ function MenuUpdateContent({
       html: data.html ?? '',
       url: data.url ?? '',
       parent: data.parent?._id ?? '',
+      visibility: data.visibility ?? 'PUBLIC',
     } satisfies MenuUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
@@ -140,6 +141,7 @@ function MenuUpdateContent({
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        visibility: value.visibility || 'PUBLIC',
       });
     },
   });

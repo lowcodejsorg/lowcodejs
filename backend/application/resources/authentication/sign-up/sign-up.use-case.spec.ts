@@ -72,7 +72,7 @@ describe('Sign Up Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({

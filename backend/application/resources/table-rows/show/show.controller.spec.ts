@@ -4,10 +4,8 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
 import { buildSchema } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
@@ -46,16 +44,18 @@ describe('E2E Table Row Show Controller', () => {
     it('deve retornar linha com sucesso', async () => {
       const { cookies, user } = await createAuthenticatedUser();
 
+      const masterGroup = await UserGroup.findOne({ slug: 'MASTER' });
+      const masterGroupId = masterGroup!._id.toString();
+
       const fieldPayload: FieldCreatePayload = {
         category: [],
         dropdown: [],
         defaultValue: null,
-        showInFilter: false,
-        showInForm: true,
-        showInDetail: true,
+        visibilityForm: masterGroupId,
+        visibilityDetail: masterGroupId,
         format: null,
         group: null,
-        showInList: true,
+        visibilityList: masterGroupId,
         multiple: false,
         required: false,
         relationship: null,
@@ -71,12 +71,10 @@ describe('E2E Table Row Show Controller', () => {
 
       const tablePayload: TableCreatePayload = {
         owner: user._id,
-        administrators: [],
-        collaboration: E_TABLE_COLLABORATION.OPEN,
         fieldOrderForm: [],
         fieldOrderList: [],
         style: E_TABLE_STYLE.LIST,
-        visibility: E_TABLE_VISIBILITY.PUBLIC,
+        viewTable: 'NOBODY',
         name: 'Products',
         slug: 'products',
         fields: [field._id.toString()],

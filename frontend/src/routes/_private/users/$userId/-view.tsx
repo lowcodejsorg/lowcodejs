@@ -68,9 +68,19 @@ export function UserView({ data }: UserViewProps): React.JSX.Element {
 
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
-              Grupo
+              Grupos
             </p>
-            <Badge variant="outline">{data.group.name || '-'}</Badge>
+            <div className="flex flex-wrap gap-1">
+              {data.groups.length === 0 && <Badge variant="outline">-</Badge>}
+              {data.groups.map((group) => (
+                <Badge
+                  key={group._id}
+                  variant="outline"
+                >
+                  {group.name}
+                </Badge>
+              ))}
+            </div>
           </div>
         </CardContent>
       </Card>

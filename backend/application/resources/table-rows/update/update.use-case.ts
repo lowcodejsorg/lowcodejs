@@ -16,6 +16,8 @@ type Response = Either<HTTPException, IRow>;
 type Payload = Record<string, unknown> & {
   slug: string;
   _id: string;
+  _ownOnly?: boolean;
+  _currentUserId?: string;
 };
 
 @Service()
@@ -35,6 +37,30 @@ export default class TableRowUpdateUseCase {
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
+
+      if (payload._ownOnly === true) {
+        const existingOwn = await this.rowRepository.findOne({
+          table,
+          query: { _id: payload._id },
+          populate: false,
+        });
+
+        if (!existingOwn) {
+          return left(
+            HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
+          );
+        }
+
+        const creatorId = String(existingOwn.creator ?? '');
+        if (!payload._currentUserId || creatorId !== payload._currentUserId) {
+          return left(
+            HTTPException.Forbidden(
+              'Apenas o criador do registro pode atualizá-lo',
+              'OWN_ROW_ONLY',
+            ),
+          );
+        }
       }
 
       const errors = validateRowPayload(payload, table.fields, table.groups, {

@@ -34,7 +34,7 @@ export default class ProfileUpdateUseCase {
           _id: user._id,
           name: payload.name,
           email: payload.email,
-          group: user.group._id,
+          groups: user.groups.map((g) => g._id),
         });
 
         return right(updated);
@@ -62,7 +62,7 @@ export default class ProfileUpdateUseCase {
         _id: user._id,
         name: payload.name,
         email: payload.email,
-        group: user.group._id,
+        groups: user.groups.map((g) => g._id),
         password,
       });
 

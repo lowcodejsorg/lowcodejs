@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { E_ROLE, IUser, Merge, ValueOf } from '@application/core/entity.core';
+import { IUser, Merge } from '@application/core/entity.core';
 
 export const UserPaginatedQueryValidator = z.object({
   page: z.coerce
@@ -16,7 +16,6 @@ export const UserPaginatedQueryValidator = z.object({
 
   'order-name': z.enum(['asc', 'desc']).optional(),
   'order-email': z.enum(['asc', 'desc']).optional(),
-  'order-group': z.enum(['asc', 'desc']).optional(),
   'order-status': z.enum(['asc', 'desc']).optional(),
   'order-created-at': z.enum(['asc', 'desc']).optional(),
 });
@@ -24,11 +23,6 @@ export const UserPaginatedQueryValidator = z.object({
 export type UserPaginatedPayload = Merge<
   z.infer<typeof UserPaginatedQueryValidator>,
   {
-    user?: Merge<
-      Pick<IUser, '_id'>,
-      {
-        role: ValueOf<typeof E_ROLE>;
-      }
-    >;
+    user?: Pick<IUser, '_id'>;
   }
 >;

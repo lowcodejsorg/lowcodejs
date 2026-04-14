@@ -3,19 +3,13 @@ import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
-import type {
-  E_ROLE,
-  IGroup as Entity,
-  IUser,
-  Merge,
-  ValueOf,
-} from '@application/core/entity.core';
+import type { IGroup as Entity, IUser } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 
 type Response = Either<HTTPException, Entity[]>;
 type Payload = {
-  user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
+  user?: Pick<IUser, '_id'>;
 };
 
 @Service()

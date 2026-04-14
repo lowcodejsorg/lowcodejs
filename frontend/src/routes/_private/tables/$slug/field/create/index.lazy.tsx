@@ -142,10 +142,9 @@ function RouteComponent(): React.JSX.Element {
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
         multiple: value.multiple,
-        showInFilter: value.showInFilter,
-        showInForm: value.showInForm,
-        showInDetail: value.showInDetail,
-        showInList: value.showInList,
+        visibilityList: value.visibilityList,
+        visibilityForm: value.visibilityForm,
+        visibilityDetail: value.visibilityDetail,
         widthInForm: value.widthInForm,
         widthInList: value.widthInList,
         format: value.format

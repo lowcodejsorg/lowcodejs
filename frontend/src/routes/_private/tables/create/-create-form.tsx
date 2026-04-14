@@ -2,11 +2,7 @@ import { FileTextIcon } from 'lucide-react';
 import { z } from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import {
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-  TABLE_NAME_REGEX,
-} from '@/lib/constant';
+import { E_TABLE_STYLE, TABLE_NAME_REGEX } from '@/lib/constant';
 
 export const TableCreateSchema = z.object({
   name: z
@@ -20,13 +16,7 @@ export const TableCreateSchema = z.object({
     E_TABLE_STYLE.GALLERY,
     E_TABLE_STYLE.DOCUMENT,
   ]),
-  visibility: z.enum([
-    E_TABLE_VISIBILITY.PUBLIC,
-    E_TABLE_VISIBILITY.RESTRICTED,
-    E_TABLE_VISIBILITY.OPEN,
-    E_TABLE_VISIBILITY.FORM,
-    E_TABLE_VISIBILITY.PRIVATE,
-  ]),
+  viewTable: z.string().default('PUBLIC'),
 });
 
 export type TableCreateFormValues = z.infer<typeof TableCreateSchema>;
@@ -36,7 +26,7 @@ export const tableCreateFormDefaultValues: TableCreateFormValues = {
   logo: null,
   logoFile: [],
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
+  viewTable: 'PUBLIC',
 };
 
 export const CreateTableFormFields = withForm({
@@ -130,12 +120,12 @@ export const CreateTableFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Campo Visibilidade */}
-        <form.AppField name="visibility">
+        {/* Campo Visualizar tabela */}
+        <form.AppField name="viewTable">
           {(field) => (
-            <field.TableVisibilitySelectField
-              label="Visibilidade"
-              placeholder="Selecione a visibilidade"
+            <field.FieldPermissionSelect
+              label="Visualizar tabela"
+              mode="table"
               disabled={isPending}
             />
           )}

@@ -1,8 +1,9 @@
 import {
-  E_ROLE,
+  E_SYSTEM_PERMISSION,
   type FindOptions,
   type IGroup,
   type IPermission,
+  type ISystemPermissions,
 } from '@application/core/entity.core';
 
 import type {
@@ -28,12 +29,28 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
     }
   }
 
+  private buildDefaultSystemPermissions(): ISystemPermissions {
+    const permissions = {} as ISystemPermissions;
+    for (const key of Object.values(E_SYSTEM_PERMISSION)) {
+      permissions[key] = false;
+    }
+    return permissions;
+  }
+
   async create(payload: UserGroupCreatePayload): Promise<IGroup> {
     const group: IGroup = {
       ...payload,
       _id: crypto.randomUUID(),
       description: payload.description ?? null,
       permissions: payload.permissions.map((p) => ({ _id: p }) as IPermission),
+      encompasses: (payload.encompasses ?? []).map(
+        (id) => ({ _id: id }) as IGroup,
+      ),
+      systemPermissions: {
+        ...this.buildDefaultSystemPermissions(),
+        ...(payload.systemPermissions ?? {}),
+      },
+      immutable: payload.immutable ?? false,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -69,10 +86,6 @@ export default class UserGroupInMemoryRepository implements UserGroupContractRep
   async findMany(payload?: UserGroupQueryPayload): Promise<IGroup[]> {
     this._checkError('findMany');
     let filtered = this.items;
-
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
-      filtered = filtered.filter((g) => g.slug !== E_ROLE.MASTER);
-    }
 
     if (payload?.search) {
       const search = payload.search.toLowerCase();

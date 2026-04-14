@@ -38,6 +38,8 @@ export default class {
     const result = await this.useCase.execute({
       ...(request.body as Record<string, any>),
       ...params,
+      _ownOnly: request.permissionContext?.ownOnly === true,
+      _currentUserId: request.user?.sub,
     });
 
     if (result.isLeft()) {

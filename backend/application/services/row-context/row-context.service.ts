@@ -8,10 +8,6 @@ import { RowContextContractService } from './row-context-contract.service';
 @Service()
 export default class RowContextService extends RowContextContractService {
   transform(row: IRow, fields: IField[], userId?: string): IRow {
-    return transformRowContext(
-      row as Record<string, any>,
-      fields,
-      userId,
-    ) as IRow;
+    return transformRowContext<IRow>(row, fields, userId);
   }
 }

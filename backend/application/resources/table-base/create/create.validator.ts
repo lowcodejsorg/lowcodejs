@@ -2,7 +2,7 @@ import z from 'zod';
 
 import { Merge } from '@application/core/entity.core';
 
-import { TableStyleSchema, TableVisibilitySchema } from '../table-base.schema';
+import { TableActionValueSchema, TableStyleSchema } from '../table-base.schema';
 
 export const TableCreateBodyValidator = z.object({
   name: z
@@ -16,7 +16,16 @@ export const TableCreateBodyValidator = z.object({
     ),
   logo: z.string().trim().nullable().optional(),
   style: TableStyleSchema.optional(),
-  visibility: TableVisibilitySchema.optional(),
+  viewTable: TableActionValueSchema.optional(),
+  viewField: TableActionValueSchema.optional(),
+  viewRow: TableActionValueSchema.optional(),
+  createRow: TableActionValueSchema.optional(),
+  updateRow: TableActionValueSchema.optional(),
+  removeRow: TableActionValueSchema.optional(),
+  createField: TableActionValueSchema.optional(),
+  updateField: TableActionValueSchema.optional(),
+  removeField: TableActionValueSchema.optional(),
+  updateTable: TableActionValueSchema.optional(),
 });
 
 export type TableCreatePayload = Merge<

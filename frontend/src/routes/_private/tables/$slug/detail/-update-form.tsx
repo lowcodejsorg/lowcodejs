@@ -3,13 +3,7 @@ import React from 'react';
 import { z } from 'zod';
 
 import { withForm } from '@/integrations/tanstack-form/form-hook';
-import {
-  E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-  TABLE_NAME_REGEX,
-} from '@/lib/constant';
+import { E_FIELD_TYPE, E_TABLE_STYLE, TABLE_NAME_REGEX } from '@/lib/constant';
 import type { IField, ILayoutFields, ITable } from '@/lib/interfaces';
 import { getAllowedTableStyles } from '@/lib/table-style';
 
@@ -43,20 +37,22 @@ export const TableUpdateSchema = z.object({
     E_TABLE_STYLE.CALENDAR,
     E_TABLE_STYLE.GANTT,
   ]),
-  visibility: z.enum([
-    E_TABLE_VISIBILITY.PUBLIC,
-    E_TABLE_VISIBILITY.RESTRICTED,
-    E_TABLE_VISIBILITY.OPEN,
-    E_TABLE_VISIBILITY.FORM,
-    E_TABLE_VISIBILITY.PRIVATE,
-  ]),
-  collaboration: z.enum([
-    E_TABLE_COLLABORATION.OPEN,
-    E_TABLE_COLLABORATION.RESTRICTED,
-  ]),
+  owner: z.string().default(''),
+  collaborators: z
+    .array(z.object({ user: z.string(), profile: z.string() }))
+    .default([]),
+  viewTable: z.string().default('PUBLIC'),
+  updateTable: z.string().default('PUBLIC'),
+  createField: z.string().default('PUBLIC'),
+  updateField: z.string().default('PUBLIC'),
+  removeField: z.string().default('PUBLIC'),
+  viewField: z.string().default('PUBLIC'),
+  createRow: z.string().default('PUBLIC'),
+  updateRow: z.string().default('PUBLIC'),
+  removeRow: z.string().default('PUBLIC'),
+  viewRow: z.string().default('PUBLIC'),
   logo: z.string().nullable().default(null),
   logoFile: z.array(z.custom<File>()).default([]),
-  administrators: z.array(z.string()).default([]),
   order: z.string().default('none'),
   layoutFields: LayoutFieldsSchema.default({
     title: '',
@@ -77,11 +73,20 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
   description: '',
   style: E_TABLE_STYLE.LIST,
-  visibility: E_TABLE_VISIBILITY.RESTRICTED,
-  collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+  owner: '',
+  collaborators: [],
+  viewTable: 'PUBLIC',
+  updateTable: 'PUBLIC',
+  createField: 'PUBLIC',
+  updateField: 'PUBLIC',
+  removeField: 'PUBLIC',
+  viewField: 'PUBLIC',
+  createRow: 'PUBLIC',
+  updateRow: 'PUBLIC',
+  removeRow: 'PUBLIC',
+  viewRow: 'PUBLIC',
   logo: null,
   logoFile: [],
-  administrators: [],
   order: 'none',
   layoutFields: {
     title: '',
@@ -329,68 +334,129 @@ export const UpdateTableFormFields = withForm({
           }}
         </form.Subscribe>
 
-        {/* Campo Visibility */}
-        <form.AppField
-          name="visibility"
-          validators={{
-            onChange: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Visibilidade é obrigatória';
-              }
-              return undefined;
-            },
-            onBlur: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Visibilidade é obrigatória';
-              }
-              return undefined;
-            },
-          }}
-        >
+        {/* Permissoes de acoes */}
+        <div className="space-y-3 rounded-lg border p-3">
+          <p className="text-sm font-medium text-muted-foreground">
+            Permissões de acesso
+          </p>
+
+          <form.AppField name="viewTable">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Visualizar tabela"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="updateTable">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Editar tabela"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="createField">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Criar campo"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="updateField">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Editar campo"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="removeField">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Remover campo"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="viewField">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Visualizar campo"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="createRow">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Criar registro"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="updateRow">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Editar registro"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="removeRow">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Remover registro"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+
+          <form.AppField name="viewRow">
+            {(field) => (
+              <field.FieldPermissionSelect
+                label="Visualizar registro"
+                mode="table"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+        </div>
+
+        {/* Dono da tabela */}
+        <form.AppField name="owner">
           {(field) => (
-            <field.TableVisibilitySelectField
-              label="Visibilidade"
-              placeholder="Selecione a visibilidade"
+            <field.FieldUserSingleSelect
+              label="Dono"
+              placeholder="Selecione o dono da tabela"
               disabled={isDisabled}
-              required
             />
           )}
         </form.AppField>
 
-        {/* Campo Collaboration */}
-        <form.AppField
-          name="collaboration"
-          validators={{
-            onChange: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Colaboração é obrigatória';
-              }
-              return undefined;
-            },
-            onBlur: ({ value }) => {
-              if (value.trim() === '') {
-                return 'Colaboração é obrigatória';
-              }
-              return undefined;
-            },
-          }}
-        >
+        {/* Colaboradores */}
+        <form.AppField name="collaborators">
           {(field) => (
-            <field.TableCollaborationSelectField
-              label="Colaboração"
-              placeholder="Selecione o modo de colaboração"
-              disabled={isDisabled}
-              required
-            />
-          )}
-        </form.AppField>
-
-        {/* Campo Administradores */}
-        <form.AppField name="administrators">
-          {(field) => (
-            <field.FieldUserMultiSelect
-              label="Administradores"
-              placeholder="Selecione administradores"
+            <field.FieldCollaboratorsEditor
+              label="Colaboradores"
               disabled={isDisabled}
             />
           )}

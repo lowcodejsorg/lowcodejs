@@ -33,10 +33,9 @@ export const FieldFormatSchema = z
   .enum(E_FIELD_FORMAT)
   .nullable()
   .default(null);
-export const FieldShowInFilterSchema = z.boolean().default(false);
-export const FieldShowInFormSchema = z.boolean().default(false);
-export const FieldShowInDetailSchema = z.boolean().default(false);
-export const FieldShowInListSchema = z.boolean().default(false);
+export const FieldVisibilityFormSchema = z.string().default('HIDDEN');
+export const FieldVisibilityDetailSchema = z.string().default('HIDDEN');
+export const FieldVisibilityListSchema = z.string().default('HIDDEN');
 export const FieldWidthInFormSchema = z.number().min(0).nullable().default(50);
 export const FieldWidthInListSchema = z.number().min(0).nullable().default(10);
 export const FieldWidthInDetailSchema = z
@@ -115,10 +114,9 @@ export const TableFieldBaseSchema = z.object({
   required: FieldRequiredSchema,
   multiple: FieldMultipleSchema,
   format: FieldFormatSchema,
-  showInFilter: FieldShowInFilterSchema,
-  showInForm: FieldShowInFormSchema,
-  showInDetail: FieldShowInDetailSchema,
-  showInList: FieldShowInListSchema,
+  visibilityForm: FieldVisibilityFormSchema,
+  visibilityDetail: FieldVisibilityDetailSchema,
+  visibilityList: FieldVisibilityListSchema,
   widthInForm: FieldWidthInFormSchema,
   widthInList: FieldWidthInListSchema,
   widthInDetail: FieldWidthInDetailSchema,

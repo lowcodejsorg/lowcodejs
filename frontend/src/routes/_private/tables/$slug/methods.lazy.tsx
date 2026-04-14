@@ -139,9 +139,7 @@ function MethodsFormContent({
         description: data.description,
         logo: data.logo?._id ?? null,
         style: data.style,
-        visibility: data.visibility,
-        collaboration: data.collaboration,
-        administrators: data.administrators.flatMap((a) => a._id),
+        // TODO: collaborators will be handled separately
         fieldOrderList: data.fieldOrderList,
         fieldOrderForm: data.fieldOrderForm,
         fieldOrderFilter: data.fieldOrderFilter,

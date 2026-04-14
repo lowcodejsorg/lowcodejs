@@ -5,8 +5,11 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { filterRowFieldsByVisibility } from '@application/core/field-visibility-filter.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { GroupResolutionContractService } from '@application/services/group-resolution/group-resolution-contract.service';
 import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 
@@ -23,6 +26,8 @@ export default class TableRowShowUseCase {
     private readonly rowRepository: RowContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly rowContextService: RowContextContractService,
+    private readonly userRepository: UserContractRepository,
+    private readonly groupResolutionService: GroupResolutionContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -49,8 +54,23 @@ export default class TableRowShowUseCase {
 
       this.rowPasswordService.mask(row, table.fields);
 
+      const transformed = this.rowContextService.transform(
+        row,
+        table.fields,
+        payload.user,
+      );
+
+      const effectiveGroupIds = await this.resolveEffectiveGroupIds(
+        payload.user,
+      );
+
       return right(
-        this.rowContextService.transform(row, table.fields, payload.user),
+        filterRowFieldsByVisibility(
+          transformed,
+          table.fields,
+          effectiveGroupIds,
+          'detail',
+        ),
       );
     } catch (error) {
       console.error('[table-rows > show][error]:', error);
@@ -61,5 +81,14 @@ export default class TableRowShowUseCase {
         ),
       );
     }
+  }
+
+  private async resolveEffectiveGroupIds(
+    userId: string | undefined,
+  ): Promise<Set<string>> {
+    if (!userId) return new Set<string>();
+    const user = await this.userRepository.findById(userId);
+    if (!user) return new Set<string>();
+    return new Set(await this.groupResolutionService.resolveUserGroupIds(user));
   }
 }

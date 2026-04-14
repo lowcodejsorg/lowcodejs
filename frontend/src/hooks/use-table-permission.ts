@@ -2,8 +2,7 @@ import { useMemo } from 'react';
 
 import { useProfileRead } from './tanstack-query/use-profile-read';
 
-import { E_ROLE, E_TABLE_VISIBILITY } from '@/lib/constant';
-import type { ITable } from '@/lib/interfaces';
+import type { IGroup, ITable } from '@/lib/interfaces';
 import { useAuthStore } from '@/stores/authentication';
 
 export type TableAction =
@@ -11,44 +10,109 @@ export type TableAction =
   | 'UPDATE_TABLE'
   | 'REMOVE_TABLE'
   | 'CREATE_TABLE'
-  | 'VIEW_FIELD'
   | 'CREATE_FIELD'
   | 'UPDATE_FIELD'
   | 'REMOVE_FIELD'
-  | 'VIEW_ROW'
+  | 'VIEW_FIELD'
   | 'CREATE_ROW'
   | 'UPDATE_ROW'
-  | 'REMOVE_ROW';
+  | 'REMOVE_ROW'
+  | 'VIEW_ROW';
 
-const PERMISSION_SLUG_MAP: Record<TableAction, string> = {
-  CREATE_TABLE: 'create-table',
-  UPDATE_TABLE: 'update-table',
-  REMOVE_TABLE: 'remove-table',
-  VIEW_TABLE: 'view-table',
-  CREATE_FIELD: 'create-field',
-  UPDATE_FIELD: 'update-field',
-  REMOVE_FIELD: 'remove-field',
-  VIEW_FIELD: 'view-field',
-  CREATE_ROW: 'create-row',
-  UPDATE_ROW: 'update-row',
-  REMOVE_ROW: 'remove-row',
-  VIEW_ROW: 'view-row',
-};
+const ACTION_FIELD_MAP = {
+  VIEW_TABLE: 'viewTable',
+  UPDATE_TABLE: 'updateTable',
+  REMOVE_TABLE: 'updateTable',
+  CREATE_TABLE: 'updateTable',
+  CREATE_FIELD: 'createField',
+  UPDATE_FIELD: 'updateField',
+  REMOVE_FIELD: 'removeField',
+  VIEW_FIELD: 'viewField',
+  CREATE_ROW: 'createRow',
+  UPDATE_ROW: 'updateRow',
+  REMOVE_ROW: 'removeRow',
+  VIEW_ROW: 'viewRow',
+} as const;
+
+/**
+ * Resolve todos os IDs de grupo do usuario, incluindo via encompasses (recursivo)
+ */
+export function resolveUserGroupIds(groups: Array<IGroup>): Array<string> {
+  const visited = new Set<string>();
+
+  const walk = (grps: Array<IGroup>): void => {
+    for (const group of grps) {
+      const id = group._id?.toString();
+      if (!id || visited.has(id)) continue;
+      visited.add(id);
+      if (group.encompasses && Array.isArray(group.encompasses)) {
+        walk(group.encompasses);
+      }
+    }
+  };
+
+  walk(groups);
+  return Array.from(visited);
+}
+
+/**
+ * Resolve todos os objetos IGroup do usuario, incluindo via encompasses (recursivo)
+ */
+export function resolveUserGroups(groups: Array<IGroup>): Array<IGroup> {
+  const visited = new Set<string>();
+  const result: Array<IGroup> = [];
+
+  const walk = (grps: Array<IGroup>): void => {
+    for (const group of grps) {
+      const id = group._id?.toString();
+      if (!id || visited.has(id)) continue;
+      visited.add(id);
+      result.push(group);
+      if (group.encompasses && Array.isArray(group.encompasses)) {
+        walk(group.encompasses);
+      }
+    }
+  };
+
+  walk(groups);
+  return result;
+}
+
+/**
+ * Resolve as systemPermissions unificadas de todos os grupos do usuario
+ */
+export function resolveUserSystemPermissions(
+  groups: Array<IGroup>,
+): Record<string, boolean> {
+  const allGroups = resolveUserGroups(groups);
+  const permissions: Record<string, boolean> = {};
+
+  for (const group of allGroups) {
+    if (!group.systemPermissions) continue;
+    for (const [key, value] of Object.entries(group.systemPermissions)) {
+      if (value === true) {
+        permissions[key] = true;
+      }
+    }
+  }
+
+  return permissions;
+}
 
 interface UseTablePermissionResult {
   isOwner: boolean;
-  isAdmin: boolean;
-  isOwnerOrAdmin: boolean;
   can: (action: TableAction) => boolean;
   isLoading: boolean;
 }
 
 /**
- * Hook para verificar permissões de tabela
+ * Hook para verificar permissoes de tabela
  *
- * Lógica:
- * 1. Se usuário é dono ou admin da tabela -> acesso total
- * 2. Se não -> verifica permissão do grupo do usuário
+ * Logica:
+ * 1. Se nao ha usuario -> verifica se a acao e PUBLIC na tabela
+ * 2. Se usuario e MASTER -> acesso total
+ * 3. Se usuario e dono da tabela -> acesso total
+ * 4. Para cada acao -> verifica o valor do campo na tabela (PUBLIC, NOBODY, ou group ID)
  */
 export function useTablePermission(
   table: ITable | undefined,
@@ -56,7 +120,8 @@ export function useTablePermission(
   const auth = useAuthStore();
   const profile = useProfileRead();
 
-  const userId = auth.user?._id;
+  const user = auth.user;
+  const userId = user?._id;
 
   const isOwner = useMemo(() => {
     if (!table || !userId) return false;
@@ -65,141 +130,78 @@ export function useTablePermission(
     return ownerId === userId;
   }, [table, userId]);
 
-  const isAdmin = useMemo(() => {
-    if (!table || !userId) return false;
-    return table.administrators.some((admin) => {
-      const adminId = typeof admin === 'string' ? admin : admin._id;
-      return adminId === userId;
-    });
-  }, [table, userId]);
-
-  const isOwnerOrAdmin = isOwner || isAdmin;
-
-  const permissions = useMemo(() => {
-    if (!profile.data) return [];
-    return profile.data.group.permissions.map((p) => p.slug.toLowerCase());
+  const resolvedGroupIds = useMemo(() => {
+    if (!profile.data?.groups) return [];
+    return resolveUserGroupIds(profile.data.groups);
   }, [profile.data]);
 
-  const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
-  const isAdministrator = profile.data?.group.slug === E_ROLE.ADMINISTRATOR;
+  const resolvedGroups = useMemo(() => {
+    if (!profile.data?.groups) return [];
+    return resolveUserGroups(profile.data.groups);
+  }, [profile.data]);
+
+  const isMaster = useMemo(() => {
+    return resolvedGroups.some((g) => g.slug === 'MASTER');
+  }, [resolvedGroups]);
 
   const can = useMemo(() => {
     return (action: TableAction): boolean => {
-      // MASTER tem acesso total a tudo
       if (isMaster) return true;
+      if (isOwner) return true;
 
-      // ADMINISTRATOR tem acesso total a TODAS as tabelas
-      if (isAdministrator) return true;
+      const fieldKey = ACTION_FIELD_MAP[action];
+      const value = (table as Record<string, unknown> | undefined)?.[fieldKey];
 
-      // Dono ou admin da tabela pode fazer tudo
-      if (isOwnerOrAdmin) return true;
-
-      // Usuário não logado
-      if (!userId) {
-        const visibility = table?.visibility || E_TABLE_VISIBILITY.RESTRICTED;
-        // Visitante pode ver tabelas públicas
-        if (
-          visibility === E_TABLE_VISIBILITY.PUBLIC &&
-          ['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)
-        ) {
-          return true;
-        }
-        // Visitante pode criar registro em tabelas de formulário
-        if (visibility === E_TABLE_VISIBILITY.FORM && action === 'CREATE_ROW') {
-          return true;
-        }
+      if (!user) {
+        if (value === 'PUBLIC') return true;
         return false;
       }
 
-      // Ações que SEMPRE requerem dono/admin (independente da visibilidade)
-      const ownerOnlyActions: Array<TableAction> = [
-        'CREATE_FIELD',
-        'UPDATE_FIELD',
-        'REMOVE_FIELD',
-        'UPDATE_TABLE',
-        'REMOVE_TABLE',
-        'UPDATE_ROW',
-        'REMOVE_ROW',
-      ];
-
-      if (ownerOnlyActions.includes(action)) {
-        return false; // Só dono/admin pode fazer isso
+      if (typeof value === 'string') {
+        if (value === 'PUBLIC') return true;
+        if (value === 'NOBODY') return false;
+        return resolvedGroupIds.includes(value);
       }
 
-      // Aplicar regras de visibilidade
-      const visibility = table?.visibility || E_TABLE_VISIBILITY.RESTRICTED;
-
-      switch (visibility) {
-        case E_TABLE_VISIBILITY.PRIVATE:
-          // PRIVADA: Apenas dono/admin pode fazer tudo
-          return false;
-
-        case E_TABLE_VISIBILITY.RESTRICTED:
-          // RESTRITA: Usuário logado pode ver, mas não criar
-          if (action === 'CREATE_ROW') return false;
-          break;
-
-        case E_TABLE_VISIBILITY.OPEN:
-          // ABERTA: Usuário logado pode ver e criar
-          break;
-
-        case E_TABLE_VISIBILITY.PUBLIC:
-          // PÚBLICA: Usuário logado pode ver e criar
-          break;
-
-        case E_TABLE_VISIBILITY.FORM:
-          // FORMULÁRIO: Usuário logado NÃO pode ver (só criar via visitante)
-          if (['VIEW_TABLE', 'VIEW_FIELD', 'VIEW_ROW'].includes(action)) {
-            return false;
-          }
-          break;
-      }
-
-      // Verifica permissões do grupo do usuário
-      const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
-      return permissions.includes(requiredSlug);
+      return false;
     };
-  }, [isMaster, isAdministrator, isOwnerOrAdmin, permissions, table, userId]);
+  }, [isMaster, isOwner, table, user, resolvedGroupIds]);
 
   return {
     isOwner,
-    isAdmin,
-    isOwnerOrAdmin,
     can,
     isLoading: profile.status === 'pending',
   };
 }
 
 /**
- * Hook para verificar permissões sem tabela específica (ex: CREATE_TABLE)
- * Usa apenas permissões do grupo do usuário
+ * Hook para verificar permissoes do sistema (systemPermissions dos grupos)
+ * Verifica uniao de permissoes de todos os grupos do usuario
  */
 export function usePermission(): {
-  can: (action: TableAction) => boolean;
+  can: (permission: string) => boolean;
   isLoading: boolean;
 } {
   const profile = useProfileRead();
 
-  const isMaster = profile.data?.group.slug === E_ROLE.MASTER;
-  const isAdministrator = profile.data?.group.slug === E_ROLE.ADMINISTRATOR;
-
-  const permissions = useMemo(() => {
-    if (!profile.data) return [];
-    return profile.data.group.permissions.map((p) => p.slug.toLowerCase());
+  const resolvedGroups = useMemo(() => {
+    if (!profile.data?.groups) return [];
+    return resolveUserGroups(profile.data.groups);
   }, [profile.data]);
 
+  const isMaster = useMemo(() => {
+    return resolvedGroups.some((g) => g.slug === 'MASTER');
+  }, [resolvedGroups]);
+
   const can = useMemo(() => {
-    return (action: TableAction): boolean => {
-      // MASTER tem acesso total a tudo
+    return (permission: string): boolean => {
+      if (!profile.data) return false;
       if (isMaster) return true;
-
-      // ADMINISTRATOR tem acesso total a tabelas
-      if (isAdministrator) return true;
-
-      const requiredSlug = PERMISSION_SLUG_MAP[action].toLowerCase();
-      return permissions.includes(requiredSlug);
+      return resolvedGroups.some(
+        (g) => g.systemPermissions?.[permission] === true,
+      );
     };
-  }, [isMaster, isAdministrator, permissions]);
+  }, [profile.data, isMaster, resolvedGroups]);
 
   return {
     can,

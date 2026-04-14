@@ -32,7 +32,6 @@ export default class {
     const result = await this.useCase.execute({
       user: {
         _id: request?.user?.sub,
-        role: request?.user?.role,
       },
     });
 

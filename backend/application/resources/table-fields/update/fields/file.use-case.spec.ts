@@ -2,9 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import {
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
   type IField,
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
@@ -23,10 +21,9 @@ let sut: TableFieldUpdateUseCase;
 const FIELD_DEFAULTS = {
   slug: 'anexo',
   type: E_FIELD_TYPE.FILE,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
-  showInFilter: false,
+  visibilityList: 'HIDDEN',
+  visibilityForm: 'HIDDEN',
+  visibilityDetail: 'HIDDEN',
   locked: false,
   native: false,
   required: false,
@@ -60,10 +57,8 @@ async function createFieldAndTable(
     _schema: {},
     fields: [field._id],
     owner: 'owner-id',
-    administrators: [],
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+    viewTable: 'NOBODY',
     fieldOrderList: [],
     fieldOrderForm: [],
   });
@@ -94,10 +89,9 @@ function buildUpdatePayload(
     trashed: false,
     trashedAt: null,
     locked: false,
-    showInList: field.showInList,
-    showInForm: field.showInForm,
-    showInDetail: field.showInDetail,
-    showInFilter: field.showInFilter,
+    visibilityList: field.visibilityList,
+    visibilityForm: field.visibilityForm,
+    visibilityDetail: field.visibilityDetail,
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
     widthInDetail: field.widthInDetail,
@@ -151,19 +145,22 @@ describe('Table Field Update - FILE', () => {
     expect(result.value.required).toBe(true);
   });
 
-  it('deve mudar visibilidade showInList para false', async () => {
+  it('deve mudar visibilidade visibilityList para false', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
     );
 
     const result = await sut.execute(
-      buildUpdatePayload(field, { showInList: false, showInDetail: false }),
+      buildUpdatePayload(field, {
+        visibilityList: 'HIDDEN',
+        visibilityDetail: 'HIDDEN',
+      }),
     );
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.showInList).toBe(false);
-    expect(result.value.showInDetail).toBe(false);
+    expect(result.value.visibilityList).toBe('HIDDEN');
+    expect(result.value.visibilityDetail).toBe('HIDDEN');
   });
 });

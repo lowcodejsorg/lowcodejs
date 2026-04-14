@@ -66,6 +66,7 @@ function RouteComponent(): React.JSX.Element {
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        visibility: value.visibility || 'PUBLIC',
       });
     },
   });

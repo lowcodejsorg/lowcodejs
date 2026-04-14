@@ -1,6 +1,6 @@
 import z from 'zod';
 
-import { E_ROLE, IUser, Merge, ValueOf } from '@application/core/entity.core';
+import { IUser, Merge } from '@application/core/entity.core';
 
 export const UserGroupPaginatedQueryValidator = z.object({
   page: z.coerce
@@ -22,11 +22,6 @@ export const UserGroupPaginatedQueryValidator = z.object({
 export type UserGroupPaginatedPayload = Merge<
   z.infer<typeof UserGroupPaginatedQueryValidator>,
   {
-    user?: Merge<
-      Pick<IUser, '_id'>,
-      {
-        role: ValueOf<typeof E_ROLE>;
-      }
-    >;
+    user?: Pick<IUser, '_id'>;
   }
 >;

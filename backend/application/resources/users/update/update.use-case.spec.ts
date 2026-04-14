@@ -22,14 +22,14 @@ describe('User Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
       _id: created._id,
       name: 'John Updated',
       email: 'john.updated@example.com',
-      group: 'new-group-id',
+      groups: ['new-group-id'],
       status: E_USER_STATUS.ACTIVE,
     });
 
@@ -45,14 +45,14 @@ describe('User Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'oldpassword',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
       _id: created._id,
       name: 'John Doe',
       email: 'john@example.com',
-      group: 'group-id',
+      groups: ['group-id'],
       status: E_USER_STATUS.ACTIVE,
       password: 'newpassword',
     });
@@ -69,14 +69,14 @@ describe('User Update Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
       _id: created._id,
       name: 'John Doe',
       email: 'john@example.com',
-      group: 'group-id',
+      groups: ['group-id'],
       status: E_USER_STATUS.INACTIVE,
     });
 
@@ -90,7 +90,7 @@ describe('User Update Use Case', () => {
       _id: 'non-existent-id',
       name: 'John Doe',
       email: 'john@example.com',
-      group: 'group-id',
+      groups: ['group-id'],
       status: E_USER_STATUS.ACTIVE,
     });
 
@@ -110,7 +110,7 @@ describe('User Update Use Case', () => {
       _id: 'any-id',
       name: 'John Doe',
       email: 'john@example.com',
-      group: 'group-id',
+      groups: ['group-id'],
       status: E_USER_STATUS.ACTIVE,
     });
 

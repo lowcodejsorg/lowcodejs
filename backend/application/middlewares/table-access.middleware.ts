@@ -83,7 +83,6 @@ export function TableAccessMiddleware(options: AccessOptions) {
     const accessInput = {
       table,
       userId: request.user?.sub,
-      userRole: request.user?.role,
       user,
       requiredPermission,
       httpMethod: request.method,
@@ -99,5 +98,10 @@ export function TableAccessMiddleware(options: AccessOptions) {
     if (result.ownership) {
       request.ownership = result.ownership;
     }
+
+    request.permissionContext = {
+      profile: result.profile,
+      ownOnly: result.ownOnly,
+    };
   };
 }

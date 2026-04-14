@@ -4,10 +4,8 @@ import { right } from '@application/core/either.core';
 import {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FIELD_NATIVE_LIST,
   type IField,
 } from '@application/core/entity.core';
@@ -49,9 +47,17 @@ export async function createDocumentTemplate(
     logo: null,
     fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
     style: E_TABLE_STYLE.DOCUMENT,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-    administrators: [],
+    viewTable: 'NOBODY',
+    updateTable: 'NOBODY',
+    createField: 'NOBODY',
+    updateField: 'NOBODY',
+    removeField: 'NOBODY',
+    viewField: 'NOBODY',
+    createRow: 'NOBODY',
+    updateRow: 'NOBODY',
+    removeRow: 'NOBODY',
+    viewRow: 'NOBODY',
+    collaborators: [],
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],
@@ -90,10 +96,9 @@ export async function buildDocumentFields(
     required: boolean;
     multiple: boolean;
     format: IField['format'];
-    showInList: boolean;
-    showInForm: boolean;
-    showInDetail: boolean;
-    showInFilter: boolean;
+    visibilityList: string;
+    visibilityForm: string;
+    visibilityDetail: string;
     defaultValue: IField['defaultValue'];
     locked: boolean;
     relationship: IField['relationship'];
@@ -118,10 +123,9 @@ export async function buildDocumentFields(
     required: true,
     multiple: false,
     format: null,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: true,
+    visibilityList: 'HIDDEN',
+    visibilityForm: 'HIDDEN',
+    visibilityDetail: 'HIDDEN',
     defaultValue: null,
     locked: false,
     relationship: null,
@@ -140,10 +144,9 @@ export async function buildDocumentFields(
     required: false,
     multiple: false,
     format: E_FIELD_FORMAT.ALPHA_NUMERIC,
-    showInList: true,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: true,
+    visibilityList: 'HIDDEN',
+    visibilityForm: 'HIDDEN',
+    visibilityDetail: 'HIDDEN',
     defaultValue: null,
     locked: false,
     relationship: null,
@@ -162,10 +165,9 @@ export async function buildDocumentFields(
     required: true,
     multiple: false,
     format: E_FIELD_FORMAT.RICH_TEXT,
-    showInList: false,
-    showInForm: true,
-    showInDetail: true,
-    showInFilter: false,
+    visibilityList: 'HIDDEN',
+    visibilityForm: 'HIDDEN',
+    visibilityDetail: 'HIDDEN',
     defaultValue: null,
     locked: false,
     relationship: null,

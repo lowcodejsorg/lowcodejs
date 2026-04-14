@@ -18,6 +18,7 @@ export const menuFormDefaultValues: MenuFormType = {
   html: '',
   url: '',
   parent: '',
+  visibility: 'PUBLIC',
 };
 
 export const CreateMenuFormFields = withForm({
@@ -188,6 +189,17 @@ export const CreateMenuFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Campo Visibilidade */}
+        <form.AppField name="visibility">
+          {(field) => (
+            <field.FieldPermissionSelect
+              label="Visibilidade"
+              mode="menu"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
 
         {/* Info para tipo SEPARATOR */}
         {menuType === E_MENU_ITEM_TYPE.SEPARATOR && <SeparatorInfo />}

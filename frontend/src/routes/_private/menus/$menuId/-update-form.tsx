@@ -15,6 +15,7 @@ export type MenuUpdateFormValues = {
   html: string;
   url: string;
   parent: string;
+  visibility: string;
 };
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
@@ -24,17 +25,25 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   html: '',
   url: '',
   parent: '',
+  visibility: 'PUBLIC',
+};
+
+type MenuFormMode = 'show' | 'edit';
+type MenuTypeProp = ValueOf<typeof E_MENU_ITEM_TYPE> | '';
+
+const DEFAULT_PROPS: {
+  isPending: boolean;
+  mode: MenuFormMode;
+  menuType: MenuTypeProp;
+} = {
+  isPending: false,
+  mode: 'show',
+  menuType: E_MENU_ITEM_TYPE.SEPARATOR,
 };
 
 export const UpdateMenuFormFields = withForm({
   defaultValues: menuUpdateFormDefaultValues,
-  props: {
-    isPending: false,
-    mode: 'show' as 'show' | 'edit',
-    menuType: E_MENU_ITEM_TYPE.SEPARATOR as
-      | ValueOf<typeof E_MENU_ITEM_TYPE>
-      | '',
-  },
+  props: DEFAULT_PROPS,
   render: function Render({ form, isPending, mode, menuType }) {
     const isDisabled = mode === 'show' || isPending;
 
@@ -202,6 +211,17 @@ export const UpdateMenuFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {/* Campo Visibilidade */}
+        <form.AppField name="visibility">
+          {(field) => (
+            <field.FieldPermissionSelect
+              label="Visibilidade"
+              mode="menu"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
 
         {/* Info para tipo SEPARATOR */}
         {menuType === E_MENU_ITEM_TYPE.SEPARATOR && <SeparatorInfo />}

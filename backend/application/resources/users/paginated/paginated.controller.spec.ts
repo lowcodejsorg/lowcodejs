@@ -31,7 +31,7 @@ describe('E2E User Paginated Controller', () => {
         name: 'John Doe',
         email: 'john@example.com',
         password: 'password123',
-        group: group._id.toString(),
+        groups: [group._id.toString()],
       });
 
       const response = await supertest(kernel.server)

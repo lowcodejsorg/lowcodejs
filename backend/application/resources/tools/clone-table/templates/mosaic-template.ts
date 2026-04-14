@@ -2,10 +2,8 @@ import slugify from 'slugify';
 
 import { right } from '@application/core/either.core';
 import {
-  E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FIELD_NATIVE_LIST,
   type IField,
 } from '@application/core/entity.core';
@@ -49,9 +47,17 @@ export async function createMosaicTemplate(
     logo: null,
     fields: [...nativeFieldIds, ...fields.map((f) => f._id)],
     style: E_TABLE_STYLE.MOSAIC,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
-    administrators: [],
+    viewTable: 'NOBODY',
+    updateTable: 'NOBODY',
+    createField: 'NOBODY',
+    updateField: 'NOBODY',
+    removeField: 'NOBODY',
+    viewField: 'NOBODY',
+    createRow: 'NOBODY',
+    updateRow: 'NOBODY',
+    removeRow: 'NOBODY',
+    viewRow: 'NOBODY',
+    collaborators: [],
     owner: payload.ownerId,
     fieldOrderList: [...nativeFieldIds, ...orderList],
     fieldOrderForm: [...nativeFieldIds, ...orderForm],

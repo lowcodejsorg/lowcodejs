@@ -35,7 +35,7 @@ describe('E2E Request Code Controller', () => {
         email: 'test@example.com',
         password: hashedPassword,
         status: E_USER_STATUS.ACTIVE,
-        group: group._id,
+        groups: [group._id],
       });
 
       const response = await supertest(kernel.server)

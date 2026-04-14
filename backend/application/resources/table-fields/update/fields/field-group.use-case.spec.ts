@@ -1,11 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-} from '@application/core/entity.core';
+import { E_FIELD_TYPE, E_TABLE_STYLE } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
@@ -22,10 +17,9 @@ let sut: TableFieldUpdateUseCase;
 const FIELD_DEFAULTS = {
   slug: 'itens',
   type: E_FIELD_TYPE.FIELD_GROUP,
-  showInList: true,
-  showInForm: true,
-  showInDetail: true,
-  showInFilter: false,
+  visibilityList: 'HIDDEN',
+  visibilityForm: 'HIDDEN',
+  visibilityDetail: 'HIDDEN',
   locked: false,
   native: false,
   required: false,
@@ -57,10 +51,8 @@ async function createFieldAndTable(
     _schema: {},
     fields: [field._id],
     owner: 'owner-id',
-    administrators: [],
     style: E_TABLE_STYLE.LIST,
-    visibility: E_TABLE_VISIBILITY.RESTRICTED,
-    collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+    viewTable: 'NOBODY',
     fieldOrderList: [],
     fieldOrderForm: [],
     groups: [
@@ -116,10 +108,9 @@ describe('Table Field Update - FIELD_GROUP', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: false,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: null,
@@ -155,10 +146,9 @@ describe('Table Field Update - FIELD_GROUP', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: false,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: null,
@@ -189,10 +179,9 @@ describe('Table Field Update - FIELD_GROUP', () => {
       trashed: false,
       trashedAt: null,
       locked: false,
-      showInList: true,
-      showInForm: true,
-      showInDetail: true,
-      showInFilter: false,
+      visibilityList: 'HIDDEN',
+      visibilityForm: 'HIDDEN',
+      visibilityDetail: 'HIDDEN',
       widthInForm: 50,
       widthInList: 10,
       widthInDetail: null,

@@ -7,10 +7,10 @@ import { left, right } from '@application/core/either.core';
 import {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
-  E_TABLE_COLLABORATION,
+  E_FIELD_VISIBILITY_VALUE,
+  E_TABLE_ACTION_VALUE,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
-  E_TABLE_VISIBILITY,
   FIELD_NATIVE_LIST,
   type ITable as Entity,
 } from '@application/core/entity.core';
@@ -34,24 +34,26 @@ export default class TableCreateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      if (!payload.owner)
+      if (!payload.owner) {
         return left(
           HTTPException.BadRequest(
             'Proprietário é obrigatório',
             'OWNER_REQUIRED',
           ),
         );
+      }
 
       const slug = slugify(payload.name, { lower: true, trim: true });
 
       const existingTable = await this.tableRepository.findBySlug(slug);
 
-      if (existingTable)
+      if (existingTable) {
         return left(
           HTTPException.Conflict('Tabela já existe', 'TABLE_ALREADY_EXISTS', {
             name: 'Tabela já existe',
           }),
         );
+      }
 
       const nativeFields = await this.fieldRepository.createMany([
         ...FIELD_NATIVE_LIST,
@@ -64,10 +66,9 @@ export default class TableCreateUseCase {
           required: true,
           multiple: false,
           format: E_FIELD_FORMAT.ALPHA_NUMERIC,
-          showInList: true,
-          showInFilter: true,
-          showInForm: true,
-          showInDetail: true,
+          visibilityList: E_FIELD_VISIBILITY_VALUE.HIDDEN,
+          visibilityForm: E_FIELD_VISIBILITY_VALUE.HIDDEN,
+          visibilityDetail: E_FIELD_VISIBILITY_VALUE.HIDDEN,
           widthInForm: 50,
           widthInList: 10,
           widthInDetail: null,
@@ -90,10 +91,18 @@ export default class TableCreateUseCase {
         fields: [],
         type: E_TABLE_TYPE.TABLE,
         owner: payload.owner,
-        administrators: [],
-        collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+        collaborators: [],
         style: payload.style ?? E_TABLE_STYLE.LIST,
-        visibility: payload.visibility ?? E_TABLE_VISIBILITY.RESTRICTED,
+        viewTable: payload.viewTable ?? E_TABLE_ACTION_VALUE.NOBODY,
+        updateTable: payload.updateTable ?? E_TABLE_ACTION_VALUE.NOBODY,
+        createField: payload.createField ?? E_TABLE_ACTION_VALUE.NOBODY,
+        updateField: payload.updateField ?? E_TABLE_ACTION_VALUE.NOBODY,
+        removeField: payload.removeField ?? E_TABLE_ACTION_VALUE.NOBODY,
+        viewField: payload.viewField ?? E_TABLE_ACTION_VALUE.NOBODY,
+        createRow: payload.createRow ?? E_TABLE_ACTION_VALUE.NOBODY,
+        updateRow: payload.updateRow ?? E_TABLE_ACTION_VALUE.NOBODY,
+        removeRow: payload.removeRow ?? E_TABLE_ACTION_VALUE.NOBODY,
+        viewRow: payload.viewRow ?? E_TABLE_ACTION_VALUE.NOBODY,
         fieldOrderForm: [],
         fieldOrderList: [],
         fieldOrderFilter: [],

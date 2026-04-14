@@ -38,7 +38,6 @@ export default class {
       ...query,
       user: {
         _id: request?.user?.sub,
-        role: request?.user?.role,
       },
     });
 

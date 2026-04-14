@@ -22,12 +22,16 @@ export type GroupUpdateFormValues = {
   name: string;
   description: string;
   permissions: Array<string>;
+  encompasses: Array<string>;
+  systemPermissions: Record<string, boolean>;
 };
 
 export const groupUpdateFormDefaultValues: GroupUpdateFormValues = {
   name: '',
   description: '',
   permissions: [],
+  encompasses: [],
+  systemPermissions: {},
 };
 
 export const UpdateGroupFormFields = withForm({
@@ -36,9 +40,18 @@ export const UpdateGroupFormFields = withForm({
     isPending: false,
     mode: 'show' as 'show' | 'edit',
     slug: '',
+    immutable: false,
+    currentGroupId: '',
   },
-  render: function Render({ form, isPending, mode, slug }) {
-    const isDisabled = mode === 'show' || isPending;
+  render: function Render({
+    form,
+    isPending,
+    mode,
+    slug,
+    immutable,
+    currentGroupId,
+  }) {
+    const isDisabled = mode === 'show' || isPending || immutable;
 
     return (
       <section
@@ -130,6 +143,35 @@ export const UpdateGroupFormFields = withForm({
             />
           )}
         </form.AppField>
+
+        {/* Campo Permissões do Sistema */}
+        <form.AppField name="systemPermissions">
+          {(field) => (
+            <field.FieldSystemPermissionCheckboxes
+              label="Permissões do Sistema"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo Abrange (grupos englobados) */}
+        <form.AppField name="encompasses">
+          {(field) => (
+            <field.FieldGroupMultiSelect
+              label="Abrange"
+              placeholder="Selecione os grupos englobados..."
+              disabled={isDisabled}
+              excludeIds={[currentGroupId]}
+            />
+          )}
+        </form.AppField>
+
+        {/* Aviso de grupo imutável */}
+        {immutable && (
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+            Este grupo é imutável e não pode ser editado.
+          </div>
+        )}
       </section>
     );
   },

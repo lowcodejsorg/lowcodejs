@@ -131,7 +131,7 @@ export function TableRowFieldGroupField({
   }
 
   const groupFields = group.fields.filter(
-    (f) => !f.trashed && !f.native && f.showInForm !== false,
+    (f) => !f.trashed && !f.native && f.visibilityForm !== 'HIDDEN',
   );
 
   return (

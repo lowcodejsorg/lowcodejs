@@ -102,10 +102,9 @@ export default class GroupFieldUpdateUseCase {
         ...(payload.trashed && {
           trashed: payload.trashed,
           required: false,
-          showInList: false,
-          showInForm: false,
-          showInDetail: false,
-          showInFilter: false,
+          visibilityList: 'HIDDEN',
+          visibilityForm: 'HIDDEN',
+          visibilityDetail: 'HIDDEN',
         }),
         ...(payload.trashedAt && { trashedAt: payload.trashedAt }),
       });
@@ -138,7 +137,6 @@ export default class GroupFieldUpdateUseCase {
         _schema: parentSchema,
         groups: updatedGroups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       await this.tableSchemaService.syncModel({

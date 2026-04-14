@@ -106,6 +106,36 @@ export const E_TABLE_COLLABORATION = {
   RESTRICTED: 'RESTRICTED',
 } as const;
 
+export const E_SYSTEM_PERMISSION = {
+  VIEW_TABLES: 'VIEW_TABLES',
+  CREATE_TABLES: 'CREATE_TABLES',
+  UPDATE_TABLES: 'UPDATE_TABLES',
+  REMOVE_TABLES: 'REMOVE_TABLES',
+  USERS: 'USERS',
+  MENU: 'MENU',
+  USER_GROUPS: 'USER_GROUPS',
+  SETTINGS: 'SETTINGS',
+  TOOLS: 'TOOLS',
+  PLUGINS: 'PLUGINS',
+} as const;
+
+export const E_COLLABORATION_PROFILE = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  EDITOR: 'EDITOR',
+  CONTRIBUTOR: 'CONTRIBUTOR',
+  VIEWER: 'VIEWER',
+} as const;
+
+export const E_TABLE_ACTION_VALUE = {
+  PUBLIC: 'PUBLIC',
+  NOBODY: 'NOBODY',
+} as const;
+
+export const E_FIELD_VISIBILITY_VALUE = {
+  HIDDEN: 'HIDDEN',
+} as const;
+
 export const E_TOKEN_STATUS = {
   REQUESTED: 'REQUESTED',
   EXPIRED: 'EXPIRED',
@@ -169,6 +199,19 @@ export const PERMISSION_LABEL_MAPPER: Record<string, string> = {
   [E_TABLE_PERMISSION.UPDATE_ROW]: 'Editar registro',
   [E_TABLE_PERMISSION.REMOVE_ROW]: 'Remover registro',
   [E_TABLE_PERMISSION.VIEW_ROW]: 'Visualizar registro',
+};
+
+export const SYSTEM_PERMISSION_LABEL_MAPPER: Record<string, string> = {
+  [E_SYSTEM_PERMISSION.VIEW_TABLES]: 'Ver tabelas',
+  [E_SYSTEM_PERMISSION.CREATE_TABLES]: 'Criar tabelas',
+  [E_SYSTEM_PERMISSION.UPDATE_TABLES]: 'Editar tabelas',
+  [E_SYSTEM_PERMISSION.REMOVE_TABLES]: 'Remover tabelas',
+  [E_SYSTEM_PERMISSION.USERS]: 'Usuários',
+  [E_SYSTEM_PERMISSION.MENU]: 'Menu',
+  [E_SYSTEM_PERMISSION.USER_GROUPS]: 'Grupos de usuários',
+  [E_SYSTEM_PERMISSION.SETTINGS]: 'Configurações',
+  [E_SYSTEM_PERMISSION.TOOLS]: 'Ferramentas',
+  [E_SYSTEM_PERMISSION.PLUGINS]: 'Plugins',
 };
 
 // ============== OPTIONS PARA SELECTS ==============

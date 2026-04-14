@@ -37,22 +37,26 @@ const Group = new mongoose.Schema(
   },
 );
 
-function validateCategory(Category: any[] | null): boolean {
-  // null é válido
+function isFieldVisibilityValue(value: unknown): boolean {
+  if (typeof value !== 'string') return false;
+  if (value === 'HIDDEN') return true;
+  return mongoose.Types.ObjectId.isValid(value);
+}
+
+function isCategoryNode(
+  item: unknown,
+): item is { id: string; label: string; children: unknown[] } {
+  if (!item || typeof item !== 'object') return false;
+  if (!('id' in item) || typeof item.id !== 'string') return false;
+  if (!('label' in item) || typeof item.label !== 'string') return false;
+  if (!('children' in item) || !Array.isArray(item.children)) return false;
+  return true;
+}
+
+function validateCategory(Category: unknown[] | null): boolean {
   if (Category === null) return true;
-
-  // Array vazio é válido
   if (Category.length === 0) return true;
-
-  // Verificar se todos os elementos têm a estrutura correta
-  return Category.every(
-    (item) =>
-      item &&
-      typeof item === 'object' &&
-      typeof item.id === 'string' &&
-      typeof item.label === 'string' &&
-      Array.isArray(item.children),
-  );
+  return Category.every(isCategoryNode);
 }
 
 const Category = new mongoose.Schema(
@@ -125,21 +129,32 @@ export const Schema = new mongoose.Schema(
       enum: Object.values(E_FIELD_FORMAT),
       default: null,
     },
-    showInFilter: {
-      type: Boolean,
-      default: false,
+    visibilityList: {
+      type: String,
+      default: 'HIDDEN',
+      validate: {
+        validator: isFieldVisibilityValue,
+        message:
+          'Field.visibilityList deve ser "HIDDEN" ou um ObjectId de grupo valido',
+      },
     },
-    showInForm: {
-      type: Boolean,
-      default: false,
+    visibilityForm: {
+      type: String,
+      default: 'HIDDEN',
+      validate: {
+        validator: isFieldVisibilityValue,
+        message:
+          'Field.visibilityForm deve ser "HIDDEN" ou um ObjectId de grupo valido',
+      },
     },
-    showInDetail: {
-      type: Boolean,
-      default: false,
-    },
-    showInList: {
-      type: Boolean,
-      default: false,
+    visibilityDetail: {
+      type: String,
+      default: 'HIDDEN',
+      validate: {
+        validator: isFieldVisibilityValue,
+        message:
+          'Field.visibilityDetail deve ser "HIDDEN" ou um ObjectId de grupo valido',
+      },
     },
     widthInForm: {
       type: Number,

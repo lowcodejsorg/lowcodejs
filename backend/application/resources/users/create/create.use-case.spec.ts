@@ -22,7 +22,7 @@ describe('User Create Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     expect(result.isRight()).toBe(true);
@@ -34,19 +34,19 @@ describe('User Create Use Case', () => {
     expect(result.value.status).toBe(E_USER_STATUS.ACTIVE);
   });
 
-  it('deve retornar erro GROUP_NOT_INFORMED quando group nao for informado', async () => {
+  it('deve retornar erro GROUPS_NOT_INFORMED quando groups nao for informado', async () => {
     const result = await sut.execute({
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
-      group: '',
+      groups: [],
     });
 
     expect(result.isLeft()).toBe(true);
     if (!result.isLeft()) throw new Error('Expected left');
     expect(result.value.code).toBe(400);
-    expect(result.value.cause).toBe('GROUP_NOT_INFORMED');
-    expect(result.value.message).toBe('Grupo não informado');
+    expect(result.value.cause).toBe('GROUPS_NOT_INFORMED');
+    expect(result.value.message).toBe('Ao menos um grupo deve ser informado');
   });
 
   it('deve retornar erro USER_ALREADY_EXISTS quando email ja existe', async () => {
@@ -54,14 +54,14 @@ describe('User Create Use Case', () => {
       name: 'Existing User',
       email: 'existing@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
       name: 'New User',
       email: 'existing@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     expect(result.isLeft()).toBe(true);
@@ -86,7 +86,7 @@ describe('User Create Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'password123',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     expect(result.isLeft()).toBe(true);

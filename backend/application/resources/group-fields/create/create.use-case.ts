@@ -112,7 +112,6 @@ export default class GroupFieldCreateUseCase {
         _schema: parentSchema,
         groups: updatedGroups,
         owner: table.owner._id,
-        administrators: table.administrators.flatMap((a) => a._id),
       });
 
       await this.tableSchemaService.syncModel({

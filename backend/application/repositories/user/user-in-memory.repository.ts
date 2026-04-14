@@ -32,7 +32,9 @@ export default class UserInMemoryRepository implements UserContractRepository {
       ...payload,
       _id: crypto.randomUUID(),
       status: E_USER_STATUS.ACTIVE,
-      group: { _id: payload.group } as IUser['group'],
+      groups: payload.groups.map(
+        (id) => ({ _id: id }) as IUser['groups'][number],
+      ),
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,

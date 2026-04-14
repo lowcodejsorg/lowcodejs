@@ -58,7 +58,7 @@ const columns: Array<ColumnDef<IGroup, any>> = [
     ),
     cell: ({ getValue }) => (
       <span className="truncate max-w-xs block">
-        {(getValue() as string) || 'N/A'}
+        {getValue<string>() || 'N/A'}
       </span>
     ),
   },

@@ -47,11 +47,6 @@ export const UserPaginatedSchema: FastifySchema = {
         enum: ['asc', 'desc'],
         description: 'Ordenar por e-mail',
       },
-      'order-group': {
-        type: 'string',
-        enum: ['asc', 'desc'],
-        description: 'Ordenar por grupo',
-      },
       'order-status': {
         type: 'string',
         enum: ['asc', 'desc'],
@@ -78,12 +73,15 @@ export const UserPaginatedSchema: FastifySchema = {
               _id: { type: 'string' },
               name: { type: 'string' },
               email: { type: 'string' },
-              group: {
-                type: 'object',
-                properties: {
-                  _id: { type: 'string' },
-                  name: { type: 'string' },
-                  slug: { type: 'string' },
+              groups: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    _id: { type: 'string' },
+                    name: { type: 'string' },
+                    slug: { type: 'string' },
+                  },
                 },
               },
               status: { type: 'string' },

@@ -1,7 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import { E_ROLE, type IGroup } from '@application/core/entity.core';
-import type { FindOptions } from '@application/core/entity.core';
+import type { FindOptions, IGroup } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { UserGroup as Model } from '@application/model/user-group.model';
 
@@ -14,16 +13,15 @@ import type {
 
 @Service()
 export default class UserGroupMongooseRepository implements UserGroupContractRepository {
-  private readonly populateOptions = [{ path: 'permissions' }];
+  private readonly populateOptions = [
+    { path: 'permissions' },
+    { path: 'encompasses' },
+  ];
 
   private async buildWhereClause(
     payload?: UserGroupQueryPayload,
   ): Promise<Record<string, unknown>> {
     const where: Record<string, unknown> = {};
-
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
-      where.slug = { $ne: E_ROLE.MASTER };
-    }
 
     if (payload?.search) {
       where.$or = [

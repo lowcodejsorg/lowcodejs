@@ -1,10 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
-import {
-  E_TABLE_COLLABORATION,
-  E_TABLE_STYLE,
-  E_TABLE_VISIBILITY,
-} from '@application/core/entity.core';
+import { E_TABLE_STYLE } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
@@ -40,10 +36,8 @@ describe('Table Update Use Case', () => {
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      viewTable: 'NOBODY',
       fieldOrderList: [],
       fieldOrderForm: [],
       fieldOrderFilter: [],
@@ -67,13 +61,11 @@ describe('Table Update Use Case', () => {
         },
       },
       style: E_TABLE_STYLE.GALLERY,
-      administrators: [],
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      viewTable: 'NOBODY',
       fieldOrderForm: [],
       fieldOrderList: [],
       fieldOrderFilter: [],
       fieldOrderDetail: [],
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });
 
@@ -102,13 +94,11 @@ describe('Table Update Use Case', () => {
         },
       },
       style: E_TABLE_STYLE.GALLERY,
-      administrators: [],
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      viewTable: 'NOBODY',
       fieldOrderForm: [],
       fieldOrderList: [],
       fieldOrderFilter: [],
       fieldOrderDetail: [],
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });
 
@@ -120,17 +110,15 @@ describe('Table Update Use Case', () => {
     expect(result.value.message).toBe('Tabela não encontrada');
   });
 
-  it('deve retornar erro INACTIVE_ADMINISTRATORS quando admin estiver inativo', async () => {
+  it('deve retornar erro INACTIVE_COLLABORATORS quando colaborador estiver inativo', async () => {
     await tableInMemoryRepository.create({
       name: 'Clientes',
       slug: 'clientes',
       _schema: {},
       fields: [],
       owner: 'owner-id',
-      administrators: [],
       style: E_TABLE_STYLE.LIST,
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      viewTable: 'NOBODY',
       fieldOrderList: [],
       fieldOrderForm: [],
       fieldOrderFilter: [],
@@ -154,13 +142,11 @@ describe('Table Update Use Case', () => {
         },
       },
       style: E_TABLE_STYLE.GALLERY,
-      administrators: ['non-existent-user'],
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      collaborators: [{ user: 'inactive-user-id', profile: 'ADMIN' }],
       fieldOrderForm: [],
       fieldOrderList: [],
       fieldOrderFilter: [],
       fieldOrderDetail: [],
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });
 
@@ -168,9 +154,9 @@ describe('Table Update Use Case', () => {
     if (!result.isLeft()) throw new Error('Expected left');
 
     expect(result.value.code).toBe(400);
-    expect(result.value.cause).toBe('INACTIVE_ADMINISTRATORS');
+    expect(result.value.cause).toBe('INACTIVE_COLLABORATORS');
     expect(result.value.message).toBe(
-      'Todos os administradores devem ser usuários ativos',
+      'Todos os colaboradores devem ser usuários ativos',
     );
   });
 
@@ -197,13 +183,10 @@ describe('Table Update Use Case', () => {
         },
       },
       style: E_TABLE_STYLE.GALLERY,
-      administrators: ['non-existent-user'],
-      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
       fieldOrderForm: [],
       fieldOrderList: [],
       fieldOrderFilter: [],
       fieldOrderDetail: [],
-      visibility: E_TABLE_VISIBILITY.RESTRICTED,
       order: null,
     });
 

@@ -55,6 +55,20 @@ export const Schema = new mongoose.Schema(
 
     order: { type: Number, default: 0 },
 
+    visibility: {
+      type: String,
+      default: 'NOBODY',
+      validate: {
+        validator: (value: unknown): boolean => {
+          if (typeof value !== 'string') return false;
+          if (value === 'PUBLIC' || value === 'NOBODY') return true;
+          return mongoose.Types.ObjectId.isValid(value);
+        },
+        message:
+          'Menu.visibility deve ser "PUBLIC", "NOBODY" ou um ObjectId valido',
+      },
+    },
+
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },

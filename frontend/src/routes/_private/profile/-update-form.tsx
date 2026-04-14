@@ -1,6 +1,7 @@
 import { UserIcon } from 'lucide-react';
 import { z } from 'zod';
 
+import { Badge } from '@/components/ui/badge';
 import { FieldLabel } from '@/components/ui/field';
 import { Switch } from '@/components/ui/switch';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
@@ -38,7 +39,7 @@ export const UpdateProfileFormFields = withForm({
     mode: 'show' as 'show' | 'edit',
     allowPasswordChange: false,
     onAllowPasswordChangeChange: (() => {}) as (value: boolean) => void,
-    groupData: null as IGroup | null,
+    groupsData: [] as Array<IGroup>,
   },
   render: function Render({
     form,
@@ -46,7 +47,7 @@ export const UpdateProfileFormFields = withForm({
     mode,
     allowPasswordChange,
     onAllowPasswordChangeChange,
-    groupData,
+    groupsData,
   }) {
     const isDisabled = mode === 'show' || isPending;
 
@@ -118,17 +119,22 @@ export const UpdateProfileFormFields = withForm({
           )}
         </form.AppField>
 
-        {/* Grupo (read-only card) */}
-        {groupData && (
+        {/* Grupos (read-only card) */}
+        {groupsData.length > 0 && (
           <div className="space-y-2">
-            <FieldLabel>Grupo</FieldLabel>
-            <div className="rounded-lg border p-4 bg-muted/50">
-              <div className="space-y-2">
-                <p className="font-medium">{groupData.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {groupData.description || 'Sem descrição disponível'}
-                </p>
-              </div>
+            <FieldLabel>Grupos</FieldLabel>
+            <div className="rounded-lg border p-4 bg-muted/50 space-y-3">
+              {groupsData.map((group) => (
+                <div
+                  key={group._id}
+                  className="space-y-1"
+                >
+                  <Badge variant="secondary">{group.name}</Badge>
+                  <p className="text-sm text-muted-foreground">
+                    {group.description || 'Sem descrição disponível'}
+                  </p>
+                </div>
+              ))}
             </div>
           </div>
         )}

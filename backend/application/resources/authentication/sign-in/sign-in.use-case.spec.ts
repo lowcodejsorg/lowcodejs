@@ -23,7 +23,7 @@ describe('Sign In Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: hashedPassword,
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
@@ -57,7 +57,7 @@ describe('Sign In Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: hashedPassword,
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({
@@ -78,7 +78,7 @@ describe('Sign In Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: hashedPassword,
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     await userInMemoryRepository.update({

@@ -1,6 +1,6 @@
 import { Service } from 'fastify-decorators';
 
-import { E_ROLE, type IUser } from '@application/core/entity.core';
+import type { IUser } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { User as Model } from '@application/model/user.model';
@@ -15,7 +15,10 @@ import type {
 @Service()
 export default class UserMongooseRepository implements UserContractRepository {
   private readonly populateOptions = [
-    { path: 'group', populate: { path: 'permissions' } },
+    {
+      path: 'groups',
+      populate: [{ path: 'permissions' }],
+    },
   ];
 
   private async buildWhereClause(
@@ -38,15 +41,6 @@ export default class UserMongooseRepository implements UserContractRepository {
     // Filtro por status
     if (payload?.status) {
       where.status = payload.status;
-    }
-
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
-      const UserGroupModel = Model.db.model('UserGroup');
-      const masterGroup = await UserGroupModel.findOne({ slug: E_ROLE.MASTER });
-
-      if (masterGroup) {
-        where.group = { $ne: masterGroup._id.toString() };
-      }
     }
 
     if (payload?.search) {
@@ -115,12 +109,12 @@ export default class UserMongooseRepository implements UserContractRepository {
         ? payload.sort
         : { name: 'asc' as const };
 
-    const hasGroupSort = sortOption && 'group.name' in sortOption;
+    const hasGroupSort = sortOption && 'groups.name' in sortOption;
 
     if (hasGroupSort) {
       const aggregationSort: Record<string, 1 | -1> = {};
       for (const [key, dir] of Object.entries(sortOption)) {
-        if (key === 'group.name') {
+        if (key === 'groups.name') {
           aggregationSort['_groupName'] = dir === 'asc' ? 1 : -1;
         } else {
           aggregationSort[key] = dir === 'asc' ? 1 : -1;
@@ -131,25 +125,25 @@ export default class UserMongooseRepository implements UserContractRepository {
         { $match: where },
         {
           $lookup: {
-            from: 'usergroups',
-            localField: 'group',
+            from: 'user-groups',
+            localField: 'groups',
             foreignField: '_id',
-            as: '_groupDoc',
+            as: '_groupDocs',
           },
         },
         {
           $addFields: {
-            _groupName: { $arrayElemAt: ['$_groupDoc.name', 0] },
+            _groupName: { $arrayElemAt: ['$_groupDocs.name', 0] },
           },
         },
         { $sort: aggregationSort },
         { $skip: skip ?? 0 },
         ...(take ? [{ $limit: take }] : []),
-        { $project: { _groupDoc: 0, _groupName: 0 } },
+        { $project: { _groupDocs: 0, _groupName: 0 } },
       ]);
 
       const populated = await Model.populate(docs, this.populateOptions);
-      return populated.map((doc: any) => ({
+      return populated.map((doc: InstanceType<typeof Model>) => ({
         ...doc,
         _id: doc._id.toString(),
       }));

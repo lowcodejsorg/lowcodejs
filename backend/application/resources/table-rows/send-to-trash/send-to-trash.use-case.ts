@@ -12,7 +12,10 @@ import type { TableRowSendToTrashPayload } from './send-to-trash.validator';
 
 type Response = Either<HTTPException, IRow>;
 
-type Payload = TableRowSendToTrashPayload;
+type Payload = TableRowSendToTrashPayload & {
+  _ownOnly?: boolean;
+  _currentUserId?: string;
+};
 
 @Service()
 export default class TableRowSendToTrashUseCase {
@@ -41,6 +44,18 @@ export default class TableRowSendToTrashUseCase {
         return left(
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
+      }
+
+      if (payload._ownOnly === true) {
+        const creatorId = String(row.creator ?? '');
+        if (!payload._currentUserId || creatorId !== payload._currentUserId) {
+          return left(
+            HTTPException.Forbidden(
+              'Apenas o criador do registro pode enviá-lo para a lixeira',
+              'OWN_ROW_ONLY',
+            ),
+          );
+        }
       }
 
       if (row.trashed) {

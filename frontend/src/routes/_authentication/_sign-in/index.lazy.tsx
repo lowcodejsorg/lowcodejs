@@ -49,12 +49,8 @@ function RouteComponent(): React.JSX.Element {
   const [showPassword, setShowPassword] = useState(false);
 
   const signInMutation = useAuthenticationSignIn({
-    onSuccess(response) {
-      const role = response.group.slug.toUpperCase();
-
-      const route = ROLE_DEFAULT_ROUTE[role];
-
-      router.navigate({ to: route, replace: true });
+    onSuccess() {
+      router.navigate({ to: ROLE_DEFAULT_ROUTE, replace: true });
 
       toastSuccess('Login realizado com sucesso!', 'Seja bem-vindo!');
     },

@@ -18,7 +18,7 @@ describe('Profile Show Use Case', () => {
       name: 'John Doe',
       email: 'john@example.com',
       password: 'hashed_password',
-      group: 'group-id',
+      groups: ['group-id'],
     });
 
     const result = await sut.execute({ _id: created._id });
