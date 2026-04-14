@@ -336,9 +336,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="viewTable">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Visualizar tabela"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -346,9 +346,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="updateTable">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Editar tabela"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -356,9 +356,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="createField">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Criar campo"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -366,9 +366,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="updateField">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Editar campo"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -376,9 +376,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="removeField">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Remover campo"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -386,9 +386,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="viewField">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Visualizar campo"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -396,9 +396,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="createRow">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Criar registro"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -406,9 +406,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="updateRow">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Editar registro"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -416,9 +416,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="removeRow">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Remover registro"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
@@ -426,9 +426,9 @@ export const UpdateTableFormFields = withForm({
 
           <form.AppField name="viewRow">
             {(field) => (
-              <field.FieldText
+              <field.FieldPermissionSelect
                 label="Visualizar registro"
-                placeholder="ID do grupo, PUBLIC ou NOBODY"
+                mode="table"
                 disabled={isDisabled}
               />
             )}
