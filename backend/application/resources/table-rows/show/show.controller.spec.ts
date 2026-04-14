@@ -44,15 +44,18 @@ describe('E2E Table Row Show Controller', () => {
     it('deve retornar linha com sucesso', async () => {
       const { cookies, user } = await createAuthenticatedUser();
 
+      const masterGroup = await UserGroup.findOne({ slug: 'MASTER' });
+      const masterGroupId = masterGroup!._id.toString();
+
       const fieldPayload: FieldCreatePayload = {
         category: [],
         dropdown: [],
         defaultValue: null,
-        visibilityForm: 'HIDDEN',
-        visibilityDetail: 'HIDDEN',
+        visibilityForm: masterGroupId,
+        visibilityDetail: masterGroupId,
         format: null,
         group: null,
-        visibilityList: 'HIDDEN',
+        visibilityList: masterGroupId,
         multiple: false,
         required: false,
         relationship: null,
