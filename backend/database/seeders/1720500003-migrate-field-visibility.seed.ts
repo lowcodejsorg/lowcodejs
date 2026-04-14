@@ -28,17 +28,22 @@ export default async function Seed(): Promise<void> {
     return;
   }
 
+  function resolveVisibility(flag: unknown, groupId: string): string {
+    if (flag === true) return groupId;
+    return 'HIDDEN';
+  }
+
   let migratedCount = 0;
 
   for (const field of fields) {
     const raw: Record<string, unknown> = field.toObject();
 
-    const visibilityList =
-      raw.showInList === true ? registeredGroupId : 'HIDDEN';
-    const visibilityForm =
-      raw.showInForm === true ? registeredGroupId : 'HIDDEN';
-    const visibilityDetail =
-      raw.showInDetail === true ? registeredGroupId : 'HIDDEN';
+    const visibilityList = resolveVisibility(raw.showInList, registeredGroupId);
+    const visibilityForm = resolveVisibility(raw.showInForm, registeredGroupId);
+    const visibilityDetail = resolveVisibility(
+      raw.showInDetail,
+      registeredGroupId,
+    );
 
     await Field.updateOne(
       { _id: field._id },
