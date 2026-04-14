@@ -37,6 +37,10 @@ export const TableUpdateSchema = z.object({
     E_TABLE_STYLE.CALENDAR,
     E_TABLE_STYLE.GANTT,
   ]),
+  owner: z.string().default(''),
+  collaborators: z
+    .array(z.object({ user: z.string(), profile: z.string() }))
+    .default([]),
   viewTable: z.string().default('PUBLIC'),
   updateTable: z.string().default('PUBLIC'),
   createField: z.string().default('PUBLIC'),
@@ -69,6 +73,8 @@ export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
   description: '',
   style: E_TABLE_STYLE.LIST,
+  owner: '',
+  collaborators: [],
   viewTable: 'PUBLIC',
   updateTable: 'PUBLIC',
   createField: 'PUBLIC',
@@ -435,7 +441,26 @@ export const UpdateTableFormFields = withForm({
           </form.AppField>
         </div>
 
-        {/* TODO: Adicionar seção de collaborators (array de {user, profile}) */}
+        {/* Dono da tabela */}
+        <form.AppField name="owner">
+          {(field) => (
+            <field.FieldUserSingleSelect
+              label="Dono"
+              placeholder="Selecione o dono da tabela"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
+
+        {/* Colaboradores */}
+        <form.AppField name="collaborators">
+          {(field) => (
+            <field.FieldCollaboratorsEditor
+              label="Colaboradores"
+              disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
 
         {/* Ordenação padrão */}
         <form.AppField name="order">

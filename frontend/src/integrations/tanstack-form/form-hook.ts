@@ -4,6 +4,7 @@ import { createFormHook } from '@tanstack/react-form';
 // Campos basicos (leves)
 import {
   FieldBooleanSwitch,
+  FieldCollaboratorsEditor,
   FieldEmail,
   FieldFileUpload,
   FieldGroupCombobox,
@@ -20,6 +21,7 @@ import {
   FieldTextarea,
   FieldUrl,
   FieldUserMultiSelect,
+  FieldUserSingleSelect,
 } from './fields/base';
 
 // Campos pesados com lazy loading interno
@@ -74,6 +76,7 @@ export const { useAppForm, withForm } = createFormHook({
     FieldUrl,
     FieldSwitch,
     FieldBooleanSwitch,
+    FieldCollaboratorsEditor,
     FieldEditor,
     FieldCodeEditor,
     FieldFileUpload,
@@ -85,6 +88,7 @@ export const { useAppForm, withForm } = createFormHook({
     FieldPermissionSelect,
     FieldSystemPermissionCheckboxes,
     FieldUserMultiSelect,
+    FieldUserSingleSelect,
     FieldTableMultiSelect,
     // Table configuration
     TableComboboxField,

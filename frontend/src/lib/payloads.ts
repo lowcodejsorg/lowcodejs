@@ -134,6 +134,7 @@ export type TableUpdatePayload = {
   updateRow?: string;
   removeRow?: string;
   viewRow?: string;
+  owner?: string;
   collaborators?: Array<{ user: string; profile: string }>;
   fieldOrderList?: Array<string>;
   fieldOrderForm?: Array<string>;

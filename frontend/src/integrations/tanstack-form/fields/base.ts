@@ -2,6 +2,7 @@
  * Campos basicos do formulario - leves e frequentemente usados
  */
 export { FieldBooleanSwitch } from '@/components/common/dynamic-table/base/field-boolean-switch';
+export { FieldCollaboratorsEditor } from '@/components/common/dynamic-table/base/field-collaborators-editor';
 export { FieldEmail } from '@/components/common/dynamic-table/base/field-email';
 export { FieldFileUpload } from '@/components/common/dynamic-table/base/field-file-upload';
 export { FieldGroupCombobox } from '@/components/common/dynamic-table/base/field-group-combobox';
@@ -18,3 +19,4 @@ export { FieldText } from '@/components/common/dynamic-table/base/field-text';
 export { FieldTextarea } from '@/components/common/dynamic-table/base/field-textarea';
 export { FieldUrl } from '@/components/common/dynamic-table/base/field-url';
 export { FieldUserMultiSelect } from '@/components/common/dynamic-table/base/field-user-multi-select';
+export { FieldUserSingleSelect } from '@/components/common/dynamic-table/base/field-user-single-select';

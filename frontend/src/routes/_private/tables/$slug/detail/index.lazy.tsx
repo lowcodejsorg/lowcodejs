@@ -130,6 +130,16 @@ function TableUpdateContent({
       name: data.name,
       description: data.description ?? '',
       style: data.style,
+      owner: ((): string => {
+        const owner = data.owner;
+        if (!owner) return '';
+        if (typeof owner === 'string') return owner;
+        return owner._id ?? '';
+      })(),
+      collaborators: (data.collaborators ?? []).map((c) => ({
+        user: typeof c.user === 'string' ? c.user : (c.user?._id ?? ''),
+        profile: c.profile,
+      })),
       viewTable: data.viewTable ?? 'PUBLIC',
       updateTable: data.updateTable ?? 'PUBLIC',
       createField: data.createField ?? 'PUBLIC',
@@ -179,6 +189,8 @@ function TableUpdateContent({
         description: value.description || null,
         logo: value.logo || data.logo?._id || null,
         style: value.style,
+        owner: value.owner || undefined,
+        collaborators: value.collaborators,
         viewTable: value.viewTable,
         updateTable: value.updateTable,
         createField: value.createField,
