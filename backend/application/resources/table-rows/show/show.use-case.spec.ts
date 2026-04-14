@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { E_TABLE_STYLE } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import GroupResolutionService from '@application/services/group-resolution/group-resolution.service';
 import InMemoryRowContextService from '@application/services/row-context/in-memory-row-context.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 
@@ -12,6 +14,8 @@ let tableInMemoryRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
 let rowPasswordService: InMemoryRowPasswordService;
 let rowContextService: InMemoryRowContextService;
+let userRepository: UserInMemoryRepository;
+let groupResolutionService: GroupResolutionService;
 let sut: TableRowShowUseCase;
 
 describe('Table Row Show Use Case', () => {
@@ -19,14 +23,17 @@ describe('Table Row Show Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     rowRepository = new RowInMemoryRepository();
     rowPasswordService = new InMemoryRowPasswordService();
-
     rowContextService = new InMemoryRowContextService();
+    userRepository = new UserInMemoryRepository();
+    groupResolutionService = new GroupResolutionService();
 
     sut = new TableRowShowUseCase(
       tableInMemoryRepository,
       rowRepository,
       rowPasswordService,
       rowContextService,
+      userRepository,
+      groupResolutionService,
     );
     vi.clearAllMocks();
   });
