@@ -28,15 +28,22 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   visibility: 'PUBLIC',
 };
 
+type MenuFormMode = 'show' | 'edit';
+type MenuTypeProp = ValueOf<typeof E_MENU_ITEM_TYPE> | '';
+
+const DEFAULT_PROPS: {
+  isPending: boolean;
+  mode: MenuFormMode;
+  menuType: MenuTypeProp;
+} = {
+  isPending: false,
+  mode: 'show',
+  menuType: E_MENU_ITEM_TYPE.SEPARATOR,
+};
+
 export const UpdateMenuFormFields = withForm({
   defaultValues: menuUpdateFormDefaultValues,
-  props: {
-    isPending: false,
-    mode: 'show' as 'show' | 'edit',
-    menuType: E_MENU_ITEM_TYPE.SEPARATOR as
-      | ValueOf<typeof E_MENU_ITEM_TYPE>
-      | '',
-  },
+  props: DEFAULT_PROPS,
   render: function Render({ form, isPending, mode, menuType }) {
     const isDisabled = mode === 'show' || isPending;
 
