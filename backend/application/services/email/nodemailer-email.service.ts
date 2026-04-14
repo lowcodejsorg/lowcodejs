@@ -3,7 +3,10 @@ import { Service } from 'fastify-decorators';
 import { join } from 'node:path';
 import nodemailer from 'nodemailer';
 
-import { NodemailerEmailProviderConfig } from '@config/email.config';
+import {
+  EmailProviderFrom,
+  NodemailerEmailProviderConfig,
+} from '@config/email.config';
 
 import {
   EmailContractService,
@@ -47,7 +50,7 @@ export default class NodemailerEmailService extends EmailContractService {
       }
 
       const result = await this.transporter.sendMail({
-        from: options.from ?? NodemailerEmailProviderConfig.auth?.user,
+        from: options.from ?? EmailProviderFrom,
         to: validEmails.join(', '),
         subject: options.subject,
         html: options.body,

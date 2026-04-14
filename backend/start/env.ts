@@ -23,6 +23,7 @@ const EnvSchema = z.object({
   EMAIL_PROVIDER_HOST: z.string().trim(),
   EMAIL_PROVIDER_PORT: z.coerce.number(),
   EMAIL_PROVIDER_USER: z.string().trim(),
+  EMAIL_PROVIDER_FROM: z.string().trim().optional(),
 
   JWT_PUBLIC_KEY: z.string().trim(),
   JWT_PRIVATE_KEY: z.string().trim(),

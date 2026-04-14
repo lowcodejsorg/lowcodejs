@@ -10,3 +10,6 @@ export const NodemailerEmailProviderConfig = {
     pass: Env.EMAIL_PROVIDER_PASSWORD,
   },
 };
+
+export const EmailProviderFrom =
+  Env.EMAIL_PROVIDER_FROM ?? Env.EMAIL_PROVIDER_USER;
