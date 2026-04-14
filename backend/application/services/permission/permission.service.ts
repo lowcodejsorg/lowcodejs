@@ -153,7 +153,7 @@ export default class PermissionService extends PermissionContractService {
       );
     }
 
-    const groups = this.groupResolutionService.resolveUserGroups(user);
+    const groups = await this.groupResolutionService.resolveUserGroups(user);
     const allPermissions = groups.flatMap((g) => g.permissions ?? []);
     const hasPermission = allPermissions.some((p) => p.slug === permissionSlug);
 
@@ -253,7 +253,7 @@ export default class PermissionService extends PermissionContractService {
       }
     }
 
-    this.checkTableActionBySystemGroup({
+    await this.checkTableActionBySystemGroup({
       table,
       user: user ?? null,
       field,
@@ -273,11 +273,11 @@ export default class PermissionService extends PermissionContractService {
     return undefined;
   }
 
-  private checkTableActionBySystemGroup(args: {
+  private async checkTableActionBySystemGroup(args: {
     table: ITable;
     user: IUser | null;
     field: TableActionField;
-  }): void {
+  }): Promise<void> {
     const { table, user, field } = args;
     const actionValue = table[field];
 
@@ -300,7 +300,7 @@ export default class PermissionService extends PermissionContractService {
     }
 
     const effectiveGroupIds =
-      this.groupResolutionService.resolveUserGroupIds(user);
+      await this.groupResolutionService.resolveUserGroupIds(user);
     if (!effectiveGroupIds.includes(String(actionValue))) {
       throw HTTPException.Forbidden(
         'Grupo do usuário não autorizado para esta ação',

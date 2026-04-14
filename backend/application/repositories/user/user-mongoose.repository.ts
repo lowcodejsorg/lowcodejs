@@ -17,7 +17,7 @@ export default class UserMongooseRepository implements UserContractRepository {
   private readonly populateOptions = [
     {
       path: 'groups',
-      populate: [{ path: 'permissions' }, { path: 'encompasses' }],
+      populate: [{ path: 'permissions' }],
     },
   ];
 

@@ -134,19 +134,19 @@ export function GroupView({ data }: GroupViewProps): React.JSX.Element {
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Permissões atribuídas
             </p>
-            {renderPermissions(data.permissions)}
+            {renderPermissions(data.permissions ?? [])}
           </div>
 
           <div className="space-y-1">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Permissões do sistema
             </p>
-            {renderSystemPermissions(data.systemPermissions)}
+            {renderSystemPermissions(data.systemPermissions ?? {})}
           </div>
         </CardContent>
       </Card>
 
-      {data.encompasses.length > 0 && (
+      {(data.encompasses ?? []).length > 0 && (
         <Card className="shadow-none">
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
@@ -162,7 +162,7 @@ export function GroupView({ data }: GroupViewProps): React.JSX.Element {
                 Grupos englobados
               </p>
               <div className="flex flex-wrap gap-1">
-                {data.encompasses.map((group) => {
+                {(data.encompasses ?? []).map((group) => {
                   const label = resolveEncompassesLabel(group);
                   return (
                     <Badge

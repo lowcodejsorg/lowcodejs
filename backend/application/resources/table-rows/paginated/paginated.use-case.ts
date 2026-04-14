@@ -102,6 +102,6 @@ export default class TableRowPaginatedUseCase {
     if (!userId) return new Set<string>();
     const user = await this.userRepository.findById(userId);
     if (!user) return new Set<string>();
-    return new Set(this.groupResolutionService.resolveUserGroupIds(user));
+    return new Set(await this.groupResolutionService.resolveUserGroupIds(user));
   }
 }

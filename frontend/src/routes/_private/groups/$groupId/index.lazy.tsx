@@ -130,9 +130,9 @@ function GroupUpdateContent({
     defaultValues: {
       name: data.name,
       description: data.description ?? '',
-      permissions: data.permissions.map((p) => p._id),
-      encompasses: data.encompasses.map((g) => g._id),
-      systemPermissions: data.systemPermissions,
+      permissions: (data.permissions ?? []).map((p) => p._id),
+      encompasses: (data.encompasses ?? []).map((g) => g._id),
+      systemPermissions: data.systemPermissions ?? {},
     } satisfies GroupUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: GroupUpdateSchema, onSubmit: GroupUpdateSchema },

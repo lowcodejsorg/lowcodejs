@@ -193,9 +193,9 @@ export const CreateMenuFormFields = withForm({
         {/* Campo Visibilidade */}
         <form.AppField name="visibility">
           {(field) => (
-            <field.FieldText
+            <field.FieldPermissionSelect
               label="Visibilidade"
-              placeholder="ID do grupo, PUBLIC ou NOBODY"
+              mode="menu"
               disabled={isPending}
             />
           )}

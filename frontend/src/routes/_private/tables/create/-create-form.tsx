@@ -123,9 +123,9 @@ export const CreateTableFormFields = withForm({
         {/* Campo Visualizar tabela */}
         <form.AppField name="viewTable">
           {(field) => (
-            <field.FieldText
+            <field.FieldPermissionSelect
               label="Visualizar tabela"
-              placeholder="ID do grupo, PUBLIC ou NOBODY"
+              mode="table"
               disabled={isPending}
             />
           )}
