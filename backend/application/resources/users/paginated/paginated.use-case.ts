@@ -25,7 +25,6 @@ export default class UserPaginatedUseCase {
       const sort: Record<string, 'asc' | 'desc'> = {};
       if (payload['order-name']) sort.name = payload['order-name'];
       if (payload['order-email']) sort.email = payload['order-email'];
-      if (payload['order-group']) sort['group.name'] = payload['order-group'];
       if (payload['order-status']) sort.status = payload['order-status'];
       if (payload['order-created-at'])
         sort.createdAt = payload['order-created-at'];

@@ -16,7 +16,6 @@ export const UserPaginatedQueryValidator = z.object({
 
   'order-name': z.enum(['asc', 'desc']).optional(),
   'order-email': z.enum(['asc', 'desc']).optional(),
-  'order-group': z.enum(['asc', 'desc']).optional(),
   'order-status': z.enum(['asc', 'desc']).optional(),
   'order-created-at': z.enum(['asc', 'desc']).optional(),
 });
