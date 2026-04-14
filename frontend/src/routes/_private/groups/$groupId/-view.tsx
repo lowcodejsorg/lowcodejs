@@ -10,12 +10,21 @@ import {
 } from '@/lib/constant';
 import type { IGroup } from '@/lib/interfaces';
 
-const RoleMapper = {
+const RoleMapper: Record<string, string> = {
   [E_ROLE.ADMINISTRATOR]: 'Administrador',
   [E_ROLE.REGISTERED]: 'Registrado',
   [E_ROLE.MANAGER]: 'Gerente',
   [E_ROLE.MASTER]: 'Dono',
 };
+
+function resolveGroupSlugLabel(slug: string): string {
+  return RoleMapper[slug] ?? slug ?? '-';
+}
+
+function resolveEncompassesLabel(group: { slug: string; name: string }): string {
+  const mapped: Record<string, string> = USER_GROUP_MAPPER;
+  return mapped[group.slug] ?? group.name;
+}
 
 interface GroupViewProps {
   data: IGroup;
@@ -88,9 +97,7 @@ export function GroupView({ data }: GroupViewProps): React.JSX.Element {
               Slug (identificador)
             </p>
             <p className="text-sm font-medium">
-              {RoleMapper[data.slug as keyof typeof RoleMapper] ||
-                data.slug ||
-                '-'}
+              {resolveGroupSlugLabel(data.slug)}
             </p>
           </div>
 
@@ -153,12 +160,7 @@ export function GroupView({ data }: GroupViewProps): React.JSX.Element {
               </p>
               <div className="flex flex-wrap gap-1">
                 {data.encompasses.map((group) => {
-                  const label =
-                    group.slug in USER_GROUP_MAPPER
-                      ? USER_GROUP_MAPPER[
-                          group.slug as keyof typeof USER_GROUP_MAPPER
-                        ]
-                      : group.name;
+                  const label = resolveEncompassesLabel(group);
                   return (
                     <Badge
                       key={group._id}
