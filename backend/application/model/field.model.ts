@@ -37,22 +37,20 @@ const Group = new mongoose.Schema(
   },
 );
 
-function validateCategory(Category: any[] | null): boolean {
-  // null é válido
+function isCategoryNode(
+  item: unknown,
+): item is { id: string; label: string; children: unknown[] } {
+  if (!item || typeof item !== 'object') return false;
+  if (!('id' in item) || typeof item.id !== 'string') return false;
+  if (!('label' in item) || typeof item.label !== 'string') return false;
+  if (!('children' in item) || !Array.isArray(item.children)) return false;
+  return true;
+}
+
+function validateCategory(Category: unknown[] | null): boolean {
   if (Category === null) return true;
-
-  // Array vazio é válido
   if (Category.length === 0) return true;
-
-  // Verificar se todos os elementos têm a estrutura correta
-  return Category.every(
-    (item) =>
-      item &&
-      typeof item === 'object' &&
-      typeof item.id === 'string' &&
-      typeof item.label === 'string' &&
-      Array.isArray(item.children),
-  );
+  return Category.every(isCategoryNode);
 }
 
 const Category = new mongoose.Schema(
