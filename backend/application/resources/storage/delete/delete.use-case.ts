@@ -6,6 +6,7 @@ import { left, right } from '@application/core/either.core';
 import HTTPException from '@application/core/exception.core';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
+import { invalidateStorageMeta } from '@application/services/storage/storage-meta-cache';
 
 type Response = Either<HTTPException, null>;
 
@@ -28,6 +29,7 @@ export default class StorageDeleteUseCase {
 
       await this.storageRepository.delete(_id);
       await this.service.delete(storage.filename);
+      invalidateStorageMeta(storage.filename);
 
       return right(null);
     } catch (error) {
