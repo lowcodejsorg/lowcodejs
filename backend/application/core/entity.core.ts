@@ -467,7 +467,7 @@ export type ISetting = {
   EMAIL_PROVIDER_USER: string | null;
   EMAIL_PROVIDER_PASSWORD: string | null;
   EMAIL_PROVIDER_FROM: string | null;
-  OPENAI_API_KEY?: string;
+  OPENAI_API_KEY: string | null;
   AI_ASSISTANT_ENABLED: boolean;
 };
 
