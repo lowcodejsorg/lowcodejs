@@ -18,6 +18,14 @@ const BUILTIN_TEMPLATE_IDS = new Set([
   'DOCUMENT_TEMPLATE',
 ]);
 
+const EMAIL_PROVIDER_KEYS = new Set([
+  'EMAIL_PROVIDER_HOST',
+  'EMAIL_PROVIDER_PORT',
+  'EMAIL_PROVIDER_USER',
+  'EMAIL_PROVIDER_PASSWORD',
+  'EMAIL_PROVIDER_FROM',
+]);
+
 type Response = Either<HTTPException, Record<string, unknown>>;
 
 @Service()
@@ -38,6 +46,8 @@ export default class SettingUpdateUseCase {
       const updated = await this.settingRepository.update(payload);
 
       for (const [key, value] of Object.entries(payload)) {
+        if (EMAIL_PROVIDER_KEYS.has(key)) continue;
+        if (value === null || value === undefined) continue;
         process.env[key] = String(value);
       }
 

@@ -15,10 +15,6 @@ export const SettingUpdateSchema: FastifySchema = {
       'FILE_UPLOAD_ACCEPTED',
       'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
       'PAGINATION_PER_PAGE',
-      'EMAIL_PROVIDER_HOST',
-      'EMAIL_PROVIDER_PORT',
-      'EMAIL_PROVIDER_USER',
-      'EMAIL_PROVIDER_PASSWORD',
     ],
     properties: {
       SYSTEM_NAME: {
@@ -88,39 +84,28 @@ export const SettingUpdateSchema: FastifySchema = {
       },
       EMAIL_PROVIDER_HOST: {
         type: 'string',
-        minLength: 1,
+        nullable: true,
         description: 'Host do servidor de email',
-        errorMessage: {
-          type: 'O host de email deve ser um texto',
-          minLength: 'O host de email é obrigatório',
-        },
       },
       EMAIL_PROVIDER_PORT: {
         type: 'number',
-        minimum: 1,
-        description: 'Porta do servidor de email (mínimo 1)',
-        errorMessage: {
-          type: 'A porta de email deve ser um número',
-          minimum: 'A porta de email deve ser maior que zero',
-        },
+        nullable: true,
+        description: 'Porta do servidor de email',
       },
       EMAIL_PROVIDER_USER: {
         type: 'string',
-        minLength: 1,
+        nullable: true,
         description: 'Usuário do servidor de email',
-        errorMessage: {
-          type: 'O usuário de email deve ser um texto',
-          minLength: 'O usuário de email é obrigatório',
-        },
       },
       EMAIL_PROVIDER_PASSWORD: {
         type: 'string',
-        minLength: 1,
+        nullable: true,
         description: 'Senha do servidor de email',
-        errorMessage: {
-          type: 'A senha de email deve ser um texto',
-          minLength: 'A senha de email é obrigatória',
-        },
+      },
+      EMAIL_PROVIDER_FROM: {
+        type: 'string',
+        nullable: true,
+        description: 'Remetente (MAIL FROM) do servidor de email',
       },
       OPENAI_API_KEY: {
         type: 'string',
@@ -189,10 +174,6 @@ export const SettingUpdateSchema: FastifySchema = {
         FILE_UPLOAD_MAX_FILES_PER_UPLOAD:
           'O máximo de arquivos por upload é obrigatório',
         PAGINATION_PER_PAGE: 'A paginação é obrigatória',
-        EMAIL_PROVIDER_HOST: 'O host de email é obrigatório',
-        EMAIL_PROVIDER_PORT: 'A porta de email é obrigatória',
-        EMAIL_PROVIDER_USER: 'O usuário de email é obrigatório',
-        EMAIL_PROVIDER_PASSWORD: 'A senha de email é obrigatória',
       },
       additionalProperties: 'Campos extras não são permitidos',
     },
@@ -235,19 +216,28 @@ export const SettingUpdateSchema: FastifySchema = {
         },
         EMAIL_PROVIDER_HOST: {
           type: 'string',
+          nullable: true,
           description: 'Host do servidor de email',
         },
         EMAIL_PROVIDER_PORT: {
           type: 'number',
+          nullable: true,
           description: 'Porta do servidor de email',
         },
         EMAIL_PROVIDER_USER: {
           type: 'string',
+          nullable: true,
           description: 'Usuário do servidor de email',
         },
         EMAIL_PROVIDER_PASSWORD: {
           type: 'string',
+          nullable: true,
           description: 'Senha do servidor de email',
+        },
+        EMAIL_PROVIDER_FROM: {
+          type: 'string',
+          nullable: true,
+          description: 'Remetente (MAIL FROM) do servidor de email',
         },
         OPENAI_API_KEY: {
           type: 'string',

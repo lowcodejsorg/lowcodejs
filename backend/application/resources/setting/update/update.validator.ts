@@ -33,21 +33,11 @@ export const SettingUpdateBodyValidator = z.object({
     .number({ message: 'A paginação deve ser um número' })
     .min(1, 'A paginação deve ser maior que zero'),
   MODEL_CLONE_TABLES: z.array(z.string()).optional(),
-  EMAIL_PROVIDER_HOST: z
-    .string({ message: 'O host de email é obrigatório' })
-    .min(1, 'O host de email é obrigatório')
-    .trim(),
-  EMAIL_PROVIDER_PORT: z.coerce
-    .number({ message: 'A porta de email deve ser um número' })
-    .min(1, 'A porta de email deve ser maior que zero'),
-  EMAIL_PROVIDER_USER: z
-    .string({ message: 'O usuário de email é obrigatório' })
-    .min(1, 'O usuário de email é obrigatório')
-    .trim(),
-  EMAIL_PROVIDER_PASSWORD: z
-    .string({ message: 'A senha de email é obrigatória' })
-    .min(1, 'A senha de email é obrigatória')
-    .trim(),
+  EMAIL_PROVIDER_HOST: z.string().trim().nullable().optional(),
+  EMAIL_PROVIDER_PORT: z.coerce.number().nullable().optional(),
+  EMAIL_PROVIDER_USER: z.string().trim().nullable().optional(),
+  EMAIL_PROVIDER_PASSWORD: z.string().trim().nullable().optional(),
+  EMAIL_PROVIDER_FROM: z.string().trim().nullable().optional(),
   OPENAI_API_KEY: z.string().trim().optional(),
   AI_ASSISTANT_ENABLED: z.boolean().optional(),
   LOGO_SMALL_URL: z

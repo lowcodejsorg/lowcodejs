@@ -99,6 +99,11 @@ export default class SettingShowUseCase {
       if (!setting) {
         return right({
           ...process.env,
+          EMAIL_PROVIDER_HOST: null,
+          EMAIL_PROVIDER_PORT: null,
+          EMAIL_PROVIDER_USER: null,
+          EMAIL_PROVIDER_PASSWORD: null,
+          EMAIL_PROVIDER_FROM: null,
           FILE_UPLOAD_ACCEPTED:
             process.env.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
           MODEL_CLONE_TABLES: [
