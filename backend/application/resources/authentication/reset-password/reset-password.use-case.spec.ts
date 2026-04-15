@@ -1,21 +1,25 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
+import InMemoryEmailService from '@application/services/email/in-memory-email.service';
 import InMemoryPasswordService from '@application/services/password/in-memory-password.service';
 
 import UpdatePasswordRecoveryUseCase from './reset-password.use-case';
 
 let userInMemoryRepository: UserInMemoryRepository;
 let passwordService: InMemoryPasswordService;
+let emailService: InMemoryEmailService;
 let sut: UpdatePasswordRecoveryUseCase;
 
 describe('Reset Password Use Case', () => {
   beforeEach(() => {
     userInMemoryRepository = new UserInMemoryRepository();
     passwordService = new InMemoryPasswordService();
+    emailService = new InMemoryEmailService();
     sut = new UpdatePasswordRecoveryUseCase(
       userInMemoryRepository,
       passwordService,
+      emailService,
     );
   });
 
@@ -60,6 +64,28 @@ describe('Reset Password Use Case', () => {
     expect(updatedUser.password).not.toBe('new_password');
   });
 
+  it('deve enviar email de confirmacao apos redefinir senha', async () => {
+    const user = await userInMemoryRepository.create({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'old_password',
+      group: 'group-id',
+    });
+
+    await sut.execute({
+      _id: user._id,
+      password: 'new_password',
+    });
+
+    // aguarda o fire-and-forget
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    const sentEmail = emailService.getLastEmail();
+    expect(sentEmail).toBeDefined();
+    expect(sentEmail?.to).toContain(user.email);
+    expect(sentEmail?.subject).toBe('Senha redefinida com sucesso');
+  });
+
   it('deve retornar erro USER_NOT_FOUND quando usuario nao existir', async () => {
     const result = await sut.execute({
       _id: 'non-existent-id',
@@ -90,5 +116,23 @@ describe('Reset Password Use Case', () => {
     expect(result.value.message).toBe('Erro interno do servidor');
 
     expect(findByIdSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it('nao deve bloquear resposta quando envio de email falhar', async () => {
+    emailService.simulateError('sendEmail', new Error('SMTP error'));
+
+    const user = await userInMemoryRepository.create({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'old_password',
+      group: 'group-id',
+    });
+
+    const result = await sut.execute({
+      _id: user._id,
+      password: 'new_password',
+    });
+
+    expect(result.isRight()).toBe(true);
   });
 });
