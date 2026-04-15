@@ -12,13 +12,12 @@ servidor HTTP + WebSocket.
 ## Fluxo de Inicialização
 
 1. Conecta ao MongoDB via Mongoose
-2. `syncSettingsFromDatabase()` — carrega do banco as configurações sobrescrevíveis
-   (driver de storage, limites de upload, config de email, etc.) e substitui env vars
-3. Inicia o servidor Fastify (kernel em `start/kernel.ts`) na porta configurada
-4. Registra Socket.IO com decodificação JWT para autenticação de WebSocket (chat)
+2. Inicia o servidor Fastify (kernel em `start/kernel.ts`) na porta configurada
+3. Registra Socket.IO com decodificação JWT para autenticação de WebSocket (chat)
 
 ## Observações
 
-- O banco de dados é fonte de verdade para configurações que podem ser alteradas
-  pela UI de Settings sem redeploy
+- Configurações de domínio (branding, locale, upload, paginação, IA, SMTP) são
+  lidas dinamicamente do documento Setting (MongoDB) pelas camadas que precisam
+  delas — não há mais sync para `process.env` no boot
 - Socket.IO usa o mesmo JWT RS256 do HTTP para autenticar conexões

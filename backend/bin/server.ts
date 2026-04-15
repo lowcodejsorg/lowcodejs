@@ -1,44 +1,10 @@
 import type { Server as HttpServer } from 'node:http';
 
 import type { IJWTPayload } from '@application/core/entity.core';
-import { Setting } from '@application/model/setting.model';
 import { initChatSocket } from '@application/resources/chat/chat.socket';
 import { MongooseConnect } from '@config/database.config';
 import { Env } from '@start/env';
 import { kernel } from '@start/kernel';
-
-const SETTING_SYNC_KEYS = [
-  'SYSTEM_NAME',
-  'LOCALE',
-  'STORAGE_DRIVER',
-  'STORAGE_ENDPOINT',
-  'STORAGE_REGION',
-  'STORAGE_BUCKET',
-  'STORAGE_ACCESS_KEY',
-  'STORAGE_SECRET_KEY',
-  'FILE_UPLOAD_MAX_SIZE',
-  'FILE_UPLOAD_ACCEPTED',
-  'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
-  'PAGINATION_PER_PAGE',
-  'LOGO_SMALL_URL',
-  'LOGO_LARGE_URL',
-  'OPENAI_API_KEY',
-  'AI_ASSISTANT_ENABLED',
-];
-
-async function syncSettingsFromDatabase(): Promise<void> {
-  const settings = await Setting.findOne().lean();
-  if (!settings) return;
-
-  for (const key of SETTING_SYNC_KEYS) {
-    const value = (settings as Record<string, unknown>)[key];
-    if (value !== undefined && value !== null) {
-      process.env[key] = String(value);
-    }
-  }
-  console.info('Settings synced from database');
-  console.info(`Storage driver: ${process.env.STORAGE_DRIVER || 'local'}`);
-}
 
 async function start(): Promise<void> {
   try {
@@ -59,9 +25,8 @@ async function start(): Promise<void> {
   }
 }
 
-MongooseConnect().then(async () => {
+MongooseConnect().then(() => {
   console.info('Mongoose connected');
   console.info('url: ', Env.DATABASE_URL);
-  await syncSettingsFromDatabase();
   start();
 });
