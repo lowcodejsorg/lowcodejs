@@ -250,10 +250,11 @@ export type SettingUpdatePayload = Partial<{
   LOGO_SMALL_URL: string;
   LOGO_LARGE_URL: string;
   MODEL_CLONE_TABLES: Array<string>;
-  EMAIL_PROVIDER_HOST: string;
-  EMAIL_PROVIDER_PORT: number;
-  EMAIL_PROVIDER_USER: string;
-  EMAIL_PROVIDER_PASSWORD: string;
+  EMAIL_PROVIDER_HOST: string | null;
+  EMAIL_PROVIDER_PORT: number | null;
+  EMAIL_PROVIDER_USER: string | null;
+  EMAIL_PROVIDER_PASSWORD: string | null;
+  EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string;
   AI_ASSISTANT_ENABLED: boolean;
 }>;
