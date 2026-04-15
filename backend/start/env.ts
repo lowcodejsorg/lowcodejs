@@ -5,17 +5,6 @@ const envFile = process.env.NODE_ENV === 'test' ? '.env.test' : '.env';
 config({ path: envFile });
 
 const EnvSchema = z.object({
-  LOCALE: z.enum(['pt-br', 'en-us']).default('pt-br'),
-  FILE_UPLOAD_MAX_SIZE: z.coerce.number().default(1024 * 1024 * 5),
-  FILE_UPLOAD_ACCEPTED: z.string().transform((val) =>
-    val
-      .split(';')
-      .map((s) => s.trim())
-      .filter(Boolean),
-  ),
-  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.coerce.number().default(10),
-  PAGINATION_PER_PAGE: z.coerce.number().default(50),
-
   DATABASE_URL: z.string().trim(),
   DB_NAME: z.string().trim().default('lowcodejs'),
 
@@ -31,9 +20,6 @@ const EnvSchema = z.object({
 
   APP_SERVER_URL: z.string().trim(),
   APP_CLIENT_URL: z.string().trim(),
-
-  LOGO_SMALL_URL: z.string().trim(),
-  LOGO_LARGE_URL: z.string().trim(),
 
   ALLOWED_ORIGINS: z
     .string()
@@ -55,7 +41,6 @@ const EnvSchema = z.object({
   REDIS_URL: z.string().trim().default('redis://localhost:6379'),
 
   MCP_SERVER_URL: z.string().trim().optional(),
-  OPENAI_API_KEY: z.string().trim().optional(),
 });
 
 const validation = EnvSchema.safeParse(process.env);
