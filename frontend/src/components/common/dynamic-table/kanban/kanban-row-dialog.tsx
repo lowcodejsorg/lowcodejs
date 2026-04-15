@@ -1,4 +1,9 @@
-import { CopyIcon, FileTextIcon, TrashIcon } from 'lucide-react';
+import {
+  CopyIcon,
+  DownloadIcon,
+  FileTextIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
@@ -50,6 +55,7 @@ import {
   normalizeRowValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
+import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
 import { toastError, toastSuccess, toastWarning } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
@@ -1032,22 +1038,34 @@ export function KanbanRowDialog({
                                               {attachment.originalName}
                                             </a>
                                           </div>
-                                          <Button
-                                            type="button"
-                                            variant="ghost"
-                                            size="icon-sm"
-                                            className="cursor-pointer text-destructive"
-                                            disabled={
-                                              updateRow.status === 'pending'
-                                            }
-                                            onClick={() =>
-                                              handleAttachmentDelete(
-                                                attachment._id,
-                                              )
-                                            }
-                                          >
-                                            <TrashIcon className="size-3.5" />
-                                          </Button>
+                                          <div className="flex items-center gap-1">
+                                            <a
+                                              href={getStorageDownloadUrl(
+                                                attachment,
+                                              )}
+                                              aria-label={`Baixar ${attachment.originalName}`}
+                                              title="Baixar"
+                                              className="text-muted-foreground hover:text-primary p-1"
+                                            >
+                                              <DownloadIcon className="size-3.5" />
+                                            </a>
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="icon-sm"
+                                              className="cursor-pointer text-destructive"
+                                              disabled={
+                                                updateRow.status === 'pending'
+                                              }
+                                              onClick={() =>
+                                                handleAttachmentDelete(
+                                                  attachment._id,
+                                                )
+                                              }
+                                            >
+                                              <TrashIcon className="size-3.5" />
+                                            </Button>
+                                          </div>
                                         </li>
                                       );
                                     },
