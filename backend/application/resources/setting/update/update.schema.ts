@@ -8,14 +8,6 @@ export const SettingUpdateSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: [
-      'SYSTEM_NAME',
-      'LOCALE',
-      'FILE_UPLOAD_MAX_SIZE',
-      'FILE_UPLOAD_ACCEPTED',
-      'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
-      'PAGINATION_PER_PAGE',
-    ],
     properties: {
       SYSTEM_NAME: {
         type: 'string',
@@ -114,6 +106,7 @@ export const SettingUpdateSchema: FastifySchema = {
       },
       AI_ASSISTANT_ENABLED: {
         type: 'boolean',
+        nullable: true,
         description: 'Habilitar ou desabilitar o assistente IA',
       },
       LOGO_SMALL_URL: {
@@ -166,15 +159,6 @@ export const SettingUpdateSchema: FastifySchema = {
     },
     additionalProperties: false,
     errorMessage: {
-      required: {
-        SYSTEM_NAME: 'O nome do sistema é obrigatório',
-        LOCALE: 'O locale é obrigatório',
-        FILE_UPLOAD_MAX_SIZE: 'O tamanho máximo de arquivo é obrigatório',
-        FILE_UPLOAD_ACCEPTED: 'As extensões aceitas são obrigatórias',
-        FILE_UPLOAD_MAX_FILES_PER_UPLOAD:
-          'O máximo de arquivos por upload é obrigatório',
-        PAGINATION_PER_PAGE: 'A paginação é obrigatória',
-      },
       additionalProperties: 'Campos extras não são permitidos',
     },
   },
@@ -241,6 +225,7 @@ export const SettingUpdateSchema: FastifySchema = {
         },
         OPENAI_API_KEY: {
           type: 'string',
+          nullable: true,
           description: 'Chave da API OpenAI para o assistente IA',
         },
         AI_ASSISTANT_ENABLED: {
@@ -249,10 +234,12 @@ export const SettingUpdateSchema: FastifySchema = {
         },
         LOGO_SMALL_URL: {
           type: 'string',
+          nullable: true,
           description: 'URL do logo pequeno',
         },
         LOGO_LARGE_URL: {
           type: 'string',
+          nullable: true,
           description: 'URL do logo grande',
         },
         STORAGE_DRIVER: {
