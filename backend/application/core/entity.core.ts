@@ -462,11 +462,12 @@ export type ISetting = {
   MODEL_CLONE_TABLES: ITable[];
   LOGO_SMALL_URL?: string | null;
   LOGO_LARGE_URL?: string | null;
-  EMAIL_PROVIDER_HOST: string;
-  EMAIL_PROVIDER_PORT: number;
-  EMAIL_PROVIDER_USER: string;
-  EMAIL_PROVIDER_PASSWORD?: string;
-  OPENAI_API_KEY?: string;
+  EMAIL_PROVIDER_HOST: string | null;
+  EMAIL_PROVIDER_PORT: number | null;
+  EMAIL_PROVIDER_USER: string | null;
+  EMAIL_PROVIDER_PASSWORD: string | null;
+  EMAIL_PROVIDER_FROM: string | null;
+  OPENAI_API_KEY: string | null;
   AI_ASSISTANT_ENABLED: boolean;
 };
 

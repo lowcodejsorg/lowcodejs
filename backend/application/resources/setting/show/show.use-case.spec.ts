@@ -82,12 +82,27 @@ describe('Setting Show Use Case', () => {
     ]);
   });
 
-  it('deve retornar process.env quando não há configurações no banco', async () => {
+  it('deve retornar defaults explicitos quando nao ha configuracoes no banco', async () => {
     const result = await sut.execute();
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
 
+    expect(result.value.SYSTEM_NAME).toBe('LowCodeJs');
+    expect(result.value.LOCALE).toBe('pt-br');
+    expect(result.value.FILE_UPLOAD_MAX_SIZE).toBe(10485760);
+    expect(result.value.FILE_UPLOAD_ACCEPTED).toEqual([
+      'jpg',
+      'jpeg',
+      'png',
+      'pdf',
+    ]);
+    expect(result.value.PAGINATION_PER_PAGE).toBe(20);
+    expect(result.value.LOGO_SMALL_URL).toBeNull();
+    expect(result.value.LOGO_LARGE_URL).toBeNull();
+    expect(result.value.OPENAI_API_KEY).toBeNull();
+    expect(result.value.AI_ASSISTANT_ENABLED).toBe(false);
+    expect(result.value.EMAIL_PROVIDER_HOST).toBeNull();
     expect(result.value.MODEL_CLONE_TABLES).toEqual([
       kanbanTemplate,
       cardsTemplate,

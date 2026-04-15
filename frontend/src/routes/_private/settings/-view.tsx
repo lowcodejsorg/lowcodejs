@@ -329,33 +329,42 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             <MailIcon className="w-5 h-5" />
             Servidor de Email
           </CardTitle>
-          <CardDescription>Servidor de email para notificações</CardDescription>
+          <CardDescription>
+            Servidor SMTP usado para envio de e-mails. Opcional — se não
+            configurado, as notificações por e-mail ficam desativadas.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-1">
               <p className="text-sm font-medium">SMTP Host</p>
               <p className="text-sm text-muted-foreground">
-                {data.EMAIL_PROVIDER_HOST || '-'}
+                {data.EMAIL_PROVIDER_HOST || 'Não configurado'}
               </p>
             </div>
             <div className="space-y-1">
               <p className="text-sm font-medium">SMTP Port</p>
               <p className="text-sm text-muted-foreground">
-                {data.EMAIL_PROVIDER_PORT}
+                {data.EMAIL_PROVIDER_PORT ?? 'Não configurado'}
               </p>
             </div>
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium">Email Username</p>
             <p className="text-sm text-muted-foreground">
-              {data.EMAIL_PROVIDER_USER || '-'}
+              {data.EMAIL_PROVIDER_USER || 'Não configurado'}
             </p>
           </div>
           <div className="space-y-1">
             <p className="text-sm font-medium">Email Password</p>
             <p className="text-sm text-muted-foreground">
-              {data.EMAIL_PROVIDER_PASSWORD ? '••••••••' : '-'}
+              {data.EMAIL_PROVIDER_PASSWORD ? '••••••••' : 'Não configurado'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Remetente (MAIL FROM)</p>
+            <p className="text-sm text-muted-foreground">
+              {data.EMAIL_PROVIDER_FROM || 'Não configurado'}
             </p>
           </div>
         </CardContent>

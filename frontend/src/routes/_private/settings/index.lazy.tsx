@@ -25,6 +25,30 @@ export const Route = createLazyFileRoute('/_private/settings/')({
   component: RouteComponent,
 });
 
+function resolveStringDefault(value: string | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  return value;
+}
+
+function resolveNumberDefault(value: number | null | undefined): string {
+  if (value === null || value === undefined) return '';
+  return String(value);
+}
+
+function stringOrNull(value: string): string | null {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return null;
+  return trimmed;
+}
+
+function numberOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  if (trimmed.length === 0) return null;
+  const parsed = Number(trimmed);
+  if (isNaN(parsed)) return null;
+  return parsed;
+}
+
 function RouteComponent(): React.JSX.Element {
   const { data } = useSuspenseQuery(settingOptions());
 
@@ -121,10 +145,13 @@ function SettingUpdateContent({
       FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
       PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
       MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES.flatMap((t) => t._id),
-      EMAIL_PROVIDER_HOST: data.EMAIL_PROVIDER_HOST,
-      EMAIL_PROVIDER_PORT: String(data.EMAIL_PROVIDER_PORT),
-      EMAIL_PROVIDER_USER: data.EMAIL_PROVIDER_USER,
-      EMAIL_PROVIDER_PASSWORD: data.EMAIL_PROVIDER_PASSWORD,
+      EMAIL_PROVIDER_HOST: resolveStringDefault(data.EMAIL_PROVIDER_HOST),
+      EMAIL_PROVIDER_PORT: resolveNumberDefault(data.EMAIL_PROVIDER_PORT),
+      EMAIL_PROVIDER_USER: resolveStringDefault(data.EMAIL_PROVIDER_USER),
+      EMAIL_PROVIDER_PASSWORD: resolveStringDefault(
+        data.EMAIL_PROVIDER_PASSWORD,
+      ),
+      EMAIL_PROVIDER_FROM: resolveStringDefault(data.EMAIL_PROVIDER_FROM),
       OPENAI_API_KEY: data.OPENAI_API_KEY || '',
       AI_ASSISTANT_ENABLED: data.AI_ASSISTANT_ENABLED ?? false,
       logoSmallFile: [] as Array<File>,
@@ -173,10 +200,11 @@ function SettingUpdateContent({
           .join(';'),
         PAGINATION_PER_PAGE: Number(value.PAGINATION_PER_PAGE),
         MODEL_CLONE_TABLES: value.MODEL_CLONE_TABLES,
-        EMAIL_PROVIDER_HOST: value.EMAIL_PROVIDER_HOST.trim(),
-        EMAIL_PROVIDER_PORT: Number(value.EMAIL_PROVIDER_PORT),
-        EMAIL_PROVIDER_USER: value.EMAIL_PROVIDER_USER.trim(),
-        EMAIL_PROVIDER_PASSWORD: value.EMAIL_PROVIDER_PASSWORD.trim(),
+        EMAIL_PROVIDER_HOST: stringOrNull(value.EMAIL_PROVIDER_HOST),
+        EMAIL_PROVIDER_PORT: numberOrNull(value.EMAIL_PROVIDER_PORT),
+        EMAIL_PROVIDER_USER: stringOrNull(value.EMAIL_PROVIDER_USER),
+        EMAIL_PROVIDER_PASSWORD: stringOrNull(value.EMAIL_PROVIDER_PASSWORD),
+        EMAIL_PROVIDER_FROM: stringOrNull(value.EMAIL_PROVIDER_FROM),
         OPENAI_API_KEY: value.OPENAI_API_KEY?.trim() || undefined,
         AI_ASSISTANT_ENABLED: value.AI_ASSISTANT_ENABLED,
       };

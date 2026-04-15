@@ -37,10 +37,6 @@ export default class SettingUpdateUseCase {
 
       const updated = await this.settingRepository.update(payload);
 
-      for (const [key, value] of Object.entries(payload)) {
-        process.env[key] = String(value);
-      }
-
       if (payload.STORAGE_DRIVER === 's3') {
         await this.storageService.ensureBucket();
       }

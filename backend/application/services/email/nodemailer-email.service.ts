@@ -3,10 +3,8 @@ import { Service } from 'fastify-decorators';
 import { join } from 'node:path';
 import nodemailer from 'nodemailer';
 
-import {
-  EmailProviderFrom,
-  NodemailerEmailProviderConfig,
-} from '@config/email.config';
+import { Setting } from '@application/model/setting.model';
+import { buildNodemailerConfig, resolveEmailFrom } from '@config/email.config';
 
 import {
   EmailContractService,
@@ -14,43 +12,39 @@ import {
   type EmailResult,
 } from './email-contract.service';
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 @Service()
 export default class NodemailerEmailService extends EmailContractService {
-  private transporter: nodemailer.Transporter | null = null;
-
-  constructor() {
-    super();
-    this.setupTransporter();
-  }
-
-  private setupTransporter(): void {
-    try {
-      this.transporter = nodemailer.createTransport(
-        NodemailerEmailProviderConfig,
-      );
-    } catch (error) {
-      console.error('Erro ao configurar transportador de email:', error);
-    }
-  }
-
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
-    if (!this.transporter) {
-      return {
-        success: false,
-        message: 'Transportador de email não configurado',
-      };
+    const setting = await Setting.findOne().lean();
+    if (!setting) {
+      console.warn(
+        '[NodemailerEmailService] SMTP nao configurado (nenhum documento Setting)',
+      );
+      return { success: false, message: 'SMTP nao configurado' };
+    }
+
+    const transportConfig = buildNodemailerConfig(setting);
+    if (!transportConfig) {
+      console.warn(
+        '[NodemailerEmailService] SMTP nao configurado (credenciais ausentes em Setting)',
+      );
+      return { success: false, message: 'SMTP nao configurado' };
+    }
+
+    const validEmails = options.to.filter((email) => EMAIL_REGEX.test(email));
+    if (validEmails.length === 0) {
+      return { success: false, message: 'Nenhum email valido fornecido' };
     }
 
     try {
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      const validEmails = options.to.filter((email) => emailRegex.test(email));
+      const transporter = nodemailer.createTransport(transportConfig);
 
-      if (validEmails.length === 0) {
-        return { success: false, message: 'Nenhum email válido fornecido' };
-      }
+      const from = options.from ?? resolveEmailFrom(setting) ?? undefined;
 
-      const result = await this.transporter.sendMail({
-        from: options.from ?? EmailProviderFrom,
+      const result = await transporter.sendMail({
+        from,
         to: validEmails.join(', '),
         subject: options.subject,
         html: options.body,
@@ -60,7 +54,7 @@ export default class NodemailerEmailService extends EmailContractService {
       let testUrl: string | boolean | undefined;
       if (process.env.NODE_ENV !== 'production') {
         const url = nodemailer.getTestMessageUrl(result);
-        testUrl = url || undefined;
+        if (url) testUrl = url;
       }
 
       return {
@@ -69,8 +63,8 @@ export default class NodemailerEmailService extends EmailContractService {
         testUrl,
       };
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error';
+      let errorMessage = 'Unknown error';
+      if (error instanceof Error) errorMessage = error.message;
       console.error('Erro ao enviar email:', error);
       return {
         success: false,

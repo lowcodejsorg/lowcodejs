@@ -251,15 +251,10 @@ Endpoint: /openapi.json
 
 Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em test.
 
-### Localizacao & Arquivos
-
-| Variavel | Default | Descricao |
-|----------|---------|-----------|
-| LOCALE | pt-br | Enum: pt-br, en-us |
-| FILE_UPLOAD_MAX_SIZE | 5242880 | Limite em bytes |
-| FILE_UPLOAD_ACCEPTED | - | MIME types separados por ; |
-| FILE_UPLOAD_MAX_FILES_PER_UPLOAD | 10 | Maximo de arquivos por upload |
-| PAGINATION_PER_PAGE | 50 | Itens por pagina |
+O `.env` agora cobre apenas infraestrutura (DB, JWT, cookies, CORS, storage
+driver, Redis, MCP). Configurações de domínio (branding, locale, upload,
+paginação, logos, IA, SMTP) vivem no documento Setting do MongoDB e são
+editadas via UI `/settings` pelo usuário MASTER.
 
 ### Banco de Dados
 
@@ -270,13 +265,12 @@ Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em 
 
 ### Email (SMTP)
 
-| Variavel | Default | Descricao |
-|----------|---------|-----------|
-| EMAIL_PROVIDER_HOST | obrigatorio | Host SMTP |
-| EMAIL_PROVIDER_PORT | obrigatorio | Porta SMTP |
-| EMAIL_PROVIDER_USER | obrigatorio | Usuario SMTP |
-| EMAIL_PROVIDER_PASSWORD | obrigatorio | Senha SMTP |
-| EMAIL_PROVIDER_FROM | opcional | Remetente (MAIL FROM). Obrigatorio quando o usuario SMTP nao e um email valido (AWS SES, SendGrid "apikey", etc.). Fallback: EMAIL_PROVIDER_USER |
+Configurado pela UI `/settings` (usuario MASTER) e persistido no documento
+Setting do MongoDB. Campos: `EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`,
+`EMAIL_PROVIDER_USER`, `EMAIL_PROVIDER_PASSWORD`, `EMAIL_PROVIDER_FROM`
+(todos nullable). Se qualquer credencial essencial estiver ausente, o
+`NodemailerEmailService` retorna `{ success: false, message: 'SMTP nao
+configurado' }` sem lancar erro.
 
 ### JWT & Cookies
 
@@ -295,13 +289,6 @@ Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em 
 | PORT | 3000 | Porta HTTP |
 | APP_SERVER_URL | obrigatorio | URL publica do backend |
 | APP_CLIENT_URL | obrigatorio | URL publica do frontend |
-
-### Assets
-
-| Variavel | Default | Descricao |
-|----------|---------|-----------|
-| LOGO_SMALL_URL | obrigatorio | URL do logo pequeno |
-| LOGO_LARGE_URL | obrigatorio | URL do logo grande |
 
 ### CORS
 
@@ -330,8 +317,11 @@ Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em 
 
 | Variavel | Default | Descricao |
 |----------|---------|-----------|
-| OPENAI_API_KEY | opcional | Chave da API OpenAI |
 | MCP_SERVER_URL | opcional | URL do servidor MCP |
+
+`OPENAI_API_KEY` e `AI_ASSISTANT_ENABLED` vivem no Setting do MongoDB (UI
+`/settings`). O `chat.socket` le do model em cada conexao, sem depender de
+`process.env`.
 
 ## Error Handling
 
