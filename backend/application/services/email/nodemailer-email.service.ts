@@ -4,10 +4,7 @@ import { join } from 'node:path';
 import nodemailer from 'nodemailer';
 
 import { Setting } from '@application/model/setting.model';
-import {
-  buildNodemailerConfig,
-  resolveEmailFrom,
-} from '@config/email.config';
+import { buildNodemailerConfig, resolveEmailFrom } from '@config/email.config';
 
 import {
   EmailContractService,

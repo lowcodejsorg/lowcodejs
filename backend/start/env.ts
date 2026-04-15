@@ -19,12 +19,6 @@ const EnvSchema = z.object({
   DATABASE_URL: z.string().trim(),
   DB_NAME: z.string().trim().default('lowcodejs'),
 
-  EMAIL_PROVIDER_PASSWORD: z.string().trim(),
-  EMAIL_PROVIDER_HOST: z.string().trim(),
-  EMAIL_PROVIDER_PORT: z.coerce.number(),
-  EMAIL_PROVIDER_USER: z.string().trim(),
-  EMAIL_PROVIDER_FROM: z.string().trim().optional(),
-
   JWT_PUBLIC_KEY: z.string().trim(),
   JWT_PRIVATE_KEY: z.string().trim(),
   COOKIE_SECRET: z.string().trim(),
