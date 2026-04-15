@@ -5,20 +5,35 @@ import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
 import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
-import _static from '@fastify/static';
 import swagger from '@fastify/swagger';
 import websocket from '@fastify/websocket';
 import scalar from '@scalar/fastify-api-reference';
 import ajv from 'ajv-errors';
-import fastify from 'fastify';
-import { bootstrap } from 'fastify-decorators';
+import fastify, { type FastifyReply } from 'fastify';
+import { bootstrap, getInstanceByToken } from 'fastify-decorators';
+import { createReadStream, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import z, { ZodError } from 'zod';
 
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
-import { getS3Client, getStorageDriver } from '@config/storage.config';
+import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
+import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
+import {
+  buildContentDisposition,
+  type DispositionMode,
+} from '@application/services/storage/content-disposition';
+import {
+  getCachedStorageMeta,
+  setCachedStorageMeta,
+  type StorageMeta,
+} from '@application/services/storage/storage-meta-cache';
+import {
+  getLocalStoragePath,
+  getS3Client,
+  getStorageDriver,
+} from '@config/storage.config';
 import { Env } from '@start/env';
 
 function matchOrigin(origin: string, pattern: string): boolean {
@@ -132,30 +147,63 @@ kernel.register(multipart, {
   },
 });
 
-kernel.register(_static, {
-  root: join(process.cwd(), '_storage'),
-  prefix: '/storage/',
-  decorateReply: true,
-});
+const DISPOSITION_MAP: Record<string, DispositionMode> = {
+  '1': 'attachment',
+  true: 'attachment',
+  attachment: 'attachment',
+};
 
-kernel.addHook('onRequest', async (request, reply) => {
-  if (!request.url.startsWith('/storage/')) return;
-  if (getStorageDriver() !== 's3') return;
+function resolveDisposition(download: string | null): DispositionMode {
+  if (download === null) return 'inline';
+  return DISPOSITION_MAP[download] ?? 'inline';
+}
 
-  const key = request.url.replace('/storage/', '');
-  const bucket = process.env.STORAGE_BUCKET!;
-
-  console.info(
-    `[Storage S3] GET ${key} -> ${process.env.STORAGE_ENDPOINT}/${bucket}`,
-  );
+async function resolveStorageMeta(
+  filename: string,
+): Promise<StorageMeta | null> {
+  const cached = getCachedStorageMeta(filename);
+  if (cached !== undefined) return cached;
 
   try {
-    const response = await getS3Client().send(
-      new GetObjectCommand({ Bucket: bucket, Key: key }),
+    const repo = getInstanceByToken<StorageContractRepository>(
+      StorageMongooseRepository,
     );
+    const doc = await repo.findByFilename(filename);
+    const meta: StorageMeta | null =
+      doc === null
+        ? null
+        : { originalName: doc.originalName, mimetype: doc.mimetype };
+    setCachedStorageMeta(filename, meta);
+    return meta;
+  } catch (error) {
+    console.error('[Storage] Falha ao buscar metadata:', error);
+    return null;
+  }
+}
 
-    console.info(
-      `[Storage S3] OK ${key} (${response.ContentType}, ${response.ContentLength} bytes)`,
+async function serveFromLocal(
+  filename: string,
+  reply: FastifyReply,
+): Promise<void> {
+  const fullPath = join(getLocalStoragePath(), filename);
+  if (!existsSync(fullPath)) {
+    reply.status(404).send({ message: 'Arquivo não encontrado' });
+    return;
+  }
+  const stats = statSync(fullPath);
+  reply.header('content-length', stats.size);
+  reply.header('cache-control', 'public, max-age=31536000');
+  reply.send(createReadStream(fullPath));
+}
+
+async function serveFromS3(
+  filename: string,
+  reply: FastifyReply,
+): Promise<void> {
+  const bucket = process.env.STORAGE_BUCKET!;
+  try {
+    const response = await getS3Client().send(
+      new GetObjectCommand({ Bucket: bucket, Key: filename }),
     );
 
     reply.header(
@@ -163,17 +211,49 @@ kernel.addHook('onRequest', async (request, reply) => {
       response.ContentType || 'application/octet-stream',
     );
     reply.header('cache-control', 'public, max-age=31536000');
-
     if (response.ContentLength) {
       reply.header('content-length', response.ContentLength);
     }
 
     reply.send(response.Body);
-    return reply;
   } catch {
-    console.info(`[Storage S3] ${key} não encontrado no S3, tentando local...`);
-    // fallback: deixa @fastify/static servir do filesystem local
+    console.info(
+      `[Storage S3] ${filename} não encontrado no S3, tentando local...`,
+    );
+    await serveFromLocal(filename, reply);
   }
+}
+
+const DRIVER_HANDLERS = {
+  local: serveFromLocal,
+  s3: serveFromS3,
+} as const;
+
+kernel.addHook('onRequest', async (request, reply) => {
+  if (!request.url.startsWith('/storage/')) return;
+  if (request.method !== 'GET' && request.method !== 'HEAD') return;
+
+  const [rawPath, rawQuery] = request.url.split('?');
+  const filename = decodeURIComponent(rawPath.replace('/storage/', ''));
+  if (!filename || filename.includes('..') || filename.includes('/')) {
+    reply.status(400).send({ message: 'Nome de arquivo inválido' });
+    return reply;
+  }
+
+  const query = new URLSearchParams(rawQuery ?? '');
+  const mode = resolveDisposition(query.get('download'));
+
+  const meta = await resolveStorageMeta(filename);
+  if (meta !== null) {
+    reply.header(
+      'content-disposition',
+      buildContentDisposition(mode, meta.originalName),
+    );
+  }
+
+  const handler = DRIVER_HANDLERS[getStorageDriver()];
+  await handler(filename, reply);
+  return reply;
 });
 
 kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
