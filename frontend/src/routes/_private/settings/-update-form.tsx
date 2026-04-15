@@ -54,18 +54,30 @@ export const SettingUpdateSchema = z.object({
   STORAGE_BUCKET: z.string(),
   STORAGE_ACCESS_KEY: z.string(),
   STORAGE_SECRET_KEY: z.string(),
-  LOGO_SMALL_URL: z.string().nullable(),
-  LOGO_LARGE_URL: z.string().nullable(),
-  FILE_UPLOAD_MAX_SIZE: z.string(),
-  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.string(),
-  FILE_UPLOAD_ACCEPTED: z.string(),
-  PAGINATION_PER_PAGE: z.string(),
-  MODEL_CLONE_TABLES: z.array(z.string()),
-  EMAIL_PROVIDER_HOST: z.string(),
-  EMAIL_PROVIDER_PORT: z.string(),
-  EMAIL_PROVIDER_USER: z.string(),
-  EMAIL_PROVIDER_PASSWORD: z.string(),
-  EMAIL_PROVIDER_FROM: z.string(),
+  LOGO_SMALL_URL: z
+    .string({ message: 'A URL do logo pequeno é obrigatória' })
+    .min(1, 'A URL do logo pequeno é obrigatória'),
+  LOGO_LARGE_URL: z
+    .string({ message: 'A URL do logo grande é obrigatória' })
+    .min(1, 'A URL do logo grande é obrigatória'),
+  FILE_UPLOAD_MAX_SIZE: z
+    .string()
+    .min(1, 'O tamanho máximo de arquivo é obrigatório'),
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z
+    .string()
+    .min(1, 'O máximo de arquivos por upload é obrigatório'),
+  FILE_UPLOAD_ACCEPTED: z
+    .string()
+    .min(1, 'As extensões aceitas são obrigatórias'),
+  PAGINATION_PER_PAGE: z.string().min(1, 'A paginação é obrigatória'),
+  MODEL_CLONE_TABLES: z
+    .array(z.string())
+    .min(1, 'Selecione ao menos um modelo de tabela'),
+  EMAIL_PROVIDER_HOST: z.string().min(1, 'O host SMTP é obrigatório'),
+  EMAIL_PROVIDER_PORT: z.string().min(1, 'A porta SMTP é obrigatória'),
+  EMAIL_PROVIDER_USER: z.string().min(1, 'O usuário SMTP é obrigatório'),
+  EMAIL_PROVIDER_PASSWORD: z.string().min(1, 'A senha SMTP é obrigatória'),
+  EMAIL_PROVIDER_FROM: z.string().min(1, 'O remetente (FROM) é obrigatório'),
   OPENAI_API_KEY: z.string(),
   AI_ASSISTANT_ENABLED: z.boolean(),
   logoSmallFile: z.array(z.instanceof(File)),
