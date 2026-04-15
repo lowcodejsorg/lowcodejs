@@ -33,6 +33,7 @@ import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { useRowUpdateTrash } from '@/hooks/tanstack-query/use-row-update-trash';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
+import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IStorage, ITable } from '@/lib/interfaces';
@@ -74,6 +75,7 @@ export function KanbanRowDialog({
 }): React.JSX.Element | null {
   const auth = useAuthStore((s) => s.user);
   const { data: profile } = useProfileRead();
+  const permission = useTablePermission(table);
   const currentUserId = auth?._id ?? '';
   const [editTarget, setEditTarget] = React.useState<
     'members' | 'start' | 'due' | null
@@ -350,7 +352,7 @@ export function KanbanRowDialog({
     return member._id === currentUserId;
   });
 
-  const canDelete = row.creator._id === currentUserId;
+  const canDelete = permission.can('REMOVE_ROW');
 
   const handleTaskToggle = async (index: number): Promise<void> => {
     if (!fields.tasks) return;
