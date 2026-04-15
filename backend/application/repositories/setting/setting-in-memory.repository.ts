@@ -29,7 +29,7 @@ export default class SettingInMemoryRepository implements SettingContractReposit
   async update(payload: SettingUpdatePayload): Promise<ISetting> {
     this._checkError('update');
     if (!this.item) {
-      const base: ISetting = {
+      const base = {
         SYSTEM_NAME: 'LowCodeJs',
         LOCALE: 'pt-br',
         STORAGE_DRIVER: 'local',
@@ -48,9 +48,7 @@ export default class SettingInMemoryRepository implements SettingContractReposit
         OPENAI_API_KEY: null,
         AI_ASSISTANT_ENABLED: false,
       };
-      const { MODEL_CLONE_TABLES: _omit, ...rest } = payload;
-      this.item = { ...base, ...rest };
-      void _omit;
+      this.item = Object.assign(base, payload) as unknown as ISetting;
     } else {
       Object.assign(this.item, payload);
     }
