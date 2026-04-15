@@ -270,13 +270,12 @@ Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em 
 
 ### Email (SMTP)
 
-| Variavel | Default | Descricao |
-|----------|---------|-----------|
-| EMAIL_PROVIDER_HOST | obrigatorio | Host SMTP |
-| EMAIL_PROVIDER_PORT | obrigatorio | Porta SMTP |
-| EMAIL_PROVIDER_USER | obrigatorio | Usuario SMTP |
-| EMAIL_PROVIDER_PASSWORD | obrigatorio | Senha SMTP |
-| EMAIL_PROVIDER_FROM | opcional | Remetente (MAIL FROM). Obrigatorio quando o usuario SMTP nao e um email valido (AWS SES, SendGrid "apikey", etc.). Fallback: EMAIL_PROVIDER_USER |
+Configurado pela UI `/settings` (usuario MASTER) e persistido no documento
+Setting do MongoDB. Campos: `EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`,
+`EMAIL_PROVIDER_USER`, `EMAIL_PROVIDER_PASSWORD`, `EMAIL_PROVIDER_FROM`
+(todos nullable). Se qualquer credencial essencial estiver ausente, o
+`NodemailerEmailService` retorna `{ success: false, message: 'SMTP nao
+configurado' }` sem lancar erro.
 
 ### JWT & Cookies
 
