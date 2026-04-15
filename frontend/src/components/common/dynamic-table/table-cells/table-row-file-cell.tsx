@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router';
-import { FileIcon } from 'lucide-react';
+import { DownloadIcon, FileIcon } from 'lucide-react';
 
 import type { IField, IRow, IStorage } from '@/lib/interfaces';
+import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { cn } from '@/lib/utils';
 
 interface TableRowFileCellProps {
@@ -86,7 +87,10 @@ export function TableRowFileCell({
         }
 
         return (
-          <li key={value._id}>
+          <li
+            key={value._id}
+            className="flex items-center gap-2"
+          >
             <Link
               to={value.url}
               target="_blank"
@@ -95,6 +99,15 @@ export function TableRowFileCell({
             >
               {value.originalName}
             </Link>
+            <a
+              href={getStorageDownloadUrl(value)}
+              aria-label={`Baixar ${value.originalName}`}
+              title="Baixar"
+              className="text-muted-foreground hover:text-primary"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <DownloadIcon className="size-4" />
+            </a>
           </li>
         );
       })}

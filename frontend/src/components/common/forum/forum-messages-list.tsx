@@ -1,4 +1,10 @@
-import { FileIcon, PencilIcon, ReplyIcon, TrashIcon } from 'lucide-react';
+import {
+  DownloadIcon,
+  FileIcon,
+  PencilIcon,
+  ReplyIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import type { ForumMessage } from './forum-types';
@@ -9,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { stripHtml } from '@/lib/forum-helpers';
 import { getUserInitials } from '@/lib/kanban-helpers';
+import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { cn } from '@/lib/utils';
 
 interface ForumMessagesListProps {
@@ -215,18 +222,30 @@ export function ForumMessagesList({
                       );
                     }
                     return (
-                      <a
+                      <div
                         key={file._id}
-                        href={file.url}
-                        target="_blank"
-                        rel="noreferrer"
                         className="flex items-center gap-2 rounded-md border p-2 text-xs hover:bg-muted/40"
                       >
-                        {filePreview}
-                        <span className="max-w-[160px] truncate">
-                          {file.originalName}
-                        </span>
-                      </a>
+                        <a
+                          href={file.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="flex items-center gap-2 min-w-0"
+                        >
+                          {filePreview}
+                          <span className="max-w-[160px] truncate">
+                            {file.originalName}
+                          </span>
+                        </a>
+                        <a
+                          href={getStorageDownloadUrl(file)}
+                          aria-label={`Baixar ${file.originalName}`}
+                          title="Baixar"
+                          className="text-muted-foreground hover:text-primary"
+                        >
+                          <DownloadIcon className="size-3.5" />
+                        </a>
+                      </div>
                     );
                   })}
                 </div>

@@ -1,6 +1,12 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { FileIcon, FileTextIcon, PlusIcon, TrashIcon } from 'lucide-react';
+import {
+  DownloadIcon,
+  FileIcon,
+  FileTextIcon,
+  PlusIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
@@ -25,6 +31,7 @@ import type {
   IUser,
 } from '@/lib/interfaces';
 import { normalizeIdList } from '@/lib/kanban-helpers';
+import { getStorageDownloadUrl } from '@/lib/storage-url';
 
 interface KanbanFieldGroupEditorProps {
   row: IRow;
@@ -369,16 +376,26 @@ export function KanbanFieldGroupEditor({
                             )}
                           </div>
                         </div>
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon-sm"
-                          className="cursor-pointer text-destructive shrink-0"
-                          disabled={isSaving}
-                          onClick={() => handleDelete(index)}
-                        >
-                          <TrashIcon className="size-3.5" />
-                        </Button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <a
+                            href={getStorageDownloadUrl(storage)}
+                            aria-label={`Baixar ${storage.originalName}`}
+                            title="Baixar"
+                            className="text-muted-foreground hover:text-primary p-1"
+                          >
+                            <DownloadIcon className="size-3.5" />
+                          </a>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon-sm"
+                            className="cursor-pointer text-destructive"
+                            disabled={isSaving}
+                            onClick={() => handleDelete(index)}
+                          >
+                            <TrashIcon className="size-3.5" />
+                          </Button>
+                        </div>
                       </li>
                     ));
                   })}
