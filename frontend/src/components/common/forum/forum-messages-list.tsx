@@ -14,8 +14,8 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { stripHtml } from '@/lib/forum-helpers';
-import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { getUserInitials } from '@/lib/kanban-helpers';
+import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { cn } from '@/lib/utils';
 
 interface ForumMessagesListProps {

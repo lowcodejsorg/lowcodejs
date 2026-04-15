@@ -11,7 +11,9 @@ interface CacheEntry {
 const TTL_MS = 5 * 60 * 1000;
 const cache = new Map<string, CacheEntry>();
 
-export function getCachedStorageMeta(filename: string): StorageMeta | null | undefined {
+export function getCachedStorageMeta(
+  filename: string,
+): StorageMeta | null | undefined {
   const entry = cache.get(filename);
   if (!entry) return undefined;
   if (entry.expiresAt <= Date.now()) {

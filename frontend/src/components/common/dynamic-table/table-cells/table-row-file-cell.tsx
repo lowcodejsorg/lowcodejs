@@ -87,7 +87,10 @@ export function TableRowFileCell({
         }
 
         return (
-          <li key={value._id} className="flex items-center gap-2">
+          <li
+            key={value._id}
+            className="flex items-center gap-2"
+          >
             <Link
               to={value.url}
               target="_blank"

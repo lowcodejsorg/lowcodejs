@@ -1,9 +1,4 @@
-import {
-  CopyIcon,
-  DownloadIcon,
-  FileTextIcon,
-  TrashIcon,
-} from 'lucide-react';
+import { CopyIcon, DownloadIcon, FileTextIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
 import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
