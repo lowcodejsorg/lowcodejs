@@ -143,6 +143,11 @@ export default class TableInMemoryRepository implements TableContractRepository 
       );
     }
 
+    if (payload?.visibility) {
+      const values = payload.visibility.split(',');
+      filtered = filtered.filter((t) => values.includes(t.visibility));
+    }
+
     filtered = filtered.sort((a, b) => a.name.localeCompare(b.name));
 
     if (payload?.page && payload?.perPage) {

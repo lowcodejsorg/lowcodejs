@@ -42,7 +42,10 @@ export default class TableMongooseRepository implements TableContractRepository 
     if (payload?.type) where.type = payload.type;
     if (payload?.owner) where['owner'] = payload.owner;
 
-    if (payload?.visibility) where.visibility = payload.visibility;
+    if (payload?.visibility) {
+      const values = payload.visibility.split(',');
+      where.visibility = values.length > 1 ? { $in: values } : payload.visibility;
+    }
 
     if (payload?.search) {
       where.name = { $regex: normalize(payload.search), $options: 'i' };
