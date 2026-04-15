@@ -54,17 +54,30 @@ export const SettingUpdateSchema = z.object({
   STORAGE_BUCKET: z.string(),
   STORAGE_ACCESS_KEY: z.string(),
   STORAGE_SECRET_KEY: z.string(),
-  LOGO_SMALL_URL: z.string().nullable(),
-  LOGO_LARGE_URL: z.string().nullable(),
-  FILE_UPLOAD_MAX_SIZE: z.string(),
-  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z.string(),
-  FILE_UPLOAD_ACCEPTED: z.string(),
-  PAGINATION_PER_PAGE: z.string(),
-  MODEL_CLONE_TABLES: z.array(z.string()),
-  EMAIL_PROVIDER_HOST: z.string(),
-  EMAIL_PROVIDER_PORT: z.string(),
-  EMAIL_PROVIDER_USER: z.string(),
-  EMAIL_PROVIDER_PASSWORD: z.string(),
+  LOGO_SMALL_URL: z
+    .string({ message: 'A URL do logo pequeno é obrigatória' })
+    .min(1, 'A URL do logo pequeno é obrigatória'),
+  LOGO_LARGE_URL: z
+    .string({ message: 'A URL do logo grande é obrigatória' })
+    .min(1, 'A URL do logo grande é obrigatória'),
+  FILE_UPLOAD_MAX_SIZE: z
+    .string()
+    .min(1, 'O tamanho máximo de arquivo é obrigatório'),
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: z
+    .string()
+    .min(1, 'O máximo de arquivos por upload é obrigatório'),
+  FILE_UPLOAD_ACCEPTED: z
+    .string()
+    .min(1, 'As extensões aceitas são obrigatórias'),
+  PAGINATION_PER_PAGE: z.string().min(1, 'A paginação é obrigatória'),
+  MODEL_CLONE_TABLES: z
+    .array(z.string())
+    .min(1, 'Selecione ao menos um modelo de tabela'),
+  EMAIL_PROVIDER_HOST: z.string().min(1, 'O host SMTP é obrigatório'),
+  EMAIL_PROVIDER_PORT: z.string().min(1, 'A porta SMTP é obrigatória'),
+  EMAIL_PROVIDER_USER: z.string().min(1, 'O usuário SMTP é obrigatório'),
+  EMAIL_PROVIDER_PASSWORD: z.string().min(1, 'A senha SMTP é obrigatória'),
+  EMAIL_PROVIDER_FROM: z.string().min(1, 'O remetente (FROM) é obrigatório'),
   OPENAI_API_KEY: z.string(),
   AI_ASSISTANT_ENABLED: z.boolean(),
   logoSmallFile: z.array(z.instanceof(File)),
@@ -93,6 +106,7 @@ export type SettingUpdateFormValues = Merge<
     EMAIL_PROVIDER_PORT: string;
     EMAIL_PROVIDER_USER: string;
     EMAIL_PROVIDER_PASSWORD: string;
+    EMAIL_PROVIDER_FROM: string;
     OPENAI_API_KEY: string;
     AI_ASSISTANT_ENABLED: boolean;
   },
@@ -116,9 +130,10 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   PAGINATION_PER_PAGE: '50',
   MODEL_CLONE_TABLES: [],
   EMAIL_PROVIDER_HOST: '',
-  EMAIL_PROVIDER_PORT: '587',
+  EMAIL_PROVIDER_PORT: '',
   EMAIL_PROVIDER_USER: '',
   EMAIL_PROVIDER_PASSWORD: '',
+  EMAIL_PROVIDER_FROM: '',
   OPENAI_API_KEY: '',
   AI_ASSISTANT_ENABLED: false,
   logoSmallFile: [],
@@ -1137,20 +1152,6 @@ export const UpdateSettingFormFields = withForm({
               {/* Host */}
               <form.Field
                 name="EMAIL_PROVIDER_HOST"
-                validators={{
-                  onChange: ({ value }) => {
-                    if (!value) {
-                      return 'O host é obrigatório';
-                    }
-                    return undefined;
-                  },
-                  onBlur: ({ value }) => {
-                    if (!value) {
-                      return 'O host é obrigatório';
-                    }
-                    return undefined;
-                  },
-                }}
                 children={(field) => {
                   const isInvalid =
                     field.state.meta.isTouched && !field.state.meta.isValid;
@@ -1185,9 +1186,7 @@ export const UpdateSettingFormFields = withForm({
                 name="EMAIL_PROVIDER_PORT"
                 validators={{
                   onChange: ({ value }) => {
-                    if (!value) {
-                      return 'A porta é obrigatória';
-                    }
+                    if (!value) return undefined;
                     const port = Number(value);
                     if (isNaN(port) || port <= 0 || port > 65535) {
                       return {
@@ -1197,9 +1196,7 @@ export const UpdateSettingFormFields = withForm({
                     return undefined;
                   },
                   onBlur: ({ value }) => {
-                    if (!value) {
-                      return 'A porta é obrigatória';
-                    }
+                    if (!value) return undefined;
                     const port = Number(value);
                     if (isNaN(port) || port <= 0 || port > 65535) {
                       return {
@@ -1270,14 +1267,50 @@ export const UpdateSettingFormFields = withForm({
               }}
             />
 
+            {/* From (MAIL FROM) */}
+            <form.Field
+              name="EMAIL_PROVIDER_FROM"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Remetente (MAIL FROM)
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Usado como remetente dos e-mails. Obrigatório quando o
+                      usuário SMTP não é um e-mail válido (ex: AWS SES, SendGrid
+                      &quot;apikey&quot;). Se vazio, usa o Email Username.
+                    </div>
+                    <InputGroup>
+                      <InputGroupInput
+                        data-test-id="settings-email-from-input"
+                        disabled={isDisabled}
+                        id={field.name}
+                        name={field.name}
+                        placeholder="noreply@exemplo.com"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                    </InputGroup>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
             {/* Password */}
             <form.Field
               name="EMAIL_PROVIDER_PASSWORD"
               validators={{
                 onChange: ({ value }) => {
-                  if (!value) {
-                    return 'A senha é obrigatória';
-                  }
+                  if (!value) return undefined;
                   if (value.length < 6) {
                     return {
                       message: 'A senha deve ter pelo menos 6 caracteres',
@@ -1286,9 +1319,7 @@ export const UpdateSettingFormFields = withForm({
                   return undefined;
                 },
                 onBlur: ({ value }) => {
-                  if (!value) {
-                    return 'A senha é obrigatória';
-                  }
+                  if (!value) return undefined;
                   if (value.length < 6) {
                     return {
                       message: 'A senha deve ter pelo menos 6 caracteres',

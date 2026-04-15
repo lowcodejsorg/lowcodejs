@@ -36,12 +36,10 @@ describe('Setting Update Use Case', () => {
     ]);
   });
 
-  it('deve atualizar process.env com os novos valores', async () => {
-    await sut.execute({
-      LOCALE: 'en-us',
-    });
-
-    expect(process.env.LOCALE).toBe('en-us');
+  it('nao deve mutar process.env apos update', async () => {
+    const previousLocale = process.env.LOCALE;
+    await sut.execute({ LOCALE: 'en-us' });
+    expect(process.env.LOCALE).toBe(previousLocale);
   });
 
   it('deve retornar erro SETTINGS_UPDATE_ERROR quando houver falha', async () => {

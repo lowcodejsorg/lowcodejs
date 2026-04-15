@@ -57,35 +57,47 @@ export const SettingShowSchema: FastifySchema = {
         },
         EMAIL_PROVIDER_HOST: {
           type: 'string',
+          nullable: true,
           description: 'Host do servidor de email',
           examples: ['smtp.gmail.com'],
         },
         EMAIL_PROVIDER_PORT: {
           type: 'number',
+          nullable: true,
           description: 'Porta do servidor de email',
           examples: [587],
         },
         EMAIL_PROVIDER_USER: {
           type: 'string',
+          nullable: true,
           description: 'Usuário do servidor de email',
           examples: ['usuario@exemplo.com'],
         },
         EMAIL_PROVIDER_PASSWORD: {
           type: 'string',
+          nullable: true,
           description: 'Senha do servidor de email',
+        },
+        EMAIL_PROVIDER_FROM: {
+          type: 'string',
+          nullable: true,
+          description: 'Remetente (MAIL FROM) do servidor de email',
         },
         LOGO_SMALL_URL: {
           type: 'string',
+          nullable: true,
           description: 'URL do logo pequeno',
           examples: ['/assets/logo-small.webp'],
         },
         LOGO_LARGE_URL: {
           type: 'string',
+          nullable: true,
           description: 'URL do logo grande',
           examples: ['/assets/logo-large.webp'],
         },
         OPENAI_API_KEY: {
           type: 'string',
+          nullable: true,
           description: 'Chave da API OpenAI para o assistente IA',
         },
         AI_ASSISTANT_ENABLED: {

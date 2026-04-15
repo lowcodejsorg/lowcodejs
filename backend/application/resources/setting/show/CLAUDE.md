@@ -10,13 +10,13 @@ Retorna as configuracoes globais da plataforma.
 2. Validator: nenhum
 3. UseCase:
    - Busca settings via settingRepository.get()
-   - Se nao existir: retorna process.env com FILE_UPLOAD_ACCEPTED splitado por ";" e templates built-in
+   - Se nao existir: retorna um objeto com defaults explicitos (mesmos do schema Mongoose) + templates built-in. Nao le process.env
    - Se existir: retorna settings com FILE_UPLOAD_ACCEPTED splitado por ";" e templates built-in concatenados com MODEL_CLONE_TABLES do banco
 4. Repository: SettingContractRepository (get)
 
 ## Regras de Negocio
 - Auth e opcional (visitantes podem ver configuracoes)
-- Se nao ha settings no banco, usa process.env como fallback
+- Fallback sem banco usa defaults proprios (SYSTEM_NAME='LowCodeJs', LOCALE='pt-br', etc.) — nao depende de env
 - FILE_UPLOAD_ACCEPTED sempre retornado como array (split por ";")
 - MODEL_CLONE_TABLES sempre inclui 6 templates built-in: Kanban, Cards, Mosaico, Documento, Forum, Calendario
 

@@ -15,15 +15,20 @@ usuarios com role MASTER.
 
 ## Configuracoes Disponiveis
 
-| Grupo              | Campos                                                                                         |
-| ------------------ | ---------------------------------------------------------------------------------------------- |
-| Sistema            | `SYSTEM_NAME`, `LOCALE`                                                                        |
-| Storage            | `STORAGE_DRIVER`                                                                               |
-| Logos              | `LOGO_SMALL_URL`, `LOGO_LARGE_URL` (com upload de arquivo)                                     |
-| Upload de arquivos | `FILE_UPLOAD_MAX_SIZE`, `FILE_UPLOAD_MAX_FILES_PER_UPLOAD`, `FILE_UPLOAD_ACCEPTED`             |
-| Paginacao          | `PAGINATION_PER_PAGE`                                                                          |
-| Clonagem           | `MODEL_CLONE_TABLES` (tabelas modelo disponiveis para clone)                                   |
-| Email (SMTP)       | `EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`, `EMAIL_PROVIDER_USER`, `EMAIL_PROVIDER_PASSWORD` |
+| Grupo              | Campos                                                                                                                |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------- |
+| Sistema            | `SYSTEM_NAME`, `LOCALE`                                                                                               |
+| Storage            | `STORAGE_DRIVER`                                                                                                      |
+| Logos              | `LOGO_SMALL_URL`, `LOGO_LARGE_URL` (com upload de arquivo)                                                            |
+| Upload de arquivos | `FILE_UPLOAD_MAX_SIZE`, `FILE_UPLOAD_MAX_FILES_PER_UPLOAD`, `FILE_UPLOAD_ACCEPTED`                                    |
+| Paginacao          | `PAGINATION_PER_PAGE`                                                                                                 |
+| Clonagem           | `MODEL_CLONE_TABLES` (tabelas modelo disponiveis para clone)                                                          |
+| Email (SMTP)       | `EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`, `EMAIL_PROVIDER_USER`, `EMAIL_PROVIDER_PASSWORD`, `EMAIL_PROVIDER_FROM` |
+| IA                 | `OPENAI_API_KEY`, `AI_ASSISTANT_ENABLED`                                                                              |
+
+Todos os campos vivem no documento Setting do MongoDB. O backend aplica defaults
+no schema Mongoose — nenhum campo depende mais de variaveis de ambiente (apenas
+`STORAGE_DRIVER` e credenciais S3 permanecem no .env).
 
 ## Controle de Acesso
 

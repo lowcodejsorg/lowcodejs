@@ -2,6 +2,13 @@
 
 Upload de arquivos para o chat via Socket.IO. Processa imagens e PDFs.
 
+## Configuracao IA
+
+O handler `chat.socket.ts` le `AI_ASSISTANT_ENABLED` e `OPENAI_API_KEY`
+diretamente do documento Setting (MongoDB) em cada conexao. A UI `/settings`
+e a unica fonte — alterar nao requer reboot do servidor. `MCP_SERVER_URL`
+permanece como env (`.env`) por ser endpoint de infraestrutura.
+
 ## Arquivos
 
 - `chat.upload.controller.ts` - Controller de upload HTTP

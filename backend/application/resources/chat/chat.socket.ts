@@ -18,6 +18,7 @@ import {
   E_JWT_TYPE,
   type IJWTPayload,
 } from '@application/core/entity.core';
+import { Setting } from '@application/model/setting.model';
 import { Env } from '@start/env';
 
 import { getChatSystemPrompt } from './system-prompt';
@@ -85,9 +86,10 @@ export function initChatSocket(
 
     const user = decoded;
 
-    // --- Validar configuração ---
-    const aiEnabled = process.env.AI_ASSISTANT_ENABLED === 'true';
-    const openaiKey = process.env.OPENAI_API_KEY || Env.OPENAI_API_KEY;
+    // --- Validar configuração (lendo do Setting singleton) ---
+    const setting = await Setting.findOne().lean();
+    const aiEnabled = Boolean(setting?.AI_ASSISTANT_ENABLED);
+    const openaiKey = setting?.OPENAI_API_KEY ?? null;
     const mcpUrl = Env.MCP_SERVER_URL;
 
     if (!aiEnabled || !openaiKey || !mcpUrl) {
