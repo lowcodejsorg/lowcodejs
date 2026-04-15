@@ -98,14 +98,22 @@ export default class SettingShowUseCase {
 
       if (!setting) {
         return right({
-          ...process.env,
+          SYSTEM_NAME: 'LowCodeJs',
+          LOCALE: 'pt-br',
+          STORAGE_DRIVER: 'local',
+          FILE_UPLOAD_MAX_SIZE: 10485760,
+          FILE_UPLOAD_ACCEPTED: ['jpg', 'jpeg', 'png', 'pdf'],
+          FILE_UPLOAD_MAX_FILES_PER_UPLOAD: 10,
+          PAGINATION_PER_PAGE: 20,
+          LOGO_SMALL_URL: null,
+          LOGO_LARGE_URL: null,
           EMAIL_PROVIDER_HOST: null,
           EMAIL_PROVIDER_PORT: null,
           EMAIL_PROVIDER_USER: null,
           EMAIL_PROVIDER_PASSWORD: null,
           EMAIL_PROVIDER_FROM: null,
-          FILE_UPLOAD_ACCEPTED:
-            process.env.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
+          OPENAI_API_KEY: null,
+          AI_ASSISTANT_ENABLED: false,
           MODEL_CLONE_TABLES: [
             getKanbanTemplateEntry(),
             getCardsTemplateEntry(),
