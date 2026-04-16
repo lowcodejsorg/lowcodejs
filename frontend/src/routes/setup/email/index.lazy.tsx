@@ -30,9 +30,13 @@ function SetupEmailPage(): React.JSX.Element {
   const [from, setFrom] = useState('');
 
   const mutation = useSetupSubmitEmail({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toastSuccess('Etapa concluída!');
-      router.invalidate();
+      if (data.completed) {
+        router.navigate({ to: '/' });
+      } else if (data.currentStep) {
+        router.navigate({ to: `/setup/${data.currentStep}` });
+      }
     },
     onError: () => {
       toastError('Erro ao salvar');

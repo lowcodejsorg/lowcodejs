@@ -27,9 +27,13 @@ function SetupLogosPage(): React.JSX.Element {
   const [logoLargeUrl, setLogoLargeUrl] = useState('');
 
   const mutation = useSetupSubmitLogos({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toastSuccess('Etapa concluída!');
-      router.invalidate();
+      if (data.completed) {
+        router.navigate({ to: '/' });
+      } else if (data.currentStep) {
+        router.navigate({ to: `/setup/${data.currentStep}` });
+      }
     },
     onError: () => {
       toastError('Erro ao salvar');

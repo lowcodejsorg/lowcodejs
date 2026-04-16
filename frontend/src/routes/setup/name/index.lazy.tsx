@@ -34,9 +34,13 @@ function SetupNamePage(): React.JSX.Element {
   const [locale, setLocale] = useState('pt-br');
 
   const mutation = useSetupSubmitName({
-    onSuccess: () => {
+    onSuccess: (data) => {
       toastSuccess('Etapa concluída!');
-      router.invalidate();
+      if (data.completed) {
+        router.navigate({ to: '/' });
+      } else if (data.currentStep) {
+        router.navigate({ to: `/setup/${data.currentStep}` });
+      }
     },
     onError: () => {
       toastError('Erro ao salvar');
