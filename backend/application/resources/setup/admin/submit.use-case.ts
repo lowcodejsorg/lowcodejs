@@ -74,7 +74,7 @@ export default class SetupAdminSubmitUseCase {
       }
 
       const masterGroup = await this.userGroupRepository.findBySlug(
-        E_ROLE.MASTER.toLowerCase(),
+        E_ROLE.MASTER,
       );
 
       if (!masterGroup) {
@@ -88,7 +88,7 @@ export default class SetupAdminSubmitUseCase {
 
       const users = await this.userRepository.findMany({});
       const alreadyHasMaster = users.some(
-        (user) => user.group?.slug === E_ROLE.MASTER.toLowerCase(),
+        (user) => user.group?.slug === E_ROLE.MASTER,
       );
 
       if (alreadyHasMaster) {

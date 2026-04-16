@@ -32,7 +32,7 @@ export default class SetupStatusUseCase {
 
       const users = await this.userRepository.findMany({});
       const hasAdmin = users.some(
-        (user) => user.group?.slug === E_ROLE.MASTER.toLowerCase(),
+        (user) => user.group?.slug === E_ROLE.MASTER,
       );
 
       if (!setting) {
