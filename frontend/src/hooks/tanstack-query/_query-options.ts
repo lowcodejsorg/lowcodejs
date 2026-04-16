@@ -11,6 +11,7 @@ import type {
   IPermission,
   IRow,
   ISetting,
+  ISetupStatus,
   ITable,
   IUser,
   Paginated,
@@ -299,4 +300,15 @@ export const relationshipRowsOptions = (params: {
     },
     enabled: Boolean(params.tableSlug),
     staleTime: 30 * 1000,
+  });
+
+// ============== SETUP ==============
+
+export const setupStatusOptions = () =>
+  queryOptions({
+    queryKey: queryKeys.setup.status(),
+    queryFn: async () => {
+      const { data } = await API.get<ISetupStatus>('/setup/status');
+      return data;
+    },
   });
