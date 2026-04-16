@@ -13,9 +13,8 @@ export const Route = createFileRoute('/_authentication')({
 
     if (isResetPassword) return;
 
-    const setupStatus = await context.queryClient.ensureQueryData(
-      setupStatusOptions(),
-    );
+    const setupStatus =
+      await context.queryClient.fetchQuery(setupStatusOptions());
 
     if (!setupStatus.completed) {
       const isSignUp = location.pathname === '/sign-up';
@@ -23,8 +22,7 @@ export const Route = createFileRoute('/_authentication')({
         throw redirect({ to: '/setup/admin' });
       }
 
-      const isSignIn =
-        location.pathname === '/' || location.pathname === '';
+      const isSignIn = location.pathname === '/' || location.pathname === '';
       if (isSignIn && setupStatus.currentStep === 'admin') {
         throw redirect({ to: '/setup/admin' });
       }

@@ -16,7 +16,7 @@ export const Route = createFileRoute('/setup')({
   validateSearch: searchSchema,
   beforeLoad: async ({ context, location }) => {
     const status =
-      await context.queryClient.ensureQueryData(setupStatusOptions());
+      await context.queryClient.fetchQuery(setupStatusOptions());
 
     if (status.completed) {
       throw redirect({ to: '/' });

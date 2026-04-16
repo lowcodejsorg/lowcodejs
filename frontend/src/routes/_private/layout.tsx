@@ -26,9 +26,8 @@ export const Route = createFileRoute('/_private')({
     meta: [{ name: 'robots', content: 'noindex, nofollow' }],
   }),
   beforeLoad: async ({ context, location }) => {
-    const setupStatus = await context.queryClient.ensureQueryData(
-      setupStatusOptions(),
-    );
+    const setupStatus =
+      await context.queryClient.fetchQuery(setupStatusOptions());
 
     if (!setupStatus.completed) {
       throw redirect({
