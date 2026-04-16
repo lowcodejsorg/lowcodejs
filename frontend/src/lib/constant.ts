@@ -297,3 +297,31 @@ export const E_CHAT_TOOL_PREFIX = {
   FILES: 'files_',
   PROFILE: 'profile_',
 } as const;
+
+// ============== SETUP WIZARD ==============
+export const SETUP_STEPS = [
+  'admin',
+  'name',
+  'logos',
+  'upload',
+  'paging',
+  'email',
+] as const;
+
+export const SETUP_STEP_LABELS = {
+  admin: 'Administrador',
+  name: 'Identidade',
+  logos: 'Logos',
+  upload: 'Uploads',
+  paging: 'Paginação',
+  email: 'Email',
+} as const;
+
+export const SETUP_NEXT_STEP = {
+  admin: 'name',
+  name: 'logos',
+  logos: 'upload',
+  upload: 'paging',
+  paging: 'email',
+  email: null,
+} as const;

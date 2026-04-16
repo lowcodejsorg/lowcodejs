@@ -275,6 +275,23 @@ export type ISetting = {
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string;
   AI_ASSISTANT_ENABLED: boolean;
+  SETUP_COMPLETED: boolean;
+  SETUP_CURRENT_STEP: string | null;
+};
+
+export type SetupStep =
+  | 'admin'
+  | 'name'
+  | 'logos'
+  | 'upload'
+  | 'paging'
+  | 'email';
+
+export type ISetupStatus = {
+  completed: boolean;
+  currentStep: SetupStep | null;
+  hasAdmin: boolean;
+  steps: ReadonlyArray<SetupStep>;
 };
 
 // type RowResponseValue =
