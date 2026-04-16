@@ -26,7 +26,7 @@ export function useSetupSubmitUpload(
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: queryKeys.setup.all });
+      queryClient.setQueryData(queryKeys.setup.status(), data);
       if (props.onSuccess) {
         props.onSuccess(data);
       }
