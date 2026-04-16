@@ -469,6 +469,15 @@ export type ISetting = {
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string | null;
   AI_ASSISTANT_ENABLED: boolean;
+  SETUP_COMPLETED: boolean;
+  SETUP_CURRENT_STEP:
+    | 'admin'
+    | 'name'
+    | 'logos'
+    | 'upload'
+    | 'paging'
+    | 'email'
+    | null;
 };
 
 export const E_TABLE_PERMISSION = {

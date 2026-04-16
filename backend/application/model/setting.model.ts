@@ -30,6 +30,12 @@ const Schema = new mongoose.Schema(
     EMAIL_PROVIDER_FROM: { type: String, default: null },
     OPENAI_API_KEY: { type: String, default: null },
     AI_ASSISTANT_ENABLED: { type: Boolean, default: false },
+    SETUP_COMPLETED: { type: Boolean, default: false },
+    SETUP_CURRENT_STEP: {
+      type: String,
+      enum: ['admin', 'name', 'logos', 'upload', 'paging', 'email'],
+      default: 'admin',
+    },
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },
