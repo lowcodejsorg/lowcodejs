@@ -14,7 +14,10 @@ type Payload = BasePayload & {
 };
 
 export default async function Seed(): Promise<void> {
-  // await User.deleteMany({});
+  if (process.env.NODE_ENV === 'production') {
+    console.info('⏭️  \x1b[33m Users seed ignorado em produção (MASTER criado pelo wizard) \x1b[0m');
+    return;
+  }
 
   const groups = await UserGroup.find();
 
