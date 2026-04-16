@@ -1,6 +1,8 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import React, { useState } from 'react';
 
+import { Stepper } from '../-stepper';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,9 +17,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitAdmin } from '@/hooks/tanstack-query/use-setup-submit-admin';
 import { toastError, toastSuccess } from '@/lib/toast';
 
-import { Stepper } from '../-stepper';
-
-export const Route = createLazyFileRoute('/_setup/admin')({
+export const Route = createLazyFileRoute('/setup/admin/')({
   component: SetupAdminPage,
 });
 
@@ -54,7 +54,10 @@ function SetupAdminPage(): React.JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="name">Nome</Label>
               <Input

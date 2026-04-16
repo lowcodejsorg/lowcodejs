@@ -1,6 +1,8 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import React, { useState } from 'react';
 
+import { Stepper } from '../-stepper';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,9 +17,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitPaging } from '@/hooks/tanstack-query/use-setup-submit-paging';
 import { toastError, toastSuccess } from '@/lib/toast';
 
-import { Stepper } from '../-stepper';
-
-export const Route = createLazyFileRoute('/_setup/paging')({
+export const Route = createLazyFileRoute('/setup/paging/')({
   component: SetupPagingPage,
 });
 
@@ -46,12 +46,13 @@ function SetupPagingPage(): React.JSX.Element {
       <Card>
         <CardHeader>
           <CardTitle>Paginação</CardTitle>
-          <CardDescription>
-            Configure itens por página padrão
-          </CardDescription>
+          <CardDescription>Configure itens por página padrão</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="PAGINATION_PER_PAGE">Itens por página</Label>
               <Input

@@ -1,6 +1,8 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import React, { useState } from 'react';
 
+import { Stepper } from '../-stepper';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -15,9 +17,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitEmail } from '@/hooks/tanstack-query/use-setup-submit-email';
 import { toastError, toastSuccess } from '@/lib/toast';
 
-import { Stepper } from '../-stepper';
-
-export const Route = createLazyFileRoute('/_setup/email')({
+export const Route = createLazyFileRoute('/setup/email/')({
   component: SetupEmailPage,
 });
 
@@ -66,7 +66,10 @@ function SetupEmailPage(): React.JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="EMAIL_PROVIDER_HOST">Host SMTP</Label>
               <Input

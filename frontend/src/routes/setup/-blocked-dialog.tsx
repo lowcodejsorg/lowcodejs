@@ -31,7 +31,10 @@ export function BlockedDialog({
   }
 
   return (
-    <Dialog open onOpenChange={handleClose}>
+    <Dialog
+      open
+      onOpenChange={handleClose}
+    >
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Etapa não disponível</DialogTitle>

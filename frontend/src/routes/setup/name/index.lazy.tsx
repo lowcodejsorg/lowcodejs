@@ -1,6 +1,8 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import React, { useState } from 'react';
 
+import { Stepper } from '../-stepper';
+
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -22,9 +24,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitName } from '@/hooks/tanstack-query/use-setup-submit-name';
 import { toastError, toastSuccess } from '@/lib/toast';
 
-import { Stepper } from '../-stepper';
-
-export const Route = createLazyFileRoute('/_setup/name')({
+export const Route = createLazyFileRoute('/setup/name/')({
   component: SetupNamePage,
 });
 
@@ -59,7 +59,10 @@ function SetupNamePage(): React.JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
             <div className="space-y-2">
               <Label htmlFor="SYSTEM_NAME">Nome do Sistema</Label>
               <Input
@@ -73,7 +76,10 @@ function SetupNamePage(): React.JSX.Element {
             </div>
             <div className="space-y-2">
               <Label htmlFor="LOCALE">Idioma</Label>
-              <Select value={locale} onValueChange={setLocale}>
+              <Select
+                value={locale}
+                onValueChange={setLocale}
+              >
                 <SelectTrigger id="LOCALE">
                   <SelectValue placeholder="Selecione o idioma" />
                 </SelectTrigger>

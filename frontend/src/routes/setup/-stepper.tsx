@@ -33,7 +33,10 @@ export function Stepper({ currentStep }: StepperProps): React.JSX.Element {
         const state = resolveState(index, currentIndex);
 
         return (
-          <div key={step} className="flex flex-1 items-center gap-2">
+          <div
+            key={step}
+            className="flex flex-1 items-center gap-2"
+          >
             <div className="flex flex-col items-center gap-1">
               <div
                 className={cn(

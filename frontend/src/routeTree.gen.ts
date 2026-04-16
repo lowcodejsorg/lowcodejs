@@ -8,118 +8,172 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root';
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml';
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt';
-import { Route as PrivateLayoutRouteImport } from './routes/_private/layout';
-import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout';
-import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index';
-import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index';
-import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index';
-import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/settings/index';
-import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index';
-import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/index';
-import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index';
-import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index';
-import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index';
-import { Route as AuthenticationForgotPasswordIndexRouteImport } from './routes/_authentication/forgot-password/index';
-import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authentication/_sign-in/index';
-import { Route as PrivatePagesSlugRouteImport } from './routes/_private/pages/$slug';
-import { Route as PrivateUsersCreateIndexRouteImport } from './routes/_private/users/create/index';
-import { Route as PrivateUsersUserIdIndexRouteImport } from './routes/_private/users/$userId/index';
-import { Route as PrivateTablesNewIndexRouteImport } from './routes/_private/tables/new/index';
-import { Route as PrivateTablesCreateIndexRouteImport } from './routes/_private/tables/create/index';
-import { Route as PrivateTablesCloneIndexRouteImport } from './routes/_private/tables/clone/index';
-import { Route as PrivateTablesSlugIndexRouteImport } from './routes/_private/tables/$slug/index';
-import { Route as PrivateMenusCreateIndexRouteImport } from './routes/_private/menus/create/index';
-import { Route as PrivateMenusMenuIdIndexRouteImport } from './routes/_private/menus/$menuId/index';
-import { Route as PrivateGroupsCreateIndexRouteImport } from './routes/_private/groups/create/index';
-import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private/groups/$groupId/index';
-import { Route as AuthenticationForgotPasswordValidateCodeIndexRouteImport } from './routes/_authentication/forgot-password/validate-code/index';
-import { Route as AuthenticationForgotPasswordResetPasswordIndexRouteImport } from './routes/_authentication/forgot-password/reset-password/index';
-import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods';
-import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index';
-import { Route as PrivateTablesSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/field/management';
-import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index';
-import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index';
-import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index';
-import { Route as PrivateTablesSlugFieldFieldIdIndexRouteImport } from './routes/_private/tables/$slug/field/$fieldId/index';
-import { Route as PrivateTablesSlugGroupGroupSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/group/$groupSlug/field/management';
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SetupLayoutRouteImport } from './routes/setup/layout'
+import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
+import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout'
+import { Route as SetupUploadIndexRouteImport } from './routes/setup/upload/index'
+import { Route as SetupPagingIndexRouteImport } from './routes/setup/paging/index'
+import { Route as SetupNameIndexRouteImport } from './routes/setup/name/index'
+import { Route as SetupLogosIndexRouteImport } from './routes/setup/logos/index'
+import { Route as SetupEmailIndexRouteImport } from './routes/setup/email/index'
+import { Route as SetupAdminIndexRouteImport } from './routes/setup/admin/index'
+import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index'
+import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index'
+import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index'
+import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/settings/index'
+import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index'
+import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/index'
+import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index'
+import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index'
+import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index'
+import { Route as AuthenticationForgotPasswordIndexRouteImport } from './routes/_authentication/forgot-password/index'
+import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authentication/_sign-in/index'
+import { Route as PrivatePagesSlugRouteImport } from './routes/_private/pages/$slug'
+import { Route as PrivateUsersCreateIndexRouteImport } from './routes/_private/users/create/index'
+import { Route as PrivateUsersUserIdIndexRouteImport } from './routes/_private/users/$userId/index'
+import { Route as PrivateTablesNewIndexRouteImport } from './routes/_private/tables/new/index'
+import { Route as PrivateTablesCreateIndexRouteImport } from './routes/_private/tables/create/index'
+import { Route as PrivateTablesCloneIndexRouteImport } from './routes/_private/tables/clone/index'
+import { Route as PrivateTablesSlugIndexRouteImport } from './routes/_private/tables/$slug/index'
+import { Route as PrivateMenusCreateIndexRouteImport } from './routes/_private/menus/create/index'
+import { Route as PrivateMenusMenuIdIndexRouteImport } from './routes/_private/menus/$menuId/index'
+import { Route as PrivateGroupsCreateIndexRouteImport } from './routes/_private/groups/create/index'
+import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private/groups/$groupId/index'
+import { Route as AuthenticationForgotPasswordValidateCodeIndexRouteImport } from './routes/_authentication/forgot-password/validate-code/index'
+import { Route as AuthenticationForgotPasswordResetPasswordIndexRouteImport } from './routes/_authentication/forgot-password/reset-password/index'
+import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods'
+import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index'
+import { Route as PrivateTablesSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/field/management'
+import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index'
+import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index'
+import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index'
+import { Route as PrivateTablesSlugFieldFieldIdIndexRouteImport } from './routes/_private/tables/$slug/field/$fieldId/index'
+import { Route as PrivateTablesSlugGroupGroupSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/group/$groupSlug/field/management'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   id: '/robots.txt',
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const SetupLayoutRoute = SetupLayoutRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
   id: '/_private',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
 const AuthenticationLayoutRoute = AuthenticationLayoutRouteImport.update({
   id: '/_authentication',
   getParentRoute: () => rootRouteImport,
-} as any);
+} as any)
+const SetupUploadIndexRoute = SetupUploadIndexRouteImport.update({
+  id: '/upload/',
+  path: '/upload/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/upload/index.lazy').then((d) => d.Route),
+)
+const SetupPagingIndexRoute = SetupPagingIndexRouteImport.update({
+  id: '/paging/',
+  path: '/paging/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/paging/index.lazy').then((d) => d.Route),
+)
+const SetupNameIndexRoute = SetupNameIndexRouteImport.update({
+  id: '/name/',
+  path: '/name/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/name/index.lazy').then((d) => d.Route),
+)
+const SetupLogosIndexRoute = SetupLogosIndexRouteImport.update({
+  id: '/logos/',
+  path: '/logos/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/logos/index.lazy').then((d) => d.Route),
+)
+const SetupEmailIndexRoute = SetupEmailIndexRouteImport.update({
+  id: '/email/',
+  path: '/email/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/email/index.lazy').then((d) => d.Route),
+)
+const SetupAdminIndexRoute = SetupAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/admin/index.lazy').then((d) => d.Route),
+)
 const PrivateUsersIndexRoute = PrivateUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/users/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateToolsIndexRoute = PrivateToolsIndexRouteImport.update({
   id: '/tools/',
   path: '/tools/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/tools/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateTablesIndexRoute = PrivateTablesIndexRouteImport.update({
   id: '/tables/',
   path: '/tables/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/tables/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateSettingsIndexRoute = PrivateSettingsIndexRouteImport.update({
   id: '/settings/',
   path: '/settings/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/settings/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateProfileIndexRoute = PrivateProfileIndexRouteImport.update({
   id: '/profile/',
   path: '/profile/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/profile/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateMenusIndexRoute = PrivateMenusIndexRouteImport.update({
   id: '/menus/',
   path: '/menus/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/menus/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateGroupsIndexRoute = PrivateGroupsIndexRouteImport.update({
   id: '/groups/',
   path: '/groups/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/groups/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateDashboardIndexRoute = PrivateDashboardIndexRouteImport.update({
   id: '/dashboard/',
   path: '/dashboard/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/dashboard/index.lazy').then((d) => d.Route),
-);
+)
 const AuthenticationSignUpIndexRoute =
   AuthenticationSignUpIndexRouteImport.update({
     id: '/sign-up/',
@@ -127,7 +181,7 @@ const AuthenticationSignUpIndexRoute =
     getParentRoute: () => AuthenticationLayoutRoute,
   } as any).lazy(() =>
     import('./routes/_authentication/sign-up/index.lazy').then((d) => d.Route),
-  );
+  )
 const AuthenticationForgotPasswordIndexRoute =
   AuthenticationForgotPasswordIndexRouteImport.update({
     id: '/forgot-password/',
@@ -137,7 +191,7 @@ const AuthenticationForgotPasswordIndexRoute =
     import('./routes/_authentication/forgot-password/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const AuthenticationSignInIndexRoute =
   AuthenticationSignInIndexRouteImport.update({
     id: '/_sign-in/',
@@ -145,35 +199,35 @@ const AuthenticationSignInIndexRoute =
     getParentRoute: () => AuthenticationLayoutRoute,
   } as any).lazy(() =>
     import('./routes/_authentication/_sign-in/index.lazy').then((d) => d.Route),
-  );
+  )
 const PrivatePagesSlugRoute = PrivatePagesSlugRouteImport.update({
   id: '/pages/$slug',
   path: '/pages/$slug',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/pages/$slug.lazy').then((d) => d.Route),
-);
+)
 const PrivateUsersCreateIndexRoute = PrivateUsersCreateIndexRouteImport.update({
   id: '/users/create/',
   path: '/users/create/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/users/create/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateUsersUserIdIndexRoute = PrivateUsersUserIdIndexRouteImport.update({
   id: '/users/$userId/',
   path: '/users/$userId/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/users/$userId/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateTablesNewIndexRoute = PrivateTablesNewIndexRouteImport.update({
   id: '/tables/new/',
   path: '/tables/new/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/tables/new/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateTablesCreateIndexRoute =
   PrivateTablesCreateIndexRouteImport.update({
     id: '/tables/create/',
@@ -181,35 +235,35 @@ const PrivateTablesCreateIndexRoute =
     getParentRoute: () => PrivateLayoutRoute,
   } as any).lazy(() =>
     import('./routes/_private/tables/create/index.lazy').then((d) => d.Route),
-  );
+  )
 const PrivateTablesCloneIndexRoute = PrivateTablesCloneIndexRouteImport.update({
   id: '/tables/clone/',
   path: '/tables/clone/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/tables/clone/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateTablesSlugIndexRoute = PrivateTablesSlugIndexRouteImport.update({
   id: '/tables/$slug/',
   path: '/tables/$slug/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/tables/$slug/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateMenusCreateIndexRoute = PrivateMenusCreateIndexRouteImport.update({
   id: '/menus/create/',
   path: '/menus/create/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/menus/create/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateMenusMenuIdIndexRoute = PrivateMenusMenuIdIndexRouteImport.update({
   id: '/menus/$menuId/',
   path: '/menus/$menuId/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/menus/$menuId/index.lazy').then((d) => d.Route),
-);
+)
 const PrivateGroupsCreateIndexRoute =
   PrivateGroupsCreateIndexRouteImport.update({
     id: '/groups/create/',
@@ -217,7 +271,7 @@ const PrivateGroupsCreateIndexRoute =
     getParentRoute: () => PrivateLayoutRoute,
   } as any).lazy(() =>
     import('./routes/_private/groups/create/index.lazy').then((d) => d.Route),
-  );
+  )
 const PrivateGroupsGroupIdIndexRoute =
   PrivateGroupsGroupIdIndexRouteImport.update({
     id: '/groups/$groupId/',
@@ -225,7 +279,7 @@ const PrivateGroupsGroupIdIndexRoute =
     getParentRoute: () => PrivateLayoutRoute,
   } as any).lazy(() =>
     import('./routes/_private/groups/$groupId/index.lazy').then((d) => d.Route),
-  );
+  )
 const AuthenticationForgotPasswordValidateCodeIndexRoute =
   AuthenticationForgotPasswordValidateCodeIndexRouteImport.update({
     id: '/forgot-password/validate-code/',
@@ -235,7 +289,7 @@ const AuthenticationForgotPasswordValidateCodeIndexRoute =
     import('./routes/_authentication/forgot-password/validate-code/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const AuthenticationForgotPasswordResetPasswordIndexRoute =
   AuthenticationForgotPasswordResetPasswordIndexRouteImport.update({
     id: '/forgot-password/reset-password/',
@@ -245,7 +299,7 @@ const AuthenticationForgotPasswordResetPasswordIndexRoute =
     import('./routes/_authentication/forgot-password/reset-password/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const PrivateTablesSlugMethodsRoute =
   PrivateTablesSlugMethodsRouteImport.update({
     id: '/tables/$slug/methods',
@@ -253,7 +307,7 @@ const PrivateTablesSlugMethodsRoute =
     getParentRoute: () => PrivateLayoutRoute,
   } as any).lazy(() =>
     import('./routes/_private/tables/$slug/methods.lazy').then((d) => d.Route),
-  );
+  )
 const PrivateTablesSlugDetailIndexRoute =
   PrivateTablesSlugDetailIndexRouteImport.update({
     id: '/tables/$slug/detail/',
@@ -263,7 +317,7 @@ const PrivateTablesSlugDetailIndexRoute =
     import('./routes/_private/tables/$slug/detail/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const PrivateTablesSlugFieldManagementRoute =
   PrivateTablesSlugFieldManagementRouteImport.update({
     id: '/tables/$slug/field/management',
@@ -273,7 +327,7 @@ const PrivateTablesSlugFieldManagementRoute =
     import('./routes/_private/tables/$slug/field/management.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const PrivateTablesSlugRowCreateIndexRoute =
   PrivateTablesSlugRowCreateIndexRouteImport.update({
     id: '/tables/$slug/row/create/',
@@ -283,7 +337,7 @@ const PrivateTablesSlugRowCreateIndexRoute =
     import('./routes/_private/tables/$slug/row/create/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const PrivateTablesSlugRowRowIdIndexRoute =
   PrivateTablesSlugRowRowIdIndexRouteImport.update({
     id: '/tables/$slug/row/$rowId/',
@@ -293,7 +347,7 @@ const PrivateTablesSlugRowRowIdIndexRoute =
     import('./routes/_private/tables/$slug/row/$rowId/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const PrivateTablesSlugFieldCreateIndexRoute =
   PrivateTablesSlugFieldCreateIndexRouteImport.update({
     id: '/tables/$slug/field/create/',
@@ -303,7 +357,7 @@ const PrivateTablesSlugFieldCreateIndexRoute =
     import('./routes/_private/tables/$slug/field/create/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const PrivateTablesSlugFieldFieldIdIndexRoute =
   PrivateTablesSlugFieldFieldIdIndexRouteImport.update({
     id: '/tables/$slug/field/$fieldId/',
@@ -313,7 +367,7 @@ const PrivateTablesSlugFieldFieldIdIndexRoute =
     import('./routes/_private/tables/$slug/field/$fieldId/index.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 const PrivateTablesSlugGroupGroupSlugFieldManagementRoute =
   PrivateTablesSlugGroupGroupSlugFieldManagementRouteImport.update({
     id: '/tables/$slug/group/$groupSlug/field/management',
@@ -323,122 +377,144 @@ const PrivateTablesSlugGroupGroupSlugFieldManagementRoute =
     import('./routes/_private/tables/$slug/group/$groupSlug/field/management.lazy').then(
       (d) => d.Route,
     ),
-  );
+  )
 
 export interface FileRoutesByFullPath {
-  '/robots.txt': typeof RobotsDottxtRoute;
-  '/sitemap.xml': typeof SitemapDotxmlRoute;
-  '/pages/$slug': typeof PrivatePagesSlugRoute;
-  '/': typeof AuthenticationSignInIndexRoute;
-  '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute;
-  '/sign-up': typeof AuthenticationSignUpIndexRoute;
-  '/dashboard': typeof PrivateDashboardIndexRoute;
-  '/groups': typeof PrivateGroupsIndexRoute;
-  '/menus': typeof PrivateMenusIndexRoute;
-  '/profile': typeof PrivateProfileIndexRoute;
-  '/settings': typeof PrivateSettingsIndexRoute;
-  '/tables': typeof PrivateTablesIndexRoute;
-  '/tools': typeof PrivateToolsIndexRoute;
-  '/users': typeof PrivateUsersIndexRoute;
-  '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute;
-  '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute;
-  '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute;
-  '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute;
-  '/groups/create': typeof PrivateGroupsCreateIndexRoute;
-  '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute;
-  '/menus/create': typeof PrivateMenusCreateIndexRoute;
-  '/tables/$slug': typeof PrivateTablesSlugIndexRoute;
-  '/tables/clone': typeof PrivateTablesCloneIndexRoute;
-  '/tables/create': typeof PrivateTablesCreateIndexRoute;
-  '/tables/new': typeof PrivateTablesNewIndexRoute;
-  '/users/$userId': typeof PrivateUsersUserIdIndexRoute;
-  '/users/create': typeof PrivateUsersCreateIndexRoute;
-  '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute;
-  '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute;
-  '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
-  '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute;
-  '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute;
-  '/tables/$slug/row/create': typeof PrivateTablesSlugRowCreateIndexRoute;
-  '/tables/$slug/group/$groupSlug/field/management': typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute;
+  '/setup': typeof SetupLayoutRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/pages/$slug': typeof PrivatePagesSlugRoute
+  '/': typeof AuthenticationSignInIndexRoute
+  '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute
+  '/sign-up': typeof AuthenticationSignUpIndexRoute
+  '/dashboard': typeof PrivateDashboardIndexRoute
+  '/groups': typeof PrivateGroupsIndexRoute
+  '/menus': typeof PrivateMenusIndexRoute
+  '/profile': typeof PrivateProfileIndexRoute
+  '/settings': typeof PrivateSettingsIndexRoute
+  '/tables': typeof PrivateTablesIndexRoute
+  '/tools': typeof PrivateToolsIndexRoute
+  '/users': typeof PrivateUsersIndexRoute
+  '/setup/admin': typeof SetupAdminIndexRoute
+  '/setup/email': typeof SetupEmailIndexRoute
+  '/setup/logos': typeof SetupLogosIndexRoute
+  '/setup/name': typeof SetupNameIndexRoute
+  '/setup/paging': typeof SetupPagingIndexRoute
+  '/setup/upload': typeof SetupUploadIndexRoute
+  '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
+  '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
+  '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
+  '/groups/create': typeof PrivateGroupsCreateIndexRoute
+  '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
+  '/menus/create': typeof PrivateMenusCreateIndexRoute
+  '/tables/$slug': typeof PrivateTablesSlugIndexRoute
+  '/tables/clone': typeof PrivateTablesCloneIndexRoute
+  '/tables/create': typeof PrivateTablesCreateIndexRoute
+  '/tables/new': typeof PrivateTablesNewIndexRoute
+  '/users/$userId': typeof PrivateUsersUserIdIndexRoute
+  '/users/create': typeof PrivateUsersCreateIndexRoute
+  '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
+  '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
+  '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute
+  '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute
+  '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute
+  '/tables/$slug/row/create': typeof PrivateTablesSlugRowCreateIndexRoute
+  '/tables/$slug/group/$groupSlug/field/management': typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute
 }
 export interface FileRoutesByTo {
-  '/robots.txt': typeof RobotsDottxtRoute;
-  '/sitemap.xml': typeof SitemapDotxmlRoute;
-  '/pages/$slug': typeof PrivatePagesSlugRoute;
-  '/': typeof AuthenticationSignInIndexRoute;
-  '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute;
-  '/sign-up': typeof AuthenticationSignUpIndexRoute;
-  '/dashboard': typeof PrivateDashboardIndexRoute;
-  '/groups': typeof PrivateGroupsIndexRoute;
-  '/menus': typeof PrivateMenusIndexRoute;
-  '/profile': typeof PrivateProfileIndexRoute;
-  '/settings': typeof PrivateSettingsIndexRoute;
-  '/tables': typeof PrivateTablesIndexRoute;
-  '/tools': typeof PrivateToolsIndexRoute;
-  '/users': typeof PrivateUsersIndexRoute;
-  '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute;
-  '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute;
-  '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute;
-  '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute;
-  '/groups/create': typeof PrivateGroupsCreateIndexRoute;
-  '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute;
-  '/menus/create': typeof PrivateMenusCreateIndexRoute;
-  '/tables/$slug': typeof PrivateTablesSlugIndexRoute;
-  '/tables/clone': typeof PrivateTablesCloneIndexRoute;
-  '/tables/create': typeof PrivateTablesCreateIndexRoute;
-  '/tables/new': typeof PrivateTablesNewIndexRoute;
-  '/users/$userId': typeof PrivateUsersUserIdIndexRoute;
-  '/users/create': typeof PrivateUsersCreateIndexRoute;
-  '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute;
-  '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute;
-  '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
-  '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute;
-  '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute;
-  '/tables/$slug/row/create': typeof PrivateTablesSlugRowCreateIndexRoute;
-  '/tables/$slug/group/$groupSlug/field/management': typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute;
+  '/setup': typeof SetupLayoutRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/pages/$slug': typeof PrivatePagesSlugRoute
+  '/': typeof AuthenticationSignInIndexRoute
+  '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute
+  '/sign-up': typeof AuthenticationSignUpIndexRoute
+  '/dashboard': typeof PrivateDashboardIndexRoute
+  '/groups': typeof PrivateGroupsIndexRoute
+  '/menus': typeof PrivateMenusIndexRoute
+  '/profile': typeof PrivateProfileIndexRoute
+  '/settings': typeof PrivateSettingsIndexRoute
+  '/tables': typeof PrivateTablesIndexRoute
+  '/tools': typeof PrivateToolsIndexRoute
+  '/users': typeof PrivateUsersIndexRoute
+  '/setup/admin': typeof SetupAdminIndexRoute
+  '/setup/email': typeof SetupEmailIndexRoute
+  '/setup/logos': typeof SetupLogosIndexRoute
+  '/setup/name': typeof SetupNameIndexRoute
+  '/setup/paging': typeof SetupPagingIndexRoute
+  '/setup/upload': typeof SetupUploadIndexRoute
+  '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
+  '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
+  '/groups/$groupId': typeof PrivateGroupsGroupIdIndexRoute
+  '/groups/create': typeof PrivateGroupsCreateIndexRoute
+  '/menus/$menuId': typeof PrivateMenusMenuIdIndexRoute
+  '/menus/create': typeof PrivateMenusCreateIndexRoute
+  '/tables/$slug': typeof PrivateTablesSlugIndexRoute
+  '/tables/clone': typeof PrivateTablesCloneIndexRoute
+  '/tables/create': typeof PrivateTablesCreateIndexRoute
+  '/tables/new': typeof PrivateTablesNewIndexRoute
+  '/users/$userId': typeof PrivateUsersUserIdIndexRoute
+  '/users/create': typeof PrivateUsersCreateIndexRoute
+  '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
+  '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
+  '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute
+  '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute
+  '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute
+  '/tables/$slug/row/create': typeof PrivateTablesSlugRowCreateIndexRoute
+  '/tables/$slug/group/$groupSlug/field/management': typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport;
-  '/_authentication': typeof AuthenticationLayoutRouteWithChildren;
-  '/_private': typeof PrivateLayoutRouteWithChildren;
-  '/robots.txt': typeof RobotsDottxtRoute;
-  '/sitemap.xml': typeof SitemapDotxmlRoute;
-  '/_private/pages/$slug': typeof PrivatePagesSlugRoute;
-  '/_authentication/_sign-in/': typeof AuthenticationSignInIndexRoute;
-  '/_authentication/forgot-password/': typeof AuthenticationForgotPasswordIndexRoute;
-  '/_authentication/sign-up/': typeof AuthenticationSignUpIndexRoute;
-  '/_private/dashboard/': typeof PrivateDashboardIndexRoute;
-  '/_private/groups/': typeof PrivateGroupsIndexRoute;
-  '/_private/menus/': typeof PrivateMenusIndexRoute;
-  '/_private/profile/': typeof PrivateProfileIndexRoute;
-  '/_private/settings/': typeof PrivateSettingsIndexRoute;
-  '/_private/tables/': typeof PrivateTablesIndexRoute;
-  '/_private/tools/': typeof PrivateToolsIndexRoute;
-  '/_private/users/': typeof PrivateUsersIndexRoute;
-  '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute;
-  '/_authentication/forgot-password/reset-password/': typeof AuthenticationForgotPasswordResetPasswordIndexRoute;
-  '/_authentication/forgot-password/validate-code/': typeof AuthenticationForgotPasswordValidateCodeIndexRoute;
-  '/_private/groups/$groupId/': typeof PrivateGroupsGroupIdIndexRoute;
-  '/_private/groups/create/': typeof PrivateGroupsCreateIndexRoute;
-  '/_private/menus/$menuId/': typeof PrivateMenusMenuIdIndexRoute;
-  '/_private/menus/create/': typeof PrivateMenusCreateIndexRoute;
-  '/_private/tables/$slug/': typeof PrivateTablesSlugIndexRoute;
-  '/_private/tables/clone/': typeof PrivateTablesCloneIndexRoute;
-  '/_private/tables/create/': typeof PrivateTablesCreateIndexRoute;
-  '/_private/tables/new/': typeof PrivateTablesNewIndexRoute;
-  '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute;
-  '/_private/users/create/': typeof PrivateUsersCreateIndexRoute;
-  '/_private/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute;
-  '/_private/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute;
-  '/_private/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute;
-  '/_private/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute;
-  '/_private/tables/$slug/row/$rowId/': typeof PrivateTablesSlugRowRowIdIndexRoute;
-  '/_private/tables/$slug/row/create/': typeof PrivateTablesSlugRowCreateIndexRoute;
-  '/_private/tables/$slug/group/$groupSlug/field/management': typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute;
+  __root__: typeof rootRouteImport
+  '/_authentication': typeof AuthenticationLayoutRouteWithChildren
+  '/_private': typeof PrivateLayoutRouteWithChildren
+  '/setup': typeof SetupLayoutRouteWithChildren
+  '/robots.txt': typeof RobotsDottxtRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/_private/pages/$slug': typeof PrivatePagesSlugRoute
+  '/_authentication/_sign-in/': typeof AuthenticationSignInIndexRoute
+  '/_authentication/forgot-password/': typeof AuthenticationForgotPasswordIndexRoute
+  '/_authentication/sign-up/': typeof AuthenticationSignUpIndexRoute
+  '/_private/dashboard/': typeof PrivateDashboardIndexRoute
+  '/_private/groups/': typeof PrivateGroupsIndexRoute
+  '/_private/menus/': typeof PrivateMenusIndexRoute
+  '/_private/profile/': typeof PrivateProfileIndexRoute
+  '/_private/settings/': typeof PrivateSettingsIndexRoute
+  '/_private/tables/': typeof PrivateTablesIndexRoute
+  '/_private/tools/': typeof PrivateToolsIndexRoute
+  '/_private/users/': typeof PrivateUsersIndexRoute
+  '/setup/admin/': typeof SetupAdminIndexRoute
+  '/setup/email/': typeof SetupEmailIndexRoute
+  '/setup/logos/': typeof SetupLogosIndexRoute
+  '/setup/name/': typeof SetupNameIndexRoute
+  '/setup/paging/': typeof SetupPagingIndexRoute
+  '/setup/upload/': typeof SetupUploadIndexRoute
+  '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
+  '/_authentication/forgot-password/reset-password/': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  '/_authentication/forgot-password/validate-code/': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
+  '/_private/groups/$groupId/': typeof PrivateGroupsGroupIdIndexRoute
+  '/_private/groups/create/': typeof PrivateGroupsCreateIndexRoute
+  '/_private/menus/$menuId/': typeof PrivateMenusMenuIdIndexRoute
+  '/_private/menus/create/': typeof PrivateMenusCreateIndexRoute
+  '/_private/tables/$slug/': typeof PrivateTablesSlugIndexRoute
+  '/_private/tables/clone/': typeof PrivateTablesCloneIndexRoute
+  '/_private/tables/create/': typeof PrivateTablesCreateIndexRoute
+  '/_private/tables/new/': typeof PrivateTablesNewIndexRoute
+  '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute
+  '/_private/users/create/': typeof PrivateUsersCreateIndexRoute
+  '/_private/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
+  '/_private/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute
+  '/_private/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute
+  '/_private/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute
+  '/_private/tables/$slug/row/$rowId/': typeof PrivateTablesSlugRowRowIdIndexRoute
+  '/_private/tables/$slug/row/create/': typeof PrivateTablesSlugRowCreateIndexRoute
+  '/_private/tables/$slug/group/$groupSlug/field/management': typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath;
+  fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/setup'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/pages/$slug'
@@ -453,6 +529,12 @@ export interface FileRouteTypes {
     | '/tables'
     | '/tools'
     | '/users'
+    | '/setup/admin'
+    | '/setup/email'
+    | '/setup/logos'
+    | '/setup/name'
+    | '/setup/paging'
+    | '/setup/upload'
     | '/tables/$slug/methods'
     | '/forgot-password/reset-password'
     | '/forgot-password/validate-code'
@@ -472,9 +554,10 @@ export interface FileRouteTypes {
     | '/tables/$slug/field/create'
     | '/tables/$slug/row/$rowId'
     | '/tables/$slug/row/create'
-    | '/tables/$slug/group/$groupSlug/field/management';
-  fileRoutesByTo: FileRoutesByTo;
+    | '/tables/$slug/group/$groupSlug/field/management'
+  fileRoutesByTo: FileRoutesByTo
   to:
+    | '/setup'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/pages/$slug'
@@ -489,6 +572,12 @@ export interface FileRouteTypes {
     | '/tables'
     | '/tools'
     | '/users'
+    | '/setup/admin'
+    | '/setup/email'
+    | '/setup/logos'
+    | '/setup/name'
+    | '/setup/paging'
+    | '/setup/upload'
     | '/tables/$slug/methods'
     | '/forgot-password/reset-password'
     | '/forgot-password/validate-code'
@@ -508,11 +597,12 @@ export interface FileRouteTypes {
     | '/tables/$slug/field/create'
     | '/tables/$slug/row/$rowId'
     | '/tables/$slug/row/create'
-    | '/tables/$slug/group/$groupSlug/field/management';
+    | '/tables/$slug/group/$groupSlug/field/management'
   id:
     | '__root__'
     | '/_authentication'
     | '/_private'
+    | '/setup'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/_private/pages/$slug'
@@ -527,6 +617,12 @@ export interface FileRouteTypes {
     | '/_private/tables/'
     | '/_private/tools/'
     | '/_private/users/'
+    | '/setup/admin/'
+    | '/setup/email/'
+    | '/setup/logos/'
+    | '/setup/name/'
+    | '/setup/paging/'
+    | '/setup/upload/'
     | '/_private/tables/$slug/methods'
     | '/_authentication/forgot-password/reset-password/'
     | '/_authentication/forgot-password/validate-code/'
@@ -546,279 +642,329 @@ export interface FileRouteTypes {
     | '/_private/tables/$slug/field/create/'
     | '/_private/tables/$slug/row/$rowId/'
     | '/_private/tables/$slug/row/create/'
-    | '/_private/tables/$slug/group/$groupSlug/field/management';
-  fileRoutesById: FileRoutesById;
+    | '/_private/tables/$slug/group/$groupSlug/field/management'
+  fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  AuthenticationLayoutRoute: typeof AuthenticationLayoutRouteWithChildren;
-  PrivateLayoutRoute: typeof PrivateLayoutRouteWithChildren;
-  RobotsDottxtRoute: typeof RobotsDottxtRoute;
-  SitemapDotxmlRoute: typeof SitemapDotxmlRoute;
+  AuthenticationLayoutRoute: typeof AuthenticationLayoutRouteWithChildren
+  PrivateLayoutRoute: typeof PrivateLayoutRouteWithChildren
+  SetupLayoutRoute: typeof SetupLayoutRouteWithChildren
+  RobotsDottxtRoute: typeof RobotsDottxtRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
     '/sitemap.xml': {
-      id: '/sitemap.xml';
-      path: '/sitemap.xml';
-      fullPath: '/sitemap.xml';
-      preLoaderRoute: typeof SitemapDotxmlRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/robots.txt': {
-      id: '/robots.txt';
-      path: '/robots.txt';
-      fullPath: '/robots.txt';
-      preLoaderRoute: typeof RobotsDottxtRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/robots.txt'
+      path: '/robots.txt'
+      fullPath: '/robots.txt'
+      preLoaderRoute: typeof RobotsDottxtRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_private': {
-      id: '/_private';
-      path: '';
-      fullPath: '';
-      preLoaderRoute: typeof PrivateLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/_private'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof PrivateLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authentication': {
-      id: '/_authentication';
-      path: '';
-      fullPath: '';
-      preLoaderRoute: typeof AuthenticationLayoutRouteImport;
-      parentRoute: typeof rootRouteImport;
-    };
+      id: '/_authentication'
+      path: ''
+      fullPath: ''
+      preLoaderRoute: typeof AuthenticationLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/setup/upload/': {
+      id: '/setup/upload/'
+      path: '/upload'
+      fullPath: '/setup/upload'
+      preLoaderRoute: typeof SetupUploadIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/paging/': {
+      id: '/setup/paging/'
+      path: '/paging'
+      fullPath: '/setup/paging'
+      preLoaderRoute: typeof SetupPagingIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/name/': {
+      id: '/setup/name/'
+      path: '/name'
+      fullPath: '/setup/name'
+      preLoaderRoute: typeof SetupNameIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/logos/': {
+      id: '/setup/logos/'
+      path: '/logos'
+      fullPath: '/setup/logos'
+      preLoaderRoute: typeof SetupLogosIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/email/': {
+      id: '/setup/email/'
+      path: '/email'
+      fullPath: '/setup/email'
+      preLoaderRoute: typeof SetupEmailIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/admin/': {
+      id: '/setup/admin/'
+      path: '/admin'
+      fullPath: '/setup/admin'
+      preLoaderRoute: typeof SetupAdminIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
     '/_private/users/': {
-      id: '/_private/users/';
-      path: '/users';
-      fullPath: '/users';
-      preLoaderRoute: typeof PrivateUsersIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/users/'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof PrivateUsersIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tools/': {
-      id: '/_private/tools/';
-      path: '/tools';
-      fullPath: '/tools';
-      preLoaderRoute: typeof PrivateToolsIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tools/'
+      path: '/tools'
+      fullPath: '/tools'
+      preLoaderRoute: typeof PrivateToolsIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/': {
-      id: '/_private/tables/';
-      path: '/tables';
-      fullPath: '/tables';
-      preLoaderRoute: typeof PrivateTablesIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/'
+      path: '/tables'
+      fullPath: '/tables'
+      preLoaderRoute: typeof PrivateTablesIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/settings/': {
-      id: '/_private/settings/';
-      path: '/settings';
-      fullPath: '/settings';
-      preLoaderRoute: typeof PrivateSettingsIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/settings/'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof PrivateSettingsIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/profile/': {
-      id: '/_private/profile/';
-      path: '/profile';
-      fullPath: '/profile';
-      preLoaderRoute: typeof PrivateProfileIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/profile/'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof PrivateProfileIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/menus/': {
-      id: '/_private/menus/';
-      path: '/menus';
-      fullPath: '/menus';
-      preLoaderRoute: typeof PrivateMenusIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/menus/'
+      path: '/menus'
+      fullPath: '/menus'
+      preLoaderRoute: typeof PrivateMenusIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/groups/': {
-      id: '/_private/groups/';
-      path: '/groups';
-      fullPath: '/groups';
-      preLoaderRoute: typeof PrivateGroupsIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/groups/'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof PrivateGroupsIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/dashboard/': {
-      id: '/_private/dashboard/';
-      path: '/dashboard';
-      fullPath: '/dashboard';
-      preLoaderRoute: typeof PrivateDashboardIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/dashboard/'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof PrivateDashboardIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_authentication/sign-up/': {
-      id: '/_authentication/sign-up/';
-      path: '/sign-up';
-      fullPath: '/sign-up';
-      preLoaderRoute: typeof AuthenticationSignUpIndexRouteImport;
-      parentRoute: typeof AuthenticationLayoutRoute;
-    };
+      id: '/_authentication/sign-up/'
+      path: '/sign-up'
+      fullPath: '/sign-up'
+      preLoaderRoute: typeof AuthenticationSignUpIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
     '/_authentication/forgot-password/': {
-      id: '/_authentication/forgot-password/';
-      path: '/forgot-password';
-      fullPath: '/forgot-password';
-      preLoaderRoute: typeof AuthenticationForgotPasswordIndexRouteImport;
-      parentRoute: typeof AuthenticationLayoutRoute;
-    };
+      id: '/_authentication/forgot-password/'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof AuthenticationForgotPasswordIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
     '/_authentication/_sign-in/': {
-      id: '/_authentication/_sign-in/';
-      path: '/';
-      fullPath: '/';
-      preLoaderRoute: typeof AuthenticationSignInIndexRouteImport;
-      parentRoute: typeof AuthenticationLayoutRoute;
-    };
+      id: '/_authentication/_sign-in/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticationSignInIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
     '/_private/pages/$slug': {
-      id: '/_private/pages/$slug';
-      path: '/pages/$slug';
-      fullPath: '/pages/$slug';
-      preLoaderRoute: typeof PrivatePagesSlugRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/pages/$slug'
+      path: '/pages/$slug'
+      fullPath: '/pages/$slug'
+      preLoaderRoute: typeof PrivatePagesSlugRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/users/create/': {
-      id: '/_private/users/create/';
-      path: '/users/create';
-      fullPath: '/users/create';
-      preLoaderRoute: typeof PrivateUsersCreateIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/users/create/'
+      path: '/users/create'
+      fullPath: '/users/create'
+      preLoaderRoute: typeof PrivateUsersCreateIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/users/$userId/': {
-      id: '/_private/users/$userId/';
-      path: '/users/$userId';
-      fullPath: '/users/$userId';
-      preLoaderRoute: typeof PrivateUsersUserIdIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/users/$userId/'
+      path: '/users/$userId'
+      fullPath: '/users/$userId'
+      preLoaderRoute: typeof PrivateUsersUserIdIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/new/': {
-      id: '/_private/tables/new/';
-      path: '/tables/new';
-      fullPath: '/tables/new';
-      preLoaderRoute: typeof PrivateTablesNewIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/new/'
+      path: '/tables/new'
+      fullPath: '/tables/new'
+      preLoaderRoute: typeof PrivateTablesNewIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/create/': {
-      id: '/_private/tables/create/';
-      path: '/tables/create';
-      fullPath: '/tables/create';
-      preLoaderRoute: typeof PrivateTablesCreateIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/create/'
+      path: '/tables/create'
+      fullPath: '/tables/create'
+      preLoaderRoute: typeof PrivateTablesCreateIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/clone/': {
-      id: '/_private/tables/clone/';
-      path: '/tables/clone';
-      fullPath: '/tables/clone';
-      preLoaderRoute: typeof PrivateTablesCloneIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/clone/'
+      path: '/tables/clone'
+      fullPath: '/tables/clone'
+      preLoaderRoute: typeof PrivateTablesCloneIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/': {
-      id: '/_private/tables/$slug/';
-      path: '/tables/$slug';
-      fullPath: '/tables/$slug';
-      preLoaderRoute: typeof PrivateTablesSlugIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/'
+      path: '/tables/$slug'
+      fullPath: '/tables/$slug'
+      preLoaderRoute: typeof PrivateTablesSlugIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/menus/create/': {
-      id: '/_private/menus/create/';
-      path: '/menus/create';
-      fullPath: '/menus/create';
-      preLoaderRoute: typeof PrivateMenusCreateIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/menus/create/'
+      path: '/menus/create'
+      fullPath: '/menus/create'
+      preLoaderRoute: typeof PrivateMenusCreateIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/menus/$menuId/': {
-      id: '/_private/menus/$menuId/';
-      path: '/menus/$menuId';
-      fullPath: '/menus/$menuId';
-      preLoaderRoute: typeof PrivateMenusMenuIdIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/menus/$menuId/'
+      path: '/menus/$menuId'
+      fullPath: '/menus/$menuId'
+      preLoaderRoute: typeof PrivateMenusMenuIdIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/groups/create/': {
-      id: '/_private/groups/create/';
-      path: '/groups/create';
-      fullPath: '/groups/create';
-      preLoaderRoute: typeof PrivateGroupsCreateIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/groups/create/'
+      path: '/groups/create'
+      fullPath: '/groups/create'
+      preLoaderRoute: typeof PrivateGroupsCreateIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/groups/$groupId/': {
-      id: '/_private/groups/$groupId/';
-      path: '/groups/$groupId';
-      fullPath: '/groups/$groupId';
-      preLoaderRoute: typeof PrivateGroupsGroupIdIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/groups/$groupId/'
+      path: '/groups/$groupId'
+      fullPath: '/groups/$groupId'
+      preLoaderRoute: typeof PrivateGroupsGroupIdIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_authentication/forgot-password/validate-code/': {
-      id: '/_authentication/forgot-password/validate-code/';
-      path: '/forgot-password/validate-code';
-      fullPath: '/forgot-password/validate-code';
-      preLoaderRoute: typeof AuthenticationForgotPasswordValidateCodeIndexRouteImport;
-      parentRoute: typeof AuthenticationLayoutRoute;
-    };
+      id: '/_authentication/forgot-password/validate-code/'
+      path: '/forgot-password/validate-code'
+      fullPath: '/forgot-password/validate-code'
+      preLoaderRoute: typeof AuthenticationForgotPasswordValidateCodeIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
     '/_authentication/forgot-password/reset-password/': {
-      id: '/_authentication/forgot-password/reset-password/';
-      path: '/forgot-password/reset-password';
-      fullPath: '/forgot-password/reset-password';
-      preLoaderRoute: typeof AuthenticationForgotPasswordResetPasswordIndexRouteImport;
-      parentRoute: typeof AuthenticationLayoutRoute;
-    };
+      id: '/_authentication/forgot-password/reset-password/'
+      path: '/forgot-password/reset-password'
+      fullPath: '/forgot-password/reset-password'
+      preLoaderRoute: typeof AuthenticationForgotPasswordResetPasswordIndexRouteImport
+      parentRoute: typeof AuthenticationLayoutRoute
+    }
     '/_private/tables/$slug/methods': {
-      id: '/_private/tables/$slug/methods';
-      path: '/tables/$slug/methods';
-      fullPath: '/tables/$slug/methods';
-      preLoaderRoute: typeof PrivateTablesSlugMethodsRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/methods'
+      path: '/tables/$slug/methods'
+      fullPath: '/tables/$slug/methods'
+      preLoaderRoute: typeof PrivateTablesSlugMethodsRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/detail/': {
-      id: '/_private/tables/$slug/detail/';
-      path: '/tables/$slug/detail';
-      fullPath: '/tables/$slug/detail';
-      preLoaderRoute: typeof PrivateTablesSlugDetailIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/detail/'
+      path: '/tables/$slug/detail'
+      fullPath: '/tables/$slug/detail'
+      preLoaderRoute: typeof PrivateTablesSlugDetailIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/field/management': {
-      id: '/_private/tables/$slug/field/management';
-      path: '/tables/$slug/field/management';
-      fullPath: '/tables/$slug/field/management';
-      preLoaderRoute: typeof PrivateTablesSlugFieldManagementRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/field/management'
+      path: '/tables/$slug/field/management'
+      fullPath: '/tables/$slug/field/management'
+      preLoaderRoute: typeof PrivateTablesSlugFieldManagementRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/row/create/': {
-      id: '/_private/tables/$slug/row/create/';
-      path: '/tables/$slug/row/create';
-      fullPath: '/tables/$slug/row/create';
-      preLoaderRoute: typeof PrivateTablesSlugRowCreateIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/row/create/'
+      path: '/tables/$slug/row/create'
+      fullPath: '/tables/$slug/row/create'
+      preLoaderRoute: typeof PrivateTablesSlugRowCreateIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/row/$rowId/': {
-      id: '/_private/tables/$slug/row/$rowId/';
-      path: '/tables/$slug/row/$rowId';
-      fullPath: '/tables/$slug/row/$rowId';
-      preLoaderRoute: typeof PrivateTablesSlugRowRowIdIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/row/$rowId/'
+      path: '/tables/$slug/row/$rowId'
+      fullPath: '/tables/$slug/row/$rowId'
+      preLoaderRoute: typeof PrivateTablesSlugRowRowIdIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/field/create/': {
-      id: '/_private/tables/$slug/field/create/';
-      path: '/tables/$slug/field/create';
-      fullPath: '/tables/$slug/field/create';
-      preLoaderRoute: typeof PrivateTablesSlugFieldCreateIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/field/create/'
+      path: '/tables/$slug/field/create'
+      fullPath: '/tables/$slug/field/create'
+      preLoaderRoute: typeof PrivateTablesSlugFieldCreateIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/field/$fieldId/': {
-      id: '/_private/tables/$slug/field/$fieldId/';
-      path: '/tables/$slug/field/$fieldId';
-      fullPath: '/tables/$slug/field/$fieldId';
-      preLoaderRoute: typeof PrivateTablesSlugFieldFieldIdIndexRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/field/$fieldId/'
+      path: '/tables/$slug/field/$fieldId'
+      fullPath: '/tables/$slug/field/$fieldId'
+      preLoaderRoute: typeof PrivateTablesSlugFieldFieldIdIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/group/$groupSlug/field/management': {
-      id: '/_private/tables/$slug/group/$groupSlug/field/management';
-      path: '/tables/$slug/group/$groupSlug/field/management';
-      fullPath: '/tables/$slug/group/$groupSlug/field/management';
-      preLoaderRoute: typeof PrivateTablesSlugGroupGroupSlugFieldManagementRouteImport;
-      parentRoute: typeof PrivateLayoutRoute;
-    };
+      id: '/_private/tables/$slug/group/$groupSlug/field/management'
+      path: '/tables/$slug/group/$groupSlug/field/management'
+      fullPath: '/tables/$slug/group/$groupSlug/field/management'
+      preLoaderRoute: typeof PrivateTablesSlugGroupGroupSlugFieldManagementRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
   }
 }
 
 interface AuthenticationLayoutRouteChildren {
-  AuthenticationSignInIndexRoute: typeof AuthenticationSignInIndexRoute;
-  AuthenticationForgotPasswordIndexRoute: typeof AuthenticationForgotPasswordIndexRoute;
-  AuthenticationSignUpIndexRoute: typeof AuthenticationSignUpIndexRoute;
-  AuthenticationForgotPasswordResetPasswordIndexRoute: typeof AuthenticationForgotPasswordResetPasswordIndexRoute;
-  AuthenticationForgotPasswordValidateCodeIndexRoute: typeof AuthenticationForgotPasswordValidateCodeIndexRoute;
+  AuthenticationSignInIndexRoute: typeof AuthenticationSignInIndexRoute
+  AuthenticationForgotPasswordIndexRoute: typeof AuthenticationForgotPasswordIndexRoute
+  AuthenticationSignUpIndexRoute: typeof AuthenticationSignUpIndexRoute
+  AuthenticationForgotPasswordResetPasswordIndexRoute: typeof AuthenticationForgotPasswordResetPasswordIndexRoute
+  AuthenticationForgotPasswordValidateCodeIndexRoute: typeof AuthenticationForgotPasswordValidateCodeIndexRoute
 }
 
 const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
@@ -830,39 +976,39 @@ const AuthenticationLayoutRouteChildren: AuthenticationLayoutRouteChildren = {
     AuthenticationForgotPasswordResetPasswordIndexRoute,
   AuthenticationForgotPasswordValidateCodeIndexRoute:
     AuthenticationForgotPasswordValidateCodeIndexRoute,
-};
+}
 
 const AuthenticationLayoutRouteWithChildren =
-  AuthenticationLayoutRoute._addFileChildren(AuthenticationLayoutRouteChildren);
+  AuthenticationLayoutRoute._addFileChildren(AuthenticationLayoutRouteChildren)
 
 interface PrivateLayoutRouteChildren {
-  PrivatePagesSlugRoute: typeof PrivatePagesSlugRoute;
-  PrivateDashboardIndexRoute: typeof PrivateDashboardIndexRoute;
-  PrivateGroupsIndexRoute: typeof PrivateGroupsIndexRoute;
-  PrivateMenusIndexRoute: typeof PrivateMenusIndexRoute;
-  PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute;
-  PrivateSettingsIndexRoute: typeof PrivateSettingsIndexRoute;
-  PrivateTablesIndexRoute: typeof PrivateTablesIndexRoute;
-  PrivateToolsIndexRoute: typeof PrivateToolsIndexRoute;
-  PrivateUsersIndexRoute: typeof PrivateUsersIndexRoute;
-  PrivateTablesSlugMethodsRoute: typeof PrivateTablesSlugMethodsRoute;
-  PrivateGroupsGroupIdIndexRoute: typeof PrivateGroupsGroupIdIndexRoute;
-  PrivateGroupsCreateIndexRoute: typeof PrivateGroupsCreateIndexRoute;
-  PrivateMenusMenuIdIndexRoute: typeof PrivateMenusMenuIdIndexRoute;
-  PrivateMenusCreateIndexRoute: typeof PrivateMenusCreateIndexRoute;
-  PrivateTablesSlugIndexRoute: typeof PrivateTablesSlugIndexRoute;
-  PrivateTablesCloneIndexRoute: typeof PrivateTablesCloneIndexRoute;
-  PrivateTablesCreateIndexRoute: typeof PrivateTablesCreateIndexRoute;
-  PrivateTablesNewIndexRoute: typeof PrivateTablesNewIndexRoute;
-  PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute;
-  PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute;
-  PrivateTablesSlugFieldManagementRoute: typeof PrivateTablesSlugFieldManagementRoute;
-  PrivateTablesSlugDetailIndexRoute: typeof PrivateTablesSlugDetailIndexRoute;
-  PrivateTablesSlugFieldFieldIdIndexRoute: typeof PrivateTablesSlugFieldFieldIdIndexRoute;
-  PrivateTablesSlugFieldCreateIndexRoute: typeof PrivateTablesSlugFieldCreateIndexRoute;
-  PrivateTablesSlugRowRowIdIndexRoute: typeof PrivateTablesSlugRowRowIdIndexRoute;
-  PrivateTablesSlugRowCreateIndexRoute: typeof PrivateTablesSlugRowCreateIndexRoute;
-  PrivateTablesSlugGroupGroupSlugFieldManagementRoute: typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute;
+  PrivatePagesSlugRoute: typeof PrivatePagesSlugRoute
+  PrivateDashboardIndexRoute: typeof PrivateDashboardIndexRoute
+  PrivateGroupsIndexRoute: typeof PrivateGroupsIndexRoute
+  PrivateMenusIndexRoute: typeof PrivateMenusIndexRoute
+  PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute
+  PrivateSettingsIndexRoute: typeof PrivateSettingsIndexRoute
+  PrivateTablesIndexRoute: typeof PrivateTablesIndexRoute
+  PrivateToolsIndexRoute: typeof PrivateToolsIndexRoute
+  PrivateUsersIndexRoute: typeof PrivateUsersIndexRoute
+  PrivateTablesSlugMethodsRoute: typeof PrivateTablesSlugMethodsRoute
+  PrivateGroupsGroupIdIndexRoute: typeof PrivateGroupsGroupIdIndexRoute
+  PrivateGroupsCreateIndexRoute: typeof PrivateGroupsCreateIndexRoute
+  PrivateMenusMenuIdIndexRoute: typeof PrivateMenusMenuIdIndexRoute
+  PrivateMenusCreateIndexRoute: typeof PrivateMenusCreateIndexRoute
+  PrivateTablesSlugIndexRoute: typeof PrivateTablesSlugIndexRoute
+  PrivateTablesCloneIndexRoute: typeof PrivateTablesCloneIndexRoute
+  PrivateTablesCreateIndexRoute: typeof PrivateTablesCreateIndexRoute
+  PrivateTablesNewIndexRoute: typeof PrivateTablesNewIndexRoute
+  PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute
+  PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute
+  PrivateTablesSlugFieldManagementRoute: typeof PrivateTablesSlugFieldManagementRoute
+  PrivateTablesSlugDetailIndexRoute: typeof PrivateTablesSlugDetailIndexRoute
+  PrivateTablesSlugFieldFieldIdIndexRoute: typeof PrivateTablesSlugFieldFieldIdIndexRoute
+  PrivateTablesSlugFieldCreateIndexRoute: typeof PrivateTablesSlugFieldCreateIndexRoute
+  PrivateTablesSlugRowRowIdIndexRoute: typeof PrivateTablesSlugRowRowIdIndexRoute
+  PrivateTablesSlugRowCreateIndexRoute: typeof PrivateTablesSlugRowCreateIndexRoute
+  PrivateTablesSlugGroupGroupSlugFieldManagementRoute: typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute
 }
 
 const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
@@ -896,27 +1042,50 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateTablesSlugRowCreateIndexRoute: PrivateTablesSlugRowCreateIndexRoute,
   PrivateTablesSlugGroupGroupSlugFieldManagementRoute:
     PrivateTablesSlugGroupGroupSlugFieldManagementRoute,
-};
+}
 
 const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(
   PrivateLayoutRouteChildren,
-);
+)
+
+interface SetupLayoutRouteChildren {
+  SetupAdminIndexRoute: typeof SetupAdminIndexRoute
+  SetupEmailIndexRoute: typeof SetupEmailIndexRoute
+  SetupLogosIndexRoute: typeof SetupLogosIndexRoute
+  SetupNameIndexRoute: typeof SetupNameIndexRoute
+  SetupPagingIndexRoute: typeof SetupPagingIndexRoute
+  SetupUploadIndexRoute: typeof SetupUploadIndexRoute
+}
+
+const SetupLayoutRouteChildren: SetupLayoutRouteChildren = {
+  SetupAdminIndexRoute: SetupAdminIndexRoute,
+  SetupEmailIndexRoute: SetupEmailIndexRoute,
+  SetupLogosIndexRoute: SetupLogosIndexRoute,
+  SetupNameIndexRoute: SetupNameIndexRoute,
+  SetupPagingIndexRoute: SetupPagingIndexRoute,
+  SetupUploadIndexRoute: SetupUploadIndexRoute,
+}
+
+const SetupLayoutRouteWithChildren = SetupLayoutRoute._addFileChildren(
+  SetupLayoutRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   AuthenticationLayoutRoute: AuthenticationLayoutRouteWithChildren,
   PrivateLayoutRoute: PrivateLayoutRouteWithChildren,
+  SetupLayoutRoute: SetupLayoutRouteWithChildren,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
-};
+}
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>();
+  ._addFileTypes<FileRouteTypes>()
 
-import type { getRouter } from './router.tsx';
-import type { createStart } from '@tanstack/react-start';
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
 declare module '@tanstack/react-start' {
   interface Register {
-    ssr: true;
-    router: Awaited<ReturnType<typeof getRouter>>;
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
   }
 }
