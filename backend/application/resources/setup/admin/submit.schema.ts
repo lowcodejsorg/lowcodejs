@@ -22,7 +22,8 @@ export const SetupAdminSubmitSchema: FastifySchema = {
       password: {
         type: 'string',
         minLength: 6,
-        description: 'Senha (mín. 6 caracteres, 1 maiúscula, 1 minúscula, 1 número, 1 especial)',
+        description:
+          'Senha (mín. 6 caracteres, 1 maiúscula, 1 minúscula, 1 número, 1 especial)',
       },
       confirmPassword: {
         type: 'string',

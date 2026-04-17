@@ -311,4 +311,5 @@ export const setupStatusOptions = () =>
       const { data } = await API.get<ISetupStatus>('/setup/status');
       return data;
     },
+    staleTime: 0,
   });

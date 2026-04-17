@@ -31,9 +31,7 @@ export default class SetupStatusUseCase {
       const setting = await this.settingRepository.get();
 
       const users = await this.userRepository.findMany({});
-      const hasAdmin = users.some(
-        (user) => user.group?.slug === E_ROLE.MASTER,
-      );
+      const hasAdmin = users.some((user) => user.group?.slug === E_ROLE.MASTER);
 
       if (!setting) {
         return right({

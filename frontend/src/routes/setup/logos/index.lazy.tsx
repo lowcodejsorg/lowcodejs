@@ -1,8 +1,10 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
+import { ImageIcon } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Stepper } from '../-stepper';
 
+import { FileUploadWithStorage } from '@/components/common/file-upload';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -11,10 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Field, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitLogos } from '@/hooks/tanstack-query/use-setup-submit-logos';
+import type { IStorage } from '@/lib/interfaces';
 import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/setup/logos/')({
@@ -23,12 +25,14 @@ export const Route = createLazyFileRoute('/setup/logos/')({
 
 function SetupLogosPage(): React.JSX.Element {
   const router = useRouter();
-  const [logoSmallUrl, setLogoSmallUrl] = useState('');
-  const [logoLargeUrl, setLogoLargeUrl] = useState('');
+  const [logoSmallUrl, setLogoSmallUrl] = useState<string | null>(null);
+  const [logoLargeUrl, setLogoLargeUrl] = useState<string | null>(null);
+  const [logoSmallFiles, setLogoSmallFiles] = useState<Array<File>>([]);
+  const [logoLargeFiles, setLogoLargeFiles] = useState<Array<File>>([]);
 
   const mutation = useSetupSubmitLogos({
     onSuccess: (data) => {
-      toastSuccess('Etapa concluída!');
+      toastSuccess('Etapa concluída');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {
@@ -43,8 +47,8 @@ function SetupLogosPage(): React.JSX.Element {
   function handleSubmit(e: React.FormEvent<HTMLFormElement>): void {
     e.preventDefault();
     mutation.mutate({
-      LOGO_SMALL_URL: logoSmallUrl || null,
-      LOGO_LARGE_URL: logoLargeUrl || null,
+      LOGO_SMALL_URL: logoSmallUrl,
+      LOGO_LARGE_URL: logoLargeUrl,
     });
   }
 
@@ -53,9 +57,13 @@ function SetupLogosPage(): React.JSX.Element {
       <Stepper currentStep="logos" />
       <Card>
         <CardHeader>
-          <CardTitle>Logos</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="size-5" />
+            Logos
+          </CardTitle>
           <CardDescription>
-            Configure os logos da plataforma (opcional)
+            Configure os logos da plataforma (opcional — pode ser feito depois em
+            Configurações)
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -63,26 +71,46 @@ function SetupLogosPage(): React.JSX.Element {
             onSubmit={handleSubmit}
             className="space-y-4"
           >
-            <div className="space-y-2">
-              <Label htmlFor="LOGO_SMALL_URL">Logo Pequeno (URL)</Label>
-              <Input
-                id="LOGO_SMALL_URL"
-                type="text"
-                value={logoSmallUrl}
-                onChange={(e) => setLogoSmallUrl(e.target.value)}
-                placeholder="https://exemplo.com/logo-small.png"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Field>
+                <FieldLabel>Logo Pequeno</FieldLabel>
+                <FileUploadWithStorage
+                  value={logoSmallFiles}
+                  onValueChange={setLogoSmallFiles}
+                  onStorageChange={(storages: Array<IStorage>) => {
+                    if (storages[0]?.url) {
+                      setLogoSmallUrl(storages[0].url);
+                    }
+                  }}
+                  accept="image/*"
+                  maxFiles={1}
+                  maxSize={4 * 1024 * 1024}
+                  placeholder="Arraste ou selecione o logo pequeno"
+                  shouldDeleteFromStorage={false}
+                  staticName="logo-small"
+                />
+              </Field>
+
+              <Field>
+                <FieldLabel>Logo Grande</FieldLabel>
+                <FileUploadWithStorage
+                  value={logoLargeFiles}
+                  onValueChange={setLogoLargeFiles}
+                  onStorageChange={(storages: Array<IStorage>) => {
+                    if (storages[0]?.url) {
+                      setLogoLargeUrl(storages[0].url);
+                    }
+                  }}
+                  accept="image/*"
+                  maxFiles={1}
+                  maxSize={4 * 1024 * 1024}
+                  placeholder="Arraste ou selecione o logo grande"
+                  shouldDeleteFromStorage={false}
+                  staticName="logo-large"
+                />
+              </Field>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="LOGO_LARGE_URL">Logo Grande (URL)</Label>
-              <Input
-                id="LOGO_LARGE_URL"
-                type="text"
-                value={logoLargeUrl}
-                onChange={(e) => setLogoLargeUrl(e.target.value)}
-                placeholder="https://exemplo.com/logo-large.png"
-              />
-            </div>
+
             <Button
               type="submit"
               className="w-full"

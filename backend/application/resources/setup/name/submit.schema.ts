@@ -3,8 +3,7 @@ import type { FastifySchema } from 'fastify';
 export const SetupNameSubmitSchema: FastifySchema = {
   tags: ['Setup'],
   summary: 'Configurar nome do sistema e locale no setup wizard',
-  description:
-    'Define o nome do sistema e o idioma. Etapa 2 do setup wizard.',
+  description: 'Define o nome do sistema e o idioma. Etapa 2 do setup wizard.',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',

@@ -1,4 +1,5 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
+import { Languages, TypeIcon } from 'lucide-react';
 import React, { useState } from 'react';
 
 import { Stepper } from '../-stepper';
@@ -11,8 +12,12 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Field, FieldLabel } from '@/components/ui/field';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import {
   Select,
   SelectContent,
@@ -35,7 +40,7 @@ function SetupNamePage(): React.JSX.Element {
 
   const mutation = useSetupSubmitName({
     onSuccess: (data) => {
-      toastSuccess('Etapa concluída!');
+      toastSuccess('Etapa concluída');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {
@@ -57,7 +62,10 @@ function SetupNamePage(): React.JSX.Element {
       <Stepper currentStep="name" />
       <Card>
         <CardHeader>
-          <CardTitle>Identidade do Sistema</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <TypeIcon className="size-5" />
+            Identidade do Sistema
+          </CardTitle>
           <CardDescription>
             Configure o nome e idioma padrão da plataforma
           </CardDescription>
@@ -67,24 +75,37 @@ function SetupNamePage(): React.JSX.Element {
             onSubmit={handleSubmit}
             className="space-y-4"
           >
-            <div className="space-y-2">
-              <Label htmlFor="SYSTEM_NAME">Nome do Sistema</Label>
-              <Input
-                id="SYSTEM_NAME"
-                type="text"
-                value={systemName}
-                onChange={(e) => setSystemName(e.target.value)}
-                placeholder="Minha Plataforma"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="LOCALE">Idioma</Label>
+            <Field>
+              <FieldLabel htmlFor="SYSTEM_NAME">Nome do Sistema</FieldLabel>
+              <div className="text-sm text-muted-foreground mb-2">
+                Exibido no título e cabeçalho da plataforma
+              </div>
+              <InputGroup>
+                <InputGroupInput
+                  id="SYSTEM_NAME"
+                  type="text"
+                  value={systemName}
+                  onChange={(e) => setSystemName(e.target.value)}
+                  placeholder="Minha Plataforma"
+                  required
+                />
+                <InputGroupAddon>
+                  <TypeIcon />
+                </InputGroupAddon>
+              </InputGroup>
+            </Field>
+
+            <Field>
+              <FieldLabel htmlFor="LOCALE">Idioma</FieldLabel>
+              <div className="text-sm text-muted-foreground mb-2">
+                Idioma padrão da aplicação
+              </div>
               <Select
                 value={locale}
                 onValueChange={setLocale}
               >
                 <SelectTrigger id="LOCALE">
+                  <Languages className="size-4 text-muted-foreground" />
                   <SelectValue placeholder="Selecione o idioma" />
                 </SelectTrigger>
                 <SelectContent>
@@ -92,7 +113,8 @@ function SetupNamePage(): React.JSX.Element {
                   <SelectItem value="en-us">English (US)</SelectItem>
                 </SelectContent>
               </Select>
-            </div>
+            </Field>
+
             <Button
               type="submit"
               className="w-full"

@@ -17,15 +17,8 @@ export const Route = createFileRoute('/_authentication')({
       await context.queryClient.fetchQuery(setupStatusOptions());
 
     if (!setupStatus.completed) {
-      const isSignUp = location.pathname === '/sign-up';
-      if (isSignUp) {
-        throw redirect({ to: '/setup/admin' });
-      }
-
-      const isSignIn = location.pathname === '/' || location.pathname === '';
-      if (isSignIn && setupStatus.currentStep === 'admin') {
-        throw redirect({ to: '/setup/admin' });
-      }
+      const step = setupStatus.currentStep ?? 'admin';
+      throw redirect({ to: `/setup/${step}` });
     }
 
     try {
@@ -33,11 +26,6 @@ export const Route = createFileRoute('/_authentication')({
         profileDetailOptions(),
       );
       if (user) {
-        if (!setupStatus.completed && setupStatus.currentStep) {
-          throw redirect({
-            to: `/setup/${setupStatus.currentStep}`,
-          });
-        }
         const role = user.group?.slug?.toUpperCase() ?? 'REGISTERED';
         throw redirect({ to: ROLE_DEFAULT_ROUTE[role] ?? '/tables' });
       }

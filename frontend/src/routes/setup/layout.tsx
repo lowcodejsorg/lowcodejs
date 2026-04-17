@@ -15,8 +15,7 @@ const searchSchema = z.object({
 export const Route = createFileRoute('/setup')({
   validateSearch: searchSchema,
   beforeLoad: async ({ context, location }) => {
-    const status =
-      await context.queryClient.fetchQuery(setupStatusOptions());
+    const status = await context.queryClient.fetchQuery(setupStatusOptions());
 
     if (status.completed) {
       throw redirect({ to: '/' });
@@ -41,8 +40,8 @@ function SetupLayout(): React.JSX.Element {
   const { blocked } = Route.useSearch();
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="w-full max-w-2xl space-y-6">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 p-4">
+      <div className="w-full max-w-xl space-y-6">
         <Outlet />
         <BlockedDialog blocked={blocked} />
       </div>

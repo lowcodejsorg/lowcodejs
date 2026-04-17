@@ -55,7 +55,7 @@ export default class SetupEmailSubmitUseCase {
         );
       }
 
-      await this.settingRepository.update({
+      const updated = await this.settingRepository.update({
         EMAIL_PROVIDER_HOST: payload.EMAIL_PROVIDER_HOST,
         EMAIL_PROVIDER_PORT: payload.EMAIL_PROVIDER_PORT,
         EMAIL_PROVIDER_USER: payload.EMAIL_PROVIDER_USER,
@@ -65,9 +65,18 @@ export default class SetupEmailSubmitUseCase {
         SETUP_CURRENT_STEP: null,
       });
 
+      if (!updated.SETUP_COMPLETED) {
+        return left(
+          HTTPException.InternalServerError(
+            'Falha ao finalizar setup',
+            'SETUP_COMPLETE_FAILED',
+          ),
+        );
+      }
+
       return right({
-        completed: true,
-        currentStep: null,
+        completed: updated.SETUP_COMPLETED,
+        currentStep: updated.SETUP_CURRENT_STEP,
         hasAdmin: true,
         steps: SETUP_STEPS,
       });

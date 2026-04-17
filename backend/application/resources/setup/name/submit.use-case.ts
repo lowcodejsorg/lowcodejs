@@ -54,15 +54,15 @@ export default class SetupNameSubmitUseCase {
 
       const next = nextStep(CURRENT_STEP);
 
-      await this.settingRepository.update({
+      const updated = await this.settingRepository.update({
         SYSTEM_NAME: payload.SYSTEM_NAME,
         LOCALE: payload.LOCALE,
         SETUP_CURRENT_STEP: next,
       });
 
       return right({
-        completed: next === null,
-        currentStep: next,
+        completed: updated.SETUP_COMPLETED,
+        currentStep: updated.SETUP_CURRENT_STEP,
         hasAdmin: true,
         steps: SETUP_STEPS,
       });

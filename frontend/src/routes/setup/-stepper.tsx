@@ -1,15 +1,9 @@
+import { CheckIcon } from 'lucide-react';
 import type * as React from 'react';
 
 import { SETUP_STEPS, SETUP_STEP_LABELS } from '@/lib/constant';
 import type { SetupStep } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
-
-const STATE_STYLES = {
-  completed: 'bg-primary text-primary-foreground',
-  active:
-    'bg-primary text-primary-foreground ring-2 ring-primary ring-offset-2',
-  pending: 'bg-muted text-muted-foreground',
-} as const;
 
 interface StepperProps {
   currentStep: SetupStep;
@@ -28,39 +22,64 @@ export function Stepper({ currentStep }: StepperProps): React.JSX.Element {
   const currentIndex = SETUP_STEPS.indexOf(currentStep);
 
   return (
-    <div className="flex items-center gap-2">
+    <nav
+      aria-label="Progresso do setup"
+      className="flex items-center justify-between"
+    >
       {SETUP_STEPS.map((step, index) => {
         const state = resolveState(index, currentIndex);
+        const isLast = index === SETUP_STEPS.length - 1;
 
         return (
           <div
             key={step}
-            className="flex flex-1 items-center gap-2"
+            className="flex flex-1 items-center"
           >
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-1.5">
               <div
                 className={cn(
-                  'flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium',
-                  STATE_STYLES[state],
+                  'flex h-9 w-9 items-center justify-center rounded-full text-sm font-semibold transition-all duration-300',
+                  state === 'completed' &&
+                    'bg-brand-blue-dark text-white shadow-sm',
+                  state === 'active' &&
+                    'bg-brand-orange text-white ring-[3px] ring-brand-orange/30 shadow-sm',
+                  state === 'pending' &&
+                    'border-2 border-muted-foreground/20 bg-transparent text-muted-foreground/50',
                 )}
               >
-                {index + 1}
+                {state === 'completed' ? (
+                  <CheckIcon className="size-4 stroke-[3]" />
+                ) : (
+                  index + 1
+                )}
               </div>
-              <span className="hidden text-xs text-muted-foreground sm:block">
+              <span
+                className={cn(
+                  'hidden text-[11px] font-medium tracking-wide uppercase sm:block transition-colors duration-300',
+                  state === 'completed' && 'text-brand-blue-dark',
+                  state === 'active' && 'text-foreground',
+                  state === 'pending' && 'text-muted-foreground/50',
+                )}
+              >
                 {SETUP_STEP_LABELS[step]}
               </span>
             </div>
-            {index < SETUP_STEPS.length - 1 && (
-              <div
-                className={cn(
-                  'h-0.5 flex-1',
-                  index < currentIndex ? 'bg-primary' : 'bg-muted',
-                )}
-              />
+
+            {!isLast && (
+              <div className="mx-2 flex-1 sm:mx-3">
+                <div
+                  className={cn(
+                    'h-px w-full transition-colors duration-500',
+                    index < currentIndex
+                      ? 'bg-brand-blue-dark/40'
+                      : 'bg-border',
+                  )}
+                />
+              </div>
             )}
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }

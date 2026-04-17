@@ -54,15 +54,15 @@ export default class SetupLogosSubmitUseCase {
 
       const next = nextStep(CURRENT_STEP);
 
-      await this.settingRepository.update({
+      const updated = await this.settingRepository.update({
         LOGO_SMALL_URL: payload.LOGO_SMALL_URL,
         LOGO_LARGE_URL: payload.LOGO_LARGE_URL,
         SETUP_CURRENT_STEP: next,
       });
 
       return right({
-        completed: next === null,
-        currentStep: next,
+        completed: updated.SETUP_COMPLETED,
+        currentStep: updated.SETUP_CURRENT_STEP,
         hasAdmin: true,
         steps: SETUP_STEPS,
       });

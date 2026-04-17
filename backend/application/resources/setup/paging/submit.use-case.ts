@@ -73,15 +73,15 @@ export default class SetupPagingSubmitUseCase {
         });
       }
 
-      await this.settingRepository.update({
+      const updated = await this.settingRepository.update({
         PAGINATION_PER_PAGE: payload.PAGINATION_PER_PAGE,
         MODEL_CLONE_TABLES: filteredCloneTables,
         SETUP_CURRENT_STEP: next,
       });
 
       return right({
-        completed: next === null,
-        currentStep: next,
+        completed: updated.SETUP_COMPLETED,
+        currentStep: updated.SETUP_CURRENT_STEP,
         hasAdmin: true,
         steps: SETUP_STEPS,
       });

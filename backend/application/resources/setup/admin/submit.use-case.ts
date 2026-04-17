@@ -111,13 +111,13 @@ export default class SetupAdminSubmitUseCase {
       });
 
       const next = nextStep('admin');
-      await this.settingRepository.update({
+      const updated = await this.settingRepository.update({
         SETUP_CURRENT_STEP: next,
       });
 
       return right({
-        completed: false,
-        currentStep: next,
+        completed: updated.SETUP_COMPLETED,
+        currentStep: updated.SETUP_CURRENT_STEP,
         hasAdmin: true,
         steps: SETUP_STEPS,
         user: created,

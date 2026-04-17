@@ -55,7 +55,7 @@ export default class SetupUploadSubmitUseCase {
 
       const next = nextStep(CURRENT_STEP);
 
-      await this.settingRepository.update({
+      const updated = await this.settingRepository.update({
         FILE_UPLOAD_MAX_SIZE: payload.FILE_UPLOAD_MAX_SIZE,
         FILE_UPLOAD_ACCEPTED: payload.FILE_UPLOAD_ACCEPTED,
         FILE_UPLOAD_MAX_FILES_PER_UPLOAD:
@@ -64,8 +64,8 @@ export default class SetupUploadSubmitUseCase {
       });
 
       return right({
-        completed: next === null,
-        currentStep: next,
+        completed: updated.SETUP_COMPLETED,
+        currentStep: updated.SETUP_CURRENT_STEP,
         hasAdmin: true,
         steps: SETUP_STEPS,
       });
