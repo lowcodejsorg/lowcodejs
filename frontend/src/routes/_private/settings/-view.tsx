@@ -108,7 +108,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
           <div className="space-y-1">
             <p className="text-sm font-medium">Driver</p>
             {data.STORAGE_DRIVER === 's3' ? (
-              <Badge variant="default">S3 / MinIO</Badge>
+              <Badge variant="default">S3</Badge>
             ) : (
               <Badge variant="secondary">Local</Badge>
             )}

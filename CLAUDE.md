@@ -14,7 +14,7 @@ lowcodejs/
 ├── .github/workflows/    # CI/CD (build, test, docker, deploy)
 ├── docker-compose.yml              # Desenvolvimento (core + profiles opcionais)
 ├── docker-compose.production.yml   # Producao/VPS com Traefik
-├── docker-compose.oficial.yml      # Instalacao minima (sem Redis/MinIO/MCP)
+├── docker-compose.oficial.yml      # Instalacao minima (sem Redis/MCP)
 ├── install.md            # Guia de instalacao
 ├── setup.sh              # Script de configuracao inicial
 └── credential-generator.sh         # Gera JWT keys e cookie secret

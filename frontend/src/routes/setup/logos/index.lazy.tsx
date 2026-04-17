@@ -62,8 +62,8 @@ function SetupLogosPage(): React.JSX.Element {
             Logos
           </CardTitle>
           <CardDescription>
-            Configure os logos da plataforma (opcional — pode ser feito depois em
-            Configurações)
+            Configure os logos da plataforma (opcional — pode ser feito depois
+            em Configurações)
           </CardDescription>
         </CardHeader>
         <CardContent>

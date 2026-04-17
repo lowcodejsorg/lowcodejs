@@ -15,6 +15,7 @@ import { Route as SetupLayoutRouteImport } from './routes/setup/layout'
 import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
 import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout'
 import { Route as SetupUploadIndexRouteImport } from './routes/setup/upload/index'
+import { Route as SetupStorageIndexRouteImport } from './routes/setup/storage/index'
 import { Route as SetupPagingIndexRouteImport } from './routes/setup/paging/index'
 import { Route as SetupNameIndexRouteImport } from './routes/setup/name/index'
 import { Route as SetupLogosIndexRouteImport } from './routes/setup/logos/index'
@@ -82,6 +83,13 @@ const SetupUploadIndexRoute = SetupUploadIndexRouteImport.update({
   getParentRoute: () => SetupLayoutRoute,
 } as any).lazy(() =>
   import('./routes/setup/upload/index.lazy').then((d) => d.Route),
+)
+const SetupStorageIndexRoute = SetupStorageIndexRouteImport.update({
+  id: '/storage/',
+  path: '/storage/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/storage/index.lazy').then((d) => d.Route),
 )
 const SetupPagingIndexRoute = SetupPagingIndexRouteImport.update({
   id: '/paging/',
@@ -400,6 +408,7 @@ export interface FileRoutesByFullPath {
   '/setup/logos': typeof SetupLogosIndexRoute
   '/setup/name': typeof SetupNameIndexRoute
   '/setup/paging': typeof SetupPagingIndexRoute
+  '/setup/storage': typeof SetupStorageIndexRoute
   '/setup/upload': typeof SetupUploadIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
@@ -443,6 +452,7 @@ export interface FileRoutesByTo {
   '/setup/logos': typeof SetupLogosIndexRoute
   '/setup/name': typeof SetupNameIndexRoute
   '/setup/paging': typeof SetupPagingIndexRoute
+  '/setup/storage': typeof SetupStorageIndexRoute
   '/setup/upload': typeof SetupUploadIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
@@ -489,6 +499,7 @@ export interface FileRoutesById {
   '/setup/logos/': typeof SetupLogosIndexRoute
   '/setup/name/': typeof SetupNameIndexRoute
   '/setup/paging/': typeof SetupPagingIndexRoute
+  '/setup/storage/': typeof SetupStorageIndexRoute
   '/setup/upload/': typeof SetupUploadIndexRoute
   '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/_authentication/forgot-password/reset-password/': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
@@ -534,6 +545,7 @@ export interface FileRouteTypes {
     | '/setup/logos'
     | '/setup/name'
     | '/setup/paging'
+    | '/setup/storage'
     | '/setup/upload'
     | '/tables/$slug/methods'
     | '/forgot-password/reset-password'
@@ -577,6 +589,7 @@ export interface FileRouteTypes {
     | '/setup/logos'
     | '/setup/name'
     | '/setup/paging'
+    | '/setup/storage'
     | '/setup/upload'
     | '/tables/$slug/methods'
     | '/forgot-password/reset-password'
@@ -622,6 +635,7 @@ export interface FileRouteTypes {
     | '/setup/logos/'
     | '/setup/name/'
     | '/setup/paging/'
+    | '/setup/storage/'
     | '/setup/upload/'
     | '/_private/tables/$slug/methods'
     | '/_authentication/forgot-password/reset-password/'
@@ -695,6 +709,13 @@ declare module '@tanstack/react-router' {
       path: '/upload'
       fullPath: '/setup/upload'
       preLoaderRoute: typeof SetupUploadIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/storage/': {
+      id: '/setup/storage/'
+      path: '/storage'
+      fullPath: '/setup/storage'
+      preLoaderRoute: typeof SetupStorageIndexRouteImport
       parentRoute: typeof SetupLayoutRoute
     }
     '/setup/paging/': {
@@ -1054,6 +1075,7 @@ interface SetupLayoutRouteChildren {
   SetupLogosIndexRoute: typeof SetupLogosIndexRoute
   SetupNameIndexRoute: typeof SetupNameIndexRoute
   SetupPagingIndexRoute: typeof SetupPagingIndexRoute
+  SetupStorageIndexRoute: typeof SetupStorageIndexRoute
   SetupUploadIndexRoute: typeof SetupUploadIndexRoute
 }
 
@@ -1063,6 +1085,7 @@ const SetupLayoutRouteChildren: SetupLayoutRouteChildren = {
   SetupLogosIndexRoute: SetupLogosIndexRoute,
   SetupNameIndexRoute: SetupNameIndexRoute,
   SetupPagingIndexRoute: SetupPagingIndexRoute,
+  SetupStorageIndexRoute: SetupStorageIndexRoute,
   SetupUploadIndexRoute: SetupUploadIndexRoute,
 }
 

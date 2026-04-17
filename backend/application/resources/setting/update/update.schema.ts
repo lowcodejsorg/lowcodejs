@@ -129,12 +129,12 @@ export const SettingUpdateSchema: FastifySchema = {
         type: 'string',
         enum: ['local', 's3'],
         nullable: true,
-        description: 'Driver de armazenamento (local ou S3/MinIO)',
+        description: 'Driver de armazenamento (local ou S3)',
       },
       STORAGE_ENDPOINT: {
         type: 'string',
         nullable: true,
-        description: 'Endpoint do servidor S3/MinIO',
+        description: 'Endpoint do servidor S3',
       },
       STORAGE_REGION: {
         type: 'string',
@@ -254,11 +254,11 @@ export const SettingUpdateSchema: FastifySchema = {
         },
         STORAGE_DRIVER: {
           type: 'string',
-          description: 'Driver de armazenamento (local ou S3/MinIO)',
+          description: 'Driver de armazenamento (local ou S3)',
         },
         STORAGE_ENDPOINT: {
           type: 'string',
-          description: 'Endpoint do servidor S3/MinIO',
+          description: 'Endpoint do servidor S3',
         },
         STORAGE_REGION: {
           type: 'string',

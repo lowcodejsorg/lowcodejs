@@ -298,14 +298,11 @@ configurado' }` sem lancar erro.
 
 ### Storage
 
-| Variavel | Default | Descricao |
-|----------|---------|-----------|
-| STORAGE_DRIVER | local | local ou s3 |
-| STORAGE_ENDPOINT | opcional | Endpoint S3 customizado |
-| STORAGE_REGION | us-east-1 | Regiao AWS |
-| STORAGE_BUCKET | opcional | Nome do bucket S3 |
-| STORAGE_ACCESS_KEY | opcional | AWS access key |
-| STORAGE_SECRET_KEY | opcional | AWS secret key |
+Configurado via Setup Wizard ou Settings na UI (MASTER). Vive no documento
+Setting do MongoDB. Campos: `STORAGE_DRIVER` ('local'|'s3'),
+`STORAGE_ENDPOINT`, `STORAGE_REGION`, `STORAGE_BUCKET`, `STORAGE_ACCESS_KEY`,
+`STORAGE_SECRET_KEY`. No boot, `bin/server.ts` carrega do DB e sincroniza para
+`process.env` via `syncStorageEnv()`.
 
 ### Redis
 

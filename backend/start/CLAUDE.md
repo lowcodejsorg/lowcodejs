@@ -39,6 +39,5 @@ Validadas com Zod. Principais grupos:
 | App        | `PORT`, `NODE_ENV`, `ALLOWED_ORIGINS`               |
 | Database   | `MONGO_URI`                                         |
 | Auth       | `JWT_PRIVATE_KEY`, `JWT_PUBLIC_KEY`, `COOKIE_SECRET`|
-| Storage    | `STORAGE_DRIVER`, `S3_*`, `LOCAL_STORAGE_PATH`      |
 | Email      | `SMTP_*`, `MAIL_FROM`                               |
 | Redis      | `REDIS_URI`                                         |

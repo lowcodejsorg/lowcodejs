@@ -302,6 +302,7 @@ export const E_CHAT_TOOL_PREFIX = {
 export const SETUP_STEPS = [
   'admin',
   'name',
+  'storage',
   'logos',
   'upload',
   'paging',
@@ -311,6 +312,7 @@ export const SETUP_STEPS = [
 export const SETUP_STEP_LABELS = {
   admin: 'Administrador',
   name: 'Identidade',
+  storage: 'Armazenamento',
   logos: 'Logos',
   upload: 'Uploads',
   paging: 'Paginação',
@@ -319,7 +321,8 @@ export const SETUP_STEP_LABELS = {
 
 export const SETUP_NEXT_STEP = {
   admin: 'name',
-  name: 'logos',
+  name: 'storage',
+  storage: 'logos',
   logos: 'upload',
   upload: 'paging',
   paging: 'email',

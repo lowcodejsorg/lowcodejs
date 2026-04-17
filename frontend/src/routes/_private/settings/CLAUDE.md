@@ -27,8 +27,7 @@ usuarios com role MASTER.
 | IA                 | `OPENAI_API_KEY`, `AI_ASSISTANT_ENABLED`                                                                              |
 
 Todos os campos vivem no documento Setting do MongoDB. O backend aplica defaults
-no schema Mongoose — nenhum campo depende mais de variaveis de ambiente (apenas
-`STORAGE_DRIVER` e credenciais S3 permanecem no .env).
+no schema Mongoose — nenhum campo depende de variaveis de ambiente.
 
 ## Controle de Acesso
 

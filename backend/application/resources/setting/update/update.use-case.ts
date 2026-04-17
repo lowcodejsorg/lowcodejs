@@ -10,6 +10,7 @@ import {
   SettingUpdatePayload,
 } from '@application/repositories/setting/setting-contract.repository';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
+import { syncStorageEnv } from '@config/setting-env-sync';
 
 const BUILTIN_TEMPLATE_IDS = new Set([
   'KANBAN_TEMPLATE',
@@ -36,6 +37,8 @@ export default class SettingUpdateUseCase {
       }
 
       const updated = await this.settingRepository.update(payload);
+
+      syncStorageEnv(updated);
 
       if (payload.STORAGE_DRIVER === 's3') {
         await this.storageService.ensureBucket();

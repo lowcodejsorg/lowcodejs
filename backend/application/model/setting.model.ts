@@ -33,7 +33,7 @@ const Schema = new mongoose.Schema(
     SETUP_COMPLETED: { type: Boolean, default: false },
     SETUP_CURRENT_STEP: {
       type: String,
-      enum: ['admin', 'name', 'logos', 'upload', 'paging', 'email', null],
+      enum: ['admin', 'name', 'storage', 'logos', 'upload', 'paging', 'email', null],
       default: 'admin',
     },
     trashed: { type: Boolean, default: false },

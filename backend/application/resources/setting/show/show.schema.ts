@@ -116,11 +116,11 @@ export const SettingShowSchema: FastifySchema = {
         },
         STORAGE_DRIVER: {
           type: 'string',
-          description: 'Driver de armazenamento (local ou S3/MinIO)',
+          description: 'Driver de armazenamento (local ou S3)',
         },
         STORAGE_ENDPOINT: {
           type: 'string',
-          description: 'Endpoint do servidor S3/MinIO',
+          description: 'Endpoint do servidor S3',
         },
         STORAGE_REGION: {
           type: 'string',

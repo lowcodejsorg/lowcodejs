@@ -86,9 +86,7 @@ function SetupEmailPage(): React.JSX.Element {
           >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Field>
-                <FieldLabel htmlFor="EMAIL_PROVIDER_HOST">
-                  Host SMTP
-                </FieldLabel>
+                <FieldLabel htmlFor="EMAIL_PROVIDER_HOST">Host SMTP</FieldLabel>
                 <InputGroup>
                   <InputGroupInput
                     id="EMAIL_PROVIDER_HOST"

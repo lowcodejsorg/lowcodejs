@@ -473,6 +473,7 @@ export type ISetting = {
   SETUP_CURRENT_STEP:
     | 'admin'
     | 'name'
+    | 'storage'
     | 'logos'
     | 'upload'
     | 'paging'

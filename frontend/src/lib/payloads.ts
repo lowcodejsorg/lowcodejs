@@ -272,6 +272,15 @@ export type SetupNamePayload = {
   LOCALE: string;
 };
 
+export type SetupStoragePayload = {
+  STORAGE_DRIVER: 'local' | 's3';
+  STORAGE_ENDPOINT?: string;
+  STORAGE_REGION?: string;
+  STORAGE_BUCKET?: string;
+  STORAGE_ACCESS_KEY?: string;
+  STORAGE_SECRET_KEY?: string;
+};
+
 export type SetupLogosPayload = {
   LOGO_SMALL_URL: string | null;
   LOGO_LARGE_URL: string | null;

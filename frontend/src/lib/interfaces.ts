@@ -282,6 +282,7 @@ export type ISetting = {
 export type SetupStep =
   | 'admin'
   | 'name'
+  | 'storage'
   | 'logos'
   | 'upload'
   | 'paging'
