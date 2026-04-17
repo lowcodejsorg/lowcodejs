@@ -176,7 +176,9 @@ function SetupStoragePage(): React.JSX.Element {
                       type="button"
                       onClick={() => setShowAccessKey(!showAccessKey)}
                       aria-label={
-                        showAccessKey ? 'Ocultar access key' : 'Mostrar access key'
+                        showAccessKey
+                          ? 'Ocultar access key'
+                          : 'Mostrar access key'
                       }
                     >
                       {showAccessKey ? (
@@ -205,7 +207,9 @@ function SetupStoragePage(): React.JSX.Element {
                       type="button"
                       onClick={() => setShowSecretKey(!showSecretKey)}
                       aria-label={
-                        showSecretKey ? 'Ocultar secret key' : 'Mostrar secret key'
+                        showSecretKey
+                          ? 'Ocultar secret key'
+                          : 'Mostrar secret key'
                       }
                     >
                       {showSecretKey ? (

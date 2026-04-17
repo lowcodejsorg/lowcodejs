@@ -330,9 +330,7 @@ export const UpdateSettingFormFields = withForm({
                 const isS3 = field.state.value === 's3';
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
-                      Habilitar S3
-                    </FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Habilitar S3</FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
                       Ativa o armazenamento remoto via S3. Alterar o driver
                       requer reinício do servidor para servir arquivos
