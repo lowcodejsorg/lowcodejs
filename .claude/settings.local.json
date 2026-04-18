@@ -102,7 +102,12 @@
       "Bash(awk -F: '{sum+=$2} END {print \"total lines:\",sum}')",
       "Read(//home/indio/.claude/projects/-home-indio-Desktop-low-code-js/b873fee7-0366-4bfe-9dfa-cd0e74df3933/subagents/**)",
       "Bash(kill %1)",
-      "Bash(wait)"
+      "Bash(wait)",
+      "Bash(mongosh lowcodejs *)",
+      "Bash(docker exec *)",
+      "Bash(npx tsr *)",
+      "Bash(npx @tanstack/router-cli generate)",
+      "Bash(npx @tanstack/router-generator generate)"
     ]
   },
   "enableAllProjectMcpServers": true,

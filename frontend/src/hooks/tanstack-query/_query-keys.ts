@@ -102,4 +102,8 @@ export const queryKeys = {
   settings: {
     all: ['settings'] as const,
   },
+  setup: {
+    all: ['setup'] as const,
+    status: () => [...queryKeys.setup.all, 'status'] as const,
+  },
 } as const;

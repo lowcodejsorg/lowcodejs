@@ -323,19 +323,17 @@ export const UpdateSettingFormFields = withForm({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Toggle S3/MinIO */}
+            {/* Toggle S3 */}
             <form.Field
               name="STORAGE_DRIVER"
               children={(field) => {
                 const isS3 = field.state.value === 's3';
                 return (
                   <Field>
-                    <FieldLabel htmlFor={field.name}>
-                      Habilitar S3 / MinIO
-                    </FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Habilitar S3</FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
-                      Ativa o armazenamento remoto via S3/MinIO. Alterar o
-                      driver requer reinício do servidor para servir arquivos
+                      Ativa o armazenamento remoto via S3. Alterar o driver
+                      requer reinício do servidor para servir arquivos
                     </div>
                     <div className="flex items-center gap-3">
                       <span className="text-sm text-muted-foreground">
@@ -375,14 +373,14 @@ export const UpdateSettingFormFields = withForm({
                               Endpoint
                             </FieldLabel>
                             <div className="text-sm text-muted-foreground mb-2">
-                              URL do servidor S3/MinIO (ex: http://minio:9000)
+                              URL do endpoint S3 (ex: https://s3.amazonaws.com)
                             </div>
                             <Input
                               data-test-id="settings-storage-endpoint-input"
                               disabled={isDisabled}
                               id={field.name}
                               name={field.name}
-                              placeholder="http://minio:9000"
+                              placeholder="https://s3.amazonaws.com"
                               value={field.state.value}
                               onBlur={field.handleBlur}
                               onChange={(e) =>

@@ -18,8 +18,6 @@ type Payload = Omit<
 > & { permissions: string[] };
 
 export default async function Seed(): Promise<void> {
-  await UserGroup.deleteMany({});
-
   const permissions: Merge<PayloadPermissionSeeder, { _id: string }>[] =
     await Permission.find();
 
@@ -97,6 +95,14 @@ export default async function Seed(): Promise<void> {
     },
   ];
 
-  await UserGroup.insertMany(payload);
+  await UserGroup.bulkWrite(
+    payload.map(({ slug, ...rest }) => ({
+      updateOne: {
+        filter: { slug },
+        update: { $set: { slug, ...rest } as any },
+        upsert: true,
+      },
+    })),
+  );
   console.info('🌱 \x1b[32m user groups \x1b[0m');
 }

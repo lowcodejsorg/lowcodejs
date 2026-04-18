@@ -11,8 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt'
+import { Route as SetupLayoutRouteImport } from './routes/setup/layout'
 import { Route as PrivateLayoutRouteImport } from './routes/_private/layout'
 import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout'
+import { Route as SetupUploadIndexRouteImport } from './routes/setup/upload/index'
+import { Route as SetupStorageIndexRouteImport } from './routes/setup/storage/index'
+import { Route as SetupPagingIndexRouteImport } from './routes/setup/paging/index'
+import { Route as SetupNameIndexRouteImport } from './routes/setup/name/index'
+import { Route as SetupLogosIndexRouteImport } from './routes/setup/logos/index'
+import { Route as SetupEmailIndexRouteImport } from './routes/setup/email/index'
+import { Route as SetupAdminIndexRouteImport } from './routes/setup/admin/index'
 import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index'
 import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index'
 import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index'
@@ -56,6 +64,11 @@ const RobotsDottxtRoute = RobotsDottxtRouteImport.update({
   path: '/robots.txt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetupLayoutRoute = SetupLayoutRouteImport.update({
+  id: '/setup',
+  path: '/setup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivateLayoutRoute = PrivateLayoutRouteImport.update({
   id: '/_private',
   getParentRoute: () => rootRouteImport,
@@ -64,6 +77,55 @@ const AuthenticationLayoutRoute = AuthenticationLayoutRouteImport.update({
   id: '/_authentication',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SetupUploadIndexRoute = SetupUploadIndexRouteImport.update({
+  id: '/upload/',
+  path: '/upload/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/upload/index.lazy').then((d) => d.Route),
+)
+const SetupStorageIndexRoute = SetupStorageIndexRouteImport.update({
+  id: '/storage/',
+  path: '/storage/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/storage/index.lazy').then((d) => d.Route),
+)
+const SetupPagingIndexRoute = SetupPagingIndexRouteImport.update({
+  id: '/paging/',
+  path: '/paging/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/paging/index.lazy').then((d) => d.Route),
+)
+const SetupNameIndexRoute = SetupNameIndexRouteImport.update({
+  id: '/name/',
+  path: '/name/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/name/index.lazy').then((d) => d.Route),
+)
+const SetupLogosIndexRoute = SetupLogosIndexRouteImport.update({
+  id: '/logos/',
+  path: '/logos/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/logos/index.lazy').then((d) => d.Route),
+)
+const SetupEmailIndexRoute = SetupEmailIndexRouteImport.update({
+  id: '/email/',
+  path: '/email/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/email/index.lazy').then((d) => d.Route),
+)
+const SetupAdminIndexRoute = SetupAdminIndexRouteImport.update({
+  id: '/admin/',
+  path: '/admin/',
+  getParentRoute: () => SetupLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/setup/admin/index.lazy').then((d) => d.Route),
+)
 const PrivateUsersIndexRoute = PrivateUsersIndexRouteImport.update({
   id: '/users/',
   path: '/users/',
@@ -326,6 +388,7 @@ const PrivateTablesSlugGroupGroupSlugFieldManagementRoute =
   )
 
 export interface FileRoutesByFullPath {
+  '/setup': typeof SetupLayoutRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/pages/$slug': typeof PrivatePagesSlugRoute
@@ -340,6 +403,13 @@ export interface FileRoutesByFullPath {
   '/tables': typeof PrivateTablesIndexRoute
   '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
+  '/setup/admin': typeof SetupAdminIndexRoute
+  '/setup/email': typeof SetupEmailIndexRoute
+  '/setup/logos': typeof SetupLogosIndexRoute
+  '/setup/name': typeof SetupNameIndexRoute
+  '/setup/paging': typeof SetupPagingIndexRoute
+  '/setup/storage': typeof SetupStorageIndexRoute
+  '/setup/upload': typeof SetupUploadIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
   '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
@@ -362,6 +432,7 @@ export interface FileRoutesByFullPath {
   '/tables/$slug/group/$groupSlug/field/management': typeof PrivateTablesSlugGroupGroupSlugFieldManagementRoute
 }
 export interface FileRoutesByTo {
+  '/setup': typeof SetupLayoutRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/pages/$slug': typeof PrivatePagesSlugRoute
@@ -376,6 +447,13 @@ export interface FileRoutesByTo {
   '/tables': typeof PrivateTablesIndexRoute
   '/tools': typeof PrivateToolsIndexRoute
   '/users': typeof PrivateUsersIndexRoute
+  '/setup/admin': typeof SetupAdminIndexRoute
+  '/setup/email': typeof SetupEmailIndexRoute
+  '/setup/logos': typeof SetupLogosIndexRoute
+  '/setup/name': typeof SetupNameIndexRoute
+  '/setup/paging': typeof SetupPagingIndexRoute
+  '/setup/storage': typeof SetupStorageIndexRoute
+  '/setup/upload': typeof SetupUploadIndexRoute
   '/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/forgot-password/reset-password': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
   '/forgot-password/validate-code': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
@@ -401,6 +479,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authentication': typeof AuthenticationLayoutRouteWithChildren
   '/_private': typeof PrivateLayoutRouteWithChildren
+  '/setup': typeof SetupLayoutRouteWithChildren
   '/robots.txt': typeof RobotsDottxtRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/_private/pages/$slug': typeof PrivatePagesSlugRoute
@@ -415,6 +494,13 @@ export interface FileRoutesById {
   '/_private/tables/': typeof PrivateTablesIndexRoute
   '/_private/tools/': typeof PrivateToolsIndexRoute
   '/_private/users/': typeof PrivateUsersIndexRoute
+  '/setup/admin/': typeof SetupAdminIndexRoute
+  '/setup/email/': typeof SetupEmailIndexRoute
+  '/setup/logos/': typeof SetupLogosIndexRoute
+  '/setup/name/': typeof SetupNameIndexRoute
+  '/setup/paging/': typeof SetupPagingIndexRoute
+  '/setup/storage/': typeof SetupStorageIndexRoute
+  '/setup/upload/': typeof SetupUploadIndexRoute
   '/_private/tables/$slug/methods': typeof PrivateTablesSlugMethodsRoute
   '/_authentication/forgot-password/reset-password/': typeof AuthenticationForgotPasswordResetPasswordIndexRoute
   '/_authentication/forgot-password/validate-code/': typeof AuthenticationForgotPasswordValidateCodeIndexRoute
@@ -439,6 +525,7 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/setup'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/pages/$slug'
@@ -453,6 +540,13 @@ export interface FileRouteTypes {
     | '/tables'
     | '/tools'
     | '/users'
+    | '/setup/admin'
+    | '/setup/email'
+    | '/setup/logos'
+    | '/setup/name'
+    | '/setup/paging'
+    | '/setup/storage'
+    | '/setup/upload'
     | '/tables/$slug/methods'
     | '/forgot-password/reset-password'
     | '/forgot-password/validate-code'
@@ -475,6 +569,7 @@ export interface FileRouteTypes {
     | '/tables/$slug/group/$groupSlug/field/management'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/setup'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/pages/$slug'
@@ -489,6 +584,13 @@ export interface FileRouteTypes {
     | '/tables'
     | '/tools'
     | '/users'
+    | '/setup/admin'
+    | '/setup/email'
+    | '/setup/logos'
+    | '/setup/name'
+    | '/setup/paging'
+    | '/setup/storage'
+    | '/setup/upload'
     | '/tables/$slug/methods'
     | '/forgot-password/reset-password'
     | '/forgot-password/validate-code'
@@ -513,6 +615,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_authentication'
     | '/_private'
+    | '/setup'
     | '/robots.txt'
     | '/sitemap.xml'
     | '/_private/pages/$slug'
@@ -527,6 +630,13 @@ export interface FileRouteTypes {
     | '/_private/tables/'
     | '/_private/tools/'
     | '/_private/users/'
+    | '/setup/admin/'
+    | '/setup/email/'
+    | '/setup/logos/'
+    | '/setup/name/'
+    | '/setup/paging/'
+    | '/setup/storage/'
+    | '/setup/upload/'
     | '/_private/tables/$slug/methods'
     | '/_authentication/forgot-password/reset-password/'
     | '/_authentication/forgot-password/validate-code/'
@@ -552,6 +662,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthenticationLayoutRoute: typeof AuthenticationLayoutRouteWithChildren
   PrivateLayoutRoute: typeof PrivateLayoutRouteWithChildren
+  SetupLayoutRoute: typeof SetupLayoutRouteWithChildren
   RobotsDottxtRoute: typeof RobotsDottxtRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
 }
@@ -572,6 +683,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof RobotsDottxtRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/setup': {
+      id: '/setup'
+      path: '/setup'
+      fullPath: '/setup'
+      preLoaderRoute: typeof SetupLayoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_private': {
       id: '/_private'
       path: ''
@@ -585,6 +703,55 @@ declare module '@tanstack/react-router' {
       fullPath: ''
       preLoaderRoute: typeof AuthenticationLayoutRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/setup/upload/': {
+      id: '/setup/upload/'
+      path: '/upload'
+      fullPath: '/setup/upload'
+      preLoaderRoute: typeof SetupUploadIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/storage/': {
+      id: '/setup/storage/'
+      path: '/storage'
+      fullPath: '/setup/storage'
+      preLoaderRoute: typeof SetupStorageIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/paging/': {
+      id: '/setup/paging/'
+      path: '/paging'
+      fullPath: '/setup/paging'
+      preLoaderRoute: typeof SetupPagingIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/name/': {
+      id: '/setup/name/'
+      path: '/name'
+      fullPath: '/setup/name'
+      preLoaderRoute: typeof SetupNameIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/logos/': {
+      id: '/setup/logos/'
+      path: '/logos'
+      fullPath: '/setup/logos'
+      preLoaderRoute: typeof SetupLogosIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/email/': {
+      id: '/setup/email/'
+      path: '/email'
+      fullPath: '/setup/email'
+      preLoaderRoute: typeof SetupEmailIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
+    }
+    '/setup/admin/': {
+      id: '/setup/admin/'
+      path: '/admin'
+      fullPath: '/setup/admin'
+      preLoaderRoute: typeof SetupAdminIndexRouteImport
+      parentRoute: typeof SetupLayoutRoute
     }
     '/_private/users/': {
       id: '/_private/users/'
@@ -902,9 +1069,34 @@ const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(
   PrivateLayoutRouteChildren,
 )
 
+interface SetupLayoutRouteChildren {
+  SetupAdminIndexRoute: typeof SetupAdminIndexRoute
+  SetupEmailIndexRoute: typeof SetupEmailIndexRoute
+  SetupLogosIndexRoute: typeof SetupLogosIndexRoute
+  SetupNameIndexRoute: typeof SetupNameIndexRoute
+  SetupPagingIndexRoute: typeof SetupPagingIndexRoute
+  SetupStorageIndexRoute: typeof SetupStorageIndexRoute
+  SetupUploadIndexRoute: typeof SetupUploadIndexRoute
+}
+
+const SetupLayoutRouteChildren: SetupLayoutRouteChildren = {
+  SetupAdminIndexRoute: SetupAdminIndexRoute,
+  SetupEmailIndexRoute: SetupEmailIndexRoute,
+  SetupLogosIndexRoute: SetupLogosIndexRoute,
+  SetupNameIndexRoute: SetupNameIndexRoute,
+  SetupPagingIndexRoute: SetupPagingIndexRoute,
+  SetupStorageIndexRoute: SetupStorageIndexRoute,
+  SetupUploadIndexRoute: SetupUploadIndexRoute,
+}
+
+const SetupLayoutRouteWithChildren = SetupLayoutRoute._addFileChildren(
+  SetupLayoutRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   AuthenticationLayoutRoute: AuthenticationLayoutRouteWithChildren,
   PrivateLayoutRoute: PrivateLayoutRouteWithChildren,
+  SetupLayoutRoute: SetupLayoutRouteWithChildren,
   RobotsDottxtRoute: RobotsDottxtRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
 }

@@ -31,13 +31,6 @@ const EnvSchema = z.object({
         .filter(Boolean),
     ),
 
-  STORAGE_DRIVER: z.enum(['local', 's3']).default('local'),
-  STORAGE_ENDPOINT: z.string().trim().optional(),
-  STORAGE_REGION: z.string().trim().default('us-east-1'),
-  STORAGE_BUCKET: z.string().trim().optional(),
-  STORAGE_ACCESS_KEY: z.string().trim().optional(),
-  STORAGE_SECRET_KEY: z.string().trim().optional(),
-
   REDIS_URL: z.string().trim().default('redis://localhost:6379'),
 
   MCP_SERVER_URL: z.string().trim().optional(),

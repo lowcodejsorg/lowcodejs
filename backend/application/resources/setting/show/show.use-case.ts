@@ -114,6 +114,8 @@ export default class SettingShowUseCase {
           EMAIL_PROVIDER_FROM: null,
           OPENAI_API_KEY: null,
           AI_ASSISTANT_ENABLED: false,
+          SETUP_COMPLETED: false,
+          SETUP_CURRENT_STEP: 'admin',
           MODEL_CLONE_TABLES: [
             getKanbanTemplateEntry(),
             getCardsTemplateEntry(),

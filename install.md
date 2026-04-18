@@ -55,22 +55,9 @@ docker exec -it low-code-js-api npm run seed
 
 ## Servicos Opcionais
 
-MinIO (armazenamento S3) e Assistente IA (Chat com MCP/OpenAI) sao **opcionais**. Nao sobem por padrao.
+O Assistente IA (Chat com MCP/OpenAI) e **opcional**. Nao sobe por padrao.
 
-### MinIO (S3 Storage)
-
-Para armazenar arquivos via S3/MinIO em vez do filesystem local:
-
-```bash
-docker compose --profile s3 up -d
-```
-
-| Servico        | URL                    |
-| -------------- | ---------------------- |
-| MinIO API      | http://localhost:9000  |
-| MinIO Console  | http://localhost:9001  |
-
-Apos subir o container, ative o S3 via **Settings** na UI (como MASTER) e preencha as credenciais.
+> **Armazenamento S3**: configurado durante o Setup Wizard ou via **Settings** na UI (como MASTER). Nenhum container adicional necessario.
 
 ### Assistente IA (Chat)
 
@@ -82,16 +69,16 @@ docker compose --profile ai up -d
 
 Apos subir o container, configure a **chave OpenAI** e ative o toggle nas **Settings** na UI (como MASTER).
 
-### Subir tudo
+### Subir tudo (com IA)
 
 ```bash
-docker compose --profile s3 --profile ai up -d
+docker compose --profile ai up -d
 ```
 
 Ou defina no `.env`:
 
 ```env
-COMPOSE_PROFILES=s3,ai
+COMPOSE_PROFILES=ai
 ```
 
 E depois:
@@ -151,17 +138,6 @@ cp .env.example .env
 | `DATABASE_URL`   | URL de conexao MongoDB   | `mongodb://...`         |
 | `APP_SERVER_URL` | URL publica do backend   | `http://localhost:3000` |
 | `APP_CLIENT_URL` | URL publica do frontend  | `http://localhost:5173` |
-
-### Storage (opcional)
-
-| Variavel             | Descricao                         | Padrao              |
-| -------------------- | --------------------------------- | ------------------- |
-| `STORAGE_DRIVER`     | `local` ou `s3`                   | `local`             |
-| `STORAGE_ENDPOINT`   | URL do S3/MinIO                   | `http://minio:9000` |
-| `STORAGE_REGION`     | Regiao AWS                        | `us-east-1`         |
-| `STORAGE_BUCKET`     | Nome do bucket                    | `lowcodejs`         |
-| `STORAGE_ACCESS_KEY` | Access Key S3                     | `lowcodejs`         |
-| `STORAGE_SECRET_KEY` | Secret Key S3                     | `lowcodejs123`      |
 
 ### Assistente IA (opcional)
 

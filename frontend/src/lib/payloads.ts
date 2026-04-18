@@ -259,6 +259,52 @@ export type SettingUpdatePayload = Partial<{
   AI_ASSISTANT_ENABLED: boolean;
 }>;
 
+// ============== SETUP WIZARD ==============
+export type SetupAdminPayload = {
+  name: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+};
+
+export type SetupNamePayload = {
+  SYSTEM_NAME: string;
+  LOCALE: string;
+};
+
+export type SetupStoragePayload = {
+  STORAGE_DRIVER: 'local' | 's3';
+  STORAGE_ENDPOINT?: string;
+  STORAGE_REGION?: string;
+  STORAGE_BUCKET?: string;
+  STORAGE_ACCESS_KEY?: string;
+  STORAGE_SECRET_KEY?: string;
+};
+
+export type SetupLogosPayload = {
+  LOGO_SMALL_URL: string | null;
+  LOGO_LARGE_URL: string | null;
+};
+
+export type SetupUploadPayload = {
+  FILE_UPLOAD_MAX_SIZE: number;
+  FILE_UPLOAD_ACCEPTED: string;
+  FILE_UPLOAD_MAX_FILES_PER_UPLOAD: number;
+};
+
+export type SetupPagingPayload = {
+  PAGINATION_PER_PAGE: number;
+  MODEL_CLONE_TABLES?: Array<string>;
+};
+
+export type SetupEmailPayload = {
+  EMAIL_PROVIDER_HOST?: string | null;
+  EMAIL_PROVIDER_PORT?: number | null;
+  EMAIL_PROVIDER_USER?: string | null;
+  EMAIL_PROVIDER_PASSWORD?: string | null;
+  EMAIL_PROVIDER_FROM?: string | null;
+};
+
 // ============== CLONE TABLE ==============
 export type CloneTablePayload = {
   baseTableId: string;

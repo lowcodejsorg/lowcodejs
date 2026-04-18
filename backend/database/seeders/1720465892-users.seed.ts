@@ -14,18 +14,23 @@ type Payload = BasePayload & {
 };
 
 export default async function Seed(): Promise<void> {
-  // await User.deleteMany({});
+  if (process.env.NODE_ENV === 'production') {
+    console.info(
+      '⏭️  \x1b[33m Users seed ignorado em produção (MASTER criado pelo wizard) \x1b[0m',
+    );
+    return;
+  }
 
   const groups = await UserGroup.find();
 
-  const masterGroup = groups.find((g) => g.slug === E_ROLE.MASTER);
+  // const masterGroup = groups.find((g) => g.slug === E_ROLE.MASTER);
 
   const administratorGroup = groups.find(
     (g) => g.slug === E_ROLE.ADMINISTRATOR,
   );
-  const managerGroup = groups.find((g) => g.slug === E_ROLE.MANAGER);
+  // const managerGroup = groups.find((g) => g.slug === E_ROLE.MANAGER);
 
-  const registeredGroup = groups.find((g) => g.slug === E_ROLE.REGISTERED);
+  // const registeredGroup = groups.find((g) => g.slug === E_ROLE.REGISTERED);
 
   const password = await bcrypt.hash('10203040', 6);
 
@@ -39,35 +44,35 @@ export default async function Seed(): Promise<void> {
       password: await bcrypt.hash('admin', 6),
       status: E_USER_STATUS.ACTIVE,
     },
-    {
-      name: 'master',
-      group: masterGroup?._id?.toString() as string,
-      email: 'master@lowcodejs.org',
-      password,
-      status: E_USER_STATUS.ACTIVE,
-    },
-    {
-      name: 'administrator',
-      group: administratorGroup?._id?.toString() as string,
-      email: 'administrator@lowcodejs.org',
-      password,
-      status: E_USER_STATUS.ACTIVE,
-    },
-    {
-      name: 'manager',
-      group: managerGroup?._id?.toString() as string,
-      email: 'manager@lowcodejs.org',
-      password,
-      status: E_USER_STATUS.ACTIVE,
-    },
+    // {
+    //   name: 'master',
+    //   group: masterGroup?._id?.toString() as string,
+    //   email: 'master@lowcodejs.org',
+    //   password,
+    //   status: E_USER_STATUS.ACTIVE,
+    // },
+    // {
+    //   name: 'administrator',
+    //   group: administratorGroup?._id?.toString() as string,
+    //   email: 'administrator@lowcodejs.org',
+    //   password,
+    //   status: E_USER_STATUS.ACTIVE,
+    // },
+    // {
+    //   name: 'manager',
+    //   group: managerGroup?._id?.toString() as string,
+    //   email: 'manager@lowcodejs.org',
+    //   password,
+    //   status: E_USER_STATUS.ACTIVE,
+    // },
 
-    {
-      name: ' registered',
-      group: registeredGroup?._id?.toString() as string,
-      email: 'registered@lowcodejs.org',
-      password,
-      status: E_USER_STATUS.ACTIVE,
-    },
+    // {
+    //   name: ' registered',
+    //   group: registeredGroup?._id?.toString() as string,
+    //   email: 'registered@lowcodejs.org',
+    //   password,
+    //   status: E_USER_STATUS.ACTIVE,
+    // },
   ];
 
   // await User.insertMany(payload);

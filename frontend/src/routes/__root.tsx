@@ -28,18 +28,24 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
           systemName: data.SYSTEM_NAME || 'LowCodeJs',
           systemDescription: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
           aiAssistantEnabled: data.AI_ASSISTANT_ENABLED ?? false,
+          setupCompleted: data.SETUP_COMPLETED ?? false,
+          setupCurrentStep: data.SETUP_CURRENT_STEP ?? 'admin',
         };
       }
       return {
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
         aiAssistantEnabled: false,
+        setupCompleted: false,
+        setupCurrentStep: 'admin',
       };
     } catch {
       return {
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
         aiAssistantEnabled: false,
+        setupCompleted: false,
+        setupCurrentStep: 'admin',
       };
     }
   },

@@ -11,6 +11,7 @@ import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar';
 import {
   profileDetailOptions,
   settingOptions,
+  setupStatusOptions,
 } from '@/hooks/tanstack-query/_query-options';
 import { useMenuDynamic } from '@/hooks/tanstack-query/use-menu-dynamic';
 import { E_ROLE } from '@/lib/constant';
@@ -25,6 +26,15 @@ export const Route = createFileRoute('/_private')({
     meta: [{ name: 'robots', content: 'noindex, nofollow' }],
   }),
   beforeLoad: async ({ context, location }) => {
+    const setupStatus =
+      await context.queryClient.fetchQuery(setupStatusOptions());
+
+    if (!setupStatus.completed) {
+      throw redirect({
+        to: `/setup/${setupStatus.currentStep ?? 'admin'}`,
+      });
+    }
+
     try {
       const user = await context.queryClient.ensureQueryData(
         profileDetailOptions(),
