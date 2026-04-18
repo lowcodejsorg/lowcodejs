@@ -283,6 +283,8 @@ export function FilterFieldsForm({
   removeFilter,
   search,
 }: FilterFieldsFormProps): React.JSX.Element {
+  const navigate = useNavigate();
+
   return (
     <section
       data-slot="filter-fields"
@@ -329,12 +331,22 @@ export function FilterFieldsForm({
             <FilterDropdown
               field={field}
               value={filterValues[field.slug] ?? []}
-              onChange={(value) =>
-                setFilterValues((prev) => ({
-                  ...prev,
-                  [field.slug]: value,
-                }))
-              }
+              onChange={(value) => {
+                setFilterValues((prev) => ({ ...prev, [field.slug]: value }));
+                // Navega imediatamente apenas quando o filtro já estava aplicado na URL
+                // (remoção de chip). Adição de novo chip espera o botão Pesquisar.
+                if (search[field.slug]) {
+                  navigate({
+                    // @ts-ignore
+                    search: (state) => ({
+                      ...state,
+                      [field.slug]:
+                        value.length > 0 ? value.join(',') : undefined,
+                      page: 1,
+                    }),
+                  });
+                }
+              }}
             />
           )}
 
