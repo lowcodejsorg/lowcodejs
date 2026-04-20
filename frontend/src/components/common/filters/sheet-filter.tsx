@@ -34,6 +34,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
     handleSubmit,
     handleClear,
     removeFilter,
+    handleMultiValueChange,
     activeFiltersCount,
   } = useFilterState(fields, {
     closeOnSubmit: true,
@@ -80,6 +81,7 @@ export function SheetFilter({ fields }: SheetFilterProps): React.JSX.Element {
             filterValues={filterValues}
             setFilterValues={setFilterValues}
             removeFilter={removeFilter}
+            handleMultiValueChange={handleMultiValueChange}
             search={search}
           />
 
