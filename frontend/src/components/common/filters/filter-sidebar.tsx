@@ -38,6 +38,7 @@ export function FilterSidebar({
     handleSubmit,
     handleClear,
     removeFilter,
+    handleMultiValueChange,
   } = useFilterState(fields);
 
   if (isMobile) {
@@ -65,6 +66,7 @@ export function FilterSidebar({
               filterValues={filterValues}
               setFilterValues={setFilterValues}
               removeFilter={removeFilter}
+              handleMultiValueChange={handleMultiValueChange}
               search={search}
             />
           </div>
@@ -128,6 +130,7 @@ export function FilterSidebar({
             filterValues={filterValues}
             setFilterValues={setFilterValues}
             removeFilter={removeFilter}
+            handleMultiValueChange={handleMultiValueChange}
             search={search}
           />
         </div>
