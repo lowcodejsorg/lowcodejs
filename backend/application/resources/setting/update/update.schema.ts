@@ -20,6 +20,17 @@ export const SettingUpdateSchema: FastifySchema = {
           maxLength: 'O nome do sistema deve ter no máximo 100 caracteres',
         },
       },
+      SYSTEM_DESCRIPTION: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 200,
+        description: 'Descrição curta do sistema usada em SEO/og:description',
+        errorMessage: {
+          type: 'A descrição do sistema deve ser um texto',
+          minLength: 'A descrição do sistema deve ter ao menos 1 caractere',
+          maxLength: 'A descrição do sistema deve ter no máximo 200 caracteres',
+        },
+      },
       LOCALE: {
         type: 'string',
         enum: ['pt-br', 'en-us'],
@@ -170,6 +181,10 @@ export const SettingUpdateSchema: FastifySchema = {
         SYSTEM_NAME: {
           type: 'string',
           description: 'Nome do sistema exibido no título da plataforma',
+        },
+        SYSTEM_DESCRIPTION: {
+          type: 'string',
+          description: 'Descrição curta do sistema usada em SEO/og:description',
         },
         LOCALE: {
           type: 'string',
