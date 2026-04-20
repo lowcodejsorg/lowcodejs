@@ -56,7 +56,7 @@ export type TableQueryPayload = {
   owner?: string;
   trashed?: boolean;
   _ids?: string[];
-  visibility?: string;
+  visibility?: Array<ValueOf<typeof E_TABLE_VISIBILITY>>;
   sort?: Record<string, 'asc' | 'desc'>;
 };
 
