@@ -129,6 +129,7 @@ function SettingUpdateContent({
   const form = useAppForm({
     defaultValues: {
       SYSTEM_NAME: data.SYSTEM_NAME || 'LowCodeJs',
+      SYSTEM_DESCRIPTION: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
       LOCALE: data.LOCALE,
       STORAGE_DRIVER: data.STORAGE_DRIVER || 'local',
       STORAGE_ENDPOINT: data.STORAGE_ENDPOINT || '',
@@ -166,6 +167,7 @@ function SettingUpdateContent({
 
       const payload = {
         SYSTEM_NAME: value.SYSTEM_NAME.trim(),
+        SYSTEM_DESCRIPTION: value.SYSTEM_DESCRIPTION.trim(),
         LOCALE: value.LOCALE.trim(),
         STORAGE_DRIVER: value.STORAGE_DRIVER,
         STORAGE_ENDPOINT:

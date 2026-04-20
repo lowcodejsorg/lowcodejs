@@ -63,11 +63,19 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Nome do sistema</p>
-            <p className="text-sm text-muted-foreground">
-              {data.SYSTEM_NAME || 'LowCodeJs'}
-            </p>
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Nome do sistema</p>
+              <p className="text-sm text-muted-foreground">
+                {data.SYSTEM_NAME || 'LowCodeJs'}
+              </p>
+            </div>
+            <div className="space-y-1">
+              <p className="text-sm font-medium">Descrição do sistema</p>
+              <p className="text-sm text-muted-foreground">
+                {data.SYSTEM_DESCRIPTION || 'Plataforma Oficial'}
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>

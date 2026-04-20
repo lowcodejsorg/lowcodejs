@@ -47,6 +47,9 @@ export const SettingUpdateSchema = z.object({
     .string()
     .min(1, 'O nome do sistema é obrigatório')
     .max(100, 'O nome do sistema deve ter no máximo 100 caracteres'),
+  SYSTEM_DESCRIPTION: z
+    .string()
+    .max(200, 'A descrição do sistema deve ter no máximo 200 caracteres'),
   LOCALE: z.string().min(1, 'O idioma é obrigatório'),
   STORAGE_DRIVER: z.enum(['local', 's3']),
   STORAGE_ENDPOINT: z.string(),
@@ -82,6 +85,7 @@ export const SettingUpdateSchema = z.object({
 export type SettingUpdateFormValues = Merge<
   {
     SYSTEM_NAME: string;
+    SYSTEM_DESCRIPTION: string;
     LOCALE: string;
     STORAGE_DRIVER: 'local' | 's3';
     STORAGE_ENDPOINT: string;
@@ -109,6 +113,7 @@ export type SettingUpdateFormValues = Merge<
 
 export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   SYSTEM_NAME: 'LowCodeJs',
+  SYSTEM_DESCRIPTION: 'Plataforma Oficial',
   LOCALE: 'pt-br',
   STORAGE_DRIVER: 'local',
   STORAGE_ENDPOINT: '',
@@ -178,7 +183,7 @@ export const UpdateSettingFormFields = withForm({
               Configure o nome exibido no título da plataforma
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <form.Field
               name="SYSTEM_NAME"
               validators={{
@@ -224,6 +229,59 @@ export const UpdateSettingFormFields = withForm({
                         name={field.name}
                         type="text"
                         placeholder="LowCodeJs"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                    </InputGroup>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            <form.Field
+              name="SYSTEM_DESCRIPTION"
+              validators={{
+                onChange: ({ value }) => {
+                  if (value && value.length > 200) {
+                    return {
+                      message:
+                        'A descrição do sistema deve ter no máximo 200 caracteres',
+                    };
+                  }
+                  return undefined;
+                },
+                onBlur: ({ value }) => {
+                  if (value && value.length > 200) {
+                    return {
+                      message:
+                        'A descrição do sistema deve ter no máximo 200 caracteres',
+                    };
+                  }
+                  return undefined;
+                },
+              }}
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Descrição do sistema
+                    </FieldLabel>
+                    <InputGroup>
+                      <InputGroupInput
+                        data-test-id="settings-system-description-input"
+                        disabled={isDisabled}
+                        id={field.name}
+                        name={field.name}
+                        type="text"
+                        placeholder="Plataforma Oficial"
                         value={field.state.value}
                         onBlur={field.handleBlur}
                         onChange={(e) => field.handleChange(e.target.value)}
