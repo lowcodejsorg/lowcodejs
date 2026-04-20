@@ -80,10 +80,7 @@ interface UseFilterStateReturn {
   handleSubmit: () => void;
   handleClear: () => void;
   removeFilter: (key: string) => void;
-  handleMultiValueChange: (
-    field: IFilterField,
-    value: Array<string>,
-  ) => void;
+  handleMultiValueChange: (field: IFilterField, value: Array<string>) => void;
   activeFiltersCount: number;
 }
 
@@ -306,10 +303,7 @@ interface FilterFieldsFormProps {
   filterValues: Record<string, any>;
   setFilterValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   removeFilter: (key: string) => void;
-  handleMultiValueChange: (
-    field: IFilterField,
-    value: Array<string>,
-  ) => void;
+  handleMultiValueChange: (field: IFilterField, value: Array<string>) => void;
   search: Record<string, unknown>;
 }
 

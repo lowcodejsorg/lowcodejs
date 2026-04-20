@@ -104,11 +104,11 @@ export function FilterSidebar({
       data-test-id="filter-sidebar"
       className={cn(
         'shrink-0 transition-[width] duration-200 ease-linear overflow-hidden border-r',
-        open && 'w-[280px]',
+        open && 'w-70',
         !open && 'w-0 border-r-0',
       )}
     >
-      <div className="w-[280px] h-full flex flex-col">
+      <div className="w-70 h-full flex flex-col">
         <div className="shrink-0 flex items-center justify-between px-4 py-3 border-b">
           <h2 className="text-sm font-semibold flex items-center gap-2">
             <FilterIcon className="size-4" />

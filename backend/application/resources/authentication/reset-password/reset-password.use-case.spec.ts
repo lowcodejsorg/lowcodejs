@@ -64,7 +64,7 @@ describe('Reset Password Use Case', () => {
     expect(updatedUser.password).not.toBe('new_password');
   });
 
-  it('deve enviar email de confirmacao apos redefinir senha', async () => {
+  it('deve enviar email de confirmação apos redefinir senha', async () => {
     const user = await userInMemoryRepository.create({
       name: 'John Doe',
       email: 'john@example.com',
@@ -86,7 +86,7 @@ describe('Reset Password Use Case', () => {
     expect(sentEmail?.subject).toBe('Senha redefinida com sucesso');
   });
 
-  it('deve retornar erro USER_NOT_FOUND quando usuario nao existir', async () => {
+  it('deve retornar erro USER_NOT_FOUND quando usuário nao existir', async () => {
     const result = await sut.execute({
       _id: 'non-existent-id',
       password: 'new_password',
