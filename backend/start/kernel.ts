@@ -9,7 +9,10 @@ import swagger from '@fastify/swagger';
 import websocket from '@fastify/websocket';
 import scalar from '@scalar/fastify-api-reference';
 import ajv from 'ajv-errors';
-import fastify, { type FastifyReply } from 'fastify';
+import fastify, {
+  type FastifyReply,
+  type FastifyRequest,
+} from 'fastify';
 import { bootstrap, getInstanceByToken } from 'fastify-decorators';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
@@ -181,8 +184,23 @@ async function resolveStorageMeta(
   }
 }
 
+// Hash names gerados em process-file.ts: Math.floor(Math.random() * 1e8) → 1-8 digitos.
+// Tudo o mais (logo-small.webp, logo-large.webp, etc.) e staticName e pode ser
+// sobrescrito mantendo a mesma URL — precisa revalidacao no navegador.
+const HASH_NAME_PATTERN = /^\d{1,8}$/;
+
+function isStaticFilename(filename: string): boolean {
+  const dotIndex = filename.lastIndexOf('.');
+  const stem = dotIndex === -1 ? filename : filename.slice(0, dotIndex);
+  return !HASH_NAME_PATTERN.test(stem);
+}
+
+const STATIC_CACHE_CONTROL = 'no-cache, must-revalidate';
+const IMMUTABLE_CACHE_CONTROL = 'public, max-age=31536000, immutable';
+
 async function serveFromLocal(
   filename: string,
+  request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
   const fullPath = join(getLocalStoragePath(), filename);
@@ -191,13 +209,29 @@ async function serveFromLocal(
     return;
   }
   const stats = statSync(fullPath);
+
+  if (isStaticFilename(filename)) {
+    const etag = `"${stats.mtimeMs.toString(36)}-${stats.size.toString(36)}"`;
+    reply.header('etag', etag);
+    reply.header('last-modified', stats.mtime.toUTCString());
+    reply.header('cache-control', STATIC_CACHE_CONTROL);
+
+    const ifNoneMatch = request.headers['if-none-match'];
+    if (ifNoneMatch === etag) {
+      reply.status(304).send();
+      return;
+    }
+  } else {
+    reply.header('cache-control', IMMUTABLE_CACHE_CONTROL);
+  }
+
   reply.header('content-length', stats.size);
-  reply.header('cache-control', 'public, max-age=31536000');
   reply.send(createReadStream(fullPath));
 }
 
 async function serveFromS3(
   filename: string,
+  request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
   const bucket = process.env.STORAGE_BUCKET!;
@@ -210,7 +244,17 @@ async function serveFromS3(
       'content-type',
       response.ContentType || 'application/octet-stream',
     );
-    reply.header('cache-control', 'public, max-age=31536000');
+
+    if (isStaticFilename(filename)) {
+      reply.header('cache-control', STATIC_CACHE_CONTROL);
+      if (response.ETag) reply.header('etag', response.ETag);
+      if (response.LastModified) {
+        reply.header('last-modified', response.LastModified.toUTCString());
+      }
+    } else {
+      reply.header('cache-control', IMMUTABLE_CACHE_CONTROL);
+    }
+
     if (response.ContentLength) {
       reply.header('content-length', response.ContentLength);
     }
@@ -220,7 +264,7 @@ async function serveFromS3(
     console.info(
       `[Storage S3] ${filename} não encontrado no S3, tentando local...`,
     );
-    await serveFromLocal(filename, reply);
+    await serveFromLocal(filename, request, reply);
   }
 }
 
@@ -252,7 +296,7 @@ kernel.addHook('onRequest', async (request, reply) => {
   }
 
   const handler = DRIVER_HANDLERS[getStorageDriver()];
-  await handler(filename, reply);
+  await handler(filename, request, reply);
   return reply;
 });
 
