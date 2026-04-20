@@ -31,6 +31,7 @@ export default class SettingInMemoryRepository implements SettingContractReposit
     if (!this.item) {
       const base = {
         SYSTEM_NAME: 'LowCodeJs',
+        SYSTEM_DESCRIPTION: 'Plataforma Oficial',
         LOCALE: 'pt-br',
         STORAGE_DRIVER: 'local',
         FILE_UPLOAD_MAX_SIZE: 10485760,

@@ -15,6 +15,11 @@ export const SettingShowSchema: FastifySchema = {
           description: 'Nome do sistema exibido no título da plataforma',
           examples: ['LowCodeJs'],
         },
+        SYSTEM_DESCRIPTION: {
+          type: 'string',
+          description: 'Descrição curta do sistema usada em SEO/og:description',
+          examples: ['Plataforma Oficial'],
+        },
         LOCALE: {
           type: 'string',
           enum: ['pt-br', 'en-us'],

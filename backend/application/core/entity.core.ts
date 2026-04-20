@@ -448,6 +448,7 @@ export type IMenu = Merge<
 
 export type ISetting = {
   SYSTEM_NAME: string;
+  SYSTEM_DESCRIPTION: string;
   LOCALE: string;
   STORAGE_DRIVER: 'local' | 's3';
   STORAGE_ENDPOINT?: string;

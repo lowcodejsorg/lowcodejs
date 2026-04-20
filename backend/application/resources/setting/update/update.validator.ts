@@ -7,6 +7,12 @@ export const SettingUpdateBodyValidator = z.object({
     .min(1, 'O nome do sistema deve ter ao menos 1 caractere')
     .max(100, 'O nome do sistema deve ter no máximo 100 caracteres')
     .optional(),
+  SYSTEM_DESCRIPTION: z
+    .string()
+    .trim()
+    .min(1, 'A descrição do sistema deve ter ao menos 1 caractere')
+    .max(200, 'A descrição do sistema deve ter no máximo 200 caracteres')
+    .optional(),
   LOCALE: z
     .enum(['pt-br', 'en-us'], {
       message: 'O locale deve ser pt-br ou en-us',

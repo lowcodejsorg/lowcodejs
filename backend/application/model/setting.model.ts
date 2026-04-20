@@ -7,6 +7,7 @@ type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 const Schema = new mongoose.Schema(
   {
     SYSTEM_NAME: { type: String, default: 'LowCodeJs' },
+    SYSTEM_DESCRIPTION: { type: String, default: 'Plataforma Oficial' },
     LOCALE: { type: String, default: 'pt-br' },
     STORAGE_DRIVER: { type: String, default: 'local', enum: ['local', 's3'] },
     STORAGE_ENDPOINT: { type: String },
