@@ -160,60 +160,59 @@ export function TableRowUserField({
 
   const handleValueChange = (newValue: IUser | Array<IUser> | null): void => {
     if (isMultiple) {
-      // Multi-select selection is handled manually via item click to avoid
-      // combobox internal state dropping previous selections during search.
+      let userList: Array<IUser> = [];
+      if (Array.isArray(newValue)) {
+        userList = newValue;
+      }
+
+      if (userList.length > 0) {
+        setSelectedCache((prev) => {
+          const next = new Map(prev);
+          for (const user of userList) {
+            next.set(user._id, user);
+          }
+          return next;
+        });
+      }
+
+      const newValues: Array<UserOption> = userList.map((user) => ({
+        value: user._id,
+        label: user.name,
+      }));
+      formField.handleChange(newValues);
+
+      if (
+        userList.length > fieldValue.length &&
+        searchQuery.trim().length > 0
+      ) {
+        setSearchQuery('');
+        setDebouncedQuery('');
+      }
       return;
     }
 
-    if (!isMultiple) {
-      const user = newValue as IUser | null;
-      if (user) {
-        setSelectedCache((prev) => {
-          const next = new Map(prev);
-          next.set(user._id, user);
-          return next;
-        });
-        formField.handleChange([
-          {
-            value: user._id,
-            label: user.name,
-          },
-        ]);
-      } else {
-        formField.handleChange([]);
-      }
-    }
-  };
-
-  const handleToggleUser = (user: IUser): void => {
-    const prevIds = fieldValue.map((opt) => opt.value);
-    let nextIds: Array<string>;
-    if (prevIds.includes(user._id)) {
-      nextIds = prevIds.filter((id) => id !== user._id);
-    } else {
-      nextIds = [...prevIds, user._id];
+    let single: IUser | null = null;
+    if (newValue !== null && !Array.isArray(newValue)) {
+      single = newValue;
     }
 
+    if (single === null) {
+      formField.handleChange([]);
+      return;
+    }
+
+    const picked = single;
     setSelectedCache((prev) => {
       const next = new Map(prev);
-      next.set(user._id, user);
+      next.set(picked._id, picked);
       return next;
     });
-
-    const newValues = nextIds.map((id) => {
-      const cached = selectedCache.get(id);
-      const fallback = fieldValue.find((opt) => opt.value === id);
-      return {
-        value: id,
-        label: cached?.name ?? fallback?.label ?? id,
-      };
-    });
-    formField.handleChange(newValues);
-
-    if (searchQuery.trim().length > 0) {
-      setSearchQuery('');
-      setDebouncedQuery('');
-    }
+    formField.handleChange([
+      {
+        value: picked._id,
+        label: picked.name,
+      },
+    ]);
   };
 
   if (isMultiple) {
@@ -283,7 +282,6 @@ export function TableRowUserField({
                     <ComboboxItem
                       key={user._id}
                       value={user}
-                      onClick={() => handleToggleUser(user)}
                     >
                       <div className="flex flex-1 flex-col">
                         <span className="font-medium">{user.name}</span>

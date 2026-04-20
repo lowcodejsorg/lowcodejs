@@ -38,6 +38,9 @@ export function TableRowRelationshipField({
 
   const [searchQuery, setSearchQuery] = React.useState('');
   const [debouncedQuery, setDebouncedQuery] = React.useState('');
+  const [selectedCache, setSelectedCache] = React.useState<Map<string, IRow>>(
+    () => new Map(),
+  );
 
   const relConfig = field.relationship;
   const isMultiple = field.multiple;
@@ -59,6 +62,40 @@ export function TableRowRelationshipField({
     enabled: Boolean(relConfig),
   });
 
+  const allItems: Array<IRow> = data?.data ?? [];
+
+  React.useEffect(() => {
+    if (!allItems.length) return;
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      for (const row of allItems) {
+        next.set(row._id, row);
+      }
+      return next;
+    });
+  }, [allItems]);
+
+  // Map selected options to IRow objects for the combobox, preferring cached
+  // rows so chips persist while the search filters the visible list.
+  const selectedItems = React.useMemo(() => {
+    return (formField.state.value ?? [])
+      .map((opt) => {
+        const cached = selectedCache.get(opt.value);
+        if (cached) return cached;
+        return allItems.find((row) => row._id === opt.value) ?? null;
+      })
+      .filter((row): row is IRow => row !== null);
+  }, [formField.state.value, selectedCache, allItems]);
+
+  const items = React.useMemo(() => {
+    const idsInList = new Set(allItems.map((row) => row._id));
+    const extras = selectedItems.filter((row) => !idsInList.has(row._id));
+    if (extras.length) {
+      return [...allItems, ...extras];
+    }
+    return allItems;
+  }, [allItems, selectedItems]);
+
   if (!relConfig || !relConfig.field || !relConfig.table) {
     return (
       <Field data-slot="table-row-relationship-field">
@@ -70,38 +107,53 @@ export function TableRowRelationshipField({
     );
   }
 
-  const allItems: Array<IRow> = data?.data ?? [];
-
-  // Map selected options to IRow objects for the combobox
-  const selectedItems = React.useMemo(() => {
-    return (formField.state.value ?? [])
-      .map((opt) => allItems.find((row) => row._id === opt.value))
-      .filter((row): row is IRow => row !== undefined);
-  }, [formField.state.value, allItems]);
-
   const handleValueChange = (newValue: IRow | Array<IRow> | null): void => {
     if (isMultiple) {
-      const items = newValue as Array<IRow>;
-      const newValues = items.map((row) => ({
+      let rowList: Array<IRow> = [];
+      if (Array.isArray(newValue)) {
+        rowList = newValue;
+      }
+
+      if (rowList.length > 0) {
+        setSelectedCache((prev) => {
+          const next = new Map(prev);
+          for (const row of rowList) {
+            next.set(row._id, row);
+          }
+          return next;
+        });
+      }
+
+      const newValues = rowList.map((row) => ({
         value: row._id,
         label: String(row[relConfig.field.slug] ?? row._id),
       }));
       formField.handleChange(newValues);
+      return;
     }
 
-    if (!isMultiple) {
-      const row = newValue as IRow | null;
-      if (row) {
-        formField.handleChange([
-          {
-            value: row._id,
-            label: String(row[relConfig.field.slug] ?? row._id),
-          },
-        ]);
-      } else {
-        formField.handleChange([]);
-      }
+    let single: IRow | null = null;
+    if (newValue !== null && !Array.isArray(newValue)) {
+      single = newValue;
     }
+
+    if (single === null) {
+      formField.handleChange([]);
+      return;
+    }
+
+    const picked = single;
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      next.set(picked._id, picked);
+      return next;
+    });
+    formField.handleChange([
+      {
+        value: picked._id,
+        label: String(picked[relConfig.field.slug] ?? picked._id),
+      },
+    ]);
   };
 
   if (isMultiple) {
@@ -118,7 +170,7 @@ export function TableRowRelationshipField({
         <div className="relative">
           <Combobox
             data-test-id="table-row-relationship"
-            items={allItems}
+            items={items}
             multiple
             value={selectedItems}
             onValueChange={handleValueChange}
@@ -212,7 +264,7 @@ export function TableRowRelationshipField({
       <div className="relative">
         <Combobox
           data-test-id="table-row-relationship"
-          items={allItems}
+          items={items}
           value={selectedItems[0] ?? null}
           onValueChange={handleValueChange}
           inputValue={searchQuery}
