@@ -27,6 +27,7 @@ type Props = React.ComponentProps<typeof DialogTrigger> & {
 export function TableExportDialog({
   slug,
   tableName,
+  children,
   ...props
 }: Props): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
@@ -83,7 +84,15 @@ export function TableExportDialog({
       <DialogTrigger
         asChild
         {...props}
-      />
+      >
+        {children ?? (
+          <button
+            type="button"
+            className="sr-only"
+            aria-hidden
+          />
+        )}
+      </DialogTrigger>
       <DialogContent
         className="py-4 px-6 max-w-md"
         data-test-id="export-table-dialog"
