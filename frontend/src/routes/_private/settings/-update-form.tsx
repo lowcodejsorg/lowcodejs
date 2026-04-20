@@ -54,12 +54,8 @@ export const SettingUpdateSchema = z.object({
   STORAGE_BUCKET: z.string(),
   STORAGE_ACCESS_KEY: z.string(),
   STORAGE_SECRET_KEY: z.string(),
-  LOGO_SMALL_URL: z
-    .string({ message: 'A URL do logo pequeno é obrigatória' })
-    .min(1, 'A URL do logo pequeno é obrigatória'),
-  LOGO_LARGE_URL: z
-    .string({ message: 'A URL do logo grande é obrigatória' })
-    .min(1, 'A URL do logo grande é obrigatória'),
+  LOGO_SMALL_URL: z.string().nullable(),
+  LOGO_LARGE_URL: z.string().nullable(),
   FILE_UPLOAD_MAX_SIZE: z
     .string()
     .min(1, 'O tamanho máximo de arquivo é obrigatório'),
