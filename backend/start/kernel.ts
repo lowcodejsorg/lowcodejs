@@ -9,10 +9,7 @@ import swagger from '@fastify/swagger';
 import websocket from '@fastify/websocket';
 import scalar from '@scalar/fastify-api-reference';
 import ajv from 'ajv-errors';
-import fastify, {
-  type FastifyReply,
-  type FastifyRequest,
-} from 'fastify';
+import fastify, { type FastifyReply, type FastifyRequest } from 'fastify';
 import { bootstrap, getInstanceByToken } from 'fastify-decorators';
 import { createReadStream, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';

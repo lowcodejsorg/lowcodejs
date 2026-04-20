@@ -107,7 +107,8 @@
       "Bash(docker exec *)",
       "Bash(npx tsr *)",
       "Bash(npx @tanstack/router-cli generate)",
-      "Bash(npx @tanstack/router-generator generate)"
+      "Bash(npx @tanstack/router-generator generate)",
+      "Bash(npm ls *)"
     ]
   },
   "enableAllProjectMcpServers": true,
