@@ -17,7 +17,7 @@ usuarios com role MASTER.
 
 | Grupo              | Campos                                                                                                                |
 | ------------------ | --------------------------------------------------------------------------------------------------------------------- |
-| Sistema            | `SYSTEM_NAME`, `LOCALE`                                                                                               |
+| Sistema            | `SYSTEM_NAME`, `SYSTEM_DESCRIPTION`, `LOCALE`                                                                         |
 | Storage            | `STORAGE_DRIVER`                                                                                                      |
 | Logos              | `LOGO_SMALL_URL`, `LOGO_LARGE_URL` (com upload de arquivo)                                                            |
 | Upload de arquivos | `FILE_UPLOAD_MAX_SIZE`, `FILE_UPLOAD_MAX_FILES_PER_UPLOAD`, `FILE_UPLOAD_ACCEPTED`                                    |

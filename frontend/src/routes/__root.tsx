@@ -21,7 +21,7 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
     try {
       const { Env } = await import('@/env');
       const baseUrl = Env.VITE_API_BASE_URL;
-      const response = await fetch(`${baseUrl}/setting`);
+      const response = await fetch(`${baseUrl}/setting/public`);
       if (response.ok) {
         const data = await response.json();
         return {
