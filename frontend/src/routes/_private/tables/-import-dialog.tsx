@@ -52,7 +52,10 @@ type ImportFileContent = {
 
 type Props = React.ComponentProps<typeof DialogTrigger>;
 
-export function TableImportDialog({ ...props }: Props): React.JSX.Element {
+export function TableImportDialog({
+  children,
+  ...props
+}: Props): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
   const [fileContent, setFileContent] =
     React.useState<ImportFileContent | null>(null);
@@ -246,7 +249,15 @@ export function TableImportDialog({ ...props }: Props): React.JSX.Element {
       <DialogTrigger
         asChild
         {...props}
-      />
+      >
+        {children ?? (
+          <button
+            type="button"
+            className="sr-only"
+            aria-hidden
+          />
+        )}
+      </DialogTrigger>
       <DialogContent
         className="py-4 px-6 max-w-lg"
         data-test-id="import-table-dialog"

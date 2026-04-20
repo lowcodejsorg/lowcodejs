@@ -80,6 +80,7 @@ interface UseFilterStateReturn {
   handleSubmit: () => void;
   handleClear: () => void;
   removeFilter: (key: string) => void;
+  handleMultiValueChange: (field: IFilterField, value: Array<string>) => void;
   activeFiltersCount: number;
 }
 
@@ -241,6 +242,34 @@ export function useFilterState(
     setFilterValues((prev) => ({ ...prev, [key]: undefined }));
   };
 
+  // Dropdown/category aceitam multi-valor e sao persistidos como CSV na URL.
+  // Ao remover um chip, precisamos refletir isso imediatamente na listagem;
+  // adicoes continuam aguardando o botao Pesquisar.
+  const handleMultiValueChange = (
+    field: IFilterField,
+    value: Array<string>,
+  ): void => {
+    const applied = search[field.slug];
+    const appliedTokens =
+      typeof applied === 'string' && applied.length > 0
+        ? applied.split(',')
+        : [];
+    const isRemoval = value.length < appliedTokens.length;
+
+    setFilterValues((prev) => ({ ...prev, [field.slug]: value }));
+
+    if (!isRemoval) return;
+
+    navigate({
+      // @ts-ignore
+      search: (state) => ({
+        ...state,
+        [field.slug]: value.length > 0 ? value.join(',') : undefined,
+        page: 1,
+      }),
+    });
+  };
+
   const activeFiltersCount = fields.filter((f) => {
     return (
       search[f.slug] || search[`${f.slug}-initial`] || search[`${f.slug}-final`]
@@ -253,6 +282,7 @@ export function useFilterState(
     handleSubmit,
     handleClear,
     removeFilter,
+    handleMultiValueChange,
     activeFiltersCount,
   };
 }
@@ -273,6 +303,7 @@ interface FilterFieldsFormProps {
   filterValues: Record<string, any>;
   setFilterValues: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   removeFilter: (key: string) => void;
+  handleMultiValueChange: (field: IFilterField, value: Array<string>) => void;
   search: Record<string, unknown>;
 }
 
@@ -281,6 +312,7 @@ export function FilterFieldsForm({
   filterValues,
   setFilterValues,
   removeFilter,
+  handleMultiValueChange,
   search,
 }: FilterFieldsFormProps): React.JSX.Element {
   return (
@@ -329,12 +361,7 @@ export function FilterFieldsForm({
             <FilterDropdown
               field={field}
               value={filterValues[field.slug] ?? []}
-              onChange={(value) =>
-                setFilterValues((prev) => ({
-                  ...prev,
-                  [field.slug]: value,
-                }))
-              }
+              onChange={(value) => handleMultiValueChange(field, value)}
             />
           )}
 
@@ -383,12 +410,7 @@ export function FilterFieldsForm({
             <FilterCategory
               field={field}
               value={filterValues[field.slug] ?? []}
-              onChange={(value) =>
-                setFilterValues((prev) => ({
-                  ...prev,
-                  [field.slug]: value,
-                }))
-              }
+              onChange={(value) => handleMultiValueChange(field, value)}
             />
           )}
         </div>
