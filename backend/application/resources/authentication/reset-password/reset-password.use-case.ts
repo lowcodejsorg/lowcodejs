@@ -48,7 +48,12 @@ export default class UpdatePasswordRecoveryUseCase {
             body,
           }),
         )
-        .catch(() => {});
+        .catch((error) =>
+          console.error(
+            '[authentication > reset-password > email][error]:',
+            error,
+          ),
+        );
 
       return right(null);
     } catch (error) {
