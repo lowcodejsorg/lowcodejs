@@ -66,9 +66,7 @@ export const SettingUpdateSchema = z.object({
     .string()
     .min(1, 'As extensões aceitas são obrigatórias'),
   PAGINATION_PER_PAGE: z.string().min(1, 'A paginação é obrigatória'),
-  MODEL_CLONE_TABLES: z
-    .array(z.string())
-    .min(1, 'Selecione ao menos um modelo de tabela'),
+  MODEL_CLONE_TABLES: z.array(z.string()),
   EMAIL_PROVIDER_HOST: z.string(),
   EMAIL_PROVIDER_PORT: z.string(),
   EMAIL_PROVIDER_USER: z.string(),
