@@ -73,11 +73,11 @@ export const SettingUpdateSchema = z.object({
   MODEL_CLONE_TABLES: z
     .array(z.string())
     .min(1, 'Selecione ao menos um modelo de tabela'),
-  EMAIL_PROVIDER_HOST: z.string().min(1, 'O host SMTP é obrigatório'),
-  EMAIL_PROVIDER_PORT: z.string().min(1, 'A porta SMTP é obrigatória'),
-  EMAIL_PROVIDER_USER: z.string().min(1, 'O usuário SMTP é obrigatório'),
-  EMAIL_PROVIDER_PASSWORD: z.string().min(1, 'A senha SMTP é obrigatória'),
-  EMAIL_PROVIDER_FROM: z.string().min(1, 'O remetente (FROM) é obrigatório'),
+  EMAIL_PROVIDER_HOST: z.string(),
+  EMAIL_PROVIDER_PORT: z.string(),
+  EMAIL_PROVIDER_USER: z.string(),
+  EMAIL_PROVIDER_PASSWORD: z.string(),
+  EMAIL_PROVIDER_FROM: z.string(),
   OPENAI_API_KEY: z.string(),
   AI_ASSISTANT_ENABLED: z.boolean(),
   logoSmallFile: z.array(z.instanceof(File)),
