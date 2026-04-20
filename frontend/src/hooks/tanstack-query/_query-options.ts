@@ -223,7 +223,7 @@ export const settingOptions = () =>
       const response = await API.get<ISetting>('/setting');
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 0,
   });
 
 // ============== PERMISSIONS ==============
@@ -235,7 +235,7 @@ export const permissionOptions = () =>
       const response = await API.get<Array<IPermission>>('/permissions');
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 0,
   });
 
 // ============== PAGES ==============
