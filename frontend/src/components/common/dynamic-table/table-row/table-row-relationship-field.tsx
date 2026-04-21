@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
   ComboboxChip,
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
-import { useRelationshipRowsReadPaginated } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated';
+import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IField, IRow, SearchableOption } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
@@ -53,16 +54,18 @@ export function TableRowRelationshipField({
     return (): void => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data, isLoading } = useRelationshipRowsReadPaginated({
-    tableSlug: relConfig?.table?.slug ?? '',
-    fieldSlug: field.slug,
-    search: debouncedQuery,
-    page: 1,
-    perPage: 50,
-    enabled: Boolean(relConfig),
-  });
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useRelationshipRowsReadPaginatedInfinite({
+      tableSlug: relConfig?.table?.slug ?? '',
+      fieldSlug: field.slug,
+      search: debouncedQuery,
+      perPage: 10,
+    });
 
-  const allItems: Array<IRow> = data?.data ?? [];
+  const allItems: Array<IRow> = React.useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data?.pages],
+  );
 
   React.useEffect(() => {
     if (!allItems.length) return;
@@ -222,16 +225,23 @@ export function TableRowRelationshipField({
                 </div>
               )}
               {!isLoading && (
-                <ComboboxList>
-                  {(row: IRow): React.ReactNode => (
-                    <ComboboxItem
-                      key={row._id}
-                      value={row}
-                    >
-                      {String(row[relConfig.field.slug] ?? row._id)}
-                    </ComboboxItem>
-                  )}
-                </ComboboxList>
+                <React.Fragment>
+                  <ComboboxList>
+                    {(row: IRow): React.ReactNode => (
+                      <ComboboxItem
+                        key={row._id}
+                        value={row}
+                      >
+                        {String(row[relConfig.field.slug] ?? row._id)}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                  <ComboboxLoadMore
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    onLoadMore={() => fetchNextPage()}
+                  />
+                </React.Fragment>
               )}
             </ComboboxContent>
           </Combobox>
@@ -290,16 +300,23 @@ export function TableRowRelationshipField({
               </div>
             )}
             {!isLoading && (
-              <ComboboxList>
-                {(row: IRow): React.ReactNode => (
-                  <ComboboxItem
-                    key={row._id}
-                    value={row}
-                  >
-                    {String(row[relConfig.field.slug] ?? row._id)}
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
+              <React.Fragment>
+                <ComboboxList>
+                  {(row: IRow): React.ReactNode => (
+                    <ComboboxItem
+                      key={row._id}
+                      value={row}
+                    >
+                      {String(row[relConfig.field.slug] ?? row._id)}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+                <ComboboxLoadMore
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onLoadMore={() => fetchNextPage()}
+                />
+              </React.Fragment>
             )}
           </ComboboxContent>
         </Combobox>

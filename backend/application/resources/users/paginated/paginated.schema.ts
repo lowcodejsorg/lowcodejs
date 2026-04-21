@@ -31,11 +31,16 @@ export const UserPaginatedSchema: FastifySchema = {
           'Search term for filtering users by name or email (optional)',
         examples: ['john', 'john@example.com', 'doe'],
       },
-      sub: {
+      status: {
         type: 'string',
+        enum: ['ACTIVE', 'INACTIVE'],
+        description: 'Filter returned users by status (optional)',
+      },
+      role: {
+        type: 'string',
+        enum: ['MASTER', 'ADMINISTRATOR', 'MANAGER', 'REGISTERED'],
         description:
-          'User ID for filtering specific user (optional, used internally)',
-        examples: ['507f1f77bcf86cd799439011'],
+          'Query context role. When ADMINISTRATOR, backend applies admin scope rules (hides MASTER users). JWT confirms authorization.',
       },
       'order-name': {
         type: 'string',

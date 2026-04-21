@@ -1,6 +1,12 @@
 import z from 'zod';
 
-import { E_ROLE, IUser, Merge, ValueOf } from '@application/core/entity.core';
+import {
+  E_ROLE,
+  E_USER_STATUS,
+  IUser,
+  Merge,
+  ValueOf,
+} from '@application/core/entity.core';
 
 export const UserPaginatedQueryValidator = z.object({
   page: z.coerce
@@ -13,6 +19,14 @@ export const UserPaginatedQueryValidator = z.object({
     .max(100, 'O limite por página deve ser no máximo 100')
     .default(50),
   search: z.string({ message: 'A busca deve ser um texto' }).trim().optional(),
+
+  // Filtra usuários retornados por status.
+  status: z.enum(E_USER_STATUS, { message: 'Status inválido' }).optional(),
+
+  // Contexto da consulta. Declarar `role=ADMINISTRATOR` pede ao backend
+  // aplicar as regras de escopo do admin (hoje: esconder MASTER).
+  // O JWT confirma autorização — ver `user-mongoose.repository.ts`.
+  role: z.enum(E_ROLE, { message: 'Role inválido' }).optional(),
 
   'order-name': z.enum(['asc', 'desc']).optional(),
   'order-email': z.enum(['asc', 'desc']).optional(),

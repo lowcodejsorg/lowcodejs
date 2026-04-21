@@ -40,7 +40,13 @@ export default class UserMongooseRepository implements UserContractRepository {
       where.status = payload.status;
     }
 
-    if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
+    // Contexto admin: o caller declara `role=ADMINISTRATOR` e o JWT
+    // confirma. Só aí aplicamos a regra "esconder MASTER" — em comboboxes
+    // (que não passam role) todos os usuários elegíveis aparecem.
+    if (
+      payload?.role === E_ROLE.ADMINISTRATOR &&
+      payload?.user?.role === E_ROLE.ADMINISTRATOR
+    ) {
       const UserGroupModel = Model.db.model('UserGroup');
       const masterGroup = await UserGroupModel.findOne({ slug: E_ROLE.MASTER });
 

@@ -25,6 +25,7 @@ export type UserQueryPayload = {
   user?: Merge<Pick<IUser, '_id'>, { role: ValueOf<typeof E_ROLE> }>;
   _ids?: string[];
   status?: ValueOf<typeof E_USER_STATUS>;
+  role?: ValueOf<typeof E_ROLE>;
   trashed?: boolean;
   sort?: Record<string, 'asc' | 'desc'>;
 };

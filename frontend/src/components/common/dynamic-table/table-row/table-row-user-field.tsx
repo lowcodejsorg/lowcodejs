@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
   ComboboxChip,
@@ -15,7 +16,7 @@ import {
 } from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
-import { useUserReadPaginated } from '@/hooks/tanstack-query/use-user-read-paginated';
+import { useUserReadPaginatedInfinite } from '@/hooks/tanstack-query/use-user-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { E_USER_STATUS } from '@/lib/constant';
 import type { IField, IUser } from '@/lib/interfaces';
@@ -60,16 +61,17 @@ export function TableRowUserField({
     return (): void => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data, isLoading } = useUserReadPaginated({
-    page: 1,
-    perPage: 50,
-    search: debouncedQuery || undefined,
-  });
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useUserReadPaginatedInfinite({
+      perPage: 10,
+      search: debouncedQuery || undefined,
+      status: E_USER_STATUS.ACTIVE,
+    });
 
-  const users = React.useMemo(() => {
-    if (!data?.data) return [];
-    return data.data.filter((user) => user.status === E_USER_STATUS.ACTIVE);
-  }, [data?.data]);
+  const users = React.useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data?.pages],
+  );
 
   React.useEffect(() => {
     if (!users.length) return;
@@ -277,21 +279,28 @@ export function TableRowUserField({
                 </div>
               )}
               {!isLoading && (
-                <ComboboxList>
-                  {(user: IUser): React.ReactNode => (
-                    <ComboboxItem
-                      key={user._id}
-                      value={user}
-                    >
-                      <div className="flex flex-1 flex-col">
-                        <span className="font-medium">{user.name}</span>
-                        <span className="text-muted-foreground text-sm">
-                          {user.email}
-                        </span>
-                      </div>
-                    </ComboboxItem>
-                  )}
-                </ComboboxList>
+                <React.Fragment>
+                  <ComboboxList>
+                    {(user: IUser): React.ReactNode => (
+                      <ComboboxItem
+                        key={user._id}
+                        value={user}
+                      >
+                        <div className="flex flex-1 flex-col">
+                          <span className="font-medium">{user.name}</span>
+                          <span className="text-muted-foreground text-sm">
+                            {user.email}
+                          </span>
+                        </div>
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                  <ComboboxLoadMore
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    onLoadMore={() => fetchNextPage()}
+                  />
+                </React.Fragment>
               )}
             </ComboboxContent>
           </Combobox>
@@ -347,21 +356,28 @@ export function TableRowUserField({
               </div>
             )}
             {!isLoading && (
-              <ComboboxList>
-                {(user: IUser): React.ReactNode => (
-                  <ComboboxItem
-                    key={user._id}
-                    value={user}
-                  >
-                    <div className="flex flex-1 flex-col">
-                      <span className="font-medium">{user.name}</span>
-                      <span className="text-muted-foreground text-sm">
-                        {user.email}
-                      </span>
-                    </div>
-                  </ComboboxItem>
-                )}
-              </ComboboxList>
+              <React.Fragment>
+                <ComboboxList>
+                  {(user: IUser): React.ReactNode => (
+                    <ComboboxItem
+                      key={user._id}
+                      value={user}
+                    >
+                      <div className="flex flex-1 flex-col">
+                        <span className="font-medium">{user.name}</span>
+                        <span className="text-muted-foreground text-sm">
+                          {user.email}
+                        </span>
+                      </div>
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+                <ComboboxLoadMore
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onLoadMore={() => fetchNextPage()}
+                />
+              </React.Fragment>
             )}
           </ComboboxContent>
         </Combobox>

@@ -4,6 +4,8 @@ export const queryKeys = {
     lists: () => [...queryKeys.tables.all, 'list'] as const,
     list: (params: Record<string, unknown>) =>
       [...queryKeys.tables.lists(), params] as const,
+    infinite: (params: Record<string, unknown>) =>
+      [...queryKeys.tables.all, 'infinite', params] as const,
     details: () => [...queryKeys.tables.all, 'detail'] as const,
     detail: (slug: string) => [...queryKeys.tables.details(), slug] as const,
   },
@@ -22,6 +24,14 @@ export const queryKeys = {
     all: ['relationships'] as const,
     rows: (fieldSlug: string, tableSlug: string, search?: string) =>
       [...queryKeys.relationships.all, fieldSlug, tableSlug, search] as const,
+    infinite: (fieldSlug: string, tableSlug: string, search?: string) =>
+      [
+        ...queryKeys.relationships.all,
+        'infinite',
+        fieldSlug,
+        tableSlug,
+        search,
+      ] as const,
   },
   fields: {
     all: (tableSlug: string) => ['tables', tableSlug, 'fields'] as const,
@@ -33,6 +43,8 @@ export const queryKeys = {
     lists: () => [...queryKeys.users.all, 'list'] as const,
     list: (params: Record<string, unknown>) =>
       [...queryKeys.users.lists(), params] as const,
+    infinite: (params: Record<string, unknown>) =>
+      [...queryKeys.users.all, 'infinite', params] as const,
     details: () => [...queryKeys.users.all, 'detail'] as const,
     detail: (userId: string) => [...queryKeys.users.details(), userId] as const,
   },

@@ -1,5 +1,6 @@
 import * as React from 'react';
 
+import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
   ComboboxContent,
@@ -8,7 +9,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from '@/components/ui/combobox';
-import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
+import { useTablesReadPaginatedInfinite } from '@/hooks/tanstack-query/use-tables-read-paginated-infinite';
 import type { ITable } from '@/lib/interfaces';
 
 interface TableComboboxProps {
@@ -28,13 +29,14 @@ export function TableCombobox({
   disabled = false,
   excludeSlug,
 }: TableComboboxProps): React.JSX.Element {
-  const { data, status } = useTablesReadPaginated();
+  const { data, status, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useTablesReadPaginatedInfinite({ perPage: 10 });
 
   const tables = React.useMemo(() => {
-    const allTables = data?.data ?? [];
+    const allTables = data?.pages.flatMap((page) => page.data) ?? [];
     if (!excludeSlug) return allTables;
     return allTables.filter((t) => t.slug !== excludeSlug);
-  }, [data?.data, excludeSlug]);
+  }, [data?.pages, excludeSlug]);
 
   // Find selected table
   const selectedTable = React.useMemo(() => {
@@ -66,21 +68,28 @@ export function TableCombobox({
           </div>
         )}
         {status === 'success' && (
-          <ComboboxList>
-            {(table: ITable): React.ReactNode => (
-              <ComboboxItem
-                key={table._id}
-                value={table}
-              >
-                <div className="flex flex-col">
-                  <span className="font-medium">{table.name}</span>
-                  <span className="text-muted-foreground text-xs">
-                    {table.slug}
-                  </span>
-                </div>
-              </ComboboxItem>
-            )}
-          </ComboboxList>
+          <React.Fragment>
+            <ComboboxList>
+              {(table: ITable): React.ReactNode => (
+                <ComboboxItem
+                  key={table._id}
+                  value={table}
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">{table.name}</span>
+                    <span className="text-muted-foreground text-xs">
+                      {table.slug}
+                    </span>
+                  </div>
+                </ComboboxItem>
+              )}
+            </ComboboxList>
+            <ComboboxLoadMore
+              hasNextPage={hasNextPage}
+              isFetchingNextPage={isFetchingNextPage}
+              onLoadMore={() => fetchNextPage()}
+            />
+          </React.Fragment>
         )}
       </ComboboxContent>
     </Combobox>

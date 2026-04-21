@@ -17,7 +17,7 @@ import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
 import type { IFilterField } from '@/lib/interfaces';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -44,6 +44,7 @@ function RouteComponent(): React.JSX.Element {
     userListOptions({
       ...search,
       authenticated: auth.user?._id,
+      role: E_ROLE.ADMINISTRATOR,
     }),
   );
 

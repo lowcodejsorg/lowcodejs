@@ -336,6 +336,9 @@ export type UserQueryPayload = Merge<
     user?: { _id: string; role: ValueOf<typeof E_ROLE> };
     _ids?: Array<string>;
     status?: ValueOf<typeof E_USER_STATUS>;
+    // Contexto da consulta; passar `E_ROLE.ADMINISTRATOR` pede ao backend
+    // aplicar as regras de escopo do admin (esconder MASTER).
+    role?: ValueOf<typeof E_ROLE>;
     trashed?: boolean;
     'order-name'?: 'asc' | 'desc';
     'order-email'?: 'asc' | 'desc';

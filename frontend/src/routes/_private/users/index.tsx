@@ -4,6 +4,7 @@ import z from 'zod';
 import { DataTableSkeleton } from '@/components/common/data-table';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
+import { E_ROLE } from '@/lib/constant';
 import type { ISetting } from '@/lib/interfaces';
 import { createRouteHead } from '@/lib/seo';
 import { useAuthStore } from '@/stores/authentication';
@@ -76,7 +77,11 @@ export const Route = createFileRoute('/_private/users/')({
   loader: ({ context, deps }) => {
     const authenticated = useAuthStore.getState().user?._id;
     context.queryClient.prefetchQuery(
-      userListOptions({ ...deps, authenticated }),
+      userListOptions({
+        ...deps,
+        authenticated,
+        role: E_ROLE.ADMINISTRATOR,
+      }),
     );
   },
 });

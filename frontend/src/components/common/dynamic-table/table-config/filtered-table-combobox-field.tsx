@@ -1,11 +1,11 @@
 import { AlertCircle } from 'lucide-react';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { TableComboboxFilteredSafe } from '@/components/common/dynamic-table/table-selectors/table-combobox-filtered';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
-import { useTablesReadPaginated } from '@/hooks/tanstack-query/use-tables-read-paginated';
+import { useTablesReadPaginatedInfinite } from '@/hooks/tanstack-query/use-tables-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { cn } from '@/lib/utils';
 
@@ -48,15 +48,27 @@ export function FilteredTableComboboxField({
   );
 
   /**
-   * Busca as tabelas diretamente com _ids filtrados
+   * Busca as tabelas diretamente com _ids filtrados. Como este combobox
+   * recebe opções prontas (sem "Carregar mais"), disparamos todas as
+   * páginas automaticamente abaixo.
    */
-  const { data, status } = useTablesReadPaginated(
-    normalizedAllowedIds.length > 0
-      ? { _ids: normalizedAllowedIds }
-      : undefined,
-  );
+  const { data, status, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useTablesReadPaginatedInfinite(
+      normalizedAllowedIds.length > 0
+        ? { _ids: normalizedAllowedIds, perPage: 50 }
+        : { perPage: 50 },
+    );
 
-  const tables = data?.data ?? [];
+  useEffect(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  const tables = useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data?.pages],
+  );
 
   /**
    * Mapeia para options

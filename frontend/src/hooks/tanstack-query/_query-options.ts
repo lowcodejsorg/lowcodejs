@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { queryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 
 import { queryKeys } from './_query-keys';
 
@@ -23,6 +23,13 @@ import type {
   UserQueryPayload,
 } from '@/lib/payloads';
 
+function nextPageOrUndefined(lastPage: Paginated<unknown>): number | undefined {
+  if (lastPage.meta.page < lastPage.meta.lastPage) {
+    return lastPage.meta.page + 1;
+  }
+  return undefined;
+}
+
 // ============== USERS ==============
 
 export const userListOptions = (params: UserQueryPayload) =>
@@ -45,6 +52,20 @@ export const userDetailOptions = (userId: string) =>
       return response.data;
     },
     enabled: Boolean(userId),
+    staleTime: 2 * 60 * 1000,
+  });
+
+export const userListInfiniteOptions = (params: UserQueryPayload = {}) =>
+  infiniteQueryOptions({
+    queryKey: queryKeys.users.infinite(params),
+    queryFn: async ({ pageParam }) => {
+      const response = await API.get<Paginated<IUser>>('/users/paginated', {
+        params: { ...params, page: pageParam },
+      });
+      return response.data;
+    },
+    initialPageParam: params.page ?? 1,
+    getNextPageParam: nextPageOrUndefined,
     staleTime: 2 * 60 * 1000,
   });
 
@@ -141,6 +162,20 @@ export const tableDetailOptions = (slug: string) =>
       return response.data;
     },
     enabled: Boolean(slug),
+    staleTime: 60 * 1000,
+  });
+
+export const tableListInfiniteOptions = (params: TableQueryPayload = {}) =>
+  infiniteQueryOptions({
+    queryKey: queryKeys.tables.infinite(params),
+    queryFn: async ({ pageParam }) => {
+      const response = await API.get<Paginated<ITable>>('/tables/paginated', {
+        params: { ...params, page: pageParam },
+      });
+      return response.data;
+    },
+    initialPageParam: params.page ?? 1,
+    getNextPageParam: nextPageOrUndefined,
     staleTime: 60 * 1000,
   });
 
@@ -299,6 +334,37 @@ export const relationshipRowsOptions = (params: {
       return response.data;
     },
     enabled: Boolean(params.tableSlug),
+    staleTime: 30 * 1000,
+  });
+
+export const relationshipRowsInfiniteOptions = (params: {
+  tableSlug: string;
+  fieldSlug: string;
+  search?: string;
+  perPage?: number;
+}) =>
+  infiniteQueryOptions({
+    queryKey: queryKeys.relationships.infinite(
+      params.fieldSlug,
+      params.tableSlug,
+      params.search,
+    ),
+    queryFn: async ({ pageParam }) => {
+      const response = await API.get<Paginated<IRow>>(
+        `/tables/${params.tableSlug}/rows/paginated`,
+        {
+          params: {
+            page: pageParam,
+            perPage: params.perPage ?? 10,
+            ...(params.search && { search: params.search }),
+          },
+        },
+      );
+      return response.data;
+    },
+    enabled: Boolean(params.tableSlug),
+    initialPageParam: 1,
+    getNextPageParam: nextPageOrUndefined,
     staleTime: 30 * 1000,
   });
 
