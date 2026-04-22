@@ -35,9 +35,9 @@ export function TableMultiSelect({
   allowedTableIds,
 }: TableMultiSelectProps): React.JSX.Element {
   const anchorRef = useComboboxAnchor();
-  const [selectedCache, setSelectedCache] = React.useState<
-    Map<string, ITable>
-  >(() => new Map());
+  const [selectedCache, setSelectedCache] = React.useState<Map<string, ITable>>(
+    () => new Map(),
+  );
 
   const queryParams = React.useMemo(() => {
     if (allowedTableIds?.length) {

@@ -16,22 +16,22 @@ export default async function Seed(): Promise<void> {
     hasMaster = Boolean(exists);
   }
 
+  let update: Record<string, unknown>;
+  let message: string;
   if (hasMaster) {
-    await Setting.findOneAndUpdate(
-      {},
-      { $set: { SETUP_COMPLETED: true, SETUP_CURRENT_STEP: null } },
-      { upsert: true, setDefaultsOnInsert: true, new: true },
-    );
-    console.info(
-      '🌱 \x1b[32m Setting (singleton) \x1b[0m — SETUP_COMPLETED=true (MASTER existente)',
-    );
-    return;
+    update = { $set: { SETUP_COMPLETED: true, SETUP_CURRENT_STEP: null } };
+    message =
+      '🌱 \x1b[32m Setting (singleton) \x1b[0m — SETUP_COMPLETED=true (MASTER existente)';
+  } else {
+    update = { $setOnInsert: {} };
+    message = '🌱 \x1b[32m Setting (singleton) \x1b[0m';
   }
 
-  await Setting.findOneAndUpdate(
-    {},
-    { $setOnInsert: {} },
-    { upsert: true, setDefaultsOnInsert: true, new: true },
-  );
-  console.info('🌱 \x1b[32m Setting (singleton) \x1b[0m');
+  await Setting.findOneAndUpdate({}, update, {
+    upsert: true,
+    setDefaultsOnInsert: true,
+    new: true,
+  });
+
+  console.info(message);
 }

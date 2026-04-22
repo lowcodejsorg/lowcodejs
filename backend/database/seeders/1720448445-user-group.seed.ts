@@ -1,108 +1,101 @@
 import {
   E_ROLE,
   E_TABLE_PERMISSION,
-  Merge,
-  type Optional,
+  ValueOf,
 } from '@application/core/entity.core';
 import { Permission } from '@application/model/permission.model';
 import { UserGroup } from '@application/model/user-group.model';
 
-import { PayloadPermissionSeeder } from './1720448435-permissions.seed';
+type GroupMetadata = {
+  name: string;
+  slug: ValueOf<typeof E_ROLE>;
+  description: string;
+};
 
-type Payload = Omit<
-  Optional<
-    import('@application/core/entity.core').IGroup,
-    '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
-  >,
-  'permissions'
-> & { permissions: string[] };
+const GROUP_METADATA: GroupMetadata[] = [
+  {
+    name: 'Master',
+    slug: E_ROLE.MASTER,
+    description:
+      'Acesso total ao sistema - gerencia tudo, incluindo configurações do sistema',
+  },
+  {
+    name: 'Administrator',
+    slug: E_ROLE.ADMINISTRATOR,
+    description:
+      'Gerenciamento total de tabelas - gerencia todas as tabelas, campos e registros',
+  },
+  {
+    name: 'Manager',
+    slug: E_ROLE.MANAGER,
+    description:
+      'Cria suas próprias tabelas e gerencia tabelas onde é proprietário ou administrador. Pode visualizar e criar registros em todas as tabelas acessíveis',
+  },
+  {
+    name: 'Registered',
+    slug: E_ROLE.REGISTERED,
+    description:
+      'Pode visualizar tabelas e criar registros (respeitando visibilidade). Gerencia apenas tabelas onde é administrador',
+  },
+];
+
+const MANAGER_PERMISSIONS: ValueOf<typeof E_TABLE_PERMISSION>[] = [
+  E_TABLE_PERMISSION.CREATE_TABLE,
+  E_TABLE_PERMISSION.UPDATE_TABLE,
+  E_TABLE_PERMISSION.REMOVE_TABLE,
+  E_TABLE_PERMISSION.VIEW_TABLE,
+  E_TABLE_PERMISSION.CREATE_FIELD,
+  E_TABLE_PERMISSION.UPDATE_FIELD,
+  E_TABLE_PERMISSION.REMOVE_FIELD,
+  E_TABLE_PERMISSION.VIEW_FIELD,
+  E_TABLE_PERMISSION.CREATE_ROW,
+  E_TABLE_PERMISSION.UPDATE_ROW,
+  E_TABLE_PERMISSION.REMOVE_ROW,
+  E_TABLE_PERMISSION.VIEW_ROW,
+];
+
+const REGISTERED_PERMISSIONS: ValueOf<typeof E_TABLE_PERMISSION>[] = [
+  E_TABLE_PERMISSION.VIEW_TABLE,
+  E_TABLE_PERMISSION.VIEW_FIELD,
+  E_TABLE_PERMISSION.VIEW_ROW,
+  E_TABLE_PERMISSION.CREATE_ROW,
+];
 
 export default async function Seed(): Promise<void> {
-  const permissions: Merge<PayloadPermissionSeeder, { _id: string }>[] =
-    await Permission.find();
+  const permissions = await Permission.find({ trashed: false });
 
-  // Super Admin (Master): TODAS as permissões do sistema
-  const permissionsSuper = permissions.flatMap((p) => p?._id?.toString() || '');
+  const permissionIdBySlug = new Map<string, unknown>();
+  for (const permission of permissions) {
+    permissionIdBySlug.set(permission.slug, permission._id);
+  }
 
-  // Administrator: TODAS as permissões (mesmas do Super Admin, exceto grupo de usuários e sistema)
-  const permissionsAdministrator = permissions.flatMap(
-    (p) => p?._id?.toString() || '',
-  );
+  const permissionsBySlug: Record<string, unknown[]> = {
+    [E_ROLE.MASTER]: permissions.map((p) => p._id),
+    [E_ROLE.ADMINISTRATOR]: permissions.map((p) => p._id),
+    [E_ROLE.MANAGER]: MANAGER_PERMISSIONS.flatMap((slug) => {
+      const id = permissionIdBySlug.get(slug);
+      if (!id) return [];
+      return [id];
+    }),
+    [E_ROLE.REGISTERED]: REGISTERED_PERMISSIONS.flatMap((slug) => {
+      const id = permissionIdBySlug.get(slug);
+      if (!id) return [];
+      return [id];
+    }),
+  };
 
-  // Manager: Pode criar tabelas próprias e gerenciar onde é admin/dono
-  const permissionsManager = permissions
-    ?.filter((p) =>
-      [
-        E_TABLE_PERMISSION.CREATE_TABLE, // apenas tabelas próprias
-        E_TABLE_PERMISSION.UPDATE_TABLE, // somente tabelas próprias ou onde é admin
-        E_TABLE_PERMISSION.REMOVE_TABLE, // somente tabelas próprias ou onde é admin
-        E_TABLE_PERMISSION.VIEW_TABLE, // Sim (respeitando visibilidade)
-        E_TABLE_PERMISSION.CREATE_FIELD, // somente tabelas próprias ou onde é admin
-        E_TABLE_PERMISSION.UPDATE_FIELD, // somente tabelas próprias ou onde é admin
-        E_TABLE_PERMISSION.REMOVE_FIELD, // somente tabelas próprias ou onde é admin
-        E_TABLE_PERMISSION.VIEW_FIELD, // Sim
-        E_TABLE_PERMISSION.CREATE_ROW, // Sim (respeitando visibilidade)
-        E_TABLE_PERMISSION.UPDATE_ROW, // somente tabelas próprias ou onde é admin
-        E_TABLE_PERMISSION.REMOVE_ROW, // somente tabelas próprias ou onde é admin
-        E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
-      ].includes(p.slug),
-    )
-    .flatMap((p) => p?._id?.toString() || '');
-
-  // Registered: Acesso limitado, só gerencia onde é admin
-  // Pode visualizar tabelas/campos/registros e criar registros (respeitando visibilidade)
-  const permissionsRegistered = permissions
-    ?.filter((p) =>
-      [
-        E_TABLE_PERMISSION.VIEW_TABLE, // Sim (respeitando visibilidade)
-        E_TABLE_PERMISSION.VIEW_FIELD, // Sim (necessário para ver os campos da tabela)
-        E_TABLE_PERMISSION.VIEW_ROW, // Sim (respeitando visibilidade)
-        E_TABLE_PERMISSION.CREATE_ROW, // Sim (respeitando visibilidade)
-      ]
-        .flatMap((p) => p.toString() || '')
-        .includes(p.slug),
-    )
-    .flatMap((p) => p._id?.toString() || '');
-
-  const payload: Payload[] = [
-    {
-      name: 'Master',
-      slug: E_ROLE.MASTER,
-      description:
-        'Acesso total ao sistema - gerencia tudo, incluindo configurações do sistema',
-      permissions: permissionsSuper,
-    },
-    {
-      name: 'Administrator',
-      slug: E_ROLE.ADMINISTRATOR,
-      description:
-        'Gerenciamento total de tabelas - gerencia todas as tabelas, campos e registros',
-      permissions: permissionsAdministrator,
-    },
-    {
-      name: 'Manager',
-      slug: E_ROLE.MANAGER,
-      description:
-        'Cria suas próprias tabelas e gerencia tabelas onde é proprietário ou administrador. Pode visualizar e criar registros em todas as tabelas acessíveis',
-      permissions: permissionsManager,
-    },
-    {
-      name: 'Registered',
-      slug: E_ROLE.REGISTERED,
-      description:
-        'Pode visualizar tabelas e criar registros (respeitando visibilidade). Gerencia apenas tabelas onde é administrador',
-      permissions: permissionsRegistered,
-    },
-  ];
-
-  await UserGroup.bulkWrite(
-    payload.map(({ slug, ...rest }) => ({
-      updateOne: {
-        filter: { slug },
-        update: { $set: { slug, ...rest } as any },
-        upsert: true,
+  const ops = GROUP_METADATA.map(({ slug, name, description }) => ({
+    updateOne: {
+      filter: { slug },
+      update: {
+        $set: { slug, name, description },
+        $setOnInsert: { permissions: permissionsBySlug[slug] ?? [] },
       },
-    })),
-  );
+      upsert: true,
+    },
+  }));
+
+  // @ts-expect-error IGroup.permissions é tipado como IPermission[] (populado), mas o schema guarda ObjectId[]
+  await UserGroup.bulkWrite(ops);
   console.info('🌱 \x1b[32m user groups \x1b[0m');
 }

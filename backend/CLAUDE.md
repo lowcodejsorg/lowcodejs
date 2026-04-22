@@ -417,12 +417,14 @@ Tipos de erro: syntax, runtime, timeout, unknown
 
 ## Seeders
 
-Execucao: `database/seeders/main.ts` encontra `*.seed.ts`, ordena por nome (timestamp), executa sequencialmente.
+Execucao: `database/seeders/main.ts` encontra `*.seed.(ts|js)`, valida padrao de filename, ordena por nome (timestamp) e executa sequencialmente. Em falha: log do arquivo que falhou, `process.exit(1)`, `mongoose.disconnect()`.
 
 Comando: `npm run seed`
 
 | Seeder | Dados |
 |--------|-------|
-| 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW) |
-| 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED) com permissoes |
-| 1720465892-users.seed.ts | 5 usuarios de teste (admin, master, administrator, manager, registered) |
+| 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW). Upsert por `slug` com `$set` |
+| 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED). Metadados via `$set`; `permissions` via `$setOnInsert` (preserva customizacoes manuais) |
+| 1720465893-settings.seed.ts | Setting singleton. Marca SETUP_COMPLETED=true se ja existe MASTER; caso contrario, `$setOnInsert: {}` |
+
+Usuario MASTER **nao** tem seed — e criado via Setup Wizard na UI na primeira execucao.
