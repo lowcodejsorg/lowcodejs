@@ -2,7 +2,7 @@ FROM node:22-alpine
 
 WORKDIR /app
 
-RUN apk add --no-cache openssl curl
+RUN apk add --no-cache openssl curl su-exec
 
 COPY package*.json ./
 
@@ -10,11 +10,10 @@ RUN npm install
 
 COPY . .
 
-# RUN npx prisma generate
-
-# Seed deve rodar após os containers subirem:
-# docker exec low-code-js-backend npm run seed
+COPY docker-entrypoint.sh /docker-entrypoint.sh
+RUN chmod +x /docker-entrypoint.sh
 
 EXPOSE 3000
 
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["npm", "run", "dev"]
