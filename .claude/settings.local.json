@@ -109,7 +109,8 @@
       "Bash(npx @tanstack/router-cli generate)",
       "Bash(npx @tanstack/router-generator generate)",
       "Bash(npm ls *)",
-      "Bash(xargs -I{} grep -l \"useQuery\\\\|useSuspenseQuery\\\\|/paginated\\\\|ReadPaginated\" {})"
+      "Bash(xargs -I{} grep -l \"useQuery\\\\|useSuspenseQuery\\\\|/paginated\\\\|ReadPaginated\" {})",
+      "Bash(ps *)"
     ]
   },
   "enableAllProjectMcpServers": true,

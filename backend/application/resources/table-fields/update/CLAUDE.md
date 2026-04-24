@@ -11,9 +11,11 @@ Atualiza um campo existente de uma tabela, incluindo nome, tipo, visibilidade e 
 3. UseCase:
    - Busca tabela por slug exato
    - Busca campo por _id exato
-   - Valida restricoes: campo nativo nao pode ser trashed, campo locked (nao-nativo) so permite alteracoes de visibilidade/width, campo nativo so permite visibilidade e width
+   - Se nativo e trashed=true: retorna NATIVE_FIELD_CANNOT_BE_TRASHED
+   - Se nativo: aplica **apenas** showIn* e widthIn* do payload (demais campos sao ignorados silenciosamente) e retorna o campo atualizado sem reconstruir schema dinamico
+   - Se locked e nao-nativo: valida que somente showIn*/widthIn* mudaram, senao FIELD_LOCKED
    - Verifica se e o ultimo campo ativo (nao pode enviar pra lixeira)
-   - Gera novo slug (campos nativos mantem slug original)
+   - Gera novo slug via slugify(payload.name)
    - Normaliza group (string -> objeto {slug})
    - Atualiza campo no repositorio
    - Se FIELD_GROUP: gerencia entrada em groups (cria novo ou atualiza slug existente)
@@ -25,12 +27,11 @@ Atualiza um campo existente de uma tabela, incluindo nome, tipo, visibilidade e 
 4. Repository: TableContractRepository.findBy, TableContractRepository.update, FieldContractRepository.findBy, FieldContractRepository.update
 
 ## Regras de Negocio
-- Campos nativos: apenas visibilidade (showIn*) e largura (width*) podem ser alterados
-- Campos locked (nao-nativos): mesma restricao de nativos (visibilidade e largura)
-- Campos nativos nao podem ser enviados pra lixeira
+- Campos nativos: apenas visibilidade (showIn*) e largura (width*) sao aplicados; tentativas de mudar outros campos sao ignoradas (name, type, format, etc. preservam os valores armazenados)
+- Campos locked (nao-nativos): mesma restricao de nativos, mas implementada como validacao que retorna FIELD_LOCKED se houver mudanca nao permitida
+- Campos nativos nao podem ser enviados pra lixeira (retorna NATIVE_FIELD_CANNOT_BE_TRASHED)
 - Ultimo campo ativo nao pode ser enviado pra lixeira
 - Rename de slug propaga para colecao MongoDB via $rename
-- Validacao usa metodos privados: canUpdateNativeField, canUpdateLockedField
 
 ## Erros Possiveis
 | Code | Cause | Quando |
@@ -38,8 +39,7 @@ Atualiza um campo existente de uma tabela, incluindo nome, tipo, visibilidade e 
 | 404 | TABLE_NOT_FOUND | Tabela nao encontrada |
 | 404 | FIELD_NOT_FOUND | Campo nao encontrado |
 | 403 | NATIVE_FIELD_CANNOT_BE_TRASHED | Tentativa de enviar campo nativo pra lixeira |
-| 403 | FIELD_LOCKED | Campo locked e alteracao nao permitida |
-| 403 | NATIVE_FIELD_RESTRICTED | Alteracao nao permitida em campo nativo |
+| 403 | FIELD_LOCKED | Campo locked nao-nativo com alteracao nao permitida |
 | 409 | LAST_ACTIVE_FIELD | Ultimo campo ativo nao pode ir pra lixeira |
 | 500 | UPDATE_FIELD_TABLE_ERROR | Erro interno |
 

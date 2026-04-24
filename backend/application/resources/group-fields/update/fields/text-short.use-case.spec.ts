@@ -401,7 +401,7 @@ describe('Group Field Update - TEXT_SHORT', () => {
     expect(result.value.showInList).toBe(false);
   });
 
-  it('deve rejeitar mudar name de campo NATIVE com NATIVE_FIELD_RESTRICTED', async () => {
+  it('deve ignorar mudanca de name em campo NATIVE e preservar o nome original', async () => {
     const field = await fieldInMemoryRepository.create({
       ...FIELD_CREATE_PAYLOAD,
       native: true,
@@ -443,10 +443,9 @@ describe('Group Field Update - TEXT_SHORT', () => {
       widthInDetail: null,
     });
 
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.code).toBe(403);
-    expect(result.value.cause).toBe('NATIVE_FIELD_RESTRICTED');
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.name).toBe(field.name);
   });
 
   it('deve permitir mudar visibilidade de campo LOCKED', async () => {

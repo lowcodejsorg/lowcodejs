@@ -23,11 +23,11 @@ Atualiza um campo existente dentro de um grupo de uma tabela.
 4. Repository: TableContractRepository (findBy, update), FieldContractRepository (findBy, update)
 
 ## Regras de Negocio
-- Campos nativos: somente visibilidade (showIn*) e largura (width*) podem ser alterados
-- Campos locked: mesma restricao que nativos, mas sem comparacao de dropdown/category
-- O slug e recalculado a partir do nome (exceto nativos)
+- Campos nativos: somente visibilidade (showIn*) e largura (width*) sao aplicados; demais campos do payload sao ignorados e os valores armazenados sao preservados
+- Campos nativos nao podem ser enviados pra lixeira (NATIVE_FIELD_CANNOT_BE_TRASHED)
+- Campos locked (nao-nativos): mesma restricao, validada via canUpdateLockedField (retorna FIELD_LOCKED)
+- O slug e recalculado a partir do nome (exceto nativos, que ignoram mudancas de nome)
 - Apos atualizacao, schema do grupo e da tabela pai sao reconstruidos
-- A tabela dinamica e reconstruida via buildTable()
 
 ## Erros Possiveis
 | Code | Cause | Quando |
@@ -35,8 +35,8 @@ Atualiza um campo existente dentro de um grupo de uma tabela.
 | 404 | TABLE_NOT_FOUND | Tabela nao encontrada |
 | 404 | GROUP_NOT_FOUND | Grupo nao encontrado na tabela |
 | 404 | FIELD_NOT_FOUND | Campo nao encontrado |
-| 403 | NATIVE_FIELD_RESTRICTED | Tentativa de alterar propriedade restrita de campo nativo |
-| 403 | FIELD_LOCKED | Tentativa de alterar propriedade restrita de campo locked |
+| 403 | NATIVE_FIELD_CANNOT_BE_TRASHED | Tentativa de enviar campo nativo pra lixeira |
+| 403 | FIELD_LOCKED | Campo locked nao-nativo com alteracao nao permitida |
 | 500 | UPDATE_GROUP_FIELD_ERROR | Erro interno durante atualizacao |
 
 ## Testes

@@ -65,13 +65,57 @@ export default class GroupFieldUpdateUseCase {
           HTTPException.NotFound('Campo não encontrado', 'FIELD_NOT_FOUND'),
         );
 
-      if (field.native && !this.canUpdateNativeField(payload, field)) {
-        return left(
-          HTTPException.Forbidden(
-            'Campos nativos só podem ter visibilidade e largura atualizados',
-            'NATIVE_FIELD_RESTRICTED',
-          ),
+      if (field.native) {
+        if (payload.trashed) {
+          return left(
+            HTTPException.Forbidden(
+              'Campos nativos não podem ser enviados para a lixeira',
+              'NATIVE_FIELD_CANNOT_BE_TRASHED',
+            ),
+          );
+        }
+
+        const updatedField = await this.fieldRepository.update({
+          _id: field._id,
+          showInFilter: payload.showInFilter,
+          showInForm: payload.showInForm,
+          showInDetail: payload.showInDetail,
+          showInList: payload.showInList,
+          widthInForm: payload.widthInForm,
+          widthInList: payload.widthInList,
+          widthInDetail: payload.widthInDetail,
+        });
+
+        const updatedGroups = table.groups.map((g) => {
+          if (g.slug !== targetGroup.slug) return g;
+
+          const updatedFields = g.fields.map((f) =>
+            f._id === field._id ? updatedField : f,
+          );
+          const groupSchema =
+            this.tableSchemaService.computeSchema(updatedFields);
+
+          return {
+            ...g,
+            fields: updatedFields,
+            _schema: groupSchema,
+          };
+        });
+
+        const parentSchema = this.tableSchemaService.computeSchema(
+          table.fields,
+          updatedGroups,
         );
+
+        await this.tableRepository.update({
+          _id: table._id,
+          _schema: parentSchema,
+          groups: updatedGroups,
+          owner: table.owner._id,
+          administrators: table.administrators.flatMap((a) => a._id),
+        });
+
+        return right(updatedField);
       }
 
       if (field.locked && !this.canUpdateLockedField(payload, field)) {
@@ -83,9 +127,7 @@ export default class GroupFieldUpdateUseCase {
         );
       }
 
-      const slug = field.native
-        ? field.slug
-        : slugify(payload.name, { lower: true, trim: true });
+      const slug = slugify(payload.name, { lower: true, trim: true });
 
       // Normalize group: if it's a string, convert to object format
       const normalizedGroup =
@@ -158,40 +200,6 @@ export default class GroupFieldUpdateUseCase {
         ),
       );
     }
-  }
-
-  private canUpdateNativeField(payload: Payload, field: IField): boolean {
-    // Native fields only allow visibility and width changes
-    // Group context is already defined by the URL, so group comparison is skipped
-    if (payload.name !== field.name) return false;
-    if (payload.type !== field.type) return false;
-    if (payload.trashed || payload.trashedAt) return false;
-    if (payload.required !== field.required) return false;
-    if (payload.multiple !== field.multiple) return false;
-    if (payload.format !== field.format) return false;
-    if (!isDefaultValueEqual(payload.defaultValue, field.defaultValue))
-      return false;
-
-    // relationship: comparar por _id
-    const payloadRelId = payload.relationship?.table?._id ?? null;
-    const fieldRelId = field.relationship?.table?._id ?? null;
-    if (payloadRelId !== fieldRelId) return false;
-
-    // dropdown: comparar por ids
-    const payloadDropdownIds = (payload.dropdown ?? [])
-      .map((d) => d.id)
-      .join(',');
-    const fieldDropdownIds = (field.dropdown ?? []).map((d) => d.id).join(',');
-    if (payloadDropdownIds !== fieldDropdownIds) return false;
-
-    // category: comparar por ids
-    const payloadCategoryIds = (payload.category ?? [])
-      .map((c) => c.id)
-      .join(',');
-    const fieldCategoryIds = (field.category ?? []).map((c) => c.id).join(',');
-    if (payloadCategoryIds !== fieldCategoryIds) return false;
-
-    return true;
   }
 
   private canUpdateLockedField(payload: Payload, field: IField): boolean {

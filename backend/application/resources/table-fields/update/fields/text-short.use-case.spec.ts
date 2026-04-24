@@ -412,7 +412,7 @@ describe('Table Field Update - TEXT_SHORT', () => {
     expect(result.value.widthInList).toBe(30);
   });
 
-  it('campo NATIVE deve rejeitar mudar name com NATIVE_FIELD_RESTRICTED', async () => {
+  it('campo NATIVE deve ignorar mudanca de name e preservar o nome original', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -444,13 +444,12 @@ describe('Table Field Update - TEXT_SHORT', () => {
       widthInDetail: field.widthInDetail,
     });
 
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.code).toBe(403);
-    expect(result.value.cause).toBe('NATIVE_FIELD_RESTRICTED');
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.name).toBe(field.name);
   });
 
-  it('campo NATIVE deve rejeitar mudar format com NATIVE_FIELD_RESTRICTED', async () => {
+  it('campo NATIVE deve ignorar mudanca de format e preservar o formato original', async () => {
     const { field } = await createFieldAndTable(
       fieldInMemoryRepository,
       tableInMemoryRepository,
@@ -482,10 +481,9 @@ describe('Table Field Update - TEXT_SHORT', () => {
       widthInDetail: field.widthInDetail,
     });
 
-    expect(result.isLeft()).toBe(true);
-    if (!result.isLeft()) throw new Error('Expected left');
-    expect(result.value.code).toBe(403);
-    expect(result.value.cause).toBe('NATIVE_FIELD_RESTRICTED');
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.format).toBe(field.format);
   });
 
   it('campo NATIVE deve rejeitar trashed=true com NATIVE_FIELD_CANNOT_BE_TRASHED', async () => {
