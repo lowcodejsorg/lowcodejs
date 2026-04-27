@@ -2,7 +2,7 @@ import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { WrenchIcon } from 'lucide-react';
 import React from 'react';
 
-import { TableComboboxPaginated } from '@/components/common/dynamic-table/table-selectors/table-combobox-paginated';
+import { TableMultiSelect } from '@/components/common/dynamic-table/table-selectors/table-multi-select';
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -19,6 +20,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { handleApiError } from '@/lib/handle-api-error';
+import type { ITable } from '@/lib/interfaces';
 import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tools/')({
@@ -38,22 +40,36 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
   const permission = usePermission();
 
-  const [model, setModel] = React.useState<string>('');
-  const [tableName, setTableName] = React.useState<string>('');
+  const [models, setModels] = React.useState<Array<string>>([]);
+  const [selectedTables, setSelectedTables] = React.useState<Array<ITable>>([]);
+  const [copyDataTableIds, setCopyDataTableIds] = React.useState<Array<string>>(
+    [],
+  );
+  const [prefix, setPrefix] = React.useState<string>('');
 
   const _clone = useCloneTable({
     onSuccess(data) {
-      toastSuccess('Tabela clonada', 'A tabela foi clonada com sucesso');
+      const total = data.tables?.length ?? 1;
+      toastSuccess(
+        total > 1 ? 'Tabelas clonadas' : 'Tabela clonada',
+        total > 1
+          ? `${total} tabelas foram clonadas com sucesso`
+          : 'A tabela foi clonada com sucesso',
+      );
 
-      setModel('');
-      setTableName('');
+      setModels([]);
+      setSelectedTables([]);
+      setCopyDataTableIds([]);
+      setPrefix('');
 
-      router.navigate({
-        to: '/tables/$slug',
-        params: {
-          slug: data.slug,
-        },
-      });
+      if (total === 1) {
+        router.navigate({
+          to: '/tables/$slug',
+          params: {
+            slug: data.slug,
+          },
+        });
+      }
     },
     onError(error) {
       handleApiError(error, {
@@ -72,13 +88,33 @@ function RouteComponent(): React.JSX.Element {
   const isCloning = _clone.status === 'pending';
 
   const handleCloneTable = async (): Promise<void> => {
-    if (!model || !tableName || isCloning) return;
+    if (models.length === 0 || isCloning) return;
 
     await _clone.mutateAsync({
-      baseTableId: model,
-      name: tableName.trim(),
+      baseTableIds: models,
+      copyDataTableIds,
+      name: prefix.trim(),
     });
   };
+
+  const handleModelsChange = React.useCallback(
+    (value: Array<string>, tables?: Array<ITable>) => {
+      setModels(value);
+      setSelectedTables(tables ?? []);
+      setCopyDataTableIds((current) =>
+        current.filter((tableId) => value.includes(tableId)),
+      );
+    },
+    [],
+  );
+
+  const toggleCopyData = React.useCallback((tableId: string) => {
+    setCopyDataTableIds((current) =>
+      current.includes(tableId)
+        ? current.filter((id) => id !== tableId)
+        : [...current, tableId],
+    );
+  }, []);
 
   return (
     <div
@@ -104,28 +140,53 @@ function RouteComponent(): React.JSX.Element {
                 Clonar Modelos de Tabela
               </CardTitle>
               <CardDescription>
-                Crie uma nova tabela com base em uma tabela existente
+                Crie uma ou mais tabelas com base nos modelos existentes
               </CardDescription>
             </CardHeader>
 
             <CardContent>
               <div className="space-y-4 max-w-md">
                 <Field>
-                  <FieldLabel>Modelo base</FieldLabel>
-                  <TableComboboxPaginated
-                    value={model}
-                    onValueChange={(value) => setModel(value)}
-                    placeholder="Selecione um modelo"
+                  <FieldLabel>Modelos base</FieldLabel>
+                  <TableMultiSelect
+                    value={models}
+                    onValueChange={handleModelsChange}
+                    placeholder="Selecione um ou mais modelos"
+                    disabled={isCloning}
                   />
                 </Field>
 
+                {selectedTables.length > 0 && (
+                  <Field>
+                    <FieldLabel>Transportar dados</FieldLabel>
+                    <div className="space-y-2 rounded-md border p-3">
+                      {selectedTables.map((table) => (
+                        <label
+                          key={table._id}
+                          className="flex items-center gap-3 text-sm"
+                        >
+                          <Checkbox
+                            checked={copyDataTableIds.includes(table._id)}
+                            onCheckedChange={() => toggleCopyData(table._id)}
+                            disabled={isCloning}
+                          />
+                          <span className="min-w-0 flex-1 truncate">
+                            {table.name}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </Field>
+                )}
+
                 <Field>
-                  <FieldLabel>Nome da nova tabela</FieldLabel>
+                  <FieldLabel>Prefixo dos clones</FieldLabel>
                   <InputGroup>
                     <InputGroupInput
-                      placeholder="ex: Atividades"
-                      value={tableName}
-                      onChange={(e) => setTableName(e.target.value)}
+                      placeholder="ex: clone_1_"
+                      value={prefix}
+                      onChange={(e) => setPrefix(e.target.value)}
+                      disabled={isCloning}
                     />
                   </InputGroup>
                 </Field>
@@ -133,7 +194,7 @@ function RouteComponent(): React.JSX.Element {
                 <div className="flex justify-end">
                   <Button
                     type="button"
-                    disabled={!model || !tableName || isCloning}
+                    disabled={models.length === 0 || isCloning}
                     onClick={handleCloneTable}
                     data-test-id="tools-clone-btn"
                   >

@@ -3,7 +3,14 @@ import { Service } from 'fastify-decorators';
 import slugify from 'slugify';
 
 import { left, right } from '@application/core/either.core';
-import { FIELD_NATIVE_LIST, type IField } from '@application/core/entity.core';
+import {
+  E_FIELD_TYPE,
+  FIELD_NATIVE_LIST,
+  type IField,
+  type IGroupConfiguration,
+  type ILayoutFields,
+  type ITable,
+} from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -34,6 +41,16 @@ import { createKanbanTemplate } from './templates/kanban-template';
 import { createMosaicTemplate } from './templates/mosaic-template';
 
 type Response = CloneTableResponse;
+
+type CloneContext = {
+  baseTable: ITable;
+  table: ITable;
+  fields: IField[];
+  groups: IGroupConfiguration[];
+  fieldIdMap: Record<string, string>;
+};
+
+type CopiedRowsByTable = Map<string, Map<string, string>>;
 
 @Service()
 export default class CloneTableUseCase {
@@ -90,24 +107,94 @@ export default class CloneTableUseCase {
         return await createCalendarTemplate(payload, templateDeps);
       }
 
-      const baseTable = await this.tableRepository.findById(
-        payload.baseTableId,
+      const requestedBaseTableIds = payload.baseTableIds?.length
+        ? [...new Set(payload.baseTableIds)]
+        : payload.baseTableId
+          ? [payload.baseTableId]
+          : [];
+      const baseTables = await this.expandTablesWithRelationships(
+        requestedBaseTableIds,
       );
+      const baseTableIds = baseTables.map((table) => table._id);
 
-      if (!baseTable) {
+      const isBatchClone = Boolean(payload.baseTableIds?.length);
+      const cloneContexts: CloneContext[] = [];
+
+      for (const baseTable of baseTables) {
+        const cloneName = await this.buildCloneName({
+          baseName: baseTable.name,
+          name: payload.name ?? '',
+          usePrefix: isBatchClone || baseTableIds.length > 1,
+        });
+
+        const context = await this.cloneExistingTable({
+          baseTable,
+          name: cloneName,
+          ownerId: payload.ownerId,
+        });
+
+        cloneContexts.push(context);
+      }
+
+      const remappedContexts =
+        await this.remapClonedRelationships(cloneContexts);
+
+      const firstContext = remappedContexts[0];
+      if (!firstContext) {
         return left(
-          HTTPException.NotFound(
-            'Tabela base não encontrada',
-            'TABLE_NOT_FOUND',
+          HTTPException.BadRequest(
+            'Selecione ao menos uma tabela base',
+            'TABLE_REQUIRED',
           ),
         );
       }
 
-      const newSlug = slugify(payload.name, {
-        lower: true,
-        strict: true,
-        trim: true,
+      await this.copySelectedRows({
+        contexts: remappedContexts,
+        requestedCopyDataTableIds: payload.copyDataTableIds ?? [],
       });
+
+      return right({
+        table: firstContext.table,
+        tables: remappedContexts.map((context) => context.table),
+        fieldIdMap: firstContext.fieldIdMap,
+        fieldIdMaps: remappedContexts.reduce(
+          (acc, context) => {
+            acc[context.baseTable._id] = context.fieldIdMap;
+            return acc;
+          },
+          {} as Record<string, Record<string, string>>,
+        ),
+      });
+    } catch (error) {
+      if (error instanceof HTTPException) {
+        return left(error);
+      }
+
+      console.error('[tools > clone-table][error]:', error);
+      return left(
+        HTTPException.InternalServerError(
+          'Erro ao clonar tabela',
+          'CLONE_TABLE_ERROR',
+        ),
+      );
+    }
+  }
+
+  private async cloneExistingTable({
+    baseTable,
+    name,
+    ownerId,
+  }: {
+    baseTable: ITable;
+    name: string;
+    ownerId: string;
+  }): Promise<CloneContext> {
+    const newSlug = slugify(name, {
+      lower: true,
+      strict: true,
+      trim: true,
+    });
 
       const { nativeFields, nativeFieldIds } = await this.createNativeFields();
 
@@ -162,7 +249,7 @@ export default class CloneTableUseCase {
 
       const createPayload: TableCreatePayload = {
         _schema,
-        name: payload.name,
+        name,
         slug: newSlug,
         description: baseTable.description ?? null,
         type: baseTable.type,
@@ -172,30 +259,80 @@ export default class CloneTableUseCase {
         visibility: baseTable.visibility,
         collaboration: baseTable.collaboration,
         administrators: baseTable.administrators.flatMap((a) => a._id),
-        owner: payload.ownerId,
+        owner: ownerId,
         fieldOrderList: orderList,
         fieldOrderForm: orderForm,
         fieldOrderFilter: orderFilter,
         fieldOrderDetail: orderDetail,
         methods: baseTable.methods,
         groups: clonedGroups,
+        order: this.remapOrder(baseTable.order, combinedFieldIdMap),
+        layoutFields: this.remapLayoutFields(
+          baseTable.layoutFields,
+          combinedFieldIdMap,
+        ),
       };
 
       const newTable = await this.tableRepository.create(createPayload);
 
-      return right({
+      return {
+        baseTable,
         table: newTable,
+        fields: [...nativeFields, ...clonedFields],
+        groups: clonedGroups,
         fieldIdMap: combinedFieldIdMap,
-      });
-    } catch (error) {
-      console.error('[tools > clone-table][error]:', error);
-      return left(
-        HTTPException.InternalServerError(
-          'Erro ao clonar tabela',
-          'CLONE_TABLE_ERROR',
-        ),
-      );
+      };
+  }
+
+  private async expandTablesWithRelationships(
+    tableIds: string[],
+  ): Promise<ITable[]> {
+    const result = new Map<string, ITable>();
+    const queue = [...new Set(tableIds)];
+
+    while (queue.length > 0) {
+      const tableId = queue.shift()!;
+      if (result.has(tableId)) continue;
+
+      const table = await this.tableRepository.findById(tableId);
+      if (!table) {
+        throw HTTPException.NotFound(
+          'Tabela base não encontrada',
+          'TABLE_NOT_FOUND',
+        );
+      }
+
+      result.set(table._id, table);
+
+      for (const relationshipField of this.getRelationshipFields(table)) {
+        const relatedTableId = relationshipField.relationship?.table?._id;
+        if (relatedTableId && !result.has(relatedTableId)) {
+          queue.push(relatedTableId);
+        }
+      }
     }
+
+    return Array.from(result.values());
+  }
+
+  private getRelationshipFields(table: ITable): IField[] {
+    const fields: IField[] = [];
+
+    for (const field of table.fields ?? []) {
+      if (field.type === E_FIELD_TYPE.RELATIONSHIP && !field.trashed) {
+        fields.push(field);
+      }
+    }
+
+    for (const group of table.groups ?? []) {
+      for (const field of group.fields ?? []) {
+        if (field.type === E_FIELD_TYPE.RELATIONSHIP && !field.trashed) {
+          fields.push(field);
+        }
+      }
+    }
+
+    return fields;
   }
 
   private async cloneFields(fields: IField[]): Promise<{
@@ -261,13 +398,364 @@ export default class CloneTableUseCase {
     return ids.map((id) => map[id]).filter(Boolean);
   }
 
+  private remapOrder(
+    order: ITable['order'] | undefined,
+    map: Record<string, string>,
+  ): ITable['order'] {
+    if (!order?.field) return null;
+
+    const field = map[order.field];
+    if (!field) return null;
+
+    return { field, direction: order.direction };
+  }
+
+  private remapLayoutFields(
+    layoutFields: ILayoutFields | undefined,
+    map: Record<string, string>,
+  ): ILayoutFields | undefined {
+    if (!layoutFields) return undefined;
+
+    return Object.entries(layoutFields).reduce((acc, [key, value]) => {
+      acc[key as keyof ILayoutFields] = value ? (map[value] ?? null) : null;
+      return acc;
+    }, {} as ILayoutFields);
+  }
+
+  private async buildCloneName({
+    baseName,
+    name,
+    usePrefix,
+  }: {
+    baseName: string;
+    name: string;
+    usePrefix: boolean;
+  }): Promise<string> {
+    const trimmedName = name.trim();
+    const candidate = usePrefix
+      ? trimmedName
+        ? `${trimmedName}${baseName}`
+        : `Clone de ${baseName}`
+      : trimmedName || `Clone de ${baseName}`;
+
+    return this.ensureUniqueTableName(candidate);
+  }
+
+  private async ensureUniqueTableName(name: string): Promise<string> {
+    let candidate = name;
+    let suffix = 2;
+
+    while (
+      await this.tableRepository.findBySlug(
+        slugify(candidate, {
+          lower: true,
+          strict: true,
+          trim: true,
+        }),
+      )
+    ) {
+      candidate = `${name} ${suffix}`;
+      suffix += 1;
+    }
+
+    return candidate;
+  }
+
+  private async remapClonedRelationships(
+    contexts: CloneContext[],
+  ): Promise<CloneContext[]> {
+    if (contexts.length === 0) return contexts;
+
+    const tableIdMap = new Map(
+      contexts.map((context) => [context.baseTable._id, context.table]),
+    );
+
+    const fieldIdMap = contexts.reduce(
+      (acc, context) => ({ ...acc, ...context.fieldIdMap }),
+      {} as Record<string, string>,
+    );
+
+    const refreshedContexts: CloneContext[] = [];
+
+    for (const context of contexts) {
+      const fieldsToRefresh = new Map<string, IField>();
+      for (const field of context.fields) fieldsToRefresh.set(field._id, field);
+      for (const group of context.groups) {
+        for (const field of group.fields ?? []) {
+          fieldsToRefresh.set(field._id, field);
+        }
+      }
+
+      const refreshedFieldsById = new Map<string, IField>();
+      let changed = false;
+
+      for (const field of fieldsToRefresh.values()) {
+        if (
+          field.type !== E_FIELD_TYPE.RELATIONSHIP ||
+          !field.relationship?.table?._id
+        ) {
+          refreshedFieldsById.set(field._id, field);
+          continue;
+        }
+
+        const clonedTargetTable = tableIdMap.get(field.relationship.table._id);
+        if (!clonedTargetTable) {
+          refreshedFieldsById.set(field._id, field);
+          continue;
+        }
+
+        const mappedTargetFieldId =
+          fieldIdMap[field.relationship.field._id] ??
+          field.relationship.field._id;
+
+        const updatedField = await this.fieldRepository.update({
+          _id: field._id,
+          relationship: {
+            table: {
+              _id: clonedTargetTable._id,
+              slug: clonedTargetTable.slug,
+            },
+            field: {
+              _id: mappedTargetFieldId,
+              slug: field.relationship.field.slug,
+            },
+            order: field.relationship.order,
+          },
+        });
+
+        refreshedFieldsById.set(updatedField._id, updatedField);
+        changed = true;
+      }
+
+      if (!changed) {
+        refreshedContexts.push(context);
+        continue;
+      }
+
+      const refreshedFields = context.fields.map(
+        (field) => refreshedFieldsById.get(field._id) ?? field,
+      );
+
+      const refreshedGroups = context.groups.map((group) => {
+        const fields = group.fields
+          .map((field) => refreshedFieldsById.get(field._id) ?? field)
+          .filter(Boolean) as IField[];
+
+        return {
+          ...group,
+          fields,
+          _schema: this.tableSchemaService.computeSchema(fields),
+        };
+      });
+
+      const updatedSchema = this.tableSchemaService.computeSchema(
+        refreshedFields,
+        refreshedGroups,
+      );
+
+      const updatedTable = await this.tableRepository.update({
+        _id: context.table._id,
+        _schema: updatedSchema,
+        groups: refreshedGroups,
+      });
+
+      refreshedContexts.push({
+        ...context,
+        table: updatedTable,
+        fields: refreshedFields,
+        groups: refreshedGroups,
+      });
+    }
+
+    return refreshedContexts;
+  }
+
+  private async copySelectedRows({
+    contexts,
+    requestedCopyDataTableIds,
+  }: {
+    contexts: CloneContext[];
+    requestedCopyDataTableIds: string[];
+  }): Promise<void> {
+    if (requestedCopyDataTableIds.length === 0) return;
+
+    const contextsByBaseId = new Map(
+      contexts.map((context) => [context.baseTable._id, context]),
+    );
+    const copyDataTableIds = this.expandDataCopyTableIds({
+      contextsByBaseId,
+      requestedCopyDataTableIds,
+    });
+
+    const copiedRowsByTable: CopiedRowsByTable = new Map();
+    const copiedRows: Array<{
+      context: CloneContext;
+      sourceRow: Record<string, unknown>;
+      clonedRowId: string;
+    }> = [];
+
+    for (const context of contexts) {
+      if (!copyDataTableIds.has(context.baseTable._id)) continue;
+
+      const rows = await this.rowRepository.findAllRaw(context.baseTable);
+      const rowIdMap = new Map<string, string>();
+      copiedRowsByTable.set(context.baseTable._id, rowIdMap);
+
+      for (const row of rows) {
+        const clonedRow = await this.rowRepository.insertRaw(
+          context.table,
+          row,
+        );
+        rowIdMap.set(String(row._id), clonedRow._id);
+        copiedRows.push({
+          context,
+          sourceRow: row,
+          clonedRowId: clonedRow._id,
+        });
+      }
+    }
+
+    for (const copiedRow of copiedRows) {
+      const data = this.remapRowRelationshipValues({
+        context: copiedRow.context,
+        row: copiedRow.sourceRow,
+        copiedRowsByTable,
+      });
+
+      await this.rowRepository.update({
+        table: copiedRow.context.table,
+        _id: copiedRow.clonedRowId,
+        data,
+      });
+    }
+  }
+
+  private expandDataCopyTableIds({
+    contextsByBaseId,
+    requestedCopyDataTableIds,
+  }: {
+    contextsByBaseId: Map<string, CloneContext>;
+    requestedCopyDataTableIds: string[];
+  }): Set<string> {
+    const result = new Set<string>();
+    const queue = [...new Set(requestedCopyDataTableIds)];
+
+    while (queue.length > 0) {
+      const tableId = queue.shift()!;
+      if (result.has(tableId)) continue;
+
+      const context = contextsByBaseId.get(tableId);
+      if (!context) continue;
+
+      result.add(tableId);
+
+      for (const relationshipField of this.getRelationshipFields(
+        context.baseTable,
+      )) {
+        const relatedTableId = relationshipField.relationship?.table?._id;
+        if (relatedTableId && !result.has(relatedTableId)) {
+          queue.push(relatedTableId);
+        }
+      }
+    }
+
+    return result;
+  }
+
+  private remapRowRelationshipValues({
+    context,
+    row,
+    copiedRowsByTable,
+  }: {
+    context: CloneContext;
+    row: Record<string, unknown>;
+    copiedRowsByTable: CopiedRowsByTable;
+  }): Record<string, unknown> {
+    const data = { ...row };
+
+    delete data._id;
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
+
+    for (const field of context.baseTable.fields ?? []) {
+      if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
+        data[field.slug] = this.remapRelationshipValue({
+          value: data[field.slug],
+          field,
+          copiedRowsByTable,
+        });
+        continue;
+      }
+
+      if (field.type !== E_FIELD_TYPE.FIELD_GROUP || !field.group?.slug) {
+        continue;
+      }
+
+      const group = context.baseTable.groups?.find(
+        (candidate) => candidate.slug === field.group?.slug,
+      );
+      if (!group) continue;
+
+      const groupRows = data[field.slug];
+      if (!Array.isArray(groupRows)) continue;
+
+      data[field.slug] = groupRows.map((groupRow) => {
+        if (!this.isRecord(groupRow)) return groupRow;
+
+        const nextGroupRow = { ...groupRow };
+        for (const groupField of group.fields ?? []) {
+          if (groupField.type !== E_FIELD_TYPE.RELATIONSHIP) continue;
+          nextGroupRow[groupField.slug] = this.remapRelationshipValue({
+            value: nextGroupRow[groupField.slug],
+            field: groupField,
+            copiedRowsByTable,
+          });
+        }
+        return nextGroupRow;
+      });
+    }
+
+    return data;
+  }
+
+  private remapRelationshipValue({
+    value,
+    field,
+    copiedRowsByTable,
+  }: {
+    value: unknown;
+    field: IField;
+    copiedRowsByTable: CopiedRowsByTable;
+  }): unknown {
+    const relatedTableId = field.relationship?.table?._id;
+    if (!relatedTableId) return value;
+
+    const rowIdMap = copiedRowsByTable.get(relatedTableId);
+    if (!rowIdMap) return value;
+
+    if (Array.isArray(value)) {
+      return value
+        .map((item) => rowIdMap.get(String(item)))
+        .filter(Boolean);
+    }
+
+    if (value === null || value === undefined || value === '') {
+      return value;
+    }
+
+    return rowIdMap.get(String(value)) ?? null;
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
   private async cloneGroups(
-    groups:
-      | import('@application/core/entity.core').IGroupConfiguration[]
-      | undefined,
+    groups: IGroupConfiguration[] | undefined,
     clonedFields: IField[],
     fieldIdMap: Record<string, string>,
-  ): Promise<import('@application/core/entity.core').IGroupConfiguration[]> {
+  ): Promise<IGroupConfiguration[]> {
     if (!groups || !Array.isArray(groups) || groups.length === 0) {
       return [];
     }
@@ -276,8 +764,7 @@ export default class CloneTableUseCase {
       clonedFields.map((field) => [field._id, field]),
     );
 
-    const clonedGroups: import('@application/core/entity.core').IGroupConfiguration[] =
-      [];
+    const clonedGroups: IGroupConfiguration[] = [];
 
     for (const group of groups) {
       const groupFields: IField[] = [];
