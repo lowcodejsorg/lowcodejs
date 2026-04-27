@@ -144,7 +144,10 @@ cp .env.example .env
 | Variavel          | Descricao                    | Padrao                   |
 | ----------------- | ---------------------------- | ------------------------ |
 | `MCP_SERVER_URL`  | URL do servidor MCP          | `http://mcp:3000/mcp`   |
-| `OPENAI_API_KEY`  | Chave da API OpenAI          | (vazio)                  |
+
+> A chave da API OpenAI e o toggle "Habilitar Assistente IA" sao
+> configurados pelo usuario MASTER em **Configuracoes** na UI
+> (`/settings`), nao via variavel de ambiente.
 
 ### Seguranca (JWT e Cookies)
 
