@@ -107,7 +107,7 @@ export default class TableMongooseRepository implements TableContractRepository 
     const sortOption =
       payload?.sort && Object.keys(payload.sort).length > 0
         ? payload.sort
-        : { name: 'asc' as const };
+        : { createdAt: 'desc' as const };
 
     const hasOwnerSort = sortOption && 'owner.name' in sortOption;
 
