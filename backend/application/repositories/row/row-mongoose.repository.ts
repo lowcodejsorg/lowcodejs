@@ -334,12 +334,17 @@ export default class RowMongooseRepository extends RowContractRepository {
     table: RowTableContext,
     row: Record<string, unknown>,
     creator?: string,
-  ): Promise<void> {
+  ): Promise<IRow> {
     const model = await this.getModel(table);
-    const doc = new model(row);
+    const { _id, id, createdAt, updatedAt, ...data } = row;
+    const doc = new model(data);
     if (creator) {
       (doc as any).creator = creator;
     }
-    await doc.collection.insertOne((doc as any).toObject());
+    const result = await doc.collection.insertOne((doc as any).toObject());
+    return {
+      ...(doc as any).toObject(),
+      _id: result.insertedId.toString(),
+    } as IRow;
   }
 }

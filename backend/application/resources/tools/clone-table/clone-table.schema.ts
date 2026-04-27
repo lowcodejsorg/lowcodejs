@@ -3,11 +3,14 @@ import type { FastifySchema } from 'fastify';
 export const CloneTableSchema: FastifySchema = {
   tags: ['Tools'],
   summary: 'Clone table',
-  description: 'Clones a table using its ID and a new table name',
+  description: 'Clones one or more tables using table IDs and an optional name/prefix',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['baseTableId', 'name'],
+    anyOf: [
+      { required: ['baseTableId'] },
+      { required: ['baseTableIds'] },
+    ],
     properties: {
       baseTableId: {
         type: 'string',
@@ -18,13 +21,29 @@ export const CloneTableSchema: FastifySchema = {
           minLength: 'O ID da tabela base é obrigatório',
         },
       },
+      baseTableIds: {
+        type: 'array',
+        minItems: 1,
+        items: {
+          type: 'string',
+          minLength: 1,
+        },
+        description: 'IDs of base tables for batch cloning',
+      },
+      copyDataTableIds: {
+        type: 'array',
+        items: {
+          type: 'string',
+          minLength: 1,
+        },
+        description: 'Base table IDs whose row data should be copied',
+      },
       name: {
         type: 'string',
-        minLength: 1,
-        description: 'Name of the new table',
+        description:
+          'Name of the new table for single clone, or prefix for batch clone',
         errorMessage: {
           type: 'O nome da nova tabela deve ser um texto',
-          minLength: 'O nome da nova tabela é obrigatório',
         },
       },
     },
@@ -32,7 +51,6 @@ export const CloneTableSchema: FastifySchema = {
     errorMessage: {
       required: {
         baseTableId: 'O ID da tabela base é obrigatório',
-        name: 'O nome da nova tabela é obrigatório',
       },
       additionalProperties: 'Campos extras não são permitidos',
     },
@@ -44,10 +62,29 @@ export const CloneTableSchema: FastifySchema = {
       properties: {
         tableId: { type: 'string', description: 'New table ID' },
         slug: { type: 'string', description: 'New table slug' },
+        tables: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              tableId: { type: 'string' },
+              slug: { type: 'string' },
+              name: { type: 'string' },
+            },
+          },
+        },
         fieldIdMap: {
           type: 'object',
           additionalProperties: { type: 'string' },
           description: 'Map of old field IDs to new field IDs',
+        },
+        fieldIdMaps: {
+          type: 'object',
+          additionalProperties: {
+            type: 'object',
+            additionalProperties: { type: 'string' },
+          },
+          description: 'Map of base table IDs to field ID maps',
         },
       },
     },
