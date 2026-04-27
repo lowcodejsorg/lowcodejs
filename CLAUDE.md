@@ -11,10 +11,9 @@ lowcodejs/
 ├── frontend/             # React + TanStack Start (SSR)
 │   └── CLAUDE.md         # Arquitetura detalhada do frontend
 ├── _docs/                # Documentacao de negocio e testes
-├── .github/workflows/    # CI/CD (build, test, docker, deploy)
+├── .github/workflows/    # CI/CD (build, test, push :latest no Docker Hub)
 ├── docker-compose.yml              # Desenvolvimento (core + profiles opcionais)
-├── docker-compose.production.yml   # Producao/VPS com Traefik
-├── docker-compose.oficial.yml      # Instalacao minima (sem Redis/MCP)
+├── docker-compose.oficial.yml      # Self-host minimo via imagens :latest
 ├── install.md            # Guia de instalacao
 ├── setup.sh              # Script de configuracao inicial
 └── credential-generator.sh         # Gera JWT keys e cookie secret
@@ -56,11 +55,16 @@ Quando S3 desativado: storage usa filesystem local (`_storage/`). Quando IA desa
 
 ## Deploy (CI/CD)
 
-- **main branch**: build + docker push (tags `latest`)
-- **deployment branches**: build + docker push + deploy VPS via SSH
-- Branches de deploy: develop, demo, intranet, homolog, saneago, lab-gestor, net-labic, admin-labic
-- Configuracao por branch em `.github/deploy-config.json`
-- Profiles controlados via secret `COMPOSE_PROFILES` (ex: `ai`)
+- **GitHub Actions (`main` branch)**: roda testes, builda e publica
+  `marcosjhollyfer/lowcodejs-api:latest` e `marcosjhollyfer/lowcodejs-app:latest`
+  no Docker Hub. Essas imagens alimentam o `docker-compose.oficial.yml`
+  para quem faz self-host sem Coolify.
+- **Coolify**: observa as branches `main` e `develop` e faz build/deploy
+  automatico a partir de `backend/Dockerfile-coolify` e
+  `frontend/Dockerfile-coolify`. Variaveis de ambiente sao configuradas
+  pelo painel do Coolify (incluindo build args do frontend:
+  `VITE_API_BASE_URL`, `APP_SERVER_URL`, `APP_CLIENT_URL`,
+  `LOGO_SMALL_URL`, `LOGO_LARGE_URL`).
 
 ## Comandos Essenciais
 
