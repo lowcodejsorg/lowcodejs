@@ -8,15 +8,21 @@ import type { TableSchemaContractService } from '@application/services/table-sch
 
 import type { CloneTablePayload } from './clone-table.validator';
 
-export type CloneTableUseCasePayload = CloneTablePayload & {
+export type CloneTableUseCasePayload = Omit<
+  CloneTablePayload,
+  'copyDataTableIds'
+> & {
   ownerId: string;
+  copyDataTableIds?: string[];
 };
 
 export type CloneTableResponse = Either<
   HTTPException,
   {
     table: ITable;
+    tables?: ITable[];
     fieldIdMap: Record<string, string>;
+    fieldIdMaps?: Record<string, Record<string, string>>;
   }
 >;
 

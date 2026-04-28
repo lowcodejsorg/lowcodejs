@@ -387,5 +387,11 @@ export type IHTTPExeptionError<T> = Merge<IHTTPException, { errors: T }>;
 export interface ICloneTableResponse {
   tableId: string;
   slug: string;
+  tables?: Array<{
+    tableId: string;
+    slug: string;
+    name: string;
+  }>;
   fieldIdMap: Record<string, string>;
+  fieldIdMaps?: Record<string, Record<string, string>>;
 }

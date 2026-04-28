@@ -39,7 +39,9 @@ export const Route = createFileRoute('/_private/users/')({
   },
   head: createRouteHead({ title: 'Usuários' }),
   pendingComponent: () => (
-    <DataTableSkeleton headers={['Nome', 'E-mail', 'Papel', 'Status']}>
+    <DataTableSkeleton
+      headers={['Nome', 'E-mail', 'Papel', 'Status', 'Criado em']}
+    >
       <DataTableSkeleton.Cell width="w-45" />
       <DataTableSkeleton.Cell width="w-50" />
       <DataTableSkeleton.Cell width="w-25" />
@@ -48,6 +50,7 @@ export const Route = createFileRoute('/_private/users/')({
         height="h-6"
         rounded="rounded-full"
       />
+      <DataTableSkeleton.Cell width="w-40" />
       <DataTableSkeleton.ActionCell />
     </DataTableSkeleton>
   ),

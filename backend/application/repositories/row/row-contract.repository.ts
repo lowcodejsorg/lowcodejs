@@ -139,5 +139,5 @@ export abstract class RowContractRepository {
     table: RowTableContext,
     row: Record<string, unknown>,
     creator?: string,
-  ): Promise<void>;
+  ): Promise<IRow>;
 }
