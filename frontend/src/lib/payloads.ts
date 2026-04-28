@@ -308,8 +308,10 @@ export type SetupEmailPayload = {
 
 // ============== CLONE TABLE ==============
 export type CloneTablePayload = {
-  baseTableId: string;
-  name: string;
+  baseTableId?: string;
+  baseTableIds?: Array<string>;
+  copyDataTableIds?: Array<string>;
+  name?: string;
 };
 
 // ============== REACTION ==============

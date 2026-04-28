@@ -19,7 +19,7 @@ import type { ITable } from '@/lib/interfaces';
 
 interface TableMultiSelectProps {
   value?: Array<string>;
-  onValueChange?: (value: Array<string>) => void;
+  onValueChange?: (value: Array<string>, tables?: Array<ITable>) => void;
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -103,7 +103,10 @@ export function TableMultiSelect({
             return next;
           });
         }
-        onValueChange?.(newTables.map((p) => p._id));
+        onValueChange?.(
+          newTables.map((p) => p._id),
+          newTables,
+        );
       }}
       itemToStringLabel={(table: ITable) => table.name}
       disabled={disabled}
