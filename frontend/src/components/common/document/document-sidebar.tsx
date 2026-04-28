@@ -27,6 +27,7 @@ import {
 import React, { useEffect, useMemo, useState } from 'react';
 
 import { DocumentSidebarAddDialog } from './document-sidebar-add-dialog';
+import type { DropMode } from './document-sidebar-helpers';
 import {
   buildParentMap,
   findNodeAndRemove,
@@ -38,7 +39,6 @@ import {
   reorderInTree,
   updateNodeLabel,
 } from './document-sidebar-helpers';
-import type { DropMode } from './document-sidebar-helpers';
 import { DocumentSidebarTree } from './document-sidebar-tree';
 
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
@@ -47,8 +47,8 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import { buildLabelMap } from '@/lib/document-helpers';
 import type { CatNode } from '@/lib/document-helpers';
+import { buildLabelMap } from '@/lib/document-helpers';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';

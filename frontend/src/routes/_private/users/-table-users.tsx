@@ -1,5 +1,7 @@
 import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { ArrowRightIcon } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -94,6 +96,30 @@ const columns: Array<ColumnDef<IUser, any>> = [
             ? USER_STATUS_MAPPER[status as keyof typeof USER_STATUS_MAPPER]
             : status}
         </Badge>
+      );
+    },
+  },
+  {
+    id: 'createdAt',
+    accessorKey: 'createdAt',
+    meta: { label: 'Criado em' },
+    header: () => (
+      <DataTableColumnHeader
+        title="Criado em"
+        orderKey="order-created-at"
+        routeId={ROUTE_ID}
+      />
+    ),
+    cell: ({ getValue }): React.ReactElement => {
+      const date = getValue() as string | undefined;
+      return (
+        <span className="text-sm text-muted-foreground">
+          {date
+            ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'as' HH:mm", {
+                locale: ptBR,
+              })
+            : 'N/A'}
+        </span>
       );
     },
   },
