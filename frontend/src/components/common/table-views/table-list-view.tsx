@@ -14,6 +14,7 @@ import {
 import React from 'react';
 
 import { InteractiveDataTable } from '@/components/common/data-table';
+import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -156,7 +157,7 @@ function RowActionsCell({
 
       <Dialog
         modal
-        open={dialogType !== null}
+        open={dialogType === 'trash' || dialogType === 'restore'}
         onOpenChange={(open) => {
           if (!open) setDialogType(null);
         }}
@@ -166,15 +167,12 @@ function RowActionsCell({
             <DialogTitle>
               {dialogType === 'trash' && 'Enviar para lixeira'}
               {dialogType === 'restore' && 'Restaurar da lixeira'}
-              {dialogType === 'delete' && 'Excluir permanentemente'}
             </DialogTitle>
             <DialogDescription>
               {dialogType === 'trash' &&
                 'Ao confirmar essa acao, o registro sera enviado para a lixeira.'}
               {dialogType === 'restore' &&
                 'Ao confirmar essa acao, o registro sera restaurado da lixeira.'}
-              {dialogType === 'delete' &&
-                'Ao confirmar essa acao, o registro sera excluido permanentemente. Essa acao nao pode ser desfeita.'}
             </DialogDescription>
           </DialogHeader>
           <section>
@@ -202,6 +200,19 @@ function RowActionsCell({
           </section>
         </DialogContent>
       </Dialog>
+
+      <PermanentDeleteConfirmDialog
+        open={dialogType === 'delete'}
+        onOpenChange={(open) => {
+          if (!open) setDialogType(null);
+        }}
+        title="Excluir registro permanentemente"
+        description="Essa ação é irreversível. O registro será excluído permanentemente e não poderá ser recuperado."
+        itemsCount={1}
+        isPending={deleteMutation.isPending}
+        onConfirm={() => deleteMutation.mutate()}
+        testId="delete-row-singular-dialog"
+      />
     </div>
   );
 }
@@ -516,7 +527,7 @@ export function TableListView({
 
       <Dialog
         modal
-        open={showConfirmDialog}
+        open={showConfirmDialog && dialogAction !== 'delete'}
         onOpenChange={setShowConfirmDialog}
       >
         <DialogContent className="py-4 px-6">
@@ -524,7 +535,6 @@ export function TableListView({
             <DialogTitle>
               {dialogAction === 'trash' && 'Enviar registros para a lixeira'}
               {dialogAction === 'restore' && 'Restaurar registros da lixeira'}
-              {dialogAction === 'delete' && 'Excluir registros permanentemente'}
             </DialogTitle>
             <DialogDescription>
               {dialogAction === 'trash' &&
@@ -535,10 +545,6 @@ export function TableListView({
                 (selectedCount === 1
                   ? 'Ao confirmar essa ação, 1 registro será restaurado da lixeira.'
                   : `Ao confirmar essa ação, ${selectedCount} registros serão restaurados da lixeira.`)}
-              {dialogAction === 'delete' &&
-                (selectedCount === 1
-                  ? 'Essa ação é irreversível. 1 registro será excluído permanentemente.'
-                  : `Essa ação é irreversível. ${selectedCount} registros serão excluídos permanentemente.`)}
             </DialogDescription>
           </DialogHeader>
           <section>
@@ -553,8 +559,7 @@ export function TableListView({
                   type="button"
                   disabled={
                     bulkTrash.status === 'pending' ||
-                    bulkRestore.status === 'pending' ||
-                    bulkDelete.status === 'pending'
+                    bulkRestore.status === 'pending'
                   }
                   onClick={() => {
                     if (dialogAction === 'trash') {
@@ -563,20 +568,15 @@ export function TableListView({
                     if (dialogAction === 'restore') {
                       bulkRestore.mutateAsync(selectedIds);
                     }
-                    if (dialogAction === 'delete') {
-                      bulkDelete.mutateAsync(selectedIds);
-                    }
                   }}
                 >
                   {(bulkTrash.status === 'pending' ||
-                    bulkRestore.status === 'pending' ||
-                    bulkDelete.status === 'pending') && (
+                    bulkRestore.status === 'pending') && (
                     <LoaderCircleIcon className="size-4 animate-spin" />
                   )}
                   {!(
                     bulkTrash.status === 'pending' ||
-                    bulkRestore.status === 'pending' ||
-                    bulkDelete.status === 'pending'
+                    bulkRestore.status === 'pending'
                   ) && <span>Confirmar</span>}
                 </Button>
               </DialogFooter>
@@ -584,6 +584,17 @@ export function TableListView({
           </section>
         </DialogContent>
       </Dialog>
+
+      <PermanentDeleteConfirmDialog
+        open={showConfirmDialog && dialogAction === 'delete'}
+        onOpenChange={setShowConfirmDialog}
+        title="Excluir registros permanentemente"
+        description="Essa ação é irreversível. Os registros selecionados serão excluídos permanentemente."
+        itemsCount={selectedCount}
+        isPending={bulkDelete.status === 'pending'}
+        onConfirm={() => bulkDelete.mutateAsync(selectedIds)}
+        testId="bulk-delete-rows-dialog"
+      />
     </div>
   );
 }

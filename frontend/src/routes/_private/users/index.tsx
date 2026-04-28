@@ -55,6 +55,15 @@ export const Route = createFileRoute('/_private/users/')({
     search: z.string().optional(),
     page: z.coerce.number().default(1),
     perPage: z.coerce.number().default(50),
+    trashed: z
+      .preprocess(
+        (v) => {
+          if (typeof v === 'boolean') return String(v);
+          return v;
+        },
+        z.enum(['true', 'false']).transform((v) => v === 'true'),
+      )
+      .optional(),
     'order-name': z.enum(['asc', 'desc']).optional(),
     'order-email': z.enum(['asc', 'desc']).optional(),
     'order-group': z.enum(['asc', 'desc']).optional(),
@@ -68,6 +77,7 @@ export const Route = createFileRoute('/_private/users/')({
     page: search.page,
     perPage: search.perPage,
     search: search.search,
+    trashed: search.trashed,
     'order-name': search['order-name'],
     'order-email': search['order-email'],
     'order-group': search['order-group'],

@@ -9,6 +9,7 @@ import type {
   UserGroupContractRepository,
   UserGroupCreatePayload,
   UserGroupQueryPayload,
+  UserGroupUpdateManyPayload,
   UserGroupUpdatePayload,
 } from './user-group-contract.repository';
 
@@ -20,6 +21,12 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
     payload?: UserGroupQueryPayload,
   ): Promise<Record<string, unknown>> {
     const where: Record<string, unknown> = {};
+
+    if (payload?.trashed !== undefined) {
+      where.trashed = payload.trashed;
+    } else {
+      where.trashed = false;
+    }
 
     if (payload?.user?.role === E_ROLE.ADMINISTRATOR) {
       where.slug = { $ne: E_ROLE.MASTER };
@@ -114,8 +121,36 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
     return this.transform(populated);
   }
 
+  async updateMany({
+    _ids,
+    filterTrashed,
+    data,
+  }: UserGroupUpdateManyPayload): Promise<number> {
+    const where: Record<string, unknown> = { _id: { $in: _ids } };
+    if (filterTrashed !== undefined) where.trashed = filterTrashed;
+
+    const updateData: Record<string, unknown> = {};
+    if (data.trashed !== undefined) updateData['trashed'] = data.trashed;
+    if (data.trashedAt !== undefined) updateData['trashedAt'] = data.trashedAt;
+
+    const result = await Model.updateMany(where, { $set: updateData });
+    return result.modifiedCount;
+  }
+
+  async findManyTrashed(): Promise<IGroup[]> {
+    const groups = await Model.find({ trashed: true }).populate(
+      this.populateOptions,
+    );
+    return groups.map((g) => this.transform(g));
+  }
+
   async delete(_id: string): Promise<void> {
     await Model.deleteOne({ _id });
+  }
+
+  async deleteMany(_ids: string[]): Promise<number> {
+    const result = await Model.deleteMany({ _id: { $in: _ids } });
+    return result.deletedCount;
   }
 
   async count(payload?: UserGroupQueryPayload): Promise<number> {
