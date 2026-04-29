@@ -79,7 +79,7 @@ export function KanbanRowDialog({
   const permission = useTablePermission(table);
   const currentUserId = auth?._id ?? '';
   const [editTarget, setEditTarget] = React.useState<
-    'members' | 'start' | 'due' | null
+    'members' | 'start' | 'due' | 'list' | null
   >(null);
   const [taskTitle, setTaskTitle] = React.useState('');
   const [editingTaskIndex, setEditingTaskIndex] = React.useState<number | null>(
@@ -125,9 +125,12 @@ export function KanbanRowDialog({
     ...extraFields,
   ].filter(Boolean) as Array<IField>;
 
-  const quickFields = [fields.members, fields.startDate, fields.dueDate].filter(
-    Boolean,
-  ) as Array<IField>;
+  const quickFields = [
+    fields.members,
+    fields.startDate,
+    fields.dueDate,
+    fields.list,
+  ].filter(Boolean) as Array<IField>;
 
   const updateRow = useUpdateTableRow({
     onSuccess(data) {
@@ -869,6 +872,7 @@ export function KanbanRowDialog({
                 members: fields.members,
                 startDate: fields.startDate,
                 dueDate: fields.dueDate,
+                list: fields.list,
               }}
               editTarget={editTarget}
               setEditTarget={setEditTarget}
@@ -1246,6 +1250,16 @@ export function KanbanRowDialog({
               >
                 Data do vencimento
               </Button>
+              {fields.list && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditTarget('list')}
+                  className="cursor-pointer"
+                >
+                  Lista
+                </Button>
+              )}
             </div>
 
             <div className="space-y-2 flex flex-col gap-1">
@@ -1286,7 +1300,7 @@ export function KanbanRowDialog({
               )}
             </div>
 
-            {fields.list && (
+            {fields.list && editTarget !== 'list' && (
               <div className="space-y-2">
                 <p className="text-xs uppercase text-muted-foreground">Lista</p>
                 <TableRowDropdownCell

@@ -1,4 +1,4 @@
-import { CalendarIcon, UserPlusIcon } from 'lucide-react';
+import { CalendarIcon, ColumnsIcon, UserPlusIcon } from 'lucide-react';
 import React from 'react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import type { IField, IUser } from '@/lib/interfaces';
 import { getUserInitials } from '@/lib/kanban-helpers';
 
-type EditTarget = 'members' | 'start' | 'due' | null;
+type EditTarget = 'members' | 'start' | 'due' | 'list' | null;
 
 export function KanbanRowQuickActions({
   members,
@@ -20,6 +20,7 @@ export function KanbanRowQuickActions({
     members?: IField;
     startDate?: IField;
     dueDate?: IField;
+    list?: IField;
   };
   editTarget: EditTarget;
   setEditTarget: (value: EditTarget) => void;
@@ -79,6 +80,19 @@ export function KanbanRowQuickActions({
             <span>Data de vencimento</span>
           </Button>
         )}
+        {fields.list && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            data-test-id="kanban-edit-list-btn"
+            onClick={() => setEditTarget('list')}
+            className="!cursor-pointer"
+          >
+            <ColumnsIcon className="size-4" />
+            <span>Lista</span>
+          </Button>
+        )}
       </div>
 
       {editTarget && (
@@ -109,6 +123,13 @@ export function KanbanRowQuickActions({
                 <quickForm.AppField name={fields.dueDate.slug}>
                   {(formField: any) => (
                     <formField.TableRowDateField field={fields.dueDate!} />
+                  )}
+                </quickForm.AppField>
+              )}
+              {editTarget === 'list' && fields.list && (
+                <quickForm.AppField name={fields.list.slug}>
+                  {(formField: any) => (
+                    <formField.TableRowDropdownField field={fields.list!} />
                   )}
                 </quickForm.AppField>
               )}
