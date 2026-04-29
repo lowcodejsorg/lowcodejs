@@ -4,8 +4,10 @@ import { format, parseISO } from 'date-fns';
 import { TextIcon, XIcon } from 'lucide-react';
 import React from 'react';
 
+import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import { RangeDatepicker } from '@/components/common/datepicker';
 import type { DatepickerValue } from '@/components/common/datepicker';
+import { UserMultiSelect } from '@/components/common/selectors/user-multi-select';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { TreeList } from '@/components/common/tree-editor/tree-list';
 import { Button } from '@/components/ui/button';
@@ -40,8 +42,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Spinner } from '@/components/ui/spinner';
+import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import type { ICategory, IFilterField } from '@/lib/interfaces';
+import type { ICategory, IFilterField, IRow } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 export function convertCategoriesToTreeNodes(
@@ -104,7 +108,10 @@ export function useFilterState(
       if (typeof fieldValue === 'string') {
         if (
           field.type === E_FIELD_TYPE.DROPDOWN ||
-          field.type === E_FIELD_TYPE.CATEGORY
+          field.type === E_FIELD_TYPE.CATEGORY ||
+          field.type === E_FIELD_TYPE.USER ||
+          field.type === E_FIELD_TYPE.CREATOR ||
+          field.type === E_FIELD_TYPE.RELATIONSHIP
         ) {
           initialValues[field.slug] = fieldValue.split(',');
         } else {
@@ -160,7 +167,6 @@ export function useFilterState(
         [
           E_FIELD_TYPE.TEXT_SHORT.toString(),
           E_FIELD_TYPE.TEXT_LONG.toString(),
-          E_FIELD_TYPE.CREATOR.toString(),
         ].includes(field.type) &&
         value
       ) {
@@ -177,6 +183,18 @@ export function useFilterState(
       if (field.type === E_FIELD_TYPE.CATEGORY && Array.isArray(value)) {
         if (value.length > 0) {
           filters[field.slug] = value.join(',');
+        }
+      }
+
+      if (
+        (field.type === E_FIELD_TYPE.USER ||
+          field.type === E_FIELD_TYPE.CREATOR ||
+          field.type === E_FIELD_TYPE.RELATIONSHIP) &&
+        Array.isArray(value)
+      ) {
+        const values = (value as Array<string>).filter(Boolean);
+        if (values.length > 0) {
+          filters[field.slug] = values.join(',');
         }
       }
 
@@ -391,18 +409,20 @@ export function FilterFieldsForm({
             />
           )}
 
-          {field.type === E_FIELD_TYPE.CREATOR && (
-            <FilterTextShort
+          {(field.type === E_FIELD_TYPE.USER ||
+            field.type === E_FIELD_TYPE.CREATOR) && (
+            <FilterUser
               field={field}
-              value={filterValues[field.slug] ?? ''}
-              onChange={(value) =>
-                setFilterValues((prev) => ({
-                  ...prev,
-                  [field.slug]: value,
-                }))
-              }
-              onRemove={() => removeFilter(field.slug)}
-              hasValue={Boolean(search[field.slug])}
+              value={filterValues[field.slug] ?? []}
+              onChange={(value) => handleMultiValueChange(field, value)}
+            />
+          )}
+
+          {field.type === E_FIELD_TYPE.RELATIONSHIP && (
+            <FilterRelationship
+              field={field}
+              value={filterValues[field.slug] ?? []}
+              onChange={(value) => handleMultiValueChange(field, value)}
             />
           )}
 
@@ -661,6 +681,213 @@ export function FilterCategory({
           />
         </PopoverContent>
       </Popover>
+    </Field>
+  );
+}
+
+export function FilterUser({
+  field,
+  value,
+  onChange,
+}: {
+  field: IFilterField;
+  value: Array<string>;
+  onChange: (value: Array<string>) => void;
+}): React.JSX.Element {
+  return (
+    <Field data-slot="filter-user">
+      <FieldLabel>{field.name}</FieldLabel>
+      <UserMultiSelect
+        value={value}
+        onValueChange={onChange}
+        placeholder={`Filtrar por ${field.name.toLowerCase()}`}
+      />
+    </Field>
+  );
+}
+
+export function FilterRelationship({
+  field,
+  value,
+  onChange,
+}: {
+  field: IFilterField;
+  value: Array<string>;
+  onChange: (value: Array<string>) => void;
+}): React.JSX.Element {
+  const anchorRef = useComboboxAnchor();
+  const [searchQuery, setSearchQuery] = React.useState('');
+  const [debouncedQuery, setDebouncedQuery] = React.useState('');
+  const [selectedCache, setSelectedCache] = React.useState<Map<string, IRow>>(
+    () => new Map(),
+  );
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+    }, 300);
+    return (): void => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const relConfig = field.relationship;
+  const labelSlug = relConfig?.field?.slug;
+
+  const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
+    useRelationshipRowsReadPaginatedInfinite({
+      tableSlug: relConfig?.table?.slug ?? '',
+      fieldSlug: field.slug,
+      search: debouncedQuery,
+      perPage: 10,
+    });
+
+  const allItems: Array<IRow> = React.useMemo(
+    () => data?.pages.flatMap((page) => page.data) ?? [],
+    [data?.pages],
+  );
+
+  React.useEffect(() => {
+    if (!allItems.length) return;
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      for (const row of allItems) {
+        next.set(row._id, row);
+      }
+      return next;
+    });
+  }, [allItems]);
+
+  const rowLabel = React.useCallback(
+    (row: IRow): string => {
+      if (labelSlug) {
+        return String(row[labelSlug] ?? row._id);
+      }
+      return row._id;
+    },
+    [labelSlug],
+  );
+
+  const selectedItems = React.useMemo<Array<IRow>>(() => {
+    return value
+      .map((id) => {
+        const cached = selectedCache.get(id);
+        if (cached) return cached;
+        const fromList = allItems.find((row) => row._id === id);
+        if (fromList) return fromList;
+        return { _id: id } as IRow;
+      })
+      .filter((row): row is IRow => row !== null);
+  }, [value, selectedCache, allItems]);
+
+  const items = React.useMemo(() => {
+    const idsInList = new Set(allItems.map((row) => row._id));
+    const extras = selectedItems.filter((row) => !idsInList.has(row._id));
+    if (extras.length) {
+      return [...allItems, ...extras];
+    }
+    return allItems;
+  }, [allItems, selectedItems]);
+
+  if (!relConfig || !relConfig.field || !relConfig.table) {
+    return (
+      <Field data-slot="filter-relationship">
+        <FieldLabel>{field.name}</FieldLabel>
+        <p className="text-muted-foreground text-sm">
+          Relacionamento não configurado
+        </p>
+      </Field>
+    );
+  }
+
+  const handleChange = (selected: Array<IRow>): void => {
+    if (selected.length > 0) {
+      setSelectedCache((prev) => {
+        const next = new Map(prev);
+        for (const row of selected) {
+          next.set(row._id, row);
+        }
+        return next;
+      });
+    }
+    onChange(selected.map((row) => row._id));
+    if (selected.length > value.length && searchQuery.trim().length > 0) {
+      setSearchQuery('');
+    }
+  };
+
+  return (
+    <Field data-slot="filter-relationship">
+      <FieldLabel>{field.name}</FieldLabel>
+      <div className="relative">
+        <Combobox
+          data-test-id={`filter-relationship-${field.slug}`}
+          items={items}
+          multiple
+          value={selectedItems}
+          onValueChange={handleChange}
+          inputValue={searchQuery}
+          onInputValueChange={setSearchQuery}
+          itemToStringLabel={rowLabel}
+        >
+          <ComboboxChips
+            ref={anchorRef}
+            className="w-full"
+          >
+            <ComboboxValue>
+              {(values: Array<IRow>): React.ReactNode => {
+                let chipsPlaceholder = `Filtrar por ${field.name.toLowerCase()}`;
+                if (values.length > 0) {
+                  chipsPlaceholder = '';
+                }
+                return (
+                  <React.Fragment>
+                    {values.slice(0, 2).map((row) => (
+                      <ComboboxChip
+                        key={row._id}
+                        aria-label={rowLabel(row)}
+                      >
+                        {rowLabel(row)}
+                      </ComboboxChip>
+                    ))}
+                    {values.length > 2 && (
+                      <span className="text-muted-foreground text-xs">
+                        +{values.length - 2}
+                      </span>
+                    )}
+                    <ComboboxChipsInput placeholder={chipsPlaceholder} />
+                  </React.Fragment>
+                );
+              }}
+            </ComboboxValue>
+          </ComboboxChips>
+          <ComboboxContent anchor={anchorRef}>
+            <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+            {isLoading && (
+              <div className="flex items-center justify-center p-3">
+                <Spinner className="opacity-50" />
+              </div>
+            )}
+            {!isLoading && (
+              <React.Fragment>
+                <ComboboxList>
+                  {(row: IRow): React.ReactNode => (
+                    <ComboboxItem
+                      key={row._id}
+                      value={row}
+                    >
+                      {rowLabel(row)}
+                    </ComboboxItem>
+                  )}
+                </ComboboxList>
+                <ComboboxLoadMore
+                  hasNextPage={hasNextPage}
+                  isFetchingNextPage={isFetchingNextPage}
+                  onLoadMore={() => fetchNextPage()}
+                />
+              </React.Fragment>
+            )}
+          </ComboboxContent>
+        </Combobox>
+      </div>
     </Field>
   );
 }

@@ -168,7 +168,7 @@ export function KanbanRowDialog({
   });
 
   const quickForm = useAppForm({
-    defaultValues: ((): Record<string, any> => {
+    defaultValues: ((): Record<string, unknown> => {
       if (row) {
         return buildDefaultValuesFromRow(row, quickFields);
       }
@@ -176,34 +176,48 @@ export function KanbanRowDialog({
     })(),
     onSubmit: async ({ value }) => {
       if (!row || updateRow.status === 'pending') return;
-      const payload: Record<string, any> = {};
+      const payload: Record<string, unknown> = {};
       for (const field of quickFields) {
         const v = value[field.slug];
         if (field.type === E_FIELD_TYPE.USER) {
-          let userValue: Array<any> = [];
+          let userValue: Array<string> = [];
           if (Array.isArray(v)) {
-            userValue = v.map((opt: any) => opt.value ?? opt._id ?? opt);
+            userValue = v
+              .map((opt: unknown) => {
+                if (typeof opt === 'string') return opt;
+                if (opt && typeof opt === 'object') {
+                  const candidate = opt as { value?: unknown; _id?: unknown };
+                  if (typeof candidate.value === 'string')
+                    return candidate.value;
+                  if (typeof candidate._id === 'string') return candidate._id;
+                }
+                return '';
+              })
+              .filter((id): id is string => id.length > 0);
           }
           payload[field.slug] = userValue;
           continue;
         }
 
         if (field.type === E_FIELD_TYPE.DROPDOWN) {
-          if (field.multiple) {
-            let dropdownValue: Array<any> = [];
-            if (Array.isArray(v)) {
-              dropdownValue = v;
-            } else if (v) {
-              dropdownValue = [v];
-            }
-            payload[field.slug] = dropdownValue;
-          } else {
-            let singleValue: any = v ?? null;
-            if (typeof v === 'string' && v) {
-              singleValue = v;
-            }
-            payload[field.slug] = singleValue;
+          let dropdownValue: Array<string> = [];
+          if (Array.isArray(v)) {
+            dropdownValue = v
+              .map((item: unknown) => {
+                if (typeof item === 'string') return item;
+                if (item && typeof item === 'object') {
+                  const candidate = item as { value?: unknown; id?: unknown };
+                  if (typeof candidate.value === 'string')
+                    return candidate.value;
+                  if (typeof candidate.id === 'string') return candidate.id;
+                }
+                return '';
+              })
+              .filter((id): id is string => id.length > 0);
+          } else if (typeof v === 'string' && v.length > 0) {
+            dropdownValue = [v];
           }
+          payload[field.slug] = dropdownValue;
           continue;
         }
 

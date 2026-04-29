@@ -189,6 +189,7 @@ export type IFilterField = Pick<
 > & {
   dropdown?: Array<IDropdown>;
   category?: Array<ICategory>;
+  relationship?: IFieldConfigurationRelationship | null;
 };
 
 export type ISchema = {
