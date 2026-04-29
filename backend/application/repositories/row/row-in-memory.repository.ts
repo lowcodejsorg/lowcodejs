@@ -358,7 +358,11 @@ export default class RowInMemoryRepository extends RowContractRepository {
     creator?: string,
   ): Promise<IRow> {
     const collection = this.getCollection(table.slug);
-    const { _id, id, createdAt, updatedAt, ...data } = row;
+    const data: Record<string, unknown> = { ...row };
+    delete data._id;
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
     const newRow: IRow = {
       _id: randomUUID(),
       ...data,

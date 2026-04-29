@@ -196,92 +196,92 @@ export default class CloneTableUseCase {
       trim: true,
     });
 
-      const { nativeFields, nativeFieldIds } = await this.createNativeFields();
+    const { nativeFields, nativeFieldIds } = await this.createNativeFields();
 
-      const nativeIdMap: Record<string, string> = {};
-      const baseNativeFields = baseTable.fields.filter((f) => f.native);
-      for (const baseNative of baseNativeFields) {
-        const matched = nativeFields.find((nf) => nf.slug === baseNative.slug);
-        if (matched) {
-          nativeIdMap[baseNative._id] = matched._id;
-        }
+    const nativeIdMap: Record<string, string> = {};
+    const baseNativeFields = baseTable.fields.filter((f) => f.native);
+    for (const baseNative of baseNativeFields) {
+      const matched = nativeFields.find((nf) => nf.slug === baseNative.slug);
+      if (matched) {
+        nativeIdMap[baseNative._id] = matched._id;
       }
+    }
 
-      const nonNativeFields = baseTable.fields.filter(
-        (f) => !f.native && !f.trashed,
-      );
+    const nonNativeFields = baseTable.fields.filter(
+      (f) => !f.native && !f.trashed,
+    );
 
-      const { newFieldIds, fieldIdMap, clonedFields } =
-        await this.cloneFields(nonNativeFields);
+    const { newFieldIds, fieldIdMap, clonedFields } =
+      await this.cloneFields(nonNativeFields);
 
-      const combinedFieldIdMap = { ...nativeIdMap, ...fieldIdMap };
+    const combinedFieldIdMap = { ...nativeIdMap, ...fieldIdMap };
 
-      const clonedGroups = await this.cloneGroups(
-        baseTable.groups,
-        clonedFields,
+    const clonedGroups = await this.cloneGroups(
+      baseTable.groups,
+      clonedFields,
+      combinedFieldIdMap,
+    );
+
+    const _schema = this.tableSchemaService.computeSchema(
+      [...nativeFields, ...clonedFields],
+      clonedGroups,
+    );
+
+    const orderList = this.remapFieldIds(
+      baseTable.fieldOrderList,
+      combinedFieldIdMap,
+    );
+
+    const orderForm = this.remapFieldIds(
+      baseTable.fieldOrderForm,
+      combinedFieldIdMap,
+    );
+
+    const orderFilter = this.remapFieldIds(
+      baseTable.fieldOrderFilter,
+      combinedFieldIdMap,
+    );
+
+    const orderDetail = this.remapFieldIds(
+      baseTable.fieldOrderDetail,
+      combinedFieldIdMap,
+    );
+
+    const createPayload: TableCreatePayload = {
+      _schema,
+      name,
+      slug: newSlug,
+      description: baseTable.description ?? null,
+      type: baseTable.type,
+      logo: baseTable.logo?._id ?? null,
+      fields: [...nativeFieldIds, ...newFieldIds],
+      style: baseTable.style,
+      visibility: baseTable.visibility,
+      collaboration: baseTable.collaboration,
+      administrators: baseTable.administrators.flatMap((a) => a._id),
+      owner: ownerId,
+      fieldOrderList: orderList,
+      fieldOrderForm: orderForm,
+      fieldOrderFilter: orderFilter,
+      fieldOrderDetail: orderDetail,
+      methods: baseTable.methods,
+      groups: clonedGroups,
+      order: this.remapOrder(baseTable.order, combinedFieldIdMap),
+      layoutFields: this.remapLayoutFields(
+        baseTable.layoutFields,
         combinedFieldIdMap,
-      );
+      ),
+    };
 
-      const _schema = this.tableSchemaService.computeSchema(
-        [...nativeFields, ...clonedFields],
-        clonedGroups,
-      );
+    const newTable = await this.tableRepository.create(createPayload);
 
-      const orderList = this.remapFieldIds(
-        baseTable.fieldOrderList,
-        combinedFieldIdMap,
-      );
-
-      const orderForm = this.remapFieldIds(
-        baseTable.fieldOrderForm,
-        combinedFieldIdMap,
-      );
-
-      const orderFilter = this.remapFieldIds(
-        baseTable.fieldOrderFilter,
-        combinedFieldIdMap,
-      );
-
-      const orderDetail = this.remapFieldIds(
-        baseTable.fieldOrderDetail,
-        combinedFieldIdMap,
-      );
-
-      const createPayload: TableCreatePayload = {
-        _schema,
-        name,
-        slug: newSlug,
-        description: baseTable.description ?? null,
-        type: baseTable.type,
-        logo: baseTable.logo?._id ?? null,
-        fields: [...nativeFieldIds, ...newFieldIds],
-        style: baseTable.style,
-        visibility: baseTable.visibility,
-        collaboration: baseTable.collaboration,
-        administrators: baseTable.administrators.flatMap((a) => a._id),
-        owner: ownerId,
-        fieldOrderList: orderList,
-        fieldOrderForm: orderForm,
-        fieldOrderFilter: orderFilter,
-        fieldOrderDetail: orderDetail,
-        methods: baseTable.methods,
-        groups: clonedGroups,
-        order: this.remapOrder(baseTable.order, combinedFieldIdMap),
-        layoutFields: this.remapLayoutFields(
-          baseTable.layoutFields,
-          combinedFieldIdMap,
-        ),
-      };
-
-      const newTable = await this.tableRepository.create(createPayload);
-
-      return {
-        baseTable,
-        table: newTable,
-        fields: [...nativeFields, ...clonedFields],
-        groups: clonedGroups,
-        fieldIdMap: combinedFieldIdMap,
-      };
+    return {
+      baseTable,
+      table: newTable,
+      fields: [...nativeFields, ...clonedFields],
+      groups: clonedGroups,
+      fieldIdMap: combinedFieldIdMap,
+    };
   }
 
   private async expandTablesWithRelationships(
@@ -735,9 +735,7 @@ export default class CloneTableUseCase {
     if (!rowIdMap) return value;
 
     if (Array.isArray(value)) {
-      return value
-        .map((item) => rowIdMap.get(String(item)))
-        .filter(Boolean);
+      return value.map((item) => rowIdMap.get(String(item))).filter(Boolean);
     }
 
     if (value === null || value === undefined || value === '') {

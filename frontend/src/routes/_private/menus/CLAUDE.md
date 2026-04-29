@@ -1,22 +1,22 @@
 # Gestao de Menus
 
 Modulo CRUD de menus do sistema com listagem paginada, filtros, ordenacao por
-colunas e fluxo completo de lixeira (soft delete, restore, hard delete
-singular, bulk-trash, bulk-restore, bulk-delete e empty-trash). Restrito a
-roles MASTER e ADMINISTRATOR.
+colunas e fluxo completo de lixeira (soft delete, restore, hard delete singular,
+bulk-trash, bulk-restore, bulk-delete e empty-trash). Restrito a roles MASTER e
+ADMINISTRATOR.
 
 ## Rota
 
-`/menus` -- lista paginada com toggle de lixeira, busca por nome e ordenacao
-por colunas (nome, slug, tipo, criado por, criado em).
+`/menus` -- lista paginada com toggle de lixeira, busca por nome e ordenacao por
+colunas (nome, slug, tipo, criado por, criado em).
 
 ## Controle de Acesso
 
 - **MASTER** e **ADMINISTRATOR** podem enviar para lixeira e restaurar.
-- Apenas **MASTER** pode hard-deletar menus (item "Excluir permanentemente"
-  no dropdown, botao na BulkActionBar e botao "Esvaziar lixeira").
-- Bulk-trash em menu pai aplica cascata recursiva nos descendentes (resolvido
-  no backend via `findDescendantIds`).
+- Apenas **MASTER** pode hard-deletar menus (item "Excluir permanentemente" no
+  dropdown, botao na BulkActionBar e botao "Esvaziar lixeira").
+- Bulk-trash em menu pai aplica cascata recursiva nos descendentes (resolvido no
+  backend via `findDescendantIds`).
 - Hard delete singular ou em lote requer que o menu esteja na lixeira (backend
   retorna `NOT_TRASHED`).
 
@@ -57,12 +57,12 @@ por colunas (nome, slug, tipo, criado por, criado em).
 
 ## Componentes Compartilhados
 
-| Componente                      | Uso                                                                          |
-| ------------------------------- | ---------------------------------------------------------------------------- |
-| `BulkActionBar`                 | Barra inferior sticky com acoes em lote conforme `isTrashView` e `canDelete` |
-| `PermanentDeleteConfirmDialog`  | Captcha matematico para hard delete singular/bulk/empty-trash                |
-| `TrashButton`                   | Toggle entre lista ativa e lixeira via search param                          |
-| `ActionDialog` (refs)           | Mantido apenas para soft trash/restore singular (codigo legado preservado)   |
+| Componente                     | Uso                                                                          |
+| ------------------------------ | ---------------------------------------------------------------------------- |
+| `BulkActionBar`                | Barra inferior sticky com acoes em lote conforme `isTrashView` e `canDelete` |
+| `PermanentDeleteConfirmDialog` | Captcha matematico para hard delete singular/bulk/empty-trash                |
+| `TrashButton`                  | Toggle entre lista ativa e lixeira via search param                          |
+| `ActionDialog` (refs)          | Mantido apenas para soft trash/restore singular (codigo legado preservado)   |
 
 ## Tipos de menu
 

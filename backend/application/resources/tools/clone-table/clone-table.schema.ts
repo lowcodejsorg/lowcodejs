@@ -3,14 +3,12 @@ import type { FastifySchema } from 'fastify';
 export const CloneTableSchema: FastifySchema = {
   tags: ['Tools'],
   summary: 'Clone table',
-  description: 'Clones one or more tables using table IDs and an optional name/prefix',
+  description:
+    'Clones one or more tables using table IDs and an optional name/prefix',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    anyOf: [
-      { required: ['baseTableId'] },
-      { required: ['baseTableIds'] },
-    ],
+    anyOf: [{ required: ['baseTableId'] }, { required: ['baseTableIds'] }],
     properties: {
       baseTableId: {
         type: 'string',

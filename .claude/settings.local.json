@@ -111,7 +111,8 @@
       "Bash(npm ls *)",
       "Bash(xargs -I{} grep -l \"useQuery\\\\|useSuspenseQuery\\\\|/paginated\\\\|ReadPaginated\" {})",
       "Bash(ps *)",
-      "Bash(xargs file *)"
+      "Bash(xargs file *)",
+      "Bash(echo \"exit=$?\")"
     ]
   },
   "enableAllProjectMcpServers": true,

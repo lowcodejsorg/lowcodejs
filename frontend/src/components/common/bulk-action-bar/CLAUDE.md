@@ -10,7 +10,7 @@ lixeira) e o role do usuário (apenas MASTER vê "Excluir permanentemente").
 type BulkActionBarProps = {
   selectedCount: number;
   isTrashView: boolean;
-  canDelete: boolean;        // true apenas para MASTER
+  canDelete: boolean; // true apenas para MASTER
   onClear: () => void;
   onTrash?: () => void;
   onRestore?: () => void;

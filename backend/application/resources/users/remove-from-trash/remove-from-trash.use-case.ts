@@ -28,10 +28,7 @@ export default class UserRemoveFromTrashUseCase {
 
       if (!user.trashed) {
         return left(
-          HTTPException.Conflict(
-            'Usuário não está na lixeira',
-            'NOT_TRASHED',
-          ),
+          HTTPException.Conflict('Usuário não está na lixeira', 'NOT_TRASHED'),
         );
       }
 

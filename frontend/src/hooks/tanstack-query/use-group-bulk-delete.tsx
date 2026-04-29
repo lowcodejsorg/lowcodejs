@@ -6,7 +6,7 @@ import { queryKeys } from './_query-keys';
 
 import { API } from '@/lib/api';
 
-type Payload = { ids: string[] };
+type Payload = { ids: Array<string> };
 type Result = { deleted: number };
 
 type UseGroupBulkDeleteProps = {

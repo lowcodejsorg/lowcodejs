@@ -1,4 +1,8 @@
-import { LoaderCircleIcon, RefreshCwIcon, TriangleAlertIcon } from 'lucide-react';
+import {
+  LoaderCircleIcon,
+  RefreshCwIcon,
+  TriangleAlertIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import { useMathCaptcha } from './use-math-captcha';
@@ -41,7 +45,6 @@ export function PermanentDeleteConfirmDialog(
         captcha.regenerate();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [props.open],
   );
 
@@ -82,7 +85,8 @@ export function PermanentDeleteConfirmDialog(
             <strong>Esta ação não pode ser desfeita.</strong>
             {props.itemsCount > 0 && (
               <span>
-                {props.itemsCount === 1 && '1 item será excluído permanentemente.'}
+                {props.itemsCount === 1 &&
+                  '1 item será excluído permanentemente.'}
                 {props.itemsCount > 1 && (
                   <React.Fragment>
                     {props.itemsCount} itens serão excluídos permanentemente.

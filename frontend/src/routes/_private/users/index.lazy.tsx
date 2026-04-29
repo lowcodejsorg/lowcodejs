@@ -71,7 +71,9 @@ function RouteComponent(): React.JSX.Element {
       toastSuccess(message, 'A lixeira de usuários foi esvaziada');
     },
     onError(error) {
-      handleApiError(error, { context: 'Erro ao esvaziar lixeira de usuários' });
+      handleApiError(error, {
+        context: 'Erro ao esvaziar lixeira de usuários',
+      });
     },
   });
 

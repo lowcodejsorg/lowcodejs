@@ -248,9 +248,7 @@ describe('Clone Table Use Case', () => {
       (table) => table.name === 'Clone de Tabela Sem Dados',
     );
 
-    const copiedRows = await rowInMemoryRepository.findAllRaw(
-      clonedWithData!,
-    );
+    const copiedRows = await rowInMemoryRepository.findAllRaw(clonedWithData!);
     const ignoredRows = await rowInMemoryRepository.findAllRaw(
       clonedWithoutData!,
     );

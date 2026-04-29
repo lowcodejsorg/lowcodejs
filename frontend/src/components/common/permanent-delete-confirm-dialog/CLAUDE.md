@@ -10,11 +10,11 @@ acidentais. **Não é um anti-bot**: o cálculo é trivial.
 
 ## Arquivos
 
-| Arquivo                              | Descrição                                  |
-| ------------------------------------ | ------------------------------------------ |
-| `permanent-delete-confirm-dialog.tsx`| Componente Dialog com captcha + warning    |
-| `use-math-captcha.ts`                | Hook que gera pergunta/resposta + reseta   |
-| `index.ts`                           | Barrel                                     |
+| Arquivo                               | Descrição                                |
+| ------------------------------------- | ---------------------------------------- |
+| `permanent-delete-confirm-dialog.tsx` | Componente Dialog com captcha + warning  |
+| `use-math-captcha.ts`                 | Hook que gera pergunta/resposta + reseta |
+| `index.ts`                            | Barrel                                   |
 
 ## Props
 
@@ -24,10 +24,10 @@ type PermanentDeleteConfirmDialogProps = {
   onOpenChange: (open: boolean) => void;
   title: string;
   description: string;
-  itemsCount: number;        // mostra "N itens serão excluídos"
-  isPending: boolean;        // disable do botão durante mutation
-  onConfirm: () => void;     // disparado quando captcha válido + clique
-  confirmLabel?: string;     // default "Excluir permanentemente"
+  itemsCount: number; // mostra "N itens serão excluídos"
+  isPending: boolean; // disable do botão durante mutation
+  onConfirm: () => void; // disparado quando captcha válido + clique
+  confirmLabel?: string; // default "Excluir permanentemente"
   testId?: string;
 };
 ```

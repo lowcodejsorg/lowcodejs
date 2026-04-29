@@ -54,10 +54,7 @@ describe('UserGroup Empty Trash Use Case', () => {
   });
 
   it('deve retornar EMPTY_TRASH_GROUPS_ERROR em falha interna', async () => {
-    groupRepo.simulateError(
-      'findManyTrashed',
-      new Error('Database error'),
-    );
+    groupRepo.simulateError('findManyTrashed', new Error('Database error'));
     const result = await sut.execute();
     expect(result.isLeft()).toBe(true);
     if (!result.isLeft()) throw new Error('expected left');

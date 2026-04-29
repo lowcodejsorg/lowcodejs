@@ -309,10 +309,7 @@ interface Props {
   toolbarPortal: HTMLDivElement | null;
 }
 
-export function TableGroups({
-  data,
-  toolbarPortal,
-}: Props): React.JSX.Element {
+export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const auth = useAuthStore();

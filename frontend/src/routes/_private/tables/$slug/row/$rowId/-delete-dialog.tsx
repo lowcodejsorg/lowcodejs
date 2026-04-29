@@ -51,7 +51,6 @@ export function RowDeleteDialog({
         captcha.regenerate();
       }
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [open],
   );
 

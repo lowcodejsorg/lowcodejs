@@ -325,11 +325,13 @@ function buildColumns(params: {
             className={cn(
               'font-semibold border-transparent',
               type === E_MENU_ITEM_TYPE.PAGE && 'bg-green-100 text-green-700',
-              type === E_MENU_ITEM_TYPE.TABLE && 'bg-yellow-100 text-yellow-700',
+              type === E_MENU_ITEM_TYPE.TABLE &&
+                'bg-yellow-100 text-yellow-700',
               type === E_MENU_ITEM_TYPE.FORM && 'bg-blue-100 text-blue-700',
               type === E_MENU_ITEM_TYPE.EXTERNAL &&
                 'bg-violet-100 text-violet-700',
-              type === E_MENU_ITEM_TYPE.SEPARATOR && 'bg-gray-100 text-gray-700',
+              type === E_MENU_ITEM_TYPE.SEPARATOR &&
+                'bg-gray-100 text-gray-700',
             )}
           >
             {TypeMapper[type as keyof typeof TypeMapper] || 'N/A'}

@@ -44,9 +44,7 @@ describe('E2E User Remove From Trash Controller', () => {
     });
 
     it('deve retornar 401 sem autenticacao', async () => {
-      const response = await supertest(kernel.server).patch(
-        '/users/x/restore',
-      );
+      const response = await supertest(kernel.server).patch('/users/x/restore');
       expect(response.statusCode).toBe(401);
     });
   });
