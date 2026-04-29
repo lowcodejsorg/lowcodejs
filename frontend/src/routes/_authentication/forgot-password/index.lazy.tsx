@@ -27,7 +27,8 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationRequestCode } from '@/hooks/tanstack-query/use-authentication-request-code';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import { toastSuccess } from '@/lib/toast';
 
@@ -56,17 +57,10 @@ function RouteComponent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao enviar código',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
         causeHandlers: {
-          EMAIL_NOT_FOUND: () => {
-            const setFieldError = createFieldErrorSetter(form);
-            setFieldError('email', 'E-mail não encontrado');
-          },
+          EMAIL_NOT_FOUND: () =>
+            applyApiFieldErrors(form, { email: 'E-mail não encontrado' }),
         },
       });
     },
@@ -82,6 +76,8 @@ function RouteComponent(): React.JSX.Element {
       await requestCodeMutation.mutateAsync(value);
     },
   });
+
+  useApiErrorAutoClear(form);
 
   return (
     <div
@@ -119,8 +115,7 @@ function RouteComponent(): React.JSX.Element {
                   <form.Field
                     name="email"
                     children={(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      const isInvalid = getFieldInvalidState(field.state.meta);
 
                       return (
                         <Field data-invalid={isInvalid}>

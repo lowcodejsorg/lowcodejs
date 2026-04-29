@@ -21,9 +21,10 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { menuDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { API } from '@/lib/api';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu, ValueOf } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -108,12 +109,7 @@ function MenuUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o menu',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -143,6 +139,8 @@ function MenuUpdateContent({
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending';
   const menuType = useStore(form.store, (state) => state.values.type) as

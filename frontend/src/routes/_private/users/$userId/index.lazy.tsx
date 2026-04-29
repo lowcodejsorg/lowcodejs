@@ -18,7 +18,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { userDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateUser } from '@/hooks/tanstack-query/use-user-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -128,7 +129,7 @@ function UserUpdateContent({
     },
   });
 
-  const setFieldError = createFieldErrorSetter(form);
+  useApiErrorAutoClear(form);
 
   const _update = useUpdateUser({
     onSuccess() {
@@ -145,11 +146,7 @@ function UserUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o usuário',
-        onFieldErrors: (errors) => {
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });

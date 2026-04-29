@@ -16,7 +16,8 @@ import { Button } from '@/components/ui/button';
 import { settingOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateSetting } from '@/hooks/tanstack-query/use-setting-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ISetting } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -116,12 +117,7 @@ function SettingUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar configurações',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -214,6 +210,8 @@ function SettingUpdateContent({
       await _update.mutateAsync(payload);
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending';
 

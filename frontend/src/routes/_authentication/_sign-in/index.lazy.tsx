@@ -28,7 +28,8 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationSignIn } from '@/hooks/tanstack-query/use-authentication-sign-in';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
 import { toastSuccess } from '@/lib/toast';
@@ -61,12 +62,7 @@ function RouteComponent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao fazer login',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -84,6 +80,8 @@ function RouteComponent(): React.JSX.Element {
       await signInMutation.mutateAsync(payload);
     },
   });
+
+  useApiErrorAutoClear(form);
 
   return (
     <div
@@ -119,8 +117,7 @@ function RouteComponent(): React.JSX.Element {
                   <form.Field
                     name="email"
                     children={(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      const isInvalid = getFieldInvalidState(field.state.meta);
 
                       return (
                         <Field data-invalid={isInvalid}>
@@ -153,8 +150,7 @@ function RouteComponent(): React.JSX.Element {
                   <form.Field
                     name="password"
                     children={(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      const isInvalid = getFieldInvalidState(field.state.meta);
 
                       return (
                         <Field data-invalid={isInvalid}>

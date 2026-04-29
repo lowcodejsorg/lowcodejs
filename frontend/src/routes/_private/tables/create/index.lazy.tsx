@@ -22,7 +22,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { useCreateTable } from '@/hooks/tanstack-query/use-table-create';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import { toastSuccess } from '@/lib/toast';
 
@@ -59,12 +60,7 @@ function RouteComponentContent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao criar a tabela',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -88,6 +84,8 @@ function RouteComponentContent(): React.JSX.Element {
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _create.status === 'pending';
 

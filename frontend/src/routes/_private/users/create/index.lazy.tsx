@@ -15,7 +15,8 @@ import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { useSidebar } from '@/components/ui/sidebar';
 import { useCreateUser } from '@/hooks/tanstack-query/use-user-create';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import { toastSuccess } from '@/lib/toast';
 
@@ -40,7 +41,7 @@ function RouteComponent(): React.JSX.Element {
     },
   });
 
-  const setFieldError = createFieldErrorSetter(form);
+  useApiErrorAutoClear(form);
 
   const _create = useCreateUser({
     onSuccess() {
@@ -54,11 +55,7 @@ function RouteComponent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao criar o usuário',
-        onFieldErrors: (errors) => {
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });

@@ -21,7 +21,8 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationResetPassword } from '@/hooks/tanstack-query/use-authentication-reset-password';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import { toastSuccess } from '@/lib/toast';
 
@@ -65,12 +66,7 @@ function RouteComponent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao redefinir senha',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -90,6 +86,8 @@ function RouteComponent(): React.JSX.Element {
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   return (
     <div
@@ -121,8 +119,7 @@ function RouteComponent(): React.JSX.Element {
               <form.Field
                 name="password"
                 children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  const isInvalid = getFieldInvalidState(field.state.meta);
 
                   return (
                     <Field data-invalid={isInvalid}>
@@ -168,8 +165,7 @@ function RouteComponent(): React.JSX.Element {
               <form.Field
                 name="confirmPassword"
                 children={(field) => {
-                  const isInvalid =
-                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  const isInvalid = getFieldInvalidState(field.state.meta);
 
                   return (
                     <Field data-invalid={isInvalid}>

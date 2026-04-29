@@ -18,7 +18,8 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { groupDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateGroup } from '@/hooks/tanstack-query/use-group-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IGroup } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -116,12 +117,7 @@ function GroupUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o grupo',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -144,6 +140,8 @@ function GroupUpdateContent({
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending';
 
