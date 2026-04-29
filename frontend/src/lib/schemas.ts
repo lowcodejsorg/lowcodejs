@@ -128,29 +128,101 @@ const MenuTypeEnum = z.enum([
   E_MENU_ITEM_TYPE.SEPARATOR,
 ]);
 
-export const MenuCreateBodySchema = z.object({
-  name: z.string().trim().min(1, 'Nome é obrigatório'),
-  type: MenuTypeEnum,
-  table: z.string().default(''),
-  parent: z.string().default(''),
-  html: z.string().default(''),
-  url: z.string().default(''),
-  order: z.number().default(0),
-});
+export const MenuCreateBodySchema = z
+  .object({
+    name: z.string().trim().min(1, 'Nome é obrigatório'),
+    type: MenuTypeEnum,
+    table: z.string().default(''),
+    parent: z.string().default(''),
+    html: z.string().default(''),
+    url: z.string().default(''),
+    order: z.number().default(0),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      (data.type === E_MENU_ITEM_TYPE.TABLE ||
+        data.type === E_MENU_ITEM_TYPE.FORM) &&
+      (!data.table || data.table.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['table'],
+        message: 'Tabela é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.PAGE &&
+      (!data.html || data.html.trim() === '' || data.html === '<p></p>')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['html'],
+        message: 'Conteúdo HTML é obrigatório',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTERNAL &&
+      (!data.url || data.url.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['url'],
+        message: 'URL é obrigatória',
+      });
+    }
+  });
 
 export const MenuUpdateParamsSchema = z.object({
   _id: z.string().min(1, 'ID é obrigatório'),
 });
 
-export const MenuUpdateBodySchema = z.object({
-  name: z.string().trim().min(1, 'Nome é obrigatório'),
-  type: MenuTypeEnum,
-  table: z.string().default(''),
-  parent: z.string().default(''),
-  html: z.string().default(''),
-  url: z.string().default(''),
-  order: z.number().default(0),
-});
+export const MenuUpdateBodySchema = z
+  .object({
+    name: z.string().trim().min(1, 'Nome é obrigatório'),
+    type: MenuTypeEnum,
+    table: z.string().default(''),
+    parent: z.string().default(''),
+    html: z.string().default(''),
+    url: z.string().default(''),
+    order: z.number().default(0),
+  })
+  .superRefine((data, ctx) => {
+    if (
+      (data.type === E_MENU_ITEM_TYPE.TABLE ||
+        data.type === E_MENU_ITEM_TYPE.FORM) &&
+      (!data.table || data.table.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['table'],
+        message: 'Tabela é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.PAGE &&
+      (!data.html || data.html.trim() === '' || data.html === '<p></p>')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['html'],
+        message: 'Conteúdo HTML é obrigatório',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTERNAL &&
+      (!data.url || data.url.trim() === '')
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['url'],
+        message: 'URL é obrigatória',
+      });
+    }
+  });
 
 // ============== TABLE ==============
 export const TableStyleSchema = z

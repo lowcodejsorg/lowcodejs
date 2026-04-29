@@ -38,6 +38,29 @@ export default class MenuUpdateUseCase {
           HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'),
         );
 
+      if (
+        existingMenu.type === E_MENU_ITEM_TYPE.SEPARATOR &&
+        payload.type &&
+        payload.type !== E_MENU_ITEM_TYPE.SEPARATOR
+      ) {
+        const childrenCount = await this.menuRepository.count({
+          parent: existingMenu._id,
+          trashed: false,
+        });
+
+        if (childrenCount > 0) {
+          return left(
+            HTTPException.Conflict(
+              'Separador com submenus ativos não pode mudar de tipo',
+              'SEPARATOR_HAS_CHILDREN',
+              {
+                type: 'Separador com submenus ativos não pode mudar de tipo',
+              },
+            ),
+          );
+        }
+      }
+
       let finalSlug = payload.slug || existingMenu.slug;
       let parent = null;
 

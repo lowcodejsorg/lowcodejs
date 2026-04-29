@@ -304,6 +304,8 @@ function MenuUpdateContent({
               isPending={isPending}
               mode={mode}
               menuType={menuType}
+              originalType={data.type}
+              hasChildren={(data.children?.length ?? 0) > 0}
             />
           </form>
         </PageShell.Content>

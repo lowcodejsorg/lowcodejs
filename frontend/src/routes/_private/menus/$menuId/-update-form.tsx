@@ -34,9 +34,22 @@ export const UpdateMenuFormFields = withForm({
     menuType: E_MENU_ITEM_TYPE.SEPARATOR as
       | ValueOf<typeof E_MENU_ITEM_TYPE>
       | '',
+    originalType: E_MENU_ITEM_TYPE.SEPARATOR as
+      | ValueOf<typeof E_MENU_ITEM_TYPE>
+      | '',
+    hasChildren: false,
   },
-  render: function Render({ form, isPending, mode, menuType }) {
+  render: function Render({
+    form,
+    isPending,
+    mode,
+    menuType,
+    originalType,
+    hasChildren,
+  }) {
     const isDisabled = mode === 'show' || isPending;
+    const isSeparatorWithChildren =
+      originalType === E_MENU_ITEM_TYPE.SEPARATOR && hasChildren;
 
     return (
       <section
@@ -76,13 +89,13 @@ export const UpdateMenuFormFields = withForm({
           name="type"
           validators={{
             onChange: ({ value }) => {
-              if (value.trim() === '') {
+              if (!value || value.trim() === '') {
                 return 'Tipo é obrigatório';
               }
               return undefined;
             },
             onBlur: ({ value }) => {
-              if (value.trim() === '') {
+              if (!value || value.trim() === '') {
                 return 'Tipo é obrigatório';
               }
               return undefined;
@@ -93,11 +106,17 @@ export const UpdateMenuFormFields = withForm({
             <field.FieldMenuTypeSelect
               label="Tipo"
               placeholder="Selecione o tipo de menu"
-              disabled={isDisabled}
+              disabled={isDisabled || isSeparatorWithChildren}
               required
             />
           )}
         </form.AppField>
+        {isSeparatorWithChildren && mode === 'edit' && (
+          <p className="text-muted-foreground text-xs -mt-2">
+            Este separador possui submenus ativos e por isso o tipo não pode
+            ser alterado.
+          </p>
+        )}
 
         {/* Campo Parent */}
         <form.AppField name="parent">
@@ -117,13 +136,13 @@ export const UpdateMenuFormFields = withForm({
             name="table"
             validators={{
               onChange: ({ value }) => {
-                if (value.trim() === '') {
+                if (!value || value.trim() === '') {
                   return 'Tabela é obrigatória';
                 }
                 return undefined;
               },
               onBlur: ({ value }) => {
-                if (value.trim() === '') {
+                if (!value || value.trim() === '') {
                   return 'Tabela é obrigatória';
                 }
                 return undefined;

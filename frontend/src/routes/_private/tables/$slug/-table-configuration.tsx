@@ -38,12 +38,14 @@ interface FieldGroupSubMenuProps {
   field: IField;
   originSlug: string;
   parentTable: ITable;
+  onNavigate: () => void;
 }
 
 function FieldGroupSubMenu({
   field,
   originSlug,
   parentTable,
+  onNavigate,
 }: FieldGroupSubMenuProps): React.JSX.Element {
   const router = useRouter();
   const permission = useTablePermission(parentTable);
@@ -70,6 +72,7 @@ function FieldGroupSubMenu({
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
               onClick={() => {
+                onNavigate();
                 router.navigate({
                   to: '/tables/$slug/field/create',
                   params: { slug: originSlug },
@@ -82,10 +85,11 @@ function FieldGroupSubMenu({
             </DropdownMenuItem>
           )}
 
-          {permission.can('UPDATE_FIELD') && activeFields.length > 1 && (
+          {permission.can('UPDATE_FIELD') && activeFields.length > 0 && (
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
               onClick={() => {
+                onNavigate();
                 router.navigate({
                   to: '/tables/$slug/group/$groupSlug/field/management',
                   params: { slug: originSlug, groupSlug },
@@ -107,6 +111,7 @@ function FieldGroupSubMenu({
                 key={groupField._id}
                 className="inline-flex space-x-1 w-full"
                 onClick={() => {
+                  onNavigate();
                   router.navigate({
                     to: '/tables/$slug/field/$fieldId',
                     params: { slug: originSlug, fieldId: groupField._id },
@@ -141,6 +146,9 @@ export function TableConfigurationDropdown({
   const permission = useTablePermission(table.data);
 
   const [apiModalOpen, setApiModalOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+
+  const closeMenu = (): void => setOpen(false);
 
   const activeFields =
     table.data?.fields.filter(
@@ -166,6 +174,8 @@ export function TableConfigurationDropdown({
     <DropdownMenu
       dir="ltr"
       modal={false}
+      open={open}
+      onOpenChange={setOpen}
     >
       <DropdownMenuTrigger asChild>
         <Button
@@ -191,6 +201,7 @@ export function TableConfigurationDropdown({
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
               onClick={() => {
+                closeMenu();
                 router.navigate({
                   to: '/tables/$slug/field/create',
                   params: { slug },
@@ -215,6 +226,7 @@ export function TableConfigurationDropdown({
                       <DropdownMenuItem
                         className="inline-flex space-x-1 w-full"
                         onClick={() => {
+                          closeMenu();
                           router.navigate({
                             to: '/tables/$slug/field/management',
                             params: { slug },
@@ -232,6 +244,7 @@ export function TableConfigurationDropdown({
                     <DropdownMenuItem
                       key={field._id}
                       onClick={() => {
+                        closeMenu();
                         router.navigate({
                           to: '/tables/$slug/field/$fieldId',
                           params: { slug, fieldId: field._id },
@@ -260,6 +273,7 @@ export function TableConfigurationDropdown({
                   <DropdownMenuItem
                     className="inline-flex space-x-1 w-full"
                     onClick={() => {
+                      closeMenu();
                       router.navigate({
                         to: '/tables/$slug/field/create',
                         params: { slug },
@@ -280,6 +294,7 @@ export function TableConfigurationDropdown({
                       field={field}
                       originSlug={slug}
                       parentTable={table.data}
+                      onNavigate={closeMenu}
                     />
                   ))}
               </DropdownMenuGroup>
@@ -296,6 +311,7 @@ export function TableConfigurationDropdown({
               <DropdownMenuItem
                 className="inline-flex space-x-1 w-full"
                 onClick={() => {
+                  closeMenu();
                   router.navigate({
                     to: '/tables/$slug/detail',
                     params: { slug },
@@ -315,6 +331,7 @@ export function TableConfigurationDropdown({
               <DropdownMenuItem
                 className="inline-flex space-x-1 w-full"
                 onClick={() => {
+                  closeMenu();
                   router.navigate({
                     to: '/tables/$slug/methods',
                     params: { slug },
@@ -329,7 +346,10 @@ export function TableConfigurationDropdown({
                 <DropdownMenuItem
                   className="inline-flex space-x-1 w-full"
                   data-test-id="api-endpoints-btn"
-                  onClick={() => setApiModalOpen(true)}
+                  onClick={() => {
+                    closeMenu();
+                    setApiModalOpen(true);
+                  }}
                 >
                   <InfoIcon className="size-4" />
                   <span>Informações da API</span>
@@ -340,6 +360,7 @@ export function TableConfigurationDropdown({
                 <DropdownMenuItem
                   className="inline-flex space-x-1 w-full"
                   onClick={() => {
+                    closeMenu();
                     const embedUrl = window.location.href;
                     const iframeCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
 
