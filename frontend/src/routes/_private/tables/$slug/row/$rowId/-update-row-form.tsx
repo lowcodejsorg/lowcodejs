@@ -1,4 +1,4 @@
-import { useRouter } from '@tanstack/react-router';
+import { useRouter, useSearch } from '@tanstack/react-router';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
@@ -46,8 +46,12 @@ function UpdateRowFormContent({
   const isUploading = useIsUploading();
   const router = useRouter();
   const permission = useTablePermission(table);
+  const search = useSearch({ from: '/_private/tables/$slug/row/$rowId/' });
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+  const canEditRow = permission.can('UPDATE_ROW');
+  const initialMode: 'show' | 'edit' =
+    search.mode === 'edit' && canEditRow && !data.trashed ? 'edit' : 'show';
+  const [mode, setMode] = React.useState<'show' | 'edit'>(initialMode);
 
   const slug = table.slug;
   const rowId = data._id;

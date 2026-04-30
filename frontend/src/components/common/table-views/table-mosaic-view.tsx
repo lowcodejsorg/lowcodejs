@@ -1,6 +1,8 @@
 import { useParams, useRouter } from '@tanstack/react-router';
 import React from 'react';
 
+import { TableRowActionsMenu } from './table-row-actions-menu';
+
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -12,6 +14,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
 import { resolveLayoutField } from '@/lib/layout-field-resolver';
@@ -174,6 +177,7 @@ export function TableMosaicView({
 }: Props): React.JSX.Element {
   const router = useRouter();
   const { slug } = useParams({ from: '/_private/tables/$slug/' });
+  const table = useReadTable({ slug });
 
   const visibleHeaders = headers.filter(HeaderFilter).sort(HeaderSorter(order));
 
@@ -227,16 +231,23 @@ export function TableMosaicView({
           </div>
 
           <div className="p-3">
-            <div className="font-semibold leading-tight line-clamp-2">
-              {titleField ? (
-                <RenderMosaicCell
-                  field={titleField}
-                  row={row}
-                  tableSlug={slug}
-                />
-              ) : (
-                <span className="text-muted-foreground">Sem título</span>
-              )}
+            <div className="flex items-start justify-between gap-2">
+              <div className="font-semibold leading-tight line-clamp-2 min-w-0 flex-1">
+                {titleField ? (
+                  <RenderMosaicCell
+                    field={titleField}
+                    row={row}
+                    tableSlug={slug}
+                  />
+                ) : (
+                  <span className="text-muted-foreground">Sem título</span>
+                )}
+              </div>
+              <TableRowActionsMenu
+                slug={slug}
+                row={row}
+                table={table.data}
+              />
             </div>
 
             {descField ? (
