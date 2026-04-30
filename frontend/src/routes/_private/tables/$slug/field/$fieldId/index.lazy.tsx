@@ -319,6 +319,7 @@ function FieldUpdateContent({
         label: d.label,
         color: d.color,
       })),
+      allowCustomDropdownOptions: data.allowCustomDropdownOptions ?? false,
       relationship: {
         tableId: data.relationship?.table?._id ?? '',
         tableSlug: data.relationship?.table?.slug ?? '',
@@ -365,6 +366,10 @@ function FieldUpdateContent({
           : null,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
+        allowCustomDropdownOptions:
+          value.type === E_FIELD_TYPE.DROPDOWN
+            ? value.allowCustomDropdownOptions
+            : false,
         relationship: hasRelationship
           ? {
               table: {

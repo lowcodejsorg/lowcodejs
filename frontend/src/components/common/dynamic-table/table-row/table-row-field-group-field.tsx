@@ -265,6 +265,8 @@ function NestedGroupField({
               <formField.TableRowDropdownField
                 field={groupField}
                 disabled={disabled}
+                tableSlug={tableSlug}
+                groupSlug={groupConfig.slug}
               />
             );
           case E_FIELD_TYPE.DATE:

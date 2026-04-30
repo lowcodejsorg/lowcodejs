@@ -225,7 +225,7 @@ export function RowFormFields({
   form,
   fields,
   disabled,
-  tableSlug: _tableSlug,
+  tableSlug,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
     <section
@@ -288,6 +288,7 @@ export function RowFormFields({
                       <formField.TableRowDropdownField
                         field={field}
                         disabled={disabled}
+                        tableSlug={tableSlug}
                       />
                     );
                   case E_FIELD_TYPE.DATE:

@@ -332,6 +332,7 @@ export type IField = Merge<
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: IDropdown[];
+    allowCustomDropdownOptions?: boolean;
     category: ICategory[];
     group: IFieldConfigurationGroup | null;
   }
@@ -357,6 +358,7 @@ export type FieldCreatePayload = Pick<
   | 'defaultValue'
   | 'relationship'
   | 'dropdown'
+  | 'allowCustomDropdownOptions'
   | 'category'
   | 'group'
 >;
@@ -443,6 +445,7 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | string | null;
     order: number;
+    isInitial: boolean;
   }
 >;
 

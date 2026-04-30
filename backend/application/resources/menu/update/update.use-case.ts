@@ -61,6 +61,20 @@ export default class MenuUpdateUseCase {
         }
       }
 
+      const finalType = payload.type ?? existingMenu.type;
+
+      if (finalType === E_MENU_ITEM_TYPE.SEPARATOR && payload.isInitial) {
+        return left(
+          HTTPException.BadRequest(
+            'Separador não pode ser página inicial',
+            'INVALID_PARAMETERS',
+            {
+              isInitial: 'Separador não pode ser página inicial',
+            },
+          ),
+        );
+      }
+
       let finalSlug = payload.slug || existingMenu.slug;
       let parent = null;
 
@@ -184,12 +198,16 @@ export default class MenuUpdateUseCase {
         slug: finalSlug,
       };
 
+      if (finalType === E_MENU_ITEM_TYPE.SEPARATOR) {
+        updatePayload.isInitial = false;
+      }
+
       const parentChanged =
         payload.parent !== undefined && payload.parent !== existingMenu.parent;
 
       if (parentChanged && payload.order === undefined) {
         const siblingCount = await this.menuRepository.count({
-          parent: payload.parent ?? undefined,
+          parent: payload.parent ?? null,
           trashed: false,
         });
         updatePayload.order = siblingCount;
@@ -198,6 +216,10 @@ export default class MenuUpdateUseCase {
       const updated = await this.menuRepository.update(
         updatePayload as RepositoryMenuUpdatePayload,
       );
+
+      if (payload.isInitial) {
+        await this.menuRepository.setOnlyInitial(updated._id);
+      }
 
       return right(updated);
     } catch (error) {

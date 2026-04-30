@@ -46,6 +46,42 @@ function getDescendantIds(menus: Array<IMenu>, rootId: string): Set<string> {
   return descendants;
 }
 
+function sortByPosition(menus: Array<IMenu>): Array<IMenu> {
+  return [...menus].sort((a, b) => {
+    const orderDiff = (a.order ?? 0) - (b.order ?? 0);
+    if (orderDiff !== 0) return orderDiff;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function sortMenusByHierarchy(menus: Array<IMenu>): Array<IMenu> {
+  const menuIds = new Set(menus.map((menu) => menu._id));
+  const childrenByParent = new Map<string | null, Array<IMenu>>();
+  const ordered: Array<IMenu> = [];
+
+  for (const menu of menus) {
+    const parentId = getParentId(menu);
+    const groupKey = parentId && menuIds.has(parentId) ? parentId : null;
+    const siblings = childrenByParent.get(groupKey) ?? [];
+
+    siblings.push(menu);
+    childrenByParent.set(groupKey, siblings);
+  }
+
+  function appendChildren(parentId: string | null): void {
+    const siblings = sortByPosition(childrenByParent.get(parentId) ?? []);
+
+    for (const menu of siblings) {
+      ordered.push(menu);
+      appendChildren(menu._id);
+    }
+  }
+
+  appendChildren(null);
+
+  return ordered;
+}
+
 function getMenuDepth(menu: IMenu, menuMap: Map<string, IMenu>): number {
   let depth = 0;
   let current = menu;
@@ -108,10 +144,12 @@ export function MenuCombobox({
   const availableMenus = React.useMemo(() => {
     if (!menus) return [];
 
-    return menus.filter((menu) => {
+    const filteredMenus = menus.filter((menu) => {
       if (excludedIds.has(menu._id)) return false;
       return true;
     });
+
+    return sortMenusByHierarchy(filteredMenus);
   }, [menus, excludedIds]);
 
   // Find selected menu

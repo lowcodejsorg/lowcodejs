@@ -1,4 +1,9 @@
-import { ExternalLinkIcon, MenuIcon, SettingsIcon } from 'lucide-react';
+import {
+  ExternalLinkIcon,
+  HouseIcon,
+  MenuIcon,
+  SettingsIcon,
+} from 'lucide-react';
 
 import { ContentViewer } from '@/components/common/rich-editor';
 import { Badge } from '@/components/ui/badge';
@@ -42,7 +47,22 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
               Tipo
             </p>
-            <Badge variant="outline">{typeLabel}</Badge>
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge variant="outline">{typeLabel}</Badge>
+              {data.isInitial && (
+                <Badge className="gap-1 border-transparent bg-primary/10 text-primary hover:bg-primary/10">
+                  <HouseIcon className="size-3" />
+                  Página inicial
+                </Badge>
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Posição
+            </p>
+            <p className="text-sm font-medium">{data.order ?? 0}</p>
           </div>
 
           {data.type !== E_MENU_ITEM_TYPE.SEPARATOR && (

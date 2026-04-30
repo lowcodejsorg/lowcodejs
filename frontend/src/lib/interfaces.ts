@@ -131,6 +131,7 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | null;
     order: number;
+    isInitial: boolean;
     children?: Array<IMenu>;
   }
 >;
@@ -179,6 +180,7 @@ export type IField = Merge<
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
+    allowCustomDropdownOptions?: boolean;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
   }

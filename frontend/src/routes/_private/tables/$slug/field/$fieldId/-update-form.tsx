@@ -12,6 +12,7 @@ export const FieldUpdateSchema = z.object({
   format: z.string().default(''),
   defaultValue: z.string().default(''),
   dropdown: z.array(z.custom<IDropdown>()).default([]),
+  allowCustomDropdownOptions: z.boolean().default(false),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
@@ -39,6 +40,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   format: '',
   defaultValue: '',
   dropdown: [],
+  allowCustomDropdownOptions: false,
   relationship: {
     tableId: '',
     tableSlug: '',
@@ -275,6 +277,18 @@ export const UpdateFieldFormFields = withForm({
                 label="Valor padrão"
                 disabled={isDisabled}
                 dropdown={dropdownOptions}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {isDropdown && (
+          <form.AppField name="allowCustomDropdownOptions">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Permitir usuário inserir novas tags"
+                description="Permite salvar uma nova opção quando o usuário digitar um valor que ainda não existe."
+                disabled={isDisabled || lockNonOptions}
               />
             )}
           </form.AppField>

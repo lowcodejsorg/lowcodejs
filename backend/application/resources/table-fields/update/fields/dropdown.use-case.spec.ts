@@ -92,6 +92,7 @@ function buildUpdatePayload(
     defaultValue: field.defaultValue,
     relationship: field.relationship,
     dropdown: field.dropdown as { id: string; label: string; color?: string }[],
+    allowCustomDropdownOptions: field.allowCustomDropdownOptions ?? false,
     category: field.category,
     group: field.group,
     trashed: false,
@@ -203,5 +204,42 @@ describe('Table Field Update - DROPDOWN', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.required).toBe(true);
+  });
+
+  it('deve atualizar permissao para criar novas tags no dropdown', async () => {
+    const { field } = await createFieldAndTable(
+      fieldInMemoryRepository,
+      tableInMemoryRepository,
+    );
+
+    const result = await sut.execute(
+      buildUpdatePayload(field, {
+        allowCustomDropdownOptions: true,
+      }),
+    );
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.allowCustomDropdownOptions).toBe(true);
+  });
+
+  it('deve rejeitar atualizacao com opcoes duplicadas por nome', async () => {
+    const { field } = await createFieldAndTable(
+      fieldInMemoryRepository,
+      tableInMemoryRepository,
+    );
+
+    const result = await sut.execute(
+      buildUpdatePayload(field, {
+        dropdown: [
+          { id: '1', label: 'Ativo' },
+          { id: '2', label: ' ativo ' },
+        ],
+      }),
+    );
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('DROPDOWN_OPTION_ALREADY_EXISTS');
   });
 });

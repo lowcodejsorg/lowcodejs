@@ -1,3 +1,4 @@
+import { useStore } from '@tanstack/react-store';
 import { FileTextIcon } from 'lucide-react';
 
 import { SeparatorInfo } from '../-separator-info';
@@ -9,7 +10,9 @@ import type { MenuCreatePayload } from '@/lib/payloads';
 import { MenuCreateBodySchema } from '@/lib/schemas';
 
 export const MenuCreateSchema = MenuCreateBodySchema;
-export type MenuFormType = MenuCreatePayload;
+export type MenuFormType = Omit<MenuCreatePayload, 'order'> & {
+  position: string;
+};
 
 export const menuFormDefaultValues: MenuFormType = {
   name: '',
@@ -18,6 +21,8 @@ export const menuFormDefaultValues: MenuFormType = {
   html: '',
   url: '',
   parent: '',
+  position: '0',
+  isInitial: false,
 };
 
 export const CreateMenuFormFields = withForm({
@@ -29,6 +34,8 @@ export const CreateMenuFormFields = withForm({
       | '',
   },
   render: function Render({ form, isPending, menuType }) {
+    const parent = useStore(form.store, (state) => state.values.parent);
+
     return (
       <section
         data-test-id="menu-create-form-fields"
@@ -100,6 +107,41 @@ export const CreateMenuFormFields = withForm({
             />
           )}
         </form.AppField>
+
+        <form.AppField
+          name="position"
+          validators={{
+            onChange: ({ value }) => {
+              if (!value) return 'Posição é obrigatória';
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value) return 'Posição é obrigatória';
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <field.FieldMenuPositionSelect
+              label="Inserir após"
+              parentId={parent || undefined}
+              disabled={isPending}
+              required
+            />
+          )}
+        </form.AppField>
+
+        {menuType !== E_MENU_ITEM_TYPE.SEPARATOR && (
+          <form.AppField name="isInitial">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Página inicial"
+                description="Carregar este menu ao acessar o sistema"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
 
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
         {(menuType === E_MENU_ITEM_TYPE.TABLE ||

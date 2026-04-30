@@ -137,6 +137,7 @@ export const MenuCreateBodySchema = z
     html: z.string().default(''),
     url: z.string().default(''),
     order: z.number().default(0),
+    isInitial: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (
@@ -187,6 +188,7 @@ export const MenuUpdateBodySchema = z
     html: z.string().default(''),
     url: z.string().default(''),
     order: z.number().default(0),
+    isInitial: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (
@@ -390,6 +392,7 @@ export const FieldBaseSchema = z.object({
   defaultValue: z.string().nullable().default(null),
   relationship: RelationshipSchema.nullable().default(null),
   dropdown: z.array(DropdownSchema).default([]),
+  allowCustomDropdownOptions: z.boolean().default(false),
   category: z.array(CategorySchema).default([]),
   group: z
     .object({

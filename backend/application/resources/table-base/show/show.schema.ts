@@ -197,6 +197,11 @@ export const TableShowSchema: FastifySchema = {
                   },
                 },
               },
+              allowCustomDropdownOptions: {
+                type: 'boolean',
+                description:
+                  'Allow users to create new dropdown options from row input',
+              },
               category: {
                 type: 'array',
                 description: 'Category tree for CATEGORY fields',
@@ -384,6 +389,7 @@ export const TableShowSchema: FastifySchema = {
                     },
                     relationship: { type: 'object', nullable: true },
                     dropdown: { type: 'array', nullable: true },
+                    allowCustomDropdownOptions: { type: 'boolean' },
                     category: { type: 'array', nullable: true },
                     group: { type: 'object', nullable: true },
                     trashed: { type: 'boolean' },

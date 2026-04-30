@@ -11,6 +11,7 @@ import React from 'react';
 import type { MenuUpdateFormValues } from './-update-form';
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { MenuView } from './-view';
+import { parseMenuPosition } from '../-position';
 
 import { ActionDialog } from '@/components/common/action-dialog';
 import { FormFooter } from '@/components/common/form-footer';
@@ -122,11 +123,18 @@ function MenuUpdateContent({
       html: data.html ?? '',
       url: data.url ?? '',
       parent: data.parent?._id ?? '',
+      position: data.parent
+        ? String((data.order ?? 0) + 1)
+        : String(data.order ?? 0),
+      isInitial: data.isInitial ?? false,
     } satisfies MenuUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending') return;
+
+      const order = parseMenuPosition(value.position, value.parent);
+      if (order === null) return;
 
       await _update.mutateAsync({
         _id: data._id,
@@ -136,6 +144,8 @@ function MenuUpdateContent({
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        order,
+        isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
       });
     },
   });
@@ -306,6 +316,7 @@ function MenuUpdateContent({
               menuType={menuType}
               originalType={data.type}
               hasChildren={(data.children?.length ?? 0) > 0}
+              menuId={data._id}
             />
           </form>
         </PageShell.Content>

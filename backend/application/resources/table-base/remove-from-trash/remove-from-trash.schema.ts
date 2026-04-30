@@ -151,6 +151,11 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                   },
                 },
               },
+              allowCustomDropdownOptions: {
+                type: 'boolean',
+                description:
+                  'Allow users to create new dropdown options from row input',
+              },
               category: {
                 type: 'array',
                 description: 'Category tree for CATEGORY fields',

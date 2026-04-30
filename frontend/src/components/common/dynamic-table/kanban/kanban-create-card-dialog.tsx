@@ -297,7 +297,10 @@ export function KanbanCreateCardDialog({
                           );
                         case E_FIELD_TYPE.DROPDOWN:
                           return (
-                            <formField.TableRowDropdownField field={field} />
+                            <formField.TableRowDropdownField
+                              field={field}
+                              tableSlug={tableSlug}
+                            />
                           );
                         case E_FIELD_TYPE.DATE:
                           return <formField.TableRowDateField field={field} />;

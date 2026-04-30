@@ -14,6 +14,7 @@ export function KanbanRowQuickActions({
   editTarget,
   setEditTarget,
   quickForm,
+  tableSlug,
 }: {
   members: Array<IUser | string>;
   fields: {
@@ -25,6 +26,7 @@ export function KanbanRowQuickActions({
   editTarget: EditTarget;
   setEditTarget: (value: EditTarget) => void;
   quickForm: any;
+  tableSlug: string;
 }): React.JSX.Element {
   return (
     <>
@@ -129,7 +131,10 @@ export function KanbanRowQuickActions({
               {editTarget === 'list' && fields.list && (
                 <quickForm.AppField name={fields.list.slug}>
                   {(formField: any) => (
-                    <formField.TableRowDropdownField field={fields.list!} />
+                    <formField.TableRowDropdownField
+                      field={fields.list!}
+                      tableSlug={tableSlug}
+                    />
                   )}
                 </quickForm.AppField>
               )}
