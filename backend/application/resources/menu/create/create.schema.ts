@@ -68,6 +68,13 @@ export const MenuCreateSchema: FastifySchema = {
           type: 'A URL deve ser um texto',
         },
       },
+      isInitial: {
+        type: 'boolean',
+        description: 'Define se este menu será carregado ao acessar o sistema',
+        errorMessage: {
+          type: 'Página inicial inválida',
+        },
+      },
     },
   },
   response: {
@@ -85,6 +92,10 @@ export const MenuCreateSchema: FastifySchema = {
         html: { type: 'string', nullable: true, description: 'Conteúdo HTML' },
         url: { type: 'string', nullable: true, description: 'URL' },
         order: { type: 'number', description: 'Ordem do menu' },
+        isInitial: {
+          type: 'boolean',
+          description: 'Se é o menu inicial do sistema',
+        },
         trashed: { type: 'boolean', description: 'Se está na lixeira' },
         trashedAt: {
           type: 'string',

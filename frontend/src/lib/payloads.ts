@@ -76,6 +76,7 @@ export type MenuCreatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  isInitial?: boolean;
 };
 
 export type MenuUpdatePayload = {
@@ -87,6 +88,15 @@ export type MenuUpdatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  isInitial?: boolean;
+};
+
+export type MenuReorderPayload = {
+  items: Array<{
+    _id: string;
+    parent: string | null;
+    order: number;
+  }>;
 };
 
 // ============== TABLE ==============
@@ -365,6 +375,7 @@ export type MenuQueryPayload = Merge<
     trashed?: boolean;
     parent?: string | null;
     'order-name'?: 'asc' | 'desc';
+    'order-position'?: 'asc' | 'desc';
     'order-slug'?: 'asc' | 'desc';
     'order-type'?: 'asc' | 'desc';
     'order-created-at'?: 'asc' | 'desc';

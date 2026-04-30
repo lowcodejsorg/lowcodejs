@@ -1,9 +1,11 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 
 import {
+  menuAllOptions,
   profileDetailOptions,
   setupStatusOptions,
 } from '@/hooks/tanstack-query/_query-options';
+import { resolveInitialMenuRoute } from '@/lib/menu/initial-menu-route';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
 
 export const Route = createFileRoute('/_authentication')({
@@ -27,7 +29,15 @@ export const Route = createFileRoute('/_authentication')({
       );
       if (user) {
         const role = user.group?.slug?.toUpperCase() ?? 'REGISTERED';
-        throw redirect({ to: ROLE_DEFAULT_ROUTE[role] ?? '/tables' });
+        const fallbackRoute = ROLE_DEFAULT_ROUTE[role] ?? '/tables';
+        const menus = await context.queryClient.fetchQuery(menuAllOptions());
+        const initialRoute = resolveInitialMenuRoute(menus);
+
+        if (initialRoute?.type === 'external') {
+          throw redirect({ href: initialRoute.href });
+        }
+
+        throw redirect({ to: initialRoute?.to ?? fallbackRoute });
       }
     } catch (e) {
       if (e && typeof e === 'object' && 'to' in e) throw e;

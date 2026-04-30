@@ -42,6 +42,28 @@ interface SidebarProps {
 
 const MAX_DEPTH = 4;
 
+function SidebarLabelTooltip({
+  children,
+  label,
+}: {
+  children: React.ReactElement;
+  label: string;
+}): React.JSX.Element {
+  return (
+    <Tooltip delayDuration={250}>
+      <TooltipTrigger asChild>{children}</TooltipTrigger>
+      <TooltipContent
+        side="right"
+        align="center"
+        sideOffset={8}
+        className="max-w-80"
+      >
+        {label}
+      </TooltipContent>
+    </Tooltip>
+  );
+}
+
 function SidebarMenuItemRecursive({
   item,
   depth,
@@ -65,7 +87,7 @@ function SidebarMenuItemRecursive({
           <CollapsibleTrigger asChild>
             <SidebarMenuButton
               data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-              tooltip={item.title}
+              tooltip={{ children: item.title, hidden: false }}
             >
               {item.icon && (
                 <item.icon
@@ -141,12 +163,14 @@ function SidebarMenuItemRecursive({
 
                 return (
                   <SidebarMenuSubItem key={subItem.title}>
-                    <SidebarMenuSubButton
-                      asChild
-                      isActive={!isExternal && location.pathname === subUrl}
-                    >
-                      {subItemLink}
-                    </SidebarMenuSubButton>
+                    <SidebarLabelTooltip label={subItem.title}>
+                      <SidebarMenuSubButton
+                        asChild
+                        isActive={!isExternal && location.pathname === subUrl}
+                      >
+                        {subItemLink}
+                      </SidebarMenuSubButton>
+                    </SidebarLabelTooltip>
                   </SidebarMenuSubItem>
                 );
               })}
@@ -167,7 +191,7 @@ function SidebarMenuItemRecursive({
       <SidebarMenuItem>
         <SidebarMenuButton
           data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-          tooltip={item.title}
+          tooltip={{ children: item.title, hidden: false }}
         >
           {item.icon && (
             <item.icon
@@ -231,7 +255,7 @@ function SidebarMenuItemRecursive({
         asChild
         className="group data-[active=true]:bg-primary data-[active=true]:text-primary-foreground "
         isActive={!isExternal && location.pathname === to}
-        tooltip={item.title}
+        tooltip={{ children: item.title, hidden: false }}
       >
         {itemLink}
       </SidebarMenuButton>

@@ -1,4 +1,5 @@
 import { useForm } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import React, { useState } from 'react';
@@ -27,10 +28,12 @@ import {
   InputGroupInput,
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
+import { menuAllOptions } from '@/hooks/tanstack-query/_query-options';
 import { useAuthenticationSignIn } from '@/hooks/tanstack-query/use-authentication-sign-in';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
+import { resolveInitialMenuRoute } from '@/lib/menu/initial-menu-route';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
 import { toastSuccess } from '@/lib/toast';
 
@@ -47,17 +50,27 @@ const FormSignInSchema = z.object({
 
 function RouteComponent(): React.JSX.Element {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [showPassword, setShowPassword] = useState(false);
 
   const signInMutation = useAuthenticationSignIn({
-    onSuccess(response) {
+    async onSuccess(response) {
       const role = response.group.slug.toUpperCase();
+      const fallbackRoute = ROLE_DEFAULT_ROUTE[role] ?? '/tables';
+      const menus = await queryClient.fetchQuery(menuAllOptions());
+      const initialRoute = resolveInitialMenuRoute(menus);
 
-      const route = ROLE_DEFAULT_ROUTE[role];
-
-      router.navigate({ to: route, replace: true });
+      if (initialRoute?.type === 'external') {
+        window.location.assign(initialRoute.href);
+        return;
+      }
 
       toastSuccess('Login realizado com sucesso!', 'Seja bem-vindo!');
+
+      router.navigate({
+        to: initialRoute?.to ?? fallbackRoute,
+        replace: true,
+      });
     },
     onError(error) {
       handleApiError(error, {

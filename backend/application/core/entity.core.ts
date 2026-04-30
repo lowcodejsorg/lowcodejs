@@ -443,6 +443,7 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | string | null;
     order: number;
+    isInitial: boolean;
   }
 >;
 

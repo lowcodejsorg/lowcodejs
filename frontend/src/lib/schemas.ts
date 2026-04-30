@@ -137,6 +137,7 @@ export const MenuCreateBodySchema = z
     html: z.string().default(''),
     url: z.string().default(''),
     order: z.number().default(0),
+    isInitial: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (
@@ -187,6 +188,7 @@ export const MenuUpdateBodySchema = z
     html: z.string().default(''),
     url: z.string().default(''),
     order: z.number().default(0),
+    isInitial: z.boolean().default(false),
   })
   .superRefine((data, ctx) => {
     if (

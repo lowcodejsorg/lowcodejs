@@ -17,6 +17,7 @@ export const MenuPaginatedQueryValidator = z.object({
     .optional(),
 
   'order-name': z.enum(['asc', 'desc']).optional(),
+  'order-position': z.enum(['asc', 'desc']).optional(),
   'order-slug': z.enum(['asc', 'desc']).optional(),
   'order-type': z.enum(['asc', 'desc']).optional(),
   'order-created-at': z.enum(['asc', 'desc']).optional(),

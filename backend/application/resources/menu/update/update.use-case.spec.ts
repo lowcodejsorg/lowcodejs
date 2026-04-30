@@ -57,6 +57,54 @@ describe('Menu Update Use Case', () => {
     }
   });
 
+  it('deve manter apenas um menu inicial ao atualizar', async () => {
+    const previousInitial = await menuInMemoryRepository.create({
+      name: 'Anterior',
+      slug: 'anterior',
+      type: 'PAGE',
+      isInitial: true,
+    });
+    const created = await menuInMemoryRepository.create({
+      name: 'Novo Inicial',
+      slug: 'novo-inicial',
+      type: 'PAGE',
+    });
+
+    const result = await sut.execute({
+      _id: created._id,
+      isInitial: true,
+      parent: null,
+    });
+
+    expect(result.isRight()).toBe(true);
+    const previous = await menuInMemoryRepository.findById(previousInitial._id);
+
+    if (result.isRight()) {
+      expect(result.value.isInitial).toBe(true);
+    }
+    expect(previous?.isInitial).toBe(false);
+  });
+
+  it('deve impedir separador como menu inicial', async () => {
+    const created = await menuInMemoryRepository.create({
+      name: 'Separador',
+      slug: 'separador',
+      type: 'SEPARATOR',
+    });
+
+    const result = await sut.execute({
+      _id: created._id,
+      isInitial: true,
+      parent: null,
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (result.isLeft()) {
+      expect(result.value.code).toBe(400);
+      expect(result.value.cause).toBe('INVALID_PARAMETERS');
+    }
+  });
+
   it('deve retornar erro MENU_NOT_FOUND quando menu nao existe', async () => {
     const result = await sut.execute({
       _id: 'non-existent-id',

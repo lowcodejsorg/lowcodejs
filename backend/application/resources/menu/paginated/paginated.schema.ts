@@ -31,6 +31,11 @@ export const MenuPaginatedSchema: FastifySchema = {
         enum: ['asc', 'desc'],
         description: 'Ordenar por nome',
       },
+      'order-position': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por posição no menu lateral',
+      },
       'order-slug': {
         type: 'string',
         enum: ['asc', 'desc'],
@@ -101,6 +106,10 @@ export const MenuPaginatedSchema: FastifySchema = {
               },
               url: { type: 'string', nullable: true, description: 'URL' },
               order: { type: 'number', description: 'Ordem do menu' },
+              isInitial: {
+                type: 'boolean',
+                description: 'Se é o menu inicial do sistema',
+              },
               trashed: { type: 'boolean', description: 'Se está na lixeira' },
               trashedAt: {
                 type: 'string',
