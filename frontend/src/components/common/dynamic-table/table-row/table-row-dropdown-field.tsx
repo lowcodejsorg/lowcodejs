@@ -40,6 +40,35 @@ interface DropdownOption {
   color?: string | null;
 }
 
+function normalizeDropdownLabel(label: string): string {
+  return label.trim().toLowerCase();
+}
+
+function hasDropdownOptionLabel(
+  dropdown: Array<DropdownOption>,
+  label: string,
+): boolean {
+  const normalizedLabel = normalizeDropdownLabel(label);
+  return dropdown.some(
+    (item) => normalizeDropdownLabel(item.label) === normalizedLabel,
+  );
+}
+
+function appendUniqueDropdownOption(
+  dropdown: Array<IDropdown>,
+  option: IDropdown,
+): Array<IDropdown> {
+  const normalizedLabel = normalizeDropdownLabel(option.label);
+  const currentDropdown = dropdown.filter((item) => {
+    return (
+      item.id !== option.id &&
+      normalizeDropdownLabel(String(item.label)) !== normalizedLabel
+    );
+  });
+
+  return [...currentDropdown, option];
+}
+
 function buildFieldUpdatePayload(
   field: IField,
   dropdown: Array<IDropdown>,
@@ -197,9 +226,7 @@ export function TableRowDropdownField({
     Boolean(tableSlug) &&
     !disabled &&
     customLabel.length > 0 &&
-    !items.some(
-      (item) => item.label.toLowerCase() === customLabel.toLowerCase(),
-    );
+    !hasDropdownOptionLabel(items, customLabel);
 
   const createCustomOptionMutation = useMutation({
     mutationFn: async (newOption: IDropdown) => {
@@ -207,7 +234,7 @@ export function TableRowDropdownField({
         throw new Error('Tabela não informada para atualizar opções');
       }
 
-      const nextDropdown = [...localDropdown, newOption];
+      const nextDropdown = appendUniqueDropdownOption(localDropdown, newOption);
       const data = buildFieldUpdatePayload(field, nextDropdown);
       const route = groupSlug
         ? `/tables/${tableSlug}/groups/${groupSlug}/fields/${field._id}`
@@ -268,7 +295,9 @@ export function TableRowDropdownField({
       color: getNextDropdownOptionColor(localDropdown.length),
     };
 
-    setLocalDropdown((current) => [...current, newOption]);
+    setLocalDropdown((current) =>
+      appendUniqueDropdownOption(current, newOption),
+    );
 
     if (isMultiple) {
       formField.handleChange([...selectedIds, newOption.id]);
