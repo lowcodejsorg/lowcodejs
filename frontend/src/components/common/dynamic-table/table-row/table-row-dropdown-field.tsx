@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 
 import { badgeStyleFromColor } from '../table-cells/table-row-badge-list';
@@ -76,6 +77,51 @@ function buildFieldUpdatePayload(
     category: field.category ?? [],
     trashed: field.trashed,
     trashedAt: field.trashedAt ?? null,
+  };
+}
+
+function getCustomOptionErrorMessage(error: unknown): string {
+  if (!isAxiosError(error)) {
+    return 'Erro ao criar nova opção do dropdown';
+  }
+
+  const data = error.response?.data as
+    | { message?: string; errors?: Record<string, string> }
+    | undefined;
+
+  return (
+    data?.errors?.dropdown ??
+    data?.message ??
+    'Erro ao criar nova opção do dropdown'
+  );
+}
+
+function replaceFieldInTable(
+  table: ITable,
+  field: IField,
+  groupSlug?: string,
+): ITable {
+  if (groupSlug) {
+    return {
+      ...table,
+      groups: (table.groups ?? []).map((group) =>
+        group.slug === groupSlug
+          ? {
+              ...group,
+              fields: (group.fields ?? []).map((groupField) =>
+                groupField._id === field._id ? field : groupField,
+              ),
+            }
+          : group,
+      ),
+    };
+  }
+
+  return {
+    ...table,
+    fields: (table.fields ?? []).map((tableField) =>
+      tableField._id === field._id ? field : tableField,
+    ),
   };
 }
 
@@ -183,28 +229,7 @@ export function TableRowDropdownField({
         queryKeys.tables.detail(tableSlug!),
         (old) => {
           if (!old) return old;
-          if (groupSlug) {
-            return {
-              ...old,
-              groups: old.groups.map((group) =>
-                group.slug === groupSlug
-                  ? {
-                      ...group,
-                      fields: group.fields.map((groupField) =>
-                        groupField._id === response._id ? response : groupField,
-                      ),
-                    }
-                  : group,
-              ),
-            };
-          }
-
-          return {
-            ...old,
-            fields: old.fields.map((tableField) =>
-              tableField._id === response._id ? response : tableField,
-            ),
-          };
+          return replaceFieldInTable(old, response, groupSlug);
         },
       );
 
@@ -216,30 +241,7 @@ export function TableRowDropdownField({
             meta: old.meta,
             data: old.data.map((table) => {
               if (table.slug !== tableSlug) return table;
-              if (groupSlug) {
-                return {
-                  ...table,
-                  groups: table.groups.map((group) =>
-                    group.slug === groupSlug
-                      ? {
-                          ...group,
-                          fields: group.fields.map((groupField) =>
-                            groupField._id === response._id
-                              ? response
-                              : groupField,
-                          ),
-                        }
-                      : group,
-                  ),
-                };
-              }
-
-              return {
-                ...table,
-                fields: table.fields.map((tableField) =>
-                  tableField._id === response._id ? response : tableField,
-                ),
-              };
+              return replaceFieldInTable(table, response, groupSlug);
             }),
           };
         },
@@ -249,8 +251,8 @@ export function TableRowDropdownField({
         queryKey: queryKeys.tables.detail(tableSlug!),
       });
     },
-    onError() {
-      toastError('Erro ao criar nova opção do dropdown');
+    onError(error) {
+      toastError(getCustomOptionErrorMessage(error));
     },
   });
 
