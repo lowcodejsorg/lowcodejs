@@ -54,6 +54,7 @@ export const Schema = new mongoose.Schema(
     },
 
     order: { type: Number, default: 0 },
+    isInitial: { type: Boolean, default: false },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
@@ -66,6 +67,7 @@ export const Schema = new mongoose.Schema(
 
 // Índices para otimização de consultas
 Schema.index({ parent: 1, order: 1 });
+Schema.index({ isInitial: 1 });
 // Schema.index({ slug: 1 }, { unique: true });
 // Schema.index({ trashed: 1 });
 

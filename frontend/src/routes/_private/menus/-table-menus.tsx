@@ -7,6 +7,7 @@ import {
   CornerDownRightIcon,
   EllipsisIcon,
   EyeIcon,
+  HouseIcon,
   LoaderCircleIcon,
   TrashIcon,
 } from 'lucide-react';
@@ -46,6 +47,7 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useMenuBulkDelete } from '@/hooks/tanstack-query/use-menu-bulk-delete';
 import { useMenuBulkRestore } from '@/hooks/tanstack-query/use-menu-bulk-restore';
 import { useMenuBulkTrash } from '@/hooks/tanstack-query/use-menu-bulk-trash';
+import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useDataTable } from '@/hooks/use-data-table';
 import { API } from '@/lib/api';
 import { E_MENU_ITEM_TYPE, E_ROLE } from '@/lib/constant';
@@ -231,6 +233,42 @@ function ActionsCell(props: ActionsCellProps): React.JSX.Element {
   const menuRestoreButtonRef = React.useRef<HTMLButtonElement | null>(null);
   const menuSendToTrashButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
+  const setInitialMutation = useUpdateMenu({
+    onSuccess() {
+      toastSuccess(
+        'Página inicial atualizada',
+        'Este menu será carregado ao acessar o sistema',
+      );
+      router.invalidate();
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Erro ao definir menu como página inicial',
+      });
+    },
+  });
+
+  const setAsInitial = (): void => {
+    if (
+      props.menu.isInitial ||
+      props.menu.type === E_MENU_ITEM_TYPE.SEPARATOR ||
+      setInitialMutation.status === 'pending'
+    )
+      return;
+
+    setInitialMutation.mutate({
+      _id: props.menu._id,
+      name: props.menu.name,
+      type: props.menu.type,
+      parent: getParentId(props.menu),
+      table: props.menu.table?._id ?? null,
+      html: props.menu.html ?? null,
+      url: props.menu.url ?? null,
+      order: props.menu.order ?? 0,
+      isInitial: true,
+    });
+  };
+
   return (
     <div onClick={(e) => e.stopPropagation()}>
       <DropdownMenu
@@ -258,6 +296,25 @@ function ActionsCell(props: ActionsCellProps): React.JSX.Element {
             <EyeIcon className="size-4" />
             <span>Visualizar</span>
           </DropdownMenuItem>
+
+          {!props.menu.trashed &&
+            props.menu.type !== E_MENU_ITEM_TYPE.SEPARATOR && (
+              <DropdownMenuItem
+                disabled={
+                  props.menu.isInitial ||
+                  setInitialMutation.status === 'pending'
+                }
+                className="inline-flex space-x-1 w-full cursor-pointer"
+                onClick={setAsInitial}
+              >
+                <HouseIcon className="size-4" />
+                <span>
+                  {props.menu.isInitial
+                    ? 'Página inicial atual'
+                    : 'Definir como página inicial'}
+                </span>
+              </DropdownMenuItem>
+            )}
 
           {props.menu.trashed && props.isMaster && (
             <DropdownMenuItem
@@ -427,6 +484,12 @@ function buildColumns(params: {
               </span>
             )}
             {getValue() as string}
+            {row.original.isInitial && (
+              <Badge className="ml-1 gap-1 border-transparent bg-primary/10 text-primary hover:bg-primary/10">
+                <HouseIcon className="size-3" />
+                Inicial
+              </Badge>
+            )}
           </span>
         );
       },

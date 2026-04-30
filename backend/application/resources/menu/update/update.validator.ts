@@ -29,6 +29,7 @@ export const MenuUpdateBodyValidator = z
       .optional(),
     url: z.string({ message: 'A URL deve ser um texto' }).nullable().optional(),
     order: z.number().int().min(0).optional(),
+    isInitial: z.boolean({ message: 'Página inicial inválida' }).optional(),
   })
   .transform((payload) => {
     return {

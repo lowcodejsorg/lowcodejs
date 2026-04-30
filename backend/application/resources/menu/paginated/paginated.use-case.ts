@@ -28,10 +28,7 @@ function getParentId(menu: Entity): string | null {
   return null;
 }
 
-function sortByPosition(
-  menus: Entity[],
-  direction: 'asc' | 'desc',
-): Entity[] {
+function sortByPosition(menus: Entity[], direction: 'asc' | 'desc'): Entity[] {
   return [...menus].sort((a, b) => {
     const orderDiff = (a.order ?? 0) - (b.order ?? 0);
     if (orderDiff !== 0) {

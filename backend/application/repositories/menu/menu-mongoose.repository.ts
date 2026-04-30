@@ -174,6 +174,7 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     const updateData: Record<string, unknown> = {};
     if (data.trashed !== undefined) updateData['trashed'] = data.trashed;
     if (data.trashedAt !== undefined) updateData['trashedAt'] = data.trashedAt;
+    if (data.isInitial !== undefined) updateData['isInitial'] = data.isInitial;
 
     const result = await Model.updateMany(where, { $set: updateData });
     return result.modifiedCount;
@@ -220,5 +221,10 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     return result[0].descendants.map((id: mongoose.Types.ObjectId) =>
       id.toString(),
     );
+  }
+
+  async setOnlyInitial(_id: string): Promise<void> {
+    await Model.updateMany({ isInitial: true }, { $set: { isInitial: false } });
+    await Model.updateOne({ _id }, { $set: { isInitial: true } });
   }
 }

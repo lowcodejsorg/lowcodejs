@@ -17,6 +17,7 @@ export type MenuUpdateFormValues = {
   url: string;
   parent: string;
   position: string;
+  isInitial: boolean;
 };
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
@@ -27,6 +28,7 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   url: '',
   parent: '',
   position: '0',
+  isInitial: false,
 };
 
 export const UpdateMenuFormFields = withForm({
@@ -119,8 +121,8 @@ export const UpdateMenuFormFields = withForm({
         </form.AppField>
         {isSeparatorWithChildren && mode === 'edit' && (
           <p className="text-muted-foreground text-xs -mt-2">
-            Este separador possui submenus ativos e por isso o tipo não pode
-            ser alterado.
+            Este separador possui submenus ativos e por isso o tipo não pode ser
+            alterado.
           </p>
         )}
 
@@ -158,6 +160,18 @@ export const UpdateMenuFormFields = withForm({
             />
           )}
         </form.AppField>
+
+        {menuType !== E_MENU_ITEM_TYPE.SEPARATOR && (
+          <form.AppField name="isInitial">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Página inicial"
+                description="Carregar este menu ao acessar o sistema"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+        )}
 
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
         {(menuType === E_MENU_ITEM_TYPE.TABLE ||

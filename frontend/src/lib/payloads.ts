@@ -76,6 +76,7 @@ export type MenuCreatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  isInitial?: boolean;
 };
 
 export type MenuUpdatePayload = {
@@ -87,6 +88,7 @@ export type MenuUpdatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  isInitial?: boolean;
 };
 
 export type MenuReorderPayload = {

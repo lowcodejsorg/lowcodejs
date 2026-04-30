@@ -22,6 +22,7 @@ export const menuFormDefaultValues: MenuFormType = {
   url: '',
   parent: '',
   position: '0',
+  isInitial: false,
 };
 
 export const CreateMenuFormFields = withForm({
@@ -129,6 +130,18 @@ export const CreateMenuFormFields = withForm({
             />
           )}
         </form.AppField>
+
+        {menuType !== E_MENU_ITEM_TYPE.SEPARATOR && (
+          <form.AppField name="isInitial">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Página inicial"
+                description="Carregar este menu ao acessar o sistema"
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
 
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
         {(menuType === E_MENU_ITEM_TYPE.TABLE ||

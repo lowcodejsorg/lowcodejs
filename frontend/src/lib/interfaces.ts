@@ -131,6 +131,7 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | null;
     order: number;
+    isInitial: boolean;
     children?: Array<IMenu>;
   }
 >;

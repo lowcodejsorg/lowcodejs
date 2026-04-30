@@ -34,6 +34,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
       url: payload.url ?? null,
       html: payload.html ?? null,
       order: payload.order ?? 0,
+      isInitial: payload.isInitial ?? false,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -121,6 +122,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     for (const menu of filtered) {
       if (data.trashed !== undefined) menu.trashed = data.trashed;
       if (data.trashedAt !== undefined) menu.trashedAt = data.trashedAt;
+      if (data.isInitial !== undefined) menu.isInitial = data.isInitial;
       menu.updatedAt = new Date();
     }
 
@@ -170,5 +172,16 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     }
 
     return descendants;
+  }
+
+  async setOnlyInitial(_id: string): Promise<void> {
+    this._checkError('setOnlyInitial');
+    for (const menu of this.items) {
+      const shouldBeInitial = menu._id === _id;
+      if (menu.isInitial !== shouldBeInitial) {
+        menu.isInitial = shouldBeInitial;
+        menu.updatedAt = new Date();
+      }
+    }
   }
 }
