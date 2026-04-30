@@ -392,6 +392,7 @@ export const FieldBaseSchema = z.object({
   defaultValue: z.string().nullable().default(null),
   relationship: RelationshipSchema.nullable().default(null),
   dropdown: z.array(DropdownSchema).default([]),
+  allowCustomDropdownOptions: z.boolean().default(false),
   category: z.array(CategorySchema).default([]),
   group: z
     .object({

@@ -136,6 +136,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
           },
         },
       },
+      allowCustomDropdownOptions: {
+        type: 'boolean',
+        default: false,
+        description:
+          'Allow users to create new dropdown options from row input',
+      },
       relationship: {
         type: 'object',
         nullable: true,
@@ -295,6 +301,11 @@ export const TableFieldUpdateSchema: FastifySchema = {
               color: { type: 'string' },
             },
           },
+        },
+        allowCustomDropdownOptions: {
+          type: 'boolean',
+          description:
+            'Allow users to create new dropdown options from row input',
         },
         relationship: {
           type: 'object',

@@ -15,7 +15,10 @@ import { FieldContractRepository } from '@application/repositories/field/field-c
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
-import { normalizeDefaultValue } from '../table-field-base.schema';
+import {
+  hasDuplicateDropdownLabels,
+  normalizeDefaultValue,
+} from '../table-field-base.schema';
 
 import type { TableFieldCreatePayload } from './create.validator';
 
@@ -51,6 +54,16 @@ export default class TableFieldCreateUseCase {
             name: 'Campo já existe',
           }),
         );
+
+      if (hasDuplicateDropdownLabels(payload.dropdown)) {
+        return left(
+          HTTPException.Conflict(
+            'Opções do dropdown não podem ter nomes duplicados',
+            'DROPDOWN_OPTION_ALREADY_EXISTS',
+            { dropdown: 'Opção já existe no dropdown' },
+          ),
+        );
+      }
 
       let field = await this.fieldRepository.create({
         ...payload,

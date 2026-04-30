@@ -55,6 +55,7 @@ export const GroupFieldShowSchema: FastifySchema = {
             },
           },
         },
+        allowCustomDropdownOptions: { type: 'boolean' },
         relationship: {
           type: 'object',
           nullable: true,

@@ -786,7 +786,12 @@ export function KanbanRowDialog({
               }
               return <formField.TableRowTextareaField field={field} />;
             case E_FIELD_TYPE.DROPDOWN:
-              return <formField.TableRowDropdownField field={field} />;
+              return (
+                <formField.TableRowDropdownField
+                  field={field}
+                  tableSlug={tableSlug}
+                />
+              );
             case E_FIELD_TYPE.DATE:
               return <formField.TableRowDateField field={field} />;
             case E_FIELD_TYPE.FILE:
@@ -891,6 +896,7 @@ export function KanbanRowDialog({
               editTarget={editTarget}
               setEditTarget={setEditTarget}
               quickForm={quickForm}
+              tableSlug={tableSlug}
             />
 
             {(fields.members || fields.startDate || fields.dueDate) && (
