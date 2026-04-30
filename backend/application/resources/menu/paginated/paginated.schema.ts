@@ -31,6 +31,11 @@ export const MenuPaginatedSchema: FastifySchema = {
         enum: ['asc', 'desc'],
         description: 'Ordenar por nome',
       },
+      'order-position': {
+        type: 'string',
+        enum: ['asc', 'desc'],
+        description: 'Ordenar por posição no menu lateral',
+      },
       'order-slug': {
         type: 'string',
         enum: ['asc', 'desc'],

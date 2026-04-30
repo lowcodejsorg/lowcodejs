@@ -10,6 +10,7 @@ import {
   MenuCreateSchema,
   menuFormDefaultValues,
 } from './-create-form';
+import { parseMenuPosition } from '../-position';
 
 import { FormFooter } from '@/components/common/form-footer';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
@@ -55,6 +56,9 @@ function RouteComponent(): React.JSX.Element {
     onSubmit: async ({ value }) => {
       if (_create.status === 'pending') return;
 
+      const order = parseMenuPosition(value.position, value.parent);
+      if (order === null) return;
+
       await _create.mutateAsync({
         name: value.name,
         type: value.type,
@@ -62,6 +66,7 @@ function RouteComponent(): React.JSX.Element {
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        order,
       });
     },
   });

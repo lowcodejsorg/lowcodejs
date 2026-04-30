@@ -1,3 +1,4 @@
+import { useStore } from '@tanstack/react-store';
 import { FileTextIcon } from 'lucide-react';
 
 import { SeparatorInfo } from '../-separator-info';
@@ -15,6 +16,7 @@ export type MenuUpdateFormValues = {
   html: string;
   url: string;
   parent: string;
+  position: string;
 };
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
@@ -24,6 +26,7 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   html: '',
   url: '',
   parent: '',
+  position: '0',
 };
 
 export const UpdateMenuFormFields = withForm({
@@ -38,6 +41,7 @@ export const UpdateMenuFormFields = withForm({
       | ValueOf<typeof E_MENU_ITEM_TYPE>
       | '',
     hasChildren: false,
+    menuId: '',
   },
   render: function Render({
     form,
@@ -46,7 +50,9 @@ export const UpdateMenuFormFields = withForm({
     menuType,
     originalType,
     hasChildren,
+    menuId,
   }) {
+    const parent = useStore(form.store, (state) => state.values.parent);
     const isDisabled = mode === 'show' || isPending;
     const isSeparatorWithChildren =
       originalType === E_MENU_ITEM_TYPE.SEPARATOR && hasChildren;
@@ -125,6 +131,30 @@ export const UpdateMenuFormFields = withForm({
               label="Menu Pai"
               placeholder="Nenhum (raiz)"
               disabled={isDisabled}
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField
+          name="position"
+          validators={{
+            onChange: ({ value }) => {
+              if (!value) return 'Posição é obrigatória';
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value) return 'Posição é obrigatória';
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <field.FieldMenuPositionSelect
+              label="Inserir após"
+              parentId={parent || undefined}
+              disabled={isDisabled}
+              excludeId={menuId}
+              required
             />
           )}
         </form.AppField>

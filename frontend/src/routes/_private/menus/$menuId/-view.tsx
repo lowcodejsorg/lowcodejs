@@ -45,6 +45,13 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
             <Badge variant="outline">{typeLabel}</Badge>
           </div>
 
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Posição
+            </p>
+            <p className="text-sm font-medium">{data.order ?? 0}</p>
+          </div>
+
           {data.type !== E_MENU_ITEM_TYPE.SEPARATOR && (
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

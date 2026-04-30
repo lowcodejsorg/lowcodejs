@@ -99,17 +99,21 @@ export default class MenuCreateUseCase {
         payload.url = '/pages/'.concat(slug);
       }
 
-      // Auto-assign order: count siblings and place at end
-      const siblingCount = await this.menuRepository.count({
-        parent: payload.parent ?? undefined,
-        trashed: false,
-      });
+      let order = payload.order;
+
+      if (order === undefined) {
+        // Auto-assign order: count siblings and place at end
+        order = await this.menuRepository.count({
+          parent: payload.parent ?? null,
+          trashed: false,
+        });
+      }
 
       const created = await this.menuRepository.create({
         ...payload,
         slug,
         owner: payload.owner,
-        order: siblingCount,
+        order,
       } as RepositoryMenuCreatePayload);
 
       return right(created);

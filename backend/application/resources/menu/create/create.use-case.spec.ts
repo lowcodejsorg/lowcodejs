@@ -55,6 +55,22 @@ describe('Menu Create Use Case', () => {
     }
   });
 
+  it('deve respeitar a posicao informada ao criar menu', async () => {
+    const result = await sut.execute({
+      name: 'Requisitos',
+      slug: 'requisitos',
+      type: 'SEPARATOR',
+      parent: null,
+      order: 3,
+      owner: 'test-user-id',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.order).toBe(3);
+    }
+  });
+
   it('deve retornar erro MENU_ALREADY_EXISTS quando slug ja existe', async () => {
     await menuInMemoryRepository.create({
       name: 'Existing Menu',
@@ -74,6 +90,9 @@ describe('Menu Create Use Case', () => {
     if (result.isLeft()) {
       expect(result.value.code).toBe(409);
       expect(result.value.cause).toBe('MENU_ALREADY_EXISTS');
+      expect(result.value.errors).toEqual({
+        name: 'Menu já existe',
+      });
     }
   });
 

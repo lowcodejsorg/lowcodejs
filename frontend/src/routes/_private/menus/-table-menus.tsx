@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
+  CornerDownRightIcon,
   EllipsisIcon,
   EyeIcon,
   LoaderCircleIcon,
@@ -63,6 +64,100 @@ const TypeMapper = {
   [E_MENU_ITEM_TYPE.EXTERNAL]: 'Link Externo',
   [E_MENU_ITEM_TYPE.SEPARATOR]: 'Separador',
 };
+
+function hasParent(menu: IMenu): boolean {
+  return Boolean(menu.parent);
+}
+
+function getParentId(menu: IMenu): string | null {
+  if (!menu.parent) return null;
+  if (typeof menu.parent === 'string') return menu.parent;
+  return menu.parent._id;
+}
+
+function sortByPosition(
+  menus: Array<IMenu>,
+  direction: 'asc' | 'desc' = 'asc',
+): Array<IMenu> {
+  return [...menus].sort((a, b) => {
+    const orderDiff = (a.order ?? 0) - (b.order ?? 0);
+    if (orderDiff !== 0) return direction === 'asc' ? orderDiff : -orderDiff;
+    return a.name.localeCompare(b.name);
+  });
+}
+
+function buildMenuPositionLabels(
+  data: Array<IMenu>,
+  direction: 'asc' | 'desc' = 'asc',
+): Map<string, string> {
+  const menuIds = new Set(data.map((menu) => menu._id));
+  const childrenByParent = new Map<string | null, Array<IMenu>>();
+
+  for (const menu of data) {
+    const parentId = getParentId(menu);
+    const groupKey = parentId && menuIds.has(parentId) ? parentId : null;
+    const siblings = childrenByParent.get(groupKey) ?? [];
+
+    siblings.push(menu);
+    childrenByParent.set(groupKey, siblings);
+  }
+
+  const labels = new Map<string, string>();
+
+  function appendLabels(parentId: string | null, parentLabel?: string): void {
+    const siblings = sortByPosition(
+      childrenByParent.get(parentId) ?? [],
+      direction,
+    );
+
+    siblings.forEach((menu, index) => {
+      const label = parentLabel
+        ? parentLabel.concat('.').concat(String(index + 1))
+        : String(menu.order ?? index);
+
+      labels.set(menu._id, label);
+      appendLabels(menu._id, label);
+    });
+  }
+
+  appendLabels(null);
+
+  return labels;
+}
+
+function sortMenuDataByHierarchy(
+  data: Array<IMenu>,
+  direction: 'asc' | 'desc' = 'asc',
+): Array<IMenu> {
+  const menuIds = new Set(data.map((menu) => menu._id));
+  const childrenByParent = new Map<string | null, Array<IMenu>>();
+  const ordered: Array<IMenu> = [];
+
+  for (const menu of data) {
+    const parentId = getParentId(menu);
+    const groupKey = parentId && menuIds.has(parentId) ? parentId : null;
+    const siblings = childrenByParent.get(groupKey) ?? [];
+
+    siblings.push(menu);
+    childrenByParent.set(groupKey, siblings);
+  }
+
+  function appendChildren(parentId: string | null): void {
+    const siblings = sortByPosition(
+      childrenByParent.get(parentId) ?? [],
+      direction,
+    );
+
+    for (const menu of siblings) {
+      ordered.push(menu);
+      appendChildren(menu._id);
+    }
+  }
+
+  appendChildren(null);
+
+  return ordered;
+}
 
 function getCheckboxState(
   allSelected: boolean,
@@ -244,6 +339,7 @@ function ActionsCell(props: ActionsCellProps): React.JSX.Element {
 function buildColumns(params: {
   canTrash: boolean;
   isMaster: boolean;
+  getPositionLabel: (menu: IMenu) => string;
   onPermanentDelete: (menu: IMenu) => void;
 }): Array<ColumnDef<IMenu, any>> {
   const cols: Array<ColumnDef<IMenu, any>> = [];
@@ -278,6 +374,24 @@ function buildColumns(params: {
 
   cols.push(
     {
+      id: 'order',
+      accessorKey: 'order',
+      meta: { label: 'Posição' },
+      size: 110,
+      header: () => (
+        <DataTableColumnHeader
+          title="Posição"
+          orderKey="order-position"
+          routeId={ROUTE_ID}
+        />
+      ),
+      cell: ({ row }) => (
+        <span className="font-mono text-sm text-muted-foreground">
+          {params.getPositionLabel(row.original)}
+        </span>
+      ),
+    },
+    {
       id: 'name',
       accessorKey: 'name',
       meta: { label: 'Nome' },
@@ -288,9 +402,34 @@ function buildColumns(params: {
           routeId={ROUTE_ID}
         />
       ),
-      cell: ({ getValue }) => (
-        <span className="font-medium">{getValue() as string}</span>
-      ),
+      cell: ({ row, getValue }) => {
+        const positionLabel = params.getPositionLabel(row.original);
+        const depth = Math.max(
+          hasParent(row.original) ? 1 : 0,
+          positionLabel.split('.').length - 1,
+        );
+
+        return (
+          <span
+            className={cn(
+              'inline-flex items-center gap-1.5 font-medium',
+              depth > 0 && 'text-muted-foreground',
+            )}
+          >
+            {depth > 0 && (
+              <span className="inline-flex items-center gap-0.5">
+                {Array.from({ length: depth }).map((_, index) => (
+                  <CornerDownRightIcon
+                    key={index}
+                    className="size-4 text-primary"
+                  />
+                ))}
+              </span>
+            )}
+            {getValue() as string}
+          </span>
+        );
+      },
     },
     {
       id: 'slug',
@@ -426,6 +565,23 @@ export function TableMenus({
 
   const tableRef = React.useRef<Table<IMenu> | null>(null);
 
+  const shouldUseHierarchyOrder =
+    !search['order-name'] &&
+    !search['order-slug'] &&
+    !search['order-type'] &&
+    !search['order-owner'] &&
+    !search['order-created-at'];
+  const positionDirection = search['order-position'] ?? 'asc';
+
+  const tableData = React.useMemo(() => {
+    if (!shouldUseHierarchyOrder) return data;
+    return sortMenuDataByHierarchy(data, positionDirection);
+  }, [data, positionDirection, shouldUseHierarchyOrder]);
+
+  const positionLabels = React.useMemo(() => {
+    return buildMenuPositionLabels(tableData, positionDirection);
+  }, [positionDirection, tableData]);
+
   const singleDelete = useMenuBulkDelete({
     onSuccess() {
       setSingleDeleteMenu(null);
@@ -495,16 +651,18 @@ export function TableMenus({
       buildColumns({
         canTrash,
         isMaster,
+        getPositionLabel: (menu) =>
+          positionLabels.get(menu._id) ?? String(menu.order ?? 0),
         onPermanentDelete: (menu) => setSingleDeleteMenu(menu),
       }),
-    [canTrash, isMaster],
+    [canTrash, isMaster, positionLabels],
   );
 
   const leftPinning: Array<string> = [];
   if (canTrash) leftPinning.push('_select');
 
   const table = useDataTable({
-    data,
+    data: tableData,
     columns,
     getRowId: (row) => row._id,
     enableRowSelection: canTrash,

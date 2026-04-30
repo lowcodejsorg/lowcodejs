@@ -5,9 +5,10 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
-import { Trash2Icon } from 'lucide-react';
+import { ListTreeIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
 
+import { MenuReorderDialog } from './-reorder-dialog';
 import { TableMenus } from './-table-menus';
 
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
@@ -47,6 +48,7 @@ function RouteComponent(): React.JSX.Element {
   const isTrashView = search.trashed === true;
 
   const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);
+  const [reorderOpen, setReorderOpen] = React.useState(false);
 
   const emptyTrash = useMenuEmptyTrash({
     onSuccess(result) {
@@ -119,6 +121,17 @@ function RouteComponent(): React.JSX.Element {
           )}
           {!isTrashView && (
             <Button
+              data-test-id="reorder-menus-btn"
+              type="button"
+              variant="outline"
+              onClick={() => setReorderOpen(true)}
+            >
+              <ListTreeIcon className="size-4" />
+              <span>Ordenar</span>
+            </Button>
+          )}
+          {!isTrashView && (
+            <Button
               data-test-id="create-menu-btn"
               className="disabled:cursor-not-allowed"
               onClick={() => {
@@ -172,6 +185,10 @@ function RouteComponent(): React.JSX.Element {
         isPending={emptyTrash.isPending}
         onConfirm={() => emptyTrash.mutate()}
         testId="empty-trash-menus-dialog"
+      />
+      <MenuReorderDialog
+        open={reorderOpen}
+        onOpenChange={setReorderOpen}
       />
     </PageShell>
   );

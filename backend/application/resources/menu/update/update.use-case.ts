@@ -189,7 +189,7 @@ export default class MenuUpdateUseCase {
 
       if (parentChanged && payload.order === undefined) {
         const siblingCount = await this.menuRepository.count({
-          parent: payload.parent ?? undefined,
+          parent: payload.parent ?? null,
           trashed: false,
         });
         updatePayload.order = siblingCount;
