@@ -22,6 +22,20 @@ export function hexToRgb(
   };
 }
 
+function getContrastTextColor(rgb: { r: number; g: number; b: number }): string {
+  // O fundo é renderizado a ~20% sobre o surface (branco em modo claro), então
+  // o texto precisa de boa legibilidade contra um tom claro. Usamos a versão
+  // escurecida da própria cor: mantém identidade visual e garante contraste.
+  const luminance = (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+  const darkenFactor = Math.max(0.22, 0.85 - luminance * 0.6);
+
+  const r = Math.round(rgb.r * darkenFactor);
+  const g = Math.round(rgb.g * darkenFactor);
+  const b = Math.round(rgb.b * darkenFactor);
+
+  return `rgb(${r}, ${g}, ${b})`;
+}
+
 export function badgeStyleFromColor(
   color?: string | null,
 ): React.CSSProperties | undefined {
@@ -29,10 +43,13 @@ export function badgeStyleFromColor(
   const rgb = hexToRgb(color);
   if (!rgb) return undefined;
 
+  const textColor = getContrastTextColor(rgb);
+
   return {
-    color,
-    backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.2)`,
-    borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0)`,
+    color: textColor,
+    backgroundColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.22)`,
+    borderColor: `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.45)`,
+    fontWeight: 500,
   };
 }
 
