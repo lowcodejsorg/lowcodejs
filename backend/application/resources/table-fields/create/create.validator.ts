@@ -17,5 +17,10 @@ export const TableFieldCreateParamsValidator = z.object({
 
 export type TableFieldCreatePayload = Merge<
   z.infer<typeof TableFieldCreateParamsValidator>,
-  z.infer<typeof TableFieldCreateBodyValidator>
+  Omit<
+    z.infer<typeof TableFieldCreateBodyValidator>,
+    'allowCustomDropdownOptions'
+  > & {
+    allowCustomDropdownOptions?: boolean;
+  }
 >;

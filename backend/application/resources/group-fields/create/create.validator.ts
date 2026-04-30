@@ -18,5 +18,10 @@ export const GroupFieldCreateParamsValidator = z.object({
 
 export type GroupFieldCreatePayload = Merge<
   z.infer<typeof GroupFieldCreateParamsValidator>,
-  z.infer<typeof GroupFieldCreateBodyValidator>
+  Omit<
+    z.infer<typeof GroupFieldCreateBodyValidator>,
+    'allowCustomDropdownOptions'
+  > & {
+    allowCustomDropdownOptions?: boolean;
+  }
 >;

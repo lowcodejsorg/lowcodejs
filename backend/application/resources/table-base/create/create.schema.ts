@@ -174,6 +174,11 @@ export const TableCreateSchema: FastifySchema = {
                 nullable: true,
                 description: 'Dropdown options',
               },
+              allowCustomDropdownOptions: {
+                type: 'boolean',
+                description:
+                  'Allow users to create new dropdown options from row input',
+              },
               category: {
                 type: 'array',
                 nullable: true,
@@ -323,6 +328,7 @@ export const TableCreateSchema: FastifySchema = {
                     },
                     relationship: { type: 'object', nullable: true },
                     dropdown: { type: 'array', nullable: true },
+                    allowCustomDropdownOptions: { type: 'boolean' },
                     category: { type: 'array', nullable: true },
                     group: { type: 'object', nullable: true },
                     trashed: { type: 'boolean' },

@@ -149,6 +149,10 @@ function RouteComponent(): React.JSX.Element {
           : null,
         defaultValue: normalizeDefaultValue(value.type, value.defaultValue),
         dropdown: hasDropdown ? value.dropdown.map((item) => item) : [],
+        allowCustomDropdownOptions:
+          value.type === E_FIELD_TYPE.DROPDOWN
+            ? value.allowCustomDropdownOptions
+            : false,
         relationship: hasRelationship
           ? {
               table: {

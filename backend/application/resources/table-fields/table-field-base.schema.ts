@@ -51,6 +51,7 @@ export const FieldDefaultValueSchema = z
   .default(null);
 export const FieldRelationshipSchema = Relationship.nullable().default(null);
 export const FieldDropdownSchema = z.array(Dropdown).default([]);
+export const FieldAllowCustomDropdownOptionsSchema = z.boolean().default(false);
 export const FieldCategorySchema = z.array(Category).default([]);
 // For API input: can be just a slug string or the full object
 export const FieldGroupSchema = z
@@ -110,6 +111,22 @@ export function normalizeDefaultValue(
   return null;
 }
 
+export function hasDuplicateDropdownLabels(
+  dropdown: Array<{ label: string }> | null | undefined,
+): boolean {
+  if (!dropdown || dropdown.length === 0) return false;
+
+  const labels = new Set<string>();
+
+  for (const item of dropdown) {
+    const label = item.label.trim().toLowerCase();
+    if (labels.has(label)) return true;
+    labels.add(label);
+  }
+
+  return false;
+}
+
 // Schema para body de criação/atualização de campos
 export const TableFieldBaseSchema = z.object({
   required: FieldRequiredSchema,
@@ -126,6 +143,7 @@ export const TableFieldBaseSchema = z.object({
   defaultValue: FieldDefaultValueSchema,
   relationship: FieldRelationshipSchema,
   dropdown: FieldDropdownSchema,
+  allowCustomDropdownOptions: FieldAllowCustomDropdownOptionsSchema,
   category: FieldCategorySchema,
   group: FieldGroupSchema,
 });

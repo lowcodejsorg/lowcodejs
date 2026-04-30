@@ -26,6 +26,7 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   async create(payload: FieldCreatePayload): Promise<IField> {
     const field: IField = {
       ...payload,
+      allowCustomDropdownOptions: payload.allowCustomDropdownOptions ?? false,
       _id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -39,6 +40,7 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   async createMany(payloads: FieldCreatePayload[]): Promise<IField[]> {
     const fields = payloads.map((payload) => ({
       ...payload,
+      allowCustomDropdownOptions: payload.allowCustomDropdownOptions ?? false,
       _id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),

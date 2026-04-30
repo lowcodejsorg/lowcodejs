@@ -8,7 +8,10 @@ import type { IField as Entity, IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { normalizeDefaultValue } from '@application/resources/table-fields/table-field-base.schema';
+import {
+  hasDuplicateDropdownLabels,
+  normalizeDefaultValue,
+} from '@application/resources/table-fields/table-field-base.schema';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type { GroupFieldUpdatePayload } from './update.validator';
@@ -128,6 +131,16 @@ export default class GroupFieldUpdateUseCase {
       }
 
       const slug = slugify(payload.name, { lower: true, trim: true });
+
+      if (hasDuplicateDropdownLabels(payload.dropdown)) {
+        return left(
+          HTTPException.Conflict(
+            'Opções do dropdown não podem ter nomes duplicados',
+            'DROPDOWN_OPTION_ALREADY_EXISTS',
+            { dropdown: 'Opção já existe no dropdown' },
+          ),
+        );
+      }
 
       // Normalize group: if it's a string, convert to object format
       const normalizedGroup =

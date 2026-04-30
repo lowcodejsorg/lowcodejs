@@ -179,6 +179,7 @@ export type IField = Merge<
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
+    allowCustomDropdownOptions?: boolean;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
   }

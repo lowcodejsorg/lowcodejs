@@ -117,6 +117,11 @@ export const TableFieldShowSchema: FastifySchema = {
             },
           },
         },
+        allowCustomDropdownOptions: {
+          type: 'boolean',
+          description:
+            'Allow users to create new dropdown options from row input',
+        },
         relationship: {
           type: 'object',
           nullable: true,
