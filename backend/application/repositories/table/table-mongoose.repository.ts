@@ -1,10 +1,16 @@
 import { Service } from 'fastify-decorators';
-import mongoose from 'mongoose';
 
 import type { ITable } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Table as Model } from '@application/model/table.model';
+import { getDataConnection } from '@config/database.config';
+
+function assertITable(value: Record<string, unknown>): asserts value is ITable {
+  if (!value['_id'] && !value['slug']) {
+    throw new Error('Invalid table object');
+  }
+}
 
 import type {
   TableContractRepository,
@@ -143,10 +149,15 @@ export default class TableMongooseRepository implements TableContractRepository 
       ]);
 
       const populated = await Model.populate(docs, this.populateOptions);
-      return populated.map((doc: any) => ({
-        ...doc,
-        _id: doc._id.toString(),
-      }));
+      return populated.map((doc): ITable => {
+        const plain: Record<string, unknown> =
+          typeof doc.toJSON === 'function'
+            ? doc.toJSON({ flattenObjectIds: true })
+            : { ...doc };
+        plain['_id'] = plain['_id'] ? String(plain['_id']) : '';
+        assertITable(plain);
+        return plain;
+      });
     }
 
     const tables = await Model.find(where)
@@ -203,24 +214,26 @@ export default class TableMongooseRepository implements TableContractRepository 
   }
 
   async dropCollection(slug: string): Promise<void> {
-    const db = mongoose.connection.db!;
+    const conn = getDataConnection();
+    const db = conn.db!;
 
     const collections = await db.listCollections({ name: slug }).toArray();
     if (collections.length > 0) {
       await db.dropCollection(slug);
     }
 
-    if (mongoose.models[slug]) {
-      delete mongoose.models[slug];
+    if (conn.models[slug]) {
+      conn.deleteModel(slug);
     }
   }
 
   async renameSlug(oldSlug: string, newSlug: string): Promise<void> {
-    const db = mongoose.connection.db!;
+    const conn = getDataConnection();
+    const db = conn.db!;
     await db.renameCollection(oldSlug, newSlug);
 
-    if (mongoose.models[oldSlug]) {
-      delete mongoose.models[oldSlug];
+    if (conn.models[oldSlug]) {
+      conn.deleteModel(oldSlug);
     }
   }
 

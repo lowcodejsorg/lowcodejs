@@ -363,7 +363,7 @@ export type FieldCreatePayload = Pick<
   | 'group'
 >;
 
-export type IRow = Merge<Base, Record<string, any>>;
+export type IRow = Merge<Base, Record<string, unknown>>;
 
 export type IAttachment = {
   filename: string;

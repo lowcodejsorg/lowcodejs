@@ -7,6 +7,7 @@ import type {
   ITable,
   ITableSchema,
 } from '@application/core/entity.core';
+import { getDataConnection } from '@config/database.config';
 
 import { TableSchemaContractService } from './table-schema-contract.service';
 
@@ -20,6 +21,6 @@ export default class TableSchemaMongooseService extends TableSchemaContractServi
   }
 
   async syncModel(table: ITable): Promise<void> {
-    await buildTable(table);
+    await buildTable(table, getDataConnection());
   }
 }

@@ -8,6 +8,7 @@ import {
   buildTable,
 } from '@application/core/builders';
 import type { IRow } from '@application/core/entity.core';
+import { getDataConnection } from '@config/database.config';
 
 interface SubdocArray<T = unknown> extends Array<T> {
   id(
@@ -32,29 +33,50 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null;
 }
 
+function isSubdocArray(value: unknown): value is SubdocArray {
+  if (!Array.isArray(value)) return false;
+  return 'id' in value && typeof value.id === 'function';
+}
+
+interface MongooseDocWithToJSON {
+  toJSON(opts: { flattenObjectIds: boolean }): Record<string, unknown>;
+  _id: { toString(): string };
+}
+
+function hasToJSON(value: unknown): value is MongooseDocWithToJSON {
+  return isRecord(value) && typeof value['toJSON'] === 'function';
+}
+
+function assertIRow(value: Record<string, unknown>): asserts value is IRow {
+  if (typeof value['_id'] !== 'string') {
+    throw new Error('Invalid row: _id must be string');
+  }
+}
+
 @Service()
 export default class RowMongooseRepository extends RowContractRepository {
   private async getModel(
     table: RowTableContext,
   ): ReturnType<typeof buildTable> {
-    return buildTable(table);
+    return buildTable(table, getDataConnection());
   }
 
   private async getPopulate(
     table: RowTableContext,
     includeReverse: boolean,
   ): ReturnType<typeof buildPopulate> {
+    const conn = getDataConnection();
     if (includeReverse) {
-      return buildPopulate(table.fields, table.groups, table.slug);
+      return buildPopulate(table.fields, table.groups, table.slug, conn);
     }
-    return buildPopulate(table.fields, table.groups);
+    return buildPopulate(table.fields, table.groups, undefined, conn);
   }
 
   private transformRow(doc: unknown): IRow {
     let json: Record<string, unknown>;
 
-    if (isRecord(doc) && typeof doc['toJSON'] === 'function') {
-      json = (doc['toJSON'] as Function)({ flattenObjectIds: true });
+    if (hasToJSON(doc)) {
+      json = doc.toJSON({ flattenObjectIds: true });
     } else if (isRecord(doc)) {
       json = { ...doc };
     } else {
@@ -66,10 +88,9 @@ export default class RowMongooseRepository extends RowContractRepository {
       id = String(doc['_id']);
     }
 
-    return {
-      ...json,
-      _id: id,
-    } as IRow;
+    json['_id'] = id;
+    assertIRow(json);
+    return json;
   }
 
   // ── Core CRUD ─────────────────────────────────────────────
@@ -109,11 +130,13 @@ export default class RowMongooseRepository extends RowContractRepository {
       payload.includeReverseRelationships || false,
     );
 
+    const conn = getDataConnection();
     const query = await buildQuery(
       payload.rawFilters ?? {},
       payload.table.fields ?? [],
       payload.table.groups,
       payload.table.slug,
+      conn,
     );
 
     const sort = buildOrder(
@@ -142,6 +165,7 @@ export default class RowMongooseRepository extends RowContractRepository {
       table.fields ?? [],
       table.groups,
       table.slug,
+      getDataConnection(),
     );
     return model.countDocuments(query);
   }
@@ -258,12 +282,11 @@ export default class RowMongooseRepository extends RowContractRepository {
 
     const subdocArray = row.get(payload.groupFieldSlug);
 
-    if (!subdocArray || !Array.isArray(subdocArray)) {
+    if (!isSubdocArray(subdocArray)) {
       throw new Error('Group field not found');
     }
 
-    const typedArray = subdocArray as unknown as SubdocArray;
-    const subdoc = typedArray.id(payload.itemId);
+    const subdoc = subdocArray.id(payload.itemId);
     if (!subdoc) throw new Error('Item not found');
 
     subdoc.set(payload.data);
@@ -282,10 +305,9 @@ export default class RowMongooseRepository extends RowContractRepository {
     if (!row) return false;
 
     const subdocArray = row.get(payload.groupFieldSlug);
-    if (!subdocArray || !Array.isArray(subdocArray)) return false;
+    if (!isSubdocArray(subdocArray)) return false;
 
-    const typedArray = subdocArray as unknown as SubdocArray;
-    const subdoc = typedArray.id(payload.itemId);
+    const subdoc = subdocArray.id(payload.itemId);
     if (!subdoc) return false;
 
     subdoc.deleteOne();
@@ -325,9 +347,8 @@ export default class RowMongooseRepository extends RowContractRepository {
 
   async findAllRaw(table: RowTableContext): Promise<Record<string, unknown>[]> {
     const model = await this.getModel(table);
-    return model.find({ trashed: { $ne: true } }).lean() as Promise<
-      Record<string, unknown>[]
-    >;
+    const docs = await model.find({ trashed: { $ne: true } }).lean();
+    return docs.map((doc): Record<string, unknown> => ({ ...doc }));
   }
 
   async insertRaw(

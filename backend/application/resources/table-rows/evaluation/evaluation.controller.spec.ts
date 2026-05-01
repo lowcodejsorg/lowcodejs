@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -19,6 +18,7 @@ import { FieldCreatePayload } from '@application/repositories/field/field-contra
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
+import { cleanDynamicCollections } from '@test/helpers/database.helper';
 
 describe('E2E Table Row Evaluation Controller', () => {
   beforeEach(async () => {
@@ -29,15 +29,7 @@ describe('E2E Table Row Evaluation Controller', () => {
     await Field.deleteMany({});
     await Evaluation.deleteMany({});
 
-    // Cleanup dynamic collections
-    const collections = await mongoose.connection.db
-      ?.listCollections()
-      .toArray();
-    for (const collection of collections || []) {
-      if (collection.name.startsWith('table_')) {
-        await mongoose.connection.db?.dropCollection(collection.name);
-      }
-    }
+    await cleanDynamicCollections();
   });
 
   afterAll(async () => {
