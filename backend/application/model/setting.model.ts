@@ -46,6 +46,8 @@ const Schema = new mongoose.Schema(
       ],
       default: 'admin',
     },
+    MIGRATION_DUAL_CONNECTION_AT: { type: Date, default: null },
+    MIGRATION_DUAL_CONNECTION_DROPPED_AT: { type: Date, default: null },
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },

@@ -30,10 +30,16 @@ graph TD
     Controller --> UseCase[Use Case]
     UseCase --> Repository[Repository Contract]
     Repository --> Mongoose[Mongoose Implementation]
-    Mongoose --> MongoDB[(MongoDB)]
+    Mongoose --> SystemDB[(MongoDB - DB_DATABASE<br/>users, tables, fields, settings...)]
+    Mongoose --> DataDB[(MongoDB - DB_DATA_DATABASE<br/>collections dinâmicas via getDataConnection)]
     UseCase --> Service[Service Contract]
     Service --> EmailImpl[Nodemailer / Storage / etc]
 ```
+
+A aplicação usa **2 conexões MongoDB**: uma para os models de sistema (default
+via `mongoose.connect()`) e outra isolada (`mongoose.createConnection()`,
+exposta por `getDataConnection()`) para as collections dinâmicas das tabelas
+low-code. Ver seção "Banco de Dados" e `config/database.config.ts`.
 
 ## Estrutura de Diretorios
 
@@ -44,19 +50,22 @@ backend/
 │   ├── kernel.ts                  # Fastify kernel - plugins, CORS, JWT, Swagger, error handler
 │   └── env.ts                     # Validacao de env vars com Zod
 ├── config/
-│   ├── database.config.ts         # Conexao MongoDB
+│   ├── database.config.ts         # 2 conexoes Mongoose (system + data via getDataConnection)
 │   ├── storage.config.ts          # Flydrive (local/S3)
 │   ├── redis.config.ts            # ioredis
 │   └── email.config.ts            # Nodemailer transporter
 ├── application/
 │   ├── core/                      # Logica central (entity types, Either, exception, builders, sandbox)
 │   ├── middlewares/               # Auth JWT + Table access/permissions
-│   ├── model/                     # Mongoose schemas (11 models)
+│   ├── model/                     # Mongoose schemas (11 models, todos no DB system)
 │   ├── repositories/              # Contract + Mongoose + InMemory (11 entidades)
 │   ├── services/                  # Email (contract + nodemailer + in-memory), Storage (flydrive)
 │   ├── utils/                     # JWT tokens, cookies
 │   └── resources/                 # 16 recursos REST (cada um com operacoes isoladas)
-├── database/seeders/              # Permissions, user groups, users
+├── database/
+│   ├── seeders/                   # Permissions, user groups, settings (idempotente)
+│   └── migrations/                # Migracoes one-time (dual-connection)
+├── docker-entrypoint.sh           # Roda migrations + seeders antes do server
 ├── templates/email/               # EJS templates (notification, sign-up)
 └── test/                          # Setup, helpers (auth)
 ```
@@ -225,11 +234,16 @@ Para adicionar nova dependencia:
 
 ```
 bin/server.ts:
-1. MongooseConnect() - conecta ao MongoDB
+1. MongooseConnect() - abre as 2 conexoes (system via mongoose.connect, data via createConnection)
 2. kernel.ready() - inicializa Fastify com todos os plugins
 3. kernel.listen({ port: Env.PORT, host: '0.0.0.0' })
 4. initChatSocket(httpServer, jwtDecode) - Socket.IO para chat
 ```
+
+Em container Docker, o `docker-entrypoint.sh` roda ANTES do servidor:
+1. `npm run migrate:dual-connection` (idempotente — no-op se ja migrado)
+2. `npm run seed` (idempotente — upsert)
+3. Inicia o servidor
 
 kernel.ts registra 9 plugins em ordem:
 
@@ -258,10 +272,21 @@ editadas via UI `/settings` pelo usuário MASTER.
 
 ### Banco de Dados
 
+A aplicacao usa **duas conexoes MongoDB** apontando para databases distintos no
+mesmo servidor (configuravel para servidores separados via `DATABASE_URL`):
+
+- **System** (`DB_DATABASE`): collections nativas (User, UserGroup, Permission,
+  Table, Field, Storage, ValidationToken, Menu, Reaction, Evaluation, Setting).
+  Conexao default via `mongoose.connect()`.
+- **Data** (`DB_DATA_DATABASE`): collections dinamicas criadas pelo usuario
+  no low-code. Cada `table.slug` vira uma collection. Conexao isolada via
+  `mongoose.createConnection()`, exposta por `getDataConnection()`.
+
 | Variavel | Default | Descricao |
 |----------|---------|-----------|
 | DATABASE_URL | obrigatorio | MongoDB connection string |
-| DB_NAME | lowcodejs | Nome do banco |
+| DB_DATABASE | lowcodejs | Nome do database **system** |
+| DB_DATA_DATABASE | lowcodejs_data | Nome do database **data** (collections dinamicas) |
 
 ### Email (SMTP)
 
@@ -428,3 +453,20 @@ Comando: `npm run seed`
 | 1720465893-settings.seed.ts | Setting singleton. Marca SETUP_COMPLETED=true se ja existe MASTER; caso contrario, `$setOnInsert: {}` |
 
 Usuario MASTER **nao** tem seed — e criado via Setup Wizard na UI na primeira execucao.
+
+## Migrations
+
+Execucao: `database/migrations/migrate-dual-connection.ts`. Migracao one-time
+(idempotente via marcadores no Setting singleton) que copia as collections
+dinamicas do DB system para o DB data. Roda automaticamente no
+`docker-entrypoint.sh`; no segundo boot em diante e no-op com 1 query.
+
+Comandos:
+- `npm run migrate:dual-connection` — copia (skip se `MIGRATION_DUAL_CONNECTION_AT` ja setado)
+- `npm run migrate:dual-connection -- --force` — re-executa ignorando marcador
+- `npm run migrate:dual-connection -- --drop-source` — apaga collections do DB
+  system apos copia (manual, executar apenas apos validar em producao + backup)
+
+Marcadores persistidos no Setting:
+- `MIGRATION_DUAL_CONNECTION_AT` — timestamp da copia bem-sucedida
+- `MIGRATION_DUAL_CONNECTION_DROPPED_AT` — timestamp do drop bem-sucedido

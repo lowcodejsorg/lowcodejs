@@ -483,6 +483,8 @@ export type ISetting = {
     | 'paging'
     | 'email'
     | null;
+  MIGRATION_DUAL_CONNECTION_AT: Date | null;
+  MIGRATION_DUAL_CONNECTION_DROPPED_AT: Date | null;
 };
 
 export const E_TABLE_PERMISSION = {

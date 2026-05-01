@@ -1,6 +1,11 @@
 # Models
 
 Mongoose schemas. Todos usam timestamps e soft delete (`trashed` + `trashedAt`).
+Os 11 models vivem na **conexao system** (database `DB_DATABASE`, default
+`lowcodejs`). Collections de dados de tabelas dinamicas (criadas pelo usuario
+no low-code) vivem na **conexao data** (`DB_DATA_DATABASE`, default
+`lowcodejs_data`) e sao registradas em runtime via `buildTable(table, getDataConnection())`,
+NAO neste diretorio.
 
 ## Entidades
 
@@ -16,7 +21,7 @@ Mongoose schemas. Todos usam timestamps e soft delete (`trashed` + `trashedAt`).
 | `menu.model.ts` | menus | name, slug, type, url, html, order | table -> Table (nullable), parent -> Menu (self-ref), owner -> User |
 | `reaction.model.ts` | reactions | type (LIKE/UNLIKE) | user -> User |
 | `evaluation.model.ts` | evaluations | value (number) | user -> User |
-| `setting.model.ts` | - | DTO apenas (nao e Mongoose model). Campos: SYSTEM_NAME, LOCALE, STORAGE_DRIVER, etc. |
+| `setting.model.ts` | settings | Singleton com configuracoes globais: SYSTEM_NAME, LOCALE, STORAGE_DRIVER, EMAIL_PROVIDER_*, OPENAI_API_KEY, SETUP_COMPLETED, MIGRATION_DUAL_CONNECTION_AT, MIGRATION_DUAL_CONNECTION_DROPPED_AT, etc. | MODEL_CLONE_TABLES -> [Table] |
 
 ## Campos Base (todas as entidades)
 
