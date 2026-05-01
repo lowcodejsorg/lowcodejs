@@ -252,7 +252,8 @@ Apenas as essenciais — a tabela completa está em [`install.md`](install.md).
 | Variável            | Onde                | Descrição                              |
 | ------------------- | ------------------- | -------------------------------------- |
 | `DATABASE_URL`      | backend             | Connection string MongoDB              |
-| `DB_NAME`           | backend             | Nome do banco (default `lowcodejs`)    |
+| `DB_DATABASE`       | backend             | Nome do banco system (default `lowcodejs`)   |
+| `DB_DATA_DATABASE`  | backend             | Nome do banco data (default `lowcodejs_data`) |
 | `JWT_PUBLIC_KEY`    | backend             | Chave RS256 pública (base64)           |
 | `JWT_PRIVATE_KEY`   | backend             | Chave RS256 privada (base64)           |
 | `COOKIE_SECRET`     | backend             | Secret de cookies assinados            |
