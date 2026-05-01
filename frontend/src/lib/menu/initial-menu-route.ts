@@ -23,9 +23,9 @@ function sortByPosition(menus: Array<IMenu>): Array<IMenu> {
 
 function buildChildrenByParent(
   menus: Array<IMenu>,
-): Map<string | null, IMenu[]> {
+): Map<string | null, Array<IMenu>> {
   const menuIds = new Set(menus.map((menu) => menu._id));
-  const childrenByParent = new Map<string | null, IMenu[]>();
+  const childrenByParent = new Map<string | null, Array<IMenu>>();
 
   for (const menu of menus) {
     const parentId = getParentId(menu);
@@ -57,7 +57,7 @@ function toInitialRoute(menu: IMenu): InitialMenuRoute | null {
 
 function findFirstNavigableDescendant(
   menu: IMenu,
-  childrenByParent: Map<string | null, IMenu[]>,
+  childrenByParent: Map<string | null, Array<IMenu>>,
 ): IMenu | null {
   const children = sortByPosition(childrenByParent.get(menu._id) ?? []);
 

@@ -23,9 +23,7 @@ export async function cleanDynamicCollections(
  * Drops specific dynamic collections by their slugs.
  * Used when you know exactly which collections to clean.
  */
-export async function dropDynamicCollections(
-  slugs: string[],
-): Promise<void> {
+export async function dropDynamicCollections(slugs: string[]): Promise<void> {
   const conn = getDataConnection();
   const db = conn.db!;
 

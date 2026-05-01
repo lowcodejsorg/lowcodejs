@@ -101,11 +101,16 @@ export function FieldMenuPositionSelect({
   }, [parentId, siblings]);
 
   React.useEffect(() => {
-    if (field.state.value && options.some((option) => option.value === field.state.value)) {
+    if (
+      field.state.value &&
+      options.some((option) => option.value === field.state.value)
+    ) {
       return;
     }
 
-    field.handleChange(options[options.length - 1]?.value ?? (parentId ? '1' : '0'));
+    field.handleChange(
+      options[options.length - 1]?.value ?? (parentId ? '1' : '0'),
+    );
   }, [field, options, parentId]);
 
   return (

@@ -8,10 +8,11 @@ import { useStore } from '@tanstack/react-store';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
+import { parseMenuPosition } from '../-position';
+
 import type { MenuUpdateFormValues } from './-update-form';
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { MenuView } from './-view';
-import { parseMenuPosition } from '../-position';
 
 import { ActionDialog } from '@/components/common/action-dialog';
 import { FormFooter } from '@/components/common/form-footer';

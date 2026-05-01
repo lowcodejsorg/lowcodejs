@@ -229,7 +229,8 @@ function getDropMode(event: DragOverEvent | DragEndEvent): DropMode | null {
   const { active, over } = event;
   if (!over) return null;
 
-  const activeRect = active.rect.current.translated ?? active.rect.current.initial;
+  const activeRect =
+    active.rect.current.translated ?? active.rect.current.initial;
   if (!activeRect) return null;
 
   const overRect = over.rect;
@@ -353,9 +354,7 @@ export function MenuReorderDialog({
   const [tree, setTree] = React.useState<Array<MenuTreeNode>>([]);
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [dragOverId, setDragOverId] = React.useState<string | null>(null);
-  const [dragOverMode, setDragOverMode] = React.useState<DropMode | null>(
-    null,
-  );
+  const [dragOverMode, setDragOverMode] = React.useState<DropMode | null>(null);
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),

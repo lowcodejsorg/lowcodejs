@@ -39,14 +39,7 @@ export const Route = createFileRoute('/_private/menus/')({
   head: createRouteHead({ title: 'Menus' }),
   pendingComponent: () => (
     <DataTableSkeleton
-      headers={[
-        'Posição',
-        'Nome',
-        'Slug',
-        'Tipo',
-        'Criado por',
-        'Criado em',
-      ]}
+      headers={['Posição', 'Nome', 'Slug', 'Tipo', 'Criado por', 'Criado em']}
     >
       <DataTableSkeleton.Cell width="w-16" />
       <DataTableSkeleton.Cell width="w-40" />

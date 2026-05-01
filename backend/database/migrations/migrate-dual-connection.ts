@@ -21,9 +21,7 @@ const DB_DATABASE = process.env.DB_DATABASE || 'lowcodejs';
 const DB_DATA_DATABASE = process.env.DB_DATA_DATABASE || 'lowcodejs_data';
 const DROP_SOURCE = process.argv.includes('--drop-source');
 
-function isMongoDuplicateKeyError(
-  e: unknown,
-): e is Error & { code: number } {
+function isMongoDuplicateKeyError(e: unknown): e is Error & { code: number } {
   return e instanceof Error && 'code' in e;
 }
 
