@@ -13,6 +13,8 @@ import { E_FIELD_TYPE } from '../entity.core';
 import { executeScript } from '../table/handler';
 import type { FieldDefinition } from '../table/types';
 
+import { buildSchema } from './schema-builder';
+
 interface Entity extends Omit<IRow, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;
 }
@@ -99,16 +101,17 @@ export async function buildTable(
     if (Array.isArray(value) && value[0]?.type === 'Embedded') {
       let embeddedSchema = value[0].schema || {};
 
-      if (
+      const group = Array.isArray(table.groups)
+        ? table.groups.find((g: IGroupConfiguration) => g.slug === key)
+        : undefined;
+
+      if (group && Array.isArray(group.fields) && group.fields.length > 0) {
+        embeddedSchema = buildSchema(group.fields as IField[]);
+      } else if (
         Object.keys(embeddedSchema).length === 0 &&
-        Array.isArray(table.groups)
+        group?._schema
       ) {
-        const group = table.groups.find(
-          (g: IGroupConfiguration) => g.slug === key,
-        );
-        if (group?._schema) {
-          embeddedSchema = group._schema;
-        }
+        embeddedSchema = group._schema;
       }
 
       const subSchemaDefinition: mongoose.SchemaDefinition = {};

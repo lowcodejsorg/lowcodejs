@@ -36,16 +36,10 @@ export async function buildPopulate(
   const populate = [];
 
   for await (const field of relacionamentos) {
-    if (
-      field.type !== E_FIELD_TYPE.FIELD_GROUP &&
-      field.type !== E_FIELD_TYPE.REACTION &&
-      field.type !== E_FIELD_TYPE.EVALUATION &&
-      field.type !== E_FIELD_TYPE.RELATIONSHIP &&
-      field.type !== E_FIELD_TYPE.USER &&
-      field.type !== E_FIELD_TYPE.CREATOR
-    ) {
+    if (field.type === E_FIELD_TYPE.FILE) {
       populate.push({
         path: field.slug,
+        model: Storage,
       });
     }
 
