@@ -85,19 +85,25 @@ async function start(): Promise<void> {
     const migrationNamespace = initStorageMigrationSocket(io, jwtDecode);
     console.info('Socket.IO storage-migration namespace initialized');
 
-    await sweepStaleMigrations();
+    if (Env.STORAGE_MIGRATION_ENABLED) {
+      await sweepStaleMigrations();
 
-    const storageRepository = getInstanceByToken<StorageContractRepository>(
-      StorageMongooseRepository,
-    );
-    const storageService = getInstanceByToken<StorageService>(StorageService);
+      const storageRepository = getInstanceByToken<StorageContractRepository>(
+        StorageMongooseRepository,
+      );
+      const storageService = getInstanceByToken<StorageService>(StorageService);
 
-    startStorageMigrationWorker({
-      namespace: migrationNamespace,
-      storageRepository,
-      storageService,
-    });
-    console.info('Storage migration worker started');
+      startStorageMigrationWorker({
+        namespace: migrationNamespace,
+        storageRepository,
+        storageService,
+      });
+      console.info('Storage migration worker started');
+    } else {
+      console.info(
+        '[StorageMigration] Worker desabilitado (STORAGE_MIGRATION_ENABLED=false)',
+      );
+    }
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);

@@ -1,3 +1,22 @@
+> ⚠️ **STATUS: DESABILITADO TEMPORARIAMENTE (2026-05-02)**
+>
+> Worker de storage-migration está OFF no boot via flag `STORAGE_MIGRATION_ENABLED=false` (default).
+> Motivo: Redis ainda não configurado no Coolify + bug do BullMQ (`maxRetriesPerRequest must be null`)
+> no `worker.ts:331` ao reusar singleton ioredis de `config/redis.config.ts`.
+>
+> **Pendências para reabilitar:**
+> 1. Provisionar Redis no Coolify (deploy do serviço + setar `REDIS_URL`).
+> 2. Fix do BullMQ: Worker e Queue precisam de conexão dedicada com
+>    `maxRetriesPerRequest: null` + `enableReadyCheck: false`. Refatorar
+>    `config/redis.config.ts` (factory `createRedisConnection(opts)`) ou
+>    instanciar conexão direto em `worker.ts` + `bullmq-storage-migration-queue.service.ts`.
+> 3. Setar `STORAGE_MIGRATION_ENABLED=true` no `.env` / Coolify.
+>
+> Endpoints `/storage/migration/*` continuam expostos mas falham se acionados (Redis indisponível).
+> Código de worker/queue/socket preservado intacto. Ver guard em `backend/bin/server.ts:88` e flag em `backend/start/env.ts:46`.
+
+---
+
 # Migração de Storage entre Drivers (Local ↔ S3)
 
 Este documento descreve como funciona a migração resiliente de arquivos quando
