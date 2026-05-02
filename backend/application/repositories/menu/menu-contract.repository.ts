@@ -3,7 +3,12 @@ import type { FindOptions, IMenu, Merge } from '@application/core/entity.core';
 
 export type MenuCreatePayload = Merge<
   Pick<IMenu, 'name' | 'slug' | 'type'>,
-  Partial<Pick<IMenu, 'table' | 'parent' | 'url' | 'html' | 'owner' | 'order'>>
+  Partial<
+    Pick<
+      IMenu,
+      'table' | 'parent' | 'url' | 'html' | 'owner' | 'order' | 'isInitial'
+    >
+  >
 >;
 
 export type MenuUpdatePayload = Merge<
@@ -23,6 +28,16 @@ export type MenuQueryPayload = {
   sort?: Record<string, 'asc' | 'desc'>;
 };
 
+export type MenuUpdateManyPayload = {
+  _ids: string[];
+  filterTrashed?: boolean;
+  data: {
+    trashed?: boolean;
+    trashedAt?: Date | null;
+    isInitial?: boolean;
+  };
+};
+
 export abstract class MenuContractRepository {
   abstract create(payload: MenuCreatePayload): Promise<IMenu>;
   abstract findById(_id: string, options?: FindOptions): Promise<IMenu | null>;
@@ -31,8 +46,12 @@ export abstract class MenuContractRepository {
     options?: FindOptions,
   ): Promise<IMenu | null>;
   abstract findMany(payload?: MenuQueryPayload): Promise<IMenu[]>;
+  abstract findManyTrashed(): Promise<IMenu[]>;
   abstract update(payload: MenuUpdatePayload): Promise<IMenu>;
+  abstract updateMany(payload: MenuUpdateManyPayload): Promise<number>;
   abstract delete(_id: string): Promise<void>;
+  abstract deleteMany(_ids: string[]): Promise<number>;
   abstract count(payload?: MenuQueryPayload): Promise<number>;
   abstract findDescendantIds(menuId: string): Promise<string[]>;
+  abstract setOnlyInitial(_id: string): Promise<void>;
 }

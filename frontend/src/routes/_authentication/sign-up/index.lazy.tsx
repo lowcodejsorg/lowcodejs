@@ -34,7 +34,8 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationSignUp } from '@/hooks/tanstack-query/use-authentication-sign-up';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 
 export const Route = createLazyFileRoute('/_authentication/sign-up/')({
@@ -90,7 +91,7 @@ function RouteComponent(): React.JSX.Element {
     },
   });
 
-  const setFieldError = createFieldErrorSetter(form);
+  useApiErrorAutoClear(form);
 
   const signUpMutation = useAuthenticationSignUp({
     onSuccess() {
@@ -99,14 +100,12 @@ function RouteComponent(): React.JSX.Element {
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao criar conta',
-        onFieldErrors: (errors) => {
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
         causeHandlers: {
           USER_ALREADY_EXISTS: () =>
-            setFieldError('email', 'Este email já está em uso'),
+            applyApiFieldErrors(form, {
+              email: 'Este email já está em uso',
+            }),
         },
       });
     },
@@ -146,8 +145,7 @@ function RouteComponent(): React.JSX.Element {
                   <form.Field
                     name="name"
                     children={(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      const isInvalid = getFieldInvalidState(field.state.meta);
 
                       return (
                         <Field data-invalid={isInvalid}>
@@ -180,8 +178,7 @@ function RouteComponent(): React.JSX.Element {
                   <form.Field
                     name="email"
                     children={(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      const isInvalid = getFieldInvalidState(field.state.meta);
 
                       return (
                         <Field data-invalid={isInvalid}>
@@ -214,8 +211,7 @@ function RouteComponent(): React.JSX.Element {
                   <form.Field
                     name="password"
                     children={(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      const isInvalid = getFieldInvalidState(field.state.meta);
                       return (
                         <Field data-invalid={isInvalid}>
                           <FieldLabel htmlFor={field.name}>Senha</FieldLabel>
@@ -261,8 +257,7 @@ function RouteComponent(): React.JSX.Element {
                   <form.Field
                     name="confirmPassword"
                     children={(field) => {
-                      const isInvalid =
-                        field.state.meta.isTouched && !field.state.meta.isValid;
+                      const isInvalid = getFieldInvalidState(field.state.meta);
                       return (
                         <Field data-invalid={isInvalid}>
                           <FieldLabel htmlFor={field.name}>

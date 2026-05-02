@@ -22,6 +22,8 @@ import type {
   CloneTableUseCasePayload,
 } from '../clone-table.types';
 
+import { createGroupNativeFields } from './group-natives-helper';
+
 export async function createForumTemplate(
   payload: CloneTableUseCasePayload,
   deps: CloneTableDeps,
@@ -542,35 +544,31 @@ export async function buildForumFields(
     widthInDetail: null,
   });
 
+  const messagesNatives = await createGroupNativeFields(
+    fieldRepository,
+    messagesGroupSlug,
+  );
+
+  const messagesGroupFields = [
+    ...messagesNatives,
+    messageIdField,
+    messageTextField,
+    messageAuthorField,
+    messageDateField,
+    messageAttachmentsField,
+    messageMentionsField,
+    messageMentionEmailsField,
+    messageMentionNotifiedField,
+    messageMentionSeenField,
+    messageReplyField,
+    messageReactionsField,
+  ];
+
   const messagesGroup: IGroupConfiguration = {
     slug: messagesGroupSlug,
     name: 'Mensagens',
-    fields: [
-      messageIdField,
-      messageTextField,
-      messageAuthorField,
-      messageDateField,
-      messageAttachmentsField,
-      messageMentionsField,
-      messageMentionEmailsField,
-      messageMentionNotifiedField,
-      messageMentionSeenField,
-      messageReplyField,
-      messageReactionsField,
-    ],
-    _schema: tableSchemaService.computeSchema([
-      messageIdField,
-      messageTextField,
-      messageAuthorField,
-      messageDateField,
-      messageAttachmentsField,
-      messageMentionsField,
-      messageMentionEmailsField,
-      messageMentionNotifiedField,
-      messageMentionSeenField,
-      messageReplyField,
-      messageReactionsField,
-    ]),
+    fields: messagesGroupFields,
+    _schema: tableSchemaService.computeSchema(messagesGroupFields),
   };
 
   const messagesGroupField = await createField({

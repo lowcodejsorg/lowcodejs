@@ -1,4 +1,3 @@
-import mongoose from 'mongoose';
 import supertest from 'supertest';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 
@@ -16,8 +15,10 @@ import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import { getDataConnection } from '@config/database.config';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
+import { dropDynamicCollections } from '@test/helpers/database.helper';
 
 describe('E2E Table Update Controller', () => {
   beforeEach(async () => {
@@ -27,17 +28,7 @@ describe('E2E Table Update Controller', () => {
     await Table.deleteMany({});
     await Field.deleteMany({});
 
-    // Limpar coleções dinâmicas que possam ter ficado de testes anteriores
-    const db = mongoose.connection.db!;
-    for (const slug of ['my-table', 'updated-table']) {
-      const exists = await db.listCollections({ name: slug }).toArray();
-      if (exists.length > 0) {
-        await db.dropCollection(slug);
-      }
-      if (mongoose.models[slug]) {
-        delete mongoose.models[slug];
-      }
-    }
+    await dropDynamicCollections(['my-table', 'updated-table']);
   });
 
   afterAll(async () => {
@@ -101,11 +92,14 @@ describe('E2E Table Update Controller', () => {
       const table = await Table.create(tablePayload);
 
       // Criar a coleção dinâmica para que o rename funcione
-      await buildTable({
-        ...table.toJSON(),
-        _id: table._id.toString(),
-        fields: [{ ...field.toJSON(), _id: field._id.toString() }],
-      });
+      await buildTable(
+        {
+          ...table.toJSON(),
+          _id: table._id.toString(),
+          fields: [{ ...field.toJSON(), _id: field._id.toString() }],
+        },
+        getDataConnection(),
+      );
 
       const response = await supertest(kernel.server)
         .put(`/tables/${table.slug}`)

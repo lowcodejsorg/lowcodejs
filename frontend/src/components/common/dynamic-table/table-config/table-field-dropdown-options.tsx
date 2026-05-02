@@ -7,6 +7,7 @@ import { ComboboxSortableChips } from '@/components/ui/combobox';
 import { Field, FieldError, FieldLabel } from '@/components/ui/field';
 import { Input } from '@/components/ui/input';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
+import { getNextDropdownOptionColor } from '@/lib/dropdown-colors';
 import type { IDropdown } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -50,7 +51,7 @@ export function TableFieldDropdownOptions({
     const newOption: IDropdown = {
       id: crypto.randomUUID(),
       label: trimmed,
-      color: null,
+      color: getNextDropdownOptionColor(field.state.value.length),
     };
 
     field.handleChange([...field.state.value, newOption]);

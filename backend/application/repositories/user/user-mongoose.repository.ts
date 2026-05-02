@@ -9,6 +9,7 @@ import type {
   UserContractRepository,
   UserCreatePayload,
   UserQueryPayload,
+  UserUpdateManyPayload,
   UserUpdatePayload,
 } from './user-contract.repository';
 
@@ -38,6 +39,11 @@ export default class UserMongooseRepository implements UserContractRepository {
     // Filtro por status
     if (payload?.status) {
       where.status = payload.status;
+    }
+
+    // Filtro por grupo
+    if (payload?.group) {
+      where.group = payload.group;
     }
 
     // Contexto admin: o caller declara `role=ADMINISTRATOR` e o JWT
@@ -184,8 +190,36 @@ export default class UserMongooseRepository implements UserContractRepository {
     return this.transform(populated);
   }
 
+  async updateMany({
+    _ids,
+    filterTrashed,
+    data,
+  }: UserUpdateManyPayload): Promise<number> {
+    const where: Record<string, unknown> = { _id: { $in: _ids } };
+    if (filterTrashed !== undefined) where.trashed = filterTrashed;
+
+    const updateData: Record<string, unknown> = {};
+    if (data.trashed !== undefined) updateData['trashed'] = data.trashed;
+    if (data.trashedAt !== undefined) updateData['trashedAt'] = data.trashedAt;
+
+    const result = await Model.updateMany(where, { $set: updateData });
+    return result.modifiedCount;
+  }
+
+  async findManyTrashed(): Promise<IUser[]> {
+    const users = await Model.find({ trashed: true }).populate(
+      this.populateOptions,
+    );
+    return users.map((u) => this.transform(u));
+  }
+
   async delete(_id: string): Promise<void> {
     await Model.deleteOne({ _id });
+  }
+
+  async deleteMany(_ids: string[]): Promise<number> {
+    const result = await Model.deleteMany({ _id: { $in: _ids } });
+    return result.deletedCount;
   }
 
   async count(payload?: UserQueryPayload): Promise<number> {

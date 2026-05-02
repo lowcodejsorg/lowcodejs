@@ -5,21 +5,30 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
+import { ListTreeIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
 
+import { MenuReorderDialog } from './-reorder-dialog';
 import { TableMenus } from './-table-menus';
 
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
 import { PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
+import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { menuListOptions } from '@/hooks/tanstack-query/_query-options';
-import { E_FIELD_TYPE, MetaDefault } from '@/lib/constant';
+import { useMenuEmptyTrash } from '@/hooks/tanstack-query/use-menu-empty-trash';
+import { useMenusExportCsv } from '@/hooks/tanstack-query/use-menus-export-csv';
+import { E_FIELD_TYPE, E_ROLE, MetaDefault } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
+import { toastSuccess } from '@/lib/toast';
+import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/menus/')({
   component: RouteComponent,
@@ -33,8 +42,39 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate({ from: '/menus' });
+  const auth = useAuthStore();
 
   const { data } = useSuspenseQuery(menuListOptions(search));
+
+  const isMaster = auth.user?.group?.slug === E_ROLE.MASTER;
+  const isAdmin = auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const canExportCsv = isMaster || isAdmin;
+  const isTrashView = search.trashed === true;
+
+  const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);
+  const [reorderOpen, setReorderOpen] = React.useState(false);
+
+  const exportCsv = useMenusExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
+
+  const emptyTrash = useMenuEmptyTrash({
+    onSuccess(result) {
+      setEmptyTrashOpen(false);
+      const message =
+        result.deleted === 1
+          ? '1 menu excluído permanentemente!'
+          : result.deleted
+              .toString()
+              .concat(' menus excluídos permanentemente!');
+      toastSuccess(message, 'A lixeira de menus foi esvaziada');
+    },
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao esvaziar lixeira de menus' });
+    },
+  });
 
   const [filterOpen, setFilterOpen] = React.useState(() => {
     try {
@@ -79,19 +119,51 @@ function RouteComponent(): React.JSX.Element {
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
-          <Button
-            data-test-id="create-menu-btn"
-            className="disabled:cursor-not-allowed"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/menus/create',
-                replace: true,
-              });
-            }}
-          >
-            <span>Novo Menu</span>
-          </Button>
+          {canExportCsv && (
+            <ExportCsvButton
+              testId="export-menus-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate(search as Record<string, unknown>)
+              }
+            />
+          )}
+          {isTrashView && isMaster && (
+            <Button
+              data-test-id="empty-trash-menus-btn"
+              variant="destructive"
+              onClick={() => setEmptyTrashOpen(true)}
+            >
+              <Trash2Icon className="size-4" />
+              <span>Esvaziar lixeira</span>
+            </Button>
+          )}
+          {!isTrashView && (
+            <Button
+              data-test-id="reorder-menus-btn"
+              type="button"
+              variant="outline"
+              onClick={() => setReorderOpen(true)}
+            >
+              <ListTreeIcon className="size-4" />
+              <span>Ordenar</span>
+            </Button>
+          )}
+          {!isTrashView && (
+            <Button
+              data-test-id="create-menu-btn"
+              className="disabled:cursor-not-allowed"
+              onClick={() => {
+                sidebar.setOpen(false);
+                router.navigate({
+                  to: '/menus/create',
+                  replace: true,
+                });
+              }}
+            >
+              <span>Novo Menu</span>
+            </Button>
+          )}
         </div>
       </PageShell.Header>
 
@@ -122,6 +194,21 @@ function RouteComponent(): React.JSX.Element {
           }
         />
       </PageShell.Footer>
+
+      <PermanentDeleteConfirmDialog
+        open={emptyTrashOpen}
+        onOpenChange={setEmptyTrashOpen}
+        title="Esvaziar lixeira de menus"
+        description="Essa ação é irreversível. Todos os menus na lixeira serão excluídos permanentemente."
+        itemsCount={data.meta?.total ?? 0}
+        isPending={emptyTrash.isPending}
+        onConfirm={() => emptyTrash.mutate()}
+        testId="empty-trash-menus-dialog"
+      />
+      <MenuReorderDialog
+        open={reorderOpen}
+        onOpenChange={setReorderOpen}
+      />
     </PageShell>
   );
 }

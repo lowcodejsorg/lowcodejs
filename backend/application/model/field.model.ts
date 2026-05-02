@@ -175,6 +175,10 @@ export const Schema = new mongoose.Schema(
         return null;
       },
     },
+    allowCustomDropdownOptions: {
+      type: Boolean,
+      default: false,
+    },
     category: {
       type: [Category],
       default: function (): null {

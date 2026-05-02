@@ -1,3 +1,4 @@
+import { useStore } from '@tanstack/react-store';
 import { FileTextIcon } from 'lucide-react';
 
 import { SeparatorInfo } from '../-separator-info';
@@ -15,6 +16,8 @@ export type MenuUpdateFormValues = {
   html: string;
   url: string;
   parent: string;
+  position: string;
+  isInitial: boolean;
 };
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
@@ -24,6 +27,8 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   html: '',
   url: '',
   parent: '',
+  position: '0',
+  isInitial: false,
 };
 
 export const UpdateMenuFormFields = withForm({
@@ -34,9 +39,25 @@ export const UpdateMenuFormFields = withForm({
     menuType: E_MENU_ITEM_TYPE.SEPARATOR as
       | ValueOf<typeof E_MENU_ITEM_TYPE>
       | '',
+    originalType: E_MENU_ITEM_TYPE.SEPARATOR as
+      | ValueOf<typeof E_MENU_ITEM_TYPE>
+      | '',
+    hasChildren: false,
+    menuId: '',
   },
-  render: function Render({ form, isPending, mode, menuType }) {
+  render: function Render({
+    form,
+    isPending,
+    mode,
+    menuType,
+    originalType,
+    hasChildren,
+    menuId,
+  }) {
+    const parent = useStore(form.store, (state) => state.values.parent);
     const isDisabled = mode === 'show' || isPending;
+    const isSeparatorWithChildren =
+      originalType === E_MENU_ITEM_TYPE.SEPARATOR && hasChildren;
 
     return (
       <section
@@ -76,13 +97,13 @@ export const UpdateMenuFormFields = withForm({
           name="type"
           validators={{
             onChange: ({ value }) => {
-              if (value.trim() === '') {
+              if (!value || value.trim() === '') {
                 return 'Tipo é obrigatório';
               }
               return undefined;
             },
             onBlur: ({ value }) => {
-              if (value.trim() === '') {
+              if (!value || value.trim() === '') {
                 return 'Tipo é obrigatório';
               }
               return undefined;
@@ -93,11 +114,17 @@ export const UpdateMenuFormFields = withForm({
             <field.FieldMenuTypeSelect
               label="Tipo"
               placeholder="Selecione o tipo de menu"
-              disabled={isDisabled}
+              disabled={isDisabled || isSeparatorWithChildren}
               required
             />
           )}
         </form.AppField>
+        {isSeparatorWithChildren && mode === 'edit' && (
+          <p className="text-muted-foreground text-xs -mt-2">
+            Este separador possui submenus ativos e por isso o tipo não pode ser
+            alterado.
+          </p>
+        )}
 
         {/* Campo Parent */}
         <form.AppField name="parent">
@@ -110,6 +137,42 @@ export const UpdateMenuFormFields = withForm({
           )}
         </form.AppField>
 
+        <form.AppField
+          name="position"
+          validators={{
+            onChange: ({ value }) => {
+              if (!value) return 'Posição é obrigatória';
+              return undefined;
+            },
+            onBlur: ({ value }) => {
+              if (!value) return 'Posição é obrigatória';
+              return undefined;
+            },
+          }}
+        >
+          {(field) => (
+            <field.FieldMenuPositionSelect
+              label="Inserir após"
+              parentId={parent || undefined}
+              disabled={isDisabled}
+              excludeId={menuId}
+              required
+            />
+          )}
+        </form.AppField>
+
+        {menuType !== E_MENU_ITEM_TYPE.SEPARATOR && (
+          <form.AppField name="isInitial">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Página inicial"
+                description="Carregar este menu ao acessar o sistema"
+                disabled={isDisabled}
+              />
+            )}
+          </form.AppField>
+        )}
+
         {/* Campo Tabela - Condicional para tipos TABLE e FORM */}
         {(menuType === E_MENU_ITEM_TYPE.TABLE ||
           menuType === E_MENU_ITEM_TYPE.FORM) && (
@@ -117,13 +180,13 @@ export const UpdateMenuFormFields = withForm({
             name="table"
             validators={{
               onChange: ({ value }) => {
-                if (value.trim() === '') {
+                if (!value || value.trim() === '') {
                   return 'Tabela é obrigatória';
                 }
                 return undefined;
               },
               onBlur: ({ value }) => {
-                if (value.trim() === '') {
+                if (!value || value.trim() === '') {
                   return 'Tabela é obrigatória';
                 }
                 return undefined;

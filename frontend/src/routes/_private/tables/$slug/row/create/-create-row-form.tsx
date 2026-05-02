@@ -14,8 +14,9 @@ import { Spinner } from '@/components/ui/spinner';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { E_FIELD_TYPE } from '@/lib/constant';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
 import { buildCreateRowDefaultValues, buildRowPayload } from '@/lib/table';
@@ -68,7 +69,7 @@ function CreateRowFormContent({
     },
   });
 
-  const setFieldError = createFieldErrorSetter(form);
+  useApiErrorAutoClear(form);
 
   const _create = useCreateTableRow({
     onSuccess(data) {
@@ -98,11 +99,7 @@ function CreateRowFormContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao criar o registro',
-        onFieldErrors: (errors) => {
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });

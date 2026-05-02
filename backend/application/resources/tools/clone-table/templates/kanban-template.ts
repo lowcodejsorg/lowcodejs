@@ -22,6 +22,8 @@ import type {
   CloneTableUseCasePayload,
 } from '../clone-table.types';
 
+import { createGroupNativeFields } from './group-natives-helper';
+
 export async function createKanbanTemplate(
   payload: CloneTableUseCasePayload,
   deps: CloneTableDeps,
@@ -616,33 +618,52 @@ export async function buildKanbanFields(
     widthInDetail: null,
   });
 
+  const attachmentsNatives = await createGroupNativeFields(
+    fieldRepository,
+    attachmentsGroupSlug,
+  );
+  const tasksNatives = await createGroupNativeFields(
+    fieldRepository,
+    tasksGroupSlug,
+  );
+  const commentsNatives = await createGroupNativeFields(
+    fieldRepository,
+    commentsGroupSlug,
+  );
+
+  const attachmentsGroupFields = [
+    ...attachmentsNatives,
+    attachmentFileField,
+    attachmentAuthorField,
+    attachmentDateField,
+  ];
+  const tasksGroupFields = [...tasksNatives, taskTitleField, taskDoneField];
+  const commentsGroupFields = [
+    ...commentsNatives,
+    commentTextField,
+    commentAuthorField,
+    commentDateField,
+  ];
+
   const attachmentsGroup: IGroupConfiguration = {
     slug: attachmentsGroupSlug,
     name: 'Anexos',
-    fields: [attachmentFileField, attachmentAuthorField, attachmentDateField],
-    _schema: tableSchemaService.computeSchema([
-      attachmentFileField,
-      attachmentAuthorField,
-      attachmentDateField,
-    ]),
+    fields: attachmentsGroupFields,
+    _schema: tableSchemaService.computeSchema(attachmentsGroupFields),
   };
 
   const tasksGroup: IGroupConfiguration = {
     slug: tasksGroupSlug,
     name: 'Tarefas',
-    fields: [taskTitleField, taskDoneField],
-    _schema: tableSchemaService.computeSchema([taskTitleField, taskDoneField]),
+    fields: tasksGroupFields,
+    _schema: tableSchemaService.computeSchema(tasksGroupFields),
   };
 
   const commentsGroup: IGroupConfiguration = {
     slug: commentsGroupSlug,
     name: 'Comentários',
-    fields: [commentTextField, commentAuthorField, commentDateField],
-    _schema: tableSchemaService.computeSchema([
-      commentTextField,
-      commentAuthorField,
-      commentDateField,
-    ]),
+    fields: commentsGroupFields,
+    _schema: tableSchemaService.computeSchema(commentsGroupFields),
   };
 
   const attachmentsGroupField = await createField({

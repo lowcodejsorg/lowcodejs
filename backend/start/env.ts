@@ -6,7 +6,8 @@ config({ path: envFile });
 
 const EnvSchema = z.object({
   DATABASE_URL: z.string().trim(),
-  DB_NAME: z.string().trim().default('lowcodejs'),
+  DB_DATABASE: z.string().trim().default('lowcodejs'),
+  DB_DATA_DATABASE: z.string().trim().default('lowcodejs_data'),
 
   JWT_PUBLIC_KEY: z.string().trim(),
   JWT_PRIVATE_KEY: z.string().trim(),

@@ -158,7 +158,9 @@ function GroupRowFormDialogContent({
                 buildFieldValidator(field, value),
             }}
           >
-            {(formField: any) => renderGroupFormField(formField, field)}
+            {(formField: any) =>
+              renderGroupFormField(formField, field, tableSlug, groupSlug)
+            }
           </form.AppField>
         ))}
       </form>
@@ -361,6 +363,8 @@ function buildGroupRowPayload(
 function renderGroupFormField(
   formField: any,
   field: IField,
+  tableSlug: string,
+  groupSlug: string,
 ): React.JSX.Element | null {
   switch (field.type) {
     case E_FIELD_TYPE.TEXT_SHORT:
@@ -390,6 +394,8 @@ function renderGroupFormField(
         <formField.TableRowDropdownField
           field={field}
           disabled={false}
+          tableSlug={tableSlug}
+          groupSlug={groupSlug}
         />
       );
     case E_FIELD_TYPE.DATE:

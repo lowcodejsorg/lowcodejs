@@ -2,6 +2,8 @@ import { useParams, useRouter } from '@tanstack/react-router';
 import { ArrowRightIcon, PlusIcon } from 'lucide-react';
 import React from 'react';
 
+import { TableRowActionsMenu } from './table-row-actions-menu';
+
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -237,7 +239,12 @@ export function TableGridView({
                 </div>
               ) : null}
             </CardContent>
-            <CardFooter className="inline-flex justify-end p-1">
+            <CardFooter className="inline-flex justify-between items-center p-1">
+              <TableRowActionsMenu
+                slug={slug}
+                row={row}
+                table={table.data}
+              />
               <Button
                 variant="ghost"
                 className="p-0"

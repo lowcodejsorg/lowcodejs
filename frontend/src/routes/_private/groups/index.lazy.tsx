@@ -5,20 +5,29 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
+import { Trash2Icon } from 'lucide-react';
 import React from 'react';
 
 import { TableGroups } from './-table-groups';
 
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
 import { PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
+import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
+import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { groupListOptions } from '@/hooks/tanstack-query/_query-options';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { useGroupEmptyTrash } from '@/hooks/tanstack-query/use-group-empty-trash';
+import { useGroupsExportCsv } from '@/hooks/tanstack-query/use-groups-export-csv';
+import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
+import { toastSuccess } from '@/lib/toast';
+import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/groups/')({
   component: RouteComponent,
@@ -35,8 +44,38 @@ function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
   const router = useRouter();
   const navigate = useNavigate({ from: '/groups' });
+  const auth = useAuthStore();
 
   const { data } = useSuspenseQuery(groupListOptions(search));
+
+  const isMaster = auth.user?.group?.slug === E_ROLE.MASTER;
+  const isAdmin = auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const canExportCsv = isMaster || isAdmin;
+  const isTrashView = search.trashed === true;
+
+  const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);
+
+  const exportCsv = useGroupsExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
+
+  const emptyTrash = useGroupEmptyTrash({
+    onSuccess(result) {
+      setEmptyTrashOpen(false);
+      const message =
+        result.deleted === 1
+          ? '1 grupo excluído permanentemente!'
+          : result.deleted
+              .toString()
+              .concat(' grupos excluídos permanentemente!');
+      toastSuccess(message, 'A lixeira de grupos foi esvaziada');
+    },
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao esvaziar lixeira de grupos' });
+    },
+  });
 
   const [filterOpen, setFilterOpen] = React.useState(() => {
     try {
@@ -75,24 +114,46 @@ function RouteComponent(): React.JSX.Element {
         </div>
         <div className="inline-flex items-center gap-2">
           <div ref={setToolbarNode} />
+          <TrashButton />
           <FilterTrigger
             activeFiltersCount={activeFiltersCount}
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
-          <Button
-            data-test-id="create-group-btn"
-            className="disabled:cursor-not-allowed"
-            onClick={() => {
-              sidebar.setOpen(false);
-              router.navigate({
-                to: '/groups/create',
-                replace: true,
-              });
-            }}
-          >
-            <span>Novo Grupo</span>
-          </Button>
+          {canExportCsv && (
+            <ExportCsvButton
+              testId="export-groups-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate(search as Record<string, unknown>)
+              }
+            />
+          )}
+          {isTrashView && isMaster && (
+            <Button
+              data-test-id="empty-trash-groups-btn"
+              variant="destructive"
+              onClick={() => setEmptyTrashOpen(true)}
+            >
+              <Trash2Icon className="size-4" />
+              <span>Esvaziar lixeira</span>
+            </Button>
+          )}
+          {!isTrashView && (
+            <Button
+              data-test-id="create-group-btn"
+              className="disabled:cursor-not-allowed"
+              onClick={() => {
+                sidebar.setOpen(false);
+                router.navigate({
+                  to: '/groups/create',
+                  replace: true,
+                });
+              }}
+            >
+              <span>Novo Grupo</span>
+            </Button>
+          )}
         </div>
       </PageShell.Header>
 
@@ -123,6 +184,17 @@ function RouteComponent(): React.JSX.Element {
           }
         />
       </PageShell.Footer>
+
+      <PermanentDeleteConfirmDialog
+        open={emptyTrashOpen}
+        onOpenChange={setEmptyTrashOpen}
+        title="Esvaziar lixeira de grupos"
+        description="Essa ação é irreversível. Todos os grupos na lixeira serão excluídos permanentemente."
+        itemsCount={data.meta.total}
+        isPending={emptyTrash.isPending}
+        onConfirm={() => emptyTrash.mutate()}
+        testId="empty-trash-groups-dialog"
+      />
     </PageShell>
   );
 }

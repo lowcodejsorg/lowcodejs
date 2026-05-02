@@ -1,4 +1,4 @@
-import { useRouter } from '@tanstack/react-router';
+import { useRouter, useSearch } from '@tanstack/react-router';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
@@ -19,7 +19,8 @@ import { Spinner } from '@/components/ui/spinner';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
@@ -46,8 +47,12 @@ function UpdateRowFormContent({
   const isUploading = useIsUploading();
   const router = useRouter();
   const permission = useTablePermission(table);
+  const search = useSearch({ from: '/_private/tables/$slug/row/$rowId/' });
 
-  const [mode, setMode] = React.useState<'show' | 'edit'>('show');
+  const canEditRow = permission.can('UPDATE_ROW');
+  const initialMode: 'show' | 'edit' =
+    search.mode === 'edit' && canEditRow && !data.trashed ? 'edit' : 'show';
+  const [mode, setMode] = React.useState<'show' | 'edit'>(initialMode);
 
   const slug = table.slug;
   const rowId = data._id;
@@ -75,13 +80,14 @@ function UpdateRowFormContent({
     };
 
   const formFields = React.useMemo(
-    () => [...baseFields].sort(sortByOrder(table.fieldOrderForm)),
+    () => [...baseFields].sort(sortByOrder(table.fieldOrderForm ?? [])),
     [baseFields, table.fieldOrderForm],
   );
 
   const viewFields = React.useMemo(() => {
     const detailOrder = table.fieldOrderDetail ?? [];
-    const order = detailOrder.length > 0 ? detailOrder : table.fieldOrderForm;
+    const order =
+      detailOrder.length > 0 ? detailOrder : (table.fieldOrderForm ?? []);
     return [...baseFields].sort(sortByOrder(order));
   }, [baseFields, table.fieldOrderDetail, table.fieldOrderForm]);
 
@@ -100,7 +106,7 @@ function UpdateRowFormContent({
     },
   });
 
-  const setFieldError = createFieldErrorSetter(form);
+  useApiErrorAutoClear(form);
 
   const _update = useUpdateTableRow({
     onSuccess() {
@@ -115,11 +121,7 @@ function UpdateRowFormContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o registro',
-        onFieldErrors: (errors) => {
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });

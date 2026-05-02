@@ -8,6 +8,23 @@ import { syncStorageEnv } from '@config/setting-env-sync';
 import { Env } from '@start/env';
 import { kernel } from '@start/kernel';
 
+const SETTING_SYNC_KEYS = [
+  'SYSTEM_NAME',
+  'LOCALE',
+  'FILE_UPLOAD_MAX_SIZE',
+  'FILE_UPLOAD_ACCEPTED',
+  'FILE_UPLOAD_MAX_FILES_PER_UPLOAD',
+  'PAGINATION_PER_PAGE',
+  'EMAIL_PROVIDER_HOST',
+  'EMAIL_PROVIDER_PORT',
+  'EMAIL_PROVIDER_USER',
+  'EMAIL_PROVIDER_PASSWORD',
+  'LOGO_SMALL_URL',
+  'LOGO_LARGE_URL',
+  'OPENAI_API_KEY',
+  'AI_ASSISTANT_ENABLED',
+];
+
 async function loadStorageConfig(): Promise<void> {
   const setting = await Setting.findOne().lean();
 
@@ -17,6 +34,19 @@ async function loadStorageConfig(): Promise<void> {
   } else {
     console.info('[Storage] Nenhum Setting encontrado, usando driver local');
   }
+}
+
+async function syncSettingsFromDatabase(): Promise<void> {
+  const settings = await Setting.findOne().lean();
+  if (!settings) return;
+
+  for (const key of SETTING_SYNC_KEYS) {
+    const value = (settings as Record<string, unknown>)[key];
+    if (value !== undefined && value !== null) {
+      process.env[key] = String(value);
+    }
+  }
+  console.info('Settings synced from database');
 }
 
 async function start(): Promise<void> {
@@ -38,8 +68,9 @@ async function start(): Promise<void> {
   }
 }
 
-MongooseConnect().then(() => {
-  console.info('Mongoose connected');
-  console.info('url: ', Env.DATABASE_URL);
+MongooseConnect().then(async () => {
+  console.info('Mongoose system connected:', Env.DB_DATABASE);
+  console.info('Mongoose data connected:', Env.DB_DATA_DATABASE);
+  await syncSettingsFromDatabase();
   start();
 });

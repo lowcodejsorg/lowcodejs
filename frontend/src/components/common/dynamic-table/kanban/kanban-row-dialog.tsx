@@ -1,4 +1,12 @@
-import { CopyIcon, DownloadIcon, FileTextIcon, TrashIcon } from 'lucide-react';
+import { useRouter } from '@tanstack/react-router';
+import {
+  CopyIcon,
+  DownloadIcon,
+  EyeIcon,
+  FileTextIcon,
+  PencilIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
@@ -77,9 +85,10 @@ export function KanbanRowDialog({
   const auth = useAuthStore((s) => s.user);
   const { data: profile } = useProfileRead();
   const permission = useTablePermission(table);
+  const router = useRouter();
   const currentUserId = auth?._id ?? '';
   const [editTarget, setEditTarget] = React.useState<
-    'members' | 'start' | 'due' | null
+    'members' | 'start' | 'due' | 'list' | null
   >(null);
   const [taskTitle, setTaskTitle] = React.useState('');
   const [editingTaskIndex, setEditingTaskIndex] = React.useState<number | null>(
@@ -125,9 +134,12 @@ export function KanbanRowDialog({
     ...extraFields,
   ].filter(Boolean) as Array<IField>;
 
-  const quickFields = [fields.members, fields.startDate, fields.dueDate].filter(
-    Boolean,
-  ) as Array<IField>;
+  const quickFields = [
+    fields.members,
+    fields.startDate,
+    fields.dueDate,
+    fields.list,
+  ].filter(Boolean) as Array<IField>;
 
   const updateRow = useUpdateTableRow({
     onSuccess(data) {
@@ -165,7 +177,7 @@ export function KanbanRowDialog({
   });
 
   const quickForm = useAppForm({
-    defaultValues: ((): Record<string, any> => {
+    defaultValues: ((): Record<string, unknown> => {
       if (row) {
         return buildDefaultValuesFromRow(row, quickFields);
       }
@@ -173,34 +185,48 @@ export function KanbanRowDialog({
     })(),
     onSubmit: async ({ value }) => {
       if (!row || updateRow.status === 'pending') return;
-      const payload: Record<string, any> = {};
+      const payload: Record<string, unknown> = {};
       for (const field of quickFields) {
         const v = value[field.slug];
         if (field.type === E_FIELD_TYPE.USER) {
-          let userValue: Array<any> = [];
+          let userValue: Array<string> = [];
           if (Array.isArray(v)) {
-            userValue = v.map((opt: any) => opt.value ?? opt._id ?? opt);
+            userValue = v
+              .map((opt: unknown) => {
+                if (typeof opt === 'string') return opt;
+                if (opt && typeof opt === 'object') {
+                  const candidate = opt as { value?: unknown; _id?: unknown };
+                  if (typeof candidate.value === 'string')
+                    return candidate.value;
+                  if (typeof candidate._id === 'string') return candidate._id;
+                }
+                return '';
+              })
+              .filter((id): id is string => id.length > 0);
           }
           payload[field.slug] = userValue;
           continue;
         }
 
         if (field.type === E_FIELD_TYPE.DROPDOWN) {
-          if (field.multiple) {
-            let dropdownValue: Array<any> = [];
-            if (Array.isArray(v)) {
-              dropdownValue = v;
-            } else if (v) {
-              dropdownValue = [v];
-            }
-            payload[field.slug] = dropdownValue;
-          } else {
-            let singleValue: any = v ?? null;
-            if (typeof v === 'string' && v) {
-              singleValue = v;
-            }
-            payload[field.slug] = singleValue;
+          let dropdownValue: Array<string> = [];
+          if (Array.isArray(v)) {
+            dropdownValue = v
+              .map((item: unknown) => {
+                if (typeof item === 'string') return item;
+                if (item && typeof item === 'object') {
+                  const candidate = item as { value?: unknown; id?: unknown };
+                  if (typeof candidate.value === 'string')
+                    return candidate.value;
+                  if (typeof candidate.id === 'string') return candidate.id;
+                }
+                return '';
+              })
+              .filter((id): id is string => id.length > 0);
+          } else if (typeof v === 'string' && v.length > 0) {
+            dropdownValue = [v];
           }
+          payload[field.slug] = dropdownValue;
           continue;
         }
 
@@ -354,6 +380,7 @@ export function KanbanRowDialog({
   });
 
   const canDelete = permission.can('REMOVE_ROW');
+  const canEdit = permission.can('UPDATE_ROW');
 
   const handleTaskToggle = async (index: number): Promise<void> => {
     if (!fields.tasks) return;
@@ -769,7 +796,12 @@ export function KanbanRowDialog({
               }
               return <formField.TableRowTextareaField field={field} />;
             case E_FIELD_TYPE.DROPDOWN:
-              return <formField.TableRowDropdownField field={field} />;
+              return (
+                <formField.TableRowDropdownField
+                  field={field}
+                  tableSlug={tableSlug}
+                />
+              );
             case E_FIELD_TYPE.DATE:
               return <formField.TableRowDateField field={field} />;
             case E_FIELD_TYPE.FILE:
@@ -869,10 +901,12 @@ export function KanbanRowDialog({
                 members: fields.members,
                 startDate: fields.startDate,
                 dueDate: fields.dueDate,
+                list: fields.list,
               }}
               editTarget={editTarget}
               setEditTarget={setEditTarget}
               quickForm={quickForm}
+              tableSlug={tableSlug}
             />
 
             {(fields.members || fields.startDate || fields.dueDate) && (
@@ -1246,10 +1280,53 @@ export function KanbanRowDialog({
               >
                 Data do vencimento
               </Button>
+              {fields.list && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditTarget('list')}
+                  className="cursor-pointer"
+                >
+                  Lista
+                </Button>
+              )}
             </div>
 
             <div className="space-y-2 flex flex-col gap-1">
               <p className="text-xs uppercase text-muted-foreground">Ações</p>
+              <Button
+                type="button"
+                variant="outline"
+                data-test-id="kanban-view-btn"
+                onClick={() =>
+                  router.navigate({
+                    to: '/tables/$slug/row/$rowId',
+                    params: { slug: tableSlug, rowId: row._id },
+                  })
+                }
+                className="cursor-pointer"
+              >
+                <EyeIcon className="size-4" />
+                <span>Visualizar</span>
+              </Button>
+              {canEdit && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-test-id="kanban-edit-btn"
+                  onClick={() =>
+                    router.navigate({
+                      to: '/tables/$slug/row/$rowId',
+                      params: { slug: tableSlug, rowId: row._id },
+                      search: { mode: 'edit' },
+                    })
+                  }
+                  className="cursor-pointer"
+                >
+                  <PencilIcon className="size-4" />
+                  <span>Editar</span>
+                </Button>
+              )}
               {isMember && (
                 <Button
                   type="button"
@@ -1286,7 +1363,7 @@ export function KanbanRowDialog({
               )}
             </div>
 
-            {fields.list && (
+            {fields.list && editTarget !== 'list' && (
               <div className="space-y-2">
                 <p className="text-xs uppercase text-muted-foreground">Lista</p>
                 <TableRowDropdownCell

@@ -14,6 +14,17 @@ export const UserGroupPaginatedQueryValidator = z.object({
     .default(50),
   search: z.string({ message: 'A busca deve ser um texto' }).trim().optional(),
 
+  // Filtra grupos por estado de lixeira (default: ativos).
+  trashed: z
+    .preprocess(
+      (v) => {
+        if (typeof v === 'boolean') return String(v);
+        return v;
+      },
+      z.enum(['true', 'false']).transform((v) => v === 'true'),
+    )
+    .optional(),
+
   'order-name': z.enum(['asc', 'desc']).optional(),
   'order-description': z.enum(['asc', 'desc']).optional(),
   'order-created-at': z.enum(['asc', 'desc']).optional(),

@@ -16,6 +16,7 @@ Gerenciamento de usuarios da plataforma (CRUD).
 |----------|--------|------|-----------|
 | create | POST | `/users` | Criar novo usuario |
 | paginated | GET | `/users/paginated` | Listar usuarios com paginacao |
+| export-csv | GET | `/users/exports/csv` | Exporta usuarios em CSV (MASTER/ADMINISTRATOR; cap 500.000 linhas) |
 | show | GET | `/users/:_id` | Buscar usuario por ID |
 | update | PATCH | `/users/:_id` | Atualizar usuario |
 

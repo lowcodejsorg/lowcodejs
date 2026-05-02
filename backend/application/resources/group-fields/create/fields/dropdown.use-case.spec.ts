@@ -136,4 +136,22 @@ describe('Group Field Create - DROPDOWN', () => {
     expect(result.value.required).toBe(true);
     expect(result.value.type).toBe(E_FIELD_TYPE.DROPDOWN);
   });
+
+  it('deve rejeitar campo DROPDOWN com opcoes duplicadas por nome no grupo', async () => {
+    const result = await sut.execute({
+      ...FIELD_PAYLOAD_BASE,
+      slug: 'pedidos',
+      groupSlug: 'itens',
+      name: 'Status duplicado',
+      type: E_FIELD_TYPE.DROPDOWN,
+      dropdown: [
+        { id: '1', label: 'Pendente' },
+        { id: '2', label: ' pendente ' },
+      ],
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('DROPDOWN_OPTION_ALREADY_EXISTS');
+  });
 });

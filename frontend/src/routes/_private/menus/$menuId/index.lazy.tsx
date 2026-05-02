@@ -8,6 +8,8 @@ import { useStore } from '@tanstack/react-store';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
+import { parseMenuPosition } from '../-position';
+
 import type { MenuUpdateFormValues } from './-update-form';
 import { MenuUpdateSchema, UpdateMenuFormFields } from './-update-form';
 import { MenuView } from './-view';
@@ -21,9 +23,10 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { menuDetailOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { API } from '@/lib/api';
 import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import { createFieldErrorSetter } from '@/lib/form-utils';
+import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu, ValueOf } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -108,12 +111,7 @@ function MenuUpdateContent({
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao atualizar o menu',
-        onFieldErrors: (errors) => {
-          const setFieldError = createFieldErrorSetter(form);
-          for (const [field, msg] of Object.entries(errors)) {
-            setFieldError(field, msg);
-          }
-        },
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
       });
     },
   });
@@ -126,11 +124,18 @@ function MenuUpdateContent({
       html: data.html ?? '',
       url: data.url ?? '',
       parent: data.parent?._id ?? '',
+      position: data.parent
+        ? String((data.order ?? 0) + 1)
+        : String(data.order ?? 0),
+      isInitial: data.isInitial ?? false,
     } satisfies MenuUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
     onSubmit: async ({ value }) => {
       if (_update.status === 'pending') return;
+
+      const order = parseMenuPosition(value.position, value.parent);
+      if (order === null) return;
 
       await _update.mutateAsync({
         _id: data._id,
@@ -140,9 +145,13 @@ function MenuUpdateContent({
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        order,
+        isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
       });
     },
   });
+
+  useApiErrorAutoClear(form);
 
   const isPending = _update.status === 'pending';
   const menuType = useStore(form.store, (state) => state.values.type) as
@@ -306,6 +315,9 @@ function MenuUpdateContent({
               isPending={isPending}
               mode={mode}
               menuType={menuType}
+              originalType={data.type}
+              hasChildren={(data.children?.length ?? 0) > 0}
+              menuId={data._id}
             />
           </form>
         </PageShell.Content>

@@ -16,7 +16,11 @@
     "test:e2e": "vitest --config vitest.e2e.config.ts",
     "test:run": "vitest run",
     "test:coverage": "vitest --coverage",
-    "lint": "eslint . --ext .ts --fix"
+    "lint": "eslint . --ext .ts --fix",
+    "migrate:dual-connection": "node --import @swc-node/register/esm-register database/migrations/migrate-dual-connection.ts",
+    "migrate:dual-connection:prod": "node database/migrations/migrate-dual-connection.js",
+    "migrate:group-native-fields": "node --import @swc-node/register/esm-register database/migrations/migrate-group-native-fields.ts",
+    "migrate:group-native-fields:prod": "node database/migrations/migrate-group-native-fields.js"
   },
   "keywords": [],
   "author": "",

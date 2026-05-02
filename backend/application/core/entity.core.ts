@@ -332,6 +332,7 @@ export type IField = Merge<
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: IDropdown[];
+    allowCustomDropdownOptions?: boolean;
     category: ICategory[];
     group: IFieldConfigurationGroup | null;
   }
@@ -357,11 +358,12 @@ export type FieldCreatePayload = Pick<
   | 'defaultValue'
   | 'relationship'
   | 'dropdown'
+  | 'allowCustomDropdownOptions'
   | 'category'
   | 'group'
 >;
 
-export type IRow = Merge<Base, Record<string, any>>;
+export type IRow = Merge<Base, Record<string, unknown>>;
 
 export type IAttachment = {
   filename: string;
@@ -443,6 +445,7 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | string | null;
     order: number;
+    isInitial: boolean;
   }
 >;
 
@@ -480,6 +483,8 @@ export type ISetting = {
     | 'paging'
     | 'email'
     | null;
+  MIGRATION_DUAL_CONNECTION_AT: Date | null;
+  MIGRATION_DUAL_CONNECTION_DROPPED_AT: Date | null;
 };
 
 export const E_TABLE_PERMISSION = {

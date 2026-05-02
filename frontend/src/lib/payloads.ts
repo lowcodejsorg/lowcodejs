@@ -76,6 +76,7 @@ export type MenuCreatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  isInitial?: boolean;
 };
 
 export type MenuUpdatePayload = {
@@ -87,6 +88,15 @@ export type MenuUpdatePayload = {
   html?: string | null;
   url?: string | null;
   order?: number;
+  isInitial?: boolean;
+};
+
+export type MenuReorderPayload = {
+  items: Array<{
+    _id: string;
+    parent: string | null;
+    order: number;
+  }>;
 };
 
 // ============== TABLE ==============
@@ -157,6 +167,7 @@ export type FieldConfigurationPayload = {
     order: 'asc' | 'desc';
   } | null;
   dropdown?: Array<string>;
+  allowCustomDropdownOptions?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
 };
@@ -181,6 +192,7 @@ export type FieldCreatePayload = {
     order: 'asc' | 'desc';
   } | null;
   dropdown?: Array<string>;
+  allowCustomDropdownOptions?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
 };
@@ -206,6 +218,7 @@ export type FieldUpdatePayload = {
     order: 'asc' | 'desc';
   } | null;
   dropdown?: Array<string>;
+  allowCustomDropdownOptions?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
   trashed?: boolean;
@@ -308,8 +321,10 @@ export type SetupEmailPayload = {
 
 // ============== CLONE TABLE ==============
 export type CloneTablePayload = {
-  baseTableId: string;
-  name: string;
+  baseTableId?: string;
+  baseTableIds?: Array<string>;
+  copyDataTableIds?: Array<string>;
+  name?: string;
 };
 
 // ============== REACTION ==============
@@ -363,6 +378,7 @@ export type MenuQueryPayload = Merge<
     trashed?: boolean;
     parent?: string | null;
     'order-name'?: 'asc' | 'desc';
+    'order-position'?: 'asc' | 'desc';
     'order-slug'?: 'asc' | 'desc';
     'order-type'?: 'asc' | 'desc';
     'order-created-at'?: 'asc' | 'desc';

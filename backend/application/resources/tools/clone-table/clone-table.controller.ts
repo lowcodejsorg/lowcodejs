@@ -49,11 +49,21 @@ export default class {
     }
 
     const { table, fieldIdMap } = result.value;
+    const tables = result.value.tables ?? [table];
+    const fieldIdMaps = result.value.fieldIdMaps ?? {
+      [table._id]: fieldIdMap,
+    };
 
     return response.status(201).send({
       tableId: table._id,
       slug: table.slug,
+      tables: tables.map((clonedTable) => ({
+        tableId: clonedTable._id,
+        slug: clonedTable.slug,
+        name: clonedTable.name,
+      })),
       fieldIdMap,
+      fieldIdMaps,
     });
   }
 }

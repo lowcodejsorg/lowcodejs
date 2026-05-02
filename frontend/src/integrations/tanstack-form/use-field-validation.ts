@@ -1,8 +1,11 @@
 import { useFieldContext } from './form-context';
 
+import { getFieldInvalidState } from '@/lib/form-utils';
+
 /**
  * Hook para verificar se um campo está inválido.
- * Retorna true se o campo foi tocado E não é válido.
+ * Considera erros de validação local (touched && !isValid) e erros de API
+ * gravados no slot `onServer` do errorMap (sempre visíveis).
  */
 export function useFieldValidation<T = unknown>(): {
   field: ReturnType<typeof useFieldContext<T>>;
@@ -10,7 +13,7 @@ export function useFieldValidation<T = unknown>(): {
   errors: Array<string>;
 } {
   const field = useFieldContext<T>();
-  const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid;
+  const isInvalid = getFieldInvalidState(field.state.meta);
 
   return {
     field,

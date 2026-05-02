@@ -22,6 +22,8 @@ import type {
   CloneTableUseCasePayload,
 } from '../clone-table.types';
 
+import { createGroupNativeFields } from './group-natives-helper';
+
 export async function createCalendarTemplate(
   payload: CloneTableUseCasePayload,
   deps: CloneTableDeps,
@@ -437,14 +439,22 @@ export async function buildCalendarFields(
     widthInDetail: null,
   });
 
+  const reminderNatives = await createGroupNativeFields(
+    fieldRepository,
+    reminderGroupSlug,
+  );
+
+  const reminderGroupFields = [
+    ...reminderNatives,
+    reminderUnitField,
+    reminderValueField,
+  ];
+
   const reminderGroup = {
     slug: reminderGroupSlug,
     name: 'Lembrete',
-    fields: [reminderUnitField, reminderValueField],
-    _schema: tableSchemaService.computeSchema([
-      reminderUnitField,
-      reminderValueField,
-    ]),
+    fields: reminderGroupFields,
+    _schema: tableSchemaService.computeSchema(reminderGroupFields),
   };
 
   const reminderGroupField = await createField({

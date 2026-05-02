@@ -8,6 +8,7 @@ import type {
   UserContractRepository,
   UserCreatePayload,
   UserQueryPayload,
+  UserUpdateManyPayload,
   UserUpdatePayload,
 } from './user-contract.repository';
 
@@ -86,6 +87,15 @@ export default class UserInMemoryRepository implements UserContractRepository {
       filtered = filtered.filter((user) => user.status === payload.status);
     }
 
+    // Filtro por grupo
+    if (payload?.group) {
+      filtered = filtered.filter((user) => {
+        const groupId =
+          typeof user.group === 'string' ? user.group : user.group?._id;
+        return groupId === payload.group;
+      });
+    }
+
     if (payload?.search) {
       filtered = filtered.filter(
         (user) =>
@@ -111,11 +121,44 @@ export default class UserInMemoryRepository implements UserContractRepository {
     return updated;
   }
 
+  async updateMany({
+    _ids,
+    filterTrashed,
+    data,
+  }: UserUpdateManyPayload): Promise<number> {
+    this._checkError('updateMany');
+    let filtered = this.items.filter((u) => _ids.includes(u._id));
+
+    if (filterTrashed !== undefined) {
+      filtered = filtered.filter((u) => u.trashed === filterTrashed);
+    }
+
+    for (const user of filtered) {
+      if (data.trashed !== undefined) user.trashed = data.trashed;
+      if (data.trashedAt !== undefined) user.trashedAt = data.trashedAt;
+      user.updatedAt = new Date();
+    }
+
+    return filtered.length;
+  }
+
+  async findManyTrashed(): Promise<IUser[]> {
+    this._checkError('findManyTrashed');
+    return this.items.filter((u) => u.trashed);
+  }
+
   async delete(_id: string): Promise<void> {
     this._checkError('delete');
     const index = this.items.findIndex((u) => u._id === _id);
     if (index === -1) throw new Error('User not found');
     this.items.splice(index, 1);
+  }
+
+  async deleteMany(_ids: string[]): Promise<number> {
+    this._checkError('deleteMany');
+    const before = this.items.length;
+    this.items = this.items.filter((u) => !_ids.includes(u._id));
+    return before - this.items.length;
   }
 
   async count(payload?: UserQueryPayload): Promise<number> {

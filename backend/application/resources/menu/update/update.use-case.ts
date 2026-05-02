@@ -38,6 +38,43 @@ export default class MenuUpdateUseCase {
           HTTPException.NotFound('Menu não encontrado', 'MENU_NOT_FOUND'),
         );
 
+      if (
+        existingMenu.type === E_MENU_ITEM_TYPE.SEPARATOR &&
+        payload.type &&
+        payload.type !== E_MENU_ITEM_TYPE.SEPARATOR
+      ) {
+        const childrenCount = await this.menuRepository.count({
+          parent: existingMenu._id,
+          trashed: false,
+        });
+
+        if (childrenCount > 0) {
+          return left(
+            HTTPException.Conflict(
+              'Separador com submenus ativos não pode mudar de tipo',
+              'SEPARATOR_HAS_CHILDREN',
+              {
+                type: 'Separador com submenus ativos não pode mudar de tipo',
+              },
+            ),
+          );
+        }
+      }
+
+      const finalType = payload.type ?? existingMenu.type;
+
+      if (finalType === E_MENU_ITEM_TYPE.SEPARATOR && payload.isInitial) {
+        return left(
+          HTTPException.BadRequest(
+            'Separador não pode ser página inicial',
+            'INVALID_PARAMETERS',
+            {
+              isInitial: 'Separador não pode ser página inicial',
+            },
+          ),
+        );
+      }
+
       let finalSlug = payload.slug || existingMenu.slug;
       let parent = null;
 
@@ -161,12 +198,16 @@ export default class MenuUpdateUseCase {
         slug: finalSlug,
       };
 
+      if (finalType === E_MENU_ITEM_TYPE.SEPARATOR) {
+        updatePayload.isInitial = false;
+      }
+
       const parentChanged =
         payload.parent !== undefined && payload.parent !== existingMenu.parent;
 
       if (parentChanged && payload.order === undefined) {
         const siblingCount = await this.menuRepository.count({
-          parent: payload.parent ?? undefined,
+          parent: payload.parent ?? null,
           trashed: false,
         });
         updatePayload.order = siblingCount;
@@ -175,6 +216,10 @@ export default class MenuUpdateUseCase {
       const updated = await this.menuRepository.update(
         updatePayload as RepositoryMenuUpdatePayload,
       );
+
+      if (payload.isInitial) {
+        await this.menuRepository.setOnlyInitial(updated._id);
+      }
 
       return right(updated);
     } catch (error) {

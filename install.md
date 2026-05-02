@@ -132,10 +132,11 @@ cp .env.example .env
 | ---------------- | ------------------------ | ----------------------- |
 | `NODE_ENV`       | Ambiente de execucao     | `development`           |
 | `PORT`           | Porta do backend         | `3000`                  |
-| `DB_USERNAME`    | Usuario do MongoDB       | `lowcodejs`             |
-| `DB_PASSWORD`    | Senha do MongoDB         | `lowcodejs`             |
-| `DB_NAME`        | Nome do banco            | `lowcodejs`             |
-| `DATABASE_URL`   | URL de conexao MongoDB   | `mongodb://...`         |
+| `DB_USERNAME`      | Usuario do MongoDB             | `lowcodejs`             |
+| `DB_PASSWORD`      | Senha do MongoDB               | `lowcodejs`             |
+| `DB_DATABASE`      | Nome do banco system           | `lowcodejs`             |
+| `DB_DATA_DATABASE` | Nome do banco data (dinamicas) | `lowcodejs_data`        |
+| `DATABASE_URL`     | URL de conexao MongoDB         | `mongodb://...`         |
 | `APP_SERVER_URL` | URL publica do backend   | `http://localhost:3000` |
 | `APP_CLIENT_URL` | URL publica do frontend  | `http://localhost:5173` |
 
@@ -144,7 +145,10 @@ cp .env.example .env
 | Variavel          | Descricao                    | Padrao                   |
 | ----------------- | ---------------------------- | ------------------------ |
 | `MCP_SERVER_URL`  | URL do servidor MCP          | `http://mcp:3000/mcp`   |
-| `OPENAI_API_KEY`  | Chave da API OpenAI          | (vazio)                  |
+
+> A chave da API OpenAI e o toggle "Habilitar Assistente IA" sao
+> configurados pelo usuario MASTER em **Configuracoes** na UI
+> (`/settings`), nao via variavel de ambiente.
 
 ### Seguranca (JWT e Cookies)
 

@@ -3,6 +3,7 @@ import z from 'zod';
 import { Merge } from '@application/core/entity.core';
 
 import {
+  GroupConfigurationSchema,
   TableAdministratorsSchema,
   TableCollaborationSchema,
   TableFieldOrderDetailSchema,
@@ -39,6 +40,7 @@ export const TableUpdateBodyValidator = z.object({
   methods: TableMethodSchema,
   order: TableOrderSchema,
   layoutFields: TableLayoutFieldsSchema.optional(),
+  groups: z.array(GroupConfigurationSchema).optional(),
 });
 
 export const TableUpdateParamsValidator = z.object({

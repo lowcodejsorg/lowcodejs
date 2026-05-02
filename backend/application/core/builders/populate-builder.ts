@@ -1,4 +1,10 @@
+import type mongoose from 'mongoose';
+
+import { Evaluation } from '@application/model/evaluation.model';
+import { Reaction } from '@application/model/reaction.model';
+import { Storage } from '@application/model/storage.model';
 import { Table } from '@application/model/table.model';
+import { User } from '@application/model/user.model';
 
 import type { IField, IGroupConfiguration } from '../entity.core';
 import { E_FIELD_TYPE } from '../entity.core';
@@ -24,28 +30,23 @@ export async function buildPopulate(
   fields?: IField[],
   groups?: IGroupConfiguration[],
   tableSlug?: string,
-): Promise<{ path: string; model?: string; select?: string }[]> {
+  conn?: mongoose.Connection,
+): Promise<mongoose.PopulateOptions[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
 
   for await (const field of relacionamentos) {
-    if (
-      field.type !== E_FIELD_TYPE.FIELD_GROUP &&
-      field.type !== E_FIELD_TYPE.REACTION &&
-      field.type !== E_FIELD_TYPE.EVALUATION &&
-      field.type !== E_FIELD_TYPE.RELATIONSHIP &&
-      field.type !== E_FIELD_TYPE.USER &&
-      field.type !== E_FIELD_TYPE.CREATOR
-    ) {
+    if (field.type === E_FIELD_TYPE.FILE) {
       populate.push({
         path: field.slug,
+        model: Storage,
       });
     }
 
     if (field.type === E_FIELD_TYPE.USER) {
       populate.push({
         path: field.slug,
-        model: 'User',
+        model: User,
         select: 'name email _id',
       });
     }
@@ -53,7 +54,7 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.CREATOR) {
       populate.push({
         path: field.slug,
-        model: 'User',
+        model: User,
         select: 'name email _id',
       });
     }
@@ -61,6 +62,7 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.REACTION) {
       populate.push({
         path: field.slug,
+        model: Reaction,
         select: 'user type',
       });
     }
@@ -68,6 +70,7 @@ export async function buildPopulate(
     if (field.type === E_FIELD_TYPE.EVALUATION) {
       populate.push({
         path: field.slug,
+        model: Evaluation,
         select: 'user value',
       });
     }
@@ -78,20 +81,25 @@ export async function buildPopulate(
         _id: relationshipTableId,
       });
 
-      if (relationshipTable) {
-        await buildTable({
-          ...relationshipTable.toJSON({
-            flattenObjectIds: true,
-          }),
-          _id: relationshipTable._id.toString(),
-        });
+      if (relationshipTable && conn) {
+        await buildTable(
+          {
+            ...relationshipTable.toJSON({
+              flattenObjectIds: true,
+            }),
+            _id: relationshipTable._id.toString(),
+          },
+          conn,
+        );
 
         const relationshipFields = getRelationship(
-          relationshipTable?.fields as IField[],
+          relationshipTable?.fields ?? [],
         );
         const relationshipPopulate = await buildPopulate(
           relationshipFields,
-          relationshipTable?.groups as IGroupConfiguration[],
+          relationshipTable?.groups ?? [],
+          undefined,
+          conn,
         );
 
         populate.push({
@@ -116,7 +124,7 @@ export async function buildPopulate(
         if (groupField.type === E_FIELD_TYPE.USER) {
           populate.push({
             path: `${field.slug}.${groupField.slug}`,
-            model: 'User',
+            model: User,
             select: 'name email _id',
           });
         }
@@ -124,7 +132,7 @@ export async function buildPopulate(
         if (groupField.type === E_FIELD_TYPE.CREATOR) {
           populate.push({
             path: `${field.slug}.${groupField.slug}`,
-            model: 'User',
+            model: User,
             select: 'name email _id',
           });
         }
@@ -132,7 +140,7 @@ export async function buildPopulate(
         if (groupField.type === E_FIELD_TYPE.FILE) {
           populate.push({
             path: `${field.slug}.${groupField.slug}`,
-            model: 'Storage',
+            model: Storage,
           });
         }
 
@@ -144,11 +152,14 @@ export async function buildPopulate(
               _id: relationshipTableId,
             });
 
-            if (relationshipTable) {
-              await buildTable({
-                ...relationshipTable.toJSON({ flattenObjectIds: true }),
-                _id: relationshipTable._id.toString(),
-              });
+            if (relationshipTable && conn) {
+              await buildTable(
+                {
+                  ...relationshipTable.toJSON({ flattenObjectIds: true }),
+                  _id: relationshipTable._id.toString(),
+                },
+                conn,
+              );
 
               populate.push({
                 path: `${field.slug}.${groupField.slug}`,
@@ -171,13 +182,17 @@ export async function buildPopulate(
         trashed: { $ne: true },
       }).populate('fields');
 
-      if (sourceTable) {
-        await buildTable({
-          ...sourceTable.toJSON({ flattenObjectIds: true }),
-          _id: sourceTable._id.toString(),
-        });
+      if (sourceTable && conn) {
+        await buildTable(
+          {
+            ...sourceTable.toJSON({ flattenObjectIds: true }),
+            _id: sourceTable._id.toString(),
+          },
+          conn,
+        );
 
-        const relationshipSlugs = (sourceTable.fields as IField[])
+        const populatedFields: IField[] = sourceTable.fields ?? [];
+        const relationshipSlugs = populatedFields
           .filter(
             (f) =>
               f.type === E_FIELD_TYPE.RELATIONSHIP && f.slug !== rel.fieldSlug,
@@ -189,11 +204,17 @@ export async function buildPopulate(
           ...(relationshipSlugs.length > 0 && {
             select: relationshipSlugs.join(' '),
           }),
-          transform: (doc: any) => {
-            if (!doc) return doc;
-            const obj = doc.toObject ? doc.toObject() : { ...doc };
-            delete obj[rel.fieldSlug];
-            return obj;
+          transform: (doc: unknown): Record<string, unknown> | null => {
+            if (!doc || typeof doc !== 'object') return null;
+            const record: Record<string, unknown> = {};
+            Object.assign(record, doc);
+            if ('toObject' in doc && typeof doc.toObject === 'function') {
+              const plain: Record<string, unknown> = doc.toObject();
+              delete plain[rel.fieldSlug];
+              return plain;
+            }
+            delete record[rel.fieldSlug];
+            return record;
           },
         });
       }

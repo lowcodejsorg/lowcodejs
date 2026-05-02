@@ -4,6 +4,7 @@ import type {
   MenuContractRepository,
   MenuCreatePayload,
   MenuQueryPayload,
+  MenuUpdateManyPayload,
   MenuUpdatePayload,
 } from './menu-contract.repository';
 
@@ -33,6 +34,7 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
       url: payload.url ?? null,
       html: payload.html ?? null,
       order: payload.order ?? 0,
+      isInitial: payload.isInitial ?? false,
       createdAt: new Date(),
       updatedAt: new Date(),
       trashedAt: null,
@@ -105,11 +107,45 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     return menu;
   }
 
+  async updateMany({
+    _ids,
+    filterTrashed,
+    data,
+  }: MenuUpdateManyPayload): Promise<number> {
+    this._checkError('updateMany');
+    let filtered = this.items.filter((m) => _ids.includes(m._id));
+
+    if (filterTrashed !== undefined) {
+      filtered = filtered.filter((m) => m.trashed === filterTrashed);
+    }
+
+    for (const menu of filtered) {
+      if (data.trashed !== undefined) menu.trashed = data.trashed;
+      if (data.trashedAt !== undefined) menu.trashedAt = data.trashedAt;
+      if (data.isInitial !== undefined) menu.isInitial = data.isInitial;
+      menu.updatedAt = new Date();
+    }
+
+    return filtered.length;
+  }
+
+  async findManyTrashed(): Promise<IMenu[]> {
+    this._checkError('findManyTrashed');
+    return this.items.filter((m) => m.trashed);
+  }
+
   async delete(_id: string): Promise<void> {
     this._checkError('delete');
     const index = this.items.findIndex((m) => m._id === _id);
     if (index === -1) throw new Error('Menu not found');
     this.items.splice(index, 1);
+  }
+
+  async deleteMany(_ids: string[]): Promise<number> {
+    this._checkError('deleteMany');
+    const before = this.items.length;
+    this.items = this.items.filter((m) => !_ids.includes(m._id));
+    return before - this.items.length;
   }
 
   async count(payload?: MenuQueryPayload): Promise<number> {
@@ -136,5 +172,16 @@ export default class MenuInMemoryRepository implements MenuContractRepository {
     }
 
     return descendants;
+  }
+
+  async setOnlyInitial(_id: string): Promise<void> {
+    this._checkError('setOnlyInitial');
+    for (const menu of this.items) {
+      const shouldBeInitial = menu._id === _id;
+      if (menu.isInitial !== shouldBeInitial) {
+        menu.isInitial = shouldBeInitial;
+        menu.updatedAt = new Date();
+      }
+    }
   }
 }

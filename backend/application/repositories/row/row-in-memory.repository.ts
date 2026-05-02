@@ -356,11 +356,16 @@ export default class RowInMemoryRepository extends RowContractRepository {
     table: RowTableContext,
     row: Record<string, unknown>,
     creator?: string,
-  ): Promise<void> {
+  ): Promise<IRow> {
     const collection = this.getCollection(table.slug);
+    const data: Record<string, unknown> = { ...row };
+    delete data._id;
+    delete data.id;
+    delete data.createdAt;
+    delete data.updatedAt;
     const newRow: IRow = {
       _id: randomUUID(),
-      ...row,
+      ...data,
       creator: creator ?? null,
       trashed: false,
       trashedAt: null,
@@ -368,5 +373,6 @@ export default class RowInMemoryRepository extends RowContractRepository {
       updatedAt: new Date(),
     } as IRow;
     collection.push(newRow);
+    return { ...newRow };
   }
 }

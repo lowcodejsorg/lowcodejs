@@ -14,16 +14,20 @@ import { TableRowUserCell } from '../table-cells/table-row-user-cell';
 import { GroupRowDeleteDialog } from './group-row-delete-dialog';
 import { GroupRowFormDialog } from './group-row-form-dialog';
 
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { groupRowListOptions } from '@/hooks/tanstack-query/_query-options';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { useGroupRowsExportCsv } from '@/hooks/tanstack-query/use-group-rows-export-csv';
+import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type {
   IField,
   IGroupConfiguration,
   IRow,
   ITable,
 } from '@/lib/interfaces';
+import { useAuthStore } from '@/stores/authentication';
 
 interface GroupRowsDataTableProps {
   tableSlug: string;
@@ -52,13 +56,28 @@ export function GroupRowsDataTable({
     groupRowListOptions(tableSlug, rowId, groupSlug ?? ''),
   );
 
-  const groupFields = React.useMemo(
+  const auth = useAuthStore();
+  const canExportCsv =
+    auth.user?.group?.slug === E_ROLE.MASTER ||
+    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const exportCsv = useGroupRowsExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
+
+  const formFields = React.useMemo(
     () =>
       group?.fields.filter(
         (f): f is IField =>
           !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
       ) ?? [],
     [group],
+  );
+
+  const columnFields = React.useMemo(
+    () => formFields.filter((f) => f.showInList),
+    [formFields],
   );
 
   if (!groupSlug || !group) {
@@ -81,26 +100,41 @@ export function GroupRowsDataTable({
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">{field.name}</span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setEditItem(null);
-            setFormOpen(true);
-          }}
-          disabled={field.multiple === false && items.length >= 1}
-        >
-          <PlusIcon className="size-4" />
-          <span>Adicionar item</span>
-        </Button>
+        <div className="inline-flex items-center gap-2">
+          {canExportCsv && groupSlug && items.length > 0 && (
+            <ExportCsvButton
+              testId="export-group-rows-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate({
+                  slug: tableSlug,
+                  rowId,
+                  groupSlug,
+                })
+              }
+            />
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setEditItem(null);
+              setFormOpen(true);
+            }}
+            disabled={field.multiple === false && items.length >= 1}
+          >
+            <PlusIcon className="size-4" />
+            <span>Adicionar item</span>
+          </Button>
+        </div>
       </div>
 
       <div className="w-full overflow-x-auto border rounded-md">
         <table className="w-full text-sm">
           <thead className="border-b bg-muted/50">
             <tr>
-              {groupFields.map((gf) => (
+              {columnFields.map((gf) => (
                 <th
                   key={gf._id}
                   className="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
@@ -117,7 +151,7 @@ export function GroupRowsDataTable({
             {items.length === 0 && (
               <tr>
                 <td
-                  colSpan={groupFields.length + 1}
+                  colSpan={columnFields.length + 1}
                   className="px-4 py-8 text-center text-sm text-muted-foreground"
                 >
                   Nenhum item encontrado
@@ -133,7 +167,7 @@ export function GroupRowsDataTable({
                   setFormOpen(true);
                 }}
               >
-                {groupFields.map((gf) => (
+                {columnFields.map((gf) => (
                   <td
                     key={gf._id}
                     className="px-4 py-2"
@@ -187,7 +221,7 @@ export function GroupRowsDataTable({
         tableSlug={tableSlug}
         rowId={rowId}
         groupSlug={groupSlug}
-        groupFields={groupFields}
+        groupFields={formFields}
         editItem={editItem}
       />
 

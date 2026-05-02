@@ -20,6 +20,17 @@ export const UserPaginatedQueryValidator = z.object({
     .default(50),
   search: z.string({ message: 'A busca deve ser um texto' }).trim().optional(),
 
+  // Filtra usuários por estado de lixeira (default: ativos).
+  trashed: z
+    .preprocess(
+      (v) => {
+        if (typeof v === 'boolean') return String(v);
+        return v;
+      },
+      z.enum(['true', 'false']).transform((v) => v === 'true'),
+    )
+    .optional(),
+
   // Filtra usuários retornados por status.
   status: z.enum(E_USER_STATUS, { message: 'Status inválido' }).optional(),
 

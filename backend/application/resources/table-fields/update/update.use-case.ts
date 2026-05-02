@@ -16,7 +16,10 @@ import { RowContractRepository } from '@application/repositories/row/row-contrac
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
-import { normalizeDefaultValue } from '../table-field-base.schema';
+import {
+  hasDuplicateDropdownLabels,
+  normalizeDefaultValue,
+} from '../table-field-base.schema';
 
 import type { TableFieldUpdatePayload } from './update.validator';
 
@@ -125,6 +128,16 @@ export default class TableFieldUpdateUseCase {
 
       const oldSlug = field.slug;
       const slug = slugify(payload.name, { lower: true, trim: true });
+
+      if (hasDuplicateDropdownLabels(payload.dropdown)) {
+        return left(
+          HTTPException.Conflict(
+            'Opções do dropdown não podem ter nomes duplicados',
+            'DROPDOWN_OPTION_ALREADY_EXISTS',
+            { dropdown: 'Opção já existe no dropdown' },
+          ),
+        );
+      }
 
       // Normalize group: if it's a string, convert to object format
       const normalizedGroup =

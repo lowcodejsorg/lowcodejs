@@ -36,6 +36,13 @@ export const UserPaginatedSchema: FastifySchema = {
         enum: ['ACTIVE', 'INACTIVE'],
         description: 'Filter returned users by status (optional)',
       },
+      trashed: {
+        type: 'string',
+        enum: ['true', 'false'],
+        description:
+          'Filter users by trash state. true = trashed only, false = active only (default).',
+        examples: ['true', 'false'],
+      },
       role: {
         type: 'string',
         enum: ['MASTER', 'ADMINISTRATOR', 'MANAGER', 'REGISTERED'],

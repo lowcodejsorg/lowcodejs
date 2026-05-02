@@ -131,6 +131,8 @@ export type IMenu = Merge<
     html: string | null;
     owner: IUser | null;
     order: number;
+    isInitial: boolean;
+    children?: Array<IMenu>;
   }
 >;
 
@@ -178,6 +180,7 @@ export type IField = Merge<
     native?: boolean;
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
+    allowCustomDropdownOptions?: boolean;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
   }
@@ -189,6 +192,7 @@ export type IFilterField = Pick<
 > & {
   dropdown?: Array<IDropdown>;
   category?: Array<ICategory>;
+  relationship?: IFieldConfigurationRelationship | null;
 };
 
 export type ISchema = {
@@ -387,5 +391,11 @@ export type IHTTPExeptionError<T> = Merge<IHTTPException, { errors: T }>;
 export interface ICloneTableResponse {
   tableId: string;
   slug: string;
+  tables?: Array<{
+    tableId: string;
+    slug: string;
+    name: string;
+  }>;
   fieldIdMap: Record<string, string>;
+  fieldIdMaps?: Record<string, Record<string, string>>;
 }

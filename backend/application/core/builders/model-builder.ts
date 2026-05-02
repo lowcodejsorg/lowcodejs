@@ -13,8 +13,9 @@ import { E_FIELD_TYPE } from '../entity.core';
 import { executeScript } from '../table/handler';
 import type { FieldDefinition } from '../table/types';
 
-interface Entity
-  extends Omit<IRow, '_id'>, mongoose.Document<Omit<IRow, '_id'>> {
+import { buildSchema } from './schema-builder';
+
+interface Entity extends Omit<IRow, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;
 }
 
@@ -62,7 +63,7 @@ export async function findReverseRelationships(
 
   for (const table of tables) {
     const matchingFields = reverseFields.filter((rf) =>
-      table.fields.some((fId: any) => fId.toString() === rf._id.toString()),
+      table.fields.some((fId) => fId.toString() === rf._id.toString()),
     );
 
     for (const field of matchingFields) {
@@ -88,30 +89,32 @@ export async function buildTable(
     import('@application/core/entity.core').ITable,
     '_id' | 'createdAt' | 'updatedAt' | 'trashed' | 'trashedAt'
   >,
+  conn: mongoose.Connection,
 ): Promise<mongoose.Model<Entity>> {
   if (!table?.slug) throw new Error('Table slug not found');
 
   if (!table?._schema) throw new Error('Table schema not found');
 
-  const schemaDefinition: Record<string, any> = {};
+  const schemaDefinition: mongoose.SchemaDefinition = {};
 
   for (const [key, value] of Object.entries(table._schema)) {
     if (Array.isArray(value) && value[0]?.type === 'Embedded') {
       let embeddedSchema = value[0].schema || {};
 
-      if (
+      const group = Array.isArray(table.groups)
+        ? table.groups.find((g: IGroupConfiguration) => g.slug === key)
+        : undefined;
+
+      if (group && Array.isArray(group.fields) && group.fields.length > 0) {
+        embeddedSchema = buildSchema(group.fields as IField[]);
+      } else if (
         Object.keys(embeddedSchema).length === 0 &&
-        Array.isArray(table.groups)
+        group?._schema
       ) {
-        const group = table.groups.find(
-          (g: IGroupConfiguration) => g.slug === key,
-        );
-        if (group?._schema) {
-          embeddedSchema = group._schema;
-        }
+        embeddedSchema = group._schema;
       }
 
-      const subSchemaDefinition: Record<string, any> = {};
+      const subSchemaDefinition: mongoose.SchemaDefinition = {};
 
       for (const [subKey, subValue] of Object.entries(embeddedSchema)) {
         subSchemaDefinition[subKey] = subValue;
@@ -151,12 +154,12 @@ export async function buildTable(
   // ===== ADICIONA OS MIDDLEWARES AQUI =====
 
   if (table?.methods?.beforeSave?.code) {
-    schema.pre('save', async function (next) {
+    schema.pre('save', async function (next): Promise<void> {
       const result = await executeScript({
         code: table?.methods?.beforeSave?.code!,
         doc: this,
         tableSlug: table.slug,
-        fields: mapFieldsForSandbox(table.fields as IField[]),
+        fields: mapFieldsForSandbox(table.fields ?? []),
         context: {
           userAction: this.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'antes_salvar',
@@ -179,12 +182,12 @@ export async function buildTable(
   }
 
   if (table?.methods?.afterSave?.code) {
-    schema.post('save', async function (doc, next) {
+    schema.post('save', async function (doc, next): Promise<void> {
       const result = await executeScript({
         code: table?.methods?.afterSave?.code!,
         doc,
         tableSlug: table.slug,
-        fields: mapFieldsForSandbox(table.fields as IField[]),
+        fields: mapFieldsForSandbox(table.fields ?? []),
         context: {
           userAction: doc.isNew ? 'novo_registro' : 'editar_registro',
           executionMoment: 'depois_salvar',
@@ -209,14 +212,12 @@ export async function buildTable(
     });
   }
 
-  delete mongoose.models[table.slug];
-  const model = mongoose.model<Entity>(
-    table.slug,
-    schema,
-    table.slug,
-  ) as mongoose.Model<Entity>;
+  if (conn.models[table.slug]) {
+    conn.deleteModel(table.slug);
+  }
+  const model = conn.model<Entity>(table.slug, schema, table.slug);
 
-  await model?.createCollection();
+  await model.createCollection();
 
   return model;
 }

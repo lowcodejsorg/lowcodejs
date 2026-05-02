@@ -42,6 +42,9 @@ export function useUpdateTable(
         });
       }
       queryClient.setQueryData(queryKeys.tables.detail(data.slug), data);
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(data.slug),
+      });
       queryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
       props.onSuccess?.(data, variables);
     },

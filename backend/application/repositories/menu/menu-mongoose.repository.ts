@@ -10,6 +10,7 @@ import type {
   MenuContractRepository,
   MenuCreatePayload,
   MenuQueryPayload,
+  MenuUpdateManyPayload,
   MenuUpdatePayload,
 } from './menu-contract.repository';
 
@@ -162,8 +163,37 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     return this.transform(populated);
   }
 
+  async updateMany({
+    _ids,
+    filterTrashed,
+    data,
+  }: MenuUpdateManyPayload): Promise<number> {
+    const where: Record<string, unknown> = { _id: { $in: _ids } };
+    if (filterTrashed !== undefined) where.trashed = filterTrashed;
+
+    const updateData: Record<string, unknown> = {};
+    if (data.trashed !== undefined) updateData['trashed'] = data.trashed;
+    if (data.trashedAt !== undefined) updateData['trashedAt'] = data.trashedAt;
+    if (data.isInitial !== undefined) updateData['isInitial'] = data.isInitial;
+
+    const result = await Model.updateMany(where, { $set: updateData });
+    return result.modifiedCount;
+  }
+
+  async findManyTrashed(): Promise<IMenu[]> {
+    const menus = await Model.find({ trashed: true }).populate(
+      this.populateOptions,
+    );
+    return menus.map((m) => this.transform(m));
+  }
+
   async delete(_id: string): Promise<void> {
     await Model.deleteOne({ _id });
+  }
+
+  async deleteMany(_ids: string[]): Promise<number> {
+    const result = await Model.deleteMany({ _id: { $in: _ids } });
+    return result.deletedCount;
   }
 
   async count(payload?: MenuQueryPayload): Promise<number> {
@@ -191,5 +221,10 @@ export default class MenuMongooseRepository implements MenuContractRepository {
     return result[0].descendants.map((id: mongoose.Types.ObjectId) =>
       id.toString(),
     );
+  }
+
+  async setOnlyInitial(_id: string): Promise<void> {
+    await Model.updateMany({ isInitial: true }, { $set: { isInitial: false } });
+    await Model.updateOne({ _id }, { $set: { isInitial: true } });
   }
 }
