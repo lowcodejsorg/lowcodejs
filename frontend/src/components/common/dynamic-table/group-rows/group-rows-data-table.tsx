@@ -66,13 +66,18 @@ export function GroupRowsDataTable({
     },
   });
 
-  const groupFields = React.useMemo(
+  const formFields = React.useMemo(
     () =>
       group?.fields.filter(
         (f): f is IField =>
           !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
       ) ?? [],
     [group],
+  );
+
+  const columnFields = React.useMemo(
+    () => formFields.filter((f) => f.showInList),
+    [formFields],
   );
 
   if (!groupSlug || !group) {
@@ -129,7 +134,7 @@ export function GroupRowsDataTable({
         <table className="w-full text-sm">
           <thead className="border-b bg-muted/50">
             <tr>
-              {groupFields.map((gf) => (
+              {columnFields.map((gf) => (
                 <th
                   key={gf._id}
                   className="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
@@ -146,7 +151,7 @@ export function GroupRowsDataTable({
             {items.length === 0 && (
               <tr>
                 <td
-                  colSpan={groupFields.length + 1}
+                  colSpan={columnFields.length + 1}
                   className="px-4 py-8 text-center text-sm text-muted-foreground"
                 >
                   Nenhum item encontrado
@@ -162,7 +167,7 @@ export function GroupRowsDataTable({
                   setFormOpen(true);
                 }}
               >
-                {groupFields.map((gf) => (
+                {columnFields.map((gf) => (
                   <td
                     key={gf._id}
                     className="px-4 py-2"
@@ -216,7 +221,7 @@ export function GroupRowsDataTable({
         tableSlug={tableSlug}
         rowId={rowId}
         groupSlug={groupSlug}
-        groupFields={groupFields}
+        groupFields={formFields}
         editItem={editItem}
       />
 

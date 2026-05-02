@@ -178,9 +178,11 @@ export default class TableMongooseRepository implements TableContractRepository 
 
     await table.save();
 
-    const populated = await table.populate(this.populateOptions);
+    const fresh = await Model.findById(_id).populate(this.populateOptions);
 
-    return this.transform(populated);
+    if (!fresh) throw new Error('Table not found after update');
+
+    return this.transform(fresh);
   }
 
   async updateMany({

@@ -790,6 +790,7 @@ export default class CloneTableUseCase {
           showInFilter: field.showInFilter,
           defaultValue: field.defaultValue,
           locked: field.locked,
+          native: field.native,
           relationship: field.relationship,
           dropdown: field.dropdown,
           category: field.category,

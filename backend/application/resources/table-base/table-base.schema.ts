@@ -10,7 +10,7 @@ export const GroupConfigurationSchema = z.object({
   slug: z.string().trim(),
   name: z.string().trim(),
   fields: z.array(z.any()).default([]),
-  _schema: z.record(z.string(), z.unknown()).default({}),
+  _schema: z.any().default({}),
 });
 
 export const TableStyleSchema = z
