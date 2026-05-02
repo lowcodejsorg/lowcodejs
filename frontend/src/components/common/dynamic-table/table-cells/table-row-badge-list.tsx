@@ -22,7 +22,11 @@ export function hexToRgb(
   };
 }
 
-function getContrastTextColor(rgb: { r: number; g: number; b: number }): string {
+function getContrastTextColor(rgb: {
+  r: number;
+  g: number;
+  b: number;
+}): string {
   // O fundo é renderizado a ~20% sobre o surface (branco em modo claro), então
   // o texto precisa de boa legibilidade contra um tom claro. Usamos a versão
   // escurecida da própria cor: mantém identidade visual e garante contraste.
