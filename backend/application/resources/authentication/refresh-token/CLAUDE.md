@@ -3,10 +3,10 @@
 Renova os tokens de acesso e refresh usando o refresh token atual dos cookies.
 
 ## Endpoint
-`POST /authentication/refresh-token` | Auth: Sim | Permission: Nenhuma
+`POST /authentication/refresh-token` | Auth: Nao (autenticacao via refresh token cookie) | Permission: Nenhuma
 
 ## Fluxo
-1. Middleware: `AuthenticationMiddleware({ optional: false })`
+1. Middleware: `AuthenticationMiddleware({ optional: true })` — nao bloqueia request sem access token. A autenticacao real do endpoint vem da posse do refresh token (cookie httpOnly assinado RS256), validado nos passos 3-4.
 2. Validator: `RefreshTokenPayload` (type apenas, nao Zod) - campos: `_id` (string, extraido do token decodificado)
 3. Controller (logica pre-use-case):
    - Extrai `refreshToken` de `request.cookies.refreshToken`
@@ -25,11 +25,11 @@ Renova os tokens de acesso e refresh usando o refresh token atual dos cookies.
 - Refresh token deve ser valido e do tipo REFRESH
 - Usuario referenciado no token deve existir
 - Novos accessToken e refreshToken sao gerados e setados como cookies
+- Endpoint **nao** exige access token valido (renovacao funciona mesmo apos expiracao do access token)
 
 ## Erros Possiveis
 | Code | Cause | Quando |
 |------|-------|--------|
-| 401 | AUTHENTICATION_REQUIRED | Middleware rejeita (sem access token) |
 | 401 | MISSING_REFRESH_TOKEN | Cookie refreshToken ausente |
 | 401 | INVALID_REFRESH_TOKEN | Token invalido, expirado ou tipo incorreto |
 | 404 | USER_NOT_FOUND | Usuario do token nao existe no banco |

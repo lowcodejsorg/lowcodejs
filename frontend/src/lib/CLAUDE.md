@@ -8,7 +8,7 @@ toda a aplicacao frontend.
 
 | Arquivo                    | Descricao                                                                                                                                                                                                                          |
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `api.ts`                   | Instancia Axios com interceptors: request (resolve baseURL via server function, injeta cookies SSR), response (401 limpa auth e redireciona)                                                                                       |
+| `api.ts`                   | Instancia Axios com interceptors: request (resolve baseURL via server function, injeta cookies SSR), response (401 dispara refresh transparente com lock anti-thundering-herd e retenta a request original; so limpa auth + redireciona se o refresh falhar)                                                                                       |
 | `calendar-helpers.ts`      | Resolucao de campos de calendario (layoutFields com fallback), normalizacao de eventos (datas, cores, participantes), formatacao de intervalos de tempo                                                                            |
 | `constant.ts`              | Enums do dominio (`E_FIELD_TYPE`, `E_FIELD_FORMAT`, `E_ROLE`, `E_TABLE_STYLE`, `E_TABLE_VISIBILITY`, `E_TABLE_PERMISSION`, etc.), arrays de options para selects, mappers de labels, regex de validacao, eventos de chat Socket.IO |
 | `document-helpers.ts`      | Helpers para visualizacao documento: resolucao de blocos titulo/corpo, ordenacao por categoria, mapa de profundidade/labels, filtragem de rows por categoria                                                                       |
@@ -46,9 +46,17 @@ toda a aplicacao frontend.
 
 A instancia `API` em `api.ts` e o unico ponto de acesso ao backend. O request
 interceptor resolve a baseURL via server function (evita expor env vars no
-client) e injeta cookies automaticamente em contexto SSR. O response interceptor
-trata 401 globalmente, limpando o Zustand e redirecionando para login (exceto
-rotas publicas).
+client) e injeta cookies automaticamente em contexto SSR.
+
+O response interceptor trata 401 com renovacao transparente:
+- Captura 401, dispara `POST /authentication/refresh-token` (uma unica chamada
+  mesmo com varias requests paralelas falhando — usa lock global), e em sucesso
+  reenvia a request original com a mesma config
+- So limpa o Zustand + redireciona para `/` se o refresh tambem falhar (refresh
+  token expirado ou revogado)
+- Pula refresh em SSR (`typeof window === 'undefined'`) e em endpoints de auth
+  (`/sign-in`, `/sign-up`, `/sign-out`, `/refresh-token`) para evitar loops
+- Marca a config com `_retried` para evitar segundo retry
 
 ### TanStack Query
 
