@@ -114,6 +114,10 @@ export const queryKeys = {
   settings: {
     all: ['settings'] as const,
   },
+  storageMigration: {
+    all: ['storage-migration'] as const,
+    status: () => [...queryKeys.storageMigration.all, 'status'] as const,
+  },
   setup: {
     all: ['setup'] as const,
     status: () => [...queryKeys.setup.all, 'status'] as const,

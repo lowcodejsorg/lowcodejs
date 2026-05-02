@@ -29,11 +29,7 @@ import {
   setCachedStorageMeta,
   type StorageMeta,
 } from '@application/services/storage/storage-meta-cache';
-import {
-  getLocalStoragePath,
-  getS3Client,
-  getStorageDriver,
-} from '@config/storage.config';
+import { getLocalStoragePath, getS3Client } from '@config/storage.config';
 import { Env } from '@start/env';
 
 function matchOrigin(origin: string, pattern: string): boolean {
@@ -172,7 +168,11 @@ async function resolveStorageMeta(
     const meta: StorageMeta | null =
       doc === null
         ? null
-        : { originalName: doc.originalName, mimetype: doc.mimetype };
+        : {
+            originalName: doc.originalName,
+            mimetype: doc.mimetype,
+            location: doc.location,
+          };
     setCachedStorageMeta(filename, meta);
     return meta;
   } catch (error) {
@@ -202,8 +202,7 @@ async function serveFromLocal(
 ): Promise<void> {
   const fullPath = join(getLocalStoragePath(), filename);
   if (!existsSync(fullPath)) {
-    reply.status(404).send({ message: 'Arquivo não encontrado' });
-    return;
+    throw new Error(`[Storage Local] File not found: ${filename}`);
   }
   const stats = statSync(fullPath);
 
@@ -228,41 +227,34 @@ async function serveFromLocal(
 
 async function serveFromS3(
   filename: string,
-  request: FastifyRequest,
+  _request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
   const bucket = process.env.STORAGE_BUCKET!;
-  try {
-    const response = await getS3Client().send(
-      new GetObjectCommand({ Bucket: bucket, Key: filename }),
-    );
+  const response = await getS3Client().send(
+    new GetObjectCommand({ Bucket: bucket, Key: filename }),
+  );
 
-    reply.header(
-      'content-type',
-      response.ContentType || 'application/octet-stream',
-    );
+  reply.header(
+    'content-type',
+    response.ContentType || 'application/octet-stream',
+  );
 
-    if (isStaticFilename(filename)) {
-      reply.header('cache-control', STATIC_CACHE_CONTROL);
-      if (response.ETag) reply.header('etag', response.ETag);
-      if (response.LastModified) {
-        reply.header('last-modified', response.LastModified.toUTCString());
-      }
-    } else {
-      reply.header('cache-control', IMMUTABLE_CACHE_CONTROL);
+  if (isStaticFilename(filename)) {
+    reply.header('cache-control', STATIC_CACHE_CONTROL);
+    if (response.ETag) reply.header('etag', response.ETag);
+    if (response.LastModified) {
+      reply.header('last-modified', response.LastModified.toUTCString());
     }
-
-    if (response.ContentLength) {
-      reply.header('content-length', response.ContentLength);
-    }
-
-    reply.send(response.Body);
-  } catch {
-    console.info(
-      `[Storage S3] ${filename} não encontrado no S3, tentando local...`,
-    );
-    await serveFromLocal(filename, request, reply);
+  } else {
+    reply.header('cache-control', IMMUTABLE_CACHE_CONTROL);
   }
+
+  if (response.ContentLength) {
+    reply.header('content-length', response.ContentLength);
+  }
+
+  reply.send(response.Body);
 }
 
 const DRIVER_HANDLERS = {
@@ -292,8 +284,24 @@ kernel.addHook('onRequest', async (request, reply) => {
     );
   }
 
-  const handler = DRIVER_HANDLERS[getStorageDriver()];
-  await handler(filename, request, reply);
+  // Per-file location (dual-read fallback during/after migration). When the
+  // doc is absent from Mongo (legacy or just-uploaded race), fall back to
+  // local — the historical default driver.
+  const primary = meta?.location ?? 'local';
+  const secondary = primary === 'local' ? 's3' : 'local';
+
+  try {
+    await DRIVER_HANDLERS[primary](filename, request, reply);
+  } catch (primaryErr) {
+    console.info(
+      `[Storage] ${filename} ausente no driver primário (${primary}), tentando ${secondary}: ${(primaryErr as Error).message}`,
+    );
+    try {
+      await DRIVER_HANDLERS[secondary](filename, request, reply);
+    } catch {
+      reply.status(404).send({ message: 'Arquivo não encontrado' });
+    }
+  }
   return reply;
 });
 

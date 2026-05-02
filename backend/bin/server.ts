@@ -1,8 +1,14 @@
+import { getInstanceByToken } from 'fastify-decorators';
 import type { Server as HttpServer } from 'node:http';
 
 import type { IJWTPayload } from '@application/core/entity.core';
 import { Setting } from '@application/model/setting.model';
+import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
+import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
 import { initChatSocket } from '@application/resources/chat/chat.socket';
+import { initStorageMigrationSocket } from '@application/resources/storage-migration/storage-migration.socket';
+import StorageService from '@application/services/storage/storage.service';
+import { startStorageMigrationWorker } from '@application/services/storage-migration/worker';
 import { MongooseConnect } from '@config/database.config';
 import { syncStorageEnv } from '@config/setting-env-sync';
 import { Env } from '@start/env';
@@ -49,6 +55,18 @@ async function syncSettingsFromDatabase(): Promise<void> {
   console.info('Settings synced from database');
 }
 
+async function sweepStaleMigrations(): Promise<void> {
+  const repo = getInstanceByToken<StorageContractRepository>(
+    StorageMongooseRepository,
+  );
+  const swept = await repo.markInProgressAsFailed();
+  if (swept > 0) {
+    console.info(
+      `[StorageMigration] Sweep boot: ${swept} arquivo(s) órfão(s) em 'in_progress' marcados como 'failed'.`,
+    );
+  }
+}
+
 async function start(): Promise<void> {
   try {
     await loadStorageConfig();
@@ -58,10 +76,28 @@ async function start(): Promise<void> {
     console.info(`HTTP Server running on http://localhost:${Env.PORT}`);
 
     const httpServer = kernel.server as HttpServer;
-    initChatSocket(httpServer, (token: string) => {
-      return kernel.jwt.decode<IJWTPayload>(token);
-    });
+    const jwtDecode = (token: string): IJWTPayload | null =>
+      kernel.jwt.decode<IJWTPayload>(token);
+
+    const io = initChatSocket(httpServer, jwtDecode);
     console.info('Socket.IO chat initialized');
+
+    const migrationNamespace = initStorageMigrationSocket(io, jwtDecode);
+    console.info('Socket.IO storage-migration namespace initialized');
+
+    await sweepStaleMigrations();
+
+    const storageRepository = getInstanceByToken<StorageContractRepository>(
+      StorageMongooseRepository,
+    );
+    const storageService = getInstanceByToken<StorageService>(StorageService);
+
+    startStorageMigrationWorker({
+      namespace: migrationNamespace,
+      storageRepository,
+      storageService,
+    });
+    console.info('Storage migration worker started');
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);

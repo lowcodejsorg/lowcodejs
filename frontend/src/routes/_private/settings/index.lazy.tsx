@@ -3,6 +3,7 @@ import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
 
+import { StorageMigrationCard } from './-storage-migration-card';
 import { SettingUpdateSchema, UpdateSettingFormFields } from './-update-form';
 import { SettingView } from './-view';
 
@@ -77,6 +78,7 @@ function RouteComponent(): React.JSX.Element {
 
       {/* Content */}
       <PageShell.Content>
+        <StorageMigrationCard />
         <UploadingProvider>
           <SettingUpdateContent
             data={data}

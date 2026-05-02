@@ -1,0 +1,354 @@
+/**
+ * BullMQ Worker for storage migration / cleanup jobs.
+ *
+ * The worker runs in-process alongside the API. It consumes jobs from the
+ * `storage-migration` queue and emits real-time progress to the
+ * `/storage-migration` Socket.IO namespace.
+ *
+ * Per-file state machine for migration jobs:
+ *   1. Skip if doc.location === target_driver (idempotent)
+ *   2. Mark migration_status = 'in_progress'
+ *   3. Try up to 3 times: read source -> writeRaw target -> verify size
+ *   4. Success: updateLocation(target, 'idle') + emit file_migrated
+ *      Failure: updateLocation(source, 'failed') + emit file_failed
+ *
+ * For cleanup jobs:
+ *   - Delete each file_id from the opposite driver and emit progress.
+ */
+import { Worker, type Job } from 'bullmq';
+import type { Readable } from 'node:stream';
+import type { Namespace } from 'socket.io';
+
+import {
+  E_STORAGE_MIGRATION_STATUS,
+  type TStorageLocation,
+} from '@application/core/entity.core';
+import type { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
+import {
+  STORAGE_MIGRATION_EVENT,
+  type StorageMigrationCompletedEvent,
+  type StorageMigrationFileFailedEvent,
+  type StorageMigrationFileMigratedEvent,
+  type StorageMigrationProgressEvent,
+} from '@application/resources/storage-migration/storage-migration.socket';
+import { invalidateStorageMeta } from '@application/services/storage/storage-meta-cache';
+import StorageService from '@application/services/storage/storage.service';
+import { redis } from '@config/redis.config';
+
+import {
+  STORAGE_MIGRATION_JOB,
+  STORAGE_MIGRATION_QUEUE_NAME,
+  type CleanupJobPayload,
+  type MigrateJobPayload,
+} from './storage-migration-queue-contract.service';
+
+const RETRY_LIMIT = 3;
+
+type WorkerDeps = {
+  namespace: Namespace;
+  storageRepository: StorageContractRepository;
+  storageService: StorageService;
+};
+
+let cachedWorker: Worker | null = null;
+
+async function streamToBuffer(stream: Readable): Promise<Buffer> {
+  const chunks: Buffer[] = [];
+  for await (const chunk of stream) {
+    chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+async function processInBatches<T>(
+  items: T[],
+  concurrency: number,
+  // eslint-disable-next-line no-unused-vars
+  handler: (item: T, index: number) => Promise<void>,
+): Promise<void> {
+  let index = 0;
+  const slots = Math.max(1, Math.min(concurrency, items.length));
+  const workers: Promise<void>[] = [];
+
+  for (let i = 0; i < slots; i++) {
+    workers.push(
+      (async (): Promise<void> => {
+        while (true) {
+          const current = index++;
+          if (current >= items.length) return;
+          await handler(items[current] as T, current);
+        }
+      })(),
+    );
+  }
+
+  await Promise.all(workers);
+}
+
+async function migrateOneFile(
+  fileId: string,
+  source: TStorageLocation,
+  target: TStorageLocation,
+  deps: WorkerDeps,
+  jobId: string,
+  ctx: { processed: number; failed: number; total: number; startedAt: number },
+): Promise<void> {
+  const { storageRepository, storageService, namespace } = deps;
+
+  const doc = await storageRepository.findById(fileId);
+  if (!doc) {
+    ctx.processed++;
+    return;
+  }
+  if (doc.location === target) {
+    ctx.processed++;
+    return;
+  }
+
+  await storageRepository.updateLocation(
+    fileId,
+    source,
+    E_STORAGE_MIGRATION_STATUS.IN_PROGRESS,
+  );
+
+  let attempts = 0;
+  let lastError: Error | null = null;
+
+  while (attempts < RETRY_LIMIT) {
+    attempts++;
+    try {
+      const sourceImpl = storageService.forDriver(source);
+      const targetImpl = storageService.forDriver(target);
+
+      const reader = await sourceImpl.read(doc.filename);
+      const buffer = await streamToBuffer(reader.stream);
+      const written = await targetImpl.writeRaw(
+        doc.filename,
+        buffer,
+        doc.mimetype,
+      );
+
+      if (written.size !== doc.size) {
+        // best-effort delete of the bad copy
+        try {
+          await targetImpl.delete(doc.filename);
+        } catch {
+          // ignore
+        }
+        throw new Error(
+          `SIZE_MISMATCH: expected ${doc.size}, got ${written.size}`,
+        );
+      }
+
+      await storageRepository.updateLocation(
+        fileId,
+        target,
+        E_STORAGE_MIGRATION_STATUS.IDLE,
+      );
+      invalidateStorageMeta(doc.filename);
+
+      ctx.processed++;
+
+      const migratedEvt: StorageMigrationFileMigratedEvent = {
+        _id: doc._id,
+        filename: doc.filename,
+        from: source,
+        to: target,
+      };
+      namespace.emit(STORAGE_MIGRATION_EVENT.FILE_MIGRATED, migratedEvt);
+      emitProgress(namespace, jobId, doc.filename, ctx);
+      return;
+    } catch (err) {
+      lastError = err as Error;
+      if (attempts < RETRY_LIMIT) {
+        await sleep(1000 * attempts);
+      }
+    }
+  }
+
+  await storageRepository.updateLocation(
+    fileId,
+    source,
+    E_STORAGE_MIGRATION_STATUS.FAILED,
+  );
+  invalidateStorageMeta(doc.filename);
+  ctx.failed++;
+  ctx.processed++;
+
+  const failedEvt: StorageMigrationFileFailedEvent = {
+    _id: doc._id,
+    filename: doc.filename,
+    error: lastError?.message ?? 'Unknown error',
+    attempts,
+  };
+  namespace.emit(STORAGE_MIGRATION_EVENT.FILE_FAILED, failedEvt);
+  emitProgress(namespace, jobId, doc.filename, ctx);
+}
+
+function emitProgress(
+  namespace: Namespace,
+  jobId: string,
+  currentFilename: string | null,
+  ctx: { processed: number; failed: number; total: number; startedAt: number },
+): void {
+  const elapsedMs = Date.now() - ctx.startedAt;
+  const remaining = ctx.total - ctx.processed;
+  const eta_seconds =
+    ctx.processed > 0
+      ? Math.round(((elapsedMs / ctx.processed) * remaining) / 1000)
+      : null;
+
+  const evt: StorageMigrationProgressEvent = {
+    job_id: jobId,
+    processed: ctx.processed,
+    total: ctx.total,
+    current_filename: currentFilename,
+    failed_count: ctx.failed,
+    eta_seconds,
+  };
+  namespace.emit(STORAGE_MIGRATION_EVENT.PROGRESS, evt);
+}
+
+async function handleMigrate(
+  job: Job<MigrateJobPayload>,
+  deps: WorkerDeps,
+): Promise<void> {
+  const { source_driver, target_driver, file_ids, concurrency } = job.data;
+  const jobId = job.id ?? 'unknown';
+  const ctx = {
+    processed: 0,
+    failed: 0,
+    total: file_ids.length,
+    startedAt: Date.now(),
+  };
+
+  console.info(
+    `[StorageMigration Worker] migrate ${jobId}: ${file_ids.length} files ${source_driver} -> ${target_driver} (concurrency=${concurrency})`,
+  );
+
+  await processInBatches(file_ids, concurrency, async (fileId) => {
+    await migrateOneFile(
+      fileId,
+      source_driver,
+      target_driver,
+      deps,
+      jobId,
+      ctx,
+    );
+    await job.updateProgress(
+      ctx.total === 0 ? 100 : Math.round((ctx.processed / ctx.total) * 100),
+    );
+  });
+
+  const completedEvt: StorageMigrationCompletedEvent = {
+    job_id: jobId,
+    total: ctx.total,
+    succeeded: ctx.processed - ctx.failed,
+    failed: ctx.failed,
+    duration_ms: Date.now() - ctx.startedAt,
+  };
+  deps.namespace.emit(STORAGE_MIGRATION_EVENT.COMPLETED, completedEvt);
+}
+
+async function handleCleanup(
+  job: Job<CleanupJobPayload>,
+  deps: WorkerDeps,
+): Promise<void> {
+  const { driver_to_clear, file_ids } = job.data;
+  const jobId = job.id ?? 'unknown';
+  const impl = deps.storageService.forDriver(driver_to_clear);
+  const ctx = {
+    processed: 0,
+    failed: 0,
+    total: file_ids.length,
+    startedAt: Date.now(),
+  };
+
+  console.info(
+    `[StorageMigration Worker] cleanup ${jobId}: deleting ${file_ids.length} files from ${driver_to_clear}`,
+  );
+
+  for (const fileId of file_ids) {
+    const doc = await deps.storageRepository.findById(fileId);
+    if (!doc) {
+      ctx.processed++;
+      continue;
+    }
+    try {
+      await impl.delete(doc.filename);
+    } catch (err) {
+      console.warn(
+        `[StorageMigration Worker] cleanup falhou ${doc.filename}: ${(err as Error).message}`,
+      );
+    }
+    ctx.processed++;
+    emitProgress(deps.namespace, jobId, doc.filename, ctx);
+    await job.updateProgress(
+      ctx.total === 0 ? 100 : Math.round((ctx.processed / ctx.total) * 100),
+    );
+  }
+
+  const completedEvt: StorageMigrationCompletedEvent = {
+    job_id: jobId,
+    total: ctx.total,
+    succeeded: ctx.processed - ctx.failed,
+    failed: ctx.failed,
+    duration_ms: Date.now() - ctx.startedAt,
+  };
+  deps.namespace.emit(STORAGE_MIGRATION_EVENT.COMPLETED, completedEvt);
+}
+
+export function startStorageMigrationWorker(deps: WorkerDeps): Worker {
+  if (cachedWorker) return cachedWorker;
+
+  const worker = new Worker(
+    STORAGE_MIGRATION_QUEUE_NAME,
+    async (job: Job) => {
+      try {
+        if (job.name === STORAGE_MIGRATION_JOB.MIGRATE) {
+          await handleMigrate(job as Job<MigrateJobPayload>, deps);
+        } else if (job.name === STORAGE_MIGRATION_JOB.CLEANUP) {
+          await handleCleanup(job as Job<CleanupJobPayload>, deps);
+        } else {
+          console.warn(
+            `[StorageMigration Worker] Job desconhecido: ${job.name}`,
+          );
+        }
+      } catch (err) {
+        console.error(`[StorageMigration Worker] Erro no job ${job.id}:`, err);
+        deps.namespace.emit(STORAGE_MIGRATION_EVENT.ERROR, {
+          job_id: job.id ?? 'unknown',
+          message: (err as Error).message,
+        });
+        throw err;
+      }
+    },
+    {
+      connection: redis,
+      // BullMQ-level concurrency: process up to N jobs in parallel.
+      // Per-file concurrency is handled inside each job via processInBatches.
+      concurrency: 1,
+    },
+  );
+
+  worker.on('failed', (job: Job | undefined, err: Error) => {
+    console.error(
+      `[StorageMigration Worker] Job ${job?.id} falhou:`,
+      err.message,
+    );
+  });
+
+  cachedWorker = worker;
+  return worker;
+}
+
+export async function stopStorageMigrationWorker(): Promise<void> {
+  if (cachedWorker) {
+    await cachedWorker.close();
+    cachedWorker = null;
+  }
+}

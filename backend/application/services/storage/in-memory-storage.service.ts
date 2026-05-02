@@ -1,10 +1,17 @@
 import type { MultipartFile } from '@fastify/multipart';
+import { Readable } from 'node:stream';
 
-import type { StorageUploadResponse } from './storage-contract.service';
+import type {
+  StorageReadResponse,
+  StorageUploadResponse,
+  StorageWriteRawResponse,
+} from './storage-contract.service';
 import { StorageContractService } from './storage-contract.service';
 
+type StoredFile = StorageUploadResponse & { body: Buffer };
+
 export default class InMemoryStorageService extends StorageContractService {
-  private files: Map<string, StorageUploadResponse> = new Map();
+  private files: Map<string, StoredFile> = new Map();
   private _forcedErrors = new Map<string, Error>();
 
   simulateError(method: string, error: Error): void {
@@ -36,7 +43,7 @@ export default class InMemoryStorageService extends StorageContractService {
       size: 0,
     };
 
-    this.files.set(filename, result);
+    this.files.set(filename, { ...result, body: Buffer.alloc(0) });
     return result;
   }
 
@@ -50,5 +57,49 @@ export default class InMemoryStorageService extends StorageContractService {
 
   async ensureBucket(): Promise<void> {
     // noop para testes
+  }
+
+  async read(filename: string): Promise<StorageReadResponse> {
+    this._checkError('read');
+    const stored = this.files.get(filename);
+    if (!stored) {
+      throw new Error(`[InMemoryStorage] File not found: ${filename}`);
+    }
+    return {
+      stream: Readable.from(stored.body),
+      size: stored.body.length,
+      mimetype: stored.mimetype,
+    };
+  }
+
+  async writeRaw(
+    filename: string,
+    body: Buffer,
+    mimetype: string,
+  ): Promise<StorageWriteRawResponse> {
+    this._checkError('writeRaw');
+    this.files.set(filename, {
+      filename,
+      mimetype,
+      originalName: filename,
+      size: body.length,
+      body,
+    });
+    return { size: body.length };
+  }
+
+  // Test helpers
+  seedFile(
+    filename: string,
+    body: Buffer,
+    mimetype = 'application/octet-stream',
+  ): void {
+    this.files.set(filename, {
+      filename,
+      mimetype,
+      originalName: filename,
+      size: body.length,
+      body,
+    });
   }
 }

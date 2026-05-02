@@ -1,13 +1,19 @@
 import { Service } from 'fastify-decorators';
 
-import type { IStorage } from '@application/core/entity.core';
-import type { FindOptions } from '@application/core/entity.core';
+import {
+  E_STORAGE_MIGRATION_STATUS,
+  type FindOptions,
+  type IStorage,
+  type TStorageLocation,
+  type TStorageMigrationStatus,
+} from '@application/core/entity.core';
 import { normalize } from '@application/core/util.core';
 import { Storage as Model } from '@application/model/storage.model';
 
 import type {
   StorageContractRepository,
   StorageCreatePayload,
+  StorageLocationFindOptions,
   StorageQueryPayload,
   StorageUpdatePayload,
 } from './storage-contract.repository';
@@ -42,7 +48,7 @@ export default class StorageMongooseRepository implements StorageContractReposit
 
   async createMany(payload: StorageCreatePayload[]): Promise<IStorage[]> {
     const storages = await Model.insertMany(payload);
-    return storages.map((s) => this.transform(s));
+    return storages.map((s) => this.transform(s as InstanceType<typeof Model>));
   }
 
   async findById(_id: string, options?: FindOptions): Promise<IStorage | null> {
@@ -110,5 +116,73 @@ export default class StorageMongooseRepository implements StorageContractReposit
   async count(payload?: StorageQueryPayload): Promise<number> {
     const where = this.buildWhereClause(payload);
     return Model.countDocuments(where);
+  }
+
+  async findByLocation(
+    location: TStorageLocation,
+    options?: StorageLocationFindOptions,
+  ): Promise<IStorage[]> {
+    let skip: number | undefined;
+    let take: number | undefined;
+    if (options?.page && options?.perPage) {
+      skip = (options.page - 1) * options.perPage;
+      take = options.perPage;
+    }
+
+    const storages = await Model.find({ location })
+      .skip(skip ?? 0)
+      .limit(take ?? 0);
+
+    return storages.map((s) => this.transform(s));
+  }
+
+  async countByLocation(location: TStorageLocation): Promise<number> {
+    return Model.countDocuments({ location });
+  }
+
+  async countByMigrationStatus(
+    status: TStorageMigrationStatus,
+  ): Promise<number> {
+    return Model.countDocuments({ migration_status: status });
+  }
+
+  async findByMigrationStatus(
+    status: TStorageMigrationStatus,
+    options?: StorageLocationFindOptions,
+  ): Promise<IStorage[]> {
+    let skip: number | undefined;
+    let take: number | undefined;
+    if (options?.page && options?.perPage) {
+      skip = (options.page - 1) * options.perPage;
+      take = options.perPage;
+    }
+
+    const storages = await Model.find({ migration_status: status })
+      .skip(skip ?? 0)
+      .limit(take ?? 0);
+
+    return storages.map((s) => this.transform(s));
+  }
+
+  async updateLocation(
+    _id: string,
+    location: TStorageLocation,
+    migration_status: TStorageMigrationStatus,
+  ): Promise<IStorage | null> {
+    const storage = await Model.findOneAndUpdate(
+      { _id },
+      { $set: { location, migration_status } },
+      { new: true },
+    );
+    if (!storage) return null;
+    return this.transform(storage);
+  }
+
+  async markInProgressAsFailed(): Promise<number> {
+    const result = await Model.updateMany(
+      { migration_status: E_STORAGE_MIGRATION_STATUS.IN_PROGRESS },
+      { $set: { migration_status: E_STORAGE_MIGRATION_STATUS.FAILED } },
+    );
+    return result.modifiedCount;
   }
 }

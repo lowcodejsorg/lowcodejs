@@ -164,6 +164,23 @@ export type IValidationToken = Merge<
   }
 >;
 
+export const E_STORAGE_LOCATION = {
+  LOCAL: 'local',
+  S3: 's3',
+} as const;
+
+export const E_STORAGE_MIGRATION_STATUS = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  IN_PROGRESS: 'in_progress',
+  FAILED: 'failed',
+} as const;
+
+export type TStorageLocation = ValueOf<typeof E_STORAGE_LOCATION>;
+export type TStorageMigrationStatus = ValueOf<
+  typeof E_STORAGE_MIGRATION_STATUS
+>;
+
 export type IStorage = Merge<
   Base,
   {
@@ -172,6 +189,8 @@ export type IStorage = Merge<
     mimetype: string;
     originalName: string;
     size: number;
+    location: TStorageLocation;
+    migration_status: TStorageMigrationStatus;
   }
 >;
 
@@ -485,6 +504,8 @@ export type ISetting = {
     | null;
   MIGRATION_DUAL_CONNECTION_AT: Date | null;
   MIGRATION_DUAL_CONNECTION_DROPPED_AT: Date | null;
+  MIGRATION_STORAGE_LOCATION_AT: Date | null;
+  STORAGE_MIGRATION_LAST_RUN_AT: Date | null;
 };
 
 export const E_TABLE_PERMISSION = {

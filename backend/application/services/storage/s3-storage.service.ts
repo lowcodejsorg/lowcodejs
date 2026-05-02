@@ -1,17 +1,23 @@
 import {
   CreateBucketCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadBucketCommand,
   HeadObjectCommand,
   PutObjectCommand,
 } from '@aws-sdk/client-s3';
 import type { MultipartFile } from '@fastify/multipart';
 import { Service } from 'fastify-decorators';
+import type { Readable } from 'node:stream';
 
 import { getS3Client } from '@config/storage.config';
 
 import { processFile } from './process-file';
-import type { StorageUploadResponse } from './storage-contract.service';
+import type {
+  StorageReadResponse,
+  StorageUploadResponse,
+  StorageWriteRawResponse,
+} from './storage-contract.service';
 import { StorageContractService } from './storage-contract.service';
 
 @Service()
@@ -89,5 +95,41 @@ export default class S3StorageService extends StorageContractService {
     } catch {
       return false;
     }
+  }
+
+  async read(filename: string): Promise<StorageReadResponse> {
+    const result = await getS3Client().send(
+      new GetObjectCommand({ Bucket: this.bucket, Key: filename }),
+    );
+
+    if (!result.Body) {
+      throw new Error(`[Storage S3] Empty body for ${filename}`);
+    }
+
+    return {
+      stream: result.Body as Readable,
+      size: result.ContentLength ?? 0,
+      mimetype: result.ContentType ?? 'application/octet-stream',
+    };
+  }
+
+  async writeRaw(
+    filename: string,
+    body: Buffer,
+    mimetype: string,
+  ): Promise<StorageWriteRawResponse> {
+    await this.ensureBucket();
+
+    await getS3Client().send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: filename,
+        Body: body,
+        ContentType: mimetype,
+        ContentLength: body.length,
+      }),
+    );
+
+    return { size: body.length };
   }
 }

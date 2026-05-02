@@ -1,0 +1,62 @@
+import type { FastifySchema } from 'fastify';
+
+export const StorageMigrationStatusSchema: FastifySchema = {
+  tags: ['Migração de Storage'],
+  summary: 'Status atual da migração de arquivos',
+  description:
+    'Retorna a quantidade de arquivos por driver, status de migração por arquivo e se um job está em andamento. Restrito ao usuário MASTER.',
+  security: [{ cookieAuth: [] }],
+  response: {
+    200: {
+      type: 'object',
+      properties: {
+        data: {
+          type: 'object',
+          properties: {
+            current_driver: { type: 'string', enum: ['local', 's3'] },
+            previous_driver: { type: 'string', enum: ['local', 's3'] },
+            total_files: { type: 'number' },
+            by_location: {
+              type: 'object',
+              properties: {
+                local: { type: 'number' },
+                s3: { type: 'number' },
+              },
+            },
+            by_status: {
+              type: 'object',
+              properties: {
+                idle: { type: 'number' },
+                pending: { type: 'number' },
+                in_progress: { type: 'number' },
+                failed: { type: 'number' },
+              },
+            },
+            migration_in_progress: { type: 'boolean' },
+            active_job_id: { type: ['string', 'null'] },
+            last_run_at: { type: ['string', 'null'], format: 'date-time' },
+            can_cleanup: { type: 'boolean' },
+          },
+        },
+      },
+    },
+    401: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number' },
+        cause: { type: 'string' },
+        errors: { type: 'object', additionalProperties: { type: 'string' } },
+      },
+    },
+    403: {
+      type: 'object',
+      properties: {
+        message: { type: 'string' },
+        code: { type: 'number' },
+        cause: { type: 'string' },
+        errors: { type: 'object', additionalProperties: { type: 'string' } },
+      },
+    },
+  },
+};

@@ -38,6 +38,8 @@ import NodeVmScriptExecutionService from '@application/services/script-execution
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
 import StorageService from '@application/services/storage/storage.service';
+import BullMQStorageMigrationQueueService from '@application/services/storage-migration/bullmq-storage-migration-queue.service';
+import { StorageMigrationQueueContractService } from '@application/services/storage-migration/storage-migration-queue-contract.service';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 import TableSchemaMongooseService from '@application/services/table-schema/table-schema-mongoose.service';
 
@@ -130,4 +132,9 @@ export function registerDependencies(): void {
   );
 
   injectablesHolder.injectService(RowContextContractService, RowContextService);
+
+  injectablesHolder.injectService(
+    StorageMigrationQueueContractService,
+    BullMQStorageMigrationQueueService,
+  );
 }

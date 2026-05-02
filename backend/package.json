@@ -20,7 +20,9 @@
     "migrate:dual-connection": "node --import @swc-node/register/esm-register database/migrations/migrate-dual-connection.ts",
     "migrate:dual-connection:prod": "node database/migrations/migrate-dual-connection.js",
     "migrate:group-native-fields": "node --import @swc-node/register/esm-register database/migrations/migrate-group-native-fields.ts",
-    "migrate:group-native-fields:prod": "node database/migrations/migrate-group-native-fields.js"
+    "migrate:group-native-fields:prod": "node database/migrations/migrate-group-native-fields.js",
+    "migrate:backfill-storage-location": "node --import @swc-node/register/esm-register database/migrations/migrate-backfill-storage-location.ts",
+    "migrate:backfill-storage-location:prod": "node database/migrations/migrate-backfill-storage-location.js"
   },
   "keywords": [],
   "author": "",
@@ -73,6 +75,7 @@
     "ai": "^6.0.134",
     "ajv-errors": "^3.0.0",
     "bcryptjs": "^3.0.2",
+    "bullmq": "^5.76.5",
     "csv-parser": "^3.2.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",

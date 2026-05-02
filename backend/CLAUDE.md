@@ -329,6 +329,47 @@ Setting do MongoDB. Campos: `STORAGE_DRIVER` ('local'|'s3'),
 `STORAGE_SECRET_KEY`. No boot, `bin/server.ts` carrega do DB e sincroniza para
 `process.env` via `syncStorageEnv()`.
 
+#### Migração de arquivos entre drivers
+
+Quando o MASTER troca `STORAGE_DRIVER` (local↔s3) na UI, os arquivos
+existentes ficam órfãos no driver antigo. O recurso `storage-migration`
+copia esses arquivos para o driver atual em background, mantendo zero downtime.
+
+| Endpoint | Método | Descrição |
+|----------|--------|-----------|
+| `/storage/migration/status` | GET | Contagens por driver/status, job ativo, can_cleanup |
+| `/storage/migration/start` | POST | Enfileira job de migração (body: `{concurrency?, retry_failed_only?}`) |
+| `/storage/migration/cleanup` | POST | Apaga arquivos do driver antigo (body: `{confirm: true}`) |
+
+Todos restritos ao role MASTER via `RoleMiddleware`. Progresso em tempo real
+via WebSocket no namespace `/storage-migration` (mesmo Socket.IO server do
+chat). Eventos: `progress`, `file_migrated`, `file_failed`, `completed`,
+`error`.
+
+**Arquitetura:** BullMQ (Redis) para a fila + worker in-process iniciado em
+`bin/server.ts`. Storage docs ganham campos `location` e `migration_status`
+(`storage.model.ts`). Kernel hook (`start/kernel.ts`) faz dual-read fallback:
+serve do driver indicado em `doc.location`, com cross-driver fallback caso o
+arquivo não esteja onde o cache acha que está.
+
+**Resiliência:**
+- BullMQ persiste jobs no Redis — restart do worker retoma de onde parou.
+- Worker pula docs já com `location === target_driver` (idempotente).
+- Sweeper de boot marca docs órfãos `in_progress` como `failed` quando não há
+  job ativo (recovery após crash).
+- Cada arquivo tem 3 tentativas com backoff linear; falhas vão para
+  `migration_status='failed'` e podem ser retentadas via
+  `retry_failed_only: true`.
+
+**Backfill:** `database/migrations/migrate-backfill-storage-location.ts` popula
+o campo `location` em docs Storage existentes (idempotente via marker
+`MIGRATION_STORAGE_LOCATION_AT` no Setting). Roda automaticamente no
+`docker-entrypoint.sh`.
+
+| Variavel | Default | Descricao |
+|----------|---------|-----------|
+| STORAGE_MIGRATION_CONCURRENCY | 5 | Arquivos copiados em paralelo (1-20) |
+
 ### Redis
 
 | Variavel | Default | Descricao |

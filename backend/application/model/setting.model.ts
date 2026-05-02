@@ -48,6 +48,8 @@ const Schema = new mongoose.Schema(
     },
     MIGRATION_DUAL_CONNECTION_AT: { type: Date, default: null },
     MIGRATION_DUAL_CONNECTION_DROPPED_AT: { type: Date, default: null },
+    MIGRATION_STORAGE_LOCATION_AT: { type: Date, default: null },
+    STORAGE_MIGRATION_LAST_RUN_AT: { type: Date, default: null },
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },

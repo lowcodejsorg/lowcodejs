@@ -3,12 +3,15 @@ import type {
   FindOptions,
   IStorage,
   Merge,
+  TStorageLocation,
+  TStorageMigrationStatus,
 } from '@application/core/entity.core';
 
 export type StorageCreatePayload = Pick<
   IStorage,
   'filename' | 'mimetype' | 'originalName' | 'size'
->;
+> &
+  Partial<Pick<IStorage, 'location' | 'migration_status'>>;
 
 export type StorageUpdatePayload = Merge<
   Pick<IStorage, '_id'>,
@@ -20,6 +23,11 @@ export type StorageQueryPayload = {
   perPage?: number;
   search?: string;
   mimetype?: string;
+};
+
+export type StorageLocationFindOptions = {
+  page?: number;
+  perPage?: number;
 };
 
 export abstract class StorageContractRepository {
@@ -37,4 +45,24 @@ export abstract class StorageContractRepository {
   abstract update(payload: StorageUpdatePayload): Promise<IStorage>;
   abstract delete(_id: string): Promise<void>;
   abstract count(payload?: StorageQueryPayload): Promise<number>;
+
+  // Migration helpers
+  abstract findByLocation(
+    location: TStorageLocation,
+    options?: StorageLocationFindOptions,
+  ): Promise<IStorage[]>;
+  abstract countByLocation(location: TStorageLocation): Promise<number>;
+  abstract countByMigrationStatus(
+    status: TStorageMigrationStatus,
+  ): Promise<number>;
+  abstract findByMigrationStatus(
+    status: TStorageMigrationStatus,
+    options?: StorageLocationFindOptions,
+  ): Promise<IStorage[]>;
+  abstract updateLocation(
+    _id: string,
+    location: TStorageLocation,
+    migration_status: TStorageMigrationStatus,
+  ): Promise<IStorage | null>;
+  abstract markInProgressAsFailed(): Promise<number>;
 }
