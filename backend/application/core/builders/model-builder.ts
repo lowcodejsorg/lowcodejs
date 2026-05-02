@@ -107,10 +107,7 @@ export async function buildTable(
 
       if (group && Array.isArray(group.fields) && group.fields.length > 0) {
         embeddedSchema = buildSchema(group.fields as IField[]);
-      } else if (
-        Object.keys(embeddedSchema).length === 0 &&
-        group?._schema
-      ) {
+      } else if (Object.keys(embeddedSchema).length === 0 && group?._schema) {
         embeddedSchema = group._schema;
       }
 
