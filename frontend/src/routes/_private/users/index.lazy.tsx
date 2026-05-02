@@ -10,6 +10,7 @@ import React from 'react';
 
 import { TableUsers } from './-table-users';
 
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -21,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { userListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useUserEmptyTrash } from '@/hooks/tanstack-query/use-user-empty-trash';
+import { useUsersExportCsv } from '@/hooks/tanstack-query/use-users-export-csv';
 import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
@@ -55,9 +57,17 @@ function RouteComponent(): React.JSX.Element {
   );
 
   const isMaster = auth.user?.group?.slug === E_ROLE.MASTER;
+  const isAdmin = auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const canExportCsv = isMaster || isAdmin;
   const isTrashView = search.trashed === true;
 
   const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);
+
+  const exportCsv = useUsersExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
 
   const emptyTrash = useUserEmptyTrash({
     onSuccess(result) {
@@ -120,6 +130,15 @@ function RouteComponent(): React.JSX.Element {
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
+          {canExportCsv && (
+            <ExportCsvButton
+              testId="export-users-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate(search as Record<string, unknown>)
+              }
+            />
+          )}
           {isTrashView && isMaster && (
             <Button
               data-test-id="empty-trash-users-btn"

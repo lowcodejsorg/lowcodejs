@@ -15,6 +15,7 @@ import { TableTables } from './-table-tables';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -24,12 +25,15 @@ import { TrashButton } from '@/components/common/trash-button';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { tableListOptions } from '@/hooks/tanstack-query/_query-options';
+import { useTablesExportCsv } from '@/hooks/tanstack-query/use-tables-export-csv';
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useToolbarPortal } from '@/hooks/use-toolbar-portal';
-import { E_FIELD_TYPE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
+import { E_FIELD_TYPE, E_ROLE, TABLE_VISIBILITY_OPTIONS } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
+import { useAuthStore } from '@/stores/authentication';
 
 const rootApi = getRouteApi('__root__');
 
@@ -50,6 +54,16 @@ function RouteComponent(): React.JSX.Element {
 
   const { data } = useSuspenseQuery(tableListOptions(search));
   const permission = usePermission();
+  const auth = useAuthStore();
+  const canExportCsv =
+    auth.user?.group?.slug === E_ROLE.MASTER ||
+    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+
+  const exportCsv = useTablesExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
 
   const { open: filterOpen, onOpenChange: handleFilterOpenChange } =
     useFilterSidebar();
@@ -106,6 +120,15 @@ function RouteComponent(): React.JSX.Element {
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
+          {canExportCsv && (
+            <ExportCsvButton
+              testId="export-tables-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate(search as Record<string, unknown>)
+              }
+            />
+          )}
           {permission.can('CREATE_TABLE') && (
             <TableImportDialog>
               <Button

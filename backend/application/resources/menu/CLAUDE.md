@@ -13,6 +13,7 @@ CRUD completo de itens de menu com suporte a hierarquia (parent/children), send-
 | create | POST | `/menu` | Auth only |
 | list | GET | `/menu` | Auth only |
 | paginated | GET | `/menu/paginated` | Auth only |
+| export-csv | GET | `/menu/exports/csv` | MASTER/ADMINISTRATOR (cap 500.000 linhas) |
 | show | GET | `/menu/:_id` | Auth only |
 | update | PATCH | `/menu/:_id` | Auth only |
 | send-to-trash | PATCH | `/menu/:_id/trash` | Auth only (soft delete) |

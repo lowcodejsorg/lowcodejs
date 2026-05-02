@@ -23,6 +23,7 @@ import { TableConfigurationDropdown } from './-table-configuration';
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
 import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -55,10 +56,12 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRowPaginated } from '@/hooks/tanstack-query/use-table-row-read-paginated';
+import { useTableRowsExportCsv } from '@/hooks/tanstack-query/use-table-rows-export-csv';
 import { useChatSidebar } from '@/hooks/use-chat-sidebar';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { useTablePermission } from '@/hooks/use-table-permission';
-import { E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
+import { E_ROLE, E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -193,6 +196,16 @@ function RouteComponent(): React.JSX.Element {
   const rows = useReadTableRowPaginated({ slug, search: rowsSearch });
   const permission = useTablePermission(table.data);
 
+  const auth = useAuthStore();
+  const canExportCsv =
+    auth.user?.group?.slug === E_ROLE.MASTER ||
+    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const exportCsv = useTableRowsExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
+
   const router = useRouter();
   const sidebar = useSidebar();
 
@@ -283,6 +296,18 @@ function RouteComponent(): React.JSX.Element {
               <span>Exportar</span>
             </Button>
           </TableExportDialog>
+          {canExportCsv && (
+            <ExportCsvButton
+              testId="export-table-rows-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate({
+                  slug,
+                  ...(search as Record<string, unknown>),
+                })
+              }
+            />
+          )}
           <TableConfigurationDropdown tableSlug={slug} />
           {aiAssistantEnabled && (
             <ChatTrigger

@@ -17,6 +17,7 @@ Gerenciamento de grupos de usuarios com permissoes (CRUD + listagem).
 | create | POST | `/user-group` | Criar novo grupo de usuarios |
 | list | GET | `/user-group` | Listar todos os grupos (sem paginacao) |
 | paginated | GET | `/user-group/paginated` | Listar grupos com paginacao |
+| export-csv | GET | `/user-group/exports/csv` | Exporta grupos em CSV (MASTER/ADMINISTRATOR; cap 500.000 linhas) |
 | show | GET | `/user-group/:_id` | Buscar grupo por ID |
 | update | PATCH | `/user-group/:_id` | Atualizar grupo |
 

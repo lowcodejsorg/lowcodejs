@@ -11,6 +11,7 @@ import React from 'react';
 import { MenuReorderDialog } from './-reorder-dialog';
 import { TableMenus } from './-table-menus';
 
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -22,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { menuListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useMenuEmptyTrash } from '@/hooks/tanstack-query/use-menu-empty-trash';
+import { useMenusExportCsv } from '@/hooks/tanstack-query/use-menus-export-csv';
 import { E_FIELD_TYPE, E_ROLE, MetaDefault } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
@@ -45,10 +47,18 @@ function RouteComponent(): React.JSX.Element {
   const { data } = useSuspenseQuery(menuListOptions(search));
 
   const isMaster = auth.user?.group?.slug === E_ROLE.MASTER;
+  const isAdmin = auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const canExportCsv = isMaster || isAdmin;
   const isTrashView = search.trashed === true;
 
   const [emptyTrashOpen, setEmptyTrashOpen] = React.useState(false);
   const [reorderOpen, setReorderOpen] = React.useState(false);
+
+  const exportCsv = useMenusExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
 
   const emptyTrash = useMenuEmptyTrash({
     onSuccess(result) {
@@ -109,6 +119,15 @@ function RouteComponent(): React.JSX.Element {
             onClick={() => handleFilterOpenChange(!filterOpen)}
             isOpen={filterOpen}
           />
+          {canExportCsv && (
+            <ExportCsvButton
+              testId="export-menus-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate(search as Record<string, unknown>)
+              }
+            />
+          )}
           {isTrashView && isMaster && (
             <Button
               data-test-id="empty-trash-menus-btn"

@@ -14,16 +14,20 @@ import { TableRowUserCell } from '../table-cells/table-row-user-cell';
 import { GroupRowDeleteDialog } from './group-row-delete-dialog';
 import { GroupRowFormDialog } from './group-row-form-dialog';
 
+import { ExportCsvButton } from '@/components/common/export-csv-button';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
 import { groupRowListOptions } from '@/hooks/tanstack-query/_query-options';
-import { E_FIELD_TYPE } from '@/lib/constant';
+import { useGroupRowsExportCsv } from '@/hooks/tanstack-query/use-group-rows-export-csv';
+import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
+import { handleApiError } from '@/lib/handle-api-error';
 import type {
   IField,
   IGroupConfiguration,
   IRow,
   ITable,
 } from '@/lib/interfaces';
+import { useAuthStore } from '@/stores/authentication';
 
 interface GroupRowsDataTableProps {
   tableSlug: string;
@@ -51,6 +55,16 @@ export function GroupRowsDataTable({
   const { data: items = [], status } = useQuery(
     groupRowListOptions(tableSlug, rowId, groupSlug ?? ''),
   );
+
+  const auth = useAuthStore();
+  const canExportCsv =
+    auth.user?.group?.slug === E_ROLE.MASTER ||
+    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
+  const exportCsv = useGroupRowsExportCsv({
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao exportar CSV' });
+    },
+  });
 
   const groupFields = React.useMemo(
     () =>
@@ -81,19 +95,34 @@ export function GroupRowsDataTable({
     >
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">{field.name}</span>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setEditItem(null);
-            setFormOpen(true);
-          }}
-          disabled={field.multiple === false && items.length >= 1}
-        >
-          <PlusIcon className="size-4" />
-          <span>Adicionar item</span>
-        </Button>
+        <div className="inline-flex items-center gap-2">
+          {canExportCsv && groupSlug && items.length > 0 && (
+            <ExportCsvButton
+              testId="export-group-rows-csv-btn"
+              isPending={exportCsv.isPending}
+              onClick={() =>
+                exportCsv.mutate({
+                  slug: tableSlug,
+                  rowId,
+                  groupSlug,
+                })
+              }
+            />
+          )}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setEditItem(null);
+              setFormOpen(true);
+            }}
+            disabled={field.multiple === false && items.length >= 1}
+          >
+            <PlusIcon className="size-4" />
+            <span>Adicionar item</span>
+          </Button>
+        </div>
       </div>
 
       <div className="w-full overflow-x-auto border rounded-md">
