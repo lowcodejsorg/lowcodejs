@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/vanes/Documents/UFG/lowcodejs/frontend/src/routes/_private/tables/$slug/row/$rowId/**)"
+    ]
+  }
+}

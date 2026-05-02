@@ -11,6 +11,7 @@ import {
   EyeIcon,
   ImageOffIcon,
   LoaderCircleIcon,
+  PencilIcon,
   Share2Icon,
   Trash2Icon,
   TrashIcon,
@@ -147,6 +148,23 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
           >
             <EyeIcon className="size-4" />
             <span>Visualizar</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className={cn(
+              'inline-flex space-x-1 w-full cursor-pointer',
+              !permission.can('UPDATE_TABLE') && 'hidden',
+            )}
+            onClick={() => {
+              sidebar.setOpen(false);
+              router.navigate({
+                to: '/tables/$slug/detail',
+                params: { slug: table.slug },
+              });
+            }}
+          >
+            <PencilIcon className="size-4" />
+            <span>Editar</span>
           </DropdownMenuItem>
 
           <DropdownMenuItem

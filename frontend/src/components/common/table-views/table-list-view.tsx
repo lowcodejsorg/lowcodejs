@@ -5,7 +5,9 @@ import {
   ArchiveRestoreIcon,
   ArrowRightIcon,
   EllipsisIcon,
+  EyeIcon,
   LoaderCircleIcon,
+  PencilIcon,
   PlusIcon,
   Trash2Icon,
   TrashIcon,
@@ -56,6 +58,7 @@ function RowActionsCell({
   canUpdateRow: boolean;
   canRemoveRow: boolean;
 }): React.JSX.Element {
+  const router = useRouter();
   const [dialogType, setDialogType] = React.useState<
     'trash' | 'restore' | 'delete' | null
   >(null);
@@ -119,6 +122,36 @@ function RowActionsCell({
         <DropdownMenuContent className="mr-10">
           <DropdownMenuLabel>Ações</DropdownMenuLabel>
           <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            className="inline-flex space-x-1 w-full cursor-pointer"
+            onClick={() =>
+              router.navigate({
+                to: '/tables/$slug/row/$rowId',
+                params: { slug, rowId: row._id },
+              })
+            }
+          >
+            <EyeIcon className="size-4" />
+            <span>Visualizar</span>
+          </DropdownMenuItem>
+
+          <DropdownMenuItem
+            className={cn(
+              'inline-flex space-x-1 w-full cursor-pointer',
+              (row.trashed || !canUpdateRow) && 'hidden',
+            )}
+            onClick={() =>
+              router.navigate({
+                to: '/tables/$slug/row/$rowId',
+                params: { slug, rowId: row._id },
+                search: { mode: 'edit' },
+              })
+            }
+          >
+            <PencilIcon className="size-4" />
+            <span>Editar</span>
+          </DropdownMenuItem>
 
           <DropdownMenuItem
             className={cn(

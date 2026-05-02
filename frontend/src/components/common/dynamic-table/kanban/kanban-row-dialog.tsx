@@ -1,4 +1,12 @@
-import { CopyIcon, DownloadIcon, FileTextIcon, TrashIcon } from 'lucide-react';
+import { useRouter } from '@tanstack/react-router';
+import {
+  CopyIcon,
+  DownloadIcon,
+  EyeIcon,
+  FileTextIcon,
+  PencilIcon,
+  TrashIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
@@ -77,6 +85,7 @@ export function KanbanRowDialog({
   const auth = useAuthStore((s) => s.user);
   const { data: profile } = useProfileRead();
   const permission = useTablePermission(table);
+  const router = useRouter();
   const currentUserId = auth?._id ?? '';
   const [editTarget, setEditTarget] = React.useState<
     'members' | 'start' | 'due' | 'list' | null
@@ -371,6 +380,7 @@ export function KanbanRowDialog({
   });
 
   const canDelete = permission.can('REMOVE_ROW');
+  const canEdit = permission.can('UPDATE_ROW');
 
   const handleTaskToggle = async (index: number): Promise<void> => {
     if (!fields.tasks) return;
@@ -1284,6 +1294,39 @@ export function KanbanRowDialog({
 
             <div className="space-y-2 flex flex-col gap-1">
               <p className="text-xs uppercase text-muted-foreground">Ações</p>
+              <Button
+                type="button"
+                variant="outline"
+                data-test-id="kanban-view-btn"
+                onClick={() =>
+                  router.navigate({
+                    to: '/tables/$slug/row/$rowId',
+                    params: { slug: tableSlug, rowId: row._id },
+                  })
+                }
+                className="cursor-pointer"
+              >
+                <EyeIcon className="size-4" />
+                <span>Visualizar</span>
+              </Button>
+              {canEdit && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  data-test-id="kanban-edit-btn"
+                  onClick={() =>
+                    router.navigate({
+                      to: '/tables/$slug/row/$rowId',
+                      params: { slug: tableSlug, rowId: row._id },
+                      search: { mode: 'edit' },
+                    })
+                  }
+                  className="cursor-pointer"
+                >
+                  <PencilIcon className="size-4" />
+                  <span>Editar</span>
+                </Button>
+              )}
               {isMember && (
                 <Button
                   type="button"
