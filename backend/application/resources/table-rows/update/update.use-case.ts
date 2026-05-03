@@ -8,6 +8,7 @@ import HTTPException from '@application/core/exception.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 
@@ -16,6 +17,7 @@ type Response = Either<HTTPException, IRow>;
 type Payload = Record<string, unknown> & {
   slug: string;
   _id: string;
+  __actorUserId?: string;
 };
 
 @Service()
@@ -25,6 +27,7 @@ export default class TableRowUpdateUseCase {
     private readonly rowRepository: RowContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
+    private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -130,6 +133,12 @@ export default class TableRowUpdateUseCase {
         }
       }
 
+      const actorUserId =
+        typeof payload.__actorUserId === 'string'
+          ? payload.__actorUserId
+          : undefined;
+      delete payload.__actorUserId;
+
       const row = await this.rowRepository.update({
         table,
         _id: payload._id,
@@ -142,9 +151,26 @@ export default class TableRowUpdateUseCase {
         );
       }
 
-      this.rowPasswordService.mask(row, table.fields);
+      const mentionResult =
+        await this.kanbanCommentMentionService.notifyNewMentions({
+          table,
+          row,
+          actorUserId: actorUserId ?? '',
+        });
 
-      return right(row);
+      let finalRow = row;
+      if (mentionResult.changed && mentionResult.data) {
+        const updatedRow = await this.rowRepository.update({
+          table,
+          _id: payload._id,
+          data: mentionResult.data,
+        });
+        if (updatedRow) finalRow = updatedRow;
+      }
+
+      this.rowPasswordService.mask(finalRow, table.fields);
+
+      return right(finalRow);
     } catch (error) {
       console.error('[table-rows > update][error]:', error);
       return left(

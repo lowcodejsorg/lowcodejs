@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
+import InMemoryKanbanCommentMentionService from '@application/services/kanban-comment-mention/in-memory-kanban-comment-mention.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
 import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import { makeTextLongField } from '@test/helpers/field-factory.helper';
@@ -28,6 +29,7 @@ describe('Table Row Update - TEXT_LONG', () => {
       rowRepository,
       rowPasswordService,
       scriptExecutionService,
+      new InMemoryKanbanCommentMentionService(),
     );
   });
 

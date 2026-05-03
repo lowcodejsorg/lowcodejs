@@ -196,3 +196,14 @@
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
+
+/* ===== Mention ===== */
+.ProseMirror .mention,
+.prose .mention {
+  background: color-mix(in srgb, var(--primary) 15%, transparent);
+  color: var(--primary);
+  padding: 0 4px;
+  border-radius: 4px;
+  font-weight: 500;
+  white-space: nowrap;
+}

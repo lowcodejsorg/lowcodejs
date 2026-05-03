@@ -1,4 +1,5 @@
 import { useRouter } from '@tanstack/react-router';
+import type { Editor as TiptapEditor } from '@tiptap/core';
 import {
   CopyIcon,
   DownloadIcon,
@@ -28,6 +29,7 @@ import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-ce
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
+import { extractMentionIds } from '@/components/common/rich-editor';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -42,6 +44,7 @@ import { useRowUpdateTrash } from '@/hooks/tanstack-query/use-row-update-trash';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useTablePermission } from '@/hooks/use-table-permission';
+import { useUserMentionSearch } from '@/hooks/use-user-mention-search';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IStorage, ITable } from '@/lib/interfaces';
@@ -96,6 +99,13 @@ export function KanbanRowDialog({
   );
   const [editingTaskTitle, setEditingTaskTitle] = React.useState('');
   const [commentText, setCommentText] = React.useState('');
+  const commentEditorRef = React.useRef<TiptapEditor | null>(null);
+  const editCommentEditorRef = React.useRef<TiptapEditor | null>(null);
+  const mentionSearch = useUserMentionSearch();
+  const mentionsConfig = React.useMemo(
+    () => ({ enabled: true, resolveItems: mentionSearch.resolveItems }),
+    [mentionSearch.resolveItems],
+  );
   const [editingCommentIndex, setEditingCommentIndex] = React.useState<
     number | null
   >(null);
@@ -294,6 +304,11 @@ export function KanbanRowDialog({
     (comment: Record<string, any>) => ({
       ...comment,
       autor: normalizeIdList(comment.autor),
+      mencoes: normalizeIdList(comment.mencoes),
+      'mencoes-notificadas':
+        typeof comment['mencoes-notificadas'] === 'string'
+          ? comment['mencoes-notificadas']
+          : '[]',
     }),
     [],
   );
@@ -496,12 +511,15 @@ export function KanbanRowDialog({
   const handleCommentAdd = async (): Promise<void> => {
     if (!fields.comments || !commentText.trim()) return;
     const authorId = currentUserId || profile?._id || '';
+    const mentionIds = extractMentionIds(commentEditorRef.current);
     const updated = [
       ...comments.map(normalizeCommentPayload),
       {
         comentario: commentText.trim(),
         autor: normalizeIdList(authorId),
         data: new Date().toISOString(),
+        mencoes: mentionIds,
+        'mencoes-notificadas': '[]',
       },
     ];
     await updateRow.mutateAsync({
@@ -516,11 +534,13 @@ export function KanbanRowDialog({
 
   const handleCommentSave = async (): Promise<void> => {
     if (editingCommentIndex === null || !fields.comments) return;
+    const editMentionIds = extractMentionIds(editCommentEditorRef.current);
     const updated = comments.map((comment, index) =>
       index === editingCommentIndex
         ? {
             ...normalizeCommentPayload(comment),
             comentario: editingCommentText.trim(),
+            mencoes: editMentionIds,
           }
         : normalizeCommentPayload(comment),
     );
@@ -839,6 +859,24 @@ export function KanbanRowDialog({
         data-slot="kanban-row-dialog"
         data-test-id="kanban-row-dialog"
         className="w-[min(75vw,1000px)] max-w-[95vw] sm:max-w-[1200px] lg:max-w-[1400px] h-[85vh] overflow-hidden p-0"
+        onPointerDownOutside={(event): void => {
+          const target = event.target;
+          if (
+            target instanceof Element &&
+            target.closest('[data-slot="mention-popup-root"]')
+          ) {
+            event.preventDefault();
+          }
+        }}
+        onInteractOutside={(event): void => {
+          const target = event.target;
+          if (
+            target instanceof Element &&
+            target.closest('[data-slot="mention-popup-root"]')
+          ) {
+            event.preventDefault();
+          }
+        }}
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_280px] h-full min-h-0">
           <div className="overflow-y-auto p-6 h-full min-h-0">
@@ -1214,11 +1252,18 @@ export function KanbanRowDialog({
                 }}
                 onEditCancel={() => setEditingCommentIndex(null)}
                 onEditChange={setEditingCommentText}
+                onEditEditorReady={(editor) => {
+                  editCommentEditorRef.current = editor;
+                }}
                 onSave={handleCommentSave}
                 onDelete={handleCommentDelete}
                 commentText={commentText}
                 onCommentTextChange={setCommentText}
+                onCommentEditorReady={(editor) => {
+                  commentEditorRef.current = editor;
+                }}
                 onAddComment={handleCommentAdd}
+                mentions={mentionsConfig}
               />
             )}
 

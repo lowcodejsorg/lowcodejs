@@ -421,8 +421,8 @@ Helpers (`test/helpers/auth.helper.ts`):
 - **Build**: `tsc -b && tsup` -> /build (ESM, ES2024, sem bundle de node_modules)
 - **Dev**: @swc-node/register para transpilacao rapida
 - 3 Dockerfiles:
-  - `Dockerfile-local`: node:22-alpine, npm run dev
-  - `Dockerfile-production`: node:22-alpine, copia /build, usuario non-root (1001), porta 3000
+  - `Dockerfile-local`: node:24-alpine, npm run dev
+  - `Dockerfile-production`: node:24-alpine, copia /build, usuario non-root (1001), porta 3000
   - `Dockerfile-coolify`: multi-stage otimizado
 
 ## Socket.IO / Chat

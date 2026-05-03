@@ -1,10 +1,12 @@
+import type { Editor as TiptapEditor } from '@tiptap/core';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import React from 'react';
 
+import { ContentViewer, Editor } from '@/components/common/rich-editor';
+import type { MentionConfig } from '@/components/common/rich-editor';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
 import type { IUser } from '@/lib/interfaces';
 import { getUserInitials } from '@/lib/kanban-helpers';
 
@@ -18,11 +20,14 @@ export function KanbanRowCommentsSection({
   onEditStart,
   onEditCancel,
   onEditChange,
+  onEditEditorReady,
   onSave,
   onDelete,
   commentText,
   onCommentTextChange,
+  onCommentEditorReady,
   onAddComment,
+  mentions,
 }: {
   comments: Array<Record<string, any>>;
   profile?: IUser;
@@ -33,11 +38,14 @@ export function KanbanRowCommentsSection({
   onEditStart: (index: number, comment: Record<string, any>) => void;
   onEditCancel: () => void;
   onEditChange: (value: string) => void;
+  onEditEditorReady?: (editor: TiptapEditor) => void;
   onSave: () => void;
   onDelete: (index: number) => void;
   commentText: string;
   onCommentTextChange: (value: string) => void;
+  onCommentEditorReady?: (editor: TiptapEditor) => void;
   onAddComment: () => void;
+  mentions?: MentionConfig;
 }): React.JSX.Element {
   return (
     <section
@@ -123,10 +131,22 @@ export function KanbanRowCommentsSection({
                 if (editingCommentIndex === index) {
                   return (
                     <div className="space-y-2">
-                      <Textarea
-                        value={editingCommentText}
-                        onChange={(event) => onEditChange(event.target.value)}
-                      />
+                      <div data-test-id="kanban-comment-edit-input">
+                        <Editor
+                          variant="compact"
+                          showToolbar={false}
+                          showBubble={false}
+                          showModeToggle={false}
+                          availableModes={['rich']}
+                          value={editingCommentText}
+                          onChange={onEditChange}
+                          placeholder="Editar comentário"
+                          focusKey={`edit-${index}`}
+                          autoFocus
+                          mentions={mentions}
+                          onEditorReady={onEditEditorReady}
+                        />
+                      </div>
                       <div className="flex justify-end gap-2">
                         <Button
                           type="button"
@@ -148,9 +168,10 @@ export function KanbanRowCommentsSection({
                   );
                 }
                 return (
-                  <p className="text-sm text-muted-foreground">
-                    {comment.comentario || '-'}
-                  </p>
+                  <ContentViewer
+                    className="text-sm"
+                    content={comment.comentario || ''}
+                  />
                 );
               })()}
             </div>
@@ -159,12 +180,20 @@ export function KanbanRowCommentsSection({
       </div>
 
       <div className="space-y-2">
-        <Textarea
-          data-test-id="kanban-comment-input"
-          value={commentText}
-          onChange={(event) => onCommentTextChange(event.target.value)}
-          placeholder="Escreva um comentario"
-        />
+        <div data-test-id="kanban-comment-input">
+          <Editor
+            variant="compact"
+            showToolbar={false}
+            showBubble={false}
+            showModeToggle={false}
+            availableModes={['rich']}
+            value={commentText}
+            onChange={onCommentTextChange}
+            placeholder="Escreva um comentário"
+            mentions={mentions}
+            onEditorReady={onCommentEditorReady}
+          />
+        </div>
         <div className="flex justify-end">
           <Button
             type="button"

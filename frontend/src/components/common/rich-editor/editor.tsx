@@ -25,6 +25,8 @@ import { LinkBubble } from './bubble/link-bubble';
 import { TableBubble } from './bubble/table-bubble';
 import { TextBubble } from './bubble/text-bubble';
 import './editor.css';
+import { buildMentionExtension } from './extensions/mention';
+import type { MentionConfig } from './extensions/mention';
 import { EditorToolbar } from './toolbar';
 import { ContentViewer } from './viewer';
 
@@ -231,6 +233,8 @@ export interface EditorProps {
   showModeToggle?: boolean;
   defaultMode?: EditorMode;
   availableModes?: Array<EditorMode>;
+  mentions?: MentionConfig;
+  onEditorReady?: (editor: TiptapEditor) => void;
 }
 
 function debounce<T extends (...args: Array<any>) => void>(
@@ -259,6 +263,8 @@ export function Editor({
   showModeToggle = true,
   defaultMode = 'rich',
   availableModes = ['rich', 'markdown', 'html', 'preview'],
+  mentions,
+  onEditorReady,
 }: EditorProps): React.JSX.Element | null {
   const [mode, setMode] = useState<EditorMode>(defaultMode);
   const [rawMd, setRawMd] = useState('');
@@ -283,8 +289,14 @@ export function Editor({
     [debounceMs],
   );
 
-  const extensions = useMemo(
-    () => [
+  const mentionsEnabled = mentions?.enabled ?? false;
+  const resolveItemsRef = useRef(mentions?.resolveItems);
+  React.useEffect(() => {
+    resolveItemsRef.current = mentions?.resolveItems;
+  }, [mentions?.resolveItems]);
+
+  const extensions = useMemo(() => {
+    const list: Array<any> = [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         code: false,
@@ -310,9 +322,18 @@ export function Editor({
       Placeholder.configure({ placeholder }),
       CharacterCount,
       TiptapMarkdown,
-    ],
-    [placeholder],
-  );
+    ];
+    if (mentionsEnabled) {
+      list.push(
+        buildMentionExtension(async (query) => {
+          const resolver = resolveItemsRef.current;
+          if (!resolver) return [];
+          return resolver(query);
+        }),
+      );
+    }
+    return list;
+  }, [placeholder, mentionsEnabled]);
 
   const ed = useEditor(
     {
@@ -352,6 +373,12 @@ export function Editor({
     if (!ed || !autoFocus) return;
     ed.commands.focus('end');
   }, [autoFocus, ed, focusKey]);
+
+  // Notify parent when editor instance is ready
+  React.useEffect(() => {
+    if (!ed) return;
+    onEditorReady?.(ed);
+  }, [ed, onEditorReady]);
 
   // --- Mode switching logic ---
   const handleModeChange = useCallback(
