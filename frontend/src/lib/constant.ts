@@ -106,6 +106,21 @@ export const E_TABLE_COLLABORATION = {
   RESTRICTED: 'RESTRICTED',
 } as const;
 
+export const E_EXTENSION_TYPE = {
+  PLUGIN: 'PLUGIN',
+  MODULE: 'MODULE',
+  TOOL: 'TOOL',
+} as const;
+
+export const EXTENSION_TYPE_LABEL: Record<
+  (typeof E_EXTENSION_TYPE)[keyof typeof E_EXTENSION_TYPE],
+  string
+> = {
+  PLUGIN: 'Plugin',
+  MODULE: 'Módulo',
+  TOOL: 'Ferramenta',
+};
+
 export const E_TOKEN_STATUS = {
   REQUESTED: 'REQUESTED',
   EXPIRED: 'EXPIRED',
