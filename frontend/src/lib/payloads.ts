@@ -465,3 +465,15 @@ export type RowEvaluationPayload = Merge<
     value: number;
   }
 >;
+
+// ============== EXTENSIONS ==============
+export type ExtensionTogglePayload = {
+  _id: string;
+  enabled: boolean;
+};
+
+export type ExtensionConfigureTableScopePayload = {
+  _id: string;
+  mode: 'all' | 'specific';
+  tableIds: Array<string>;
+};

@@ -2,6 +2,8 @@ import { injectablesHolder } from 'fastify-decorators';
 
 import { EvaluationContractRepository } from '@application/repositories/evaluation/evaluation-contract.repository';
 import EvaluationMongooseRepository from '@application/repositories/evaluation/evaluation-mongoose.repository';
+import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
+import ExtensionMongooseRepository from '@application/repositories/extension/extension-mongoose.repository';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import FieldMongooseRepository from '@application/repositories/field/field-mongoose.repository';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
@@ -53,6 +55,11 @@ export function registerDependencies(): void {
   injectablesHolder.injectService(
     EvaluationContractRepository,
     EvaluationMongooseRepository,
+  );
+
+  injectablesHolder.injectService(
+    ExtensionContractRepository,
+    ExtensionMongooseRepository,
   );
 
   injectablesHolder.injectService(
