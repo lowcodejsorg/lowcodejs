@@ -33,7 +33,7 @@ import {
 } from '@application/resources/storage-migration/storage-migration.socket';
 import { invalidateStorageMeta } from '@application/services/storage/storage-meta-cache';
 import StorageService from '@application/services/storage/storage.service';
-import { redis } from '@config/redis.config';
+import { createBullMQConnection } from '@config/redis.config';
 
 import {
   STORAGE_MIGRATION_JOB,
@@ -328,7 +328,7 @@ export function startStorageMigrationWorker(deps: WorkerDeps): Worker {
       }
     },
     {
-      connection: redis,
+      connection: createBullMQConnection(),
       // BullMQ-level concurrency: process up to N jobs in parallel.
       // Per-file concurrency is handled inside each job via processInBatches.
       concurrency: 1,

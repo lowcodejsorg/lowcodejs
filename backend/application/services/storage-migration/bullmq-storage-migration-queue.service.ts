@@ -1,7 +1,7 @@
 import { Queue } from 'bullmq';
 import { Service } from 'fastify-decorators';
 
-import { redis } from '@config/redis.config';
+import { createBullMQConnection } from '@config/redis.config';
 
 import {
   STORAGE_MIGRATION_JOB,
@@ -17,7 +17,7 @@ let cachedQueue: Queue | null = null;
 function getQueue(): Queue {
   if (cachedQueue) return cachedQueue;
   cachedQueue = new Queue(STORAGE_MIGRATION_QUEUE_NAME, {
-    connection: redis,
+    connection: createBullMQConnection(),
     defaultJobOptions: {
       attempts: 1, // we manage retries inside the worker per file
       removeOnComplete: { count: 50 },

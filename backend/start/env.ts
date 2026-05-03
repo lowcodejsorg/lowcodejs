@@ -42,12 +42,6 @@ const EnvSchema = z.object({
     .min(1)
     .max(20)
     .default(5),
-
-  STORAGE_MIGRATION_ENABLED: z
-    .string()
-    .optional()
-    .default('false')
-    .transform((v) => v === 'true'),
 });
 
 const validation = EnvSchema.safeParse(process.env);
