@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
+import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
 import { Badge } from '@/components/ui/badge';
 import {
   DATE_FORMAT_OPTIONS,
@@ -103,22 +104,19 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
         <div className="space-y-1">
           <p className="text-sm font-medium">Opções do Dropdown</p>
           <div className="flex flex-wrap gap-1">
-            {data.dropdown.map((opt) => (
-              <Badge
-                key={opt.id}
-                variant="secondary"
-                style={
-                  opt.color
-                    ? {
-                        backgroundColor: opt.color,
-                        color: '#fff',
-                      }
-                    : undefined
-                }
-              >
-                {opt.label}
-              </Badge>
-            ))}
+            {data.dropdown.map((opt) => {
+              const colorStyle = getDropdownContrastStyle(opt.color);
+              return (
+                <Badge
+                  key={opt.id}
+                  variant="outline"
+                  className={colorStyle ? undefined : 'text-muted-foreground'}
+                  style={colorStyle}
+                >
+                  {opt.label}
+                </Badge>
+              );
+            })}
           </div>
         </div>
       )}

@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { badgeStyleFromColor } from '../table-cells/table-row-badge-list';
+import { getDropdownContrastStyle } from '../table-cells/table-row-dropdown-cell';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -399,7 +399,7 @@ export function TableRowDropdownField({
                       <ComboboxChip
                         key={opt.value}
                         aria-label={opt.label}
-                        style={badgeStyleFromColor(opt.color)}
+                        style={getDropdownContrastStyle(opt.color)}
                       >
                         {opt.label}
                       </ComboboxChip>
@@ -421,7 +421,7 @@ export function TableRowDropdownField({
                   key={opt.value}
                   value={opt}
                   className="mb-1 last:mb-0"
-                  style={badgeStyleFromColor(opt.color)}
+                  style={getDropdownContrastStyle(opt.color)}
                 >
                   {opt.label}
                 </ComboboxItem>
@@ -476,7 +476,7 @@ export function TableRowDropdownField({
                 key={opt.value}
                 value={opt}
                 className="mb-1 last:mb-0"
-                style={badgeStyleFromColor(opt.color)}
+                style={getDropdownContrastStyle(opt.color)}
               >
                 {opt.label}
               </ComboboxItem>

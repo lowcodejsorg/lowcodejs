@@ -7,6 +7,7 @@ import React from 'react';
 import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import { RangeDatepicker } from '@/components/common/datepicker';
 import type { DatepickerValue } from '@/components/common/datepicker';
+import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
 import { UserMultiSelect } from '@/components/common/selectors/user-multi-select';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { TreeList } from '@/components/common/tree-editor/tree-list';
@@ -544,6 +545,7 @@ export function FilterDropdown({
                       <ComboboxChip
                         key={opt.value}
                         aria-label={opt.label}
+                        style={getDropdownContrastStyle(opt.color)}
                       >
                         {opt.label}
                       </ComboboxChip>
@@ -561,6 +563,8 @@ export function FilterDropdown({
                 <ComboboxItem
                   key={opt.value}
                   value={opt}
+                  className="mb-1 last:mb-0"
+                  style={getDropdownContrastStyle(opt.color)}
                 >
                   {opt.label}
                 </ComboboxItem>
@@ -596,6 +600,8 @@ export function FilterDropdown({
             <SelectItem
               key={option.value}
               value={option.value}
+              className="mb-1 last:mb-0"
+              style={getDropdownContrastStyle(option.color)}
             >
               {option.label}
             </SelectItem>
