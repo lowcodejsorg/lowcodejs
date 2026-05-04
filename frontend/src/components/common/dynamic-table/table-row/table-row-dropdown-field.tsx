@@ -3,7 +3,7 @@ import { isAxiosError } from 'axios';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import * as React from 'react';
 
-import { getDropdownContrastStyle } from '../table-cells/table-row-dropdown-cell';
+import { getDropdownContrastStyle } from '../table-cells/utils';
 
 import { Button } from '@/components/ui/button';
 import {

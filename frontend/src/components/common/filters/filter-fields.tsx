@@ -5,9 +5,9 @@ import { TextIcon, XIcon } from 'lucide-react';
 import React from 'react';
 
 import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
-import { RangeDatepicker } from '@/components/common/datepicker';
 import type { DatepickerValue } from '@/components/common/datepicker';
-import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
+import { RangeDatepicker } from '@/components/common/datepicker';
+import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/utils';
 import { UserMultiSelect } from '@/components/common/selectors/user-multi-select';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { TreeList } from '@/components/common/tree-editor/tree-list';

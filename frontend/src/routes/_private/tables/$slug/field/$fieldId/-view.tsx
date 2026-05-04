@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
-import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
+import { getDropdownContrastStyle } from '@/components/common/dynamic-table/table-cells/utils';
 import { Badge } from '@/components/ui/badge';
 import {
   DATE_FORMAT_OPTIONS,
