@@ -305,6 +305,25 @@ export const groupRowListOptions = (
     staleTime: 30 * 1000,
   });
 
+export const groupRowListPaginatedOptions = (
+  slug: string,
+  rowId: string,
+  groupSlug: string,
+  params: { page?: number; perPage?: number; search?: string },
+) =>
+  queryOptions({
+    queryKey: queryKeys.groupRows.paginated(slug, rowId, groupSlug, params),
+    queryFn: async () => {
+      const response = await API.get<Paginated<IRow>>(
+        `/tables/${slug}/rows/${rowId}/groups/${groupSlug}/paginated`,
+        { params },
+      );
+      return response.data;
+    },
+    enabled: Boolean(slug) && Boolean(rowId) && Boolean(groupSlug),
+    staleTime: 30 * 1000,
+  });
+
 // ============== RELATIONSHIPS ==============
 
 export const relationshipRowsOptions = (params: {

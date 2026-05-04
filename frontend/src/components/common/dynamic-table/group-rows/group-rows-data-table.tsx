@@ -14,20 +14,17 @@ import { TableRowUserCell } from '../table-cells/table-row-user-cell';
 import { GroupRowDeleteDialog } from './group-row-delete-dialog';
 import { GroupRowFormDialog } from './group-row-form-dialog';
 
-import { ExportCsvButton } from '@/components/common/export-csv-button';
+import { Pagination } from '@/components/common/pagination';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
-import { groupRowListOptions } from '@/hooks/tanstack-query/_query-options';
-import { useGroupRowsExportCsv } from '@/hooks/tanstack-query/use-group-rows-export-csv';
-import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
-import { handleApiError } from '@/lib/handle-api-error';
+import { groupRowListPaginatedOptions } from '@/hooks/tanstack-query/_query-options';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import type {
   IField,
   IGroupConfiguration,
   IRow,
   ITable,
 } from '@/lib/interfaces';
-import { useAuthStore } from '@/stores/authentication';
 
 interface GroupRowsDataTableProps {
   tableSlug: string;
@@ -51,34 +48,44 @@ export function GroupRowsDataTable({
   const [formOpen, setFormOpen] = React.useState(false);
   const [editItem, setEditItem] = React.useState<IRow | null>(null);
   const [deleteItem, setDeleteItem] = React.useState<IRow | null>(null);
+  const [page, setPage] = React.useState(1);
+  const [perPage, setPerPage] = React.useState(6);
 
-  const { data: items = [], status } = useQuery(
-    groupRowListOptions(tableSlug, rowId, groupSlug ?? ''),
+  const { data, status } = useQuery(
+    groupRowListPaginatedOptions(tableSlug, rowId, groupSlug ?? '', {
+      page,
+      perPage,
+    }),
   );
 
-  const auth = useAuthStore();
-  const canExportCsv =
-    auth.user?.group?.slug === E_ROLE.MASTER ||
-    auth.user?.group?.slug === E_ROLE.ADMINISTRATOR;
-  const exportCsv = useGroupRowsExportCsv({
-    onError(error) {
-      handleApiError(error, { context: 'Erro ao exportar CSV' });
-    },
-  });
+  const items = data?.data ?? [];
+  const meta = data?.meta ?? {
+    total: 0,
+    page,
+    perPage,
+    lastPage: 1,
+    firstPage: 0,
+  };
 
   const formFields = React.useMemo(
     () =>
       group?.fields.filter(
         (f): f is IField =>
-          !!f && f.type !== E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+          !!f &&
+          f.type !== E_FIELD_TYPE.FIELD_GROUP &&
+          f.type !== E_FIELD_TYPE.IDENTIFIER &&
+          f.type !== E_FIELD_TYPE.TRASHED &&
+          f.type !== E_FIELD_TYPE.TRASHED_AT &&
+          !f.trashed,
       ) ?? [],
     [group],
   );
 
-  const columnFields = React.useMemo(
-    () => formFields.filter((f) => f.showInList),
-    [formFields],
-  );
+  const columnFields = React.useMemo(() => {
+    const visible = formFields.filter((f) => f.showInList);
+    const hasUserConfigured = visible.some((f) => !f.native);
+    return hasUserConfigured ? visible : formFields;
+  }, [formFields]);
 
   if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
@@ -101,19 +108,6 @@ export function GroupRowsDataTable({
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">{field.name}</span>
         <div className="inline-flex items-center gap-2">
-          {canExportCsv && groupSlug && items.length > 0 && (
-            <ExportCsvButton
-              testId="export-group-rows-csv-btn"
-              isPending={exportCsv.isPending}
-              onClick={() =>
-                exportCsv.mutate({
-                  slug: tableSlug,
-                  rowId,
-                  groupSlug,
-                })
-              }
-            />
-          )}
           <Button
             type="button"
             variant="outline"
@@ -122,7 +116,7 @@ export function GroupRowsDataTable({
               setEditItem(null);
               setFormOpen(true);
             }}
-            disabled={field.multiple === false && items.length >= 1}
+            disabled={field.multiple === false && meta.total >= 1}
           >
             <PlusIcon className="size-4" />
             <span>Adicionar item</span>
@@ -211,6 +205,19 @@ export function GroupRowsDataTable({
           </tbody>
         </table>
       </div>
+
+      {field.multiple !== false && meta.total > 0 && (
+        <Pagination
+          meta={meta}
+          page={page}
+          perPage={perPage}
+          onPageChange={(nextPage) => setPage(nextPage)}
+          onPerPageChange={(nextPerPage) => {
+            setPerPage(nextPerPage);
+            setPage(1);
+          }}
+        />
+      )}
 
       <GroupRowFormDialog
         open={formOpen}
