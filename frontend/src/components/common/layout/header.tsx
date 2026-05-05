@@ -3,6 +3,7 @@ import React from 'react';
 
 import { LoginButton } from './login-button';
 import { Profile } from './profile';
+import { ThemeToggle } from './theme-toggle';
 
 import { InputSearch } from '@/components/common/input-search';
 import { SidebarTrigger } from '@/components/ui/sidebar';
@@ -52,7 +53,10 @@ export function Header({
         <div className="inline-flex gap-2 w-full items-center">
           {showSearchInput && <InputSearch />}
         </div>
-        <div className="inline-flex gap-2">{authContent}</div>
+        <div className="inline-flex gap-2">
+          <ThemeToggle />
+          {authContent}
+        </div>
       </nav>
     </header>
   );
