@@ -1,7 +1,10 @@
-import { TableRowBadgeList } from './table-row-badge-list';
+import * as React from 'react';
 
+import { Badge } from '@/components/ui/badge';
 import type { IField, IRow } from '@/lib/interfaces';
 import { getDropdownItem } from '@/lib/table';
+
+import { getDropdownContrastStyle } from './utils';
 
 interface TableRowDropdownCellProps {
   row: IRow;
@@ -16,14 +19,29 @@ export function TableRowDropdownCell({
 
   const items = values.map((value) => getDropdownItem(field.dropdown, value));
 
+  if (items.length === 0) {
+    return <span className="text-muted-foreground text-sm">-</span>;
+  }
+
   return (
-    <TableRowBadgeList
+    <div
       data-slot="table-row-dropdown-cell"
       data-test-id="dropdown-cell"
-      values={items}
-      renderLabel={(value) => value?.label}
-      getKey={(value) => value?.id ?? ''}
-      getColor={(value) => value?.color ?? null}
-    />
+      className="inline-flex flex-wrap gap-1"
+    >
+      {items.map((item, index) => {
+        const style = getDropdownContrastStyle(item?.color);
+        return (
+          <Badge
+            key={item?.id ?? index}
+            variant="outline"
+            className={style ? undefined : 'text-muted-foreground'}
+            style={style}
+          >
+            {item?.label}
+          </Badge>
+        );
+      })}
+    </div>
   );
 }

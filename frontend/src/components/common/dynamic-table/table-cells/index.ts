@@ -1,7 +1,5 @@
 export {
-  TableRowBadgeList,
-  hexToRgb,
-  badgeStyleFromColor,
+  TableRowBadgeList
 } from './table-row-badge-list';
 export { TableRowCategoryCell } from './table-row-category-cell';
 export { TableRowDateCell } from './table-row-date-cell';
@@ -14,3 +12,4 @@ export { TableRowRelationshipCell } from './table-row-relationship-cell';
 export { TableRowTextLongCell } from './table-row-text-long-cell';
 export { TableRowTextShortCell } from './table-row-text-short-cell';
 export { TableRowUserCell } from './table-row-user-cell';
+
