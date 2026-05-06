@@ -29,9 +29,10 @@ export type GroupFieldUpdatePayload = Merge<
   z.infer<typeof GroupFieldUpdateParamsValidator>,
   Omit<
     z.infer<typeof GroupFieldUpdateBodyValidator>,
-    'allowCustomDropdownOptions' | 'allowCreateRelationshipRecords'
+    'allowCustomDropdownOptions' | 'tip'
   > & {
     allowCustomDropdownOptions?: boolean;
-    allowCreateRelationshipRecords?: boolean;
+    tip?: string | null;
   }
 >;
+

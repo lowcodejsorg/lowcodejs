@@ -60,6 +60,11 @@ function normalizeDefaultValue(
   return defaultValue || null;
 }
 
+function normalizeTip(tip: string): string | null {
+  const normalized = tip.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
 export const Route = createLazyFileRoute(
   '/_private/tables/$slug/field/$fieldId/',
 )({
@@ -309,7 +314,8 @@ function FieldUpdateContent({
   const form = useAppForm({
     defaultValues: {
       name: data.name,
-      type: data.type as string,
+      tip: data.tip ?? '',
+      type: data.type,
       format: data.format ?? '',
       defaultValue: Array.isArray(data.defaultValue)
         ? (data.defaultValue[0] ?? '')
@@ -354,7 +360,8 @@ function FieldUpdateContent({
         trashedAt?: string | null;
       } = {
         name: value.name,
-        type: value.type as keyof typeof E_FIELD_TYPE,
+        tip: normalizeTip(value.tip),
+        type: value.type,
         required: value.trashed ? false : value.required,
         multiple: value.multiple,
         showInFilter: value.showInFilter,
@@ -389,9 +396,7 @@ function FieldUpdateContent({
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
             }
           : null,
-        category: hasCategory
-          ? (value.category as unknown as IField['category'])
-          : [],
+        category: hasCategory ? value.category : [],
         trashed: value.trashed,
         trashedAt: value.trashed ? new Date().toISOString() : null,
       };

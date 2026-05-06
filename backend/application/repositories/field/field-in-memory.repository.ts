@@ -27,8 +27,7 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
     const field: IField = {
       ...payload,
       allowCustomDropdownOptions: payload.allowCustomDropdownOptions ?? false,
-      allowCreateRelationshipRecords:
-        payload.allowCreateRelationshipRecords ?? false,
+      tip: payload.tip ?? null,
       _id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -43,8 +42,7 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
     const fields = payloads.map((payload) => ({
       ...payload,
       allowCustomDropdownOptions: payload.allowCustomDropdownOptions ?? false,
-      allowCreateRelationshipRecords:
-        payload.allowCreateRelationshipRecords ?? false,
+      tip: payload.tip ?? null,
       _id: crypto.randomUUID(),
       createdAt: new Date(),
       updatedAt: new Date(),

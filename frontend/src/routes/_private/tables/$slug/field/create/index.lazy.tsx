@@ -62,6 +62,11 @@ function normalizeDefaultValue(
   return defaultValue || null;
 }
 
+function normalizeTip(tip: string): string | null {
+  const normalized = tip.trim();
+  return normalized.length > 0 ? normalized : null;
+}
+
 function convertTreeNodeToCategory(nodes: Array<TreeNode>): Array<ICategory> {
   return nodes.map((node) => ({
     id: node.id,
@@ -135,6 +140,7 @@ function RouteComponent(): React.JSX.Element {
 
       const payload: Partial<IField> = {
         name: value.name,
+        tip: normalizeTip(value.tip),
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
         multiple: value.multiple,
