@@ -1,6 +1,8 @@
 import { Suspense, lazy } from 'react';
 
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { TableRowFieldLabel } from './table-row-field-label';
+
+import { Field, FieldError } from '@/components/ui/field';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import type { IField } from '@/lib/interfaces';
@@ -49,7 +51,6 @@ export function TableRowRichTextField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
 
   if (disabled) {
     return (
@@ -57,7 +58,7 @@ export function TableRowRichTextField({
         data-slot="table-row-rich-text-field"
         data-test-id="table-row-rich-text"
       >
-        <FieldLabel>{field.name}</FieldLabel>
+        <TableRowFieldLabel field={field} />
         <div className="border rounded-md p-4 bg-muted min-h-25">
           <Suspense fallback={<Skeleton className="h-20 w-full" />}>
             <ContentViewer content={formField.state.value || ''} />
@@ -78,10 +79,10 @@ export function TableRowRichTextField({
       data-test-id="table-row-rich-text"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <div
         className={cn(
           'border rounded-md overflow-hidden',

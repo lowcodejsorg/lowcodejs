@@ -9,6 +9,10 @@ import type { IDropdown } from '@/lib/interfaces';
 
 export const FieldCreateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
+  tip: z
+    .string()
+    .max(500, 'A dica deve ter no máximo 500 caracteres')
+    .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   defaultValue: z.string().default(''),
@@ -36,6 +40,7 @@ export type FieldCreateFormValues = z.infer<typeof FieldCreateSchema>;
 
 export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   name: '',
+  tip: '',
   type: '',
   format: '',
   defaultValue: '',
@@ -63,7 +68,7 @@ export const CreateFieldFormFields = withForm({
   defaultValues: fieldCreateFormDefaultValues,
   props: {
     isPending: false,
-    tableSlug: '' as string,
+    tableSlug: '',
     blockedTypes: [] as Array<string>,
     defaultFieldType: undefined as string | undefined,
   },
@@ -142,6 +147,17 @@ export const CreateFieldFormFields = withForm({
               disabled={isPending}
               icon={<FileTextIcon />}
               required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField name="tip">
+          {(field) => (
+            <field.FieldTextarea
+              label="Dica do campo"
+              placeholder="Texto de ajuda exibido no formulário"
+              disabled={isPending}
+              rows={2}
             />
           )}
         </form.AppField>

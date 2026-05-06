@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { TableRowFieldLabel } from './table-row-field-label';
+
 import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
@@ -14,7 +16,7 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from '@/components/ui/combobox';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
@@ -34,7 +36,6 @@ export function TableRowRelationshipField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
   const anchorRef = useComboboxAnchor();
 
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -102,7 +103,7 @@ export function TableRowRelationshipField({
   if (!relConfig || !relConfig.field || !relConfig.table) {
     return (
       <Field data-slot="table-row-relationship-field">
-        <FieldLabel>{field.name}</FieldLabel>
+        <TableRowFieldLabel field={field} />
         <p className="text-muted-foreground text-sm">
           Relacionamento não configurado
         </p>
@@ -166,10 +167,10 @@ export function TableRowRelationshipField({
         data-test-id="table-row-relationship"
         data-invalid={isInvalid}
       >
-        <FieldLabel htmlFor={formField.name}>
-          {field.name}
-          {isRequired && <span className="text-destructive"> *</span>}
-        </FieldLabel>
+        <TableRowFieldLabel
+          field={field}
+          htmlFor={formField.name}
+        />
         <div className="relative">
           <Combobox
             data-test-id="table-row-relationship"
@@ -267,10 +268,10 @@ export function TableRowRelationshipField({
       data-test-id="table-row-relationship"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <div className="relative">
         <Combobox
           data-test-id="table-row-relationship"

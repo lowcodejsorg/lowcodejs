@@ -28,8 +28,9 @@ export type TableFieldUpdatePayload = Merge<
   z.infer<typeof TableFieldUpdateParamsValidator>,
   Omit<
     z.infer<typeof TableFieldUpdateBodyValidator>,
-    'allowCustomDropdownOptions'
+    'allowCustomDropdownOptions' | 'tip'
   > & {
     allowCustomDropdownOptions?: boolean;
+    tip?: string | null;
   }
 >;

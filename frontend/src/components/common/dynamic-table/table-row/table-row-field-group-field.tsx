@@ -1,7 +1,9 @@
 import { PlusIcon, TrashIcon } from 'lucide-react';
 
+import { TableRowFieldLabel } from './table-row-field-label';
+
 import { Button } from '@/components/ui/button';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
@@ -55,7 +57,6 @@ export function TableRowFieldGroupField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
   const isMultiple = field.multiple;
 
   const groupConfig = field.group;
@@ -88,7 +89,7 @@ export function TableRowFieldGroupField({
   if (!groupConfig) {
     return (
       <Field data-slot="table-row-field-group-field">
-        <FieldLabel>{field.name}</FieldLabel>
+        <TableRowFieldLabel field={field} />
         <p className="text-muted-foreground text-sm">
           Grupo de campos não configurado
         </p>
@@ -100,7 +101,7 @@ export function TableRowFieldGroupField({
   if (!tableProp && tableQuery.status === 'pending') {
     return (
       <Field data-slot="table-row-field-group-field">
-        <FieldLabel>{field.name}</FieldLabel>
+        <TableRowFieldLabel field={field} />
         <div className="flex items-center justify-center py-4">
           <Spinner />
         </div>
@@ -111,7 +112,7 @@ export function TableRowFieldGroupField({
   if (!tableProp && tableQuery.status === 'error') {
     return (
       <Field data-slot="table-row-field-group-field">
-        <FieldLabel>{field.name}</FieldLabel>
+        <TableRowFieldLabel field={field} />
         <p className="text-destructive text-sm">
           Erro ao carregar grupo de campos
         </p>
@@ -122,7 +123,7 @@ export function TableRowFieldGroupField({
   if (!group) {
     return (
       <Field data-slot="table-row-field-group-field">
-        <FieldLabel>{field.name}</FieldLabel>
+        <TableRowFieldLabel field={field} />
         <p className="text-muted-foreground text-sm">
           Grupo de campos não encontrado
         </p>
@@ -140,10 +141,10 @@ export function TableRowFieldGroupField({
       data-test-id="table-row-field-group"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <div className="space-y-4">
         {items.map((_, index) => (
           <div

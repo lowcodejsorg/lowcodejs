@@ -105,6 +105,11 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                 type: 'boolean',
                 description: 'Allow filtering',
               },
+              tip: {
+                type: 'string',
+                nullable: true,
+                description: 'Optional help text shown in row forms',
+              },
               locked: {
                 type: 'boolean',
                 description: 'Field is locked and cannot be modified',

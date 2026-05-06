@@ -44,6 +44,13 @@ export const FieldWidthInDetailSchema = z
   .min(0)
   .nullable()
   .default(50);
+export const FieldTipSchema = z
+  .string()
+  .trim()
+  .max(500)
+  .nullable()
+  .default(null)
+  .transform((value) => (value && value.length > 0 ? value : null));
 export const FieldLockedSchema = z.boolean().default(false);
 export const FieldDefaultValueSchema = z
   .union([z.string(), z.array(z.string())])
@@ -139,6 +146,7 @@ export const TableFieldBaseSchema = z.object({
   widthInForm: FieldWidthInFormSchema,
   widthInList: FieldWidthInListSchema,
   widthInDetail: FieldWidthInDetailSchema,
+  tip: FieldTipSchema,
   locked: FieldLockedSchema,
   defaultValue: FieldDefaultValueSchema,
   relationship: FieldRelationshipSchema,

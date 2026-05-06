@@ -1,7 +1,9 @@
 import { EyeClosedIcon, EyeIcon, LockIcon } from 'lucide-react';
 import React from 'react';
 
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { TableRowFieldLabel } from './table-row-field-label';
+
+import { Field, FieldError } from '@/components/ui/field';
 import {
   InputGroup,
   InputGroupAddon,
@@ -25,7 +27,6 @@ export function TableRowPasswordField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
 
   let inputType = 'password';
   if (showPassword) {
@@ -48,10 +49,10 @@ export function TableRowPasswordField({
       data-test-id="table-row-password-input"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <InputGroup data-disabled={disabled}>
         <InputGroupInput
           data-test-id="table-row-password-input"
@@ -64,7 +65,7 @@ export function TableRowPasswordField({
           onBlur={formField.handleBlur}
           onChange={(e) => formField.handleChange(e.target.value)}
           aria-invalid={isInvalid}
-          aria-required={isRequired || undefined}
+          aria-required={field.required || undefined}
           aria-describedby={ariaDescribedBy}
         />
         <InputGroupAddon>

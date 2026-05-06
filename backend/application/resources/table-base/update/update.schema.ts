@@ -208,6 +208,11 @@ export const TableUpdateSchema: FastifySchema = {
                 nullable: true,
                 description: 'Field width in detail views, integer 0-100 (%)',
               },
+              tip: {
+                type: 'string',
+                nullable: true,
+                description: 'Optional help text shown in row forms',
+              },
               locked: {
                 type: 'boolean',
                 description: 'Field is locked and cannot be modified',
@@ -395,6 +400,7 @@ export const TableUpdateSchema: FastifySchema = {
                     widthInForm: { type: 'number', nullable: true },
                     widthInList: { type: 'number', nullable: true },
                     widthInDetail: { type: 'number', nullable: true },
+                    tip: { type: 'string', nullable: true },
                     locked: { type: 'boolean' },
                     native: { type: 'boolean' },
                     defaultValue: {

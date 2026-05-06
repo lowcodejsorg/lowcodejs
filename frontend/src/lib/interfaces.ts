@@ -175,6 +175,7 @@ export type IField = Merge<
     widthInForm: number | null;
     widthInList: number | null;
     widthInDetail: number | null;
+    tip?: string | null;
     defaultValue: string | Array<string> | null;
     locked?: boolean;
     native?: boolean;

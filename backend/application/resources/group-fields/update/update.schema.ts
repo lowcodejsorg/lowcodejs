@@ -31,6 +31,7 @@ export const GroupFieldUpdateSchema: FastifySchema = {
       widthInForm: { type: 'number', nullable: true, default: 50 },
       widthInList: { type: 'number', nullable: true, default: 10 },
       widthInDetail: { type: 'number', nullable: true, default: 50 },
+      tip: { type: 'string', nullable: true, default: null },
       locked: { type: 'boolean', default: false },
       format: { type: 'string', nullable: true, default: null },
       defaultValue: {
@@ -67,6 +68,7 @@ export const GroupFieldUpdateSchema: FastifySchema = {
         widthInForm: { type: 'number', nullable: true },
         widthInList: { type: 'number', nullable: true },
         widthInDetail: { type: 'number', nullable: true },
+        tip: { type: 'string', nullable: true },
         locked: { type: 'boolean' },
         native: { type: 'boolean' },
         format: { type: 'string', nullable: true },

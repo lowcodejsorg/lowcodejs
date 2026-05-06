@@ -20,8 +20,9 @@ export type GroupFieldCreatePayload = Merge<
   z.infer<typeof GroupFieldCreateParamsValidator>,
   Omit<
     z.infer<typeof GroupFieldCreateBodyValidator>,
-    'allowCustomDropdownOptions'
+    'allowCustomDropdownOptions' | 'tip'
   > & {
     allowCustomDropdownOptions?: boolean;
+    tip?: string | null;
   }
 >;

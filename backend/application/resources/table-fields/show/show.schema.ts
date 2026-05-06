@@ -86,6 +86,11 @@ export const TableFieldShowSchema: FastifySchema = {
           nullable: true,
           description: 'Field width in detail views, integer 0-100 (%)',
         },
+        tip: {
+          type: 'string',
+          nullable: true,
+          description: 'Optional help text shown in row forms',
+        },
         locked: {
           type: 'boolean',
           description: 'Field is locked and cannot be modified',
