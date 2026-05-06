@@ -139,8 +139,17 @@ A SKILL valida `placement.slot` contra esta lista.
    `available: false` qualquer registro cujo manifesto sumiu
 3. **Ativação**: MASTER vai em `/extensions`, liga o switch — grava
    `enabled: true` no DB
-4. **Runtime (futuro)**: hooks de slot/menu consultam o registry e lazy-importam
-   o entry da extensão
+4. **Runtime**: o controller da extensão usa `ExtensionActiveMiddleware` para
+   responder 404 quando desativada. O frontend usa `loadExtensionEntry` (Vite
+   `import.meta.glob`) para lazy-importar entries de tools/modules/plugins
+
+## Pacote `core` — exceção de ativação
+
+O pacote especial `pkg === 'core'` é shipado junto com a plataforma. Para
+não quebrar funcionalidades existentes que migraram do core para extensão
+(ex: `clone-table`), o loader chama `upsert` com `enabledOnInsert: true`
+**apenas** quando o registro é criado pela primeira vez. Toggles subsequentes
+do MASTER são preservados — uma vez desligada, fica desligada.
 
 ## Permissões
 

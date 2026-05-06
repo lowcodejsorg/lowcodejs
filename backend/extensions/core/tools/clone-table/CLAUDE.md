@@ -1,13 +1,16 @@
-# Clone Table
+# Clone Table (extensão `core/tools/clone-table`)
 
-Clona uma tabela existente ou cria a partir de um template built-in.
+Primeira tool extension oficial. Clona uma tabela existente ou cria a partir
+de um template built-in. Era um recurso core; foi migrada para extensão como
+referência canônica do modelo de tools.
 
 ## Endpoint
 `POST /tools/clone-table` | Auth: Yes | Permission: nenhuma especifica
 
 ## Fluxo
 1. Middleware: AuthenticationMiddleware (obrigatorio)
-2. Validator: CloneTableValidator - campos: baseTableId (string, required, min 1), name (string, required, min 1, max 40, regex: letras/numeros/espacos/hifen/underscore/cedilha)
+2. Middleware: ExtensionActiveMiddleware (pkg=core, type=TOOL, id=clone-table)
+3. Validator: CloneTableValidator - campos: baseTableId (string, required, min 1), name (string, required, min 1, max 40, regex: letras/numeros/espacos/hifen/underscore/cedilha)
 3. UseCase:
    - Verifica se ownerId esta presente (vem do request.user.sub)
    - Se baseTableId e um template built-in (KANBAN_TEMPLATE, CARDS_TEMPLATE, MOSAIC_TEMPLATE, DOCUMENT_TEMPLATE, FORUM_TEMPLATE, CALENDAR_TEMPLATE): delega para a funcao template correspondente

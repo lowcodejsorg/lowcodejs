@@ -13,6 +13,7 @@ rotas dinâmicas).
 | Operação | Método | Rota | Permissão |
 |----------|--------|------|-----------|
 | list | GET | `/extensions` | MASTER |
+| active | GET | `/extensions/active` | Auth (qualquer usuário) |
 | toggle | PATCH | `/extensions/:_id/toggle` | MASTER |
 | configure-table-scope | PATCH | `/extensions/:_id/table-scope` | MASTER |
 
@@ -28,7 +29,10 @@ rotas dinâmicas).
 ## Comportamentos chave
 
 - **list** retorna todas as extensões (incluindo `enabled: false` e
-  `available: false`) para o Workshop
+  `available: false`) para o Workshop. Restrito a MASTER
+- **active** retorna apenas extensões `enabled: true` e `available: true`,
+  **sem** `manifestSnapshot`. Disponível para qualquer usuário autenticado —
+  usado pela sidebar (sub-menu Ferramentas) e pelos slots no frontend
 - **toggle** rejeita habilitar uma extensão `available: false` (o manifesto
   sumiu do disco) com `EXTENSION_UNAVAILABLE`
 - **configure-table-scope** só aceita extensões do tipo `PLUGIN` —

@@ -26,6 +26,14 @@ export type ExtensionUpsertPayload = {
   requires: IExtensionRequires;
 };
 
+export type ExtensionUpsertOptions = {
+  /**
+   * Define `enabled: true` quando o registro é criado pela primeira vez.
+   * Não afeta registros existentes — preserva o estado atual.
+   */
+  enabledOnInsert?: boolean;
+};
+
 export type ExtensionToggleEnabledPayload = {
   _id: string;
   enabled: boolean;
@@ -57,7 +65,10 @@ export abstract class ExtensionContractRepository {
     extensionId: string,
   ): Promise<IExtension | null>;
   abstract findMany(payload?: ExtensionQueryPayload): Promise<IExtension[]>;
-  abstract upsert(payload: ExtensionUpsertPayload): Promise<IExtension>;
+  abstract upsert(
+    payload: ExtensionUpsertPayload,
+    options?: ExtensionUpsertOptions,
+  ): Promise<IExtension>;
   abstract toggleEnabled(
     payload: ExtensionToggleEnabledPayload,
   ): Promise<IExtension>;

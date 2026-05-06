@@ -17,7 +17,10 @@ import z, { ZodError } from 'zod';
 
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
+import { loadExtensions } from '@application/core/extensions/loader';
 import HTTPException from '@application/core/exception.core';
+import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
+import ExtensionMongooseRepository from '@application/repositories/extension/extension-mongoose.repository';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
 import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
 import {
@@ -410,6 +413,20 @@ registerDependencies();
 
 kernel.register(bootstrap, {
   controllers: [...(await loadControllers())],
+});
+
+// Carrega o registry de extensões assim que o kernel está pronto. Roda tanto
+// no boot do servidor (bin/server.ts) quanto nos testes E2E (que dão
+// kernel.ready() na suíte). Falha de scan é não-fatal — apenas loga.
+kernel.addHook('onReady', async () => {
+  try {
+    const repo = getInstanceByToken<ExtensionContractRepository>(
+      ExtensionMongooseRepository,
+    );
+    await loadExtensions(repo);
+  } catch (error) {
+    console.error('[Extensions] Falha ao carregar registry no onReady:', error);
+  }
 });
 
 kernel.get('/openapi.json', async function () {

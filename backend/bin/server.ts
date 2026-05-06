@@ -2,10 +2,7 @@ import { getInstanceByToken } from 'fastify-decorators';
 import type { Server as HttpServer } from 'node:http';
 
 import type { IJWTPayload } from '@application/core/entity.core';
-import { loadExtensions } from '@application/core/extensions/loader';
 import { Setting } from '@application/model/setting.model';
-import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
-import ExtensionMongooseRepository from '@application/repositories/extension/extension-mongoose.repository';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
 import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
 import { initChatSocket } from '@application/resources/chat/chat.socket';
@@ -73,17 +70,6 @@ async function sweepStaleMigrations(): Promise<void> {
   }
 }
 
-async function loadExtensionsRegistry(): Promise<void> {
-  try {
-    const repo = getInstanceByToken<ExtensionContractRepository>(
-      ExtensionMongooseRepository,
-    );
-    await loadExtensions(repo);
-  } catch (error) {
-    console.error('[Extensions] Falha ao carregar registry:', error);
-  }
-}
-
 async function start(): Promise<void> {
   try {
     await loadStorageConfig();
@@ -103,7 +89,6 @@ async function start(): Promise<void> {
     console.info('Socket.IO storage-migration namespace initialized');
 
     await sweepStaleMigrations();
-    await loadExtensionsRegistry();
 
     const storageRepository = getInstanceByToken<StorageContractRepository>(
       StorageMongooseRepository,

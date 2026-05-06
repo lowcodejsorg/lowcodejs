@@ -2,7 +2,9 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
+import { E_EXTENSION_TYPE } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { ExtensionActiveMiddleware } from '@application/middlewares/extension-active.middleware';
 
 import { CloneTableSchema } from './clone-table.schema';
 import CloneTableUseCase from './clone-table.use-case';
@@ -24,6 +26,11 @@ export default class {
       onRequest: [
         AuthenticationMiddleware({
           optional: false,
+        }),
+        ExtensionActiveMiddleware({
+          pkg: 'core',
+          type: E_EXTENSION_TYPE.TOOL,
+          extensionId: 'clone-table',
         }),
       ],
       schema: CloneTableSchema,

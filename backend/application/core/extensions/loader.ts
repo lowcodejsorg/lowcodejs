@@ -74,22 +74,28 @@ export async function loadExtensions(
             continue;
           }
 
-          await repository.upsert({
-            pkg,
-            type,
-            extensionId,
-            name: manifest.name,
-            description: manifest.description ?? null,
-            version: manifest.version,
-            author: manifest.author ?? null,
-            icon: manifest.icon ?? null,
-            image: manifest.image ?? null,
-            slot: manifest.placement?.slot ?? null,
-            route: manifest.route ?? null,
-            submenu: manifest.tool?.submenu ?? null,
-            manifestSnapshot: raw as Record<string, unknown>,
-            requires: manifest.requires ?? {},
-          });
+          await repository.upsert(
+            {
+              pkg,
+              type,
+              extensionId,
+              name: manifest.name,
+              description: manifest.description ?? null,
+              version: manifest.version,
+              author: manifest.author ?? null,
+              icon: manifest.icon ?? null,
+              image: manifest.image ?? null,
+              slot: manifest.placement?.slot ?? null,
+              route: manifest.route ?? null,
+              submenu: manifest.tool?.submenu ?? null,
+              manifestSnapshot: raw as Record<string, unknown>,
+              requires: manifest.requires ?? {},
+            },
+            // Pacote `core` é shipado com a plataforma — vem ativado por
+            // padrão quando registrado pela primeira vez. Toggle subsequente
+            // do MASTER é preservado.
+            { enabledOnInsert: pkg === 'core' },
+          );
 
           presentKeys.push({ pkg, type, extensionId });
         } catch (error) {

@@ -10,6 +10,7 @@ import type {
   ExtensionToggleEnabledPayload,
   ExtensionType,
   ExtensionUpdateTableScopePayload,
+  ExtensionUpsertOptions,
   ExtensionUpsertPayload,
 } from './extension-contract.repository';
 
@@ -63,7 +64,10 @@ export default class ExtensionMongooseRepository
     return docs.map((d) => this.transform(d));
   }
 
-  async upsert(payload: ExtensionUpsertPayload): Promise<IExtension> {
+  async upsert(
+    payload: ExtensionUpsertPayload,
+    options?: ExtensionUpsertOptions,
+  ): Promise<IExtension> {
     const { pkg, type, extensionId, ...rest } = payload;
 
     const existing = await Model.findOne({ pkg, type, extensionId });
@@ -84,7 +88,7 @@ export default class ExtensionMongooseRepository
       type,
       extensionId,
       ...rest,
-      enabled: false,
+      enabled: options?.enabledOnInsert ?? false,
       available: true,
       tableScope: { mode: 'all', tableIds: [] },
     });

@@ -137,6 +137,7 @@ export const queryKeys = {
     all: ['extensions'] as const,
     lists: () => [...queryKeys.extensions.all, 'list'] as const,
     list: () => [...queryKeys.extensions.lists()] as const,
+    active: () => [...queryKeys.extensions.all, 'active'] as const,
     details: () => [...queryKeys.extensions.all, 'detail'] as const,
     detail: (extensionId: string) =>
       [...queryKeys.extensions.details(), extensionId] as const,

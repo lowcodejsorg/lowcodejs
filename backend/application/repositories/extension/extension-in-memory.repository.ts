@@ -7,6 +7,7 @@ import type {
   ExtensionToggleEnabledPayload,
   ExtensionType,
   ExtensionUpdateTableScopePayload,
+  ExtensionUpsertOptions,
   ExtensionUpsertPayload,
 } from './extension-contract.repository';
 
@@ -56,7 +57,10 @@ export default class ExtensionInMemoryRepository
     });
   }
 
-  async upsert(payload: ExtensionUpsertPayload): Promise<IExtension> {
+  async upsert(
+    payload: ExtensionUpsertPayload,
+    options?: ExtensionUpsertOptions,
+  ): Promise<IExtension> {
     const existing = this.items.find(
       (i) =>
         i.pkg === payload.pkg &&
@@ -75,7 +79,7 @@ export default class ExtensionInMemoryRepository
     const created: IExtension = {
       ...payload,
       _id: crypto.randomUUID(),
-      enabled: false,
+      enabled: options?.enabledOnInsert ?? false,
       available: true,
       tableScope: { mode: 'all', tableIds: [] },
       createdAt: new Date(),

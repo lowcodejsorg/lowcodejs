@@ -156,8 +156,8 @@ Catálogo final vai pra `backend/extensions/CLAUDE.md` e a SKILL valida
 | Fase | Escopo                                                                                                              | Status |
 |------|--------------------------------------------------------------------------------------------------------------------|--------|
 | 1    | Fundação: model `Extension`, REST list/toggle/scope, loader, Workshop, sidebar                                     | feito |
-| 2    | Tools: sub-menu Ferramentas collapsível, rota `/tools/$pkg/$id`, **migrar `clone-table` para `core/tools/clone-table`** | próximo |
-| 3    | Slots/Plugins: `<ExtensionSlot>`, registro dos 7 slots, 1 plugin de exemplo (export CSV vira plugin)              | pendente |
+| 2    | Tools: sub-menu Ferramentas collapsível, rota `/tools/$pkg/$id`, migração de `clone-table` para `core/tools/clone-table`, endpoint `GET /extensions/active`, auto-enable do `pkg=core` | feito |
+| 3    | Slots/Plugins: `<ExtensionSlot>`, registro dos 7 slots, 1 plugin de exemplo (export CSV vira plugin)              | próximo |
 | 4    | Módulos: rota catch-all `/e/$pkg/$id`, novo `E_MENU_ITEM_TYPE.EXTENSION_MODULE`, 1 módulo de exemplo              | pendente |
 | 5    | SKILL `lowcodejs-extension`: scaffold determinístico, catálogo de slots, validação, testes E2E                    | pendente |
 | 6    | Polish: versionamento (semver match), `requires.extensions` resolver, hot-reload em dev, telemetria               | pendente |
@@ -264,95 +264,108 @@ EOF
 
 ---
 
-## 7. Fase 2 — Próxima ação detalhada
+## 6.bis Estado da Fase 2 (entregue)
+
+### Backend
+
+- `backend/application/core/controllers.ts` — `loadControllers` agora também
+  varre `backend/extensions/` (qualquer `*.controller.ts` é registrado)
+- `backend/application/core/extensions/loader.ts` — `enabledOnInsert: true`
+  quando `pkg === 'core'` (apenas no insert; toggles posteriores preservados)
+- `backend/application/repositories/extension/extension-contract.repository.ts`
+  — `upsert(payload, options?: { enabledOnInsert? })`
+- `backend/application/resources/extensions/active/{controller,use-case,schema}.ts`
+  — `GET /extensions/active` (auth qualquer user, sem `manifestSnapshot`)
+- `backend/extensions/core/tools/clone-table/` — manifest.json + controller
+  blindado por `ExtensionActiveMiddleware` + use-case + validator + schema +
+  templates (movidos via `git mv` preservando histórico)
+- `backend/application/resources/tools/CLAUDE.md` — atualizado: clone-table
+  saiu da lista (vive em extensions/)
+
+### Frontend
+
+- `frontend/extensions/core/tools/clone-table/index.tsx` — entry React (UI da
+  clonagem), default export
+- `frontend/src/lib/extensions-registry.ts` — `loadExtensionEntry(pkg, type, id)`
+  via `import.meta.glob`
+- `frontend/src/hooks/tanstack-query/use-extensions-active-list.tsx` — hook +
+  options para `GET /extensions/active`
+- `frontend/src/hooks/tanstack-query/use-menu-dynamic.tsx` — injeta tools
+  ativadas como filhas do item "Ferramentas" (collapsible quando há tools)
+- `frontend/src/routes/_private/tools/index.{tsx,lazy.tsx}` — virou listagem
+  (cards de tools ativas, link para `/extensions` quando vazio)
+- `frontend/src/routes/_private/tools/$package/$id/{index.tsx,index.lazy.tsx}`
+  — rota dinâmica que resolve a extensão ativa e lazy-importa o entry
+- `frontend/src/lib/menu/menu-access-permissions.ts` — `/tools` e
+  `/tools/$package/$id` adicionados ao MASTER
+- `frontend/src/routes/_private/layout.tsx` — regex `/^\/tools\/.+\/.+$/`
+  no `routesWithoutSearchInput`
+
+### Decisões implementadas
+
+| Decisão pendente da Fase 2 | Resolvido como |
+|----------------------------|----------------|
+| Auto-enable do `pkg=core` | (a) Loader passa `enabledOnInsert: pkg === 'core'` ao repo |
+| Endpoint público de extensões ativas | (b) Novo `GET /extensions/active` sem `manifestSnapshot`, auth-only |
+| Compat de `/tools/clone-table` | (c) Mantida — mesma URL/route, apenas blindada por middleware. Nenhuma migração de cliente externo necessária |
+
+## 7. Fase 3 — Próxima ação detalhada
 
 ### Objetivo
 
-Migrar a funcionalidade "Clonar Tabela" do core para a primeira `tool`
-extension oficial em `extensions/core/tools/clone-table/`. Em paralelo,
-transformar o item "Ferramentas" da sidebar em um sub-menu collapsível que
-agrega todas as `tools` ativadas.
+Implementar o sistema de **slots** para plugins. Plugins são extensões
+pequenas que ocupam placeholders distribuídos pelo core. Esta fase introduz o
+componente `<ExtensionSlot id="..." context={...}>` e instala-o em 7 pontos
+estratégicos da UI.
 
 ### Subtarefas
 
-1. **Backend: criar a tool extension**
-   - `backend/extensions/core/tools/clone-table/manifest.json`:
-     ```json
-     {
-       "id": "clone-table",
-       "type": "TOOL",
-       "name": "Clonar Tabela",
-       "description": "Cria nova tabela baseada em um modelo existente",
-       "version": "1.0.0",
-       "author": "Time Core",
-       "icon": "CopyIcon",
-       "tool": { "submenu": "tables" }
-     }
-     ```
-   - Mover (ou referenciar) o use-case existente em
-     `backend/application/resources/tools/clone-table/` para a estrutura da
-     extensão. **Decisão pendente**: copiar e remover o original ou manter
-     stub que delega? Sugestão: **mover de fato**, mantendo apenas redirect
-     temporário em `/tools/clone-table` durante 1 release pra não quebrar
-     clientes externos
-   - Wrapping com `ExtensionActiveMiddleware`
-   - Seeder: garantir que `core/tools/clone-table` venha ativada por default
-     (`enabled: true` no upsert quando `pkg=core`?). Decisão: o loader pode
-     ter um flag especial para o pacote core. Ou rodar um seeder separado.
-     Discutir.
+1. **Frontend: componente `<ExtensionSlot>`**
+   - `frontend/src/components/common/extension-slot/extension-slot.tsx`
+   - Recebe `id` (string do slot, ex: `table.actions`) e `context` (props
+     passadas para todos os plugins do slot)
+   - Lê extensões ativas via `useExtensionsActiveList`, filtra
+     `type === PLUGIN && slot === <id>` e respeita `tableScope`
+   - Lazy-importa cada entry com `loadExtensionEntry(pkg, 'plugins', id)`
+   - Renderiza cada componente passando `context` como props
 
-2. **Frontend: criar o entry**
-   - `frontend/extensions/core/tools/clone-table/index.tsx` — mover o
-     componente atual de `routes/_private/tools/index.lazy.tsx`
-   - Manter as importações do design system
+2. **Frontend: instalar slots no JSX existente** (catálogo da seção 4)
+   - `table.actions` em algum ponto da grade dynamic-table
+   - `table.tools-menu`, `table.filters`, `table.row-menu`,
+     `table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`
+   - Cada local define o `context` adequado
 
-3. **Frontend: rota dinâmica de tool**
-   - `routes/_private/tools/$package/$id/index.tsx` + `index.lazy.tsx` que:
-     - Resolve a extensão via `useExtensionsReadList`
-     - Lazy-importa o entry de `frontend/extensions/<pkg>/tools/<id>/index.tsx`
-     - 404 se não existe ou não está ativa
+3. **Plugin de exemplo: migrar `export-csv-button` para plugin**
+   - Hoje `frontend/src/components/common/export-csv-button.tsx` é usado em
+     vários pontos. Vira `extensions/core/plugins/export-csv/index.tsx` e é
+     consumido pelo slot `table.actions`
+   - Manifest no backend
+   - Remove os usos diretos (substituídos pelo slot)
 
-4. **Frontend: sidebar collapsível para Ferramentas**
-   - Em `lib/menu/menu.ts`, transformar o item "Ferramentas" em um
-     `CollapsibleItem` cujos `items` são as tools ativadas
-   - Carregar as tools ativadas via `useExtensionsReadList` filtrando
-     `type === 'TOOL' && enabled === true`. Provavelmente precisa de uma
-     versão do hook que **não** seja MASTER-only (Fase 3 endereça isso —
-     na Fase 2 mantemos MASTER no Workshop e expomos um endpoint público
-     de "extensões ativas para o usuário")
-   - **Decisão pendente**: criar `GET /extensions/active` retornando apenas
-     enabled+available para qualquer auth user, ou refatorar `GET /extensions`
-     para aceitar params? Sugestão: novo endpoint `/extensions/active`
-     limitado a uma projeção segura (sem manifestSnapshot)
+4. **Backend (opcional)**: se algum plugin precisar de API própria,
+   convenção `POST /extensions/<pkg>/plugins/<id>/<action>` — sem mudança
+   de infra (loadControllers já varre `extensions/`)
 
-5. **Frontend: rota antiga `/tools` vira listagem**
-   - Atualmente `/tools` mostra direto o clone. Vira uma página de listagem
-     ("Estas são as ferramentas disponíveis…") com cards das tools ativas
-     (linka pra cada `/tools/$pkg/$id`)
-   - **Alternativa**: redirect `/tools` para a primeira tool ativa, sem
-     listagem. Sugestão: listagem é mais útil
+5. **Documentação**
+   - Atualizar `backend/extensions/CLAUDE.md` com a tabela de slots final
+     (já está rascunhada; promover de "referência para Fase 3" para
+     "implementação atual")
+   - `frontend/src/components/common/extension-slot/CLAUDE.md`
 
-6. **Documentação**
-   - Atualizar `backend/extensions/core/CLAUDE.md` com a primeira tool
-   - Atualizar `frontend/src/routes/_private/tools/CLAUDE.md` para refletir
-     a nova arquitetura
-   - Atualizar `frontend/src/components/common/layout/CLAUDE.md` se a
-     sidebar mudou
+### Decisões pendentes da Fase 3 (pra alinhar antes de começar)
 
-### Decisões pendentes da Fase 2 (pra alinhar antes de começar)
-
-- **Seeder do core enabled-by-default**: clone-table deve vir ligada para não
-  quebrar usuários atuais. Como sinalizar isso? Opções:
-  - (a) Loader liga `enabled: true` automaticamente para `pkg === 'core'`
-  - (b) Seeder dedicado em `database/seeders/`
-  - (c) Manifest declara `defaultEnabled: true` (campo novo)
-  - **Recomendação**: (a) — simplifica, e o pacote core é shipado com a
-    plataforma, então faz sentido. Documentar essa exceção
-- **Endpoint público `/extensions/active`**: necessário para sidebar
-  carregar tools sem dar acesso à lista completa pra não-MASTER. Confirmar
-  formato (provavelmente sem `manifestSnapshot` para reduzir payload)
-- **Link de compatibilidade `/tools/clone-table`**: manter ou matar? Se
-  manter, por quanto tempo?
+- **Onde instalar `table.actions`?** Os botões "Adicionar registro" /
+  "Configurações" hoje vivem em… preciso re-mapear. Possivelmente
+  `dynamic-table/` ou `table-views/`. Investigar e decidir o local exato
+- **`tableScope` aplicado onde?** O filtro por tabela deve ser aplicado
+  dentro do `<ExtensionSlot>` ou do `useExtensionsActiveList`?
+  Recomendação: dentro do componente, porque o context é que sabe qual
+  tabela está em foco
+- **Plugin de exemplo: export-csv**: já existe `export-csv-button.tsx` —
+  faz sentido migrar pra plugin? Ou criar um plugin **novo** mais simples
+  (ex: "Imprimir tabela") para não tocar em código que já é usado em
+  vários lugares? Sugestão: novo plugin simples, deixar export-csv pra
+  depois
 
 ---
 
@@ -389,10 +402,10 @@ git checkout feat/extensions
 
 Abrir Claude Code na pasta do repo e iniciar com prompt tipo:
 
-> Continue o sistema de extensões — fase 2. Leia
-> `_docs/extensions-roadmap.md` para o contexto completo (decisões, fase 1
-> entregue, plano detalhado da fase 2 e decisões pendentes). Antes de
-> começar a codar, valide comigo as 3 decisões pendentes da Fase 2 listadas
+> Continue o sistema de extensões — fase 3. Leia
+> `_docs/extensions-roadmap.md` para o contexto completo (decisões, fases 1
+> e 2 entregues, plano detalhado da fase 3 e decisões pendentes). Antes de
+> começar a codar, valide comigo as 3 decisões pendentes da Fase 3 listadas
 > na seção 7.
 
 A nova sessão do Claude vai ler este arquivo + os CLAUDE.md das pastas
