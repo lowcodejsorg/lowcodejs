@@ -165,6 +165,10 @@ export const Schema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: null,
     },
+    tip: {
+      type: String,
+      default: null,
+    },
     relationship: {
       type: Relationship,
       default: null,

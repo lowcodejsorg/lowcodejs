@@ -54,6 +54,15 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
         <p className="text-sm text-muted-foreground">{data.name || '-'}</p>
       </div>
 
+      {data.tip && (
+        <div className="space-y-1">
+          <p className="text-sm font-medium">Dica do campo</p>
+          <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+            {data.tip}
+          </p>
+        </div>
+      )}
+
       {/* Tipo */}
       <div className="space-y-1">
         <p className="text-sm font-medium">Tipo</p>

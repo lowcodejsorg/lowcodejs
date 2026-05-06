@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { TableRowFieldLabel } from './table-row-field-label';
+
 import { ComboboxLoadMore } from '@/components/common/combobox-load-more';
 import {
   Combobox,
@@ -14,7 +16,7 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from '@/components/ui/combobox';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useUserReadPaginatedInfinite } from '@/hooks/tanstack-query/use-user-read-paginated-infinite';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
@@ -43,7 +45,6 @@ export function TableRowUserField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
   const isMultiple = field.multiple;
   const anchorRef = useComboboxAnchor();
 
@@ -224,10 +225,10 @@ export function TableRowUserField({
         data-test-id="table-row-user-select"
         data-invalid={isInvalid}
       >
-        <FieldLabel htmlFor={formField.name}>
-          {field.name}
-          {isRequired && <span className="text-destructive"> *</span>}
-        </FieldLabel>
+        <TableRowFieldLabel
+          field={field}
+          htmlFor={formField.name}
+        />
         <div className="relative">
           <Combobox
             data-test-id="table-row-user-select"
@@ -326,10 +327,10 @@ export function TableRowUserField({
       data-test-id="table-row-user-select"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <div className="relative">
         <Combobox
           data-test-id="table-row-user-select"

@@ -5,6 +5,8 @@ import * as React from 'react';
 
 import { getDropdownContrastStyle } from '../table-cells/utils';
 
+import { TableRowFieldLabel } from './table-row-field-label';
+
 import { Button } from '@/components/ui/button';
 import {
   Combobox,
@@ -19,7 +21,7 @@ import {
   ComboboxValue,
   useComboboxAnchor,
 } from '@/components/ui/combobox';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { API } from '@/lib/api';
@@ -85,6 +87,7 @@ function buildFieldUpdatePayload(
     widthInForm: field.widthInForm,
     widthInList: field.widthInList,
     widthInDetail: field.widthInDetail,
+    tip: field.tip ?? null,
     format: field.format ?? null,
     defaultValue: field.defaultValue ?? null,
     dropdown,
@@ -188,7 +191,6 @@ export function TableRowDropdownField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
   const isMultiple = field.multiple;
   const anchorRef = useComboboxAnchor();
   const [inputValue, setInputValue] = React.useState('');
@@ -209,7 +211,7 @@ export function TableRowDropdownField({
   }, [localDropdown]);
 
   const selectedIds = React.useMemo(() => {
-    return normalizeDropdownValues(formField.state.value as any);
+    return normalizeDropdownValues(formField.state.value);
   }, [formField.state.value]);
 
   React.useEffect(() => {
@@ -372,10 +374,10 @@ export function TableRowDropdownField({
         data-test-id="table-row-dropdown"
         data-invalid={isInvalid}
       >
-        <FieldLabel htmlFor={formField.name}>
-          {field.name}
-          {isRequired && <span className="text-destructive"> *</span>}
-        </FieldLabel>
+        <TableRowFieldLabel
+          field={field}
+          htmlFor={formField.name}
+        />
 
         <Combobox
           data-test-id="table-row-dropdown"
@@ -449,10 +451,10 @@ export function TableRowDropdownField({
       data-test-id="table-row-dropdown"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
 
       <Combobox
         data-test-id="table-row-dropdown"
