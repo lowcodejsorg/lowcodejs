@@ -11,7 +11,8 @@ oficiais que adotam o modelo de extensão (ao invés de viver no core
 core/
 ├── plugins/
 │   └── print-table/                ← Fase 3: plugin de referência (slot table.actions)
-├── modules/                        ← (Fase 4)
+├── modules/
+│   └── welcome/                    ← Fase 4: módulo de referência (boas-vindas)
 └── tools/
     └── clone-table/                ← Fase 2: primeira tool oficial
 ```
@@ -27,5 +28,11 @@ core/
 | ID            | Slot           | Descrição                                                              |
 | ------------- | -------------- | ---------------------------------------------------------------------- |
 | `print-table` | `table.actions` | Botão `window.print()` na toolbar da tabela. Plugin de referência. |
+
+## Modules
+
+| ID        | URL default        | Descrição                                                                |
+| --------- | ------------------ | ------------------------------------------------------------------------ |
+| `welcome` | `/e/core/welcome`  | Página de boas-vindas com atalhos. Pode ser anexada a um menu custom. |
 
 Cada extensão tem seu próprio CLAUDE.md no subdiretório (quando aplicável).

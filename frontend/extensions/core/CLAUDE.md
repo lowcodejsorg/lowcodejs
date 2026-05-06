@@ -14,7 +14,9 @@ core/
 ├── plugins/
 │   └── print-table/
 │       └── index.tsx       ← componente default do plugin (slot table.actions)
-└── modules/                ← (Fase 4)
+└── modules/
+    └── welcome/
+        └── index.tsx       ← componente default do módulo (boas-vindas)
 ```
 
 ## Entries
@@ -23,6 +25,7 @@ core/
 |------|----|----|-----------|
 | `tools` | `clone-table` | `tools/clone-table/index.tsx` | UI de clonagem de tabelas (ex-página `/tools` do core) |
 | `plugins` | `print-table` | `plugins/print-table/index.tsx` | Botão de impressão na toolbar (slot `table.actions`) |
+| `modules` | `welcome` | `modules/welcome/index.tsx` | Página de boas-vindas com atalhos (URL `/e/core/welcome`) |
 
 ## Convenções
 

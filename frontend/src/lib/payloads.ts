@@ -68,6 +68,11 @@ export type UserGroupUpdatePayload = {
 };
 
 // ============== MENU ==============
+export type MenuExtensionRefPayload = {
+  pkg: string;
+  extensionId: string;
+};
+
 export type MenuCreatePayload = {
   name: string;
   type: ValueOf<typeof E_MENU_ITEM_TYPE>;
@@ -77,6 +82,7 @@ export type MenuCreatePayload = {
   url?: string | null;
   order?: number;
   isInitial?: boolean;
+  extension?: MenuExtensionRefPayload | null;
 };
 
 export type MenuUpdatePayload = {
@@ -89,6 +95,7 @@ export type MenuUpdatePayload = {
   url?: string | null;
   order?: number;
   isInitial?: boolean;
+  extension?: MenuExtensionRefPayload | null;
 };
 
 export type MenuReorderPayload = {

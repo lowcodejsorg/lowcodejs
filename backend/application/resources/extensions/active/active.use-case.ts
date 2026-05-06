@@ -9,6 +9,7 @@ import { ExtensionContractRepository } from '@application/repositories/extension
 
 export type ActiveExtension = Omit<IExtension, 'manifestSnapshot'>;
 
+type Input = { role: string };
 type Response = Either<HTTPException, ActiveExtension[]>;
 
 @Service()
@@ -17,14 +18,22 @@ export default class ExtensionActiveListUseCase {
     private readonly extensionRepository: ExtensionContractRepository,
   ) {}
 
-  async execute(): Promise<Response> {
+  async execute(input: Input): Promise<Response> {
     try {
       const extensions = await this.extensionRepository.findMany({
         enabled: true,
         available: true,
       });
 
-      const projected = extensions.map<ActiveExtension>((extension) => {
+      // Filtra por permissions.view: vazio = visível para todos auth users;
+      // não-vazio = role do user precisa estar na lista
+      const visible = extensions.filter((extension) => {
+        const allowed = extension.permissions?.view ?? [];
+        if (allowed.length === 0) return true;
+        return allowed.includes(input.role);
+      });
+
+      const projected = visible.map<ActiveExtension>((extension) => {
         const { manifestSnapshot: _ignored, ...rest } = extension;
         return rest;
       });

@@ -91,6 +91,7 @@ export default class ExtensionMongooseRepository
       enabled: options?.enabledOnInsert ?? false,
       available: true,
       tableScope: { mode: 'all', tableIds: [] },
+      permissions: rest.permissions ?? { view: [] },
     });
     return this.transform(created);
   }

@@ -17,6 +17,7 @@ export const E_MENU_ITEM_TYPE = {
   FORM: 'FORM',
   EXTERNAL: 'EXTERNAL',
   SEPARATOR: 'SEPARATOR',
+  EXTENSION_MODULE: 'EXTENSION_MODULE',
 } as const;
 
 export const E_FIELD_TYPE = {
@@ -248,6 +249,7 @@ export const MENU_ITEM_TYPE_OPTIONS = [
   { label: 'Formulário', value: E_MENU_ITEM_TYPE.FORM },
   { label: 'Link Externo', value: E_MENU_ITEM_TYPE.EXTERNAL },
   { label: 'Separador', value: E_MENU_ITEM_TYPE.SEPARATOR },
+  { label: 'Módulo de Extensão', value: E_MENU_ITEM_TYPE.EXTENSION_MODULE },
 ] as const;
 
 export const TABLE_COLLABORATION_OPTIONS = [

@@ -107,12 +107,35 @@ Para `TOOL`:
 | `image` | string \| null | não | preview/screenshot |
 | `requires.lowcodejs` | string semver | não | versão mínima da plataforma |
 | `requires.extensions` | string[] | não | outras extensões necessárias |
+| `permissions.view` | array de roles | não | roles permitidas. Vazio = todos auth users |
 | `placement.slot` | string | apenas PLUGIN | id do slot do core (ver §Slots) |
 | `route` | string | apenas MODULE | URL default; default = `/e/<pkg>/<id>` |
 | `tool.submenu` | string | opcional TOOL | grupo dentro de Ferramentas |
 
 Campos extras são preservados em `manifestSnapshot` (passthrough Zod) — útil
 para configurações específicas da extensão.
+
+### Permissões (`permissions.view`)
+
+Quando um manifest declara `permissions.view: ['MASTER', 'ADMINISTRATOR']`, o
+endpoint `GET /extensions/active` filtra a extensão para que **apenas** users
+com essas roles vejam (sidebar não inclui, slots não rendem, módulos
+inacessíveis). Vazio ou ausente = qualquer auth user vê. O endpoint
+`/extensions` (MASTER-only) sempre retorna a lista completa para gestão no
+Workshop.
+
+## Módulos (type=MODULE)
+
+Módulos são extensões maiores — telas, dashboards, formulários customizados.
+Cada módulo tem URL default `/e/<pkg>/<id>` (resolvida pela rota dinâmica
+`routes/_private/e/$package/$id/`). Para apresentar um módulo no menu lateral,
+o MASTER cria um item de menu do tipo `EXTENSION_MODULE` em `/menus/create`,
+selecionando o módulo desejado. A URL do menu é setada automaticamente para
+`/e/<pkg>/<id>` no backend.
+
+> **Nota Fase 4**: URLs custom (ex: `/home`) ainda não são suportadas. O menu
+> sempre aponta para a URL canônica do módulo. URLs aliases ficam para Fase 6
+> (requer splat-route com resolução em runtime).
 
 ## Slots de plugins
 

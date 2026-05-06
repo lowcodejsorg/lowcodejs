@@ -82,6 +82,7 @@ export default class ExtensionInMemoryRepository
       enabled: options?.enabledOnInsert ?? false,
       available: true,
       tableScope: { mode: 'all', tableIds: [] },
+      permissions: payload.permissions ?? { view: [] },
       createdAt: new Date(),
       updatedAt: new Date(),
       trashed: false,

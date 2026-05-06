@@ -120,6 +120,11 @@ export type IJWTPayload = {
   type: ValueOf<typeof E_JWT_TYPE>;
 };
 
+export type IMenuExtensionRef = {
+  pkg: string;
+  extensionId: string;
+};
+
 export type IMenu = Merge<
   Base,
   {
@@ -133,6 +138,7 @@ export type IMenu = Merge<
     owner: IUser | null;
     order: number;
     isInitial: boolean;
+    extension: IMenuExtensionRef | null;
     children?: Array<IMenu>;
   }
 >;
@@ -401,6 +407,10 @@ export type IExtensionRequires = {
   extensions?: Array<string>;
 };
 
+export type IExtensionPermissions = {
+  view: Array<string>;
+};
+
 export type IExtension = Merge<
   Base,
   {
@@ -421,6 +431,7 @@ export type IExtension = Merge<
     tableScope: IExtensionTableScope;
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;
+    permissions: IExtensionPermissions;
   }
 >;
 

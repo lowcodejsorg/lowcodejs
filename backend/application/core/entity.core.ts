@@ -92,6 +92,7 @@ export const E_MENU_ITEM_TYPE = {
   FORM: 'FORM',
   EXTERNAL: 'EXTERNAL',
   SEPARATOR: 'SEPARATOR',
+  EXTENSION_MODULE: 'EXTENSION_MODULE',
 } as const;
 
 export const E_TABLE_TYPE = {
@@ -456,6 +457,11 @@ export type IEvaluation = Merge<
   }
 >;
 
+export type IMenuExtensionRef = {
+  pkg: string;
+  extensionId: string;
+};
+
 export type IMenu = Merge<
   Base,
   {
@@ -469,6 +475,8 @@ export type IMenu = Merge<
     owner: IUser | string | null;
     order: number;
     isInitial: boolean;
+    /** Referência a uma extensão (apenas para type=EXTENSION_MODULE). */
+    extension: IMenuExtensionRef | null;
   }
 >;
 
@@ -528,6 +536,14 @@ export type IExtensionRequires = {
   extensions?: string[];
 };
 
+export type IExtensionPermissions = {
+  /**
+   * Roles permitidas a visualizar/usar a extensão. Vazio (`[]`) ou ausente
+   * = qualquer usuário autenticado pode ver.
+   */
+  view: string[];
+};
+
 export type IExtension = Merge<
   Base,
   {
@@ -556,6 +572,7 @@ export type IExtension = Merge<
     /** Manifesto completo, para auditoria/diagnóstico. */
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;
+    permissions: IExtensionPermissions;
   }
 >;
 

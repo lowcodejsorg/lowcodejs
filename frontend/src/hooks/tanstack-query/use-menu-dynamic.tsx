@@ -28,6 +28,7 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   [E_MENU_ITEM_TYPE.PAGE]: FileTextIcon,
   [E_MENU_ITEM_TYPE.FORM]: PlusCircleIcon,
   [E_MENU_ITEM_TYPE.EXTERNAL]: ExternalLinkIcon,
+  [E_MENU_ITEM_TYPE.EXTENSION_MODULE]: WrenchIcon,
 };
 
 // Tipo para menu com children

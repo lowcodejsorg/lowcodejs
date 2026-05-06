@@ -158,9 +158,9 @@ Catálogo final vai pra `backend/extensions/CLAUDE.md` e a SKILL valida
 | 1    | Fundação: model `Extension`, REST list/toggle/scope, loader, Workshop, sidebar                                     | feito |
 | 2    | Tools: sub-menu Ferramentas collapsível, rota `/tools/$pkg/$id`, migração de `clone-table` para `core/tools/clone-table`, endpoint `GET /extensions/active`, auto-enable do `pkg=core` | feito |
 | 3    | Slots/Plugins: `<ExtensionSlot>` com filtro por `tableScope`, instalação de 3 slots (`table.actions`, `table.filters`, `table.row.actions`), plugin de referência `print-table` | feito |
-| 4    | Módulos: rota catch-all `/e/$pkg/$id`, novo `E_MENU_ITEM_TYPE.EXTENSION_MODULE`, 1 módulo de exemplo              | próximo |
-| 5    | SKILL `lowcodejs-extension`: scaffold determinístico, catálogo de slots, validação, testes E2E                    | pendente |
-| 6    | Polish: versionamento (semver match), `requires.extensions` resolver, hot-reload em dev, telemetria, slots reservados (`table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`) | pendente |
+| 4    | Módulos: rota dinâmica `/e/$pkg/$id`, `E_MENU_ITEM_TYPE.EXTENSION_MODULE`, `permissions.view` por role, módulo de referência `welcome`, integração com form de menu | feito |
+| 5    | SKILL `lowcodejs-extension`: scaffold determinístico, catálogo de slots, validação, testes E2E                    | próximo |
+| 6    | Polish: versionamento (semver match), `requires.extensions` resolver, hot-reload em dev, telemetria, slots reservados (`table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`), URLs custom para módulos via splat-route | pendente |
 
 ---
 
@@ -338,40 +338,94 @@ EOF
 | Onde aplicar filtro `tableScope` | Dentro do `<ExtensionSlot>` — usa `context.table?._id` como chave |
 | Plugin de exemplo | Novo plugin `print-table` (window.print) — não toca em export-csv existente |
 
-## 7. Fase 4 — Próxima ação detalhada
+## 6.quat Estado da Fase 4 (entregue)
+
+### Backend
+
+- **`permissions.view` no manifest** — `IExtensionPermissions = { view: string[] }` em
+  `entity.core.ts`, schema Zod em `manifest.schema.ts`, model + repos
+  atualizados, loader propaga
+- **`GET /extensions/active`** — filtra por `request.user.role` quando
+  `permissions.view` é não-vazio
+- **`E_MENU_ITEM_TYPE.EXTENSION_MODULE`** — novo valor enum + campo
+  `extension: { pkg, extensionId } | null` no Menu model, contract repo,
+  validators (create/update) e schemas Fastify
+- **Use-cases create/update do menu** — quando `type === EXTENSION_MODULE`,
+  validam que extensão existe + está ativa, setam `url = /e/<pkg>/<id>`
+- **Module loader** — `core/modules/welcome/manifest.json` (auto-ativado por
+  ser `pkg=core`)
+
+### Frontend
+
+- **Tipos**: `IMenuExtensionRef`, `IExtensionPermissions`, `MenuExtensionRefPayload`
+  em `interfaces.ts` / `payloads.ts`. Constants atualizadas
+- **`/e/$package/$id` rota dinâmica** — `routes/_private/e/$package/$id/{index,index.lazy}.tsx`,
+  espelha `tools/$package/$id` mas filtra `type === MODULE`
+- **`menu-access-permissions.ts`** — `/e/$package/$id` adicionado a todas as
+  roles (módulos podem ser visíveis para qualquer auth user; permissões
+  granulares ficam no manifest)
+- **`ExtensionModuleSelect`** em `components/common/selectors/` —
+  combobox de módulos ativos
+- **Form de menu** (create + edit) — select condicional quando
+  `type=EXTENSION_MODULE`, schema Zod refine, payload e default values
+- **`useMenuDynamic`** — `EXTENSION_MODULE` mapeado a `WrenchIcon` no
+  `TYPE_ICONS`; URL `/e/<pkg>/<id>` é resolvida automaticamente pelo backend
+- **Módulo welcome** em `frontend/extensions/core/modules/welcome/index.tsx`
+  — página com saudação + 3 atalhos para Tabelas/Ferramentas/Extensões
+
+### Decisões implementadas
+
+| Decisão pendente da Fase 4 | Resolvido como |
+|----------------------------|----------------|
+| Visibilidade do módulo por role | Manifest declara `permissions.view: string[]` (vazio = todos). Backend filtra `/extensions/active` |
+| Validação de URL única no menu custom | **Punted** — Fase 4 não suporta URL custom. Menu sempre aponta para a URL canônica `/e/<pkg>/<id>` (auto-derivada). URLs alias ficam para Fase 6 |
+| Módulo de exemplo | Página de boas-vindas (`core/modules/welcome`) com atalhos para `/tables`, `/tools` e `/extensions` |
+
+## 7. Fase 5 — Próxima ação detalhada
 
 ### Objetivo
 
-Suporte a **módulos** (extensões maiores: telas, dashboards, formulários
-custom). Cada módulo recebe URL default `/e/<pkg>/<id>` e pode ser conectado
-a um item de Menu custom via novo `E_MENU_ITEM_TYPE.EXTENSION_MODULE`.
+Criar a **SKILL `lowcodejs-extension`** que orienta agentes (Claude Code,
+outros) a criar extensões corretamente, sem reinventar features que já
+existem no core. Skill global em `~/.claude/skills/lowcodejs-extension/`.
 
 ### Subtarefas
 
-1. **Frontend: rota catch-all** `routes/_private/e/$package/$id/{index.tsx,index.lazy.tsx}`
-   - Igual a `tools/$package/$id` mas para `type === MODULE`
-   - Lazy-importa `frontend/extensions/<pkg>/modules/<id>/index.tsx`
-2. **Backend + Frontend: novo tipo de menu** `E_MENU_ITEM_TYPE.EXTENSION_MODULE`
-   - Schema Mongoose do menu aceita o novo tipo
-   - Form de menu (`menus/create`, `menus/$menuId`) ganha select "Módulo de
-     extensão" → lista de modules ativos via `/extensions/active`
-   - Item de menu com type=EXTENSION_MODULE armazena `pkg` e `extensionId` e
-     uma `url` custom (ex: `/home`); a sidebar resolve para o componente
-3. **Módulo de exemplo: dashboard simples** em `core/modules/dashboard-home`
-   (ou similar) — uma página com 1-2 cards de estatística
-4. **`menu-access-permissions.ts`**: adicionar `/e/$package/$id` aos roles
-   apropriados
+1. **`SKILL.md`** com as triggers e instruções principais:
+   - Quando usar (palavras-chave: "criar plugin", "criar módulo", "novo botão
+     na tabela", "criar tela", "exportar X", etc.)
+   - Pre-flight obrigatório: ler `_docs/extensions-roadmap.md`,
+     `backend/extensions/CLAUDE.md`, `frontend/extensions/CLAUDE.md`
+   - Decisão guiada (árvore de perguntas para escolher PLUGIN/MODULE/TOOL)
+   - Catálogo de slots com props/context que cada um expõe
+   - Catálogo de componentes UI obrigatórios (`@/components/ui/*`,
+     `dynamic-table/*`)
+2. **Pre-flight de redundância**: comandos grep para verificar se a feature
+   já existe no core antes de criar (ex: `Grep "export.*pdf"` antes de criar
+   plugin de export PDF)
+3. **Scaffold determinístico**: passos exatos para criar um plugin/module/tool:
+   - Criar pastas `backend/extensions/<pkg>/<type>/<id>/`
+     e `frontend/extensions/<pkg>/<type>/<id>/`
+   - Gerar `manifest.json` válido (schema Zod já existe)
+   - Gerar boilerplate (controller backend se aplicável; entry React)
+   - Atualizar CLAUDE.md do pacote
+4. **Validação**: a skill deve verificar que:
+   - `manifest.id` bate com nome da pasta
+   - `placement.slot` está em catálogo válido (para PLUGIN)
+   - Referências usam `@/components/ui/*` (não Radix direto)
+5. **Testes**: 1-2 cenários E2E de scaffold (criar um plugin do zero ponta a
+   ponta, criar um módulo do zero)
 
-### Decisões pendentes da Fase 4
+### Decisões pendentes da Fase 5
 
-- **Visibilidade do módulo por role?** Hoje `useExtensionsActiveList` é
-  acessível a qualquer auth user. Módulos podem precisar restrição extra
-  (ex: dashboard só para MASTER). Manifest deve declarar `permissions.view`?
-- **Menu custom com URL livre**: se o usuário cria menu pra módulo `core/home`
-  com URL `/home`, e existe outro menu pra outro módulo `pkg/x` com URL
-  `/home`, conflito. Validação de unicidade no backend?
-- **Módulo de exemplo concreto**: dashboard? Página de boas-vindas? Algo mais
-  específico pro lowcodejs?
+- **Onde a SKILL mora**: global (`~/.claude/skills/`) ou no repo (
+  `.claude/skills/lowcodejs-extension/`)? Recomendação: **no repo** — todo
+  dev que clona já recebe a skill, sem setup manual
+- **A skill executa código ou só orienta?** Recomendação: **só orienta**, mas
+  sugere comandos exatos para o agente rodar (mkdir, write, git mv)
+- **Suporte a packages externos** (ex: alguém fork da plataforma adiciona
+  pacote `marcos-pdf-tools/`)? Recomendação: skill é agnóstica de pacote —
+  funciona pra qualquer `pkg`, com `core` apenas como referência
 
 ---
 
@@ -408,10 +462,10 @@ git checkout feat/extensions
 
 Abrir Claude Code na pasta do repo e iniciar com prompt tipo:
 
-> Continue o sistema de extensões — fase 4. Leia
+> Continue o sistema de extensões — fase 5. Leia
 > `_docs/extensions-roadmap.md` para o contexto completo (decisões, fases
-> 1, 2 e 3 entregues, plano detalhado da fase 4 e decisões pendentes).
-> Antes de começar a codar, valide comigo as 3 decisões pendentes da Fase 4
+> 1, 2, 3 e 4 entregues, plano detalhado da fase 5 e decisões pendentes).
+> Antes de começar a codar, valide comigo as 3 decisões pendentes da Fase 5
 > listadas na seção 7.
 
 A nova sessão do Claude vai ler este arquivo + os CLAUDE.md das pastas

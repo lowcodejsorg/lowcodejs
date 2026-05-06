@@ -128,6 +128,7 @@ function MenuUpdateContent({
         ? String((data.order ?? 0) + 1)
         : String(data.order ?? 0),
       isInitial: data.isInitial ?? false,
+      extension: data.extension ?? null,
     } satisfies MenuUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
@@ -147,6 +148,7 @@ function MenuUpdateContent({
         url: value.url || null,
         order,
         isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
+        extension: value.extension ?? null,
       });
     },
   });

@@ -90,6 +90,7 @@ export async function loadExtensions(
               submenu: manifest.tool?.submenu ?? null,
               manifestSnapshot: raw as Record<string, unknown>,
               requires: manifest.requires ?? {},
+              permissions: { view: manifest.permissions?.view ?? [] },
             },
             // Pacote `core` é shipado com a plataforma — vem ativado por
             // padrão quando registrado pela primeira vez. Toggle subsequente

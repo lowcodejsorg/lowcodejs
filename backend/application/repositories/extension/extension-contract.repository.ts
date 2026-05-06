@@ -2,6 +2,7 @@
 import type {
   E_EXTENSION_TYPE,
   IExtension,
+  IExtensionPermissions,
   IExtensionRequires,
   IExtensionTableScope,
   ValueOf,
@@ -24,6 +25,7 @@ export type ExtensionUpsertPayload = {
   submenu: string | null;
   manifestSnapshot: Record<string, unknown>;
   requires: IExtensionRequires;
+  permissions: IExtensionPermissions;
 };
 
 export type ExtensionUpsertOptions = {

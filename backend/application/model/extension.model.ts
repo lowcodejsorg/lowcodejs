@@ -51,6 +51,9 @@ export const Schema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {},
     },
+    permissions: {
+      view: { type: [String], default: [] },
+    },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },

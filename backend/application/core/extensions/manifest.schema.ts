@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { E_EXTENSION_TYPE } from '@application/core/entity.core';
+import { E_EXTENSION_TYPE, E_ROLE } from '@application/core/entity.core';
 
 const SLUG_REGEX = /^[a-z0-9][a-z0-9-_]*$/;
 
@@ -15,6 +15,13 @@ export const ManifestRequiresSchema = z
 export const ManifestPlacementSchema = z
   .object({
     slot: z.string().min(1),
+  })
+  .strict()
+  .optional();
+
+export const ManifestPermissionsSchema = z
+  .object({
+    view: z.array(z.enum(E_ROLE)).optional().default([]),
   })
   .strict()
   .optional();
@@ -40,6 +47,7 @@ export const ManifestSchema = z
     route: z.string().nullable().optional(),
     tool: ManifestToolSchema,
     requires: ManifestRequiresSchema,
+    permissions: ManifestPermissionsSchema,
   })
   .passthrough();
 
