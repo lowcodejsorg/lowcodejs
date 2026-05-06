@@ -59,6 +59,9 @@ export const FieldDefaultValueSchema = z
 export const FieldRelationshipSchema = Relationship.nullable().default(null);
 export const FieldDropdownSchema = z.array(Dropdown).default([]);
 export const FieldAllowCustomDropdownOptionsSchema = z.boolean().default(false);
+export const FieldAllowCreateRelationshipRecordsSchema = z
+  .boolean()
+  .default(false);
 export const FieldCategorySchema = z.array(Category).default([]);
 // For API input: can be just a slug string or the full object
 export const FieldGroupSchema = z
@@ -152,6 +155,7 @@ export const TableFieldBaseSchema = z.object({
   relationship: FieldRelationshipSchema,
   dropdown: FieldDropdownSchema,
   allowCustomDropdownOptions: FieldAllowCustomDropdownOptionsSchema,
+  allowCreateRelationshipRecords: FieldAllowCreateRelationshipRecordsSchema,
   category: FieldCategorySchema,
   group: FieldGroupSchema,
 });

@@ -20,6 +20,10 @@ import type { MenuUpdatePayload } from './update.validator';
 type Response = Either<HTTPException, Entity>;
 type Payload = MenuUpdatePayload;
 
+function getMenuId(value: Entity['parent'] | undefined): string | null {
+  return value ?? null;
+}
+
 @Service()
 export default class MenuUpdateUseCase {
   constructor(
@@ -202,15 +206,65 @@ export default class MenuUpdateUseCase {
         updatePayload.isInitial = false;
       }
 
+      const currentParentId = getMenuId(existingMenu.parent);
+      const nextParentId =
+        payload.parent !== undefined ? payload.parent : currentParentId;
       const parentChanged =
-        payload.parent !== undefined && payload.parent !== existingMenu.parent;
+        payload.parent !== undefined && payload.parent !== currentParentId;
 
       if (parentChanged && payload.order === undefined) {
         const siblingCount = await this.menuRepository.count({
-          parent: payload.parent ?? null,
+          parent: nextParentId,
           trashed: false,
         });
         updatePayload.order = siblingCount;
+      }
+
+      const shouldReorderSiblings = parentChanged || payload.order !== undefined;
+
+      if (shouldReorderSiblings) {
+        const siblings = await this.menuRepository.findMany({
+          parent: nextParentId,
+          trashed: false,
+          sort: { order: 'asc', name: 'asc' },
+        });
+        const siblingsWithoutCurrent = siblings.filter(
+          (menu) => menu._id !== payload._id,
+        );
+        const requestedOrder =
+          typeof updatePayload.order === 'number'
+            ? updatePayload.order
+            : siblingsWithoutCurrent.length;
+        const nextOrder = Math.min(
+          Math.max(requestedOrder, 0),
+          siblingsWithoutCurrent.length,
+        );
+        const reorderedIds = [
+          ...siblingsWithoutCurrent.slice(0, nextOrder).map((menu) => menu._id),
+          payload._id,
+          ...siblingsWithoutCurrent.slice(nextOrder).map((menu) => menu._id),
+        ];
+
+        updatePayload.order = nextOrder;
+
+        const updated = await this.menuRepository.update(
+          updatePayload as RepositoryMenuUpdatePayload,
+        );
+
+        for (let index = 0; index < reorderedIds.length; index += 1) {
+          const menuId = reorderedIds[index];
+          if (menuId === payload._id) continue;
+          await this.menuRepository.update({
+            _id: menuId,
+            order: index,
+          });
+        }
+
+        if (payload.isInitial) {
+          await this.menuRepository.setOnlyInitial(updated._id);
+        }
+
+        return right(updated);
       }
 
       const updated = await this.menuRepository.update(

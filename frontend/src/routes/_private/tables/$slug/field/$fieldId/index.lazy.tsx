@@ -326,6 +326,8 @@ function FieldUpdateContent({
         color: d.color,
       })),
       allowCustomDropdownOptions: data.allowCustomDropdownOptions ?? false,
+      allowCreateRelationshipRecords:
+        data.allowCreateRelationshipRecords ?? false,
       relationship: {
         tableId: data.relationship?.table?._id ?? '',
         tableSlug: data.relationship?.table?.slug ?? '',
@@ -376,6 +378,10 @@ function FieldUpdateContent({
         allowCustomDropdownOptions:
           value.type === E_FIELD_TYPE.DROPDOWN
             ? value.allowCustomDropdownOptions
+            : false,
+        allowCreateRelationshipRecords:
+          value.type === E_FIELD_TYPE.RELATIONSHIP
+            ? value.allowCreateRelationshipRecords
             : false,
         relationship: hasRelationship
           ? {

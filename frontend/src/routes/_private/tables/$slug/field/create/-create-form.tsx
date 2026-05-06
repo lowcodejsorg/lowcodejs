@@ -18,6 +18,7 @@ export const FieldCreateSchema = z.object({
   defaultValue: z.string().default(''),
   dropdown: z.array(z.custom<IDropdown>()).default([]),
   allowCustomDropdownOptions: z.boolean().default(false),
+  allowCreateRelationshipRecords: z.boolean().default(false),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
@@ -46,6 +47,7 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   defaultValue: '',
   dropdown: [],
   allowCustomDropdownOptions: false,
+  allowCreateRelationshipRecords: false,
   relationship: {
     tableId: '',
     tableSlug: '',
@@ -196,6 +198,7 @@ export const CreateFieldFormFields = withForm({
                     'relationship.fieldSlug',
                     'relationship.order',
                     'allowCustomDropdownOptions',
+                    'allowCreateRelationshipRecords',
                   ];
                   for (const fieldName of conditionalFields) {
                     if (form.getFieldMeta(fieldName)) {
@@ -212,6 +215,7 @@ export const CreateFieldFormFields = withForm({
                   form.setFieldValue('defaultValue', '');
                   form.setFieldValue('dropdown', []);
                   form.setFieldValue('allowCustomDropdownOptions', false);
+                  form.setFieldValue('allowCreateRelationshipRecords', false);
                   form.setFieldValue('category', []);
                   form.setFieldValue(
                     'relationship',
@@ -359,6 +363,18 @@ export const CreateFieldFormFields = withForm({
               <field.FieldBooleanSwitch
                 label="Permitir usuário inserir novas tags"
                 description="Permite salvar uma nova opção quando o usuário digitar um valor que ainda não existe."
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {isRelationship && (
+          <form.AppField name="allowCreateRelationshipRecords">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Permitir adicionar novos registros"
+                description="Exibe a opção Novo para criar um registro na tabela relacionada durante o preenchimento."
                 disabled={isPending}
               />
             )}

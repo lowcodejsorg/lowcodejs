@@ -159,6 +159,10 @@ function RouteComponent(): React.JSX.Element {
           value.type === E_FIELD_TYPE.DROPDOWN
             ? value.allowCustomDropdownOptions
             : false,
+        allowCreateRelationshipRecords:
+          value.type === E_FIELD_TYPE.RELATIONSHIP
+            ? value.allowCreateRelationshipRecords
+            : false,
         relationship: hasRelationship
           ? {
               table: {

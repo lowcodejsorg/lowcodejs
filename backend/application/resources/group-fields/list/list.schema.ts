@@ -58,6 +58,7 @@ export const GroupFieldListSchema: FastifySchema = {
             },
           },
           allowCustomDropdownOptions: { type: 'boolean' },
+          allowCreateRelationshipRecords: { type: 'boolean' },
           relationship: {
             type: 'object',
             nullable: true,

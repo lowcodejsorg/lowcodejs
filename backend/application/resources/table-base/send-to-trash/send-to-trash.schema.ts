@@ -161,6 +161,11 @@ export const TableSendToTrashSchema: FastifySchema = {
                 description:
                   'Allow users to create new dropdown options from row input',
               },
+              allowCreateRelationshipRecords: {
+                type: 'boolean',
+                description:
+                  'Allow users to create records in the related table from row input',
+              },
               category: {
                 type: 'array',
                 description: 'Category tree for CATEGORY fields',

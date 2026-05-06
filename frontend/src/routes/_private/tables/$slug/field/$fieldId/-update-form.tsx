@@ -17,6 +17,7 @@ export const FieldUpdateSchema = z.object({
   defaultValue: z.string().default(''),
   dropdown: z.array(z.custom<IDropdown>()).default([]),
   allowCustomDropdownOptions: z.boolean().default(false),
+  allowCreateRelationshipRecords: z.boolean().default(false),
   relationship: z.object({
     tableId: z.string().default(''),
     tableSlug: z.string().default(''),
@@ -46,6 +47,7 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   defaultValue: '',
   dropdown: [],
   allowCustomDropdownOptions: false,
+  allowCreateRelationshipRecords: false,
   relationship: {
     tableId: '',
     tableSlug: '',
@@ -304,6 +306,18 @@ export const UpdateFieldFormFields = withForm({
               <field.FieldBooleanSwitch
                 label="Permitir usuário inserir novas tags"
                 description="Permite salvar uma nova opção quando o usuário digitar um valor que ainda não existe."
+                disabled={isDisabled || lockNonOptions}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {isRelationship && (
+          <form.AppField name="allowCreateRelationshipRecords">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Permitir adicionar novos registros"
+                description="Exibe a opção Novo para criar um registro na tabela relacionada durante o preenchimento."
                 disabled={isDisabled || lockNonOptions}
               />
             )}
