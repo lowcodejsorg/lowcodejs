@@ -181,6 +181,7 @@ export type IField = Merge<
     relationship: IFieldConfigurationRelationship | null;
     dropdown: Array<IDropdown>;
     allowCustomDropdownOptions?: boolean;
+    allowCreateRelationshipRecords?: boolean;
     category: Array<ICategory>;
     group: IFieldConfigurationGroup | null;
   }

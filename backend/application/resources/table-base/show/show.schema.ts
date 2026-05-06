@@ -202,6 +202,11 @@ export const TableShowSchema: FastifySchema = {
                 description:
                   'Allow users to create new dropdown options from row input',
               },
+              allowCreateRelationshipRecords: {
+                type: 'boolean',
+                description:
+                  'Allow users to create records in the related table from row input',
+              },
               category: {
                 type: 'array',
                 description: 'Category tree for CATEGORY fields',
@@ -390,6 +395,7 @@ export const TableShowSchema: FastifySchema = {
                     relationship: { type: 'object', nullable: true },
                     dropdown: { type: 'array', nullable: true },
                     allowCustomDropdownOptions: { type: 'boolean' },
+                    allowCreateRelationshipRecords: { type: 'boolean' },
                     category: { type: 'array', nullable: true },
                     group: { type: 'object', nullable: true },
                     trashed: { type: 'boolean' },

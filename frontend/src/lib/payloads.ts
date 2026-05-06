@@ -168,6 +168,7 @@ export type FieldConfigurationPayload = {
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
+  allowCreateRelationshipRecords?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
 };
@@ -193,6 +194,7 @@ export type FieldCreatePayload = {
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
+  allowCreateRelationshipRecords?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
 };
@@ -219,6 +221,7 @@ export type FieldUpdatePayload = {
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
+  allowCreateRelationshipRecords?: boolean;
   category?: Array<{ id: string; label: string; children: Array<unknown> }>;
   group?: { _id: string; slug: string } | null;
   trashed?: boolean;
