@@ -7,6 +7,9 @@ import { StorageContractRepository } from '@application/repositories/storage/sto
 import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
 import { initChatSocket } from '@application/resources/chat/chat.socket';
 import { initStorageMigrationSocket } from '@application/resources/storage-migration/storage-migration.socket';
+import { EmailContractService } from '@application/services/email/email-contract.service';
+import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import { startEmailWorker } from '@application/services/email-queue/worker';
 import StorageService from '@application/services/storage/storage.service';
 import { startStorageMigrationWorker } from '@application/services/storage-migration/worker';
 import { MongooseConnect } from '@config/database.config';
@@ -98,6 +101,12 @@ async function start(): Promise<void> {
       storageService,
     });
     console.info('Storage migration worker started');
+
+    const emailService = getInstanceByToken<EmailContractService>(
+      NodemailerEmailService,
+    );
+    startEmailWorker({ emailService });
+    console.info('Email worker started');
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);

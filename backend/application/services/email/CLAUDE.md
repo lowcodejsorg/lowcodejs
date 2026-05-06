@@ -3,6 +3,8 @@
 Servico de envio de email via SMTP. Credenciais lidas dinamicamente do
 documento `Setting` no MongoDB (configuradas via UI `/settings`).
 
+**Importante:** Use-cases NAO devem injetar `EmailContractService` diretamente. O envio agora passa por uma fila BullMQ (`services/email-queue/`). Use-cases chamam `await emailQueue.enqueue(...)`; o `EmailWorker` consome a fila e chama `EmailContractService.buildTemplate + sendEmail`.
+
 ## Arquivos
 
 | Arquivo | Descricao |

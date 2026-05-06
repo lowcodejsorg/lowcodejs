@@ -30,7 +30,7 @@ CRUD e operacoes especiais em registros (rows) de tabelas dinamicas.
 - `ReactionContractRepository` - CRUD de reacoes (usado em reaction)
 - `EvaluationContractRepository` - CRUD de avaliacoes (usado em evaluation)
 - `UserContractRepository` - Resolucao de emails para mencoes (usado em forum-message)
-- `EmailContractService` - Notificacao de mencoes (usado em forum-message)
+- `EmailQueueContractService` - Enfileira notificacao de mencoes (usado em forum-message); worker BullMQ processa async
 
 ## Particularidades
 

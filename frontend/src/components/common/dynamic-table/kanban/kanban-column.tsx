@@ -3,7 +3,10 @@ import { CSS } from '@dnd-kit/utilities';
 import { GripVerticalIcon } from 'lucide-react';
 import React from 'react';
 
-import { badgeStyleFromColor, hexToRgb } from '@/components/common/dynamic-table/table-cells/utils';
+import {
+  badgeStyleFromColor,
+  hexToRgb,
+} from '@/components/common/dynamic-table/table-cells/utils';
 import { Badge } from '@/components/ui/badge';
 import {
   columnHeaderStyleFromColor,

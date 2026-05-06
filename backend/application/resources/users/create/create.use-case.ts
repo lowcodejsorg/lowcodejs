@@ -9,6 +9,7 @@ import {
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { EmailQueueContractService } from '@application/services/email-queue/email-queue-contract.service';
 import { PasswordContractService } from '@application/services/password/password-contract.service';
 
 import type { UserCreatePayload } from './create.validator';
@@ -21,6 +22,7 @@ export default class UserCreateUseCase {
   constructor(
     private readonly userRepository: UserContractRepository,
     private readonly passwordService: PasswordContractService,
+    private readonly emailQueue: EmailQueueContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -49,6 +51,17 @@ export default class UserCreateUseCase {
         ...payload,
         password: passwordHash,
         status: E_USER_STATUS.ACTIVE,
+      });
+
+      await this.emailQueue.enqueue({
+        template: 'user-created',
+        data: {
+          name: payload.name,
+          email: payload.email,
+          loginUrl: process.env.APP_CLIENT_URL ?? '',
+        },
+        to: [payload.email],
+        subject: 'Sua conta no LowCodeJS foi criada',
       });
 
       return right(created);

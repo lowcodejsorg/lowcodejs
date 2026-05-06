@@ -223,7 +223,7 @@ npm start            # Producao (build/bin/server.js)
 
 Registrado em `application/core/di-registry.ts` usando `fastify-decorators`:
 - 11 repositorios: User, UserGroup, Permission, Table, Field, Storage, ValidationToken, Menu, Reaction, Evaluation, Setting
-- 1 servico: Email (contract -> nodemailer)
+- Servicos: Email (contract -> nodemailer), EmailQueue (contract -> BullMQ — use-cases injetam este, nao Email diretamente), StorageMigrationQueue (BullMQ), Password, Permission, RowPassword, ScriptExecution, RowContext, KanbanCommentMention, TableSchema, Storage
 
 Para adicionar nova dependencia:
 1. Crie o contract (abstract class)
@@ -370,6 +370,7 @@ o campo `location` em docs Storage existentes (idempotente via marker
 | Variavel | Default | Descricao |
 |----------|---------|-----------|
 | STORAGE_MIGRATION_CONCURRENCY | 5 | Arquivos copiados em paralelo (1-20) |
+| EMAIL_WORKER_CONCURRENCY | 5 | Jobs de email processados em paralelo pelo BullMQ worker (1-50) |
 
 ### Redis
 

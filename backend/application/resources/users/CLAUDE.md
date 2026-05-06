@@ -10,6 +10,10 @@ Gerenciamento de usuarios da plataforma (CRUD).
 
 `UserContractRepository` -> `UserMongooseRepository`
 
+## Servicos
+
+`EmailQueueContractService` - enfileira email apos create (welcome) e update (campos sensiveis: password/email/status). Worker BullMQ processa o envio
+
 ## Endpoints
 
 | Operacao | Metodo | Rota | Descricao |

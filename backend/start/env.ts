@@ -47,6 +47,8 @@ const EnvSchema = z.object({
     .min(1)
     .max(20)
     .default(5),
+
+  EMAIL_WORKER_CONCURRENCY: z.coerce.number().int().min(1).max(50).default(5),
 });
 
 const validation = EnvSchema.safeParse(process.env);

@@ -11,7 +11,7 @@ import {
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import type { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import type { EmailContractService } from '@application/services/email/email-contract.service';
+import InMemoryEmailQueueService from '@application/services/email-queue/in-memory-email-queue.service';
 
 import ForumMessageUseCase from './forum-message.use-case';
 
@@ -112,7 +112,7 @@ const USER_ID = 'user-123';
 let tableInMemoryRepository: TableInMemoryRepository;
 let rowInMemoryRepository: RowInMemoryRepository;
 let mockUserRepo: UserContractRepository;
-let mockEmailService: EmailContractService;
+let emailQueue: InMemoryEmailQueueService;
 let sut: ForumMessageUseCase;
 
 function createMockUserRepo(): UserContractRepository {
@@ -127,23 +127,16 @@ function createMockUserRepo(): UserContractRepository {
   } as unknown as UserContractRepository;
 }
 
-function createMockEmailService(): EmailContractService {
-  return {
-    sendEmail: vi.fn().mockResolvedValue({ success: true, message: 'ok' }),
-    buildTemplate: vi.fn().mockResolvedValue(''),
-  } as unknown as EmailContractService;
-}
-
 describe('Forum Message Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     rowInMemoryRepository = new RowInMemoryRepository();
     mockUserRepo = createMockUserRepo();
-    mockEmailService = createMockEmailService();
+    emailQueue = new InMemoryEmailQueueService();
     sut = new ForumMessageUseCase(
       tableInMemoryRepository,
       mockUserRepo,
-      mockEmailService,
+      emailQueue,
       rowInMemoryRepository,
     );
     vi.clearAllMocks();

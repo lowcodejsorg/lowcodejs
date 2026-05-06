@@ -26,6 +26,8 @@ import { ValidationTokenContractRepository } from '@application/repositories/val
 import ValidationTokenMongooseRepository from '@application/repositories/validation-token/validation-token-mongoose.repository';
 import { EmailContractService } from '@application/services/email/email-contract.service';
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import BullMQEmailQueueService from '@application/services/email-queue/bullmq-email-queue.service';
+import { EmailQueueContractService } from '@application/services/email-queue/email-queue-contract.service';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import KanbanCommentMentionService from '@application/services/kanban-comment-mention/kanban-comment-mention.service';
 import BcryptPasswordService from '@application/services/password/bcrypt-password.service';
@@ -108,6 +110,11 @@ export function registerDependencies(): void {
   );
 
   injectablesHolder.injectService(EmailContractService, NodemailerEmailService);
+
+  injectablesHolder.injectService(
+    EmailQueueContractService,
+    BullMQEmailQueueService,
+  );
 
   injectablesHolder.injectService(StorageContractService, StorageService);
 

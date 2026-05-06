@@ -16,7 +16,7 @@ import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import { EmailContractService } from '@application/services/email/email-contract.service';
+import { EmailQueueContractService } from '@application/services/email-queue/email-queue-contract.service';
 import { Env } from '@start/env';
 
 import type {
@@ -57,7 +57,7 @@ export default class ForumMessageUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
-    private readonly emailService: EmailContractService,
+    private readonly emailQueue: EmailQueueContractService,
     private readonly rowRepository: RowContractRepository,
   ) {}
 
@@ -812,21 +812,18 @@ export default class ForumMessageUseCase {
         data['Acessar'] = Env.APP_CLIENT_URL + '/tables/' + opts.tableSlug;
       }
 
-      const body = await this.emailService.buildTemplate({
+      await this.emailQueue.enqueue({
         template: 'notification',
         data: {
           title: 'Você foi mencionado em um canal',
           message: 'Você recebeu uma menção em uma mensagem do fórum.',
           data,
         },
-      });
-      await this.emailService.sendEmail({
         to: opts.emails,
         subject: 'Você foi mencionado em um canal',
-        body,
       });
     } catch {
-      // Keep forum message flow resilient even if email provider fails.
+      // Keep forum message flow resilient even if email queue fails.
     }
   }
 
