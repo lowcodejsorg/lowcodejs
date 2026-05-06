@@ -159,8 +159,8 @@ Catálogo final vai pra `backend/extensions/CLAUDE.md` e a SKILL valida
 | 2    | Tools: sub-menu Ferramentas collapsível, rota `/tools/$pkg/$id`, migração de `clone-table` para `core/tools/clone-table`, endpoint `GET /extensions/active`, auto-enable do `pkg=core` | feito |
 | 3    | Slots/Plugins: `<ExtensionSlot>` com filtro por `tableScope`, instalação de 3 slots (`table.actions`, `table.filters`, `table.row.actions`), plugin de referência `print-table` | feito |
 | 4    | Módulos: rota dinâmica `/e/$pkg/$id`, `E_MENU_ITEM_TYPE.EXTENSION_MODULE`, `permissions.view` por role, módulo de referência `welcome`, integração com form de menu | feito |
-| 5    | SKILL `lowcodejs-extension`: scaffold determinístico, catálogo de slots, validação, testes E2E                    | próximo |
-| 6    | Polish: versionamento (semver match), `requires.extensions` resolver, hot-reload em dev, telemetria, slots reservados (`table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`), URLs custom para módulos via splat-route | pendente |
+| 5    | SKILL `lowcodejs-extension`: `SKILL.md` + 4 anexos (`references.md`, `core-features.md`, `templates/{plugin,module,tool}.md`) em `.claude/skills/` no repo | feito |
+| 6    | Polish: versionamento (semver match), `requires.extensions` resolver, hot-reload em dev, telemetria, slots reservados (`table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`), URLs custom para módulos via splat-route | próximo |
 
 ---
 
@@ -381,51 +381,83 @@ EOF
 | Validação de URL única no menu custom | **Punted** — Fase 4 não suporta URL custom. Menu sempre aponta para a URL canônica `/e/<pkg>/<id>` (auto-derivada). URLs alias ficam para Fase 6 |
 | Módulo de exemplo | Página de boas-vindas (`core/modules/welcome`) com atalhos para `/tables`, `/tools` e `/extensions` |
 
-## 7. Fase 5 — Próxima ação detalhada
+## 6.quint Estado da Fase 5 (entregue)
+
+Skill `lowcodejs-extension` criada em `.claude/skills/lowcodejs-extension/`
+no repo (todo dev que clona já recebe). Estrutura:
+
+```
+.claude/skills/lowcodejs-extension/
+├── SKILL.md            # entrada principal com frontmatter (triggers)
+├── references.md       # tipos, enums, hooks e componentes UI disponíveis
+├── core-features.md    # catálogo de features do core (não duplicar)
+└── templates/
+    ├── plugin.md       # boilerplate completo
+    ├── module.md       # boilerplate completo
+    └── tool.md         # boilerplate completo
+```
+
+A `SKILL.md` cobre:
+- Pre-flight obrigatório (leitura de CLAUDE.mds + roadmap)
+- Pre-flight de redundância com greps prontos (não duplicar core features)
+- Árvore de decisão PLUGIN / MODULE / TOOL
+- Catálogo de slots com context types
+- Convenções de design system (proibido importar Radix direto)
+- `ExtensionActiveMiddleware` em todos os controllers de extensão
+- Auto-ativação de `pkg=core`
+- Checklist final + erros comuns
+- Smoke test passo-a-passo
+
+`backend/extensions/CLAUDE.md` atualizado para apontar a skill como caminho
+recomendado para criar extensões.
+
+### Decisões implementadas
+
+| Decisão pendente da Fase 5 | Resolvido como |
+|----------------------------|----------------|
+| Onde a skill mora | No repo (`.claude/skills/lowcodejs-extension/`) — versionada e disponível pra todo dev que clona |
+| Skill executa código? | **Não** — só orienta. Sugere comandos exatos (mkdir/write/git mv) que o agente roda |
+| Packages externos | Skill é **agnóstica de pkg** — qualquer `pkg` segue o mesmo template; `core` é só referência |
+
+## 7. Fase 6 — Próxima ação detalhada
 
 ### Objetivo
 
-Criar a **SKILL `lowcodejs-extension`** que orienta agentes (Claude Code,
-outros) a criar extensões corretamente, sem reinventar features que já
-existem no core. Skill global em `~/.claude/skills/lowcodejs-extension/`.
+Polish e features avançadas. Esta fase é **opcional** — o sistema já é
+plenamente funcional. Itens são independentes; pode-se entregar em múltiplos
+PRs ou cherry-pick os mais importantes.
 
-### Subtarefas
+### Subtarefas (priorizadas)
 
-1. **`SKILL.md`** com as triggers e instruções principais:
-   - Quando usar (palavras-chave: "criar plugin", "criar módulo", "novo botão
-     na tabela", "criar tela", "exportar X", etc.)
-   - Pre-flight obrigatório: ler `_docs/extensions-roadmap.md`,
-     `backend/extensions/CLAUDE.md`, `frontend/extensions/CLAUDE.md`
-   - Decisão guiada (árvore de perguntas para escolher PLUGIN/MODULE/TOOL)
-   - Catálogo de slots com props/context que cada um expõe
-   - Catálogo de componentes UI obrigatórios (`@/components/ui/*`,
-     `dynamic-table/*`)
-2. **Pre-flight de redundância**: comandos grep para verificar se a feature
-   já existe no core antes de criar (ex: `Grep "export.*pdf"` antes de criar
-   plugin de export PDF)
-3. **Scaffold determinístico**: passos exatos para criar um plugin/module/tool:
-   - Criar pastas `backend/extensions/<pkg>/<type>/<id>/`
-     e `frontend/extensions/<pkg>/<type>/<id>/`
-   - Gerar `manifest.json` válido (schema Zod já existe)
-   - Gerar boilerplate (controller backend se aplicável; entry React)
-   - Atualizar CLAUDE.md do pacote
-4. **Validação**: a skill deve verificar que:
-   - `manifest.id` bate com nome da pasta
-   - `placement.slot` está em catálogo válido (para PLUGIN)
-   - Referências usam `@/components/ui/*` (não Radix direto)
-5. **Testes**: 1-2 cenários E2E de scaffold (criar um plugin do zero ponta a
-   ponta, criar um módulo do zero)
+1. **URLs custom para módulos** — splat-route resolvendo aliases tipo `/home`
+   - `routes/_private/$.tsx` (catch-all) que lê menus type=EXTENSION_MODULE
+     e resolve `pathname → pkg/extensionId`
+   - Backend: validar URL única quando user cria menu custom
+   - Validar que não conflita com rotas existentes (ex: `/tables`, `/tools`)
+2. **`requires.extensions` resolver** — bloquear ativação se dependências não
+   estão habilitadas. Workshop mostra mensagem clara
+3. **Versionamento semver** — comparar versão atual com a do DB no upsert.
+   Major bump pode disparar warning ou exigir reativação manual
+4. **Hot-reload em dev** — watcher de `extensions/` dispara re-scan sem
+   restart do backend (chokidar + invalidar cache + re-importar controllers)
+5. **Slots reservados (instalação)**:
+   - `table.bulk-actions` em `bulk-action-bar/`
+   - `app.header.right` em `layout/header.tsx`
+   - `app.dashboard.widgets` em `routes/_private/dashboard/`
+6. **Telemetria** — log de quais extensões estão ativas, quantas chamadas por
+   endpoint, erros mais comuns (Setting com contadores ou Redis)
 
-### Decisões pendentes da Fase 5
+### Decisões pendentes da Fase 6
 
-- **Onde a SKILL mora**: global (`~/.claude/skills/`) ou no repo (
-  `.claude/skills/lowcodejs-extension/`)? Recomendação: **no repo** — todo
-  dev que clona já recebe a skill, sem setup manual
-- **A skill executa código ou só orienta?** Recomendação: **só orienta**, mas
-  sugere comandos exatos para o agente rodar (mkdir, write, git mv)
-- **Suporte a packages externos** (ex: alguém fork da plataforma adiciona
-  pacote `marcos-pdf-tools/`)? Recomendação: skill é agnóstica de pacote —
-  funciona pra qualquer `pkg`, com `core` apenas como referência
+- **Splat-route para URLs custom**: aceita conflitar com rotas existentes
+  (404 implícito) ou rejeita criação se URL é reservada? Recomendação:
+  rejeitar com lista de prefixos reservados (`/tables`, `/tools`, `/e`,
+  `/extensions`, `/menus`, `/users`, `/groups`, `/settings`, `/profile`,
+  `/dashboard`, `/pages`)
+- **Hot-reload é desejável ou over-engineering?** Atualmente restart do
+  backend é rápido. Decidir antes de implementar
+- **Versionamento estrito ou apenas warning?** Recomendação: warning no
+  Workshop e log; não bloquear ativação
 
 ---
 
@@ -462,11 +494,12 @@ git checkout feat/extensions
 
 Abrir Claude Code na pasta do repo e iniciar com prompt tipo:
 
-> Continue o sistema de extensões — fase 5. Leia
+> Continue o sistema de extensões — fase 6 (polish). Leia
 > `_docs/extensions-roadmap.md` para o contexto completo (decisões, fases
-> 1, 2, 3 e 4 entregues, plano detalhado da fase 5 e decisões pendentes).
-> Antes de começar a codar, valide comigo as 3 decisões pendentes da Fase 5
-> listadas na seção 7.
+> 1-5 entregues, plano detalhado da fase 6 e decisões pendentes). Esta fase
+> é OPCIONAL e os itens são independentes — confirme comigo quais
+> priorizar. Antes de codar, valide as decisões pendentes da Fase 6 na
+> seção 7.
 
 A nova sessão do Claude vai ler este arquivo + os CLAUDE.md das pastas
 afetadas e ter o contexto completo. Conversa atual NÃO viaja entre máquinas.

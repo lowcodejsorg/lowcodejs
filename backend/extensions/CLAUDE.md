@@ -195,7 +195,12 @@ do MASTER são preservados — uma vez desligada, fica desligada.
 
 ## Como criar uma nova extensão
 
-Use a SKILL `lowcodejs-extension` (Fase 5 do roadmap). Manualmente:
+**Recomendado**: invoque a skill `lowcodejs-extension` (em
+`.claude/skills/lowcodejs-extension/SKILL.md`). Ela orienta você desde a
+decisão (PLUGIN/MODULE/TOOL) até o smoke test, com templates prontos para
+copiar e checklist de validação.
+
+Manualmente:
 
 1. Crie `backend/extensions/<pkg>/<type>/<id>/manifest.json`
 2. Se houver código backend, adicione `controller.ts` + `use-case.ts` no mesmo
