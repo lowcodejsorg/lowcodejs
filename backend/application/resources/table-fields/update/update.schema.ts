@@ -142,6 +142,12 @@ export const TableFieldUpdateSchema: FastifySchema = {
         description:
           'Allow users to create new dropdown options from row input',
       },
+      allowCreateRelationshipRecords: {
+        type: 'boolean',
+        default: false,
+        description:
+          'Allow users to create records in the related table from row input',
+      },
       relationship: {
         type: 'object',
         nullable: true,
@@ -306,6 +312,11 @@ export const TableFieldUpdateSchema: FastifySchema = {
           type: 'boolean',
           description:
             'Allow users to create new dropdown options from row input',
+        },
+        allowCreateRelationshipRecords: {
+          type: 'boolean',
+          description:
+            'Allow users to create records in the related table from row input',
         },
         relationship: {
           type: 'object',

@@ -352,6 +352,7 @@ export type IField = Merge<
     relationship: IFieldConfigurationRelationship | null;
     dropdown: IDropdown[];
     allowCustomDropdownOptions?: boolean;
+    allowCreateRelationshipRecords?: boolean;
     category: ICategory[];
     group: IFieldConfigurationGroup | null;
   }
@@ -378,6 +379,7 @@ export type FieldCreatePayload = Pick<
   | 'relationship'
   | 'dropdown'
   | 'allowCustomDropdownOptions'
+  | 'allowCreateRelationshipRecords'
   | 'category'
   | 'group'
 >;

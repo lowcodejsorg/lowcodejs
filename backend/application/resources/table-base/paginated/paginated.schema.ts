@@ -236,6 +236,11 @@ export const TablePaginatedSchema: FastifySchema = {
                       description:
                         'Allow users to create new dropdown options from row input',
                     },
+                    allowCreateRelationshipRecords: {
+                      type: 'boolean',
+                      description:
+                        'Allow users to create records in the related table from row input',
+                    },
                     category: {
                       type: 'array',
                       nullable: true,
@@ -405,6 +410,7 @@ export const TablePaginatedSchema: FastifySchema = {
                           relationship: { type: 'object', nullable: true },
                           dropdown: { type: 'array', nullable: true },
                           allowCustomDropdownOptions: { type: 'boolean' },
+                          allowCreateRelationshipRecords: { type: 'boolean' },
                           category: { type: 'array', nullable: true },
                           group: { type: 'object', nullable: true },
                           trashed: { type: 'boolean' },
