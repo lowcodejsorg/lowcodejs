@@ -179,6 +179,10 @@ export const Schema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    allowCreateRelationshipRecords: {
+      type: Boolean,
+      default: false,
+    },
     category: {
       type: [Category],
       default: function (): null {

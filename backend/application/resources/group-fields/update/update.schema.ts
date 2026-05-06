@@ -43,6 +43,7 @@ export const GroupFieldUpdateSchema: FastifySchema = {
       },
       dropdown: { type: 'array', nullable: true, default: [] },
       allowCustomDropdownOptions: { type: 'boolean', default: false },
+      allowCreateRelationshipRecords: { type: 'boolean', default: false },
       relationship: { type: 'object', nullable: true, default: null },
       category: { type: 'array', nullable: true, default: [] },
       trashed: { type: 'boolean' },
@@ -90,6 +91,7 @@ export const GroupFieldUpdateSchema: FastifySchema = {
           },
         },
         allowCustomDropdownOptions: { type: 'boolean' },
+        allowCreateRelationshipRecords: { type: 'boolean' },
         relationship: {
           type: 'object',
           nullable: true,

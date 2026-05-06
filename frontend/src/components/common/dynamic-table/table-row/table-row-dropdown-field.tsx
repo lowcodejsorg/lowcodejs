@@ -89,6 +89,8 @@ function buildFieldUpdatePayload(
     defaultValue: field.defaultValue ?? null,
     dropdown,
     allowCustomDropdownOptions: field.allowCustomDropdownOptions ?? false,
+    allowCreateRelationshipRecords:
+      field.allowCreateRelationshipRecords ?? false,
     relationship: field.relationship
       ? {
           table: {
