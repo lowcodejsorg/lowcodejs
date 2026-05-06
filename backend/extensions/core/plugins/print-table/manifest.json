@@ -1,0 +1,15 @@
+{
+  "id": "print-table",
+  "type": "PLUGIN",
+  "name": "Imprimir tabela",
+  "description": "Aciona window.print() na tabela atual. Plugin de referência para o slot table.actions.",
+  "version": "1.0.0",
+  "author": "Time Core",
+  "icon": "PrinterIcon",
+  "placement": {
+    "slot": "table.actions"
+  },
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}

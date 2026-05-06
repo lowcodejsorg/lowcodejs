@@ -11,8 +11,10 @@ core/
 ├── tools/
 │   └── clone-table/
 │       └── index.tsx       ← componente default da tool
-├── modules/                ← (Fase 4)
-└── plugins/                ← (Fase 3)
+├── plugins/
+│   └── print-table/
+│       └── index.tsx       ← componente default do plugin (slot table.actions)
+└── modules/                ← (Fase 4)
 ```
 
 ## Entries
@@ -20,10 +22,13 @@ core/
 | Tipo | ID | Path | Descrição |
 |------|----|----|-----------|
 | `tools` | `clone-table` | `tools/clone-table/index.tsx` | UI de clonagem de tabelas (ex-página `/tools` do core) |
+| `plugins` | `print-table` | `plugins/print-table/index.tsx` | Botão de impressão na toolbar (slot `table.actions`) |
 
 ## Convenções
 
 - O arquivo deve ser `index.tsx` com `export default function ...`
 - Pode importar livremente de `@/components/ui/*`, `@/hooks/...`, `@/lib/...`
-- A entry recebe (futuramente) props padronizadas por tipo de slot. Para tools,
-  hoje recebe nada — é uma página completa
+- Para **tools**: nenhuma prop (página completa)
+- Para **plugins**: recebe as props definidas pelo slot via spread do `context`
+  do `<ExtensionSlot>`. Ver
+  `frontend/src/components/common/extension-slot/CLAUDE.md` para o catálogo

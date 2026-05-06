@@ -2,6 +2,7 @@ import { useRouter } from '@tanstack/react-router';
 import { EllipsisIcon, EyeIcon, PencilIcon } from 'lucide-react';
 import React from 'react';
 
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -70,6 +71,11 @@ export function TableRowActionsMenu({
               <span>Editar</span>
             </DropdownMenuItem>
           )}
+
+          <ExtensionSlot
+            id="table.row.actions"
+            context={{ table, row, slug }}
+          />
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

@@ -114,22 +114,23 @@ Para `TOOL`:
 Campos extras são preservados em `manifestSnapshot` (passthrough Zod) — útil
 para configurações específicas da extensão.
 
-## Slots de plugins (catálogo inicial — Fase 3)
+## Slots de plugins
 
-Os slots ainda não estão renderizados (Fase 1 só registra). O catálogo final
-viverá aqui:
+Slots são pontos no JSX do core onde plugins são injetados via
+`<ExtensionSlot id="...">` (ver
+`frontend/src/components/common/extension-slot/CLAUDE.md`). Catálogo atual:
 
-| Slot id | Onde aparece | Context props |
-|---------|--------------|---------------|
-| `table.actions` | barra ao lado de "Adicionar registro" | `{ table, selection }` |
-| `table.tools-menu` | menu de ferramentas no topo da grade | `{ table, view }` |
-| `table.filters` | sidebar de filtros | `{ table, filters, setFilters }` |
-| `table.row-menu` | menu de contexto de uma linha | `{ table, row }` |
-| `table.bulk-actions` | barra de ações em massa | `{ table, selectedIds }` |
-| `app.header.right` | header global | `{ user }` |
-| `app.dashboard.widgets` | dashboard | `{}` |
+| Slot id | Onde aparece | Context props | Status |
+|---------|--------------|---------------|--------|
+| `table.actions` | toolbar da página da tabela (linha do view/config) | `{ table, slug }` | instalado |
+| `table.filters` | topo da listagem do FilterSidebar | `{ table, fields }` | instalado |
+| `table.row.actions` | dropdown de ações por registro (`TableRowActionsMenu`) | `{ table, row, slug }` | instalado |
+| `table.bulk-actions` | barra de ações em massa | `{ table, selectedIds }` | reservado (futuro) |
+| `app.header.right` | header global | `{ user }` | reservado (futuro) |
+| `app.dashboard.widgets` | dashboard | `{}` | reservado (futuro) |
 
-A SKILL valida `placement.slot` contra esta lista.
+Slots reservados podem ser instalados conforme demanda. A SKILL (Fase 5)
+valida `placement.slot` contra os slots ativos.
 
 ## Ciclo de vida
 

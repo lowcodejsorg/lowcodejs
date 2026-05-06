@@ -9,7 +9,8 @@ oficiais que adotam o modelo de extensão (ao invés de viver no core
 
 ```
 core/
-├── plugins/                        ← (Fase 3) ex: export CSV vira plugin
+├── plugins/
+│   └── print-table/                ← Fase 3: plugin de referência (slot table.actions)
 ├── modules/                        ← (Fase 4)
 └── tools/
     └── clone-table/                ← Fase 2: primeira tool oficial
@@ -21,4 +22,10 @@ core/
 | ------------- | --------------------- | ---------------------------------------------------------------------------------------------------- |
 | `clone-table` | `POST /tools/clone-table` | Clona uma ou mais tabelas com base em modelos existentes ou templates built-in (Kanban, Cards, etc.) |
 
-Cada tool tem seu próprio CLAUDE.md no subdiretório.
+## Plugins
+
+| ID            | Slot           | Descrição                                                              |
+| ------------- | -------------- | ---------------------------------------------------------------------- |
+| `print-table` | `table.actions` | Botão `window.print()` na toolbar da tabela. Plugin de referência. |
+
+Cada extensão tem seu próprio CLAUDE.md no subdiretório (quando aplicável).

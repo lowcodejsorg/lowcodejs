@@ -157,10 +157,10 @@ Catálogo final vai pra `backend/extensions/CLAUDE.md` e a SKILL valida
 |------|--------------------------------------------------------------------------------------------------------------------|--------|
 | 1    | Fundação: model `Extension`, REST list/toggle/scope, loader, Workshop, sidebar                                     | feito |
 | 2    | Tools: sub-menu Ferramentas collapsível, rota `/tools/$pkg/$id`, migração de `clone-table` para `core/tools/clone-table`, endpoint `GET /extensions/active`, auto-enable do `pkg=core` | feito |
-| 3    | Slots/Plugins: `<ExtensionSlot>`, registro dos 7 slots, 1 plugin de exemplo (export CSV vira plugin)              | próximo |
-| 4    | Módulos: rota catch-all `/e/$pkg/$id`, novo `E_MENU_ITEM_TYPE.EXTENSION_MODULE`, 1 módulo de exemplo              | pendente |
+| 3    | Slots/Plugins: `<ExtensionSlot>` com filtro por `tableScope`, instalação de 3 slots (`table.actions`, `table.filters`, `table.row.actions`), plugin de referência `print-table` | feito |
+| 4    | Módulos: rota catch-all `/e/$pkg/$id`, novo `E_MENU_ITEM_TYPE.EXTENSION_MODULE`, 1 módulo de exemplo              | próximo |
 | 5    | SKILL `lowcodejs-extension`: scaffold determinístico, catálogo de slots, validação, testes E2E                    | pendente |
-| 6    | Polish: versionamento (semver match), `requires.extensions` resolver, hot-reload em dev, telemetria               | pendente |
+| 6    | Polish: versionamento (semver match), `requires.extensions` resolver, hot-reload em dev, telemetria, slots reservados (`table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`) | pendente |
 
 ---
 
@@ -309,63 +309,69 @@ EOF
 | Endpoint público de extensões ativas | (b) Novo `GET /extensions/active` sem `manifestSnapshot`, auth-only |
 | Compat de `/tools/clone-table` | (c) Mantida — mesma URL/route, apenas blindada por middleware. Nenhuma migração de cliente externo necessária |
 
-## 7. Fase 3 — Próxima ação detalhada
+## 6.ter Estado da Fase 3 (entregue)
+
+### Frontend
+
+- `frontend/src/components/common/extension-slot/{extension-slot.tsx,index.ts,CLAUDE.md}`
+  — componente `<ExtensionSlot id="..." context={...}>` com lazy import +
+  filtro por `tableScope`
+- **3 slots instalados**:
+  - `table.actions` em `routes/_private/tables/$slug/index.lazy.tsx` (toolbar)
+  - `table.filters` em `components/common/filters/filter-sidebar.tsx` (mobile + desktop)
+  - `table.row.actions` em `components/common/table-views/table-row-actions-menu.tsx`
+- `components/common/filters/filter-sidebar.tsx` — recebe prop `table`
+  opcional para alimentar o slot
+- `frontend/extensions/core/plugins/print-table/index.tsx` — plugin de
+  referência (`window.print()`) no slot `table.actions`
+
+### Backend
+
+- `backend/extensions/core/plugins/print-table/manifest.json` — manifest do
+  plugin de referência. Auto-ativado no primeiro boot por ser `pkg=core`
+
+### Decisões implementadas
+
+| Decisão pendente da Fase 3 | Resolvido como |
+|----------------------------|----------------|
+| Onde instalar `table.actions` | Toolbar de ações da página da tabela (linha do view/config), antes do botão Registro |
+| Onde aplicar filtro `tableScope` | Dentro do `<ExtensionSlot>` — usa `context.table?._id` como chave |
+| Plugin de exemplo | Novo plugin `print-table` (window.print) — não toca em export-csv existente |
+
+## 7. Fase 4 — Próxima ação detalhada
 
 ### Objetivo
 
-Implementar o sistema de **slots** para plugins. Plugins são extensões
-pequenas que ocupam placeholders distribuídos pelo core. Esta fase introduz o
-componente `<ExtensionSlot id="..." context={...}>` e instala-o em 7 pontos
-estratégicos da UI.
+Suporte a **módulos** (extensões maiores: telas, dashboards, formulários
+custom). Cada módulo recebe URL default `/e/<pkg>/<id>` e pode ser conectado
+a um item de Menu custom via novo `E_MENU_ITEM_TYPE.EXTENSION_MODULE`.
 
 ### Subtarefas
 
-1. **Frontend: componente `<ExtensionSlot>`**
-   - `frontend/src/components/common/extension-slot/extension-slot.tsx`
-   - Recebe `id` (string do slot, ex: `table.actions`) e `context` (props
-     passadas para todos os plugins do slot)
-   - Lê extensões ativas via `useExtensionsActiveList`, filtra
-     `type === PLUGIN && slot === <id>` e respeita `tableScope`
-   - Lazy-importa cada entry com `loadExtensionEntry(pkg, 'plugins', id)`
-   - Renderiza cada componente passando `context` como props
+1. **Frontend: rota catch-all** `routes/_private/e/$package/$id/{index.tsx,index.lazy.tsx}`
+   - Igual a `tools/$package/$id` mas para `type === MODULE`
+   - Lazy-importa `frontend/extensions/<pkg>/modules/<id>/index.tsx`
+2. **Backend + Frontend: novo tipo de menu** `E_MENU_ITEM_TYPE.EXTENSION_MODULE`
+   - Schema Mongoose do menu aceita o novo tipo
+   - Form de menu (`menus/create`, `menus/$menuId`) ganha select "Módulo de
+     extensão" → lista de modules ativos via `/extensions/active`
+   - Item de menu com type=EXTENSION_MODULE armazena `pkg` e `extensionId` e
+     uma `url` custom (ex: `/home`); a sidebar resolve para o componente
+3. **Módulo de exemplo: dashboard simples** em `core/modules/dashboard-home`
+   (ou similar) — uma página com 1-2 cards de estatística
+4. **`menu-access-permissions.ts`**: adicionar `/e/$package/$id` aos roles
+   apropriados
 
-2. **Frontend: instalar slots no JSX existente** (catálogo da seção 4)
-   - `table.actions` em algum ponto da grade dynamic-table
-   - `table.tools-menu`, `table.filters`, `table.row-menu`,
-     `table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`
-   - Cada local define o `context` adequado
+### Decisões pendentes da Fase 4
 
-3. **Plugin de exemplo: migrar `export-csv-button` para plugin**
-   - Hoje `frontend/src/components/common/export-csv-button.tsx` é usado em
-     vários pontos. Vira `extensions/core/plugins/export-csv/index.tsx` e é
-     consumido pelo slot `table.actions`
-   - Manifest no backend
-   - Remove os usos diretos (substituídos pelo slot)
-
-4. **Backend (opcional)**: se algum plugin precisar de API própria,
-   convenção `POST /extensions/<pkg>/plugins/<id>/<action>` — sem mudança
-   de infra (loadControllers já varre `extensions/`)
-
-5. **Documentação**
-   - Atualizar `backend/extensions/CLAUDE.md` com a tabela de slots final
-     (já está rascunhada; promover de "referência para Fase 3" para
-     "implementação atual")
-   - `frontend/src/components/common/extension-slot/CLAUDE.md`
-
-### Decisões pendentes da Fase 3 (pra alinhar antes de começar)
-
-- **Onde instalar `table.actions`?** Os botões "Adicionar registro" /
-  "Configurações" hoje vivem em… preciso re-mapear. Possivelmente
-  `dynamic-table/` ou `table-views/`. Investigar e decidir o local exato
-- **`tableScope` aplicado onde?** O filtro por tabela deve ser aplicado
-  dentro do `<ExtensionSlot>` ou do `useExtensionsActiveList`?
-  Recomendação: dentro do componente, porque o context é que sabe qual
-  tabela está em foco
-- **Plugin de exemplo: export-csv**: já existe `export-csv-button.tsx` —
-  faz sentido migrar pra plugin? Ou criar um plugin **novo** mais simples
-  (ex: "Imprimir tabela") para não tocar em código que já é usado em
-  vários lugares? Sugestão: novo plugin simples, deixar export-csv pra
-  depois
+- **Visibilidade do módulo por role?** Hoje `useExtensionsActiveList` é
+  acessível a qualquer auth user. Módulos podem precisar restrição extra
+  (ex: dashboard só para MASTER). Manifest deve declarar `permissions.view`?
+- **Menu custom com URL livre**: se o usuário cria menu pra módulo `core/home`
+  com URL `/home`, e existe outro menu pra outro módulo `pkg/x` com URL
+  `/home`, conflito. Validação de unicidade no backend?
+- **Módulo de exemplo concreto**: dashboard? Página de boas-vindas? Algo mais
+  específico pro lowcodejs?
 
 ---
 
@@ -402,11 +408,11 @@ git checkout feat/extensions
 
 Abrir Claude Code na pasta do repo e iniciar com prompt tipo:
 
-> Continue o sistema de extensões — fase 3. Leia
-> `_docs/extensions-roadmap.md` para o contexto completo (decisões, fases 1
-> e 2 entregues, plano detalhado da fase 3 e decisões pendentes). Antes de
-> começar a codar, valide comigo as 3 decisões pendentes da Fase 3 listadas
-> na seção 7.
+> Continue o sistema de extensões — fase 4. Leia
+> `_docs/extensions-roadmap.md` para o contexto completo (decisões, fases
+> 1, 2 e 3 entregues, plano detalhado da fase 4 e decisões pendentes).
+> Antes de começar a codar, valide comigo as 3 decisões pendentes da Fase 4
+> listadas na seção 7.
 
 A nova sessão do Claude vai ler este arquivo + os CLAUDE.md das pastas
 afetadas e ter o contexto completo. Conversa atual NÃO viaja entre máquinas.

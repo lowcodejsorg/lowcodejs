@@ -24,6 +24,7 @@ import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
 import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
 import { ExportCsvButton } from '@/components/common/export-csv-button';
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -316,6 +317,11 @@ function RouteComponent(): React.JSX.Element {
             />
           )}
 
+          <ExtensionSlot
+            id="table.actions"
+            context={{ table: table.data, slug }}
+          />
+
           {permission.can('CREATE_ROW') &&
             (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) > 0 && (
               <Button
@@ -343,6 +349,7 @@ function RouteComponent(): React.JSX.Element {
             fields={filterFields}
             open={filterOpen}
             onOpenChange={handleFilterOpenChange}
+            table={table.data}
           />
         )}
         <PageShell.Content>
