@@ -314,6 +314,7 @@ configurado' }` sem lancar erro.
 | PORT | 3000 | Porta HTTP |
 | APP_SERVER_URL | obrigatorio | URL publica do backend |
 | APP_CLIENT_URL | obrigatorio | URL publica do frontend |
+| DEMO_MODE | false | Quando "true", `1778025600-demo-users.seed.ts` cria/atualiza usuarios publicos da instancia demo. Aceita literalmente "true" ou "false" |
 
 ### CORS
 
@@ -492,6 +493,7 @@ Comando: `npm run seed`
 | 1720448435-permissions.seed.ts | 12 permissoes (CREATE/UPDATE/REMOVE/VIEW para TABLE, FIELD, ROW). Upsert por `slug` com `$set` |
 | 1720448445-user-group.seed.ts | 4 grupos (MASTER, ADMINISTRATOR, MANAGER, REGISTERED). Metadados via `$set`; `permissions` via `$setOnInsert` (preserva customizacoes manuais) |
 | 1720465893-settings.seed.ts | Setting singleton. Marca SETUP_COMPLETED=true se ja existe MASTER; caso contrario, `$setOnInsert: {}` |
+| 1778025600-demo-users.seed.ts | Gated por `DEMO_MODE=true`. Cria/atualiza `admin@admin.com` (ADMINISTRATOR) e `registered@registered.com` (REGISTERED). `$set` em todos os campos, password re-hashado a cada `npm run seed`. No-op silencioso fora de demo |
 
 Usuario MASTER **nao** tem seed — e criado via Setup Wizard na UI na primeira execucao.
 

@@ -19,6 +19,11 @@ const EnvSchema = z.object({
     .default('development'),
   PORT: z.coerce.number().default(3000),
 
+  DEMO_MODE: z
+    .union([z.literal('true'), z.literal('false')])
+    .default('false')
+    .transform((v): boolean => v === 'true'),
+
   APP_SERVER_URL: z.string().trim(),
   APP_CLIENT_URL: z.string().trim(),
 

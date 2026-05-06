@@ -14,6 +14,7 @@ na primeira execução da UI.
 | `1720448435-permissions.seed.ts`  | Cria 12 registros de permissão (CREATE_TABLE, VIEW_TABLE, etc.). Upsert por `slug` com `$set` |
 | `1720448445-user-group.seed.ts`   | Cria 4 grupos: MASTER, ADMINISTRATOR, MANAGER, REGISTERED. Metadados via `$set`; array `permissions` via `$setOnInsert` (preserva customizações após a 1ª criação). Busca apenas permissões com `trashed: false` |
 | `1720465893-settings.seed.ts`     | Setting singleton. Se já existe MASTER, marca `SETUP_COMPLETED=true`. Caso contrário, usa `$setOnInsert: {}` (não sobrescreve configs existentes) |
+| `1778025600-demo-users.seed.ts`   | **Gated por `DEMO_MODE=true`**. Cria/atualiza 2 usuários públicos (`admin@admin.com` → ADMINISTRATOR, `registered@registered.com` → REGISTERED) com `$set` em todos os campos (incluindo password re-hashado a cada execução). Throw se grupos ausentes. No-op silencioso quando `DEMO_MODE=false` |
 
 ## Padrões
 
@@ -28,3 +29,6 @@ na primeira execução da UI.
   orquestrador abortar antes de rodar qualquer seeder.
 - **Fail-fast**: cada seeder roda dentro de `try/catch` no `main.ts`. Qualquer erro
   propaga com log do arquivo que falhou, `process.exit(1)` e `mongoose.disconnect()`.
+- **Gating por env**: seeders sensíveis a ambiente (ex.: `1778025600-demo-users.seed.ts`)
+  fazem early-return baseado em `Env` (`DEMO_MODE`). Seed continua sendo idempotente
+  e seguro de rodar em qualquer instância — só dispara o efeito quando a flag estiver ligada.
