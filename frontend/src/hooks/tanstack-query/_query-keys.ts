@@ -92,6 +92,17 @@ export const queryKeys = {
         ...queryKeys.groupRows.all(tableSlug, rowId, groupSlug),
         'list',
       ] as const,
+    paginated: (
+      tableSlug: string,
+      rowId: string,
+      groupSlug: string,
+      params: Record<string, unknown>,
+    ) =>
+      [
+        ...queryKeys.groupRows.lists(tableSlug, rowId, groupSlug),
+        'paginated',
+        params,
+      ] as const,
     details: (tableSlug: string, rowId: string, groupSlug: string) =>
       [
         ...queryKeys.groupRows.all(tableSlug, rowId, groupSlug),
