@@ -306,9 +306,6 @@ kernel.addHook('onRequest', async (request, reply) => {
 });
 
 kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
-  console.error(JSON.stringify(error, null, 2));
-  console.error(error);
-
   if (error instanceof HTTPException) {
     return response.status(error.code).send({
       message: error.message,
@@ -364,6 +361,8 @@ kernel.setErrorHandler((error: Record<string, unknown>, request, response) => {
       ...(Object.keys(errors).length > 0 && { errors }),
     });
   }
+
+  console.error(error);
 
   return response.status(500).send({
     message: 'Erro interno do servidor',

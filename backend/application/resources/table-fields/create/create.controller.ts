@@ -52,8 +52,6 @@ export default class {
       });
     }
 
-    console.error(JSON.stringify(result.value, null, 2));
-
     return response.status(201).send(result.value);
   }
 }
