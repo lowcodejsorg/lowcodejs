@@ -220,7 +220,8 @@ export default class MenuUpdateUseCase {
         updatePayload.order = siblingCount;
       }
 
-      const shouldReorderSiblings = parentChanged || payload.order !== undefined;
+      const shouldReorderSiblings =
+        parentChanged || payload.order !== undefined;
 
       if (shouldReorderSiblings) {
         const siblings = await this.menuRepository.findMany({

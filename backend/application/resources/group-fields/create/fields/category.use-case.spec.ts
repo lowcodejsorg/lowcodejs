@@ -35,6 +35,7 @@ const FIELD_PAYLOAD_BASE = {
   showInDetail: true,
   showInFilter: false,
   locked: false,
+  allowCreateRelationshipRecords: false,
   required: false,
   dropdown: [],
   defaultValue: null,
