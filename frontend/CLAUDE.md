@@ -316,9 +316,9 @@ impactar bundle inicial.
 Build args (producao): VITE_API_BASE_URL, APP_SERVER_URL, APP_CLIENT_URL.
 Runtime: docker-entrypoint.sh substitui URLs hardcoded nos artifacts.
 
-Logos (`LOGO_SMALL_URL`, `LOGO_LARGE_URL`), nome do sistema e descricao
-vivem no documento Setting do MongoDB e sao carregados em runtime via
-server function (`__root.tsx`). Nao sao build args.
+Logos (`LOGO_SMALL_URL`, `LOGO_LARGE_URL`), nome do sistema e descricao vivem no
+documento Setting do MongoDB e sao carregados em runtime via server function
+(`__root.tsx`). Nao sao build args.
 
 ## Componentes UI (Design System)
 
