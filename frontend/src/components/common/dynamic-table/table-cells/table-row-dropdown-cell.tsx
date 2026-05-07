@@ -1,10 +1,10 @@
 import * as React from 'react';
 
+import { getDropdownContrastStyle } from './utils';
+
 import { Badge } from '@/components/ui/badge';
 import type { IField, IRow } from '@/lib/interfaces';
 import { getDropdownItem } from '@/lib/table';
-
-import { getDropdownContrastStyle } from './utils';
 
 interface TableRowDropdownCellProps {
   row: IRow;
