@@ -263,12 +263,26 @@ Endpoint: /openapi.json
 
 ## Variaveis de Ambiente
 
-Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test` em test.
+Validadas em `start/env.ts` com Zod. Carrega `.env` em dev/prod, `.env.test`
+em test.
 
-O `.env` agora cobre apenas infraestrutura (DB, JWT, cookies, CORS, storage
-driver, Redis, MCP). Configurações de domínio (branding, locale, upload,
-paginação, logos, IA, SMTP) vivem no documento Setting do MongoDB e são
-editadas via UI `/settings` pelo usuário MASTER.
+O `.env` cobre apenas **infraestrutura** (DB, JWT, cookies, CORS, Redis,
+MCP, workers). **Configuracoes de dominio** (branding, locale, upload,
+paginacao, logos, IA, SMTP, storage driver/S3) vivem no documento Setting
+do MongoDB e sao editadas via UI `/settings` pelo usuario MASTER.
+
+### Hosts: dev nativo vs Docker Compose
+
+Os defaults em `.env.example` apontam `127.0.0.1`/`localhost` (cenario
+dev nativo: backend rodando na maquina, somente mongo+redis em Docker).
+Quando o stack inteiro sobe via `docker compose up -d`, o proprio compose
+**sobrescreve** `DATABASE_URL`, `REDIS_URL` e `MCP_SERVER_URL` com hosts
+internos da rede Docker (`mongo`, `redis`, `mcp`). Veja o bloco
+`environment:` do service `api` em `docker-compose.yml`. O dev nao precisa
+editar `.env` ao alternar entre os modos.
+
+Testes e2e rodam **sempre no host** (nunca em container) — `.env.test`
+sempre usa `127.0.0.1`.
 
 ### Banco de Dados
 
@@ -290,12 +304,14 @@ mesmo servidor (configuravel para servidores separados via `DATABASE_URL`):
 
 ### Email (SMTP)
 
-Configurado pela UI `/settings` (usuario MASTER) e persistido no documento
-Setting do MongoDB. Campos: `EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`,
-`EMAIL_PROVIDER_USER`, `EMAIL_PROVIDER_PASSWORD`, `EMAIL_PROVIDER_FROM`
-(todos nullable). Se qualquer credencial essencial estiver ausente, o
-`NodemailerEmailService` retorna `{ success: false, message: 'SMTP nao
-configurado' }` sem lancar erro.
+**Nao e env var.** Sao **campos do documento Setting** no MongoDB,
+editados pela UI `/settings` (usuario MASTER):
+`EMAIL_PROVIDER_HOST`, `EMAIL_PROVIDER_PORT`, `EMAIL_PROVIDER_USER`,
+`EMAIL_PROVIDER_PASSWORD`, `EMAIL_PROVIDER_FROM` (todos nullable).
+
+`NodemailerEmailService` le do Setting em cada envio (sem cache). Se
+qualquer credencial essencial estiver ausente, retorna `{ success: false,
+message: 'SMTP nao configurado' }` sem lancar erro.
 
 ### JWT & Cookies
 
