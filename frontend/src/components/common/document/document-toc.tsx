@@ -41,7 +41,7 @@ export function DocumentToc({
                 className="toc-link flex items-baseline gap-2 no-underline font-semibold"
               >
                 <span className="toc-title">{it.label}</span>
-                <span className="toc-dots flex-1 border-b border-dotted border-gray-400 translate-y-[-2px]" />
+                <span className="toc-dots flex-1 border-b border-dotted border-muted-foreground/40 translate-y-[-2px]" />
               </a>
             </li>
           ))}

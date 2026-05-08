@@ -526,14 +526,14 @@ function buildColumns(params: {
           <Badge
             className={cn(
               'font-semibold border-transparent',
-              type === E_MENU_ITEM_TYPE.PAGE && 'bg-green-100 text-green-700',
+              type === E_MENU_ITEM_TYPE.PAGE && 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
               type === E_MENU_ITEM_TYPE.TABLE &&
-                'bg-yellow-100 text-yellow-700',
-              type === E_MENU_ITEM_TYPE.FORM && 'bg-blue-100 text-blue-700',
+                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+              type === E_MENU_ITEM_TYPE.FORM && 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
               type === E_MENU_ITEM_TYPE.EXTERNAL &&
-                'bg-violet-100 text-violet-700',
+                'bg-violet-100 text-violet-700 dark:bg-violet-900/30 dark:text-violet-400',
               type === E_MENU_ITEM_TYPE.SEPARATOR &&
-                'bg-gray-100 text-gray-700',
+                'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
             )}
           >
             {TypeMapper[type as keyof typeof TypeMapper] || 'N/A'}
