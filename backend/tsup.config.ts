@@ -7,6 +7,7 @@ export default defineConfig({
     'config/**/*.ts',
     'database/**/*.ts',
     'start/**/*.ts',
+    'extensions/**/*.ts',
   ],
   ignoreWatch: ['node_modules'],
   outDir: 'build',
