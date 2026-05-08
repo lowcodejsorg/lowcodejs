@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 
+import ExtensionInMemoryRepository from '@application/repositories/extension/extension-in-memory.repository';
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 
@@ -7,15 +8,18 @@ import MenuUpdateUseCase from './update.use-case';
 
 let menuInMemoryRepository: MenuInMemoryRepository;
 let tableInMemoryRepository: TableInMemoryRepository;
+let extensionInMemoryRepository: ExtensionInMemoryRepository;
 let sut: MenuUpdateUseCase;
 
 describe('Menu Update Use Case', () => {
   beforeEach(() => {
     menuInMemoryRepository = new MenuInMemoryRepository();
     tableInMemoryRepository = new TableInMemoryRepository();
+    extensionInMemoryRepository = new ExtensionInMemoryRepository();
     sut = new MenuUpdateUseCase(
       menuInMemoryRepository,
       tableInMemoryRepository,
+      extensionInMemoryRepository,
     );
   });
 
