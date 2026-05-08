@@ -12,15 +12,15 @@ rotas dinâmicas).
 
 | Operação | Método | Rota | Permissão |
 |----------|--------|------|-----------|
-| list | GET | `/extensions` | MASTER |
+| list | GET | `/extensions` | MASTER, ADMINISTRATOR |
 | active | GET | `/extensions/active` | Auth (qualquer usuário) |
-| toggle | PATCH | `/extensions/:_id/toggle` | MASTER |
-| configure-table-scope | PATCH | `/extensions/:_id/table-scope` | MASTER |
+| toggle | PATCH | `/extensions/:_id/toggle` | MASTER, ADMINISTRATOR |
+| configure-table-scope | PATCH | `/extensions/:_id/table-scope` | MASTER, ADMINISTRATOR |
 
 ## Middlewares
 
 1. `AuthenticationMiddleware({ optional: false })`
-2. `RoleMiddleware([E_ROLE.MASTER])`
+2. `RoleMiddleware([E_ROLE.MASTER, E_ROLE.ADMINISTRATOR])`
 
 ## Repositórios utilizados
 
@@ -29,7 +29,7 @@ rotas dinâmicas).
 ## Comportamentos chave
 
 - **list** retorna todas as extensões (incluindo `enabled: false` e
-  `available: false`) para o Workshop. Restrito a MASTER
+  `available: false`) para o Workshop. Restrito a MASTER e ADMINISTRATOR
 - **active** retorna apenas extensões `enabled: true` e `available: true`,
   **sem** `manifestSnapshot`. Disponível para qualquer usuário autenticado —
   usado pela sidebar (sub-menu Ferramentas) e pelos slots no frontend
