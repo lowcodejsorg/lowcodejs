@@ -35,7 +35,7 @@ function ShortcutCard({
       to={to}
       className="block"
     >
-      <Card className="hover:bg-accent/50 transition-colors h-full">
+      <Card className="hover:bg-accent/50 transition-colors h-full flex flex-col">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Icon className="size-5 text-primary" />
@@ -43,7 +43,7 @@ function ShortcutCard({
           </CardTitle>
           <CardDescription>{description}</CardDescription>
         </CardHeader>
-        <CardContent className="text-sm text-muted-foreground inline-flex items-center gap-1">
+        <CardContent className="mt-auto text-sm text-muted-foreground inline-flex items-center gap-1">
           Ir para {title.toLowerCase()}
           <ArrowRightIcon className="size-3" />
         </CardContent>

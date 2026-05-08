@@ -54,7 +54,7 @@ Um manifesto mínimo para um plugin:
   "name": "Exportar PDF",
   "description": "Baixa a tabela atual em PDF",
   "version": "1.0.0",
-  "author": "Time Core",
+  "author": "LowcodeJS",
   "icon": "FileDown",
   "placement": {
     "slots": ["table.actions"]

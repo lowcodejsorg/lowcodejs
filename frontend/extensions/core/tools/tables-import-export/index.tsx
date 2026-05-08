@@ -16,7 +16,7 @@ export default function TablesImportExportTool(): React.JSX.Element {
       </PageShell.Header>
 
       <PageShell.Content className="p-4">
-        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2 max-w-6xl">
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
           <ExportTableSection />
           <ImportTableSection />
         </div>

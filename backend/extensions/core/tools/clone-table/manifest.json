@@ -4,7 +4,7 @@
   "name": "Clonar Tabela",
   "description": "Cria uma nova tabela baseada em um modelo existente (com ou sem dados) ou em templates built-in (Kanban, Card, Mosaico, Documento, Forum, Calendário).",
   "version": "1.0.0",
-  "author": "Time Core",
+  "author": "LowcodeJS",
   "icon": "CopyIcon",
   "tool": {
     "submenu": "tables"

@@ -4,8 +4,10 @@ import {
   AlertTriangleIcon,
   PackageIcon,
   PuzzleIcon,
+  SearchIcon,
   SettingsIcon,
   WrenchIcon,
+  XIcon,
 } from 'lucide-react';
 import React from 'react';
 
@@ -13,6 +15,12 @@ import { TableMultiSelect } from '@/components/common/dynamic-table/table-select
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import {
   Card,
   CardContent,
@@ -171,6 +179,7 @@ function ExtensionCard({
               type="button"
               variant="outline"
               size="sm"
+              className="cursor-pointer"
               onClick={() => onConfigureTableScope(extension)}
               data-test-id={`extension-configure-${extension._id}`}
             >
@@ -224,7 +233,17 @@ function TableScopeSheet({
       open={open}
       onOpenChange={onOpenChange}
     >
-      <SheetContent className="sm:max-w-md">
+      <SheetContent
+        className="sm:max-w-md"
+        onInteractOutside={(e) => {
+          // Combobox (base-ui) renderiza popup via Portal fora do SheetContent.
+          // Sem isso, clicar numa opção fecha o Sheet por "click outside".
+          const target = e.target as HTMLElement | null;
+          if (target?.closest('[data-slot="combobox-content"]')) {
+            e.preventDefault();
+          }
+        }}
+      >
         <SheetHeader>
           <SheetTitle>Escopo de {extension.name}</SheetTitle>
           <SheetDescription>
@@ -300,6 +319,21 @@ function TableScopeSheet({
   );
 }
 
+type StatusFilter = 'all' | 'enabled' | 'disabled';
+type TypeFilter = IExtension['type'];
+
+const TYPE_FILTERS: Array<TypeFilter> = [
+  E_EXTENSION_TYPE.PLUGIN,
+  E_EXTENSION_TYPE.MODULE,
+  E_EXTENSION_TYPE.TOOL,
+];
+
+const STATUS_FILTERS: Array<{ value: StatusFilter; label: string }> = [
+  { value: 'all', label: 'Todas' },
+  { value: 'enabled', label: 'Ativas' },
+  { value: 'disabled', label: 'Desativadas' },
+];
+
 function RouteComponent(): React.JSX.Element {
   const { data } = useSuspenseQuery(extensionListOptions());
 
@@ -307,7 +341,32 @@ function RouteComponent(): React.JSX.Element {
     React.useState<IExtension | null>(null);
   const [scopeOpen, setScopeOpen] = React.useState(false);
 
-  const groups = React.useMemo(() => groupByPackage(data), [data]);
+  const [search, setSearch] = React.useState('');
+  const [typeFilter, setTypeFilter] = React.useState<Array<TypeFilter>>([]);
+  const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
+
+  const filtered = React.useMemo(() => {
+    const term = search.trim().toLowerCase();
+    return data.filter((extension) => {
+      if (typeFilter.length > 0 && !typeFilter.includes(extension.type)) {
+        return false;
+      }
+      if (statusFilter === 'enabled' && !extension.enabled) return false;
+      if (statusFilter === 'disabled' && extension.enabled) return false;
+      if (term.length === 0) return true;
+      const haystack = [
+        extension.name,
+        extension.description ?? '',
+        extension.pkg,
+        extension.extensionId,
+      ]
+        .join(' ')
+        .toLowerCase();
+      return haystack.includes(term);
+    });
+  }, [data, search, statusFilter, typeFilter]);
+
+  const groups = React.useMemo(() => groupByPackage(filtered), [filtered]);
 
   const handleConfigureTableScope = React.useCallback(
     (extension: IExtension) => {
@@ -317,12 +376,105 @@ function RouteComponent(): React.JSX.Element {
     [],
   );
 
+  const toggleTypeFilter = React.useCallback((type: TypeFilter): void => {
+    setTypeFilter((prev) =>
+      prev.includes(type) ? prev.filter((t) => t !== type) : [...prev, type],
+    );
+  }, []);
+
   return (
     <PageShell data-test-id="extensions-page">
-      <PageShell.Header>
-        <PageHeader title="Extensões">
-          <Badge variant="outline">{data.length} registrada(s)</Badge>
-        </PageHeader>
+      <PageShell.Header className="flex-col items-stretch gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <PageHeader title="Extensões">
+            <Badge
+              variant="outline"
+              data-test-id="extensions-count-badge"
+            >
+              {filtered.length} de {data.length}
+            </Badge>
+          </PageHeader>
+        </div>
+
+        <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end lg:gap-3">
+          <div className="lg:w-96">
+            <InputGroup>
+              <InputGroupAddon>
+                <SearchIcon className="size-4" />
+              </InputGroupAddon>
+              <InputGroupInput
+                data-test-id="extensions-search-input"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Buscar por nome, descrição ou pacote..."
+                className="shadow-none"
+              />
+              {search.length > 0 && (
+                <InputGroupAddon align="inline-end">
+                  <InputGroupButton
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Limpar busca"
+                    onClick={() => setSearch('')}
+                    className="cursor-pointer"
+                  >
+                    <XIcon className="size-4" />
+                  </InputGroupButton>
+                </InputGroupAddon>
+              )}
+            </InputGroup>
+          </div>
+
+          <div
+            className="flex flex-wrap items-center gap-1.5"
+            data-test-id="extensions-type-filter"
+          >
+            <span className="text-xs font-medium text-muted-foreground mr-1">
+              Tipo:
+            </span>
+            {TYPE_FILTERS.map((type) => {
+              const active = typeFilter.includes(type);
+              return (
+                <Button
+                  key={type}
+                  type="button"
+                  size="sm"
+                  variant={active ? 'default' : 'outline'}
+                  className="h-7 px-2.5 cursor-pointer"
+                  onClick={() => toggleTypeFilter(type)}
+                  data-test-id={`extensions-type-${type.toLowerCase()}`}
+                >
+                  {EXTENSION_TYPE_LABEL[type]}
+                </Button>
+              );
+            })}
+          </div>
+
+          <div
+            className="flex flex-wrap items-center gap-1.5"
+            data-test-id="extensions-status-filter"
+          >
+            <span className="text-xs font-medium text-muted-foreground mr-1">
+              Status:
+            </span>
+            {STATUS_FILTERS.map((option) => {
+              const active = statusFilter === option.value;
+              return (
+                <Button
+                  key={option.value}
+                  type="button"
+                  size="sm"
+                  variant={active ? 'default' : 'outline'}
+                  className="h-7 px-2.5 cursor-pointer"
+                  onClick={() => setStatusFilter(option.value)}
+                  data-test-id={`extensions-status-${option.value}`}
+                >
+                  {option.label}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
       </PageShell.Header>
 
       <PageShell.Content className="p-4">
@@ -333,6 +485,15 @@ function RouteComponent(): React.JSX.Element {
               Adicione manifestos em <code>backend/extensions/</code> seguindo a
               estrutura <code>{'<pacote>/<plugins|modules|tools>/<id>'}</code>.
               O loader varre o diretório no boot e popula esta lista.
+            </EmptyDescription>
+          </Empty>
+        )}
+
+        {data.length > 0 && filtered.length === 0 && (
+          <Empty>
+            <EmptyTitle>Nenhum resultado</EmptyTitle>
+            <EmptyDescription>
+              Ajuste a busca ou os filtros para encontrar extensões.
             </EmptyDescription>
           </Empty>
         )}
