@@ -17,6 +17,7 @@ export const E_MENU_ITEM_TYPE = {
   FORM: 'FORM',
   EXTERNAL: 'EXTERNAL',
   SEPARATOR: 'SEPARATOR',
+  EXTENSION_MODULE: 'EXTENSION_MODULE',
 } as const;
 
 export const E_FIELD_TYPE = {
@@ -105,6 +106,21 @@ export const E_TABLE_COLLABORATION = {
   OPEN: 'OPEN',
   RESTRICTED: 'RESTRICTED',
 } as const;
+
+export const E_EXTENSION_TYPE = {
+  PLUGIN: 'PLUGIN',
+  MODULE: 'MODULE',
+  TOOL: 'TOOL',
+} as const;
+
+export const EXTENSION_TYPE_LABEL: Record<
+  (typeof E_EXTENSION_TYPE)[keyof typeof E_EXTENSION_TYPE],
+  string
+> = {
+  PLUGIN: 'Plugin',
+  MODULE: 'Módulo',
+  TOOL: 'Ferramenta',
+};
 
 export const E_TOKEN_STATUS = {
   REQUESTED: 'REQUESTED',
@@ -233,6 +249,7 @@ export const MENU_ITEM_TYPE_OPTIONS = [
   { label: 'Formulário', value: E_MENU_ITEM_TYPE.FORM },
   { label: 'Link Externo', value: E_MENU_ITEM_TYPE.EXTERNAL },
   { label: 'Separador', value: E_MENU_ITEM_TYPE.SEPARATOR },
+  { label: 'Módulo de Extensão', value: E_MENU_ITEM_TYPE.EXTENSION_MODULE },
 ] as const;
 
 export const TABLE_COLLABORATION_OPTIONS = [

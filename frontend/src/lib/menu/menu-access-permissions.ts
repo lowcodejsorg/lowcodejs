@@ -2,6 +2,7 @@ import type { LinkProps } from '@tanstack/react-router';
 
 export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
   ADMINISTRATOR: [
+    '/e/$package/$id',
     '/groups',
     '/groups/create',
     '/groups/$groupId',
@@ -17,9 +18,21 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
     '/users/create',
     '/users/$userId',
   ],
-  MANAGER: ['/tables', '/tables/$slug', '/pages/$slug'],
-  REGISTERED: ['/tables', '/tables/$slug', '/pages/$slug'],
+  MANAGER: [
+    '/e/$package/$id',
+    '/tables',
+    '/tables/$slug',
+    '/pages/$slug',
+  ],
+  REGISTERED: [
+    '/e/$package/$id',
+    '/tables',
+    '/tables/$slug',
+    '/pages/$slug',
+  ],
   MASTER: [
+    '/e/$package/$id',
+    '/extensions',
     '/groups',
     '/groups/create',
     '/groups/$groupId',
@@ -31,6 +44,8 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
     '/settings',
     '/tables',
     '/tables/$slug',
+    '/tools',
+    '/tools/$package/$id',
     '/users',
     '/users/create',
     '/users/$userId',

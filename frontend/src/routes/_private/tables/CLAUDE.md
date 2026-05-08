@@ -1,7 +1,8 @@
 # Tabelas - Funcionalidade Central da Plataforma Low-Code
 
 Gerenciamento de tabelas dinamicas. Rota base `/tables` com listagem paginada,
-filtros, importacao/exportacao e acoes de lixeira.
+filtros e acoes de lixeira. Importacao/exportacao de tabelas vive na tool
+`tables-import-export` (`/tools/core/tables-import-export`).
 
 ## Rota
 
@@ -17,8 +18,6 @@ filtros, importacao/exportacao e acoes de lixeira.
 | `index.lazy.tsx`             | Componente         | Layout com header, FilterSidebar, TableTables, ChatSidebar e Pagination                                        |
 | `-table-tables.tsx`          | Componente privado | DataTable com colunas: nome, slug, visibilidade, criado por, criado em, acoes                                  |
 | `-table-tables-skeleton.tsx` | Skeleton           | Skeleton da tabela de listagem                                                                                 |
-| `-export-dialog.tsx`         | Dialog             | Exportar tabela como JSON (estrutura, dados ou ambos) via POST `/tools/export-table`                           |
-| `-import-dialog.tsx`         | Dialog             | Importar tabela de arquivo JSON exportado via POST `/tools/import-table`                                       |
 
 ## Visibilidades (E_TABLE_VISIBILITY)
 

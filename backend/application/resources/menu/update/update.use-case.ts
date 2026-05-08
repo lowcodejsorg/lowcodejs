@@ -5,10 +5,12 @@ import slugify from 'slugify';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import {
+  E_EXTENSION_TYPE,
   E_MENU_ITEM_TYPE,
   type IMenu as Entity,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import {
   MenuContractRepository,
   type MenuUpdatePayload as RepositoryMenuUpdatePayload,
@@ -29,6 +31,7 @@ export default class MenuUpdateUseCase {
   constructor(
     private readonly menuRepository: MenuContractRepository,
     private readonly tableRepository: TableContractRepository,
+    private readonly extensionRepository: ExtensionContractRepository,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -194,6 +197,50 @@ export default class MenuUpdateUseCase {
 
       if (payload.type && payload.type === E_MENU_ITEM_TYPE.PAGE) {
         payload.url = '/pages/'.concat(finalSlug);
+      }
+
+      if (
+        payload.type &&
+        payload.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE
+      ) {
+        const ref = payload.extension;
+        if (!ref?.pkg || !ref?.extensionId) {
+          return left(
+            HTTPException.BadRequest(
+              'Selecione um módulo de extensão',
+              'INVALID_PARAMETERS',
+              { extension: 'Selecione um módulo de extensão' },
+            ),
+          );
+        }
+
+        const extension = await this.extensionRepository.findByKey(
+          ref.pkg,
+          E_EXTENSION_TYPE.MODULE,
+          ref.extensionId,
+        );
+
+        if (!extension) {
+          return left(
+            HTTPException.NotFound(
+              'Módulo de extensão não encontrado',
+              'EXTENSION_NOT_FOUND',
+              { extension: 'Módulo de extensão não encontrado' },
+            ),
+          );
+        }
+
+        if (!extension.enabled || !extension.available) {
+          return left(
+            HTTPException.BadRequest(
+              'Módulo de extensão não está ativo',
+              'EXTENSION_NOT_ACTIVE',
+              { extension: 'Módulo de extensão não está ativo' },
+            ),
+          );
+        }
+
+        payload.url = '/e/'.concat(ref.pkg).concat('/').concat(ref.extensionId);
       }
 
       // If parent changed, recalculate order

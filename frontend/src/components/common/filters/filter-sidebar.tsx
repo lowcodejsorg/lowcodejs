@@ -2,6 +2,7 @@ import { useSearch } from '@tanstack/react-router';
 import { FilterIcon, XIcon } from 'lucide-react';
 import React from 'react';
 
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import {
   FilterFieldsForm,
   useFilterState,
@@ -15,19 +16,22 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { useIsMobile } from '@/hooks/use-mobile';
-import type { IFilterField } from '@/lib/interfaces';
+import type { IFilterField, ITable } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
 interface FilterSidebarProps {
   fields: Array<IFilterField>;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  /** Tabela em foco — usado pelo slot de extensões table.filters para filtrar por tableScope. */
+  table?: ITable;
 }
 
 export function FilterSidebar({
   fields,
   open,
   onOpenChange,
+  table,
 }: FilterSidebarProps): React.JSX.Element {
   const isMobile = useIsMobile();
   const search = useSearch({ strict: false });
@@ -61,6 +65,10 @@ export function FilterSidebar({
           </SheetHeader>
 
           <div className="flex flex-col gap-4 w-full flex-1">
+            <ExtensionSlot
+              id="table.filters"
+              context={{ table, fields }}
+            />
             <FilterFieldsForm
               fields={fields}
               filterValues={filterValues}
@@ -124,7 +132,11 @@ export function FilterSidebar({
           </Button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-3">
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          <ExtensionSlot
+            id="table.filters"
+            context={{ table, fields }}
+          />
           <FilterFieldsForm
             fields={fields}
             filterValues={filterValues}

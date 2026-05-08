@@ -1,4 +1,5 @@
 import type { BootstrapConfig } from 'fastify-decorators';
+import { existsSync } from 'node:fs';
 import { readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
@@ -12,23 +13,42 @@ type Controllers = Extract<
 const isDevOrTest = ['development'].includes(Env.NODE_ENV);
 const controllerPattern = /^(?!.*\.spec\.).*\.controller\.(ts|js)$/;
 
-export async function loadControllers(): Promise<Controllers> {
-  const controllers: Controllers = [];
-  const controllersPath = join(process.cwd(), 'application/resources');
-  const files = await readdir(controllersPath, { recursive: true });
+async function collectFromRoot(
+  root: string,
+  controllers: Controllers,
+  label: string,
+): Promise<void> {
+  if (!existsSync(root)) return;
 
+  const files = await readdir(root, { recursive: true });
   const controllerFiles = files
-    .filter((file) => controllerPattern.test(file))
-    .sort((a, b) => a.localeCompare(b));
+    .filter((file) => controllerPattern.test(String(file)))
+    .sort((a, b) => String(a).localeCompare(String(b)));
 
   for (const file of controllerFiles) {
-    const module = await import(join(controllersPath, file));
+    const module = await import(join(root, String(file)));
     controllers.push(module.default);
 
     if (isDevOrTest) {
-      console.info(`✅ Controller ${file} loaded`);
+      console.info(`✅ Controller [${label}] ${file} loaded`);
     }
   }
+}
+
+export async function loadControllers(): Promise<Controllers> {
+  const controllers: Controllers = [];
+
+  await collectFromRoot(
+    join(process.cwd(), 'application/resources'),
+    controllers,
+    'core',
+  );
+
+  await collectFromRoot(
+    join(process.cwd(), 'extensions'),
+    controllers,
+    'extension',
+  );
 
   if (isDevOrTest) {
     console.info(`✅ ${controllers.length} controllers loaded`);
