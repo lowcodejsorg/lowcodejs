@@ -113,7 +113,7 @@ Schema Zod canônico em
   "author": "...",
   "icon": "FileDown",                // lucide-react ou path relativo
   "image": "preview.png",
-  "placement": { "slot": "table.actions" },     // PLUGIN
+  "placement": { "slots": ["table.actions"] },  // PLUGIN — array, 1+ slots
   "route": "/e/core/homepage",                   // MODULE
   "tool": { "submenu": "tables" },               // TOOL
   "requires": { "lowcodejs": ">=1.0.0", "extensions": [] }
@@ -380,6 +380,45 @@ EOF
 | Visibilidade do módulo por role | Manifest declara `permissions.view: string[]` (vazio = todos). Backend filtra `/extensions/active` |
 | Validação de URL única no menu custom | **Punted** — Fase 4 não suporta URL custom. Menu sempre aponta para a URL canônica `/e/<pkg>/<id>` (auto-derivada). URLs alias ficam para Fase 6 |
 | Módulo de exemplo | Página de boas-vindas (`core/modules/welcome`) com atalhos para `/tables`, `/tools` e `/extensions` |
+
+## 6.bonus Multi-slot + migração export/import (entregue depois da Fase 5)
+
+Mudanças adicionais agendadas pelo usuário durante a transição para Fase 6:
+
+### Multi-slot em PLUGIN
+
+- **Schema**: `placement.slot: string` → `placement.slots: string[]` em
+  `manifest.schema.ts`. Plugins podem ser registrados em N slots ao mesmo tempo
+- **Model + repos**: `slot` → `slots: [String]` (multikey index `slots: 1,
+  enabled: 1`). Query `payload.slot` usa busca por presença no array
+- **`<ExtensionSlot>`**: filtra por `extension.slots.includes(id)`. Injeta
+  `slot: string` como prop adicional no entry React (permite o mesmo plugin
+  renderizar UI diferente em cada slot)
+- **Migration**: `migrate-extension-slots.ts` (idempotente via marker
+  `MIGRATION_EXTENSION_SLOTS_AT`) renomeia `slot` → `slots` em registros
+  existentes
+- **Plugin de referência atualizado**: `core/plugins/print-table` agora declara
+  `placement.slots: ["table.actions"]`
+- **Slots reservados**: `tables-page.actions` e `tables-page.row.actions` foram
+  documentados como reservados (não instalados) — disponíveis para plugins
+  futuros sem redocumentar o catálogo
+
+### Migração export/import → TOOL única
+
+- Os recursos `backend/application/resources/tools/{export-table,import-table}/`
+  foram migrados para `backend/extensions/core/tools/tables-import-export/`
+  (TOOL única, dois endpoints `/tools/export-table` e `/tools/import-table`,
+  ambos blindados por `ExtensionActiveMiddleware({ type: TOOL,
+  extensionId: 'tables-import-export' })`)
+- O recurso `tools/` no backend ficou vazio e foi removido — `clone-table`,
+  `export-table` e `import-table` vivem em extensões agora
+- Frontend: `frontend/extensions/core/tools/tables-import-export/` com
+  `index.tsx` (página com 2 cards lado a lado) + `export-section.tsx` (card
+  de exportação com `TableCombobox` + checkboxes) + `import-section.tsx` (card
+  de importação com upload + preview)
+- Botões legados `Importar` em `/tables`, `Exportar` no dropdown de cada
+  tabela e `Exportar` na toolbar de `/tables/:slug` foram removidos — acesso
+  agora é via sidebar **Ferramentas** → "Importar / Exportar Tabela"
 
 ## 6.quint Estado da Fase 5 (entregue)
 

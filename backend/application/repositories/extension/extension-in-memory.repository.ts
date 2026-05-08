@@ -45,7 +45,7 @@ export default class ExtensionInMemoryRepository
       filtered = filtered.filter((i) => i.enabled === payload.enabled);
     }
     if (payload?.slot) {
-      filtered = filtered.filter((i) => i.slot === payload.slot);
+      filtered = filtered.filter((i) => i.slots.includes(payload.slot!));
     }
     if (payload?.available !== undefined) {
       filtered = filtered.filter((i) => i.available === payload.available);

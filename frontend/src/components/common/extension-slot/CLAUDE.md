@@ -22,14 +22,14 @@ import { ExtensionSlot } from '@/components/common/extension-slot';
 ```
 
 - `id`: identificador do slot (ver catálogo em `backend/extensions/CLAUDE.md`).
-  Deve bater com `placement.slot` do manifest dos plugins
+  O plugin é renderizado se este id estiver em `placement.slots` do manifest
 - `context`: objeto repassado como spread para cada componente de plugin.
   Cada slot define quais campos vai povoar (ver catálogo)
 
 ## Comportamento
 
 1. Lê extensões ativas via `useExtensionsActiveList`
-2. Filtra por `type === PLUGIN && slot === id`
+2. Filtra por `type === PLUGIN && slots.includes(id)`
 3. Aplica `tableScope`: se `context.table._id` existe, mantém apenas plugins
    cujo `tableScope.mode === 'all'` ou cujo `tableScope.tableIds` inclui o id
    da tabela. Se não há tabela em foco, todos passam
@@ -38,18 +38,22 @@ import { ExtensionSlot } from '@/components/common/extension-slot';
 5. Se a entry React não existe no bundle (manifest registrado mas sem código),
    renderiza `null` — não quebra o slot
 
-## Slots instalados (Fase 3)
+## Slots instalados
 
 | Slot id | Local | Context |
 |---------|-------|---------|
 | `table.actions` | `routes/_private/tables/$slug/index.lazy.tsx` (toolbar de ações) | `{ table, slug }` |
 | `table.filters` | `components/common/filters/filter-sidebar.tsx` (topo da listagem) | `{ table, fields }` |
-| `table.row.actions` | `components/common/table-views/table-row-actions-menu.tsx` (dropdown da linha) | `{ table, row, slug }` |
+| `table.row.actions` | `components/common/table-views/table-row-actions-menu.tsx` (dropdown da linha de registro) | `{ table, row, slug }` |
 
 ## Convenções para autores de plugin
 
 - O componente é `export default` no `index.tsx`
 - Recebe os campos do `context` como props — tipar conforme o slot
+- **Recebe também `slot: string`** — o id do slot atual, injetado
+  automaticamente pelo `<ExtensionSlot>`. Útil para plugins registrados em
+  múltiplos slots renderizarem UI diferente em cada um (ex: `Button` vs
+  `DropdownMenuItem`)
 - Usa o design system (`@/components/ui/*`) para coerência visual
 - Sem chamadas síncronas pesadas no render (use Suspense quando precisar de
   dados — TanStack Query funciona normalmente)

@@ -27,7 +27,7 @@ export const Schema = new mongoose.Schema(
     icon: { type: String, default: null },
     image: { type: String, default: null },
 
-    slot: { type: String, default: null },
+    slots: { type: [String], default: [] },
     route: { type: String, default: null },
     submenu: { type: String, default: null },
 
@@ -66,7 +66,7 @@ export const Schema = new mongoose.Schema(
 
 Schema.index({ pkg: 1, type: 1, extensionId: 1 }, { unique: true });
 Schema.index({ enabled: 1, type: 1 });
-Schema.index({ slot: 1, enabled: 1 });
+Schema.index({ slots: 1, enabled: 1 });
 
 export const Extension = (mongoose?.models?.Extension ||
   mongoose.model<Entity>(

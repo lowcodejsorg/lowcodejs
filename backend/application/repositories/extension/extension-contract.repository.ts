@@ -20,7 +20,7 @@ export type ExtensionUpsertPayload = {
   author: string | null;
   icon: string | null;
   image: string | null;
-  slot: string | null;
+  slots: string[];
   route: string | null;
   submenu: string | null;
   manifestSnapshot: Record<string, unknown>;
@@ -52,6 +52,9 @@ export type ExtensionQueryPayload = {
   slot?: string;
   available?: boolean;
 };
+
+// Nota: o campo `slot` em ExtensionQueryPayload aceita um único slot e
+// busca por presença no array `slots` (multikey index do Mongo).
 
 export type ExtensionAvailabilityKey = {
   pkg: string;

@@ -14,7 +14,7 @@ export const ManifestRequiresSchema = z
 
 export const ManifestPlacementSchema = z
   .object({
-    slot: z.string().min(1),
+    slots: z.array(z.string().min(1)).min(1),
   })
   .strict()
   .optional();

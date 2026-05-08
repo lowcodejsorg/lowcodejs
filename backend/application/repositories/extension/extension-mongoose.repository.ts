@@ -32,7 +32,7 @@ export default class ExtensionMongooseRepository
 
     if (payload?.type) where.type = payload.type;
     if (payload?.enabled !== undefined) where.enabled = payload.enabled;
-    if (payload?.slot) where.slot = payload.slot;
+    if (payload?.slot) where.slots = payload.slot;
     if (payload?.available !== undefined) where.available = payload.available;
 
     return where;

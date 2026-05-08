@@ -558,8 +558,8 @@ export type IExtension = Merge<
     author: string | null;
     icon: string | null;
     image: string | null;
-    /** Slot do placement. Apenas para PLUGIN. */
-    slot: string | null;
+    /** Slots de placement. Apenas para PLUGIN. Plugins podem aparecer em múltiplos slots. */
+    slots: string[];
     /** URL default do módulo. Apenas para MODULE. */
     route: string | null;
     /** Sub-grupo no menu Ferramentas. Apenas para TOOL. */

@@ -29,9 +29,8 @@ estender, customizar ou criar uma variação — não duplicar.
 | Feature | Endpoint / Arquivo |
 |---------|--------------------|
 | Export CSV de rows | `useTableRowsExportCsv()` + `ExportCsvButton` |
-| Export tabela JSON (estrutura + dados) | `POST /tools/export-table` + `TableExportDialog` |
-| Import tabela JSON | `POST /tools/import-table` + `TableImportDialog` |
-| Clone tabela (extensão) | `core/tools/clone-table` |
+| Export/Import tabela JSON (extensão TOOL) | `core/tools/tables-import-export` (`POST /tools/export-table`, `POST /tools/import-table`) |
+| Clone tabela (extensão TOOL) | `core/tools/clone-table` (`POST /tools/clone-table`) |
 
 ## Storage / Arquivos
 
@@ -92,7 +91,7 @@ grep -rni "export" frontend/src/components/common/
 grep -rni "filter" frontend/src/components/common/filters/
 
 # Antes de criar tool
-ls backend/application/resources/tools/ backend/extensions/*/tools/
+ls backend/extensions/*/tools/
 
 # Antes de criar dashboard
 ls frontend/src/routes/_private/dashboard/

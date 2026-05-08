@@ -14,14 +14,16 @@ core/
 ├── modules/
 │   └── welcome/                    ← Fase 4: módulo de referência (boas-vindas)
 └── tools/
-    └── clone-table/                ← Fase 2: primeira tool oficial
+    ├── clone-table/                ← Fase 2: primeira tool oficial
+    └── tables-import-export/       ← exporta/importa tabelas em JSON (2 endpoints, 1 tool)
 ```
 
 ## Tools
 
-| ID            | Endpoint              | Descrição                                                                                            |
-| ------------- | --------------------- | ---------------------------------------------------------------------------------------------------- |
-| `clone-table` | `POST /tools/clone-table` | Clona uma ou mais tabelas com base em modelos existentes ou templates built-in (Kanban, Cards, etc.) |
+| ID                      | Endpoints                                              | Descrição                                                                                            |
+| ----------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `clone-table`           | `POST /tools/clone-table`                              | Clona uma ou mais tabelas com base em modelos existentes ou templates built-in (Kanban, Cards, etc.) |
+| `tables-import-export`  | `POST /tools/export-table`, `POST /tools/import-table` | Exporta uma tabela em JSON (estrutura/dados/full) ou importa de um arquivo JSON exportado pela plataforma |
 
 ## Plugins
 

@@ -9,21 +9,26 @@ projeto TypeScript via `tsconfig.json` (`"include": ["**/*.ts", "**/*.tsx"]`).
 ```
 core/
 ├── tools/
-│   └── clone-table/
-│       └── index.tsx       ← componente default da tool
+│   ├── clone-table/
+│   │   └── index.tsx                ← componente default da tool
+│   └── tables-import-export/
+│       ├── index.tsx                ← page com 2 cards (importar + exportar)
+│       ├── export-section.tsx       ← card de exportação (TableCombobox + checkboxes)
+│       └── import-section.tsx       ← card de importação (file upload + preview)
 ├── plugins/
 │   └── print-table/
-│       └── index.tsx       ← componente default do plugin (slot table.actions)
+│       └── index.tsx                ← botão Imprimir na toolbar (slot table.actions)
 └── modules/
     └── welcome/
-        └── index.tsx       ← componente default do módulo (boas-vindas)
+        └── index.tsx                ← componente default do módulo (boas-vindas)
 ```
 
 ## Entries
 
 | Tipo | ID | Path | Descrição |
 |------|----|----|-----------|
-| `tools` | `clone-table` | `tools/clone-table/index.tsx` | UI de clonagem de tabelas (ex-página `/tools` do core) |
+| `tools` | `clone-table` | `tools/clone-table/index.tsx` | UI de clonagem de tabelas |
+| `tools` | `tables-import-export` | `tools/tables-import-export/index.tsx` | Página com seções de Importar e Exportar tabela. Endpoints `POST /tools/export-table` e `POST /tools/import-table` |
 | `plugins` | `print-table` | `plugins/print-table/index.tsx` | Botão de impressão na toolbar (slot `table.actions`) |
 | `modules` | `welcome` | `modules/welcome/index.tsx` | Página de boas-vindas com atalhos (URL `/e/core/welcome`) |
 

@@ -15,7 +15,7 @@ import { loadExtensionEntry } from '@/lib/extensions-registry';
 export type ExtensionSlotContext = Record<string, unknown>;
 
 interface ExtensionSlotProps {
-  /** Identificador do slot (ex: "table.actions"). Bate com `placement.slot` do manifest. */
+  /** Identificador do slot (ex: "table.actions"). O plugin é renderizado se este id estiver em `placement.slots` do manifest. */
   id: string;
   /** Props passadas como spread para o componente da extensão. */
   context?: ExtensionSlotContext;
@@ -33,11 +33,13 @@ function isPluginAllowedForTable(
 
 interface ExtensionPluginRenderProps {
   plugin: IActiveExtension;
+  slot: string;
   context: ExtensionSlotContext;
 }
 
 function ExtensionPluginRender({
   plugin,
+  slot,
   context,
 }: ExtensionPluginRenderProps): React.JSX.Element {
   const Component = React.useMemo(() => {
@@ -58,7 +60,10 @@ function ExtensionPluginRender({
 
   return (
     <Suspense fallback={null}>
-      <Component {...context} />
+      <Component
+        slot={slot}
+        {...context}
+      />
     </Suspense>
   );
 }
@@ -83,7 +88,7 @@ export function ExtensionSlot({
   const plugins = React.useMemo(() => {
     return (extensions ?? []).filter((extension) => {
       if (extension.type !== E_EXTENSION_TYPE.PLUGIN) return false;
-      if (extension.slot !== id) return false;
+      if (!extension.slots.includes(id)) return false;
       return isPluginAllowedForTable(extension, tableId);
     });
   }, [extensions, id, tableId]);
@@ -96,6 +101,7 @@ export function ExtensionSlot({
         <ExtensionPluginRender
           key={plugin._id}
           plugin={plugin}
+          slot={id}
           context={context}
         />
       ))}

@@ -14,7 +14,7 @@ Use quando o usuário quer um botão pequeno em um placeholder existente do core
   "author": "<seu nome ou time>",
   "icon": "<NomeLucideIcon>",
   "placement": {
-    "slot": "<slot.id>"
+    "slots": ["<slot.id>"]
   },
   "requires": {
     "lowcodejs": ">=1.0.0"
@@ -25,6 +25,12 @@ Use quando o usuário quer um botão pequeno em um placeholder existente do core
 Slots válidos hoje: `table.actions`, `table.filters`, `table.row.actions`.
 Veja `frontend/src/components/common/extension-slot/CLAUDE.md` para o context
 de cada slot.
+
+`placement.slots` é um array — um plugin pode ser registrado em múltiplos
+slots ao mesmo tempo (ex: `["table.actions", "tables-page.row.actions"]` para
+um botão que aparece tanto na toolbar da tabela quanto no dropdown de cada
+linha em `/tables`). O entry React é montado uma vez por slot e recebe o
+context daquele slot.
 
 ## 2. `frontend/extensions/<pkg>/plugins/<id>/index.tsx`
 

@@ -1,0 +1,15 @@
+{
+  "id": "tables-import-export",
+  "type": "TOOL",
+  "name": "Importar / Exportar Tabela",
+  "description": "Exporta uma tabela em JSON (estrutura e/ou dados) ou importa uma tabela a partir de um arquivo JSON exportado pela plataforma.",
+  "version": "1.0.0",
+  "author": "Time Core",
+  "icon": "ArrowDownUpIcon",
+  "tool": {
+    "submenu": "tables"
+  },
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}

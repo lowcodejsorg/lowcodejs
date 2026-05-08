@@ -32,7 +32,7 @@ export const ExtensionListSchema: FastifySchema = {
           author: { type: 'string', nullable: true },
           icon: { type: 'string', nullable: true },
           image: { type: 'string', nullable: true },
-          slot: { type: 'string', nullable: true },
+          slots: { type: 'array', items: { type: 'string' } },
           route: { type: 'string', nullable: true },
           submenu: { type: 'string', nullable: true },
           enabled: { type: 'boolean' },

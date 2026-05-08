@@ -170,7 +170,7 @@ Resumo:
 - `name`: string obrigatório
 - `version`: semver obrigatório
 - `description`, `author`, `icon`, `image`: strings opcionais nullable
-- `placement.slot`: obrigatório se PLUGIN
+- `placement.slots`: obrigatório se PLUGIN — array de strings (1 ou mais)
 - `route`: opcional se MODULE (default = `/e/<pkg>/<id>`)
 - `tool.submenu`: opcional se TOOL
 - `requires.lowcodejs`: semver opcional

@@ -68,17 +68,23 @@ Exemplos canônicos:
 
 ## 3. Catálogo de slots (apenas PLUGIN)
 
-Plugins precisam declarar `placement.slot` no manifest. Slots **instalados**
-hoje:
+Plugins precisam declarar `placement.slots` (array com 1+ slots) no manifest.
+Um mesmo plugin pode ser registrado em múltiplos slots — o entry React é
+montado uma vez por slot, recebendo o context daquele slot. Use isso quando a
+mesma ação faz sentido em locais diferentes (ex: botão "Exportar" na toolbar
+da tabela e no dropdown de ações de cada linha).
+
+Slots **instalados** hoje:
 
 | Slot id | Onde aparece | Context props recebidas |
 |---------|--------------|-------------------------|
 | `table.actions` | Toolbar da página da tabela (linha do view/config) | `{ table: ITable, slug: string }` |
 | `table.filters` | Topo da listagem do FilterSidebar (mobile + desktop) | `{ table?: ITable, fields: IFilterField[] }` |
-| `table.row.actions` | Dropdown "Ações" de cada linha | `{ table?: ITable, row: IRow, slug: string }` |
+| `table.row.actions` | Dropdown "Ações" de cada linha (registro) | `{ table?: ITable, row: IRow, slug: string }` |
 
 Slots **reservados** (não instalados — agendar com user antes):
-`table.bulk-actions`, `app.header.right`, `app.dashboard.widgets`.
+`tables-page.actions`, `tables-page.row.actions`, `table.bulk-actions`,
+`app.header.right`, `app.dashboard.widgets`.
 
 **Regra**: NÃO use um slot reservado sem antes adicionar o `<ExtensionSlot>` no
 JSX correspondente do core E documentar a context shape.
@@ -118,7 +124,23 @@ Schema canônico em `backend/application/core/extensions/manifest.schema.ts`.
   "type": "PLUGIN",
   "name": "Exemplo",
   "version": "1.0.0",
-  "placement": { "slot": "table.actions" }
+  "placement": { "slots": ["table.actions"] }
+}
+```
+
+Para registrar o mesmo plugin em múltiplos slots, basta adicionar mais ids ao
+array. O entry React é montado uma vez por slot e recebe o context do slot
+correspondente, **mais a prop `slot: string`** com o id do slot atual —
+injetada automaticamente pelo `<ExtensionSlot>`. Use isso para diferenciar a
+UI em cada local (ex: `Button` na toolbar vs `DropdownMenuItem` num dropdown).
+
+```jsonc
+{
+  "id": "export-table",
+  "type": "PLUGIN",
+  "name": "Exportar tabela",
+  "version": "1.0.0",
+  "placement": { "slots": ["table.actions", "tables-page.row.actions"] }
 }
 ```
 
@@ -261,8 +283,8 @@ outros pacotes começam **desativadas** — o MASTER ativa em `/extensions`.
 
 ## 12. Checklist final (antes de declarar pronto)
 
-- [ ] Manifesto válido (id bate com pasta, type correto, placement.slot
-      existe se plugin)
+- [ ] Manifesto válido (id bate com pasta, type correto, placement.slots
+      é array não vazio se plugin, todos os slots existem no catálogo §3)
 - [ ] Entry React tem `export default`
 - [ ] Imports usam `@/components/ui/*` / `@/hooks/tanstack-query/*` (não Radix)
 - [ ] CLAUDE.md do pacote atualizado
@@ -275,8 +297,9 @@ outros pacotes começam **desativadas** — o MASTER ativa em `/extensions`.
 
 - **"Manifest id não bate com pasta"** → o loader rejeitou. Renomeie a pasta
   ou o `id` no manifest
-- **Plugin não aparece no slot** → verifique `placement.slot` (case-sensitive),
-  se a extensão está `enabled`, e se `tableScope` permite a tabela atual
+- **Plugin não aparece no slot** → verifique `placement.slots` (case-sensitive,
+  cada id deve estar no catálogo §3), se a extensão está `enabled`, e se
+  `tableScope` permite a tabela atual
 - **Module 404** → confirme que está em `pkg/modules/id/manifest.json` (não
   `pkg/module/...`) e que está ativada
 - **Endpoint da extensão retorna 404** → faltou

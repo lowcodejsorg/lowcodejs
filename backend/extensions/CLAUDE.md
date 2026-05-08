@@ -57,7 +57,7 @@ Um manifesto mínimo para um plugin:
   "author": "Time Core",
   "icon": "FileDown",
   "placement": {
-    "slot": "table.actions"
+    "slots": ["table.actions"]
   },
   "requires": {
     "lowcodejs": ">=1.0.0"
@@ -108,7 +108,7 @@ Para `TOOL`:
 | `requires.lowcodejs` | string semver | não | versão mínima da plataforma |
 | `requires.extensions` | string[] | não | outras extensões necessárias |
 | `permissions.view` | array de roles | não | roles permitidas. Vazio = todos auth users |
-| `placement.slot` | string | apenas PLUGIN | id do slot do core (ver §Slots) |
+| `placement.slots` | string[] | apenas PLUGIN | um ou mais ids de slots do core onde o plugin será renderizado (ver §Slots) |
 | `route` | string | apenas MODULE | URL default; default = `/e/<pkg>/<id>` |
 | `tool.submenu` | string | opcional TOOL | grupo dentro de Ferramentas |
 
@@ -148,12 +148,18 @@ Slots são pontos no JSX do core onde plugins são injetados via
 | `table.actions` | toolbar da página da tabela (linha do view/config) | `{ table, slug }` | instalado |
 | `table.filters` | topo da listagem do FilterSidebar | `{ table, fields }` | instalado |
 | `table.row.actions` | dropdown de ações por registro (`TableRowActionsMenu`) | `{ table, row, slug }` | instalado |
+| `tables-page.actions` | toolbar de `/tables` (página de listagem de tabelas) | `{}` | reservado (futuro) |
+| `tables-page.row.actions` | dropdown de ações de cada tabela em `/tables` | `{ table, slug }` | reservado (futuro) |
 | `table.bulk-actions` | barra de ações em massa | `{ table, selectedIds }` | reservado (futuro) |
 | `app.header.right` | header global | `{ user }` | reservado (futuro) |
 | `app.dashboard.widgets` | dashboard | `{}` | reservado (futuro) |
 
+> Plugins podem ser registrados em **vários** slots ao mesmo tempo declarando
+> múltiplos ids em `placement.slots`. O entry React é montado uma vez por slot
+> e recebe o context daquele slot.
+
 Slots reservados podem ser instalados conforme demanda. A SKILL (Fase 5)
-valida `placement.slot` contra os slots ativos.
+valida `placement.slots` contra os slots ativos.
 
 ## Ciclo de vida
 
