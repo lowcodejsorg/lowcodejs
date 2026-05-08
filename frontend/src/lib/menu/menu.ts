@@ -58,6 +58,11 @@ export const getStaticMenusByRole = (
               { title: 'Tabelas', url: '/tables', icon: TableIcon },
               { title: 'Menus', url: '/menus', icon: MenuIcon },
               { title: 'Usuários', url: '/users', icon: UsersIcon },
+              {
+                title: 'Extensões',
+                url: '/extensions',
+                icon: PuzzleIcon,
+              },
             ],
           },
           {

@@ -1,7 +1,7 @@
 # Workshop de Extensões
 
-Página de gestão das extensões registradas no sistema. Restrita a usuários com
-role MASTER.
+Página de gestão das extensões registradas no sistema. Disponível para
+usuários com role MASTER ou ADMINISTRATOR.
 
 ## Arquivos
 
@@ -22,8 +22,9 @@ role MASTER.
 
 ## Controle de acesso
 
-- `beforeLoad`: redireciona não-MASTER para `/tables`
-- Backend: `RoleMiddleware([E_ROLE.MASTER])` em todas as rotas `/extensions`
+- `beforeLoad`: redireciona quem não for MASTER nem ADMINISTRATOR para `/tables`
+- Backend: `RoleMiddleware([E_ROLE.MASTER, E_ROLE.ADMINISTRATOR])` em todas as
+  rotas `/extensions`
 
 ## Observações
 

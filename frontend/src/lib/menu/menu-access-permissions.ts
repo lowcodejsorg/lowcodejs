@@ -3,6 +3,7 @@ import type { LinkProps } from '@tanstack/react-router';
 export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
   ADMINISTRATOR: [
     '/e/$package/$id',
+    '/extensions',
     '/groups',
     '/groups/create',
     '/groups/$groupId',
