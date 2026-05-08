@@ -423,7 +423,7 @@ export type IExtension = Merge<
     author: string | null;
     icon: string | null;
     image: string | null;
-    slots: string[];
+    slots: Array<string>;
     route: string | null;
     submenu: string | null;
     enabled: boolean;

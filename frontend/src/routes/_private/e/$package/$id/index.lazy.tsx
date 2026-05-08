@@ -45,7 +45,7 @@ function RouteComponent(): React.JSX.Element {
     return React.lazy(async () => {
       const Entry = await loadExtensionEntry(pkg, 'modules', id);
       if (!Entry) {
-        return { default: () => <RouteNotFound /> };
+        return { default: (): React.JSX.Element => <RouteNotFound /> };
       }
       return { default: Entry };
     });

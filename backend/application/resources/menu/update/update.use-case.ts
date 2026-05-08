@@ -199,10 +199,7 @@ export default class MenuUpdateUseCase {
         payload.url = '/pages/'.concat(finalSlug);
       }
 
-      if (
-        payload.type &&
-        payload.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE
-      ) {
+      if (payload.type && payload.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE) {
         const ref = payload.extension;
         if (!ref?.pkg || !ref?.extensionId) {
           return left(

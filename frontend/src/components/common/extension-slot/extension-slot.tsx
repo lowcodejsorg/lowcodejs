@@ -1,9 +1,7 @@
 import React, { Suspense } from 'react';
 
-import {
-  useExtensionsActiveList,
-  type IActiveExtension,
-} from '@/hooks/tanstack-query/use-extensions-active-list';
+import { useExtensionsActiveList } from '@/hooks/tanstack-query/use-extensions-active-list';
+import type { IActiveExtension } from '@/hooks/tanstack-query/use-extensions-active-list';
 import { E_EXTENSION_TYPE } from '@/lib/constant';
 import { loadExtensionEntry } from '@/lib/extensions-registry';
 
@@ -52,7 +50,7 @@ function ExtensionPluginRender({
       if (!Entry) {
         // Manifest registrado mas entry React não existe no bundle. Não quebra
         // o slot — só não renderiza nada.
-        return { default: () => null };
+        return { default: (): null => null };
       }
       return { default: Entry };
     });

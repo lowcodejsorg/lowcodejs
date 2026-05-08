@@ -20,7 +20,9 @@ interface RecentActivityProps {
   data: Array<ActivityItem>;
 }
 
-export function RecentActivity({ data }: RecentActivityProps): React.JSX.Element {
+export function RecentActivity({
+  data,
+}: RecentActivityProps): React.JSX.Element {
   return (
     <Card data-test-id="recent-activity">
       <CardHeader>

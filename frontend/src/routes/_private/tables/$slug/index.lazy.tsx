@@ -6,12 +6,7 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
-import {
-  ArrowLeftIcon,
-  PlusIcon,
-  Share2Icon,
-  ShieldXIcon,
-} from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
 
 import { RowEmptyTrashDialog } from './-empty-trash-dialog';

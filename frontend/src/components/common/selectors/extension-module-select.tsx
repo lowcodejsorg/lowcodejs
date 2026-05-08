@@ -46,8 +46,7 @@ export function ExtensionModuleSelect({
   const { data, isLoading } = useExtensionsActiveList();
 
   const modules = React.useMemo(
-    () =>
-      (data ?? []).filter((e) => e.type === E_EXTENSION_TYPE.MODULE),
+    () => (data ?? []).filter((e) => e.type === E_EXTENSION_TYPE.MODULE),
     [data],
   );
 

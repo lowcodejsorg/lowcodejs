@@ -24,10 +24,7 @@ export default class {
       schema: ExtensionActiveListSchema,
     },
   })
-  async handle(
-    request: FastifyRequest,
-    response: FastifyReply,
-  ): Promise<void> {
+  async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const result = await this.useCase.execute({ role: request.user.role });
 
     if (result.isLeft()) {

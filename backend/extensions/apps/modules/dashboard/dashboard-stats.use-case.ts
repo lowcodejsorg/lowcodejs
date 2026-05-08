@@ -1,14 +1,13 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import { getDataConnection } from '@config/database.config';
-
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import { E_USER_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { getDataConnection } from '@config/database.config';
 
 export type DashboardStatsResponse = {
   totals: {

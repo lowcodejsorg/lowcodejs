@@ -11,10 +11,8 @@ import {
 } from 'lucide-react';
 import { useMemo } from 'react';
 
-import {
-  useExtensionsActiveList,
-  type IActiveExtension,
-} from './use-extensions-active-list';
+import { useExtensionsActiveList } from './use-extensions-active-list';
+import type { IActiveExtension } from './use-extensions-active-list';
 import { useMenuReadList } from './use-menu-read-list';
 
 import { E_EXTENSION_TYPE, E_MENU_ITEM_TYPE } from '@/lib/constant';
@@ -181,9 +179,7 @@ function resolveLucideIcon(name: string | null | undefined): LucideIcon {
   return WrenchIcon;
 }
 
-function buildToolItems(
-  extensions: Array<IActiveExtension>,
-): Array<MenuItem> {
+function buildToolItems(extensions: Array<IActiveExtension>): Array<MenuItem> {
   return extensions
     .filter((extension) => extension.type === E_EXTENSION_TYPE.TOOL)
     .sort((a, b) => a.name.localeCompare(b.name))
@@ -268,11 +264,7 @@ export function useMenuDynamic(role: string): {
       ? [{ title: '', items: [], isLoading: true }]
       : dynamicMenuRoute;
 
-    return [
-      ...staticMenusBefore,
-      ...dynamicPart,
-      ...staticMenusAfterWithTools,
-    ];
+    return [...staticMenusBefore, ...dynamicPart, ...staticMenusAfterWithTools];
   }, [
     staticMenusBefore,
     dynamicMenuRoute,

@@ -18,18 +18,8 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
     '/users/create',
     '/users/$userId',
   ],
-  MANAGER: [
-    '/e/$package/$id',
-    '/tables',
-    '/tables/$slug',
-    '/pages/$slug',
-  ],
-  REGISTERED: [
-    '/e/$package/$id',
-    '/tables',
-    '/tables/$slug',
-    '/pages/$slug',
-  ],
+  MANAGER: ['/e/$package/$id', '/tables', '/tables/$slug', '/pages/$slug'],
+  REGISTERED: ['/e/$package/$id', '/tables', '/tables/$slug', '/pages/$slug'],
   MASTER: [
     '/e/$package/$id',
     '/extensions',

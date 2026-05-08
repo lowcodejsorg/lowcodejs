@@ -15,11 +15,7 @@ const entries = import.meta.glob<ExtensionEntryModule>(
   '../../extensions/*/{plugins,modules,tools}/*/index.tsx',
 );
 
-function buildKey(
-  pkg: string,
-  type: ExtensionEntryType,
-  id: string,
-): string {
+function buildKey(pkg: string, type: ExtensionEntryType, id: string): string {
   return `../../extensions/${pkg}/${type}/${id}/index.tsx`;
 }
 

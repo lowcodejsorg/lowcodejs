@@ -9,13 +9,14 @@ import { useAuthStore } from '@/stores/authentication';
 
 export type IActiveExtension = Omit<IExtension, 'manifestSnapshot'>;
 
-export const extensionActiveListOptions = () =>
+export const extensionActiveListOptions = (): ReturnType<
+  typeof queryOptions<Array<IActiveExtension>>
+> =>
   queryOptions({
     queryKey: queryKeys.extensions.active(),
     queryFn: async () => {
-      const response = await API.get<Array<IActiveExtension>>(
-        '/extensions/active',
-      );
+      const response =
+        await API.get<Array<IActiveExtension>>('/extensions/active');
       return response.data;
     },
     staleTime: 60 * 1000,

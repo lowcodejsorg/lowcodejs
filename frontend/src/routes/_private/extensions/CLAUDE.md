@@ -5,11 +5,11 @@ role MASTER.
 
 ## Arquivos
 
-| Arquivo                            | Tipo         | Descrição                                                                |
-| ---------------------------------- | ------------ | ------------------------------------------------------------------------ |
-| `index.tsx`                        | Route config | `beforeLoad` valida MASTER, loader prefetch `extensionListOptions()`     |
-| `index.lazy.tsx`                   | Componente   | Listagem por pacote, toggle de ativação, sheet de escopo por tabela      |
-| `-extensions-page-skeleton.tsx`    | Privado      | Skeleton exibido durante prefetch                                        |
+| Arquivo                         | Tipo         | Descrição                                                            |
+| ------------------------------- | ------------ | -------------------------------------------------------------------- |
+| `index.tsx`                     | Route config | `beforeLoad` valida MASTER, loader prefetch `extensionListOptions()` |
+| `index.lazy.tsx`                | Componente   | Listagem por pacote, toggle de ativação, sheet de escopo por tabela  |
+| `-extensions-page-skeleton.tsx` | Privado      | Skeleton exibido durante prefetch                                    |
 
 ## Fluxo
 

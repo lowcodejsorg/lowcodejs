@@ -16,12 +16,6 @@ import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group';
-import {
   Card,
   CardContent,
   CardDescription,
@@ -30,6 +24,12 @@ import {
 } from '@/components/ui/card';
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { Field, FieldLabel } from '@/components/ui/field';
+import {
+  InputGroup,
+  InputGroupAddon,
+  InputGroupButton,
+  InputGroupInput,
+} from '@/components/ui/input-group';
 import {
   Sheet,
   SheetContent,
@@ -43,7 +43,7 @@ import { Switch } from '@/components/ui/switch';
 import { extensionListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useExtensionConfigureTableScope } from '@/hooks/tanstack-query/use-extension-configure-table-scope';
 import { useExtensionToggle } from '@/hooks/tanstack-query/use-extension-toggle';
-import { E_EXTENSION_TYPE, EXTENSION_TYPE_LABEL } from '@/lib/constant';
+import { EXTENSION_TYPE_LABEL, E_EXTENSION_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IExtension } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -52,11 +52,7 @@ export const Route = createLazyFileRoute('/_private/extensions/')({
   component: RouteComponent,
 });
 
-function TypeBadge({
-  type,
-}: {
-  type: IExtension['type'];
-}): React.JSX.Element {
+function TypeBadge({ type }: { type: IExtension['type'] }): React.JSX.Element {
   const Icon =
     type === E_EXTENSION_TYPE.PLUGIN
       ? PuzzleIcon
@@ -113,7 +109,7 @@ function ExtensionCard({
   const isPending = toggle.status === 'pending';
   const canEnable = extension.available;
 
-  const tableScopeLabel = (() => {
+  const tableScopeLabel = ((): string | null => {
     if (extension.type !== E_EXTENSION_TYPE.PLUGIN) return null;
     if (extension.tableScope.mode === 'all') return 'Todas as tabelas';
     const count = extension.tableScope.tableIds.length;
@@ -337,8 +333,9 @@ const STATUS_FILTERS: Array<{ value: StatusFilter; label: string }> = [
 function RouteComponent(): React.JSX.Element {
   const { data } = useSuspenseQuery(extensionListOptions());
 
-  const [scopeExtension, setScopeExtension] =
-    React.useState<IExtension | null>(null);
+  const [scopeExtension, setScopeExtension] = React.useState<IExtension | null>(
+    null,
+  );
   const [scopeOpen, setScopeOpen] = React.useState(false);
 
   const [search, setSearch] = React.useState('');

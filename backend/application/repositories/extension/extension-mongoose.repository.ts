@@ -15,9 +15,7 @@ import type {
 } from './extension-contract.repository';
 
 @Service()
-export default class ExtensionMongooseRepository
-  implements ExtensionContractRepository
-{
+export default class ExtensionMongooseRepository implements ExtensionContractRepository {
   private transform(entity: InstanceType<typeof Model>): IExtension {
     return {
       ...entity.toJSON({ flattenObjectIds: true }),

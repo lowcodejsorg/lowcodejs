@@ -77,8 +77,8 @@ export default function WelcomeModule(): React.JSX.Element {
             >
               Menus → Criar
             </Link>
-            (tipo <strong>Módulo de Extensão</strong>) para apresentá-la
-            como página inicial do sistema.
+            (tipo <strong>Módulo de Extensão</strong>) para apresentá-la como
+            página inicial do sistema.
           </p>
 
           <div className="grid gap-3 grid-cols-1 md:grid-cols-3">

@@ -4,7 +4,6 @@ import React from 'react';
 
 import { TableCombobox } from '@/components/common/dynamic-table/table-selectors/table-combobox';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Field, FieldLabel } from '@/components/ui/field';
 import { Label } from '@/components/ui/label';
 import { API } from '@/lib/api';
@@ -30,8 +30,7 @@ export function ExportTableSection(): React.JSX.Element {
     return 'structure';
   }, [includeStructure, includeData]);
 
-  const canExport =
-    Boolean(tableSlug) && (includeStructure || includeData);
+  const canExport = Boolean(tableSlug) && (includeStructure || includeData);
 
   const exportTable = useMutation({
     mutationFn: async function () {
@@ -120,9 +119,7 @@ export function ExportTableSection(): React.JSX.Element {
               <Checkbox
                 id="export-data"
                 checked={includeData}
-                onCheckedChange={(checked) =>
-                  setIncludeData(checked === true)
-                }
+                onCheckedChange={(checked) => setIncludeData(checked === true)}
                 disabled={isPending}
               />
               <div>

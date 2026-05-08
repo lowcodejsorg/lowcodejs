@@ -1,7 +1,8 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { createLazyFileRoute, Link } from '@tanstack/react-router';
+import { Link, createLazyFileRoute } from '@tanstack/react-router';
 import * as LucideIcons from 'lucide-react';
-import { WrenchIcon, type LucideIcon } from 'lucide-react';
+import { WrenchIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import React from 'react';
 
 import { PageHeader, PageShell } from '@/components/common/page-shell';

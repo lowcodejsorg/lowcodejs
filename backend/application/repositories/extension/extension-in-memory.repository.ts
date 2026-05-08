@@ -11,9 +11,7 @@ import type {
   ExtensionUpsertPayload,
 } from './extension-contract.repository';
 
-export default class ExtensionInMemoryRepository
-  implements ExtensionContractRepository
-{
+export default class ExtensionInMemoryRepository implements ExtensionContractRepository {
   items: IExtension[] = [];
 
   async findById(_id: string): Promise<IExtension | null> {

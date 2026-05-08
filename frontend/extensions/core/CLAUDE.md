@@ -25,12 +25,12 @@ core/
 
 ## Entries
 
-| Tipo | ID | Path | Descrição |
-|------|----|----|-----------|
-| `tools` | `clone-table` | `tools/clone-table/index.tsx` | UI de clonagem de tabelas |
-| `tools` | `tables-import-export` | `tools/tables-import-export/index.tsx` | Página com seções de Importar e Exportar tabela. Endpoints `POST /tools/export-table` e `POST /tools/import-table` |
-| `plugins` | `print-table` | `plugins/print-table/index.tsx` | Botão de impressão na toolbar (slot `table.actions`) |
-| `modules` | `welcome` | `modules/welcome/index.tsx` | Página de boas-vindas com atalhos (URL `/e/core/welcome`) |
+| Tipo      | ID                     | Path                                   | Descrição                                                                                                          |
+| --------- | ---------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `tools`   | `clone-table`          | `tools/clone-table/index.tsx`          | UI de clonagem de tabelas                                                                                          |
+| `tools`   | `tables-import-export` | `tools/tables-import-export/index.tsx` | Página com seções de Importar e Exportar tabela. Endpoints `POST /tools/export-table` e `POST /tools/import-table` |
+| `plugins` | `print-table`          | `plugins/print-table/index.tsx`        | Botão de impressão na toolbar (slot `table.actions`)                                                               |
+| `modules` | `welcome`              | `modules/welcome/index.tsx`            | Página de boas-vindas com atalhos (URL `/e/core/welcome`)                                                          |
 
 ## Convenções
 

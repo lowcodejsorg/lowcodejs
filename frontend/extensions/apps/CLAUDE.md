@@ -20,8 +20,8 @@ apps/
 
 ## Entries
 
-| Tipo | ID | Path | Descrição |
-|------|----|------|-----------|
+| Tipo      | ID          | Path                          | Descrição                                                               |
+| --------- | ----------- | ----------------------------- | ----------------------------------------------------------------------- |
 | `modules` | `dashboard` | `modules/dashboard/index.tsx` | Painel administrativo com dados reais (URL `/e/apps/dashboard`, MASTER) |
 
 ## Convenções

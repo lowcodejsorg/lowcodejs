@@ -226,8 +226,8 @@ export function ImportTableSection(): React.JSX.Element {
           Importar tabela
         </CardTitle>
         <CardDescription>
-          Carregue um arquivo JSON exportado pela plataforma para criar uma
-          nova tabela.
+          Carregue um arquivo JSON exportado pela plataforma para criar uma nova
+          tabela.
         </CardDescription>
       </CardHeader>
 

@@ -3,7 +3,7 @@ import { createLazyFileRoute } from '@tanstack/react-router';
 import React, { Suspense } from 'react';
 
 import { PageHeader, PageShell } from '@/components/common/page-shell';
-import { RouteRouteNotFound } from '@/components/common/route-status/route-not-found';
+import { RouteNotFound } from '@/components/common/route-status/route-not-found';
 import { Spinner } from '@/components/ui/spinner';
 import { extensionActiveListOptions } from '@/hooks/tanstack-query/use-extensions-active-list';
 import { E_EXTENSION_TYPE } from '@/lib/constant';
@@ -45,7 +45,7 @@ function RouteComponent(): React.JSX.Element {
     return React.lazy(async () => {
       const Entry = await loadExtensionEntry(pkg, 'tools', id);
       if (!Entry) {
-        return { default: () => <RouteNotFound /> };
+        return { default: (): React.JSX.Element => <RouteNotFound /> };
       }
       return { default: Entry };
     });

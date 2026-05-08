@@ -17,8 +17,8 @@ import z, { ZodError } from 'zod';
 
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
-import { loadExtensions } from '@application/core/extensions/loader';
 import HTTPException from '@application/core/exception.core';
+import { loadExtensions } from '@application/core/extensions/loader';
 import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
 import ExtensionMongooseRepository from '@application/repositories/extension/extension-mongoose.repository';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';

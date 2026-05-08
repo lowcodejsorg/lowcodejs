@@ -1,4 +1,5 @@
-import { useQuery, type UseQueryResult } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
+import type { UseQueryResult } from '@tanstack/react-query';
 
 import { API } from '@/lib/api';
 
@@ -23,9 +24,7 @@ export function useDashboardStats(): UseQueryResult<DashboardStats, Error> {
   return useQuery({
     queryKey: ['extensions', 'apps', 'dashboard', 'stats'],
     queryFn: async () => {
-      const response = await API.get<DashboardStats>(
-        '/e/apps/dashboard/stats',
-      );
+      const response = await API.get<DashboardStats>('/e/apps/dashboard/stats');
       return response.data;
     },
     staleTime: 60 * 1000,

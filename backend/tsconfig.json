@@ -32,6 +32,7 @@
     "application",
     "bin",
     "config",
+    "extensions",
     "start",
     "database",
     "_types",
