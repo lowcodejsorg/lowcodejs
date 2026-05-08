@@ -9,7 +9,7 @@ export const Route = createFileRoute('/_private/extensions/')({
   beforeLoad: async () => {
     const { useAuthStore } = await import('@/stores/authentication');
     const role = useAuthStore.getState().user?.group?.slug?.toUpperCase();
-    if (role !== 'MASTER') {
+    if (role !== 'MASTER' && role !== 'ADMINISTRATOR') {
       throw redirect({ to: '/tables' });
     }
   },
