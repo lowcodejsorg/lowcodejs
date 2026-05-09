@@ -1,5 +1,6 @@
 import {
   GroupIcon,
+  HistoryIcon,
   MenuIcon,
   PuzzleIcon,
   SettingsIcon,
@@ -39,6 +40,11 @@ export const getStaticMenusByRole = (
                 url: '/extensions',
                 icon: PuzzleIcon,
               },
+              {
+                title: 'Histórico de ações',
+                url: '/history',
+                icon: HistoryIcon,
+              },
             ],
           },
           {
@@ -63,6 +69,11 @@ export const getStaticMenusByRole = (
                 url: '/extensions',
                 icon: PuzzleIcon,
               },
+              {
+                title: 'Histórico de ações',
+                url: '/history',
+                icon: HistoryIcon,
+              },
             ],
           },
           {
@@ -78,7 +89,14 @@ export const getStaticMenusByRole = (
         after: [
           {
             title: 'Sistema',
-            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
+            items: [
+              { title: 'Tabelas', url: '/tables', icon: TableIcon },
+              {
+                title: 'Histórico de ações',
+                url: '/history',
+                icon: HistoryIcon,
+              },
+            ],
           },
           {
             title: 'Conta',
@@ -93,7 +111,14 @@ export const getStaticMenusByRole = (
         after: [
           {
             title: 'Sistema',
-            items: [{ title: 'Tabelas', url: '/tables', icon: TableIcon }],
+            items: [
+              { title: 'Tabelas', url: '/tables', icon: TableIcon },
+              {
+                title: 'Histórico de ações',
+                url: '/history',
+                icon: HistoryIcon,
+              },
+            ],
           },
           {
             title: 'Conta',

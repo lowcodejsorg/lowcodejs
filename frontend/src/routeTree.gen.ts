@@ -27,6 +27,7 @@ import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables
 import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/settings/index'
 import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index'
 import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/index'
+import { Route as PrivateHistoryIndexRouteImport } from './routes/_private/history/index'
 import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index'
 import { Route as PrivateExtensionsIndexRouteImport } from './routes/_private/extensions/index'
 import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index'
@@ -170,6 +171,13 @@ const PrivateMenusIndexRoute = PrivateMenusIndexRouteImport.update({
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/menus/index.lazy').then((d) => d.Route),
+)
+const PrivateHistoryIndexRoute = PrivateHistoryIndexRouteImport.update({
+  id: '/history/',
+  path: '/history/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_private/history/index.lazy').then((d) => d.Route),
 )
 const PrivateGroupsIndexRoute = PrivateGroupsIndexRouteImport.update({
   id: '/groups/',
@@ -425,6 +433,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof PrivateDashboardIndexRoute
   '/extensions': typeof PrivateExtensionsIndexRoute
   '/groups': typeof PrivateGroupsIndexRoute
+  '/history': typeof PrivateHistoryIndexRoute
   '/menus': typeof PrivateMenusIndexRoute
   '/profile': typeof PrivateProfileIndexRoute
   '/settings': typeof PrivateSettingsIndexRoute
@@ -472,6 +481,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof PrivateDashboardIndexRoute
   '/extensions': typeof PrivateExtensionsIndexRoute
   '/groups': typeof PrivateGroupsIndexRoute
+  '/history': typeof PrivateHistoryIndexRoute
   '/menus': typeof PrivateMenusIndexRoute
   '/profile': typeof PrivateProfileIndexRoute
   '/settings': typeof PrivateSettingsIndexRoute
@@ -522,6 +532,7 @@ export interface FileRoutesById {
   '/_private/dashboard/': typeof PrivateDashboardIndexRoute
   '/_private/extensions/': typeof PrivateExtensionsIndexRoute
   '/_private/groups/': typeof PrivateGroupsIndexRoute
+  '/_private/history/': typeof PrivateHistoryIndexRoute
   '/_private/menus/': typeof PrivateMenusIndexRoute
   '/_private/profile/': typeof PrivateProfileIndexRoute
   '/_private/settings/': typeof PrivateSettingsIndexRoute
@@ -571,6 +582,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/extensions'
     | '/groups'
+    | '/history'
     | '/menus'
     | '/profile'
     | '/settings'
@@ -618,6 +630,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/extensions'
     | '/groups'
+    | '/history'
     | '/menus'
     | '/profile'
     | '/settings'
@@ -667,6 +680,7 @@ export interface FileRouteTypes {
     | '/_private/dashboard/'
     | '/_private/extensions/'
     | '/_private/groups/'
+    | '/_private/history/'
     | '/_private/menus/'
     | '/_private/profile/'
     | '/_private/settings/'
@@ -838,6 +852,13 @@ declare module '@tanstack/react-router' {
       path: '/menus'
       fullPath: '/menus'
       preLoaderRoute: typeof PrivateMenusIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
+    '/_private/history/': {
+      id: '/_private/history/'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof PrivateHistoryIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/groups/': {
@@ -1073,6 +1094,7 @@ interface PrivateLayoutRouteChildren {
   PrivateDashboardIndexRoute: typeof PrivateDashboardIndexRoute
   PrivateExtensionsIndexRoute: typeof PrivateExtensionsIndexRoute
   PrivateGroupsIndexRoute: typeof PrivateGroupsIndexRoute
+  PrivateHistoryIndexRoute: typeof PrivateHistoryIndexRoute
   PrivateMenusIndexRoute: typeof PrivateMenusIndexRoute
   PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute
   PrivateSettingsIndexRoute: typeof PrivateSettingsIndexRoute
@@ -1106,6 +1128,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateDashboardIndexRoute: PrivateDashboardIndexRoute,
   PrivateExtensionsIndexRoute: PrivateExtensionsIndexRoute,
   PrivateGroupsIndexRoute: PrivateGroupsIndexRoute,
+  PrivateHistoryIndexRoute: PrivateHistoryIndexRoute,
   PrivateMenusIndexRoute: PrivateMenusIndexRoute,
   PrivateProfileIndexRoute: PrivateProfileIndexRoute,
   PrivateSettingsIndexRoute: PrivateSettingsIndexRoute,
