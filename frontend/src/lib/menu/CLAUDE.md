@@ -13,12 +13,12 @@ de menu e controle de acesso a rotas baseado em papeis (RBAC).
 
 ## Estrutura de Menus por Role
 
-| Role          | Menus Disponiveis                                                    |
-| ------------- | -------------------------------------------------------------------- |
+| Role          | Menus Disponiveis                                                               |
+| ------------- | ------------------------------------------------------------------------------- |
 | MASTER        | Tabelas, Configuracoes, Menus, Grupos, Usuarios, Ferramentas, Extensões, Perfil |
 | ADMINISTRATOR | Tabelas, Menus, Usuarios, Ferramentas, Extensões, Perfil                        |
-| MANAGER       | Tabelas, Perfil                                                      |
-| REGISTERED    | Tabelas, Perfil                                                      |
+| MANAGER       | Tabelas, Perfil                                                                 |
+| REGISTERED    | Tabelas, Perfil                                                                 |
 
 Todos os menus sao retornados na propriedade `after`. A propriedade `before`
 esta vazia para todos os roles e e reservada para menus dinamicos carregados do

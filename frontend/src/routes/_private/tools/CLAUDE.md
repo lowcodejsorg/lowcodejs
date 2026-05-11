@@ -27,7 +27,8 @@ tools/
 
 ## Permissões
 
-- Disponível para MASTER e ADMINISTRATOR. `useExtensionsActiveList` carrega só as ativas
+- Disponível para MASTER e ADMINISTRATOR. `useExtensionsActiveList` carrega só
+  as ativas
 - Cada tool pode aplicar suas próprias verificações internas (ex:
   `usePermission().can('CREATE_TABLE')`)
 
