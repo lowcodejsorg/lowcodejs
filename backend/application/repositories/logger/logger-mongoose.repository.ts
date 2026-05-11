@@ -20,11 +20,11 @@ export default class LoggerMongooseRepository implements LoggerContractRepositor
   ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
-    if (payload?.trashed !== undefined) {
-      where.trashed = payload.trashed;
-    } else {
-      where.trashed = false;
-    }
+    // if (payload?.trashed !== undefined) {
+    //   where.trashed = payload.trashed;
+    // } else {
+    //   where.trashed = false;
+    // }
 
     if (payload?.search) {
       where.$or = [
@@ -74,11 +74,19 @@ export default class LoggerMongooseRepository implements LoggerContractRepositor
       take = payload.perPage;
     }
 
+    console.log('[LoggerMongooseRepository] findMany with payload:', where, {
+      skip,
+      take,
+    });
+
     const loggers = await Model.find(where)
       .populate(this.populateOptions)
       // .sort(sortOption)
       .skip(skip ?? 0)
       .limit(take ?? 0);
+
+    console.log('[LoggerMongooseRepository] findMany with payload:', payload);
+    console.log('[LoggerMongooseRepository] MongoDB query result:', loggers);
 
     return loggers.map(this.transform);
   }
