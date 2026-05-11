@@ -8,7 +8,7 @@
   "icon": "LayoutDashboardIcon",
   "route": "/e/apps/dashboard",
   "permissions": {
-    "view": ["MASTER"]
+    "view": ["MASTER", "ADMINISTRATOR"]
   },
   "requires": {
     "lowcodejs": ">=1.0.0"
