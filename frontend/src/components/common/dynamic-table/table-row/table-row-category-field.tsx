@@ -1,9 +1,11 @@
 import React from 'react';
 
+import { TableRowFieldLabel } from './table-row-field-label';
+
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { TreeList } from '@/components/common/tree-editor/tree-list';
 import { Button } from '@/components/ui/button';
-import { Field, FieldError, FieldLabel } from '@/components/ui/field';
+import { Field, FieldError } from '@/components/ui/field';
 import {
   Popover,
   PopoverContent,
@@ -56,7 +58,6 @@ export function TableRowCategoryField({
   const isInvalid =
     formField.state.meta.isTouched && !formField.state.meta.isValid;
   const errorId = `${formField.name}-error`;
-  const isRequired = field.required;
 
   const categories = field.category;
   const treeData = convertCategoriesToTreeNodes(categories);
@@ -91,10 +92,10 @@ export function TableRowCategoryField({
       data-test-id="table-row-category"
       data-invalid={isInvalid}
     >
-      <FieldLabel htmlFor={formField.name}>
-        {field.name}
-        {isRequired && <span className="text-destructive"> *</span>}
-      </FieldLabel>
+      <TableRowFieldLabel
+        field={field}
+        htmlFor={formField.name}
+      />
       <Popover>
         <PopoverTrigger asChild>
           <Button

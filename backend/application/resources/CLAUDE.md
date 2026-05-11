@@ -1,6 +1,13 @@
 # Resources
 
-16 recursos REST organizados por dominio. Cada recurso possui subdiretorios por operacao.
+15 recursos REST organizados por dominio. Cada recurso possui subdiretorios por operacao.
+
+> **Nota**: o recurso `tools/` foi totalmente migrado para extensões em
+> `backend/extensions/core/`: `clone-table` virou TOOL, `export-table` e
+> `import-table` viraram PLUGIN (registrados em slots da página de tabelas).
+> Os endpoints `/tools/clone-table`, `/tools/export-table` e
+> `/tools/import-table` continuam respondendo nos mesmos paths, blindados por
+> `ExtensionActiveMiddleware`.
 
 ## Estrutura por Operacao
 
@@ -30,7 +37,6 @@ Cada operacao (ex: `users/create/`) contem:
 | `setting/` | `/setting` | show, update | Misto | Setting |
 | `pages/` | `/pages` | show | Sim | Menu (type=PAGE) |
 | `storage/` | `/storage` | upload (POST), delete | Sim | Storage |
-| `tools/` | `/tools` | clone-table, export-table, import-table | Sim | Table |
 | `chat/` | `/chat` | upload | Sim | - (WebSocket) |
 
 ## Middleware Stack Padrao

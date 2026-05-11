@@ -1,8 +1,8 @@
 import type { CSSProperties } from 'react';
 
+import { hexToRgb } from '@/components/common/dynamic-table/table-cells/utils';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, IUser } from '@/lib/interfaces';
-import { hexToRgb } from '@/components/common/dynamic-table/table-cells/utils';
 
 export const ORDER_FIELD_SLUG = 'ordem-kanban';
 export const ORDER_FIELD_NAME = 'Ordem Kanban';

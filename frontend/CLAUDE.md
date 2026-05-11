@@ -89,7 +89,8 @@ frontend/
 │   │       ├── pages/              # Paginas customizadas (menu type=PAGE)
 │   │       ├── profile/            # Perfil do usuario
 │   │       ├── settings/           # Configuracoes do sistema
-│   │       └── tools/              # Clone, import, export de tabelas
+│   │       ├── tools/              # Clone, import, export de tabelas
+│   │       └── extensions/         # Workshop de extensoes (MASTER)
 │   │
 │   ├── components/
 │   │   ├── ui/                     # Design system (34 componentes shadcn/Radix)
@@ -138,6 +139,7 @@ frontend/
 │       ├── tanstack-query/         # QueryClientProvider + devtools
 │       └── tanstack-form/          # createFormHook + 40 field components
 │
+├── extensions/                     # Codigo UI das extensoes — ver extensions/CLAUDE.md
 ├── vite.config.ts                  # Vite + Nitro + TanStack Start + Tailwind
 ├── tsconfig.json                   # ES2024, strict, @/* path alias
 ├── eslint.config.js                # TanStack ESLint + Prettier
@@ -313,9 +315,12 @@ impactar bundle inicial.
 | Dockerfile-production | Multi-stage build, usuario non-root (1001) | 3000  |
 | Dockerfile-coolify    | Producao otimizado com healthcheck         | 3000  |
 
-Build args (producao): VITE_API_BASE_URL, APP_SERVER_URL, APP_CLIENT_URL,
-LOGO_SMALL_URL, LOGO_LARGE_URL Runtime: docker-entrypoint.sh substitui URLs
-hardcoded nos artifacts
+Build args (producao): VITE_API_BASE_URL, APP_SERVER_URL, APP_CLIENT_URL.
+Runtime: docker-entrypoint.sh substitui URLs hardcoded nos artifacts.
+
+Logos (`LOGO_SMALL_URL`, `LOGO_LARGE_URL`), nome do sistema e descricao vivem no
+documento Setting do MongoDB e sao carregados em runtime via server function
+(`__root.tsx`). Nao sao build args.
 
 ## Componentes UI (Design System)
 
@@ -342,6 +347,20 @@ Cada subdiretorio tem seu proprio CLAUDE.md com documentacao detalhada.
 - `lib/seo.ts`: createRouteHead() gera meta tags
 - `__root.tsx`: meta tags OG, Twitter, JSON-LD structured data
 - Settings do sistema (nome, descricao) carregados via server function
+
+## Extensoes
+
+Espelho frontend de `backend/extensions/` para o codigo de UI. Ver
+`frontend/extensions/CLAUDE.md` para o contrato. Workshop de gestao em
+`/extensions` (rota MASTER):
+
+- Lista as extensoes registradas no DB (descobertas pelo loader do backend)
+- Toggle de ativacao via `useExtensionToggle`
+- Configuracao de escopo por tabela para plugins via
+  `useExtensionConfigureTableScope`
+
+Tipos em `IExtension` (lib/interfaces.ts), enum `E_EXTENSION_TYPE`
+(lib/constant.ts), payloads em lib/payloads.ts.
 
 ## Convencoes de Nomenclatura
 

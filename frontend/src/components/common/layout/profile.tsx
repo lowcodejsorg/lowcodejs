@@ -59,7 +59,7 @@ export function Profile(): React.JSX.Element {
           className="h-8 w-8 rounded-full p-0"
         >
           <Avatar className="h-8 w-8">
-            <AvatarFallback className="text-xs bg-slate-200 font-bold text-slate-700">
+            <AvatarFallback className="text-xs bg-muted font-bold text-muted-foreground">
               {user.status === 'success' && getInitials(user.data.name)}
               {user.status !== 'success' && 'M'}
             </AvatarFallback>
@@ -75,7 +75,7 @@ export function Profile(): React.JSX.Element {
           <React.Fragment>
             <div className="px-2 py-1.5">
               <p className="text-sm font-medium">{user.data.name}</p>
-              <p className="text-xs text-slate-600">{user.data.email}</p>
+              <p className="text-xs text-muted-foreground">{user.data.email}</p>
             </div>
 
             <DropdownMenuSeparator />
@@ -101,7 +101,7 @@ export function Profile(): React.JSX.Element {
             <DropdownMenuItem
               data-test-id="logout-btn"
               onClick={() => signOut.mutateAsync()}
-              className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+              className="cursor-pointer text-destructive focus:text-destructive focus:bg-destructive/10"
             >
               {signOut.status !== 'pending' && (
                 <LogOut className="size-4 mr-2" />
@@ -113,7 +113,7 @@ export function Profile(): React.JSX.Element {
         )}
 
         {user.status === 'pending' && (
-          <div className="px-2 py-1.5 text-xs text-slate-600 text-center">
+          <div className="px-2 py-1.5 text-xs text-muted-foreground text-center">
             Carregando...
           </div>
         )}

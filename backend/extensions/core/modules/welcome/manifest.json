@@ -1,0 +1,13 @@
+{
+  "id": "welcome",
+  "type": "MODULE",
+  "name": "Boas-vindas",
+  "description": "Página de boas-vindas com atalhos para tabelas e gerenciamento de extensões. Pode ser anexada a um menu custom (ex: '/' ou '/home') via Menus.",
+  "version": "1.0.0",
+  "author": "LowcodeJS",
+  "icon": "HomeIcon",
+  "route": "/e/core/welcome",
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}

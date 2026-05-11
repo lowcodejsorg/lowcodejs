@@ -62,9 +62,10 @@ Quando S3 desativado: storage usa filesystem local (`_storage/`). Quando IA desa
 - **Coolify**: observa as branches `main` e `develop` e faz build/deploy
   automatico a partir de `backend/Dockerfile-coolify` e
   `frontend/Dockerfile-coolify`. Variaveis de ambiente sao configuradas
-  pelo painel do Coolify (incluindo build args do frontend:
-  `VITE_API_BASE_URL`, `APP_SERVER_URL`, `APP_CLIENT_URL`,
-  `LOGO_SMALL_URL`, `LOGO_LARGE_URL`).
+  pelo painel do Coolify (build args do frontend:
+  `VITE_API_BASE_URL`, `APP_SERVER_URL`, `APP_CLIENT_URL`).
+  Logos, branding, locale, storage, SMTP e IA vivem no documento Setting
+  do MongoDB e sao editados via UI `/settings`.
 
 ## Comandos Essenciais
 

@@ -87,6 +87,7 @@ export default class GroupFieldUpdateUseCase {
           widthInForm: payload.widthInForm,
           widthInList: payload.widthInList,
           widthInDetail: payload.widthInDetail,
+          tip: payload.tip,
         });
 
         const updatedGroups = table.groups.map((g) => {

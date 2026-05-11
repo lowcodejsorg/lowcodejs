@@ -22,8 +22,14 @@ chmod +x ./setup.sh
 O script `setup.sh` ira:
 
 - Criar o arquivo `.env` a partir do `.env.example`
+- Criar `.env.test` a partir do `.env.test.example`
 - Gerar credenciais JWT automaticamente
-- Separar variaveis de ambiente para backend e frontend
+- Separar variaveis para `backend/.env` (sem `VITE_*`) e `frontend/.env` (so `VITE_*`)
+
+> Apos subir a aplicacao pela primeira vez, o **Setup Wizard** na UI guia a
+> configuracao de branding, logos, locale, storage (local/S3), upload, paginacao,
+> SMTP e Assistente IA — tudo persistido no documento Setting do MongoDB.
+> Nao ha variaveis de ambiente para esses itens.
 
 ---
 
@@ -120,25 +126,38 @@ npm run dev
 
 ## Variaveis de Ambiente
 
-Copie o `.env.example` para `.env` e ajuste conforme necessario:
+O `setup.sh` ja copia `.env.example` -> `.env`. Para fazer manualmente:
 
 ```bash
 cp .env.example .env
+cp .env.test.example .env.test
 ```
+
+> Os defaults em `.env.example` apontam para hosts nativos (`127.0.0.1`,
+> `localhost`) porque o cenario padrao e dev local com mongo + redis em
+> Docker e backend/frontend rodando direto na maquina. Quando o stack
+> inteiro sobe via `docker compose up -d`, o proprio compose sobrescreve
+> `DATABASE_URL`, `REDIS_URL` e `MCP_SERVER_URL` para usar os hosts
+> internos da rede Docker (`mongo`, `redis`, `mcp`). Nao precisa editar
+> nada para alternar entre os modos.
 
 ### Principais variaveis
 
-| Variavel         | Descricao                | Padrao                  |
-| ---------------- | ------------------------ | ----------------------- |
-| `NODE_ENV`       | Ambiente de execucao     | `development`           |
-| `PORT`           | Porta do backend         | `3000`                  |
+| Variavel           | Descricao                      | Padrao                  |
+| ------------------ | ------------------------------ | ----------------------- |
+| `NODE_ENV`         | Ambiente de execucao           | `development`           |
+| `PORT`             | Porta do backend               | `3000`                  |
 | `DB_USERNAME`      | Usuario do MongoDB             | `lowcodejs`             |
 | `DB_PASSWORD`      | Senha do MongoDB               | `lowcodejs`             |
 | `DB_DATABASE`      | Nome do banco system           | `lowcodejs`             |
 | `DB_DATA_DATABASE` | Nome do banco data (dinamicas) | `lowcodejs_data`        |
 | `DATABASE_URL`     | URL de conexao MongoDB         | `mongodb://...`         |
-| `APP_SERVER_URL` | URL publica do backend   | `http://localhost:3000` |
-| `APP_CLIENT_URL` | URL publica do frontend  | `http://localhost:5173` |
+| `APP_SERVER_URL`   | URL publica do backend         | `http://localhost:3000` |
+| `APP_CLIENT_URL`   | URL publica do frontend        | `http://localhost:5173` |
+
+> **Configuracoes de dominio** (branding, locale, logos, upload, paginacao,
+> storage S3, SMTP, IA) **nao** vivem em `.env` — sao editadas via UI
+> `/settings` (usuario MASTER) ou pelo Setup Wizard no primeiro acesso.
 
 ### Assistente IA (opcional)
 
@@ -199,13 +218,14 @@ docker ps
 
 ### Erro de conexao com MongoDB
 
-- Docker: use `mongo` como host
-- Local: use `localhost`
+O `.env` ja vem com `DATABASE_URL` apontando para `127.0.0.1:27017` (host
+nativo). Quando o backend roda dentro de `docker compose up -d`, o proprio
+compose sobrescreve para usar host interno `mongo`. Voce nao precisa editar
+o `.env` ao alternar entre rodar local vs container.
 
-```env
-# Docker
-DATABASE_URL=mongodb://lowcodejs:lowcodejs@mongo:27017/lowcodejs?authSource=admin
+Se mesmo assim houver erro:
 
-# Local
-DATABASE_URL=mongodb://lowcodejs:lowcodejs@localhost:27017/lowcodejs?authSource=admin
-```
+- Confira que o container `mongo` esta saudavel: `docker compose ps`
+- Confira credenciais no `.env` (`DB_USERNAME` / `DB_PASSWORD`)
+- Em testes (`npm run test:e2e`), `127.0.0.1` e obrigatorio — testes nunca
+  rodam em container

@@ -68,6 +68,11 @@ export type UserGroupUpdatePayload = {
 };
 
 // ============== MENU ==============
+export type MenuExtensionRefPayload = {
+  pkg: string;
+  extensionId: string;
+};
+
 export type MenuCreatePayload = {
   name: string;
   type: ValueOf<typeof E_MENU_ITEM_TYPE>;
@@ -77,6 +82,7 @@ export type MenuCreatePayload = {
   url?: string | null;
   order?: number;
   isInitial?: boolean;
+  extension?: MenuExtensionRefPayload | null;
 };
 
 export type MenuUpdatePayload = {
@@ -89,6 +95,7 @@ export type MenuUpdatePayload = {
   url?: string | null;
   order?: number;
   isInitial?: boolean;
+  extension?: MenuExtensionRefPayload | null;
 };
 
 export type MenuReorderPayload = {
@@ -160,6 +167,7 @@ export type FieldConfigurationPayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
+  tip?: string | null;
   defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
@@ -186,6 +194,7 @@ export type FieldCreatePayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
+  tip?: string | null;
   defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
@@ -213,6 +222,7 @@ export type FieldUpdatePayload = {
   showInList?: boolean;
   widthInForm?: number | null;
   widthInList?: number | null;
+  tip?: string | null;
   defaultValue?: string | Array<string> | null;
   relationship?: {
     table: { _id: string; slug: string };
@@ -468,3 +478,15 @@ export type RowEvaluationPayload = Merge<
     value: number;
   }
 >;
+
+// ============== EXTENSIONS ==============
+export type ExtensionTogglePayload = {
+  _id: string;
+  enabled: boolean;
+};
+
+export type ExtensionConfigureTableScopePayload = {
+  _id: string;
+  mode: 'all' | 'specific';
+  tableIds: Array<string>;
+};

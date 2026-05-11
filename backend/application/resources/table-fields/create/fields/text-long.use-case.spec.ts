@@ -24,6 +24,7 @@ const BASE_PAYLOAD = {
   showInDetail: true,
   showInFilter: false,
   locked: false,
+  allowCreateRelationshipRecords: false,
   required: false,
   category: [],
   dropdown: [],

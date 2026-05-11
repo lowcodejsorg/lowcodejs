@@ -47,6 +47,15 @@ export const Schema = new mongoose.Schema(
       default: null,
     },
 
+    /** Referência a extensão (apenas para tipo EXTENSION_MODULE) */
+    extension: {
+      type: {
+        pkg: { type: String, required: true },
+        extensionId: { type: String, required: true },
+      },
+      default: null,
+    },
+
     owner: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',

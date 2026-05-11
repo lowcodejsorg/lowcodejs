@@ -59,8 +59,7 @@ export function AuthenticationMiddleware(
         role: accessTokenDecoded.role,
         type: E_JWT_TYPE.ACCESS,
       };
-    } catch (error) {
-      console.error(error);
+    } catch {
       if (options.optional) return;
 
       throw HTTPException.Unauthorized(

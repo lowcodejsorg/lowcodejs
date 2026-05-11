@@ -8,6 +8,10 @@ import type { ICategory, IDropdown } from '@/lib/interfaces';
 
 export const FieldUpdateSchema = z.object({
   name: z.string().min(1, 'Nome é obrigatório').max(40),
+  tip: z
+    .string()
+    .max(500, 'A dica deve ter no máximo 500 caracteres')
+    .default(''),
   type: z.string().min(1, 'Tipo é obrigatório'),
   format: z.string().default(''),
   defaultValue: z.string().default(''),
@@ -37,6 +41,7 @@ export type FieldUpdateFormValues = z.infer<typeof FieldUpdateSchema>;
 
 export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
   name: '',
+  tip: '',
   type: '',
   format: '',
   defaultValue: '',
@@ -67,7 +72,7 @@ export const UpdateFieldFormFields = withForm({
   props: {
     isPending: false,
     mode: 'show' as 'show' | 'edit',
-    tableSlug: '' as string,
+    tableSlug: '',
     isLocked: false,
   },
   render: function Render({ form, isPending, mode, tableSlug, isLocked }) {
@@ -145,6 +150,17 @@ export const UpdateFieldFormFields = withForm({
               disabled={isDisabled || isLocked}
               icon={<FileTextIcon />}
               required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField name="tip">
+          {(field) => (
+            <field.FieldTextarea
+              label="Dica do campo"
+              placeholder="Texto de ajuda exibido no formulário"
+              disabled={isDisabled || isLocked}
+              rows={2}
             />
           )}
         </form.AppField>

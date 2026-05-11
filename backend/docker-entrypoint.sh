@@ -31,6 +31,13 @@ else
   su-exec 1001:1001 node /app/database/migrations/migrate-backfill-relationship-create-records.js
 fi
 
+echo "🧩 Verificando rename slot → slots em extensões..."
+if [ -f "/app/database/migrations/migrate-extension-slots.ts" ]; then
+  su-exec 1001:1001 npm run migrate:extension-slots
+else
+  su-exec 1001:1001 node /app/database/migrations/migrate-extension-slots.js
+fi
+
 echo "🌱 Rodando seeders..."
 if [ -f "/app/database/seeders/main.ts" ]; then
   su-exec 1001:1001 npm run seed

@@ -29,7 +29,14 @@ export const MenuCreateSchema: FastifySchema = {
       },
       type: {
         type: 'string',
-        enum: ['TABLE', 'PAGE', 'FORM', 'EXTERNAL', 'SEPARATOR'],
+        enum: [
+          'TABLE',
+          'PAGE',
+          'FORM',
+          'EXTERNAL',
+          'SEPARATOR',
+          'EXTENSION_MODULE',
+        ],
         description: 'Tipo do item de menu',
         errorMessage: {
           type: 'O tipo deve ser um texto',
@@ -74,6 +81,17 @@ export const MenuCreateSchema: FastifySchema = {
         errorMessage: {
           type: 'Página inicial inválida',
         },
+      },
+      extension: {
+        type: 'object',
+        nullable: true,
+        properties: {
+          pkg: { type: 'string' },
+          extensionId: { type: 'string' },
+        },
+        required: ['pkg', 'extensionId'],
+        description:
+          'Referência a um módulo de extensão (obrigatório quando type=EXTENSION_MODULE)',
       },
     },
   },

@@ -1,5 +1,7 @@
 import * as React from 'react';
 
+import { badgeStyleFromColor } from './utils';
+
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
@@ -9,8 +11,6 @@ interface TableRowBadgeListProps<T> {
   getKey?: (value: T, index: number) => string | number;
   getColor?: (value: T, index: number) => string | null | undefined;
 }
-
-import { badgeStyleFromColor } from './utils';
 
 export function TableRowBadgeList<T>({
   values,

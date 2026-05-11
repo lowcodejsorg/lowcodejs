@@ -49,6 +49,7 @@ import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 type DropMode = 'before' | 'after' | 'nest';
+type ReorderScope = 'all' | 'root';
 
 type MenuTreeNode = {
   menu: IMenu;
@@ -134,6 +135,21 @@ function findNodeById(
   return null;
 }
 
+function findParentIdByNodeId(
+  nodes: Array<MenuTreeNode>,
+  nodeId: string,
+  parentId: string | null = null,
+): string | null | undefined {
+  for (const node of nodes) {
+    if (node.menu._id === nodeId) return parentId;
+
+    const found = findParentIdByNodeId(node.children, nodeId, node.menu._id);
+    if (found !== undefined) return found;
+  }
+
+  return undefined;
+}
+
 function findAndRemove(
   nodes: Array<MenuTreeNode>,
   nodeId: string,
@@ -205,13 +221,24 @@ function isDescendant(
   return walk(root.children);
 }
 
-function flattenPayload(nodes: Array<MenuTreeNode>): Array<{
+function flattenPayload(
+  nodes: Array<MenuTreeNode>,
+  scope: ReorderScope,
+): Array<{
   _id: string;
   parent: string | null;
   order: number;
 }> {
   const items: Array<{ _id: string; parent: string | null; order: number }> =
     [];
+
+  if (scope === 'root') {
+    return nodes.map((node, order) => ({
+      _id: node.menu._id,
+      parent: null,
+      order,
+    }));
+  }
 
   function append(children: Array<MenuTreeNode>, parent: string | null): void {
     children.forEach((node, order) => {
@@ -225,7 +252,10 @@ function flattenPayload(nodes: Array<MenuTreeNode>): Array<{
   return items;
 }
 
-function getDropMode(event: DragOverEvent | DragEndEvent): DropMode | null {
+function getDropMode(
+  event: DragOverEvent | DragEndEvent,
+  allowNest: boolean,
+): DropMode | null {
   const { active, over } = event;
   if (!over) return null;
 
@@ -238,10 +268,18 @@ function getDropMode(event: DragOverEvent | DragEndEvent): DropMode | null {
   const activeCenterX = activeRect.left + activeRect.width / 2;
   const threshold = overRect.height * 0.3;
 
-  if (activeCenterX > overRect.left + overRect.width * 0.56) return 'nest';
+  if (allowNest && activeCenterX > overRect.left + overRect.width * 0.56) {
+    return 'nest';
+  }
   if (activeCenterY <= overRect.top + threshold) return 'before';
   if (activeCenterY >= overRect.top + overRect.height - threshold) {
     return 'after';
+  }
+
+  if (!allowNest) {
+    return activeCenterY < overRect.top + overRect.height / 2
+      ? 'before'
+      : 'after';
   }
 
   return 'nest';
@@ -270,6 +308,7 @@ function SortableMenuNode({
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.55 : 1,
+    marginLeft: `${level * 24}px`,
   };
 
   let DropIcon = FolderTreeIcon;
@@ -283,19 +322,16 @@ function SortableMenuNode({
   }
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="space-y-1"
-    >
+    <div className="space-y-1">
       <div
+        ref={setNodeRef}
+        style={style}
         className={cn(
           'relative flex min-h-11 items-center gap-2 rounded-md border bg-background px-2 text-sm transition-colors',
           dropMode === 'nest' && 'border-primary/50 bg-primary/5',
           dropMode === 'before' && 'border-t-primary border-t-2',
           dropMode === 'after' && 'border-b-primary border-b-2',
         )}
-        style={{ marginLeft: `${level * 24}px` }}
       >
         <button
           type="button"
@@ -351,6 +387,7 @@ export function MenuReorderDialog({
   onOpenChange,
 }: MenuReorderDialogProps): React.JSX.Element {
   const { data: menus, status } = useMenuReadList({ enabled: open });
+  const [scope, setScope] = React.useState<ReorderScope>('root');
   const [tree, setTree] = React.useState<Array<MenuTreeNode>>([]);
   const [activeId, setActiveId] = React.useState<string | null>(null);
   const [dragOverId, setDragOverId] = React.useState<string | null>(null);
@@ -405,7 +442,7 @@ export function MenuReorderDialog({
     }
 
     setDragOverId(overId);
-    setDragOverMode(getDropMode(event));
+    setDragOverMode(getDropMode(event, scope === 'all'));
   };
 
   const handleDragCancel = (_event: DragCancelEvent): void => {
@@ -426,7 +463,7 @@ export function MenuReorderDialog({
     const overId = String(over.id);
     const overParentId =
       (over.data.current?.parentId as string | null | undefined) ?? null;
-    const mode = getDropMode(event) ?? 'after';
+    const mode = getDropMode(event, scope === 'all') ?? 'after';
 
     if (
       isDescendant(tree, activeIdValue, overId) ||
@@ -445,22 +482,24 @@ export function MenuReorderDialog({
       return;
     }
 
+    const nextParentId = findParentIdByNodeId(updated, overId) ?? overParentId;
     const targetList =
-      overParentId === null
+      nextParentId === null
         ? updated
-        : (findNodeById(updated, overParentId)?.children ?? []);
+        : (findNodeById(updated, nextParentId)?.children ?? []);
     const overIndex = targetList.findIndex((node) => node.menu._id === overId);
     let insertIndex = targetList.length;
     if (overIndex !== -1) {
       insertIndex = mode === 'after' ? overIndex + 1 : overIndex;
     }
 
-    setTree(insertNodeAt(updated, overParentId, insertIndex, removed));
+    setTree(insertNodeAt(updated, nextParentId, insertIndex, removed));
   };
 
   const activeNode = activeId ? findNodeById(tree, activeId) : null;
   const isLoading = status === 'pending';
   const canRenderOverlay = typeof document !== 'undefined';
+  const visibleTree = scope === 'root' ? tree : tree;
 
   const renderNodes = (
     nodes: Array<MenuTreeNode>,
@@ -523,7 +562,15 @@ export function MenuReorderDialog({
               onDragEnd={handleDragEnd}
               onDragCancel={handleDragCancel}
             >
-              <div className="space-y-1">{renderNodes(tree, 0, null)}</div>
+              <div className="space-y-1">
+                {scope === 'root'
+                  ? renderNodes(
+                      visibleTree.map((node) => ({ ...node, children: [] })),
+                      0,
+                      null,
+                    )
+                  : renderNodes(visibleTree, 0, null)}
+              </div>
               {canRenderOverlay &&
                 createPortal(
                   <DragOverlay>
@@ -536,6 +583,28 @@ export function MenuReorderDialog({
         </div>
 
         <DialogFooter>
+          <div className="mr-auto inline-flex rounded-md border bg-background p-1">
+            <Button
+              type="button"
+              variant={scope === 'root' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8"
+              onClick={() => setScope('root')}
+              disabled={reorder.isPending}
+            >
+              Raiz
+            </Button>
+            <Button
+              type="button"
+              variant={scope === 'all' ? 'secondary' : 'ghost'}
+              size="sm"
+              className="h-8"
+              onClick={() => setScope('all')}
+              disabled={reorder.isPending}
+            >
+              Todos
+            </Button>
+          </div>
           <Button
             type="button"
             variant="outline"
@@ -556,7 +625,9 @@ export function MenuReorderDialog({
           </Button>
           <Button
             type="button"
-            onClick={() => reorder.mutate({ items: flattenPayload(tree) })}
+            onClick={() =>
+              reorder.mutate({ items: flattenPayload(tree, scope) })
+            }
             disabled={reorder.isPending || isLoading || tree.length === 0}
           >
             {reorder.isPending && (

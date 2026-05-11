@@ -6,16 +6,8 @@ import {
   useSearch,
 } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
-import {
-  ArrowLeftIcon,
-  DownloadIcon,
-  PlusIcon,
-  Share2Icon,
-  ShieldXIcon,
-} from 'lucide-react';
+import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
-
-import { TableExportDialog } from '../-export-dialog';
 
 import { RowEmptyTrashDialog } from './-empty-trash-dialog';
 import { TableConfigurationDropdown } from './-table-configuration';
@@ -24,6 +16,7 @@ import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
 import { ChatTrigger } from '@/components/common/chat/chat-trigger';
 import { TableStyleViewDropdown } from '@/components/common/dynamic-table/table-selectors/table-style-view';
 import { ExportCsvButton } from '@/components/common/export-csv-button';
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import { getActiveFiltersCount } from '@/components/common/filters/filter-fields';
 import { FilterSidebar } from '@/components/common/filters/filter-sidebar';
 import { FilterTrigger } from '@/components/common/filters/filter-trigger';
@@ -284,18 +277,6 @@ function RouteComponent(): React.JSX.Element {
           {permission.can('UPDATE_ROW') && <TrashButton />}
 
           <TableStyleViewDropdown slug={slug} />
-          <TableExportDialog
-            slug={slug}
-            tableName={table.data?.name ?? slug}
-          >
-            <Button
-              variant="outline"
-              className="shadow-none p-1 h-auto"
-            >
-              <DownloadIcon className="size-4" />
-              <span>Exportar</span>
-            </Button>
-          </TableExportDialog>
           {canExportCsv && (
             <ExportCsvButton
               testId="export-table-rows-csv-btn"
@@ -315,6 +296,11 @@ function RouteComponent(): React.JSX.Element {
               isOpen={chatOpen}
             />
           )}
+
+          <ExtensionSlot
+            id="table.actions"
+            context={{ table: table.data, slug }}
+          />
 
           {permission.can('CREATE_ROW') &&
             (table.data?.fields?.filter((f) => !f.native)?.length ?? 0) > 0 && (
@@ -343,6 +329,7 @@ function RouteComponent(): React.JSX.Element {
             fields={filterFields}
             open={filterOpen}
             onOpenChange={handleFilterOpenChange}
+            table={table.data}
           />
         )}
         <PageShell.Content>

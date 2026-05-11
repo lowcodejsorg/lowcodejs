@@ -1,6 +1,8 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
+@source "../../extensions/**/*.{ts,tsx,js,jsx}";
+
 @plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
@@ -183,8 +185,8 @@ code {
   --accent: oklch(0.274 0.006 286.033);
   --accent-foreground: oklch(0.92 0.004 286.32);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --border: oklch(0.27 0.006 286.033);
+  --input: oklch(0.32 0.006 286.033);
   --ring: oklch(0.556 0 0);
   --chart-1: oklch(0.809 0.105 251.813);
   --chart-2: oklch(0.623 0.214 259.815);

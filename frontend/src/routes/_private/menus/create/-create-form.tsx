@@ -3,6 +3,7 @@ import { FileTextIcon } from 'lucide-react';
 
 import { SeparatorInfo } from '../-separator-info';
 
+import { ExtensionModuleSelect } from '@/components/common/selectors/extension-module-select';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { ValueOf } from '@/lib/interfaces';
@@ -23,6 +24,7 @@ export const menuFormDefaultValues: MenuFormType = {
   parent: '',
   position: '0',
   isInitial: false,
+  extension: null,
 };
 
 export const CreateMenuFormFields = withForm({
@@ -233,6 +235,37 @@ export const CreateMenuFormFields = withForm({
 
         {/* Info para tipo SEPARATOR */}
         {menuType === E_MENU_ITEM_TYPE.SEPARATOR && <SeparatorInfo />}
+
+        {/* Campo Extensão - Condicional para tipo EXTENSION_MODULE */}
+        {menuType === E_MENU_ITEM_TYPE.EXTENSION_MODULE && (
+          <form.Field
+            name="extension"
+            validators={{
+              onChange: ({ value }) => {
+                if (!value?.pkg || !value?.extensionId) {
+                  return 'Selecione um módulo de extensão';
+                }
+                return undefined;
+              },
+            }}
+          >
+            {(field) => (
+              <ExtensionModuleSelect
+                label="Módulo"
+                value={field.state.value ?? null}
+                onValueChange={(value) => field.handleChange(value)}
+                disabled={isPending}
+                required
+                error={
+                  field.state.meta.isTouched && !field.state.meta.isValid
+                    ? ((field.state.meta.errors[0] as string | undefined) ??
+                      null)
+                    : null
+                }
+              />
+            )}
+          </form.Field>
+        )}
       </section>
     );
   },

@@ -126,7 +126,13 @@ const MenuTypeEnum = z.enum([
   E_MENU_ITEM_TYPE.FORM,
   E_MENU_ITEM_TYPE.EXTERNAL,
   E_MENU_ITEM_TYPE.SEPARATOR,
+  E_MENU_ITEM_TYPE.EXTENSION_MODULE,
 ]);
+
+const MenuExtensionRefSchema = z.object({
+  pkg: z.string(),
+  extensionId: z.string(),
+});
 
 export const MenuCreateBodySchema = z
   .object({
@@ -138,6 +144,7 @@ export const MenuCreateBodySchema = z
     url: z.string().default(''),
     order: z.number().default(0),
     isInitial: z.boolean().default(false),
+    extension: MenuExtensionRefSchema.nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (
@@ -171,6 +178,17 @@ export const MenuCreateBodySchema = z
         code: 'custom',
         path: ['url'],
         message: 'URL é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE &&
+      (!data.extension?.pkg || !data.extension?.extensionId)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['extension'],
+        message: 'Selecione um módulo de extensão',
       });
     }
   });
@@ -189,6 +207,7 @@ export const MenuUpdateBodySchema = z
     url: z.string().default(''),
     order: z.number().default(0),
     isInitial: z.boolean().default(false),
+    extension: MenuExtensionRefSchema.nullable().optional(),
   })
   .superRefine((data, ctx) => {
     if (
@@ -222,6 +241,17 @@ export const MenuUpdateBodySchema = z
         code: 'custom',
         path: ['url'],
         message: 'URL é obrigatória',
+      });
+    }
+
+    if (
+      data.type === E_MENU_ITEM_TYPE.EXTENSION_MODULE &&
+      (!data.extension?.pkg || !data.extension?.extensionId)
+    ) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['extension'],
+        message: 'Selecione um módulo de extensão',
       });
     }
   });
@@ -388,6 +418,7 @@ export const FieldBaseSchema = z.object({
   showInList: z.boolean().default(false),
   widthInForm: z.number().nullable().default(50),
   widthInList: z.number().nullable().default(10),
+  tip: z.string().nullable().default(null),
   locked: z.boolean().default(false),
   defaultValue: z.string().nullable().default(null),
   relationship: RelationshipSchema.nullable().default(null),

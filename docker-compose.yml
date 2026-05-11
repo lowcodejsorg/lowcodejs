@@ -30,6 +30,10 @@ services:
     ports:
       - "${APP_SERVER_PORT}:3000"
     env_file: .env
+    environment:
+      DATABASE_URL: mongodb://${DB_USERNAME}:${DB_PASSWORD}@mongo:27017/${DB_DATABASE}?authSource=admin
+      REDIS_URL: redis://redis:6379
+      MCP_SERVER_URL: http://mcp:3000/mcp
     networks:
       - low-code-js-network
     depends_on:
@@ -59,6 +63,7 @@ services:
     env_file: .env
     environment:
       - VITE_API_BASE_URL=${VITE_API_BASE_URL}
+      - SERVER_API_URL=http://api:3000
       - PORT=5173
     networks:
       - low-code-js-network

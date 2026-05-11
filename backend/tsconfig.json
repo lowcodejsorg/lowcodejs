@@ -7,9 +7,19 @@
       "@config/*": ["./config/*"],
       "@database/*": ["./database/*"],
       "@start/*": ["./start/*"],
-      "@test/*": ["./test/*"]
+      "@test/*": ["./test/*"],
+      "@extensions/*": ["./extensions/*"],
+      "@hooks/*": ["./hooks/*"]
     },
-    "rootDirs": ["./application", "./bin", "./config", "./start", "./database"],
+    "rootDirs": [
+      "./application",
+      "./bin",
+      "./config",
+      "./start",
+      "./database",
+      "./extensions",
+      "./hooks"
+    ],
     "typeRoots": ["_types", "./node_modules/@types"],
     "target": "ES2024",
     "module": "ESNext",
@@ -32,6 +42,8 @@
     "application",
     "bin",
     "config",
+    "extensions",
+    "hooks",
     "start",
     "database",
     "_types",

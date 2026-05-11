@@ -85,6 +85,7 @@ export default class TableFieldUpdateUseCase {
           widthInForm: payload.widthInForm,
           widthInList: payload.widthInList,
           widthInDetail: payload.widthInDetail,
+          tip: payload.tip,
         });
 
         const fields = table.fields.map((f) =>

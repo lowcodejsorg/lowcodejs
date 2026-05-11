@@ -1,9 +1,14 @@
+/* eslint-disable import/order */
 import { injectablesHolder } from 'fastify-decorators';
 
 import { EvaluationContractRepository } from '@application/repositories/evaluation/evaluation-contract.repository';
 import EvaluationMongooseRepository from '@application/repositories/evaluation/evaluation-mongoose.repository';
+import { ExtensionContractRepository } from '@application/repositories/extension/extension-contract.repository';
+import ExtensionMongooseRepository from '@application/repositories/extension/extension-mongoose.repository';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import FieldMongooseRepository from '@application/repositories/field/field-mongoose.repository';
+import { LoggerContractRepository } from '@application/repositories/logger/logger-contract.repository';
+import LoggerMongooseRepository from '@application/repositories/logger/logger-mongoose.repository';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 import MenuMongooseRepository from '@application/repositories/menu/menu-mongoose.repository';
 import { PermissionContractRepository } from '@application/repositories/permission/permission-contract.repository';
@@ -18,16 +23,16 @@ import { StorageContractRepository } from '@application/repositories/storage/sto
 import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
-import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import UserMongooseRepository from '@application/repositories/user/user-mongoose.repository';
 import { UserGroupContractRepository } from '@application/repositories/user-group/user-group-contract.repository';
 import UserGroupMongooseRepository from '@application/repositories/user-group/user-group-mongoose.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import UserMongooseRepository from '@application/repositories/user/user-mongoose.repository';
 import { ValidationTokenContractRepository } from '@application/repositories/validation-token/validation-token-contract.repository';
 import ValidationTokenMongooseRepository from '@application/repositories/validation-token/validation-token-mongoose.repository';
-import { EmailContractService } from '@application/services/email/email-contract.service';
-import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
 import BullMQEmailQueueService from '@application/services/email-queue/bullmq-email-queue.service';
 import { EmailQueueContractService } from '@application/services/email-queue/email-queue-contract.service';
+import { EmailContractService } from '@application/services/email/email-contract.service';
+import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import KanbanCommentMentionService from '@application/services/kanban-comment-mention/kanban-comment-mention.service';
 import BcryptPasswordService from '@application/services/password/bcrypt-password.service';
@@ -40,10 +45,10 @@ import BcryptRowPasswordService from '@application/services/row-password/bcrypt-
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import NodeVmScriptExecutionService from '@application/services/script-execution/node-vm-script-execution.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
-import { StorageContractService } from '@application/services/storage/storage-contract.service';
-import StorageService from '@application/services/storage/storage.service';
 import BullMQStorageMigrationQueueService from '@application/services/storage-migration/bullmq-storage-migration-queue.service';
 import { StorageMigrationQueueContractService } from '@application/services/storage-migration/storage-migration-queue-contract.service';
+import { StorageContractService } from '@application/services/storage/storage-contract.service';
+import StorageService from '@application/services/storage/storage.service';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 import TableSchemaMongooseService from '@application/services/table-schema/table-schema-mongoose.service';
 
@@ -55,6 +60,11 @@ export function registerDependencies(): void {
   injectablesHolder.injectService(
     EvaluationContractRepository,
     EvaluationMongooseRepository,
+  );
+
+  injectablesHolder.injectService(
+    ExtensionContractRepository,
+    ExtensionMongooseRepository,
   );
 
   injectablesHolder.injectService(
@@ -150,5 +160,10 @@ export function registerDependencies(): void {
   injectablesHolder.injectService(
     KanbanCommentMentionContractService,
     KanbanCommentMentionService,
+  );
+
+  injectablesHolder.injectService(
+    LoggerContractRepository,
+    LoggerMongooseRepository,
   );
 }
