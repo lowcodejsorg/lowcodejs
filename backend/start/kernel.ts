@@ -6,9 +6,6 @@ import jwt from '@fastify/jwt';
 import multipart from '@fastify/multipart';
 import swagger from '@fastify/swagger';
 import websocket from '@fastify/websocket';
-import { StorageContentDispositionHook } from '@hooks/content-disposition.hook';
-import { LoadExtensionHook } from '@hooks/load-extensions.hook';
-import { LoggerUserActionHook } from '@hooks/logger.hook';
 import scalar from '@scalar/fastify-api-reference';
 import ajv from 'ajv-errors';
 import fastify from 'fastify';
@@ -18,6 +15,9 @@ import z, { ZodError } from 'zod';
 import { loadControllers } from '@application/core/controllers';
 import { registerDependencies } from '@application/core/di-registry';
 import HTTPException from '@application/core/exception.core';
+import { StorageContentDispositionHook } from '@hooks/content-disposition.hook';
+import { LoadExtensionHook } from '@hooks/load-extensions.hook';
+import { LoggerUserActionHook } from '@hooks/logger.hook';
 import { Env } from '@start/env';
 
 function matchOrigin(origin: string, pattern: string): boolean {

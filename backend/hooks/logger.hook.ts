@@ -2,12 +2,15 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { getInstanceByToken } from 'fastify-decorators';
 import z from 'zod';
 
-import { E_LOGGER_ACTION_TYPE, E_LOGGER_OBJECT_TYPE } from './core/entity.core';
+import {
+  E_LOGGER_ACTION_TYPE,
+  E_LOGGER_OBJECT_TYPE,
+} from '@application/core/entity.core';
 import {
   LoggerContractRepository,
   LoggerCreatePayload,
-} from './repositories/logger/logger-contract.repository';
-import LoggerMongooseRepository from './repositories/logger/logger-mongoose.repository';
+} from '@application/repositories/logger/logger-contract.repository';
+import LoggerMongooseRepository from '@application/repositories/logger/logger-mongoose.repository';
 
 const ACTION_MAP: Record<string, keyof typeof E_LOGGER_ACTION_TYPE> = {
   GET: E_LOGGER_ACTION_TYPE.VIEW,
