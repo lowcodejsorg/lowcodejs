@@ -16,7 +16,7 @@ apps/
 
 | ID          | URL default          | Permissões | Descrição |
 |-------------|----------------------|------------|-----------|
-| `dashboard` | `/e/apps/dashboard`  | MASTER     | Estatísticas reais do sistema (totais, gráfico mensal, atividades recentes). Endpoint próprio `GET /e/apps/dashboard/stats` blindado por `ExtensionActiveMiddleware` |
+| `dashboard` | `/e/apps/dashboard`  | MASTER, ADMINISTRATOR | Estatísticas reais do sistema (totais, gráfico mensal, atividades recentes). Endpoint próprio `GET /e/apps/dashboard/stats` blindado por `ExtensionActiveMiddleware` |
 
 ## Convenção de pacote
 
