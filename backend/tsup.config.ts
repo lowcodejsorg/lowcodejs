@@ -11,6 +11,7 @@ export default defineConfig({
     'database/**/*.ts',
     'start/**/*.ts',
     'extensions/**/*.ts',
+    'hooks/**/*.ts',
   ],
   ignoreWatch: ['node_modules'],
   outDir: 'build',

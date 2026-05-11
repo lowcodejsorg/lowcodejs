@@ -8,7 +8,8 @@
       "@database/*": ["./database/*"],
       "@start/*": ["./start/*"],
       "@test/*": ["./test/*"],
-      "@extensions/*": ["./extensions/*"]
+      "@extensions/*": ["./extensions/*"],
+      "@hooks/*": ["./hooks/*"]
     },
     "rootDirs": [
       "./application",
@@ -16,7 +17,8 @@
       "./config",
       "./start",
       "./database",
-      "./extensions"
+      "./extensions",
+      "./hooks"
     ],
     "typeRoots": ["_types", "./node_modules/@types"],
     "target": "ES2024",
@@ -41,6 +43,7 @@
     "bin",
     "config",
     "extensions",
+    "hooks",
     "start",
     "database",
     "_types",
