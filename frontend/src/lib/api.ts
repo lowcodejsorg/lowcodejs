@@ -18,7 +18,11 @@ export const API = axios.create({
 API.interceptors.request.use(async (config) => {
   if (!resolvedBaseUrl) {
     if (!baseUrlPromise) {
-      baseUrlPromise = getApiBaseUrl();
+      if (typeof window === 'undefined' && process.env.SERVER_API_URL) {
+        baseUrlPromise = Promise.resolve(process.env.SERVER_API_URL);
+      } else {
+        baseUrlPromise = getApiBaseUrl();
+      }
     }
     resolvedBaseUrl = await baseUrlPromise;
   }
