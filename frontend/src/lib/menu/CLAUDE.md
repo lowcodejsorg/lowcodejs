@@ -15,8 +15,8 @@ de menu e controle de acesso a rotas baseado em papeis (RBAC).
 
 | Role          | Menus Disponiveis                                                    |
 | ------------- | -------------------------------------------------------------------- |
-| MASTER        | Tabelas, Configuracoes, Menus, Grupos, Usuarios, Ferramentas, Perfil |
-| ADMINISTRATOR | Tabelas, Menus, Usuarios, Perfil                                     |
+| MASTER        | Tabelas, Configuracoes, Menus, Grupos, Usuarios, Ferramentas, Extensões, Perfil |
+| ADMINISTRATOR | Tabelas, Menus, Usuarios, Ferramentas, Extensões, Perfil                        |
 | MANAGER       | Tabelas, Perfil                                                      |
 | REGISTERED    | Tabelas, Perfil                                                      |
 

@@ -28,6 +28,7 @@ import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/sett
 import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index'
 import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/index'
 import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index'
+import { Route as PrivateExtensionsIndexRouteImport } from './routes/_private/extensions/index'
 import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index'
 import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index'
 import { Route as AuthenticationForgotPasswordIndexRouteImport } from './routes/_authentication/forgot-password/index'
@@ -46,7 +47,9 @@ import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private
 import { Route as AuthenticationForgotPasswordValidateCodeIndexRouteImport } from './routes/_authentication/forgot-password/validate-code/index'
 import { Route as AuthenticationForgotPasswordResetPasswordIndexRouteImport } from './routes/_authentication/forgot-password/reset-password/index'
 import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods'
+import { Route as PrivateToolsPackageIdIndexRouteImport } from './routes/_private/tools/$package/$id/index'
 import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index'
+import { Route as PrivateEPackageIdIndexRouteImport } from './routes/_private/e/$package/$id/index'
 import { Route as PrivateTablesSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/field/management'
 import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index'
 import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index'
@@ -174,6 +177,13 @@ const PrivateGroupsIndexRoute = PrivateGroupsIndexRouteImport.update({
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/groups/index.lazy').then((d) => d.Route),
+)
+const PrivateExtensionsIndexRoute = PrivateExtensionsIndexRouteImport.update({
+  id: '/extensions/',
+  path: '/extensions/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_private/extensions/index.lazy').then((d) => d.Route),
 )
 const PrivateDashboardIndexRoute = PrivateDashboardIndexRouteImport.update({
   id: '/dashboard/',
@@ -316,6 +326,16 @@ const PrivateTablesSlugMethodsRoute =
   } as any).lazy(() =>
     import('./routes/_private/tables/$slug/methods.lazy').then((d) => d.Route),
   )
+const PrivateToolsPackageIdIndexRoute =
+  PrivateToolsPackageIdIndexRouteImport.update({
+    id: '/tools/$package/$id/',
+    path: '/tools/$package/$id/',
+    getParentRoute: () => PrivateLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_private/tools/$package/$id/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugDetailIndexRoute =
   PrivateTablesSlugDetailIndexRouteImport.update({
     id: '/tables/$slug/detail/',
@@ -326,6 +346,13 @@ const PrivateTablesSlugDetailIndexRoute =
       (d) => d.Route,
     ),
   )
+const PrivateEPackageIdIndexRoute = PrivateEPackageIdIndexRouteImport.update({
+  id: '/e/$package/$id/',
+  path: '/e/$package/$id/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_private/e/$package/$id/index.lazy').then((d) => d.Route),
+)
 const PrivateTablesSlugFieldManagementRoute =
   PrivateTablesSlugFieldManagementRouteImport.update({
     id: '/tables/$slug/field/management',
@@ -396,6 +423,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute
   '/sign-up': typeof AuthenticationSignUpIndexRoute
   '/dashboard': typeof PrivateDashboardIndexRoute
+  '/extensions': typeof PrivateExtensionsIndexRoute
   '/groups': typeof PrivateGroupsIndexRoute
   '/menus': typeof PrivateMenusIndexRoute
   '/profile': typeof PrivateProfileIndexRoute
@@ -424,7 +452,9 @@ export interface FileRoutesByFullPath {
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
+  '/e/$package/$id': typeof PrivateEPackageIdIndexRoute
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
+  '/tools/$package/$id': typeof PrivateToolsPackageIdIndexRoute
   '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -440,6 +470,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof AuthenticationForgotPasswordIndexRoute
   '/sign-up': typeof AuthenticationSignUpIndexRoute
   '/dashboard': typeof PrivateDashboardIndexRoute
+  '/extensions': typeof PrivateExtensionsIndexRoute
   '/groups': typeof PrivateGroupsIndexRoute
   '/menus': typeof PrivateMenusIndexRoute
   '/profile': typeof PrivateProfileIndexRoute
@@ -468,7 +499,9 @@ export interface FileRoutesByTo {
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
+  '/e/$package/$id': typeof PrivateEPackageIdIndexRoute
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
+  '/tools/$package/$id': typeof PrivateToolsPackageIdIndexRoute
   '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -487,6 +520,7 @@ export interface FileRoutesById {
   '/_authentication/forgot-password/': typeof AuthenticationForgotPasswordIndexRoute
   '/_authentication/sign-up/': typeof AuthenticationSignUpIndexRoute
   '/_private/dashboard/': typeof PrivateDashboardIndexRoute
+  '/_private/extensions/': typeof PrivateExtensionsIndexRoute
   '/_private/groups/': typeof PrivateGroupsIndexRoute
   '/_private/menus/': typeof PrivateMenusIndexRoute
   '/_private/profile/': typeof PrivateProfileIndexRoute
@@ -515,7 +549,9 @@ export interface FileRoutesById {
   '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute
   '/_private/users/create/': typeof PrivateUsersCreateIndexRoute
   '/_private/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
+  '/_private/e/$package/$id/': typeof PrivateEPackageIdIndexRoute
   '/_private/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute
+  '/_private/tools/$package/$id/': typeof PrivateToolsPackageIdIndexRoute
   '/_private/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/_private/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/_private/tables/$slug/row/$rowId/': typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -533,6 +569,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/sign-up'
     | '/dashboard'
+    | '/extensions'
     | '/groups'
     | '/menus'
     | '/profile'
@@ -561,7 +598,9 @@ export interface FileRouteTypes {
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/management'
+    | '/e/$package/$id'
     | '/tables/$slug/detail'
+    | '/tools/$package/$id'
     | '/tables/$slug/field/$fieldId'
     | '/tables/$slug/field/create'
     | '/tables/$slug/row/$rowId'
@@ -577,6 +616,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/sign-up'
     | '/dashboard'
+    | '/extensions'
     | '/groups'
     | '/menus'
     | '/profile'
@@ -605,7 +645,9 @@ export interface FileRouteTypes {
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/management'
+    | '/e/$package/$id'
     | '/tables/$slug/detail'
+    | '/tools/$package/$id'
     | '/tables/$slug/field/$fieldId'
     | '/tables/$slug/field/create'
     | '/tables/$slug/row/$rowId'
@@ -623,6 +665,7 @@ export interface FileRouteTypes {
     | '/_authentication/forgot-password/'
     | '/_authentication/sign-up/'
     | '/_private/dashboard/'
+    | '/_private/extensions/'
     | '/_private/groups/'
     | '/_private/menus/'
     | '/_private/profile/'
@@ -651,7 +694,9 @@ export interface FileRouteTypes {
     | '/_private/users/$userId/'
     | '/_private/users/create/'
     | '/_private/tables/$slug/field/management'
+    | '/_private/e/$package/$id/'
     | '/_private/tables/$slug/detail/'
+    | '/_private/tools/$package/$id/'
     | '/_private/tables/$slug/field/$fieldId/'
     | '/_private/tables/$slug/field/create/'
     | '/_private/tables/$slug/row/$rowId/'
@@ -802,6 +847,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateGroupsIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_private/extensions/': {
+      id: '/_private/extensions/'
+      path: '/extensions'
+      fullPath: '/extensions'
+      preLoaderRoute: typeof PrivateExtensionsIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/dashboard/': {
       id: '/_private/dashboard/'
       path: '/dashboard'
@@ -928,11 +980,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateTablesSlugMethodsRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_private/tools/$package/$id/': {
+      id: '/_private/tools/$package/$id/'
+      path: '/tools/$package/$id'
+      fullPath: '/tools/$package/$id'
+      preLoaderRoute: typeof PrivateToolsPackageIdIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/detail/': {
       id: '/_private/tables/$slug/detail/'
       path: '/tables/$slug/detail'
       fullPath: '/tables/$slug/detail'
       preLoaderRoute: typeof PrivateTablesSlugDetailIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
+    '/_private/e/$package/$id/': {
+      id: '/_private/e/$package/$id/'
+      path: '/e/$package/$id'
+      fullPath: '/e/$package/$id'
+      preLoaderRoute: typeof PrivateEPackageIdIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/tables/$slug/field/management': {
@@ -1005,6 +1071,7 @@ const AuthenticationLayoutRouteWithChildren =
 interface PrivateLayoutRouteChildren {
   PrivatePagesSlugRoute: typeof PrivatePagesSlugRoute
   PrivateDashboardIndexRoute: typeof PrivateDashboardIndexRoute
+  PrivateExtensionsIndexRoute: typeof PrivateExtensionsIndexRoute
   PrivateGroupsIndexRoute: typeof PrivateGroupsIndexRoute
   PrivateMenusIndexRoute: typeof PrivateMenusIndexRoute
   PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute
@@ -1024,7 +1091,9 @@ interface PrivateLayoutRouteChildren {
   PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute
   PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute
   PrivateTablesSlugFieldManagementRoute: typeof PrivateTablesSlugFieldManagementRoute
+  PrivateEPackageIdIndexRoute: typeof PrivateEPackageIdIndexRoute
   PrivateTablesSlugDetailIndexRoute: typeof PrivateTablesSlugDetailIndexRoute
+  PrivateToolsPackageIdIndexRoute: typeof PrivateToolsPackageIdIndexRoute
   PrivateTablesSlugFieldFieldIdIndexRoute: typeof PrivateTablesSlugFieldFieldIdIndexRoute
   PrivateTablesSlugFieldCreateIndexRoute: typeof PrivateTablesSlugFieldCreateIndexRoute
   PrivateTablesSlugRowRowIdIndexRoute: typeof PrivateTablesSlugRowRowIdIndexRoute
@@ -1035,6 +1104,7 @@ interface PrivateLayoutRouteChildren {
 const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivatePagesSlugRoute: PrivatePagesSlugRoute,
   PrivateDashboardIndexRoute: PrivateDashboardIndexRoute,
+  PrivateExtensionsIndexRoute: PrivateExtensionsIndexRoute,
   PrivateGroupsIndexRoute: PrivateGroupsIndexRoute,
   PrivateMenusIndexRoute: PrivateMenusIndexRoute,
   PrivateProfileIndexRoute: PrivateProfileIndexRoute,
@@ -1054,7 +1124,9 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateUsersUserIdIndexRoute: PrivateUsersUserIdIndexRoute,
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
   PrivateTablesSlugFieldManagementRoute: PrivateTablesSlugFieldManagementRoute,
+  PrivateEPackageIdIndexRoute: PrivateEPackageIdIndexRoute,
   PrivateTablesSlugDetailIndexRoute: PrivateTablesSlugDetailIndexRoute,
+  PrivateToolsPackageIdIndexRoute: PrivateToolsPackageIdIndexRoute,
   PrivateTablesSlugFieldFieldIdIndexRoute:
     PrivateTablesSlugFieldFieldIdIndexRoute,
   PrivateTablesSlugFieldCreateIndexRoute:

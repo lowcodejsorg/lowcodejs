@@ -23,3 +23,6 @@ backend/_storage/*
 
 _docs/nextjs/
 frontend-next
+
+# Local docker overrides
+docker-compose.override.yml

@@ -1,17 +1,21 @@
 import type { LinkProps } from '@tanstack/react-router';
 import type { LucideIcon } from 'lucide-react';
+import * as LucideIcons from 'lucide-react';
 import {
   ExternalLinkIcon,
   FileTextIcon,
   LayoutListIcon,
   PlusCircleIcon,
   TableIcon,
+  WrenchIcon,
 } from 'lucide-react';
 import { useMemo } from 'react';
 
+import { useExtensionsActiveList } from './use-extensions-active-list';
+import type { IActiveExtension } from './use-extensions-active-list';
 import { useMenuReadList } from './use-menu-read-list';
 
-import { E_MENU_ITEM_TYPE } from '@/lib/constant';
+import { E_EXTENSION_TYPE, E_MENU_ITEM_TYPE } from '@/lib/constant';
 import type { IMenu } from '@/lib/interfaces';
 import { getStaticMenusByRole } from '@/lib/menu/menu';
 import type { MenuGroupItem, MenuItem, MenuRoute } from '@/lib/menu/menu-route';
@@ -22,6 +26,7 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   [E_MENU_ITEM_TYPE.PAGE]: FileTextIcon,
   [E_MENU_ITEM_TYPE.FORM]: PlusCircleIcon,
   [E_MENU_ITEM_TYPE.EXTERNAL]: ExternalLinkIcon,
+  [E_MENU_ITEM_TYPE.EXTENSION_MODULE]: WrenchIcon,
 };
 
 // Tipo para menu com children
@@ -165,6 +170,49 @@ function convertToMenuRoute(menuTree: Array<MenuWithChildren>): MenuRoute {
   return [];
 }
 
+function resolveLucideIcon(name: string | null | undefined): LucideIcon {
+  if (!name) return WrenchIcon;
+  const candidate = (LucideIcons as Record<string, unknown>)[name];
+  if (typeof candidate === 'function' || typeof candidate === 'object') {
+    return candidate as LucideIcon;
+  }
+  return WrenchIcon;
+}
+
+function buildToolItems(extensions: Array<IActiveExtension>): Array<MenuItem> {
+  return extensions
+    .filter((extension) => extension.type === E_EXTENSION_TYPE.TOOL)
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map<MenuItem>((extension) => ({
+      title: extension.name,
+      icon: resolveLucideIcon(extension.icon),
+      url: `/tools/${extension.pkg}/${extension.extensionId}` as LinkProps['to'],
+    }));
+}
+
+/**
+ * Injeta as tools ativadas como filhas do item "Ferramentas" do menu estático.
+ * Quando há tools, o item vira um CollapsibleItem; sem tools, segue como link
+ * para `/tools` (página de listagem).
+ */
+function injectToolsIntoMenu(
+  staticMenu: MenuRoute,
+  toolItems: Array<MenuItem>,
+): MenuRoute {
+  if (toolItems.length === 0) return staticMenu;
+
+  return staticMenu.map((group) => ({
+    ...group,
+    items: group.items.map((item) => {
+      if (item.title !== 'Ferramentas') return item;
+      return {
+        ...item,
+        items: toolItems,
+      };
+    }),
+  }));
+}
+
 /**
  * Hook para obter menus dinâmicos combinados com menus estáticos
  */
@@ -197,15 +245,32 @@ export function useMenuDynamic(role: string): {
     return getStaticMenusByRole(role);
   }, [role]);
 
-  // 5. Combinar: Tabelas → Dinâmicos → Conta/Sistema
+  // 5. Buscar extensões ativas e construir items de tools
+  const { data: activeExtensions } = useExtensionsActiveList();
+  const toolItems = useMemo(
+    () => buildToolItems(activeExtensions ?? []),
+    [activeExtensions],
+  );
+
+  const staticMenusAfterWithTools = useMemo(
+    () => injectToolsIntoMenu(staticMenusAfter, toolItems),
+    [staticMenusAfter, toolItems],
+  );
+
+  // 6. Combinar: Tabelas → Dinâmicos → Conta/Sistema (com tools injetadas)
   const combinedMenu = useMemo(() => {
     // Se está carregando, adiciona um grupo especial com flag isLoading
     const dynamicPart = isLoading
       ? [{ title: '', items: [], isLoading: true }]
       : dynamicMenuRoute;
 
-    return [...staticMenusBefore, ...dynamicPart, ...staticMenusAfter];
-  }, [staticMenusBefore, dynamicMenuRoute, staticMenusAfter, isLoading]);
+    return [...staticMenusBefore, ...dynamicPart, ...staticMenusAfterWithTools];
+  }, [
+    staticMenusBefore,
+    dynamicMenuRoute,
+    staticMenusAfterWithTools,
+    isLoading,
+  ]);
 
   return { menu: combinedMenu, isLoading };
 }

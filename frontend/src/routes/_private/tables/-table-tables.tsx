@@ -6,7 +6,6 @@ import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
   CopyIcon,
-  DownloadIcon,
   EllipsisIcon,
   EyeIcon,
   ImageOffIcon,
@@ -19,8 +18,6 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
-
-import { TableExportDialog } from './-export-dialog';
 
 import { ActionDialog } from '@/components/common/action-dialog';
 import {
@@ -88,7 +85,6 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
   const tableSendToTrashButtonRef = React.useRef<HTMLButtonElement | null>(
     null,
   );
-  const tableExportButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   const permission = useTablePermission(table);
   const router = useRouter();
@@ -182,17 +178,6 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
           <DropdownMenuItem
             className={cn(
               'inline-flex space-x-1 w-full cursor-pointer',
-              table.trashed && 'hidden',
-            )}
-            onClick={() => tableExportButtonRef.current?.click()}
-          >
-            <DownloadIcon className="size-4" />
-            <span>Exportar</span>
-          </DropdownMenuItem>
-
-          <DropdownMenuItem
-            className={cn(
-              'inline-flex space-x-1 w-full cursor-pointer',
               !table.trashed && 'hidden',
               !permission.can('REMOVE_TABLE') && 'hidden',
             )}
@@ -228,11 +213,6 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <TableExportDialog
-        ref={tableExportButtonRef}
-        slug={table.slug}
-        tableName={table.name}
-      />
       <PermanentDeleteConfirmDialog
         open={hardDeleteOpen}
         onOpenChange={setHardDeleteOpen}

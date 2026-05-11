@@ -1,6 +1,7 @@
 import {
   GroupIcon,
   MenuIcon,
+  PuzzleIcon,
   SettingsIcon,
   TableIcon,
   UserIcon,
@@ -33,6 +34,11 @@ export const getStaticMenusByRole = (
               { title: 'Grupos', url: '/groups', icon: GroupIcon },
               { title: 'Usuários', url: '/users', icon: UsersIcon },
               { title: 'Ferramentas', url: '/tools', icon: WrenchIcon },
+              {
+                title: 'Extensões',
+                url: '/extensions',
+                icon: PuzzleIcon,
+              },
             ],
           },
           {
@@ -52,6 +58,12 @@ export const getStaticMenusByRole = (
               { title: 'Tabelas', url: '/tables', icon: TableIcon },
               { title: 'Menus', url: '/menus', icon: MenuIcon },
               { title: 'Usuários', url: '/users', icon: UsersIcon },
+              { title: 'Ferramentas', url: '/tools', icon: WrenchIcon },
+              {
+                title: 'Extensões',
+                url: '/extensions',
+                icon: PuzzleIcon,
+              },
             ],
           },
           {

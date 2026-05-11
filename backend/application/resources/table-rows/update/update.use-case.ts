@@ -113,7 +113,7 @@ export default class TableRowUpdateUseCase {
         });
 
         if (result.logs.length > 0) {
-          console.log(
+          console.info(
             `[beforeSave][${table.slug}] logs:`,
             result.logs.join('\n'),
           );

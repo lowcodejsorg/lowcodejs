@@ -6,7 +6,14 @@ export type MenuCreatePayload = Merge<
   Partial<
     Pick<
       IMenu,
-      'table' | 'parent' | 'url' | 'html' | 'owner' | 'order' | 'isInitial'
+      | 'table'
+      | 'parent'
+      | 'url'
+      | 'html'
+      | 'owner'
+      | 'order'
+      | 'isInitial'
+      | 'extension'
     >
   >
 >;

@@ -6,11 +6,9 @@ import {
   useRouter,
   useSearch,
 } from '@tanstack/react-router';
-import { UploadIcon } from 'lucide-react';
 import React from 'react';
 
 import { TableEmptyTrashDialog } from './-empty-trash-dialog';
-import { TableImportDialog } from './-import-dialog';
 import { TableTables } from './-table-tables';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
@@ -129,18 +127,6 @@ function RouteComponent(): React.JSX.Element {
               }
             />
           )}
-          {permission.can('CREATE_TABLE') && (
-            <TableImportDialog>
-              <Button
-                variant="outline"
-                size={'sm'}
-              >
-                <UploadIcon className="size-4" />
-                <span>Importar</span>
-              </Button>
-            </TableImportDialog>
-          )}
-
           {aiAssistantEnabled && (
             <ChatTrigger
               onClick={() => handleChatOpenChange(!chatOpen)}
