@@ -15,6 +15,8 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
     '/pages/$slug',
     '/profile',
     '/tables',
+    '/tools',
+    '/tools/$package/$id',
     '/users',
     '/users/create',
     '/users/$userId',
