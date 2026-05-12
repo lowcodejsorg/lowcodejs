@@ -520,6 +520,45 @@ export type ISetting = {
   STORAGE_MIGRATION_LAST_RUN_AT: Date | null;
 };
 
+export const E_LOGGER_ACTION_TYPE = {
+  VIEW: 'VIEW',
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+} as const;
+
+export const E_LOGGER_OBJECT_TYPE = {
+  TABLE: 'TABLE',
+  FIELD: 'FIELD',
+  ROW: 'ROW',
+  MENU: 'MENU',
+  USER: 'USER',
+  EXTENSION: 'EXTENSION',
+  GROUP_FIELD: 'GROUP_FIELD',
+  GROUP_ROW: 'GROUP_ROW',
+  PAGE: 'PAGE',
+  PERMISSION: 'PERMISSION',
+  PROFILE: 'PROFILE',
+  SETTING: 'SETTING',
+  SETUP: 'SETUP',
+  STORAGE: 'STORAGE',
+  USER_GROUP: 'USER_GROUP',
+} as const;
+
+export type ILogger = Merge<
+  Base,
+  {
+    url: string;
+    user: IUser | null;
+    action: (typeof E_LOGGER_ACTION_TYPE)[keyof typeof E_LOGGER_ACTION_TYPE];
+    object:
+      | (typeof E_LOGGER_OBJECT_TYPE)[keyof typeof E_LOGGER_OBJECT_TYPE]
+      | null;
+    object_id: string | null;
+    content: Record<string, unknown> | null;
+  }
+>;
+
 export const E_EXTENSION_TYPE = {
   PLUGIN: 'PLUGIN',
   MODULE: 'MODULE',

@@ -1,7 +1,7 @@
 # Workshop de Extensões
 
-Página de gestão das extensões registradas no sistema. Disponível para
-usuários com role MASTER ou ADMINISTRATOR.
+Página de gestão das extensões registradas no sistema. Disponível para usuários
+com role MASTER ou ADMINISTRATOR.
 
 ## Arquivos
 
