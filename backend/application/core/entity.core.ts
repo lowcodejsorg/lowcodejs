@@ -530,6 +530,8 @@ export const E_LOGGER_ACTION_TYPE = {
   CREATE: 'CREATE',
   UPDATE: 'UPDATE',
   DELETE: 'DELETE',
+  AI_CALL: 'AI_CALL',
+  AI_RESPONSE: 'AI_RESPONSE',
 } as const;
 
 export const E_LOGGER_OBJECT_TYPE = {
@@ -548,6 +550,7 @@ export const E_LOGGER_OBJECT_TYPE = {
   SETUP: 'SETUP',
   STORAGE: 'STORAGE',
   USER_GROUP: 'USER_GROUP',
+  AI_TOOL: 'AI_TOOL',
 } as const;
 
 export type ILogger = Merge<

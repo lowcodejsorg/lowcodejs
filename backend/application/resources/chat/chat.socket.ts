@@ -19,8 +19,11 @@ import { Server as SocketIOServer } from 'socket.io';
 import {
   E_CHAT_EVENT,
   E_JWT_TYPE,
+  E_LOGGER_ACTION_TYPE,
+  E_LOGGER_OBJECT_TYPE,
   type IJWTPayload,
 } from '@application/core/entity.core';
+import { Logger } from '@application/model/logger.model';
 import { Setting } from '@application/model/setting.model';
 import { Env } from '@start/env';
 
@@ -167,8 +170,10 @@ class NodeHttpTransport implements Transport {
   }
 }
 
-async function connectMcpClient(mcpUrl: string, mcpAuthToken: string | null): Promise<{ client: Client; tools: Awaited<ReturnType<Client['listTools']>>['tools'] }> {
-  const headers: Record<string, string> = {};
+async function connectMcpClient(mcpUrl: string, mcpAuthToken: string | null, accessToken: string): Promise<{ client: Client; tools: Awaited<ReturnType<Client['listTools']>>['tools'] }> {
+  const headers: Record<string, string> = {
+    'X-Access-Token': accessToken,
+  };
   if (mcpAuthToken) {
     headers['Authorization'] = `Bearer ${mcpAuthToken}`;
   }
@@ -240,7 +245,7 @@ export function initChatSocket(
         message: 'Conectando ao servidor MCP...',
       });
 
-      const { client, tools: mcpTools } = await connectMcpClient(mcpUrl, mcpAuthToken);
+      const { client, tools: mcpTools } = await connectMcpClient(mcpUrl, mcpAuthToken, accessToken);
       mcpClient = client;
 
       let openaiTools: OpenAI.ChatCompletionTool[] | undefined;
@@ -356,6 +361,16 @@ export function initChatSocket(
                   args: toolArgs,
                 });
 
+                console.log('[MCP Log] tool_call:', toolName, toolArgs);
+                Logger.create({
+                  url: `mcp://${toolName}`,
+                  user: user.sub,
+                  action: E_LOGGER_ACTION_TYPE.AI_CALL,
+                  object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
+                  object_id: toolName,
+                  content: toolArgs,
+                }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
+
                 try {
                   const result = await mcpClient!.callTool({
                     name: toolName,
@@ -385,13 +400,24 @@ export function initChatSocket(
                     content: contentStr,
                   });
 
+                  const preview = contentStr.length > 150
+                    ? contentStr.slice(0, 150) + '...'
+                    : contentStr;
+
                   socket.emit(E_CHAT_EVENT.TOOL_RESULT, {
                     name: toolName,
-                    preview:
-                      contentStr.length > 150
-                        ? contentStr.slice(0, 150) + '...'
-                        : contentStr,
+                    preview,
                   });
+
+                  console.log('[MCP Log] tool_result:', toolName, '|', preview);
+                  Logger.create({
+                    url: `mcp://${toolName}/result`,
+                    user: user.sub,
+                    action: E_LOGGER_ACTION_TYPE.AI_RESPONSE,
+                    object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
+                    object_id: toolName,
+                    content: { preview, length: contentStr.length },
+                  }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
                 } catch (err) {
                   const errorMsg =
                     err instanceof Error ? err.message : String(err);
@@ -406,6 +432,16 @@ export function initChatSocket(
                     name: toolName,
                     message: errorMsg,
                   });
+
+                  console.error('[MCP Log] tool_error:', toolName, errorMsg);
+                  Logger.create({
+                    url: `mcp://${toolName}/error`,
+                    user: user.sub,
+                    action: E_LOGGER_ACTION_TYPE.AI_RESPONSE,
+                    object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
+                    object_id: toolName,
+                    content: { error: errorMsg },
+                  }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
                 }
               }
               // Continua o loop para enviar resultados de volta ao modelo (igual agent L287)

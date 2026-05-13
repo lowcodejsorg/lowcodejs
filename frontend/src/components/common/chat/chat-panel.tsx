@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react';
 import { ChatMessage } from './chat-message';
 
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Textarea } from '@/components/ui/textarea';
 import { useChatSocket } from '@/hooks/use-chat-socket';
 import type { FileData } from '@/hooks/use-chat-socket';
@@ -163,8 +162,8 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
       </div>
 
       {/* Messages */}
-      <ScrollArea className="flex-1 overflow-hidden px-4">
-        <div className="space-y-3 py-4">
+      <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
+        <div className="space-y-3 py-4 px-4">
           {renderStatusOrWelcome()}
           {messages.map((message) => (
             <ChatMessage
@@ -221,7 +220,7 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
           )}
           <div ref={scrollRef} />
         </div>
-      </ScrollArea>
+      </div>
 
       {/* Input */}
       <form
