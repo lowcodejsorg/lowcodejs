@@ -1,7 +1,7 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Link, createLazyFileRoute } from '@tanstack/react-router';
 import * as LucideIcons from 'lucide-react';
-import { WrenchIcon } from 'lucide-react';
+import { FileCode2Icon, WrenchIcon } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import React from 'react';
 
@@ -13,7 +13,6 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { extensionActiveListOptions } from '@/hooks/tanstack-query/use-extensions-active-list';
 import { E_EXTENSION_TYPE } from '@/lib/constant';
 
@@ -45,47 +44,56 @@ function RouteComponent(): React.JSX.Element {
       </PageShell.Header>
 
       <PageShell.Content className="p-4">
-        {tools.length === 0 && (
-          <Empty>
-            <EmptyTitle>Nenhuma ferramenta ativa</EmptyTitle>
-            <EmptyDescription>
-              Ative ferramentas em <Link to="/extensions">Extensões</Link> para
-              que apareçam aqui.
-            </EmptyDescription>
-          </Empty>
-        )}
+        <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+          <Link
+            to="/tables/schema-import"
+            className="block"
+            data-test-id="tool-card-schema-import"
+          >
+            <Card className="hover:bg-accent/50 transition-colors h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileCode2Icon className="size-5 text-primary" />
+                  <span>Importar Schema</span>
+                </CardTitle>
+                <CardDescription>
+                  Crie várias tabelas de uma vez via arquivo YAML declarativo
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="text-xs text-muted-foreground font-mono">
+                core/schema-import
+              </CardContent>
+            </Card>
+          </Link>
 
-        {tools.length > 0 && (
-          <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {tools.map((tool) => {
-              const Icon = resolveLucideIcon(tool.icon);
-              return (
-                <Link
-                  key={tool._id}
-                  to="/tools/$package/$id"
-                  params={{ package: tool.pkg, id: tool.extensionId }}
-                  className="block"
-                  data-test-id={`tool-card-${tool.extensionId}`}
-                >
-                  <Card className="hover:bg-accent/50 transition-colors h-full">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Icon className="size-5 text-primary" />
-                        <span>{tool.name}</span>
-                      </CardTitle>
-                      <CardDescription>
-                        {tool.description ?? 'Sem descrição'}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent className="text-xs text-muted-foreground font-mono">
-                      {tool.pkg}/{tool.extensionId}
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-        )}
+          {tools.map((tool) => {
+            const Icon = resolveLucideIcon(tool.icon);
+            return (
+              <Link
+                key={tool._id}
+                to="/tools/$package/$id"
+                params={{ package: tool.pkg, id: tool.extensionId }}
+                className="block"
+                data-test-id={`tool-card-${tool.extensionId}`}
+              >
+                <Card className="hover:bg-accent/50 transition-colors h-full">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Icon className="size-5 text-primary" />
+                      <span>{tool.name}</span>
+                    </CardTitle>
+                    <CardDescription>
+                      {tool.description ?? 'Sem descrição'}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="text-xs text-muted-foreground font-mono">
+                    {tool.pkg}/{tool.extensionId}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
       </PageShell.Content>
     </PageShell>
   );

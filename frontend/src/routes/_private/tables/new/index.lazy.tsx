@@ -1,5 +1,5 @@
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
-import { CopyIcon, DatabaseIcon } from 'lucide-react';
+import { CopyIcon, DatabaseIcon, FileCode2Icon } from 'lucide-react';
 import React from 'react';
 
 export const Route = createLazyFileRoute('/_private/tables/new/')({
@@ -14,7 +14,7 @@ function RouteComponent(): React.JSX.Element {
       className="flex h-full items-center justify-center"
       data-test-id="new-table-page"
     >
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl w-full px-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full px-4">
         {/* Criar a partir de modelo */}
         <button
           onClick={() => navigate({ to: '/tables/clone' })}
@@ -47,6 +47,24 @@ function RouteComponent(): React.JSX.Element {
             <h2 className="text-lg font-semibold">Criar nova Tabela</h2>
             <p className="mt-1 text-sm text-muted-foreground">
               Comece com uma tabela totalmente em branco
+            </p>
+          </div>
+        </button>
+
+        {/* Importar schema YAML */}
+        <button
+          onClick={() => navigate({ to: '/tables/schema-import' })}
+          data-test-id="new-table-schema-import-card"
+          className="group flex flex-col items-center justify-center gap-4 rounded-2xl border border-border bg-background p-10 text-center transition hover:border-primary hover:shadow-lg"
+        >
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <FileCode2Icon className="h-6 w-6" />
+          </div>
+
+          <div>
+            <h2 className="text-lg font-semibold">Importar Schema</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Crie várias tabelas de uma vez via arquivo YAML
             </p>
           </div>
         </button>
