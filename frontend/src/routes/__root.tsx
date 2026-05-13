@@ -28,6 +28,7 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
           systemName: data.SYSTEM_NAME || 'LowCodeJs',
           systemDescription: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
           aiAssistantEnabled: data.AI_ASSISTANT_ENABLED ?? false,
+        chatHistoryEnabled: data.CHAT_HISTORY_ENABLED ?? false,
           setupCompleted: data.SETUP_COMPLETED ?? false,
           setupCurrentStep: data.SETUP_CURRENT_STEP ?? 'admin',
         };
@@ -36,6 +37,7 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
         aiAssistantEnabled: false,
+        chatHistoryEnabled: false,
         setupCompleted: false,
         setupCurrentStep: 'admin',
       };
@@ -44,6 +46,7 @@ const getSystemSettings = createServerFn({ method: 'GET' }).handler(
         systemName: 'LowCodeJs',
         systemDescription: 'Plataforma Oficial',
         aiAssistantEnabled: false,
+        chatHistoryEnabled: false,
         setupCompleted: false,
         setupCurrentStep: 'admin',
       };
@@ -64,6 +67,7 @@ export const Route = createRootRouteWithContext<RouterContext>()({
       systemName: settings.systemName,
       systemDescription: settings.systemDescription,
       aiAssistantEnabled: settings.aiAssistantEnabled,
+      chatHistoryEnabled: settings.chatHistoryEnabled,
     };
   },
   component: RootDocument,

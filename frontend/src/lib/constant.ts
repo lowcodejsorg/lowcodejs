@@ -303,7 +303,8 @@ export const E_CHAT_EVENT = {
   TOOL_ERROR: 'tool_error',
   MESSAGE: 'message',
   ERROR: 'error',
-  // Client -> Server (same as server message event)
+  // Client -> Server
+  HISTORY: 'history',
 } as const;
 
 // Tool name prefixes for query invalidation mapping
