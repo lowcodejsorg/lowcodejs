@@ -153,10 +153,6 @@ function SettingUpdateContent({
       EMAIL_PROVIDER_FROM: resolveStringDefault(data.EMAIL_PROVIDER_FROM),
       OPENAI_API_KEY: data.OPENAI_API_KEY || '',
       AI_ASSISTANT_ENABLED: data.AI_ASSISTANT_ENABLED ?? false,
-      CHAT_HISTORY_ENABLED: data.CHAT_HISTORY_ENABLED ?? false,
-      MCP_SERVER_URL: data.MCP_SERVER_URL || '',
-      MCP_SERVER_TOKEN: data.MCP_SERVER_TOKEN || '',
-      OPENAI_MODEL: data.OPENAI_MODEL || 'gpt-4.1-nano',
       logoSmallFile: [] as Array<File>,
       logoLargeFile: [] as Array<File>,
     },
@@ -211,10 +207,6 @@ function SettingUpdateContent({
         EMAIL_PROVIDER_FROM: stringOrNull(value.EMAIL_PROVIDER_FROM),
         OPENAI_API_KEY: value.OPENAI_API_KEY?.trim() || undefined,
         AI_ASSISTANT_ENABLED: value.AI_ASSISTANT_ENABLED,
-        CHAT_HISTORY_ENABLED: value.CHAT_HISTORY_ENABLED,
-        MCP_SERVER_URL: value.MCP_SERVER_URL?.trim() || null,
-        MCP_SERVER_TOKEN: value.MCP_SERVER_TOKEN?.trim() || null,
-        OPENAI_MODEL: value.OPENAI_MODEL?.trim() || 'gpt-4.1-nano',
       };
 
       await _update.mutateAsync(payload);

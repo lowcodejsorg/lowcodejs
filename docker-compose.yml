@@ -33,6 +33,7 @@ services:
     environment:
       DATABASE_URL: mongodb://${DB_USERNAME}:${DB_PASSWORD}@mongo:27017/${DB_DATABASE}?authSource=admin
       REDIS_URL: redis://redis:6379
+      MCP_SERVER_URL: http://mcp:3000/mcp
     networks:
       - low-code-js-network
     depends_on:

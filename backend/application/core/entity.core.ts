@@ -139,7 +139,6 @@ export const E_CHAT_EVENT = {
   TOOL_ERROR: 'tool_error',
   MESSAGE: 'message',
   ERROR: 'error',
-  HISTORY: 'history',
 } as const;
 
 export type IJWTPayload = {
@@ -505,10 +504,6 @@ export type ISetting = {
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string | null;
   AI_ASSISTANT_ENABLED: boolean;
-  CHAT_HISTORY_ENABLED: boolean;
-  MCP_SERVER_URL: string | null;
-  MCP_SERVER_TOKEN: string | null;
-  OPENAI_MODEL: string;
   SETUP_COMPLETED: boolean;
   SETUP_CURRENT_STEP:
     | 'admin'

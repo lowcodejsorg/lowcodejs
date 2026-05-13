@@ -36,10 +36,6 @@ export const SettingPublicSchema: FastifySchema = {
           type: 'boolean',
           description: 'Indica se o assistente IA está habilitado',
         },
-        CHAT_HISTORY_ENABLED: {
-          type: 'boolean',
-          description: 'Indica se o histórico do chat é salvo entre atualizações',
-        },
         SETUP_COMPLETED: {
           type: 'boolean',
           description: 'Indica se o setup inicial foi concluído',
