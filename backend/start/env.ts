@@ -39,6 +39,8 @@ const EnvSchema = z.object({
 
   REDIS_URL: z.string().trim().default('redis://localhost:6379'),
 
+  MCP_SERVER_URL: z.string().trim().optional(),
+
   STORAGE_MIGRATION_CONCURRENCY: z.coerce
     .number()
     .int()

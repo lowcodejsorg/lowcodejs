@@ -120,26 +120,6 @@ export const SettingUpdateSchema: FastifySchema = {
         nullable: true,
         description: 'Habilitar ou desabilitar o assistente IA',
       },
-      CHAT_HISTORY_ENABLED: {
-        type: 'boolean',
-        nullable: true,
-        description: 'Salvar histórico do chat entre atualizações de página',
-      },
-      MCP_SERVER_URL: {
-        type: 'string',
-        nullable: true,
-        description: 'URL do servidor MCP para o assistente IA',
-      },
-      MCP_SERVER_TOKEN: {
-        type: 'string',
-        nullable: true,
-        description: 'Token de autenticação do servidor MCP (Bearer)',
-      },
-      OPENAI_MODEL: {
-        type: 'string',
-        nullable: true,
-        description: 'Modelo OpenAI usado pelo assistente IA',
-      },
       LOGO_SMALL_URL: {
         type: 'string',
         nullable: true,
@@ -266,25 +246,6 @@ export const SettingUpdateSchema: FastifySchema = {
         AI_ASSISTANT_ENABLED: {
           type: 'boolean',
           description: 'Habilitar ou desabilitar o assistente IA',
-        },
-        CHAT_HISTORY_ENABLED: {
-          type: 'boolean',
-          description: 'Salvar histórico do chat entre atualizações de página',
-        },
-        MCP_SERVER_URL: {
-          type: 'string',
-          nullable: true,
-          description: 'URL do servidor MCP para o assistente IA',
-        },
-        MCP_SERVER_TOKEN: {
-          type: 'string',
-          nullable: true,
-          description: 'Token de autenticação do servidor MCP (Bearer)',
-        },
-        OPENAI_MODEL: {
-          type: 'string',
-          nullable: true,
-          description: 'Modelo OpenAI usado pelo assistente IA',
         },
         SETUP_COMPLETED: {
           type: 'boolean',
