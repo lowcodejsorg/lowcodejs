@@ -11,6 +11,8 @@ import { LoggerContractRepository } from '@application/repositories/logger/logge
 import LoggerMongooseRepository from '@application/repositories/logger/logger-mongoose.repository';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 import MenuMongooseRepository from '@application/repositories/menu/menu-mongoose.repository';
+import { NotificationContractRepository } from '@application/repositories/notification/notification-contract.repository';
+import NotificationMongooseRepository from '@application/repositories/notification/notification-mongoose.repository';
 import { PermissionContractRepository } from '@application/repositories/permission/permission-contract.repository';
 import PermissionMongooseRepository from '@application/repositories/permission/permission-mongoose.repository';
 import { ReactionContractRepository } from '@application/repositories/reaction/reaction-contract.repository';
@@ -35,12 +37,16 @@ import { EmailContractService } from '@application/services/email/email-contract
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import KanbanCommentMentionService from '@application/services/kanban-comment-mention/kanban-comment-mention.service';
+import { NotificationContractService } from '@application/services/notification/notification-contract.service';
+import NotificationService from '@application/services/notification/notification.service';
 import BcryptPasswordService from '@application/services/password/bcrypt-password.service';
 import { PasswordContractService } from '@application/services/password/password-contract.service';
 import { PermissionContractService } from '@application/services/permission/permission-contract.service';
 import PermissionService from '@application/services/permission/permission.service';
 import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
 import RowContextService from '@application/services/row-context/row-context.service';
+import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
+import RowMemberNotificationService from '@application/services/row-member-notification/row-member-notification.service';
 import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import NodeVmScriptExecutionService from '@application/services/script-execution/node-vm-script-execution.service';
@@ -75,6 +81,11 @@ export function registerDependencies(): void {
   injectablesHolder.injectService(
     MenuContractRepository,
     MenuMongooseRepository,
+  );
+
+  injectablesHolder.injectService(
+    NotificationContractRepository,
+    NotificationMongooseRepository,
   );
 
   injectablesHolder.injectService(
@@ -165,5 +176,15 @@ export function registerDependencies(): void {
   injectablesHolder.injectService(
     LoggerContractRepository,
     LoggerMongooseRepository,
+  );
+
+  injectablesHolder.injectService(
+    NotificationContractService,
+    NotificationService,
+  );
+
+  injectablesHolder.injectService(
+    RowMemberNotificationContractService,
+    RowMemberNotificationService,
   );
 }

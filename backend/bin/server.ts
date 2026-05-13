@@ -6,6 +6,7 @@ import { Setting } from '@application/model/setting.model';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
 import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
 import { initChatSocket } from '@application/resources/chat/chat.socket';
+import { initNotificationsSocket } from '@application/resources/notifications/notifications.socket';
 import { initStorageMigrationSocket } from '@application/resources/storage-migration/storage-migration.socket';
 import { EmailContractService } from '@application/services/email/email-contract.service';
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
@@ -87,6 +88,9 @@ async function start(): Promise<void> {
 
     const migrationNamespace = initStorageMigrationSocket(io, jwtDecode);
     console.info('Socket.IO storage-migration namespace initialized');
+
+    initNotificationsSocket(io, jwtDecode);
+    console.info('Socket.IO notifications namespace initialized');
 
     await sweepStaleMigrations();
 

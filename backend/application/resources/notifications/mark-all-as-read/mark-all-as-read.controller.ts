@@ -1,0 +1,48 @@
+/* eslint-disable no-unused-vars */
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
+
+import { E_NOTIFICATION_EVENT } from '@application/core/entity.core';
+import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
+import { NotificationContractRepository } from '@application/repositories/notification/notification-contract.repository';
+import NotificationMongooseRepository from '@application/repositories/notification/notification-mongoose.repository';
+import { getNotificationsNamespace } from '@application/resources/notifications/notifications.socket';
+
+@Controller({
+  route: '/notifications',
+})
+export default class {
+  constructor(
+    private readonly repository: NotificationContractRepository = getInstanceByToken(
+      NotificationMongooseRepository,
+    ),
+  ) {}
+
+  @PATCH({
+    url: '/read-all',
+    options: {
+      onRequest: [AuthenticationMiddleware({ optional: false })],
+    },
+  })
+  async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
+    try {
+      const updated = await this.repository.markAllAsRead(request.user.sub);
+
+      const namespace = getNotificationsNamespace();
+      if (namespace) {
+        namespace
+          .to(`user:${request.user.sub}`)
+          .emit(E_NOTIFICATION_EVENT.READ_ALL, { userId: request.user.sub });
+      }
+
+      return response.status(200).send({ updated });
+    } catch (error) {
+      console.error('[notifications > mark-all-as-read][error]:', error);
+      return response.status(500).send({
+        message: 'Erro interno do servidor',
+        code: 500,
+        cause: 'MARK_ALL_AS_READ_ERROR',
+      });
+    }
+  }
+}

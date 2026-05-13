@@ -1,9 +1,13 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import { E_USER_STATUS } from '@application/core/entity.core';
+import {
+  E_NOTIFICATION_TYPE,
+  E_USER_STATUS,
+} from '@application/core/entity.core';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { EmailContractService } from '@application/services/email/email-contract.service';
+import { NotificationContractService } from '@application/services/notification/notification-contract.service';
 import { Env } from '@start/env';
 
 import {
@@ -90,6 +94,7 @@ export default class KanbanCommentMentionService extends KanbanCommentMentionCon
   constructor(
     private readonly userRepository: UserContractRepository,
     private readonly emailService: EmailContractService,
+    private readonly notificationService: NotificationContractService,
   ) {
     super();
   }
@@ -179,6 +184,15 @@ export default class KanbanCommentMentionService extends KanbanCommentMentionCon
       commentText: readString(record[COMMENT_TEXT_SLUG]),
     });
 
+    await this.dispatchInAppNotification({
+      recipientIds,
+      actorUserId,
+      table,
+      row,
+      cardTitle,
+      commentText: readString(record[COMMENT_TEXT_SLUG]),
+    });
+
     const newNotified = Array.from(new Set([...notified, ...recipientIds]));
     markChanged();
     return {
@@ -221,5 +235,39 @@ export default class KanbanCommentMentionService extends KanbanCommentMentionCon
     } catch (error) {
       console.error('[kanban-comment-mention] erro ao notificar:', error);
     }
+  }
+
+  private async dispatchInAppNotification(args: {
+    recipientIds: string[];
+    actorUserId: string;
+    table: NotifyMentionsParams['table'];
+    row: NotifyMentionsParams['row'];
+    cardTitle: string;
+    commentText: string;
+  }): Promise<void> {
+    const { recipientIds, actorUserId, table, row, cardTitle, commentText } =
+      args;
+    if (recipientIds.length === 0) return;
+    const rowId = readString(asRecord(row)._id);
+    const snippet = buildSnippet(commentText);
+    const title = cardTitle
+      ? `Você foi mencionado em "${cardTitle}"`
+      : 'Você foi mencionado em um card';
+    await this.notificationService.notify({
+      userIds: recipientIds,
+      type: E_NOTIFICATION_TYPE.KANBAN_COMMENT_MENTION,
+      title,
+      body: snippet,
+      action: {
+        type: 'route',
+        href: `/tables/${table.slug}?rowId=${rowId}`,
+        label: 'Abrir card',
+      },
+      source: {
+        tableSlug: table.slug,
+        rowId,
+      },
+      actorUserId,
+    });
   }
 }

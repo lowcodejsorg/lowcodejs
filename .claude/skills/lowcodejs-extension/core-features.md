@@ -81,6 +81,20 @@ estender, customizar ou criar uma variação — não duplicar.
 | Chat com IA + tools MCP | `useChatSocket` + `chat.socket.ts` |
 | Lazy load de mensagens | já implementado |
 
+## Notificações
+
+| Feature | Onde vive |
+|---------|-----------|
+| Sininho + popover no header | `components/common/layout/notification-bell.tsx` |
+| Página de notificações | `routes/_private/notifications/` |
+| Socket realtime | `backend/application/resources/notifications/notifications.socket.ts` (namespace `/notifications`, room `user:<sub>`) |
+| Serviço de disparo (DI) | `NotificationContractService.notify({ userIds, type, title, body?, action?, source?, actorUserId? })` |
+| Toggle visual no perfil | campo `notificationsEnabled` em IUser, formulário em `/profile` |
+| Triggers nativos | menção no fórum, menção em comentário de kanban, membro adicionado em row de KANBAN/CALENDAR |
+
+**Extensões devem reusar `NotificationContractService` ao invés de criar um sistema próprio.**
+Ver `references.md` § Notificações para a API completa.
+
 ## Greps recomendados
 
 ```bash

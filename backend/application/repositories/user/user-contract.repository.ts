@@ -20,6 +20,7 @@ export type UserUpdatePayload = Merge<
     status?: ValueOf<typeof E_USER_STATUS>;
     trashed?: boolean;
     trashedAt?: Date | null;
+    notificationsEnabled?: boolean;
   }
 >;
 

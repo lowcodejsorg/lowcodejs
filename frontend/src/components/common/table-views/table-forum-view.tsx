@@ -1,3 +1,4 @@
+import { useRouterState } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -175,6 +176,30 @@ export function TableForumView({
   const [highlightMentionMessageId, setHighlightMentionMessageId] =
     React.useState<string | null>(null);
   const [highlightMentionTick, setHighlightMentionTick] = React.useState(0);
+
+  // Deep-link via query params (?channelId=...&messageId=...) — usado pelas
+  // notificações de menção do fórum para abrir o canal certo e rolar até a
+  // mensagem específica.
+  const searchParams = useRouterState({ select: (s) => s.location.search });
+  React.useEffect(() => {
+    const channelId =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).channelId
+        : undefined;
+    const messageId =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).messageId
+        : undefined;
+    if (typeof channelId === 'string' && channelId) {
+      setActiveRowId(channelId);
+    }
+    if (typeof messageId === 'string' && messageId) {
+      setMentionJumpMessageId(messageId);
+      setMentionJumpTick((value) => value + 1);
+      setHighlightMentionMessageId(messageId);
+      setHighlightMentionTick((value) => value + 1);
+    }
+  }, [searchParams]);
 
   const bumpFocus = React.useCallback(() => {
     setFocusTick((value) => value + 1);
