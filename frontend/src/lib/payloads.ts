@@ -284,6 +284,10 @@ export type SettingUpdatePayload = Partial<{
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string;
   AI_ASSISTANT_ENABLED: boolean;
+  CHAT_HISTORY_ENABLED: boolean;
+  MCP_SERVER_URL: string | null;
+  MCP_SERVER_TOKEN: string | null;
+  OPENAI_MODEL: string;
 }>;
 
 // ============== SETUP WIZARD ==============

@@ -8,8 +8,11 @@
  * - Protocolo de eventos: status, ready, thinking, tool_call, tool_result, tool_error, message, error
  */
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
+import * as http from 'node:http';
 import type { Server as HttpServer } from 'node:http';
+import * as https from 'node:https';
 import OpenAI from 'openai';
 import { Server as SocketIOServer } from 'socket.io';
 
@@ -52,6 +55,131 @@ function extractCookieValue(
   return lastValue;
 }
 
+function getErrorMessage(err: unknown): string {
+  if (!(err instanceof Error)) return String(err);
+  const cause = (err as Error & { cause?: unknown }).cause;
+  const causeMsg = cause instanceof Error ? ` — causa: ${cause.message}` : '';
+  return err.message + causeMsg;
+}
+
+// Custom transport using node:http to bypass WHATWG "bad port" restriction
+class NodeHttpTransport implements Transport {
+  onclose?: () => void;
+  onerror?: (error: Error) => void;
+  onmessage?: (message: JSONRPCMessage) => void;
+
+  private readonly url: URL;
+  private readonly headers: Record<string, string>;
+
+  constructor(url: URL, headers: Record<string, string> = {}) {
+    this.url = url;
+    this.headers = headers;
+  }
+
+  async start(): Promise<void> {}
+
+  async send(message: JSONRPCMessage): Promise<void> {
+    // Notifications have no id — fire-and-forget, server sends no response
+    const isNotification = !('id' in message);
+    if (isNotification) {
+      this.post(message).catch((err: unknown) => this.onerror?.(err instanceof Error ? err : new Error(String(err))));
+      return;
+    }
+    const response = await this.post(message);
+    if (response !== null && this.onmessage) {
+      this.onmessage(response as JSONRPCMessage);
+    }
+  }
+
+  async close(): Promise<void> {
+    this.onclose?.();
+  }
+
+  private post(body: object, timeoutMs = 15000): Promise<JSONRPCMessage | null> {
+    return new Promise((resolve, reject) => {
+      const mod = this.url.protocol === 'https:' ? https : http;
+      const data = JSON.stringify(body);
+      const port = this.url.port || (this.url.protocol === 'https:' ? '443' : '80');
+
+      const req = mod.request(
+        {
+          hostname: this.url.hostname,
+          port,
+          path: this.url.pathname + this.url.search,
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': Buffer.byteLength(data),
+            Accept: 'application/json, text/event-stream',
+            ...this.headers,
+          },
+        },
+        (res) => {
+          const ct = res.headers['content-type'] ?? '';
+
+          // SSE response — parse events, call onmessage per event
+          if (ct.includes('text/event-stream')) {
+            let buf = '';
+            res.setEncoding('utf8');
+            res.on('data', (chunk: string) => {
+              buf += chunk;
+              const lines = buf.split('\n');
+              buf = lines.pop() ?? '';
+              let eventData = '';
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  eventData += line.slice(6);
+                } else if (line.trim() === '' && eventData) {
+                  try {
+                    const msg = JSON.parse(eventData) as JSONRPCMessage;
+                    this.onmessage?.(msg);
+                  } catch { /* ignore */ }
+                  eventData = '';
+                }
+              }
+            });
+            res.on('end', () => resolve(null));
+            return;
+          }
+
+          // Regular JSON response
+          let chunks = '';
+          res.setEncoding('utf8');
+          res.on('data', (chunk: string) => { chunks += chunk; });
+          res.on('end', () => {
+            if (!chunks) { resolve(null); return; }
+            try {
+              resolve(JSON.parse(chunks) as JSONRPCMessage);
+            } catch {
+              reject(new Error(`Resposta inválida do MCP: ${chunks.slice(0, 200)}`));
+            }
+          });
+        },
+      );
+
+      req.setTimeout(timeoutMs, () => {
+        req.destroy(new Error(`MCP request timeout (${timeoutMs}ms)`));
+      });
+      req.on('error', reject);
+      req.write(data);
+      req.end();
+    });
+  }
+}
+
+async function connectMcpClient(mcpUrl: string, mcpAuthToken: string | null): Promise<{ client: Client; tools: Awaited<ReturnType<Client['listTools']>>['tools'] }> {
+  const headers: Record<string, string> = {};
+  if (mcpAuthToken) {
+    headers['Authorization'] = `Bearer ${mcpAuthToken}`;
+  }
+
+  const transport = new NodeHttpTransport(new URL(mcpUrl), headers);
+  const client = new Client({ name: 'lowcodejs-chat', version: '1.0.0' });
+  await client.connect(transport);
+  const { tools } = await client.listTools();
+  return { client, tools };
+}
+
 export function initChatSocket(
   httpServer: HttpServer,
   jwtDecode: (value: string) => IJWTPayload | null,
@@ -90,7 +218,9 @@ export function initChatSocket(
     const setting = await Setting.findOne().lean();
     const aiEnabled = Boolean(setting?.AI_ASSISTANT_ENABLED);
     const openaiKey = setting?.OPENAI_API_KEY ?? null;
-    const mcpUrl = Env.MCP_SERVER_URL;
+    const mcpUrl = setting?.MCP_SERVER_URL ?? null;
+    const mcpAuthToken = setting?.MCP_SERVER_TOKEN ?? null;
+    const openaiModel = setting?.OPENAI_MODEL ?? 'gpt-4.1-nano';
 
     if (!aiEnabled || !openaiKey || !mcpUrl) {
       socket.emit(E_CHAT_EVENT.ERROR, {
@@ -105,29 +235,13 @@ export function initChatSocket(
     let mcpClient: Client | null = null;
 
     try {
-      // --- Conectar ao MCP (igual agent L150-153) ---
+      // --- Conectar ao MCP (tenta StreamableHTTP, fallback SSE) ---
       socket.emit(E_CHAT_EVENT.STATUS, {
         message: 'Conectando ao servidor MCP...',
       });
 
-      const transport = new StreamableHTTPClientTransport(new URL(mcpUrl), {
-        requestInit: {
-          headers: {
-            'X-Access-Token': accessToken,
-          },
-        },
-      });
-
-      mcpClient = new Client({
-        name: 'lowcodejs-chat',
-        version: '1.0.0',
-      });
-
-      await mcpClient.connect(transport);
-
-      // --- Descoberta dinâmica de tools (igual agent L156-169) ---
-      const toolsResult = await mcpClient.listTools();
-      const mcpTools = toolsResult.tools;
+      const { client, tools: mcpTools } = await connectMcpClient(mcpUrl, mcpAuthToken);
+      mcpClient = client;
 
       let openaiTools: OpenAI.ChatCompletionTool[] | undefined;
       if (mcpTools.length > 0) {
@@ -141,7 +255,7 @@ export function initChatSocket(
         }));
       }
 
-      // --- Histórico de mensagens in-memory (igual agent L171-173) ---
+      // --- Histórico de mensagens in-memory ---
       const messages: OpenAI.ChatCompletionMessageParam[] = [
         {
           role: 'system',
@@ -149,13 +263,26 @@ export function initChatSocket(
         },
       ];
 
-      // --- Agente pronto (igual agent L175-179) ---
+      // --- Recebe histórico do frontend (persistência entre reloads) ---
+      socket.on(
+        E_CHAT_EVENT.HISTORY,
+        (data: { messages: Array<{ role: 'user' | 'assistant'; content: string }> }) => {
+          if (!Array.isArray(data?.messages)) return;
+          for (const msg of data.messages) {
+            if ((msg.role === 'user' || msg.role === 'assistant') && typeof msg.content === 'string') {
+              messages.push({ role: msg.role, content: msg.content });
+            }
+          }
+        },
+      );
+
+      // --- Agente pronto ---
       socket.emit(E_CHAT_EVENT.READY, {
         message: 'Agente pronto! Você pode enviar mensagens.',
         tools_count: mcpTools.length,
       });
 
-      // --- Loop de mensagens (igual agent L181-293) ---
+      // --- Loop de mensagens ---
       socket.on(E_CHAT_EVENT.MESSAGE, async (data: ClientMessage) => {
         try {
           const userInput = (data.message || '').trim();
@@ -204,7 +331,7 @@ export function initChatSocket(
             socket.emit(E_CHAT_EVENT.THINKING);
 
             const response = await openaiClient.chat.completions.create({
-              model: 'gpt-5-mini',
+              model: openaiModel,
               messages,
               tools: openaiTools,
             });
@@ -294,7 +421,7 @@ export function initChatSocket(
         } catch (err) {
           // Error handling (igual agent L297-308)
           console.error('Erro no processamento:', err);
-          const errorMsg = err instanceof Error ? err.message : String(err);
+          const errorMsg = getErrorMessage(err);
           try {
             socket.emit(E_CHAT_EVENT.ERROR, {
               message: `Erro no servidor: ${errorMsg}`,
@@ -318,7 +445,7 @@ export function initChatSocket(
     } catch (err) {
       // Erro na inicialização (igual agent L297-308)
       console.error('Erro ao inicializar chat socket:', err);
-      const errorMsg = err instanceof Error ? err.message : String(err);
+      const errorMsg = getErrorMessage(err);
       try {
         socket.emit(E_CHAT_EVENT.ERROR, {
           message: `Erro no servidor: ${errorMsg}`,

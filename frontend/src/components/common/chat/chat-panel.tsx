@@ -17,10 +17,11 @@ interface ChatPanelProps {
 }
 
 export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
-  const { baseUrl } = rootApi.useLoaderData();
+  const { baseUrl, chatHistoryEnabled } = rootApi.useLoaderData();
   const [input, setInput] = useState('');
   const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
   const {
     messages,
@@ -29,7 +30,8 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
     statusMessage,
     sendMessage,
     clearMessages,
-  } = useChatSocket(baseUrl);
+    reconnect,
+  } = useChatSocket(baseUrl, chatHistoryEnabled ?? false);
 
   const isLoading = status === 'thinking' || status === 'connecting';
 
@@ -42,6 +44,7 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
     if (!input.trim() || isLoading) return;
     sendMessage(input.trim());
     setInput('');
+    inputRef.current?.focus();
   }
 
   function renderStatusOrWelcome(): React.JSX.Element | null {
@@ -54,8 +57,15 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
     }
     if (status === 'error') {
       return (
-        <div className="text-center text-sm text-destructive py-8">
-          {statusMessage}
+        <div className="flex flex-col items-center gap-3 py-8">
+          <p className="text-center text-sm text-destructive">{statusMessage}</p>
+          <button
+            type="button"
+            onClick={reconnect}
+            className="text-xs text-muted-foreground underline hover:text-foreground"
+          >
+            Tentar novamente
+          </button>
         </div>
       );
     }
@@ -239,6 +249,7 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
             <Paperclip className="h-4 w-4" />
           </Button>
           <Textarea
+            ref={inputRef}
             data-test-id="chat-input"
             value={input}
             onChange={(e) => setInput(e.target.value)}
