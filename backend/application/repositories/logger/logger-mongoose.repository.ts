@@ -12,7 +12,9 @@ import {
 } from './logger-contract.repository';
 
 @Service()
-export default class LoggerMongooseRepository implements LoggerContractRepository {
+export default class LoggerMongooseRepository
+  implements LoggerContractRepository
+{
   private readonly populateOptions = [{ path: 'user' }];
 
   private buildWhereClause(
@@ -20,16 +22,32 @@ export default class LoggerMongooseRepository implements LoggerContractRepositor
   ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
-    // if (payload?.trashed !== undefined) {
-    //   where.trashed = payload.trashed;
-    // } else {
-    //   where.trashed = false;
-    // }
+    if (payload?.user_id) {
+      where.user = payload.user_id;
+    }
+
+    if (payload?.actions && payload.actions.length > 0) {
+      where.action = { $in: payload.actions };
+    }
+
+    if (payload?.objects && payload.objects.length > 0) {
+      where.object = { $in: payload.objects };
+    }
+
+    if (payload?.dateFrom || payload?.dateTo) {
+      const range: Record<string, Date> = {};
+      if (payload.dateFrom) range.$gte = payload.dateFrom;
+      if (payload.dateTo) range.$lte = payload.dateTo;
+      where.createdAt = range;
+    }
 
     if (payload?.search) {
+      const term = normalize(payload.search);
       where.$or = [
-        { action: { $regex: normalize(payload.search), $options: 'i' } },
-        { object: { $regex: normalize(payload.search), $options: 'i' } },
+        { url: { $regex: term, $options: 'i' } },
+        { object_id: { $regex: term, $options: 'i' } },
+        { action: { $regex: term, $options: 'i' } },
+        { object: { $regex: term, $options: 'i' } },
       ];
     }
 
@@ -44,7 +62,11 @@ export default class LoggerMongooseRepository implements LoggerContractRepositor
   }
 
   async create(payload: LoggerCreatePayload): Promise<ILogger> {
-    const created = await Model.create(payload);
+    const { user_id, ...rest } = payload;
+    const created = await Model.create({
+      ...rest,
+      user: user_id ?? null,
+    });
     const populated = await created.populate(this.populateOptions);
     return this.transform(populated);
   }
@@ -74,13 +96,18 @@ export default class LoggerMongooseRepository implements LoggerContractRepositor
       take = payload.perPage;
     }
 
+    const sortOption =
+      payload?.sort && Object.keys(payload.sort).length > 0
+        ? payload.sort
+        : { createdAt: 'desc' as const };
+
     const loggers = await Model.find(where)
       .populate(this.populateOptions)
-      // .sort(sortOption)
+      .sort(sortOption)
       .skip(skip ?? 0)
       .limit(take ?? 0);
 
-    return loggers.map(this.transform);
+    return loggers.map((entity) => this.transform(entity));
   }
 
   async update({ _id, ...payload }: LoggerUpdatePayload): Promise<ILogger> {
@@ -88,7 +115,11 @@ export default class LoggerMongooseRepository implements LoggerContractRepositor
 
     if (!logger) throw new Error('logger not found');
 
-    logger.set(payload);
+    const { user_id, ...rest } = payload;
+    logger.set({
+      ...rest,
+      ...(user_id !== undefined && { user: user_id }),
+    });
 
     await logger.save();
 
