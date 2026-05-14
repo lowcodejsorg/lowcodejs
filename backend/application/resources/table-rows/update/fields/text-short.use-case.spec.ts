@@ -5,6 +5,7 @@ import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import InMemoryKanbanCommentMentionService from '@application/services/kanban-comment-mention/in-memory-kanban-comment-mention.service';
+import InMemoryRowMemberNotificationService from '@application/services/row-member-notification/in-memory-row-member-notification.service';
 import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
 import InMemoryScriptExecutionService from '@application/services/script-execution/in-memory-script-execution.service';
 import {
@@ -35,6 +36,7 @@ describe('Table Row Update - TEXT_SHORT', () => {
       rowPasswordService,
       scriptExecutionService,
       new InMemoryKanbanCommentMentionService(),
+      new InMemoryRowMemberNotificationService(),
     );
   });
 

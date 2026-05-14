@@ -12,6 +12,7 @@ import RowInMemoryRepository from '@application/repositories/row/row-in-memory.r
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
 import type { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import InMemoryEmailQueueService from '@application/services/email-queue/in-memory-email-queue.service';
+import InMemoryNotificationService from '@application/services/notification/in-memory-notification.service';
 
 import ForumMessageUseCase from './forum-message.use-case';
 
@@ -113,6 +114,7 @@ let tableInMemoryRepository: TableInMemoryRepository;
 let rowInMemoryRepository: RowInMemoryRepository;
 let mockUserRepo: UserContractRepository;
 let emailQueue: InMemoryEmailQueueService;
+let notificationService: InMemoryNotificationService;
 let sut: ForumMessageUseCase;
 
 function createMockUserRepo(): UserContractRepository {
@@ -133,11 +135,13 @@ describe('Forum Message Use Case', () => {
     rowInMemoryRepository = new RowInMemoryRepository();
     mockUserRepo = createMockUserRepo();
     emailQueue = new InMemoryEmailQueueService();
+    notificationService = new InMemoryNotificationService();
     sut = new ForumMessageUseCase(
       tableInMemoryRepository,
       mockUserRepo,
       emailQueue,
       rowInMemoryRepository,
+      notificationService,
     );
     vi.clearAllMocks();
   });
