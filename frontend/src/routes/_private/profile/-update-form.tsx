@@ -13,6 +13,7 @@ export const ProfileUpdateSchema = z.object({
   currentPassword: z.string(),
   newPassword: z.string(),
   confirmPassword: z.string(),
+  notificationsEnabled: z.boolean(),
 });
 
 export type ProfileUpdateFormValues = {
@@ -21,6 +22,7 @@ export type ProfileUpdateFormValues = {
   currentPassword: string;
   newPassword: string;
   confirmPassword: string;
+  notificationsEnabled: boolean;
 };
 
 export const profileUpdateFormDefaultValues: ProfileUpdateFormValues = {
@@ -29,6 +31,7 @@ export const profileUpdateFormDefaultValues: ProfileUpdateFormValues = {
   currentPassword: '',
   newPassword: '',
   confirmPassword: '',
+  notificationsEnabled: true,
 };
 
 export const UpdateProfileFormFields = withForm({
@@ -132,6 +135,28 @@ export const UpdateProfileFormFields = withForm({
             </div>
           </div>
         )}
+
+        {/* Switch Visual Notifications */}
+        <form.AppField name="notificationsEnabled">
+          {(field) => (
+            <div className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FieldLabel>Notificações visuais</FieldLabel>
+                <p className="text-sm text-muted-foreground">
+                  Mostra um toast quando você recebe uma notificação em outra
+                  página. Desativando, as notificações continuam acumulando no
+                  sininho mas sem alerta na tela.
+                </p>
+              </div>
+              <Switch
+                disabled={isDisabled}
+                checked={field.state.value}
+                onCheckedChange={(value) => field.handleChange(value)}
+                data-test-id="profile-notifications-enabled-switch"
+              />
+            </div>
+          )}
+        </form.AppField>
 
         {/* Switch Change Password */}
         <div className="flex flex-row items-center justify-between rounded-lg border p-4">

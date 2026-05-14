@@ -3,3 +3,4 @@ export { Sidebar } from './sidebar';
 export { Profile } from './profile';
 export { LoginButton } from './login-button';
 export { Logo } from './logo';
+export { NotificationBell } from './notification-bell';

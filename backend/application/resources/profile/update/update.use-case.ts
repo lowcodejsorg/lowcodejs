@@ -35,6 +35,9 @@ export default class ProfileUpdateUseCase {
           name: payload.name,
           email: payload.email,
           group: user.group._id,
+          ...(payload.notificationsEnabled !== undefined && {
+            notificationsEnabled: payload.notificationsEnabled,
+          }),
         });
 
         return right(updated);
@@ -64,6 +67,9 @@ export default class ProfileUpdateUseCase {
         email: payload.email,
         group: user.group._id,
         password,
+        ...(payload.notificationsEnabled !== undefined && {
+          notificationsEnabled: payload.notificationsEnabled,
+        }),
       });
 
       return right(updated);

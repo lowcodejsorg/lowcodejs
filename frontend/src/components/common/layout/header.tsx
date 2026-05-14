@@ -2,6 +2,7 @@ import { useLocation } from '@tanstack/react-router';
 import React from 'react';
 
 import { LoginButton } from './login-button';
+import { NotificationBell } from './notification-bell';
 import { Profile } from './profile';
 import { ThemeToggle } from './theme-toggle';
 
@@ -53,8 +54,9 @@ export function Header({
         <div className="inline-flex gap-2 w-full items-center">
           {showSearchInput && <InputSearch />}
         </div>
-        <div className="inline-flex gap-2">
+        <div className="inline-flex gap-2 items-center">
           <ThemeToggle />
+          {isAuthenticated && <NotificationBell />}
           {authContent}
         </div>
       </nav>

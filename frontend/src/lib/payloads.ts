@@ -257,6 +257,7 @@ export type ProfileUpdatePayload = {
   allowPasswordChange?: boolean;
   currentPassword?: string;
   newPassword?: string;
+  notificationsEnabled?: boolean;
 };
 
 // ============== SETTING ==============
