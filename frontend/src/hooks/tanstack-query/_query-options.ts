@@ -261,7 +261,7 @@ export const settingOptions = () =>
       const response = await API.get<ISetting>('/setting');
       return response.data;
     },
-    staleTime: 0,
+    staleTime: 5 * 60 * 1000,
   });
 
 // ============== PERMISSIONS ==============
@@ -413,7 +413,8 @@ export const loggerListOptions = (params: LoggerQueryPayload) =>
       });
       return response.data;
     },
-    staleTime: 30 * 1000,
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
 // ============== EXTENSIONS ==============

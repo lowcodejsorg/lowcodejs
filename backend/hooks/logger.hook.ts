@@ -222,6 +222,16 @@ export async function LoggerUserActionHook(
     // Não loga rotas que não mapeiam para nenhum objeto conhecido
     if (!object) return;
 
+    // Não loga requests sem usuário autenticado (SSR, endpoints públicos,
+    // healthchecks). Sem identidade o log vira ruído ("Anônimo") e polui o histórico.
+    if (!user_id) return;
+
+    // Não loga GETs (Visualização). Carregar uma página dispara várias requests
+    // em paralelo (menus, extensões, settings, tabelas...) e cada uma viraria um
+    // log separado. O histórico deve refletir AÇÕES do usuário — criar, editar,
+    // deletar — não cada chamada HTTP de leitura.
+    if (action === E_LOGGER_ACTION_TYPE.VIEW) return;
+
     const payload = {
       action,
       url: request.url,

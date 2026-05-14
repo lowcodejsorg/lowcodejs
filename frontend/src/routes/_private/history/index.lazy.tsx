@@ -450,6 +450,29 @@ interface JsonDialogProps {
   onClose: () => void;
 }
 
+function MetaRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}): React.JSX.Element {
+  return (
+    <div className="grid grid-cols-[140px_1fr] gap-3 border-b border-border/60 px-3 py-2 last:border-b-0">
+      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
+      <span className="text-sm break-all">{value}</span>
+    </div>
+  );
+}
+
+function hasContent(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'object') return Object.keys(value).length > 0;
+  return true;
+}
+
 function JsonDialog({ entry, onClose }: JsonDialogProps): React.JSX.Element {
   return (
     <Dialog
@@ -460,21 +483,88 @@ function JsonDialog({ entry, onClose }: JsonDialogProps): React.JSX.Element {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileJsonIcon className="size-4" />
-            Conteúdo da ação
+            Detalhes do log
           </DialogTitle>
           <DialogDescription>
-            {entry && (
-              <span className="font-mono text-xs">
-                {entry.action} · {entry.object ?? '—'} ·{' '}
-                {entry.object_id ?? '—'}
-              </span>
-            )}
+            Metadados da ação registrada e conteúdo da requisição.
           </DialogDescription>
         </DialogHeader>
+
         {entry && (
-          <pre className="mt-2 max-h-96 overflow-auto rounded-md border bg-muted/40 p-3 text-xs leading-relaxed">
-            {formatJson(entry.content ?? {})}
-          </pre>
+          <div className="space-y-3">
+            <div className="rounded-md border bg-muted/30">
+              <MetaRow
+                label="Data"
+                value={
+                  entry.createdAt
+                    ? format(
+                        new Date(entry.createdAt),
+                        "dd 'de' MMM 'de' yyyy 'às' HH:mm:ss.SSS",
+                        { locale: ptBR },
+                      )
+                    : '—'
+                }
+              />
+              <MetaRow
+                label="Usuário"
+                value={
+                  entry.user ? (
+                    <span title={entry.user.email}>
+                      {entry.user.name}{' '}
+                      <span className="text-muted-foreground">
+                        ({entry.user.email})
+                      </span>
+                    </span>
+                  ) : (
+                    <span className="italic text-muted-foreground">
+                      Anônimo
+                    </span>
+                  )
+                }
+              />
+              <MetaRow
+                label="Ação"
+                value={<ActionBadge action={entry.action} />}
+              />
+              <MetaRow
+                label="Tipo de objeto"
+                value={
+                  entry.object ? LOGGER_OBJECT_LABEL[entry.object] : '—'
+                }
+              />
+              <MetaRow
+                label="ID do objeto"
+                value={
+                  entry.object_id ?? (
+                    <span className="text-muted-foreground">—</span>
+                  )
+                }
+              />
+              <MetaRow
+                label="URL"
+                value={
+                  <span className="font-mono text-xs">{entry.url}</span>
+                }
+              />
+            </div>
+
+            <div>
+              <div className="mb-2 flex items-center gap-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                <FileJsonIcon className="size-3.5" />
+                Conteúdo
+              </div>
+              {hasContent(entry.content) ? (
+                <pre className="max-h-72 overflow-auto rounded-md border bg-muted/40 p-3 text-xs leading-relaxed">
+                  {formatJson(entry.content)}
+                </pre>
+              ) : (
+                <p className="rounded-md border bg-muted/30 p-3 text-xs italic text-muted-foreground">
+                  Esta ação não enviou body, query ou parâmetros — sem
+                  conteúdo adicional para exibir.
+                </p>
+              )}
+            </div>
+          </div>
         )}
       </DialogContent>
     </Dialog>
@@ -602,7 +692,7 @@ function buildColumns(params: {
         return (
           <span className="text-sm text-muted-foreground">
             {date
-              ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'às' HH:mm", {
+              ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'às' HH:mm:ss.SSS", {
                   locale: ptBR,
                 })
               : 'N/A'}
