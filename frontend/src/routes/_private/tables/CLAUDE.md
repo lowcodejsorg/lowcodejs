@@ -37,12 +37,13 @@ LIST, GALLERY, DOCUMENT, CARD, MOSAIC, KANBAN, FORUM, CALENDAR, GANTT
 
 ## Subdiretorios
 
-| Diretorio | Rota             | Descricao                                       |
-| --------- | ---------------- | ----------------------------------------------- |
-| `create/` | `/tables/create` | Formulario de criacao de tabela                 |
-| `clone/`  | `/tables/clone`  | Formulario de clonagem a partir de modelo       |
-| `new/`    | `/tables/new`    | Wizard com opcoes: criar do zero ou usar modelo |
-| `$slug/`  | `/tables/:slug`  | Visualizacao de tabela com multiplos modos      |
+| Diretorio        | Rota                    | Descricao                                                 |
+| ---------------- | ----------------------- | --------------------------------------------------------- |
+| `create/`        | `/tables/create`        | Formulario de criacao de tabela                           |
+| `clone/`         | `/tables/clone`         | Formulario de clonagem a partir de modelo                 |
+| `new/`           | `/tables/new`           | Wizard com 3 opcoes: criar do zero, usar modelo, importar |
+| `schema-import/` | `/tables/schema-import` | Editor YAML para criar varias tabelas de uma vez          |
+| `$slug/`         | `/tables/:slug`         | Visualizacao de tabela com multiplos modos                |
 
 ## Padroes
 
