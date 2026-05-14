@@ -64,6 +64,36 @@ function SidebarLabelTooltip({
   );
 }
 
+function SidebarItemIcon({
+  item,
+  className = '',
+}: {
+  item: MenuItem;
+  className?: string;
+}): React.JSX.Element | null {
+  if (item.iconUrl) {
+    return (
+      <img
+        src={item.iconUrl}
+        alt=""
+        aria-hidden="true"
+        className={`size-4 shrink-0 object-contain ${className}`.trim()}
+      />
+    );
+  }
+
+  if (item.icon) {
+    const Icon = item.icon;
+    return (
+      <Icon
+        className={`text-primary size-4 shrink-0 ${className}`.trim()}
+      />
+    );
+  }
+
+  return null;
+}
+
 function SidebarMenuItemRecursive({
   item,
   depth,
@@ -89,14 +119,9 @@ function SidebarMenuItemRecursive({
               data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
               tooltip={{ children: item.title, hidden: false }}
             >
-              {item.icon && (
-                <item.icon
-                  className="text-primary"
-                  width={32}
-                />
-              )}
-              <span>{item.title}</span>
-              <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              <SidebarItemIcon item={item} />
+              <span className="flex-1 truncate">{item.title}</span>
+              <ChevronRightIcon className="ml-auto shrink-0 size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
@@ -140,10 +165,8 @@ function SidebarMenuItemRecursive({
                       data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
-                      {subItem.icon && (
-                        <subItem.icon className="text-primary size-4" />
-                      )}
-                      <span>{subItem.title}</span>
+                      <SidebarItemIcon item={subItem} />
+                      <span className="flex-1 truncate">{subItem.title}</span>
                     </a>
                   );
                 } else {
@@ -153,10 +176,8 @@ function SidebarMenuItemRecursive({
                       data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
-                      {subItem.icon && (
-                        <subItem.icon className="text-primary size-4" />
-                      )}
-                      <span>{subItem.title}</span>
+                      <SidebarItemIcon item={subItem} />
+                      <span className="flex-1 truncate">{subItem.title}</span>
                     </Link>
                   );
                 }
@@ -193,13 +214,8 @@ function SidebarMenuItemRecursive({
           data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
           tooltip={{ children: item.title, hidden: false }}
         >
-          {item.icon && (
-            <item.icon
-              className="text-primary"
-              width={32}
-            />
-          )}
-          <span>{item.title}</span>
+          <SidebarItemIcon item={item} />
+          <span className="flex-1 truncate">{item.title}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
@@ -219,13 +235,11 @@ function SidebarMenuItemRecursive({
         data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
-        {item.icon && (
-          <item.icon
-            className="text-primary group-data-[active=true]:text-primary-foreground"
-            width={32}
-          />
-        )}
-        <span>{item.title}</span>
+        <SidebarItemIcon
+          item={item}
+          className="group-data-[active=true]:text-primary-foreground"
+        />
+        <span className="flex-1 truncate">{item.title}</span>
       </a>
     );
   } else {
@@ -235,15 +249,15 @@ function SidebarMenuItemRecursive({
         data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
-        {item.icon && (
-          <item.icon
-            className="text-primary group-data-[active=true]:text-primary-foreground"
-            width={32}
-          />
-        )}
-        <span>{item.title}</span>
+        <SidebarItemIcon
+          item={item}
+          className="group-data-[active=true]:text-primary-foreground"
+        />
+        <span className="flex-1 truncate">{item.title}</span>
         {item.badge && (
-          <Badge className="rounded-full px-1  text-xs">{item.badge}</Badge>
+          <Badge className="ml-auto rounded-full px-1 text-xs">
+            {item.badge}
+          </Badge>
         )}
       </Link>
     );

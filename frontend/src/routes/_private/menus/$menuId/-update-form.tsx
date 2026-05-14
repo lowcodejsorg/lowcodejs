@@ -3,10 +3,12 @@ import { FileTextIcon } from 'lucide-react';
 
 import { SeparatorInfo } from '../-separator-info';
 
+import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { ExtensionModuleSelect } from '@/components/common/selectors/extension-module-select';
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import type { IMenuExtensionRef, ValueOf } from '@/lib/interfaces';
+import type { IMenuExtensionRef, IStorage, ValueOf } from '@/lib/interfaces';
 import { MenuUpdateBodySchema } from '@/lib/schemas';
 
 export const MenuUpdateSchema = MenuUpdateBodySchema;
@@ -16,10 +18,12 @@ export type MenuUpdateFormValues = {
   table: string;
   html: string;
   url: string;
+  icon: string | null;
   parent: string;
   position: string;
   isInitial: boolean;
   extension: IMenuExtensionRef | null;
+  iconFile: Array<File>;
 };
 
 export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
@@ -28,10 +32,12 @@ export const menuUpdateFormDefaultValues: MenuUpdateFormValues = {
   table: '',
   html: '',
   url: '',
+  icon: null,
   parent: '',
   position: '0',
   isInitial: false,
   extension: null,
+  iconFile: [],
 };
 
 export const UpdateMenuFormFields = withForm({
@@ -58,6 +64,7 @@ export const UpdateMenuFormFields = withForm({
     menuId,
   }) {
     const parent = useStore(form.store, (state) => state.values.parent);
+    const iconUrl = useStore(form.store, (state) => state.values.icon);
     const isDisabled = mode === 'show' || isPending;
     const isSeparatorWithChildren =
       originalType === E_MENU_ITEM_TYPE.SEPARATOR && hasChildren;
@@ -94,6 +101,53 @@ export const UpdateMenuFormFields = withForm({
             />
           )}
         </form.AppField>
+
+        {/* Campo Ícone (opcional) */}
+        <form.Field
+          name="iconFile"
+          children={(field) => (
+            <Field>
+              <FieldLabel>Ícone</FieldLabel>
+              {mode === 'edit' && (
+                <FieldDescription>
+                  Imagem opcional usada como ícone no menu lateral. Se vazio, é
+                  exibido o ícone padrão do tipo selecionado.
+                </FieldDescription>
+              )}
+              {mode === 'edit' && (
+                <FileUploadWithStorage
+                  value={field.state.value}
+                  onValueChange={field.handleChange}
+                  onStorageChange={(storages: Array<IStorage>) => {
+                    form.setFieldValue('icon', storages[0]?.url ?? null);
+                  }}
+                  accept="image/*"
+                  maxFiles={1}
+                  maxSize={4 * 1024 * 1024}
+                  placeholder="Arraste ou selecione uma imagem"
+                  shouldDeleteFromStorage={false}
+                />
+              )}
+              {iconUrl && (
+                <div className="mt-2 flex items-center gap-2 p-2 border rounded-md w-fit">
+                  <img
+                    src={iconUrl}
+                    alt="Pré-visualização do ícone"
+                    className="h-8 w-8 object-contain"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    Ícone atual
+                  </span>
+                </div>
+              )}
+              {!iconUrl && mode === 'show' && (
+                <p className="text-sm text-muted-foreground">
+                  Nenhum ícone customizado. O sistema usa o padrão por tipo.
+                </p>
+              )}
+            </Field>
+          )}
+        />
 
         {/* Campo Tipo */}
         <form.AppField

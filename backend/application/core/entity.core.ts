@@ -472,6 +472,7 @@ export type IMenu = Merge<
     parent: string | null;
     url: string | null;
     html: string | null;
+    icon: string | null;
     owner: IUser | string | null;
     order: number;
     isInitial: boolean;
