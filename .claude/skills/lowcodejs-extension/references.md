@@ -141,6 +141,108 @@ const form = useAppForm({
 
 40 field components disponíveis (`base/`, `rich/`, `table-config/`, `table-row/`).
 
+## Notificações (in-app + WebSocket)
+
+Use `NotificationContractService` no backend para disparar notificações para um
+ou mais usuários. O serviço persiste o documento no Mongo e emite o evento
+`notification:created` no namespace Socket.IO `/notifications` (room `user:<sub>`).
+O sininho no frontend (`NotificationBell`) recebe em tempo real e, se o usuário
+estiver em outra página com `notificationsEnabled=true`, mostra um toast clicável.
+
+### Backend — disparar uma notificação
+
+```ts
+import { Service } from 'fastify-decorators';
+
+import { E_NOTIFICATION_TYPE } from '@application/core/entity.core';
+import { NotificationContractService } from '@application/services/notification/notification-contract.service';
+
+@Service()
+export default class MeuUseCase {
+  constructor(
+    private readonly notificationService: NotificationContractService,
+  ) {}
+
+  async execute(actorUserId: string, recipientIds: string[]): Promise<void> {
+    await this.notificationService.notify({
+      userIds: recipientIds,        // será deduplicado e o actor é excluído
+      type: E_NOTIFICATION_TYPE.GENERIC,
+      title: 'Sua extensão fez algo',
+      body: 'Detalhe (até ~200 chars).',
+      action: {                     // opcional — clique navega aqui
+        type: 'route',              // 'route' (TanStack Router) ou 'url' (window.location)
+        href: '/tables/clientes/rows/abc123',
+        label: 'Abrir',
+      },
+      source: {                     // opcional — metadados para a UI
+        pkg: 'meu-pacote',
+        tableSlug: 'clientes',
+        rowId: 'abc123',
+        anchorId: 'msg-uuid',       // ex: id da mensagem do forum para scroll
+      },
+      actorUserId,                  // remove o ator da lista de destinatários
+    });
+  }
+}
+```
+
+### Tipos de notificação (`E_NOTIFICATION_TYPE`)
+
+| Type | Usado por | Quando |
+|------|-----------|--------|
+| `FORUM_MENTION` | core | Usuário mencionado em uma mensagem do fórum |
+| `KANBAN_COMMENT_MENTION` | core | Usuário mencionado em comentário de card kanban |
+| `ROW_MEMBER_ASSIGNED` | core | Usuário adicionado a campo USER em row KANBAN/CALENDAR |
+| `GENERIC` | extensões | Use para qualquer notificação custom |
+
+Adicionar novo type? Acrescente em `E_NOTIFICATION_TYPE` (backend `entity.core.ts`
+e frontend `lib/constant.ts`) **e** adicione o enum value no model (`notification.model.ts`).
+
+### Frontend — consultar notificações na sua extensão
+
+Reuse os hooks existentes em vez de criar novos:
+
+```ts
+import { useNotificationPaginated } from '@/hooks/tanstack-query/use-notification-paginated';
+import { useNotificationUnreadCount } from '@/hooks/tanstack-query/use-notification-unread-count';
+import { useNotificationMarkAsRead } from '@/hooks/tanstack-query/use-notification-mark-as-read';
+import { useNotificationMarkAllAsRead } from '@/hooks/tanstack-query/use-notification-mark-all-as-read';
+import { useNotificationDelete } from '@/hooks/tanstack-query/use-notification-delete';
+```
+
+Endpoints REST:
+
+| Método | Rota | Descrição |
+|--------|------|-----------|
+| GET | `/notifications/paginated?page=&perPage=&unreadOnly=` | Lista paginada do usuário logado |
+| GET | `/notifications/unread-count` | Apenas o contador `{ count }` |
+| PATCH | `/notifications/:_id/read` | Marca uma como lida (emite `notification:read`) |
+| PATCH | `/notifications/read-all` | Marca todas como lidas (emite `notification:read_all`) |
+| DELETE | `/notifications/:_id` | Soft delete |
+
+### Deep-link com anchor
+
+Se a notificação leva a uma área específica (ex.: mensagem no fórum), use
+`source.anchorId` e construa o `action.href` com query params que o consumidor
+da UI saiba ler. Exemplo do fórum:
+
+```ts
+action: {
+  type: 'route',
+  href: `/tables/${tableSlug}?channelId=${rowId}&messageId=${messageId}`,
+  label: 'Abrir mensagem',
+},
+```
+
+O `TableForumView` lê `channelId` + `messageId` da query e rola até a mensagem.
+Siga o mesmo padrão se sua extensão precisar de scroll para um elemento.
+
+### Respeitando preferência do usuário
+
+O backend persiste a notificação **sempre**. A flag `notificationsEnabled` em
+`IUser` controla **apenas** o toast visual — o sininho continua atualizando o
+unread-count e a página `/notifications` continua acumulando o histórico.
+
 ## Backend imports comuns
 
 ```ts

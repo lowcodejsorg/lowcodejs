@@ -133,6 +133,13 @@ export const queryKeys = {
     all: ['setup'] as const,
     status: () => [...queryKeys.setup.all, 'status'] as const,
   },
+  notifications: {
+    all: ['notifications'] as const,
+    paginated: (params: Record<string, unknown>) =>
+      [...queryKeys.notifications.all, 'paginated', params] as const,
+    unreadCount: () =>
+      [...queryKeys.notifications.all, 'unread-count'] as const,
+  },
   extensions: {
     all: ['extensions'] as const,
     lists: () => [...queryKeys.extensions.all, 'list'] as const,

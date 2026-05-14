@@ -64,3 +64,23 @@ Router, Form, etc.).
 
 Mesma ideia dos módulos, mas a rota é `/_private/tools/$package/$id/`. Aparece
 no submenu Ferramentas da sidebar.
+
+## Notificações in-app
+
+Extensões geralmente **disparam** notificações pelo backend (via
+`NotificationContractService` — ver `backend/extensions/CLAUDE.md`). No frontend
+você só precisa **ler** notificações quando faz sentido para a UI da sua
+extensão (ex.: badge custom, lista filtrada por `source.pkg`).
+
+Hooks já existentes (não duplique):
+
+```ts
+import { useNotificationPaginated } from '@/hooks/tanstack-query/use-notification-paginated';
+import { useNotificationUnreadCount } from '@/hooks/tanstack-query/use-notification-unread-count';
+import { useNotificationMarkAsRead } from '@/hooks/tanstack-query/use-notification-mark-as-read';
+```
+
+O `NotificationBell` no header e a página `/notifications` cobrem o caso comum —
+só implemente UI custom se precisar filtrar/agrupar por `source.pkg` da sua
+extensão. Toast em tela é controlado por `user.notificationsEnabled` (toggle no
+formulário do perfil) — respeite essa preferência.

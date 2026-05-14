@@ -22,6 +22,8 @@ export const Schema = new mongoose.Schema(
     },
     group: { type: mongoose.Schema.Types.ObjectId, ref: 'UserGroup' },
 
+    notificationsEnabled: { type: Boolean, default: true },
+
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
   },
