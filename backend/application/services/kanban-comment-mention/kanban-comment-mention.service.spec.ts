@@ -11,6 +11,7 @@ import {
 } from '@application/core/entity.core';
 import UserInMemoryRepository from '@application/repositories/user/user-in-memory.repository';
 import InMemoryEmailService from '@application/services/email/in-memory-email.service';
+import InMemoryNotificationService from '@application/services/notification/in-memory-notification.service';
 
 import KanbanCommentMentionService from './kanban-comment-mention.service';
 
@@ -116,13 +117,19 @@ function makeKanbanTable(): ITable {
 
 let userRepository: UserInMemoryRepository;
 let emailService: InMemoryEmailService;
+let notificationService: InMemoryNotificationService;
 let sut: KanbanCommentMentionService;
 
 describe('KanbanCommentMentionService', () => {
   beforeEach(() => {
     userRepository = new UserInMemoryRepository();
     emailService = new InMemoryEmailService();
-    sut = new KanbanCommentMentionService(userRepository, emailService);
+    notificationService = new InMemoryNotificationService();
+    sut = new KanbanCommentMentionService(
+      userRepository,
+      emailService,
+      notificationService,
+    );
   });
 
   it('retorna changed=false quando tabela sem grupo de mentions', async () => {

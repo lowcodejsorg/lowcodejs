@@ -7,16 +7,43 @@ export const ImportTableSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['name', 'fileContent'],
+    required: ['fileContent'],
     properties: {
       name: {
-        type: 'string',
-        minLength: 1,
-        description: 'Name of the new table',
+        type: ['string', 'null'],
+        description:
+          'Optional override for the first table name (only applied to single-table imports).',
+      },
+      tables: {
+        type: 'array',
+        description:
+          'Per-table rename map: original slug → new name. The final slug is derived from the name. Tables not listed keep their original name/slug. Relationships are preserved.',
+        items: {
+          type: 'object',
+          required: ['slug', 'name'],
+          properties: {
+            slug: { type: 'string' },
+            name: { type: 'string' },
+          },
+        },
+      },
+      menus: {
+        type: 'array',
+        description:
+          'Per-menu rename map: original slug → new name. Applies only to conflicting leaf menu items — existing parent menus are reused, never renamed.',
+        items: {
+          type: 'object',
+          required: ['slug', 'name'],
+          properties: {
+            slug: { type: 'string' },
+            name: { type: 'string' },
+          },
+        },
       },
       fileContent: {
         type: 'object',
-        description: 'The exported JSON content',
+        description:
+          'The exported JSON content (v1 single-table or v2 multi-table)',
         additionalProperties: true,
       },
     },
@@ -31,6 +58,18 @@ export const ImportTableSchema: FastifySchema = {
         slug: { type: 'string' },
         importedFields: { type: 'number' },
         importedRows: { type: 'number' },
+        importedMenus: { type: 'number' },
+        tables: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              tableId: { type: 'string' },
+              slug: { type: 'string' },
+              name: { type: 'string' },
+            },
+          },
+        },
       },
     },
     400: {
