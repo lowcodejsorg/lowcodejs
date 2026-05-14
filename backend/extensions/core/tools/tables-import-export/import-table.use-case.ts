@@ -292,7 +292,8 @@ export default class ImportTableUseCase {
 
       const first = summaries[0];
       const importedFields = Array.from(tableSlugToInfo.values()).reduce(
-        (acc, info) => acc + (info.allFields?.filter((f) => !f.native).length || 0),
+        (acc, info) =>
+          acc + (info.allFields?.filter((f) => !f.native).length || 0),
         0,
       );
 
@@ -317,7 +318,9 @@ export default class ImportTableUseCase {
 
   // ── Normalization ──────────────────────────────────────────
 
-  private normalizePackage(content: Record<string, unknown>): NormalizedPackage {
+  private normalizePackage(
+    content: Record<string, unknown>,
+  ): NormalizedPackage {
     if (Array.isArray(content.tables)) {
       return {
         tables: content.tables as ExportedTable[],
@@ -415,9 +418,7 @@ export default class ImportTableUseCase {
    */
   private getMenuParentOriginalIds(menus: ExportedMenu[]): Set<string> {
     return new Set(
-      menus
-        .map((m) => m.parent)
-        .filter((p): p is string => Boolean(p)),
+      menus.map((m) => m.parent).filter((p): p is string => Boolean(p)),
     );
   }
 
@@ -536,9 +537,8 @@ export default class ImportTableUseCase {
   }> {
     const { structure, newName, newSlug, ownerId, packageSlugs } = args;
 
-    const nativeFields = await this.fieldRepository.createMany(
-      FIELD_NATIVE_LIST,
-    );
+    const nativeFields =
+      await this.fieldRepository.createMany(FIELD_NATIVE_LIST);
     const allFields: IField[] = [...nativeFields];
     const fieldsIds: string[] = nativeFields.map((f) => f._id);
     const fieldSlugToId = new Map<string, string>();
@@ -595,8 +595,7 @@ export default class ImportTableUseCase {
         groupFields.push(sub);
       }
 
-      const groupSchema =
-        this.tableSchemaService.computeSchema(groupFields);
+      const groupSchema = this.tableSchemaService.computeSchema(groupFields);
 
       groups.push({
         slug: group.slug,
@@ -607,7 +606,9 @@ export default class ImportTableUseCase {
     }
 
     const layoutFields: Partial<ILayoutFields> = {};
-    for (const [key, slugValue] of Object.entries(structure.layoutFields || {})) {
+    for (const [key, slugValue] of Object.entries(
+      structure.layoutFields || {},
+    )) {
       if (slugValue && fieldSlugToId.has(slugValue)) {
         layoutFields[key as keyof ILayoutFields] =
           fieldSlugToId.get(slugValue) || null;
@@ -751,7 +752,9 @@ export default class ImportTableUseCase {
       }
       const ref = tableSlugToInfo.get(exported.relationship.tableSlug);
       if (!ref?.tableId || !ref.fieldSlugToId) return null;
-      const targetFieldId = ref.fieldSlugToId.get(exported.relationship.fieldSlug);
+      const targetFieldId = ref.fieldSlugToId.get(
+        exported.relationship.fieldSlug,
+      );
       if (!targetFieldId) return null;
       return this.fieldRepository.update({
         _id: currentFieldId,
@@ -954,9 +957,7 @@ export default class ImportTableUseCase {
       return id;
     };
     if (Array.isArray(value)) {
-      const ids = value
-        .map(remapOne)
-        .filter((v): v is string => Boolean(v));
+      const ids = value.map(remapOne).filter((v): v is string => Boolean(v));
       return ids;
     }
     const single = remapOne(value);
@@ -1010,10 +1011,9 @@ export default class ImportTableUseCase {
       // Menu-pai já existente é REAPROVEITADO — os filhos passam a apontar
       // para o item existente em vez de recriá-lo.
       if (isParent) {
-        const existingParent = await this.menuRepository.findBySlug(
-          menu.slug,
-          { trashed: false },
-        );
+        const existingParent = await this.menuRepository.findBySlug(menu.slug, {
+          trashed: false,
+        });
         if (existingParent) {
           newIdByOriginalId.set(menu._originalId, existingParent._id);
           created.add(menu._originalId);
@@ -1046,7 +1046,7 @@ export default class ImportTableUseCase {
       }
 
       const parentId = menu.parent
-        ? newIdByOriginalId.get(menu.parent) ?? null
+        ? (newIdByOriginalId.get(menu.parent) ?? null)
         : null;
 
       try {

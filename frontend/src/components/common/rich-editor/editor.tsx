@@ -391,9 +391,7 @@ export function Editor({
       content: (isControlled && value) || '',
       editorProps: {
         handlePaste: (_view, event) => {
-          const files = getImageFilesFromDataTransfer(
-            (event as ClipboardEvent).clipboardData,
-          );
+          const files = getImageFilesFromDataTransfer(event.clipboardData);
           if (files.length === 0) return false;
           const editor = editorRef.current;
           if (!editor) return false;
@@ -403,9 +401,7 @@ export function Editor({
         },
         handleDrop: (_view, event, _slice, moved) => {
           if (moved) return false;
-          const files = getImageFilesFromDataTransfer(
-            (event as DragEvent).dataTransfer,
-          );
+          const files = getImageFilesFromDataTransfer(event.dataTransfer);
           if (files.length === 0) return false;
           const editor = editorRef.current;
           if (!editor) return false;

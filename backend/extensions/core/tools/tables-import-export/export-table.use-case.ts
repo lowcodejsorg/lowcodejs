@@ -2,11 +2,7 @@
 import { Service } from 'fastify-decorators';
 
 import { left, right } from '@application/core/either.core';
-import type {
-  IField,
-  IMenu,
-  ITable,
-} from '@application/core/entity.core';
+import type { IField, IMenu, ITable } from '@application/core/entity.core';
 import { E_FIELD_TYPE, E_MENU_ITEM_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
@@ -408,7 +404,7 @@ export default class ExportTableUseCase {
 
     return Array.from(collected.values()).map((menu) => {
       const tid = toIdString(menu.table);
-      const knownTableSlug = tid ? tableIdToSlug.get(tid) ?? null : null;
+      const knownTableSlug = tid ? (tableIdToSlug.get(tid) ?? null) : null;
 
       let type = menu.type;
       let tableSlug: string | null = knownTableSlug;
