@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import {
   AlertCircleIcon,
@@ -21,97 +21,108 @@ import { Label } from '@/components/ui/label';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
-import type { ITable, Paginated } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
 
-type ImportFileContent = {
-  header: {
-    version: string;
-    platform: string;
-    tableName: string;
-    tableSlug: string;
-    exportedBy: string;
-    exportedAt: string;
-    exportType: 'structure' | 'data' | 'full';
-  };
-  structure?: {
-    name: string;
-    fields: Array<{ name: string; type: string }>;
-    groups: Array<{ name: string; fields: Array<{ name: string }> }>;
-    [key: string]: unknown;
-  };
-  data?: {
-    totalRows: number;
-    rows: Array<Record<string, unknown>>;
-  };
+type ImportFileV1 = {
+  header: { platform: string; tableName?: string; exportType?: string; version?: string; exportedBy?: string; exportedAt?: string };
+  structure?: { name?: string; slug?: string };
+  data?: { totalRows: number };
 };
+
+type ImportFileV2 = {
+  header: {
+    platform: string;
+    tableName?: string;
+    version?: string;
+    exportType?: string;
+    tablesCount?: number;
+    menusCount?: number;
+    exportedBy?: string;
+    exportedAt?: string;
+  };
+  tables: Array<{
+    structure?: { name: string; slug: string; fields?: unknown[]; groups?: unknown[] };
+    data?: { totalRows: number };
+  }>;
+  menus: Array<{ slug: string; name: string }>;
+};
+
+type ImportFileContent = ImportFileV1 | ImportFileV2;
+
+function isV2(file: ImportFileContent): file is ImportFileV2 {
+  return Array.isArray((file as ImportFileV2).tables);
+}
+
+function summarizeFile(file: ImportFileContent): {
+  tables: Array<{ name: string; slug: string; rows: number }>;
+  menus: Array<{ slug: string; name: string }>;
+  totalFields: number;
+} {
+  if (isV2(file)) {
+    const tables = file.tables.map((t) => ({
+      name: t.structure?.name ?? '—',
+      slug: t.structure?.slug ?? '—',
+      rows: t.data?.totalRows ?? 0,
+    }));
+    const totalFields = file.tables.reduce((acc, t) => {
+      const top = t.structure?.fields?.length ?? 0;
+      const grp = (t.structure?.groups ?? []).reduce(
+        (a: number, g) =>
+          a + ((g as { fields?: unknown[] }).fields?.length ?? 0),
+        0,
+      );
+      return acc + top + grp;
+    }, 0);
+    return { tables, menus: file.menus ?? [], totalFields };
+  }
+  const legacy = file as ImportFileV1;
+  const struct = legacy.structure as {
+    name?: string;
+    slug?: string;
+    fields?: unknown[];
+    groups?: Array<{ fields?: unknown[] }>;
+  } | undefined;
+  const top = struct?.fields?.length ?? 0;
+  const grp = (struct?.groups ?? []).reduce(
+    (a, g) => a + (g.fields?.length ?? 0),
+    0,
+  );
+  return {
+    tables: [
+      {
+        name: struct?.name ?? legacy.header.tableName ?? '—',
+        slug: struct?.slug ?? '—',
+        rows: legacy.data?.totalRows ?? 0,
+      },
+    ],
+    menus: [],
+    totalFields: top + grp,
+  };
+}
 
 export function ImportTableSection(): React.JSX.Element {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [fileContent, setFileContent] =
-    React.useState<ImportFileContent | null>(null);
+  const [fileContent, setFileContent] = React.useState<ImportFileContent | null>(
+    null,
+  );
   const [fileError, setFileError] = React.useState<string | null>(null);
   const [tableName, setTableName] = React.useState('');
-  const [nameError, setNameError] = React.useState<string | null>(null);
+  const [conflicts, setConflicts] = React.useState<{
+    tables: Array<string>;
+    menus: Array<string>;
+  } | null>(null);
   const navigate = useNavigate();
 
-  const tablesQuery = useQuery({
-    queryKey: [...queryKeys.tables.lists(), 'import-check'],
-    queryFn: async () => {
-      const response = await API.get<Paginated<ITable>>('/tables', {
-        params: { page: 1, perPage: 1000 },
-      });
-      return response.data;
-    },
-    staleTime: 0,
-  });
-
-  const existingSlugs = React.useMemo(() => {
-    if (!tablesQuery.data?.data) return new Set<string>();
-    return new Set(tablesQuery.data.data.map((t) => t.slug));
-  }, [tablesQuery.data]);
-
-  const checkNameConflict = React.useCallback(
-    (name: string): boolean => {
-      if (!name.trim()) return false;
-      const slug = name
-        .normalize('NFD')
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9\s-]/g, '')
-        .replace(/[\s]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '');
-      return existingSlugs.has(slug);
-    },
-    [existingSlugs],
-  );
-
-  const handleNameChange = (value: string): void => {
-    setTableName(value);
-    setNameError(null);
-
-    if (value.trim() && checkNameConflict(value)) {
-      setNameError('Já existe uma tabela com este nome. Escolha outro nome.');
-    }
-  };
-
-  React.useEffect(() => {
-    if (tableName.trim() && checkNameConflict(tableName)) {
-      setNameError('Já existe uma tabela com este nome. Escolha outro nome.');
-    } else if (nameError && tableName.trim()) {
-      setNameError(null);
-    }
-  }, [existingSlugs]);
+  const isMultiTable =
+    fileContent !== null && isV2(fileContent) && fileContent.tables.length > 1;
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
     setFileError(null);
     setFileContent(null);
     setTableName('');
-    setNameError(null);
+    setConflicts(null);
 
     if (!file) return;
 
@@ -123,7 +134,9 @@ export function ImportTableSection(): React.JSX.Element {
     const reader = new FileReader();
     reader.onload = (event): void => {
       try {
-        const parsed = JSON.parse(event.target?.result as string);
+        const parsed = JSON.parse(
+          event.target?.result as string,
+        ) as ImportFileContent;
 
         if (!parsed.header || parsed.header.platform !== 'lowcodejs') {
           setFileError(
@@ -132,23 +145,17 @@ export function ImportTableSection(): React.JSX.Element {
           return;
         }
 
-        if (!parsed.structure) {
+        const summary = summarizeFile(parsed);
+        if (summary.tables.length === 0) {
           setFileError(
-            'O arquivo não contém a estrutura da tabela. Exporte com a opção "Estrutura" habilitada.',
+            'O arquivo não contém estrutura de tabela. Exporte com a opção "Estrutura" habilitada.',
           );
           return;
         }
 
         setFileContent(parsed);
-
-        const originalName = parsed.header.tableName;
-        setTableName(originalName);
-
-        if (checkNameConflict(originalName)) {
-          setNameError(
-            'Já existe uma tabela com este nome. Escolha outro nome.',
-          );
-        }
+        const firstName = summary.tables[0].name;
+        setTableName(firstName);
       } catch {
         setFileError('Erro ao ler o arquivo. Verifique se é um JSON válido.');
       }
@@ -157,77 +164,85 @@ export function ImportTableSection(): React.JSX.Element {
   };
 
   const importTable = useMutation({
-    mutationFn: async function () {
-      const response = await API.post('/tools/import-table', {
-        name: tableName,
-        fileContent,
-      });
-      return response.data as {
-        tableId: string;
-        slug: string;
-        importedFields: number;
-        importedRows: number;
-      };
+    mutationFn: async function (): Promise<{
+      tableId: string;
+      slug: string;
+      importedFields: number;
+      importedRows: number;
+      importedMenus: number;
+      tables: Array<{ tableId: string; slug: string; name: string }>;
+    }> {
+      const body: Record<string, unknown> = { fileContent };
+      if (!isMultiTable && tableName.trim()) body.name = tableName.trim();
+      const response = await API.post('/tools/import-table', body);
+      return response.data;
     },
     onSuccess(data) {
       setFileContent(null);
       setTableName('');
-      setNameError(null);
+      setConflicts(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
 
-      QueryClient.invalidateQueries({
-        queryKey: queryKeys.tables.lists(),
-      });
+      QueryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
+      QueryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
 
       toastSuccess(
-        'Tabela importada com sucesso!',
-        `${data.importedFields} campos e ${data.importedRows} registros importados`,
+        'Importação concluída!',
+        `${data.tables.length} tabela(s), ${data.importedFields} campo(s), ${data.importedRows} registro(s) e ${data.importedMenus} item(ns) de menu`,
       );
 
-      navigate({
-        to: '/tables/$slug',
-        params: { slug: data.slug },
-      });
+      if (data.tables.length === 1) {
+        navigate({
+          to: '/tables/$slug',
+          params: { slug: data.slug },
+        });
+      }
     },
     onError(error) {
       handleApiError(error, {
         context: 'Erro ao importar tabela',
         causeHandlers: {
+          IMPORT_CONFLICTS: (errorData) => {
+            setConflicts({
+              tables: (errorData.errors?.tables ?? '')
+                .split(',')
+                .map((s: string) => s.trim())
+                .filter(Boolean),
+              menus: (errorData.errors?.menus ?? '')
+                .split(',')
+                .map((s: string) => s.trim())
+                .filter(Boolean),
+            });
+          },
           TABLE_SLUG_ALREADY_EXISTS: () => {
-            setNameError(
-              'Já existe uma tabela com este nome. Escolha outro nome.',
-            );
+            setConflicts({
+              tables: [tableName],
+              menus: [],
+            });
           },
         },
       });
     },
   });
 
-  const totalFields = React.useMemo(() => {
-    if (!fileContent?.structure) return 0;
-    const topLevel = fileContent.structure.fields?.length || 0;
-    const groupFields = (fileContent.structure.groups || []).reduce(
-      (acc, g) => acc + (g.fields?.length || 0),
-      0,
-    );
-    return topLevel + groupFields;
-  }, [fileContent]);
-
+  const summary = fileContent ? summarizeFile(fileContent) : null;
   const isPending = importTable.status === 'pending';
 
   const canImport =
-    Boolean(fileContent) && tableName.trim().length > 0 && !nameError;
+    Boolean(fileContent) &&
+    (isMultiTable || tableName.trim().length > 0) &&
+    !conflicts;
 
   return (
     <Card data-test-id="import-table-section">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UploadIcon className="size-5" />
-          Importar tabela
+          Importar tabela(s)
         </CardTitle>
         <CardDescription>
-          Carregue um arquivo JSON exportado pela plataforma para criar uma nova
-          tabela.
+          Carregue um arquivo JSON exportado pela plataforma. Suporta pacotes
+          com várias tabelas, relacionamentos e itens de menu.
         </CardDescription>
       </CardHeader>
 
@@ -252,20 +267,19 @@ export function ImportTableSection(): React.JSX.Element {
           </div>
         )}
 
-        {fileContent && (
+        {fileContent && summary && (
           <div className="space-y-3 p-3 rounded-md border bg-muted/50">
             <div className="flex items-center gap-2 text-sm text-green-600">
               <CheckCircleIcon className="size-4" />
               <span className="font-medium">Arquivo válido</span>
             </div>
+
             <div className="grid grid-cols-2 gap-2 text-sm">
               <div>
-                <span className="text-muted-foreground">Tabela original:</span>
-                <p className="font-medium">{fileContent.header.tableName}</p>
-              </div>
-              <div>
                 <span className="text-muted-foreground">Exportado por:</span>
-                <p className="font-medium">{fileContent.header.exportedBy}</p>
+                <p className="font-medium">
+                  {fileContent.header.exportedBy ?? '—'}
+                </p>
               </div>
               <div>
                 <span className="text-muted-foreground">Tipo:</span>
@@ -278,46 +292,109 @@ export function ImportTableSection(): React.JSX.Element {
                 </p>
               </div>
               <div>
-                <span className="text-muted-foreground">Campos:</span>
-                <p className="font-medium">{totalFields}</p>
+                <span className="text-muted-foreground">Tabelas:</span>
+                <p className="font-medium">{summary.tables.length}</p>
               </div>
-              {fileContent.data && (
-                <div>
-                  <span className="text-muted-foreground">Registros:</span>
-                  <p className="font-medium">{fileContent.data.totalRows}</p>
-                </div>
-              )}
+              <div>
+                <span className="text-muted-foreground">Campos:</span>
+                <p className="font-medium">{summary.totalFields}</p>
+              </div>
+              <div>
+                <span className="text-muted-foreground">Menus:</span>
+                <p className="font-medium">{summary.menus.length}</p>
+              </div>
               <div>
                 <span className="text-muted-foreground">Data:</span>
                 <p className="font-medium">
-                  {new Date(fileContent.header.exportedAt).toLocaleDateString(
-                    'pt-BR',
-                  )}
+                  {fileContent.header.exportedAt
+                    ? new Date(fileContent.header.exportedAt).toLocaleDateString(
+                        'pt-BR',
+                      )
+                    : '—'}
                 </p>
               </div>
             </div>
 
-            <div className="space-y-2 pt-2 border-t">
-              <Label htmlFor="import-table-name">Nome da nova tabela</Label>
-              <Input
-                id="import-table-name"
-                value={tableName}
-                onChange={(e) => handleNameChange(e.target.value)}
-                placeholder="Nome da tabela"
-                maxLength={40}
-                disabled={isPending}
-                className={
-                  nameError
-                    ? 'border-destructive focus-visible:ring-destructive'
-                    : ''
-                }
-              />
-              {nameError && (
-                <p className="text-xs text-destructive flex items-center gap-1">
-                  <AlertCircleIcon className="size-3 shrink-0" />
-                  {nameError}
+            <div className="space-y-1 pt-2 border-t text-sm">
+              <div className="text-muted-foreground">Conteúdo:</div>
+              <ul className="space-y-0.5">
+                {summary.tables.map((t) => (
+                  <li
+                    key={t.slug}
+                    className="flex items-center gap-2 font-mono text-xs"
+                  >
+                    <span className="font-medium">{t.name}</span>
+                    <span className="text-muted-foreground">/{t.slug}</span>
+                    {t.rows > 0 && (
+                      <span className="text-muted-foreground">
+                        — {t.rows} registro(s)
+                      </span>
+                    )}
+                  </li>
+                ))}
+                {summary.menus.length > 0 && (
+                  <li className="pt-1 text-xs text-muted-foreground">
+                    + {summary.menus.length} item(ns) de menu
+                  </li>
+                )}
+              </ul>
+            </div>
+
+            {!isMultiTable && (
+              <div className="space-y-2 pt-2 border-t">
+                <Label htmlFor="import-table-name">Nome da nova tabela</Label>
+                <Input
+                  id="import-table-name"
+                  value={tableName}
+                  onChange={(e) => {
+                    setTableName(e.target.value);
+                    setConflicts(null);
+                  }}
+                  placeholder="Nome da tabela"
+                  maxLength={40}
+                  disabled={isPending}
+                />
+              </div>
+            )}
+
+            {isMultiTable && (
+              <p className="pt-2 text-xs text-muted-foreground border-t">
+                Importação multi-tabela: nomes e slugs originais serão
+                preservados.
+              </p>
+            )}
+          </div>
+        )}
+
+        {conflicts && (
+          <div className="space-y-2 p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm">
+            <div className="flex items-start gap-2">
+              <AlertCircleIcon className="size-4 mt-0.5 shrink-0 text-destructive" />
+              <div className="space-y-1">
+                <p className="font-medium text-destructive">
+                  Conflitos de slug — nada foi importado
                 </p>
-              )}
+                {conflicts.tables.length > 0 && (
+                  <p>
+                    <span className="text-muted-foreground">Tabelas: </span>
+                    <span className="font-mono text-xs">
+                      {conflicts.tables.join(', ')}
+                    </span>
+                  </p>
+                )}
+                {conflicts.menus.length > 0 && (
+                  <p>
+                    <span className="text-muted-foreground">Menus: </span>
+                    <span className="font-mono text-xs">
+                      {conflicts.menus.join(', ')}
+                    </span>
+                  </p>
+                )}
+                <p className="text-xs text-muted-foreground">
+                  Renomeie os itens existentes (ou descarte-os) e tente
+                  novamente.
+                </p>
+              </div>
             </div>
           </div>
         )}
@@ -328,7 +405,8 @@ export function ImportTableSection(): React.JSX.Element {
             data-test-id="import-table-submit-btn"
             disabled={!canImport || isPending}
             onClick={() => {
-              importTable.mutateAsync();
+              setConflicts(null);
+              importTable.mutate();
             }}
           >
             {isPending ? (

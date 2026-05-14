@@ -7,16 +7,16 @@ export const ImportTableSchema: FastifySchema = {
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['name', 'fileContent'],
+    required: ['fileContent'],
     properties: {
       name: {
-        type: 'string',
-        minLength: 1,
-        description: 'Name of the new table',
+        type: ['string', 'null'],
+        description:
+          'Optional override for the first table name (only applied to single-table imports).',
       },
       fileContent: {
         type: 'object',
-        description: 'The exported JSON content',
+        description: 'The exported JSON content (v1 single-table or v2 multi-table)',
         additionalProperties: true,
       },
     },
@@ -31,6 +31,18 @@ export const ImportTableSchema: FastifySchema = {
         slug: { type: 'string' },
         importedFields: { type: 'number' },
         importedRows: { type: 'number' },
+        importedMenus: { type: 'number' },
+        tables: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              tableId: { type: 'string' },
+              slug: { type: 'string' },
+              name: { type: 'string' },
+            },
+          },
+        },
       },
     },
     400: {

@@ -2,10 +2,11 @@ import z from 'zod';
 
 export const ImportTableValidator = z.object({
   name: z
-    .string({ message: 'O nome da nova tabela e obrigatorio' })
+    .string()
     .trim()
-    .min(1, 'O nome da nova tabela e obrigatorio')
-    .max(40, 'Nome deve ter no maximo 40 caracteres'),
+    .max(40, 'Nome deve ter no maximo 40 caracteres')
+    .optional()
+    .nullable(),
   fileContent: z.object({}).loose(),
 });
 

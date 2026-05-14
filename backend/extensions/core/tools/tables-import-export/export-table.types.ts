@@ -21,6 +21,7 @@ export type ExportedField = {
   showInList: boolean;
   widthInForm: number | null;
   widthInList: number | null;
+  widthInDetail: number | null;
   defaultValue: string | string[] | null;
   locked?: boolean;
   relationship: {
@@ -37,16 +38,6 @@ export type ExportedGroup = {
   slug: string;
   name: string;
   fields: ExportedField[];
-};
-
-export type ExportHeader = {
-  version: string;
-  platform: string;
-  tableName: string;
-  tableSlug: string;
-  exportedBy: string;
-  exportedAt: string;
-  exportType: 'structure' | 'data' | 'full';
 };
 
 export type ExportedStructure = {
@@ -70,13 +61,46 @@ export type ExportedStructure = {
   };
 };
 
-export type ExportResult = {
-  header: ExportHeader;
+export type ExportedRow = Record<string, unknown> & { _originalId: string };
+
+export type ExportedTable = {
   structure?: ExportedStructure;
   data?: {
     totalRows: number;
-    rows: Record<string, unknown>[];
+    rows: ExportedRow[];
   };
+};
+
+export type ExportedMenu = {
+  _originalId: string;
+  name: string;
+  slug: string;
+  type: string;
+  parent: string | null;
+  url: string | null;
+  html: string | null;
+  order: number;
+  isInitial: boolean;
+  tableSlug: string | null;
+  extension: { pkg: string; extensionId: string } | null;
+};
+
+export type ExportHeader = {
+  version: string;
+  platform: string;
+  tableName: string;
+  tableSlug: string;
+  exportedBy: string;
+  exportedAt: string;
+  exportType: 'structure' | 'data' | 'full';
+  tablesCount: number;
+  menusCount: number;
+};
+
+export type ExportResult = {
+  header: ExportHeader;
+  tables: ExportedTable[];
+  menus: ExportedMenu[];
 };
 
 export type ExportTableResponse = Either<HTTPException, ExportResult>;
