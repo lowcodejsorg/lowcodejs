@@ -23,7 +23,7 @@ core/
 | ID                      | Endpoints                                              | Descrição                                                                                            |
 | ----------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------- |
 | `clone-table`           | `POST /tools/clone-table`                              | Clona uma ou mais tabelas com base em modelos existentes ou templates built-in (Kanban, Cards, etc.) |
-| `tables-import-export`  | `POST /tools/export-table`, `POST /tools/import-table` | Exporta uma tabela em JSON (estrutura/dados/full) ou importa de um arquivo JSON exportado pela plataforma |
+| `tables-import-export`  | `POST /tools/export-table`, `POST /tools/import-table` | Exporta uma ou mais tabelas em JSON (estrutura/dados/full) preservando relacionamentos e itens de menu vinculados, e importa de volta com remapeamento de IDs (formato v2; v1 single-table ainda aceito na importação) |
 
 ## Plugins
 

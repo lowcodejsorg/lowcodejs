@@ -15,6 +15,7 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
     '/menus/$menuId',
     '/pages/$slug',
     '/profile',
+    '/notifications',
     '/tables',
     '/tools',
     '/tools/$package/$id',
@@ -24,14 +25,24 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
   ],
   MANAGER: [
     '/e/$package/$id',
+
     '/history',
+
+    '/notifications',
+    '/profile',
+
     '/tables',
     '/tables/$slug',
     '/pages/$slug',
   ],
   REGISTERED: [
     '/e/$package/$id',
+
     '/history',
+
+    '/notifications',
+    '/profile',
+
     '/tables',
     '/tables/$slug',
     '/pages/$slug',
@@ -46,6 +57,7 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
     '/menus',
     '/menus/create',
     '/menus/$menuId',
+    '/notifications',
     '/pages/$slug',
     '/profile',
     '/settings',

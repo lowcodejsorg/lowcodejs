@@ -22,6 +22,7 @@ import type {
   E_LOGGER_ACTION_TYPE,
   E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
+  E_NOTIFICATION_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
   E_TABLE_COLLABORATION,
@@ -103,6 +104,35 @@ export type IUser = Merge<
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
     group: IGroup;
+    notificationsEnabled: boolean;
+  }
+>;
+
+export type INotificationAction = {
+  type: 'route' | 'url';
+  href: string;
+  label?: string | null;
+} | null;
+
+export type INotificationSource = {
+  pkg?: string | null;
+  tableSlug?: string | null;
+  rowId?: string | null;
+  anchorId?: string | null;
+} | null;
+
+export type INotification = Merge<
+  Base,
+  {
+    userId: string;
+    type: ValueOf<typeof E_NOTIFICATION_TYPE>;
+    title: string;
+    body: string | null;
+    action: INotificationAction;
+    source: INotificationSource;
+    actorUserId: string | null;
+    read: boolean;
+    readAt: string | null;
   }
 >;
 

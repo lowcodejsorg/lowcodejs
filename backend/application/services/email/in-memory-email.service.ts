@@ -8,7 +8,7 @@ interface StoredEmail extends EmailOptions {
   sentAt: Date;
 }
 
-export default class InMemoryEmailService extends EmailContractService {
+export default class InMemoryEmailService implements EmailContractService {
   private emails: StoredEmail[] = [];
   private _forcedErrors = new Map<string, Error>();
 

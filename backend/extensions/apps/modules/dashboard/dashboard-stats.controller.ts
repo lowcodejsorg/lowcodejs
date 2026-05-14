@@ -25,7 +25,7 @@ export default class {
     options: {
       onRequest: [
         AuthenticationMiddleware({ optional: false }),
-        RoleMiddleware([E_ROLE.MASTER]),
+        RoleMiddleware([E_ROLE.MASTER, E_ROLE.ADMINISTRATOR]),
         ExtensionActiveMiddleware({
           pkg: 'apps',
           type: E_EXTENSION_TYPE.MODULE,

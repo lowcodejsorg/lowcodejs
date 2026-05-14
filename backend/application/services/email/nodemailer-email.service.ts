@@ -15,7 +15,7 @@ import {
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 @Service()
-export default class NodemailerEmailService extends EmailContractService {
+export default class NodemailerEmailService implements EmailContractService {
   async sendEmail(options: EmailOptions): Promise<EmailResult> {
     const setting = await Setting.findOne().lean();
     if (!setting) {

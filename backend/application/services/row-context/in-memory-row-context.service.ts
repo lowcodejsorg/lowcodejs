@@ -3,7 +3,7 @@ import type { IField, IRow } from '@application/core/entity.core';
 
 import { RowContextContractService } from './row-context-contract.service';
 
-export default class InMemoryRowContextService extends RowContextContractService {
+export default class InMemoryRowContextService implements RowContextContractService {
   private _forcedErrors = new Map<string, Error>();
 
   simulateError(method: string, error: Error): void {

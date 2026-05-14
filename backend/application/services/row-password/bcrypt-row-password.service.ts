@@ -10,7 +10,7 @@ import {
 import { RowPasswordContractService } from './row-password-contract.service';
 
 @Service()
-export default class BcryptRowPasswordService extends RowPasswordContractService {
+export default class BcryptRowPasswordService implements RowPasswordContractService {
   async hash(payload: Record<string, any>, fields: IField[]): Promise<void> {
     await hashPasswordFields(payload, fields);
   }

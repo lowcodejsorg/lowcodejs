@@ -10,7 +10,7 @@ import { StorageContractService } from './storage-contract.service';
 
 type StoredFile = StorageUploadResponse & { body: Buffer };
 
-export default class InMemoryStorageService extends StorageContractService {
+export default class InMemoryStorageService implements StorageContractService {
   private files: Map<string, StoredFile> = new Map();
   private _forcedErrors = new Map<string, Error>();
 

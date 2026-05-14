@@ -109,6 +109,7 @@ function ProfileUpdateContent({
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
+      notificationsEnabled: data.notificationsEnabled ?? true,
     } satisfies ProfileUpdateFormValues,
     validators: {
       onChange: ProfileUpdateSchema,
@@ -131,10 +132,12 @@ function ProfileUpdateContent({
         allowPasswordChange: boolean;
         currentPassword?: string;
         newPassword?: string;
+        notificationsEnabled?: boolean;
       } = {
         name: value.name.trim(),
         email: value.email.trim(),
         allowPasswordChange,
+        notificationsEnabled: value.notificationsEnabled,
       };
 
       if (allowPasswordChange) {

@@ -15,7 +15,7 @@ import type {
 } from './row-contract.repository';
 import { RowContractRepository } from './row-contract.repository';
 
-export default class RowInMemoryRepository extends RowContractRepository {
+export default class RowInMemoryRepository implements RowContractRepository {
   private collections = new Map<string, IRow[]>();
   private _forcedErrors = new Map<string, Error>();
 

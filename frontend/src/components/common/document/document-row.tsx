@@ -251,7 +251,7 @@ export function DocumentRow({
                 className="space-y-2"
               >
                 {title && (
-                  <h2 className="text-base font-semibold leading-none text-gray-700">
+                  <h2 className="text-base font-semibold leading-none text-foreground">
                     {title}
                   </h2>
                 )}
