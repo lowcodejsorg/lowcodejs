@@ -133,6 +133,12 @@ export const queryKeys = {
     all: ['setup'] as const,
     status: () => [...queryKeys.setup.all, 'status'] as const,
   },
+  loggers: {
+    all: ['loggers'] as const,
+    lists: () => [...queryKeys.loggers.all, 'list'] as const,
+    list: (params: Record<string, unknown>) =>
+      [...queryKeys.loggers.lists(), params] as const,
+  },
   extensions: {
     all: ['extensions'] as const,
     lists: () => [...queryKeys.extensions.all, 'list'] as const,

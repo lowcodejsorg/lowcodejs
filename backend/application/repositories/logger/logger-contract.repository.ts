@@ -1,16 +1,16 @@
 /* eslint-disable no-unused-vars */
 import type {
+  E_LOGGER_ACTION_TYPE,
+  E_LOGGER_OBJECT_TYPE,
   FindOptions,
   ILogger,
   Merge,
+  ValueOf,
 } from '@application/core/entity.core';
 
 export type LoggerCreatePayload = Merge<
-  Pick<
-    ILogger,
-    'action' | 'content' | 'url' | 'action' | 'object' | 'object_id'
-  >,
-  { user_id: string }
+  Pick<ILogger, 'action' | 'content' | 'url' | 'object' | 'object_id'>,
+  { user_id: string | null }
 >;
 
 export type LoggerUpdatePayload = Merge<
@@ -22,7 +22,12 @@ export type LoggerQueryPayload = {
   page?: number;
   perPage?: number;
   search?: string;
-  trashed?: boolean;
+  user_id?: string | null;
+  actions?: Array<ValueOf<typeof E_LOGGER_ACTION_TYPE>>;
+  objects?: Array<ValueOf<typeof E_LOGGER_OBJECT_TYPE>>;
+  dateFrom?: Date;
+  dateTo?: Date;
+  sort?: Record<string, 'asc' | 'desc'>;
 };
 
 export abstract class LoggerContractRepository {

@@ -315,6 +315,63 @@ export const E_CHAT_TOOL_PREFIX = {
   PROFILE: 'profile_',
 } as const;
 
+// ============== LOGS / HISTORICO ==============
+export const E_LOGGER_ACTION_TYPE = {
+  VIEW: 'VIEW',
+  CREATE: 'CREATE',
+  UPDATE: 'UPDATE',
+  DELETE: 'DELETE',
+} as const;
+
+export const E_LOGGER_OBJECT_TYPE = {
+  TABLE: 'TABLE',
+  FIELD: 'FIELD',
+  ROW: 'ROW',
+  MENU: 'MENU',
+  USER: 'USER',
+  EXTENSION: 'EXTENSION',
+  GROUP_FIELD: 'GROUP_FIELD',
+  GROUP_ROW: 'GROUP_ROW',
+  PAGE: 'PAGE',
+  PERMISSION: 'PERMISSION',
+  PROFILE: 'PROFILE',
+  SETTING: 'SETTING',
+  SETUP: 'SETUP',
+  STORAGE: 'STORAGE',
+  USER_GROUP: 'USER_GROUP',
+} as const;
+
+export const LOGGER_ACTION_LABEL: Record<
+  (typeof E_LOGGER_ACTION_TYPE)[keyof typeof E_LOGGER_ACTION_TYPE],
+  string
+> = {
+  VIEW: 'Visualização',
+  CREATE: 'Criação',
+  UPDATE: 'Edição',
+  DELETE: 'Exclusão',
+};
+
+export const LOGGER_OBJECT_LABEL: Record<
+  (typeof E_LOGGER_OBJECT_TYPE)[keyof typeof E_LOGGER_OBJECT_TYPE],
+  string
+> = {
+  TABLE: 'Tabela',
+  FIELD: 'Campo',
+  ROW: 'Registro',
+  MENU: 'Menu',
+  USER: 'Usuário',
+  EXTENSION: 'Extensão',
+  GROUP_FIELD: 'Grupo de campos',
+  GROUP_ROW: 'Grupo de registros',
+  PAGE: 'Página',
+  PERMISSION: 'Permissão',
+  PROFILE: 'Perfil',
+  SETTING: 'Configuração',
+  SETUP: 'Setup',
+  STORAGE: 'Arquivo',
+  USER_GROUP: 'Grupo de usuário',
+};
+
 // ============== SETUP WIZARD ==============
 export const SETUP_STEPS = [
   'admin',

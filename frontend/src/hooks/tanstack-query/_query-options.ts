@@ -8,6 +8,7 @@ import type {
   IExtension,
   IField,
   IGroup,
+  ILogger,
   IMenu,
   IPermission,
   IRow,
@@ -18,6 +19,7 @@ import type {
   Paginated,
 } from '@/lib/interfaces';
 import type {
+  LoggerQueryPayload,
   MenuQueryPayload,
   TableQueryPayload,
   UserGroupQueryPayload,
@@ -398,6 +400,20 @@ export const setupStatusOptions = () =>
       return data;
     },
     staleTime: 0,
+  });
+
+// ============== LOGS ==============
+
+export const loggerListOptions = (params: LoggerQueryPayload) =>
+  queryOptions({
+    queryKey: queryKeys.loggers.list(params),
+    queryFn: async () => {
+      const response = await API.get<Paginated<ILogger>>('/logs/paginated', {
+        params,
+      });
+      return response.data;
+    },
+    staleTime: 30 * 1000,
   });
 
 // ============== EXTENSIONS ==============

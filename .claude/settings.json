@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git log *)",
+      "Bash(findstr /I \"log\")",
+      "PowerShell(npx tsc --noEmit -p backend/tsconfig.json 2>&1)",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(npx tsc *)",
+      "Read(//tmp/**)",
+      "Bash(sed -i 's/\\\\r$//' docker-entrypoint.sh)",
+      "Read(//c/c/Users/vanes/Documents/UFG/lowcodejs/backend/**)",
+      "Bash(git diff *)",
+      "Bash(cd ../backend && npx tsc --noEmit -p . 2>&1 | grep -E \"logger\\\\.hook\" || echo \"OK: logger.hook.ts sem erros\")",
+      "Read(//c/Users/vanes/Documents/UFG/**)"
+    ]
+  }
+}

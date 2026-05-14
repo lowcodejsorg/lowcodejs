@@ -19,6 +19,8 @@ import type {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
   E_JWT_TYPE,
+  E_LOGGER_ACTION_TYPE,
+  E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
@@ -432,6 +434,20 @@ export type IExtension = Merge<
     manifestSnapshot: Record<string, unknown>;
     requires: IExtensionRequires;
     permissions: IExtensionPermissions;
+  }
+>;
+
+export type ILoggerUserRef = Pick<IUser, '_id' | 'name' | 'email'>;
+
+export type ILogger = Merge<
+  Base,
+  {
+    url: string;
+    user: ILoggerUserRef | null;
+    action: ValueOf<typeof E_LOGGER_ACTION_TYPE>;
+    object: ValueOf<typeof E_LOGGER_OBJECT_TYPE> | null;
+    object_id: string | null;
+    content: Record<string, unknown> | null;
   }
 >;
 
