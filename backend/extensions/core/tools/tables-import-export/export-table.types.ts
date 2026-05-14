@@ -61,7 +61,11 @@ export type ExportedStructure = {
   };
 };
 
-export type ExportedRow = Record<string, unknown> & { _originalId: string };
+export type ExportedRow = Record<string, unknown> & {
+  _originalId: string;
+  /** ID original do usuário criador da row (campo nativo CREATOR). */
+  _originalCreator?: string;
+};
 
 export type ExportedTable = {
   structure?: ExportedStructure;

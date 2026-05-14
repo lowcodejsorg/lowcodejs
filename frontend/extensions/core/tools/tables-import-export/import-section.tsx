@@ -23,9 +23,17 @@ import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
+import { cn } from '@/lib/utils';
 
 type ImportFileV1 = {
-  header: { platform: string; tableName?: string; exportType?: string; version?: string; exportedBy?: string; exportedAt?: string };
+  header: {
+    platform: string;
+    tableName?: string;
+    exportType?: string;
+    version?: string;
+    exportedBy?: string;
+    exportedAt?: string;
+  };
   structure?: { name?: string; slug?: string };
   data?: { totalRows: number };
 };
@@ -42,7 +50,12 @@ type ImportFileV2 = {
     exportedAt?: string;
   };
   tables: Array<{
-    structure?: { name: string; slug: string; fields?: unknown[]; groups?: unknown[] };
+    structure?: {
+      name: string;
+      slug: string;
+      fields?: Array<unknown>;
+      groups?: Array<unknown>;
+    };
     data?: { totalRows: number };
   }>;
   menus: Array<{ slug: string; name: string }>;
@@ -52,6 +65,21 @@ type ImportFileContent = ImportFileV1 | ImportFileV2;
 
 function isV2(file: ImportFileContent): file is ImportFileV2 {
   return Array.isArray((file as ImportFileV2).tables);
+}
+
+/**
+ * Slug de pré-visualização. O backend é a fonte da verdade (usa `slugify` com
+ * `strict`), mas isso aproxima o resultado para o usuário ver o efeito da
+ * renomeação antes de importar.
+ */
+function toSlug(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function summarizeFile(file: ImportFileContent): {
@@ -69,20 +97,22 @@ function summarizeFile(file: ImportFileContent): {
       const top = t.structure?.fields?.length ?? 0;
       const grp = (t.structure?.groups ?? []).reduce(
         (a: number, g) =>
-          a + ((g as { fields?: unknown[] }).fields?.length ?? 0),
+          a + ((g as { fields?: Array<unknown> }).fields?.length ?? 0),
         0,
       );
       return acc + top + grp;
     }, 0);
     return { tables, menus: file.menus ?? [], totalFields };
   }
-  const legacy = file as ImportFileV1;
-  const struct = legacy.structure as {
-    name?: string;
-    slug?: string;
-    fields?: unknown[];
-    groups?: Array<{ fields?: unknown[] }>;
-  } | undefined;
+  const legacy = file;
+  const struct = legacy.structure as
+    | {
+        name?: string;
+        slug?: string;
+        fields?: Array<unknown>;
+        groups?: Array<{ fields?: Array<unknown> }>;
+      }
+    | undefined;
   const top = struct?.fields?.length ?? 0;
   const grp = (struct?.groups ?? []).reduce(
     (a, g) => a + (g.fields?.length ?? 0),
@@ -103,26 +133,34 @@ function summarizeFile(file: ImportFileContent): {
 
 export function ImportTableSection(): React.JSX.Element {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [fileContent, setFileContent] = React.useState<ImportFileContent | null>(
-    null,
-  );
+  const [fileContent, setFileContent] =
+    React.useState<ImportFileContent | null>(null);
   const [fileError, setFileError] = React.useState<string | null>(null);
-  const [tableName, setTableName] = React.useState('');
+  // Nome editável por tabela, chaveado pelo slug ORIGINAL do pacote.
+  const [tableNames, setTableNames] = React.useState<Record<string, string>>(
+    {},
+  );
+  // Nome editável por item de menu, chaveado pelo slug ORIGINAL do menu.
+  const [menuNames, setMenuNames] = React.useState<Record<string, string>>({});
   const [conflicts, setConflicts] = React.useState<{
     tables: Array<string>;
     menus: Array<string>;
   } | null>(null);
   const navigate = useNavigate();
 
-  const isMultiTable =
-    fileContent !== null && isV2(fileContent) && fileContent.tables.length > 1;
+  const summary = fileContent ? summarizeFile(fileContent) : null;
+
+  const resetState = (): void => {
+    setFileError(null);
+    setFileContent(null);
+    setTableNames({});
+    setMenuNames({});
+    setConflicts(null);
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>): void => {
     const file = e.target.files?.[0];
-    setFileError(null);
-    setFileContent(null);
-    setTableName('');
-    setConflicts(null);
+    resetState();
 
     if (!file) return;
 
@@ -145,8 +183,8 @@ export function ImportTableSection(): React.JSX.Element {
           return;
         }
 
-        const summary = summarizeFile(parsed);
-        if (summary.tables.length === 0) {
+        const parsedSummary = summarizeFile(parsed);
+        if (parsedSummary.tables.length === 0) {
           setFileError(
             'O arquivo não contém estrutura de tabela. Exporte com a opção "Estrutura" habilitada.',
           );
@@ -154,13 +192,27 @@ export function ImportTableSection(): React.JSX.Element {
         }
 
         setFileContent(parsed);
-        const firstName = summary.tables[0].name;
-        setTableName(firstName);
+        setTableNames(
+          Object.fromEntries(parsedSummary.tables.map((t) => [t.slug, t.name])),
+        );
+        setMenuNames(
+          Object.fromEntries(parsedSummary.menus.map((m) => [m.slug, m.name])),
+        );
       } catch {
         setFileError('Erro ao ler o arquivo. Verifique se é um JSON válido.');
       }
     };
     reader.readAsText(file);
+  };
+
+  const updateTableName = (originalSlug: string, value: string): void => {
+    setTableNames((prev) => ({ ...prev, [originalSlug]: value }));
+    setConflicts(null);
+  };
+
+  const updateMenuName = (originalSlug: string, value: string): void => {
+    setMenuNames((prev) => ({ ...prev, [originalSlug]: value }));
+    setConflicts(null);
   };
 
   const importTable = useMutation({
@@ -173,14 +225,30 @@ export function ImportTableSection(): React.JSX.Element {
       tables: Array<{ tableId: string; slug: string; name: string }>;
     }> {
       const body: Record<string, unknown> = { fileContent };
-      if (!isMultiTable && tableName.trim()) body.name = tableName.trim();
+      // Envia apenas as tabelas cujo nome foi de fato alterado — as demais
+      // mantêm nome/slug originais. Relacionamentos são preservados pelo
+      // backend independentemente da renomeação.
+      const renamed = (summary?.tables ?? [])
+        .map((t) => ({
+          slug: t.slug,
+          name: (tableNames[t.slug] ?? t.name).trim(),
+        }))
+        .filter((t) => t.name && t.name !== originalNameOf(t.slug));
+      if (renamed.length > 0) body.tables = renamed;
+      // Idem para itens de menu — só os renomeados. Menus-pai já existentes
+      // são reaproveitados pelo backend; só os itens folha podem conflitar.
+      const renamedMenus = (summary?.menus ?? [])
+        .map((m) => ({
+          slug: m.slug,
+          name: (menuNames[m.slug] ?? m.name).trim(),
+        }))
+        .filter((m) => m.name && m.name !== originalMenuNameOf(m.slug));
+      if (renamedMenus.length > 0) body.menus = renamedMenus;
       const response = await API.post('/tools/import-table', body);
       return response.data;
     },
     onSuccess(data) {
-      setFileContent(null);
-      setTableName('');
-      setConflicts(null);
+      resetState();
       if (fileInputRef.current) fileInputRef.current.value = '';
 
       QueryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
@@ -203,35 +271,66 @@ export function ImportTableSection(): React.JSX.Element {
         context: 'Erro ao importar tabela',
         causeHandlers: {
           IMPORT_CONFLICTS: (errorData) => {
-            setConflicts({
-              tables: (errorData.errors?.tables ?? '')
-                .split(',')
-                .map((s: string) => s.trim())
-                .filter(Boolean),
-              menus: (errorData.errors?.menus ?? '')
-                .split(',')
-                .map((s: string) => s.trim())
-                .filter(Boolean),
-            });
+            applyConflicts(
+              splitSlugs(errorData.errors?.tables),
+              splitSlugs(errorData.errors?.menus),
+            );
           },
-          TABLE_SLUG_ALREADY_EXISTS: () => {
-            setConflicts({
-              tables: [tableName],
-              menus: [],
-            });
+          TABLE_SLUG_ALREADY_EXISTS: (errorData) => {
+            applyConflicts(splitSlugs(errorData.errors?.tables), []);
+          },
+          DUPLICATE_TABLE_SLUGS: (errorData) => {
+            applyConflicts(splitSlugs(errorData.errors?.tables), []);
+          },
+          DUPLICATE_MENU_SLUGS: (errorData) => {
+            applyConflicts([], splitSlugs(errorData.errors?.menus));
           },
         },
       });
     },
   });
 
-  const summary = fileContent ? summarizeFile(fileContent) : null;
+  function originalNameOf(originalSlug: string): string {
+    return summary?.tables.find((t) => t.slug === originalSlug)?.name ?? '';
+  }
+
+  function originalMenuNameOf(originalSlug: string): string {
+    return summary?.menus.find((m) => m.slug === originalSlug)?.name ?? '';
+  }
+
+  function splitSlugs(raw: string | undefined): Array<string> {
+    return (raw ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+  }
+
+  // Apenas marca os itens conflitantes (tabelas e menus). NÃO renomeia
+  // automaticamente — o usuário escolhe o novo nome. Auto-preencher um
+  // sufixo dava a falsa impressão de que o conflito persistia mesmo após
+  // a sugestão aplicada.
+  function applyConflicts(
+    tableSlugs: Array<string>,
+    menuSlugs: Array<string>,
+  ): void {
+    setConflicts({ tables: tableSlugs, menus: menuSlugs });
+  }
+
   const isPending = importTable.status === 'pending';
 
+  const allNamesFilled =
+    summary !== null &&
+    summary.tables.every((t) => (tableNames[t.slug] ?? '').trim().length > 0);
+
+  const conflictingMenusFilled =
+    conflicts === null ||
+    conflicts.menus.every((slug) => (menuNames[slug] ?? '').trim().length > 0);
+
   const canImport =
-    Boolean(fileContent) &&
-    (isMultiTable || tableName.trim().length > 0) &&
-    !conflicts;
+    Boolean(fileContent) && allNamesFilled && conflictingMenusFilled;
+
+  const conflictingTableSlugs = new Set(conflicts?.tables ?? []);
+  const conflictingMenuSlugs = conflicts?.menus ?? [];
 
   return (
     <Card data-test-id="import-table-section">
@@ -307,31 +406,65 @@ export function ImportTableSection(): React.JSX.Element {
                 <span className="text-muted-foreground">Data:</span>
                 <p className="font-medium">
                   {fileContent.header.exportedAt
-                    ? new Date(fileContent.header.exportedAt).toLocaleDateString(
-                        'pt-BR',
-                      )
+                    ? new Date(
+                        fileContent.header.exportedAt,
+                      ).toLocaleDateString('pt-BR')
                     : '—'}
                 </p>
               </div>
             </div>
 
-            <div className="space-y-1 pt-2 border-t text-sm">
-              <div className="text-muted-foreground">Conteúdo:</div>
-              <ul className="space-y-0.5">
-                {summary.tables.map((t) => (
-                  <li
-                    key={t.slug}
-                    className="flex items-center gap-2 font-mono text-xs"
-                  >
-                    <span className="font-medium">{t.name}</span>
-                    <span className="text-muted-foreground">/{t.slug}</span>
-                    {t.rows > 0 && (
-                      <span className="text-muted-foreground">
-                        — {t.rows} registro(s)
-                      </span>
-                    )}
-                  </li>
-                ))}
+            <div className="space-y-2 pt-2 border-t text-sm">
+              <div className="text-muted-foreground">
+                Tabelas a importar — ajuste o nome se quiser (os relacionamentos
+                entre as tabelas são preservados):
+              </div>
+              <ul className="space-y-3">
+                {summary.tables.map((t) => {
+                  const value = tableNames[t.slug] ?? t.name;
+                  const previewSlug = toSlug(value) || t.slug;
+                  const isConflicting = conflictingTableSlugs.has(t.slug);
+                  return (
+                    <li
+                      key={t.slug}
+                      className="space-y-1"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Input
+                          aria-label={`Nome da tabela ${t.name}`}
+                          value={value}
+                          onChange={(e) =>
+                            updateTableName(t.slug, e.target.value)
+                          }
+                          placeholder="Nome da tabela"
+                          maxLength={40}
+                          disabled={isPending}
+                          className={cn(
+                            'h-8',
+                            isConflicting &&
+                              'border-destructive focus-visible:ring-destructive/40',
+                          )}
+                        />
+                        {t.rows > 0 && (
+                          <span className="shrink-0 text-xs text-muted-foreground">
+                            {t.rows} registro(s)
+                          </span>
+                        )}
+                      </div>
+                      <p
+                        className={cn(
+                          'font-mono text-xs',
+                          isConflicting
+                            ? 'text-destructive'
+                            : 'text-muted-foreground',
+                        )}
+                      >
+                        /{previewSlug}
+                        {isConflicting && ' — já existe, escolha outro nome'}
+                      </p>
+                    </li>
+                  );
+                })}
                 {summary.menus.length > 0 && (
                   <li className="pt-1 text-xs text-muted-foreground">
                     + {summary.menus.length} item(ns) de menu
@@ -339,35 +472,11 @@ export function ImportTableSection(): React.JSX.Element {
                 )}
               </ul>
             </div>
-
-            {!isMultiTable && (
-              <div className="space-y-2 pt-2 border-t">
-                <Label htmlFor="import-table-name">Nome da nova tabela</Label>
-                <Input
-                  id="import-table-name"
-                  value={tableName}
-                  onChange={(e) => {
-                    setTableName(e.target.value);
-                    setConflicts(null);
-                  }}
-                  placeholder="Nome da tabela"
-                  maxLength={40}
-                  disabled={isPending}
-                />
-              </div>
-            )}
-
-            {isMultiTable && (
-              <p className="pt-2 text-xs text-muted-foreground border-t">
-                Importação multi-tabela: nomes e slugs originais serão
-                preservados.
-              </p>
-            )}
           </div>
         )}
 
         {conflicts && (
-          <div className="space-y-2 p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm">
+          <div className="space-y-3 p-3 rounded-md border border-destructive/40 bg-destructive/10 text-sm">
             <div className="flex items-start gap-2">
               <AlertCircleIcon className="size-4 mt-0.5 shrink-0 text-destructive" />
               <div className="space-y-1">
@@ -375,27 +484,49 @@ export function ImportTableSection(): React.JSX.Element {
                   Conflitos de slug — nada foi importado
                 </p>
                 {conflicts.tables.length > 0 && (
-                  <p>
-                    <span className="text-muted-foreground">Tabelas: </span>
-                    <span className="font-mono text-xs">
-                      {conflicts.tables.join(', ')}
-                    </span>
+                  <p className="text-xs text-muted-foreground">
+                    Renomeie a(s) tabela(s) destacada(s) acima e clique em
+                    Importar novamente.
                   </p>
                 )}
-                {conflicts.menus.length > 0 && (
-                  <p>
-                    <span className="text-muted-foreground">Menus: </span>
-                    <span className="font-mono text-xs">
-                      {conflicts.menus.join(', ')}
-                    </span>
+                {conflictingMenuSlugs.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Itens de menu já existentes. Ajuste o nome abaixo e importe
+                    novamente — os menus-pai já existentes são reaproveitados
+                    automaticamente.
                   </p>
                 )}
-                <p className="text-xs text-muted-foreground">
-                  Renomeie os itens existentes (ou descarte-os) e tente
-                  novamente.
-                </p>
               </div>
             </div>
+
+            {conflictingMenuSlugs.length > 0 && (
+              <ul className="space-y-3 pl-6">
+                {conflictingMenuSlugs.map((slug) => {
+                  const value =
+                    menuNames[slug] ?? originalMenuNameOf(slug) ?? slug;
+                  const previewSlug = toSlug(value) || slug;
+                  return (
+                    <li
+                      key={slug}
+                      className="space-y-1"
+                    >
+                      <Input
+                        aria-label={`Nome do menu ${originalMenuNameOf(slug) || slug}`}
+                        value={value}
+                        onChange={(e) => updateMenuName(slug, e.target.value)}
+                        placeholder="Nome do item de menu"
+                        maxLength={120}
+                        disabled={isPending}
+                        className="h-8 border-destructive focus-visible:ring-destructive/40"
+                      />
+                      <p className="font-mono text-xs text-destructive">
+                        /{previewSlug} — slug original: /{slug}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
           </div>
         )}
 

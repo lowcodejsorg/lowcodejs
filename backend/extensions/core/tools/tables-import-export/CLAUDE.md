@@ -42,7 +42,13 @@ desliga ambos os endpoints.
       "data": {
         "totalRows": 10,
         "rows": [
-          { "_originalId": "abc...", "nome": "Acme", "produtos": ["xyz...", "..."] }
+          {
+            "_originalId": "abc...",
+            "_originalCreator": "user-id...",   // criador da row (campo CREATOR)
+            "nome": "Acme",
+            "produtos": ["xyz...", "..."],       // RELATIONSHIP — remapeado
+            "responsavel": ["user-id..."]        // USER — preservado como ID
+          }
         ]
       }
     }
@@ -98,9 +104,14 @@ suportados na importação — internamente são normalizados para o formato v2.
    (quando `data|full`)
    - **Relacionamentos são preservados**: campos RELATIONSHIP exportam os
      IDs originais para serem remapeados na importação
-   - Campos referenciais que NÃO viajam: `FILE`, `USER`, `EVALUATION`,
-     `REACTION`, `CREATOR`
-   - Cada row carrega `_originalId` para o remapeamento
+   - **Campos USER e o criador (CREATOR)**: viajam como IDs de usuário
+     (`string`/`string[]`). Resolvem na mesma instância; em instância
+     diferente o ID pode não existir e o campo fica vazio (sem erro)
+   - Campos referenciais que NÃO viajam: `FILE`, `EVALUATION`, `REACTION`
+     (dependem de arquivos físicos ou de agregados da instância de origem)
+   - Cada row carrega `_originalId` para o remapeamento e `_originalCreator`
+     (quando há criador) para restaurar o campo nativo CREATOR na importação.
+     Subrows de field groups carregam os mesmos dois marcadores
 6. Coleta menus que apontam para qualquer tabela selecionada e sobe a árvore
    de pais até o topo. Ancestrais cujo `type=TABLE|FORM` aponta para tabelas
    fora do pacote são exportados como `SEPARATOR`
@@ -116,45 +127,85 @@ suportados na importação — internamente são normalizados para o formato v2.
 ## Import
 
 ### Validator
-`ImportTableValidator`: `fileContent` (objeto loose), `name` (string, opcional,
-máx 40 chars) — usado apenas em pacotes single-table para renomear a primeira
-tabela.
+`ImportTableValidator`:
+- `fileContent` (objeto loose) — o pacote v1/v2
+- `name` (string, opcional, máx 40 chars) — **legado**: renomeia a primeira
+  tabela apenas em pacotes single-table
+- `tables` (array opcional de `{ slug, name }`) — **renomeação por tabela**.
+  `slug` é o slug **original** no pacote; `name` é o novo nome (o slug final é
+  derivado via `slugify`). Tabelas ausentes do array mantêm nome/slug
+  originais. Quando `tables` é enviado, `name` é ignorado.
+- `menus` (array opcional de `{ slug, name }`) — **renomeação por item de
+  menu**. Mesma semântica de `tables`, porém só se aplica aos **itens folha**
+  em conflito: menus-pai já existentes são reaproveitados e nunca renomeados.
+
+> **Renomear preserva relacionamentos.** Todo o fluxo de import é chaveado pelo
+> `originalSlug`; renomear só troca o `newSlug`/`newName` de destino. Os campos
+> RELATIONSHIP entre tabelas do pacote continuam sendo religados na Fase B com
+> os novos `tableId`/slug.
 
 ### Fluxo
 1. Auth + `ExtensionActiveMiddleware` (bodyLimit 50 MB)
 2. Valida `header.platform === 'lowcodejs'`
 3. Normaliza v1 → v2 internamente
-4. **Detecta conflitos antes de qualquer escrita**: slugs de tabelas (vs.
-   tabelas existentes não-trashed) **e** slugs de menus (vs. menus
-   existentes não-trashed). Se houver, aborta com `IMPORT_CONFLICTS` (ou,
-   no caso single-table com apenas conflito de tabela, mantém o código
-   legado `TABLE_SLUG_ALREADY_EXISTS`)
-5. **Fase A — esqueleto das tabelas**: cria fields nativos + top-level +
+4. Monta os mapas de renomeação `originalSlug → { name, slug }`
+   (`computeRenames` para tabelas, `computeMenuRenames` para menus): API nova
+   (`payload.tables` / `payload.menus`) ou campo legado (`payload.name` para
+   single-table)
+5. **Detecta conflitos antes de qualquer escrita** (`detectConflicts`), usando
+   os slugs **já renomeados**:
+   - slugs de tabelas vs. tabelas existentes não-trashed → `IMPORT_CONFLICTS`
+     ou `TABLE_SLUG_ALREADY_EXISTS` (single-table sem conflito de menu)
+   - slugs de **itens de menu folha** vs. menus existentes não-trashed →
+     `IMPORT_CONFLICTS`. Menus que são **pai** de outro menu do pacote são
+     ignorados aqui — serão reaproveitados na Fase E, nunca conflitam
+   - slugs duplicados **entre as próprias renomeações** do pacote →
+     `DUPLICATE_TABLE_SLUGS` / `DUPLICATE_MENU_SLUGS`
+   - `errors.tables` / `errors.menus` carregam sempre o **slug original** do
+     item em conflito, para o frontend destacar o campo certo no formulário
+7. **Fase A — esqueleto das tabelas**: cria fields nativos + top-level +
    grupos. `relationship` para tabelas **dentro do pacote** fica `null`
    nesta fase. `relationship` para tabelas **fora do pacote** é resolvido
    contra o DB atual
-6. **Fase B — relacionamentos do pacote**: agora que todas as tabelas existem,
+8. **Fase B — relacionamentos do pacote**: agora que todas as tabelas existem,
    atualiza fields cujo relationship apontava para outro item do pacote (usando
-   os novos `tableId`/`fieldId`)
-7. **Fase C — inserção de rows**: por tabela, insere cada row removendo os
-   campos RELATIONSHIP (e os de subrows dos field groups). Constrói
-   `rowIdMap[originalSlug][_originalId] = newId`
-8. **Fase D — backfill de relacionamentos**: percorre as rows e faz `update`
-   substituindo os IDs originais pelos novos via `rowIdMap`. IDs cuja tabela
-   referenciada não veio no pacote são mantidos como estão
-9. **Fase E — menus**: cria em ordem topológica (pais antes dos filhos),
-   resolvendo `tableSlug → novo tableId` e `parent → novo parentId`. Menus
-   `TABLE/FORM` que apontam para tabelas ausentes viram `SEPARATOR`
+   os novos `tableId`/`fieldId` — já refletindo as renomeações)
+9. **Fase C — inserção de rows**: por tabela, insere cada row removendo os
+   campos RELATIONSHIP (e os de subrows dos field groups). Campos USER são
+   mantidos como estão; o `_originalCreator` da row vira o `creator` do
+   registro inserido (cai para o usuário que importa quando ausente).
+   Constrói `rowIdMap[newSlug][_originalId] = newId` — chaveado pelo slug
+   **renomeado**, porque é assim que a Fase D consulta o mapa (os campos
+   RELATIONSHIP já apontam para o slug novo após a Fase B)
+10. **Fase D — backfill de relacionamentos**: percorre as rows e faz `update`
+    substituindo os IDs originais pelos novos via `rowIdMap`. IDs cuja tabela
+    referenciada não veio no pacote são mantidos como estão
+11. **Fase E — menus**: cria em ordem topológica (pais antes dos filhos),
+    resolvendo `tableSlug → novo tableId` e `parent → novo parentId`.
+    - **Menu-pai já existente é reaproveitado**: se um menu do pacote é pai de
+      outro menu do pacote e já existe um menu com aquele slug no DB, ele
+      **não** é recriado — os filhos passam a apontar para o menu existente
+      (não conta em `importedMenus`)
+    - **Itens folha** podem ter sido renomeados (`menuRenames`) — criados com
+      o novo `slug`/`name`
+    - Menus `TABLE/FORM` que apontam para tabelas ausentes viram `SEPARATOR`
 
 ### Erros
 | Code | Cause | Quando |
 |------|-------|--------|
 | 400 | OWNER_ID_REQUIRED | Owner ausente (não deveria com auth) |
 | 400 | INVALID_PLATFORM | header.platform diferente de "lowcodejs" |
-| 400 | TABLE_SLUG_ALREADY_EXISTS | Slug da tabela já existe (single-table) |
-| 400 | IMPORT_CONFLICTS | Conflitos detectados (multi-table OU menu). `errors.tables` e `errors.menus` trazem listas |
+| 400 | TABLE_SLUG_ALREADY_EXISTS | Slug da tabela já existe (single-table sem conflito de menu). `errors.tables` traz o(s) slug(s) **original(is)** |
+| 400 | IMPORT_CONFLICTS | Conflitos detectados (tabelas e/ou itens de menu folha). `errors.tables` e `errors.menus` trazem os slugs **originais** em conflito |
+| 400 | DUPLICATE_TABLE_SLUGS | Duas tabelas do pacote gerariam o mesmo slug após renomeação. `errors.tables` traz os slugs originais colidentes |
+| 400 | DUPLICATE_MENU_SLUGS | Dois itens de menu do pacote gerariam o mesmo slug após renomeação. `errors.menus` traz os slugs originais colidentes |
 | 400 | STRUCTURE_REQUIRED | Arquivo sem `structure` (em nenhuma tabela) |
 | 500 | IMPORT_TABLE_ERROR | Erro interno |
+
+> O frontend (`import-section.tsx`) usa esses códigos para destacar as tabelas
+> **e os itens de menu** conflitantes no formulário de renomeação, já
+> pré-preenchendo uma sugestão de nome. Menus-pai já existentes são
+> reaproveitados automaticamente — o usuário só renomeia o item folha.
 
 ### Resposta
 ```jsonc

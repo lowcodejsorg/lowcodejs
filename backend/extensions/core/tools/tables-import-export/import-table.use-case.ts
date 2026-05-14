@@ -109,14 +109,6 @@ type NormalizedPackage = {
   menus: ExportedMenu[];
 };
 
-const REFERENCE_TYPES = new Set<string>([
-  E_FIELD_TYPE.FILE,
-  E_FIELD_TYPE.USER,
-  E_FIELD_TYPE.EVALUATION,
-  E_FIELD_TYPE.REACTION,
-  E_FIELD_TYPE.CREATOR,
-]);
-
 @Service()
 export default class ImportTableUseCase {
   constructor(
@@ -162,9 +154,10 @@ export default class ImportTableUseCase {
         );
       }
 
-      const renameFirst = this.computeFirstRename(payload, pkg);
+      const renames = this.computeRenames(payload, pkg);
+      const menuRenames = this.computeMenuRenames(payload, pkg);
 
-      const conflict = await this.detectConflicts(pkg, renameFirst);
+      const conflict = await this.detectConflicts(pkg, renames, menuRenames);
       if (conflict) return left(conflict);
 
       const tableSlugToInfo = new Map<
@@ -182,18 +175,14 @@ export default class ImportTableUseCase {
         }
       >();
 
-      for (const [index, t] of pkg.tables.entries()) {
+      for (const t of pkg.tables) {
         if (!t.structure) continue;
         const originalSlug = t.structure.slug;
-        const isFirst = index === 0;
-        const newName =
-          isFirst && renameFirst ? renameFirst.name : t.structure.name;
-        const newSlug =
-          isFirst && renameFirst ? renameFirst.slug : originalSlug;
+        const rename = renames.get(originalSlug);
         tableSlugToInfo.set(originalSlug, {
           originalSlug,
-          newSlug,
-          newName,
+          newSlug: rename ? rename.slug : originalSlug,
+          newName: rename ? rename.name : t.structure.name,
           structure: t.structure,
         });
       }
@@ -219,30 +208,43 @@ export default class ImportTableUseCase {
         await this.resolvePackageRelationships(info, tableSlugToInfo);
       }
 
-      // Phase C: insert rows (without relationship fields) + collect id map
-      const rowIdMap = new Map<string, Map<string, string>>(); // originalSlug → originalRowId → newRowId
+      // Phase C: insert rows (without relationship fields) + collect id map.
+      // O rowIdMap é chaveado pelo NOVO slug porque, após a Fase B, os campos
+      // RELATIONSHIP já apontam para o slug renomeado da tabela alvo — é assim
+      // que `remapRelationshipValue` (Fase D) consulta o mapa.
+      const rowIdMap = new Map<string, Map<string, string>>(); // newSlug → originalRowId → newRowId
       const fullTables = new Map<string, ITable>();
       let importedRowCount = 0;
 
       for (const info of tableSlugToInfo.values()) {
         const full = await this.tableRepository.findById(info.tableId!);
         if (!full) continue;
+        // Usa os fields/groups já resolvidos na Fase B em vez de depender do
+        // populate do repositório — garante que strip/backfill enxerguem o
+        // `type`/`relationship` corretos de cada campo.
+        if (info.allFields) full.fields = info.allFields;
+        if (info.groups) full.groups = info.groups;
         fullTables.set(info.originalSlug, full);
         const entry = pkg.tables.find(
           (t) => t.structure?.slug === info.originalSlug,
         );
         if (!entry?.data?.rows?.length) {
-          rowIdMap.set(info.originalSlug, new Map());
+          rowIdMap.set(info.newSlug, new Map());
           continue;
         }
         const map = new Map<string, string>();
         for (const row of entry.data.rows) {
           const stripped = this.stripRelationshipFields(row, full);
+          // Preserva o criador original da row (campo nativo CREATOR);
+          // cai para o usuário que está importando quando ausente.
+          const rowCreator = row._originalCreator
+            ? String(row._originalCreator)
+            : payload.ownerId;
           try {
             const inserted = await this.rowRepository.insertRaw(
               full,
               stripped,
-              payload.ownerId,
+              rowCreator,
             );
             importedRowCount++;
             const originalRowId = row._originalId
@@ -253,7 +255,7 @@ export default class ImportTableUseCase {
             console.error('[tools > import-table][row-insert]:', rowError);
           }
         }
-        rowIdMap.set(info.originalSlug, map);
+        rowIdMap.set(info.newSlug, map);
       }
 
       // Phase D: backfill relationships using the row id map
@@ -268,7 +270,7 @@ export default class ImportTableUseCase {
           table: full,
           rows: entry.data.rows,
           rowIdMap,
-          ownerSlug: info.originalSlug,
+          ownerSlug: info.newSlug,
         });
       }
 
@@ -277,6 +279,7 @@ export default class ImportTableUseCase {
         menus: pkg.menus,
         tableSlugToInfo,
         ownerId: payload.ownerId,
+        menuRenames,
       });
 
       const summaries: ImportedTableSummary[] = Array.from(
@@ -334,44 +337,163 @@ export default class ImportTableUseCase {
     return { tables: [], menus: [] };
   }
 
-  private computeFirstRename(
+  /**
+   * Monta o mapa de renomeações `originalSlug → { name, slug }`. Aceita a API
+   * nova (`payload.tables`, renomeação por tabela) e o campo legado
+   * (`payload.name`, renomeia a primeira/única tabela do pacote). O slug é
+   * sempre derivado do nome — o relacionamento entre tabelas é preservado
+   * porque o resto do fluxo continua chaveado pelo `originalSlug`.
+   */
+  private computeRenames(
     payload: ImportTableUseCasePayload,
     pkg: NormalizedPackage,
-  ): { name: string; slug: string } | null {
-    if (!payload.name) return null;
-    const name = payload.name.trim();
-    if (!name) return null;
-    if (pkg.tables.length > 1) {
-      // Multi-table: rename only makes sense for single import; ignore.
-      return null;
+  ): Map<string, { name: string; slug: string }> {
+    const renames = new Map<string, { name: string; slug: string }>();
+
+    const buildRename = (
+      rawName: string,
+    ): { name: string; slug: string } | null => {
+      const name = rawName.trim();
+      if (!name) return null;
+      const slug = slugify(name, { lower: true, strict: true, trim: true });
+      if (!slug) return null;
+      return { name, slug };
+    };
+
+    // API nova: renomeação explícita por slug original.
+    if (payload.tables && payload.tables.length > 0) {
+      const knownSlugs = new Set(
+        pkg.tables
+          .map((t) => t.structure?.slug)
+          .filter((s): s is string => Boolean(s)),
+      );
+      for (const entry of payload.tables) {
+        if (!knownSlugs.has(entry.slug)) continue;
+        const rename = buildRename(entry.name);
+        if (rename) renames.set(entry.slug, rename);
+      }
+      return renames;
     }
-    const slug = slugify(name, { lower: true, strict: true, trim: true });
-    return { name, slug };
+
+    // Legado: `name` renomeia a primeira/única tabela do pacote.
+    if (payload.name && pkg.tables.length === 1 && pkg.tables[0].structure) {
+      const rename = buildRename(payload.name);
+      if (rename) renames.set(pkg.tables[0].structure.slug, rename);
+    }
+
+    return renames;
+  }
+
+  /**
+   * Monta o mapa de renomeações de menus (`slug` original → `{ name, slug }`).
+   * Só vale para itens de menu em conflito — menus-pai existentes são
+   * reaproveitados (ver `getMenuParentOriginalIds` / `importMenus`).
+   */
+  private computeMenuRenames(
+    payload: ImportTableUseCasePayload,
+    pkg: NormalizedPackage,
+  ): Map<string, { name: string; slug: string }> {
+    const renames = new Map<string, { name: string; slug: string }>();
+    if (!payload.menus || payload.menus.length === 0) return renames;
+
+    const knownSlugs = new Set(pkg.menus.map((m) => m.slug));
+    for (const entry of payload.menus) {
+      if (!knownSlugs.has(entry.slug)) continue;
+      const name = entry.name.trim();
+      if (!name) continue;
+      const slug = slugify(name, { lower: true, strict: true, trim: true });
+      if (!slug) continue;
+      renames.set(entry.slug, { name, slug });
+    }
+    return renames;
+  }
+
+  /**
+   * `_originalId` dos menus que são **pai** de algum outro menu do pacote.
+   * Esses menus são reaproveitados quando já existem no DB — só os itens
+   * "folha" (não-pais) podem entrar em conflito e ser renomeados.
+   */
+  private getMenuParentOriginalIds(menus: ExportedMenu[]): Set<string> {
+    return new Set(
+      menus
+        .map((m) => m.parent)
+        .filter((p): p is string => Boolean(p)),
+    );
   }
 
   // ── Conflict detection ─────────────────────────────────────
 
+  /**
+   * Detecta conflitos contra o DB **e** entre as próprias renomeações do
+   * pacote. As listas de erro carregam sempre o `originalSlug` da tabela —
+   * assim o frontend consegue destacar a tabela certa no formulário,
+   * independentemente do slug final escolhido.
+   */
   private async detectConflicts(
     pkg: NormalizedPackage,
-    renameFirst: { name: string; slug: string } | null,
+    renames: Map<string, { name: string; slug: string }>,
+    menuRenames: Map<string, { name: string; slug: string }>,
   ): Promise<HTTPException | null> {
-    const conflictingTables: string[] = [];
-    for (const [index, t] of pkg.tables.entries()) {
+    const conflictingTables: string[] = []; // originalSlugs
+    const duplicateTables: string[] = []; // originalSlugs colidindo dentro do pacote
+    const seenSlugs = new Map<string, string>(); // newSlug → originalSlug
+
+    for (const t of pkg.tables) {
       if (!t.structure) continue;
-      const slug =
-        index === 0 && renameFirst ? renameFirst.slug : t.structure.slug;
-      const existing = await this.tableRepository.findBySlug(slug, {
+      const originalSlug = t.structure.slug;
+      const newSlug = renames.get(originalSlug)?.slug ?? originalSlug;
+
+      if (seenSlugs.has(newSlug)) {
+        duplicateTables.push(originalSlug);
+      } else {
+        seenSlugs.set(newSlug, originalSlug);
+      }
+
+      const existing = await this.tableRepository.findBySlug(newSlug, {
         trashed: false,
       });
-      if (existing) conflictingTables.push(slug);
+      if (existing) conflictingTables.push(originalSlug);
     }
 
-    const conflictingMenus: string[] = [];
+    // Duas tabelas do pacote acabariam com o mesmo slug — bloqueia antes do DB.
+    if (duplicateTables.length > 0) {
+      return HTTPException.BadRequest(
+        'Há tabelas com nomes que geram o mesmo slug. Use nomes distintos.',
+        'DUPLICATE_TABLE_SLUGS',
+        { tables: duplicateTables.join(',') },
+      );
+    }
+
+    // Menus: itens "pai" são reaproveitados quando já existem — nunca
+    // conflitam. Só os itens folha (não referenciados como pai) podem
+    // conflitar e ser renomeados. `errors.menus` carrega o slug original.
+    const parentOriginalIds = this.getMenuParentOriginalIds(pkg.menus);
+    const conflictingMenus: string[] = []; // slugs originais
+    const duplicateMenus: string[] = []; // slugs originais colidindo no pacote
+    const seenMenuSlugs = new Set<string>();
+
     for (const m of pkg.menus) {
-      const existing = await this.menuRepository.findBySlug(m.slug, {
+      if (parentOriginalIds.has(m._originalId)) continue; // pai → reaproveitado
+      const effectiveSlug = menuRenames.get(m.slug)?.slug ?? m.slug;
+
+      if (seenMenuSlugs.has(effectiveSlug)) {
+        duplicateMenus.push(m.slug);
+      } else {
+        seenMenuSlugs.add(effectiveSlug);
+      }
+
+      const existing = await this.menuRepository.findBySlug(effectiveSlug, {
         trashed: false,
       });
       if (existing) conflictingMenus.push(m.slug);
+    }
+
+    if (duplicateMenus.length > 0) {
+      return HTTPException.BadRequest(
+        'Há itens de menu com nomes que geram o mesmo slug. Use nomes distintos.',
+        'DUPLICATE_MENU_SLUGS',
+        { menus: duplicateMenus.join(',') },
+      );
     }
 
     if (conflictingTables.length === 0 && conflictingMenus.length === 0) {
@@ -381,7 +503,7 @@ export default class ImportTableUseCase {
     if (conflictingTables.length > 0 && conflictingMenus.length === 0) {
       // Mantém código legado para o caso single-table
       return HTTPException.BadRequest(
-        'Já existe(m) tabela(s) com este(s) slug(s)',
+        'Já existe(m) tabela(s) com este(s) slug(s). Renomeie a(s) tabela(s) e tente novamente.',
         'TABLE_SLUG_ALREADY_EXISTS',
         { tables: conflictingTables.join(',') },
       );
@@ -709,6 +831,8 @@ export default class ImportTableUseCase {
     }
     for (const [key, value] of Object.entries(row)) {
       if (key === '_originalId' || key === '_id' || key === 'id') continue;
+      // `_originalCreator` é tratado à parte (vira o `creator` da row na Fase C).
+      if (key === '_originalCreator') continue;
       if (key === 'createdAt' || key === 'updatedAt') continue;
       if (relationshipSlugs.has(key)) continue;
       // For FIELD_GROUP, strip relationships within each subrow
@@ -723,6 +847,11 @@ export default class ImportTableUseCase {
           const cleaned: Record<string, unknown> = {};
           for (const [k, v] of Object.entries(sub)) {
             if (k === '_originalId') continue;
+            // Restaura o criador original do subdocumento no campo nativo.
+            if (k === '_originalCreator') {
+              if (v) cleaned.creator = v;
+              continue;
+            }
             if (subSlugs.has(k)) continue;
             cleaned[k] = v;
           }
@@ -843,8 +972,9 @@ export default class ImportTableUseCase {
       { originalSlug: string; newSlug: string; tableId?: string }
     >;
     ownerId: string;
+    menuRenames: Map<string, { name: string; slug: string }>;
   }): Promise<number> {
-    const { menus, tableSlugToInfo, ownerId } = args;
+    const { menus, tableSlugToInfo, ownerId, menuRenames } = args;
     if (menus.length === 0) return 0;
 
     const tableSlugMap = new Map<string, { id: string; newSlug: string }>();
@@ -860,6 +990,7 @@ export default class ImportTableUseCase {
     const byOriginalId = new Map<string, ExportedMenu>();
     for (const m of menus) byOriginalId.set(m._originalId, m);
 
+    const parentOriginalIds = this.getMenuParentOriginalIds(menus);
     const newIdByOriginalId = new Map<string, string>();
     const created = new Set<string>();
     let importedCount = 0;
@@ -873,6 +1004,27 @@ export default class ImportTableUseCase {
           await createMenu(parent);
         }
       }
+
+      const isParent = parentOriginalIds.has(menu._originalId);
+
+      // Menu-pai já existente é REAPROVEITADO — os filhos passam a apontar
+      // para o item existente em vez de recriá-lo.
+      if (isParent) {
+        const existingParent = await this.menuRepository.findBySlug(
+          menu.slug,
+          { trashed: false },
+        );
+        if (existingParent) {
+          newIdByOriginalId.set(menu._originalId, existingParent._id);
+          created.add(menu._originalId);
+          return;
+        }
+      }
+
+      // Itens folha em conflito podem ter sido renomeados; pais nunca.
+      const rename = isParent ? undefined : menuRenames.get(menu.slug);
+      const slug = rename?.slug ?? menu.slug;
+      const name = rename?.name ?? menu.name;
 
       let tableId: string | null = null;
       let url: string | null = menu.url;
@@ -899,8 +1051,8 @@ export default class ImportTableUseCase {
 
       try {
         const newMenu = await this.menuRepository.create({
-          name: menu.name,
-          slug: menu.slug,
+          name,
+          slug,
           type: type as never,
           table: tableId,
           parent: parentId,

@@ -25,11 +25,18 @@ import type {
   ExportTableUseCasePayload,
 } from './export-table.types';
 
+// Tipos referenciais que NÃO viajam no export — dependem de recursos externos
+// (arquivos físicos) ou de agregados específicos da instância de origem.
 const REFERENCE_TYPES = new Set<string>([
   E_FIELD_TYPE.FILE,
-  E_FIELD_TYPE.USER,
   E_FIELD_TYPE.EVALUATION,
   E_FIELD_TYPE.REACTION,
+]);
+
+// Campos cujo valor é um (ou vários) ID de usuário. Viajam como string/string[]
+// de IDs: resolvem na mesma instância e ficam vazios (sem erro) em outra.
+const USER_REFERENCE_TYPES = new Set<string>([
+  E_FIELD_TYPE.USER,
   E_FIELD_TYPE.CREATOR,
 ]);
 
@@ -37,8 +44,18 @@ function toIdString(value: unknown): string | null {
   if (!value) return null;
   if (typeof value === 'string') return value;
   if (typeof value === 'object' && value !== null) {
-    const v = value as { _id?: unknown; toString?: () => string };
-    if (v._id) return toIdString(v._id);
+    const v = value as {
+      _id?: unknown;
+      _bsontype?: string;
+      toString?: () => string;
+    };
+    // Mongoose/BSON ObjectId expõe um getter `_id` que retorna a si mesmo —
+    // tratar ObjectId direto pelo toString evita recursão infinita.
+    if (v._bsontype === 'ObjectId' || v._bsontype === 'ObjectID') {
+      return typeof v.toString === 'function' ? v.toString() : String(value);
+    }
+    // Guard contra auto-referência (`v._id === value`) por segurança extra.
+    if (v._id && v._id !== value) return toIdString(v._id);
     if (typeof v.toString === 'function') return v.toString();
   }
   return String(value);
@@ -283,13 +300,20 @@ export default class ExportTableUseCase {
       const originalId = toIdString(row['_id']) || '';
       const exportedRow: ExportedRow = { _originalId: originalId };
 
+      // Campo nativo CREATOR (slug `creator`): viaja como ID de usuário.
+      const creatorId = toIdString(row['creator']);
+      if (creatorId) exportedRow._originalCreator = creatorId;
+
       for (const field of nonNativeFields) {
         const value = row[field.slug];
         if (value === undefined || value === null) continue;
 
         if (REFERENCE_TYPES.has(field.type)) continue;
 
-        if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
+        if (
+          field.type === E_FIELD_TYPE.RELATIONSHIP ||
+          USER_REFERENCE_TYPES.has(field.type)
+        ) {
           exportedRow[field.slug] = this.serializeRelationshipValue(value);
           continue;
         }
@@ -305,12 +329,19 @@ export default class ExportTableUseCase {
               if (groupOriginalId) {
                 exportedGroupRow._originalId = groupOriginalId;
               }
+              const groupCreatorId = toIdString(groupRow['creator']);
+              if (groupCreatorId) {
+                exportedGroupRow._originalCreator = groupCreatorId;
+              }
               for (const gf of group.fields || []) {
                 if (gf.native) continue;
                 if (REFERENCE_TYPES.has(gf.type)) continue;
                 const gv = groupRow[gf.slug];
                 if (gv === undefined || gv === null) continue;
-                if (gf.type === E_FIELD_TYPE.RELATIONSHIP) {
+                if (
+                  gf.type === E_FIELD_TYPE.RELATIONSHIP ||
+                  USER_REFERENCE_TYPES.has(gf.type)
+                ) {
                   exportedGroupRow[gf.slug] =
                     this.serializeRelationshipValue(gv);
                   continue;

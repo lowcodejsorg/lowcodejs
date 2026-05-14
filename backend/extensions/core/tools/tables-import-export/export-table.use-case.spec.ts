@@ -117,6 +117,58 @@ describe('Export Table Use Case', () => {
     expect(result.value.tables[0].data).toBeTruthy();
   });
 
+  it('deve exportar campos USER e o criador (CREATOR) da row', async () => {
+    const userField = await fieldInMemoryRepository.create({
+      name: 'Adaptado por',
+      slug: 'adaptado-por',
+      type: E_FIELD_TYPE.USER,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      required: false,
+      dropdown: [],
+      category: [],
+      defaultValue: null,
+      format: null,
+      group: null,
+      multiple: true,
+      relationship: null,
+      widthInForm: null,
+      widthInList: null,
+      widthInDetail: null,
+    });
+
+    const table = await tableInMemoryRepository.create({
+      ...tableBase,
+      name: 'Livros',
+      slug: 'livros',
+      fields: [userField as never],
+    });
+
+    await rowInMemoryRepository.create({
+      table,
+      data: {
+        'adaptado-por': ['user-1', 'user-2'],
+        creator: 'user-9',
+      } as never,
+    });
+
+    const result = await sut.execute({
+      slugs: ['livros'],
+      exportType: 'data',
+      acknowledgeMissingRelationships: false,
+      userId: 'user-id',
+      userName: 'Admin',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    const row = result.value.tables[0].data?.rows[0];
+    expect(row?.['adaptado-por']).toEqual(['user-1', 'user-2']);
+    expect(row?._originalCreator).toBe('user-9');
+  });
+
   it('deve exportar full (estrutura + dados) com sucesso', async () => {
     await tableInMemoryRepository.create({
       ...tableBase,
@@ -241,6 +293,76 @@ describe('Export Table Use Case', () => {
     expect(leaf?.parent).toBe(root._id);
     const parent = result.value.menus.find((m) => m.slug === 'cadastros');
     expect(parent).toBeTruthy();
+  });
+
+  it('deve serializar relationships com ObjectId sem estourar a pilha', async () => {
+    // Reproduz o comportamento do ObjectId do Mongoose: o getter `_id`
+    // retorna a si mesmo, o que causava recursão infinita em toIdString.
+    const makeObjectId = (hex: string): object => {
+      const oid: Record<string, unknown> = {
+        _bsontype: 'ObjectId',
+        toString: () => hex,
+      };
+      Object.defineProperty(oid, '_id', { get: () => oid });
+      return oid;
+    };
+
+    const relField = await fieldInMemoryRepository.create({
+      name: 'Cliente',
+      slug: 'cliente',
+      type: E_FIELD_TYPE.RELATIONSHIP,
+      showInList: true,
+      showInForm: true,
+      showInDetail: true,
+      showInFilter: false,
+      required: false,
+      dropdown: [],
+      category: [],
+      defaultValue: null,
+      format: null,
+      group: null,
+      multiple: true,
+      relationship: {
+        table: { _id: 'tbl-clientes', slug: 'clientes' },
+        field: { _id: 'fld-nome', slug: 'nome' },
+        order: 'asc',
+      },
+      widthInForm: null,
+      widthInList: null,
+      widthInDetail: null,
+    });
+
+    const table = await tableInMemoryRepository.create({
+      ...tableBase,
+      name: 'Pedidos',
+      slug: 'pedidos',
+      fields: [relField as never],
+    });
+
+    await rowInMemoryRepository.create({
+      table,
+      data: {
+        cliente: [
+          makeObjectId('aaaaaaaaaaaaaaaaaaaaaaaa'),
+          makeObjectId('bbbbbbbbbbbbbbbbbbbbbbbb'),
+        ],
+      } as never,
+    });
+
+    const result = await sut.execute({
+      slugs: ['pedidos'],
+      exportType: 'data',
+      acknowledgeMissingRelationships: true,
+      userId: 'user-id',
+      userName: 'Admin',
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.tables[0].data?.rows[0].cliente).toEqual([
+      'aaaaaaaaaaaaaaaaaaaaaaaa',
+      'bbbbbbbbbbbbbbbbbbbbbbbb',
+    ]);
   });
 
   it('deve retornar erro EXPORT_TABLE_ERROR quando houver falha', async () => {
