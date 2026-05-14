@@ -17,6 +17,9 @@ export default defineConfig({
   outDir: 'build',
   target: 'es2024',
   format: ['esm'],
+  banner: {
+    js: "import 'reflect-metadata';",
+  },
   async onSuccess(): Promise<void> {
     const patterns: Array<{ pattern: string; label: string }> = [
       { pattern: 'extensions/**/manifest.json', label: 'manifest.json' },
