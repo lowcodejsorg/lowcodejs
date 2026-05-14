@@ -26,6 +26,7 @@ export const ProfileUpdateBodyValidator = z.object({
     .trim()
     .optional(),
   allowPasswordChange: z.coerce.boolean().default(false),
+  notificationsEnabled: z.coerce.boolean().optional(),
 });
 
 export const ProfileUpdateParamsValidator = z.object({

@@ -36,6 +36,7 @@ import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authent
 import { Route as PrivatePagesSlugRouteImport } from './routes/_private/pages/$slug'
 import { Route as PrivateUsersCreateIndexRouteImport } from './routes/_private/users/create/index'
 import { Route as PrivateUsersUserIdIndexRouteImport } from './routes/_private/users/$userId/index'
+import { Route as PrivateTablesSchemaImportIndexRouteImport } from './routes/_private/tables/schema-import/index'
 import { Route as PrivateTablesNewIndexRouteImport } from './routes/_private/tables/new/index'
 import { Route as PrivateTablesCreateIndexRouteImport } from './routes/_private/tables/create/index'
 import { Route as PrivateTablesCloneIndexRouteImport } from './routes/_private/tables/clone/index'
@@ -239,6 +240,16 @@ const PrivateUsersUserIdIndexRoute = PrivateUsersUserIdIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_private/users/$userId/index.lazy').then((d) => d.Route),
 )
+const PrivateTablesSchemaImportIndexRoute =
+  PrivateTablesSchemaImportIndexRouteImport.update({
+    id: '/tables/schema-import/',
+    path: '/tables/schema-import/',
+    getParentRoute: () => PrivateLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_private/tables/schema-import/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesNewIndexRoute = PrivateTablesNewIndexRouteImport.update({
   id: '/tables/new/',
   path: '/tables/new/',
@@ -449,6 +460,7 @@ export interface FileRoutesByFullPath {
   '/tables/clone': typeof PrivateTablesCloneIndexRoute
   '/tables/create': typeof PrivateTablesCreateIndexRoute
   '/tables/new': typeof PrivateTablesNewIndexRoute
+  '/tables/schema-import': typeof PrivateTablesSchemaImportIndexRoute
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
@@ -496,6 +508,7 @@ export interface FileRoutesByTo {
   '/tables/clone': typeof PrivateTablesCloneIndexRoute
   '/tables/create': typeof PrivateTablesCreateIndexRoute
   '/tables/new': typeof PrivateTablesNewIndexRoute
+  '/tables/schema-import': typeof PrivateTablesSchemaImportIndexRoute
   '/users/$userId': typeof PrivateUsersUserIdIndexRoute
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
@@ -546,6 +559,7 @@ export interface FileRoutesById {
   '/_private/tables/clone/': typeof PrivateTablesCloneIndexRoute
   '/_private/tables/create/': typeof PrivateTablesCreateIndexRoute
   '/_private/tables/new/': typeof PrivateTablesNewIndexRoute
+  '/_private/tables/schema-import/': typeof PrivateTablesSchemaImportIndexRoute
   '/_private/users/$userId/': typeof PrivateUsersUserIdIndexRoute
   '/_private/users/create/': typeof PrivateUsersCreateIndexRoute
   '/_private/tables/$slug/field/management': typeof PrivateTablesSlugFieldManagementRoute
@@ -595,6 +609,7 @@ export interface FileRouteTypes {
     | '/tables/clone'
     | '/tables/create'
     | '/tables/new'
+    | '/tables/schema-import'
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/management'
@@ -642,6 +657,7 @@ export interface FileRouteTypes {
     | '/tables/clone'
     | '/tables/create'
     | '/tables/new'
+    | '/tables/schema-import'
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/management'
@@ -691,6 +707,7 @@ export interface FileRouteTypes {
     | '/_private/tables/clone/'
     | '/_private/tables/create/'
     | '/_private/tables/new/'
+    | '/_private/tables/schema-import/'
     | '/_private/users/$userId/'
     | '/_private/users/create/'
     | '/_private/tables/$slug/field/management'
@@ -903,6 +920,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateUsersUserIdIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_private/tables/schema-import/': {
+      id: '/_private/tables/schema-import/'
+      path: '/tables/schema-import'
+      fullPath: '/tables/schema-import'
+      preLoaderRoute: typeof PrivateTablesSchemaImportIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/new/': {
       id: '/_private/tables/new/'
       path: '/tables/new'
@@ -1088,6 +1112,7 @@ interface PrivateLayoutRouteChildren {
   PrivateTablesCloneIndexRoute: typeof PrivateTablesCloneIndexRoute
   PrivateTablesCreateIndexRoute: typeof PrivateTablesCreateIndexRoute
   PrivateTablesNewIndexRoute: typeof PrivateTablesNewIndexRoute
+  PrivateTablesSchemaImportIndexRoute: typeof PrivateTablesSchemaImportIndexRoute
   PrivateUsersUserIdIndexRoute: typeof PrivateUsersUserIdIndexRoute
   PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute
   PrivateTablesSlugFieldManagementRoute: typeof PrivateTablesSlugFieldManagementRoute
@@ -1121,6 +1146,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateTablesCloneIndexRoute: PrivateTablesCloneIndexRoute,
   PrivateTablesCreateIndexRoute: PrivateTablesCreateIndexRoute,
   PrivateTablesNewIndexRoute: PrivateTablesNewIndexRoute,
+  PrivateTablesSchemaImportIndexRoute: PrivateTablesSchemaImportIndexRoute,
   PrivateUsersUserIdIndexRoute: PrivateUsersUserIdIndexRoute,
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
   PrivateTablesSlugFieldManagementRoute: PrivateTablesSlugFieldManagementRoute,

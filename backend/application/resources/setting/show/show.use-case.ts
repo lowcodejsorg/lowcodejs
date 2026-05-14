@@ -115,10 +115,6 @@ export default class SettingShowUseCase {
           EMAIL_PROVIDER_FROM: null,
           OPENAI_API_KEY: null,
           AI_ASSISTANT_ENABLED: false,
-          CHAT_HISTORY_ENABLED: false,
-          MCP_SERVER_URL: null,
-          MCP_SERVER_TOKEN: null,
-          OPENAI_MODEL: 'gpt-4.1-nano',
           SETUP_COMPLETED: false,
           SETUP_CURRENT_STEP: 'admin',
           MODEL_CLONE_TABLES: [

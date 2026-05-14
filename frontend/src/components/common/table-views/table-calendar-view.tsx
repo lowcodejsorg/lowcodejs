@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { useRouter } from '@tanstack/react-router';
+import { useRouter, useRouterState } from '@tanstack/react-router';
 import { addMonths, addWeeks, subMonths, subWeeks } from 'date-fns';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
@@ -58,6 +58,22 @@ export function TableCalendarView({
   React.useEffect(() => {
     setRowsState(data);
   }, [data]);
+
+  // Deep-link: ?rowId=... abre o evento automaticamente.
+  const searchParams = useRouterState({ select: (s) => s.location.search });
+  const deepLinkRowIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const rowIdParam =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).rowId
+        : undefined;
+    if (typeof rowIdParam !== 'string' || !rowIdParam) return;
+    if (deepLinkRowIdRef.current === rowIdParam) return;
+    const exists = rowsState.some((row) => row._id === rowIdParam);
+    if (!exists) return;
+    deepLinkRowIdRef.current = rowIdParam;
+    setEditingRowId(rowIdParam);
+  }, [searchParams, rowsState]);
 
   const resolvedFields = React.useMemo(
     () => resolveCalendarFields(headers, table.layoutFields),

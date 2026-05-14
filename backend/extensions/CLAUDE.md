@@ -199,6 +199,57 @@ do MASTER são preservados — uma vez desligada, fica desligada.
 - O pacote especial `core` é shipado junto da plataforma (Fase 2 migra o
   Clonar Tabela para `core/tools/clone-table/`)
 
+## Notificações in-app
+
+Extensões podem disparar notificações em tempo real para um ou mais usuários
+reusando o `NotificationContractService` do core (mesmo serviço usado por
+forum-mention, kanban-comment-mention e atribuição de membros em
+KANBAN/CALENDAR). Persiste no Mongo e emite via Socket.IO `/notifications`.
+
+```ts
+import { Service } from 'fastify-decorators';
+
+import { E_NOTIFICATION_TYPE } from '@application/core/entity.core';
+import { NotificationContractService } from '@application/services/notification/notification-contract.service';
+
+@Service()
+export default class MeuUseCase {
+  constructor(
+    private readonly notificationService: NotificationContractService,
+  ) {}
+
+  async run(actorUserId: string, recipientIds: string[]): Promise<void> {
+    await this.notificationService.notify({
+      userIds: recipientIds,
+      type: E_NOTIFICATION_TYPE.GENERIC,   // ou um novo type que você definir
+      title: 'Algo aconteceu',
+      body: 'Detalhe opcional',
+      action: {                            // opcional
+        type: 'route',                     // 'route' | 'url'
+        href: '/tables/clientes',
+        label: 'Abrir',
+      },
+      source: {                            // opcional, metadados
+        pkg: 'meu-pacote',
+        tableSlug: 'clientes',
+        rowId: '...',
+        anchorId: '...',
+      },
+      actorUserId,                         // exclui o ator da lista
+    });
+  }
+}
+```
+
+- `userIds` é deduplicado e o `actorUserId` é filtrado fora.
+- Erros são logados e não propagados — disparo é fire-and-forget.
+- Para um novo `type`, acrescente em `E_NOTIFICATION_TYPE` (core) **e** no enum
+  do model (`notification.model.ts`).
+- O frontend cuida do toast e do sininho — sua extensão só precisa disparar.
+
+Documentação completa de payload, deep-link com anchor e tipos: ver
+`.claude/skills/lowcodejs-extension/references.md` § Notificações.
+
 ## Como criar uma nova extensão
 
 **Recomendado**: invoque a skill `lowcodejs-extension` (em

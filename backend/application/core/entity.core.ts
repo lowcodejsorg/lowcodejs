@@ -139,8 +139,33 @@ export const E_CHAT_EVENT = {
   TOOL_ERROR: 'tool_error',
   MESSAGE: 'message',
   ERROR: 'error',
-  HISTORY: 'history',
 } as const;
+
+export const E_NOTIFICATION_TYPE = {
+  FORUM_MENTION: 'FORUM_MENTION',
+  KANBAN_COMMENT_MENTION: 'KANBAN_COMMENT_MENTION',
+  ROW_MEMBER_ASSIGNED: 'ROW_MEMBER_ASSIGNED',
+  GENERIC: 'GENERIC',
+} as const;
+
+export const E_NOTIFICATION_EVENT = {
+  CREATED: 'notification:created',
+  READ: 'notification:read',
+  READ_ALL: 'notification:read_all',
+} as const;
+
+export type INotificationAction = {
+  type: 'route' | 'url';
+  href: string;
+  label?: string | null;
+} | null;
+
+export type INotificationSource = {
+  pkg?: string | null;
+  tableSlug?: string | null;
+  rowId?: string | null;
+  anchorId?: string | null;
+} | null;
 
 export type IJWTPayload = {
   sub: string;
@@ -228,6 +253,22 @@ export type IUser = Merge<
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
     group: IGroup;
+    notificationsEnabled: boolean;
+  }
+>;
+
+export type INotification = Merge<
+  Base,
+  {
+    userId: string;
+    type: ValueOf<typeof E_NOTIFICATION_TYPE>;
+    title: string;
+    body: string | null;
+    action: INotificationAction;
+    source: INotificationSource;
+    actorUserId: string | null;
+    read: boolean;
+    readAt: Date | null;
   }
 >;
 
@@ -505,10 +546,6 @@ export type ISetting = {
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string | null;
   AI_ASSISTANT_ENABLED: boolean;
-  CHAT_HISTORY_ENABLED: boolean;
-  MCP_SERVER_URL: string | null;
-  MCP_SERVER_TOKEN: string | null;
-  OPENAI_MODEL: string;
   SETUP_COMPLETED: boolean;
   SETUP_CURRENT_STEP:
     | 'admin'

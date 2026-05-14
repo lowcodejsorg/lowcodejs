@@ -46,6 +46,9 @@ Features já no core (NÃO recriar):
 - **Filtros dinâmicos** (sistema de `IFilterField` em `components/common/filters/`)
 - **Páginas HTML** (tipo `PAGE` no menu)
 - **Dashboard** (`/dashboard` rota nativa)
+- **Notificações in-app + WebSocket** (`NotificationContractService` no backend,
+  sininho + `/notifications` no frontend — ver `references.md` § Notificações
+  antes de criar um sistema próprio)
 
 Se a feature pedida é parecida com algo do core, primeiro pergunte ao usuário
 se quer **estender** o core ou **substituir**. Substituir é raro — geralmente o

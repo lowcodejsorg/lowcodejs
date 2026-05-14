@@ -303,35 +303,9 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             )}
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium">Histórico do Chat</p>
-            {data.CHAT_HISTORY_ENABLED ? (
-              <Badge variant="default">Habilitado</Badge>
-            ) : (
-              <Badge variant="secondary">Desabilitado</Badge>
-            )}
-          </div>
-          <div className="space-y-1">
             <p className="text-sm font-medium">Chave da API OpenAI</p>
             <p className="text-sm text-muted-foreground font-mono">
               {data.OPENAI_API_KEY ? '••••••••' : '-'}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">URL do Servidor MCP</p>
-            <p className="text-sm text-muted-foreground font-mono">
-              {data.MCP_SERVER_URL || '-'}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Token MCP</p>
-            <p className="text-sm text-muted-foreground font-mono">
-              {data.MCP_SERVER_TOKEN ? '••••••••' : '-'}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-medium">Modelo OpenAI</p>
-            <p className="text-sm text-muted-foreground font-mono">
-              {data.OPENAI_MODEL || 'gpt-4o-mini'}
             </p>
           </div>
         </CardContent>
