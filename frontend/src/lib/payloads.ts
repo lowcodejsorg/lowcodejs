@@ -156,6 +156,15 @@ export type TableUpdatePayload = {
   };
 };
 
+export type SchemaImportPayload = {
+  yaml: string;
+};
+
+export type SchemaImportResponse = {
+  created: Array<{ name: string; slug: string; fieldCount: number }>;
+  errors: Array<{ name: string; message: string }>;
+};
+
 // ============== FIELD ==============
 export type FieldConfigurationPayload = {
   required?: boolean;
