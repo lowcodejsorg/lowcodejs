@@ -169,6 +169,11 @@ export function registerDependencies(): void {
   );
 
   injectablesHolder.injectService(
+    LoggerContractRepository,
+    LoggerMongooseRepository,
+  );
+
+  injectablesHolder.injectService(
     NotificationContractService,
     NotificationService,
   );
@@ -181,10 +186,5 @@ export function registerDependencies(): void {
   injectablesHolder.injectService(
     RowMemberNotificationContractService,
     RowMemberNotificationService,
-  );
-
-  injectablesHolder.injectService(
-    LoggerContractRepository,
-    LoggerMongooseRepository,
   );
 }

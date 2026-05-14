@@ -11,9 +11,12 @@ export const ExportTableValidator = z
     }),
     acknowledgeMissingRelationships: z.boolean().optional().default(false),
   })
-  .refine((value) => Boolean(value.slug) || (value.slugs && value.slugs.length > 0), {
-    message: 'Informe slug ou slugs',
-    path: ['slugs'],
-  });
+  .refine(
+    (value) => Boolean(value.slug) || (value.slugs && value.slugs.length > 0),
+    {
+      message: 'Informe slug ou slugs',
+      path: ['slugs'],
+    },
+  );
 
 export type ExportTablePayload = z.infer<typeof ExportTableValidator>;

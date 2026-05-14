@@ -1,9 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import {
-  AlertCircleIcon,
-  DownloadIcon,
-  LoaderCircleIcon,
-} from 'lucide-react';
+import { AlertCircleIcon, DownloadIcon, LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 
 import { TableMultiSelect } from '@/components/common/dynamic-table/table-selectors/table-multi-select';
@@ -25,8 +21,8 @@ import { toastSuccess } from '@/lib/toast';
 
 type ExportResponse = {
   header: { exportType: string; tablesCount: number; menusCount: number };
-  tables: unknown[];
-  menus: unknown[];
+  tables: Array<unknown>;
+  menus: Array<unknown>;
 };
 
 export function ExportTableSection(): React.JSX.Element {

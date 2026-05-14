@@ -13,7 +13,8 @@ export const ExportTableSchema: FastifySchema = {
       slug: {
         type: 'string',
         minLength: 1,
-        description: 'Single-table slug (legacy/compat). Use "slugs" for multi-table export.',
+        description:
+          'Single-table slug (legacy/compat). Use "slugs" for multi-table export.',
       },
       slugs: {
         type: 'array',

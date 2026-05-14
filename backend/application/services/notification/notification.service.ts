@@ -20,6 +20,7 @@ export default class NotificationService implements NotificationContractService 
   }
 
   async notify(payload: NotifyPayload): Promise<INotification[]> {
+    console.log('[NotificationService] notify chamado com payload:', payload);
     const recipients = Array.from(
       new Set(
         payload.userIds.filter(
