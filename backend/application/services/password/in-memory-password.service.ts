@@ -1,6 +1,6 @@
 import { PasswordContractService } from './password-contract.service';
 
-export default class InMemoryPasswordService extends PasswordContractService {
+export default class InMemoryPasswordService implements PasswordContractService {
   private _forcedErrors = new Map<string, Error>();
 
   simulateError(method: string, error: Error): void {

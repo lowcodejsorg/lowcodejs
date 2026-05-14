@@ -8,7 +8,7 @@ interface StoredJob extends EmailJobPayload {
   enqueuedAt: Date;
 }
 
-export default class InMemoryEmailQueueService extends EmailQueueContractService {
+export default class InMemoryEmailQueueService implements EmailQueueContractService {
   private jobs: StoredJob[] = [];
   private counter = 0;
   private _forcedErrors = new Map<string, Error>();

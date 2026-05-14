@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import {
@@ -13,12 +14,9 @@ import {
 } from './notification-contract.service';
 
 @Service()
-export default class NotificationService extends NotificationContractService {
-  constructor(
-    // eslint-disable-next-line no-unused-vars
-    private readonly repository: NotificationContractRepository,
-  ) {
-    super();
+export default class NotificationService implements NotificationContractService {
+  constructor(private readonly repository: NotificationContractRepository) {
+    console.log('[NotificationService] instanciado');
   }
 
   async notify(payload: NotifyPayload): Promise<INotification[]> {

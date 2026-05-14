@@ -9,7 +9,7 @@ import {
  * Implementação in-memory para testes unitários. Registra as chamadas em
  * `calls` (sem persistir nem emitir socket) e pode simular um erro.
  */
-export default class InMemoryNotificationService extends NotificationContractService {
+export default class InMemoryNotificationService implements NotificationContractService {
   public calls: NotifyPayload[] = [];
   private _forcedError: Error | null = null;
 

@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import {
@@ -6,8 +5,6 @@ import {
   E_NOTIFICATION_TYPE,
   E_TABLE_STYLE,
   type IField,
-  type IRow,
-  type ITable,
 } from '@application/core/entity.core';
 import { NotificationContractService } from '@application/services/notification/notification-contract.service';
 
@@ -48,11 +45,14 @@ function readString(value: unknown): string {
 }
 
 @Service()
-export default class RowMemberNotificationService extends RowMemberNotificationContractService {
+export default class RowMemberNotificationService implements RowMemberNotificationContractService {
   constructor(
     private readonly notificationService: NotificationContractService,
   ) {
-    super();
+    console.log(
+      '[RowMemberNotificationService] instanciado:',
+      notificationService,
+    );
   }
 
   async notifyNewMembers(params: NotifyRowMembersParams): Promise<void> {

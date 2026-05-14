@@ -6,7 +6,7 @@ import { PasswordContractService } from './password-contract.service';
 const SALT_ROUNDS = 10;
 
 @Service()
-export default class BcryptPasswordService extends PasswordContractService {
+export default class BcryptPasswordService implements PasswordContractService {
   async hash(password: string): Promise<string> {
     return bcrypt.hash(password, SALT_ROUNDS);
   }

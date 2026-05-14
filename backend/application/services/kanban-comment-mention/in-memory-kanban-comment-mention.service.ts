@@ -4,7 +4,7 @@ import {
   type NotifyMentionsResult,
 } from './kanban-comment-mention-contract.service';
 
-export default class InMemoryKanbanCommentMentionService extends KanbanCommentMentionContractService {
+export default class InMemoryKanbanCommentMentionService implements KanbanCommentMentionContractService {
   public calls: NotifyMentionsParams[] = [];
   private nextResult: NotifyMentionsResult = { changed: false };
   private _forcedError: Error | null = null;

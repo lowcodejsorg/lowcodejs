@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import {
@@ -90,13 +89,18 @@ function buildSnippet(rawText: string): string {
 }
 
 @Service()
-export default class KanbanCommentMentionService extends KanbanCommentMentionContractService {
+export default class KanbanCommentMentionService implements KanbanCommentMentionContractService {
   constructor(
     private readonly userRepository: UserContractRepository,
     private readonly emailService: EmailContractService,
     private readonly notificationService: NotificationContractService,
   ) {
-    super();
+    console.log(
+      '[KanbanCommentMentionService] instanciado:',
+      notificationService,
+      emailService,
+      userRepository,
+    );
   }
 
   async notifyNewMentions(

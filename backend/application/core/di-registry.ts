@@ -169,22 +169,22 @@ export function registerDependencies(): void {
   );
 
   injectablesHolder.injectService(
-    KanbanCommentMentionContractService,
-    KanbanCommentMentionService,
-  );
-
-  injectablesHolder.injectService(
-    LoggerContractRepository,
-    LoggerMongooseRepository,
-  );
-
-  injectablesHolder.injectService(
     NotificationContractService,
     NotificationService,
   );
 
   injectablesHolder.injectService(
+    KanbanCommentMentionContractService,
+    KanbanCommentMentionService,
+  );
+
+  injectablesHolder.injectService(
     RowMemberNotificationContractService,
     RowMemberNotificationService,
+  );
+
+  injectablesHolder.injectService(
+    LoggerContractRepository,
+    LoggerMongooseRepository,
   );
 }

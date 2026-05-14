@@ -7,7 +7,7 @@ import {
  * Implementação in-memory para testes unitários. Registra as chamadas em
  * `calls` (sem disparar notificações reais) e pode simular um erro.
  */
-export default class InMemoryRowMemberNotificationService extends RowMemberNotificationContractService {
+export default class InMemoryRowMemberNotificationService implements RowMemberNotificationContractService {
   public calls: NotifyRowMembersParams[] = [];
   private _forcedError: Error | null = null;
 

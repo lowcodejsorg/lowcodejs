@@ -27,7 +27,7 @@ function getQueue(): Queue {
 }
 
 @Service()
-export default class BullMQEmailQueueService extends EmailQueueContractService {
+export default class BullMQEmailQueueService implements EmailQueueContractService {
   async enqueue(payload: EmailJobPayload): Promise<string> {
     const queue = getQueue();
     const jobId = `${EMAIL_JOB.SEND}:${Date.now()}:${Math.random()

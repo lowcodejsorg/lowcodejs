@@ -54,7 +54,7 @@ function assertIRow(value: Record<string, unknown>): asserts value is IRow {
 }
 
 @Service()
-export default class RowMongooseRepository extends RowContractRepository {
+export default class RowMongooseRepository implements RowContractRepository {
   private async getModel(
     table: RowTableContext,
   ): ReturnType<typeof buildTable> {

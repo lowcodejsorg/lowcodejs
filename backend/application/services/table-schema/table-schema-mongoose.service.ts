@@ -12,7 +12,7 @@ import { getDataConnection } from '@config/database.config';
 import { TableSchemaContractService } from './table-schema-contract.service';
 
 @Service()
-export default class TableSchemaMongooseService extends TableSchemaContractService {
+export default class TableSchemaMongooseService implements TableSchemaContractService {
   computeSchema(
     fields: IField[],
     groups?: IGroupConfiguration[],

@@ -219,8 +219,6 @@ export async function LoggerUserActionHook(
       object_id,
     } satisfies LoggerCreatePayload;
 
-    console.log('[Logger Hook] Logging user action:', payload);
-
     await repo.create(payload);
   } catch (err) {
     // Nunca deixar o hook de log derrubar a requisição

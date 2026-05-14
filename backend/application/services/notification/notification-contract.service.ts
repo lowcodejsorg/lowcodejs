@@ -1,10 +1,10 @@
 /* eslint-disable no-unused-vars */
 import type {
+  E_NOTIFICATION_TYPE,
   INotification,
   INotificationAction,
   INotificationSource,
   ValueOf,
-  E_NOTIFICATION_TYPE,
 } from '@application/core/entity.core';
 
 export type NotifyPayload = {

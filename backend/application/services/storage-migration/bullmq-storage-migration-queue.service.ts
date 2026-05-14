@@ -28,7 +28,7 @@ function getQueue(): Queue {
 }
 
 @Service()
-export default class BullMQStorageMigrationQueueService extends StorageMigrationQueueContractService {
+export default class BullMQStorageMigrationQueueService implements StorageMigrationQueueContractService {
   async enqueueMigration(payload: MigrateJobPayload): Promise<string> {
     const queue = getQueue();
     const jobId = `${STORAGE_MIGRATION_JOB.MIGRATE}:${Date.now()}`;
