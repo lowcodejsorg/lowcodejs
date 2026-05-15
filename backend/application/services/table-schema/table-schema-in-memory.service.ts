@@ -8,7 +8,7 @@ import type {
 
 import { TableSchemaContractService } from './table-schema-contract.service';
 
-export default class TableSchemaInMemoryService extends TableSchemaContractService {
+export default class TableSchemaInMemoryService implements TableSchemaContractService {
   private _forcedErrors = new Map<string, Error>();
   syncModelCallCount = 0;
 

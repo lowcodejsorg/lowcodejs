@@ -584,6 +584,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/history'
     | '/menus'
+    | '/notifications'
     | '/profile'
     | '/settings'
     | '/tables'
@@ -607,6 +608,7 @@ export interface FileRouteTypes {
     | '/tables/clone'
     | '/tables/create'
     | '/tables/new'
+    | '/tables/schema-import'
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/management'
@@ -632,6 +634,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/history'
     | '/menus'
+    | '/notifications'
     | '/profile'
     | '/settings'
     | '/tables'
@@ -655,6 +658,7 @@ export interface FileRouteTypes {
     | '/tables/clone'
     | '/tables/create'
     | '/tables/new'
+    | '/tables/schema-import'
     | '/users/$userId'
     | '/users/create'
     | '/tables/$slug/field/management'
@@ -682,6 +686,7 @@ export interface FileRouteTypes {
     | '/_private/groups/'
     | '/_private/history/'
     | '/_private/menus/'
+    | '/_private/notifications/'
     | '/_private/profile/'
     | '/_private/settings/'
     | '/_private/tables/'
@@ -705,6 +710,7 @@ export interface FileRouteTypes {
     | '/_private/tables/clone/'
     | '/_private/tables/create/'
     | '/_private/tables/new/'
+    | '/_private/tables/schema-import/'
     | '/_private/users/$userId/'
     | '/_private/users/create/'
     | '/_private/tables/$slug/field/management'
@@ -1130,6 +1136,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateGroupsIndexRoute: PrivateGroupsIndexRoute,
   PrivateHistoryIndexRoute: PrivateHistoryIndexRoute,
   PrivateMenusIndexRoute: PrivateMenusIndexRoute,
+  PrivateNotificationsIndexRoute: PrivateNotificationsIndexRoute,
   PrivateProfileIndexRoute: PrivateProfileIndexRoute,
   PrivateSettingsIndexRoute: PrivateSettingsIndexRoute,
   PrivateTablesIndexRoute: PrivateTablesIndexRoute,
@@ -1144,6 +1151,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateTablesCloneIndexRoute: PrivateTablesCloneIndexRoute,
   PrivateTablesCreateIndexRoute: PrivateTablesCreateIndexRoute,
   PrivateTablesNewIndexRoute: PrivateTablesNewIndexRoute,
+  PrivateTablesSchemaImportIndexRoute: PrivateTablesSchemaImportIndexRoute,
   PrivateUsersUserIdIndexRoute: PrivateUsersUserIdIndexRoute,
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
   PrivateTablesSlugFieldManagementRoute: PrivateTablesSlugFieldManagementRoute,

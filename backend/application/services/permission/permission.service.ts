@@ -29,7 +29,7 @@ const OWNER_ONLY_ACTIONS = [
 ].map((p) => p.toString());
 
 @Service()
-export default class PermissionService extends PermissionContractService {
+export default class PermissionService implements PermissionContractService {
   async checkUserHasPermission(
     user: IUser | null,
     permission: ValueOf<typeof E_TABLE_PERMISSION>,

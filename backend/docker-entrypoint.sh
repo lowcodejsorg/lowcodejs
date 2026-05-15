@@ -24,7 +24,14 @@ else
   su-exec 1001:1001 node /app/database/migrations/migrate-backfill-storage-location.js
 fi
 
-echo "🧩 Verificando rename slot → slots em extensions..."
+echo "🔗 Verificando backfill de relacionamento criar registros..."
+if [ -f "/app/database/migrations/migrate-backfill-relationship-create-records.ts" ]; then
+  su-exec 1001:1001 node --import @swc-node/register/esm-register /app/database/migrations/migrate-backfill-relationship-create-records.ts
+else
+  su-exec 1001:1001 node /app/database/migrations/migrate-backfill-relationship-create-records.js
+fi
+
+echo "🧩 Verificando rename slot → slots em extensões..."
 if [ -f "/app/database/migrations/migrate-extension-slots.ts" ]; then
   su-exec 1001:1001 npm run migrate:extension-slots
 else

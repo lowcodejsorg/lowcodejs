@@ -21,7 +21,7 @@ import type {
 import { StorageContractService } from './storage-contract.service';
 
 @Service()
-export default class S3StorageService extends StorageContractService {
+export default class S3StorageService implements StorageContractService {
   private get bucket(): string {
     return process.env.STORAGE_BUCKET!;
   }

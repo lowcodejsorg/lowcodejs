@@ -15,7 +15,7 @@ import type {
 import { StorageContractService } from './storage-contract.service';
 
 @Service()
-export default class LocalStorageService extends StorageContractService {
+export default class LocalStorageService implements StorageContractService {
   async ensureBucket(): Promise<void> {
     const storagePath = getLocalStoragePath();
     if (!existsSync(storagePath)) {

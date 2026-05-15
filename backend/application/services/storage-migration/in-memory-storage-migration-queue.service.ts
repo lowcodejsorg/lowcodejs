@@ -9,7 +9,7 @@ type Enqueued =
   | { type: 'migrate'; id: string; payload: MigrateJobPayload }
   | { type: 'cleanup'; id: string; payload: CleanupJobPayload };
 
-export default class InMemoryStorageMigrationQueueService extends StorageMigrationQueueContractService {
+export default class InMemoryStorageMigrationQueueService implements StorageMigrationQueueContractService {
   jobs: Enqueued[] = [];
   private active: ActiveJobInfo | null = null;
 

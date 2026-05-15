@@ -7,7 +7,7 @@ import type { ScriptExecutionInput } from './script-execution-contract.service';
 import { ScriptExecutionContractService } from './script-execution-contract.service';
 
 @Service()
-export default class NodeVmScriptExecutionService extends ScriptExecutionContractService {
+export default class NodeVmScriptExecutionService implements ScriptExecutionContractService {
   async execute(input: ScriptExecutionInput): Promise<ExecutionResult> {
     return executeScript(input);
   }

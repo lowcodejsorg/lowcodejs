@@ -5,7 +5,7 @@ exibindo **dados reais** calculados a partir das tabelas e usuários do sistema.
 
 ## Acesso UI
 
-`/e/apps/dashboard` (URL canônica) — apenas role MASTER. A rota antiga
+`/e/apps/dashboard` (URL canônica) — roles MASTER ou ADMINISTRATOR. A rota antiga
 `/dashboard` continua existindo paralelamente até decisão do gerente.
 
 ## Endpoint próprio
@@ -16,7 +16,7 @@ exibindo **dados reais** calculados a partir das tabelas e usuários do sistema.
 
 Middlewares:
 1. `AuthenticationMiddleware({ optional: false })`
-2. `RoleMiddleware([E_ROLE.MASTER])`
+2. `RoleMiddleware([E_ROLE.MASTER, E_ROLE.ADMINISTRATOR])`
 3. `ExtensionActiveMiddleware({ pkg: 'apps', type: MODULE, extensionId: 'dashboard' })`
 
 ## Dados retornados
@@ -43,6 +43,6 @@ Middlewares:
 | Code | Cause | Quando |
 |------|-------|--------|
 | 401 | UNAUTHORIZED | Sem auth |
-| 403 | FORBIDDEN | Não-MASTER |
+| 403 | FORBIDDEN | Role diferente de MASTER ou ADMINISTRATOR |
 | 404 | EXTENSION_NOT_ACTIVE | Extensão desativada |
 | 500 | DASHBOARD_STATS_ERROR | Erro interno na agregação |

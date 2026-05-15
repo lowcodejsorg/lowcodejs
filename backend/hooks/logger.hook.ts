@@ -186,20 +186,32 @@ export async function LoggerUserActionHook(
     const routePattern = request.routeOptions?.url ?? request.url;
 
     const method = request.method.toUpperCase();
-    const isRelevantMethod = ['POST', 'PUT', 'PATCH'].includes(method);
+    const hasBodyMethod = ['POST', 'PUT', 'PATCH'].includes(method);
     const isJson =
       request.headers['content-type']?.includes('application/json');
 
-    let content: Record<string, unknown> | null = null;
+    let body: Record<string, unknown> | null = null;
 
-    if (isRelevantMethod) {
+    if (hasBodyMethod) {
       if (isJson) {
         const parsed = bodySchema.safeParse(request.body);
-        if (parsed.success) content = parsed.data;
+        if (parsed.success) body = parsed.data;
       } else {
-        content = { raw: '[Non-JSON payload]' };
+        body = { raw: '[Non-JSON payload]' };
       }
     }
+
+    const query = request.query as Record<string, unknown> | undefined;
+    const routeParams = request.params as Record<string, unknown> | undefined;
+    const hasQuery = !!query && Object.keys(query).length > 0;
+    const hasParams = !!routeParams && Object.keys(routeParams).length > 0;
+
+    const contentParts: Record<string, unknown> = {};
+    if (body) contentParts.body = body;
+    if (hasQuery) contentParts.query = query;
+    if (hasParams) contentParts.params = routeParams;
+    const content =
+      Object.keys(contentParts).length > 0 ? contentParts : null;
 
     const action = resolveAction(method);
     const object = resolveObject(routePattern);
@@ -210,6 +222,16 @@ export async function LoggerUserActionHook(
     // Não loga rotas que não mapeiam para nenhum objeto conhecido
     if (!object) return;
 
+    // Não loga requests sem usuário autenticado (SSR, endpoints públicos,
+    // healthchecks). Sem identidade o log vira ruído ("Anônimo") e polui o histórico.
+    if (!user_id) return;
+
+    // Não loga GETs (Visualização). Carregar uma página dispara várias requests
+    // em paralelo (menus, extensões, settings, tabelas...) e cada uma viraria um
+    // log separado. O histórico deve refletir AÇÕES do usuário — criar, editar,
+    // deletar — não cada chamada HTTP de leitura.
+    if (action === E_LOGGER_ACTION_TYPE.VIEW) return;
+
     const payload = {
       action,
       url: request.url,
@@ -218,8 +240,6 @@ export async function LoggerUserActionHook(
       object,
       object_id,
     } satisfies LoggerCreatePayload;
-
-    console.log('[Logger Hook] Logging user action:', payload);
 
     await repo.create(payload);
   } catch (err) {

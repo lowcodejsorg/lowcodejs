@@ -3,20 +3,24 @@ import type { FastifySchema } from 'fastify';
 export const ExportTableSchema: FastifySchema = {
   tags: ['Tools'],
   summary: 'Export table',
-  description: 'Exports a table structure and/or data as JSON',
+  description:
+    'Exports one or more table structures and/or data as JSON (multi-table format v2)',
   security: [{ cookieAuth: [] }],
   body: {
     type: 'object',
-    required: ['slug', 'exportType'],
+    required: ['exportType'],
     properties: {
       slug: {
         type: 'string',
         minLength: 1,
-        description: 'Slug of the table to export',
-        errorMessage: {
-          type: 'O slug da tabela deve ser um texto',
-          minLength: 'O slug da tabela e obrigatorio',
-        },
+        description:
+          'Single-table slug (legacy/compat). Use "slugs" for multi-table export.',
+      },
+      slugs: {
+        type: 'array',
+        items: { type: 'string', minLength: 1 },
+        minItems: 1,
+        description: 'Slugs of the tables to export. Preferred over "slug".',
       },
       exportType: {
         type: 'string',
@@ -27,11 +31,15 @@ export const ExportTableSchema: FastifySchema = {
           enum: 'Tipo de exportacao deve ser: structure, data ou full',
         },
       },
+      acknowledgeMissingRelationships: {
+        type: 'boolean',
+        description:
+          'When true, allows export to proceed even when relationship fields point to tables outside the selection (those values will be dropped on import).',
+      },
     },
     additionalProperties: false,
     errorMessage: {
       required: {
-        slug: 'O slug da tabela e obrigatorio',
         exportType: 'O tipo de exportacao e obrigatorio',
       },
       additionalProperties: 'Campos extras nao sao permitidos',

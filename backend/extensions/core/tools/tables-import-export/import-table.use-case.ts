@@ -5,14 +5,17 @@ import slugify from 'slugify';
 import { left, right } from '@application/core/either.core';
 import {
   E_FIELD_TYPE,
+  E_MENU_ITEM_TYPE,
   FIELD_GROUP_NATIVE_LIST,
   FIELD_NATIVE_LIST,
   type IField,
   type IGroupConfiguration,
   type ILayoutFields,
+  type ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
+import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import {
   TableContractRepository,
@@ -21,6 +24,7 @@ import {
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
 
 import type {
+  ImportedTableSummary,
   ImportTableResponse,
   ImportTableUseCasePayload,
 } from './import-table.types';
@@ -51,12 +55,67 @@ type ExportedField = {
   group: { slug: string } | null;
 };
 
+type ExportedGroup = {
+  slug: string;
+  name: string;
+  fields: ExportedField[];
+};
+
+type ExportedStructure = {
+  name: string;
+  slug: string;
+  description: string | null;
+  style: string;
+  visibility: string;
+  collaboration: string;
+  fields: ExportedField[];
+  groups: ExportedGroup[];
+  fieldOrderList: string[];
+  fieldOrderForm: string[];
+  fieldOrderFilter: string[];
+  fieldOrderDetail: string[];
+  layoutFields: Record<string, string | null>;
+  methods?: {
+    onLoad: { code: string | null };
+    beforeSave: { code: string | null };
+    afterSave: { code: string | null };
+  };
+};
+
+type ExportedTable = {
+  structure?: ExportedStructure;
+  data?: {
+    totalRows: number;
+    rows: Array<Record<string, unknown> & { _originalId?: string }>;
+  };
+};
+
+type ExportedMenu = {
+  _originalId: string;
+  name: string;
+  slug: string;
+  type: string;
+  parent: string | null;
+  url: string | null;
+  html: string | null;
+  order: number;
+  isInitial: boolean;
+  tableSlug: string | null;
+  extension: { pkg: string; extensionId: string } | null;
+};
+
+type NormalizedPackage = {
+  tables: ExportedTable[];
+  menus: ExportedMenu[];
+};
+
 @Service()
 export default class ImportTableUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly menuRepository: MenuContractRepository,
     private readonly tableSchemaService: TableSchemaContractService,
   ) {}
 
@@ -73,11 +132,8 @@ export default class ImportTableUseCase {
         );
       }
 
-      const { fileContent, name } = payload;
-      const content = fileContent as any;
-      const header = content.header;
-      const structure = content.structure;
-      const data = content.data;
+      const content = payload.fileContent as Record<string, unknown>;
+      const header = content.header as Record<string, unknown> | undefined;
 
       if (!header || header.platform !== 'lowcodejs') {
         return left(
@@ -88,220 +144,167 @@ export default class ImportTableUseCase {
         );
       }
 
-      const newSlug = slugify(name, {
-        lower: true,
-        strict: true,
-        trim: true,
-      });
-
-      // Check slug uniqueness
-      const existingTable = await this.tableRepository.findBySlug(newSlug);
-
-      if (existingTable) {
+      const pkg = this.normalizePackage(content);
+      if (pkg.tables.length === 0 || !pkg.tables[0].structure) {
         return left(
           HTTPException.BadRequest(
-            'Já existe uma tabela com este nome/slug',
-            'TABLE_SLUG_ALREADY_EXISTS',
+            'Importação requer ao menos uma tabela com estrutura',
+            'STRUCTURE_REQUIRED',
           ),
         );
       }
 
-      // 1. Create native fields
-      const nativeFields =
-        await this.fieldRepository.createMany(FIELD_NATIVE_LIST);
-      const nativeFieldIds = nativeFields.map((f) => f._id);
+      const renames = this.computeRenames(payload, pkg);
+      const menuRenames = this.computeMenuRenames(payload, pkg);
 
-      let importedFieldCount = 0;
-      let importedRowCount = 0;
-      const allCreatedFields: IField[] = [...nativeFields];
-      const createdFieldIds: string[] = [...nativeFieldIds];
-      const slugToFieldId = new Map<string, string>();
+      const conflict = await this.detectConflicts(pkg, renames, menuRenames);
+      if (conflict) return left(conflict);
 
-      // Map native fields
-      for (const nf of nativeFields) {
-        slugToFieldId.set(nf.slug, nf._id);
-      }
-
-      if (structure) {
-        // 2. Create top-level fields (non-group fields)
-        for (const exportedField of structure.fields) {
-          const createdField = await this.createField(exportedField);
-          createdFieldIds.push(createdField._id);
-          allCreatedFields.push(createdField);
-          slugToFieldId.set(createdField.slug, createdField._id);
-          importedFieldCount++;
+      const tableSlugToInfo = new Map<
+        string,
+        {
+          originalSlug: string;
+          newSlug: string;
+          newName: string;
+          tableId?: string;
+          fieldSlugToId?: Map<string, string>;
+          fieldsIds?: string[];
+          allFields?: IField[];
+          groups?: IGroupConfiguration[];
+          structure: ExportedStructure;
         }
+      >();
 
-        // 3. Create groups and their fields
-        const groups: IGroupConfiguration[] = [];
-
-        for (const exportedGroup of structure.groups || []) {
-          const groupFields: IField[] = [];
-
-          // Create the FIELD_GROUP field itself
-          const fieldGroupField = await this.fieldRepository.create({
-            name: exportedGroup.name,
-            slug: exportedGroup.slug,
-            type: E_FIELD_TYPE.FIELD_GROUP,
-            required: false,
-            multiple: false,
-            format: null,
-            showInList: true,
-            showInForm: true,
-            showInDetail: true,
-            showInFilter: false,
-            widthInForm: null,
-            widthInList: null,
-            widthInDetail: null,
-            defaultValue: null,
-            relationship: null,
-            dropdown: [],
-            category: [],
-            group: { slug: exportedGroup.slug },
-          });
-
-          createdFieldIds.push(fieldGroupField._id);
-          allCreatedFields.push(fieldGroupField);
-          slugToFieldId.set(fieldGroupField.slug, fieldGroupField._id);
-          importedFieldCount++;
-
-          // Create group native fields
-          const groupNativeList = FIELD_GROUP_NATIVE_LIST.map((f) => ({
-            ...f,
-            group: { slug: exportedGroup.slug },
-          }));
-
-          const groupNativeFields =
-            await this.fieldRepository.createMany(groupNativeList);
-
-          for (const gnf of groupNativeFields) {
-            groupFields.push(gnf);
-          }
-
-          // Create group sub-fields
-          for (const exportedSubField of exportedGroup.fields) {
-            const createdSubField = await this.createField({
-              ...exportedSubField,
-              group: { slug: exportedGroup.slug },
-            });
-            groupFields.push(createdSubField);
-            importedFieldCount++;
-          }
-
-          const groupSchema =
-            this.tableSchemaService.computeSchema(groupFields);
-
-          groups.push({
-            slug: exportedGroup.slug,
-            name: exportedGroup.name,
-            fields: groupFields,
-            _schema: groupSchema,
-          });
-        }
-
-        // 4. Resolve layout fields (slug -> new field id)
-        const layoutFields: Partial<ILayoutFields> = {};
-        if (structure.layoutFields) {
-          for (const [key, slugValue] of Object.entries(
-            structure.layoutFields as Record<string, string | null>,
-          )) {
-            if (slugValue && slugToFieldId.has(slugValue)) {
-              layoutFields[key as keyof ILayoutFields] =
-                slugToFieldId.get(slugValue) || null;
-            } else {
-              layoutFields[key as keyof ILayoutFields] = null;
-            }
-          }
-        }
-
-        // 5. Resolve field order (slug -> new field id)
-        const fieldOrderList = (structure.fieldOrderList || [])
-          .map((slug: string) => slugToFieldId.get(slug))
-          .filter(Boolean) as string[];
-
-        const fieldOrderForm = (structure.fieldOrderForm || [])
-          .map((slug: string) => slugToFieldId.get(slug))
-          .filter(Boolean) as string[];
-
-        const fieldOrderFilter = (structure.fieldOrderFilter || [])
-          .map((slug: string) => slugToFieldId.get(slug))
-          .filter(Boolean) as string[];
-
-        const fieldOrderDetail = (structure.fieldOrderDetail || [])
-          .map((slug: string) => slugToFieldId.get(slug))
-          .filter(Boolean) as string[];
-
-        // 6. Build schema and create table
-        const _schema = this.tableSchemaService.computeSchema(
-          allCreatedFields,
-          groups,
-        );
-
-        const createPayload: TableCreatePayload = {
-          _schema,
-          name,
-          slug: newSlug,
-          description: structure.description ?? null,
-          type: 'TABLE',
-          logo: null,
-          fields: createdFieldIds,
-          style: structure.style as any,
-          visibility: structure.visibility as any,
-          collaboration: structure.collaboration as any,
-          administrators: [],
-          owner: payload.ownerId,
-          fieldOrderList,
-          fieldOrderForm,
-          fieldOrderFilter,
-          fieldOrderDetail,
-          methods: structure.methods || {
-            onLoad: { code: null },
-            beforeSave: { code: null },
-            afterSave: { code: null },
-          },
-          groups,
-          layoutFields: layoutFields as ILayoutFields,
-        };
-
-        const newTable = await this.tableRepository.create(createPayload);
-
-        // 7. Import data if available
-        if (data && data.rows && data.rows.length > 0 && newTable) {
-          const fullTable = await this.tableRepository.findById(newTable._id);
-
-          if (fullTable) {
-            for (const row of data.rows) {
-              try {
-                await this.rowRepository.insertRaw(
-                  fullTable,
-                  row,
-                  payload.ownerId,
-                );
-                importedRowCount++;
-              } catch (rowError) {
-                console.error('[tools > import-table][error]:', rowError);
-                // Continue importing other rows
-              }
-            }
-          }
-        }
-
-        return right({
-          tableId: newTable._id,
-          slug: newTable.slug,
-          importedFields: importedFieldCount,
-          importedRows: importedRowCount,
+      for (const t of pkg.tables) {
+        if (!t.structure) continue;
+        const originalSlug = t.structure.slug;
+        const rename = renames.get(originalSlug);
+        tableSlugToInfo.set(originalSlug, {
+          originalSlug,
+          newSlug: rename ? rename.slug : originalSlug,
+          newName: rename ? rename.name : t.structure.name,
+          structure: t.structure,
         });
       }
 
-      // Data-only import (no structure) - needs an existing table slug in header
-      // This is not supported in the current version
-      return left(
-        HTTPException.BadRequest(
-          'Importação somente de dados requer a estrutura da tabela no arquivo',
-          'STRUCTURE_REQUIRED',
-        ),
+      // Phase A: create tables (relationship pointing to packages → resolved later)
+      for (const info of tableSlugToInfo.values()) {
+        const built = await this.createTableSkeleton({
+          structure: info.structure,
+          newName: info.newName,
+          newSlug: info.newSlug,
+          ownerId: payload.ownerId,
+          packageSlugs: new Set(tableSlugToInfo.keys()),
+        });
+        info.tableId = built.tableId;
+        info.fieldSlugToId = built.fieldSlugToId;
+        info.fieldsIds = built.fieldsIds;
+        info.allFields = built.allFields;
+        info.groups = built.groups;
+      }
+
+      // Phase B: resolve relationships within the package (rewrite to new ids/slugs)
+      for (const info of tableSlugToInfo.values()) {
+        await this.resolvePackageRelationships(info, tableSlugToInfo);
+      }
+
+      // Phase C: insert rows (without relationship fields) + collect id map.
+      // O rowIdMap é chaveado pelo NOVO slug porque, após a Fase B, os campos
+      // RELATIONSHIP já apontam para o slug renomeado da tabela alvo — é assim
+      // que `remapRelationshipValue` (Fase D) consulta o mapa.
+      const rowIdMap = new Map<string, Map<string, string>>(); // newSlug → originalRowId → newRowId
+      const fullTables = new Map<string, ITable>();
+      let importedRowCount = 0;
+
+      for (const info of tableSlugToInfo.values()) {
+        const full = await this.tableRepository.findById(info.tableId!);
+        if (!full) continue;
+        // Usa os fields/groups já resolvidos na Fase B em vez de depender do
+        // populate do repositório — garante que strip/backfill enxerguem o
+        // `type`/`relationship` corretos de cada campo.
+        if (info.allFields) full.fields = info.allFields;
+        if (info.groups) full.groups = info.groups;
+        fullTables.set(info.originalSlug, full);
+        const entry = pkg.tables.find(
+          (t) => t.structure?.slug === info.originalSlug,
+        );
+        if (!entry?.data?.rows?.length) {
+          rowIdMap.set(info.newSlug, new Map());
+          continue;
+        }
+        const map = new Map<string, string>();
+        for (const row of entry.data.rows) {
+          const stripped = this.stripRelationshipFields(row, full);
+          // Preserva o criador original da row (campo nativo CREATOR);
+          // cai para o usuário que está importando quando ausente.
+          const rowCreator = row._originalCreator
+            ? String(row._originalCreator)
+            : payload.ownerId;
+          try {
+            const inserted = await this.rowRepository.insertRaw(
+              full,
+              stripped,
+              rowCreator,
+            );
+            importedRowCount++;
+            const originalRowId = row._originalId
+              ? String(row._originalId)
+              : null;
+            if (originalRowId) map.set(originalRowId, inserted._id);
+          } catch (rowError) {
+            console.error('[tools > import-table][row-insert]:', rowError);
+          }
+        }
+        rowIdMap.set(info.newSlug, map);
+      }
+
+      // Phase D: backfill relationships using the row id map
+      for (const info of tableSlugToInfo.values()) {
+        const full = fullTables.get(info.originalSlug);
+        if (!full) continue;
+        const entry = pkg.tables.find(
+          (t) => t.structure?.slug === info.originalSlug,
+        );
+        if (!entry?.data?.rows?.length) continue;
+        await this.backfillRelationships({
+          table: full,
+          rows: entry.data.rows,
+          rowIdMap,
+          ownerSlug: info.newSlug,
+        });
+      }
+
+      // Phase E: recreate menus
+      const importedMenus = await this.importMenus({
+        menus: pkg.menus,
+        tableSlugToInfo,
+        ownerId: payload.ownerId,
+        menuRenames,
+      });
+
+      const summaries: ImportedTableSummary[] = Array.from(
+        tableSlugToInfo.values(),
+      ).map((info) => ({
+        tableId: info.tableId!,
+        slug: info.newSlug,
+        name: info.newName,
+      }));
+
+      const first = summaries[0];
+      const importedFields = Array.from(tableSlugToInfo.values()).reduce(
+        (acc, info) =>
+          acc + (info.allFields?.filter((f) => !f.native).length || 0),
+        0,
       );
+
+      return right({
+        tableId: first.tableId,
+        slug: first.slug,
+        importedFields,
+        importedRows: importedRowCount,
+        tables: summaries,
+        importedMenus,
+      });
     } catch (error) {
       console.error('[tools > import-table][error]:', error);
       return left(
@@ -313,49 +316,765 @@ export default class ImportTableUseCase {
     }
   }
 
-  private async createField(exportedField: ExportedField): Promise<IField> {
-    // For RELATIONSHIP fields, try to resolve the table reference
-    let relationship = null;
-    if (exportedField.relationship) {
-      const relatedTable = await this.tableRepository.findBySlug(
-        exportedField.relationship.tableSlug,
-      );
+  // ── Normalization ──────────────────────────────────────────
 
+  private normalizePackage(
+    content: Record<string, unknown>,
+  ): NormalizedPackage {
+    if (Array.isArray(content.tables)) {
+      return {
+        tables: content.tables as ExportedTable[],
+        menus: Array.isArray(content.menus)
+          ? (content.menus as ExportedMenu[])
+          : [],
+      };
+    }
+    const legacyStructure = content.structure as ExportedStructure | undefined;
+    const legacyData = content.data as ExportedTable['data'];
+    if (legacyStructure) {
+      return {
+        tables: [{ structure: legacyStructure, data: legacyData }],
+        menus: [],
+      };
+    }
+    return { tables: [], menus: [] };
+  }
+
+  /**
+   * Monta o mapa de renomeações `originalSlug → { name, slug }`. Aceita a API
+   * nova (`payload.tables`, renomeação por tabela) e o campo legado
+   * (`payload.name`, renomeia a primeira/única tabela do pacote). O slug é
+   * sempre derivado do nome — o relacionamento entre tabelas é preservado
+   * porque o resto do fluxo continua chaveado pelo `originalSlug`.
+   */
+  private computeRenames(
+    payload: ImportTableUseCasePayload,
+    pkg: NormalizedPackage,
+  ): Map<string, { name: string; slug: string }> {
+    const renames = new Map<string, { name: string; slug: string }>();
+
+    const buildRename = (
+      rawName: string,
+    ): { name: string; slug: string } | null => {
+      const name = rawName.trim();
+      if (!name) return null;
+      const slug = slugify(name, { lower: true, strict: true, trim: true });
+      if (!slug) return null;
+      return { name, slug };
+    };
+
+    // API nova: renomeação explícita por slug original.
+    if (payload.tables && payload.tables.length > 0) {
+      const knownSlugs = new Set(
+        pkg.tables
+          .map((t) => t.structure?.slug)
+          .filter((s): s is string => Boolean(s)),
+      );
+      for (const entry of payload.tables) {
+        if (!knownSlugs.has(entry.slug)) continue;
+        const rename = buildRename(entry.name);
+        if (rename) renames.set(entry.slug, rename);
+      }
+      return renames;
+    }
+
+    // Legado: `name` renomeia a primeira/única tabela do pacote.
+    if (payload.name && pkg.tables.length === 1 && pkg.tables[0].structure) {
+      const rename = buildRename(payload.name);
+      if (rename) renames.set(pkg.tables[0].structure.slug, rename);
+    }
+
+    return renames;
+  }
+
+  /**
+   * Monta o mapa de renomeações de menus (`slug` original → `{ name, slug }`).
+   * Só vale para itens de menu em conflito — menus-pai existentes são
+   * reaproveitados (ver `getMenuParentOriginalIds` / `importMenus`).
+   */
+  private computeMenuRenames(
+    payload: ImportTableUseCasePayload,
+    pkg: NormalizedPackage,
+  ): Map<string, { name: string; slug: string }> {
+    const renames = new Map<string, { name: string; slug: string }>();
+    if (!payload.menus || payload.menus.length === 0) return renames;
+
+    const knownSlugs = new Set(pkg.menus.map((m) => m.slug));
+    for (const entry of payload.menus) {
+      if (!knownSlugs.has(entry.slug)) continue;
+      const name = entry.name.trim();
+      if (!name) continue;
+      const slug = slugify(name, { lower: true, strict: true, trim: true });
+      if (!slug) continue;
+      renames.set(entry.slug, { name, slug });
+    }
+    return renames;
+  }
+
+  /**
+   * `_originalId` dos menus que são **pai** de algum outro menu do pacote.
+   * Esses menus são reaproveitados quando já existem no DB — só os itens
+   * "folha" (não-pais) podem entrar em conflito e ser renomeados.
+   */
+  private getMenuParentOriginalIds(menus: ExportedMenu[]): Set<string> {
+    return new Set(
+      menus.map((m) => m.parent).filter((p): p is string => Boolean(p)),
+    );
+  }
+
+  // ── Conflict detection ─────────────────────────────────────
+
+  /**
+   * Detecta conflitos contra o DB **e** entre as próprias renomeações do
+   * pacote. As listas de erro carregam sempre o `originalSlug` da tabela —
+   * assim o frontend consegue destacar a tabela certa no formulário,
+   * independentemente do slug final escolhido.
+   */
+  private async detectConflicts(
+    pkg: NormalizedPackage,
+    renames: Map<string, { name: string; slug: string }>,
+    menuRenames: Map<string, { name: string; slug: string }>,
+  ): Promise<HTTPException | null> {
+    const conflictingTables: string[] = []; // originalSlugs
+    const duplicateTables: string[] = []; // originalSlugs colidindo dentro do pacote
+    const seenSlugs = new Map<string, string>(); // newSlug → originalSlug
+
+    for (const t of pkg.tables) {
+      if (!t.structure) continue;
+      const originalSlug = t.structure.slug;
+      const newSlug = renames.get(originalSlug)?.slug ?? originalSlug;
+
+      if (seenSlugs.has(newSlug)) {
+        duplicateTables.push(originalSlug);
+      } else {
+        seenSlugs.set(newSlug, originalSlug);
+      }
+
+      const existing = await this.tableRepository.findBySlug(newSlug, {
+        trashed: false,
+      });
+      if (existing) conflictingTables.push(originalSlug);
+    }
+
+    // Duas tabelas do pacote acabariam com o mesmo slug — bloqueia antes do DB.
+    if (duplicateTables.length > 0) {
+      return HTTPException.BadRequest(
+        'Há tabelas com nomes que geram o mesmo slug. Use nomes distintos.',
+        'DUPLICATE_TABLE_SLUGS',
+        { tables: duplicateTables.join(',') },
+      );
+    }
+
+    // Menus: itens "pai" são reaproveitados quando já existem — nunca
+    // conflitam. Só os itens folha (não referenciados como pai) podem
+    // conflitar e ser renomeados. `errors.menus` carrega o slug original.
+    const parentOriginalIds = this.getMenuParentOriginalIds(pkg.menus);
+    const conflictingMenus: string[] = []; // slugs originais
+    const duplicateMenus: string[] = []; // slugs originais colidindo no pacote
+    const seenMenuSlugs = new Set<string>();
+
+    for (const m of pkg.menus) {
+      if (parentOriginalIds.has(m._originalId)) continue; // pai → reaproveitado
+      const effectiveSlug = menuRenames.get(m.slug)?.slug ?? m.slug;
+
+      if (seenMenuSlugs.has(effectiveSlug)) {
+        duplicateMenus.push(m.slug);
+      } else {
+        seenMenuSlugs.add(effectiveSlug);
+      }
+
+      const existing = await this.menuRepository.findBySlug(effectiveSlug, {
+        trashed: false,
+      });
+      if (existing) conflictingMenus.push(m.slug);
+    }
+
+    if (duplicateMenus.length > 0) {
+      return HTTPException.BadRequest(
+        'Há itens de menu com nomes que geram o mesmo slug. Use nomes distintos.',
+        'DUPLICATE_MENU_SLUGS',
+        { menus: duplicateMenus.join(',') },
+      );
+    }
+
+    if (conflictingTables.length === 0 && conflictingMenus.length === 0) {
+      return null;
+    }
+
+    if (conflictingTables.length > 0 && conflictingMenus.length === 0) {
+      // Mantém código legado para o caso single-table
+      return HTTPException.BadRequest(
+        'Já existe(m) tabela(s) com este(s) slug(s). Renomeie a(s) tabela(s) e tente novamente.',
+        'TABLE_SLUG_ALREADY_EXISTS',
+        { tables: conflictingTables.join(',') },
+      );
+    }
+
+    return HTTPException.BadRequest(
+      'Conflitos de slug impedem a importação',
+      'IMPORT_CONFLICTS',
+      {
+        tables: conflictingTables.join(','),
+        menus: conflictingMenus.join(','),
+      },
+    );
+  }
+
+  // ── Phase A: skeleton creation ─────────────────────────────
+
+  private async createTableSkeleton(args: {
+    structure: ExportedStructure;
+    newName: string;
+    newSlug: string;
+    ownerId: string;
+    packageSlugs: Set<string>;
+  }): Promise<{
+    tableId: string;
+    fieldSlugToId: Map<string, string>;
+    fieldsIds: string[];
+    allFields: IField[];
+    groups: IGroupConfiguration[];
+  }> {
+    const { structure, newName, newSlug, ownerId, packageSlugs } = args;
+
+    const nativeFields =
+      await this.fieldRepository.createMany(FIELD_NATIVE_LIST);
+    const allFields: IField[] = [...nativeFields];
+    const fieldsIds: string[] = nativeFields.map((f) => f._id);
+    const fieldSlugToId = new Map<string, string>();
+    for (const nf of nativeFields) fieldSlugToId.set(nf.slug, nf._id);
+
+    for (const exported of structure.fields) {
+      const field = await this.createField(exported, packageSlugs);
+      allFields.push(field);
+      fieldsIds.push(field._id);
+      fieldSlugToId.set(field.slug, field._id);
+    }
+
+    const groups: IGroupConfiguration[] = [];
+    for (const group of structure.groups || []) {
+      const groupFields: IField[] = [];
+
+      const fieldGroupField = await this.fieldRepository.create({
+        name: group.name,
+        slug: group.slug,
+        type: E_FIELD_TYPE.FIELD_GROUP,
+        required: false,
+        multiple: false,
+        format: null,
+        showInList: true,
+        showInForm: true,
+        showInDetail: true,
+        showInFilter: false,
+        widthInForm: null,
+        widthInList: null,
+        widthInDetail: null,
+        defaultValue: null,
+        relationship: null,
+        dropdown: [],
+        category: [],
+        group: { slug: group.slug },
+      });
+      allFields.push(fieldGroupField);
+      fieldsIds.push(fieldGroupField._id);
+      fieldSlugToId.set(fieldGroupField.slug, fieldGroupField._id);
+
+      const groupNativeList = FIELD_GROUP_NATIVE_LIST.map((f) => ({
+        ...f,
+        group: { slug: group.slug },
+      }));
+      const groupNativeFields =
+        await this.fieldRepository.createMany(groupNativeList);
+      for (const gnf of groupNativeFields) groupFields.push(gnf);
+
+      for (const exported of group.fields) {
+        const sub = await this.createField(
+          { ...exported, group: { slug: group.slug } },
+          packageSlugs,
+        );
+        groupFields.push(sub);
+      }
+
+      const groupSchema = this.tableSchemaService.computeSchema(groupFields);
+
+      groups.push({
+        slug: group.slug,
+        name: group.name,
+        fields: groupFields,
+        _schema: groupSchema,
+      });
+    }
+
+    const layoutFields: Partial<ILayoutFields> = {};
+    for (const [key, slugValue] of Object.entries(
+      structure.layoutFields || {},
+    )) {
+      if (slugValue && fieldSlugToId.has(slugValue)) {
+        layoutFields[key as keyof ILayoutFields] =
+          fieldSlugToId.get(slugValue) || null;
+      } else {
+        layoutFields[key as keyof ILayoutFields] = null;
+      }
+    }
+
+    const resolveOrder = (slugs: string[]): string[] =>
+      (slugs || [])
+        .map((s) => fieldSlugToId.get(s))
+        .filter((id): id is string => Boolean(id));
+
+    const _schema = this.tableSchemaService.computeSchema(allFields, groups);
+
+    const createPayload: TableCreatePayload = {
+      _schema,
+      name: newName,
+      slug: newSlug,
+      description: structure.description ?? null,
+      type: 'TABLE',
+      logo: null,
+      fields: fieldsIds,
+      style: structure.style as TableCreatePayload['style'],
+      visibility: structure.visibility as TableCreatePayload['visibility'],
+      collaboration:
+        structure.collaboration as TableCreatePayload['collaboration'],
+      administrators: [],
+      owner: ownerId,
+      fieldOrderList: resolveOrder(structure.fieldOrderList),
+      fieldOrderForm: resolveOrder(structure.fieldOrderForm),
+      fieldOrderFilter: resolveOrder(structure.fieldOrderFilter),
+      fieldOrderDetail: resolveOrder(structure.fieldOrderDetail),
+      methods: structure.methods || {
+        onLoad: { code: null },
+        beforeSave: { code: null },
+        afterSave: { code: null },
+      },
+      groups,
+      layoutFields: layoutFields as ILayoutFields,
+    };
+
+    const created = await this.tableRepository.create(createPayload);
+
+    return {
+      tableId: created._id,
+      fieldSlugToId,
+      fieldsIds,
+      allFields,
+      groups,
+    };
+  }
+
+  /**
+   * Cria um field. Quando `relationship` aponta para uma tabela DENTRO do
+   * pacote sendo importado, o relationship é deixado como null (resolvido na
+   * fase B). Para tabelas FORA do pacote, tenta resolver contra o DB.
+   */
+  private async createField(
+    exported: ExportedField,
+    packageSlugs: Set<string>,
+  ): Promise<IField> {
+    let relationship: IField['relationship'] = null;
+
+    if (
+      exported.type === E_FIELD_TYPE.RELATIONSHIP &&
+      exported.relationship &&
+      !packageSlugs.has(exported.relationship.tableSlug)
+    ) {
+      const relatedTable = await this.tableRepository.findBySlug(
+        exported.relationship.tableSlug,
+      );
       if (relatedTable) {
         const relatedField = relatedTable.fields.find(
-          (f) => f.slug === exportedField.relationship!.fieldSlug,
+          (f) => f.slug === exported.relationship!.fieldSlug,
         );
-
         if (relatedField) {
           relationship = {
             table: { _id: relatedTable._id, slug: relatedTable.slug },
             field: { _id: relatedField._id, slug: relatedField.slug },
-            order: exportedField.relationship.order,
+            order: exported.relationship.order,
           };
         }
       }
     }
 
     return this.fieldRepository.create({
-      name: exportedField.name,
-      slug: exportedField.slug,
-      type: exportedField.type as any,
-      required: exportedField.required,
-      multiple: exportedField.multiple,
-      format: exportedField.format as any,
-      showInList: exportedField.showInList,
-      showInForm: exportedField.showInForm,
-      showInDetail: exportedField.showInDetail,
-      showInFilter: exportedField.showInFilter,
-      widthInForm: exportedField.widthInForm,
-      widthInList: exportedField.widthInList,
-      widthInDetail: exportedField.widthInDetail,
-      defaultValue: exportedField.defaultValue,
-      locked: exportedField.locked,
+      name: exported.name,
+      slug: exported.slug,
+      type: exported.type as IField['type'],
+      required: exported.required,
+      multiple: exported.multiple,
+      format: exported.format as IField['format'],
+      showInList: exported.showInList,
+      showInForm: exported.showInForm,
+      showInDetail: exported.showInDetail,
+      showInFilter: exported.showInFilter,
+      widthInForm: exported.widthInForm,
+      widthInList: exported.widthInList,
+      widthInDetail: exported.widthInDetail,
+      defaultValue: exported.defaultValue,
+      locked: exported.locked,
       relationship,
-      dropdown: exportedField.dropdown,
-      category: exportedField.category as any,
-      group: exportedField.group,
+      dropdown: exported.dropdown,
+      category: exported.category as IField['category'],
+      group: exported.group,
     });
+  }
+
+  // ── Phase B: resolve in-package relationships ──────────────
+
+  private async resolvePackageRelationships(
+    info: {
+      structure: ExportedStructure;
+      newSlug: string;
+      fieldSlugToId?: Map<string, string>;
+      tableId?: string;
+      allFields?: IField[];
+      groups?: IGroupConfiguration[];
+    },
+    tableSlugToInfo: Map<
+      string,
+      {
+        newSlug: string;
+        tableId?: string;
+        fieldSlugToId?: Map<string, string>;
+      }
+    >,
+  ): Promise<void> {
+    if (!info.tableId || !info.allFields || !info.fieldSlugToId) return;
+
+    const resolveOne = async (
+      exported: ExportedField,
+      currentFieldId: string,
+    ): Promise<IField | null> => {
+      if (
+        exported.type !== E_FIELD_TYPE.RELATIONSHIP ||
+        !exported.relationship
+      ) {
+        return null;
+      }
+      const ref = tableSlugToInfo.get(exported.relationship.tableSlug);
+      if (!ref?.tableId || !ref.fieldSlugToId) return null;
+      const targetFieldId = ref.fieldSlugToId.get(
+        exported.relationship.fieldSlug,
+      );
+      if (!targetFieldId) return null;
+      return this.fieldRepository.update({
+        _id: currentFieldId,
+        relationship: {
+          table: { _id: ref.tableId, slug: ref.newSlug },
+          field: { _id: targetFieldId, slug: exported.relationship.fieldSlug },
+          order: exported.relationship.order,
+        },
+      });
+    };
+
+    let touched = false;
+    const updatedAllFields = [...info.allFields];
+
+    for (const exported of info.structure.fields) {
+      const id = info.fieldSlugToId.get(exported.slug);
+      if (!id) continue;
+      const updated = await resolveOne(exported, id);
+      if (updated) {
+        touched = true;
+        const idx = updatedAllFields.findIndex((f) => f._id === id);
+        if (idx >= 0) updatedAllFields[idx] = updated;
+      }
+    }
+
+    const updatedGroups = info.groups ? [...info.groups] : [];
+    for (const [gi, group] of (info.structure.groups || []).entries()) {
+      const gconf = updatedGroups[gi];
+      if (!gconf) continue;
+      const newGroupFields = [...gconf.fields];
+      for (const exported of group.fields) {
+        const idInGroup = newGroupFields.find((f) => f.slug === exported.slug);
+        if (!idInGroup) continue;
+        const updated = await resolveOne(exported, idInGroup._id);
+        if (updated) {
+          touched = true;
+          const idx = newGroupFields.findIndex((f) => f._id === idInGroup._id);
+          if (idx >= 0) newGroupFields[idx] = updated;
+          const idxAll = updatedAllFields.findIndex(
+            (f) => f._id === idInGroup._id,
+          );
+          if (idxAll >= 0) updatedAllFields[idxAll] = updated;
+        }
+      }
+      updatedGroups[gi] = {
+        ...gconf,
+        fields: newGroupFields,
+        _schema: this.tableSchemaService.computeSchema(newGroupFields),
+      };
+    }
+
+    if (touched) {
+      const _schema = this.tableSchemaService.computeSchema(
+        updatedAllFields,
+        updatedGroups,
+      );
+      await this.tableRepository.update({
+        _id: info.tableId,
+        _schema,
+        groups: updatedGroups,
+      });
+      info.allFields = updatedAllFields;
+      info.groups = updatedGroups;
+    }
+  }
+
+  // ── Phase C/D: rows + backfill ────────────────────────────
+
+  private stripRelationshipFields(
+    row: Record<string, unknown>,
+    table: ITable,
+  ): Record<string, unknown> {
+    const stripped: Record<string, unknown> = {};
+    const relationshipSlugs = new Set<string>();
+    for (const f of table.fields) {
+      if (f.type === E_FIELD_TYPE.RELATIONSHIP) relationshipSlugs.add(f.slug);
+    }
+    for (const [key, value] of Object.entries(row)) {
+      if (key === '_originalId' || key === '_id' || key === 'id') continue;
+      // `_originalCreator` é tratado à parte (vira o `creator` da row na Fase C).
+      if (key === '_originalCreator') continue;
+      if (key === 'createdAt' || key === 'updatedAt') continue;
+      if (relationshipSlugs.has(key)) continue;
+      // For FIELD_GROUP, strip relationships within each subrow
+      const fg = table.groups?.find((g) => g.slug === key);
+      if (fg && Array.isArray(value)) {
+        const subSlugs = new Set(
+          fg.fields
+            .filter((f) => f.type === E_FIELD_TYPE.RELATIONSHIP)
+            .map((f) => f.slug),
+        );
+        stripped[key] = value.map((sub: Record<string, unknown>) => {
+          const cleaned: Record<string, unknown> = {};
+          for (const [k, v] of Object.entries(sub)) {
+            if (k === '_originalId') continue;
+            // Restaura o criador original do subdocumento no campo nativo.
+            if (k === '_originalCreator') {
+              if (v) cleaned.creator = v;
+              continue;
+            }
+            if (subSlugs.has(k)) continue;
+            cleaned[k] = v;
+          }
+          return cleaned;
+        });
+        continue;
+      }
+      stripped[key] = value;
+    }
+    return stripped;
+  }
+
+  private async backfillRelationships(args: {
+    table: ITable;
+    rows: Array<Record<string, unknown> & { _originalId?: string }>;
+    rowIdMap: Map<string, Map<string, string>>;
+    ownerSlug: string;
+  }): Promise<void> {
+    const { table, rows, rowIdMap, ownerSlug } = args;
+    const myMap = rowIdMap.get(ownerSlug);
+    if (!myMap) return;
+
+    const relationshipFields = table.fields.filter(
+      (f) => f.type === E_FIELD_TYPE.RELATIONSHIP && f.relationship,
+    );
+    const groupRelationships = new Map<string, IField[]>();
+    for (const g of table.groups || []) {
+      const rels = g.fields.filter(
+        (f) => f.type === E_FIELD_TYPE.RELATIONSHIP && f.relationship,
+      );
+      if (rels.length) groupRelationships.set(g.slug, rels);
+    }
+
+    if (relationshipFields.length === 0 && groupRelationships.size === 0) {
+      return;
+    }
+
+    for (const row of rows) {
+      const originalRowId = row._originalId ? String(row._originalId) : null;
+      const newRowId = originalRowId ? myMap.get(originalRowId) : null;
+      if (!newRowId) continue;
+
+      const updateData: Record<string, unknown> = {};
+
+      for (const field of relationshipFields) {
+        const raw = row[field.slug];
+        if (raw === undefined || raw === null) continue;
+        const targetSlug = field.relationship!.table.slug;
+        const remapped = this.remapRelationshipValue(raw, targetSlug, rowIdMap);
+        if (remapped === undefined) continue;
+        updateData[field.slug] = remapped;
+      }
+
+      for (const [groupSlug, rels] of groupRelationships.entries()) {
+        const subRows = row[groupSlug];
+        if (!Array.isArray(subRows)) continue;
+        const newSubRows = subRows.map((sub: Record<string, unknown>) => {
+          const updated: Record<string, unknown> = { ...sub };
+          for (const f of rels) {
+            const raw = sub[f.slug];
+            if (raw === undefined || raw === null) continue;
+            const remapped = this.remapRelationshipValue(
+              raw,
+              f.relationship!.table.slug,
+              rowIdMap,
+            );
+            if (remapped !== undefined) updated[f.slug] = remapped;
+          }
+          return updated;
+        });
+        updateData[groupSlug] = newSubRows;
+      }
+
+      if (Object.keys(updateData).length === 0) continue;
+
+      try {
+        await this.rowRepository.update({
+          table,
+          _id: newRowId,
+          data: updateData,
+        });
+      } catch (err) {
+        console.error('[tools > import-table][row-backfill]:', err);
+      }
+    }
+  }
+
+  private remapRelationshipValue(
+    value: unknown,
+    targetTableSlug: string,
+    rowIdMap: Map<string, Map<string, string>>,
+  ): string | string[] | undefined {
+    const target = rowIdMap.get(targetTableSlug);
+    const remapOne = (v: unknown): string | null => {
+      const id = typeof v === 'string' ? v : String(v ?? '');
+      if (!id) return null;
+      if (target?.has(id)) return target.get(id)!;
+      // Target table is outside the package — return original (may match an
+      // existing record if importing into the same DB or a snapshot of it).
+      return id;
+    };
+    if (Array.isArray(value)) {
+      const ids = value.map(remapOne).filter((v): v is string => Boolean(v));
+      return ids;
+    }
+    const single = remapOne(value);
+    return single ?? undefined;
+  }
+
+  // ── Phase E: menus ────────────────────────────────────────
+
+  private async importMenus(args: {
+    menus: ExportedMenu[];
+    tableSlugToInfo: Map<
+      string,
+      { originalSlug: string; newSlug: string; tableId?: string }
+    >;
+    ownerId: string;
+    menuRenames: Map<string, { name: string; slug: string }>;
+  }): Promise<number> {
+    const { menus, tableSlugToInfo, ownerId, menuRenames } = args;
+    if (menus.length === 0) return 0;
+
+    const tableSlugMap = new Map<string, { id: string; newSlug: string }>();
+    for (const info of tableSlugToInfo.values()) {
+      if (info.tableId) {
+        tableSlugMap.set(info.originalSlug, {
+          id: info.tableId,
+          newSlug: info.newSlug,
+        });
+      }
+    }
+
+    const byOriginalId = new Map<string, ExportedMenu>();
+    for (const m of menus) byOriginalId.set(m._originalId, m);
+
+    const parentOriginalIds = this.getMenuParentOriginalIds(menus);
+    const newIdByOriginalId = new Map<string, string>();
+    const created = new Set<string>();
+    let importedCount = 0;
+
+    const createMenu = async (menu: ExportedMenu): Promise<void> => {
+      if (created.has(menu._originalId)) return;
+      // Ensure parent is created first
+      if (menu.parent) {
+        const parent = byOriginalId.get(menu.parent);
+        if (parent && !created.has(parent._originalId)) {
+          await createMenu(parent);
+        }
+      }
+
+      const isParent = parentOriginalIds.has(menu._originalId);
+
+      // Menu-pai já existente é REAPROVEITADO — os filhos passam a apontar
+      // para o item existente em vez de recriá-lo.
+      if (isParent) {
+        const existingParent = await this.menuRepository.findBySlug(menu.slug, {
+          trashed: false,
+        });
+        if (existingParent) {
+          newIdByOriginalId.set(menu._originalId, existingParent._id);
+          created.add(menu._originalId);
+          return;
+        }
+      }
+
+      // Itens folha em conflito podem ter sido renomeados; pais nunca.
+      const rename = isParent ? undefined : menuRenames.get(menu.slug);
+      const slug = rename?.slug ?? menu.slug;
+      const name = rename?.name ?? menu.name;
+
+      let tableId: string | null = null;
+      let url: string | null = menu.url;
+      let type = menu.type;
+      if (menu.tableSlug) {
+        const ref = tableSlugMap.get(menu.tableSlug);
+        if (ref) {
+          tableId = ref.id;
+          if (type === E_MENU_ITEM_TYPE.TABLE) {
+            url = '/tables/'.concat(ref.newSlug);
+          } else if (type === E_MENU_ITEM_TYPE.FORM) {
+            url = '/tables/'.concat(ref.newSlug).concat('/row/create');
+          }
+        } else {
+          // Linked table is missing — fall back to SEPARATOR
+          type = E_MENU_ITEM_TYPE.SEPARATOR;
+          url = null;
+        }
+      }
+
+      const parentId = menu.parent
+        ? (newIdByOriginalId.get(menu.parent) ?? null)
+        : null;
+
+      try {
+        const newMenu = await this.menuRepository.create({
+          name,
+          slug,
+          type: type as never,
+          table: tableId,
+          parent: parentId,
+          url,
+          html: menu.html,
+          owner: ownerId,
+          order: menu.order,
+          isInitial: false,
+          extension: menu.extension ?? null,
+        });
+        newIdByOriginalId.set(menu._originalId, newMenu._id);
+        created.add(menu._originalId);
+        importedCount++;
+      } catch (err) {
+        console.error('[tools > import-table][menu-create]:', err);
+      }
+    };
+
+    for (const menu of menus) {
+      await createMenu(menu);
+    }
+
+    return importedCount;
   }
 }

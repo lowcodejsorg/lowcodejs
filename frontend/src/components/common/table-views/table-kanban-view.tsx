@@ -15,6 +15,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useRouterState } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
 
@@ -350,6 +351,23 @@ export function TableKanbanView({
     const updated = rowsState.find((row) => row._id === activeRowId);
     if (updated) setActiveRow(updated);
   }, [rowsState, activeRowId]);
+
+  // Deep-link: ?rowId=... abre o card automaticamente.
+  // Usado pelas notificações de membro/menção/comentário.
+  const searchParams = useRouterState({ select: (s) => s.location.search });
+  const deepLinkRowIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const rowIdParam =
+      typeof searchParams === 'object' && searchParams !== null
+        ? (searchParams as Record<string, unknown>).rowId
+        : undefined;
+    if (typeof rowIdParam !== 'string' || !rowIdParam) return;
+    if (deepLinkRowIdRef.current === rowIdParam) return;
+    const target = rowsState.find((row) => row._id === rowIdParam);
+    if (!target) return;
+    deepLinkRowIdRef.current = rowIdParam;
+    setActiveRow(target);
+  }, [searchParams, rowsState]);
 
   const createRow = useCreateTableRow({
     onSuccess(createdRow) {

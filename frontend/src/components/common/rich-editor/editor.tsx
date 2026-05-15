@@ -18,6 +18,7 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { CodeIcon } from 'lucide-react';
 import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { Markdown as TiptapMarkdown } from 'tiptap-markdown';
 
 import { ImageBubble } from './bubble/image-bubble';
@@ -28,6 +29,7 @@ import './editor.css';
 import { buildMentionExtension } from './extensions/mention';
 import type { MentionConfig } from './extensions/mention';
 import { EditorToolbar } from './toolbar';
+import { uploadFile } from './upload';
 import { ContentViewer } from './viewer';
 
 import { cn } from '@/lib/utils';
@@ -215,6 +217,51 @@ function getMarkdownFromEditor(editor: TiptapEditor): string {
   return editor.getHTML();
 }
 
+function getImageFilesFromDataTransfer(
+  dataTransfer: DataTransfer | null,
+): Array<File> {
+  if (!dataTransfer) return [];
+  const collected: Array<File> = [];
+
+  if (dataTransfer.files && dataTransfer.files.length > 0) {
+    for (let i = 0; i < dataTransfer.files.length; i++) {
+      const file = dataTransfer.files.item(i);
+      if (file && file.type.startsWith('image/')) {
+        collected.push(file);
+      }
+    }
+  }
+
+  if (collected.length === 0 && dataTransfer.items?.length) {
+    for (let i = 0; i < dataTransfer.items.length; i++) {
+      const item = dataTransfer.items[i];
+      if (item.kind === 'file' && item.type.startsWith('image/')) {
+        const file = item.getAsFile();
+        if (file) collected.push(file);
+      }
+    }
+  }
+
+  return collected;
+}
+
+async function uploadAndInsertImages(
+  editor: TiptapEditor,
+  files: Array<File>,
+): Promise<void> {
+  for (const file of files) {
+    const toastId = toast.loading('Enviando imagem...');
+    try {
+      const url = await uploadFile(file);
+      editor.chain().focus().setImage({ src: url }).run();
+      toast.success('Imagem inserida', { id: toastId });
+    } catch (error) {
+      console.error('[rich-editor][paste-image]', error);
+      toast.error('Erro ao enviar imagem', { id: toastId });
+    }
+  }
+}
+
 // --- Main Editor ---
 
 export interface EditorProps {
@@ -335,17 +382,44 @@ export function Editor({
     return list;
   }, [placeholder, mentionsEnabled]);
 
+  const editorRef = useRef<TiptapEditor | null>(null);
+
   const ed = useEditor(
     {
       extensions,
       immediatelyRender: false,
       content: (isControlled && value) || '',
+      editorProps: {
+        handlePaste: (_view, event) => {
+          const files = getImageFilesFromDataTransfer(event.clipboardData);
+          if (files.length === 0) return false;
+          const editor = editorRef.current;
+          if (!editor) return false;
+          event.preventDefault();
+          void uploadAndInsertImages(editor, files);
+          return true;
+        },
+        handleDrop: (_view, event, _slice, moved) => {
+          if (moved) return false;
+          const files = getImageFilesFromDataTransfer(event.dataTransfer);
+          if (files.length === 0) return false;
+          const editor = editorRef.current;
+          if (!editor) return false;
+          event.preventDefault();
+          void uploadAndInsertImages(editor, files);
+          return true;
+        },
+      },
       onUpdate: ({ editor: editorInstance }) => {
         onValueChange(editorInstance);
       },
     },
     [],
   );
+
+  React.useEffect(() => {
+    editorRef.current = ed ?? null;
+  }, [ed]);
 
   // Sync external value (only in rich mode)
   React.useEffect(() => {

@@ -6,7 +6,7 @@ import type { IField, IRow } from '@application/core/entity.core';
 import { RowContextContractService } from './row-context-contract.service';
 
 @Service()
-export default class RowContextService extends RowContextContractService {
+export default class RowContextService implements RowContextContractService {
   transform(row: IRow, fields: IField[], userId?: string): IRow {
     return transformRowContext(
       row as Record<string, any>,

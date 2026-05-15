@@ -9,6 +9,7 @@ import { validateRowPayload } from '@application/core/row-payload-validator.core
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
+import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 
@@ -28,6 +29,7 @@ export default class TableRowUpdateUseCase {
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
+    private readonly rowMemberNotificationService: RowMemberNotificationContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -139,6 +141,11 @@ export default class TableRowUpdateUseCase {
           : undefined;
       delete payload.__actorUserId;
 
+      const previousRow = await this.rowRepository.findOne({
+        table,
+        query: { _id: payload._id },
+      });
+
       const row = await this.rowRepository.update({
         table,
         _id: payload._id,
@@ -150,6 +157,17 @@ export default class TableRowUpdateUseCase {
           HTTPException.NotFound('Registro não encontrado', 'ROW_NOT_FOUND'),
         );
       }
+
+      console.log(
+        '[TableRowUpdateUseCase] this.rowMemberNotificationService.notifyNewMembers',
+      );
+
+      await this.rowMemberNotificationService.notifyNewMembers({
+        table,
+        previousRow,
+        nextRow: row,
+        actorUserId: actorUserId ?? '',
+      });
 
       const mentionResult =
         await this.kanbanCommentMentionService.notifyNewMentions({

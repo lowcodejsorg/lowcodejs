@@ -1,4 +1,3 @@
-/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
@@ -9,6 +8,7 @@ import { validateRowPayload } from '@application/core/row-payload-validator.core
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
+import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 
@@ -27,7 +27,18 @@ export default class TableRowCreateUseCase {
     private readonly userRepository: UserContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
-  ) {}
+    private readonly rowMemberNotificationService: RowMemberNotificationContractService,
+  ) {
+    console.log(
+      '[TableRowCreateUseCase] instanciado',
+      tableRepository,
+      rowRepository,
+      userRepository,
+      rowPasswordService,
+      scriptExecutionService,
+      rowMemberNotificationService,
+    );
+  }
 
   async execute(payload: Payload): Promise<Response> {
     try {
@@ -148,6 +159,13 @@ export default class TableRowCreateUseCase {
       const row = await this.rowRepository.create({
         table,
         data: createData,
+      });
+
+      await this.rowMemberNotificationService.notifyNewMembers({
+        table,
+        previousRow: null,
+        nextRow: row,
+        actorUserId: typeof payload.creator === 'string' ? payload.creator : '',
       });
 
       this.rowPasswordService.mask(row, table.fields);

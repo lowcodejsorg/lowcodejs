@@ -13,7 +13,7 @@ import type {
 import { StorageContractService } from './storage-contract.service';
 
 @Service()
-export default class StorageService extends StorageContractService {
+export default class StorageService implements StorageContractService {
   private readonly local = new LocalStorageService();
   private readonly s3 = new S3StorageService();
 

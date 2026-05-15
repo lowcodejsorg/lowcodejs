@@ -141,6 +141,32 @@ export const E_CHAT_EVENT = {
   ERROR: 'error',
 } as const;
 
+export const E_NOTIFICATION_TYPE = {
+  FORUM_MENTION: 'FORUM_MENTION',
+  KANBAN_COMMENT_MENTION: 'KANBAN_COMMENT_MENTION',
+  ROW_MEMBER_ASSIGNED: 'ROW_MEMBER_ASSIGNED',
+  GENERIC: 'GENERIC',
+} as const;
+
+export const E_NOTIFICATION_EVENT = {
+  CREATED: 'notification:created',
+  READ: 'notification:read',
+  READ_ALL: 'notification:read_all',
+} as const;
+
+export type INotificationAction = {
+  type: 'route' | 'url';
+  href: string;
+  label?: string | null;
+} | null;
+
+export type INotificationSource = {
+  pkg?: string | null;
+  tableSlug?: string | null;
+  rowId?: string | null;
+  anchorId?: string | null;
+} | null;
+
 export type IJWTPayload = {
   sub: string;
   email: string;
@@ -227,6 +253,22 @@ export type IUser = Merge<
     password: string;
     status: ValueOf<typeof E_USER_STATUS>;
     group: IGroup;
+    notificationsEnabled: boolean;
+  }
+>;
+
+export type INotification = Merge<
+  Base,
+  {
+    userId: string;
+    type: ValueOf<typeof E_NOTIFICATION_TYPE>;
+    title: string;
+    body: string | null;
+    action: INotificationAction;
+    source: INotificationSource;
+    actorUserId: string | null;
+    read: boolean;
+    readAt: Date | null;
   }
 >;
 
