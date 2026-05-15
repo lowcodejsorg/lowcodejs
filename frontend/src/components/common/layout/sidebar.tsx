@@ -70,28 +70,43 @@ function SidebarItemIcon({
 }: {
   item: MenuItem;
   className?: string;
-}): React.JSX.Element | null {
+}): React.JSX.Element {
+  const wrapper =
+    `inline-flex size-4 shrink-0 items-center justify-center ${className}`.trim();
+
   if (item.iconUrl) {
     return (
-      <img
-        src={item.iconUrl}
-        alt=""
+      <span
         aria-hidden="true"
-        className={`size-4 shrink-0 object-contain ${className}`.trim()}
-      />
+        className={wrapper}
+      >
+        <img
+          src={item.iconUrl}
+          alt=""
+          className="size-full object-contain"
+        />
+      </span>
     );
   }
 
   if (item.icon) {
     const Icon = item.icon;
     return (
-      <Icon
-        className={`text-primary size-4 shrink-0 ${className}`.trim()}
-      />
+      <span
+        aria-hidden="true"
+        className={wrapper}
+      >
+        <Icon className="text-primary size-4" />
+      </span>
     );
   }
 
-  return null;
+  return (
+    <span
+      aria-hidden="true"
+      className={wrapper}
+    />
+  );
 }
 
 function SidebarMenuItemRecursive({
@@ -125,7 +140,7 @@ function SidebarMenuItemRecursive({
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <SidebarMenuSub>
+            <SidebarMenuSub className="mx-0 border-l-0 px-0 py-0 translate-x-0">
               {item.items.map((subItem) => {
                 // If sub-item has its own children and we haven't hit max depth, recurse
                 if (
@@ -167,6 +182,7 @@ function SidebarMenuItemRecursive({
                     >
                       <SidebarItemIcon item={subItem} />
                       <span className="flex-1 truncate">{subItem.title}</span>
+                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </a>
                   );
                 } else {
@@ -178,6 +194,7 @@ function SidebarMenuItemRecursive({
                     >
                       <SidebarItemIcon item={subItem} />
                       <span className="flex-1 truncate">{subItem.title}</span>
+                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </Link>
                   );
                 }
@@ -187,7 +204,9 @@ function SidebarMenuItemRecursive({
                     <SidebarLabelTooltip label={subItem.title}>
                       <SidebarMenuSubButton
                         asChild
+                        size="md"
                         isActive={!isExternal && location.pathname === subUrl}
+                        className="h-8 translate-x-0 p-2 text-sm"
                       >
                         {subItemLink}
                       </SidebarMenuSubButton>
