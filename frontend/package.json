@@ -53,13 +53,13 @@
     "@tanstack/react-form": "^1.0.0",
     "@tanstack/react-query": "^5.66.5",
     "@tanstack/react-query-devtools": "^5.84.2",
-    "@tanstack/react-router": "^1.132.0",
-    "@tanstack/react-router-devtools": "^1.132.0",
-    "@tanstack/react-router-ssr-query": "^1.131.7",
-    "@tanstack/react-start": "^1.132.0",
+    "@tanstack/react-router": "~1.170.1",
+    "@tanstack/react-router-devtools": "~1.167.0",
+    "@tanstack/react-router-ssr-query": "~1.167.0",
+    "@tanstack/react-start": "~1.168.1",
     "@tanstack/react-table": "^8.21.3",
     "@tanstack/react-virtual": "^3.13.20",
-    "@tanstack/router-plugin": "^1.132.0",
+    "@tanstack/router-plugin": "~1.168.1",
     "@tiptap/extension-character-count": "^3.20.0",
     "@tiptap/extension-color": "^3.20.0",
     "@tiptap/extension-highlight": "^3.20.0",
@@ -138,5 +138,8 @@
     "vite": "^7.1.7",
     "vitest": "^3.0.5",
     "web-vitals": "^5.1.0"
+  },
+  "overrides": {
+    "dompurify": "^3.4.3"
   }
 }

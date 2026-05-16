@@ -251,6 +251,10 @@ export default class KanbanCommentMentionService implements KanbanCommentMention
   }): Promise<void> {
     const { recipientIds, actorUserId, table, row, cardTitle, commentText } =
       args;
+    if (!this.notificationService) {
+      console.error('[KanbanCommentMentionService] notificationService não injetado — notificação ignorada');
+      return;
+    }
     if (recipientIds.length === 0) return;
     const rowId = readString(asRecord(row)._id);
     const snippet = buildSnippet(commentText);

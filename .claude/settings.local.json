@@ -1,7 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)"
+      "Bash(npx tsc *)",
+      "Bash(python3 *)",
+      "Bash(systemctl --user list-units --type=service)",
+      "Bash(npm audit *)",
+      "Bash(npm pack *)",
+      "Bash(npm view *)",
+      "Bash(npm ls *)",
+      "Bash(npm install *)"
     ]
   }
 }

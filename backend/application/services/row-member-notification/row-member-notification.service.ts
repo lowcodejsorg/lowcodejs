@@ -56,6 +56,11 @@ export default class RowMemberNotificationService implements RowMemberNotificati
   }
 
   async notifyNewMembers(params: NotifyRowMembersParams): Promise<void> {
+    if (!this.notificationService) {
+      console.error('[RowMemberNotificationService] notificationService não injetado — notificação ignorada');
+      return;
+    }
+
     const { table, previousRow, nextRow, actorUserId } = params;
     if (!SUPPORTED_STYLES.has(table.style)) return;
 
