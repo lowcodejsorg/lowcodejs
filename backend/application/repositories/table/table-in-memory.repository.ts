@@ -137,9 +137,10 @@ export default class TableInMemoryRepository implements TableContractRepository 
       filtered = filtered.filter((t) => t.type === payload.type);
     }
 
-    if (payload?.owner) {
-      filtered = filtered.filter(
-        (t) => (t.owner as IUser)?._id === payload.owner,
+    if (payload?.owner?.length) {
+      const ownerIds = payload.owner;
+      filtered = filtered.filter((t) =>
+        ownerIds.includes(String((t.owner as IUser)?._id)),
       );
     }
 

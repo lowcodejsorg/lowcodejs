@@ -53,7 +53,7 @@ export type TableQueryPayload = {
   perPage?: number;
   search?: string;
   type?: ValueOf<typeof E_TABLE_TYPE>;
-  owner?: string;
+  owner?: string[];
   trashed?: boolean;
   _ids?: string[];
   visibility?: Array<ValueOf<typeof E_TABLE_VISIBILITY>>;

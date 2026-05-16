@@ -87,8 +87,8 @@ function RouteComponent(): React.JSX.Element {
     {
       slug: 'owner',
       name: 'Criado por',
-      type: E_FIELD_TYPE.TEXT_SHORT,
-      multiple: false,
+      type: E_FIELD_TYPE.USER,
+      multiple: true,
     },
   ];
 
