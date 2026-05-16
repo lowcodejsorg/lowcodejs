@@ -46,7 +46,7 @@ export default class UserDeleteUseCase {
       }
 
       const ownedTables = await this.tableRepository.count({
-        owner: user._id,
+        owner: [user._id],
       });
 
       if (ownedTables > 0) {

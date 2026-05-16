@@ -18,3 +18,6 @@
 
 
 _system/setting.properties
+
+!backend/application/resources/logs/
+!backend/application/resources/logs/**

@@ -35,7 +35,7 @@ export default class UserBulkDeleteUseCase {
         if (!user) continue;
         if (!user.trashed) continue;
 
-        const owned = await this.tableRepository.count({ owner: user._id });
+        const owned = await this.tableRepository.count({ owner: [user._id] });
         if (owned > 0) continue;
 
         eligibleIds.push(user._id);

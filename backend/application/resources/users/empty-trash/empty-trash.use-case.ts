@@ -22,7 +22,7 @@ export default class UserEmptyTrashUseCase {
 
       const eligibleIds: string[] = [];
       for (const user of trashed) {
-        const owned = await this.tableRepository.count({ owner: user._id });
+        const owned = await this.tableRepository.count({ owner: [user._id] });
         if (owned > 0) continue;
         eligibleIds.push(user._id);
       }

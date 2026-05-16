@@ -14,7 +14,10 @@ import { left, right } from '@application/core/either.core';
 import type { ITable, IUser } from '@application/core/entity.core';
 import { E_TABLE_TYPE } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import {
+  TableContractRepository,
+  type TableQueryPayload,
+} from '@application/repositories/table/table-contract.repository';
 
 import type { TableExportCsvPayload } from './export-csv.validator';
 
@@ -73,13 +76,13 @@ export default class TableExportCsvUseCase {
         sort.visibility = payload['order-visibility'];
       if (payload['order-owner']) sort['owner.name'] = payload['order-owner'];
 
-      const filter = {
+      const filter: TableQueryPayload = {
         search: payload.search ?? payload.name,
         type: E_TABLE_TYPE.TABLE,
         trashed,
-        owner: payload.owner,
         visibility: payload.visibility,
       };
+      if (payload.owner) filter.owner = [payload.owner];
 
       const total = await this.tableRepository.count(filter);
 
