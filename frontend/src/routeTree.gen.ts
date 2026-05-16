@@ -9,55 +9,56 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root';
-import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml';
-import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt';
-import { Route as SetupLayoutRouteImport } from './routes/setup/layout';
-import { Route as PrivateLayoutRouteImport } from './routes/_private/layout';
-import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout';
-import { Route as SetupUploadIndexRouteImport } from './routes/setup/upload/index';
-import { Route as SetupStorageIndexRouteImport } from './routes/setup/storage/index';
-import { Route as SetupPagingIndexRouteImport } from './routes/setup/paging/index';
-import { Route as SetupNameIndexRouteImport } from './routes/setup/name/index';
-import { Route as SetupLogosIndexRouteImport } from './routes/setup/logos/index';
-import { Route as SetupEmailIndexRouteImport } from './routes/setup/email/index';
-import { Route as SetupAdminIndexRouteImport } from './routes/setup/admin/index';
-import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index';
-import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index';
-import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index';
-import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/settings/index';
-import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index';
-import { Route as PrivateNotificationsIndexRouteImport } from './routes/_private/notifications/index';
-import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/index';
-import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index';
-import { Route as PrivateExtensionsIndexRouteImport } from './routes/_private/extensions/index';
-import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index';
-import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index';
-import { Route as AuthenticationForgotPasswordIndexRouteImport } from './routes/_authentication/forgot-password/index';
 import { Route as AuthenticationSignInIndexRouteImport } from './routes/_authentication/_sign-in/index';
-import { Route as PrivatePagesSlugRouteImport } from './routes/_private/pages/$slug';
-import { Route as PrivateUsersCreateIndexRouteImport } from './routes/_private/users/create/index';
-import { Route as PrivateUsersUserIdIndexRouteImport } from './routes/_private/users/$userId/index';
-import { Route as PrivateTablesSchemaImportIndexRouteImport } from './routes/_private/tables/schema-import/index';
-import { Route as PrivateTablesNewIndexRouteImport } from './routes/_private/tables/new/index';
-import { Route as PrivateTablesCreateIndexRouteImport } from './routes/_private/tables/create/index';
-import { Route as PrivateTablesCloneIndexRouteImport } from './routes/_private/tables/clone/index';
-import { Route as PrivateTablesSlugIndexRouteImport } from './routes/_private/tables/$slug/index';
-import { Route as PrivateMenusCreateIndexRouteImport } from './routes/_private/menus/create/index';
-import { Route as PrivateMenusMenuIdIndexRouteImport } from './routes/_private/menus/$menuId/index';
-import { Route as PrivateGroupsCreateIndexRouteImport } from './routes/_private/groups/create/index';
-import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private/groups/$groupId/index';
-import { Route as AuthenticationForgotPasswordValidateCodeIndexRouteImport } from './routes/_authentication/forgot-password/validate-code/index';
+import { Route as AuthenticationForgotPasswordIndexRouteImport } from './routes/_authentication/forgot-password/index';
 import { Route as AuthenticationForgotPasswordResetPasswordIndexRouteImport } from './routes/_authentication/forgot-password/reset-password/index';
-import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods';
-import { Route as PrivateToolsPackageIdIndexRouteImport } from './routes/_private/tools/$package/$id/index';
-import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index';
+import { Route as AuthenticationForgotPasswordValidateCodeIndexRouteImport } from './routes/_authentication/forgot-password/validate-code/index';
+import { Route as AuthenticationLayoutRouteImport } from './routes/_authentication/layout';
+import { Route as AuthenticationSignUpIndexRouteImport } from './routes/_authentication/sign-up/index';
+import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index';
 import { Route as PrivateEPackageIdIndexRouteImport } from './routes/_private/e/$package/$id/index';
-import { Route as PrivateTablesSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/field/management';
-import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index';
-import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index';
-import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index';
+import { Route as PrivateExtensionsIndexRouteImport } from './routes/_private/extensions/index';
+import { Route as PrivateGroupsGroupIdIndexRouteImport } from './routes/_private/groups/$groupId/index';
+import { Route as PrivateGroupsCreateIndexRouteImport } from './routes/_private/groups/create/index';
+import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index';
+import { Route as PrivateHistoryIndexRouteImport } from './routes/_private/history/index';
+import { Route as PrivateLayoutRouteImport } from './routes/_private/layout';
+import { Route as PrivateMenusMenuIdIndexRouteImport } from './routes/_private/menus/$menuId/index';
+import { Route as PrivateMenusCreateIndexRouteImport } from './routes/_private/menus/create/index';
+import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/index';
+import { Route as PrivateNotificationsIndexRouteImport } from './routes/_private/notifications/index';
+import { Route as PrivatePagesSlugRouteImport } from './routes/_private/pages/$slug';
+import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index';
+import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/settings/index';
+import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index';
 import { Route as PrivateTablesSlugFieldFieldIdIndexRouteImport } from './routes/_private/tables/$slug/field/$fieldId/index';
+import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index';
+import { Route as PrivateTablesSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/field/management';
 import { Route as PrivateTablesSlugGroupGroupSlugFieldManagementRouteImport } from './routes/_private/tables/$slug/group/$groupSlug/field/management';
+import { Route as PrivateTablesSlugIndexRouteImport } from './routes/_private/tables/$slug/index';
+import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods';
+import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index';
+import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index';
+import { Route as PrivateTablesCloneIndexRouteImport } from './routes/_private/tables/clone/index';
+import { Route as PrivateTablesCreateIndexRouteImport } from './routes/_private/tables/create/index';
+import { Route as PrivateTablesIndexRouteImport } from './routes/_private/tables/index';
+import { Route as PrivateTablesNewIndexRouteImport } from './routes/_private/tables/new/index';
+import { Route as PrivateTablesSchemaImportIndexRouteImport } from './routes/_private/tables/schema-import/index';
+import { Route as PrivateToolsPackageIdIndexRouteImport } from './routes/_private/tools/$package/$id/index';
+import { Route as PrivateToolsIndexRouteImport } from './routes/_private/tools/index';
+import { Route as PrivateUsersUserIdIndexRouteImport } from './routes/_private/users/$userId/index';
+import { Route as PrivateUsersCreateIndexRouteImport } from './routes/_private/users/create/index';
+import { Route as PrivateUsersIndexRouteImport } from './routes/_private/users/index';
+import { Route as RobotsDottxtRouteImport } from './routes/robots[.]txt';
+import { Route as SetupAdminIndexRouteImport } from './routes/setup/admin/index';
+import { Route as SetupEmailIndexRouteImport } from './routes/setup/email/index';
+import { Route as SetupLayoutRouteImport } from './routes/setup/layout';
+import { Route as SetupLogosIndexRouteImport } from './routes/setup/logos/index';
+import { Route as SetupNameIndexRouteImport } from './routes/setup/name/index';
+import { Route as SetupPagingIndexRouteImport } from './routes/setup/paging/index';
+import { Route as SetupStorageIndexRouteImport } from './routes/setup/storage/index';
+import { Route as SetupUploadIndexRouteImport } from './routes/setup/upload/index';
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml';
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -180,6 +181,13 @@ const PrivateMenusIndexRoute = PrivateMenusIndexRouteImport.update({
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
   import('./routes/_private/menus/index.lazy').then((d) => d.Route),
+);
+const PrivateHistoryIndexRoute = PrivateHistoryIndexRouteImport.update({
+  id: '/history/',
+  path: '/history/',
+  getParentRoute: () => PrivateLayoutRoute,
+} as any).lazy(() =>
+  import('./routes/_private/history/index.lazy').then((d) => d.Route),
 );
 const PrivateGroupsIndexRoute = PrivateGroupsIndexRouteImport.update({
   id: '/groups/',
@@ -445,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof PrivateDashboardIndexRoute;
   '/extensions/': typeof PrivateExtensionsIndexRoute;
   '/groups/': typeof PrivateGroupsIndexRoute;
+  '/history/': typeof PrivateHistoryIndexRoute;
   '/menus/': typeof PrivateMenusIndexRoute;
   '/notifications/': typeof PrivateNotificationsIndexRoute;
   '/profile/': typeof PrivateProfileIndexRoute;
@@ -494,6 +503,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof PrivateDashboardIndexRoute;
   '/extensions': typeof PrivateExtensionsIndexRoute;
   '/groups': typeof PrivateGroupsIndexRoute;
+  '/history': typeof PrivateHistoryIndexRoute;
   '/menus': typeof PrivateMenusIndexRoute;
   '/notifications': typeof PrivateNotificationsIndexRoute;
   '/profile': typeof PrivateProfileIndexRoute;
@@ -546,6 +556,7 @@ export interface FileRoutesById {
   '/_private/dashboard/': typeof PrivateDashboardIndexRoute;
   '/_private/extensions/': typeof PrivateExtensionsIndexRoute;
   '/_private/groups/': typeof PrivateGroupsIndexRoute;
+  '/_private/history/': typeof PrivateHistoryIndexRoute;
   '/_private/menus/': typeof PrivateMenusIndexRoute;
   '/_private/notifications/': typeof PrivateNotificationsIndexRoute;
   '/_private/profile/': typeof PrivateProfileIndexRoute;
@@ -597,6 +608,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/extensions/'
     | '/groups/'
+    | '/history/'
     | '/menus/'
     | '/notifications/'
     | '/profile/'
@@ -646,6 +658,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/extensions'
     | '/groups'
+    | '/history'
     | '/menus'
     | '/notifications'
     | '/profile'
@@ -697,6 +710,7 @@ export interface FileRouteTypes {
     | '/_private/dashboard/'
     | '/_private/extensions/'
     | '/_private/groups/'
+    | '/_private/history/'
     | '/_private/menus/'
     | '/_private/notifications/'
     | '/_private/profile/'
@@ -877,6 +891,13 @@ declare module '@tanstack/react-router' {
       path: '/menus';
       fullPath: '/menus/';
       preLoaderRoute: typeof PrivateMenusIndexRouteImport;
+      parentRoute: typeof PrivateLayoutRoute;
+    };
+    '/_private/history/': {
+      id: '/_private/history/';
+      path: '/history';
+      fullPath: '/history/';
+      preLoaderRoute: typeof PrivateHistoryIndexRouteImport;
       parentRoute: typeof PrivateLayoutRoute;
     };
     '/_private/groups/': {
@@ -1119,6 +1140,7 @@ interface PrivateLayoutRouteChildren {
   PrivateDashboardIndexRoute: typeof PrivateDashboardIndexRoute;
   PrivateExtensionsIndexRoute: typeof PrivateExtensionsIndexRoute;
   PrivateGroupsIndexRoute: typeof PrivateGroupsIndexRoute;
+  PrivateHistoryIndexRoute: typeof PrivateHistoryIndexRoute;
   PrivateMenusIndexRoute: typeof PrivateMenusIndexRoute;
   PrivateNotificationsIndexRoute: typeof PrivateNotificationsIndexRoute;
   PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute;
@@ -1154,6 +1176,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateDashboardIndexRoute: PrivateDashboardIndexRoute,
   PrivateExtensionsIndexRoute: PrivateExtensionsIndexRoute,
   PrivateGroupsIndexRoute: PrivateGroupsIndexRoute,
+  PrivateHistoryIndexRoute: PrivateHistoryIndexRoute,
   PrivateMenusIndexRoute: PrivateMenusIndexRoute,
   PrivateNotificationsIndexRoute: PrivateNotificationsIndexRoute,
   PrivateProfileIndexRoute: PrivateProfileIndexRoute,
@@ -1226,8 +1249,8 @@ export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>();
 
-import type { getRouter } from './router.tsx';
 import type { createStart } from '@tanstack/react-start';
+import type { getRouter } from './router.tsx';
 declare module '@tanstack/react-start' {
   interface Register {
     ssr: true;

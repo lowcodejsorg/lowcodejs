@@ -1,6 +1,8 @@
 import type {
   E_FIELD_FORMAT,
   E_FIELD_TYPE,
+  E_LOGGER_ACTION_TYPE,
+  E_LOGGER_OBJECT_TYPE,
   E_MENU_ITEM_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
@@ -432,6 +434,28 @@ export type StorageQueryPayload = Merge<
   BaseQueryPayload,
   {
     type?: string;
+  }
+>;
+
+export type LoggerQueryPayload = Merge<
+  BaseQueryPayload,
+  {
+    actions?:
+      | ValueOf<typeof E_LOGGER_ACTION_TYPE>
+      | Array<ValueOf<typeof E_LOGGER_ACTION_TYPE>>
+      | string;
+    objects?:
+      | ValueOf<typeof E_LOGGER_OBJECT_TYPE>
+      | Array<ValueOf<typeof E_LOGGER_OBJECT_TYPE>>
+      | string;
+    'date-from'?: string;
+    'date-to'?: string;
+    'order-created-at'?: 'asc' | 'desc';
+    'order-user'?: 'asc' | 'desc';
+    'order-action'?: 'asc' | 'desc';
+    'order-object'?: 'asc' | 'desc';
+    'order-object-id'?: 'asc' | 'desc';
+    'order-url'?: 'asc' | 'desc';
   }
 >;
 
