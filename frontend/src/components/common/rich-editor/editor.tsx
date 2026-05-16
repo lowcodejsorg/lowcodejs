@@ -26,8 +26,8 @@ import { LinkBubble } from './bubble/link-bubble';
 import { TableBubble } from './bubble/table-bubble';
 import { TextBubble } from './bubble/text-bubble';
 import './editor.css';
-import { buildMentionExtension } from './extensions/mention';
 import type { MentionConfig } from './extensions/mention';
+import { buildMentionExtension } from './extensions/mention';
 import { EditorToolbar } from './toolbar';
 import { uploadFile } from './upload';
 import { ContentViewer } from './viewer';
@@ -233,8 +233,7 @@ function getImageFilesFromDataTransfer(
   }
 
   if (collected.length === 0 && dataTransfer.items?.length) {
-    for (let i = 0; i < dataTransfer.items.length; i++) {
-      const item = dataTransfer.items[i];
+    for (const item of dataTransfer.items) {
       if (item.kind === 'file' && item.type.startsWith('image/')) {
         const file = item.getAsFile();
         if (file) collected.push(file);
