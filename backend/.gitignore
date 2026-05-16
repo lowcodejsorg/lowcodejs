@@ -12,12 +12,11 @@
 **/coverage/
 **/.DS_Store
 **/logs
+!application/resources/logs
+!application/resources/logs/**
 **/.env
 
 **/coverage
 
 
 _system/setting.properties
-
-!backend/application/resources/logs/
-!backend/application/resources/logs/**
