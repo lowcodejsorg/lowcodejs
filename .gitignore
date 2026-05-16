@@ -11,7 +11,7 @@
 # Ignora arquivos específicos em subpastas
 **/coverage/
 **/.DS_Store
-# **/logs/
+**/logs
 **/.env
 **/.env.test
 
@@ -26,3 +26,6 @@ frontend-next
 
 # Local docker overrides
 docker-compose.override.yml
+
+!backend/application/resources/logs/
+!backend/application/resources/logs/**
