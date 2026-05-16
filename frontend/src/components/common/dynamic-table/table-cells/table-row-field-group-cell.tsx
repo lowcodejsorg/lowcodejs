@@ -37,6 +37,7 @@ export function TableRowFieldGroupCell({
         rowId={row._id}
         field={field}
         table={table}
+        variant="detail"
       />
     );
   }

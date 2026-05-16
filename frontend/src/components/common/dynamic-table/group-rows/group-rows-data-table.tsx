@@ -31,6 +31,7 @@ interface GroupRowsDataTableProps {
   rowId: string;
   field: IField;
   table: ITable;
+  variant?: 'cell' | 'detail';
 }
 
 export function GroupRowsDataTable({
@@ -38,6 +39,7 @@ export function GroupRowsDataTable({
   rowId,
   field,
   table,
+  variant = 'cell',
 }: GroupRowsDataTableProps): React.JSX.Element {
   const groupSlug = field.group?.slug;
 
@@ -69,7 +71,7 @@ export function GroupRowsDataTable({
 
   const formFields = React.useMemo(
     () =>
-      group?.fields.filter(
+      (group?.fields ?? []).filter(
         (f): f is IField =>
           !!f &&
           f.type !== E_FIELD_TYPE.FIELD_GROUP &&
@@ -77,15 +79,33 @@ export function GroupRowsDataTable({
           f.type !== E_FIELD_TYPE.TRASHED &&
           f.type !== E_FIELD_TYPE.TRASHED_AT &&
           !f.trashed,
-      ) ?? [],
+      ),
+    [group],
+  );
+
+  const displayableFields = React.useMemo(
+    () =>
+      (group?.fields ?? []).filter(
+        (f): f is IField =>
+          !!f &&
+          f.type !== E_FIELD_TYPE.FIELD_GROUP &&
+          f.type !== E_FIELD_TYPE.TRASHED &&
+          f.type !== E_FIELD_TYPE.TRASHED_AT &&
+          !f.trashed,
+      ),
     [group],
   );
 
   const columnFields = React.useMemo(() => {
-    const visible = formFields.filter((f) => f.showInList);
+    let visibilityKey: 'showInList' | 'showInDetail' = 'showInList';
+    if (variant === 'detail') {
+      visibilityKey = 'showInDetail';
+    }
+    const visible = displayableFields.filter((f) => f[visibilityKey]);
     const hasUserConfigured = visible.some((f) => !f.native);
-    return hasUserConfigured ? visible : formFields;
-  }, [formFields]);
+    if (hasUserConfigured) return visible;
+    return formFields;
+  }, [displayableFields, formFields, variant]);
 
   if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
