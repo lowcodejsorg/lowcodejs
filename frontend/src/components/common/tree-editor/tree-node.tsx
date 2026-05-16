@@ -556,8 +556,10 @@ export const TreeEditor: React.FC<TreeEditorProps> = ({
                     {activeDragId && (
                       <TreeNodeItem
                         node={
-                          findNodeByIdLocal(treeData, activeDragId) ??
-                          ({ id: activeDragId, label: '' } as TreeNode)
+                          findNodeByIdLocal(treeData, activeDragId) ?? {
+                            id: activeDragId,
+                            label: '',
+                          }
                         }
                         level={0}
                         isSelected={false}

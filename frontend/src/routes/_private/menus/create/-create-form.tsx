@@ -258,8 +258,7 @@ export const CreateMenuFormFields = withForm({
                 required
                 error={
                   field.state.meta.isTouched && !field.state.meta.isValid
-                    ? ((field.state.meta.errors[0] as string | undefined) ??
-                      null)
+                    ? (field.state.meta.errors[0] ?? null)
                     : null
                 }
               />

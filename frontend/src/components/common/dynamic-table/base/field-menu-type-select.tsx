@@ -44,7 +44,7 @@ export function FieldMenuTypeSelect({
         value={field.state.value}
         aria-label={label}
         onValueChange={(value) => {
-          field.handleChange(value as ValueOf<typeof E_MENU_ITEM_TYPE>);
+          field.handleChange(value);
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>

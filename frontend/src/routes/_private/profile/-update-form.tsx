@@ -40,7 +40,7 @@ export const UpdateProfileFormFields = withForm({
     isPending: false,
     mode: 'show' as 'show' | 'edit',
     allowPasswordChange: false,
-    onAllowPasswordChangeChange: (() => {}) as (value: boolean) => void,
+    onAllowPasswordChangeChange: () => {},
     groupData: null as IGroup | null,
   },
   render: function Render({

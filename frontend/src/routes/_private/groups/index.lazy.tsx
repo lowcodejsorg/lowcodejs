@@ -124,9 +124,7 @@ function RouteComponent(): React.JSX.Element {
             <ExportCsvButton
               testId="export-groups-csv-btn"
               isPending={exportCsv.isPending}
-              onClick={() =>
-                exportCsv.mutate(search as Record<string, unknown>)
-              }
+              onClick={() => exportCsv.mutate(search)}
             />
           )}
           {isTrashView && isMaster && (

@@ -105,14 +105,7 @@ function summarizeFile(file: ImportFileContent): {
     return { tables, menus: file.menus ?? [], totalFields };
   }
   const legacy = file;
-  const struct = legacy.structure as
-    | {
-        name?: string;
-        slug?: string;
-        fields?: Array<unknown>;
-        groups?: Array<{ fields?: Array<unknown> }>;
-      }
-    | undefined;
+  const struct = legacy.structure;
   const top = struct?.fields?.length ?? 0;
   const grp = (struct?.groups ?? []).reduce(
     (a, g) => a + (g.fields?.length ?? 0),

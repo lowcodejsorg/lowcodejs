@@ -53,7 +53,7 @@ export function TableStyleSelectField({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(value as ValueOf<typeof E_TABLE_STYLE>);
+          field.handleChange(value);
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>

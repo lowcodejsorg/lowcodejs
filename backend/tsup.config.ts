@@ -1,8 +1,8 @@
 import { glob } from 'glob';
 import { copyFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { swc } from 'unplugin-swc';
 import { defineConfig } from 'tsup';
+import { swc } from 'unplugin-swc';
 
 export default defineConfig({
   entry: [

@@ -40,7 +40,7 @@ export function TableCollaborationSelectField({
         disabled={disabled}
         value={field.state.value}
         onValueChange={(value) => {
-          field.handleChange(value as 'open' | 'restricted');
+          field.handleChange(value);
         }}
       >
         <SelectTrigger className={cn(isInvalid && 'border-destructive')}>
