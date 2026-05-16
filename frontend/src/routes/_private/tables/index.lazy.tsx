@@ -48,7 +48,7 @@ function RouteComponent(): React.JSX.Element {
 
   const sidebar = useSidebar();
   const router = useRouter();
-  const navigate = useNavigate({ from: '/tables' });
+  const navigate = useNavigate({ from: '/tables/' });
 
   const { data } = useSuspenseQuery(tableListOptions(search));
   const permission = usePermission();
