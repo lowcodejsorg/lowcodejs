@@ -55,9 +55,14 @@ export const LoggerPaginatedSchema: FastifySchema = {
                 description: 'The URL that triggered the log entry',
               },
               user: {
-                type: ['string', 'null'],
-                description:
-                  'Reference ID of the user who performed the action (nullable)',
+                type: 'object',
+                nullable: true,
+                description: 'User who performed the action (nullable)',
+                properties: {
+                  _id: { type: 'string' },
+                  name: { type: 'string' },
+                  email: { type: 'string' },
+                },
               },
               action: {
                 type: 'string',
