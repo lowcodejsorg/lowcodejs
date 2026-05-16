@@ -2,7 +2,6 @@ import { glob } from 'glob';
 import { copyFile, mkdir } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { defineConfig } from 'tsup';
-import { swc } from 'unplugin-swc';
 
 export default defineConfig({
   entry: [
@@ -21,7 +20,6 @@ export default defineConfig({
   banner: {
     js: "import 'reflect-metadata';",
   },
-  esbuildPlugins: [swc.esbuild()],
   async onSuccess(): Promise<void> {
     const patterns: Array<{ pattern: string; label: string }> = [
       { pattern: 'extensions/**/manifest.json', label: 'manifest.json' },

@@ -10,7 +10,8 @@
       "Bash(npm ls *)",
       "Bash(npm install *)",
       "Bash(node -e \"const f = require\\('fastify'\\); console.log\\(Object.keys\\(f\\)\\)\")",
-      "Skill(typescript-patterns)"
+      "Skill(typescript-patterns)",
+      "Bash(npm run *)"
     ]
   }
 }

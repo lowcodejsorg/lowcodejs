@@ -10,6 +10,7 @@ import scalar from '@scalar/fastify-api-reference';
 import ajv from 'ajv-errors';
 import fastify from 'fastify';
 import { bootstrap } from 'fastify-decorators';
+import type { Server } from 'node:http';
 import z, { ZodError } from 'zod';
 
 import { loadControllers } from '@application/core/controllers';
@@ -56,13 +57,19 @@ interface ValidationError {
   message: string;
 }
 
-const kernel = fastify({
+function registerAjvErrors(
+  instance: Parameters<typeof ajv>[0],
+): ReturnType<typeof ajv> {
+  return ajv(instance);
+}
+
+const kernel = fastify<Server>({
   logger: false,
   ajv: {
     customOptions: {
       allErrors: true, // Retorna todos os erros, não só o primeiro
     },
-    plugins: [ajv as never],
+    plugins: [registerAjvErrors],
   },
 });
 
