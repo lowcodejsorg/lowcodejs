@@ -62,7 +62,7 @@ const kernel = fastify({
     customOptions: {
       allErrors: true, // Retorna todos os erros, não só o primeiro
     },
-    plugins: [ajv],
+    plugins: [ajv as never],
   },
 });
 

@@ -1,5 +1,5 @@
+/* eslint-disable import/order */
 import { getInstanceByToken } from 'fastify-decorators';
-import type { Server as HttpServer } from 'node:http';
 
 import type { IJWTPayload } from '@application/core/entity.core';
 import { Setting } from '@application/model/setting.model';
@@ -8,11 +8,11 @@ import StorageMongooseRepository from '@application/repositories/storage/storage
 import { initChatSocket } from '@application/resources/chat/chat.socket';
 import { initNotificationsSocket } from '@application/resources/notifications/notifications.socket';
 import { initStorageMigrationSocket } from '@application/resources/storage-migration/storage-migration.socket';
+import { startEmailWorker } from '@application/services/email-queue/worker';
 import { EmailContractService } from '@application/services/email/email-contract.service';
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
-import { startEmailWorker } from '@application/services/email-queue/worker';
-import StorageService from '@application/services/storage/storage.service';
 import { startStorageMigrationWorker } from '@application/services/storage-migration/worker';
+import StorageService from '@application/services/storage/storage.service';
 import { MongooseConnect } from '@config/database.config';
 import { syncStorageEnv } from '@config/setting-env-sync';
 import { Env } from '@start/env';
@@ -79,7 +79,7 @@ async function start(): Promise<void> {
     await kernel.listen({ port: Env.PORT, host: '0.0.0.0' });
     console.info(`HTTP Server running on http://localhost:${Env.PORT}`);
 
-    const httpServer = kernel.server as HttpServer;
+    const httpServer = kernel.server;
     const jwtDecode = (token: string): IJWTPayload | null =>
       kernel.jwt.decode<IJWTPayload>(token);
 
