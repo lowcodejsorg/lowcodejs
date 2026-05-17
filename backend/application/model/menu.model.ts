@@ -47,6 +47,13 @@ export const Schema = new mongoose.Schema(
       default: null,
     },
 
+    /** URL da imagem usada como ícone (opcional). Quando ausente, o frontend
+     *  cai para o ícone padrão por tipo de menu. */
+    icon: {
+      type: String,
+      default: null,
+    },
+
     /** Referência a extensão (apenas para tipo EXTENSION_MODULE) */
     extension: {
       type: {

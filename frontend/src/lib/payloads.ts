@@ -82,6 +82,7 @@ export type MenuCreatePayload = {
   parent?: string | null;
   html?: string | null;
   url?: string | null;
+  icon?: string | null;
   order?: number;
   isInitial?: boolean;
   extension?: MenuExtensionRefPayload | null;
@@ -95,6 +96,7 @@ export type MenuUpdatePayload = {
   parent?: string | null;
   html?: string | null;
   url?: string | null;
+  icon?: string | null;
   order?: number;
   isInitial?: boolean;
   extension?: MenuExtensionRefPayload | null;

@@ -64,6 +64,51 @@ function SidebarLabelTooltip({
   );
 }
 
+function SidebarItemIcon({
+  item,
+  className = '',
+}: {
+  item: MenuItem;
+  className?: string;
+}): React.JSX.Element {
+  const wrapper =
+    `inline-flex size-4 shrink-0 items-center justify-center ${className}`.trim();
+
+  if (item.iconUrl) {
+    return (
+      <span
+        aria-hidden="true"
+        className={wrapper}
+      >
+        <img
+          src={item.iconUrl}
+          alt=""
+          className="size-full object-contain"
+        />
+      </span>
+    );
+  }
+
+  if (item.icon) {
+    const Icon = item.icon;
+    return (
+      <span
+        aria-hidden="true"
+        className={wrapper}
+      >
+        <Icon className="text-primary size-4" />
+      </span>
+    );
+  }
+
+  return (
+    <span
+      aria-hidden="true"
+      className={wrapper}
+    />
+  );
+}
+
 function SidebarMenuItemRecursive({
   item,
   depth,
@@ -89,18 +134,13 @@ function SidebarMenuItemRecursive({
               data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
               tooltip={{ children: item.title, hidden: false }}
             >
-              {item.icon && (
-                <item.icon
-                  className="text-primary"
-                  width={32}
-                />
-              )}
-              <span>{item.title}</span>
-              <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+              <SidebarItemIcon item={item} />
+              <span className="flex-1 truncate">{item.title}</span>
+              <ChevronRightIcon className="ml-auto shrink-0 size-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
             </SidebarMenuButton>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <SidebarMenuSub>
+            <SidebarMenuSub className="mx-0 border-l-0 px-0 py-0 translate-x-0">
               {item.items.map((subItem) => {
                 // If sub-item has its own children and we haven't hit max depth, recurse
                 if (
@@ -140,10 +180,9 @@ function SidebarMenuItemRecursive({
                       data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
-                      {subItem.icon && (
-                        <subItem.icon className="text-primary size-4" />
-                      )}
-                      <span>{subItem.title}</span>
+                      <SidebarItemIcon item={subItem} />
+                      <span className="flex-1 truncate">{subItem.title}</span>
+                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </a>
                   );
                 } else {
@@ -153,10 +192,9 @@ function SidebarMenuItemRecursive({
                       data-test-id={`sidebar-menu-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
                       onClick={() => setOpenMobile(false)}
                     >
-                      {subItem.icon && (
-                        <subItem.icon className="text-primary size-4" />
-                      )}
-                      <span>{subItem.title}</span>
+                      <SidebarItemIcon item={subItem} />
+                      <span className="flex-1 truncate">{subItem.title}</span>
+                      <ChevronRightIcon className="ml-auto shrink-0 size-4 text-sidebar-foreground/40" />
                     </Link>
                   );
                 }
@@ -166,7 +204,9 @@ function SidebarMenuItemRecursive({
                     <SidebarLabelTooltip label={subItem.title}>
                       <SidebarMenuSubButton
                         asChild
+                        size="md"
                         isActive={!isExternal && location.pathname === subUrl}
+                        className="h-8 translate-x-0 p-2 text-sm"
                       >
                         {subItemLink}
                       </SidebarMenuSubButton>
@@ -193,13 +233,8 @@ function SidebarMenuItemRecursive({
           data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
           tooltip={{ children: item.title, hidden: false }}
         >
-          {item.icon && (
-            <item.icon
-              className="text-primary"
-              width={32}
-            />
-          )}
-          <span>{item.title}</span>
+          <SidebarItemIcon item={item} />
+          <span className="flex-1 truncate">{item.title}</span>
         </SidebarMenuButton>
       </SidebarMenuItem>
     );
@@ -219,13 +254,11 @@ function SidebarMenuItemRecursive({
         data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
-        {item.icon && (
-          <item.icon
-            className="text-primary group-data-[active=true]:text-primary-foreground"
-            width={32}
-          />
-        )}
-        <span>{item.title}</span>
+        <SidebarItemIcon
+          item={item}
+          className="group-data-[active=true]:text-primary-foreground"
+        />
+        <span className="flex-1 truncate">{item.title}</span>
       </a>
     );
   } else {
@@ -235,15 +268,15 @@ function SidebarMenuItemRecursive({
         data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
         onClick={() => setOpenMobile(false)}
       >
-        {item.icon && (
-          <item.icon
-            className="text-primary group-data-[active=true]:text-primary-foreground"
-            width={32}
-          />
-        )}
-        <span>{item.title}</span>
+        <SidebarItemIcon
+          item={item}
+          className="group-data-[active=true]:text-primary-foreground"
+        />
+        <span className="flex-1 truncate">{item.title}</span>
         {item.badge && (
-          <Badge className="rounded-full px-1  text-xs">{item.badge}</Badge>
+          <Badge className="ml-auto rounded-full px-1 text-xs">
+            {item.badge}
+          </Badge>
         )}
       </Link>
     );

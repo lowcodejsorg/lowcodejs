@@ -65,6 +65,29 @@ export function MenuView({ data }: MenuViewProps): React.JSX.Element {
             <p className="text-sm font-medium">{data.order ?? 0}</p>
           </div>
 
+          <div className="space-y-1">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+              Ícone
+            </p>
+            {data.icon && (
+              <div className="flex items-center gap-2 p-2 border rounded-md w-fit">
+                <img
+                  src={data.icon}
+                  alt="Ícone do menu"
+                  className="h-8 w-8 object-contain"
+                />
+                <span className="text-xs text-muted-foreground">
+                  Ícone customizado
+                </span>
+              </div>
+            )}
+            {!data.icon && (
+              <p className="text-sm text-muted-foreground">
+                Padrão (ícone do tipo)
+              </p>
+            )}
+          </div>
+
           {data.type !== E_MENU_ITEM_TYPE.SEPARATOR && (
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">

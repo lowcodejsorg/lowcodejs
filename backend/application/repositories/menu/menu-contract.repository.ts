@@ -10,6 +10,7 @@ export type MenuCreatePayload = Merge<
       | 'parent'
       | 'url'
       | 'html'
+      | 'icon'
       | 'owner'
       | 'order'
       | 'isInitial'
