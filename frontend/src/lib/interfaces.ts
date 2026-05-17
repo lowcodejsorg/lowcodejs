@@ -194,6 +194,7 @@ export type IFieldConfigurationRelationship = {
 };
 
 export type IFieldConfigurationGroup = {
+  _id?: string;
   slug: string;
   fields?: Array<IField>;
 };
@@ -246,6 +247,7 @@ export type ISchema = {
 export type ITableSchema = Record<string, ISchema | Array<ISchema>>;
 
 export type IGroupConfiguration = {
+  _id?: string;
   slug: string;
   name: string;
   fields: Array<IField>;

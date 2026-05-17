@@ -17,6 +17,7 @@ import { toastError, toastSuccess } from '@/lib/toast';
 function buildGroupFieldPayload(
   field: IField,
   groupSlug: string,
+  groupId: string | undefined,
   overrides: Partial<IField>,
 ): Partial<IField> {
   const dropdown = field.dropdown ?? [];
@@ -37,6 +38,11 @@ function buildGroupFieldPayload(
     };
   }
 
+  const groupEntry: { slug: string; _id?: string } = { slug: groupSlug };
+  if (groupId) {
+    groupEntry._id = groupId;
+  }
+
   return {
     name: field.name,
     type: field.type,
@@ -53,7 +59,7 @@ function buildGroupFieldPayload(
     defaultValue: field.defaultValue ?? null,
     dropdown,
     relationship,
-    group: { slug: groupSlug },
+    group: groupEntry,
     category,
     trashed: field.trashed,
     trashedAt: field.trashedAt ?? null,
@@ -192,7 +198,7 @@ export function useGroupFieldManagement(
       tableSlug,
       groupSlug,
       fieldId: field._id,
-      data: buildGroupFieldPayload(field, groupSlug, {
+      data: buildGroupFieldPayload(field, groupSlug, targetGroup?._id, {
         [visibilityKey]: newValue,
       }),
     });
@@ -209,7 +215,9 @@ export function useGroupFieldManagement(
       tableSlug,
       groupSlug,
       fieldId: field._id,
-      data: buildGroupFieldPayload(field, groupSlug, { [widthKey]: newWidth }),
+      data: buildGroupFieldPayload(field, groupSlug, targetGroup?._id, {
+        [widthKey]: newWidth,
+      }),
     });
   }
 

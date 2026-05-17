@@ -13,7 +13,12 @@
       "Skill(typescript-patterns)",
       "Bash(npm run *)",
       "Bash(git check-ignore *)",
-      "Bash(xargs ls -la)"
+      "Bash(xargs ls -la)",
+      "Bash(grep *)",
+      "mcp__ide__getDiagnostics",
+      "Bash(git -C /home/jhollyfer/Documentos/lowcodejs diff HEAD -- frontend/src/components/common/dynamic-table/table-cells/table-row-field-group-cell.tsx)",
+      "Bash(git -C /home/jhollyfer/Documentos/lowcodejs diff HEAD -- backend/application/model/field.model.ts)",
+      "Bash(git -C /home/jhollyfer/Documentos/lowcodejs diff HEAD -- frontend/src/components/common/dynamic-table/group-rows/group-rows-data-table.tsx)"
     ]
   }
 }

@@ -140,11 +140,15 @@ export default class TableFieldUpdateUseCase {
         );
       }
 
-      // Normalize group: if it's a string, convert to object format
-      const normalizedGroup =
-        typeof payload.group === 'string'
-          ? { slug: payload.group }
-          : payload.group;
+      let normalizedGroup: { slug: string; _id?: string } | null = null;
+      if (typeof payload.group === 'string') {
+        normalizedGroup = { slug: payload.group };
+      } else if (payload.group) {
+        normalizedGroup = { slug: payload.group.slug };
+        if (payload.group._id) {
+          normalizedGroup._id = payload.group._id;
+        }
+      }
 
       let updatedField = await this.fieldRepository.update({
         ...payload,
@@ -166,31 +170,30 @@ export default class TableFieldUpdateUseCase {
       let groups = table.groups || [];
 
       if (updatedField.type === E_FIELD_TYPE.FIELD_GROUP) {
-        // Verifica se já existe um grupo para este campo
         const existingGroup = groups.find((g) => g.slug === field.group?.slug);
+        const groupId = updatedField._id;
 
         if (!existingGroup) {
-          // Cria novo grupo em groups
           const newGroup: IGroupConfiguration = {
+            _id: groupId,
             slug,
             name: updatedField.name,
             fields: [],
             _schema: {},
           };
-
           groups = [...groups, newGroup];
-        } else if (oldSlug !== slug) {
-          // Atualiza o slug do grupo existente
-          groups = groups.map((g) =>
-            g.slug === existingGroup.slug
-              ? { ...g, slug, name: updatedField.name }
-              : g,
-          );
+        } else {
+          groups = groups.map((g) => {
+            if (g.slug === existingGroup.slug) {
+              return { ...g, _id: groupId, slug, name: updatedField.name };
+            }
+            return g;
+          });
         }
 
         updatedField = await this.fieldRepository.update({
           _id: updatedField._id,
-          group: { slug },
+          group: { slug, _id: groupId },
         });
       }
 

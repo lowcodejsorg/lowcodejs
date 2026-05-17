@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { PencilIcon, PlusIcon, TrashIcon } from 'lucide-react';
+import { PencilIcon, PlusIcon, Settings2Icon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
 import { TableRowCategoryCell } from '../table-cells/table-row-category-cell';
@@ -11,6 +11,7 @@ import { TableRowTextLongCell } from '../table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '../table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '../table-cells/table-row-user-cell';
 
+import { GroupFieldManagementSheet } from './group-field-management-sheet';
 import { GroupRowDeleteDialog } from './group-row-delete-dialog';
 import { GroupRowFormDialog } from './group-row-form-dialog';
 
@@ -31,7 +32,7 @@ interface GroupRowsDataTableProps {
   rowId: string;
   field: IField;
   table: ITable;
-  variant?: 'cell' | 'detail';
+  canManage?: boolean;
 }
 
 export function GroupRowsDataTable({
@@ -39,7 +40,7 @@ export function GroupRowsDataTable({
   rowId,
   field,
   table,
-  variant = 'cell',
+  canManage = false,
 }: GroupRowsDataTableProps): React.JSX.Element {
   const groupSlug = field.group?.slug;
 
@@ -50,6 +51,7 @@ export function GroupRowsDataTable({
   const [formOpen, setFormOpen] = React.useState(false);
   const [editItem, setEditItem] = React.useState<IRow | null>(null);
   const [deleteItem, setDeleteItem] = React.useState<IRow | null>(null);
+  const [managementOpen, setManagementOpen] = React.useState(false);
   const [page, setPage] = React.useState(1);
   const [perPage, setPerPage] = React.useState(6);
 
@@ -97,15 +99,11 @@ export function GroupRowsDataTable({
   );
 
   const columnFields = React.useMemo(() => {
-    let visibilityKey: 'showInList' | 'showInDetail' = 'showInList';
-    if (variant === 'detail') {
-      visibilityKey = 'showInDetail';
-    }
-    const visible = displayableFields.filter((f) => f[visibilityKey]);
+    const visible = displayableFields.filter((f) => f.showInList);
     const hasUserConfigured = visible.some((f) => !f.native);
     if (hasUserConfigured) return visible;
     return formFields;
-  }, [displayableFields, formFields, variant]);
+  }, [displayableFields, formFields]);
 
   if (!groupSlug || !group) {
     return <span className="text-muted-foreground text-sm">-</span>;
@@ -128,6 +126,17 @@ export function GroupRowsDataTable({
       <div className="flex items-center justify-between">
         <span className="text-sm font-medium ml-2">{field.name}</span>
         <div className="inline-flex items-center gap-2">
+          {canManage && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setManagementOpen(true)}
+            >
+              <Settings2Icon className="size-4" />
+              <span>Gerenciar campos</span>
+            </Button>
+          )}
           <Button
             type="button"
             variant="outline"
@@ -262,6 +271,15 @@ export function GroupRowsDataTable({
           rowId={rowId}
           groupSlug={groupSlug}
           itemId={deleteItem._id}
+        />
+      )}
+
+      {canManage && (
+        <GroupFieldManagementSheet
+          open={managementOpen}
+          onOpenChange={setManagementOpen}
+          table={table}
+          groupSlug={groupSlug}
         />
       )}
     </div>

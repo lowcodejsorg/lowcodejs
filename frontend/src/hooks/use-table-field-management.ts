@@ -20,6 +20,13 @@ function buildFieldPayload(
   const hasRelationship = field.relationship !== null;
   const hasDropdown = field.dropdown.length > 0;
   const hasCategory = field.category.length > 0;
+  let group: { slug: string; _id?: string } | null = null;
+  if (field.group) {
+    group = { slug: field.group.slug };
+    if (field.group._id) {
+      group._id = field.group._id;
+    }
+  }
 
   return {
     name: field.name,
@@ -49,7 +56,7 @@ function buildFieldPayload(
           order: field.relationship!.order,
         }
       : null,
-    group: field.group,
+    group,
     category: hasCategory ? field.category : [],
     trashed: field.trashed,
     trashedAt: field.trashedAt ?? null,

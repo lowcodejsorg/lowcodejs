@@ -96,13 +96,13 @@ export default class FieldMongooseRepository implements FieldContractRepository 
   }
 
   async update({ _id, ...payload }: FieldUpdatePayload): Promise<IField> {
-    const field = await Model.findOne({ _id });
+    const field = await Model.findOneAndUpdate(
+      { _id },
+      { $set: payload },
+      { new: true, runValidators: true },
+    );
 
     if (!field) throw new Error('Field not found');
-
-    field.set(payload);
-
-    await field.save();
 
     return this.transform(field);
   }

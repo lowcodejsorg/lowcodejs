@@ -79,10 +79,7 @@ export function resolveLoggerNavigateTarget(
     case E_LOGGER_OBJECT_TYPE.FIELD: {
       const groupFieldMatch = matchTableGroupField(url);
       if (groupFieldMatch) {
-        return {
-          to: '/tables/$slug/group/$groupSlug/field/management',
-          params: { slug: groupFieldMatch[1], groupSlug: groupFieldMatch[2] },
-        };
+        return { to: '/tables/$slug', params: { slug: groupFieldMatch[1] } };
       }
       const fieldMatch = matchTableField(url);
       if (fieldMatch) {
@@ -104,10 +101,7 @@ export function resolveLoggerNavigateTarget(
     case E_LOGGER_OBJECT_TYPE.GROUP_FIELD: {
       const groupFieldMatch = matchTableGroupField(url);
       if (groupFieldMatch) {
-        return {
-          to: '/tables/$slug/group/$groupSlug/field/management',
-          params: { slug: groupFieldMatch[1], groupSlug: groupFieldMatch[2] },
-        };
+        return { to: '/tables/$slug', params: { slug: groupFieldMatch[1] } };
       }
       const tableMatch = matchTableSlug(url);
       if (tableMatch) {

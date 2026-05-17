@@ -68,7 +68,11 @@ export const FieldGroupSchema = z
   .union([
     z.string().trim(),
     z.object({
-      _id: z.string().trim().optional(),
+      _id: z
+        .string()
+        .trim()
+        .nullish()
+        .transform((v) => v || undefined),
       slug: z.string().trim(),
     }),
   ])

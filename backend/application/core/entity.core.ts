@@ -300,6 +300,7 @@ export type ITableSchema = Record<
 >;
 
 export type IGroupConfiguration = {
+  _id?: string;
   slug: string;
   name: string;
   fields: IField[];
