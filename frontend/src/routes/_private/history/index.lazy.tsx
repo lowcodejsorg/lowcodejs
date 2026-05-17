@@ -908,7 +908,10 @@ function buildColumns(params: {
           display = `${id.slice(0, 16)}…`;
         }
         return (
-          <span className="text-sm text-muted-foreground" title={id}>
+          <span
+            className="text-sm text-muted-foreground"
+            title={id}
+          >
             {display}
           </span>
         );
