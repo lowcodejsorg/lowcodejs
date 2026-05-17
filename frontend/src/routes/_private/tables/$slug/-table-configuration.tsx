@@ -85,7 +85,7 @@ function FieldGroupSubMenu({
             </DropdownMenuItem>
           )}
 
-          {permission.can('UPDATE_FIELD') && activeFields.length > 0 && (
+          {permission.can('UPDATE_FIELD') && (
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full"
               onClick={() => {
@@ -101,9 +101,7 @@ function FieldGroupSubMenu({
             </DropdownMenuItem>
           )}
 
-          {permission.can('UPDATE_FIELD') && activeFields.length > 0 && (
-            <DropdownMenuSeparator />
-          )}
+          {permission.can('UPDATE_FIELD') && <DropdownMenuSeparator />}
 
           {permission.can('UPDATE_FIELD') &&
             activeFields.map((groupField) => (
@@ -213,7 +211,7 @@ export function TableConfigurationDropdown({
             </DropdownMenuItem>
           )}
 
-          {permission.can('UPDATE_FIELD') && activeFields.length > 0 && (
+          {permission.can('UPDATE_FIELD') && (
             <DropdownMenuSub>
               <DropdownMenuSubTrigger className="inline-flex space-x-1 w-full">
                 <SendToBackIcon className="size-4" />
@@ -221,24 +219,21 @@ export function TableConfigurationDropdown({
               </DropdownMenuSubTrigger>
               <DropdownMenuPortal>
                 <DropdownMenuSubContent>
-                  {activeFields.length > 0 && (
-                    <>
-                      <DropdownMenuItem
-                        className="inline-flex space-x-1 w-full"
-                        onClick={() => {
-                          closeMenu();
-                          router.navigate({
-                            to: '/tables/$slug/field/management',
-                            params: { slug },
-                          });
-                        }}
-                      >
-                        <Settings2Icon className="size-4" />
-                        <span>Gerenciar </span>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator />
-                    </>
-                  )}
+                  <DropdownMenuItem
+                    className="inline-flex space-x-1 w-full"
+                    onClick={() => {
+                      closeMenu();
+                      router.navigate({
+                        to: '/tables/$slug/field/management',
+                        params: { slug },
+                      });
+                    }}
+                  >
+                    <Settings2Icon className="size-4" />
+                    <span>Gerenciar </span>
+                  </DropdownMenuItem>
+
+                  <DropdownMenuSeparator />
 
                   {activeFields.map((field) => (
                     <DropdownMenuItem
