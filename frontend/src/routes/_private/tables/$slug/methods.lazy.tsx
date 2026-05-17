@@ -134,7 +134,7 @@ function MethodsFormContent({
       if (_update.status === 'pending') return;
 
       await _update.mutateAsync({
-        slug: tableSlug,
+        routeSlug: tableSlug,
         name: data.name,
         description: data.description,
         logo: data.logo?._id ?? null,

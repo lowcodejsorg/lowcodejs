@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -42,7 +41,7 @@ export default class TableCreateUseCase {
           ),
         );
 
-      const slug = slugify(payload.name, { lower: true, trim: true });
+      const slug = payload.slug;
 
       const existingTable = await this.tableRepository.findBySlug(slug);
 

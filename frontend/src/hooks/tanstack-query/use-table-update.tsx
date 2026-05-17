@@ -28,17 +28,17 @@ export function useUpdateTable(
 
   return useMutation({
     mutationFn: async function (payload: TableUpdatePayload) {
-      const route = '/tables/'.concat(payload.slug);
+      const route = '/tables/'.concat(payload.routeSlug);
       const response = await API.put<ITable>(route, payload);
       return response.data;
     },
     onSuccess(data, variables) {
-      if (data.slug !== variables.slug) {
+      if (data.slug !== variables.routeSlug) {
         queryClient.removeQueries({
-          queryKey: queryKeys.tables.detail(variables.slug),
+          queryKey: queryKeys.tables.detail(variables.routeSlug),
         });
         queryClient.removeQueries({
-          queryKey: queryKeys.rows.all(variables.slug),
+          queryKey: queryKeys.rows.all(variables.routeSlug),
         });
       }
       queryClient.setQueryData(queryKeys.tables.detail(data.slug), data);

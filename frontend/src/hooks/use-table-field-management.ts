@@ -302,7 +302,7 @@ export function useTableFieldManagement(
     }
 
     updateTable.mutate({
-      slug: table.slug,
+      routeSlug: table.slug,
       name: table.name,
       description: table.description,
       logo: table.logo?._id ?? null,

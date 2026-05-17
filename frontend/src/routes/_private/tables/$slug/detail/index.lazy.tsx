@@ -128,6 +128,7 @@ function TableUpdateContent({
   const form = useAppForm({
     defaultValues: {
       name: data.name,
+      slug: data.slug,
       description: data.description ?? '',
       style: data.style,
       visibility: data.visibility,
@@ -169,7 +170,8 @@ function TableUpdateContent({
       }
 
       await _update.mutateAsync({
-        slug: data.slug,
+        routeSlug: data.slug,
+        slug: value.slug.trim() || undefined,
         name: value.name || data.name,
         description: value.description || null,
         logo: value.logo || data.logo?._id || null,

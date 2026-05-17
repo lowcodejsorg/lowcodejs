@@ -42,7 +42,7 @@ export default class {
     const params = TableUpdateParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
-      ...params,
+      routeSlug: params.slug,
       ...payload,
     });
 

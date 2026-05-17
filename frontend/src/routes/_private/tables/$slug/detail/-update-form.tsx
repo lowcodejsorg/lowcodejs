@@ -31,6 +31,7 @@ export const TableUpdateSchema = z.object({
     .string()
     .min(1, 'Nome é obrigatório')
     .max(40, 'Nome deve ter no máximo 40 caracteres'),
+  slug: z.string().trim().default(''),
   description: z.string().default(''),
   style: z.enum([
     E_TABLE_STYLE.LIST,
@@ -75,6 +76,7 @@ export type TableUpdateFormValues = z.infer<typeof TableUpdateSchema>;
 
 export const tableUpdateFormDefaultValues: TableUpdateFormValues = {
   name: '',
+  slug: '',
   description: '',
   style: E_TABLE_STYLE.LIST,
   visibility: E_TABLE_VISIBILITY.RESTRICTED,
@@ -272,6 +274,18 @@ export const UpdateTableFormFields = withForm({
               disabled={isDisabled}
               icon={<FileTextIcon />}
               required
+            />
+          )}
+        </form.AppField>
+
+        {/* Campo URL */}
+        <form.AppField name="slug">
+          {(field) => (
+            <field.FieldText
+              label="URL"
+              placeholder="ex: minha-tabela"
+              description="Use letras minúsculas e hífens. Ex: minha-tabela"
+              disabled={isDisabled}
             />
           )}
         </form.AppField>

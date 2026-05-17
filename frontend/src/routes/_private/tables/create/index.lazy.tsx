@@ -78,6 +78,7 @@ function RouteComponentContent(): React.JSX.Element {
 
       await _create.mutateAsync({
         name: value.name.trim(),
+        slug: value.slug.trim() || undefined,
         logo: value.logo,
         style: value.style,
         visibility: value.visibility,

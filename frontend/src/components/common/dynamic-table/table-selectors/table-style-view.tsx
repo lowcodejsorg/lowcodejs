@@ -75,7 +75,7 @@ export function TableStyleViewDropdown({
     if (!table.data) return;
 
     update.mutate({
-      slug,
+      routeSlug: slug,
       name: table.data.name,
       description: table.data.description ?? null,
       logo: table.data.logo?._id ?? null,

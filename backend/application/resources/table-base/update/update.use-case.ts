@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -32,7 +31,7 @@ export default class TableUpdateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const table = await this.tableRepository.findBySlug(payload.routeSlug);
 
       if (!table)
         return left(
@@ -62,13 +61,8 @@ export default class TableUpdateUseCase {
         }
       }
 
-      // Gerar novo slug a partir do nome
       const oldSlug = table.slug;
-      const newSlug = slugify(payload.name, {
-        lower: true,
-        strict: true,
-        trim: true,
-      });
+      const newSlug = payload.slug;
       const slugChanged = newSlug !== oldSlug;
 
       // Verificar unicidade do novo slug

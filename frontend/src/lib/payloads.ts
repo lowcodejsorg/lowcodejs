@@ -113,6 +113,7 @@ export type MenuReorderPayload = {
 // ============== TABLE ==============
 export type TableCreatePayload = {
   name: string;
+  slug?: string;
   owner?: string;
   logo?: string | null;
   style?: ValueOf<typeof E_TABLE_STYLE>;
@@ -126,7 +127,8 @@ export type TableMethodPayload = {
 };
 
 export type TableUpdatePayload = {
-  slug: string;
+  routeSlug: string;
+  slug?: string;
   name?: string;
   description?: string | null;
   logo?: string | null;
