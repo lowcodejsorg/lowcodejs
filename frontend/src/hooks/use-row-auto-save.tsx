@@ -150,8 +150,13 @@ export function useAutoSaveController({
     if (isUploading) return;
     if (!hasAnyValue(values)) return;
 
-    const timer = setTimeout(() => {
+    const timer = setTimeout((): void => {
       void save(values);
+      const fieldNames = Object.keys(form.store.state.fieldMeta);
+      for (const name of fieldNames) {
+        form.setFieldMeta(name, (prev) => ({ ...prev, isTouched: true }));
+      }
+      void form.validateAllFields('change');
     }, 500);
 
     return (): void => clearTimeout(timer);
