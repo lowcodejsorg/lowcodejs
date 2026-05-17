@@ -72,7 +72,9 @@ export const FieldGroupSchema = z
         .string()
         .trim()
         .nullish()
-        .transform((v) => v || undefined),
+        .transform((v) => v || undefined)
+        .optional(),
+
       slug: z.string().trim(),
     }),
   ])
