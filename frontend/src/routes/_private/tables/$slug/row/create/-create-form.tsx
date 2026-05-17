@@ -257,6 +257,9 @@ export function RowFormFields({
                 onChange: ({ value }: { value: any }) => {
                   return buildFieldValidator(field, value);
                 },
+                onBlur: ({ value }: { value: any }) => {
+                  return buildFieldValidator(field, value);
+                },
               }}
             >
               {(formField: any) => {
