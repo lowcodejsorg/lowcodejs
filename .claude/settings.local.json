@@ -18,7 +18,12 @@
       "mcp__ide__getDiagnostics",
       "Bash(git -C /home/jhollyfer/Documentos/lowcodejs diff HEAD -- frontend/src/components/common/dynamic-table/table-cells/table-row-field-group-cell.tsx)",
       "Bash(git -C /home/jhollyfer/Documentos/lowcodejs diff HEAD -- backend/application/model/field.model.ts)",
-      "Bash(git -C /home/jhollyfer/Documentos/lowcodejs diff HEAD -- frontend/src/components/common/dynamic-table/group-rows/group-rows-data-table.tsx)"
+      "Bash(git -C /home/jhollyfer/Documentos/lowcodejs diff HEAD -- frontend/src/components/common/dynamic-table/group-rows/group-rows-data-table.tsx)",
+      "Bash(git merge-tree *)",
+      "Bash(git fetch *)",
+      "Bash(git merge *)",
+      "Bash(git stash *)",
+      "Bash(git add *)"
     ]
   }
 }

@@ -53,6 +53,7 @@ function RouteComponent(): React.JSX.Element {
 
   const form = useAppForm({
     defaultValues: menuFormDefaultValues,
+    // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuCreateSchema, onSubmit: MenuCreateSchema },
     onSubmit: async ({ value }) => {
       if (_create.status === 'pending') return;
@@ -67,6 +68,7 @@ function RouteComponent(): React.JSX.Element {
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        icon: value.icon || null,
         order,
         isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
         extension: value.extension ?? null,

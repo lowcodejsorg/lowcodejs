@@ -25,24 +25,14 @@ export const ROLE_ROUTES: Record<string, Array<LinkProps['to']>> = {
   ],
   MANAGER: [
     '/e/$package/$id',
-
     '/history',
-
-    '/notifications',
-    '/profile',
-
     '/tables',
     '/tables/$slug',
     '/pages/$slug',
   ],
   REGISTERED: [
     '/e/$package/$id',
-
     '/history',
-
-    '/notifications',
-    '/profile',
-
     '/tables',
     '/tables/$slug',
     '/pages/$slug',

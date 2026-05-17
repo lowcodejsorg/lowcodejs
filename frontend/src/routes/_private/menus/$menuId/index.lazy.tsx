@@ -123,12 +123,14 @@ function MenuUpdateContent({
       table: data.table?._id ?? '',
       html: data.html ?? '',
       url: data.url ?? '',
+      icon: data.icon ?? null,
       parent: data.parent?._id ?? '',
       position: data.parent
         ? String((data.order ?? 0) + 1)
         : String(data.order ?? 0),
       isInitial: data.isInitial ?? false,
       extension: data.extension ?? null,
+      iconFile: [] as Array<File>,
     } satisfies MenuUpdateFormValues,
     // @ts-expect-error Zod Standard Schema type inference
     validators: { onChange: MenuUpdateSchema, onSubmit: MenuUpdateSchema },
@@ -146,6 +148,7 @@ function MenuUpdateContent({
         table: value.table || null,
         html: value.html || null,
         url: value.url || null,
+        icon: value.icon || null,
         order,
         isInitial: value.type === 'SEPARATOR' ? false : value.isInitial,
         extension: value.extension ?? null,
