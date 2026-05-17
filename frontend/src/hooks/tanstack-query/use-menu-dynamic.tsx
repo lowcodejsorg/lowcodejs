@@ -78,6 +78,7 @@ function buildMenuTree(menus: Array<IMenu>): Array<MenuWithChildren> {
  */
 function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
   const Icon = TYPE_ICONS[menu.type] || LayoutListIcon;
+  const iconUrl = menu.icon ?? null;
   const hasChildren = menu.children && menu.children.length > 0;
 
   // Menu com URL (pode ter filhos ou não)
@@ -95,6 +96,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
       return {
         title: menu.name,
         icon: Icon,
+        iconUrl,
         url: menu.url as LinkProps['to'],
         type: menu.type,
         items: childItems,
@@ -105,6 +107,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
     return {
       title: menu.name,
       icon: Icon,
+      iconUrl,
       url: menu.url as LinkProps['to'],
       type: menu.type,
     };
@@ -123,6 +126,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
     return {
       title: menu.name,
       icon: Icon,
+      iconUrl,
       type: menu.type,
       items: childItems,
     };
@@ -133,6 +137,7 @@ function convertMenuToItem(menu: MenuWithChildren): MenuItem | null {
     return {
       title: menu.name,
       icon: Icon,
+      iconUrl,
       type: menu.type,
       items: [],
     };

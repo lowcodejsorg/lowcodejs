@@ -3,16 +3,19 @@ import { FileTextIcon } from 'lucide-react';
 
 import { SeparatorInfo } from '../-separator-info';
 
+import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { ExtensionModuleSelect } from '@/components/common/selectors/extension-module-select';
+import { Field, FieldDescription, FieldLabel } from '@/components/ui/field';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
-import type { ValueOf } from '@/lib/interfaces';
+import type { IStorage, ValueOf } from '@/lib/interfaces';
 import type { MenuCreatePayload } from '@/lib/payloads';
 import { MenuCreateBodySchema } from '@/lib/schemas';
 
 export const MenuCreateSchema = MenuCreateBodySchema;
 export type MenuFormType = Omit<MenuCreatePayload, 'order'> & {
   position: string;
+  iconFile: Array<File>;
 };
 
 export const menuFormDefaultValues: MenuFormType = {
@@ -21,10 +24,12 @@ export const menuFormDefaultValues: MenuFormType = {
   table: '',
   html: '',
   url: '',
+  icon: null,
   parent: '',
   position: '0',
   isInitial: false,
   extension: null,
+  iconFile: [],
 };
 
 export const CreateMenuFormFields = withForm({
@@ -37,6 +42,7 @@ export const CreateMenuFormFields = withForm({
   },
   render: function Render({ form, isPending, menuType }) {
     const parent = useStore(form.store, (state) => state.values.parent);
+    const iconUrl = useStore(form.store, (state) => state.values.icon);
 
     return (
       <section
@@ -70,6 +76,44 @@ export const CreateMenuFormFields = withForm({
             />
           )}
         </form.AppField>
+
+        {/* Campo Ícone (opcional) */}
+        <form.Field
+          name="iconFile"
+          children={(field) => (
+            <Field>
+              <FieldLabel>Ícone</FieldLabel>
+              <FieldDescription>
+                Imagem opcional usada como ícone no menu lateral. Se vazio, é
+                exibido o ícone padrão do tipo selecionado.
+              </FieldDescription>
+              <FileUploadWithStorage
+                value={field.state.value}
+                onValueChange={field.handleChange}
+                onStorageChange={(storages: Array<IStorage>) => {
+                  form.setFieldValue('icon', storages[0]?.url ?? null);
+                }}
+                accept="image/*"
+                maxFiles={1}
+                maxSize={4 * 1024 * 1024}
+                placeholder="Arraste ou selecione uma imagem"
+                shouldDeleteFromStorage={false}
+              />
+              {iconUrl && (
+                <div className="mt-2 flex items-center gap-2 p-2 border rounded-md w-fit">
+                  <img
+                    src={iconUrl}
+                    alt="Pré-visualização do ícone"
+                    className="h-8 w-8 object-contain"
+                  />
+                  <span className="text-xs text-muted-foreground">
+                    Ícone atual
+                  </span>
+                </div>
+              )}
+            </Field>
+          )}
+        />
 
         {/* Campo Tipo */}
         <form.AppField
