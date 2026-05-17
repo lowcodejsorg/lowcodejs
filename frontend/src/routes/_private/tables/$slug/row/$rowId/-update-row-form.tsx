@@ -17,6 +17,11 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
+import {
+  SaveStatusIndicator,
+  useAutoSaveController,
+  useRowAutoSave,
+} from '@/hooks/use-row-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
@@ -108,6 +113,14 @@ function UpdateRowFormContent({
 
   useApiErrorAutoClear(form);
 
+  const { isSaving, lastSavedAt, save } = useRowAutoSave({
+    tableSlug: slug,
+    fields: formFields,
+    rowId,
+  });
+
+  useAutoSaveController({ form, save, isUploading, enabled: mode === 'edit' });
+
   const _update = useUpdateTableRow({
     onSuccess() {
       toastSuccess(
@@ -126,7 +139,7 @@ function UpdateRowFormContent({
     },
   });
 
-  const isDisabled = mode === 'show' || _update.status === 'pending';
+  const isDisabled = mode === 'show' || isSaving || _update.status === 'pending';
 
   return (
     <React.Fragment>
@@ -228,7 +241,7 @@ function UpdateRowFormContent({
         <form
           className="flex-1 flex flex-col min-h-0 overflow-auto"
           data-test-id="update-row-form"
-          onSubmit={(e) => {
+          onSubmit={(e: React.FormEvent<HTMLFormElement>): void => {
             e.preventDefault();
             form.handleSubmit();
           }}
@@ -245,38 +258,36 @@ function UpdateRowFormContent({
       {/* Footer - Edit Mode */}
       {mode === 'edit' && (
         <div className="shrink-0 border-t bg-sidebar p-2">
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <div className="flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="update-row-cancel-btn"
-                  disabled={isSubmitting}
-                  onClick={() => {
-                    form.reset();
-                    setMode('show');
-                  }}
-                >
-                  <span>Cancelar</span>
-                </Button>
-                <Button
-                  type="button"
-                  size="sm"
-                  className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                  data-test-id="update-row-submit-btn"
-                  disabled={!canSubmit || isUploading}
-                  onClick={() => form.handleSubmit()}
-                >
-                  {isSubmitting && <Spinner />}
-                  <span>Salvar</span>
-                </Button>
-              </div>
-            )}
-          />
+          <div className="flex items-center justify-between gap-2">
+            <SaveStatusIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
+            <div className="flex gap-2">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                data-test-id="update-row-cancel-btn"
+                disabled={isSaving || _update.isPending}
+                onClick={(): void => {
+                  form.reset();
+                  setMode('show');
+                }}
+              >
+                <span>Cancelar</span>
+              </Button>
+              <Button
+                type="button"
+                size="sm"
+                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                data-test-id="update-row-submit-btn"
+                disabled={isSaving || _update.isPending || isUploading}
+                onClick={(): void => form.handleSubmit()}
+              >
+                {_update.isPending && <Spinner />}
+                <span>Salvar</span>
+              </Button>
+            </div>
+          </div>
         </div>
       )}
     </React.Fragment>
