@@ -4,8 +4,10 @@ import React, { Suspense } from 'react';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { ITable } from '@/lib/interfaces';
 
 import { ConfigTab } from './-config-tab';
+import { FillButton } from './-fill-button';
 import { TranscriptionTab } from './-transcription-tab';
 
 function TabSkeleton(): React.JSX.Element {
@@ -17,7 +19,23 @@ function TabSkeleton(): React.JSX.Element {
   );
 }
 
-export default function DocTranscriptionTool(): React.JSX.Element {
+interface Props {
+  slot?: string;
+  table?: ITable;
+  slug?: string;
+  onFillFields?: (data: Record<string, string | null>) => void;
+}
+
+export default function DocTranscriptionTool({ slot, onFillFields }: Props): React.JSX.Element {
+  // Quando renderizado num slot (ex: table.row.create), exibe só o botão de fill
+  if (slot) {
+    return (
+      <Suspense fallback={null}>
+        <FillButton onFillFields={onFillFields} />
+      </Suspense>
+    );
+  }
+
   return (
     <PageShell data-test-id="tool-doc-transcription">
       <PageShell.Header>

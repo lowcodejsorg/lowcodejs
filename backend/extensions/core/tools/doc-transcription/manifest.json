@@ -7,6 +7,9 @@
   "author": "LowcodeJS",
   "icon": "ScanTextIcon",
   "configRoute": "/tools/core/doc-transcription",
+  "placement": {
+    "slots": ["table.row.create"]
+  },
   "tool": {
     "submenu": "documents"
   },

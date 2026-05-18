@@ -3,6 +3,7 @@ import React from 'react';
 
 import { RowFormFields } from './-create-form';
 
+import { ExtensionSlot } from '@/components/common/extension-slot/extension-slot';
 import {
   UploadingProvider,
   useIsUploading,
@@ -96,10 +97,25 @@ function CreateRowFormContent({
     setPrefillApplied(true);
   }, [fields, categoryId, categorySlug, form, prefillApplied]);
 
+  const onFillFields = React.useCallback(
+    (data: Record<string, string | null>): void => {
+      Object.entries(data).forEach(([key, value]) => {
+        if (value === null || value === undefined) return;
+        const field = fields.find((f) => f.slug === key);
+        if (field) form.setFieldValue(key, value);
+      });
+    },
+    [fields, form],
+  );
+
   if (!permissions.can('CREATE_ROW')) return <AccessDenied />;
 
   return (
     <React.Fragment>
+      <ExtensionSlot
+        id="table.row.create"
+        context={{ table, slug: table.slug, onFillFields }}
+      />
       <form
         className="flex-1 flex flex-col min-h-0 overflow-auto relative"
         data-test-id="create-row-form"

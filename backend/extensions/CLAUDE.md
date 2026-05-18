@@ -148,6 +148,7 @@ Slots são pontos no JSX do core onde plugins são injetados via
 | `table.actions` | toolbar da página da tabela (linha do view/config) | `{ table, slug }` | instalado |
 | `table.filters` | topo da listagem do FilterSidebar | `{ table, fields }` | instalado |
 | `table.row.actions` | dropdown de ações por registro (`TableRowActionsMenu`) | `{ table, row, slug }` | instalado |
+| `table.row.create` | topo do formulário de criação de registro | `{ table: ITable, slug: string, onFillFields: (data: Record<string, string \| null>) => void }` | instalado |
 | `tables-page.actions` | toolbar de `/tables` (página de listagem de tabelas) | `{}` | reservado (futuro) |
 | `tables-page.row.actions` | dropdown de ações de cada tabela em `/tables` | `{ table, slug }` | reservado (futuro) |
 | `table.bulk-actions` | barra de ações em massa | `{ table, selectedIds }` | reservado (futuro) |
