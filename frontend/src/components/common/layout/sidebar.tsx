@@ -209,7 +209,9 @@ function SidebarMenuItemRecursive({
                         size="md"
                         isActive={!isExternal && location.pathname === subUrl}
                         className="h-8 translate-x-0 text-sm"
-                        style={{ paddingLeft: `${(depth + 1) * INDENT_PX + 8}px` }}
+                        style={{
+                          paddingLeft: `${(depth + 1) * INDENT_PX + 8}px`,
+                        }}
                       >
                         {subItemLink}
                       </SidebarMenuSubButton>

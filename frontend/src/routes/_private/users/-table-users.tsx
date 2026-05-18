@@ -1,6 +1,5 @@
 import { useRouter, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, Table } from '@tanstack/react-table';
-import { formatDate } from '@/lib/format-date';
 import {
   ArchiveRestoreIcon,
   EllipsisIcon,
@@ -52,6 +51,7 @@ import {
   USER_GROUP_MAPPER,
   USER_STATUS_MAPPER,
 } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';

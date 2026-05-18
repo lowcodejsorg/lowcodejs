@@ -1,6 +1,5 @@
 import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
-import { formatDate } from '@/lib/format-date';
 import { EllipsisIcon, ExternalLinkIcon, FileJsonIcon } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -24,6 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useDataTable } from '@/hooks/use-data-table';
 import { LOGGER_OBJECT_LABEL } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
 import type { ILogger } from '@/lib/interfaces';
 import { resolveLoggerNavigateTarget } from '@/lib/logger-route';
 import { cn } from '@/lib/utils';

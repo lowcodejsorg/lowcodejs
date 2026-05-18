@@ -10,8 +10,8 @@ import { useNotificationDelete } from '@/hooks/tanstack-query/use-notification-d
 import { useNotificationMarkAllAsRead } from '@/hooks/tanstack-query/use-notification-mark-all-as-read';
 import { useNotificationMarkAsRead } from '@/hooks/tanstack-query/use-notification-mark-as-read';
 import { useNotificationPaginated } from '@/hooks/tanstack-query/use-notification-paginated';
-import type { INotification } from '@/lib/interfaces';
 import { formatDate } from '@/lib/format-date';
+import type { INotification } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
