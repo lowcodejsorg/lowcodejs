@@ -1,5 +1,3 @@
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { FileJsonIcon } from 'lucide-react';
 import React from 'react';
 
@@ -13,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { LOGGER_OBJECT_LABEL } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
 import type { ILogger } from '@/lib/interfaces';
 
 function formatJson(value: unknown): string {
@@ -47,14 +46,7 @@ function MetaRow({
 }
 
 function EntryDetails({ entry }: { entry: ILogger }): React.JSX.Element {
-  let dateDisplay = '—';
-  if (entry.createdAt) {
-    dateDisplay = format(
-      new Date(entry.createdAt),
-      "dd 'de' MMM 'de' yyyy 'às' HH:mm:ss",
-      { locale: ptBR },
-    );
-  }
+  const dateDisplay = formatDate(entry.createdAt);
 
   let objectLabel = '—';
   if (entry.object) {

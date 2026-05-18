@@ -1,7 +1,6 @@
 import { useRouter, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, Table } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatDate } from '@/lib/format-date';
 import {
   ArchiveRestoreIcon,
   CornerDownRightIcon,
@@ -575,11 +574,7 @@ function buildColumns(params: {
         const date = getValue() as string | undefined;
         return (
           <span className="text-sm text-muted-foreground">
-            {date
-              ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'as' HH:mm", {
-                  locale: ptBR,
-                })
-              : 'N/A'}
+            {formatDate(date)}
           </span>
         );
       },

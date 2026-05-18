@@ -1,7 +1,6 @@
 import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { formatDate } from '@/lib/format-date';
 import { EllipsisIcon, ExternalLinkIcon, FileJsonIcon } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -100,14 +99,9 @@ function buildColumns(params: {
       ),
       cell: ({ row }): React.ReactElement => {
         const date = row.original.createdAt;
-        if (!date) {
-          return <span className="text-sm text-muted-foreground">N/A</span>;
-        }
         return (
           <span className="text-sm text-muted-foreground">
-            {format(new Date(date), "dd 'de' MMM 'de' yyyy 'às' HH:mm:ss", {
-              locale: ptBR,
-            })}
+            {formatDate(date)}
           </span>
         );
       },
