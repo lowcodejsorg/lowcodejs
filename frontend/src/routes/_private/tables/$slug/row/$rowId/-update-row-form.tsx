@@ -113,7 +113,7 @@ function UpdateRowFormContent({
 
   useApiErrorAutoClear(form);
 
-  const { isSaving, lastSavedAt, save } = useRowAutoSave({
+  const { isSaving, isError, lastSavedAt, save } = useRowAutoSave({
     tableSlug: slug,
     fields: formFields,
     rowId,
@@ -139,7 +139,8 @@ function UpdateRowFormContent({
     },
   });
 
-  const isDisabled = mode === 'show' || isSaving || _update.status === 'pending';
+  const isDisabled =
+    mode === 'show' || isSaving || _update.status === 'pending';
 
   return (
     <React.Fragment>
@@ -259,7 +260,11 @@ function UpdateRowFormContent({
       {mode === 'edit' && (
         <div className="shrink-0 border-t bg-sidebar p-2">
           <div className="flex items-center justify-between gap-2">
-            <SaveStatusIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
+            <SaveStatusIndicator
+              isSaving={isSaving}
+              isError={isError}
+              lastSavedAt={lastSavedAt}
+            />
             <div className="flex gap-2">
               <Button
                 type="button"

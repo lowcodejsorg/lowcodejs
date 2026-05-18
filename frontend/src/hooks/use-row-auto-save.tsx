@@ -1,5 +1,6 @@
 import type { AnyFormApi } from '@tanstack/form-core';
 import { useStore } from '@tanstack/react-form';
+import { AlertCircleIcon, CheckCircleIcon, LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
 
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
@@ -41,6 +42,7 @@ interface UseRowAutoSaveOptions {
 interface UseRowAutoSaveReturn {
   savedRowId: React.MutableRefObject<string | null>;
   isSaving: boolean;
+  isError: boolean;
   lastSavedAt: Date | null;
   save: (values: CreateRowDefaultValue) => Promise<void>;
 }
@@ -53,6 +55,7 @@ export function useRowAutoSave({
 }: UseRowAutoSaveOptions): UseRowAutoSaveReturn {
   const savedRowId = React.useRef<string | null>(rowId ?? null);
   const [lastSavedAt, setLastSavedAt] = React.useState<Date | null>(null);
+  const [isError, setIsError] = React.useState(false);
 
   const onFirstSaveRef = React.useRef(onFirstSave);
   onFirstSaveRef.current = onFirstSave;
@@ -62,11 +65,13 @@ export function useRowAutoSave({
       const isFirst = savedRowId.current === null;
       savedRowId.current = data._id;
       setLastSavedAt(new Date());
+      setIsError(false);
       if (isFirst) {
         onFirstSaveRef.current?.(data._id);
       }
     },
     onError() {
+      setIsError(true);
       toastError(
         'Erro ao salvar',
         'Não foi possível salvar o registro automaticamente',
@@ -77,8 +82,10 @@ export function useRowAutoSave({
   const _update = useUpdateTableRow({
     onSuccess() {
       setLastSavedAt(new Date());
+      setIsError(false);
     },
     onError() {
+      setIsError(true);
       toastError(
         'Erro ao salvar',
         'Não foi possível salvar o registro automaticamente',
@@ -115,7 +122,7 @@ export function useRowAutoSave({
 
   const isSaving = _create.isPending || _update.isPending;
 
-  return { savedRowId, isSaving, lastSavedAt, save };
+  return { savedRowId, isSaving, isError, lastSavedAt, save };
 }
 
 // ─── hook: useAutoSaveController ─────────────────────────────────────────────
@@ -151,12 +158,14 @@ export function useAutoSaveController({
     if (!hasAnyValue(values)) return;
 
     const timer = setTimeout((): void => {
-      void save(values);
       const fieldNames = Object.keys(form.store.state.fieldMeta);
       for (const name of fieldNames) {
         form.setFieldMeta(name, (prev) => ({ ...prev, isTouched: true }));
       }
-      void form.validateAllFields('change');
+      void form.validateAllFields('change').then((): void => {
+        if (!form.store.state.isValid) return;
+        void save(values);
+      });
     }, 500);
 
     return (): void => clearTimeout(timer);
@@ -167,11 +176,13 @@ export function useAutoSaveController({
 
 interface SaveStatusIndicatorProps {
   isSaving: boolean;
+  isError: boolean;
   lastSavedAt: Date | null;
 }
 
 export function SaveStatusIndicator({
   isSaving,
+  isError,
   lastSavedAt,
 }: SaveStatusIndicatorProps): React.JSX.Element {
   const [showSaved, setShowSaved] = React.useState(false);
@@ -179,17 +190,29 @@ export function SaveStatusIndicator({
   React.useEffect(() => {
     if (!lastSavedAt) return;
     setShowSaved(true);
-    const t = setTimeout(() => setShowSaved(false), 2000);
+    const t = setTimeout((): void => setShowSaved(false), 2000);
     return (): void => clearTimeout(t);
   }, [lastSavedAt]);
 
   return (
-    <span className="text-xs">
+    <span className="flex items-center gap-1 text-xs">
       {isSaving && (
-        <span className="text-muted-foreground animate-pulse">Salvando...</span>
+        <React.Fragment>
+          <LoaderCircleIcon className="size-3 animate-spin text-muted-foreground" />
+          <span className="text-muted-foreground">Salvando...</span>
+        </React.Fragment>
       )}
       {!isSaving && showSaved && (
-        <span className="text-green-600">Salvo ✓</span>
+        <React.Fragment>
+          <CheckCircleIcon className="size-3 text-green-600" />
+          <span className="text-green-600">Salvo</span>
+        </React.Fragment>
+      )}
+      {!isSaving && !showSaved && isError && (
+        <React.Fragment>
+          <AlertCircleIcon className="size-3 text-destructive" />
+          <span className="text-destructive">Erro ao salvar</span>
+        </React.Fragment>
       )}
     </span>
   );

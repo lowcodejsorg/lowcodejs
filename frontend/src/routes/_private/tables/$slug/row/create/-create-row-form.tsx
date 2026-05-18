@@ -60,7 +60,10 @@ function CreateRowFormContent({
   }, [table.fields, table.fieldOrderForm]);
 
   const hasGroups = React.useMemo(
-    () => table.fields.some((f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed),
+    () =>
+      table.fields.some(
+        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+      ),
     [table.fields],
   );
 
@@ -69,7 +72,7 @@ function CreateRowFormContent({
     onSubmit: async (): Promise<void> => {},
   });
 
-  const { isSaving, lastSavedAt, save } = useRowAutoSave({
+  const { isSaving, isError, lastSavedAt, save } = useRowAutoSave({
     tableSlug: table.slug,
     fields,
     onFirstSave(rowId) {
@@ -123,7 +126,11 @@ function CreateRowFormContent({
 
       <div className="shrink-0 border-t p-2">
         <div className="flex items-center justify-between">
-          <SaveStatusIndicator isSaving={isSaving} lastSavedAt={lastSavedAt} />
+          <SaveStatusIndicator
+            isSaving={isSaving}
+            isError={isError}
+            lastSavedAt={lastSavedAt}
+          />
           <Button
             type="button"
             variant="outline"
