@@ -1,6 +1,8 @@
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+import { E_FIELD_TYPE } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
 import type { IField, IRow } from '@/lib/interfaces';
 
 interface TableRowDateCellProps {
@@ -13,11 +15,18 @@ export function TableRowDateCell({
   row,
 }: TableRowDateCellProps): React.JSX.Element {
   const value = row[field.slug];
-  const dateFormat = field.format || 'dd/MM/yyyy';
 
   let displayValue = '-';
   if (value) {
-    displayValue = format(value, dateFormat, { locale: ptBR });
+    if (
+      field.type === E_FIELD_TYPE.CREATED_AT ||
+      field.type === E_FIELD_TYPE.TRASHED_AT
+    ) {
+      displayValue = formatDate(value);
+    } else {
+      const dateFormat = field.format || 'dd/MM/yyyy';
+      displayValue = format(value, dateFormat, { locale: ptBR });
+    }
   }
 
   return (
