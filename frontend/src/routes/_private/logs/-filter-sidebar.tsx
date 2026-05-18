@@ -109,7 +109,8 @@ function HistoryFiltersForm({
                 className={cn(
                   'rounded-full border px-3 py-1 text-xs cursor-pointer transition-colors',
                   {
-                    'border-primary bg-primary text-primary-foreground': checked,
+                    'border-primary bg-primary text-primary-foreground':
+                      checked,
                     'border-border bg-background hover:bg-accent': !checked,
                   },
                 )}

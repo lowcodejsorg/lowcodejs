@@ -46,11 +46,7 @@ function MetaRow({
   );
 }
 
-function EntryDetails({
-  entry,
-}: {
-  entry: ILogger;
-}): React.JSX.Element {
+function EntryDetails({ entry }: { entry: ILogger }): React.JSX.Element {
   let dateDisplay = '—';
   if (entry.createdAt) {
     dateDisplay = format(
@@ -101,9 +97,7 @@ function EntryDetails({
         <MetaRow
           label="ID do objeto"
           value={
-            entry.object_id ?? (
-              <span className="text-muted-foreground">—</span>
-            )
+            entry.object_id ?? <span className="text-muted-foreground">—</span>
           }
         />
         <MetaRow
@@ -165,4 +159,3 @@ export function JsonDialog({
     </Dialog>
   );
 }
-
