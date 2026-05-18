@@ -11,3 +11,6 @@ count.txt
 .output
 .vinxi
 todos.json
+
+!src/routes/_private/logs
+!src/routes/_private/logs/**

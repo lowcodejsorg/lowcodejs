@@ -77,7 +77,7 @@ import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
-export const Route = createLazyFileRoute('/_private/history/')({
+export const Route = createLazyFileRoute('/_private/logs/')({
   component: RouteComponent,
 });
 

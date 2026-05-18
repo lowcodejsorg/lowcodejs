@@ -28,7 +28,7 @@ import { Route as PrivateSettingsIndexRouteImport } from './routes/_private/sett
 import { Route as PrivateProfileIndexRouteImport } from './routes/_private/profile/index'
 import { Route as PrivateNotificationsIndexRouteImport } from './routes/_private/notifications/index'
 import { Route as PrivateMenusIndexRouteImport } from './routes/_private/menus/index'
-import { Route as PrivateHistoryIndexRouteImport } from './routes/_private/history/index'
+import { Route as PrivateLogsIndexRouteImport } from './routes/_private/logs/index'
 import { Route as PrivateGroupsIndexRouteImport } from './routes/_private/groups/index'
 import { Route as PrivateExtensionsIndexRouteImport } from './routes/_private/extensions/index'
 import { Route as PrivateDashboardIndexRouteImport } from './routes/_private/dashboard/index'
@@ -180,12 +180,12 @@ const PrivateMenusIndexRoute = PrivateMenusIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_private/menus/index.lazy').then((d) => d.Route),
 )
-const PrivateHistoryIndexRoute = PrivateHistoryIndexRouteImport.update({
-  id: '/history/',
-  path: '/history/',
+const PrivateLogsIndexRoute = PrivateLogsIndexRouteImport.update({
+  id: '/logs/',
+  path: '/logs/',
   getParentRoute: () => PrivateLayoutRoute,
 } as any).lazy(() =>
-  import('./routes/_private/history/index.lazy').then((d) => d.Route),
+  import('./routes/_private/logs/index.lazy').then((d) => d.Route),
 )
 const PrivateGroupsIndexRoute = PrivateGroupsIndexRouteImport.update({
   id: '/groups/',
@@ -431,7 +431,7 @@ export interface FileRoutesByFullPath {
   '/dashboard/': typeof PrivateDashboardIndexRoute
   '/extensions/': typeof PrivateExtensionsIndexRoute
   '/groups/': typeof PrivateGroupsIndexRoute
-  '/history/': typeof PrivateHistoryIndexRoute
+  '/logs/': typeof PrivateLogsIndexRoute
   '/menus/': typeof PrivateMenusIndexRoute
   '/notifications/': typeof PrivateNotificationsIndexRoute
   '/profile/': typeof PrivateProfileIndexRoute
@@ -479,7 +479,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof PrivateDashboardIndexRoute
   '/extensions': typeof PrivateExtensionsIndexRoute
   '/groups': typeof PrivateGroupsIndexRoute
-  '/history': typeof PrivateHistoryIndexRoute
+  '/logs': typeof PrivateLogsIndexRoute
   '/menus': typeof PrivateMenusIndexRoute
   '/notifications': typeof PrivateNotificationsIndexRoute
   '/profile': typeof PrivateProfileIndexRoute
@@ -530,7 +530,7 @@ export interface FileRoutesById {
   '/_private/dashboard/': typeof PrivateDashboardIndexRoute
   '/_private/extensions/': typeof PrivateExtensionsIndexRoute
   '/_private/groups/': typeof PrivateGroupsIndexRoute
-  '/_private/history/': typeof PrivateHistoryIndexRoute
+  '/_private/logs/': typeof PrivateLogsIndexRoute
   '/_private/menus/': typeof PrivateMenusIndexRoute
   '/_private/notifications/': typeof PrivateNotificationsIndexRoute
   '/_private/profile/': typeof PrivateProfileIndexRoute
@@ -580,7 +580,7 @@ export interface FileRouteTypes {
     | '/dashboard/'
     | '/extensions/'
     | '/groups/'
-    | '/history/'
+    | '/logs/'
     | '/menus/'
     | '/notifications/'
     | '/profile/'
@@ -628,7 +628,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/extensions'
     | '/groups'
-    | '/history'
+    | '/logs'
     | '/menus'
     | '/notifications'
     | '/profile'
@@ -678,7 +678,7 @@ export interface FileRouteTypes {
     | '/_private/dashboard/'
     | '/_private/extensions/'
     | '/_private/groups/'
-    | '/_private/history/'
+    | '/_private/logs/'
     | '/_private/menus/'
     | '/_private/notifications/'
     | '/_private/profile/'
@@ -859,11 +859,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateMenusIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
-    '/_private/history/': {
-      id: '/_private/history/'
-      path: '/history'
-      fullPath: '/history/'
-      preLoaderRoute: typeof PrivateHistoryIndexRouteImport
+    '/_private/logs/': {
+      id: '/_private/logs/'
+      path: '/logs'
+      fullPath: '/logs/'
+      preLoaderRoute: typeof PrivateLogsIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/groups/': {
@@ -1092,7 +1092,7 @@ interface PrivateLayoutRouteChildren {
   PrivateDashboardIndexRoute: typeof PrivateDashboardIndexRoute
   PrivateExtensionsIndexRoute: typeof PrivateExtensionsIndexRoute
   PrivateGroupsIndexRoute: typeof PrivateGroupsIndexRoute
-  PrivateHistoryIndexRoute: typeof PrivateHistoryIndexRoute
+  PrivateLogsIndexRoute: typeof PrivateLogsIndexRoute
   PrivateMenusIndexRoute: typeof PrivateMenusIndexRoute
   PrivateNotificationsIndexRoute: typeof PrivateNotificationsIndexRoute
   PrivateProfileIndexRoute: typeof PrivateProfileIndexRoute
@@ -1126,7 +1126,7 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateDashboardIndexRoute: PrivateDashboardIndexRoute,
   PrivateExtensionsIndexRoute: PrivateExtensionsIndexRoute,
   PrivateGroupsIndexRoute: PrivateGroupsIndexRoute,
-  PrivateHistoryIndexRoute: PrivateHistoryIndexRoute,
+  PrivateLogsIndexRoute: PrivateLogsIndexRoute,
   PrivateMenusIndexRoute: PrivateMenusIndexRoute,
   PrivateNotificationsIndexRoute: PrivateNotificationsIndexRoute,
   PrivateProfileIndexRoute: PrivateProfileIndexRoute,

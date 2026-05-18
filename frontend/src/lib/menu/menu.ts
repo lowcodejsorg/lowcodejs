@@ -42,7 +42,7 @@ export const getStaticMenusByRole = (
               },
               {
                 title: 'Histórico de ações',
-                url: '/history',
+                url: '/logs',
                 icon: HistoryIcon,
               },
             ],
@@ -72,7 +72,7 @@ export const getStaticMenusByRole = (
               },
               {
                 title: 'Histórico de ações',
-                url: '/history',
+                url: '/logs',
                 icon: HistoryIcon,
               },
             ],
@@ -94,7 +94,7 @@ export const getStaticMenusByRole = (
               { title: 'Tabelas', url: '/tables', icon: TableIcon },
               {
                 title: 'Histórico de ações',
-                url: '/history',
+                url: '/logs',
                 icon: HistoryIcon,
               },
             ],
@@ -116,7 +116,7 @@ export const getStaticMenusByRole = (
               { title: 'Tabelas', url: '/tables', icon: TableIcon },
               {
                 title: 'Histórico de ações',
-                url: '/history',
+                url: '/logs',
                 icon: HistoryIcon,
               },
             ],

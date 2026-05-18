@@ -119,7 +119,7 @@ function UpdateRowFormContent({
     rowId,
   });
 
-  useAutoSaveController({ form, save, isUploading, enabled: mode === 'edit' });
+  useAutoSaveController({ form, save, isUploading, fields: formFields, enabled: mode === 'edit' });
 
   const _update = useUpdateTableRow({
     onSuccess() {

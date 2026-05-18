@@ -59,14 +59,6 @@ function CreateRowFormContent({
       });
   }, [table.fields, table.fieldOrderForm]);
 
-  const hasGroups = React.useMemo(
-    () =>
-      table.fields.some(
-        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
-      ),
-    [table.fields],
-  );
-
   const form = useAppForm({
     defaultValues: buildCreateRowDefaultValues(fields),
     onSubmit: async (): Promise<void> => {},
@@ -76,7 +68,6 @@ function CreateRowFormContent({
     tableSlug: table.slug,
     fields,
     onFirstSave(rowId) {
-      if (!hasGroups) return;
       navigate({
         to: '/tables/$slug/row/$rowId',
         params: { slug: table.slug, rowId },
@@ -84,7 +75,7 @@ function CreateRowFormContent({
     },
   });
 
-  useAutoSaveController({ form, save, isUploading });
+  useAutoSaveController({ form, save, isUploading, fields });
 
   const [prefillApplied, setPrefillApplied] = React.useState(false);
 

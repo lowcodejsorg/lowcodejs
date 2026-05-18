@@ -32,3 +32,6 @@ docker-compose.override.yml
 
 !backend/application/resources/logs/
 !backend/application/resources/logs/**
+
+!frontend/src/routes/_private/logs
+!frontend/src/routes/_private/logs/**

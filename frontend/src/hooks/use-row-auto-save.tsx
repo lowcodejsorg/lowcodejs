@@ -1,6 +1,10 @@
 import type { AnyFormApi } from '@tanstack/form-core';
 import { useStore } from '@tanstack/react-form';
-import { AlertCircleIcon, CheckCircleIcon, LoaderCircleIcon } from 'lucide-react';
+import {
+  AlertCircleIcon,
+  CheckCircleIcon,
+  LoaderCircleIcon,
+} from 'lucide-react';
 import React from 'react';
 
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
@@ -24,6 +28,21 @@ function hasAnyValue(values: object): boolean {
     if (isFileValue(v)) return v.storages.length > 0;
     return false;
   });
+}
+
+function areRequiredFieldsFilled(
+  fields: Array<IField>,
+  values: CreateRowDefaultValue,
+): boolean {
+  return fields
+    .filter((f) => f.required)
+    .every((f) => {
+      const v: unknown = values[f.slug];
+      if (typeof v === 'string') return v.trim() !== '';
+      if (Array.isArray(v)) return v.length > 0;
+      if (isFileValue(v)) return v.storages.length > 0;
+      return false;
+    });
 }
 
 // ─── hook: useRowAutoSave ────────────────────────────────────────────────────
@@ -133,6 +152,7 @@ interface UseAutoSaveControllerOptions {
   form: AnyFormApi;
   save: (values: CreateRowDefaultValue) => Promise<void>;
   isUploading: boolean;
+  fields: Array<IField>;
   enabled?: boolean;
 }
 
@@ -140,6 +160,7 @@ export function useAutoSaveController({
   form,
   save,
   isUploading,
+  fields,
   enabled = true,
 }: UseAutoSaveControllerOptions): void {
   const values = useStore(form.store, (s) => s.values);
@@ -163,13 +184,14 @@ export function useAutoSaveController({
         form.setFieldMeta(name, (prev) => ({ ...prev, isTouched: true }));
       }
       void form.validateAllFields('change').then((): void => {
+        if (!areRequiredFieldsFilled(fields, values)) return;
         if (!form.store.state.isValid) return;
         void save(values);
       });
     }, 500);
 
     return (): void => clearTimeout(timer);
-  }, [values, isUploading, save, enabled]);
+  }, [values, isUploading, save, enabled, fields]);
 }
 
 // ─── component: SaveStatusIndicator ─────────────────────────────────────────

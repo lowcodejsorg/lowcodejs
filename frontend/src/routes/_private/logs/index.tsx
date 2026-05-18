@@ -6,7 +6,7 @@ import { createRouteHead } from '@/lib/seo';
 
 const defaultSearch = { page: 1, perPage: 10 };
 
-export const Route = createFileRoute('/_private/history/')({
+export const Route = createFileRoute('/_private/logs/')({
   head: createRouteHead({ title: 'Histórico de ações' }),
   pendingComponent: () => (
     <DataTableSkeleton
