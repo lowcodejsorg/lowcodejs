@@ -11,6 +11,7 @@ import { useNotificationMarkAllAsRead } from '@/hooks/tanstack-query/use-notific
 import { useNotificationMarkAsRead } from '@/hooks/tanstack-query/use-notification-mark-as-read';
 import { useNotificationPaginated } from '@/hooks/tanstack-query/use-notification-paginated';
 import type { INotification } from '@/lib/interfaces';
+import { formatDate } from '@/lib/format-date';
 import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
@@ -19,11 +20,6 @@ export const Route = createLazyFileRoute('/_private/notifications/')({
 });
 
 type Tab = 'all' | 'unread';
-
-function formatDateTime(value: string): string {
-  const date = new Date(value);
-  return date.toLocaleString('pt-BR');
-}
 
 function NotificationsPage(): React.JSX.Element {
   const [tab, setTab] = React.useState<Tab>('all');
@@ -148,7 +144,7 @@ function NotificationsPage(): React.JSX.Element {
                       </p>
                     )}
                     <p className="text-[10px] text-muted-foreground mt-2">
-                      {formatDateTime(notification.createdAt)}
+                      {formatDate(notification.createdAt)}
                     </p>
                   </button>
                   <div className="flex flex-col gap-1 shrink-0">
