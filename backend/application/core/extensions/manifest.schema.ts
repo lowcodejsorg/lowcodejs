@@ -45,6 +45,7 @@ export const ManifestSchema = z
     image: z.string().nullable().optional(),
     placement: ManifestPlacementSchema,
     route: z.string().nullable().optional(),
+    configRoute: z.string().nullable().optional(),
     tool: ManifestToolSchema,
     requires: ManifestRequiresSchema,
     permissions: ManifestPermissionsSchema,

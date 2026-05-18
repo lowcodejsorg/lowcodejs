@@ -148,6 +148,10 @@ export const queryKeys = {
     unreadCount: () =>
       [...queryKeys.notifications.all, 'unread-count'] as const,
   },
+  docTranscription: {
+    all: ['doc-transcription'] as const,
+    config: () => [...queryKeys.docTranscription.all, 'config'] as const,
+  },
   extensions: {
     all: ['extensions'] as const,
     lists: () => [...queryKeys.extensions.all, 'list'] as const,

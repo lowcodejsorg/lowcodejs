@@ -22,6 +22,7 @@ export type ExtensionUpsertPayload = {
   image: string | null;
   slots: string[];
   route: string | null;
+  configRoute: string | null;
   submenu: string | null;
   manifestSnapshot: Record<string, unknown>;
   requires: IExtensionRequires;

@@ -1,0 +1,19 @@
+{
+  "id": "doc-transcription",
+  "type": "TOOL",
+  "name": "Transcrição de Documentos",
+  "description": "Envia documentos para uma API externa e retorna dados estruturados conforme os tipos configurados (CNH, comprovante de endereço, etc.).",
+  "version": "1.0.0",
+  "author": "LowcodeJS",
+  "icon": "ScanTextIcon",
+  "configRoute": "/tools/core/doc-transcription",
+  "tool": {
+    "submenu": "documents"
+  },
+  "permissions": {
+    "view": ["MASTER", "ADMINISTRATOR"]
+  },
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}

@@ -84,6 +84,7 @@ export async function loadExtensions(
               image: manifest.image ?? null,
               slots: manifest.placement?.slots ?? [],
               route: manifest.route ?? null,
+              configRoute: manifest.configRoute ?? null,
               submenu: manifest.tool?.submenu ?? null,
               manifestSnapshot: raw as Record<string, unknown>,
               requires: manifest.requires ?? {},

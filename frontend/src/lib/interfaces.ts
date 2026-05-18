@@ -460,6 +460,7 @@ export type IExtension = Merge<
     image: string | null;
     slots: Array<string>;
     route: string | null;
+    configRoute: string | null;
     submenu: string | null;
     enabled: boolean;
     available: boolean;
