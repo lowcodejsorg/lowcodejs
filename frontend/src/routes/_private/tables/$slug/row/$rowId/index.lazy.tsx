@@ -45,8 +45,11 @@ function RouteComponent(): React.JSX.Element {
   const table = useReadTable({ slug });
   const row = useReadTableRow({ slug, rowId });
 
-  // Loading
-  if (table.status === 'pending' || row.status === 'pending') {
+  // Loading — só mostra skeleton quando não há dados em cache (não durante refetch)
+  if (
+    (!table.data && table.status === 'pending') ||
+    (!row.data && row.status === 'pending')
+  ) {
     return <UpdateRowFormSkeleton />;
   }
 

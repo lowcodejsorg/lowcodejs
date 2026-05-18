@@ -56,6 +56,13 @@ interface UseRowAutoSaveReturn {
   isError: boolean;
   lastSavedAt: Date | null;
   isDraft: boolean;
+  // Salva imediatamente, cancela qualquer debounce pendente.
+  triggerSaveImmediate: (values: CreateRowDefaultValue) => Promise<void>;
+  // Agenda save com 600ms de debounce (para campos de seleção).
+  triggerSaveDebounced: (values: CreateRowDefaultValue) => void;
+  // Cancela debounce pendente sem executar.
+  cancelDebounce: () => void;
+  // Alias de triggerSaveImmediate para compatibilidade.
   triggerSave: (values: CreateRowDefaultValue) => Promise<void>;
 }
 
@@ -72,6 +79,8 @@ type RestoreMutationPayload = {
   rowId: string;
 };
 
+const DEBOUNCE_MS = 600;
+
 export function useRowAutoSave({
   tableSlug,
   fields,
@@ -86,6 +95,11 @@ export function useRowAutoSave({
   const [lastSavedAt, setLastSavedAt] = React.useState<Date | null>(null);
   const [isError, setIsError] = React.useState(false);
   const [isTrashed, setIsTrashed] = React.useState(initialIsTrashed);
+
+  const debounceTimerRef = React.useRef<ReturnType<typeof setTimeout> | null>(
+    null,
+  );
+  const pendingValuesRef = React.useRef<CreateRowDefaultValue | null>(null);
 
   const _create = useMutation({
     mutationFn: async (payload: CreateMutationPayload): Promise<IRow> => {
@@ -156,7 +170,8 @@ export function useRowAutoSave({
     },
   });
 
-  const triggerSave = React.useCallback(
+  // Lógica central de save — chamada por immediate e pelo timer do debounce.
+  const executeSave = React.useCallback(
     async (values: CreateRowDefaultValue): Promise<void> => {
       if (_create.isPending || _update.isPending || _restore.isPending) {
         return;
@@ -199,6 +214,42 @@ export function useRowAutoSave({
     [fields, isTrashed, _create, _update, _restore],
   );
 
+  const cancelDebounce = React.useCallback((): void => {
+    if (debounceTimerRef.current !== null) {
+      clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+  }, []);
+
+  const triggerSaveImmediate = React.useCallback(
+    async (values: CreateRowDefaultValue): Promise<void> => {
+      cancelDebounce();
+      await executeSave(values);
+    },
+    [cancelDebounce, executeSave],
+  );
+
+  const triggerSaveDebounced = React.useCallback(
+    (values: CreateRowDefaultValue): void => {
+      pendingValuesRef.current = values;
+      cancelDebounce();
+      debounceTimerRef.current = setTimeout((): void => {
+        debounceTimerRef.current = null;
+        if (pendingValuesRef.current !== null) {
+          void executeSave(pendingValuesRef.current);
+        }
+      }, DEBOUNCE_MS);
+    },
+    [cancelDebounce, executeSave],
+  );
+
+  // Cleanup do timer ao desmontar.
+  React.useEffect(() => {
+    return (): void => {
+      cancelDebounce();
+    };
+  }, [cancelDebounce]);
+
   const isSaving = _create.isPending || _update.isPending || _restore.isPending;
 
   return {
@@ -206,7 +257,10 @@ export function useRowAutoSave({
     isError,
     lastSavedAt,
     isDraft: isTrashed,
-    triggerSave,
+    triggerSaveImmediate,
+    triggerSaveDebounced,
+    cancelDebounce,
+    triggerSave: triggerSaveImmediate,
   };
 }
 

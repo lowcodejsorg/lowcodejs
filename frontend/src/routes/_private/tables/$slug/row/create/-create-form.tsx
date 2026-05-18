@@ -225,7 +225,8 @@ type FieldValidators = {
 
 function buildValidators(
   field: IField,
-  onAutoSave?: () => void,
+  onBlurSave?: () => void,
+  onSelectionChange?: () => void,
 ): FieldValidators {
   const isSelectionField =
     field.type === E_FIELD_TYPE.DROPDOWN ||
@@ -237,7 +238,7 @@ function buildValidators(
   if (isSelectionField) {
     return {
       onChange: ({ value }: ValidatorParam): string | undefined => {
-        onAutoSave?.();
+        onSelectionChange?.();
         return buildFieldValidator(field, value);
       },
       onBlur: ({ value }: ValidatorParam): string | undefined =>
@@ -249,7 +250,7 @@ function buildValidators(
     onChange: ({ value }: ValidatorParam): string | undefined =>
       buildFieldValidator(field, value),
     onBlur: ({ value }: ValidatorParam): string | undefined => {
-      onAutoSave?.();
+      onBlurSave?.();
       return buildFieldValidator(field, value);
     },
   };
@@ -260,7 +261,8 @@ interface RowFormFieldsProps {
   fields: Array<IField>;
   disabled: boolean;
   tableSlug: string;
-  onAutoSave?: () => void;
+  onBlurSave?: () => void;
+  onSelectionChange?: () => void;
 }
 
 export function RowFormFields({
@@ -268,7 +270,8 @@ export function RowFormFields({
   fields,
   disabled,
   tableSlug,
-  onAutoSave,
+  onBlurSave,
+  onSelectionChange,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
     <section
@@ -296,7 +299,7 @@ export function RowFormFields({
           >
             <form.AppField
               name={field.slug}
-              validators={buildValidators(field, onAutoSave)}
+              validators={buildValidators(field, onBlurSave, onSelectionChange)}
             >
               {(formField: any) => {
                 switch (field.type) {

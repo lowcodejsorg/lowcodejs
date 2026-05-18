@@ -111,29 +111,42 @@ function UpdateRowFormContent({
 
   useApiErrorAutoClear(form);
 
-  const { isSaving, isError, lastSavedAt, isDraft, triggerSave } =
-    useRowAutoSave({
-      tableSlug: slug,
-      fields: formFields,
-      rowId,
-      initialIsTrashed: data.trashed,
-    });
+  const {
+    isSaving,
+    isError,
+    lastSavedAt,
+    isDraft,
+    triggerSaveImmediate,
+    triggerSaveDebounced,
+    cancelDebounce,
+  } = useRowAutoSave({
+    tableSlug: slug,
+    fields: formFields,
+    rowId,
+    initialIsTrashed: data.trashed,
+  });
 
-  const handleAutoSave = React.useCallback((): void => {
+  const handleBlurSave = React.useCallback((): void => {
     if (mode !== 'edit') return;
     if (isUploading) return;
-    void triggerSave(form.store.state.values);
-  }, [mode, isUploading, triggerSave, form]);
+    void triggerSaveImmediate(form.store.state.values);
+  }, [mode, isUploading, triggerSaveImmediate, form]);
+
+  const handleSelectionChange = React.useCallback((): void => {
+    if (mode !== 'edit') return;
+    if (isUploading) return;
+    triggerSaveDebounced(form.store.state.values);
+  }, [mode, isUploading, triggerSaveDebounced, form]);
 
   React.useEffect(() => {
     if (mode !== 'edit') return;
     const timer = setInterval((): void => {
       if (!isUploading) {
-        void triggerSave(form.store.state.values);
+        void triggerSaveImmediate(form.store.state.values);
       }
     }, 30_000);
     return (): void => clearInterval(timer);
-  }, [mode, isUploading, triggerSave, form]);
+  }, [mode, isUploading, triggerSaveImmediate, form]);
 
   const _update = useUpdateTableRow({
     onSuccess() {
@@ -153,75 +166,121 @@ function UpdateRowFormContent({
     },
   });
 
-  const isDisabled =
-    mode === 'show' || isSaving || _update.status === 'pending';
+  const isDisabled = mode === 'show' || _update.status === 'pending';
 
   return (
     <React.Fragment>
-      <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
-        {mode === 'show' && !data.trashed && permission.can('REMOVE_ROW') && (
-          <RowSendToTrashDialog
-            rowId={rowId}
-            slug={slug}
-            asChild
-          >
+      <div className="shrink-0 px-2 pb-2 flex flex-row items-center justify-between gap-1">
+        <div>
+          {mode === 'edit' && (
+            <SaveStatusIndicator
+              isSaving={isSaving}
+              isError={isError}
+              lastSavedAt={lastSavedAt}
+              isDraft={isDraft}
+            />
+          )}
+        </div>
+
+        <div className="flex gap-1">
+          {mode === 'show' && !data.trashed && permission.can('REMOVE_ROW') && (
+            <RowSendToTrashDialog
+              rowId={rowId}
+              slug={slug}
+              asChild
+            >
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                <TrashIcon className="size-4" />
+                <span>Enviar para lixeira</span>
+              </Button>
+            </RowSendToTrashDialog>
+          )}
+
+          {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
+            <RowRemoveFromTrashDialog
+              rowId={rowId}
+              slug={slug}
+              asChild
+            >
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+              >
+                <ArchiveRestoreIcon className="size-4" />
+                <span>Restaurar</span>
+              </Button>
+            </RowRemoveFromTrashDialog>
+          )}
+
+          {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
+            <RowDeleteDialog
+              rowId={rowId}
+              slug={slug}
+              asChild
+            >
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+              >
+                <TrashIcon className="size-4" />
+                <span>Excluir permanentemente</span>
+              </Button>
+            </RowDeleteDialog>
+          )}
+
+          {mode === 'show' && !data.trashed && permission.can('UPDATE_ROW') && (
+            <Button
+              type="button"
+              className="px-2 cursor-pointer max-w-40 w-full"
+              size="sm"
+              data-test-id="row-edit-btn"
+              onClick={(): void => setMode('edit')}
+            >
+              <PencilIcon className="size-4 mr-1" />
+              <span>Editar</span>
+            </Button>
+          )}
+
+          {mode === 'edit' && (
             <Button
               type="button"
               variant="outline"
               size="sm"
+              className="disabled:cursor-not-allowed px-2 cursor-pointer"
+              data-test-id="update-row-cancel-btn"
+              disabled={_update.isPending}
+              onClick={(): void => {
+                form.reset();
+                setMode('show');
+              }}
             >
-              <TrashIcon className="size-4" />
-              <span>Enviar para lixeira</span>
+              <span>Cancelar</span>
             </Button>
-          </RowSendToTrashDialog>
-        )}
+          )}
 
-        {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
-          <RowRemoveFromTrashDialog
-            rowId={rowId}
-            slug={slug}
-            asChild
-          >
+          {mode === 'edit' && (
             <Button
               type="button"
-              variant="outline"
               size="sm"
+              className="disabled:cursor-not-allowed px-2 cursor-pointer"
+              data-test-id="update-row-submit-btn"
+              disabled={isSaving || _update.isPending || isUploading}
+              onClick={(): void => {
+                cancelDebounce();
+                void form.handleSubmit();
+              }}
             >
-              <ArchiveRestoreIcon className="size-4" />
-              <span>Restaurar</span>
+              {_update.isPending && <Spinner />}
+              <span>Salvar</span>
             </Button>
-          </RowRemoveFromTrashDialog>
-        )}
-
-        {mode === 'show' && data.trashed && permission.can('REMOVE_ROW') && (
-          <RowDeleteDialog
-            rowId={rowId}
-            slug={slug}
-            asChild
-          >
-            <Button
-              type="button"
-              variant="destructive"
-              size="sm"
-            >
-              <TrashIcon className="size-4" />
-              <span>Excluir permanentemente</span>
-            </Button>
-          </RowDeleteDialog>
-        )}
-
-        {mode === 'show' && !data.trashed && permission.can('UPDATE_ROW') && (
-          <Button
-            type="button"
-            className="px-2 cursor-pointer max-w-40 w-full"
-            size="sm"
-            data-test-id="row-edit-btn"
-            onClick={() => setMode('edit')}
-          >
-            <PencilIcon className="size-4 mr-1" />
-            <span>Editar</span>
-          </Button>
-        )}
+          )}
+        </div>
       </div>
 
       {mode === 'show' && (
@@ -266,53 +325,12 @@ function UpdateRowFormContent({
             fields={formFields}
             disabled={isDisabled}
             tableSlug={slug}
-            onAutoSave={handleAutoSave}
+            onBlurSave={handleBlurSave}
+            onSelectionChange={handleSelectionChange}
           />
         </form>
       )}
 
-      {/* Footer - Edit Mode */}
-      {mode === 'edit' && (
-        <div className="shrink-0 border-t bg-sidebar p-2">
-          <div className="flex items-center justify-between gap-2">
-            <SaveStatusIndicator
-              isSaving={isSaving}
-              isError={isError}
-              lastSavedAt={lastSavedAt}
-              isDraft={isDraft}
-            />
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                data-test-id="update-row-cancel-btn"
-                disabled={isSaving || _update.isPending}
-                onClick={(): void => {
-                  form.reset();
-                  setMode('show');
-                }}
-              >
-                <span>Cancelar</span>
-              </Button>
-              <Button
-                type="button"
-                size="sm"
-                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
-                data-test-id="update-row-submit-btn"
-                disabled={isSaving || _update.isPending || isUploading}
-                onClick={(): void => {
-                  void form.handleSubmit();
-                }}
-              >
-                {_update.isPending && <Spinner />}
-                <span>Salvar</span>
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </React.Fragment>
   );
 }
