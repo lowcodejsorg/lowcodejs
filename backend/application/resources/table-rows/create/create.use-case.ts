@@ -50,7 +50,11 @@ export default class TableRowCreateUseCase {
         );
       }
 
-      const errors = validateRowPayload(payload, table.fields, table.groups);
+      const isTrashed = payload.trashed === true;
+
+      const errors = validateRowPayload(payload, table.fields, table.groups, {
+        skipRequired: isTrashed,
+      });
 
       if (errors) {
         return left(
@@ -64,9 +68,16 @@ export default class TableRowCreateUseCase {
 
       await this.rowPasswordService.hash(payload, table.fields);
 
+      let trashedAt: Date | null = null;
+      if (isTrashed) {
+        trashedAt = new Date();
+      }
+
       const createData: Record<string, any> = {
         ...payload,
         creator: payload.creator ?? null,
+        trashed: isTrashed,
+        trashedAt,
       };
 
       const beforeSaveCode = table.methods?.beforeSave?.code;

@@ -69,13 +69,14 @@ function validateFieldValue(
   value: unknown,
   field: IField,
   groups?: IGroupConfiguration[],
+  skipRequired?: boolean,
 ): string | null {
   const { type } = field;
   const isRequired = field.required ?? false;
 
   // Check required
   if (value === null || value === undefined || value === '') {
-    if (isRequired) {
+    if (isRequired && !skipRequired) {
       return 'Este campo é obrigatório';
     }
     return null;
@@ -186,6 +187,7 @@ function validateFieldValue(
 
 type ValidateRowPayloadOptions = {
   skipMissing?: boolean;
+  skipRequired?: boolean;
 };
 
 export function validateRowPayload(
@@ -212,7 +214,12 @@ export function validateRowPayload(
     }
 
     const value = payload[field.slug];
-    const error = validateFieldValue(value, field, groups);
+    const error = validateFieldValue(
+      value,
+      field,
+      groups,
+      options.skipRequired,
+    );
 
     if (error) {
       errors[field.slug] = error;

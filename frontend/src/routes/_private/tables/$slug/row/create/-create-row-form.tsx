@@ -10,11 +10,7 @@ import {
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
-import {
-  SaveStatusIndicator,
-  useAutoSaveController,
-  useRowAutoSave,
-} from '@/hooks/use-row-auto-save';
+import { SaveStatusIndicator, useRowAutoSave } from '@/hooks/use-row-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_TYPE } from '@/lib/constant';
@@ -64,18 +60,33 @@ function CreateRowFormContent({
     onSubmit: async (): Promise<void> => {},
   });
 
-  const { isSaving, isError, lastSavedAt, save } = useRowAutoSave({
-    tableSlug: table.slug,
-    fields,
-    onFirstSave(rowId) {
-      navigate({
-        to: '/tables/$slug/row/$rowId',
-        params: { slug: table.slug, rowId },
-      });
-    },
-  });
+  const { isSaving, isError, lastSavedAt, isDraft, triggerSave } =
+    useRowAutoSave({
+      tableSlug: table.slug,
+      fields,
+      onFirstSave(rowId: string): void {
+        navigate({
+          to: '/tables/$slug/row/$rowId',
+          params: { slug: table.slug, rowId },
+          search: { mode: 'edit' },
+          replace: true,
+        });
+      },
+    });
 
-  useAutoSaveController({ form, save, isUploading, fields });
+  const handleAutoSave = React.useCallback((): void => {
+    if (isUploading) return;
+    void triggerSave(form.store.state.values);
+  }, [isUploading, triggerSave, form]);
+
+  React.useEffect(() => {
+    const timer = setInterval((): void => {
+      if (!isUploading) {
+        void triggerSave(form.store.state.values);
+      }
+    }, 30_000);
+    return (): void => clearInterval(timer);
+  }, [isUploading, triggerSave, form]);
 
   const [prefillApplied, setPrefillApplied] = React.useState(false);
 
@@ -112,6 +123,7 @@ function CreateRowFormContent({
           fields={fields}
           disabled={isSaving}
           tableSlug={table.slug}
+          onAutoSave={handleAutoSave}
         />
       </form>
 
@@ -121,6 +133,7 @@ function CreateRowFormContent({
             isSaving={isSaving}
             isError={isError}
             lastSavedAt={lastSavedAt}
+            isDraft={isDraft}
           />
           <Button
             type="button"

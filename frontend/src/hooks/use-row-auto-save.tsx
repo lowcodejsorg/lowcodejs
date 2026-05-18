@@ -1,15 +1,17 @@
-import type { AnyFormApi } from '@tanstack/form-core';
-import { useStore } from '@tanstack/react-form';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   AlertCircleIcon,
   CheckCircleIcon,
+  FileTextIcon,
   LoaderCircleIcon,
 } from 'lucide-react';
 import React from 'react';
 
-import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
-import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
-import type { IField } from '@/lib/interfaces';
+import { queryKeys } from './tanstack-query/_query-keys';
+
+import { API } from '@/lib/api';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import type { IField, IRow } from '@/lib/interfaces';
 import { buildRowPayload } from '@/lib/table';
 import type { CreateRowDefaultValue } from '@/lib/table';
 import { toastError } from '@/lib/toast';
@@ -20,17 +22,7 @@ function isFileValue(v: unknown): v is { storages: Array<unknown> } {
   return v !== null && typeof v === 'object' && 'storages' in v;
 }
 
-function hasAnyValue(values: object): boolean {
-  const vals: Array<unknown> = Object.values(values);
-  return vals.some((v) => {
-    if (typeof v === 'string') return v.trim() !== '';
-    if (Array.isArray(v)) return v.length > 0;
-    if (isFileValue(v)) return v.storages.length > 0;
-    return false;
-  });
-}
-
-function areRequiredFieldsFilled(
+export function areRequiredFieldsFilled(
   fields: Array<IField>,
   values: CreateRowDefaultValue,
 ): boolean {
@@ -53,57 +45,68 @@ interface UseRowAutoSaveOptions {
   // Undefined = modo create (primeiro save faz POST).
   // String = modo edit (todos os saves fazem PUT).
   rowId?: string;
+  // Estado inicial de lixeira (relevante só no modo edit).
+  initialIsTrashed?: boolean;
   // Callback disparado uma vez após o primeiro POST (create mode).
-  // Útil para navegação pós-criação em tabelas com FIELD_GROUP.
   onFirstSave?: (rowId: string) => void;
 }
 
 interface UseRowAutoSaveReturn {
-  savedRowId: React.MutableRefObject<string | null>;
   isSaving: boolean;
   isError: boolean;
   lastSavedAt: Date | null;
-  save: (values: CreateRowDefaultValue) => Promise<void>;
+  isDraft: boolean;
+  triggerSave: (values: CreateRowDefaultValue) => Promise<void>;
 }
+
+type CreateMutationPayload = {
+  data: Record<string, unknown>;
+};
+
+type UpdateMutationPayload = {
+  rowId: string;
+  data: Record<string, unknown>;
+};
+
+type RestoreMutationPayload = {
+  rowId: string;
+};
 
 export function useRowAutoSave({
   tableSlug,
   fields,
   rowId,
+  initialIsTrashed = false,
   onFirstSave,
 }: UseRowAutoSaveOptions): UseRowAutoSaveReturn {
+  const queryClient = useQueryClient();
   const savedRowId = React.useRef<string | null>(rowId ?? null);
-  const [lastSavedAt, setLastSavedAt] = React.useState<Date | null>(null);
-  const [isError, setIsError] = React.useState(false);
-
   const onFirstSaveRef = React.useRef(onFirstSave);
   onFirstSaveRef.current = onFirstSave;
+  const [lastSavedAt, setLastSavedAt] = React.useState<Date | null>(null);
+  const [isError, setIsError] = React.useState(false);
+  const [isTrashed, setIsTrashed] = React.useState(initialIsTrashed);
 
-  const _create = useCreateTableRow({
-    onSuccess(data) {
-      const isFirst = savedRowId.current === null;
-      savedRowId.current = data._id;
-      setLastSavedAt(new Date());
-      setIsError(false);
-      if (isFirst) {
+  const _create = useMutation({
+    mutationFn: async (payload: CreateMutationPayload): Promise<IRow> => {
+      const route = `/tables/${tableSlug}/rows`;
+      const response = await API.post<IRow>(route, payload.data);
+      return response.data;
+    },
+    onSuccess(data: IRow): void {
+      queryClient.setQueryData(
+        queryKeys.rows.detail(tableSlug, data._id),
+        data,
+      );
+      if (savedRowId.current === null) {
         onFirstSaveRef.current?.(data._id);
       }
-    },
-    onError() {
-      setIsError(true);
-      toastError(
-        'Erro ao salvar',
-        'Não foi possível salvar o registro automaticamente',
-      );
-    },
-  });
-
-  const _update = useUpdateTableRow({
-    onSuccess() {
+      savedRowId.current = data._id;
+      setIsTrashed(data.trashed);
       setLastSavedAt(new Date());
       setIsError(false);
     },
-    onError() {
+    onError(): void {
       setIsError(true);
       toastError(
         'Erro ao salvar',
@@ -112,86 +115,99 @@ export function useRowAutoSave({
     },
   });
 
-  const createRef = React.useRef(_create);
-  createRef.current = _create;
-  const updateRef = React.useRef(_update);
-  updateRef.current = _update;
+  const _update = useMutation({
+    mutationFn: async (payload: UpdateMutationPayload): Promise<IRow> => {
+      const route = `/tables/${tableSlug}/rows/${payload.rowId}`;
+      const response = await API.put<IRow>(route, payload.data);
+      return response.data;
+    },
+    onSuccess(data: IRow): void {
+      queryClient.setQueryData(
+        queryKeys.rows.detail(tableSlug, data._id),
+        data,
+      );
+      setLastSavedAt(new Date());
+      setIsError(false);
+    },
+    onError(): void {
+      setIsError(true);
+      toastError(
+        'Erro ao salvar',
+        'Não foi possível salvar o registro automaticamente',
+      );
+    },
+  });
 
-  const save = React.useCallback(
+  const _restore = useMutation({
+    mutationFn: async (payload: RestoreMutationPayload): Promise<IRow> => {
+      const route = `/tables/${tableSlug}/rows/${payload.rowId}/restore`;
+      const response = await API.patch<IRow>(route);
+      return response.data;
+    },
+    onSuccess(data: IRow): void {
+      queryClient.setQueryData(
+        queryKeys.rows.detail(tableSlug, data._id),
+        data,
+      );
+      setIsTrashed(false);
+    },
+    onError(): void {
+      console.warn('[useRowAutoSave] falha ao restaurar da lixeira');
+    },
+  });
+
+  const triggerSave = React.useCallback(
     async (values: CreateRowDefaultValue): Promise<void> => {
-      if (
-        createRef.current.status === 'pending' ||
-        updateRef.current.status === 'pending'
-      ) {
+      if (_create.isPending || _update.isPending || _restore.isPending) {
         return;
       }
-      const data = buildRowPayload(values, fields);
+
+      const requiredFilled = areRequiredFieldsFilled(fields, values);
+      const rawData = buildRowPayload(values, fields);
+      const data: Record<string, unknown> = rawData;
+
       if (savedRowId.current === null) {
-        await createRef.current.mutateAsync({ slug: tableSlug, data });
-      } else {
-        await updateRef.current.mutateAsync({
-          slug: tableSlug,
-          rowId: savedRowId.current,
-          data,
+        const draftPayload: Record<string, unknown> = { ...data };
+        if (!requiredFilled) {
+          for (const field of fields) {
+            if (draftPayload[field.slug] === null) {
+              if (
+                field.type === E_FIELD_TYPE.TEXT_SHORT ||
+                field.type === E_FIELD_TYPE.TEXT_LONG
+              ) {
+                draftPayload[field.slug] = 'rascunho';
+              }
+              if (field.type === E_FIELD_TYPE.DATE) {
+                draftPayload[field.slug] = new Date().toISOString();
+              }
+            }
+          }
+        }
+        await _create.mutateAsync({
+          data: { ...draftPayload, trashed: !requiredFilled },
         });
+        return;
+      }
+
+      const currentRowId = savedRowId.current;
+      await _update.mutateAsync({ rowId: currentRowId, data });
+
+      if (isTrashed && requiredFilled) {
+        await _restore.mutateAsync({ rowId: currentRowId });
       }
     },
-    [tableSlug, fields],
+    [fields, isTrashed, _create, _update, _restore],
   );
 
-  const isSaving = _create.isPending || _update.isPending;
+  const isSaving = _create.isPending || _update.isPending || _restore.isPending;
 
-  return { savedRowId, isSaving, isError, lastSavedAt, save };
-}
-
-// ─── hook: useAutoSaveController ─────────────────────────────────────────────
-// Observa form.store e dispara save com debounce 500ms.
-// enabled=false cancela timers pendentes e reseta o ciclo (útil ao alternar modos).
-
-interface UseAutoSaveControllerOptions {
-  form: AnyFormApi;
-  save: (values: CreateRowDefaultValue) => Promise<void>;
-  isUploading: boolean;
-  fields: Array<IField>;
-  enabled?: boolean;
-}
-
-export function useAutoSaveController({
-  form,
-  save,
-  isUploading,
-  fields,
-  enabled = true,
-}: UseAutoSaveControllerOptions): void {
-  const values = useStore(form.store, (s) => s.values);
-  const isFirst = React.useRef(true);
-
-  React.useEffect(() => {
-    if (!enabled) {
-      isFirst.current = true;
-      return;
-    }
-    if (isFirst.current) {
-      isFirst.current = false;
-      return;
-    }
-    if (isUploading) return;
-    if (!hasAnyValue(values)) return;
-
-    const timer = setTimeout((): void => {
-      const fieldNames = Object.keys(form.store.state.fieldMeta);
-      for (const name of fieldNames) {
-        form.setFieldMeta(name, (prev) => ({ ...prev, isTouched: true }));
-      }
-      void form.validateAllFields('change').then((): void => {
-        if (!areRequiredFieldsFilled(fields, values)) return;
-        if (!form.store.state.isValid) return;
-        void save(values);
-      });
-    }, 500);
-
-    return (): void => clearTimeout(timer);
-  }, [values, isUploading, save, enabled, fields]);
+  return {
+    isSaving,
+    isError,
+    lastSavedAt,
+    isDraft: isTrashed,
+    triggerSave,
+  };
 }
 
 // ─── component: SaveStatusIndicator ─────────────────────────────────────────
@@ -200,12 +216,14 @@ interface SaveStatusIndicatorProps {
   isSaving: boolean;
   isError: boolean;
   lastSavedAt: Date | null;
+  isDraft?: boolean;
 }
 
 export function SaveStatusIndicator({
   isSaving,
   isError,
   lastSavedAt,
+  isDraft = false,
 }: SaveStatusIndicatorProps): React.JSX.Element {
   const [showSaved, setShowSaved] = React.useState(false);
 
@@ -224,13 +242,19 @@ export function SaveStatusIndicator({
           <span className="text-muted-foreground">Salvando...</span>
         </React.Fragment>
       )}
-      {!isSaving && showSaved && (
+      {!isSaving && showSaved && !isDraft && (
         <React.Fragment>
           <CheckCircleIcon className="size-3 text-green-600" />
           <span className="text-green-600">Salvo</span>
         </React.Fragment>
       )}
-      {!isSaving && !showSaved && isError && (
+      {!isSaving && !showSaved && isDraft && (
+        <React.Fragment>
+          <FileTextIcon className="size-3 text-yellow-600" />
+          <span className="text-yellow-600">Rascunho (lixeira)</span>
+        </React.Fragment>
+      )}
+      {!isSaving && !showSaved && !isDraft && isError && (
         <React.Fragment>
           <AlertCircleIcon className="size-3 text-destructive" />
           <span className="text-destructive">Erro ao salvar</span>

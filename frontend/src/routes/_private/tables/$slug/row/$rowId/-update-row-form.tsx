@@ -17,11 +17,7 @@ import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
-import {
-  SaveStatusIndicator,
-  useAutoSaveController,
-  useRowAutoSave,
-} from '@/hooks/use-row-auto-save';
+import { SaveStatusIndicator, useRowAutoSave } from '@/hooks/use-row-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
@@ -55,8 +51,10 @@ function UpdateRowFormContent({
   const search = useSearch({ from: '/_private/tables/$slug/row/$rowId/' });
 
   const canEditRow = permission.can('UPDATE_ROW');
-  const initialMode: 'show' | 'edit' =
-    search.mode === 'edit' && canEditRow && !data.trashed ? 'edit' : 'show';
+  let initialMode: 'show' | 'edit' = 'show';
+  if (search.mode === 'edit' && canEditRow) {
+    initialMode = 'edit';
+  }
   const [mode, setMode] = React.useState<'show' | 'edit'>(initialMode);
 
   const slug = table.slug;
@@ -113,19 +111,29 @@ function UpdateRowFormContent({
 
   useApiErrorAutoClear(form);
 
-  const { isSaving, isError, lastSavedAt, save } = useRowAutoSave({
-    tableSlug: slug,
-    fields: formFields,
-    rowId,
-  });
+  const { isSaving, isError, lastSavedAt, isDraft, triggerSave } =
+    useRowAutoSave({
+      tableSlug: slug,
+      fields: formFields,
+      rowId,
+      initialIsTrashed: data.trashed,
+    });
 
-  useAutoSaveController({
-    form,
-    save,
-    isUploading,
-    fields: formFields,
-    enabled: mode === 'edit',
-  });
+  const handleAutoSave = React.useCallback((): void => {
+    if (mode !== 'edit') return;
+    if (isUploading) return;
+    void triggerSave(form.store.state.values);
+  }, [mode, isUploading, triggerSave, form]);
+
+  React.useEffect(() => {
+    if (mode !== 'edit') return;
+    const timer = setInterval((): void => {
+      if (!isUploading) {
+        void triggerSave(form.store.state.values);
+      }
+    }, 30_000);
+    return (): void => clearInterval(timer);
+  }, [mode, isUploading, triggerSave, form]);
 
   const _update = useUpdateTableRow({
     onSuccess() {
@@ -258,6 +266,7 @@ function UpdateRowFormContent({
             fields={formFields}
             disabled={isDisabled}
             tableSlug={slug}
+            onAutoSave={handleAutoSave}
           />
         </form>
       )}
@@ -270,6 +279,7 @@ function UpdateRowFormContent({
               isSaving={isSaving}
               isError={isError}
               lastSavedAt={lastSavedAt}
+              isDraft={isDraft}
             />
             <div className="flex gap-2">
               <Button
@@ -292,7 +302,9 @@ function UpdateRowFormContent({
                 className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
                 data-test-id="update-row-submit-btn"
                 disabled={isSaving || _update.isPending || isUploading}
-                onClick={(): void => form.handleSubmit()}
+                onClick={(): void => {
+                  void form.handleSubmit();
+                }}
               >
                 {_update.isPending && <Spinner />}
                 <span>Salvar</span>
