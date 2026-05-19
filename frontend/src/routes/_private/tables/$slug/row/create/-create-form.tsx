@@ -214,55 +214,11 @@ export function createRequiredValidator(fieldName: string): RequiredValidator {
   };
 }
 
-type ValidatorParam = {
-  value: null | undefined | string | { storages: Array<IStorage> };
-};
-
-type FieldValidators = {
-  onChange: (params: ValidatorParam) => string | undefined;
-  onBlur: (params: ValidatorParam) => string | undefined;
-};
-
-function buildValidators(
-  field: IField,
-  onBlurSave?: () => void,
-  onSelectionChange?: () => void,
-): FieldValidators {
-  const isSelectionField =
-    field.type === E_FIELD_TYPE.DROPDOWN ||
-    field.type === E_FIELD_TYPE.CATEGORY ||
-    field.type === E_FIELD_TYPE.USER ||
-    field.type === E_FIELD_TYPE.RELATIONSHIP ||
-    field.type === E_FIELD_TYPE.FILE;
-
-  if (isSelectionField) {
-    return {
-      onChange: ({ value }: ValidatorParam): string | undefined => {
-        onSelectionChange?.();
-        return buildFieldValidator(field, value);
-      },
-      onBlur: ({ value }: ValidatorParam): string | undefined =>
-        buildFieldValidator(field, value),
-    };
-  }
-
-  return {
-    onChange: ({ value }: ValidatorParam): string | undefined =>
-      buildFieldValidator(field, value),
-    onBlur: ({ value }: ValidatorParam): string | undefined => {
-      onBlurSave?.();
-      return buildFieldValidator(field, value);
-    },
-  };
-}
-
 interface RowFormFieldsProps {
   form: any;
   fields: Array<IField>;
   disabled: boolean;
   tableSlug: string;
-  onBlurSave?: () => void;
-  onSelectionChange?: () => void;
 }
 
 export function RowFormFields({
@@ -270,8 +226,6 @@ export function RowFormFields({
   fields,
   disabled,
   tableSlug,
-  onBlurSave,
-  onSelectionChange,
 }: RowFormFieldsProps): React.JSX.Element {
   return (
     <section
@@ -299,7 +253,14 @@ export function RowFormFields({
           >
             <form.AppField
               name={field.slug}
-              validators={buildValidators(field, onBlurSave, onSelectionChange)}
+              validators={{
+                onChange: ({ value }: { value: any }) => {
+                  return buildFieldValidator(field, value);
+                },
+                onBlur: ({ value }: { value: any }) => {
+                  return buildFieldValidator(field, value);
+                },
+              }}
             >
               {(formField: any) => {
                 switch (field.type) {

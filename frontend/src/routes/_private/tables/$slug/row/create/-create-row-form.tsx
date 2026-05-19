@@ -11,12 +11,16 @@ import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { Button } from '@/components/ui/button';
 import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
-import { SaveStatusIndicator, useRowAutoSave } from '@/hooks/use-row-auto-save';
+import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { E_FIELD_TYPE } from '@/lib/constant';
+import { applyApiFieldErrors } from '@/lib/form-utils';
+import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
-import { buildCreateRowDefaultValues } from '@/lib/table';
+import { buildCreateRowDefaultValues, buildRowPayload } from '@/lib/table';
+import { toastSuccess } from '@/lib/toast';
 
 interface CreateRowFormProps {
   table: ITable;
@@ -58,48 +62,47 @@ function CreateRowFormContent({
 
   const form = useAppForm({
     defaultValues: buildCreateRowDefaultValues(fields),
-    onSubmit: async (): Promise<void> => {},
-  });
-
-  const {
-    isSaving,
-    isError,
-    lastSavedAt,
-    isDraft,
-    triggerSaveImmediate,
-    triggerSaveDebounced,
-    cancelDebounce,
-  } = useRowAutoSave({
-    tableSlug: table.slug,
-    fields,
-    onFirstSave(rowId: string): void {
-      navigate({
-        to: '/tables/$slug/row/$rowId',
-        params: { slug: table.slug, rowId },
-        search: { mode: 'edit' },
-        replace: true,
-      });
+    onSubmit: async ({ value }) => {
+      if (_create.status === 'pending') return;
+      const _data = buildRowPayload(value, fields);
+      await _create.mutateAsync({ slug: table.slug, data: _data });
     },
   });
 
-  const handleBlurSave = React.useCallback((): void => {
-    if (isUploading) return;
-    void triggerSaveImmediate(form.store.state.values);
-  }, [isUploading, triggerSaveImmediate, form]);
+  useApiErrorAutoClear(form);
 
-  const handleSelectionChange = React.useCallback((): void => {
-    if (isUploading) return;
-    triggerSaveDebounced(form.store.state.values);
-  }, [isUploading, triggerSaveDebounced, form]);
+  const _create = useCreateTableRow({
+    onSuccess(data) {
+      toastSuccess('Registro criado', 'O registro foi criado com sucesso');
 
-  React.useEffect(() => {
-    const timer = setInterval((): void => {
-      if (!isUploading) {
-        void triggerSaveImmediate(form.store.state.values);
+      form.reset();
+
+      const hasGroups = table.fields.some(
+        (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && !f.trashed,
+      );
+
+      if (hasGroups) {
+        navigate({
+          to: '/tables/$slug/row/$rowId',
+          params: { slug: table.slug, rowId: data._id },
+        });
+      } else {
+        sidebar.setOpen(false);
+
+        navigate({
+          to: '/tables/$slug',
+          replace: true,
+          params: { slug: table.slug },
+        });
       }
-    }, 30_000);
-    return (): void => clearInterval(timer);
-  }, [isUploading, triggerSaveImmediate, form]);
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Erro ao criar o registro',
+        onFieldErrors: (errors) => applyApiFieldErrors(form, errors),
+      });
+    },
+  });
 
   const [prefillApplied, setPrefillApplied] = React.useState(false);
 
@@ -124,66 +127,58 @@ function CreateRowFormContent({
 
   return (
     <React.Fragment>
-      <div className="shrink-0 border-b p-2">
-        <div className="flex items-center justify-between gap-2">
-          <SaveStatusIndicator
-            isSaving={isSaving}
-            isError={isError}
-            lastSavedAt={lastSavedAt}
-            isDraft={isDraft}
-          />
-          <div className="flex gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="px-2 cursor-pointer"
-              data-test-id="create-row-cancel-btn"
-              onClick={(): void => {
-                sidebar.setOpen(false);
-                navigate({
-                  to: '/tables/$slug',
-                  replace: true,
-                  params: { slug: table.slug },
-                });
-              }}
-            >
-              <span>Cancelar</span>
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              className="disabled:cursor-not-allowed px-2 cursor-pointer"
-              data-test-id="create-row-save-btn"
-              disabled={isSaving || isUploading}
-              onClick={(): void => {
-                cancelDebounce();
-                void triggerSaveImmediate(form.store.state.values);
-              }}
-            >
-              {isSaving && <Spinner />}
-              <span>Salvar</span>
-            </Button>
-          </div>
-        </div>
-      </div>
-
       <form
         className="flex-1 flex flex-col min-h-0 overflow-auto relative"
         data-test-id="create-row-form"
-        onSubmit={(e: React.FormEvent<HTMLFormElement>): void => {
+        onSubmit={(e) => {
           e.preventDefault();
+          form.handleSubmit();
         }}
       >
         <RowFormFields
           form={form}
           fields={fields}
-          disabled={false}
+          disabled={_create.status === 'pending'}
           tableSlug={table.slug}
-          onBlurSave={handleBlurSave}
-          onSelectionChange={handleSelectionChange}
         />
       </form>
+
+      <div className="shrink-0 border-t p-2">
+        <form.Subscribe
+          selector={(state) => [state.canSubmit, state.isSubmitting]}
+          children={([canSubmit, isSubmitting]) => (
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                data-test-id="create-row-cancel-btn"
+                disabled={isSubmitting}
+                onClick={() => {
+                  sidebar.setOpen(false);
+                  navigate({
+                    to: '/tables/$slug',
+                    replace: true,
+                    params: { slug: table.slug },
+                  });
+                }}
+              >
+                <span>Cancelar</span>
+              </Button>
+              <Button
+                type="button"
+                className="disabled:cursor-not-allowed px-2 cursor-pointer max-w-40 w-full"
+                data-test-id="create-row-submit-btn"
+                disabled={!canSubmit || isUploading}
+                onClick={() => form.handleSubmit()}
+              >
+                {isSubmitting && <Spinner />}
+                <span>Criar</span>
+              </Button>
+            </div>
+          )}
+        />
+      </div>
     </React.Fragment>
   );
 }
