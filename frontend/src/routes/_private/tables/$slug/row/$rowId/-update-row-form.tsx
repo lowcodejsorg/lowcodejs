@@ -330,7 +330,6 @@ function UpdateRowFormContent({
           />
         </form>
       )}
-
     </React.Fragment>
   );
 }

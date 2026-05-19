@@ -10,9 +10,7 @@ import {
   DownloadIcon,
   PencilIcon,
   PlusIcon,
-  SearchIcon,
   UserIcon,
-  XIcon,
 } from 'lucide-react';
 import React from 'react';
 
@@ -30,16 +28,11 @@ import { StatCard } from './-stat-card';
 import { TableHistory } from './-table-history';
 
 import { FilterTrigger } from '@/components/common/filters';
+import { InputSearch } from '@/components/common/input-search';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group';
 import { useLoggerReadPaginated } from '@/hooks/tanstack-query/use-logger-read-paginated';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { E_ROLE, MetaDefault } from '@/lib/constant';
@@ -167,16 +160,6 @@ function RouteComponent(): React.JSX.Element {
     });
   };
 
-  const handleQuickSearchChange = (value: string): void => {
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        page: 1,
-        search: value || undefined,
-      }),
-    });
-  };
-
   const handleExport = (): void => {
     const csv = entriesToCsv(entries);
     const stamp = format(new Date(), 'yyyy-MM-dd_HHmm');
@@ -207,31 +190,7 @@ function RouteComponent(): React.JSX.Element {
 
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end lg:gap-3">
           <div className="lg:w-96">
-            <InputGroup>
-              <InputGroupAddon>
-                <SearchIcon className="size-4" />
-              </InputGroupAddon>
-              <InputGroupInput
-                data-test-id="history-search-input"
-                placeholder="Pesquisar no histórico..."
-                value={filters.search}
-                onChange={(e) => handleQuickSearchChange(e.target.value)}
-                className="shadow-none"
-              />
-              {filters.search.length > 0 && (
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label="Limpar busca"
-                    onClick={() => handleQuickSearchChange('')}
-                    className="cursor-pointer"
-                  >
-                    <XIcon className="size-4" />
-                  </InputGroupButton>
-                </InputGroupAddon>
-              )}
-            </InputGroup>
+            <InputSearch />
           </div>
 
           <div className="inline-flex items-center gap-2">
