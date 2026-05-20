@@ -63,13 +63,8 @@ export default class RowMongooseRepository implements RowContractRepository {
 
   private async getPopulate(
     table: RowTableContext,
-    includeReverse: boolean,
   ): ReturnType<typeof buildPopulate> {
-    const conn = getDataConnection();
-    if (includeReverse) {
-      return buildPopulate(table.fields, table.groups, table.slug, conn);
-    }
-    return buildPopulate(table.fields, table.groups, undefined, conn);
+    return buildPopulate(table.fields, table.groups, getDataConnection());
   }
 
   private transformRow(doc: unknown): IRow {
@@ -97,7 +92,7 @@ export default class RowMongooseRepository implements RowContractRepository {
 
   async create(payload: RowCreatePayload): Promise<IRow> {
     const model = await this.getModel(payload.table);
-    const populate = await this.getPopulate(payload.table, false);
+    const populate = await this.getPopulate(payload.table);
 
     const created = await model.create(payload.data);
     const populated = await created.populate(populate);
@@ -113,10 +108,7 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     const shouldPopulate = payload.populate !== false;
     if (shouldPopulate) {
-      const populate = await this.getPopulate(
-        payload.table,
-        payload.includeReverseRelationships || false,
-      );
+      const populate = await this.getPopulate(payload.table);
       await row.populate(populate);
     }
 
@@ -125,10 +117,7 @@ export default class RowMongooseRepository implements RowContractRepository {
 
   async findMany(payload: RowFindManyPayload): Promise<IRow[]> {
     const model = await this.getModel(payload.table);
-    const populate = await this.getPopulate(
-      payload.table,
-      payload.includeReverseRelationships || false,
-    );
+    const populate = await this.getPopulate(payload.table);
 
     const conn = getDataConnection();
     const query = await buildQuery(
@@ -172,7 +161,7 @@ export default class RowMongooseRepository implements RowContractRepository {
 
   async update(payload: RowUpdatePayload): Promise<IRow> {
     const model = await this.getModel(payload.table);
-    const populate = await this.getPopulate(payload.table, false);
+    const populate = await this.getPopulate(payload.table);
 
     const row = await model
       .findOneAndUpdate(
@@ -230,7 +219,7 @@ export default class RowMongooseRepository implements RowContractRepository {
 
   async setFieldAndSave(payload: RowSetFieldPayload): Promise<IRow> {
     const model = await this.getModel(payload.table);
-    const populate = await this.getPopulate(payload.table, false);
+    const populate = await this.getPopulate(payload.table);
 
     const row = await model.findOne({ _id: payload._id });
     if (!row) throw new Error('Row not found');
@@ -247,7 +236,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     payload: RowGroupItemPayload & { data: Record<string, unknown> },
   ): Promise<IRow> {
     const model = await this.getModel(payload.table);
-    const populate = await this.getPopulate(payload.table, false);
+    const populate = await this.getPopulate(payload.table);
 
     const row = await model.findOne({ _id: payload.rowId });
     if (!row) throw new Error('Row not found');
@@ -270,7 +259,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     },
   ): Promise<IRow> {
     const model = await this.getModel(payload.table);
-    const populate = await this.getPopulate(payload.table, false);
+    const populate = await this.getPopulate(payload.table);
 
     const row = await model.findOne({ _id: payload.rowId });
     if (!row) throw new Error('Row not found');
@@ -319,7 +308,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     update: Record<string, unknown>,
   ): Promise<IRow | null> {
     const model = await this.getModel(table);
-    const populate = await this.getPopulate(table, false);
+    const populate = await this.getPopulate(table);
 
     const row = await model.findOneAndUpdate(filter, update, { new: true });
     if (!row) return null;

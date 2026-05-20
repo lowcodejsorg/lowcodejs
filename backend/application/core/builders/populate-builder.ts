@@ -9,7 +9,7 @@ import { User } from '@application/model/user.model';
 import type { IField, IGroupConfiguration } from '../entity.core';
 import { E_FIELD_TYPE } from '../entity.core';
 
-import { findReverseRelationships, buildTable } from './model-builder';
+import { buildTable } from './model-builder';
 
 export function getRelationship(fields: IField[] = []): IField[] {
   const types = [
@@ -29,7 +29,6 @@ export function getRelationship(fields: IField[] = []): IField[] {
 export async function buildPopulate(
   fields?: IField[],
   groups?: IGroupConfiguration[],
-  tableSlug?: string,
   conn?: mongoose.Connection,
 ): Promise<mongoose.PopulateOptions[]> {
   const relacionamentos = getRelationship(fields);
@@ -98,7 +97,6 @@ export async function buildPopulate(
         const relationshipPopulate = await buildPopulate(
           relationshipFields,
           relationshipTable?.groups ?? [],
-          undefined,
           conn,
         );
 
@@ -168,55 +166,6 @@ export async function buildPopulate(
             }
           }
         }
-      }
-    }
-  }
-
-  // === VIRTUAL POPULATE (Relacionamentos Reversos) ===
-  if (tableSlug) {
-    const reverseRelationships = await findReverseRelationships(tableSlug);
-
-    for (const rel of reverseRelationships) {
-      const sourceTable = await Table.findOne({
-        slug: rel.sourceTableSlug,
-        trashed: { $ne: true },
-      }).populate('fields');
-
-      if (sourceTable && conn) {
-        await buildTable(
-          {
-            ...sourceTable.toJSON({ flattenObjectIds: true }),
-            _id: sourceTable._id.toString(),
-          },
-          conn,
-        );
-
-        const populatedFields: IField[] = sourceTable.fields ?? [];
-        const relationshipSlugs = populatedFields
-          .filter(
-            (f) =>
-              f.type === E_FIELD_TYPE.RELATIONSHIP && f.slug !== rel.fieldSlug,
-          )
-          .map((f) => `-${f.slug}`);
-
-        populate.push({
-          path: rel.virtualName,
-          ...(relationshipSlugs.length > 0 && {
-            select: relationshipSlugs.join(' '),
-          }),
-          transform: (doc: unknown): Record<string, unknown> | null => {
-            if (!doc || typeof doc !== 'object') return null;
-            const record: Record<string, unknown> = {};
-            Object.assign(record, doc);
-            if ('toObject' in doc && typeof doc.toObject === 'function') {
-              const plain: Record<string, unknown> = doc.toObject();
-              delete plain[rel.fieldSlug];
-              return plain;
-            }
-            delete record[rel.fieldSlug];
-            return record;
-          },
-        });
       }
     }
   }

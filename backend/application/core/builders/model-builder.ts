@@ -138,16 +138,6 @@ export async function buildTable(
     id: false,
   });
 
-  // === VIRTUAL POPULATE (Relacionamentos Reversos) ===
-  const reverseRelationships = await findReverseRelationships(table.slug);
-  for (const rel of reverseRelationships) {
-    schema.virtual(rel.virtualName, {
-      ref: rel.sourceTableSlug,
-      localField: '_id',
-      foreignField: rel.fieldSlug,
-    });
-  }
-
   // ===== ADICIONA OS MIDDLEWARES AQUI =====
 
   if (table?.methods?.beforeSave?.code) {

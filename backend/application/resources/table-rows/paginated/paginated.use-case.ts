@@ -42,7 +42,6 @@ export default class TableRowPaginatedUseCase {
         rawFilters: payload,
         skip,
         limit: payload.perPage,
-        includeReverseRelationships: true,
       });
 
       const total = await this.rowRepository.count(table, payload);
