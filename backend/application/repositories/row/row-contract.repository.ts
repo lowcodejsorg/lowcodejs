@@ -80,7 +80,7 @@ export abstract class RowContractRepository {
     rawFilters?: Record<string, unknown>,
   ): Promise<number>;
 
-  abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
+  abstract update(payload: RowUpdatePayload): Promise<IRow>;
 
   abstract deleteOne(table: RowTableContext, _id: string): Promise<boolean>;
 

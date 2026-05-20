@@ -83,36 +83,30 @@ function validateFieldValue(
 
   switch (type) {
     case E_FIELD_TYPE.TEXT_SHORT: {
-      if (typeof value !== 'string') {
-        return 'Deve ser um texto';
-      }
+      if (typeof value !== 'string') return 'Deve ser um texto';
+
       const formatError = validateFormat(value, field.format ?? null);
       if (formatError) return formatError;
       return null;
     }
 
     case E_FIELD_TYPE.TEXT_LONG: {
-      if (typeof value !== 'string') {
-        return 'Deve ser um texto';
-      }
+      if (typeof value !== 'string') return 'Deve ser um texto';
       return null;
     }
 
     case E_FIELD_TYPE.DATE: {
-      if (!isValidISODate(value)) {
+      if (!isValidISODate(value))
         return 'Deve ser uma data válida no formato ISO 8601';
-      }
+
       return null;
     }
 
     case E_FIELD_TYPE.DROPDOWN: {
-      if (!Array.isArray(value)) {
-        return 'Deve ser uma lista';
-      }
+      if (!Array.isArray(value)) return 'Deve ser uma lista';
+
       for (const item of value) {
-        if (typeof item !== 'string') {
-          return 'Todos os itens devem ser textos';
-        }
+        if (typeof item !== 'string') return 'Todos os itens devem ser textos';
       }
       return null;
     }

@@ -170,22 +170,17 @@ export default class RowMongooseRepository implements RowContractRepository {
     return model.countDocuments(query);
   }
 
-  async update(payload: RowUpdatePayload): Promise<IRow | null> {
+  async update(payload: RowUpdatePayload): Promise<IRow> {
     const model = await this.getModel(payload.table);
     const populate = await this.getPopulate(payload.table, false);
 
-    const row = await model.findOne({ _id: payload._id }).populate(populate);
-
-    if (!row) return null;
-
-    await row
-      .set({
-        ...row.toJSON({ flattenObjectIds: true }),
-        ...payload.data,
-      })
-      .save();
-
-    await row.populate(populate);
+    const row = await model
+      .findOneAndUpdate(
+        { _id: payload._id },
+        { $set: payload.data },
+        { new: true },
+      )
+      .populate(populate);
 
     return this.transformRow(row);
   }
