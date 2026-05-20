@@ -16,8 +16,10 @@ core/
 │       ├── export-section.tsx       ← card de exportação (TableCombobox + checkboxes)
 │       └── import-section.tsx       ← card de importação (file upload + preview)
 ├── plugins/
-│   └── print-table/
-│       └── index.tsx                ← botão Imprimir na toolbar (slot table.actions)
+│   ├── print-table/
+│   │   └── index.tsx                ← botão Imprimir na toolbar (slot table.actions)
+│   └── copy-record-link/
+│       └── index.tsx                ← item "Copiar link" no dropdown da linha (slot table.row.actions)
 └── modules/
     └── welcome/
         └── index.tsx                ← componente default do módulo (boas-vindas)
@@ -30,6 +32,7 @@ core/
 | `tools`   | `clone-table`          | `tools/clone-table/index.tsx`          | UI de clonagem de tabelas                                                                                          |
 | `tools`   | `tables-import-export` | `tools/tables-import-export/index.tsx` | Página com seções de Importar e Exportar tabela. Endpoints `POST /tools/export-table` e `POST /tools/import-table` |
 | `plugins` | `print-table`          | `plugins/print-table/index.tsx`        | Botão de impressão na toolbar (slot `table.actions`)                                                               |
+| `plugins` | `copy-record-link`     | `plugins/copy-record-link/index.tsx`   | Item "Copiar link" no dropdown de ações da linha (slot `table.row.actions`) — copia `/tables/<slug>/row/<rowId>`   |
 | `modules` | `welcome`              | `modules/welcome/index.tsx`            | Página de boas-vindas com atalhos (URL `/e/core/welcome`)                                                          |
 
 ## Convenções

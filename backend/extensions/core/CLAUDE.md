@@ -10,7 +10,8 @@ oficiais que adotam o modelo de extensão (ao invés de viver no core
 ```
 core/
 ├── plugins/
-│   └── print-table/                ← Fase 3: plugin de referência (slot table.actions)
+│   ├── print-table/                ← Fase 3: plugin de referência (slot table.actions)
+│   └── copy-record-link/           ← copia o link direto do registro (slot table.row.actions)
 ├── modules/
 │   └── welcome/                    ← Fase 4: módulo de referência (boas-vindas)
 └── tools/
@@ -27,9 +28,10 @@ core/
 
 ## Plugins
 
-| ID            | Slot           | Descrição                                                              |
-| ------------- | -------------- | ---------------------------------------------------------------------- |
-| `print-table` | `table.actions` | Botão `window.print()` na toolbar da tabela. Plugin de referência. |
+| ID                 | Slot                | Descrição                                                              |
+| ------------------ | ------------------- | ---------------------------------------------------------------------- |
+| `print-table`      | `table.actions`     | Botão `window.print()` na toolbar da tabela. Plugin de referência.     |
+| `copy-record-link` | `table.row.actions` | Item no dropdown de ações da linha que copia o link direto do registro (`/tables/<slug>/row/<rowId>`) para a área de transferência. |
 
 ## Modules
 
