@@ -1,4 +1,3 @@
-import { useNavigate } from '@tanstack/react-router';
 import type { AxiosError } from 'axios';
 import React from 'react';
 
@@ -33,6 +32,7 @@ interface AutoSaveRowFormProps {
   rowId?: string;
   existingRow?: IRow;
   onBack?: () => void;
+  onRowCreated?: (rowId: string) => void;
 }
 
 export function AutoSaveRowForm(
@@ -50,10 +50,10 @@ function AutoSaveRowFormContent({
   rowId: initialRowId,
   existingRow,
   onBack,
+  onRowCreated,
 }: AutoSaveRowFormProps): React.JSX.Element {
   const permissions = useTablePermission(table);
   const isUploading = useIsUploading();
-  const navigate = useNavigate();
 
   const rowIdRef = React.useRef<string | undefined>(initialRowId);
   const [isTrashed, setIsTrashed] = React.useState<boolean>(
@@ -96,12 +96,7 @@ function AutoSaveRowFormContent({
       setIsTrashed(data.trashed);
       if (!rowIdRef.current) {
         rowIdRef.current = data._id;
-        navigate({
-          to: '/tables/$slug/row/$rowId',
-          params: { slug, rowId: data._id },
-          search: { mode: 'edit' as const },
-          replace: true,
-        });
+        onRowCreated?.(data._id);
       }
     },
     onError(error: AxiosError | Error): void {

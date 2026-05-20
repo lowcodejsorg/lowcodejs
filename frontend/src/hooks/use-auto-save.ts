@@ -21,20 +21,13 @@ export function useAutoSave({
   const [lastSavedAt, setLastSavedAt] = React.useState<Date | null>(null);
 
   const isSavingRef = React.useRef(false);
-  const isFirstSaveRef = React.useRef(true);
   const debounceRef = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const performSave = React.useCallback(async (): Promise<void> => {
     if (isSavingRef.current) return;
 
     isSavingRef.current = true;
-
-    const isFirst = isFirstSaveRef.current;
-    if (isFirst) {
-      isFirstSaveRef.current = false;
-    } else {
-      setStatus('saving');
-    }
+    setStatus('saving');
 
     try {
       await onSave();

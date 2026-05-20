@@ -47,8 +47,9 @@ export function TableRowActionsMenu({
             className="inline-flex space-x-1 w-full cursor-pointer"
             onClick={(): void => {
               void router.navigate({
-                to: '/tables/$slug/row/$rowId',
-                params: { slug, rowId: row._id },
+                to: '/tables/$slug/row/',
+                params: { slug },
+                search: { _id: row._id },
               });
             }}
           >
@@ -61,9 +62,9 @@ export function TableRowActionsMenu({
               className="inline-flex space-x-1 w-full cursor-pointer"
               onClick={(): void => {
                 void router.navigate({
-                  to: '/tables/$slug/row/$rowId',
-                  params: { slug, rowId: row._id },
-                  search: { mode: 'edit' as const },
+                  to: '/tables/$slug/row/',
+                  params: { slug },
+                  search: { _id: row._id, mode: 'edit' as const },
                 });
               }}
             >

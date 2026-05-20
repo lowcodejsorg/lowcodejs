@@ -211,8 +211,9 @@ export function TableCardView({
           className="py-4 cursor-pointer hover:bg-muted/30 rounded-xl px-2"
           onClick={() => {
             router.navigate({
-              to: '/tables/$slug/row/$rowId',
-              params: { slug, rowId: row._id },
+              to: '/tables/$slug/row/',
+              params: { slug },
+              search: { _id: row._id },
             });
           }}
         >

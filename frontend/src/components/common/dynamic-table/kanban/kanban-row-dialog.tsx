@@ -1345,8 +1345,9 @@ export function KanbanRowDialog({
                 data-test-id="kanban-view-btn"
                 onClick={(): void => {
                   void router.navigate({
-                    to: '/tables/$slug/row/$rowId',
-                    params: { slug: tableSlug, rowId: row._id },
+                    to: '/tables/$slug/row/',
+                    params: { slug: tableSlug },
+                    search: { _id: row._id },
                   });
                 }}
                 className="cursor-pointer"
@@ -1361,9 +1362,9 @@ export function KanbanRowDialog({
                   data-test-id="kanban-edit-btn"
                   onClick={(): void => {
                     void router.navigate({
-                      to: '/tables/$slug/row/$rowId',
-                      params: { slug: tableSlug, rowId: row._id },
-                      search: { mode: 'edit' as const },
+                      to: '/tables/$slug/row/',
+                      params: { slug: tableSlug },
+                      search: { _id: row._id, mode: 'edit' as const },
                     });
                   }}
                   className="cursor-pointer"
