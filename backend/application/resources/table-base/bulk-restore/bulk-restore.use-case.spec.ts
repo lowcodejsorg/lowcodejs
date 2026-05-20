@@ -105,13 +105,107 @@ describe('Bulk Restore Tables Use Case', () => {
     expect(result.value.modified).toBe(0);
   });
 
+  it('deve pular tabelas cujo slug ja esta em uso por uma tabela ativa', async () => {
+    // Tabela ativa ocupando o slug "clientes"
+    await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    // Tabela na lixeira com o MESMO slug — não pode ser restaurada
+    const trashedDup = await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+    await tableInMemoryRepository.update({
+      _id: trashedDup._id,
+      trashed: true,
+      trashedAt: new Date(),
+    });
+
+    // Tabela na lixeira sem conflito — deve ser restaurada
+    const trashedOk = await tableInMemoryRepository.create({
+      name: 'Produtos',
+      slug: 'produtos',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+    await tableInMemoryRepository.update({
+      _id: trashedOk._id,
+      trashed: true,
+      trashedAt: new Date(),
+    });
+
+    const result = await sut.execute({ ids: [trashedDup._id, trashedOk._id] });
+
+    expect(result.isRight()).toBe(true);
+    if (!result.isRight()) throw new Error('Expected right');
+    expect(result.value.modified).toBe(1);
+    expect(result.value.skipped).toEqual(['clientes']);
+
+    // A duplicata permanece na lixeira; a sem conflito foi restaurada.
+    const stillTrashed = await tableInMemoryRepository.findById(
+      trashedDup._id,
+      {
+        trashed: true,
+      },
+    );
+    expect(stillTrashed).not.toBeNull();
+    const restored = await tableInMemoryRepository.findById(trashedOk._id);
+    expect(restored?.trashed).toBe(false);
+  });
+
   it('deve retornar erro BULK_RESTORE_TABLES_ERROR quando houver falha', async () => {
+    const table = await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+    await tableInMemoryRepository.update({
+      _id: table._id,
+      trashed: true,
+      trashedAt: new Date(),
+    });
+
     tableInMemoryRepository.simulateError(
       'updateMany',
       new Error('Database error'),
     );
 
-    const result = await sut.execute({ ids: ['some-id'] });
+    const result = await sut.execute({ ids: [table._id] });
 
     expect(result.isLeft()).toBe(true);
     if (!result.isLeft()) throw new Error('Expected left');

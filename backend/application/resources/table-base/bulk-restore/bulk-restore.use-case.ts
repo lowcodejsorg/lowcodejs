@@ -8,7 +8,7 @@ import { TableContractRepository } from '@application/repositories/table/table-c
 
 import type { BulkRestorePayload } from './bulk-restore.validator';
 
-type Response = Either<HTTPException, { modified: number }>;
+type Response = Either<HTTPException, { modified: number; skipped?: string[] }>;
 
 @Service()
 export default class BulkRestoreUseCase {
@@ -16,16 +16,42 @@ export default class BulkRestoreUseCase {
 
   async execute(payload: BulkRestorePayload): Promise<Response> {
     try {
-      const modified = await this.tableRepository.updateMany({
-        _ids: payload.ids,
-        filterTrashed: true,
-        data: {
-          trashed: false,
-          trashedAt: null,
-        },
-      });
+      // Só restaura tabelas na lixeira cujo slug NÃO colide com uma tabela
+      // ativa. Slug é a chave da coleção dinâmica — restaurar um slug já ativo
+      // duplicaria os registros e deixaria duas tabelas iguais na lista.
+      const restorableIds: string[] = [];
+      const skipped: string[] = [];
 
-      return right({ modified });
+      for (const id of payload.ids) {
+        const table = await this.tableRepository.findById(id, {
+          trashed: true,
+        });
+        if (!table) continue; // não existe ou não está na lixeira
+
+        const active = await this.tableRepository.findBySlug(table.slug, {
+          trashed: false,
+        });
+        if (active) {
+          skipped.push(table.slug);
+          continue;
+        }
+
+        restorableIds.push(table._id);
+      }
+
+      let modified = 0;
+      if (restorableIds.length > 0) {
+        modified = await this.tableRepository.updateMany({
+          _ids: restorableIds,
+          filterTrashed: true,
+          data: {
+            trashed: false,
+            trashedAt: null,
+          },
+        });
+      }
+
+      return right({ modified, ...(skipped.length > 0 && { skipped }) });
     } catch (error) {
       console.error('[table-base > bulk-restore][error]:', error);
       return left(
