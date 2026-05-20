@@ -4,6 +4,7 @@ import type { ILogger } from '@/lib/interfaces';
 export type LoggerNavigateTarget = {
   to: string;
   params?: Record<string, string>;
+  search?: Record<string, string>;
 };
 
 function matchTableRow(url: string): RegExpMatchArray | null {

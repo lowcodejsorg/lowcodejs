@@ -41,6 +41,8 @@ export default class TableRowAutoSaveUseCase {
         fields: table.fields,
       });
 
+      console.log(draft);
+
       const fields = table.fields.filter((field) => {
         return (
           !field.native &&
@@ -134,7 +136,10 @@ export default class TableRowAutoSaveUseCase {
       (accumulator, field) => {
         if (field.native) return accumulator;
         if (field.trashed) return accumulator;
-        if (field.slug in accumulator) return accumulator;
+        if (field.slug in accumulator && accumulator[field.slug])
+          return accumulator;
+
+        if (!FIELD_DEFAULT_MAPPER[field.type]) return accumulator;
 
         accumulator[field.slug] = FIELD_DEFAULT_MAPPER[field.type];
 

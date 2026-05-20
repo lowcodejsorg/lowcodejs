@@ -103,12 +103,8 @@ export function DocumentMain({
                     aria-label="Adicionar registro nesta seção"
                     onClick={() => {
                       router.navigate({
-                        to: '/tables/$slug/row/create',
+                        to: '/tables/$slug/row',
                         params: { slug },
-                        search: {
-                          categoryId: selectedCategoryId,
-                          categorySlug,
-                        },
                       });
                     }}
                   >

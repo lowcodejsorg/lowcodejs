@@ -5,16 +5,15 @@ import {
 } from '@tanstack/react-router';
 import React from 'react';
 
-import { CreateRowForm } from './-create-row-form';
-import { CreateRowSkeleton } from './-create-row-skeleton';
+import { AutoSaveRowForm } from './-auto-save-row-form';
 
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { LoadError } from '@/components/common/route-status/load-error';
 import { useSidebar } from '@/components/ui/sidebar';
+import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
-import { cn } from '@/lib/utils';
 
-export const Route = createLazyFileRoute('/_private/tables/$slug/row/create/')({
+export const Route = createLazyFileRoute('/_private/tables/$slug/row/')({
   component: RouteComponent,
 });
 
@@ -23,7 +22,7 @@ function RouteComponent(): React.JSX.Element {
   const router = useRouter();
 
   const { slug } = useParams({
-    from: '/_private/tables/$slug/row/create/',
+    from: '/_private/tables/$slug/row/',
   });
 
   const table = useReadTable({ slug });
@@ -37,9 +36,10 @@ function RouteComponent(): React.JSX.Element {
     });
   };
 
+  const isLoading = table.status === 'pending';
+
   return (
     <PageShell data-test-id="create-row-page">
-      {/* Header */}
       <PageShell.Header borderBottom={false}>
         <PageHeader
           onBack={goBack}
@@ -47,23 +47,25 @@ function RouteComponent(): React.JSX.Element {
         />
       </PageShell.Header>
 
-      {/* Content */}
-      <div
-        className={cn(
-          ['pending', 'error'].includes(table.status) &&
-            'flex-1 flex flex-col min-h-0 overflow-auto relative',
-        )}
-      >
-        {table.status === 'pending' && <CreateRowSkeleton />}
-        {table.status === 'error' && (
-          <LoadError
-            refetch={table.refetch}
-            message={'Erro ao carregar dados da tabela'}
-          />
-        )}
-      </div>
+      {isLoading && (
+        <div className="flex-1 flex items-center justify-center">
+          <Spinner />
+        </div>
+      )}
 
-      {table.status === 'success' && <CreateRowForm table={table.data} />}
+      {!isLoading && table.status === 'error' && (
+        <LoadError
+          refetch={table.refetch}
+          message="Erro ao carregar dados da tabela"
+        />
+      )}
+
+      {!isLoading && table.status === 'success' && (
+        <AutoSaveRowForm
+          table={table.data}
+          onBack={goBack}
+        />
+      )}
     </PageShell>
   );
 }

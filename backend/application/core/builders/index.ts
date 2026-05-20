@@ -1,10 +1,10 @@
-export { PASSWORD_REGEX, FieldTypeMapper, buildSchema } from './schema-builder';
-export { findReverseRelationships, buildTable } from './model-builder';
-export { getRelationship, buildPopulate } from './populate-builder';
+export { buildTable } from './model-builder';
+export { buildPopulate, getRelationship } from './populate-builder';
 export {
-  normalize,
-  buildQuery,
   buildOrder,
+  buildQuery,
+  normalize,
   type QueryOrder,
 } from './query-builder';
 export { transformRowContext } from './row-context-builder';
+export { buildSchema, FieldTypeMapper, PASSWORD_REGEX } from './schema-builder';

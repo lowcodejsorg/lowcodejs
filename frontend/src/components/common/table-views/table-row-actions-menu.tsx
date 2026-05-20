@@ -45,12 +45,12 @@ export function TableRowActionsMenu({
 
           <DropdownMenuItem
             className="inline-flex space-x-1 w-full cursor-pointer"
-            onClick={() =>
-              router.navigate({
+            onClick={(): void => {
+              void router.navigate({
                 to: '/tables/$slug/row/$rowId',
                 params: { slug, rowId: row._id },
-              })
-            }
+              });
+            }}
           >
             <EyeIcon className="size-4" />
             <span>Visualizar</span>
@@ -59,13 +59,13 @@ export function TableRowActionsMenu({
           {canEdit && (
             <DropdownMenuItem
               className="inline-flex space-x-1 w-full cursor-pointer"
-              onClick={() =>
-                router.navigate({
+              onClick={(): void => {
+                void router.navigate({
                   to: '/tables/$slug/row/$rowId',
                   params: { slug, rowId: row._id },
-                  search: { mode: 'edit' },
-                })
-              }
+                  search: { mode: 'edit' as const },
+                });
+              }}
             >
               <PencilIcon className="size-4" />
               <span>Editar</span>

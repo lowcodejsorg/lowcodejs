@@ -310,7 +310,7 @@ function RouteComponent(): React.JSX.Element {
                 onClick={() => {
                   sidebar.setOpen(false);
                   router.navigate({
-                    to: '/tables/$slug/row/create',
+                    to: '/tables/$slug/row',
                     replace: true,
                     params: { slug },
                   });

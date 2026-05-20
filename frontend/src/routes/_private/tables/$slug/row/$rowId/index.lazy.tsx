@@ -1,14 +1,18 @@
 import {
   createLazyFileRoute,
+  useNavigate,
   useParams,
   useRouter,
+  useSearch,
 } from '@tanstack/react-router';
-import type { AxiosError } from 'axios';
+import { isAxiosError } from 'axios';
 import { Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
 
-import { UpdateRowFormSkeleton } from './-update-form-skeleton';
-import { UpdateRowForm } from './-update-row-form';
+import { RowDetailView } from './-row-detail-view';
+import { RowDetailSkeleton } from './-row-detail-skeleton';
+
+import { AutoSaveRowForm } from '../-auto-save-row-form';
 
 import { LoginButton } from '@/components/common/layout/login-button';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
@@ -27,9 +31,20 @@ import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
-export const Route = createLazyFileRoute('/_private/tables/$slug/row/$rowId/')({
+export const Route = createLazyFileRoute(
+  '/_private/tables/$slug/row/$rowId/',
+)({
   component: RouteComponent,
 });
+
+interface ApiErrorData {
+  cause?: string;
+  code?: number;
+}
+
+function isApiErrorData(data: unknown): data is ApiErrorData {
+  return typeof data === 'object' && data !== null;
+}
 
 function RouteComponent(): React.JSX.Element {
   const user = useAuthStore((s) => s.user);
@@ -37,42 +52,55 @@ function RouteComponent(): React.JSX.Element {
 
   const sidebar = useSidebar();
   const router = useRouter();
+  const navigate = useNavigate();
 
   const { slug, rowId } = useParams({
     from: '/_private/tables/$slug/row/$rowId/',
   });
 
+  const search = useSearch({
+    from: '/_private/tables/$slug/row/$rowId/',
+  });
+
+  const mode = search.mode ?? 'view';
+
   const table = useReadTable({ slug });
   const row = useReadTableRow({ slug, rowId });
 
-  // Loading — só mostra skeleton quando não há dados em cache (não durante refetch)
-  if (
-    (!table.data && table.status === 'pending') ||
-    (!row.data && row.status === 'pending')
-  ) {
-    return <UpdateRowFormSkeleton />;
+  const isLoadingTable = !table.data && table.status === 'pending';
+  const isLoadingRow = !row.data && row.status === 'pending';
+  const isLoading = isLoadingTable || isLoadingRow;
+
+  if (isLoading) {
+    return <RowDetailSkeleton />;
   }
 
-  // Error
   if (table.status === 'error' || row.status === 'error') {
-    const error = (table.error ?? row.error) as AxiosError<{
-      code: number;
-      cause: string;
-    }>;
-    const cause = error?.response?.data?.cause;
+    const rawError = table.error ?? row.error;
 
-    if (
+    let cause: string | undefined;
+    let httpStatus: number | undefined;
+
+    if (isAxiosError(rawError)) {
+      const data: unknown = rawError.response?.data;
+      if (isApiErrorData(data)) {
+        cause = data.cause;
+      }
+      httpStatus = rawError.response?.status;
+    }
+
+    const isAccessDenied =
       cause === 'TABLE_PRIVATE' ||
       cause === 'FORM_VIEW_RESTRICTED' ||
-      error?.response?.status === 403 ||
-      error?.response?.status === 401
-    ) {
-      const message =
-        cause === 'TABLE_PRIVATE'
-          ? 'Esta tabela é privada'
-          : cause === 'FORM_VIEW_RESTRICTED'
-            ? 'Apenas o dono pode visualizar tabelas de formulário'
-            : 'Você não tem permissão para acessar este registro';
+      httpStatus === 403 ||
+      httpStatus === 401;
+
+    if (isAccessDenied) {
+      let message = 'Você não tem permissão para acessar este registro';
+      if (cause === 'TABLE_PRIVATE') message = 'Esta tabela é privada';
+      if (cause === 'FORM_VIEW_RESTRICTED') {
+        message = 'Apenas o dono pode visualizar tabelas de formulário';
+      }
 
       return (
         <Empty className="from-muted/50 to-background h-full bg-linear-to-b from-30%">
@@ -95,7 +123,7 @@ function RouteComponent(): React.JSX.Element {
     return (
       <LoadError
         message="Houve um erro ao buscar dados do registro"
-        refetch={() => {
+        refetch={(): void => {
           table.refetch();
           row.refetch();
         }}
@@ -112,37 +140,82 @@ function RouteComponent(): React.JSX.Element {
     });
   };
 
-  // Success
+  const goToView = (): void => {
+    void navigate({
+      to: '/tables/$slug/row/$rowId',
+      params: { slug, rowId },
+      search: {},
+      replace: true,
+    });
+  };
+
+  const goToEdit = (): void => {
+    void navigate({
+      to: '/tables/$slug/row/$rowId',
+      params: { slug, rowId },
+      search: { mode: 'edit' as const },
+    });
+  };
+
+  const handleShare = (): void => {
+    navigator.clipboard.writeText(window.location.href);
+    toastInfo(
+      'Link do registro copiado',
+      'O link do registro foi copiado para a área de transferência',
+    );
+  };
+
   return (
     <PageShell data-test-id="row-detail-page">
-      {/* Header */}
-      <PageShell.Header borderBottom={false}>
-        <PageHeader
-          onBack={isAuthenticated ? goBack : undefined}
-          title="Detalhes do registro"
-        >
-          <Button
-            variant="outline"
-            className="shadow-none p-1 h-auto"
-            data-test-id="row-share-btn"
-            onClick={() => {
-              navigator.clipboard.writeText(window.location.href);
-              toastInfo(
-                'Link do registro copiado',
-                'O link do registro foi copiado para a área de transferência',
-              );
-            }}
+      {mode === 'view' && (
+        <PageShell.Header borderBottom={false}>
+          <PageHeader
+            onBack={isAuthenticated ? goBack : undefined}
+            title="Detalhes do registro"
           >
-            <Share2Icon />
-            <span className="sr-only">Compartilhar</span>
-          </Button>
-        </PageHeader>
-      </PageShell.Header>
+            <Button
+              variant="outline"
+              className="shadow-none p-1 h-auto"
+              data-test-id="row-share-btn"
+              onClick={handleShare}
+            >
+              <Share2Icon />
+              <span className="sr-only">Compartilhar</span>
+            </Button>
+          </PageHeader>
+        </PageShell.Header>
+      )}
 
-      <UpdateRowForm
-        table={table.data}
-        data={row.data}
-      />
+      {mode === 'edit' && (
+        <PageShell.Header borderBottom={false}>
+          <PageHeader
+            onBack={goToView}
+            title="Editar registro"
+          />
+        </PageShell.Header>
+      )}
+
+      {mode === 'view' &&
+        table.status === 'success' &&
+        row.status === 'success' && (
+          <RowDetailView
+            table={table.data}
+            data={row.data}
+            onBack={goBack}
+            onEdit={goToEdit}
+          />
+        )}
+
+      {mode === 'edit' &&
+        table.status === 'success' &&
+        row.status === 'success' && (
+          <AutoSaveRowForm
+            table={table.data}
+            rowId={rowId}
+            existingRow={row.data}
+            onBack={goToView}
+          />
+        )}
     </PageShell>
   );
 }

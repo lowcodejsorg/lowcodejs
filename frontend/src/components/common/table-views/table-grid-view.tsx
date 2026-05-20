@@ -270,7 +270,7 @@ export function TableGridView({
                 className="flex flex-col gap-2 h-full w-full"
                 onClick={() => {
                   router.navigate({
-                    to: '/tables/$slug/row/create',
+                    to: '/tables/$slug/row',
                     replace: true,
                     params: { slug },
                   });

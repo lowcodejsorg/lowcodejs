@@ -1,0 +1,415 @@
+import { useMutation } from '@tanstack/react-query';
+import {
+  ArchiveRestoreIcon,
+  LoaderCircleIcon,
+  PencilIcon,
+  Trash2Icon,
+  TrashIcon,
+} from 'lucide-react';
+import React from 'react';
+
+import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
+import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
+import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
+import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
+import { TableRowEvaluationCell } from '@/components/common/dynamic-table/table-cells/table-row-evaluation-cell';
+import { TableRowFieldGroupCell } from '@/components/common/dynamic-table/table-cells/table-row-field-group-cell';
+import { TableRowFileCell } from '@/components/common/dynamic-table/table-cells/table-row-file-cell';
+import { TableRowReactionCell } from '@/components/common/dynamic-table/table-cells/table-row-reaction-cell';
+import { TableRowRelationshipCell } from '@/components/common/dynamic-table/table-cells/table-row-relationship-cell';
+import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
+import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
+import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useTablePermission } from '@/hooks/use-table-permission';
+import { API } from '@/lib/api';
+import { E_FIELD_TYPE } from '@/lib/constant';
+import type { IField, IRow, ITable } from '@/lib/interfaces';
+import { QueryClient } from '@/lib/query-client';
+import { toastSuccess } from '@/lib/toast';
+
+interface RowDetailViewProps {
+  table: ITable;
+  data: IRow;
+  onBack: () => void;
+  onEdit: () => void;
+}
+
+function renderCell(
+  field: IField,
+  row: IRow,
+  tableSlug: string,
+): React.JSX.Element {
+  switch (field.type) {
+    case E_FIELD_TYPE.TEXT_SHORT:
+    case E_FIELD_TYPE.IDENTIFIER:
+    case E_FIELD_TYPE.TRASHED:
+      return (
+        <TableRowTextShortCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.TEXT_LONG:
+      return (
+        <TableRowTextLongCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.DATE:
+    case E_FIELD_TYPE.CREATED_AT:
+    case E_FIELD_TYPE.TRASHED_AT:
+      return (
+        <TableRowDateCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.DROPDOWN:
+      return (
+        <TableRowDropdownCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.FILE:
+      return (
+        <TableRowFileCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.RELATIONSHIP:
+      return (
+        <TableRowRelationshipCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.CATEGORY:
+      return (
+        <TableRowCategoryCell
+          row={row}
+          field={field}
+        />
+      );
+    case E_FIELD_TYPE.EVALUATION:
+      return (
+        <TableRowEvaluationCell
+          row={row}
+          field={field}
+          tableSlug={tableSlug}
+        />
+      );
+    case E_FIELD_TYPE.REACTION:
+      return (
+        <TableRowReactionCell
+          row={row}
+          field={field}
+          tableSlug={tableSlug}
+        />
+      );
+    case E_FIELD_TYPE.USER:
+    case E_FIELD_TYPE.CREATOR:
+      return (
+        <TableRowUserCell
+          row={row}
+          field={field}
+        />
+      );
+    default: {
+      const rawValue: unknown = row[field.slug];
+      return (
+        <p className="text-sm text-muted-foreground">
+          {String(rawValue ?? '-')}
+        </p>
+      );
+    }
+  }
+}
+
+export function RowDetailView({
+  table,
+  data,
+  onBack,
+  onEdit,
+}: RowDetailViewProps): React.JSX.Element {
+  const permission = useTablePermission(table);
+
+  const [dialogType, setDialogType] = React.useState<
+    'trash' | 'restore' | 'delete' | null
+  >(null);
+
+  const slug = table.slug;
+  const rowId = data._id;
+
+  const trashMutation = useMutation({
+    mutationFn: async (): Promise<void> => {
+      await API.patch(`/tables/${slug}/rows/${rowId}/trash`);
+    },
+    onSuccess(): void {
+      setDialogType(null);
+      void QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
+      void QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.detail(slug, rowId),
+      });
+      toastSuccess('Registro enviado para lixeira!');
+    },
+  });
+
+  const restoreMutation = useMutation({
+    mutationFn: async (): Promise<void> => {
+      await API.patch(`/tables/${slug}/rows/${rowId}/restore`);
+    },
+    onSuccess(): void {
+      setDialogType(null);
+      void QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
+      void QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.detail(slug, rowId),
+      });
+      toastSuccess('Registro restaurado!');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (): Promise<void> => {
+      await API.delete(`/tables/${slug}/rows/${rowId}`);
+    },
+    onSuccess(): void {
+      setDialogType(null);
+      void QueryClient.invalidateQueries({
+        queryKey: queryKeys.rows.lists(slug),
+      });
+      toastSuccess('Registro excluído permanentemente!');
+      onBack();
+    },
+  });
+
+  const visibleFields = React.useMemo((): Array<IField> => {
+    const detailOrder = table.fieldOrderDetail ?? [];
+    const order =
+      detailOrder.length > 0 ? detailOrder : (table.fieldOrderForm ?? []);
+    const filtered = table.fields.filter((f) => !f.trashed && f.showInDetail);
+    if (order.length === 0) return filtered;
+    return [...filtered].sort((a, b): number => {
+      const idxA = order.indexOf(a._id);
+      const idxB = order.indexOf(b._id);
+      const sortA = idxA === -1 ? Infinity : idxA;
+      const sortB = idxB === -1 ? Infinity : idxB;
+      return sortA - sortB;
+    });
+  }, [table.fields, table.fieldOrderDetail, table.fieldOrderForm]);
+
+  const mainFields = React.useMemo(
+    (): Array<IField> =>
+      visibleFields.filter((f) => f.type !== E_FIELD_TYPE.FIELD_GROUP),
+    [visibleFields],
+  );
+
+  const groupFields = React.useMemo(
+    (): Array<IField> =>
+      visibleFields.filter((f) => f.type === E_FIELD_TYPE.FIELD_GROUP),
+    [visibleFields],
+  );
+
+  const isConfirmPending =
+    trashMutation.status === 'pending' ||
+    restoreMutation.status === 'pending';
+
+  const handleConfirmAction = (): void => {
+    if (dialogType === 'trash') {
+      void trashMutation.mutateAsync();
+    }
+    if (dialogType === 'restore') {
+      void restoreMutation.mutateAsync();
+    }
+  };
+
+  const canRemoveRow = permission.can('REMOVE_ROW');
+  const canUpdateRow = permission.can('UPDATE_ROW');
+
+  return (
+    <React.Fragment>
+      <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
+        {!data.trashed && canRemoveRow && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={(): void => setDialogType('trash')}
+          >
+            <TrashIcon className="size-4" />
+            <span>Enviar para lixeira</span>
+          </Button>
+        )}
+
+        {data.trashed && canRemoveRow && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={(): void => setDialogType('restore')}
+          >
+            <ArchiveRestoreIcon className="size-4" />
+            <span>Restaurar</span>
+          </Button>
+        )}
+
+        {data.trashed && canRemoveRow && (
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={(): void => setDialogType('delete')}
+          >
+            <Trash2Icon className="size-4" />
+            <span>Excluir permanentemente</span>
+          </Button>
+        )}
+
+        {!data.trashed && canUpdateRow && (
+          <Button
+            type="button"
+            size="sm"
+            data-test-id="row-edit-btn"
+            onClick={onEdit}
+          >
+            <PencilIcon className="size-4" />
+            <span>Editar</span>
+          </Button>
+        )}
+      </div>
+
+      <section
+        className="flex-1 flex flex-col min-h-0 overflow-auto"
+        data-test-id="row-detail-view"
+      >
+        <div className="space-y-4 p-4">
+          {mainFields.map(
+            (field): React.JSX.Element => (
+              <div
+                key={field._id}
+                className="space-y-1"
+              >
+                <p className="text-sm font-medium">{field.name}</p>
+                {renderCell(field, data, slug)}
+              </div>
+            ),
+          )}
+        </div>
+
+        {data.trashed && (
+          <div className="rounded-md border border-amber-500 p-3 bg-amber-50 m-4">
+            <p className="text-sm text-amber-700">
+              Este registro está na lixeira
+            </p>
+          </div>
+        )}
+
+        {groupFields.length > 0 && (
+          <div className="flex flex-col gap-6 pt-4 border-t">
+            {groupFields.map(
+              (field): React.JSX.Element => (
+                <TableRowFieldGroupCell
+                  key={field._id}
+                  row={data}
+                  field={field}
+                  tableSlug={slug}
+                  table={table}
+                  variant="detail"
+                />
+              ),
+            )}
+          </div>
+        )}
+      </section>
+
+      <div className="shrink-0 border-t bg-sidebar p-2">
+        <div className="flex justify-end gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="px-2 cursor-pointer max-w-40 w-full"
+            onClick={onBack}
+          >
+            <span>Voltar</span>
+          </Button>
+        </div>
+      </div>
+
+      <Dialog
+        modal
+        open={dialogType === 'trash' || dialogType === 'restore'}
+        onOpenChange={(open: boolean): void => {
+          if (!open) setDialogType(null);
+        }}
+      >
+        <DialogContent className="py-4 px-6">
+          <DialogHeader>
+            <DialogTitle>
+              {dialogType === 'trash' && 'Enviar para lixeira'}
+              {dialogType === 'restore' && 'Restaurar da lixeira'}
+            </DialogTitle>
+            <DialogDescription>
+              {dialogType === 'trash' &&
+                'Ao confirmar, o registro será enviado para a lixeira.'}
+              {dialogType === 'restore' &&
+                'Ao confirmar, o registro será restaurado da lixeira.'}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="inline-flex w-full gap-2 justify-end">
+            <DialogClose asChild>
+              <Button
+                variant="outline"
+                disabled={isConfirmPending}
+              >
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button
+              type="button"
+              disabled={isConfirmPending}
+              onClick={handleConfirmAction}
+            >
+              {isConfirmPending && (
+                <LoaderCircleIcon className="size-4 animate-spin" />
+              )}
+              {!isConfirmPending && <span>Confirmar</span>}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <PermanentDeleteConfirmDialog
+        open={dialogType === 'delete'}
+        onOpenChange={(open: boolean): void => {
+          if (!open) setDialogType(null);
+        }}
+        title="Excluir registro permanentemente"
+        description="Essa ação é irreversível. O registro será excluído permanentemente."
+        itemsCount={1}
+        isPending={deleteMutation.isPending}
+        onConfirm={(): void => {
+          deleteMutation.mutate();
+        }}
+        testId="delete-row-dialog"
+      />
+    </React.Fragment>
+  );
+}

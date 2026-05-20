@@ -277,6 +277,7 @@ export function TableHistory({
       router.navigate({
         to: target.to,
         params: target.params,
+        search: target.search,
       } as Parameters<typeof router.navigate>[0]);
     },
     [router],

@@ -51,9 +51,9 @@ import { Route as AuthenticationForgotPasswordValidateCodeIndexRouteImport } fro
 import { Route as AuthenticationForgotPasswordResetPasswordIndexRouteImport } from './routes/_authentication/forgot-password/reset-password/index'
 import { Route as PrivateTablesSlugMethodsRouteImport } from './routes/_private/tables/$slug/methods'
 import { Route as PrivateToolsPackageIdIndexRouteImport } from './routes/_private/tools/$package/$id/index'
+import { Route as PrivateTablesSlugRowIndexRouteImport } from './routes/_private/tables/$slug/row/index'
 import { Route as PrivateTablesSlugDetailIndexRouteImport } from './routes/_private/tables/$slug/detail/index'
 import { Route as PrivateEPackageIdIndexRouteImport } from './routes/_private/e/$package/$id/index'
-import { Route as PrivateTablesSlugRowCreateIndexRouteImport } from './routes/_private/tables/$slug/row/create/index'
 import { Route as PrivateTablesSlugRowRowIdIndexRouteImport } from './routes/_private/tables/$slug/row/$rowId/index'
 import { Route as PrivateTablesSlugFieldCreateIndexRouteImport } from './routes/_private/tables/$slug/field/create/index'
 import { Route as PrivateTablesSlugFieldFieldIdIndexRouteImport } from './routes/_private/tables/$slug/field/$fieldId/index'
@@ -362,6 +362,16 @@ const PrivateToolsPackageIdIndexRoute =
       (d) => d.Route,
     ),
   )
+const PrivateTablesSlugRowIndexRoute =
+  PrivateTablesSlugRowIndexRouteImport.update({
+    id: '/tables/$slug/row/',
+    path: '/tables/$slug/row/',
+    getParentRoute: () => PrivateLayoutRoute,
+  } as any).lazy(() =>
+    import('./routes/_private/tables/$slug/row/index.lazy').then(
+      (d) => d.Route,
+    ),
+  )
 const PrivateTablesSlugDetailIndexRoute =
   PrivateTablesSlugDetailIndexRouteImport.update({
     id: '/tables/$slug/detail/',
@@ -379,16 +389,6 @@ const PrivateEPackageIdIndexRoute = PrivateEPackageIdIndexRouteImport.update({
 } as any).lazy(() =>
   import('./routes/_private/e/$package/$id/index.lazy').then((d) => d.Route),
 )
-const PrivateTablesSlugRowCreateIndexRoute =
-  PrivateTablesSlugRowCreateIndexRouteImport.update({
-    id: '/tables/$slug/row/create/',
-    path: '/tables/$slug/row/create/',
-    getParentRoute: () => PrivateLayoutRoute,
-  } as any).lazy(() =>
-    import('./routes/_private/tables/$slug/row/create/index.lazy').then(
-      (d) => d.Route,
-    ),
-  )
 const PrivateTablesSlugRowRowIdIndexRoute =
   PrivateTablesSlugRowRowIdIndexRouteImport.update({
     id: '/tables/$slug/row/$rowId/',
@@ -462,11 +462,11 @@ export interface FileRoutesByFullPath {
   '/users/create/': typeof PrivateUsersCreateIndexRoute
   '/e/$package/$id/': typeof PrivateEPackageIdIndexRoute
   '/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute
+  '/tables/$slug/row/': typeof PrivateTablesSlugRowIndexRoute
   '/tools/$package/$id/': typeof PrivateToolsPackageIdIndexRoute
   '/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/tables/$slug/row/$rowId/': typeof PrivateTablesSlugRowRowIdIndexRoute
-  '/tables/$slug/row/create/': typeof PrivateTablesSlugRowCreateIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof AuthenticationSignInIndexRoute
@@ -510,11 +510,11 @@ export interface FileRoutesByTo {
   '/users/create': typeof PrivateUsersCreateIndexRoute
   '/e/$package/$id': typeof PrivateEPackageIdIndexRoute
   '/tables/$slug/detail': typeof PrivateTablesSlugDetailIndexRoute
+  '/tables/$slug/row': typeof PrivateTablesSlugRowIndexRoute
   '/tools/$package/$id': typeof PrivateToolsPackageIdIndexRoute
   '/tables/$slug/field/$fieldId': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/tables/$slug/field/create': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/tables/$slug/row/$rowId': typeof PrivateTablesSlugRowRowIdIndexRoute
-  '/tables/$slug/row/create': typeof PrivateTablesSlugRowCreateIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -561,11 +561,11 @@ export interface FileRoutesById {
   '/_private/users/create/': typeof PrivateUsersCreateIndexRoute
   '/_private/e/$package/$id/': typeof PrivateEPackageIdIndexRoute
   '/_private/tables/$slug/detail/': typeof PrivateTablesSlugDetailIndexRoute
+  '/_private/tables/$slug/row/': typeof PrivateTablesSlugRowIndexRoute
   '/_private/tools/$package/$id/': typeof PrivateToolsPackageIdIndexRoute
   '/_private/tables/$slug/field/$fieldId/': typeof PrivateTablesSlugFieldFieldIdIndexRoute
   '/_private/tables/$slug/field/create/': typeof PrivateTablesSlugFieldCreateIndexRoute
   '/_private/tables/$slug/row/$rowId/': typeof PrivateTablesSlugRowRowIdIndexRoute
-  '/_private/tables/$slug/row/create/': typeof PrivateTablesSlugRowCreateIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -611,11 +611,11 @@ export interface FileRouteTypes {
     | '/users/create/'
     | '/e/$package/$id/'
     | '/tables/$slug/detail/'
+    | '/tables/$slug/row/'
     | '/tools/$package/$id/'
     | '/tables/$slug/field/$fieldId/'
     | '/tables/$slug/field/create/'
     | '/tables/$slug/row/$rowId/'
-    | '/tables/$slug/row/create/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -659,11 +659,11 @@ export interface FileRouteTypes {
     | '/users/create'
     | '/e/$package/$id'
     | '/tables/$slug/detail'
+    | '/tables/$slug/row'
     | '/tools/$package/$id'
     | '/tables/$slug/field/$fieldId'
     | '/tables/$slug/field/create'
     | '/tables/$slug/row/$rowId'
-    | '/tables/$slug/row/create'
   id:
     | '__root__'
     | '/_authentication'
@@ -709,11 +709,11 @@ export interface FileRouteTypes {
     | '/_private/users/create/'
     | '/_private/e/$package/$id/'
     | '/_private/tables/$slug/detail/'
+    | '/_private/tables/$slug/row/'
     | '/_private/tools/$package/$id/'
     | '/_private/tables/$slug/field/$fieldId/'
     | '/_private/tables/$slug/field/create/'
     | '/_private/tables/$slug/row/$rowId/'
-    | '/_private/tables/$slug/row/create/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1020,6 +1020,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivateToolsPackageIdIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
+    '/_private/tables/$slug/row/': {
+      id: '/_private/tables/$slug/row/'
+      path: '/tables/$slug/row'
+      fullPath: '/tables/$slug/row/'
+      preLoaderRoute: typeof PrivateTablesSlugRowIndexRouteImport
+      parentRoute: typeof PrivateLayoutRoute
+    }
     '/_private/tables/$slug/detail/': {
       id: '/_private/tables/$slug/detail/'
       path: '/tables/$slug/detail'
@@ -1032,13 +1039,6 @@ declare module '@tanstack/react-router' {
       path: '/e/$package/$id'
       fullPath: '/e/$package/$id/'
       preLoaderRoute: typeof PrivateEPackageIdIndexRouteImport
-      parentRoute: typeof PrivateLayoutRoute
-    }
-    '/_private/tables/$slug/row/create/': {
-      id: '/_private/tables/$slug/row/create/'
-      path: '/tables/$slug/row/create'
-      fullPath: '/tables/$slug/row/create/'
-      preLoaderRoute: typeof PrivateTablesSlugRowCreateIndexRouteImport
       parentRoute: typeof PrivateLayoutRoute
     }
     '/_private/tables/$slug/row/$rowId/': {
@@ -1114,11 +1114,11 @@ interface PrivateLayoutRouteChildren {
   PrivateUsersCreateIndexRoute: typeof PrivateUsersCreateIndexRoute
   PrivateEPackageIdIndexRoute: typeof PrivateEPackageIdIndexRoute
   PrivateTablesSlugDetailIndexRoute: typeof PrivateTablesSlugDetailIndexRoute
+  PrivateTablesSlugRowIndexRoute: typeof PrivateTablesSlugRowIndexRoute
   PrivateToolsPackageIdIndexRoute: typeof PrivateToolsPackageIdIndexRoute
   PrivateTablesSlugFieldFieldIdIndexRoute: typeof PrivateTablesSlugFieldFieldIdIndexRoute
   PrivateTablesSlugFieldCreateIndexRoute: typeof PrivateTablesSlugFieldCreateIndexRoute
   PrivateTablesSlugRowRowIdIndexRoute: typeof PrivateTablesSlugRowRowIdIndexRoute
-  PrivateTablesSlugRowCreateIndexRoute: typeof PrivateTablesSlugRowCreateIndexRoute
 }
 
 const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
@@ -1148,13 +1148,13 @@ const PrivateLayoutRouteChildren: PrivateLayoutRouteChildren = {
   PrivateUsersCreateIndexRoute: PrivateUsersCreateIndexRoute,
   PrivateEPackageIdIndexRoute: PrivateEPackageIdIndexRoute,
   PrivateTablesSlugDetailIndexRoute: PrivateTablesSlugDetailIndexRoute,
+  PrivateTablesSlugRowIndexRoute: PrivateTablesSlugRowIndexRoute,
   PrivateToolsPackageIdIndexRoute: PrivateToolsPackageIdIndexRoute,
   PrivateTablesSlugFieldFieldIdIndexRoute:
     PrivateTablesSlugFieldFieldIdIndexRoute,
   PrivateTablesSlugFieldCreateIndexRoute:
     PrivateTablesSlugFieldCreateIndexRoute,
   PrivateTablesSlugRowRowIdIndexRoute: PrivateTablesSlugRowRowIdIndexRoute,
-  PrivateTablesSlugRowCreateIndexRoute: PrivateTablesSlugRowCreateIndexRoute,
 }
 
 const PrivateLayoutRouteWithChildren = PrivateLayoutRoute._addFileChildren(

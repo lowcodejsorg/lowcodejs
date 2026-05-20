@@ -26,7 +26,7 @@ export default class {
     options: {
       onRequest: [
         AuthenticationMiddleware({
-          optional: true,
+          optional: false,
         }),
         TableAccessMiddleware({
           requiredPermission: 'CREATE_ROW',

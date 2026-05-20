@@ -8,7 +8,7 @@ export const TableRowAutoSaveParamsValidator = z.object({
 });
 
 export const TableRowAutoSaveQueryValidator = z.object({
-  _id: z.string().trim(),
+  _id: z.string().trim().optional(),
 });
 
 export const TableRowAutoSaveBodyValidator = z.record(

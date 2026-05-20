@@ -10,16 +10,15 @@
  * Novos imports devem usar diretamente: import { buildTable } from '@application/core/builders'
  */
 export {
-  PASSWORD_REGEX,
-  FieldTypeMapper,
-  buildSchema,
-  findReverseRelationships,
-  buildTable,
-  getRelationship,
-  buildPopulate,
-  normalize,
-  buildQuery,
   buildOrder,
-  type QueryOrder,
+  buildPopulate,
+  buildQuery,
+  buildSchema,
+  buildTable,
+  FieldTypeMapper,
+  getRelationship,
+  normalize,
+  PASSWORD_REGEX,
   transformRowContext,
+  type QueryOrder,
 } from './builders';

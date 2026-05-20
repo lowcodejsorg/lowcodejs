@@ -5,8 +5,6 @@ import mongoose from 'mongoose';
 import type { IField, IGroupConfiguration, IRow } from '../entity.core';
 import { E_FIELD_TYPE } from '../entity.core';
 
-import { findReverseRelationships } from './model-builder';
-
 type Query = Record<string, unknown>;
 
 export function normalize(search: string): string {
@@ -213,60 +211,6 @@ export async function buildQuery(
       query = {
         $and: [{ ...query }, { $or: searchQuery }],
       };
-    }
-  }
-
-  // === FILTRO EM VIRTUAL RELATIONSHIPS (Reverse Lookup) ===
-  if (tableSlug) {
-    const reverseRelationships = await findReverseRelationships(tableSlug);
-
-    for (const rel of reverseRelationships) {
-      if (!payload[rel.virtualName]) continue;
-
-      const filterIds = String(payload[rel.virtualName]).split(',');
-
-      const db = conn?.db ?? mongoose.connection.db!;
-      const sourceCollection = db.collection(rel.sourceTableSlug);
-
-      const sourceRecords = await sourceCollection
-        .find(
-          {
-            _id: {
-              $in: filterIds.map(
-                (id: string) => new mongoose.Types.ObjectId(id),
-              ),
-            },
-          },
-          { projection: { [rel.fieldSlug]: 1 } },
-        )
-        .toArray();
-
-      const matchingIds = new Set<string>();
-      for (const record of sourceRecords) {
-        const fieldValue = record[rel.fieldSlug];
-        if (Array.isArray(fieldValue)) {
-          fieldValue.forEach((id) => matchingIds.add(id.toString()));
-        } else if (fieldValue) {
-          matchingIds.add(fieldValue.toString());
-        }
-      }
-
-      const idCondition =
-        matchingIds.size > 0
-          ? {
-              _id: {
-                $in: [...matchingIds].map(
-                  (id) => new mongoose.Types.ObjectId(id),
-                ),
-              },
-            }
-          : { _id: { $in: [] } };
-
-      if (Array.isArray(query.$and)) {
-        query = { $and: [...query.$and, idCondition] };
-      } else {
-        query = { $and: [query, idCondition] };
-      }
     }
   }
 

@@ -145,7 +145,7 @@ function RowActionsCell({
               router.navigate({
                 to: '/tables/$slug/row/$rowId',
                 params: { slug, rowId: row._id },
-                search: { mode: 'edit' },
+                search: { mode: 'edit' as const },
               })
             }
           >

@@ -1,15 +1,11 @@
 import mongoose from 'mongoose';
 
-import { Field } from '@application/model/field.model';
-import { Table } from '@application/model/table.model';
-
 import type {
   IField,
   IGroupConfiguration,
   IRow,
   Optional,
 } from '../entity.core';
-import { E_FIELD_TYPE } from '../entity.core';
 import { executeScript } from '../table/handler';
 import type { FieldDefinition } from '../table/types';
 
@@ -17,12 +13,6 @@ import { buildSchema } from './schema-builder';
 
 interface Entity extends Omit<IRow, '_id'>, mongoose.Document {
   _id: mongoose.Types.ObjectId;
-}
-
-interface IReverseRelationship {
-  sourceTableSlug: string;
-  fieldSlug: string;
-  virtualName: string;
 }
 
 /**
@@ -40,48 +30,6 @@ function mapFieldsForSandbox(fields: IField[]): FieldDefinition[] {
     ...(f.dropdown?.length && { dropdown: f.dropdown }),
     ...(f.category?.length && { category: f.category }),
   }));
-}
-
-export async function findReverseRelationships(
-  tableSlug: string,
-): Promise<IReverseRelationship[]> {
-  const reverseFields = await Field.find({
-    type: E_FIELD_TYPE.RELATIONSHIP,
-    'relationship.table.slug': tableSlug,
-    trashed: { $ne: true },
-  }).select('_id slug');
-
-  if (reverseFields.length === 0) return [];
-
-  const fieldIds = reverseFields.flatMap((f) => f._id);
-  const tables = await Table.find({
-    fields: { $in: fieldIds },
-    trashed: { $ne: true },
-  }).select('slug fields');
-
-  const result: IReverseRelationship[] = [];
-
-  for (const table of tables) {
-    const matchingFields = reverseFields.filter((rf) =>
-      table.fields.some((fId) => fId.toString() === rf._id.toString()),
-    );
-
-    for (const field of matchingFields) {
-      let virtualName = table.slug;
-
-      if (matchingFields.length > 1) {
-        virtualName = table.slug.concat('-').concat(field.slug);
-      }
-
-      result.push({
-        sourceTableSlug: table.slug,
-        fieldSlug: field.slug,
-        virtualName,
-      });
-    }
-  }
-
-  return result;
 }
 
 export async function buildTable(

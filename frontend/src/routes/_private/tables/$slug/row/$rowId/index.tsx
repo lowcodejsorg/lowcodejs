@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import z from 'zod';
 
-import { UpdateRowFormSkeleton } from './-update-form-skeleton';
+import { RowDetailSkeleton } from './-row-detail-skeleton';
 
 import {
   rowDetailOptions,
@@ -10,11 +10,11 @@ import {
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createFileRoute('/_private/tables/$slug/row/$rowId/')({
-  pendingComponent: UpdateRowFormSkeleton,
+  pendingComponent: RowDetailSkeleton,
   validateSearch: z.object({
-    mode: z.enum(['edit']).optional(),
+    mode: z.enum(['view', 'edit']).optional(),
   }),
-  loader: ({ context, params }) => {
+  loader: ({ context, params }): void => {
     const isAuthenticated = Boolean(useAuthStore.getState().user);
     if (!isAuthenticated) return;
 
