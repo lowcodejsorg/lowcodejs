@@ -307,6 +307,20 @@ export const E_CHAT_EVENT = {
   HISTORY: 'history',
 } as const;
 
+// Socket.IO Notification Events
+export const E_NOTIFICATION_EVENT = {
+  CREATED: 'notification:created',
+  READ: 'notification:read',
+  READ_ALL: 'notification:read_all',
+} as const;
+
+export const E_NOTIFICATION_TYPE = {
+  FORUM_MENTION: 'FORUM_MENTION',
+  KANBAN_COMMENT_MENTION: 'KANBAN_COMMENT_MENTION',
+  ROW_MEMBER_ASSIGNED: 'ROW_MEMBER_ASSIGNED',
+  GENERIC: 'GENERIC',
+} as const;
+
 // Tool name prefixes for query invalidation mapping
 export const E_CHAT_TOOL_PREFIX = {
   TABLES: 'tables_',
