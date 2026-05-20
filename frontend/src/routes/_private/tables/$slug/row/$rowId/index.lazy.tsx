@@ -9,10 +9,10 @@ import { isAxiosError } from 'axios';
 import { Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
 
-import { RowDetailView } from './-row-detail-view';
-import { RowDetailSkeleton } from './-row-detail-skeleton';
-
 import { AutoSaveRowForm } from '../-auto-save-row-form';
+
+import { RowDetailSkeleton } from './-row-detail-skeleton';
+import { RowDetailView } from './-row-detail-view';
 
 import { LoginButton } from '@/components/common/layout/login-button';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
@@ -31,9 +31,7 @@ import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
-export const Route = createLazyFileRoute(
-  '/_private/tables/$slug/row/$rowId/',
-)({
+export const Route = createLazyFileRoute('/_private/tables/$slug/row/$rowId/')({
   component: RouteComponent,
 });
 
