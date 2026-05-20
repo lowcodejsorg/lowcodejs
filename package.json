@@ -5,6 +5,7 @@
   },
   "scripts": {
     "prepare": "husky",
+    "make:extension": "node scripts/make-extension.mjs",
     "lint:backend": "cd backend && npm run lint",
     "lint:frontend": "cd frontend && npm run lint",
     "test:unit:backend": "cd backend && npm run test:unit",
