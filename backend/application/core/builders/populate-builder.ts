@@ -78,10 +78,11 @@ export async function buildPopulate(
       const relationshipTableId = field?.relationship?.table?._id?.toString();
       const relationshipTable = await Table.findOne({
         _id: relationshipTableId,
+        trashed: { $ne: true },
       });
 
       if (relationshipTable && conn) {
-        await buildTable(
+        const relationModel = await buildTable(
           {
             ...relationshipTable.toJSON({
               flattenObjectIds: true,
@@ -102,6 +103,7 @@ export async function buildPopulate(
 
         populate.push({
           path: field.slug,
+          model: relationModel,
           ...(relationshipPopulate.length > 0 && {
             populate: relationshipPopulate,
           }),
@@ -148,10 +150,11 @@ export async function buildPopulate(
           if (relationshipTableId) {
             const relationshipTable = await Table.findOne({
               _id: relationshipTableId,
+              trashed: { $ne: true },
             });
 
             if (relationshipTable && conn) {
-              await buildTable(
+              const relModel = await buildTable(
                 {
                   ...relationshipTable.toJSON({ flattenObjectIds: true }),
                   _id: relationshipTable._id.toString(),
@@ -161,7 +164,7 @@ export async function buildPopulate(
 
               populate.push({
                 path: `${field.slug}.${groupField.slug}`,
-                model: relationshipTable.slug,
+                model: relModel,
               });
             }
           }
