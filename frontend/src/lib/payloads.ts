@@ -156,15 +156,6 @@ export type TableUpdatePayload = {
   };
 };
 
-export type SchemaImportPayload = {
-  yaml: string;
-};
-
-export type SchemaImportResponse = {
-  created: Array<{ name: string; slug: string; fieldCount: number }>;
-  errors: Array<{ name: string; message: string }>;
-};
-
 // ============== FIELD ==============
 export type FieldConfigurationPayload = {
   required?: boolean;
@@ -266,7 +257,6 @@ export type ProfileUpdatePayload = {
   allowPasswordChange?: boolean;
   currentPassword?: string;
   newPassword?: string;
-  notificationsEnabled?: boolean;
 };
 
 // ============== SETTING ==============
@@ -294,6 +284,10 @@ export type SettingUpdatePayload = Partial<{
   EMAIL_PROVIDER_FROM: string | null;
   OPENAI_API_KEY: string;
   AI_ASSISTANT_ENABLED: boolean;
+  CHAT_HISTORY_ENABLED: boolean;
+  MCP_SERVER_URL: string | null;
+  MCP_SERVER_TOKEN: string | null;
+  OPENAI_MODEL: string;
 }>;
 
 // ============== SETUP WIZARD ==============

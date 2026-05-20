@@ -303,21 +303,8 @@ export const E_CHAT_EVENT = {
   TOOL_ERROR: 'tool_error',
   MESSAGE: 'message',
   ERROR: 'error',
-  // Client -> Server (same as server message event)
-} as const;
-
-// Socket.IO Notification Events
-export const E_NOTIFICATION_EVENT = {
-  CREATED: 'notification:created',
-  READ: 'notification:read',
-  READ_ALL: 'notification:read_all',
-} as const;
-
-export const E_NOTIFICATION_TYPE = {
-  FORUM_MENTION: 'FORUM_MENTION',
-  KANBAN_COMMENT_MENTION: 'KANBAN_COMMENT_MENTION',
-  ROW_MEMBER_ASSIGNED: 'ROW_MEMBER_ASSIGNED',
-  GENERIC: 'GENERIC',
+  // Client -> Server
+  HISTORY: 'history',
 } as const;
 
 // Tool name prefixes for query invalidation mapping

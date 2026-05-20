@@ -8,8 +8,11 @@
  * - Protocolo de eventos: status, ready, thinking, tool_call, tool_result, tool_error, message, error
  */
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StreamableHTTPClientTransport } from '@modelcontextprotocol/sdk/client/streamableHttp.js';
+import type { Transport } from '@modelcontextprotocol/sdk/shared/transport.js';
+import type { JSONRPCMessage } from '@modelcontextprotocol/sdk/types.js';
+import * as http from 'node:http';
 import type { Server as HttpServer } from 'node:http';
+import * as https from 'node:https';
 import OpenAI from 'openai';
 import { Server as SocketIOServer } from 'socket.io';
 
@@ -220,7 +223,9 @@ export function initChatSocket(
     const setting = await Setting.findOne().lean();
     const aiEnabled = Boolean(setting?.AI_ASSISTANT_ENABLED);
     const openaiKey = setting?.OPENAI_API_KEY ?? null;
-    const mcpUrl = Env.MCP_SERVER_URL;
+    const mcpUrl = setting?.MCP_SERVER_URL ?? null;
+    const mcpAuthToken = setting?.MCP_SERVER_TOKEN ?? null;
+    const openaiModel = setting?.OPENAI_MODEL ?? 'gpt-4.1-nano';
 
     if (!aiEnabled || !openaiKey || !mcpUrl) {
       socket.emit(E_CHAT_EVENT.ERROR, {
@@ -235,7 +240,7 @@ export function initChatSocket(
     let mcpClient: Client | null = null;
 
     try {
-      // --- Conectar ao MCP (igual agent L150-153) ---
+      // --- Conectar ao MCP (tenta StreamableHTTP, fallback SSE) ---
       socket.emit(E_CHAT_EVENT.STATUS, {
         message: 'Conectando ao servidor MCP...',
       });
@@ -255,7 +260,7 @@ export function initChatSocket(
         }));
       }
 
-      // --- Histórico de mensagens in-memory (igual agent L171-173) ---
+      // --- Histórico de mensagens in-memory ---
       const messages: OpenAI.ChatCompletionMessageParam[] = [
         {
           role: 'system',
@@ -263,13 +268,26 @@ export function initChatSocket(
         },
       ];
 
-      // --- Agente pronto (igual agent L175-179) ---
+      // --- Recebe histórico do frontend (persistência entre reloads) ---
+      socket.on(
+        E_CHAT_EVENT.HISTORY,
+        (data: { messages: Array<{ role: 'user' | 'assistant'; content: string }> }) => {
+          if (!Array.isArray(data?.messages)) return;
+          for (const msg of data.messages) {
+            if ((msg.role === 'user' || msg.role === 'assistant') && typeof msg.content === 'string') {
+              messages.push({ role: msg.role, content: msg.content });
+            }
+          }
+        },
+      );
+
+      // --- Agente pronto ---
       socket.emit(E_CHAT_EVENT.READY, {
         message: 'Agente pronto! Você pode enviar mensagens.',
         tools_count: mcpTools.length,
       });
 
-      // --- Loop de mensagens (igual agent L181-293) ---
+      // --- Loop de mensagens ---
       socket.on(E_CHAT_EVENT.MESSAGE, async (data: ClientMessage) => {
         try {
           const userInput = (data.message || '').trim();
@@ -318,7 +336,7 @@ export function initChatSocket(
             socket.emit(E_CHAT_EVENT.THINKING);
 
             const response = await openaiClient.chat.completions.create({
-              model: 'gpt-5-mini',
+              model: openaiModel,
               messages,
               tools: openaiTools,
             });
@@ -439,7 +457,7 @@ export function initChatSocket(
         } catch (err) {
           // Error handling (igual agent L297-308)
           console.error('Erro no processamento:', err);
-          const errorMsg = err instanceof Error ? err.message : String(err);
+          const errorMsg = getErrorMessage(err);
           try {
             socket.emit(E_CHAT_EVENT.ERROR, {
               message: `Erro no servidor: ${errorMsg}`,
@@ -463,7 +481,7 @@ export function initChatSocket(
     } catch (err) {
       // Erro na inicialização (igual agent L297-308)
       console.error('Erro ao inicializar chat socket:', err);
-      const errorMsg = err instanceof Error ? err.message : String(err);
+      const errorMsg = getErrorMessage(err);
       try {
         socket.emit(E_CHAT_EVENT.ERROR, {
           message: `Erro no servidor: ${errorMsg}`,
