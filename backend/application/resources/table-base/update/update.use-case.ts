@@ -82,7 +82,7 @@ export default class TableUpdateUseCase {
       if (slugChanged) {
         await this.tableRepository.renameSlug(oldSlug, newSlug);
         await this.fieldRepository.updateRelationshipTableSlug(
-          oldSlug,
+          table._id,
           newSlug,
         );
       }

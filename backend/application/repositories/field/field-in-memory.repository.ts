@@ -128,11 +128,11 @@ export default class FieldInMemoryRepository implements FieldContractRepository 
   }
 
   async updateRelationshipTableSlug(
-    oldSlug: string,
+    tableId: string,
     newSlug: string,
   ): Promise<void> {
     for (const field of this.items) {
-      if (field.relationship?.table?.slug === oldSlug) {
+      if (field.relationship?.table?._id === tableId) {
         field.relationship.table.slug = newSlug;
       }
     }

@@ -76,10 +76,20 @@ export async function buildPopulate(
 
     if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
       const relationshipTableId = field?.relationship?.table?._id?.toString();
-      const relationshipTable = await Table.findOne({
-        _id: relationshipTableId,
-        trashed: { $ne: true },
-      });
+      const relationshipTableSlug = field?.relationship?.table?.slug;
+
+      let relationshipTable;
+      if (relationshipTableId) {
+        relationshipTable = await Table.findOne({
+          _id: relationshipTableId,
+          trashed: { $ne: true },
+        });
+      } else if (relationshipTableSlug) {
+        relationshipTable = await Table.findOne({
+          slug: relationshipTableSlug,
+          trashed: { $ne: true },
+        });
+      }
 
       if (relationshipTable && conn) {
         const relationModel = await buildTable(
@@ -147,26 +157,34 @@ export async function buildPopulate(
         if (groupField.type === E_FIELD_TYPE.RELATIONSHIP) {
           const relationshipTableId =
             groupField?.relationship?.table?._id?.toString();
+          const relationshipTableSlug = groupField?.relationship?.table?.slug;
+
+          let groupRelationshipTable;
           if (relationshipTableId) {
-            const relationshipTable = await Table.findOne({
+            groupRelationshipTable = await Table.findOne({
               _id: relationshipTableId,
               trashed: { $ne: true },
             });
+          } else if (relationshipTableSlug) {
+            groupRelationshipTable = await Table.findOne({
+              slug: relationshipTableSlug,
+              trashed: { $ne: true },
+            });
+          }
 
-            if (relationshipTable && conn) {
-              const relModel = await buildTable(
-                {
-                  ...relationshipTable.toJSON({ flattenObjectIds: true }),
-                  _id: relationshipTable._id.toString(),
-                },
-                conn,
-              );
+          if (groupRelationshipTable && conn) {
+            const relModel = await buildTable(
+              {
+                ...groupRelationshipTable.toJSON({ flattenObjectIds: true }),
+                _id: groupRelationshipTable._id.toString(),
+              },
+              conn,
+            );
 
-              populate.push({
-                path: `${field.slug}.${groupField.slug}`,
-                model: relModel,
-              });
-            }
+            populate.push({
+              path: `${field.slug}.${groupField.slug}`,
+              model: relModel,
+            });
           }
         }
       }

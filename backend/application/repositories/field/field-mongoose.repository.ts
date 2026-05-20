@@ -121,11 +121,11 @@ export default class FieldMongooseRepository implements FieldContractRepository 
   }
 
   async updateRelationshipTableSlug(
-    oldSlug: string,
+    tableId: string,
     newSlug: string,
   ): Promise<void> {
     await Model.updateMany(
-      { 'relationship.table.slug': oldSlug },
+      { 'relationship.table._id': tableId },
       { $set: { 'relationship.table.slug': newSlug } },
     );
   }

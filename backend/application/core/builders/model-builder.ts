@@ -147,10 +147,12 @@ export async function buildTable(
     });
   }
 
-  if (conn.models[table.slug]) {
-    conn.deleteModel(table.slug);
+  const modelName = table._id?.toString();
+  if (!modelName) throw new Error('Table _id not found');
+  if (conn.models[modelName]) {
+    conn.deleteModel(modelName);
   }
-  const model = conn.model<Entity>(table.slug, schema, table.slug);
+  const model = conn.model<Entity>(modelName, schema, table.slug);
 
   await model.createCollection();
 

@@ -40,7 +40,7 @@ export abstract class FieldContractRepository {
   abstract deleteMany(_ids: string[]): Promise<void>;
   abstract count(payload?: FieldQueryPayload): Promise<number>;
   abstract updateRelationshipTableSlug(
-    oldSlug: string,
+    tableId: string,
     newSlug: string,
   ): Promise<void>;
   abstract findByRelationshipTableId(tableId: string): Promise<IField[]>;
