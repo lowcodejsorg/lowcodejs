@@ -31,6 +31,10 @@ const Schema = new mongoose.Schema(
     EMAIL_PROVIDER_FROM: { type: String, default: null },
     OPENAI_API_KEY: { type: String, default: null },
     AI_ASSISTANT_ENABLED: { type: Boolean, default: false },
+    CHAT_HISTORY_ENABLED: { type: Boolean, default: false },
+    MCP_SERVER_URL: { type: String, default: null },
+    MCP_SERVER_TOKEN: { type: String, default: null },
+    OPENAI_MODEL: { type: String, default: 'gpt-4.1-nano' },
     SETUP_COMPLETED: { type: Boolean, default: false },
     SETUP_CURRENT_STEP: {
       type: String,

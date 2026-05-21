@@ -77,6 +77,10 @@ export const SettingUpdateSchema = z.object({
   EMAIL_PROVIDER_FROM: z.string(),
   OPENAI_API_KEY: z.string(),
   AI_ASSISTANT_ENABLED: z.boolean(),
+  CHAT_HISTORY_ENABLED: z.boolean(),
+  MCP_SERVER_URL: z.string(),
+  MCP_SERVER_TOKEN: z.string(),
+  OPENAI_MODEL: z.string(),
   logoSmallFile: z.array(z.instanceof(File)),
   logoLargeFile: z.array(z.instanceof(File)),
 });
@@ -107,6 +111,10 @@ export type SettingUpdateFormValues = Merge<
     EMAIL_PROVIDER_FROM: string;
     OPENAI_API_KEY: string;
     AI_ASSISTANT_ENABLED: boolean;
+    CHAT_HISTORY_ENABLED: boolean;
+    MCP_SERVER_URL: string;
+    MCP_SERVER_TOKEN: string;
+    OPENAI_MODEL: string;
   },
   { logoSmallFile: Array<File>; logoLargeFile: Array<File> }
 >;
@@ -135,6 +143,10 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   EMAIL_PROVIDER_FROM: '',
   OPENAI_API_KEY: '',
   AI_ASSISTANT_ENABLED: false,
+  CHAT_HISTORY_ENABLED: false,
+  MCP_SERVER_URL: '',
+  MCP_SERVER_TOKEN: '',
+  OPENAI_MODEL: 'gpt-4.1-nano',
   logoSmallFile: [],
   logoLargeFile: [],
 };
@@ -153,6 +165,7 @@ export const UpdateSettingFormFields = withForm({
       databaseUrl: false,
       emailPassword: false,
       openaiApiKey: false,
+      mcpToken: false,
       storageAccessKey: false,
       storageSecretKey: false,
     });
@@ -1037,6 +1050,19 @@ export const UpdateSettingFormFields = withForm({
               )}
             </form.AppField>
 
+            {/* Toggle Histórico */}
+            <form.AppField name="CHAT_HISTORY_ENABLED">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Salvar histórico do chat"
+                  description="Preserva mensagens entre atualizações de página"
+                  disabled={isDisabled}
+                  yesLabel="Ativo"
+                  noLabel="Inativo"
+                />
+              )}
+            </form.AppField>
+
             {/* OpenAI API Key */}
             <form.Field
               name="OPENAI_API_KEY"
@@ -1084,6 +1110,163 @@ export const UpdateSettingFormFields = withForm({
                         </InputGroupButton>
                       </InputGroupAddon>
                     </InputGroup>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            {/* MCP Server URL */}
+            <form.Field
+              name="MCP_SERVER_URL"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      URL do Servidor MCP
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Endereço do servidor MCP para o assistente IA
+                    </div>
+                    <Input
+                      data-test-id="settings-mcp-server-url-input"
+                      disabled={isDisabled}
+                      id={field.name}
+                      name={field.name}
+                      type="url"
+                      placeholder="http://localhost:3001/mcp"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            {/* MCP Auth Token */}
+            <form.Field
+              name="MCP_SERVER_TOKEN"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      Token MCP (opcional)
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Enviado como <code>Authorization: Bearer ...</code>
+                    </div>
+                    <InputGroup>
+                      <InputGroupInput
+                        data-test-id="settings-mcp-token-input"
+                        disabled={isDisabled}
+                        id={field.name}
+                        name={field.name}
+                        type={show.mcpToken ? 'text' : 'password'}
+                        placeholder="seu-token-secreto"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        aria-invalid={isInvalid}
+                      />
+                      <InputGroupAddon align="inline-end">
+                        <InputGroupButton
+                          disabled={isDisabled}
+                          type="button"
+                          aria-label="toggle token visibility"
+                          onClick={() =>
+                            setShow((s) => ({ ...s, mcpToken: !s.mcpToken }))
+                          }
+                        >
+                          {show.mcpToken ? <EyeClosedIcon /> : <EyeIcon />}
+                        </InputGroupButton>
+                      </InputGroupAddon>
+                    </InputGroup>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            {/* OpenAI Model */}
+            <form.Field
+              name="OPENAI_MODEL"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>Modelo OpenAI</FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Modelo usado pelo assistente IA (entrada / saída por 1M
+                      tokens)
+                    </div>
+                    <Select
+                      disabled={isDisabled}
+                      value={field.state.value}
+                      onValueChange={field.handleChange}
+                    >
+                      <SelectTrigger
+                        data-test-id="settings-openai-model-select"
+                        id={field.name}
+                        aria-invalid={isInvalid}
+                      >
+                        <SelectValue placeholder="Selecione um modelo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="gpt-4.1-nano">
+                          GPT-4.1 Nano — $0,10 / $0,40
+                        </SelectItem>
+                        <SelectItem value="gpt-4.1-mini">
+                          GPT-4.1 Mini — $0,40 / $1,60
+                        </SelectItem>
+                        <SelectItem value="gpt-4.1">
+                          GPT-4.1 — $2,00 / $8,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5-nano">
+                          GPT-5 Nano — $0,20 / $1,25
+                        </SelectItem>
+                        <SelectItem value="gpt-5-mini">
+                          GPT-5 Mini — $0,40 / $3,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5">
+                          GPT-5 — $1,25 / $10,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.2">
+                          GPT-5.2 — $1,75 / $14,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.4">
+                          GPT-5.4 — $2,50 / $15,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.4-nano">
+                          GPT-5.4 Nano — $0,20 / $1,25
+                        </SelectItem>
+                        <SelectItem value="gpt-5.4-mini">
+                          GPT-5.4 Mini — $0,75 / $4,50
+                        </SelectItem>
+                        <SelectItem value="gpt-5.5">
+                          GPT-5.5 — $5,00 / $30,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.5-pro">
+                          GPT-5.5 Pro — $30,00 / $180,00
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}

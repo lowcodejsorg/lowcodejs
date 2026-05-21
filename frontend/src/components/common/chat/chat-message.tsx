@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import remarkBreaks from 'remark-breaks';
 import remarkGfm from 'remark-gfm';
 
 import type { ChatMessage as ChatMessageData } from '@/hooks/use-chat-socket';
@@ -17,14 +18,14 @@ export function ChatMessage({ message }: ChatMessageProps): React.JSX.Element {
       data-slot="chat-message"
       data-test-id="chat-message"
       className={cn(
-        'flex gap-2',
+        'flex gap-2 min-w-0 w-full',
         isUser && 'justify-end',
         !isUser && 'justify-start',
       )}
     >
       <div
         className={cn(
-          'max-w-[85%] rounded-lg px-3 py-2 text-sm',
+          'max-w-[85%] min-w-0 rounded-lg px-3 py-2 text-sm',
           isUser && 'bg-primary text-primary-foreground',
           !isUser && 'bg-muted text-foreground',
         )}
@@ -38,12 +39,15 @@ export function ChatMessage({ message }: ChatMessageProps): React.JSX.Element {
         )}
         <div
           className={cn(
-            'prose prose-sm max-w-none [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
+            'prose prose-sm max-w-none break-words',
+            '[&_pre]:overflow-x-auto [&_pre]:max-w-full [&_pre]:whitespace-pre-wrap',
+            '[&_code]:break-all',
+            '[&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
             isUser && 'prose-invert',
             !isUser && 'dark:prose-invert',
           )}
         >
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          <ReactMarkdown remarkPlugins={[remarkGfm, remarkBreaks]}>
             {message.content}
           </ReactMarkdown>
         </div>
