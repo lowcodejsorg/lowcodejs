@@ -18,7 +18,11 @@ Recurso REST para restaurar múltiplas tabelas do lixeiro de volta ao estado ati
 
 ## Comportamento
 
-- Retorna `Either<HTTPException, { modified: number }>`
+- Retorna `Either<HTTPException, { modified: number; skipped?: string[] }>`
 - Apenas tabelas com `trashed=true` são afetadas
+- **Pula** tabelas cujo slug já está em uso por uma tabela ativa — slug é a
+  chave da coleção dinâmica, então restaurar duplicaria registros e deixaria
+  duas tabelas iguais na lista. Os slugs pulados voltam em `skipped` (ausente
+  quando nada é pulado)
 - `modified` indica quantas tabelas foram efetivamente restauradas
 - Requer autenticação JWT; permissão verificada no middleware de auth

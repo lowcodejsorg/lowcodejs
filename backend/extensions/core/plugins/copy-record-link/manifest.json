@@ -1,0 +1,15 @@
+{
+  "id": "copy-record-link",
+  "type": "PLUGIN",
+  "name": "Copiar link do registro",
+  "description": "Adiciona uma ação no dropdown de cada registro para copiar o link direto para a área de transferência.",
+  "version": "1.0.0",
+  "author": "LowcodeJS",
+  "icon": "LinkIcon",
+  "placement": {
+    "slots": ["table.row.actions"]
+  },
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}

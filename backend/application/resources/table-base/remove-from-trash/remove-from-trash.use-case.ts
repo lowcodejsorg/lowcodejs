@@ -18,16 +18,40 @@ export default class TableRemoveFromTrashUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      // Busca explicitamente a tabela na lixeira: pode coexistir outra ativa
+      // com o mesmo slug (resíduo de importações antigas), e findBySlug sem
+      // filtro retornaria qualquer uma das duas.
+      const table = await this.tableRepository.findBySlug(payload.slug, {
+        trashed: true,
+      });
 
-      if (!table)
+      if (!table) {
+        const active = await this.tableRepository.findBySlug(payload.slug, {
+          trashed: false,
+        });
+
+        if (active)
+          return left(
+            HTTPException.Conflict('Tabela não está na lixeira', 'NOT_TRASHED'),
+          );
+
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
+      }
 
-      if (!table.trashed)
+      // Impede restaurar quando já existe uma tabela ativa com o mesmo slug —
+      // restaurar duplicaria a coleção dinâmica (chaveada pelo slug).
+      const active = await this.tableRepository.findBySlug(payload.slug, {
+        trashed: false,
+      });
+
+      if (active)
         return left(
-          HTTPException.Conflict('Tabela não está na lixeira', 'NOT_TRASHED'),
+          HTTPException.Conflict(
+            'Já existe uma tabela ativa com este slug. Renomeie ou exclua a tabela ativa antes de restaurar.',
+            'SLUG_ALREADY_ACTIVE',
+          ),
         );
 
       const updated = await this.tableRepository.update({
