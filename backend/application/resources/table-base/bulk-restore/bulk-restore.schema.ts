@@ -28,6 +28,12 @@ export const BulkRestoreSchema: FastifySchema = {
           type: 'number',
           description: 'Number of tables restored from trash',
         },
+        skipped: {
+          type: 'array',
+          items: { type: 'string' },
+          description:
+            'Slugs of tables not restored because an active table already uses the same slug',
+        },
       },
     },
     500: {

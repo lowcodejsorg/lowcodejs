@@ -257,7 +257,26 @@ Documentação completa de payload, deep-link com anchor e tipos: ver
 decisão (PLUGIN/MODULE/TOOL) até o smoke test, com templates prontos para
 copiar e checklist de validação.
 
-Manualmente:
+**Gerador de boilerplate** (`npm run make:extension`, na raiz do monorepo):
+cria o esqueleto dos dois lados (manifest + entry React + CLAUDE.md da
+extensão; e, para TOOL ou com `--with-backend`, também
+`controller/use-case/validator/schema`). Funciona interativo ou via flags:
+
+```bash
+# interativo (faz as perguntas)
+npm run make:extension
+
+# direto via flags
+npm run make:extension -- --type plugin --pkg core --id hello-table \
+  --name "Hello Table" --slots table.actions --icon HandIcon
+npm run make:extension -- --type tool --pkg core --id merge-tables --with-backend
+```
+
+A saída já vem formatada (Prettier) e tipada; ao final imprime a linha pronta
+para colar na tabela do CLAUDE.md do pacote e os próximos passos (restart +
+ativar em `/extensions`). Script: `scripts/make-extension.mjs`.
+
+Manualmente (sem o gerador):
 
 1. Crie `backend/extensions/<pkg>/<type>/<id>/manifest.json`
 2. Se houver código backend, adicione `controller.ts` + `use-case.ts` no mesmo

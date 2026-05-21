@@ -84,6 +84,51 @@ describe('Table Remove From Trash Use Case', () => {
     expect(result.value.message).toBe('Tabela não está na lixeira');
   });
 
+  it('deve retornar erro SLUG_ALREADY_ACTIVE quando ja existe uma tabela ativa com o mesmo slug', async () => {
+    // Tabela ativa ocupando o slug "clientes"
+    await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    // Tabela na lixeira com o MESMO slug
+    const trashed = await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+    await tableInMemoryRepository.update({
+      _id: trashed._id,
+      trashed: true,
+      trashedAt: new Date(),
+    });
+
+    const result = await sut.execute({ slug: 'clientes' });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+
+    expect(result.value.code).toBe(409);
+    expect(result.value.cause).toBe('SLUG_ALREADY_ACTIVE');
+  });
+
   it('deve retornar erro REMOVE_TABLE_FROM_TRASH_ERROR quando houver falha', async () => {
     tableInMemoryRepository.simulateError(
       'findBySlug',

@@ -450,9 +450,10 @@ export default class ImportTableUseCase {
         seenSlugs.set(newSlug, originalSlug);
       }
 
-      const existing = await this.tableRepository.findBySlug(newSlug, {
-        trashed: false,
-      });
+      // Slug é a chave da coleção dinâmica de dados — precisa ser único entre
+      // TODAS as tabelas, inclusive as que estão na lixeira. Importar sobre um
+      // slug "trashed" duplicaria a collection e mesclaria os registros.
+      const existing = await this.tableRepository.findBySlug(newSlug);
       if (existing) conflictingTables.push(originalSlug);
     }
 
@@ -504,7 +505,7 @@ export default class ImportTableUseCase {
     if (conflictingTables.length > 0 && conflictingMenus.length === 0) {
       // Mantém código legado para o caso single-table
       return HTTPException.BadRequest(
-        'Já existe(m) tabela(s) com este(s) slug(s). Renomeie a(s) tabela(s) e tente novamente.',
+        'Já existe(m) tabela(s) com este(s) slug(s), inclusive na lixeira. Renomeie a(s) tabela(s) ou esvazie a lixeira e tente novamente.',
         'TABLE_SLUG_ALREADY_EXISTS',
         { tables: conflictingTables.join(',') },
       );

@@ -58,7 +58,7 @@ import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toastInfo, toastSuccess } from '@/lib/toast';
+import { toastInfo, toastSuccess, toastWarning } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 const ROUTE_ID = '/_private/tables/';
@@ -498,10 +498,10 @@ export function TableTables({
 
   const bulkRestore = useMutation({
     mutationFn: async function (ids: Array<string>) {
-      const response = await API.patch<{ modified: number }>(
-        '/tables/bulk-restore',
-        { ids },
-      );
+      const response = await API.patch<{
+        modified: number;
+        skipped?: Array<string>;
+      }>('/tables/bulk-restore', { ids });
       return response.data;
     },
     onSuccess(result) {
@@ -510,12 +510,24 @@ export function TableTables({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.tables.lists(),
       });
-      toastSuccess(
-        result.modified === 1
-          ? '1 tabela restaurada!'
-          : `${result.modified} tabelas restauradas!`,
-        'As tabelas foram restauradas da lixeira',
-      );
+
+      if (result.modified > 0) {
+        toastSuccess(
+          result.modified === 1
+            ? '1 tabela restaurada!'
+            : `${result.modified} tabelas restauradas!`,
+          'As tabelas foram restauradas da lixeira',
+        );
+      }
+
+      if (result.skipped && result.skipped.length > 0) {
+        toastWarning(
+          result.skipped.length === 1
+            ? '1 tabela não foi restaurada'
+            : `${result.skipped.length} tabelas não foram restauradas`,
+          `Já existe uma tabela ativa com o mesmo slug: ${result.skipped.join(', ')}. Renomeie ou exclua a tabela ativa antes de restaurar.`,
+        );
+      }
     },
   });
 

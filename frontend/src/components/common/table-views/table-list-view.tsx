@@ -16,6 +16,7 @@ import {
 import React from 'react';
 
 import { InteractiveDataTable } from '@/components/common/data-table';
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -42,7 +43,7 @@ import { useDataTable } from '@/hooks/use-data-table';
 import { useFieldColumns } from '@/hooks/use-field-columns';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
-import type { IField, IRow } from '@/lib/interfaces';
+import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
@@ -50,11 +51,13 @@ import { cn } from '@/lib/utils';
 function RowActionsCell({
   row,
   slug,
+  table,
   canUpdateRow,
   canRemoveRow,
 }: {
   row: IRow;
   slug: string;
+  table?: ITable;
   canUpdateRow: boolean;
   canRemoveRow: boolean;
 }): React.JSX.Element {
@@ -186,6 +189,11 @@ function RowActionsCell({
             <Trash2Icon className="size-4" />
             <span>Excluir permanentemente</span>
           </DropdownMenuItem>
+
+          <ExtensionSlot
+            id="table.row.actions"
+            context={{ table, row, slug }}
+          />
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -349,6 +357,7 @@ export function TableListView({
           <RowActionsCell
             row={row.original}
             slug={slug}
+            table={table_.data}
             canUpdateRow={canTrashRow}
             canRemoveRow={canRemoveRow}
           />
@@ -397,7 +406,15 @@ export function TableListView({
     }
 
     return cols;
-  }, [canTrashRow, canRemoveRow, canCreateField, fieldColumns, router, slug]);
+  }, [
+    canTrashRow,
+    canRemoveRow,
+    canCreateField,
+    fieldColumns,
+    router,
+    slug,
+    table_.data,
+  ]);
 
   const table = useDataTable({
     data,

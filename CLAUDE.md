@@ -87,6 +87,10 @@ cd frontend && npm install && npm run dev
 cd backend && npm run test        # todos
 cd backend && npm run test:unit   # unitarios
 cd backend && npm run test:e2e    # e2e (MongoDB real)
+
+# Gerar boilerplate de extensao (plugin/module/tool) — backend + frontend
+npm run make:extension                                   # interativo
+npm run make:extension -- --type plugin --id hello-table # via flags
 ```
 
 ## Arquitetura
