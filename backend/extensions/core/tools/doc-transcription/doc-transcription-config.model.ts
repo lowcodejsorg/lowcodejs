@@ -38,14 +38,13 @@ const DocTranscriptionConfigSchema = new mongoose.Schema(
   { timestamps: true, id: false },
 );
 
-export const DocTranscriptionConfigModel = (
-  mongoose?.models?.DocTranscriptionConfig ||
+export const DocTranscriptionConfigModel = (mongoose?.models
+  ?.DocTranscriptionConfig ||
   mongoose.model<IDocTranscriptionConfig & mongoose.Document>(
     'DocTranscriptionConfig',
     DocTranscriptionConfigSchema,
     'doc_transcription_config',
-  )
-) as mongoose.Model<IDocTranscriptionConfig & mongoose.Document>;
+  )) as mongoose.Model<IDocTranscriptionConfig & mongoose.Document>;
 
 export async function getOrCreateConfig(): Promise<IDocTranscriptionConfig> {
   let doc = await DocTranscriptionConfigModel.findById(SINGLETON_ID);

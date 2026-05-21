@@ -1,6 +1,8 @@
 import { ChevronDownIcon, EditIcon, PlusIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
 
+import { DocumentTypeForm } from './-document-type-form';
+
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -26,8 +28,6 @@ import { useDocTranscriptionConfigUpdate } from '@/hooks/tanstack-query/use-doc-
 import { handleApiError } from '@/lib/handle-api-error';
 import { toastSuccess } from '@/lib/toast';
 
-import { DocumentTypeForm } from './-document-type-form';
-
 interface OpenAIModel {
   id: string;
   label: string;
@@ -36,30 +36,120 @@ interface OpenAIModel {
   outputPer1M: string;
 }
 
-const OPENAI_MODELS: OpenAIModel[] = [
+const OPENAI_MODELS: Array<OpenAIModel> = [
   // GPT-5.5
-  { id: 'gpt-5.5',      label: 'GPT-5.5',      group: 'GPT-5.5', inputPer1M: '$5.00', outputPer1M: '$30.00' },
+  {
+    id: 'gpt-5.5',
+    label: 'GPT-5.5',
+    group: 'GPT-5.5',
+    inputPer1M: '$5.00',
+    outputPer1M: '$30.00',
+  },
   // GPT-5.4
-  { id: 'gpt-5.4',      label: 'GPT-5.4',      group: 'GPT-5.4', inputPer1M: '$2.50', outputPer1M: '$15.00' },
-  { id: 'gpt-5.4-mini', label: 'GPT-5.4 Mini', group: 'GPT-5.4', inputPer1M: '$0.75', outputPer1M: '$4.50'  },
-  { id: 'gpt-5.4-nano', label: 'GPT-5.4 Nano', group: 'GPT-5.4', inputPer1M: '$0.20', outputPer1M: '$1.25'  },
+  {
+    id: 'gpt-5.4',
+    label: 'GPT-5.4',
+    group: 'GPT-5.4',
+    inputPer1M: '$2.50',
+    outputPer1M: '$15.00',
+  },
+  {
+    id: 'gpt-5.4-mini',
+    label: 'GPT-5.4 Mini',
+    group: 'GPT-5.4',
+    inputPer1M: '$0.75',
+    outputPer1M: '$4.50',
+  },
+  {
+    id: 'gpt-5.4-nano',
+    label: 'GPT-5.4 Nano',
+    group: 'GPT-5.4',
+    inputPer1M: '$0.20',
+    outputPer1M: '$1.25',
+  },
   // GPT-5.2
-  { id: 'gpt-5.2',      label: 'GPT-5.2',      group: 'GPT-5.2', inputPer1M: '$0.88', outputPer1M: '$7.00'  },
+  {
+    id: 'gpt-5.2',
+    label: 'GPT-5.2',
+    group: 'GPT-5.2',
+    inputPer1M: '$0.88',
+    outputPer1M: '$7.00',
+  },
   // GPT-5.1
-  { id: 'gpt-5.1',      label: 'GPT-5.1',      group: 'GPT-5.1', inputPer1M: '$0.63', outputPer1M: '$5.00'  },
+  {
+    id: 'gpt-5.1',
+    label: 'GPT-5.1',
+    group: 'GPT-5.1',
+    inputPer1M: '$0.63',
+    outputPer1M: '$5.00',
+  },
   // GPT-5
-  { id: 'gpt-5',        label: 'GPT-5',        group: 'GPT-5',   inputPer1M: '$1.25', outputPer1M: '$10.00' },
-  { id: 'gpt-5-nano',   label: 'GPT-5 Nano',   group: 'GPT-5',   inputPer1M: '$0.05', outputPer1M: '$0.40'  },
+  {
+    id: 'gpt-5',
+    label: 'GPT-5',
+    group: 'GPT-5',
+    inputPer1M: '$1.25',
+    outputPer1M: '$10.00',
+  },
+  {
+    id: 'gpt-5-nano',
+    label: 'GPT-5 Nano',
+    group: 'GPT-5',
+    inputPer1M: '$0.05',
+    outputPer1M: '$0.40',
+  },
   // GPT-4.1
-  { id: 'gpt-4.1',      label: 'GPT-4.1',      group: 'GPT-4.1', inputPer1M: '$2.00', outputPer1M: '$8.00'  },
-  { id: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', group: 'GPT-4.1', inputPer1M: '$0.10', outputPer1M: '$0.40'  },
+  {
+    id: 'gpt-4.1',
+    label: 'GPT-4.1',
+    group: 'GPT-4.1',
+    inputPer1M: '$2.00',
+    outputPer1M: '$8.00',
+  },
+  {
+    id: 'gpt-4.1-nano',
+    label: 'GPT-4.1 Nano',
+    group: 'GPT-4.1',
+    inputPer1M: '$0.10',
+    outputPer1M: '$0.40',
+  },
   // GPT-4o
-  { id: 'gpt-4o',       label: 'GPT-4o',       group: 'GPT-4o',  inputPer1M: '$2.50', outputPer1M: '$10.00' },
+  {
+    id: 'gpt-4o',
+    label: 'GPT-4o',
+    group: 'GPT-4o',
+    inputPer1M: '$2.50',
+    outputPer1M: '$10.00',
+  },
   // Reasoning
-  { id: 'o4-mini',      label: 'o4 Mini',      group: 'Reasoning', inputPer1M: '$0.55', outputPer1M: '$2.20'  },
-  { id: 'o3',           label: 'o3',           group: 'Reasoning', inputPer1M: '$2.00', outputPer1M: '$8.00'  },
-  { id: 'o3-mini',      label: 'o3 Mini',      group: 'Reasoning', inputPer1M: '$1.10', outputPer1M: '$4.40'  },
-  { id: 'o1',           label: 'o1',           group: 'Reasoning', inputPer1M: '$15.00',outputPer1M: '$60.00' },
+  {
+    id: 'o4-mini',
+    label: 'o4 Mini',
+    group: 'Reasoning',
+    inputPer1M: '$0.55',
+    outputPer1M: '$2.20',
+  },
+  {
+    id: 'o3',
+    label: 'o3',
+    group: 'Reasoning',
+    inputPer1M: '$2.00',
+    outputPer1M: '$8.00',
+  },
+  {
+    id: 'o3-mini',
+    label: 'o3 Mini',
+    group: 'Reasoning',
+    inputPer1M: '$1.10',
+    outputPer1M: '$4.40',
+  },
+  {
+    id: 'o1',
+    label: 'o1',
+    group: 'Reasoning',
+    inputPer1M: '$15.00',
+    outputPer1M: '$60.00',
+  },
 ];
 
 const KNOWN_MODELS = OPENAI_MODELS.filter((m) => m.inputPer1M !== '$—');
@@ -77,7 +167,10 @@ function ModelPickerDialog({
   onSelect: (id: string) => void;
 }): React.JSX.Element {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog
+      open={open}
+      onOpenChange={onOpenChange}
+    >
       <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col gap-0 p-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b shrink-0">
           <DialogTitle>Selecionar modelo OpenAI</DialogTitle>
@@ -87,7 +180,10 @@ function ModelPickerDialog({
           {/* Padrão */}
           <button
             type="button"
-            onClick={() => { onSelect(''); onOpenChange(false); }}
+            onClick={() => {
+              onSelect('');
+              onOpenChange(false);
+            }}
             className={[
               'w-full text-left rounded-lg border px-4 py-3 transition-colors cursor-pointer',
               !value
@@ -100,7 +196,8 @@ function ModelPickerDialog({
               {!value && <span className="size-2 rounded-full bg-primary" />}
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Usa <span className="font-mono">OPENAI_MODEL</span> configurado na API
+              Usa <span className="font-mono">OPENAI_MODEL</span> configurado na
+              API
             </p>
           </button>
 
@@ -115,7 +212,10 @@ function ModelPickerDialog({
                   <button
                     key={m.id}
                     type="button"
-                    onClick={() => { onSelect(m.id); onOpenChange(false); }}
+                    onClick={() => {
+                      onSelect(m.id);
+                      onOpenChange(false);
+                    }}
                     className={[
                       'text-left rounded-lg border px-3 py-2.5 transition-colors cursor-pointer',
                       value === m.id
@@ -124,14 +224,22 @@ function ModelPickerDialog({
                     ].join(' ')}
                   >
                     <div className="flex items-center justify-between gap-1">
-                      <span className="font-medium text-sm leading-tight">{m.label}</span>
-                      {value === m.id && <span className="size-2 rounded-full bg-primary shrink-0" />}
+                      <span className="font-medium text-sm leading-tight">
+                        {m.label}
+                      </span>
+                      {value === m.id && (
+                        <span className="size-2 rounded-full bg-primary shrink-0" />
+                      )}
                     </div>
-                    <div className="font-mono text-[11px] text-muted-foreground mt-0.5">{m.id}</div>
+                    <div className="font-mono text-[11px] text-muted-foreground mt-0.5">
+                      {m.id}
+                    </div>
                     <div className="flex gap-2 text-[11px] text-muted-foreground mt-1">
                       <span title="Entrada">↑ {m.inputPer1M}</span>
                       <span title="Saída">↓ {m.outputPer1M}</span>
-                      <span className="text-[10px] opacity-60">/ 1M tokens</span>
+                      <span className="text-[10px] opacity-60">
+                        / 1M tokens
+                      </span>
                     </div>
                   </button>
                 ))}
@@ -152,7 +260,9 @@ export function ConfigTab(): React.JSX.Element {
   const [model, setModel] = React.useState(config.model ?? '');
   const [modelPickerOpen, setModelPickerOpen] = React.useState(false);
   const [formOpen, setFormOpen] = React.useState(false);
-  const [editingType, setEditingType] = React.useState<IDocumentType | null>(null);
+  const [editingType, setEditingType] = React.useState<IDocumentType | null>(
+    null,
+  );
 
   const update = useDocTranscriptionConfigUpdate({
     onSuccess() {
@@ -185,7 +295,7 @@ export function ConfigTab(): React.JSX.Element {
     const current = config.documentTypes ?? [];
     const exists = current.find((dt) => dt.id === docType.id);
 
-    let updated: IDocumentType[];
+    let updated: Array<IDocumentType>;
     if (exists) {
       updated = current.map((dt) => (dt.id === docType.id ? docType : dt));
     } else {
@@ -255,7 +365,7 @@ export function ConfigTab(): React.JSX.Element {
             >
               <span className={model ? 'font-mono' : 'text-muted-foreground'}>
                 {model
-                  ? KNOWN_MODELS.find((m) => m.id === model)?.label ?? model
+                  ? (KNOWN_MODELS.find((m) => m.id === model)?.label ?? model)
                   : 'Padrão do servidor'}
               </span>
               <ChevronDownIcon className="size-4 text-muted-foreground shrink-0" />
@@ -292,8 +402,8 @@ export function ConfigTab(): React.JSX.Element {
             <div>
               <CardTitle className="text-base">Tipos de documento</CardTitle>
               <CardDescription>
-                Configure os tipos de documento e os campos esperados na resposta
-                da API.
+                Configure os tipos de documento e os campos esperados na
+                resposta da API.
               </CardDescription>
             </div>
             <Button

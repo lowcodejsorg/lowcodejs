@@ -1,14 +1,14 @@
-import { Settings2Icon, ScanTextIcon } from 'lucide-react';
+import { ScanTextIcon, Settings2Icon } from 'lucide-react';
 import React, { Suspense } from 'react';
+
+import { ConfigTab } from './-config-tab';
+import { FillButton } from './-fill-button';
+import { TranscriptionTab } from './-transcription-tab';
 
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { ITable } from '@/lib/interfaces';
-
-import { ConfigTab } from './-config-tab';
-import { FillButton } from './-fill-button';
-import { TranscriptionTab } from './-transcription-tab';
 
 function TabSkeleton(): React.JSX.Element {
   return (
@@ -26,7 +26,10 @@ interface Props {
   onFillFields?: (data: Record<string, string | null>) => void;
 }
 
-export default function DocTranscriptionTool({ slot, onFillFields }: Props): React.JSX.Element {
+export default function DocTranscriptionTool({
+  slot,
+  onFillFields,
+}: Props): React.JSX.Element {
   // Quando renderizado num slot (ex: table.row.create), exibe só o botão de fill
   if (slot) {
     return (

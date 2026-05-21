@@ -3,12 +3,7 @@ import React from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Collapsible,
   CollapsibleContent,
@@ -57,11 +52,15 @@ export function TranscriptionTab(): React.JSX.Element {
       handleApiError(error, {
         context: 'Erro ao transcrever documento',
         causes: {
-          API_NOT_CONFIGURED: 'Configure a URL da API em Configurações antes de usar.',
-          API_KEY_NOT_CONFIGURED: 'Configure a API Key em Configurações antes de usar.',
-          DOCUMENT_TYPE_NOT_FOUND: 'Tipo de documento inválido. Recarregue a página.',
+          API_NOT_CONFIGURED:
+            'Configure a URL da API em Configurações antes de usar.',
+          API_KEY_NOT_CONFIGURED:
+            'Configure a API Key em Configurações antes de usar.',
+          DOCUMENT_TYPE_NOT_FOUND:
+            'Tipo de documento inválido. Recarregue a página.',
           TRANSCRIPTION_API_ERROR: 'A API de transcrição retornou um erro.',
-          TRANSCRIPTION_API_UNREACHABLE: 'Não foi possível conectar à API de transcrição.',
+          TRANSCRIPTION_API_UNREACHABLE:
+            'Não foi possível conectar à API de transcrição.',
         },
       });
     },
@@ -174,7 +173,9 @@ export function TranscriptionTab(): React.JSX.Element {
           <Button
             type="button"
             onClick={handleSubmit}
-            disabled={!file || !documentTypeId || transcribe.status === 'pending'}
+            disabled={
+              !file || !documentTypeId || transcribe.status === 'pending'
+            }
             className="w-full cursor-pointer"
           >
             {transcribe.status === 'pending' ? (

@@ -1,6 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { createLazyFileRoute } from '@tanstack/react-router';
-import { useNavigate } from '@tanstack/react-router';
+import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import {
   AlertTriangleIcon,
   PackageIcon,
@@ -187,22 +186,22 @@ function ExtensionCard({
           </div>
         )}
 
-        {extension.type !== E_EXTENSION_TYPE.PLUGIN && extension.configRoute && (
-          <div className="flex items-center justify-end gap-2 pt-2 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="cursor-pointer"
-              data-test-id={`extension-config-route-${extension._id}`}
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              onClick={() => navigate({ to: extension.configRoute as any })}
-            >
-              <SettingsIcon className="size-4" />
-              Configurar
-            </Button>
-          </div>
-        )}
+        {extension.type !== E_EXTENSION_TYPE.PLUGIN &&
+          extension.configRoute && (
+            <div className="flex items-center justify-end gap-2 pt-2 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="cursor-pointer"
+                data-test-id={`extension-config-route-${extension._id}`}
+                onClick={() => navigate({ to: extension.configRoute as any })}
+              >
+                <SettingsIcon className="size-4" />
+                Configurar
+              </Button>
+            </div>
+          )}
       </CardContent>
     </Card>
   );
