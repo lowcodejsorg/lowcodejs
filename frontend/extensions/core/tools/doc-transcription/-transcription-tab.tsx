@@ -81,7 +81,7 @@ export function TranscriptionTab(): React.JSX.Element {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
-  async function handleSubmit(): Promise<void> {
+  function handleSubmit(): void {
     if (!file || !documentTypeId) return;
     const formData = new FormData();
     formData.append('documentTypeId', documentTypeId);
