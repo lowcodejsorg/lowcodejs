@@ -2,6 +2,9 @@
 set -e
 chown -R 1001:1001 /app/_storage 2>/dev/null || true
 
+echo "🚀 Rodando migrations..."
+sh /app/docker-migrate.sh
+
 echo "🌱 Rodando seeders..."
 if [ -f "/app/database/seeders/main.ts" ]; then
   su-exec 1001:1001 npm run seed
