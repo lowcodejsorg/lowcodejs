@@ -54,7 +54,12 @@ export const SettingUpdateBodyValidator = z.object({
   OPENAI_API_KEY: z.string().trim().nullable().optional(),
   AI_ASSISTANT_ENABLED: z.boolean().optional(),
   CHAT_HISTORY_ENABLED: z.boolean().optional(),
-  MCP_SERVER_URL: z.string().trim().url('URL do servidor MCP inválida').nullable().optional(),
+  MCP_SERVER_URL: z
+    .string()
+    .trim()
+    .url('URL do servidor MCP inválida')
+    .nullable()
+    .optional(),
   MCP_SERVER_TOKEN: z.string().trim().nullable().optional(),
   OPENAI_MODEL: z.string().trim().min(1).optional(),
   LOGO_SMALL_URL: z

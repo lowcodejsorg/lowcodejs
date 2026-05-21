@@ -57,7 +57,9 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
     if (status === 'error') {
       return (
         <div className="flex flex-col items-center gap-3 py-8">
-          <p className="text-center text-sm text-destructive">{statusMessage}</p>
+          <p className="text-center text-sm text-destructive">
+            {statusMessage}
+          </p>
           <button
             type="button"
             onClick={reconnect}

@@ -85,7 +85,9 @@ class NodeHttpTransport implements Transport {
     // Notifications have no id — fire-and-forget, server sends no response
     const isNotification = !('id' in message);
     if (isNotification) {
-      this.post(message).catch((err: unknown) => this.onerror?.(err instanceof Error ? err : new Error(String(err))));
+      this.post(message).catch((err: unknown) =>
+        this.onerror?.(err instanceof Error ? err : new Error(String(err))),
+      );
       return;
     }
     const response = await this.post(message);
@@ -98,11 +100,15 @@ class NodeHttpTransport implements Transport {
     this.onclose?.();
   }
 
-  private post(body: object, timeoutMs = 15000): Promise<JSONRPCMessage | null> {
+  private post(
+    body: object,
+    timeoutMs = 15000,
+  ): Promise<JSONRPCMessage | null> {
     return new Promise((resolve, reject) => {
       const mod = this.url.protocol === 'https:' ? https : http;
       const data = JSON.stringify(body);
-      const port = this.url.port || (this.url.protocol === 'https:' ? '443' : '80');
+      const port =
+        this.url.port || (this.url.protocol === 'https:' ? '443' : '80');
 
       const req = mod.request(
         {
@@ -136,7 +142,9 @@ class NodeHttpTransport implements Transport {
                   try {
                     const msg = JSON.parse(eventData) as JSONRPCMessage;
                     this.onmessage?.(msg);
-                  } catch { /* ignore */ }
+                  } catch {
+                    /* ignore */
+                  }
                   eventData = '';
                 }
               }
@@ -148,13 +156,20 @@ class NodeHttpTransport implements Transport {
           // Regular JSON response
           let chunks = '';
           res.setEncoding('utf8');
-          res.on('data', (chunk: string) => { chunks += chunk; });
+          res.on('data', (chunk: string) => {
+            chunks += chunk;
+          });
           res.on('end', () => {
-            if (!chunks) { resolve(null); return; }
+            if (!chunks) {
+              resolve(null);
+              return;
+            }
             try {
               resolve(JSON.parse(chunks) as JSONRPCMessage);
             } catch {
-              reject(new Error(`Resposta inválida do MCP: ${chunks.slice(0, 200)}`));
+              reject(
+                new Error(`Resposta inválida do MCP: ${chunks.slice(0, 200)}`),
+              );
             }
           });
         },
@@ -170,7 +185,14 @@ class NodeHttpTransport implements Transport {
   }
 }
 
-async function connectMcpClient(mcpUrl: string, mcpAuthToken: string | null, accessToken: string): Promise<{ client: Client; tools: Awaited<ReturnType<Client['listTools']>>['tools'] }> {
+async function connectMcpClient(
+  mcpUrl: string,
+  mcpAuthToken: string | null,
+  accessToken: string,
+): Promise<{
+  client: Client;
+  tools: Awaited<ReturnType<Client['listTools']>>['tools'];
+}> {
   const headers: Record<string, string> = {
     'X-Access-Token': accessToken,
   };
@@ -245,7 +267,11 @@ export function initChatSocket(
         message: 'Conectando ao servidor MCP...',
       });
 
-      const { client, tools: mcpTools } = await connectMcpClient(mcpUrl, mcpAuthToken, accessToken);
+      const { client, tools: mcpTools } = await connectMcpClient(
+        mcpUrl,
+        mcpAuthToken,
+        accessToken,
+      );
       mcpClient = client;
 
       let openaiTools: OpenAI.ChatCompletionTool[] | undefined;
@@ -271,10 +297,15 @@ export function initChatSocket(
       // --- Recebe histórico do frontend (persistência entre reloads) ---
       socket.on(
         E_CHAT_EVENT.HISTORY,
-        (data: { messages: Array<{ role: 'user' | 'assistant'; content: string }> }) => {
+        (data: {
+          messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+        }) => {
           if (!Array.isArray(data?.messages)) return;
           for (const msg of data.messages) {
-            if ((msg.role === 'user' || msg.role === 'assistant') && typeof msg.content === 'string') {
+            if (
+              (msg.role === 'user' || msg.role === 'assistant') &&
+              typeof msg.content === 'string'
+            ) {
               messages.push({ role: msg.role, content: msg.content });
             }
           }
@@ -369,7 +400,9 @@ export function initChatSocket(
                   object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
                   object_id: toolName,
                   content: toolArgs,
-                }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
+                }).catch((err: unknown) =>
+                  console.error('[MCP Log] create error:', err),
+                );
 
                 try {
                   const result = await mcpClient!.callTool({
@@ -400,9 +433,10 @@ export function initChatSocket(
                     content: contentStr,
                   });
 
-                  const preview = contentStr.length > 150
-                    ? contentStr.slice(0, 150) + '...'
-                    : contentStr;
+                  const preview =
+                    contentStr.length > 150
+                      ? contentStr.slice(0, 150) + '...'
+                      : contentStr;
 
                   socket.emit(E_CHAT_EVENT.TOOL_RESULT, {
                     name: toolName,
@@ -417,7 +451,9 @@ export function initChatSocket(
                     object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
                     object_id: toolName,
                     content: { preview, length: contentStr.length },
-                  }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
+                  }).catch((err: unknown) =>
+                    console.error('[MCP Log] create error:', err),
+                  );
                 } catch (err) {
                   const errorMsg =
                     err instanceof Error ? err.message : String(err);
@@ -441,7 +477,9 @@ export function initChatSocket(
                     object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
                     object_id: toolName,
                     content: { error: errorMsg },
-                  }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
+                  }).catch((err: unknown) =>
+                    console.error('[MCP Log] create error:', err),
+                  );
                 }
               }
               // Continua o loop para enviar resultados de volta ao modelo (igual agent L287)

@@ -58,7 +58,10 @@ function nextId(): string {
   return `msg-${messageIdCounter}-${Date.now()}`;
 }
 
-export function useChatSocket(baseUrl: string, persistHistory = false): {
+export function useChatSocket(
+  baseUrl: string,
+  persistHistory = false,
+): {
   messages: Array<ChatMessage>;
   toolActivities: Array<ToolActivity>;
   status: ChatStatus;
@@ -88,7 +91,9 @@ export function useChatSocket(baseUrl: string, persistHistory = false): {
     try {
       const capped = msgs.slice(-MAX_MESSAGES);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(capped));
-    } catch { /* ignore quota errors */ }
+    } catch {
+      /* ignore quota errors */
+    }
   }
 
   const queryClient = useQueryClient();
@@ -173,7 +178,10 @@ export function useChatSocket(baseUrl: string, persistHistory = false): {
           const stored = loadMessages();
           if (stored.length > 0) {
             socket.emit(E_CHAT_EVENT.HISTORY, {
-              messages: stored.map((m) => ({ role: m.role, content: m.content })),
+              messages: stored.map((m) => ({
+                role: m.role,
+                content: m.content,
+              })),
             });
           }
         }
@@ -251,7 +259,10 @@ export function useChatSocket(baseUrl: string, persistHistory = false): {
 
     socket.on(E_CHAT_EVENT.MESSAGE, (data: { content: string }) => {
       setMessages((prev) => {
-        const next = [...prev, { id: nextId(), role: 'assistant' as const, content: data.content }];
+        const next = [
+          ...prev,
+          { id: nextId(), role: 'assistant' as const, content: data.content },
+        ];
         saveMessages(next);
         return next;
       });
@@ -276,7 +287,10 @@ export function useChatSocket(baseUrl: string, persistHistory = false): {
     if (!socketRef.current) return;
 
     setMessages((prev) => {
-      const next = [...prev, { id: nextId(), role: 'user' as const, content: text, file }];
+      const next = [
+        ...prev,
+        { id: nextId(), role: 'user' as const, content: text, file },
+      ];
       saveMessages(next);
       return next;
     });
@@ -291,7 +305,13 @@ export function useChatSocket(baseUrl: string, persistHistory = false): {
     setMessages([]);
     setToolActivities([]);
     setStatus('idle');
-    if (persistHistory) { try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ } }
+    if (persistHistory) {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
   }, []);
 
   const reconnect = useCallback(() => {

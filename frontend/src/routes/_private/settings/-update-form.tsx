@@ -1213,7 +1213,8 @@ export const UpdateSettingFormFields = withForm({
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Modelo OpenAI</FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
-                      Modelo usado pelo assistente IA (entrada / saída por 1M tokens)
+                      Modelo usado pelo assistente IA (entrada / saída por 1M
+                      tokens)
                     </div>
                     <Select
                       disabled={isDisabled}
@@ -1228,18 +1229,42 @@ export const UpdateSettingFormFields = withForm({
                         <SelectValue placeholder="Selecione um modelo" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="gpt-4.1-nano">GPT-4.1 Nano — $0,10 / $0,40</SelectItem>
-                        <SelectItem value="gpt-4.1-mini">GPT-4.1 Mini — $0,40 / $1,60</SelectItem>
-                        <SelectItem value="gpt-4.1">GPT-4.1 — $2,00 / $8,00</SelectItem>
-                        <SelectItem value="gpt-5-nano">GPT-5 Nano — $0,20 / $1,25</SelectItem>
-                        <SelectItem value="gpt-5-mini">GPT-5 Mini — $0,40 / $3,00</SelectItem>
-                        <SelectItem value="gpt-5">GPT-5 — $1,25 / $10,00</SelectItem>
-                        <SelectItem value="gpt-5.2">GPT-5.2 — $1,75 / $14,00</SelectItem>
-                        <SelectItem value="gpt-5.4">GPT-5.4 — $2,50 / $15,00</SelectItem>
-                        <SelectItem value="gpt-5.4-nano">GPT-5.4 Nano — $0,20 / $1,25</SelectItem>
-                        <SelectItem value="gpt-5.4-mini">GPT-5.4 Mini — $0,75 / $4,50</SelectItem>
-                        <SelectItem value="gpt-5.5">GPT-5.5 — $5,00 / $30,00</SelectItem>
-                        <SelectItem value="gpt-5.5-pro">GPT-5.5 Pro — $30,00 / $180,00</SelectItem>
+                        <SelectItem value="gpt-4.1-nano">
+                          GPT-4.1 Nano — $0,10 / $0,40
+                        </SelectItem>
+                        <SelectItem value="gpt-4.1-mini">
+                          GPT-4.1 Mini — $0,40 / $1,60
+                        </SelectItem>
+                        <SelectItem value="gpt-4.1">
+                          GPT-4.1 — $2,00 / $8,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5-nano">
+                          GPT-5 Nano — $0,20 / $1,25
+                        </SelectItem>
+                        <SelectItem value="gpt-5-mini">
+                          GPT-5 Mini — $0,40 / $3,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5">
+                          GPT-5 — $1,25 / $10,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.2">
+                          GPT-5.2 — $1,75 / $14,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.4">
+                          GPT-5.4 — $2,50 / $15,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.4-nano">
+                          GPT-5.4 Nano — $0,20 / $1,25
+                        </SelectItem>
+                        <SelectItem value="gpt-5.4-mini">
+                          GPT-5.4 Mini — $0,75 / $4,50
+                        </SelectItem>
+                        <SelectItem value="gpt-5.5">
+                          GPT-5.5 — $5,00 / $30,00
+                        </SelectItem>
+                        <SelectItem value="gpt-5.5-pro">
+                          GPT-5.5 Pro — $30,00 / $180,00
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     {isInvalid && (
