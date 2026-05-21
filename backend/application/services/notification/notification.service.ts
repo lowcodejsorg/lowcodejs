@@ -15,12 +15,9 @@ import {
 
 @Service()
 export default class NotificationService implements NotificationContractService {
-  constructor(private readonly repository: NotificationContractRepository) {
-    console.log('[NotificationService] instanciado');
-  }
+  constructor(private readonly repository: NotificationContractRepository) {}
 
   async notify(payload: NotifyPayload): Promise<INotification[]> {
-    console.log('[NotificationService] notify chamado com payload:', payload);
     const recipients = Array.from(
       new Set(
         payload.userIds.filter(

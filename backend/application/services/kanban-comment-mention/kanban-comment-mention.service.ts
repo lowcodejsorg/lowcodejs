@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import {
@@ -94,14 +95,7 @@ export default class KanbanCommentMentionService implements KanbanCommentMention
     private readonly userRepository: UserContractRepository,
     private readonly emailService: EmailContractService,
     private readonly notificationService: NotificationContractService,
-  ) {
-    console.log(
-      '[KanbanCommentMentionService] instanciado:',
-      notificationService,
-      emailService,
-      userRepository,
-    );
-  }
+  ) {}
 
   async notifyNewMentions(
     params: NotifyMentionsParams,
