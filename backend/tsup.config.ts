@@ -25,8 +25,7 @@ export default defineConfig({
       { pattern: 'extensions/**/manifest.json', label: 'manifest.json' },
       { pattern: 'templates/**/*.ejs', label: 'template.ejs' },
       { pattern: 'scripts/**/*.sh', label: '*.sh' },
-      { pattern: 'docker-migrate.sh', label: 'docker-migrate.sh' },
-      { pattern: 'docker-seeder.sh', label: 'docker-seeder.sh' },
+      { pattern: 'docker-entry-point.sh', label: 'docker-entry-point.sh' },
     ];
 
     for (const { pattern, label } of patterns) {
