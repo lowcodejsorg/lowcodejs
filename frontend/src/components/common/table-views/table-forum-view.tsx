@@ -1,5 +1,6 @@
 import { useRouterState } from '@tanstack/react-router';
 import { useStore } from '@tanstack/react-store';
+import type { Editor as TiptapEditor } from '@tiptap/core';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowDownIcon, AtSignIcon } from 'lucide-react';
@@ -17,6 +18,7 @@ import {
   ForumSidebar,
 } from '@/components/common/forum';
 import type { ForumDocument, ForumMessage } from '@/components/common/forum';
+import { extractMentionIds } from '@/components/common/rich-editor';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
@@ -138,6 +140,7 @@ export function TableForumView({
     null,
   );
   const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
+  const composerEditorRef = React.useRef<TiptapEditor | null>(null);
   const pollingRef = React.useRef<{ inFlight: boolean; rowId: string | null }>({
     inFlight: false,
     rowId: null,
@@ -1086,6 +1089,8 @@ export function TableForumView({
 
     const { text: formText, mentions: formMentions } =
       composerForm.state.values;
+    const editorMentionIds = extractMentionIds(composerEditorRef.current);
+    const mentions = Array.from(new Set([...editorMentionIds, ...formMentions]));
     const hasText = stripHtml(formText).length > 0;
     const hasAttachments = composerStorages.length > 0;
 
@@ -1098,7 +1103,7 @@ export function TableForumView({
       const attachments = composerStorages.map((storage) => storage._id);
       const payload = {
         text: formText || '',
-        mentions: formMentions,
+        mentions,
         attachments,
         replyTo: replyToId ?? null,
       };
@@ -1141,6 +1146,10 @@ export function TableForumView({
     canAccessChannel,
     tableSlug,
   ]);
+
+  const handleEditorReady = React.useCallback((editor: TiptapEditor): void => {
+    composerEditorRef.current = editor;
+  }, []);
 
   const handleDelete = React.useCallback(
     async (index: number) => {
@@ -1493,6 +1502,7 @@ export function TableForumView({
                   onSend={handleSend}
                   isEditing={editingIndex !== null}
                   onCancelEdit={resetComposer}
+                  onEditorReady={handleEditorReady}
                 />
               </div>
             ) : (
