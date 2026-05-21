@@ -1090,7 +1090,9 @@ export function TableForumView({
     const { text: formText, mentions: formMentions } =
       composerForm.state.values;
     const editorMentionIds = extractMentionIds(composerEditorRef.current);
-    const mentions = Array.from(new Set([...editorMentionIds, ...formMentions]));
+    const mentions = Array.from(
+      new Set([...editorMentionIds, ...formMentions]),
+    );
     const hasText = stripHtml(formText).length > 0;
     const hasAttachments = composerStorages.length > 0;
 
