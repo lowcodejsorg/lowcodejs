@@ -19,13 +19,15 @@ export default function CopyRecordLinkPlugin({
   slug,
 }: Props): React.JSX.Element {
   async function handleCopy(): Promise<void> {
-    const origin =
-      typeof window !== 'undefined' ? window.location.origin : '';
+    const origin = typeof window !== 'undefined' ? window.location.origin : '';
     const url = `${origin}/tables/${slug}/row/${row._id}`;
 
     try {
       await navigator.clipboard.writeText(url);
-      toastSuccess('Link copiado', 'O link do registro está na área de transferência.');
+      toastSuccess(
+        'Link copiado',
+        'O link do registro está na área de transferência.',
+      );
     } catch {
       toastError(
         'Não foi possível copiar',
