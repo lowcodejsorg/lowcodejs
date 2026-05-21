@@ -5,7 +5,7 @@ import React, { Suspense } from 'react';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { RouteNotFound } from '@/components/common/route-status/route-not-found';
 import { Spinner } from '@/components/ui/spinner';
-import { extensionActiveListOptions } from '@/hooks/tanstack-query/use-extensions-active-list';
+import { extensionListOptions } from '@/hooks/tanstack-query/_query-options';
 import { E_EXTENSION_TYPE } from '@/lib/constant';
 import { loadExtensionEntry } from '@/lib/extensions-registry';
 
@@ -28,7 +28,7 @@ function ToolLoadingState(): React.JSX.Element {
 
 function RouteComponent(): React.JSX.Element {
   const { package: pkg, id } = Route.useParams();
-  const { data: extensions } = useSuspenseQuery(extensionActiveListOptions());
+  const { data: extensions } = useSuspenseQuery(extensionListOptions());
 
   const extension = React.useMemo(
     () =>

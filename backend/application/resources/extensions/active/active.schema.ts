@@ -34,6 +34,7 @@ export const ExtensionActiveListSchema: FastifySchema = {
           image: { type: 'string', nullable: true },
           slots: { type: 'array', items: { type: 'string' } },
           route: { type: 'string', nullable: true },
+          configRoute: { type: 'string', nullable: true },
           submenu: { type: 'string', nullable: true },
           enabled: { type: 'boolean' },
           available: { type: 'boolean' },

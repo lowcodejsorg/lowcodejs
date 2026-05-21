@@ -11,10 +11,15 @@ core/
 ├── tools/
 │   ├── clone-table/
 │   │   └── index.tsx                ← componente default da tool
-│   └── tables-import-export/
-│       ├── index.tsx                ← page com 2 cards (importar + exportar)
-│       ├── export-section.tsx       ← card de exportação (TableCombobox + checkboxes)
-│       └── import-section.tsx       ← card de importação (file upload + preview)
+│   ├── tables-import-export/
+│   │   ├── index.tsx
+│   │   ├── export-section.tsx
+│   │   └── import-section.tsx
+│   └── doc-transcription/
+│       ├── index.tsx                ← page com tabs (Transcrever | Configurações)
+│       ├── -transcription-tab.tsx   ← upload + resultado
+│       ├── -config-tab.tsx          ← URL da API + tipos de documento
+│       └── -document-type-form.tsx  ← dialog de add/edit tipo
 ├── plugins/
 │   ├── print-table/
 │   │   └── index.tsx                ← botão Imprimir na toolbar (slot table.actions)
@@ -31,6 +36,7 @@ core/
 | --------- | ---------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `tools`   | `clone-table`          | `tools/clone-table/index.tsx`          | UI de clonagem de tabelas                                                                                          |
 | `tools`   | `tables-import-export` | `tools/tables-import-export/index.tsx` | Página com seções de Importar e Exportar tabela. Endpoints `POST /tools/export-table` e `POST /tools/import-table` |
+| `tools`   | `doc-transcription`    | `tools/doc-transcription/index.tsx`    | Transcrição de documentos via API externa                                                                          |
 | `plugins` | `print-table`          | `plugins/print-table/index.tsx`        | Botão de impressão na toolbar (slot `table.actions`)                                                               |
 | `plugins` | `copy-record-link`     | `plugins/copy-record-link/index.tsx`   | Item "Copiar link" no dropdown de ações da linha (slot `table.row.actions`) — copia `/tables/<slug>/row/<rowId>`   |
 | `modules` | `welcome`              | `modules/welcome/index.tsx`            | Página de boas-vindas com atalhos (URL `/e/core/welcome`)                                                          |
