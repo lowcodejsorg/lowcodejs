@@ -1,3 +1,4 @@
+import type { Editor as TiptapEditor } from '@tiptap/core';
 import { SendIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
 
@@ -6,6 +7,7 @@ import { ForumUserMultiSelect } from './forum-user-multi-select';
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { Editor } from '@/components/common/rich-editor';
 import { Button } from '@/components/ui/button';
+import { useUserMentionSearch } from '@/hooks/use-user-mention-search';
 import type { IStorage, IUser } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +30,7 @@ interface ForumComposerProps {
   isEditing: boolean;
   onCancelEdit: () => void;
   onUploadingChange?: (isUploading: boolean) => void;
+  onEditorReady?: (editor: TiptapEditor) => void;
 }
 
 export function ForumComposer({
@@ -49,8 +52,10 @@ export function ForumComposer({
   isEditing,
   onCancelEdit,
   onUploadingChange,
+  onEditorReady,
 }: ForumComposerProps): React.JSX.Element {
   const [isFileUploading, setIsFileUploading] = React.useState(false);
+  const mentionSearch = useUserMentionSearch();
 
   const handleUploadingChange = React.useCallback(
     (uploading: boolean) => {
@@ -108,6 +113,8 @@ export function ForumComposer({
           composerLayout === 'side' && 'max-h-none',
           composerLayout !== 'side' && 'max-h-[200px] min-h-[120px] p-0 gap-2',
         )}
+        mentions={{ enabled: true, resolveItems: mentionSearch.resolveItems }}
+        onEditorReady={onEditorReady}
       />
 
       <div className="space-y-2">
