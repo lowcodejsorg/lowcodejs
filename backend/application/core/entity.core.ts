@@ -653,6 +653,8 @@ export type IExtension = Merge<
     slots: string[];
     /** URL default do módulo. Apenas para MODULE. */
     route: string | null;
+    /** URL da tela de configuração da extensão. Quando presente, exibe botão "Configurar" em /extensions. */
+    configRoute: string | null;
     /** Sub-grupo no menu Ferramentas. Apenas para TOOL. */
     submenu: string | null;
     enabled: boolean;

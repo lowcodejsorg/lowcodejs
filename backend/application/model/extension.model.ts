@@ -29,6 +29,7 @@ export const Schema = new mongoose.Schema(
 
     slots: { type: [String], default: [] },
     route: { type: String, default: null },
+    configRoute: { type: String, default: null },
     submenu: { type: String, default: null },
 
     enabled: { type: Boolean, default: false },

@@ -4,6 +4,13 @@ import { useExtensionsActiveList } from '@/hooks/tanstack-query/use-extensions-a
 import type { IActiveExtension } from '@/hooks/tanstack-query/use-extensions-active-list';
 import { E_EXTENSION_TYPE } from '@/lib/constant';
 import { loadExtensionEntry } from '@/lib/extensions-registry';
+import type { ExtensionEntryType } from '@/lib/extensions-registry';
+
+function extensionTypeToFolder(type: string): ExtensionEntryType {
+  if (type === E_EXTENSION_TYPE.MODULE) return 'modules';
+  if (type === E_EXTENSION_TYPE.TOOL) return 'tools';
+  return 'plugins';
+}
 
 /**
  * Contexto entregue aos plugins. Cada slot define quais campos vai povoar —
@@ -44,7 +51,7 @@ function ExtensionPluginRender({
     return React.lazy(async () => {
       const Entry = await loadExtensionEntry(
         plugin.pkg,
-        'plugins',
+        extensionTypeToFolder(plugin.type),
         plugin.extensionId,
       );
       if (!Entry) {
@@ -85,7 +92,6 @@ export function ExtensionSlot({
 
   const plugins = React.useMemo(() => {
     return (extensions ?? []).filter((extension) => {
-      if (extension.type !== E_EXTENSION_TYPE.PLUGIN) return false;
       if (!extension.slots.includes(id)) return false;
       return isPluginAllowedForTable(extension, tableId);
     });
