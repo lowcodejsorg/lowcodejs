@@ -1,26 +1,33 @@
 import type { Editor as TiptapEditor } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
 import type { SuggestionOptions } from '@tiptap/suggestion';
-import React from 'react';
+import { flip, offset, shift, size, useFloating } from '@floating-ui/react-dom';
+import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
 
 import { MentionList } from '../bubble/mention-list';
-import type { MentionItem, MentionListHandle } from '../bubble/mention-list';
+import type {
+  MentionItem,
+  MentionListHandle,
+  MentionPage,
+  ResolveMentionPage,
+} from '../bubble/mention-list';
 
-export type ResolveMentionItems = (
-  query: string,
-) => Promise<Array<MentionItem>> | Array<MentionItem>;
+export type { MentionPage, ResolveMentionPage };
 
 export interface MentionConfig {
   enabled: boolean;
-  resolveItems: ResolveMentionItems;
+  resolvePage: ResolveMentionPage;
 }
 
 type ClientRectFn = () => DOMRect | null;
 
 interface PopupState {
   items: Array<MentionItem>;
+  query: string;
+  hasMore: boolean;
+  resolvePage: ResolveMentionPage;
   command: (item: MentionItem) => void;
   clientRect: ClientRectFn;
   ref: React.RefObject<MentionListHandle | null>;
@@ -48,46 +55,76 @@ function getMentionAttrs(node: {
   return { id: safeId, label: safeLabel };
 }
 
+interface MentionFloatingPopupProps {
+  state: PopupState | null;
+}
+
+function MentionFloatingPopup({
+  state,
+}: MentionFloatingPopupProps): React.JSX.Element {
+  const { refs, floatingStyles } = useFloating({
+    placement: 'bottom-start',
+    strategy: 'fixed',
+    middleware: [
+      offset(4),
+      flip({ padding: 8 }),
+      shift({ padding: 8 }),
+      size({
+        padding: 8,
+        apply({ availableHeight, elements }): void {
+          elements.floating.style.maxHeight = `${String(Math.min(288, availableHeight))}px`;
+        },
+      }),
+    ],
+  });
+
+  let clientRect: ClientRectFn | null = null;
+  if (state) clientRect = state.clientRect;
+
+  useEffect((): void => {
+    if (!clientRect) return;
+    refs.setReference({
+      getBoundingClientRect: (): DOMRect => {
+        const rect = clientRect();
+        if (!rect) return new DOMRect(0, 0, 0, 0);
+        return rect;
+      },
+    });
+  }, [clientRect, refs]);
+
+  if (!state) return <></>;
+
+  return (
+    <div
+      ref={refs.setFloating}
+      style={{ ...floatingStyles, zIndex: 50, pointerEvents: 'auto', overflowY: 'auto' }}
+    >
+      <MentionList
+        ref={state.ref}
+        items={state.items}
+        query={state.query}
+        hasMore={state.hasMore}
+        resolvePage={state.resolvePage}
+        command={state.command}
+      />
+    </div>
+  );
+}
+
 function createPopup(): PopupController {
   const rootEl = document.createElement('div');
   rootEl.dataset.slot = 'mention-popup-root';
   rootEl.style.position = 'fixed';
   rootEl.style.top = '0';
   rootEl.style.left = '0';
-  rootEl.style.zIndex = '50';
+  rootEl.style.zIndex = '9999';
   rootEl.style.pointerEvents = 'none';
   document.body.appendChild(rootEl);
 
   const reactRoot: Root = createRoot(rootEl);
 
   const rerender = (state: PopupState | null): void => {
-    if (!state) {
-      reactRoot.render(<></>);
-      return;
-    }
-    const rect = state.clientRect();
-    let top = 0;
-    let left = 0;
-    if (rect) {
-      top = rect.bottom + window.scrollY;
-      left = rect.left + window.scrollX;
-    }
-    reactRoot.render(
-      <div
-        style={{
-          position: 'absolute',
-          top,
-          left,
-          pointerEvents: 'auto',
-        }}
-      >
-        <MentionList
-          ref={state.ref}
-          items={state.items}
-          command={state.command}
-        />
-      </div>,
-    );
+    reactRoot.render(<MentionFloatingPopup state={state} />);
   };
 
   const destroy = (): void => {
@@ -108,18 +145,22 @@ function pickClientRect(value: unknown): ClientRectFn | null {
 }
 
 export function buildMentionExtension(
-  resolveItems: ResolveMentionItems,
+  resolvePage: ResolveMentionPage,
 ): ReturnType<typeof Mention.configure> {
+  let currentHasMore = false;
+
   const suggestion: Partial<SuggestionOptions<MentionItem>> = {
     char: '@',
     items: async ({ query }): Promise<Array<MentionItem>> => {
-      const items = await resolveItems(query);
-      return items.slice(0, 10);
+      const result = await resolvePage(query, 1);
+      currentHasMore = result.hasMore;
+      return result.items;
     },
     render: () => {
       let popup: PopupController | null = null;
       const ref = React.createRef<MentionListHandle | null>();
       let currentItems: Array<MentionItem> = [];
+      let currentQuery = '';
       let currentClientRect: ClientRectFn | null = null;
       const noopCommand = (_item: MentionItem): void => {};
       let currentCommand: (item: MentionItem) => void = noopCommand;
@@ -129,6 +170,9 @@ export function buildMentionExtension(
         if (!currentClientRect) return;
         popup.rerender({
           items: currentItems,
+          query: currentQuery,
+          hasMore: currentHasMore,
+          resolvePage,
           command: currentCommand,
           clientRect: currentClientRect,
           ref,
@@ -138,6 +182,7 @@ export function buildMentionExtension(
       return {
         onStart: (props): void => {
           currentItems = props.items;
+          currentQuery = props.query;
           currentCommand = (item: MentionItem): void => {
             props.command(item);
           };
@@ -147,6 +192,7 @@ export function buildMentionExtension(
         },
         onUpdate: (props): void => {
           currentItems = props.items;
+          currentQuery = props.query;
           currentCommand = (item: MentionItem): void => {
             props.command(item);
           };

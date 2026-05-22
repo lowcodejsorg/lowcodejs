@@ -113,7 +113,7 @@ export function ForumComposer({
           composerLayout === 'side' && 'max-h-none',
           composerLayout !== 'side' && 'max-h-[200px] min-h-[120px] p-0 gap-2',
         )}
-        mentions={{ enabled: true, resolveItems: mentionSearch.resolveItems }}
+        mentions={{ enabled: true, resolvePage: mentionSearch.resolvePage }}
         onEditorReady={onEditorReady}
       />
 

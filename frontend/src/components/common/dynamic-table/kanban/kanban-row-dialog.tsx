@@ -103,8 +103,8 @@ export function KanbanRowDialog({
   const editCommentEditorRef = React.useRef<TiptapEditor | null>(null);
   const mentionSearch = useUserMentionSearch();
   const mentionsConfig = React.useMemo(
-    () => ({ enabled: true, resolveItems: mentionSearch.resolveItems }),
-    [mentionSearch.resolveItems],
+    () => ({ enabled: true, resolvePage: mentionSearch.resolvePage }),
+    [mentionSearch.resolvePage],
   );
   const [editingCommentIndex, setEditingCommentIndex] = React.useState<
     number | null

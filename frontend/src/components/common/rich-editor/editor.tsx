@@ -1,4 +1,4 @@
-import type { Editor as TiptapEditor } from '@tiptap/core';
+import type { Editor as TiptapEditor, Extensions } from '@tiptap/core';
 import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';
@@ -336,13 +336,13 @@ export function Editor({
   );
 
   const mentionsEnabled = mentions?.enabled ?? false;
-  const resolveItemsRef = useRef(mentions?.resolveItems);
-  React.useEffect(() => {
-    resolveItemsRef.current = mentions?.resolveItems;
-  }, [mentions?.resolveItems]);
+  const resolvePageRef = useRef(mentions?.resolvePage);
+  React.useEffect((): void => {
+    resolvePageRef.current = mentions?.resolvePage;
+  }, [mentions?.resolvePage]);
 
   const extensions = useMemo(() => {
-    const list: Array<any> = [
+    const list: Extensions = [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
         code: false,
@@ -371,10 +371,10 @@ export function Editor({
     ];
     if (mentionsEnabled) {
       list.push(
-        buildMentionExtension(async (query) => {
-          const resolver = resolveItemsRef.current;
-          if (!resolver) return [];
-          return resolver(query);
+        buildMentionExtension(async (query, page) => {
+          const resolver = resolvePageRef.current;
+          if (!resolver) return { items: [], hasMore: false };
+          return resolver(query, page);
         }),
       );
     }
