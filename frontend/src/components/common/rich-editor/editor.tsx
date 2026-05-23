@@ -1,4 +1,4 @@
-import type { Editor as TiptapEditor, Extensions } from '@tiptap/core';
+import type { Extensions, Editor as TiptapEditor } from '@tiptap/core';
 import CharacterCount from '@tiptap/extension-character-count';
 import Color from '@tiptap/extension-color';
 import Highlight from '@tiptap/extension-highlight';

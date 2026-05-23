@@ -1,7 +1,7 @@
+import { flip, offset, shift, size, useFloating } from '@floating-ui/react-dom';
 import type { Editor as TiptapEditor } from '@tiptap/core';
 import Mention from '@tiptap/extension-mention';
 import type { SuggestionOptions } from '@tiptap/suggestion';
-import { flip, offset, shift, size, useFloating } from '@floating-ui/react-dom';
 import React, { useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import type { Root } from 'react-dom/client';
@@ -97,7 +97,12 @@ function MentionFloatingPopup({
   return (
     <div
       ref={refs.setFloating}
-      style={{ ...floatingStyles, zIndex: 50, pointerEvents: 'auto', overflowY: 'auto' }}
+      style={{
+        ...floatingStyles,
+        zIndex: 50,
+        pointerEvents: 'auto',
+        overflowY: 'auto',
+      }}
     >
       <MentionList
         ref={state.ref}

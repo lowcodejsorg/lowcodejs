@@ -1,3 +1,4 @@
+import { Loader2Icon } from 'lucide-react';
 import React, {
   forwardRef,
   useCallback,
@@ -5,7 +6,6 @@ import React, {
   useImperativeHandle,
   useState,
 } from 'react';
-import { Loader2Icon } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
@@ -84,28 +84,30 @@ export const MentionList = forwardRef<MentionListHandle, MentionListProps>(
       setIsLoadingMore(false);
     }, [isLoadingMore, page, query, resolvePage]);
 
-    useImperativeHandle(ref, (): MentionListHandle => ({
-      onKeyDown: (event: KeyboardEvent): boolean => {
-        if (event.key === 'ArrowUp') {
-          setSelectedIndex(
-            (current): number =>
-              (current + allItems.length - 1) % Math.max(allItems.length, 1),
-          );
-          return true;
-        }
-        if (event.key === 'ArrowDown') {
-          setSelectedIndex(
-            (current): number =>
-              (current + 1) % Math.max(allItems.length, 1),
-          );
-          return true;
-        }
-        if (event.key === 'Enter') {
-          return selectItem(selectedIndex);
-        }
-        return false;
-      },
-    }));
+    useImperativeHandle(
+      ref,
+      (): MentionListHandle => ({
+        onKeyDown: (event: KeyboardEvent): boolean => {
+          if (event.key === 'ArrowUp') {
+            setSelectedIndex(
+              (current): number =>
+                (current + allItems.length - 1) % Math.max(allItems.length, 1),
+            );
+            return true;
+          }
+          if (event.key === 'ArrowDown') {
+            setSelectedIndex(
+              (current): number => (current + 1) % Math.max(allItems.length, 1),
+            );
+            return true;
+          }
+          if (event.key === 'Enter') {
+            return selectItem(selectedIndex);
+          }
+          return false;
+        },
+      }),
+    );
 
     return (
       <div
