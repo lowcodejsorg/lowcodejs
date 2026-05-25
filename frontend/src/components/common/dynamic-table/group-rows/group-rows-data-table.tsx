@@ -100,8 +100,8 @@ export function GroupRowsDataTable({
 
   const columnFields = React.useMemo(() => {
     const visible = displayableFields.filter((f) => f.showInList);
-    const hasUserConfigured = visible.some((f) => !f.native);
-    if (hasUserConfigured) return visible;
+    const hasAnyUserField = displayableFields.some((f) => !f.native);
+    if (hasAnyUserField) return visible;
     return formFields;
   }, [displayableFields, formFields]);
 

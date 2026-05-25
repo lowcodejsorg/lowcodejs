@@ -143,11 +143,16 @@ export default class GroupFieldUpdateUseCase {
         );
       }
 
-      // Normalize group: if it's a string, convert to object format
-      const normalizedGroup =
-        typeof payload.group === 'string'
-          ? { slug: payload.group }
-          : payload.group;
+      // Normalize group — same pattern as table-fields/update
+      let normalizedGroup: { slug: string; _id?: string } | null = null;
+      if (typeof payload.group === 'string') {
+        normalizedGroup = { slug: payload.group };
+      } else if (payload.group) {
+        normalizedGroup = { slug: payload.group.slug };
+        if (payload.group._id) {
+          normalizedGroup._id = payload.group._id;
+        }
+      }
 
       const updatedField = await this.fieldRepository.update({
         ...payload,
