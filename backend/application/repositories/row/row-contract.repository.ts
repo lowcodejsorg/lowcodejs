@@ -22,7 +22,6 @@ export type RowFindOnePayload = {
   table: RowTableContext;
   query: Record<string, unknown>;
   populate?: boolean;
-  includeReverseRelationships?: boolean;
 };
 
 export type RowFindManyPayload = {
@@ -32,7 +31,6 @@ export type RowFindManyPayload = {
   limit: number;
   sortField?: string;
   sortDirection?: 'asc' | 'desc';
-  includeReverseRelationships?: boolean;
 };
 
 export type RowUpdatePayload = {
@@ -80,7 +78,7 @@ export abstract class RowContractRepository {
     rawFilters?: Record<string, unknown>,
   ): Promise<number>;
 
-  abstract update(payload: RowUpdatePayload): Promise<IRow | null>;
+  abstract update(payload: RowUpdatePayload): Promise<IRow>;
 
   abstract deleteOne(table: RowTableContext, _id: string): Promise<boolean>;
 

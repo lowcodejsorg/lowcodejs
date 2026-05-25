@@ -1,7 +1,5 @@
 import { useRouter, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, Table } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
   EllipsisIcon,
@@ -53,6 +51,7 @@ import {
   USER_GROUP_MAPPER,
   USER_STATUS_MAPPER,
 } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -321,11 +320,7 @@ function buildColumns(params: {
         const date = row.original.createdAt;
         return (
           <span className="text-sm text-muted-foreground">
-            {date
-              ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'as' HH:mm", {
-                  locale: ptBR,
-                })
-              : 'N/A'}
+            {formatDate(date)}
           </span>
         );
       },

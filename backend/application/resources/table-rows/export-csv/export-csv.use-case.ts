@@ -89,7 +89,6 @@ export default class TableRowExportCsvUseCase {
             rawFilters: p,
             skip,
             limit: perPage,
-            includeReverseRelationships: true,
           });
           return rows.map((row) => toCsvRow(row, exportableFields));
         },

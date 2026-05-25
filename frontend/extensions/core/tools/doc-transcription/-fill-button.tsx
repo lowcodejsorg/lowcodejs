@@ -42,7 +42,8 @@ export function FillButton({ onFillFields }: Props): React.JSX.Element {
       if (!onFillFields) return;
       const data: Record<string, string | null> = {};
       result.fields.forEach((f) => {
-        data[f.key] = f.value !== null && f.value !== undefined ? String(f.value) : null;
+        data[f.key] =
+          f.value !== null && f.value !== undefined ? String(f.value) : null;
       });
       onFillFields(data);
       toastSuccess(
@@ -56,8 +57,10 @@ export function FillButton({ onFillFields }: Props): React.JSX.Element {
       handleApiError(error, {
         context: 'Erro ao transcrever documento',
         causes: {
-          API_NOT_CONFIGURED: 'Configure a URL da API em Ferramentas > Transcrição de Documentos.',
-          API_KEY_NOT_CONFIGURED: 'Configure a API Key em Ferramentas > Transcrição de Documentos.',
+          API_NOT_CONFIGURED:
+            'Configure a URL da API em Ferramentas > Transcrição de Documentos.',
+          API_KEY_NOT_CONFIGURED:
+            'Configure a API Key em Ferramentas > Transcrição de Documentos.',
           DOCUMENT_TYPE_NOT_FOUND: 'Tipo de documento inválido.',
           TRANSCRIPTION_API_ERROR: 'A API de transcrição retornou um erro.',
           TRANSCRIPTION_API_UNREACHABLE: 'Não foi possível conectar à API.',
@@ -114,14 +117,20 @@ export function FillButton({ onFillFields }: Props): React.JSX.Element {
           {noConfig && (
             <p className="text-sm text-destructive">
               A extensão não está configurada. Acesse{' '}
-              <strong>Ferramentas {'>'} Transcrição de Documentos {'>'} Configurações</strong>.
+              <strong>
+                Ferramentas {'>'} Transcrição de Documentos {'>'} Configurações
+              </strong>
+              .
             </p>
           )}
 
           {!noConfig && noTypes && (
             <p className="text-sm text-destructive">
               Nenhum tipo de documento configurado. Acesse{' '}
-              <strong>Ferramentas {'>'} Transcrição de Documentos {'>'} Configurações</strong>.
+              <strong>
+                Ferramentas {'>'} Transcrição de Documentos {'>'} Configurações
+              </strong>
+              .
             </p>
           )}
 
@@ -129,13 +138,19 @@ export function FillButton({ onFillFields }: Props): React.JSX.Element {
             <div className="space-y-4">
               <Field>
                 <FieldLabel>Tipo de documento</FieldLabel>
-                <Select value={documentTypeId} onValueChange={setDocumentTypeId}>
+                <Select
+                  value={documentTypeId}
+                  onValueChange={setDocumentTypeId}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecione..." />
                   </SelectTrigger>
                   <SelectContent>
                     {config.documentTypes.map((dt) => (
-                      <SelectItem key={dt.id} value={dt.id}>
+                      <SelectItem
+                        key={dt.id}
+                        value={dt.id}
+                      >
                         {dt.name}
                       </SelectItem>
                     ))}
@@ -199,7 +214,9 @@ export function FillButton({ onFillFields }: Props): React.JSX.Element {
             <Button
               type="button"
               onClick={handleSubmit}
-              disabled={!file || !documentTypeId || isPending || noConfig || noTypes}
+              disabled={
+                !file || !documentTypeId || isPending || noConfig || noTypes
+              }
               className="cursor-pointer"
             >
               {isPending ? (

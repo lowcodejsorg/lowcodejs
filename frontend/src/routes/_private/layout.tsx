@@ -46,7 +46,7 @@ export const Route = createFileRoute('/_private')({
 
       // Permitir acesso público a rotas de visualização de tabela
       // O componente e o backend controlam por visibility
-      const isTableViewRoute = /^\/tables\/[^/]+(?:\/?|\/row\/[^/]+\/?)$/.test(
+      const isTableViewRoute = /^\/tables\/[^/]+(?:\/?|\/row\/?.*)$/.test(
         location.pathname,
       );
       if (isTableViewRoute) {
@@ -77,8 +77,7 @@ function PrivateLayout(): React.JSX.Element {
     '/settings',
     /^\/tables\/[^/]+\/field\/.+$/,
     /^\/tables\/[^/]+\/field\/create$/,
-    /^\/tables\/[^/]+\/row\/.+$/,
-    /^\/tables\/[^/]+\/row\/create$/,
+    /^\/tables\/[^/]+\/row.*$/,
     /^\/tables\/[^/]+\/detail$/,
     /^\/tables\/[^/]+\/methods$/,
     /^\/users\/.+$/,

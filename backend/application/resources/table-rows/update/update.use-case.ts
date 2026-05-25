@@ -158,10 +158,6 @@ export default class TableRowUpdateUseCase {
         );
       }
 
-      console.log(
-        '[TableRowUpdateUseCase] this.rowMemberNotificationService.notifyNewMembers',
-      );
-
       await this.rowMemberNotificationService.notifyNewMembers({
         table,
         previousRow,

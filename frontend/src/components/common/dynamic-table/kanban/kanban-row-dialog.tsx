@@ -1343,12 +1343,13 @@ export function KanbanRowDialog({
                 type="button"
                 variant="outline"
                 data-test-id="kanban-view-btn"
-                onClick={() =>
-                  router.navigate({
-                    to: '/tables/$slug/row/$rowId',
-                    params: { slug: tableSlug, rowId: row._id },
-                  })
-                }
+                onClick={(): void => {
+                  void router.navigate({
+                    to: '/tables/$slug/row/',
+                    params: { slug: tableSlug },
+                    search: { _id: row._id },
+                  });
+                }}
                 className="cursor-pointer"
               >
                 <EyeIcon className="size-4" />
@@ -1359,13 +1360,13 @@ export function KanbanRowDialog({
                   type="button"
                   variant="outline"
                   data-test-id="kanban-edit-btn"
-                  onClick={() =>
-                    router.navigate({
-                      to: '/tables/$slug/row/$rowId',
-                      params: { slug: tableSlug, rowId: row._id },
-                      search: { mode: 'edit' },
-                    })
-                  }
+                  onClick={(): void => {
+                    void router.navigate({
+                      to: '/tables/$slug/row/',
+                      params: { slug: tableSlug },
+                      search: { _id: row._id, mode: 'edit' as const },
+                    });
+                  }}
                   className="cursor-pointer"
                 >
                   <PencilIcon className="size-4" />

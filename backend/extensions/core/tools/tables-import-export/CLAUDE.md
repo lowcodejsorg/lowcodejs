@@ -154,8 +154,10 @@ suportados na importação — internamente são normalizados para o formato v2.
    single-table)
 5. **Detecta conflitos antes de qualquer escrita** (`detectConflicts`), usando
    os slugs **já renomeados**:
-   - slugs de tabelas vs. tabelas existentes não-trashed → `IMPORT_CONFLICTS`
-     ou `TABLE_SLUG_ALREADY_EXISTS` (single-table sem conflito de menu)
+   - slugs de tabelas vs. **qualquer tabela existente, inclusive na lixeira**
+     (o slug é a chave da coleção dinâmica e precisa ser único) →
+     `IMPORT_CONFLICTS` ou `TABLE_SLUG_ALREADY_EXISTS` (single-table sem
+     conflito de menu)
    - slugs de **itens de menu folha** vs. menus existentes não-trashed →
      `IMPORT_CONFLICTS`. Menus que são **pai** de outro menu do pacote são
      ignorados aqui — serão reaproveitados na Fase E, nunca conflitam
@@ -195,7 +197,7 @@ suportados na importação — internamente são normalizados para o formato v2.
 |------|-------|--------|
 | 400 | OWNER_ID_REQUIRED | Owner ausente (não deveria com auth) |
 | 400 | INVALID_PLATFORM | header.platform diferente de "lowcodejs" |
-| 400 | TABLE_SLUG_ALREADY_EXISTS | Slug da tabela já existe (single-table sem conflito de menu). `errors.tables` traz o(s) slug(s) **original(is)** |
+| 400 | TABLE_SLUG_ALREADY_EXISTS | Slug da tabela já existe — inclusive se a tabela existente está na lixeira (single-table sem conflito de menu). `errors.tables` traz o(s) slug(s) **original(is)** |
 | 400 | IMPORT_CONFLICTS | Conflitos detectados (tabelas e/ou itens de menu folha). `errors.tables` e `errors.menus` trazem os slugs **originais** em conflito |
 | 400 | DUPLICATE_TABLE_SLUGS | Duas tabelas do pacote gerariam o mesmo slug após renomeação. `errors.tables` traz os slugs originais colidentes |
 | 400 | DUPLICATE_MENU_SLUGS | Dois itens de menu do pacote gerariam o mesmo slug após renomeação. `errors.menus` traz os slugs originais colidentes |

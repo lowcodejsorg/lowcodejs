@@ -1,3 +1,4 @@
+import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
 import { API } from '@/lib/api';
@@ -12,7 +13,7 @@ export interface ITranscribeField {
 export interface ITranscribeResult {
   documentTypeId: string;
   documentTypeName: string;
-  fields: ITranscribeField[];
+  fields: Array<ITranscribeField>;
   raw: unknown;
 }
 
@@ -21,7 +22,9 @@ interface Options {
   onError?: (error: unknown) => void;
 }
 
-export function useDocTranscriptionTranscribe(options?: Options) {
+export function useDocTranscriptionTranscribe(
+  options?: Options,
+): UseMutationResult<ITranscribeResult, Error, FormData> {
   return useMutation({
     mutationFn: async (formData: FormData) => {
       const response = await API.post<ITranscribeResult>(

@@ -1,9 +1,9 @@
+import type { UseSuspenseQueryResult } from '@tanstack/react-query';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { queryOptions } from '@tanstack/react-query';
-
-import { API } from '@/lib/api';
 
 import { queryKeys } from './_query-keys';
+
+import { API } from '@/lib/api';
 
 export interface IDocResponseField {
   key: string;
@@ -15,20 +15,20 @@ export interface IDocumentType {
   id: string;
   name: string;
   description: string | null;
-  responseFields: IDocResponseField[];
+  responseFields: Array<IDocResponseField>;
 }
 
 export interface IDocTranscriptionConfig {
   apiUrl: string | null;
   apiKey: string | null;
   model: string | null;
-  documentTypes: IDocumentType[];
+  documentTypes: Array<IDocumentType>;
 }
 
-export const docTranscriptionConfigOptions = () =>
-  queryOptions({
+export function useDocTranscriptionConfig(): UseSuspenseQueryResult<IDocTranscriptionConfig> {
+  return useSuspenseQuery({
     queryKey: queryKeys.docTranscription.config(),
-    queryFn: async () => {
+    queryFn: async function () {
       const response = await API.get<IDocTranscriptionConfig>(
         '/tools/doc-transcription/config',
       );
@@ -36,7 +36,4 @@ export const docTranscriptionConfigOptions = () =>
     },
     staleTime: 5 * 60 * 1000,
   });
-
-export function useDocTranscriptionConfig() {
-  return useSuspenseQuery(docTranscriptionConfigOptions());
 }

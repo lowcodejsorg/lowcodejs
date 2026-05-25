@@ -202,6 +202,38 @@ describe('Import Table Use Case', () => {
     expect(result.value.cause).toBe('TABLE_SLUG_ALREADY_EXISTS');
   });
 
+  it('deve retornar TABLE_SLUG_ALREADY_EXISTS quando o slug ja existe na lixeira', async () => {
+    const trashed = await tableInMemoryRepository.create({
+      name: 'Clientes',
+      slug: 'clientes',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.LIST,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+    await tableInMemoryRepository.update({
+      _id: trashed._id,
+      trashed: true,
+      trashedAt: new Date(),
+    });
+
+    const result = await sut.execute({
+      name: 'Clientes',
+      fileContent: v1FileContent,
+      ownerId: 'owner-id',
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('TABLE_SLUG_ALREADY_EXISTS');
+  });
+
   it('deve retornar IMPORT_CONFLICTS listando tabelas e menus conflitantes', async () => {
     await tableInMemoryRepository.create({
       name: 'Clientes',

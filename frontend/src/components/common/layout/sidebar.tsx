@@ -41,6 +41,7 @@ interface SidebarProps {
 }
 
 const MAX_DEPTH = 4;
+const INDENT_PX = 16;
 
 function SidebarLabelTooltip({
   children,
@@ -133,6 +134,7 @@ function SidebarMenuItemRecursive({
             <SidebarMenuButton
               data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
               tooltip={{ children: item.title, hidden: false }}
+              style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
             >
               <SidebarItemIcon item={item} />
               <span className="flex-1 truncate">{item.title}</span>
@@ -206,7 +208,10 @@ function SidebarMenuItemRecursive({
                         asChild
                         size="md"
                         isActive={!isExternal && location.pathname === subUrl}
-                        className="h-8 translate-x-0 p-2 text-sm"
+                        className="h-8 translate-x-0 text-sm"
+                        style={{
+                          paddingLeft: `${(depth + 1) * INDENT_PX + 8}px`,
+                        }}
                       >
                         {subItemLink}
                       </SidebarMenuSubButton>
@@ -232,6 +237,7 @@ function SidebarMenuItemRecursive({
         <SidebarMenuButton
           data-test-id={`sidebar-menu-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
           tooltip={{ children: item.title, hidden: false }}
+          style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
         >
           <SidebarItemIcon item={item} />
           <span className="flex-1 truncate">{item.title}</span>
@@ -289,6 +295,7 @@ function SidebarMenuItemRecursive({
         className="group data-[active=true]:bg-primary data-[active=true]:text-primary-foreground "
         isActive={!isExternal && location.pathname === to}
         tooltip={{ children: item.title, hidden: false }}
+        style={{ paddingLeft: `${depth * INDENT_PX + 8}px` }}
       >
         {itemLink}
       </SidebarMenuButton>

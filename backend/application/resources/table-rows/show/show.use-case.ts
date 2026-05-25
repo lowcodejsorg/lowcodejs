@@ -38,7 +38,6 @@ export default class TableRowShowUseCase {
       const row = await this.rowRepository.findOne({
         table,
         query: { _id: payload._id },
-        includeReverseRelationships: true,
       });
 
       if (!row) {

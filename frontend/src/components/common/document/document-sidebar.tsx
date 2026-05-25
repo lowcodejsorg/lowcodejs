@@ -153,7 +153,7 @@ export function DocumentSidebar({
       }>(route, payload);
       return response.data;
     },
-    onSuccess(data) {
+    onSuccess(_data) {
       queryClient.invalidateQueries({
         queryKey: queryKeys.tables.detail(slug),
       });
@@ -164,12 +164,8 @@ export function DocumentSidebar({
 
       window.setTimeout(() => {
         router.navigate({
-          to: '/tables/$slug/row/create',
+          to: '/tables/$slug/row',
           params: { slug },
-          search: {
-            categoryId: data.node.id,
-            categorySlug: categoryField.slug,
-          },
         });
       }, 200);
     },

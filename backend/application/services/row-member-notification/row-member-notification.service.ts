@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import {
@@ -48,12 +49,7 @@ function readString(value: unknown): string {
 export default class RowMemberNotificationService implements RowMemberNotificationContractService {
   constructor(
     private readonly notificationService: NotificationContractService,
-  ) {
-    console.log(
-      '[RowMemberNotificationService] instanciado:',
-      notificationService,
-    );
-  }
+  ) {}
 
   async notifyNewMembers(params: NotifyRowMembersParams): Promise<void> {
     if (!this.notificationService) {

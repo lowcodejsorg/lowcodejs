@@ -131,11 +131,11 @@ export default class RowInMemoryRepository implements RowContractRepository {
     }).length;
   }
 
-  async update(payload: RowUpdatePayload): Promise<IRow | null> {
+  async update(payload: RowUpdatePayload): Promise<IRow> {
     const collection = this.getCollection(payload.table.slug);
     const index = collection.findIndex((item) => item._id === payload._id);
 
-    if (index === -1) return null;
+    // if (index === -1) return null;
 
     collection[index] = {
       ...collection[index],

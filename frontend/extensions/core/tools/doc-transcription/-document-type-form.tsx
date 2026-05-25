@@ -61,7 +61,7 @@ export function DocumentTypeForm({
 }: Props): React.JSX.Element {
   const [name, setName] = React.useState('');
   const [description, setDescription] = React.useState('');
-  const [fields, setFields] = React.useState<IDocResponseField[]>([]);
+  const [fields, setFields] = React.useState<Array<IDocResponseField>>([]);
 
   const id = initial ? initial.id : generateSlug(name);
 
@@ -83,16 +83,10 @@ export function DocumentTypeForm({
   }
 
   function addField(): void {
-    setFields((prev) => [
-      ...prev,
-      { key: '', label: '', type: 'string' },
-    ]);
+    setFields((prev) => [...prev, { key: '', label: '', type: 'string' }]);
   }
 
-  function updateField(
-    index: number,
-    patch: Partial<IDocResponseField>,
-  ): void {
+  function updateField(index: number, patch: Partial<IDocResponseField>): void {
     setFields((prev) =>
       prev.map((f, i) => (i === index ? { ...f, ...patch } : f)),
     );
@@ -103,11 +97,16 @@ export function DocumentTypeForm({
   }
 
   const nameError = name.trim().length === 0 ? 'Nome obrigatório' : null;
-  const idError = id.trim().length === 0 ? 'Digite um nome para gerar o ID' : null;
+  const idError =
+    id.trim().length === 0 ? 'Digite um nome para gerar o ID' : null;
   const fieldsError =
     fields.length === 0 ? 'Adicione ao menos um campo de resposta' : null;
   const fieldErrors = fields.map((f) => ({
-    key: !f.key.trim() ? 'Obrigatório' : !SLUG_REGEX.test(f.key) ? 'Slug inválido' : null,
+    key: !f.key.trim()
+      ? 'Obrigatório'
+      : !SLUG_REGEX.test(f.key)
+        ? 'Slug inválido'
+        : null,
     label: !f.label.trim() ? 'Obrigatório' : null,
   }));
   const hasFieldErrors = fieldErrors.some((e) => e.key || e.label);
@@ -186,7 +185,9 @@ export function DocumentTypeForm({
                     <Input
                       value={f.key}
                       onChange={(e) =>
-                        updateField(i, { key: e.target.value.toLowerCase().replace(/\s/g, '_') })
+                        updateField(i, {
+                          key: e.target.value.toLowerCase().replace(/\s/g, '_'),
+                        })
                       }
                       placeholder="chave_api"
                       className="font-mono text-xs h-8"
@@ -201,7 +202,9 @@ export function DocumentTypeForm({
                   <div>
                     <Input
                       value={f.label}
-                      onChange={(e) => updateField(i, { label: e.target.value })}
+                      onChange={(e) =>
+                        updateField(i, { label: e.target.value })
+                      }
                       placeholder="Rótulo"
                       className="text-xs h-8"
                     />

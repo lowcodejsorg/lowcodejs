@@ -77,7 +77,7 @@ function mapperSchema(
         {
           type: FieldTypeMapper[field.type] || 'String',
           required: Boolean(field.required || false),
-          ref: field?.relationship?.table?.slug ?? undefined,
+          ref: field?.relationship?.table?._id?.toString() ?? undefined,
         },
       ],
     },

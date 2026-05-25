@@ -21,8 +21,10 @@ core/
 │       ├── -config-tab.tsx          ← URL da API + tipos de documento
 │       └── -document-type-form.tsx  ← dialog de add/edit tipo
 ├── plugins/
-│   └── print-table/
-│       └── index.tsx                ← botão Imprimir na toolbar (slot table.actions)
+│   ├── print-table/
+│   │   └── index.tsx                ← botão Imprimir na toolbar (slot table.actions)
+│   └── copy-record-link/
+│       └── index.tsx                ← item "Copiar link" no dropdown da linha (slot table.row.actions)
 └── modules/
     └── welcome/
         └── index.tsx                ← componente default do módulo (boas-vindas)
@@ -30,13 +32,14 @@ core/
 
 ## Entries
 
-| Tipo    | ID                    | Path                                   | Descrição |
-| ------- | --------------------- | -------------------------------------- | --------- |
-| `tools` | `clone-table`         | `tools/clone-table/index.tsx`          | UI de clonagem de tabelas |
-| `tools` | `tables-import-export`| `tools/tables-import-export/index.tsx` | Importar e Exportar tabela em JSON |
-| `tools` | `doc-transcription`   | `tools/doc-transcription/index.tsx`    | Transcrição de documentos via API externa |
-| `plugins` | `print-table`       | `plugins/print-table/index.tsx`        | Botão de impressão (slot `table.actions`) |
-| `modules` | `welcome`           | `modules/welcome/index.tsx`            | Boas-vindas (URL `/e/core/welcome`) |
+| Tipo      | ID                     | Path                                   | Descrição                                                                                                          |
+| --------- | ---------------------- | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `tools`   | `clone-table`          | `tools/clone-table/index.tsx`          | UI de clonagem de tabelas                                                                                          |
+| `tools`   | `tables-import-export` | `tools/tables-import-export/index.tsx` | Página com seções de Importar e Exportar tabela. Endpoints `POST /tools/export-table` e `POST /tools/import-table` |
+| `tools`   | `doc-transcription`    | `tools/doc-transcription/index.tsx`    | Transcrição de documentos via API externa                                                                          |
+| `plugins` | `print-table`          | `plugins/print-table/index.tsx`        | Botão de impressão na toolbar (slot `table.actions`)                                                               |
+| `plugins` | `copy-record-link`     | `plugins/copy-record-link/index.tsx`   | Item "Copiar link" no dropdown de ações da linha (slot `table.row.actions`) — copia `/tables/<slug>/row/<rowId>`   |
+| `modules` | `welcome`              | `modules/welcome/index.tsx`            | Página de boas-vindas com atalhos (URL `/e/core/welcome`)                                                          |
 
 ## Convenções
 

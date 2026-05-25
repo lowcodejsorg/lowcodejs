@@ -53,7 +53,7 @@ export function TableRowRelationshipCell({
         if (item.tableSlug && item._id) {
           return (
             <a
-              href={`/tables/${item.tableSlug}/row/${item._id}`}
+              href={`/tables/${item.tableSlug}/row?_id=${item._id}`}
               target="_blank"
               rel="noopener noreferrer"
               className="hover:underline"

@@ -30,12 +30,11 @@ RUN addgroup -S nodejs -g 1001 && \
     adduser -S appuser -u 1001 -G nodejs && \
     chown -R appuser:nodejs /app
 
-COPY --from=builder /app/docker-entrypoint.sh /docker-entrypoint.sh
-RUN chmod +x /docker-entrypoint.sh
+RUN chmod +x ./docker-entry-point.sh
 
 EXPOSE 3000
 ENV PORT=3000
 ENV NODE_ENV=production
 
-ENTRYPOINT ["/docker-entrypoint.sh"]
+ENTRYPOINT ["/app/docker-entry-point.sh"]
 CMD ["node", "bin/server.js"]

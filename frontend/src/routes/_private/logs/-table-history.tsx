@@ -1,7 +1,5 @@
 import { useRouter } from '@tanstack/react-router';
 import type { ColumnDef } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import { EllipsisIcon, ExternalLinkIcon, FileJsonIcon } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
@@ -25,6 +23,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { useDataTable } from '@/hooks/use-data-table';
 import { LOGGER_OBJECT_LABEL } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
 import type { ILogger } from '@/lib/interfaces';
 import { resolveLoggerNavigateTarget } from '@/lib/logger-route';
 import { cn } from '@/lib/utils';
@@ -100,14 +99,9 @@ function buildColumns(params: {
       ),
       cell: ({ row }): React.ReactElement => {
         const date = row.original.createdAt;
-        if (!date) {
-          return <span className="text-sm text-muted-foreground">N/A</span>;
-        }
         return (
           <span className="text-sm text-muted-foreground">
-            {format(new Date(date), "dd 'de' MMM 'de' yyyy 'às' HH:mm:ss", {
-              locale: ptBR,
-            })}
+            {formatDate(date)}
           </span>
         );
       },
@@ -283,6 +277,7 @@ export function TableHistory({
       router.navigate({
         to: target.to,
         params: target.params,
+        search: target.search,
       } as Parameters<typeof router.navigate>[0]);
     },
     [router],

@@ -1,6 +1,12 @@
 /* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, GET, PATCH, POST, getInstanceByToken } from 'fastify-decorators';
+import {
+  Controller,
+  GET,
+  PATCH,
+  POST,
+  getInstanceByToken,
+} from 'fastify-decorators';
 
 import { E_EXTENSION_TYPE, E_ROLE } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';

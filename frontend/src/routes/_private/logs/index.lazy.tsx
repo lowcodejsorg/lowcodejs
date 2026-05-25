@@ -10,9 +10,7 @@ import {
   DownloadIcon,
   PencilIcon,
   PlusIcon,
-  SearchIcon,
   UserIcon,
-  XIcon,
 } from 'lucide-react';
 import React from 'react';
 
@@ -22,28 +20,28 @@ import {
   ROUTE_ID,
   parseCsvList,
 } from './-constants';
-import type { ActionType, FiltersState } from './-constants';
+import type { ActionType } from './-constants';
 import { downloadCsv, entriesToCsv } from './-csv';
-import { HistoryFilterSidebar } from './-filter-sidebar';
 import { JsonDialog } from './-json-dialog';
 import { StatCard } from './-stat-card';
 import { TableHistory } from './-table-history';
 
-import { FilterTrigger } from '@/components/common/filters';
+import { FilterSidebar, FilterTrigger } from '@/components/common/filters';
+import { InputSearch } from '@/components/common/input-search';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Pagination } from '@/components/common/pagination';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group';
 import { useLoggerReadPaginated } from '@/hooks/tanstack-query/use-logger-read-paginated';
 import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
-import { E_ROLE, MetaDefault } from '@/lib/constant';
-import type { ILogger } from '@/lib/interfaces';
+import {
+  E_FIELD_TYPE,
+  E_ROLE,
+  LOGGER_ACTION_LABEL,
+  LOGGER_OBJECT_LABEL,
+  MetaDefault,
+} from '@/lib/constant';
+import type { IFilterField, ILogger } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -64,16 +62,36 @@ function RouteComponent(): React.JSX.Element {
     null,
   );
 
-  const filters: FiltersState = React.useMemo(
-    () => ({
-      search: search.search ?? '',
-      actions: parseCsvList(search.actions, ACTION_OPTIONS),
-      objects: parseCsvList(search.objects, OBJECT_OPTIONS),
-      dateFrom: search['date-from'] ?? '',
-      dateTo: search['date-to'] ?? '',
-    }),
-    [search],
-  );
+  const fieldFilters: Array<IFilterField> = [
+    {
+      slug: 'actions',
+      name: 'Ação',
+      type: E_FIELD_TYPE.DROPDOWN,
+      multiple: true,
+      dropdown: ACTION_OPTIONS.map((action) => ({
+        id: action,
+        label: LOGGER_ACTION_LABEL[action],
+        color: null,
+      })),
+    },
+    {
+      slug: 'objects',
+      name: 'Tipo de objeto',
+      type: E_FIELD_TYPE.DROPDOWN,
+      multiple: true,
+      dropdown: OBJECT_OPTIONS.map((type) => ({
+        id: type,
+        label: LOGGER_OBJECT_LABEL[type],
+        color: null,
+      })),
+    },
+    {
+      slug: 'date-range',
+      name: 'Data',
+      type: E_FIELD_TYPE.DATE,
+      multiple: false,
+    },
+  ];
 
   const queryParams = React.useMemo(() => {
     const orderKeys = [
@@ -93,22 +111,26 @@ function RouteComponent(): React.JSX.Element {
     return {
       page: search.page,
       perPage: search.perPage,
-      ...(filters.search && { search: filters.search }),
-      ...(filters.actions.length > 0 && {
-        actions: filters.actions.join(','),
+      ...(search.search && { search: search.search }),
+      ...(search.actions && {
+        actions: search.actions,
       }),
-      ...(filters.objects.length > 0 && {
-        objects: filters.objects.join(','),
+      ...(search.objects && {
+        objects: search.objects,
       }),
-      ...(filters.dateFrom && {
-        'date-from': new Date(`${filters.dateFrom}T00:00:00`).toISOString(),
+      ...(search['date-range-initial'] && {
+        'date-from': new Date(
+          `${search['date-range-initial']}T00:00:00`,
+        ).toISOString(),
       }),
-      ...(filters.dateTo && {
-        'date-to': new Date(`${filters.dateTo}T23:59:59.999`).toISOString(),
+      ...(search['date-range-final'] && {
+        'date-to': new Date(
+          `${search['date-range-final']}T23:59:59.999`,
+        ).toISOString(),
       }),
       ...orderEntries,
     };
-  }, [search, filters]);
+  }, [search]);
 
   const { data, isLoading } = useLoggerReadPaginated(queryParams);
 
@@ -131,51 +153,11 @@ function RouteComponent(): React.JSX.Element {
     return { todayCount, counts };
   }, [entries]);
 
-  let activeFilterCount = filters.actions.length + filters.objects.length;
-  if (filters.search) activeFilterCount += 1;
-  if (filters.dateFrom) activeFilterCount += 1;
-  if (filters.dateTo) activeFilterCount += 1;
-
-  const handleApplyFilters = (next: FiltersState): void => {
-    let actionsParam: string | undefined;
-    if (next.actions.length > 0) {
-      actionsParam = next.actions.join(',');
-    }
-    let objectsParam: string | undefined;
-    if (next.objects.length > 0) {
-      objectsParam = next.objects.join(',');
-    }
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        page: 1,
-        search: next.search || undefined,
-        actions: actionsParam,
-        objects: objectsParam,
-        'date-from': next.dateFrom || undefined,
-        'date-to': next.dateTo || undefined,
-      }),
-    });
-  };
-
-  const handleClearFilters = (): void => {
-    navigate({
-      search: (prev) => ({
-        page: 1,
-        perPage: prev.perPage,
-      }),
-    });
-  };
-
-  const handleQuickSearchChange = (value: string): void => {
-    navigate({
-      search: (prev) => ({
-        ...prev,
-        page: 1,
-        search: value || undefined,
-      }),
-    });
-  };
+  let activeFilterCount = 0;
+  if (search.actions) activeFilterCount += 1;
+  if (search.objects) activeFilterCount += 1;
+  if (search['date-range-initial'] || search['date-range-final'])
+    activeFilterCount += 1;
 
   const handleExport = (): void => {
     const csv = entriesToCsv(entries);
@@ -207,31 +189,7 @@ function RouteComponent(): React.JSX.Element {
 
         <div className="flex flex-col gap-2 lg:flex-row lg:items-center lg:justify-end lg:gap-3">
           <div className="lg:w-96">
-            <InputGroup>
-              <InputGroupAddon>
-                <SearchIcon className="size-4" />
-              </InputGroupAddon>
-              <InputGroupInput
-                data-test-id="history-search-input"
-                placeholder="Pesquisar no histórico..."
-                value={filters.search}
-                onChange={(e) => handleQuickSearchChange(e.target.value)}
-                className="shadow-none"
-              />
-              {filters.search.length > 0 && (
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    variant="ghost"
-                    size="icon-xs"
-                    aria-label="Limpar busca"
-                    onClick={() => handleQuickSearchChange('')}
-                    className="cursor-pointer"
-                  >
-                    <XIcon className="size-4" />
-                  </InputGroupButton>
-                </InputGroupAddon>
-              )}
-            </InputGroup>
+            <InputSearch />
           </div>
 
           <div className="inline-flex items-center gap-2">
@@ -289,12 +247,10 @@ function RouteComponent(): React.JSX.Element {
       </PageShell.Header>
 
       <div className="flex-1 flex flex-row min-h-0">
-        <HistoryFilterSidebar
+        <FilterSidebar
+          fields={fieldFilters}
           open={filterSidebar.open}
           onOpenChange={filterSidebar.onOpenChange}
-          value={filters}
-          onApply={handleApplyFilters}
-          onClear={handleClearFilters}
         />
         <PageShell.Content>
           <TableHistory

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
@@ -28,17 +29,7 @@ export default class TableRowCreateUseCase {
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly rowMemberNotificationService: RowMemberNotificationContractService,
-  ) {
-    console.log(
-      '[TableRowCreateUseCase] instanciado',
-      tableRepository,
-      rowRepository,
-      userRepository,
-      rowPasswordService,
-      scriptExecutionService,
-      rowMemberNotificationService,
-    );
-  }
+  ) {}
 
   async execute(payload: Payload): Promise<Response> {
     try {

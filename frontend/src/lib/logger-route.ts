@@ -4,6 +4,7 @@ import type { ILogger } from '@/lib/interfaces';
 export type LoggerNavigateTarget = {
   to: string;
   params?: Record<string, string>;
+  search?: Record<string, string>;
 };
 
 function matchTableRow(url: string): RegExpMatchArray | null {
@@ -65,8 +66,9 @@ export function resolveLoggerNavigateTarget(
       const rowMatch = matchTableRow(url);
       if (rowMatch) {
         return {
-          to: '/tables/$slug/row/$rowId',
-          params: { slug: rowMatch[1], rowId: rowMatch[2] },
+          to: '/tables/$slug/row/',
+          params: { slug: rowMatch[1] },
+          search: { _id: rowMatch[2] },
         };
       }
       const tableMatch = matchTableSlug(url);
@@ -114,8 +116,9 @@ export function resolveLoggerNavigateTarget(
       const rowMatch = matchTableRow(url);
       if (rowMatch) {
         return {
-          to: '/tables/$slug/row/$rowId',
-          params: { slug: rowMatch[1], rowId: rowMatch[2] },
+          to: '/tables/$slug/row/',
+          params: { slug: rowMatch[1] },
+          search: { _id: rowMatch[2] },
         };
       }
       const tableMatch = matchTableSlug(url);

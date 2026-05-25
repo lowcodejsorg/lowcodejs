@@ -77,7 +77,9 @@ export default class TranscribeDocumentUseCase {
           try {
             const parsed = JSON.parse(errorText) as { error?: string };
             if (parsed.error) detail = parsed.error;
-          } catch { /* não é JSON */ }
+          } catch {
+            /* não é JSON */
+          }
           return left(
             HTTPException.BadGateway(
               `Erro na API de transcrição: ${detail}`,
@@ -109,7 +111,10 @@ export default class TranscribeDocumentUseCase {
         key: rf.key,
         label: rf.label,
         type: rf.type,
-        value: raw[rf.key] !== undefined ? (raw[rf.key] as string | number | boolean | null) : null,
+        value:
+          raw[rf.key] !== undefined
+            ? (raw[rf.key] as string | number | boolean | null)
+            : null,
       }));
 
       return right({

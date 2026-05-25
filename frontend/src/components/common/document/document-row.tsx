@@ -196,12 +196,8 @@ export function DocumentRow({
                   aria-label="Adicionar registro nesta seção"
                   onClick={() => {
                     router.navigate({
-                      to: '/tables/$slug/row/create',
+                      to: '/tables/$slug/row',
                       params: { slug },
-                      search: {
-                        categoryId: leafId,
-                        categorySlug,
-                      },
                     });
                   }}
                 >
@@ -227,8 +223,9 @@ export function DocumentRow({
                 className="p-0 cursor-pointer"
                 onClick={() => {
                   router.navigate({
-                    to: '/tables/$slug/row/$rowId',
-                    params: { slug, rowId: row._id },
+                    to: '/tables/$slug/row/',
+                    params: { slug },
+                    search: { _id: row._id, mode: 'edit' as const },
                   });
                 }}
               >

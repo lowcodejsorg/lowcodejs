@@ -1,7 +1,5 @@
 import { useRouter, useSearch } from '@tanstack/react-router';
 import type { ColumnDef, Table } from '@tanstack/react-table';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 import {
   ArchiveRestoreIcon,
   CornerDownRightIcon,
@@ -51,6 +49,7 @@ import { useUpdateMenu } from '@/hooks/tanstack-query/use-menu-update';
 import { useDataTable } from '@/hooks/use-data-table';
 import { API } from '@/lib/api';
 import { E_MENU_ITEM_TYPE, E_ROLE } from '@/lib/constant';
+import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu } from '@/lib/interfaces';
 import { toastSuccess } from '@/lib/toast';
@@ -575,11 +574,7 @@ function buildColumns(params: {
         const date = getValue() as string | undefined;
         return (
           <span className="text-sm text-muted-foreground">
-            {date
-              ? format(new Date(date), "dd 'de' MMM 'de' yyyy 'as' HH:mm", {
-                  locale: ptBR,
-                })
-              : 'N/A'}
+            {formatDate(date)}
           </span>
         );
       },

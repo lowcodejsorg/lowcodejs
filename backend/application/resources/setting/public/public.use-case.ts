@@ -12,6 +12,7 @@ export type PublicSetting = {
   LOGO_SMALL_URL: string | null;
   LOGO_LARGE_URL: string | null;
   AI_ASSISTANT_ENABLED: boolean;
+  CHAT_HISTORY_ENABLED: boolean;
   SETUP_COMPLETED: boolean;
   SETUP_CURRENT_STEP: string | null;
 };
@@ -24,6 +25,7 @@ const PUBLIC_DEFAULTS: PublicSetting = {
   LOGO_SMALL_URL: null,
   LOGO_LARGE_URL: null,
   AI_ASSISTANT_ENABLED: false,
+  CHAT_HISTORY_ENABLED: false,
   SETUP_COMPLETED: false,
   SETUP_CURRENT_STEP: 'admin',
 };
@@ -45,6 +47,7 @@ export default class SettingPublicUseCase {
         LOGO_SMALL_URL: setting.LOGO_SMALL_URL ?? null,
         LOGO_LARGE_URL: setting.LOGO_LARGE_URL ?? null,
         AI_ASSISTANT_ENABLED: setting.AI_ASSISTANT_ENABLED ?? false,
+        CHAT_HISTORY_ENABLED: setting.CHAT_HISTORY_ENABLED ?? false,
         SETUP_COMPLETED: setting.SETUP_COMPLETED ?? false,
         SETUP_CURRENT_STEP: PUBLIC_DEFAULTS.SETUP_CURRENT_STEP,
       };

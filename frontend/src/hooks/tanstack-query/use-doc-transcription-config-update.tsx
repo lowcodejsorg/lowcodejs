@@ -1,9 +1,10 @@
+import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-
-import { API } from '@/lib/api';
 
 import { queryKeys } from './_query-keys';
 import type { IDocTranscriptionConfig } from './use-doc-transcription-config';
+
+import { API } from '@/lib/api';
 
 interface UpdateConfigPayload {
   apiUrl?: string | null;
@@ -15,7 +16,9 @@ interface Options {
   onError?: (error: unknown) => void;
 }
 
-export function useDocTranscriptionConfigUpdate(options?: Options) {
+export function useDocTranscriptionConfigUpdate(
+  options?: Options,
+): UseMutationResult<IDocTranscriptionConfig, Error, UpdateConfigPayload> {
   const queryClient = useQueryClient();
 
   return useMutation({
