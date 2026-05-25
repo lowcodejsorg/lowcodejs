@@ -9,6 +9,7 @@ import { RowRemoveFromTrashDialog } from './-remove-from-trash-dialog';
 import { RowSendToTrashDialog } from './-send-to-trash-dialog';
 import { RowView } from './-view';
 
+import { ExtensionSlot } from '@/components/common/extension-slot/extension-slot';
 import {
   UploadingProvider,
   useIsUploading,
@@ -148,6 +149,17 @@ function UpdateRowFormContent({
   const isDisabled =
     mode === 'show' || isSaving || _update.status === 'pending';
 
+  const onFillFields = React.useCallback(
+    (fillData: Record<string, string | null>): void => {
+      Object.entries(fillData).forEach(([key, value]) => {
+        if (value === null || value === undefined) return;
+        const field = formFields.find((f) => f.slug === key);
+        if (field) form.setFieldValue(key, value);
+      });
+    },
+    [form, formFields],
+  );
+
   return (
     <React.Fragment>
       <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
@@ -245,21 +257,27 @@ function UpdateRowFormContent({
       )}
 
       {mode === 'edit' && (
-        <form
-          className="flex-1 flex flex-col min-h-0 overflow-auto"
-          data-test-id="update-row-form"
-          onSubmit={(e: React.FormEvent<HTMLFormElement>): void => {
-            e.preventDefault();
-            form.handleSubmit();
-          }}
-        >
-          <RowFormFields
-            form={form}
-            fields={formFields}
-            disabled={isDisabled}
-            tableSlug={slug}
+        <React.Fragment>
+          <ExtensionSlot
+            id="table.row.create"
+            context={{ table, slug: table.slug, onFillFields }}
           />
-        </form>
+          <form
+            className="flex-1 flex flex-col min-h-0 overflow-auto"
+            data-test-id="update-row-form"
+            onSubmit={(e: React.FormEvent<HTMLFormElement>): void => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
+            <RowFormFields
+              form={form}
+              fields={formFields}
+              disabled={isDisabled}
+              tableSlug={slug}
+            />
+          </form>
+        </React.Fragment>
       )}
 
       {/* Footer - Edit Mode */}
