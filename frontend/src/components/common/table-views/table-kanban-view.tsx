@@ -630,19 +630,24 @@ export function TableKanbanView({
 
   const updateRowsOrder = React.useCallback(
     async (
-      updates: Array<{ rowId: string; data: Record<string, unknown> }>,
-    ) => {
+      updates: Array<{ rowId: string; data: Record<string, unknown>; skipLog?: boolean }>,
+    ): Promise<void> => {
       try {
         await Promise.all(
-          updates.map((update) =>
-            API.put(
+          updates.map((update) => {
+            let config: { headers: Record<string, string> } | undefined;
+            if (update.skipLog) {
+              config = { headers: { 'x-skip-log': 'true' } };
+            }
+            return API.put(
               '/tables/'
                 .concat(tableSlug)
                 .concat('/rows/')
                 .concat(update.rowId),
               update.data,
-            ),
-          ),
+              config,
+            );
+          }),
         );
         queryClient.invalidateQueries({
           queryKey: queryKeys.rows.lists(tableSlug),
@@ -735,29 +740,33 @@ export function TableKanbanView({
 
       const rowById = new Map(rowsState.map((row) => [row._id, row] as const));
 
-      const updates: Array<{ rowId: string; data: Record<string, unknown> }> =
-        [];
+      const updates: Array<{
+        rowId: string;
+        data: Record<string, unknown>;
+        skipLog?: boolean;
+      }> = [];
 
       const applyOrder = (ids: Array<string>, columnId: string): void => {
         ids.forEach((id, index) => {
           const row = rowById.get(id);
           if (!row) return;
           const patchData: Record<string, unknown> = {};
-          if (sourceColumn !== targetColumn && id === activeId) {
+          // true somente para o card que efetivamente muda de coluna
+          const isColumnChange = sourceColumn !== targetColumn && id === activeId;
+          if (isColumnChange) {
             patchData[fields.list!.slug] = [columnId];
           }
           if (orderSlug) {
             patchData[orderSlug] = String(index + 1);
           }
           if (Object.keys(patchData).length > 0) {
-            updates.push({ rowId: id, data: patchData });
+            // skipLog: true para updates de posição-apenas (sem mudança de coluna)
+            updates.push({ rowId: id, data: patchData, skipLog: !isColumnChange });
           }
           rowById.set(id, {
             ...row,
-            ...(sourceColumn !== targetColumn && id === activeId
-              ? { [fields.list!.slug]: [columnId] }
-              : {}),
-            ...(orderSlug ? { [orderSlug]: String(index + 1) } : {}),
+            ...(isColumnChange && { [fields.list!.slug]: [columnId] }),
+            ...(orderSlug && { [orderSlug]: String(index + 1) }),
           });
         });
       };
