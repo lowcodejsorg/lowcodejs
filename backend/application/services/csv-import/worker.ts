@@ -105,13 +105,41 @@ function buildFieldMap(
   return map;
 }
 
+function isUnsupportedImportType(fieldType: IField['type']): boolean {
+  return (
+    fieldType === E_FIELD_TYPE.RELATIONSHIP ||
+    fieldType === E_FIELD_TYPE.USER ||
+    fieldType === E_FIELD_TYPE.FILE ||
+    fieldType === E_FIELD_TYPE.FIELD_GROUP
+  );
+}
+
+function isArrayFieldType(fieldType: IField['type']): boolean {
+  return (
+    fieldType === E_FIELD_TYPE.DROPDOWN || fieldType === E_FIELD_TYPE.CATEGORY
+  );
+}
+
 function coerceValue(raw: string, field: IField): unknown {
+  // RELATIONSHIP, USER, FILE, FIELD_GROUP são exportados como display names /
+  // filenames — não há como reconstituir os ObjectIDs no import. Retorna
+  // undefined para que campos não-obrigatórios sejam ignorados.
+  if (isUnsupportedImportType(field.type)) return undefined;
+
   if (raw === '') return undefined;
 
   if (field.type === E_FIELD_TYPE.DATE) {
     const parsed = new Date(raw);
     if (!isNaN(parsed.getTime())) return parsed;
     return raw;
+  }
+
+  // DROPDOWN e CATEGORY são exportados como "valor1; valor2" — reconstrói array.
+  if (isArrayFieldType(field.type)) {
+    return raw
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
   }
 
   if (field.format === E_FIELD_FORMAT.INTEGER) {
