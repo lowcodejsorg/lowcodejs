@@ -34,7 +34,11 @@ export const TableRowImportCsvTemplateSchema: FastifySchema = {
     required: ['slug'],
   },
   response: {
-    200: { description: 'Arquivo CSV template', type: 'string', format: 'binary' },
+    200: {
+      description: 'Arquivo CSV template',
+      type: 'string',
+      format: 'binary',
+    },
     401: {
       ...ERROR_SHAPE,
       properties: {
@@ -67,12 +71,6 @@ export const TableRowImportCsvSchema: FastifySchema = {
     required: ['slug'],
   },
   consumes: ['multipart/form-data'],
-  body: {
-    type: 'object',
-    properties: {
-      file: { type: 'string', format: 'binary' },
-    },
-  },
   response: {
     202: {
       type: 'object',
