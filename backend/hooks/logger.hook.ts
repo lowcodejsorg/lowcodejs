@@ -233,6 +233,7 @@ export async function LoggerUserActionHook(
 
     // Não loga operações de reordenação kanban (posicionamento sem mudança de coluna).
     // Frontend envia X-Skip-Log: true em updates que só alteram `ordem-kanban`.
+
     if (request.headers['x-skip-log']) return;
 
     const payload = {

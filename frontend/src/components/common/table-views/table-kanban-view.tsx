@@ -630,7 +630,11 @@ export function TableKanbanView({
 
   const updateRowsOrder = React.useCallback(
     async (
-      updates: Array<{ rowId: string; data: Record<string, unknown>; skipLog?: boolean }>,
+      updates: Array<{
+        rowId: string;
+        data: Record<string, unknown>;
+        skipLog?: boolean;
+      }>,
     ): Promise<void> => {
       try {
         await Promise.all(
@@ -752,7 +756,8 @@ export function TableKanbanView({
           if (!row) return;
           const patchData: Record<string, unknown> = {};
           // true somente para o card que efetivamente muda de coluna
-          const isColumnChange = sourceColumn !== targetColumn && id === activeId;
+          const isColumnChange =
+            sourceColumn !== targetColumn && id === activeId;
           if (isColumnChange) {
             patchData[fields.list!.slug] = [columnId];
           }
@@ -761,7 +766,11 @@ export function TableKanbanView({
           }
           if (Object.keys(patchData).length > 0) {
             // skipLog: true para updates de posição-apenas (sem mudança de coluna)
-            updates.push({ rowId: id, data: patchData, skipLog: !isColumnChange });
+            updates.push({
+              rowId: id,
+              data: patchData,
+              skipLog: !isColumnChange,
+            });
           }
           rowById.set(id, {
             ...row,
