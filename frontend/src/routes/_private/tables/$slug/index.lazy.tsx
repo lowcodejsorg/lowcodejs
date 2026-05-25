@@ -9,8 +9,8 @@ import type { AxiosError } from 'axios';
 import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
 
-import { ImportCsvDialog } from './-import-csv-dialog';
 import { RowEmptyTrashDialog } from './-empty-trash-dialog';
+import { ImportCsvDialog } from './-import-csv-dialog';
 import { TableConfigurationDropdown } from './-table-configuration';
 
 import { ChatSidebar } from '@/components/common/chat/chat-sidebar';
@@ -290,9 +290,7 @@ function RouteComponent(): React.JSX.Element {
               }
             />
           )}
-          {canExportCsv && (
-            <ImportCsvDialog slug={slug} />
-          )}
+          {canExportCsv && <ImportCsvDialog slug={slug} />}
           <TableConfigurationDropdown tableSlug={slug} />
           {aiAssistantEnabled && (
             <ChatTrigger

@@ -2,7 +2,10 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { buildCsvFilename } from '@application/core/csv/csv-filename';
-import { type CsvField, buildCsvStream } from '@application/core/csv/csv-stream';
+import {
+  type CsvField,
+  buildCsvStream,
+} from '@application/core/csv/csv-stream';
 import { E_ROLE } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { RoleMiddleware } from '@application/middlewares/role.middleware';
@@ -29,7 +32,9 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const params = ImportCsvParamsValidator.parse(request.params);
 
-    const tableRepo = getInstanceByToken<TableContractRepository>(TableMongooseRepository);
+    const tableRepo = getInstanceByToken<TableContractRepository>(
+      TableMongooseRepository,
+    );
     const table = await tableRepo.findBySlug(params.slug);
 
     if (!table) {
@@ -46,7 +51,9 @@ export default class {
       (f): CsvField => ({ label: f.name, value: f.slug }),
     );
 
-    const source = (async function* (): AsyncGenerator<Record<string, unknown>> {})();
+    const source = (async function* (): AsyncGenerator<
+      Record<string, unknown>
+    > {})();
 
     const stream = buildCsvStream({ source, fields: csvFields });
     const filename = buildCsvFilename('template-' + params.slug);

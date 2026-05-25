@@ -132,9 +132,12 @@ export function initCsvImportSocket(
 
   function storeResult(jobId: string, result: StoredFinalEvent): void {
     results.set(jobId, result);
-    setTimeout((): void => {
-      results.delete(jobId);
-    }, 10 * 60 * 1000);
+    setTimeout(
+      (): void => {
+        results.delete(jobId);
+      },
+      10 * 60 * 1000,
+    );
   }
 
   return { namespace, storeResult };

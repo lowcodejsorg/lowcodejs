@@ -20,9 +20,9 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useCsvImportSocket } from '@/hooks/use-csv-import-socket';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useTableRowsImportCsv } from '@/hooks/tanstack-query/use-table-rows-import-csv';
+import { useCsvImportSocket } from '@/hooks/use-csv-import-socket';
 import { downloadCsvFromApi } from '@/lib/csv-export';
 import { QueryClient } from '@/lib/query-client';
 import { toastSuccess } from '@/lib/toast';
@@ -225,9 +225,7 @@ export function ImportCsvDialog({ slug }: Props): React.JSX.Element {
             </Button>
           )}
 
-          {isDone && (
-            <Button onClick={handleReset}>Fechar</Button>
-          )}
+          {isDone && <Button onClick={handleReset}>Fechar</Button>}
         </DialogFooter>
       </DialogContent>
     </Dialog>

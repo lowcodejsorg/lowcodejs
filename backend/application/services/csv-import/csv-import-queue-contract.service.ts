@@ -7,7 +7,8 @@ export const CSV_IMPORT_JOB = {
   IMPORT: 'import',
 } as const;
 
-export type CsvImportJobName = (typeof CSV_IMPORT_JOB)[keyof typeof CSV_IMPORT_JOB];
+export type CsvImportJobName =
+  (typeof CSV_IMPORT_JOB)[keyof typeof CSV_IMPORT_JOB];
 
 export type CsvImportJobPayload = {
   slug: string;
