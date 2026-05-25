@@ -388,3 +388,10 @@ Composes:
   `tanstack-query`, `tanstack-table`, `tanstack-form`, `tanstack-start`,
   `shadcn`, `fly-drive`), `plano-de-testes.md`, `doc-soft.md` e
   `changelog-separacao-camadas.md`.
+
+---
+
+## Licença
+
+Distribuído sob a licença [MIT](LICENSE).  
+Copyright © 2024-2026 [Lowcodejs.org Contributors](https://lowcodejs.org).
