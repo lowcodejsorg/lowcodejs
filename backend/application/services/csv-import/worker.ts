@@ -26,6 +26,7 @@ import {
   type CsvImportCompletedEvent,
   type CsvImportErrorEvent,
   type CsvImportProgressEvent,
+  type CsvImportSocketInit,
 } from '@application/resources/table-rows/import-csv/import-csv.socket';
 import type { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { createBullMQConnection } from '@config/redis.config';
@@ -42,6 +43,7 @@ const PROGRESS_INTERVAL = 100;
 
 type WorkerDeps = {
   namespace: Namespace;
+  storeResult: CsvImportSocketInit['storeResult'];
   tableRepository: TableContractRepository;
   rowRepository: RowContractRepository;
   rowPasswordService: RowPasswordContractService;
@@ -68,7 +70,10 @@ function parseCsv(csvContent: string): Promise<Array<Record<string, string>>> {
   });
 }
 
-function buildFieldMap(headers: string[], fields: IField[]): Map<string, IField> {
+function buildFieldMap(
+  headers: string[],
+  fields: IField[],
+): Map<string, IField> {
   const map = new Map<string, IField>();
 
   for (const header of headers) {
@@ -140,6 +145,7 @@ async function processImportJob(
       message: 'Tabela não encontrada',
       cause: 'TABLE_NOT_FOUND',
     };
+    deps.storeResult(jobId, { kind: 'error', event: errorEvt });
     deps.namespace.to(room).emit(CSV_IMPORT_EVENT.ERROR, errorEvt);
     return;
   }
@@ -152,6 +158,7 @@ async function processImportJob(
       message: `Arquivo excede ${IMPORT_CSV_LIMIT.toLocaleString('pt-BR')} linhas`,
       cause: 'IMPORT_LIMIT_EXCEEDED',
     };
+    deps.storeResult(jobId, { kind: 'error', event: errorEvt });
     deps.namespace.to(room).emit(CSV_IMPORT_EVENT.ERROR, errorEvt);
     return;
   }
@@ -223,10 +230,13 @@ async function processImportJob(
     skipped,
     total,
   };
+  deps.storeResult(jobId, { kind: 'completed', event: completedEvt });
   deps.namespace.to(room).emit(CSV_IMPORT_EVENT.COMPLETED, completedEvt);
 }
 
-export function startCsvImportWorker(deps: WorkerDeps): Worker<CsvImportJobPayload> {
+export function startCsvImportWorker(
+  deps: WorkerDeps,
+): Worker<CsvImportJobPayload> {
   if (cachedWorker) return cachedWorker;
 
   const worker = new Worker<CsvImportJobPayload>(

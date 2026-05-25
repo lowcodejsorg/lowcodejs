@@ -120,15 +120,22 @@ async function start(): Promise<void> {
     startEmailWorker({ emailService });
     console.info('Email worker started');
 
-    const csvImportNamespace = initCsvImportSocket(io, jwtDecode);
+    const { namespace: csvImportNamespace, storeResult: csvImportStoreResult } =
+      initCsvImportSocket(io, jwtDecode);
     console.info('Socket.IO csv-import namespace initialized');
 
-    const csvTableRepository = getInstanceByToken<TableContractRepository>(TableMongooseRepository);
-    const csvRowRepository = getInstanceByToken<RowContractRepository>(RowMongooseRepository);
-    const csvRowPasswordService = getInstanceByToken<RowPasswordContractService>(BcryptRowPasswordService);
+    const csvTableRepository = getInstanceByToken<TableContractRepository>(
+      TableMongooseRepository,
+    );
+    const csvRowRepository = getInstanceByToken<RowContractRepository>(
+      RowMongooseRepository,
+    );
+    const csvRowPasswordService =
+      getInstanceByToken<RowPasswordContractService>(BcryptRowPasswordService);
 
     startCsvImportWorker({
       namespace: csvImportNamespace,
+      storeResult: csvImportStoreResult,
       tableRepository: csvTableRepository,
       rowRepository: csvRowRepository,
       rowPasswordService: csvRowPasswordService,
