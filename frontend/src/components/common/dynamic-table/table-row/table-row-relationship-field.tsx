@@ -43,6 +43,7 @@ import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow, ITable, SearchableOption } from '@/lib/interfaces';
+import { resolveRelationshipLabel } from '@/lib/relationship-label';
 import {
   buildCreateRowDefaultValues,
   buildFieldValidator,
@@ -383,9 +384,8 @@ export function TableRowRelationshipField({
     );
   }
 
-  const getRowLabel = (row: IRow): string => {
-    return String(row[relConfig.field.slug] ?? row._id);
-  };
+  const getRowLabel = (row: IRow): string =>
+    resolveRelationshipLabel(row, relConfig);
 
   const handleValueChange = (newValue: IRow | Array<IRow> | null): void => {
     if (isMultiple) {
@@ -536,9 +536,7 @@ export function TableRowRelationshipField({
               onValueChange={handleValueChange}
               inputValue={searchQuery}
               onInputValueChange={setSearchQuery}
-              itemToStringLabel={(row: IRow) =>
-                String(row[relConfig.field.slug] ?? row._id)
-              }
+              itemToStringLabel={(row: IRow) => getRowLabel(row)}
               disabled={disabled}
             >
               <ComboboxChips
@@ -556,11 +554,9 @@ export function TableRowRelationshipField({
                         {values.slice(0, 2).map((row) => (
                           <ComboboxChip
                             key={row._id}
-                            aria-label={String(
-                              row[relConfig.field.slug] ?? row._id,
-                            )}
+                            aria-label={getRowLabel(row)}
                           >
-                            {String(row[relConfig.field.slug] ?? row._id)}
+                            {getRowLabel(row)}
                           </ComboboxChip>
                         ))}
                         {values.length > 2 && (
@@ -589,7 +585,7 @@ export function TableRowRelationshipField({
                           key={row._id}
                           value={row}
                         >
-                          {String(row[relConfig.field.slug] ?? row._id)}
+                          {getRowLabel(row)}
                         </ComboboxItem>
                       )}
                     </ComboboxList>
@@ -640,9 +636,7 @@ export function TableRowRelationshipField({
             onValueChange={handleValueChange}
             inputValue={singleInputValue}
             onInputValueChange={setSearchQuery}
-            itemToStringLabel={(row: IRow) =>
-              String(row[relConfig.field.slug] ?? row._id)
-            }
+            itemToStringLabel={(row: IRow) => getRowLabel(row)}
             disabled={disabled}
           >
             <ComboboxInput
@@ -677,7 +671,7 @@ export function TableRowRelationshipField({
                         key={row._id}
                         value={row}
                       >
-                        {String(row[relConfig.field.slug] ?? row._id)}
+                        {getRowLabel(row)}
                       </ComboboxItem>
                     )}
                   </ComboboxList>

@@ -368,6 +368,11 @@ const CategorySchema = z.object({
   children: z.array(z.unknown()).default([]),
 });
 
+const RelationshipLabelPartSchema = z.object({
+  path: z.string().trim().min(1),
+  label: z.string().trim().optional(),
+});
+
 const RelationshipSchema = z.object({
   table: z.object({
     _id: z.string().trim(),
@@ -378,6 +383,9 @@ const RelationshipSchema = z.object({
     slug: z.string().trim(),
   }),
   order: z.enum(['asc', 'desc']).default('asc'),
+  customLabel: z.boolean().default(false),
+  labelParts: z.array(RelationshipLabelPartSchema).default([]),
+  labelSeparator: z.string().default(' - '),
 });
 
 const DropdownSchema = z.object({

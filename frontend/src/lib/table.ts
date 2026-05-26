@@ -9,6 +9,7 @@ import type {
   IUser,
   SearchableOption,
 } from './interfaces';
+import { resolveRelationshipLabel } from './relationship-label';
 
 export function getDropdownItem(
   items: Array<IDropdown>,
@@ -196,11 +197,10 @@ export function buildUpdateRowDefaultValues(
       case E_FIELD_TYPE.RELATIONSHIP: {
         const rows = toArray<IRow>(value);
         const relConfig = field.relationship;
-        const labelField = relConfig?.field?.slug ?? '_id';
 
         defaults[field.slug] = rows.map((row) => ({
           value: row._id,
-          label: String(row[labelField] ?? row._id),
+          label: resolveRelationshipLabel(row, relConfig),
         }));
         break;
       }

@@ -1,6 +1,7 @@
 import { TableRowBadgeList } from './table-row-badge-list';
 
 import type { IField, IRow } from '@/lib/interfaces';
+import { resolveRelationshipLabel } from '@/lib/relationship-label';
 
 interface RelationshipItem {
   _id: string;
@@ -26,17 +27,16 @@ export function TableRowRelationshipCell({
       />
     );
   }
-  const relationshipFieldSlug = relConfig.field.slug;
   const tableSlug = relConfig.table?.slug ?? null;
 
   const rawValues = Array.from(row[field.slug] ?? []);
 
   const values = rawValues.map<RelationshipItem>((item) => {
     if (typeof item === 'object' && item !== null) {
-      const obj = item as Record<string, string>;
+      const obj = item as IRow;
       return {
-        _id: obj._id ?? '',
-        label: obj[relationshipFieldSlug] ?? String(obj._id ?? ''),
+        _id: String(obj._id ?? ''),
+        label: resolveRelationshipLabel(obj, relConfig),
         tableSlug,
       };
     }
