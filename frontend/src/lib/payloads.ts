@@ -179,6 +179,9 @@ export type FieldConfigurationPayload = {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
     order: 'asc' | 'desc';
+    customLabel?: boolean;
+    labelParts?: Array<{ path: string; label?: string }>;
+    labelSeparator?: string;
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
@@ -206,6 +209,9 @@ export type FieldCreatePayload = {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
     order: 'asc' | 'desc';
+    customLabel?: boolean;
+    labelParts?: Array<{ path: string; label?: string }>;
+    labelSeparator?: string;
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;
@@ -234,6 +240,9 @@ export type FieldUpdatePayload = {
     table: { _id: string; slug: string };
     field: { _id: string; slug: string };
     order: 'asc' | 'desc';
+    customLabel?: boolean;
+    labelParts?: Array<{ path: string; label?: string }>;
+    labelSeparator?: string;
   } | null;
   dropdown?: Array<string>;
   allowCustomDropdownOptions?: boolean;

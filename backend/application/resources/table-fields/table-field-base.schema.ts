@@ -8,6 +8,11 @@ const Category = z.object({
   children: z.array(z.unknown()).default([]), // aceita qualquer coisa
 });
 
+const RelationshipLabelPart = z.object({
+  path: z.string().trim().min(1),
+  label: z.string().trim().optional(),
+});
+
 const Relationship = z.object({
   table: z.object({
     _id: z.string().trim(),
@@ -18,6 +23,9 @@ const Relationship = z.object({
     slug: z.string().trim(),
   }),
   order: z.enum(['asc', 'desc']).default('asc'),
+  customLabel: z.boolean().optional(),
+  labelParts: z.array(RelationshipLabelPart).optional(),
+  labelSeparator: z.string().optional(),
 });
 
 const Dropdown = z.object({

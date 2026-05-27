@@ -188,10 +188,29 @@ export type IDropdown = {
   color: string | null;
 };
 
+export type IRelationshipLabelPart = {
+  /**
+   * Caminho separado por pontos, relativo à tabela relacionada.
+   * Ex: "nome", "categoria.nome", "fornecedor.cidade.uf".
+   */
+  path: string;
+  /** Rótulo amigável do caminho (para exibição na UI de configuração). */
+  label?: string;
+};
+
 export type IFieldConfigurationRelationship = {
   table: Pick<ITable, '_id' | 'slug'>;
   field: Pick<IField, '_id' | 'slug'>;
   order: 'asc' | 'desc';
+  /**
+   * Quando true, o label das opções é composto por `labelParts` + `labelSeparator`.
+   * Quando false/ausente, mantém o comportamento legado (label = `field.slug`).
+   */
+  customLabel?: boolean;
+  /** Lista ordenada de caminhos que compõem o label customizado. */
+  labelParts?: Array<IRelationshipLabelPart>;
+  /** Separador usado entre os `labelParts`. Default: " - ". */
+  labelSeparator?: string;
 };
 
 export type IFieldConfigurationGroup = {
