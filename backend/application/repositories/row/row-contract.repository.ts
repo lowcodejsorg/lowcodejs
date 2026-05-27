@@ -138,4 +138,18 @@ export abstract class RowContractRepository {
     row: Record<string, unknown>,
     creator?: string,
   ): Promise<IRow>;
+
+  // ── Resolver helpers (csv-import) ─────────────────────────
+
+  /**
+   * Busca rows onde qualquer um dos `fieldSlugs` contenha algum dos `values`
+   * (case-insensitive). Ignora rows com `trashed: true`.
+   * Usada pelo worker de importação CSV para resolver display values de campos
+   * RELATIONSHIP de volta para ObjectIds.
+   */
+  abstract findManyByFieldValues(
+    table: RowTableContext,
+    fieldSlugs: string[],
+    values: string[],
+  ): Promise<IRow[]>;
 }

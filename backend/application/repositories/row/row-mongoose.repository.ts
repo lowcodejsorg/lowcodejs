@@ -344,12 +344,33 @@ export default class RowMongooseRepository implements RowContractRepository {
     const { _id, id, createdAt, updatedAt, ...data } = row;
     const doc = new model(data);
     if (creator) {
-      (doc as any).creator = creator;
+      (doc as any).creator = creator; // eslint-disable-line @typescript-eslint/no-explicit-any
     }
-    const result = await doc.collection.insertOne((doc as any).toObject());
+    const result = await doc.collection.insertOne((doc as any).toObject()); // eslint-disable-line @typescript-eslint/no-explicit-any
     return {
-      ...(doc as any).toObject(),
+      ...(doc as any).toObject(), // eslint-disable-line @typescript-eslint/no-explicit-any
       _id: result.insertedId.toString(),
     } as IRow;
+  }
+
+  // ── Resolver helpers (csv-import) ─────────────────────────
+
+  async findManyByFieldValues(
+    table: RowTableContext,
+    fieldSlugs: string[],
+    values: string[],
+  ): Promise<IRow[]> {
+    if (fieldSlugs.length === 0 || values.length === 0) return [];
+
+    const model = await this.getModel(table);
+    const orClauses = fieldSlugs.map((slug) => ({
+      [slug]: { $in: values },
+    }));
+
+    const docs = await model
+      .find({ $or: orClauses, trashed: { $ne: true } })
+      .lean();
+
+    return docs.map((doc) => this.transformRow(doc));
   }
 }
