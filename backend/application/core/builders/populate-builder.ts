@@ -26,10 +26,19 @@ export function getRelationship(fields: IField[] = []): IField[] {
   );
 }
 
+/**
+ * Profundidade maxima de populate aninhado de relacionamentos.
+ * Limita o quanto navegamos em relacionamentos-de-relacionamentos ao montar
+ * labels customizados (paths como `fornecedor.cidade.uf`) e, principalmente,
+ * evita recursao infinita em esquemas ciclicos (ex: localizacao.pai -> localizacao).
+ */
+const MAX_RELATIONSHIP_DEPTH = 5;
+
 export async function buildPopulate(
   fields?: IField[],
   groups?: IGroupConfiguration[],
   conn?: mongoose.Connection,
+  depth: number = MAX_RELATIONSHIP_DEPTH,
 ): Promise<mongoose.PopulateOptions[]> {
   const relacionamentos = getRelationship(fields);
   const populate = [];
@@ -83,12 +92,12 @@ export async function buildPopulate(
         relationshipTable = await Table.findOne({
           _id: relationshipTableId,
           trashed: { $ne: true },
-        });
+        }).populate(['fields', 'groups.fields']);
       } else if (relationshipTableSlug) {
         relationshipTable = await Table.findOne({
           slug: relationshipTableSlug,
           trashed: { $ne: true },
-        });
+        }).populate(['fields', 'groups.fields']);
       }
 
       if (relationshipTable && conn) {
@@ -102,14 +111,18 @@ export async function buildPopulate(
           conn,
         );
 
-        const relationshipFields = getRelationship(
-          relationshipTable?.fields ?? [],
-        );
-        const relationshipPopulate = await buildPopulate(
-          relationshipFields,
-          relationshipTable?.groups ?? [],
-          conn,
-        );
+        let relationshipPopulate: mongoose.PopulateOptions[] = [];
+        if (depth > 1) {
+          const relationshipFields = getRelationship(
+            relationshipTable?.fields ?? [],
+          );
+          relationshipPopulate = await buildPopulate(
+            relationshipFields,
+            relationshipTable?.groups ?? [],
+            conn,
+            depth - 1,
+          );
+        }
 
         populate.push({
           path: field.slug,

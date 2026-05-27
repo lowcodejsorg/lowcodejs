@@ -6,6 +6,16 @@ import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@application/core/entity.core';
 
 type Entity = Merge<Omit<Core, '_id'>, mongoose.Document>;
 
+const RelationshipLabelPart = new mongoose.Schema(
+  {
+    path: { type: String, required: true },
+    label: { type: String, default: null },
+  },
+  {
+    _id: false,
+  },
+);
+
 const Relationship = new mongoose.Schema(
   {
     table: {
@@ -20,6 +30,18 @@ const Relationship = new mongoose.Schema(
       type: String,
       enum: ['asc', 'desc'],
       default: 'asc',
+    },
+    customLabel: {
+      type: Boolean,
+      default: false,
+    },
+    labelParts: {
+      type: [RelationshipLabelPart],
+      default: [],
+    },
+    labelSeparator: {
+      type: String,
+      default: ' - ',
     },
   },
   {

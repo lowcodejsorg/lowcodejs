@@ -184,6 +184,28 @@ export const TableFieldCreateSchema: FastifySchema = {
             default: 'asc',
             description: 'Sort order for relationship data',
           },
+          customLabel: {
+            type: 'boolean',
+            default: false,
+            description: 'Enable composite/custom label for select options',
+          },
+          labelParts: {
+            type: 'array',
+            description: 'Ordered dot-paths composing the custom label',
+            items: {
+              type: 'object',
+              required: ['path'],
+              properties: {
+                path: { type: 'string' },
+                label: { type: 'string' },
+              },
+            },
+          },
+          labelSeparator: {
+            type: 'string',
+            default: ' - ',
+            description: 'Separator between label parts',
+          },
         },
       },
       group: {
@@ -351,6 +373,18 @@ export const TableFieldCreateSchema: FastifySchema = {
               },
             },
             order: { type: 'string', enum: ['asc', 'desc'] },
+            customLabel: { type: 'boolean' },
+            labelParts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string' },
+                  label: { type: 'string' },
+                },
+              },
+            },
+            labelSeparator: { type: 'string' },
           },
         },
         category: {
