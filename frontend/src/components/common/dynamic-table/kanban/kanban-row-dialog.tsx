@@ -75,6 +75,7 @@ export function KanbanRowDialog({
   tableSlug,
   table,
   fields,
+  initialEditTarget,
 }: {
   row: IRow | null;
   onClose: () => void;
@@ -84,6 +85,7 @@ export function KanbanRowDialog({
   tableSlug: string;
   table: ITable;
   fields: FieldMap;
+  initialEditTarget?: 'members' | 'start' | 'due' | 'list' | null;
 }): React.JSX.Element | null {
   const auth = useAuthStore((s) => s.user);
   const { data: profile } = useProfileRead();
@@ -92,7 +94,7 @@ export function KanbanRowDialog({
   const currentUserId = auth?._id ?? '';
   const [editTarget, setEditTarget] = React.useState<
     'members' | 'start' | 'due' | 'list' | null
-  >(null);
+  >(initialEditTarget ?? null);
   const [taskTitle, setTaskTitle] = React.useState('');
   const [editingTaskIndex, setEditingTaskIndex] = React.useState<number | null>(
     null,
@@ -114,6 +116,10 @@ export function KanbanRowDialog({
     null,
   );
   const [isAddingAttachments, setIsAddingAttachments] = React.useState(false);
+
+  React.useEffect(() => {
+    setEditTarget(initialEditTarget ?? null);
+  }, [row?._id, initialEditTarget]);
   const [attachmentUploadFiles, setAttachmentUploadFiles] = React.useState<
     Array<File>
   >([]);
