@@ -70,13 +70,25 @@ describe('buildRelationshipResolvers', () => {
 
   it('resolve display value único para ObjectId', async () => {
     const relatedTable = await tableRepo.create(PRODUTOS_TABLE_PAYLOAD);
-    const row = await rowRepo.create({ table: relatedTable, data: { name: 'Caneta' } });
+    const row = await rowRepo.create({
+      table: relatedTable,
+      data: { name: 'Caneta' },
+    });
 
-    const field: IField = { ...BASE_REL_FIELD, slug: 'produto', _id: 'f-produto' };
+    const field: IField = {
+      ...BASE_REL_FIELD,
+      slug: 'produto',
+      _id: 'f-produto',
+    };
     const fieldMap = new Map<string, IField>([['produto', field]]);
     const csvRows: Record<string, string>[] = [{ produto: 'Caneta' }];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     const resolver = resolvers.get('produto');
     expect(resolver).toBeDefined();
@@ -87,14 +99,29 @@ describe('buildRelationshipResolvers', () => {
 
   it('resolve múltiplos itens separados por ";"', async () => {
     const relatedTable = await tableRepo.create(PRODUTOS_TABLE_PAYLOAD);
-    const row1 = await rowRepo.create({ table: relatedTable, data: { name: 'Caneta' } });
-    const row2 = await rowRepo.create({ table: relatedTable, data: { name: 'Lápis' } });
+    const row1 = await rowRepo.create({
+      table: relatedTable,
+      data: { name: 'Caneta' },
+    });
+    const row2 = await rowRepo.create({
+      table: relatedTable,
+      data: { name: 'Lápis' },
+    });
 
-    const field: IField = { ...BASE_REL_FIELD, slug: 'produto', _id: 'f-produto' };
+    const field: IField = {
+      ...BASE_REL_FIELD,
+      slug: 'produto',
+      _id: 'f-produto',
+    };
     const fieldMap = new Map<string, IField>([['produto', field]]);
     const csvRows: Record<string, string>[] = [{ produto: 'Caneta; Lápis' }];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     const resolver = resolvers.get('produto');
     expect(resolver).toBeDefined();
@@ -110,11 +137,20 @@ describe('buildRelationshipResolvers', () => {
     await tableRepo.create(PRODUTOS_TABLE_PAYLOAD);
 
     const fakeId = '507f1f77bcf86cd799439011';
-    const field: IField = { ...BASE_REL_FIELD, slug: 'produto', _id: 'f-produto' };
+    const field: IField = {
+      ...BASE_REL_FIELD,
+      slug: 'produto',
+      _id: 'f-produto',
+    };
     const fieldMap = new Map<string, IField>([['produto', field]]);
     const csvRows: Record<string, string>[] = [{ produto: fakeId }];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     const resolver = resolvers.get('produto');
     expect(resolver).toBeDefined();
@@ -127,11 +163,20 @@ describe('buildRelationshipResolvers', () => {
     const relatedTable = await tableRepo.create(PRODUTOS_TABLE_PAYLOAD);
     await rowRepo.create({ table: relatedTable, data: { name: 'Caneta' } });
 
-    const field: IField = { ...BASE_REL_FIELD, slug: 'produto', _id: 'f-produto' };
+    const field: IField = {
+      ...BASE_REL_FIELD,
+      slug: 'produto',
+      _id: 'f-produto',
+    };
     const fieldMap = new Map<string, IField>([['produto', field]]);
     const csvRows: Record<string, string>[] = [{ produto: 'Inexistente' }];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     const resolver = resolvers.get('produto');
     expect(resolver).toBeDefined();
@@ -143,11 +188,20 @@ describe('buildRelationshipResolvers', () => {
   it('retorna resolver vazio quando tabela relacionada não existe no banco', async () => {
     // tableRepo está vazio — 'produtos' não cadastrado
 
-    const field: IField = { ...BASE_REL_FIELD, slug: 'produto', _id: 'f-produto' };
+    const field: IField = {
+      ...BASE_REL_FIELD,
+      slug: 'produto',
+      _id: 'f-produto',
+    };
     const fieldMap = new Map<string, IField>([['produto', field]]);
     const csvRows: Record<string, string>[] = [{ produto: 'Caneta' }];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     const resolver = resolvers.get('produto');
     expect(resolver).toBeDefined();
@@ -186,9 +240,16 @@ describe('buildRelationshipResolvers', () => {
     };
 
     const fieldMap = new Map<string, IField>([['responsavel', userField]]);
-    const csvRows: Record<string, string>[] = [{ responsavel: 'user@example.com' }];
+    const csvRows: Record<string, string>[] = [
+      { responsavel: 'user@example.com' },
+    ];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     // USER não gera resolver — worker.ts coerceValue retornará undefined via isUnsupportedImportType
     expect(resolvers.has('responsavel')).toBe(false);
@@ -204,21 +265,38 @@ describe('buildRelationshipResolvers', () => {
     const fieldMap = new Map<string, IField>([['produto', field]]);
     const csvRows: Record<string, string>[] = [{ produto: 'Caneta' }];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     expect(resolvers.has('produto')).toBe(false);
   });
 
   it('resolve com lookup case-insensitive no mapa', async () => {
     const relatedTable = await tableRepo.create(PRODUTOS_TABLE_PAYLOAD);
-    const row = await rowRepo.create({ table: relatedTable, data: { name: 'Caneta' } });
+    const row = await rowRepo.create({
+      table: relatedTable,
+      data: { name: 'Caneta' },
+    });
 
-    const field: IField = { ...BASE_REL_FIELD, slug: 'produto', _id: 'f-produto' };
+    const field: IField = {
+      ...BASE_REL_FIELD,
+      slug: 'produto',
+      _id: 'f-produto',
+    };
     const fieldMap = new Map<string, IField>([['produto', field]]);
     // CSV exportado com capitalização original; resolver usa toLowerCase no mapa
     const csvRows: Record<string, string>[] = [{ produto: 'Caneta' }];
 
-    const resolvers = await buildRelationshipResolvers(csvRows, fieldMap, tableRepo, rowRepo);
+    const resolvers = await buildRelationshipResolvers(
+      csvRows,
+      fieldMap,
+      tableRepo,
+      rowRepo,
+    );
 
     const resolver = resolvers.get('produto');
     expect(resolver).toBeDefined();
