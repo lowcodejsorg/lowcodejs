@@ -89,18 +89,16 @@ export function FillButton({ onFillFields }: Props): React.JSX.Element {
 
   return (
     <>
-      <div className="px-2 pt-2">
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="gap-2 cursor-pointer"
-          onClick={() => setOpen(true)}
-        >
-          <ScanTextIcon className="size-4" />
-          Transcrever documento
-        </Button>
-      </div>
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="gap-2 cursor-pointer"
+        onClick={() => setOpen(true)}
+      >
+        <ScanTextIcon className="size-4" />
+        Transcrever documento
+      </Button>
 
       <Dialog
         open={open}
