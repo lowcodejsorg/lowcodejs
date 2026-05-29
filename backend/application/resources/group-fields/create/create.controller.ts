@@ -39,7 +39,11 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = GroupFieldCreateBodyValidator.parse(request.body);
     const params = GroupFieldCreateParamsValidator.parse(request.params);
-    const result = await this.useCase.execute({ ...payload, ...params });
+    const result = await this.useCase.execute({
+      ...payload,
+      tableSlug: params.slug,
+      groupSlug: params.groupSlug,
+    });
 
     if (result.isLeft()) {
       const error = result.value;

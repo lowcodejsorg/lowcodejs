@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { FieldTitle } from '@/components/common/field-title';
 import { cn } from '@/lib/utils';
 
 interface DataTableColumnHeaderProps {
@@ -42,7 +43,7 @@ export function DataTableColumnHeader({
   const canPin = column && !column.columnDef.enableHiding === false;
 
   if (!orderKey && !column) {
-    return <span>{title}</span>;
+    return <FieldTitle value={title} />;
   }
 
   let currentOrder: 'asc' | 'desc' | undefined = undefined;
@@ -71,10 +72,10 @@ export function DataTableColumnHeader({
             if (canNavigate) onTitleClick();
           }}
         >
-          {title}
+          <FieldTitle value={title} />
         </Button>
       )}
-      {!onTitleClick && <span>{title}</span>}
+      {!onTitleClick && <FieldTitle value={title} />}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

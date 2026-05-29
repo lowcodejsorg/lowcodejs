@@ -14,6 +14,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { FieldTitle } from '@/components/common/field-title';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
@@ -42,7 +43,7 @@ function RenderMosaicCell({
     return (
       <div className="flex flex-col gap-0.5">
         <span className="text-xs font-medium text-muted-foreground">
-          {field.name}
+          <FieldTitle value={field.name} />
         </span>
         <span className="text-muted-foreground text-sm">-</span>
       </div>
