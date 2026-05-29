@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -10,6 +9,7 @@ import {
   type IField,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { resolveFieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import {
@@ -33,7 +33,14 @@ export default class GroupFieldCreateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const tableSlug = payload.tableSlug ?? payload.slug;
+      if (!tableSlug) {
+        return left(
+          HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      const table = await this.tableRepository.findBySlug(tableSlug);
 
       if (!table)
         return left(
@@ -64,7 +71,20 @@ export default class GroupFieldCreateUseCase {
         );
       }
 
-      const slug = slugify(payload.name, { lower: true, trim: true });
+      const resolvedSlug = resolveFieldSlug({
+        name: payload.name,
+        slug: payload.tableSlug ? payload.slug : undefined,
+      });
+
+      if (resolvedSlug.error) {
+        return left(
+          HTTPException.BadRequest('Slug inválido', 'INVALID_FIELD_SLUG', {
+            slug: resolvedSlug.error,
+          }),
+        );
+      }
+
+      const slug = resolvedSlug.slug;
 
       // Verifica se o campo já existe no grupo
       const existFieldInGroup = targetGroup.fields?.find(
@@ -76,7 +96,7 @@ export default class GroupFieldCreateUseCase {
           HTTPException.Conflict(
             'Campo já existe no grupo',
             'FIELD_ALREADY_EXIST',
-            { name: 'Campo já existe no grupo' },
+            { slug: 'Campo já existe no grupo' },
           ),
         );
       }

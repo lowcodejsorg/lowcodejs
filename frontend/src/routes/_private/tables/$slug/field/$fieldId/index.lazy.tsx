@@ -314,6 +314,7 @@ function FieldUpdateContent({
   const form = useAppForm({
     defaultValues: {
       name: data.name,
+      slug: data.slug,
       tip: data.tip ?? '',
       type: data.type,
       format: data.format ?? '',
@@ -360,6 +361,7 @@ function FieldUpdateContent({
         trashedAt?: string | null;
       } = {
         name: value.name,
+        slug: value.slug,
         tip: normalizeTip(value.tip),
         type: value.type,
         required: value.trashed ? false : value.required,
@@ -459,6 +461,7 @@ function FieldUpdateContent({
             mode={mode}
             tableSlug={slug}
             isLocked={data.locked ?? false}
+            isGroupField={Boolean(groupSlug)}
           />
         </form>
       )}

@@ -140,6 +140,7 @@ function RouteComponent(): React.JSX.Element {
 
       const payload: Partial<IField> = {
         name: value.name,
+        slug: value.slug,
         tip: normalizeTip(value.tip),
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,

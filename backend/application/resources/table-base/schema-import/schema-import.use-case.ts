@@ -19,6 +19,7 @@ import {
   type ValueOf,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { suggestUniqueFieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
@@ -201,13 +202,9 @@ export default class SchemaImportUseCase {
     const usedSlugs = new Set<string>(nativeFields.map((f) => f.slug));
 
     for (const fieldDef of tableDef.fields) {
-      const baseSlug = slugify(fieldDef.name, { lower: true, trim: true });
-      let fieldSlug = baseSlug;
-      let attempt = 1;
-      while (usedSlugs.has(fieldSlug)) {
-        attempt += 1;
-        fieldSlug = `${baseSlug}-${attempt}`;
-      }
+      const fieldSlug = suggestUniqueFieldSlug(fieldDef.name, [
+        ...usedSlugs,
+      ]);
       usedSlugs.add(fieldSlug);
 
       const payload = this.buildFieldPayload(fieldDef, fieldSlug);

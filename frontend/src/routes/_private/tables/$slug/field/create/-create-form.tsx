@@ -1,14 +1,37 @@
 import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 import z from 'zod';
 
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
+import {
+  FIELD_NAME_MAX_LENGTH,
+  FIELD_SLUG_MAX_LENGTH,
+  getFieldSlugError,
+  normalizeFieldSlug,
+} from '@/lib/field-slug';
 import type { IDropdown } from '@/lib/interfaces';
 
 export const FieldCreateSchema = z.object({
-  name: z.string().min(1, 'Nome é obrigatório').max(40),
+  name: z
+    .string()
+    .min(1, 'Título exibido é obrigatório')
+    .max(
+      FIELD_NAME_MAX_LENGTH,
+      `O título exibido deve ter no máximo ${FIELD_NAME_MAX_LENGTH} caracteres`,
+    ),
+  slug: z
+    .string()
+    .min(1, 'Slug é obrigatório')
+    .max(
+      FIELD_SLUG_MAX_LENGTH,
+      `O slug deve ter no máximo ${FIELD_SLUG_MAX_LENGTH} caracteres`,
+    )
+    .refine((value) => !getFieldSlugError(value), {
+      message: 'Use apenas letras minúsculas, números e hífens',
+    }),
   tip: z
     .string()
     .max(500, 'A dica deve ter no máximo 500 caracteres')
@@ -41,6 +64,7 @@ export type FieldCreateFormValues = z.infer<typeof FieldCreateSchema>;
 
 export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   name: '',
+  slug: '',
   tip: '',
   type: '',
   format: '',
@@ -83,6 +107,8 @@ export const CreateFieldFormFields = withForm({
   }) {
     // useStore para valores reativos do form
     const fieldType = useStore(form.store, (state) => state.values.type);
+    const fieldName = useStore(form.store, (state) => state.values.name);
+    const slugManuallyEdited = useRef(false);
     const relationshipTableSlug = useStore(
       form.store,
       (state) => state.values.relationship.tableSlug,
@@ -113,6 +139,11 @@ export const CreateFieldFormFields = withForm({
     const isEvaluation = fieldType === E_FIELD_TYPE.EVALUATION;
     const isUser = fieldType === E_FIELD_TYPE.USER;
 
+    useEffect(() => {
+      if (slugManuallyEdited.current) return;
+      form.setFieldValue('slug', normalizeFieldSlug(fieldName));
+    }, [fieldName, form]);
+
     const showMultiple =
       isDropdown ||
       isFile ||
@@ -133,21 +164,43 @@ export const CreateFieldFormFields = withForm({
           validators={{
             onChange: ({ value }) => {
               if (!value || value.trim() === '') {
-                return 'Nome é obrigatório';
+                return 'Título exibido é obrigatório';
               }
-              if (value.length > 40) {
-                return 'O nome deve ter no máximo 40 caracteres';
+              if (value.length > FIELD_NAME_MAX_LENGTH) {
+                return `O título exibido deve ter no máximo ${FIELD_NAME_MAX_LENGTH} caracteres`;
               }
               return undefined;
             },
           }}
         >
           {(field) => (
+            <field.FieldTextarea
+              label="Título exibido"
+              placeholder="Título exibido para o usuário final"
+              disabled={isPending}
+              rows={3}
+              required
+            />
+          )}
+        </form.AppField>
+
+        <form.AppField
+          name="slug"
+          validators={{
+            onChange: ({ value }) => getFieldSlugError(value),
+          }}
+        >
+          {(field) => (
             <field.FieldText
-              label="Nome"
-              placeholder="Nome do campo"
+              label="Slug"
+              placeholder="nome-slug-campo"
               disabled={isPending}
               icon={<FileTextIcon />}
+              description="Identificador técnico usado em consultas e integrações"
+              onChangeTransform={(value) => {
+                slugManuallyEdited.current = true;
+                return normalizeFieldSlug(value);
+              }}
               required
             />
           )}
