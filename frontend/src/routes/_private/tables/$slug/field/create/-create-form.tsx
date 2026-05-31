@@ -3,6 +3,7 @@ import { FileTextIcon } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import z from 'zod';
 
+import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import type { TreeNode } from '@/components/common/tree-editor/tree-list';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
@@ -12,7 +13,7 @@ import {
   getFieldSlugError,
   normalizeFieldSlug,
 } from '@/lib/field-slug';
-import type { IDropdown } from '@/lib/interfaces';
+import type { IDropdown, IRelationshipLabelPart } from '@/lib/interfaces';
 
 export const FieldCreateSchema = z.object({
   name: z
@@ -48,6 +49,9 @@ export const FieldCreateSchema = z.object({
     fieldId: z.string().default(''),
     fieldSlug: z.string().default(''),
     order: z.string().default(''),
+    customLabel: z.boolean().default(false),
+    labelParts: z.array(z.custom<IRelationshipLabelPart>()).default([]),
+    labelSeparator: z.string().default(' - '),
   }),
   category: z.array(z.custom<TreeNode>()).default([]),
   multiple: z.boolean().default(false),
@@ -78,6 +82,9 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
     fieldId: '',
     fieldSlug: '',
     order: '',
+    customLabel: false,
+    labelParts: [],
+    labelSeparator: ' - ',
   },
   category: [],
   multiple: false,
@@ -125,6 +132,18 @@ export const CreateFieldFormFields = withForm({
     const relationshipFieldSlug = useStore(
       form.store,
       (state) => state.values.relationship.fieldSlug,
+    );
+    const relationshipCustomLabel = useStore(
+      form.store,
+      (state) => state.values.relationship.customLabel,
+    );
+    const relationshipLabelParts = useStore(
+      form.store,
+      (state) => state.values.relationship.labelParts,
+    );
+    const relationshipLabelSeparator = useStore(
+      form.store,
+      (state) => state.values.relationship.labelSeparator,
     );
 
     const isTextShort = fieldType === E_FIELD_TYPE.TEXT_SHORT;
@@ -551,6 +570,33 @@ export const CreateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
+        )}
+
+        {/* Personalização do label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && (
+          <form.AppField name="relationship.customLabel">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Personalizar exibição das opções"
+                description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
+                disabled={isPending}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Compositor de label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && relationshipCustomLabel && (
+          <TableFieldRelationshipLabelComposer
+            rootTableSlug={relationshipTableSlug}
+            parts={relationshipLabelParts}
+            separator={relationshipLabelSeparator}
+            disabled={isPending}
+            onChange={(parts, separator) => {
+              form.setFieldValue('relationship.labelParts', parts);
+              form.setFieldValue('relationship.labelSeparator', separator);
+            }}
+          />
         )}
 
         {/* Campo Valor Padrão (RELATIONSHIP) */}

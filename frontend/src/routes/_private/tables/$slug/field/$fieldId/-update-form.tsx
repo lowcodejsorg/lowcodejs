@@ -2,6 +2,7 @@ import { useStore } from '@tanstack/react-form';
 import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
+import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import {
@@ -10,7 +11,11 @@ import {
   getFieldSlugError,
   normalizeFieldSlug,
 } from '@/lib/field-slug';
-import type { ICategory, IDropdown } from '@/lib/interfaces';
+import type {
+  ICategory,
+  IDropdown,
+  IRelationshipLabelPart,
+} from '@/lib/interfaces';
 
 export const FieldUpdateSchema = z.object({
   name: z
@@ -46,6 +51,9 @@ export const FieldUpdateSchema = z.object({
     fieldId: z.string().default(''),
     fieldSlug: z.string().default(''),
     order: z.string().default(''),
+    customLabel: z.boolean().default(false),
+    labelParts: z.array(z.custom<IRelationshipLabelPart>()).default([]),
+    labelSeparator: z.string().default(' - '),
   }),
   category: z.array(z.custom<ICategory>()).default([]),
   multiple: z.boolean().default(false),
@@ -77,6 +85,9 @@ export const fieldUpdateFormDefaultValues: FieldUpdateFormValues = {
     fieldId: '',
     fieldSlug: '',
     order: '',
+    customLabel: false,
+    labelParts: [],
+    labelSeparator: ' - ',
   },
   category: [],
   multiple: false,
@@ -138,6 +149,18 @@ export const UpdateFieldFormFields = withForm({
     const relationshipFieldSlug = useStore(
       form.store,
       (state) => state.values.relationship.fieldSlug,
+    );
+    const relationshipCustomLabel = useStore(
+      form.store,
+      (state) => state.values.relationship.customLabel,
+    );
+    const relationshipLabelParts = useStore(
+      form.store,
+      (state) => state.values.relationship.labelParts,
+    );
+    const relationshipLabelSeparator = useStore(
+      form.store,
+      (state) => state.values.relationship.labelSeparator,
     );
     const isTrashed = useStore(form.store, (state) => state.values.trashed);
 
@@ -495,6 +518,33 @@ export const UpdateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
+        )}
+
+        {/* Personalização do label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && (
+          <form.AppField name="relationship.customLabel">
+            {(field) => (
+              <field.FieldBooleanSwitch
+                label="Personalizar exibição das opções"
+                description="Por padrão a opção exibe apenas o campo principal. Ative para compor o label com um ou mais campos (inclusive de tabelas relacionadas) e escolher o separador."
+                disabled={isDisabled || lockAllControls}
+              />
+            )}
+          </form.AppField>
+        )}
+
+        {/* Compositor de label (relacionamento) */}
+        {isRelationship && relationshipTableSlug && relationshipCustomLabel && (
+          <TableFieldRelationshipLabelComposer
+            rootTableSlug={relationshipTableSlug}
+            parts={relationshipLabelParts}
+            separator={relationshipLabelSeparator}
+            disabled={isDisabled || lockAllControls}
+            onChange={(parts, separator) => {
+              form.setFieldValue('relationship.labelParts', parts);
+              form.setFieldValue('relationship.labelSeparator', separator);
+            }}
+          />
         )}
 
         {/* Campo Valor Padrão (RELATIONSHIP) */}

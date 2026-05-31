@@ -14,9 +14,9 @@ import React, { useState } from 'react';
 
 import { ApiEndpointsModal } from './-api-endpoints-modal';
 
-import { FieldTitle } from '@/components/common/field-title';
 import { TableFieldManagementSheet } from '@/components/common/dynamic-table/field-management/table-field-management-sheet';
 import { GroupFieldManagementSheet } from '@/components/common/dynamic-table/group-rows/group-field-management-sheet';
+import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,

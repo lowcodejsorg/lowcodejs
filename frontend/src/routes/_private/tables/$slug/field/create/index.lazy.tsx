@@ -175,6 +175,11 @@ function RouteComponent(): React.JSX.Element {
                 slug: value.relationship.fieldSlug,
               },
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+              customLabel: value.relationship.customLabel,
+              labelParts: value.relationship.customLabel
+                ? value.relationship.labelParts
+                : [],
+              labelSeparator: value.relationship.labelSeparator || ' - ',
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],

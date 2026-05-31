@@ -8,6 +8,7 @@ import {
   PinOffIcon,
 } from 'lucide-react';
 
+import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -16,7 +17,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { FieldTitle } from '@/components/common/field-title';
 import { cn } from '@/lib/utils';
 
 interface DataTableColumnHeaderProps {

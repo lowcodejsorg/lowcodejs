@@ -36,6 +36,10 @@ import {
   CSV_IMPORT_QUEUE_NAME,
   type CsvImportJobPayload,
 } from './csv-import-queue-contract.service';
+import {
+  buildRelationshipResolvers,
+  type RelationshipResolver,
+} from './relationship-resolver';
 
 export const IMPORT_CSV_LIMIT = 10_000;
 
@@ -107,7 +111,6 @@ function buildFieldMap(
 
 function isUnsupportedImportType(fieldType: IField['type']): boolean {
   return (
-    fieldType === E_FIELD_TYPE.RELATIONSHIP ||
     fieldType === E_FIELD_TYPE.USER ||
     fieldType === E_FIELD_TYPE.FILE ||
     fieldType === E_FIELD_TYPE.FIELD_GROUP
@@ -120,10 +123,22 @@ function isArrayFieldType(fieldType: IField['type']): boolean {
   );
 }
 
-function coerceValue(raw: string, field: IField): unknown {
-  // RELATIONSHIP, USER, FILE, FIELD_GROUP são exportados como display names /
-  // filenames — não há como reconstituir os ObjectIDs no import. Retorna
-  // undefined para que campos não-obrigatórios sejam ignorados.
+function coerceValue(
+  raw: string,
+  field: IField,
+  resolver?: RelationshipResolver,
+): unknown {
+  // RELATIONSHIP: resolve display values para ObjectIds via resolver pré-computado.
+  if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
+    if (raw === '') return undefined;
+    if (!resolver) return undefined;
+    const ids = resolver(raw);
+    if (ids.length === 0) return undefined;
+    return ids;
+  }
+
+  // USER, FILE, FIELD_GROUP são exportados como display names / filenames —
+  // não há como reconstituir os ObjectIDs no import. Retorna undefined.
   if (isUnsupportedImportType(field.type)) return undefined;
 
   if (raw === '') return undefined;
@@ -198,6 +213,13 @@ async function processImportJob(
   }
   const fieldMap = buildFieldMap(headers, table.fields);
 
+  const resolvers = await buildRelationshipResolvers(
+    rows,
+    fieldMap,
+    deps.tableRepository,
+    deps.rowRepository,
+  );
+
   let imported = 0;
   let skipped = 0;
   const total = rows.length;
@@ -209,7 +231,7 @@ async function processImportJob(
 
     for (const [col, field] of fieldMap) {
       const raw = row[col] ?? '';
-      payload[field.slug] = coerceValue(raw, field);
+      payload[field.slug] = coerceValue(raw, field, resolvers.get(col));
     }
 
     payload['creator'] = userId;

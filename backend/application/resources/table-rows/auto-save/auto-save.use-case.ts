@@ -41,8 +41,6 @@ export default class TableRowAutoSaveUseCase {
         fields: table.fields,
       });
 
-      console.log(draft);
-
       const fields = table.fields.filter((field) => {
         return (
           !field.native &&

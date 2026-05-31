@@ -202,9 +202,7 @@ export default class SchemaImportUseCase {
     const usedSlugs = new Set<string>(nativeFields.map((f) => f.slug));
 
     for (const fieldDef of tableDef.fields) {
-      const fieldSlug = suggestUniqueFieldSlug(fieldDef.name, [
-        ...usedSlugs,
-      ]);
+      const fieldSlug = suggestUniqueFieldSlug(fieldDef.name, [...usedSlugs]);
       usedSlugs.add(fieldSlug);
 
       const payload = this.buildFieldPayload(fieldDef, fieldSlug);

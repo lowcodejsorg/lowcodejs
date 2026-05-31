@@ -143,6 +143,18 @@ export const TableRemoveFromTrashSchema: FastifySchema = {
                     },
                   },
                   order: { type: 'string', enum: ['asc', 'desc'] },
+                  customLabel: { type: 'boolean' },
+                  labelParts: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        path: { type: 'string' },
+                        label: { type: 'string' },
+                      },
+                    },
+                  },
+                  labelSeparator: { type: 'string' },
                 },
               },
               dropdown: {

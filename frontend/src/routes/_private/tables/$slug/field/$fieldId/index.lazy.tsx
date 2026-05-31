@@ -335,6 +335,9 @@ function FieldUpdateContent({
         fieldId: data.relationship?.field?._id ?? '',
         fieldSlug: data.relationship?.field?.slug ?? '',
         order: data.relationship?.order ?? '',
+        customLabel: data.relationship?.customLabel ?? false,
+        labelParts: data.relationship?.labelParts ?? [],
+        labelSeparator: data.relationship?.labelSeparator ?? ' - ',
       },
       category: data.category ?? [],
       multiple: data.multiple,
@@ -396,6 +399,11 @@ function FieldUpdateContent({
                 slug: value.relationship.fieldSlug,
               },
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+              customLabel: value.relationship.customLabel,
+              labelParts: value.relationship.customLabel
+                ? value.relationship.labelParts
+                : [],
+              labelSeparator: value.relationship.labelSeparator || ' - ',
             }
           : null,
         category: hasCategory ? value.category : [],

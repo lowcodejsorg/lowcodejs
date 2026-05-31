@@ -153,6 +153,15 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
             Ordem:{' '}
             {data.relationship.order === 'asc' ? 'Crescente' : 'Decrescente'}
           </p>
+          {data.relationship.customLabel &&
+            (data.relationship.labelParts?.length ?? 0) > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Label personalizado:{' '}
+                {data.relationship.labelParts
+                  ?.map((part) => part.label || part.path)
+                  .join(data.relationship.labelSeparator || ' - ')}
+              </p>
+            )}
         </div>
       )}
 
