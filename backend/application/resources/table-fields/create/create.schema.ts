@@ -4,7 +4,7 @@ export const TableFieldCreateSchema: FastifySchema = {
   tags: ['Fields'],
   summary: 'Create field',
   description:
-    'Creates a new field in a table. Automatically generates slug from name and rebuilds table schema. For FIELD_GROUP type, creates a new table.',
+    'Creates a new field in a table. The display title is stored in name, while slug is the safe technical key. If slug is omitted, the API generates it from name. For FIELD_GROUP type, creates a new field group.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -24,8 +24,22 @@ export const TableFieldCreateSchema: FastifySchema = {
     properties: {
       name: {
         type: 'string',
-        description: 'Field name (will be slugified for internal use)',
-        examples: ['Full Name', 'Product Price', 'Published Date'],
+        minLength: 1,
+        maxLength: 500,
+        description: 'Field display title shown to end users',
+        examples: [
+          'Full Name',
+          'Pesquise na base do USPTO e digite os resultados encontrados na busca de anterioridade (padrão). Você tem condições?',
+        ],
+      },
+      slug: {
+        type: 'string',
+        minLength: 2,
+        maxLength: 80,
+        pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+        description:
+          'Safe technical field key. Use only lowercase letters, numbers and hyphens. If omitted, the API suggests one from name.',
+        examples: ['full-name', 'nome-slug-campo'],
       },
       type: {
         type: 'string',

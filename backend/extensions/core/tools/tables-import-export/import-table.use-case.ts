@@ -14,6 +14,10 @@ import {
   type ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import {
+  FIELD_NAME_MAX_LENGTH,
+  getFieldSlugError,
+} from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -145,6 +149,9 @@ export default class ImportTableUseCase {
       }
 
       const pkg = this.normalizePackage(content);
+      const metadataError = this.validatePackageFieldMetadata(pkg);
+      if (metadataError) return left(metadataError);
+
       if (pkg.tables.length === 0 || !pkg.tables[0].structure) {
         return left(
           HTTPException.BadRequest(
@@ -314,6 +321,123 @@ export default class ImportTableUseCase {
         ),
       );
     }
+  }
+
+  private validatePackageFieldMetadata(
+    pkg: NormalizedPackage,
+  ): HTTPException | null {
+    const validateField = (
+      field: ExportedField,
+      path: string,
+    ): HTTPException | null => {
+      if (!field.name?.trim()) {
+        return HTTPException.BadRequest(
+          'Arquivo de importação possui campo sem título',
+          'INVALID_FIELD_NAME',
+          { field: path },
+        );
+      }
+
+      if (field.name.length > FIELD_NAME_MAX_LENGTH) {
+        return HTTPException.BadRequest(
+          `Título do campo deve ter no máximo ${FIELD_NAME_MAX_LENGTH} caracteres`,
+          'INVALID_FIELD_NAME',
+          { field: path },
+        );
+      }
+
+      const slugError = getFieldSlugError(field.slug);
+      if (slugError) {
+        return HTTPException.BadRequest(
+          `Slug de campo inválido: ${slugError}`,
+          'INVALID_FIELD_SLUG',
+          { field: path, slug: field.slug },
+        );
+      }
+
+      return null;
+    };
+
+    const validateUniqueSlugs = (
+      fields: ExportedField[],
+      scope: string,
+    ): HTTPException | null => {
+      const used = new Set<string>();
+      for (const field of fields) {
+        if (used.has(field.slug)) {
+          return HTTPException.BadRequest(
+            'Arquivo de importação possui slugs de campo duplicados',
+            'DUPLICATE_FIELD_SLUGS',
+            { field: scope, slug: field.slug },
+          );
+        }
+        used.add(field.slug);
+      }
+      return null;
+    };
+
+    for (const table of pkg.tables) {
+      const structure = table.structure;
+      if (!structure) continue;
+
+      const topLevelGroupFields: ExportedField[] = (structure.groups || []).map(
+        (group) => ({
+          name: group.name,
+          slug: group.slug,
+          type: E_FIELD_TYPE.FIELD_GROUP,
+          required: false,
+          multiple: false,
+          format: null,
+          showInFilter: false,
+          showInForm: true,
+          showInDetail: true,
+          showInList: true,
+          widthInForm: null,
+          widthInList: null,
+          widthInDetail: null,
+          defaultValue: null,
+          relationship: null,
+          dropdown: [],
+          category: [],
+          group: { slug: group.slug },
+        }),
+      );
+
+      const topLevelError = validateUniqueSlugs(
+        [...(structure.fields || []), ...topLevelGroupFields],
+        structure.slug,
+      );
+      if (topLevelError) return topLevelError;
+
+      for (const field of structure.fields || []) {
+        const error = validateField(field, `${structure.slug}.${field.slug}`);
+        if (error) return error;
+      }
+
+      for (const group of structure.groups || []) {
+        const groupFieldError = validateField(
+          topLevelGroupFields.find((field) => field.slug === group.slug)!,
+          `${structure.slug}.${group.slug}`,
+        );
+        if (groupFieldError) return groupFieldError;
+
+        const groupError = validateUniqueSlugs(
+          group.fields || [],
+          `${structure.slug}.${group.slug}`,
+        );
+        if (groupError) return groupError;
+
+        for (const field of group.fields || []) {
+          const error = validateField(
+            field,
+            `${structure.slug}.${group.slug}.${field.slug}`,
+          );
+          if (error) return error;
+        }
+      }
+    }
+
+    return null;
   }
 
   // ── Normalization ──────────────────────────────────────────

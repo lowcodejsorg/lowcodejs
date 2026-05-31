@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -11,6 +10,7 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { resolveFieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
@@ -35,23 +35,43 @@ export default class TableFieldCreateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const tableSlug = payload.tableSlug ?? payload.slug;
+      if (!tableSlug) {
+        return left(
+          HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      const table = await this.tableRepository.findBySlug(tableSlug);
 
       if (!table)
         return left(
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
-      const slug = slugify(payload.name, { lower: true, trim: true });
+      const resolvedSlug = resolveFieldSlug({
+        name: payload.name,
+        slug: payload.tableSlug ? payload.slug : undefined,
+      });
+
+      if (resolvedSlug.error) {
+        return left(
+          HTTPException.BadRequest('Slug inválido', 'INVALID_FIELD_SLUG', {
+            slug: resolvedSlug.error,
+          }),
+        );
+      }
+
+      const slug = resolvedSlug.slug;
 
       const existFieldOnTable = table?.fields?.some(
-        (field) => field.slug === slug,
+        (field) => field.slug === slug && !field.trashed,
       );
 
       if (existFieldOnTable)
         return left(
           HTTPException.Conflict('Campo já existe', 'FIELD_ALREADY_EXIST', {
-            name: 'Campo já existe',
+            slug: 'Campo já existe',
           }),
         );
 

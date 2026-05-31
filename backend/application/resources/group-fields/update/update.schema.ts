@@ -4,7 +4,7 @@ export const GroupFieldUpdateSchema: FastifySchema = {
   tags: ['Group Fields'],
   summary: 'Update field in group',
   description:
-    'Updates an existing field inside a FIELD_GROUP. Regenerates slug if name changed and rebuilds group and table schemas.',
+    'Updates an existing field inside a FIELD_GROUP. Changing name only changes the display title. Group field slug changes are currently blocked to protect existing nested data.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -20,7 +20,20 @@ export const GroupFieldUpdateSchema: FastifySchema = {
     type: 'object',
     required: ['name', 'type'],
     properties: {
-      name: { type: 'string' },
+      name: {
+        type: 'string',
+        minLength: 1,
+        maxLength: 500,
+        description: 'Field display title shown to end users',
+      },
+      slug: {
+        type: 'string',
+        minLength: 2,
+        maxLength: 80,
+        pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+        description:
+          'Safe technical field key. Changing group field slugs is currently blocked.',
+      },
       type: { type: 'string' },
       required: { type: 'boolean', default: false },
       multiple: { type: 'boolean', default: false },
