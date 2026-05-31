@@ -2,10 +2,8 @@ import type {
   UseMutationOptions,
   UseMutationResult,
 } from '@tanstack/react-query';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
-
-import { queryKeys } from './_query-keys';
 
 import { API } from '@/lib/api';
 import type { IRow } from '@/lib/interfaces';
@@ -24,8 +22,6 @@ type UseAutoSaveTableRowProps = Pick<
 export function useAutoSaveTableRow(
   props: UseAutoSaveTableRowProps,
 ): UseMutationResult<IRow, AxiosError | Error, RowAutoSavePayload> {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: async function (payload: RowAutoSavePayload): Promise<IRow> {
       const base = '/tables/'.concat(payload.slug).concat('/rows/auto-save');
@@ -36,11 +32,10 @@ export function useAutoSaveTableRow(
       const response = await API.patch<IRow>(url, payload.data);
       return response.data;
     },
+    // NAO escreve no cache da query de detalhe aqui: isso re-renderizava o
+    // form aberto a cada save (pisca, perde foco, fecha modal). A sincronizacao
+    // de cache acontece uma unica vez ao sair do form.
     onSuccess(data, variables): void {
-      queryClient.setQueryData(
-        queryKeys.rows.detail(variables.slug, data._id),
-        data,
-      );
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,

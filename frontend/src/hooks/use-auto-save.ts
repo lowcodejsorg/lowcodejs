@@ -18,8 +18,11 @@ type UseAutoSaveReturn = {
   cancelPending: () => void;
 };
 
-const DEFAULT_DEBOUNCE_MS = 1000;
-const DEFAULT_INTERVAL_MS = 60_000;
+// Debounce curto: triggerSave e chamado no blur do campo, nao por tecla.
+// So coalesce blur+refocus imediato (ex: tab entre campos).
+const DEFAULT_DEBOUNCE_MS = 300;
+// Fallback periodico de salvamento.
+const DEFAULT_INTERVAL_MS = 30_000;
 
 export function useAutoSave({
   onSave,

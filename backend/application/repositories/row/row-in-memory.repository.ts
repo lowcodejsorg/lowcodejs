@@ -49,9 +49,9 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
     const row: IRow = {
       _id: randomUUID(),
-      ...payload.data,
       trashed: false,
       trashedAt: null,
+      ...payload.data,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as IRow;

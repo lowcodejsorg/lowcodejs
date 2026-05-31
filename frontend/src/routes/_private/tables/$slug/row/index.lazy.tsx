@@ -95,11 +95,21 @@ function CreateRowView({
 
   const isLoading = !table.data && table.status === 'pending';
 
+  const backGuardRef = React.useRef<(() => void) | null>(null);
+  const handleHeaderBack = (): void => {
+    const guard = backGuardRef.current;
+    if (guard) {
+      guard();
+      return;
+    }
+    onBack();
+  };
+
   return (
     <PageShell data-test-id="create-row-page">
       <PageShell.Header borderBottom={false}>
         <PageHeader
-          onBack={onBack}
+          onBack={handleHeaderBack}
           title="Novo registro"
         />
       </PageShell.Header>
@@ -121,6 +131,7 @@ function CreateRowView({
         <AutoSaveRowForm
           table={table.data}
           onBack={onBack}
+          backGuardRef={backGuardRef}
         />
       )}
     </PageShell>
@@ -151,6 +162,8 @@ function ExistingRowView({
   const isLoadingRow = !row.data && row.status === 'pending';
   const isLoading = isLoadingTable || isLoadingRow;
 
+  const backGuardRef = React.useRef<(() => void) | null>(null);
+
   const goToView = (): void => {
     void navigate({
       to: '/tables/$slug/row/',
@@ -158,6 +171,15 @@ function ExistingRowView({
       search: { _id: rowId },
       replace: true,
     });
+  };
+
+  const handleEditBack = (): void => {
+    const guard = backGuardRef.current;
+    if (guard) {
+      guard();
+      return;
+    }
+    goToView();
   };
 
   const goToEdit = (): void => {
@@ -267,7 +289,7 @@ function ExistingRowView({
       {mode === 'edit' && (
         <PageShell.Header borderBottom={false}>
           <PageHeader
-            onBack={goToView}
+            onBack={handleEditBack}
             title="Editar registro"
           />
         </PageShell.Header>
@@ -292,6 +314,7 @@ function ExistingRowView({
             rowId={rowId}
             existingRow={row.data}
             onBack={goToView}
+            backGuardRef={backGuardRef}
           />
         )}
     </PageShell>

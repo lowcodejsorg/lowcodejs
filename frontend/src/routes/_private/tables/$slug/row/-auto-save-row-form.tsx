@@ -1,5 +1,6 @@
 import type { AnyFieldMetaBase } from '@tanstack/form-core';
 import { useStore } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import type { AxiosError } from 'axios';
 import React from 'react';
 
@@ -13,8 +14,18 @@ import {
 import { AccessDenied } from '@/components/common/route-status/access-denied';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
+import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useAutoSaveTableRow } from '@/hooks/tanstack-query/use-table-row-auto-save';
+import { useDeleteTableRow } from '@/hooks/tanstack-query/use-table-row-delete';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -34,6 +45,7 @@ interface AutoSaveRowFormProps {
   rowId?: string;
   existingRow?: IRow;
   onBack?: () => void;
+  backGuardRef?: React.MutableRefObject<(() => void) | null>;
 }
 
 function hasValue(value: unknown): boolean {
@@ -65,15 +77,20 @@ function AutoSaveRowFormContent({
   rowId: initialRowId,
   existingRow,
   onBack,
+  backGuardRef,
 }: AutoSaveRowFormProps): React.JSX.Element {
   const permissions = useTablePermission(table);
   const isUploading = useIsUploading();
+  const queryClient = useQueryClient();
 
+  const isNewRecord = !initialRowId;
   const rowIdRef = React.useRef<string | undefined>(initialRowId);
   const [isTrashed, setIsTrashed] = React.useState<boolean>(
     existingRow?.trashed ?? false,
   );
   const [missingRequired, setMissingRequired] = React.useState<boolean>(false);
+  const [confirmDiscardOpen, setConfirmDiscardOpen] =
+    React.useState<boolean>(false);
 
   const slug = table.slug;
 
@@ -103,14 +120,22 @@ function AutoSaveRowFormContent({
     return buildCreateRowDefaultValues(fields);
   }, [existingRow, fields]);
 
+  // O save e disparado no blur do campo. triggerSave so existe apos o form
+  // (depende de performSave), entao o listener chama atraves de um ref.
+  const triggerSaveRef = React.useRef<() => void>((): void => {});
+
   const form = useAppForm({
     defaultValues,
     onSubmit: async (): Promise<void> => {},
+    listeners: {
+      onBlur: (): void => {
+        triggerSaveRef.current();
+      },
+    },
   });
 
   useApiErrorAutoClear(form);
 
-  const values = useStore(form.store, (state) => state.values);
   const isDirty = useStore(form.store, (state) => state.isDirty);
 
   const _autoSave = useAutoSaveTableRow({
@@ -127,6 +152,12 @@ function AutoSaveRowFormContent({
           applyApiFieldErrors(form, errors);
         },
       });
+    },
+  });
+
+  const _deleteDraft = useDeleteTableRow({
+    onError(error: AxiosError | Error): void {
+      handleApiError(error, { context: 'Erro ao descartar o rascunho' });
     },
   });
 
@@ -163,12 +194,7 @@ function AutoSaveRowFormContent({
     isDirty: isDirtyCallback,
   });
 
-  const previousValuesRef = React.useRef(values);
-  React.useEffect((): void => {
-    if (previousValuesRef.current === values) return;
-    previousValuesRef.current = values;
-    triggerSave();
-  }, [values, triggerSave]);
+  triggerSaveRef.current = triggerSave;
 
   const validateAndTouch = React.useCallback((): boolean => {
     let allValid = true;
@@ -200,20 +226,55 @@ function AutoSaveRowFormContent({
     return allValid;
   }, [form, requiredFields]);
 
+  const isIncompleteDraft = React.useCallback((): boolean => {
+    if (!isNewRecord) return false;
+    if (!rowIdRef.current) return false;
+    return requiredFields.some((field): boolean => {
+      return !hasValue(form.state.values[field.slug]);
+    });
+  }, [isNewRecord, requiredFields, form]);
+
+  const finishAndBack = React.useCallback((): void => {
+    // Sincroniza o cache uma unica vez ao sair (em vez de a cada save).
+    queryClient.invalidateQueries({ queryKey: queryKeys.rows.lists(slug) });
+    if (rowIdRef.current) {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.rows.detail(slug, rowIdRef.current),
+      });
+    }
+    onBack?.();
+  }, [queryClient, slug, onBack]);
+
   const handleSaveAndBack = async (): Promise<void> => {
     cancelPending();
+    // Marca campos para feedback visual, mas nao bloqueia: registro incompleto
+    // e salvo como rascunho (lixeira) pelo backend.
     const isValid = validateAndTouch();
-    if (!isValid) {
-      setMissingRequired(true);
-      return;
-    }
-    setMissingRequired(false);
+    setMissingRequired(!isValid);
     await performSave();
-    onBack?.();
+    finishAndBack();
   };
 
-  const handleCancel = (): void => {
+  const requestBack = React.useCallback((): void => {
     cancelPending();
+    if (isIncompleteDraft()) {
+      setConfirmDiscardOpen(true);
+      return;
+    }
+    finishAndBack();
+  }, [cancelPending, isIncompleteDraft, finishAndBack]);
+
+  // Permite que o botao Voltar do cabecalho (renderizado pelo componente pai)
+  // passe pela mesma guarda de descarte do rascunho.
+  if (backGuardRef) {
+    backGuardRef.current = requestBack;
+  }
+
+  const confirmDiscard = async (): Promise<void> => {
+    if (rowIdRef.current) {
+      await _deleteDraft.mutateAsync({ slug, rowId: rowIdRef.current });
+    }
+    setConfirmDiscardOpen(false);
     onBack?.();
   };
 
@@ -268,7 +329,7 @@ function AutoSaveRowFormContent({
           variant="outline"
           size="sm"
           disabled={_autoSave.isPending}
-          onClick={handleCancel}
+          onClick={requestBack}
         >
           Cancelar
         </Button>
@@ -284,6 +345,48 @@ function AutoSaveRowFormContent({
           <span>Salvar</span>
         </Button>
       </div>
+
+      <Dialog
+        open={confirmDiscardOpen}
+        onOpenChange={setConfirmDiscardOpen}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Descartar rascunho?</DialogTitle>
+            <DialogDescription>
+              Este registro ainda não tem todos os campos obrigatórios
+              preenchidos e foi salvo como rascunho na lixeira. Deseja
+              descartá-lo ou mantê-lo como rascunho?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={_deleteDraft.isPending}
+              onClick={(): void => {
+                setConfirmDiscardOpen(false);
+                finishAndBack();
+              }}
+            >
+              Manter rascunho
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={_deleteDraft.isPending}
+              onClick={(): void => {
+                void confirmDiscard();
+              }}
+            >
+              {_deleteDraft.isPending && <Spinner />}
+              <span>Descartar</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </React.Fragment>
   );
 }

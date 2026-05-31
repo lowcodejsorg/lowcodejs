@@ -41,12 +41,16 @@ export default class TableRowAutoSaveUseCase {
         fields: table.fields,
       });
 
+      // Valida apenas formato/tipo dos campos que possuem valor real.
+      // A ausencia de obrigatorios NAO rejeita a requisicao: vira sinal de
+      // rascunho (trashed=true). Validar campos vazios faria o auto-save
+      // falhar em vez de salvar o rascunho na lixeira.
       const fields = table.fields.filter((field) => {
         return (
           !field.native &&
           !field.trashed &&
-          field.required &&
-          field.slug in payload
+          field.slug in payload &&
+          this.hasValue(payload[field.slug])
         );
       });
 
@@ -134,8 +138,10 @@ export default class TableRowAutoSaveUseCase {
       (accumulator, field) => {
         if (field.native) return accumulator;
         if (field.trashed) return accumulator;
-        if (field.slug in accumulator && accumulator[field.slug])
-          return accumulator;
+        // Preenche default apenas para campos AUSENTES do payload.
+        // Campos presentes-porem-vazios sao mantidos como estao (null/''/[])
+        // para nao mascarar o vazio com '-' e quebrar a deteccao de rascunho.
+        if (field.slug in accumulator) return accumulator;
 
         if (!FIELD_DEFAULT_MAPPER[field.type]) return accumulator;
 
@@ -147,15 +153,23 @@ export default class TableRowAutoSaveUseCase {
     );
   }
 
+  private hasValue(value: unknown): boolean {
+    if (value === null || value === undefined) return false;
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    return true;
+  }
+
   private isIncomplete(data: Draft): boolean {
     return data.fields.some((field) => {
       if (field.native) return false;
       if (field.trashed) return false;
       if (!field.required) return false;
 
-      if (field.slug in data.payload) return false;
-
-      return true;
+      // Incompleto quando o obrigatorio nao tem VALOR real (nao basta a
+      // chave existir no payload — frontend envia todos os campos, inclusive
+      // vazios como null/[]).
+      return !this.hasValue(data.payload[field.slug]);
     });
   }
 }
