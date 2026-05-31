@@ -314,6 +314,7 @@ function FieldUpdateContent({
   const form = useAppForm({
     defaultValues: {
       name: data.name,
+      slug: data.slug,
       tip: data.tip ?? '',
       type: data.type,
       format: data.format ?? '',
@@ -334,6 +335,9 @@ function FieldUpdateContent({
         fieldId: data.relationship?.field?._id ?? '',
         fieldSlug: data.relationship?.field?.slug ?? '',
         order: data.relationship?.order ?? '',
+        customLabel: data.relationship?.customLabel ?? false,
+        labelParts: data.relationship?.labelParts ?? [],
+        labelSeparator: data.relationship?.labelSeparator ?? ' - ',
       },
       category: data.category ?? [],
       multiple: data.multiple,
@@ -360,6 +364,7 @@ function FieldUpdateContent({
         trashedAt?: string | null;
       } = {
         name: value.name,
+        slug: value.slug,
         tip: normalizeTip(value.tip),
         type: value.type,
         required: value.trashed ? false : value.required,
@@ -394,6 +399,11 @@ function FieldUpdateContent({
                 slug: value.relationship.fieldSlug,
               },
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+              customLabel: value.relationship.customLabel,
+              labelParts: value.relationship.customLabel
+                ? value.relationship.labelParts
+                : [],
+              labelSeparator: value.relationship.labelSeparator || ' - ',
             }
           : null,
         category: hasCategory ? value.category : [],
@@ -459,6 +469,7 @@ function FieldUpdateContent({
             mode={mode}
             tableSlug={slug}
             isLocked={data.locked ?? false}
+            isGroupField={Boolean(groupSlug)}
           />
         </form>
       )}

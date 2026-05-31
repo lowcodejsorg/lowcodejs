@@ -16,6 +16,7 @@ import { ApiEndpointsModal } from './-api-endpoints-modal';
 
 import { TableFieldManagementSheet } from '@/components/common/dynamic-table/field-management/table-field-management-sheet';
 import { GroupFieldManagementSheet } from '@/components/common/dynamic-table/group-rows/group-field-management-sheet';
+import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -66,7 +67,10 @@ function FieldGroupSubMenu({
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
-        <span>Gerenciar {field.name}</span>
+        <span className="inline-flex min-w-0 gap-1">
+          <span>Gerenciar</span>
+          <FieldTitle value={field.name} />
+        </span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent>
@@ -117,7 +121,10 @@ function FieldGroupSubMenu({
                 }}
               >
                 <PencilIcon className="size-4" />
-                <span>Editar {groupField.name}</span>
+                <span className="inline-flex min-w-0 gap-1">
+                  <span>Editar</span>
+                  <FieldTitle value={groupField.name} />
+                </span>
               </DropdownMenuItem>
             ))}
         </DropdownMenuSubContent>
@@ -247,7 +254,10 @@ export function TableConfigurationDropdown({
                         }}
                       >
                         <PencilIcon className="size-4" />
-                        <span>Editar {field.name}</span>
+                        <span className="inline-flex min-w-0 gap-1">
+                          <span>Editar</span>
+                          <FieldTitle value={field.name} />
+                        </span>
                       </DropdownMenuItem>
                     ))}
                   </DropdownMenuSubContent>

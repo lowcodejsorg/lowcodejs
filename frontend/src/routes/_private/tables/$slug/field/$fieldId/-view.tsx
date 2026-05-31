@@ -50,8 +50,17 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
     >
       {/* Nome */}
       <div className="space-y-1">
-        <p className="text-sm font-medium">Nome</p>
-        <p className="text-sm text-muted-foreground">{data.name || '-'}</p>
+        <p className="text-sm font-medium">Título exibido</p>
+        <p className="text-sm text-muted-foreground whitespace-pre-wrap break-words">
+          {data.name || '-'}
+        </p>
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-sm font-medium">Slug</p>
+        <p className="text-sm text-muted-foreground break-all">
+          {data.slug || '-'}
+        </p>
       </div>
 
       {data.tip && (
@@ -144,6 +153,15 @@ export function FieldView({ data }: FieldViewProps): React.JSX.Element {
             Ordem:{' '}
             {data.relationship.order === 'asc' ? 'Crescente' : 'Decrescente'}
           </p>
+          {data.relationship.customLabel &&
+            (data.relationship.labelParts?.length ?? 0) > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Label personalizado:{' '}
+                {data.relationship.labelParts
+                  ?.map((part) => part.label || part.path)
+                  .join(data.relationship.labelSeparator || ' - ')}
+              </p>
+            )}
         </div>
       )}
 

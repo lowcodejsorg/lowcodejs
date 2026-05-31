@@ -6,6 +6,7 @@ export {
   buildMentionExtension,
   extractMentionIds,
   type MentionConfig,
-  type ResolveMentionItems,
+  type MentionPage,
+  type ResolveMentionPage,
 } from './extensions/mention';
 export type { MentionItem, MentionListHandle } from './bubble/mention-list';

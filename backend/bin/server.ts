@@ -12,6 +12,14 @@ import { startEmailWorker } from '@application/services/email-queue/worker';
 import { EmailContractService } from '@application/services/email/email-contract.service';
 import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
 import { startStorageMigrationWorker } from '@application/services/storage-migration/worker';
+import { initCsvImportSocket } from '@application/resources/table-rows/import-csv/import-csv.socket';
+import { startCsvImportWorker } from '@application/services/csv-import/worker';
+import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
+import RowMongooseRepository from '@application/repositories/row/row-mongoose.repository';
+import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
+import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
 import StorageService from '@application/services/storage/storage.service';
 import { MongooseConnect } from '@config/database.config';
 import { syncStorageEnv } from '@config/setting-env-sync';
@@ -111,6 +119,28 @@ async function start(): Promise<void> {
     );
     startEmailWorker({ emailService });
     console.info('Email worker started');
+
+    const { namespace: csvImportNamespace, storeResult: csvImportStoreResult } =
+      initCsvImportSocket(io, jwtDecode);
+    console.info('Socket.IO csv-import namespace initialized');
+
+    const csvTableRepository = getInstanceByToken<TableContractRepository>(
+      TableMongooseRepository,
+    );
+    const csvRowRepository = getInstanceByToken<RowContractRepository>(
+      RowMongooseRepository,
+    );
+    const csvRowPasswordService =
+      getInstanceByToken<RowPasswordContractService>(BcryptRowPasswordService);
+
+    startCsvImportWorker({
+      namespace: csvImportNamespace,
+      storeResult: csvImportStoreResult,
+      tableRepository: csvTableRepository,
+      rowRepository: csvRowRepository,
+      rowPasswordService: csvRowPasswordService,
+    });
+    console.info('CSV import worker started');
   } catch (err) {
     console.error('Error starting server:', err);
     process.exit(1);

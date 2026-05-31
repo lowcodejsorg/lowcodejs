@@ -1,6 +1,5 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -11,6 +10,7 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { resolveFieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
@@ -52,7 +52,14 @@ export default class TableFieldUpdateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const tableSlug = payload.tableSlug ?? payload.slug;
+      if (!tableSlug) {
+        return left(
+          HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      const table = await this.tableRepository.findBySlug(tableSlug);
 
       if (!table)
         return left(
@@ -128,7 +135,35 @@ export default class TableFieldUpdateUseCase {
       }
 
       const oldSlug = field.slug;
-      const slug = slugify(payload.name, { lower: true, trim: true });
+      const explicitSlug =
+        payload.tableSlug !== undefined &&
+        payload.slug !== undefined &&
+        payload.slug !== oldSlug;
+      const resolvedSlug = explicitSlug
+        ? resolveFieldSlug({ name: payload.name, slug: payload.slug })
+        : { slug: oldSlug, error: null };
+
+      if (resolvedSlug.error) {
+        return left(
+          HTTPException.BadRequest('Slug inválido', 'INVALID_FIELD_SLUG', {
+            slug: resolvedSlug.error,
+          }),
+        );
+      }
+
+      const slug = resolvedSlug.slug;
+
+      const existFieldOnTable = table.fields?.some(
+        (item) => item._id !== field._id && item.slug === slug && !item.trashed,
+      );
+
+      if (existFieldOnTable) {
+        return left(
+          HTTPException.Conflict('Campo já existe', 'FIELD_ALREADY_EXIST', {
+            slug: 'Campo já existe',
+          }),
+        );
+      }
 
       if (hasDuplicateDropdownLabels(payload.dropdown)) {
         return left(
@@ -237,6 +272,7 @@ export default class TableFieldUpdateUseCase {
   private canUpdateLockedField(payload: Payload, field: IField): boolean {
     // Locked fields allow visibility and width changes, block everything else
     if (payload.name !== field.name) return false;
+    if (payload.slug !== undefined && payload.slug !== field.slug) return false;
     if (payload.type !== field.type) return false;
     if (payload.trashed || payload.trashedAt) return false;
     if (payload.required !== field.required) return false;

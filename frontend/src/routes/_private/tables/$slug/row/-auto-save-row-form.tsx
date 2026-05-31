@@ -1,3 +1,5 @@
+import type { AnyFieldMetaBase } from '@tanstack/form-core';
+import { useStore } from '@tanstack/react-form';
 import type { AxiosError } from 'axios';
 import React from 'react';
 
@@ -33,7 +35,20 @@ interface AutoSaveRowFormProps {
   rowId?: string;
   existingRow?: IRow;
   onBack?: () => void;
-  onRowCreated?: (rowId: string) => void;
+}
+
+function hasValue(value: unknown): boolean {
+  if (value === null || value === undefined) return false;
+  if (typeof value === 'string') return value.length > 0;
+  if (Array.isArray(value)) return value.length > 0;
+  if (
+    typeof value === 'object' &&
+    'storages' in value &&
+    Array.isArray(value.storages)
+  ) {
+    return value.storages.length > 0;
+  }
+  return false;
 }
 
 export function AutoSaveRowForm(
@@ -51,7 +66,6 @@ function AutoSaveRowFormContent({
   rowId: initialRowId,
   existingRow,
   onBack,
-  onRowCreated,
 }: AutoSaveRowFormProps): React.JSX.Element {
   const permissions = useTablePermission(table);
   const isUploading = useIsUploading();
@@ -60,6 +74,7 @@ function AutoSaveRowFormContent({
   const [isTrashed, setIsTrashed] = React.useState<boolean>(
     existingRow?.trashed ?? false,
   );
+  const [missingRequired, setMissingRequired] = React.useState<boolean>(false);
 
   const slug = table.slug;
 
@@ -78,6 +93,10 @@ function AutoSaveRowFormContent({
       });
   }, [table.fields, table.fieldOrderForm]);
 
+  const requiredFields = React.useMemo((): Array<IField> => {
+    return fields.filter((f) => f.required && !f.native);
+  }, [fields]);
+
   const defaultValues = React.useMemo((): CreateRowDefaultValue => {
     if (existingRow) {
       return buildUpdateRowDefaultValues(existingRow, fields);
@@ -92,12 +111,14 @@ function AutoSaveRowFormContent({
 
   useApiErrorAutoClear(form);
 
+  const values = useStore(form.store, (state) => state.values);
+  const isDirty = useStore(form.store, (state) => state.isDirty);
+
   const _autoSave = useAutoSaveTableRow({
     onSuccess(data: IRow): void {
       setIsTrashed(data.trashed);
       if (!rowIdRef.current) {
         rowIdRef.current = data._id;
-        onRowCreated?.(data._id);
       }
     },
     onError(error: AxiosError | Error): void {
@@ -123,16 +144,71 @@ function AutoSaveRowFormContent({
     });
   }, [_autoSave, form, fields, slug, isUploading]);
 
-  const { status, lastSavedAt, triggerSave } = useAutoSave({
+  const canSaveCallback = React.useCallback((): boolean => {
+    if (rowIdRef.current) return true;
+    if (requiredFields.length === 0) return false;
+    return requiredFields.some((field): boolean => {
+      const value = form.state.values[field.slug];
+      return hasValue(value);
+    });
+  }, [form, requiredFields]);
+
+  const isDirtyCallback = React.useCallback((): boolean => {
+    return isDirty;
+  }, [isDirty]);
+
+  const { status, lastSavedAt, triggerSave, cancelPending } = useAutoSave({
     onSave: performSave,
     isTrashed,
+    canSave: canSaveCallback,
+    isDirty: isDirtyCallback,
   });
 
-  const handleFormBlur = (): void => {
+  const previousValuesRef = React.useRef(values);
+  React.useEffect((): void => {
+    if (previousValuesRef.current === values) return;
+    previousValuesRef.current = values;
     triggerSave();
-  };
+  }, [values, triggerSave]);
+
+  const validateAndTouch = React.useCallback((): boolean => {
+    let allValid = true;
+    for (const field of requiredFields) {
+      const value = form.state.values[field.slug];
+      const filled = hasValue(value);
+      form.setFieldMeta(
+        field.slug,
+        (prev: AnyFieldMetaBase): AnyFieldMetaBase => ({
+          ...prev,
+          isTouched: true,
+        }),
+      );
+      if (!filled) {
+        allValid = false;
+        form.setFieldMeta(
+          field.slug,
+          (prev: AnyFieldMetaBase): AnyFieldMetaBase => ({
+            ...prev,
+            isTouched: true,
+            errorMap: {
+              ...prev.errorMap,
+              onChange: field.name + ' é obrigatório',
+            },
+          }),
+        );
+      }
+    }
+    return allValid;
+  }, [form, requiredFields]);
 
   const handleSaveAndBack = async (): Promise<void> => {
+    cancelPending();
+    const isValid = validateAndTouch();
+    if (!isValid) {
+      setMissingRequired(true);
+      return;
+    }
+    setMissingRequired(false);
     await performSave();
     onBack?.();
   };
@@ -149,6 +225,11 @@ function AutoSaveRowFormContent({
     [fields, form, triggerSave],
   );
 
+  const handleCancel = (): void => {
+    cancelPending();
+    onBack?.();
+  };
+
   if (!initialRowId && !permissions.can('CREATE_ROW')) {
     return <AccessDenied />;
   }
@@ -157,11 +238,16 @@ function AutoSaveRowFormContent({
     return <AccessDenied />;
   }
 
+  let displayStatus = status;
+  if (missingRequired) {
+    displayStatus = 'draft';
+  }
+
   return (
     <React.Fragment>
       <div className="shrink-0 px-4 py-2 flex items-center justify-between gap-2 border-b">
         <AutoSaveStatusIndicator
-          status={status}
+          status={displayStatus}
           lastSavedAt={lastSavedAt}
         />
         <div className="flex items-center gap-2 shrink-0">
@@ -187,7 +273,6 @@ function AutoSaveRowFormContent({
       <form
         className="flex-1 flex flex-col min-h-0 overflow-auto relative"
         data-test-id="auto-save-row-form"
-        onBlur={handleFormBlur}
         onSubmit={(e: React.FormEvent<HTMLFormElement>): void => {
           e.preventDefault();
         }}
@@ -206,7 +291,7 @@ function AutoSaveRowFormContent({
           variant="outline"
           size="sm"
           disabled={_autoSave.isPending}
-          onClick={onBack}
+          onClick={handleCancel}
         >
           Cancelar
         </Button>

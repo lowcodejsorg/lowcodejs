@@ -4,7 +4,7 @@ export const GroupFieldCreateSchema: FastifySchema = {
   tags: ['Group Fields'],
   summary: 'Create field in group',
   description:
-    'Creates a new field inside a FIELD_GROUP. Automatically generates slug from name and rebuilds group and table schemas.',
+    'Creates a new field inside a FIELD_GROUP. The display title is stored in name, while slug is the safe technical key.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -27,7 +27,17 @@ export const GroupFieldCreateSchema: FastifySchema = {
     properties: {
       name: {
         type: 'string',
-        description: 'Field name',
+        minLength: 1,
+        maxLength: 500,
+        description: 'Field display title shown to end users',
+      },
+      slug: {
+        type: 'string',
+        minLength: 2,
+        maxLength: 80,
+        pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+        description:
+          'Safe technical field key. If omitted, the API generates it from name.',
       },
       type: {
         type: 'string',
@@ -132,6 +142,18 @@ export const GroupFieldCreateSchema: FastifySchema = {
               },
             },
             order: { type: 'string', enum: ['asc', 'desc'] },
+            customLabel: { type: 'boolean' },
+            labelParts: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  path: { type: 'string' },
+                  label: { type: 'string' },
+                },
+              },
+            },
+            labelSeparator: { type: 'string' },
           },
         },
         category: {

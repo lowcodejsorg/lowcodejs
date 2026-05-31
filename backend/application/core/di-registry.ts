@@ -53,6 +53,8 @@ import NodeVmScriptExecutionService from '@application/services/script-execution
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
 import BullMQStorageMigrationQueueService from '@application/services/storage-migration/bullmq-storage-migration-queue.service';
 import { StorageMigrationQueueContractService } from '@application/services/storage-migration/storage-migration-queue-contract.service';
+import BullMQCsvImportQueueService from '@application/services/csv-import/bullmq-csv-import-queue.service';
+import { CsvImportQueueContractService } from '@application/services/csv-import/csv-import-queue-contract.service';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
 import StorageService from '@application/services/storage/storage.service';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
@@ -186,5 +188,10 @@ export function registerDependencies(): void {
   injectablesHolder.injectService(
     RowMemberNotificationContractService,
     RowMemberNotificationService,
+  );
+
+  injectablesHolder.injectService(
+    CsvImportQueueContractService,
+    BullMQCsvImportQueueService,
   );
 }

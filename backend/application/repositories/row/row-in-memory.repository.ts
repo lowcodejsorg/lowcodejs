@@ -352,6 +352,32 @@ export default class RowInMemoryRepository implements RowContractRepository {
       .map((row) => ({ ...row })) as Record<string, unknown>[];
   }
 
+  // ── Resolver helpers (csv-import) ─────────────────────────
+
+  async findManyByFieldValues(
+    table: RowTableContext,
+    fieldSlugs: string[],
+    values: string[],
+  ): Promise<IRow[]> {
+    if (fieldSlugs.length === 0 || values.length === 0) return [];
+
+    const collection = this.getCollection(table.slug);
+    const valueSet = new Set(values);
+
+    return collection
+      .filter((row) => {
+        if (row.trashed) return false;
+        for (const slug of fieldSlugs) {
+          const fieldValue = row[slug];
+          if (typeof fieldValue === 'string' && valueSet.has(fieldValue)) {
+            return true;
+          }
+        }
+        return false;
+      })
+      .map((row) => ({ ...row }));
+  }
+
   async insertRaw(
     table: RowTableContext,
     row: Record<string, unknown>,

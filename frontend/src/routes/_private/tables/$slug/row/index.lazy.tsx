@@ -46,7 +46,6 @@ function isApiErrorData(value: unknown): value is ApiErrorData {
 
 function RouteComponent(): React.JSX.Element {
   const sidebar = useSidebar();
-  const navigate = useNavigate();
   const router = useRouter();
 
   const { slug } = useParams({ from: '/_private/tables/$slug/row/' });
@@ -64,21 +63,11 @@ function RouteComponent(): React.JSX.Element {
     });
   };
 
-  const handleRowCreated = (newRowId: string): void => {
-    void navigate({
-      to: '/tables/$slug/row/',
-      params: { slug },
-      search: { _id: newRowId, mode: 'edit' as const },
-      replace: true,
-    });
-  };
-
   if (!rowId) {
     return (
       <CreateRowView
         slug={slug}
         onBack={goBack}
-        onRowCreated={handleRowCreated}
       />
     );
   }
@@ -96,13 +85,11 @@ function RouteComponent(): React.JSX.Element {
 interface CreateRowViewProps {
   slug: string;
   onBack: () => void;
-  onRowCreated: (rowId: string) => void;
 }
 
 function CreateRowView({
   slug,
   onBack,
-  onRowCreated,
 }: CreateRowViewProps): React.JSX.Element {
   const table = useReadTable({ slug });
 
@@ -134,7 +121,6 @@ function CreateRowView({
         <AutoSaveRowForm
           table={table.data}
           onBack={onBack}
-          onRowCreated={onRowCreated}
         />
       )}
     </PageShell>

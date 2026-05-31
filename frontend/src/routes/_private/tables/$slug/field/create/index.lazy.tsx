@@ -140,6 +140,7 @@ function RouteComponent(): React.JSX.Element {
 
       const payload: Partial<IField> = {
         name: value.name,
+        slug: value.slug,
         tip: normalizeTip(value.tip),
         type: value.type as keyof typeof E_FIELD_TYPE,
         required: value.required,
@@ -174,6 +175,11 @@ function RouteComponent(): React.JSX.Element {
                 slug: value.relationship.fieldSlug,
               },
               order: (value.relationship.order || 'asc') as 'asc' | 'desc',
+              customLabel: value.relationship.customLabel,
+              labelParts: value.relationship.customLabel
+                ? value.relationship.labelParts
+                : [],
+              labelSeparator: value.relationship.labelSeparator || ' - ',
             }
           : null,
         category: hasCategory ? convertTreeNodeToCategory(value.category) : [],

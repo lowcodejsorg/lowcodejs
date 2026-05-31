@@ -1,0 +1,330 @@
+/**
+ * BullMQ Worker para importação de CSV.
+ *
+ * Consome jobs da fila `csv-import`. Cada job carrega { slug, userId, csvContent }.
+ * O worker parseia o CSV, valida cada linha, cria as rows e emite progresso
+ * em tempo real via Socket.IO no namespace `/csv-import`.
+ *
+ * Retry: attempts: 1 — erros de CSV não devem ser reprocessados automaticamente.
+ */
+import { Worker, type Job } from 'bullmq';
+import csv from 'csv-parser';
+import { Readable } from 'node:stream';
+import type { Namespace } from 'socket.io';
+
+import {
+  E_FIELD_FORMAT,
+  E_FIELD_TYPE,
+  type IField,
+  type IGroupConfiguration,
+} from '@application/core/entity.core';
+import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import type { RowContractRepository } from '@application/repositories/row/row-contract.repository';
+import type { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import {
+  CSV_IMPORT_EVENT,
+  type CsvImportCompletedEvent,
+  type CsvImportErrorEvent,
+  type CsvImportProgressEvent,
+  type CsvImportSocketInit,
+} from '@application/resources/table-rows/import-csv/import-csv.socket';
+import type { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import { createBullMQConnection } from '@config/redis.config';
+
+import {
+  CSV_IMPORT_JOB,
+  CSV_IMPORT_QUEUE_NAME,
+  type CsvImportJobPayload,
+} from './csv-import-queue-contract.service';
+import {
+  buildRelationshipResolvers,
+  type RelationshipResolver,
+} from './relationship-resolver';
+
+export const IMPORT_CSV_LIMIT = 10_000;
+
+const PROGRESS_INTERVAL = 100;
+
+type WorkerDeps = {
+  namespace: Namespace;
+  storeResult: CsvImportSocketInit['storeResult'];
+  tableRepository: TableContractRepository;
+  rowRepository: RowContractRepository;
+  rowPasswordService: RowPasswordContractService;
+};
+
+let cachedWorker: Worker<CsvImportJobPayload> | null = null;
+
+function parseCsv(csvContent: string): Promise<Array<Record<string, string>>> {
+  return new Promise((resolve, reject) => {
+    const results: Array<Record<string, string>> = [];
+    const stream = Readable.from(csvContent);
+
+    stream
+      .pipe(csv())
+      .on('data', (row: Record<string, string>) => {
+        results.push(row);
+      })
+      .on('end', () => {
+        resolve(results);
+      })
+      .on('error', (err: Error) => {
+        reject(err);
+      });
+  });
+}
+
+function buildFieldMap(
+  headers: string[],
+  fields: IField[],
+): Map<string, IField> {
+  const map = new Map<string, IField>();
+
+  for (const header of headers) {
+    let matched: IField | undefined;
+
+    for (const field of fields) {
+      if (field.native) continue;
+      if (field.slug === header) {
+        matched = field;
+        break;
+      }
+    }
+
+    if (!matched) {
+      for (const field of fields) {
+        if (field.native) continue;
+        if (field.name.toLowerCase() === header.toLowerCase()) {
+          matched = field;
+          break;
+        }
+      }
+    }
+
+    if (matched) {
+      map.set(header, matched);
+    }
+  }
+
+  return map;
+}
+
+function isUnsupportedImportType(fieldType: IField['type']): boolean {
+  return (
+    fieldType === E_FIELD_TYPE.USER ||
+    fieldType === E_FIELD_TYPE.FILE ||
+    fieldType === E_FIELD_TYPE.FIELD_GROUP
+  );
+}
+
+function isArrayFieldType(fieldType: IField['type']): boolean {
+  return (
+    fieldType === E_FIELD_TYPE.DROPDOWN || fieldType === E_FIELD_TYPE.CATEGORY
+  );
+}
+
+function coerceValue(
+  raw: string,
+  field: IField,
+  resolver?: RelationshipResolver,
+): unknown {
+  // RELATIONSHIP: resolve display values para ObjectIds via resolver pré-computado.
+  if (field.type === E_FIELD_TYPE.RELATIONSHIP) {
+    if (raw === '') return undefined;
+    if (!resolver) return undefined;
+    const ids = resolver(raw);
+    if (ids.length === 0) return undefined;
+    return ids;
+  }
+
+  // USER, FILE, FIELD_GROUP são exportados como display names / filenames —
+  // não há como reconstituir os ObjectIDs no import. Retorna undefined.
+  if (isUnsupportedImportType(field.type)) return undefined;
+
+  if (raw === '') return undefined;
+
+  if (field.type === E_FIELD_TYPE.DATE) {
+    const parsed = new Date(raw);
+    if (!isNaN(parsed.getTime())) return parsed;
+    return raw;
+  }
+
+  // DROPDOWN e CATEGORY são exportados como "valor1; valor2" — reconstrói array.
+  if (isArrayFieldType(field.type)) {
+    return raw
+      .split(';')
+      .map((s) => s.trim())
+      .filter((s) => s.length > 0);
+  }
+
+  if (field.format === E_FIELD_FORMAT.INTEGER) {
+    const parsed = parseInt(raw, 10);
+    if (!isNaN(parsed)) return parsed;
+    return raw;
+  }
+
+  if (field.format === E_FIELD_FORMAT.DECIMAL) {
+    const parsed = parseFloat(raw);
+    if (!isNaN(parsed)) return parsed;
+    return raw;
+  }
+
+  return raw;
+}
+
+async function processImportJob(
+  job: Job<CsvImportJobPayload>,
+  deps: WorkerDeps,
+): Promise<void> {
+  const { slug, userId, csvContent } = job.data;
+  const jobId = job.id ?? '';
+  const room = 'job:' + jobId;
+
+  const table = await deps.tableRepository.findBySlug(slug);
+
+  if (!table) {
+    const errorEvt: CsvImportErrorEvent = {
+      job_id: jobId,
+      message: 'Tabela não encontrada',
+      cause: 'TABLE_NOT_FOUND',
+    };
+    deps.storeResult(jobId, { kind: 'error', event: errorEvt });
+    deps.namespace.to(room).emit(CSV_IMPORT_EVENT.ERROR, errorEvt);
+    return;
+  }
+
+  const rows = await parseCsv(csvContent);
+
+  if (rows.length > IMPORT_CSV_LIMIT) {
+    const errorEvt: CsvImportErrorEvent = {
+      job_id: jobId,
+      message: `Arquivo excede ${IMPORT_CSV_LIMIT.toLocaleString('pt-BR')} linhas`,
+      cause: 'IMPORT_LIMIT_EXCEEDED',
+    };
+    deps.storeResult(jobId, { kind: 'error', event: errorEvt });
+    deps.namespace.to(room).emit(CSV_IMPORT_EVENT.ERROR, errorEvt);
+    return;
+  }
+
+  const firstRow = rows[0];
+  const headers: string[] = [];
+  if (firstRow) {
+    headers.push(...Object.keys(firstRow));
+  }
+  const fieldMap = buildFieldMap(headers, table.fields);
+
+  const resolvers = await buildRelationshipResolvers(
+    rows,
+    fieldMap,
+    deps.tableRepository,
+    deps.rowRepository,
+  );
+
+  let imported = 0;
+  let skipped = 0;
+  const total = rows.length;
+  const groups: IGroupConfiguration[] = table.groups ?? [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const payload: Record<string, unknown> = {};
+
+    for (const [col, field] of fieldMap) {
+      const raw = row[col] ?? '';
+      payload[field.slug] = coerceValue(raw, field, resolvers.get(col));
+    }
+
+    payload['creator'] = userId;
+
+    const errors = validateRowPayload(payload, table.fields, groups);
+
+    if (errors) {
+      skipped++;
+
+      const isLast = i === rows.length - 1;
+      const isInterval = (i + 1) % PROGRESS_INTERVAL === 0;
+
+      if (isInterval || isLast) {
+        const progressEvt: CsvImportProgressEvent = {
+          job_id: jobId,
+          processed: i + 1,
+          total,
+        };
+        deps.namespace.to(room).emit(CSV_IMPORT_EVENT.PROGRESS, progressEvt);
+      }
+
+      continue;
+    }
+
+    await deps.rowPasswordService.hash(payload, table.fields);
+    await deps.rowRepository.create({ table, data: payload });
+
+    imported++;
+
+    const isLast = i === rows.length - 1;
+    const isInterval = (i + 1) % PROGRESS_INTERVAL === 0;
+
+    if (isInterval || isLast) {
+      const progressEvt: CsvImportProgressEvent = {
+        job_id: jobId,
+        processed: i + 1,
+        total,
+      };
+      deps.namespace.to(room).emit(CSV_IMPORT_EVENT.PROGRESS, progressEvt);
+    }
+  }
+
+  const completedEvt: CsvImportCompletedEvent = {
+    job_id: jobId,
+    imported,
+    skipped,
+    total,
+  };
+  deps.storeResult(jobId, { kind: 'completed', event: completedEvt });
+  deps.namespace.to(room).emit(CSV_IMPORT_EVENT.COMPLETED, completedEvt);
+}
+
+export function startCsvImportWorker(
+  deps: WorkerDeps,
+): Worker<CsvImportJobPayload> {
+  if (cachedWorker) return cachedWorker;
+
+  const worker = new Worker<CsvImportJobPayload>(
+    CSV_IMPORT_QUEUE_NAME,
+    async (job: Job<CsvImportJobPayload>): Promise<void> => {
+      if (job.name === CSV_IMPORT_JOB.IMPORT) {
+        await processImportJob(job, deps);
+        return;
+      }
+      console.warn(`[CsvImportWorker] Job desconhecido: ${job.name}`);
+    },
+    {
+      connection: createBullMQConnection(),
+      concurrency: 3,
+    },
+  );
+
+  worker.on('completed', (job: Job<CsvImportJobPayload>): void => {
+    console.info(`[CsvImportWorker] Job ${job.id} processado`);
+  });
+
+  worker.on(
+    'failed',
+    (job: Job<CsvImportJobPayload> | undefined, err: Error): void => {
+      console.error(
+        `[CsvImportWorker] Job ${job?.id} falhou (tentativa ${job?.attemptsMade ?? '?'}):`,
+        err.message,
+      );
+    },
+  );
+
+  cachedWorker = worker;
+  return worker;
+}
+
+export async function stopCsvImportWorker(): Promise<void> {
+  if (cachedWorker) {
+    await cachedWorker.close();
+    cachedWorker = null;
+  }
+}

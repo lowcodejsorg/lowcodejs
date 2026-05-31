@@ -231,6 +231,11 @@ export async function LoggerUserActionHook(
     // deletar — não cada chamada HTTP de leitura.
     if (action === E_LOGGER_ACTION_TYPE.VIEW) return;
 
+    // Não loga operações de reordenação kanban (posicionamento sem mudança de coluna).
+    // Frontend envia X-Skip-Log: true em updates que só alteram `ordem-kanban`.
+
+    if (request.headers['x-skip-log']) return;
+
     const payload = {
       action,
       url: request.url,

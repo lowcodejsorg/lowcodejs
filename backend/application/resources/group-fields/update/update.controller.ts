@@ -42,7 +42,9 @@ export default class {
 
     const result = await this.useCase.execute({
       ...payload,
-      ...params,
+      tableSlug: params.slug,
+      groupSlug: params.groupSlug,
+      fieldId: params.fieldId,
     });
 
     if (result.isLeft()) {

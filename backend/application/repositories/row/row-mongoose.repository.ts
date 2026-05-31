@@ -352,4 +352,25 @@ export default class RowMongooseRepository implements RowContractRepository {
       _id: result.insertedId.toString(),
     } as IRow;
   }
+
+  // ── Resolver helpers (csv-import) ─────────────────────────
+
+  async findManyByFieldValues(
+    table: RowTableContext,
+    fieldSlugs: string[],
+    values: string[],
+  ): Promise<IRow[]> {
+    if (fieldSlugs.length === 0 || values.length === 0) return [];
+
+    const model = await this.getModel(table);
+    const orClauses = fieldSlugs.map((slug) => ({
+      [slug]: { $in: values },
+    }));
+
+    const docs = await model
+      .find({ $or: orClauses, trashed: { $ne: true } })
+      .lean();
+
+    return docs.map((doc) => this.transformRow(doc));
+  }
 }

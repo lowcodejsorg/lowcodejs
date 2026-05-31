@@ -41,9 +41,6 @@ export function useAutoSaveTableRow(
         queryKeys.rows.detail(variables.slug, data._id),
         data,
       );
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.rows.lists(variables.slug),
-      });
       props.onSuccess?.(data, variables);
     },
     onError: props.onError,
