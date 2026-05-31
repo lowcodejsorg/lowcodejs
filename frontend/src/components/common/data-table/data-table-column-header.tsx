@@ -8,6 +8,7 @@ import {
   PinOffIcon,
 } from 'lucide-react';
 
+import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -42,7 +43,7 @@ export function DataTableColumnHeader({
   const canPin = column && !column.columnDef.enableHiding === false;
 
   if (!orderKey && !column) {
-    return <span>{title}</span>;
+    return <FieldTitle value={title} />;
   }
 
   let currentOrder: 'asc' | 'desc' | undefined = undefined;
@@ -71,10 +72,10 @@ export function DataTableColumnHeader({
             if (canNavigate) onTitleClick();
           }}
         >
-          {title}
+          <FieldTitle value={title} />
         </Button>
       )}
-      {!onTitleClick && <span>{title}</span>}
+      {!onTitleClick && <FieldTitle value={title} />}
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

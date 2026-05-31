@@ -39,7 +39,10 @@ export default class {
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
     const payload = TableFieldCreateBodyValidator.parse(request.body);
     const params = TableFieldCreateParamsValidator.parse(request.params);
-    const result = await this.useCase.execute({ ...payload, ...params });
+    const result = await this.useCase.execute({
+      ...payload,
+      tableSlug: params.slug,
+    });
 
     if (result.isLeft()) {
       const error = result.value;

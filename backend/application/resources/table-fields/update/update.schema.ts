@@ -4,7 +4,7 @@ export const TableFieldUpdateSchema: FastifySchema = {
   tags: ['Fields'],
   summary: 'Update field',
   description:
-    'Updates an existing field in a table. Regenerates slug if name changed and rebuilds table schema. Updates field references if slug changes.',
+    'Updates an existing field in a table. Changing name only changes the display title. Slug is the safe technical key and only changes when explicitly sent.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -29,8 +29,22 @@ export const TableFieldUpdateSchema: FastifySchema = {
     properties: {
       name: {
         type: 'string',
-        description: 'Field name (will be re-slugified if changed)',
-        examples: ['Full Name Updated', 'Product Price', 'Published Date'],
+        minLength: 1,
+        maxLength: 500,
+        description: 'Field display title shown to end users',
+        examples: [
+          'Full Name Updated',
+          'Pesquise na base do USPTO e digite os resultados encontrados na busca de anterioridade (padrão). Você tem condições?',
+        ],
+      },
+      slug: {
+        type: 'string',
+        minLength: 2,
+        maxLength: 80,
+        pattern: '^[a-z0-9]+(?:-[a-z0-9]+)*$',
+        description:
+          'Safe technical field key. Changing it renames the stored field data.',
+        examples: ['full-name', 'nome-slug-campo'],
       },
       type: {
         type: 'string',

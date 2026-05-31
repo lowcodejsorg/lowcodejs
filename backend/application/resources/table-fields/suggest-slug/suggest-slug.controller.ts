@@ -1,50 +1,48 @@
-/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
-import { Controller, getInstanceByToken, PUT } from 'fastify-decorators';
+import { Controller, getInstanceByToken, POST } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 
-import { GroupFieldUpdateSchema } from './update.schema';
-import GroupFieldUpdateUseCase from './update.use-case';
+import { TableFieldSuggestSlugSchema } from './suggest-slug.schema';
+import TableFieldSuggestSlugUseCase from './suggest-slug.use-case';
 import {
-  GroupFieldUpdateBodyValidator,
-  GroupFieldUpdateParamsValidator,
-} from './update.validator';
+  TableFieldSuggestSlugBodyValidator,
+  TableFieldSuggestSlugParamsValidator,
+} from './suggest-slug.validator';
 
 @Controller({
   route: 'tables',
 })
 export default class {
   constructor(
-    private readonly useCase: GroupFieldUpdateUseCase = getInstanceByToken(
-      GroupFieldUpdateUseCase,
+    // eslint-disable-next-line no-unused-vars
+    private readonly useCase: TableFieldSuggestSlugUseCase = getInstanceByToken(
+      TableFieldSuggestSlugUseCase,
     ),
   ) {}
 
-  @PUT({
-    url: '/:slug/groups/:groupSlug/fields/:fieldId',
+  @POST({
+    url: '/:slug/fields/suggest-slug',
     options: {
       onRequest: [
         AuthenticationMiddleware({
           optional: false,
         }),
         TableAccessMiddleware({
-          requiredPermission: 'UPDATE_FIELD',
+          requiredPermission: 'CREATE_FIELD',
         }),
       ],
-      schema: GroupFieldUpdateSchema,
+      schema: TableFieldSuggestSlugSchema,
     },
   })
   async handle(request: FastifyRequest, response: FastifyReply): Promise<void> {
-    const payload = GroupFieldUpdateBodyValidator.parse(request.body);
-    const params = GroupFieldUpdateParamsValidator.parse(request.params);
+    const payload = TableFieldSuggestSlugBodyValidator.parse(request.body);
+    const params = TableFieldSuggestSlugParamsValidator.parse(request.params);
 
     const result = await this.useCase.execute({
-      ...payload,
+      name: payload.name,
       tableSlug: params.slug,
-      groupSlug: params.groupSlug,
-      fieldId: params.fieldId,
     });
 
     if (result.isLeft()) {

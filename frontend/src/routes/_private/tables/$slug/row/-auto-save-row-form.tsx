@@ -6,6 +6,7 @@ import React from 'react';
 import { AutoSaveStatusIndicator } from './-auto-save-status';
 import { RowFormFields } from './create/-create-form';
 
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import {
   UploadingProvider,
   useIsUploading,
@@ -212,6 +213,18 @@ function AutoSaveRowFormContent({
     onBack?.();
   };
 
+  const handleFillFields = React.useCallback(
+    (data: Record<string, string | null>): void => {
+      const fieldSlugs = new Set(fields.map((field) => field.slug));
+      for (const [key, value] of Object.entries(data)) {
+        if (value === null || !fieldSlugs.has(key)) continue;
+        form.setFieldValue(key, value);
+      }
+      triggerSave();
+    },
+    [fields, form, triggerSave],
+  );
+
   const handleCancel = (): void => {
     cancelPending();
     onBack?.();
@@ -232,19 +245,29 @@ function AutoSaveRowFormContent({
 
   return (
     <React.Fragment>
-      <div className="shrink-0 px-4 py-2 flex items-center justify-between border-b">
+      <div className="shrink-0 px-4 py-2 flex items-center justify-between gap-2 border-b">
         <AutoSaveStatusIndicator
           status={displayStatus}
           lastSavedAt={lastSavedAt}
         />
-        {isTrashed && (
-          <Badge
-            variant="outline"
-            className="text-amber-600 border-amber-400"
-          >
-            Rascunho
-          </Badge>
-        )}
+        <div className="flex items-center gap-2 shrink-0">
+          {isTrashed && (
+            <Badge
+              variant="outline"
+              className="text-amber-600 border-amber-400"
+            >
+              Rascunho
+            </Badge>
+          )}
+          <ExtensionSlot
+            id="table.row.create"
+            context={{
+              table,
+              slug,
+              onFillFields: handleFillFields,
+            }}
+          />
+        </div>
       </div>
 
       <form

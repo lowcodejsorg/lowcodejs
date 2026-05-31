@@ -114,11 +114,11 @@ describe('Group Field Update Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value.name).toBe('Avenida');
-    expect(result.value.slug).toBe('avenida');
+    expect(result.value.slug).toBe('rua');
 
     const updatedField = await fieldRepository.findById(field._id);
     expect(updatedField?.name).toBe('Avenida');
-    expect(updatedField?.slug).toBe('avenida');
+    expect(updatedField?.slug).toBe('rua');
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {

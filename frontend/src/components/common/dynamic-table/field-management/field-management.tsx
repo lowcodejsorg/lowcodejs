@@ -36,6 +36,7 @@ import {
   useFieldManagement,
 } from './field-management-context';
 
+import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -126,7 +127,10 @@ function SortableManagementItem({
       style={style}
       className="flex items-center justify-between gap-2 rounded-lg border bg-card p-3 shadow-sm"
     >
-      <span className="text-sm font-medium">{field.name}</span>
+      <FieldTitle
+        value={field.name}
+        className="text-sm font-medium"
+      />
       <div className="flex items-center gap-1">
         {widthKey && onWidthChange && (
           <Input
@@ -205,7 +209,10 @@ function TrashedItem({
   const [restoreOpen, setRestoreOpen] = useState(false);
   return (
     <div className="flex items-center justify-between gap-2 rounded-lg border bg-muted/50 p-3">
-      <span className="text-sm text-muted-foreground">{field.name}</span>
+      <FieldTitle
+        value={field.name}
+        className="text-sm text-muted-foreground"
+      />
       <div className="flex items-center gap-1">
         <Dialog
           modal

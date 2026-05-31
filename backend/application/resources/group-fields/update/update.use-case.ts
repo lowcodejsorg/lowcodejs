@@ -1,11 +1,11 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
-import slugify from 'slugify';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField as Entity, IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
+import { resolveFieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import {
@@ -44,7 +44,14 @@ export default class GroupFieldUpdateUseCase {
 
   async execute(payload: Payload): Promise<Response> {
     try {
-      const table = await this.tableRepository.findBySlug(payload.slug);
+      const tableSlug = payload.tableSlug ?? payload.slug;
+      if (!tableSlug) {
+        return left(
+          HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      const table = await this.tableRepository.findBySlug(tableSlug);
 
       if (!table)
         return left(
@@ -131,7 +138,49 @@ export default class GroupFieldUpdateUseCase {
         );
       }
 
-      const slug = slugify(payload.name, { lower: true, trim: true });
+      const explicitSlug =
+        payload.tableSlug !== undefined &&
+        payload.slug !== undefined &&
+        payload.slug !== field.slug;
+      const resolvedSlug = explicitSlug
+        ? resolveFieldSlug({ name: payload.name, slug: payload.slug })
+        : { slug: field.slug, error: null };
+
+      if (resolvedSlug.error) {
+        return left(
+          HTTPException.BadRequest('Slug inválido', 'INVALID_FIELD_SLUG', {
+            slug: resolvedSlug.error,
+          }),
+        );
+      }
+
+      const slug = resolvedSlug.slug;
+
+      if (explicitSlug) {
+        return left(
+          HTTPException.Forbidden(
+            'Slug de campo de grupo ainda não pode ser alterado',
+            'GROUP_FIELD_SLUG_CHANGE_NOT_ALLOWED',
+            {
+              slug: 'Altere apenas o título exibido deste campo',
+            },
+          ),
+        );
+      }
+
+      const existFieldInGroup = targetGroup.fields?.some(
+        (item) => item._id !== field._id && item.slug === slug && !item.trashed,
+      );
+
+      if (existFieldInGroup) {
+        return left(
+          HTTPException.Conflict(
+            'Campo já existe no grupo',
+            'FIELD_ALREADY_EXIST',
+            { slug: 'Campo já existe no grupo' },
+          ),
+        );
+      }
 
       if (hasDuplicateDropdownLabels(payload.dropdown)) {
         return left(
@@ -225,6 +274,7 @@ export default class GroupFieldUpdateUseCase {
     // Locked fields allow visibility and width changes, block everything else
     // Group context is already defined by the URL, so group comparison is skipped
     if (payload.name !== field.name) return false;
+    if (payload.slug !== undefined && payload.slug !== field.slug) return false;
     if (payload.type !== field.type) return false;
     if (payload.trashed || payload.trashedAt) return false;
     if (payload.required !== field.required) return false;

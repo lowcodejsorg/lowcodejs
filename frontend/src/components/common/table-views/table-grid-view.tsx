@@ -15,6 +15,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
@@ -48,7 +49,7 @@ function RenderGridCell({
     return (
       <div className="flex flex-col gap-0.5">
         <span className="text-xs font-medium text-muted-foreground">
-          {field.name}
+          <FieldTitle value={field.name} />
         </span>
         <span className="text-muted-foreground text-sm">-</span>
       </div>
@@ -147,7 +148,7 @@ function RenderGridCell({
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-xs font-medium text-muted-foreground">
-        {field.name}
+        <FieldTitle value={field.name} />
       </span>
       {renderContent()}
     </div>
