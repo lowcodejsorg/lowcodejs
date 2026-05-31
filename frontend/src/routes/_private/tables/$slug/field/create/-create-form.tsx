@@ -272,9 +272,9 @@ export const CreateFieldFormFields = withForm({
                     'allowCustomDropdownOptions',
                     'allowCreateRelationshipRecords',
                   ];
-                  for (const fieldName of conditionalFields) {
-                    if (form.getFieldMeta(fieldName)) {
-                      form.deleteField(fieldName);
+                  for (const conditionalField of conditionalFields) {
+                    if (form.getFieldMeta(conditionalField)) {
+                      form.deleteField(conditionalField);
                     }
                   }
 
