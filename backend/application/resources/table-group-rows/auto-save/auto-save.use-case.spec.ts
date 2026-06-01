@@ -109,9 +109,7 @@ async function createRowWithItems(table: ITable): Promise<string> {
   const row = await rowRepository.create({
     table,
     data: {
-      items: [
-        { _id: 'item-1', descricao: 'Item existente', trashed: false },
-      ],
+      items: [{ _id: 'item-1', descricao: 'Item existente', trashed: false }],
     },
   });
   return row._id;
