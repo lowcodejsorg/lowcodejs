@@ -21,6 +21,12 @@ export function InputSearch(): React.JSX.Element {
 
   const [inputValue, setInputValue] = React.useState(search.search || '');
 
+  // Sincroniza com a URL quando o param `search` muda externamente
+  // (ex.: "Limpar filtros" remove o param e a caixa deve zerar).
+  React.useEffect(() => {
+    setInputValue(search.search ?? '');
+  }, [search.search]);
+
   const handleChange = (value: string): void => {
     setInputValue(value);
     if (value.trim().length === 0 && search.search) {

@@ -29,6 +29,7 @@ describe('E2E Setting Public Controller', () => {
         LOGO_SMALL_URL: null,
         LOGO_LARGE_URL: null,
         AI_ASSISTANT_ENABLED: false,
+        CHAT_HISTORY_ENABLED: false,
         SETUP_COMPLETED: false,
         SETUP_CURRENT_STEP: 'admin',
       });

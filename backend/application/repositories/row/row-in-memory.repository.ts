@@ -49,9 +49,9 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
     const row: IRow = {
       _id: randomUUID(),
-      ...payload.data,
       trashed: false,
       trashedAt: null,
+      ...payload.data,
       createdAt: new Date(),
       updatedAt: new Date(),
     } as IRow;
@@ -376,6 +376,35 @@ export default class RowInMemoryRepository implements RowContractRepository {
         return false;
       })
       .map((row) => ({ ...row }));
+  }
+
+  // ── Category cleanup (delete-category) ────────────────────
+
+  async pullCategoryValues(
+    table: RowTableContext,
+    fieldSlug: string,
+    ids: string[],
+  ): Promise<number> {
+    if (ids.length === 0) return 0;
+
+    const collection = this.getCollection(table.slug);
+    const idSet = new Set(ids);
+    let count = 0;
+
+    for (const row of collection) {
+      const record = row as Record<string, unknown>;
+      const value = record[fieldSlug];
+      if (!Array.isArray(value)) continue;
+
+      const filtered = value.filter((item) => !idSet.has(String(item)));
+      if (filtered.length !== value.length) {
+        record[fieldSlug] = filtered;
+        row.updatedAt = new Date();
+        count++;
+      }
+    }
+
+    return count;
   }
 
   async insertRaw(

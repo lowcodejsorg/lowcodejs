@@ -85,6 +85,9 @@ export function TableKanbanView({
   const [editingColumnColor, setEditingColumnColor] = React.useState<
     string | null
   >(null);
+  const [rowEditTarget, setRowEditTarget] = React.useState<
+    'members' | 'start' | 'due' | 'list' | null
+  >(null);
   const startDateEnsureAttemptedRef = React.useRef(false);
 
   const fields = React.useMemo<FieldMap>(() => {
@@ -861,7 +864,14 @@ export function TableKanbanView({
                     row={row}
                     fields={fields}
                     columnId={option.id}
-                    onClick={() => setActiveRow(row)}
+                    onClick={() => {
+                      setActiveRow(row);
+                      setRowEditTarget(null);
+                    }}
+                    onFieldClick={(field) => {
+                      setActiveRow(row);
+                      setRowEditTarget(field);
+                    }}
                   />
                 ))}
               </SortableContext>
@@ -883,7 +893,14 @@ export function TableKanbanView({
           <KanbanUnassignedColumn
             rows={columns.unassigned}
             fields={fields}
-            onSelectRow={setActiveRow}
+            onSelectRow={(row) => {
+              setActiveRow(row);
+              setRowEditTarget(null);
+            }}
+            onFieldClick={(row, field) => {
+              setActiveRow(row);
+              setRowEditTarget(field);
+            }}
           />
 
           <section className="w-72 shrink-0 rounded-xl border border-dashed bg-muted/10 p-4 flex items-center justify-center">
@@ -901,13 +918,17 @@ export function TableKanbanView({
 
           <KanbanRowDialog
             row={activeRow}
-            onClose={() => setActiveRow(null)}
+            onClose={() => {
+              setActiveRow(null);
+              setRowEditTarget(null);
+            }}
             onRowUpdated={(row) => setActiveRow(row)}
             onRowDuplicated={handleRowDuplicated}
             onRowDeleted={handleRowDeleted}
             tableSlug={tableSlug}
             table={table}
             fields={fields}
+            initialEditTarget={rowEditTarget}
           />
 
           <KanbanAddListDialog

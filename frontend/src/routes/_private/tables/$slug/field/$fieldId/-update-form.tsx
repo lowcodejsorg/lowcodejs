@@ -621,6 +621,30 @@ export const UpdateFieldFormFields = withForm({
           </form.AppField>
         )}
 
+        {/* Exibição do grupo de campos: formulário e/ou detalhes */}
+        {isFieldGroup && (
+          <>
+            <form.AppField name="showInForm">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Exibir no formulário"
+                  description="Exibir este grupo no formulário de adicionar/editar registro?"
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+            <form.AppField name="showInDetail">
+              {(field) => (
+                <field.FieldBooleanSwitch
+                  label="Exibir nos detalhes"
+                  description="Exibir este grupo na página de detalhes do registro?"
+                  disabled={isDisabled}
+                />
+              )}
+            </form.AppField>
+          </>
+        )}
+
         {/* Campo Obrigatoriedade */}
         {showRequired && (
           <form.AppField name="required">

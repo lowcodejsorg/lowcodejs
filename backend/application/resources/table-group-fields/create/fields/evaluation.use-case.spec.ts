@@ -76,7 +76,9 @@ describe('Group Field Create - EVALUATION', () => {
     });
   });
 
-  it('deve criar campo EVALUATION basico no grupo', async () => {
+  // Invariante nível único: EVALUATION é campo de sistema e NÃO pode existir
+  // dentro de um grupo. O use-case bloqueia (TYPES_NOT_ALLOWED_IN_GROUP).
+  it('deve bloquear criação de campo EVALUATION no grupo', async () => {
     const result = await sut.execute({
       ...FIELD_PAYLOAD_BASE,
       slug: 'pedidos',
@@ -85,14 +87,13 @@ describe('Group Field Create - EVALUATION', () => {
       type: E_FIELD_TYPE.EVALUATION,
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.type).toBe(E_FIELD_TYPE.EVALUATION);
-    expect(result.value.format).toBeNull();
-    expect(result.value.slug).toBe('nota');
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
   });
 
-  it('deve criar campo EVALUATION sem formato no grupo', async () => {
+  it('deve bloquear EVALUATION no grupo mesmo sem formato', async () => {
     const result = await sut.execute({
       ...FIELD_PAYLOAD_BASE,
       slug: 'pedidos',
@@ -102,9 +103,8 @@ describe('Group Field Create - EVALUATION', () => {
       format: null,
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.type).toBe(E_FIELD_TYPE.EVALUATION);
-    expect(result.value.format).toBeNull();
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
   });
 });

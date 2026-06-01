@@ -66,6 +66,7 @@ function toDefaultSearchableOptions(
 
 export function buildCreateRowDefaultValues(
   fields: Array<IField>,
+  overrides?: CreateRowDefaultValue,
 ): CreateRowDefaultValue {
   const defaults: Record<
     string,
@@ -117,6 +118,12 @@ export function buildCreateRowDefaultValues(
         break;
       default:
         defaults[field.slug] = '';
+    }
+  }
+
+  if (overrides) {
+    for (const [key, value] of Object.entries(overrides)) {
+      if (key in defaults) defaults[key] = value;
     }
   }
 

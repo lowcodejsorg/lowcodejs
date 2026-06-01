@@ -152,4 +152,18 @@ export abstract class RowContractRepository {
     fieldSlugs: string[],
     values: string[],
   ): Promise<IRow[]>;
+
+  // ── Category cleanup (delete-category) ────────────────────
+
+  /**
+   * Remove os `ids` (categorias) do array `fieldSlug` de todas as rows que os
+   * contenham. Usada ao excluir uma seção (categoria) para desvincular os
+   * registros (artigos) sem apagá-los.
+   * Retorna a quantidade de rows modificadas.
+   */
+  abstract pullCategoryValues(
+    table: RowTableContext,
+    fieldSlug: string,
+    ids: string[],
+  ): Promise<number>;
 }

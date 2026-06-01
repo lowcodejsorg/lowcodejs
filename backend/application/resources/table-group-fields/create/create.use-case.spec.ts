@@ -187,6 +187,39 @@ describe('Group Field Create Use Case', () => {
     expect(result.value.message).toBe('Campo já existe no grupo');
   });
 
+  it.each([
+    E_FIELD_TYPE.FIELD_GROUP,
+    E_FIELD_TYPE.REACTION,
+    E_FIELD_TYPE.EVALUATION,
+  ])('deve rejeitar tipo %s dentro de grupo (nivel unico)', async (type) => {
+    await tableRepository.create({
+      ...TABLE_DEFAULTS,
+      name: 'Clientes',
+      slug: 'clientes',
+      groups: [
+        {
+          slug: 'endereco',
+          name: 'Endereco',
+          fields: [],
+          _schema: {},
+        },
+      ],
+    });
+
+    const result = await sut.execute({
+      slug: 'clientes',
+      groupSlug: 'endereco',
+      name: 'Aninhado',
+      ...FIELD_PAYLOAD_BASE,
+      type,
+    });
+
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
+  });
+
   it('deve retornar CREATE_GROUP_FIELD_ERROR quando repository falha', async () => {
     tableRepository.simulateError('findBySlug', new Error('Database error'));
 

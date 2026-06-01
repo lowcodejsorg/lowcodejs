@@ -27,7 +27,7 @@ Cada operacao (ex: `users/create/`) contem:
 | `users/` | `/users` | create, paginated, export-csv, show, update | Sim | User |
 | `user-groups/` | `/user-group` | create, paginated, list, export-csv, show, update | Sim | UserGroup |
 | `table-base/` | `/tables` | create, paginated, export-csv, show, update, delete, send-to-trash, remove-from-trash | Misto | Table |
-| `table-fields/` | `/tables/:slug/fields` | create, show, update, delete, send-to-trash, remove-from-trash, add-category | Sim | Field |
+| `table-fields/` | `/tables/:slug/fields` | create, show, update, delete, send-to-trash, remove-from-trash, add-category, delete-category | Sim | Field |
 | `table-rows/` | `/tables/:slug/rows` | create, paginated, export-csv, show, update, delete, send-to-trash, remove-from-trash, bulk-trash, bulk-restore, reaction, evaluation, forum-message | Misto | Row (dinamico) |
 | `group-fields/` | `/tables/:slug/groups/:groupSlug/fields` | create, list, show, update, send-to-trash | Sim | Field (embedded) |
 | `group-rows/` | `/tables/:slug/rows/:rowId/groups/:groupSlug` | create, list, export-csv, show, update, delete | Sim | Row (embedded) |

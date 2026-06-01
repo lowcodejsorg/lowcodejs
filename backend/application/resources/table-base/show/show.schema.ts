@@ -410,12 +410,28 @@ export const TableShowSchema: FastifySchema = {
                         { type: 'null' },
                       ],
                     },
-                    relationship: { type: 'object', nullable: true },
-                    dropdown: { type: 'array', nullable: true },
+                    relationship: {
+                      type: 'object',
+                      nullable: true,
+                      additionalProperties: true,
+                    },
+                    dropdown: {
+                      type: 'array',
+                      nullable: true,
+                      items: { type: 'object', additionalProperties: true },
+                    },
                     allowCustomDropdownOptions: { type: 'boolean' },
                     allowCreateRelationshipRecords: { type: 'boolean' },
-                    category: { type: 'array', nullable: true },
-                    group: { type: 'object', nullable: true },
+                    category: {
+                      type: 'array',
+                      nullable: true,
+                      items: { type: 'object', additionalProperties: true },
+                    },
+                    group: {
+                      type: 'object',
+                      nullable: true,
+                      additionalProperties: true,
+                    },
                     trashed: { type: 'boolean' },
                     trashedAt: {
                       type: 'string',

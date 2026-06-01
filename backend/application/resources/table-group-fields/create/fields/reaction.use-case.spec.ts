@@ -76,7 +76,9 @@ describe('Group Field Create - REACTION', () => {
     });
   });
 
-  it('deve criar campo REACTION basico no grupo', async () => {
+  // Invariante nível único: REACTION é campo de sistema e NÃO pode existir
+  // dentro de um grupo. O use-case bloqueia (TYPES_NOT_ALLOWED_IN_GROUP).
+  it('deve bloquear criação de campo REACTION no grupo', async () => {
     const result = await sut.execute({
       ...FIELD_PAYLOAD_BASE,
       slug: 'pedidos',
@@ -85,14 +87,13 @@ describe('Group Field Create - REACTION', () => {
       type: E_FIELD_TYPE.REACTION,
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.type).toBe(E_FIELD_TYPE.REACTION);
-    expect(result.value.format).toBeNull();
-    expect(result.value.slug).toBe('curtida');
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.code).toBe(400);
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
   });
 
-  it('deve criar campo REACTION sem formato no grupo', async () => {
+  it('deve bloquear REACTION no grupo mesmo sem formato', async () => {
     const result = await sut.execute({
       ...FIELD_PAYLOAD_BASE,
       slug: 'pedidos',
@@ -102,9 +103,8 @@ describe('Group Field Create - REACTION', () => {
       format: null,
     });
 
-    expect(result.isRight()).toBe(true);
-    if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.type).toBe(E_FIELD_TYPE.REACTION);
-    expect(result.value.format).toBeNull();
+    expect(result.isLeft()).toBe(true);
+    if (!result.isLeft()) throw new Error('Expected left');
+    expect(result.value.cause).toBe('FIELD_TYPE_NOT_ALLOWED_IN_GROUP');
   });
 });

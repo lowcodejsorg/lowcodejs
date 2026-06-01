@@ -23,6 +23,13 @@ import type { GroupFieldCreatePayload } from './create.validator';
 type Response = Either<HTTPException, Entity>;
 type Payload = GroupFieldCreatePayload;
 
+// Invariante nível único: tipos proibidos dentro de um grupo de campos.
+const TYPES_NOT_ALLOWED_IN_GROUP = new Set<string>([
+  E_FIELD_TYPE.FIELD_GROUP,
+  E_FIELD_TYPE.REACTION,
+  E_FIELD_TYPE.EVALUATION,
+]);
+
 @Service()
 export default class GroupFieldCreateUseCase {
   constructor(
@@ -37,6 +44,18 @@ export default class GroupFieldCreateUseCase {
       if (!tableSlug) {
         return left(
           HTTPException.BadRequest('Tabela inválida', 'INVALID_TABLE_SLUG'),
+        );
+      }
+
+      // Grupo de campos é nível único: não pode conter outro grupo, nem campos
+      // de sistema (reação/avaliação). Defesa em profundidade — a UI já bloqueia.
+      if (TYPES_NOT_ALLOWED_IN_GROUP.has(payload.type)) {
+        return left(
+          HTTPException.BadRequest(
+            'Este tipo de campo não é permitido dentro de um grupo',
+            'FIELD_TYPE_NOT_ALLOWED_IN_GROUP',
+            { type: 'Tipo de campo não permitido no grupo' },
+          ),
         );
       }
 

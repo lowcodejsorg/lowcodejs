@@ -138,13 +138,14 @@ export default class GroupFieldUpdateUseCase {
         );
       }
 
-      const explicitSlug =
-        payload.tableSlug !== undefined &&
-        payload.slug !== undefined &&
-        payload.slug !== field.slug;
-      const resolvedSlug = explicitSlug
-        ? resolveFieldSlug({ name: payload.name, slug: payload.slug })
-        : { slug: field.slug, error: null };
+      const nameChanged = payload.name !== field.name;
+      let resolvedSlug: { slug: string; error: string | null } = {
+        slug: field.slug,
+        error: null,
+      };
+      if (nameChanged) {
+        resolvedSlug = resolveFieldSlug({ name: payload.name });
+      }
 
       if (resolvedSlug.error) {
         return left(
@@ -155,18 +156,6 @@ export default class GroupFieldUpdateUseCase {
       }
 
       const slug = resolvedSlug.slug;
-
-      if (explicitSlug) {
-        return left(
-          HTTPException.Forbidden(
-            'Slug de campo de grupo ainda não pode ser alterado',
-            'GROUP_FIELD_SLUG_CHANGE_NOT_ALLOWED',
-            {
-              slug: 'Altere apenas o título exibido deste campo',
-            },
-          ),
-        );
-      }
 
       const existFieldInGroup = targetGroup.fields?.some(
         (item) => item._id !== field._id && item.slug === slug && !item.trashed,
@@ -274,7 +263,6 @@ export default class GroupFieldUpdateUseCase {
     // Locked fields allow visibility and width changes, block everything else
     // Group context is already defined by the URL, so group comparison is skipped
     if (payload.name !== field.name) return false;
-    if (payload.slug !== undefined && payload.slug !== field.slug) return false;
     if (payload.type !== field.type) return false;
     if (payload.trashed || payload.trashedAt) return false;
     if (payload.required !== field.required) return false;

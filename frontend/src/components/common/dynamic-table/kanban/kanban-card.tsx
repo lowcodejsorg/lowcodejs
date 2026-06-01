@@ -18,16 +18,26 @@ export interface KanbanCardProps {
   row: IRow;
   fields: FieldMap;
   onClick: () => void;
+  onFieldClick?: (field: 'members' | 'start' | 'due' | 'list') => void;
 }
 
 export function KanbanCard({
   row,
   fields,
   onClick,
+  onFieldClick,
 }: KanbanCardProps): React.JSX.Element {
   const title = getTitleValue(row, fields.title);
   const progress = getProgressValue(row, fields.progress);
   const members = getMembersFromRow(row, fields.members);
+
+  const handleFieldClick = (
+    fieldType: 'members' | 'start' | 'due' | 'list',
+    event: React.MouseEvent,
+  ): void => {
+    event.stopPropagation();
+    onFieldClick?.(fieldType);
+  };
 
   return (
     <button
@@ -49,27 +59,44 @@ export function KanbanCard({
             )}
           >
             {fields.startDate && (
-              <div className="min-w-0">
+              <button
+                type="button"
+                onClick={(e) => handleFieldClick('start', e)}
+                className="min-w-0 hover:underline text-left"
+              >
                 <span className="mr-1">Início:</span>
                 <TableRowDateCell
                   row={row}
                   field={fields.startDate}
                 />
-              </div>
+              </button>
             )}
             {fields.dueDate && (
-              <div className="min-w-0">
+              <button
+                type="button"
+                onClick={(e) => handleFieldClick('due', e)}
+                className="min-w-0 hover:underline text-left"
+              >
                 <span className="mr-1">Venc.:</span>
                 <TableRowDateCell
                   row={row}
                   field={fields.dueDate}
                 />
-              </div>
+              </button>
             )}
             {!fields.startDate && !fields.dueDate && <span>-</span>}
           </div>
         </div>
-        <div className="flex -space-x-2">
+        <div
+          className="flex -space-x-2"
+          onClick={(e) => {
+            if (fields.members) {
+              handleFieldClick('members', e);
+            }
+          }}
+          role="button"
+          tabIndex={fields.members ? 0 : -1}
+        >
           {members.slice(0, 3).map((member, index) => (
             <Avatar
               key={index}
@@ -108,11 +135,13 @@ export function KanbanSortableCard({
   row,
   fields,
   onClick,
+  onFieldClick,
   columnId,
 }: {
   row: IRow;
   fields: FieldMap;
   onClick: () => void;
+  onFieldClick?: (field: 'members' | 'start' | 'due' | 'list') => void;
   columnId: string;
 }): React.JSX.Element {
   const {
@@ -146,6 +175,7 @@ export function KanbanSortableCard({
         row={row}
         fields={fields}
         onClick={onClick}
+        onFieldClick={onFieldClick}
       />
     </div>
   );

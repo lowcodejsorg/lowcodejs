@@ -41,6 +41,16 @@ import {
 } from './document-sidebar-helpers';
 import { DocumentSidebarTree } from './document-sidebar-tree';
 
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
@@ -85,6 +95,10 @@ export function DocumentSidebar({
   const [dragEnabledId, setDragEnabledId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
   const [dragOverMode, setDragOverMode] = useState<DropMode>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{
+    id: string;
+    label: string;
+  } | null>(null);
   const rootDropId = 'document-sidebar-root';
   const { setNodeRef: setRootDropRef, isOver: isOverRoot } = useDroppable({
     id: rootDropId,
@@ -161,13 +175,6 @@ export function DocumentSidebar({
       toastSuccess('Seção criada', 'A seção foi criada com sucesso');
 
       setAddModalOpen(false);
-
-      window.setTimeout(() => {
-        router.navigate({
-          to: '/tables/$slug/row',
-          params: { slug },
-        });
-      }, 200);
     },
     onError(error) {
       handleApiError(error, {
@@ -238,6 +245,61 @@ export function DocumentSidebar({
       });
     },
   });
+
+  const deleteCategory = useMutation({
+    mutationFn: async (categoryId: string) => {
+      const route = `/tables/${slug}/fields/${categoryField._id}/category/${categoryId}`;
+      const response = await API.delete<{
+        field: IField;
+        removedIds: Array<string>;
+      }>(route);
+      return response.data;
+    },
+    onSuccess() {
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.tables.detail(slug),
+      });
+      toastSuccess('Seção excluída', 'A seção foi excluída com sucesso');
+    },
+    onError(error) {
+      handleApiError(error, {
+        context: 'Erro ao excluir seção',
+      });
+    },
+  });
+
+  const handleRequestDelete = (id: string, label: string): void => {
+    if (!canManageCategory) return;
+    setDeleteTarget({ id, label });
+  };
+
+  const handleConfirmDelete = async (): Promise<void> => {
+    if (!deleteTarget) return;
+    const targetId = deleteTarget.id;
+
+    if (selectedId === targetId) onSelect(null);
+
+    const previous = treeNodes;
+    const { updated, removed } = findNodeAndRemove(treeNodes, targetId);
+    if (removed) setTreeNodes(updated);
+    setDeleteTarget(null);
+
+    try {
+      await deleteCategory.mutateAsync(targetId);
+    } catch {
+      setTreeNodes(previous);
+    }
+  };
+
+  const handleCreateArticle = (nodeId: string): void => {
+    setDragEnabledId(null);
+    cancelEdit();
+    router.navigate({
+      to: '/tables/$slug/row',
+      params: { slug },
+      search: { category: nodeId },
+    });
+  };
 
   const startEdit = (nodeId: string, label: string): void => {
     if (!canManageCategory) return;
@@ -519,6 +581,8 @@ export function DocumentSidebar({
                   openMap={openMap}
                   toggleOpen={toggleOpen}
                   onAddChild={handleOpenAdd}
+                  onCreateArticle={handleCreateArticle}
+                  onDelete={handleRequestDelete}
                   canAdd={!!canManageCategory}
                   editingNodeId={editingNodeId}
                   editingLabel={editingLabel}
@@ -552,6 +616,49 @@ export function DocumentSidebar({
         onCancel={() => setAddModalOpen(false)}
         isPending={addCategory.status === 'pending'}
       />
+
+      <Dialog
+        open={!!deleteTarget}
+        onOpenChange={(open) => {
+          if (!open) setDeleteTarget(null);
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-md"
+          data-test-id="document-delete-section-dialog"
+        >
+          <DialogHeader>
+            <DialogTitle>Excluir seção</DialogTitle>
+            <DialogDescription>
+              {deleteTarget &&
+                `A seção "${deleteTarget.label}" e suas subseções serão excluídas. Os artigos vinculados não serão apagados, mas perderão a categoria.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={deleteCategory.status === 'pending'}
+              onClick={() => setDeleteTarget(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              size="sm"
+              disabled={deleteCategory.status === 'pending'}
+              onClick={() => {
+                void handleConfirmDelete();
+              }}
+            >
+              {deleteCategory.status === 'pending' && <Spinner />}
+              <span>Excluir</span>
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

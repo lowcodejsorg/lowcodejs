@@ -158,6 +158,7 @@ function RouteComponent(): React.JSX.Element {
   if (search.objects) activeFilterCount += 1;
   if (search['date-range-initial'] || search['date-range-final'])
     activeFilterCount += 1;
+  if (search.search) activeFilterCount += 1;
 
   const handleExport = (): void => {
     const csv = entriesToCsv(entries);

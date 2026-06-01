@@ -10,10 +10,15 @@ export function KanbanUnassignedColumn({
   rows,
   fields,
   onSelectRow,
+  onFieldClick,
 }: {
   rows: Array<IRow>;
   fields: FieldMap;
   onSelectRow: (row: IRow) => void;
+  onFieldClick?: (
+    row: IRow,
+    field: 'members' | 'start' | 'due' | 'list',
+  ) => void;
 }): React.JSX.Element | null {
   if (rows.length === 0) return null;
 
@@ -34,6 +39,7 @@ export function KanbanUnassignedColumn({
             row={row}
             fields={fields}
             onClick={() => onSelectRow(row)}
+            onFieldClick={(field) => onFieldClick?.(row, field)}
           />
         ))}
       </div>

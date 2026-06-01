@@ -17,6 +17,7 @@ CRUD e gerenciamento de campos de uma tabela dinamica.
 | send-to-trash | PATCH | `/tables/:slug/fields/:_id/trash` | Sim | UPDATE_FIELD |
 | remove-from-trash | PATCH | `/tables/:slug/fields/:_id/restore` | Sim | UPDATE_FIELD |
 | add-category | POST | `/tables/:slug/fields/:_id/category` | Sim | UPDATE_FIELD |
+| delete-category | DELETE | `/tables/:slug/fields/:_id/category/:categoryId` | Sim | UPDATE_FIELD |
 
 ## Repositorios
 

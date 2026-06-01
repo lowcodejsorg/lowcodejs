@@ -35,7 +35,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isSubdocArray(value: unknown): value is SubdocArray {
   if (!Array.isArray(value)) return false;
-  return 'id' in value && typeof value.id === 'function';
+  // Mongoose 8 envolve document arrays em Proxy: `'id' in value` retorna false
+  // mesmo com o metodo presente. Reflect.get dispara o get trap do Proxy.
+  return typeof Reflect.get(value, 'id') === 'function';
 }
 
 interface MongooseDocWithToJSON {
@@ -372,5 +374,23 @@ export default class RowMongooseRepository implements RowContractRepository {
       .lean();
 
     return docs.map((doc) => this.transformRow(doc));
+  }
+
+  // ── Category cleanup (delete-category) ────────────────────
+
+  async pullCategoryValues(
+    table: RowTableContext,
+    fieldSlug: string,
+    ids: string[],
+  ): Promise<number> {
+    if (ids.length === 0) return 0;
+
+    const model = await this.getModel(table);
+    const result = await model.updateMany(
+      { [fieldSlug]: { $in: ids } },
+      { $pull: { [fieldSlug]: { $in: ids } } },
+    );
+
+    return result.modifiedCount;
   }
 }
