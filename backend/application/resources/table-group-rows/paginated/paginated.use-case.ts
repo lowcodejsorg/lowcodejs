@@ -67,7 +67,8 @@ export default class GroupRowPaginatedUseCase {
 
       if (Array.isArray(rawItems)) {
         for (const item of rawItems) {
-          if (isRecord(item)) {
+          // Ignora rascunhos (itens incompletos do auto-save, trashed=true).
+          if (isRecord(item) && item.trashed !== true) {
             allItems.push(item);
           }
         }

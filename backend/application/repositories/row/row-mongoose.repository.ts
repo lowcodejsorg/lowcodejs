@@ -35,7 +35,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function isSubdocArray(value: unknown): value is SubdocArray {
   if (!Array.isArray(value)) return false;
-  return 'id' in value && typeof value.id === 'function';
+  // Mongoose 8 envolve document arrays em Proxy: `'id' in value` retorna false
+  // mesmo com o metodo presente. Reflect.get dispara o get trap do Proxy.
+  return typeof Reflect.get(value, 'id') === 'function';
 }
 
 interface MongooseDocWithToJSON {

@@ -138,14 +138,24 @@ export default class TableRowAutoSaveUseCase {
       (accumulator, field) => {
         if (field.native) return accumulator;
         if (field.trashed) return accumulator;
-        // Preenche default apenas para campos AUSENTES do payload.
-        // Campos presentes-porem-vazios sao mantidos como estao (null/''/[])
-        // para nao mascarar o vazio com '-' e quebrar a deteccao de rascunho.
-        if (field.slug in accumulator) return accumulator;
 
-        if (!FIELD_DEFAULT_MAPPER[field.type]) return accumulator;
+        const fallback = FIELD_DEFAULT_MAPPER[field.type];
+        if (fallback === undefined) return accumulator;
 
-        accumulator[field.slug] = FIELD_DEFAULT_MAPPER[field.type];
+        // Campo AUSENTE do payload: preenche com o default do tipo.
+        if (!(field.slug in accumulator)) {
+          accumulator[field.slug] = fallback;
+          return accumulator;
+        }
+
+        // Campo presente-porem-vazio E obrigatorio: preenche placeholder para
+        // passar no `required` do schema Mongoose (senao o save do rascunho
+        // falha). A deteccao de rascunho (isIncomplete) independe deste valor,
+        // entao o registro continua trashed:true. Campos opcionais vazios sao
+        // mantidos como estao para nao mascarar o vazio.
+        if (field.required && !this.hasValue(accumulator[field.slug])) {
+          accumulator[field.slug] = fallback;
+        }
 
         return accumulator;
       },

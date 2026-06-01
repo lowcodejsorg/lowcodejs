@@ -7,7 +7,7 @@ import React from 'react';
 import { AutoSaveStatusIndicator } from './-auto-save-status';
 import { RowFormFields } from './create/-create-form';
 
-import { GroupRowsDataTable } from '@/components/common/dynamic-table/group-rows';
+import { GroupRowsInline } from '@/components/common/dynamic-table/group-rows';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import {
   UploadingProvider,
@@ -213,6 +213,18 @@ function AutoSaveRowFormContent({
 
   triggerSaveRef.current = triggerSave;
 
+  // Garante que o registro pai exista antes de adicionar itens a um grupo.
+  // Sem rowId, dispara o auto-save (que persiste como rascunho via backend)
+  // para obter o id e habilitar os cards do grupo.
+  const ensureParentRow = React.useCallback(async (): Promise<
+    string | undefined
+  > => {
+    cancelPending();
+    if (rowIdRef.current) return rowIdRef.current;
+    await performSave();
+    return rowIdRef.current;
+  }, [cancelPending, performSave]);
+
   const validateAndTouch = React.useCallback((): boolean => {
     let allValid = true;
     for (const field of requiredFields) {
@@ -365,30 +377,14 @@ function AutoSaveRowFormContent({
           <div className="flex flex-col gap-6 px-2 pb-4 pt-2 border-t mt-2">
             {formGroupFields.map(
               (groupField): React.JSX.Element => (
-                <div
+                <GroupRowsInline
                   key={groupField._id}
-                  className="space-y-2"
-                >
-                  {persistedRowId && (
-                    <GroupRowsDataTable
-                      tableSlug={slug}
-                      rowId={persistedRowId}
-                      field={groupField}
-                      table={table}
-                    />
-                  )}
-                  {!persistedRowId && (
-                    <div className="space-y-1">
-                      <span className="text-sm font-medium ml-2">
-                        {groupField.name}
-                      </span>
-                      <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
-                        Salve os campos obrigatórios do registro para adicionar
-                        itens a este grupo.
-                      </p>
-                    </div>
-                  )}
-                </div>
+                  tableSlug={slug}
+                  rowId={persistedRowId}
+                  field={groupField}
+                  table={table}
+                  onEnsureParentRow={ensureParentRow}
+                />
               ),
             )}
           </div>
