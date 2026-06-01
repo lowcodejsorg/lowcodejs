@@ -135,13 +135,14 @@ export default class TableFieldUpdateUseCase {
       }
 
       const oldSlug = field.slug;
-      const explicitSlug =
-        payload.tableSlug !== undefined &&
-        payload.slug !== undefined &&
-        payload.slug !== oldSlug;
-      const resolvedSlug = explicitSlug
-        ? resolveFieldSlug({ name: payload.name, slug: payload.slug })
-        : { slug: oldSlug, error: null };
+      const nameChanged = payload.name !== field.name;
+      let resolvedSlug: { slug: string; error: string | null } = {
+        slug: oldSlug,
+        error: null,
+      };
+      if (nameChanged) {
+        resolvedSlug = resolveFieldSlug({ name: payload.name });
+      }
 
       if (resolvedSlug.error) {
         return left(
@@ -272,7 +273,6 @@ export default class TableFieldUpdateUseCase {
   private canUpdateLockedField(payload: Payload, field: IField): boolean {
     // Locked fields allow visibility and width changes, block everything else
     if (payload.name !== field.name) return false;
-    if (payload.slug !== undefined && payload.slug !== field.slug) return false;
     if (payload.type !== field.type) return false;
     if (payload.trashed || payload.trashedAt) return false;
     if (payload.required !== field.required) return false;

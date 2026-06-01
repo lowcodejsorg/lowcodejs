@@ -14,7 +14,7 @@ expor credenciais.
 3. UseCase:
    - Busca settings via settingRepository.get()
    - Se nao existir: retorna defaults explicitos do subset publico
-   - Se existir: projeta apenas os 7 campos publicos
+   - Se existir: projeta apenas os 8 campos publicos
 4. Repository: SettingContractRepository (get)
 
 ## Campos Retornados
@@ -26,6 +26,7 @@ expor credenciais.
 | LOGO_SMALL_URL | string \| null | null |
 | LOGO_LARGE_URL | string \| null | null |
 | AI_ASSISTANT_ENABLED | boolean | false |
+| CHAT_HISTORY_ENABLED | boolean | false |
 | SETUP_COMPLETED | boolean | false |
 | SETUP_CURRENT_STEP | string \| null | "admin" |
 

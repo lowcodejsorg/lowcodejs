@@ -25,6 +25,7 @@ describe('Setting Public Use Case', () => {
       LOGO_SMALL_URL: null,
       LOGO_LARGE_URL: null,
       AI_ASSISTANT_ENABLED: false,
+      CHAT_HISTORY_ENABLED: false,
       SETUP_COMPLETED: false,
       SETUP_CURRENT_STEP: 'admin',
     });
@@ -53,6 +54,7 @@ describe('Setting Public Use Case', () => {
       LOGO_SMALL_URL: '/storage/logo-small.webp',
       LOGO_LARGE_URL: '/storage/logo-large.webp',
       AI_ASSISTANT_ENABLED: true,
+      CHAT_HISTORY_ENABLED: false,
       SETUP_COMPLETED: false,
       SETUP_CURRENT_STEP: 'admin',
     });
