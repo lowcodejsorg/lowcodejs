@@ -19,8 +19,8 @@ import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 
 async function makeDocumentTableWithCategory(ownerId: string): Promise<{
-  field: Awaited<ReturnType<typeof Field.create>>;
-  table: Awaited<ReturnType<typeof Table.create>>;
+  field: InstanceType<typeof Field>;
+  table: InstanceType<typeof Table>;
 }> {
   const fieldPayload: FieldCreatePayload = {
     category: [
