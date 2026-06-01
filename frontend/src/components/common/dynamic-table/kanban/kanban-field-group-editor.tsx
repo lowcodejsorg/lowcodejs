@@ -9,18 +9,9 @@ import {
 } from 'lucide-react';
 import React from 'react';
 
-import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
-import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
-import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
-import { TableRowFileCell } from '@/components/common/dynamic-table/table-cells/table-row-file-cell';
-import { TableRowRelationshipCell } from '@/components/common/dynamic-table/table-cells/table-row-relationship-cell';
-import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
-import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
-import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { GroupRowsDataTable } from '@/components/common/dynamic-table/group-rows';
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type {
   IField,
@@ -273,15 +264,6 @@ export function KanbanFieldGroupEditor({
   }
 
   const fileFields = groupFields.filter((gf) => gf.type === E_FIELD_TYPE.FILE);
-  const nonFileFields = groupFields.filter(
-    (gf) => gf.type !== E_FIELD_TYPE.FILE,
-  );
-  const hasNewData =
-    fileFields.length > 0
-      ? uploadStorages.length > 0
-      : Object.values(newItem).some(
-          (v) => v !== null && v !== undefined && v !== '',
-        );
 
   if (attachmentMode) {
     const fileField = fileFields[0];
@@ -443,230 +425,14 @@ export function KanbanFieldGroupEditor({
     );
   }
 
+  // Modo genérico delega para a tabela de itens de grupo (endpoints group-rows),
+  // que renderiza os seletores corretos (relacionamento, dropdown, etc.).
   return (
-    <div
-      data-slot="kanban-field-group-editor"
-      data-test-id="kanban-field-group-editor"
-      className="space-y-2"
-    >
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-semibold">{field.name}</h3>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="cursor-pointer"
-          onClick={() => setIsAdding(true)}
-          disabled={
-            isSaving ||
-            isAdding ||
-            (field.multiple === false && groupData.length >= 1)
-          }
-        >
-          <PlusIcon className="size-3.5 mr-1" />
-          Adicionar item
-        </Button>
-      </div>
-
-      <div className="space-y-2 rounded-md border px-3 py-2">
-        {((): React.ReactNode => {
-          if (groupData.length > 0) {
-            return (
-              <ul className="space-y-2">
-                {groupData.map((groupRow, index) => (
-                  <li
-                    key={groupRow._id || index}
-                    className="flex items-start justify-between gap-2"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="grid grid-cols-2 gap-2">
-                        {groupFields.map((groupField) => (
-                          <div
-                            key={groupField._id}
-                            className="flex flex-col gap-0.5"
-                          >
-                            <span className="text-xs font-medium text-muted-foreground">
-                              {groupField.name}
-                            </span>
-                            <RenderGroupFieldCell
-                              field={groupField}
-                              row={groupRow as IRow}
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon-sm"
-                      className="cursor-pointer text-destructive shrink-0 mt-1"
-                      disabled={isSaving}
-                      onClick={() => handleDelete(index)}
-                    >
-                      <TrashIcon className="size-3.5" />
-                    </Button>
-                  </li>
-                ))}
-              </ul>
-            );
-          }
-          return <span className="text-sm text-muted-foreground">-</span>;
-        })()}
-
-        {isAdding && (
-          <div className="space-y-3 border-t pt-2">
-            {nonFileFields.map((gf) => (
-              <div
-                key={gf._id}
-                className="space-y-1"
-              >
-                <label className="text-xs font-medium text-muted-foreground">
-                  {gf.name}
-                </label>
-                {((): React.ReactNode => {
-                  if (gf.type === E_FIELD_TYPE.TEXT_LONG) {
-                    return (
-                      <Textarea
-                        value={newItem[gf.slug] ?? ''}
-                        onChange={(e) =>
-                          setNewItem((prev) => ({
-                            ...prev,
-                            [gf.slug]: e.target.value,
-                          }))
-                        }
-                        rows={2}
-                      />
-                    );
-                  }
-                  return (
-                    <Input
-                      value={newItem[gf.slug] ?? ''}
-                      onChange={(e) =>
-                        setNewItem((prev) => ({
-                          ...prev,
-                          [gf.slug]: e.target.value,
-                        }))
-                      }
-                    />
-                  );
-                })()}
-              </div>
-            ))}
-
-            {fileFields.map((gf) => (
-              <div
-                key={gf._id}
-                className="space-y-1"
-              >
-                <label className="text-xs font-medium text-muted-foreground">
-                  {gf.name}
-                </label>
-                <FileUploadWithStorage
-                  value={uploadFiles}
-                  onValueChange={setUploadFiles}
-                  onStorageChange={setUploadStorages}
-                  maxFiles={10}
-                  onUploadingChange={setIsUploading}
-                />
-              </div>
-            ))}
-
-            <div className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="ghost"
-                className="cursor-pointer"
-                onClick={handleAddCancel}
-                disabled={isSaving}
-              >
-                Cancelar
-              </Button>
-              <Button
-                type="button"
-                className="cursor-pointer"
-                onClick={handleAddSave}
-                disabled={isSaving || isUploading || !hasNewData}
-              >
-                Adicionar
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
+    <GroupRowsDataTable
+      tableSlug={tableSlug}
+      rowId={row._id}
+      field={field}
+      table={table}
+    />
   );
-}
-
-function RenderGroupFieldCell({
-  field,
-  row,
-}: {
-  field: IField;
-  row: IRow;
-}): React.JSX.Element {
-  if (!(field.slug in row)) {
-    return <span className="text-muted-foreground text-sm">-</span>;
-  }
-
-  switch (field.type) {
-    case E_FIELD_TYPE.TEXT_SHORT:
-      return (
-        <TableRowTextShortCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.TEXT_LONG:
-      return (
-        <TableRowTextLongCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.DATE:
-      return (
-        <TableRowDateCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.DROPDOWN:
-      return (
-        <TableRowDropdownCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.FILE:
-      return (
-        <TableRowFileCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.RELATIONSHIP:
-      return (
-        <TableRowRelationshipCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.CATEGORY:
-      return (
-        <TableRowCategoryCell
-          field={field}
-          row={row}
-        />
-      );
-    case E_FIELD_TYPE.USER:
-      return (
-        <TableRowUserCell
-          field={field}
-          row={row}
-        />
-      );
-    default:
-      return <span className="text-muted-foreground text-sm">-</span>;
-  }
 }

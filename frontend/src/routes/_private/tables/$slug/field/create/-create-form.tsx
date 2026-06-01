@@ -97,6 +97,40 @@ export const fieldCreateFormDefaultValues: FieldCreateFormValues = {
   widthInList: 10,
 };
 
+// Toggles de exibição do grupo (formulário/detalhes) isolados em um componente
+// próprio para reduzir a profundidade de inferência de tipos no form principal.
+const FieldGroupDisplayToggles = withForm({
+  defaultValues: fieldCreateFormDefaultValues,
+  props: {
+    isPending: false,
+  },
+  render: function Render({ form, isPending }) {
+    return (
+      <>
+        {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
+        <form.AppField name="showInForm">
+          {(field) => (
+            <field.FieldBooleanSwitch
+              label="Exibir no formulário"
+              description="Exibir este grupo no formulário de adicionar/editar registro?"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
+        <form.AppField name="showInDetail">
+          {(field) => (
+            <field.FieldBooleanSwitch
+              label="Exibir nos detalhes"
+              description="Exibir este grupo na página de detalhes do registro?"
+              disabled={isPending}
+            />
+          )}
+        </form.AppField>
+      </>
+    );
+  },
+});
+
 export const CreateFieldFormFields = withForm({
   defaultValues: fieldCreateFormDefaultValues,
   props: {
@@ -177,7 +211,6 @@ export const CreateFieldFormFields = withForm({
         data-test-id="field-create-form-fields"
         className="space-y-4 p-2"
       >
-        {/* @ts-expect-error TanStack Form type depth issue with nested configuration */}
         <form.AppField
           name="name"
           validators={{
@@ -671,6 +704,16 @@ export const CreateFieldFormFields = withForm({
               />
             )}
           </form.AppField>
+        )}
+
+        {/* Exibição do grupo de campos: formulário e/ou detalhes.
+            Extraído em componente próprio para não estourar a profundidade
+            de tipos do TanStack Form neste render. */}
+        {isFieldGroup && (
+          <FieldGroupDisplayToggles
+            form={form}
+            isPending={isPending}
+          />
         )}
 
         {/* Campo Obrigatoriedade */}

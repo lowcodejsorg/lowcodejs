@@ -7,6 +7,7 @@ import React from 'react';
 import { AutoSaveStatusIndicator } from './-auto-save-status';
 import { RowFormFields } from './create/-create-form';
 
+import { GroupRowsDataTable } from '@/components/common/dynamic-table/group-rows';
 import { ExtensionSlot } from '@/components/common/extension-slot';
 import {
   UploadingProvider,
@@ -31,6 +32,7 @@ import { useAutoSave } from '@/hooks/use-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import { E_FIELD_TYPE } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
@@ -86,6 +88,11 @@ function AutoSaveRowFormContent({
 
   const isNewRecord = !initialRowId;
   const rowIdRef = React.useRef<string | undefined>(initialRowId);
+  // Espelha o rowId em estado para re-renderizar a seção de grupos quando o
+  // registro novo é persistido pelo auto-save (refs não disparam render).
+  const [persistedRowId, setPersistedRowId] = React.useState<
+    string | undefined
+  >(initialRowId);
   const [isTrashed, setIsTrashed] = React.useState<boolean>(
     existingRow?.trashed ?? false,
   );
@@ -113,6 +120,14 @@ function AutoSaveRowFormContent({
   const requiredFields = React.useMemo((): Array<IField> => {
     return fields.filter((f) => f.required && !f.native);
   }, [fields]);
+
+  // Grupos de campos exibidos no formulário. Salvos à parte via endpoints
+  // group-rows (precisam de rowId), não no payload do registro principal.
+  const formGroupFields = React.useMemo((): Array<IField> => {
+    return table.fields.filter(
+      (f) => f.type === E_FIELD_TYPE.FIELD_GROUP && f.showInForm && !f.trashed,
+    );
+  }, [table.fields]);
 
   const defaultValues = React.useMemo((): CreateRowDefaultValue => {
     if (existingRow) {
@@ -145,6 +160,7 @@ function AutoSaveRowFormContent({
       if (!rowIdRef.current) {
         rowIdRef.current = data._id;
       }
+      setPersistedRowId(data._id);
     },
     onError(error: AxiosError | Error): void {
       handleApiError(error, {
@@ -344,6 +360,39 @@ function AutoSaveRowFormContent({
           tableSlug={slug}
           disabled={false}
         />
+
+        {formGroupFields.length > 0 && (
+          <div className="flex flex-col gap-6 px-2 pb-4 pt-2 border-t mt-2">
+            {formGroupFields.map(
+              (groupField): React.JSX.Element => (
+                <div
+                  key={groupField._id}
+                  className="space-y-2"
+                >
+                  {persistedRowId && (
+                    <GroupRowsDataTable
+                      tableSlug={slug}
+                      rowId={persistedRowId}
+                      field={groupField}
+                      table={table}
+                    />
+                  )}
+                  {!persistedRowId && (
+                    <div className="space-y-1">
+                      <span className="text-sm font-medium ml-2">
+                        {groupField.name}
+                      </span>
+                      <p className="rounded-md border border-dashed p-3 text-sm text-muted-foreground">
+                        Salve os campos obrigatórios do registro para adicionar
+                        itens a este grupo.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ),
+            )}
+          </div>
+        )}
       </form>
 
       <div className="shrink-0 px-4 py-3 flex justify-end gap-2 border-t">

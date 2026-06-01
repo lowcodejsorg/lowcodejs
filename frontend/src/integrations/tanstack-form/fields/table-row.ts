@@ -4,7 +4,6 @@
 export { TableRowCategoryField } from '@/components/common/dynamic-table/table-row/table-row-category-field';
 export { TableRowDateField } from '@/components/common/dynamic-table/table-row/table-row-date-field';
 export { TableRowDropdownField } from '@/components/common/dynamic-table/table-row/table-row-dropdown-field';
-export { TableRowFieldGroupField } from '@/components/common/dynamic-table/table-row/table-row-field-group-field';
 export { TableRowFileField } from '@/components/common/dynamic-table/table-row/table-row-file-field';
 export { TableRowRelationshipField } from '@/components/common/dynamic-table/table-row/table-row-relationship-field';
 export { TableRowRichTextField } from '@/components/common/dynamic-table/table-row/table-row-rich-text-field';

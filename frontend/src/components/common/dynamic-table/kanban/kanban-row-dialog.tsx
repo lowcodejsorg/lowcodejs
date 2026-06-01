@@ -17,6 +17,7 @@ import { KanbanRowExtraFieldsSection } from './kanban-row-extra-fields';
 import { KanbanRowQuickActions } from './kanban-row-quick-actions';
 import { KanbanRowTasksSection } from './kanban-row-tasks';
 
+import { GroupRowsDataTable } from '@/components/common/dynamic-table/group-rows';
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { TableRowDropdownCell } from '@/components/common/dynamic-table/table-cells/table-row-dropdown-cell';
@@ -838,10 +839,11 @@ export function KanbanRowDialog({
               return <formField.TableRowCategoryField field={field} />;
             case E_FIELD_TYPE.FIELD_GROUP:
               return (
-                <formField.TableRowFieldGroupField
-                  field={field}
+                <GroupRowsDataTable
                   tableSlug={tableSlug}
-                  form={extraForm}
+                  rowId={row._id}
+                  field={field}
+                  table={table}
                 />
               );
             case E_FIELD_TYPE.USER:
