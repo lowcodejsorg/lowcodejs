@@ -289,11 +289,14 @@ export function useFilterState(
     });
   };
 
-  const activeFiltersCount = fields.filter((f) => {
-    return (
-      search[f.slug] || search[`${f.slug}-initial`] || search[`${f.slug}-final`]
-    );
-  }).length;
+  const activeFiltersCount =
+    fields.filter((f) => {
+      return (
+        search[f.slug] ||
+        search[`${f.slug}-initial`] ||
+        search[`${f.slug}-final`]
+      );
+    }).length + Number(Boolean(search.search));
 
   return {
     filterValues,
@@ -310,11 +313,12 @@ export function getActiveFiltersCount(
   fields: Array<IFilterField>,
   search: Record<string, unknown>,
 ): number {
-  return fields.filter((f) => {
+  const fieldsCount = fields.filter((f) => {
     return (
       search[f.slug] || search[`${f.slug}-initial`] || search[`${f.slug}-final`]
     );
   }).length;
+  return fieldsCount + Number(Boolean(search.search));
 }
 
 interface FilterFieldsFormProps {

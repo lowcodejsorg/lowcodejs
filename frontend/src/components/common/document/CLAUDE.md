@@ -35,9 +35,10 @@ hierarquicas, com sidebar de navegacao, sumario, impressao e exportacao PDF.
 - Cada secao tem um menu kebab (tres pontinhos) revelado no hover com as acoes:
   Renomear, Criar subsecao, Criar artigo e Excluir. Double-click (renomear),
   botao `+` (subsecao) e drag (reordenar) permanecem como atalhos
-- Excluir e cascateado via `DELETE /tables/:slug/fields/:_id/category/:categoryId`
-  (remove o no + subsecoes e desvincula os artigos); confirmacao via dialog,
-  com atualizacao otimista (`findNodeAndRemove`) que reverte em caso de erro
+- Excluir e cascateado via
+  `DELETE /tables/:slug/fields/:_id/category/:categoryId` (remove o no +
+  subsecoes e desvincula os artigos); confirmacao via dialog, com atualizacao
+  otimista (`findNodeAndRemove`) que reverte em caso de erro
 - Criar artigo navega para `/tables/:slug/row?category=<id>` — o form de criacao
   de registro abre com o campo CATEGORY pre-preenchido (search param `category`)
 - Edicao inline de labels com double-click e persistencia otimista (reverte em
