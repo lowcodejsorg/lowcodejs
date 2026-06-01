@@ -7,15 +7,27 @@ import { CSS } from '@dnd-kit/utilities';
 import {
   ChevronDownIcon,
   ChevronRightIcon,
+  FilePlusIcon,
+  FolderPlusIcon,
   FolderTreeIcon,
   GripVerticalIcon,
+  MoreVerticalIcon,
+  PencilIcon,
   PlusIcon,
+  Trash2Icon,
   WorkflowIcon,
 } from 'lucide-react';
 import React, { useRef } from 'react';
 
 import type { DropMode } from './document-sidebar-helpers';
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import type { CatNode } from '@/lib/document-helpers';
 import { cn } from '@/lib/utils';
@@ -29,6 +41,8 @@ function TreeNodeItem({
   isOpen,
   toggleOpen,
   onAddChild,
+  onCreateArticle,
+  onDelete,
   canAdd,
   editingNodeId,
   editingLabel,
@@ -50,6 +64,8 @@ function TreeNodeItem({
   isOpen: boolean;
   toggleOpen: (id: string) => void;
   onAddChild?: (id: string) => void;
+  onCreateArticle?: (id: string) => void;
+  onDelete?: (id: string, label: string) => void;
   canAdd?: boolean;
   editingNodeId: string | null;
   editingLabel: string;
@@ -65,6 +81,7 @@ function TreeNodeItem({
 }): React.JSX.Element {
   const hasChildren = !!node.children?.length;
   const showAdd = canAdd && onAddChild;
+  const showMenu = canAdd;
   const isEditing = editingNodeId === node.id;
   const canDrag = dragEnabledId === node.id && dragMode;
   const {
@@ -197,6 +214,53 @@ function TreeNodeItem({
             <PlusIcon className="size-4 opacity-70" />
           </button>
         )}
+
+        {showMenu && (
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              className="p-0.5 rounded hover:bg-background/60 cursor-pointer opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100 data-[state=open]:opacity-100"
+              aria-label="Ações da seção"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <MoreVerticalIcon className="size-4 opacity-70" />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <DropdownMenuItem
+                onSelect={() => onStartEdit(node.id, node.label)}
+              >
+                <PencilIcon className="size-4 opacity-70" />
+                <span>Renomear</span>
+              </DropdownMenuItem>
+              {onAddChild && (
+                <DropdownMenuItem onSelect={() => onAddChild(node.id)}>
+                  <FolderPlusIcon className="size-4 opacity-70" />
+                  <span>Criar subseção</span>
+                </DropdownMenuItem>
+              )}
+              {onCreateArticle && (
+                <DropdownMenuItem onSelect={() => onCreateArticle(node.id)}>
+                  <FilePlusIcon className="size-4 opacity-70" />
+                  <span>Criar artigo</span>
+                </DropdownMenuItem>
+              )}
+              {onDelete && (
+                <React.Fragment>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    variant="destructive"
+                    onSelect={() => onDelete(node.id, node.label)}
+                  >
+                    <Trash2Icon className="size-4" />
+                    <span>Excluir</span>
+                  </DropdownMenuItem>
+                </React.Fragment>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        )}
       </div>
       {children}
     </div>
@@ -211,6 +275,8 @@ export function DocumentSidebarTree({
   toggleOpen,
   level = 0,
   onAddChild,
+  onCreateArticle,
+  onDelete,
   canAdd = false,
   editingNodeId,
   editingLabel,
@@ -231,6 +297,8 @@ export function DocumentSidebarTree({
   toggleOpen: (id: string) => void;
   level?: number;
   onAddChild?: (id: string) => void;
+  onCreateArticle?: (id: string) => void;
+  onDelete?: (id: string, label: string) => void;
   canAdd?: boolean;
   editingNodeId: string | null;
   editingLabel: string;
@@ -301,6 +369,8 @@ export function DocumentSidebarTree({
               isOpen={isOpen}
               toggleOpen={toggleOpen}
               onAddChild={onAddChild}
+              onCreateArticle={onCreateArticle}
+              onDelete={onDelete}
               canAdd={canAdd}
               editingNodeId={editingNodeId}
               editingLabel={editingLabel}
@@ -323,6 +393,8 @@ export function DocumentSidebarTree({
                     toggleOpen={toggleOpen}
                     level={level + 1}
                     onAddChild={onAddChild}
+                    onCreateArticle={onCreateArticle}
+                    onDelete={onDelete}
                     canAdd={canAdd}
                     editingNodeId={editingNodeId}
                     editingLabel={editingLabel}

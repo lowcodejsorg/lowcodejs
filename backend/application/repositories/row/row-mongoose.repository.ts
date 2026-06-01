@@ -375,4 +375,22 @@ export default class RowMongooseRepository implements RowContractRepository {
 
     return docs.map((doc) => this.transformRow(doc));
   }
+
+  // ── Category cleanup (delete-category) ────────────────────
+
+  async pullCategoryValues(
+    table: RowTableContext,
+    fieldSlug: string,
+    ids: string[],
+  ): Promise<number> {
+    if (ids.length === 0) return 0;
+
+    const model = await this.getModel(table);
+    const result = await model.updateMany(
+      { [fieldSlug]: { $in: ids } },
+      { $pull: { [fieldSlug]: { $in: ids } } },
+    );
+
+    return result.modifiedCount;
+  }
 }

@@ -33,6 +33,7 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { E_FIELD_TYPE } from '@/lib/constant';
+import { firstCategoryField } from '@/lib/document-helpers';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
@@ -47,6 +48,7 @@ interface AutoSaveRowFormProps {
   table: ITable;
   rowId?: string;
   existingRow?: IRow;
+  initialCategory?: string;
   onBack?: () => void;
   backGuardRef?: React.MutableRefObject<(() => void) | null>;
 }
@@ -79,6 +81,7 @@ function AutoSaveRowFormContent({
   table,
   rowId: initialRowId,
   existingRow,
+  initialCategory,
   onBack,
   backGuardRef,
 }: AutoSaveRowFormProps): React.JSX.Element {
@@ -129,12 +132,25 @@ function AutoSaveRowFormContent({
     );
   }, [table.fields]);
 
+  const categoryOverride = React.useMemo(():
+    | CreateRowDefaultValue
+    | undefined => {
+    if (!initialCategory) return undefined;
+    const categoryField = firstCategoryField(
+      table.fields,
+      table.fieldOrderForm,
+      table.layoutFields,
+    );
+    if (!categoryField) return undefined;
+    return { [categoryField.slug]: [initialCategory] };
+  }, [initialCategory, table.fields, table.fieldOrderForm, table.layoutFields]);
+
   const defaultValues = React.useMemo((): CreateRowDefaultValue => {
     if (existingRow) {
       return buildUpdateRowDefaultValues(existingRow, fields);
     }
-    return buildCreateRowDefaultValues(fields);
-  }, [existingRow, fields]);
+    return buildCreateRowDefaultValues(fields, categoryOverride);
+  }, [existingRow, fields, categoryOverride]);
 
   // O save e disparado no blur do campo. triggerSave so existe apos o form
   // (depende de performSave), entao o listener chama atraves de um ref.

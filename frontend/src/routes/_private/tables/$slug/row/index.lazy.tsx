@@ -67,6 +67,7 @@ function RouteComponent(): React.JSX.Element {
     return (
       <CreateRowView
         slug={slug}
+        initialCategory={search.category}
         onBack={goBack}
       />
     );
@@ -84,11 +85,13 @@ function RouteComponent(): React.JSX.Element {
 
 interface CreateRowViewProps {
   slug: string;
+  initialCategory?: string;
   onBack: () => void;
 }
 
 function CreateRowView({
   slug,
+  initialCategory,
   onBack,
 }: CreateRowViewProps): React.JSX.Element {
   const table = useReadTable({ slug });
@@ -130,6 +133,7 @@ function CreateRowView({
       {!isLoading && table.status === 'success' && (
         <AutoSaveRowForm
           table={table.data}
+          initialCategory={initialCategory}
           onBack={onBack}
           backGuardRef={backGuardRef}
         />
