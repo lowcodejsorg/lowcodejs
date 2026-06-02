@@ -1,0 +1,13 @@
+{
+  "id": "dashboard",
+  "type": "MODULE",
+  "name": "Dashboard Labgestor",
+  "description": "Painel com totais de Projetos, Produtos e Equipamentos cadastrados no Labgestor.",
+  "version": "1.0.0",
+  "author": "Labgestor",
+  "icon": "LayoutDashboardIcon",
+  "route": "/e/labgestor/dashboard",
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}
