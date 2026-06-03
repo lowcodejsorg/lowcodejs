@@ -138,7 +138,28 @@ export const SettingUpdateSchema: FastifySchema = {
       OPENAI_MODEL: {
         type: 'string',
         nullable: true,
-        description: 'Modelo OpenAI usado pelo assistente IA',
+        description: 'Modelo OpenAI usado pelo assistente IA (legado)',
+      },
+      AI_LLM_PROVIDER: {
+        type: 'string',
+        enum: ['openai', 'gemini', 'claude', 'openrouter', 'ollama'],
+        nullable: true,
+        description: 'Provedor LLM do assistente IA',
+      },
+      LLM_API_KEY: {
+        type: 'string',
+        nullable: true,
+        description: 'Chave da API do provedor LLM',
+      },
+      LLM_MODEL: {
+        type: 'string',
+        nullable: true,
+        description: 'Modelo LLM do provedor selecionado',
+      },
+      LLM_BASE_URL: {
+        type: 'string',
+        nullable: true,
+        description: 'URL base do LLM (ex.: Ollama local)',
       },
       LOGO_SMALL_URL: {
         type: 'string',
@@ -284,7 +305,28 @@ export const SettingUpdateSchema: FastifySchema = {
         OPENAI_MODEL: {
           type: 'string',
           nullable: true,
-          description: 'Modelo OpenAI usado pelo assistente IA',
+          description: 'Modelo OpenAI usado pelo assistente IA (legado)',
+        },
+        AI_LLM_PROVIDER: {
+          type: 'string',
+          enum: ['openai', 'gemini', 'claude', 'openrouter', 'ollama'],
+          nullable: true,
+          description: 'Provedor LLM do assistente IA',
+        },
+        LLM_API_KEY: {
+          type: 'string',
+          nullable: true,
+          description: 'Chave da API do provedor LLM',
+        },
+        LLM_MODEL: {
+          type: 'string',
+          nullable: true,
+          description: 'Modelo LLM do provedor selecionado',
+        },
+        LLM_BASE_URL: {
+          type: 'string',
+          nullable: true,
+          description: 'URL base do LLM (ex.: Ollama local)',
         },
         SETUP_COMPLETED: {
           type: 'boolean',

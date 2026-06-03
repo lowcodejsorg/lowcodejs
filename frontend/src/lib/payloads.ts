@@ -309,6 +309,10 @@ export type SettingUpdatePayload = Partial<{
   MCP_SERVER_URL: string | null;
   MCP_SERVER_TOKEN: string | null;
   OPENAI_MODEL: string;
+  AI_LLM_PROVIDER: string;
+  LLM_API_KEY: string | null;
+  LLM_MODEL: string;
+  LLM_BASE_URL: string | null;
 }>;
 
 // ============== SETUP WIZARD ==============

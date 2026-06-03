@@ -140,6 +140,16 @@ export const E_CHAT_EVENT = {
   MESSAGE: 'message',
   ERROR: 'error',
   HISTORY: 'history',
+  LLM_INFO: 'llm_info',
+} as const;
+
+/** Provedor de LLM do assistente IA (configurável em /settings). */
+export const E_AI_LLM_PROVIDER = {
+  OPENAI: 'openai',
+  GEMINI: 'gemini',
+  CLAUDE: 'claude',
+  OPENROUTER: 'openrouter',
+  OLLAMA: 'ollama',
 } as const;
 
 export const E_NOTIFICATION_TYPE = {
@@ -572,6 +582,14 @@ export type ISetting = {
   MCP_SERVER_URL: string | null;
   MCP_SERVER_TOKEN: string | null;
   OPENAI_MODEL: string;
+  /** Provedor ativo do assistente IA. */
+  AI_LLM_PROVIDER: ValueOf<typeof E_AI_LLM_PROVIDER>;
+  /** Chave de API do provedor (exceto Ollama). */
+  LLM_API_KEY: string | null;
+  /** ID do modelo no provedor selecionado. */
+  LLM_MODEL: string;
+  /** URL base para Ollama ou endpoint customizado. */
+  LLM_BASE_URL: string | null;
   SETUP_COMPLETED: boolean;
   SETUP_CURRENT_STEP:
     | 'admin'

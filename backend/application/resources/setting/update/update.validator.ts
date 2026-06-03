@@ -1,5 +1,7 @@
 import z from 'zod';
 
+import { E_AI_LLM_PROVIDER } from '@application/core/entity.core';
+
 export const SettingUpdateBodyValidator = z.object({
   SYSTEM_NAME: z
     .string()
@@ -62,6 +64,23 @@ export const SettingUpdateBodyValidator = z.object({
     .optional(),
   MCP_SERVER_TOKEN: z.string().trim().nullable().optional(),
   OPENAI_MODEL: z.string().trim().min(1).optional(),
+  AI_LLM_PROVIDER: z
+    .enum([
+      E_AI_LLM_PROVIDER.OPENAI,
+      E_AI_LLM_PROVIDER.GEMINI,
+      E_AI_LLM_PROVIDER.CLAUDE,
+      E_AI_LLM_PROVIDER.OPENROUTER,
+      E_AI_LLM_PROVIDER.OLLAMA,
+    ])
+    .optional(),
+  LLM_API_KEY: z.string().trim().nullable().optional(),
+  LLM_MODEL: z.string().trim().min(1).optional(),
+  LLM_BASE_URL: z
+    .string()
+    .trim()
+    .url('URL base do LLM inválida')
+    .nullable()
+    .optional(),
   LOGO_SMALL_URL: z
     .string({ message: 'A URL do logo pequeno deve ser um texto' })
     .trim()
