@@ -90,6 +90,6 @@ onLoad).
 | ------------------- | -------------------------------------------------------------------------------- |
 | `executor.ts`       | Executa codigo em Node VM com timeout (5s). Valida sintaxe.                      |
 | `handler.ts`        | Orquestra: monta sandbox + executa + coleta logs                                 |
-| `sandbox.ts`        | Monta ambiente isolado com APIs: `field`, `context`, `email`, `utils`, `console` |
+| `sandbox.ts`        | Monta ambiente isolado com APIs: `field`, `context`, `email`, `users`, `notify`, `utils`, `console` |
 | `field-resolver.ts` | Resolve valores de campo com normalizacao                                        |
 | `types.ts`          | Tipos TypeScript para execucao                                                   |
