@@ -120,6 +120,7 @@ export default class SettingShowUseCase {
           CHAT_HISTORY_ENABLED: false,
           MCP_SERVER_URL: null,
           MCP_SERVER_TOKEN: null,
+          MCP_LOWCODE_API_URL: null,
           OPENAI_MODEL: 'gpt-4.1-nano',
           AI_LLM_PROVIDER: E_AI_LLM_PROVIDER.OPENAI,
           LLM_API_KEY: null,

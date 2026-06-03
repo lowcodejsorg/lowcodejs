@@ -581,6 +581,8 @@ export type ISetting = {
   CHAT_HISTORY_ENABLED: boolean;
   MCP_SERVER_URL: string | null;
   MCP_SERVER_TOKEN: string | null;
+  /** URL da API LowCodeJS enviada ao MCP no header X-Lowcode-Api-Url. */
+  MCP_LOWCODE_API_URL: string | null;
   OPENAI_MODEL: string;
   /** Provedor ativo do assistente IA. */
   AI_LLM_PROVIDER: ValueOf<typeof E_AI_LLM_PROVIDER>;

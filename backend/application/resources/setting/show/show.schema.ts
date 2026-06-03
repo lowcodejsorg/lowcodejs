@@ -123,6 +123,12 @@ export const SettingShowSchema: FastifySchema = {
           nullable: true,
           description: 'Token de autenticação do servidor MCP (Bearer)',
         },
+        MCP_LOWCODE_API_URL: {
+          type: 'string',
+          nullable: true,
+          description:
+            'URL da API LowCodeJS enviada ao MCP no header X-Lowcode-Api-Url',
+        },
         OPENAI_MODEL: {
           type: 'string',
           nullable: true,

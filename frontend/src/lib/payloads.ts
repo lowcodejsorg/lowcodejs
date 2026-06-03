@@ -308,6 +308,7 @@ export type SettingUpdatePayload = Partial<{
   CHAT_HISTORY_ENABLED: boolean;
   MCP_SERVER_URL: string | null;
   MCP_SERVER_TOKEN: string | null;
+  MCP_LOWCODE_API_URL: string | null;
   OPENAI_MODEL: string;
   AI_LLM_PROVIDER: string;
   LLM_API_KEY: string | null;

@@ -338,6 +338,12 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             </p>
           </div>
           <div className="space-y-1">
+            <p className="text-sm font-medium">URL da API (header MCP)</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {data.MCP_LOWCODE_API_URL || 'Padrão do servidor (APP_SERVER_URL)'}
+            </p>
+          </div>
+          <div className="space-y-1">
             <p className="text-sm font-medium">Token MCP</p>
             <p className="text-sm text-muted-foreground font-mono">
               {data.MCP_SERVER_TOKEN ? '••••••••' : '-'}

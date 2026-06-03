@@ -88,6 +88,7 @@ export const SettingUpdateSchema = z.object({
   CHAT_HISTORY_ENABLED: z.boolean(),
   MCP_SERVER_URL: z.string(),
   MCP_SERVER_TOKEN: z.string(),
+  MCP_LOWCODE_API_URL: z.string(),
   OPENAI_MODEL: z.string(),
   AI_LLM_PROVIDER: z.string(),
   LLM_API_KEY: z.string(),
@@ -126,6 +127,7 @@ export type SettingUpdateFormValues = Merge<
     CHAT_HISTORY_ENABLED: boolean;
     MCP_SERVER_URL: string;
     MCP_SERVER_TOKEN: string;
+    MCP_LOWCODE_API_URL: string;
     OPENAI_MODEL: string;
     AI_LLM_PROVIDER: string;
     LLM_API_KEY: string;
@@ -162,6 +164,7 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   CHAT_HISTORY_ENABLED: false,
   MCP_SERVER_URL: '',
   MCP_SERVER_TOKEN: '',
+  MCP_LOWCODE_API_URL: '',
   OPENAI_MODEL: 'gpt-4.1-nano',
   AI_LLM_PROVIDER: 'openai',
   LLM_API_KEY: '',
@@ -1285,6 +1288,44 @@ export const UpdateSettingFormFields = withForm({
                       name={field.name}
                       type="url"
                       placeholder="http://localhost:3001/mcp"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            {/* URL da API LowCodeJS para o MCP */}
+            <form.Field
+              name="MCP_LOWCODE_API_URL"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      URL da API (MCP)
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Enviada ao servidor MCP no header{' '}
+                      <code>X-Lowcode-Api-Url</code>. Deixe vazio para usar a
+                      URL padrão do servidor (
+                      <code>APP_SERVER_URL</code>).
+                    </div>
+                    <Input
+                      data-test-id="settings-mcp-lowcode-api-url-input"
+                      disabled={isDisabled}
+                      id={field.name}
+                      name={field.name}
+                      type="url"
+                      placeholder="https://api.seudominio.com"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}

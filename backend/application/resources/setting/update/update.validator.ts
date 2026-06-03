@@ -63,6 +63,12 @@ export const SettingUpdateBodyValidator = z.object({
     .nullable()
     .optional(),
   MCP_SERVER_TOKEN: z.string().trim().nullable().optional(),
+  MCP_LOWCODE_API_URL: z
+    .string()
+    .trim()
+    .url('URL da API LowCodeJS inválida')
+    .nullable()
+    .optional(),
   OPENAI_MODEL: z.string().trim().min(1).optional(),
   AI_LLM_PROVIDER: z
     .enum([

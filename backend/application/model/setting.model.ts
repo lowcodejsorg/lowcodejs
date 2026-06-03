@@ -34,6 +34,7 @@ const Schema = new mongoose.Schema(
     CHAT_HISTORY_ENABLED: { type: Boolean, default: false },
     MCP_SERVER_URL: { type: String, default: null },
     MCP_SERVER_TOKEN: { type: String, default: null },
+    MCP_LOWCODE_API_URL: { type: String, default: null },
     OPENAI_MODEL: { type: String, default: 'gpt-4.1-nano' },
     AI_LLM_PROVIDER: {
       type: String,

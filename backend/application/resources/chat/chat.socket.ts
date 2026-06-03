@@ -207,6 +207,7 @@ class NodeHttpTransport implements Transport {
 async function connectMcpClient(
   mcpUrl: string,
   mcpAuthToken: string | null,
+  mcpLowcodeApiUrl: string | null,
   accessToken: string,
 ): Promise<{
   client: Client;
@@ -218,6 +219,11 @@ async function connectMcpClient(
   if (mcpAuthToken) {
     headers['Authorization'] = `Bearer ${mcpAuthToken}`;
   }
+
+  const lowcodeApiUrl =
+    mcpLowcodeApiUrl?.trim().replace(/\/$/, '') ||
+    Env.APP_SERVER_URL.replace(/\/$/, '');
+  headers['X-Lowcode-Api-Url'] = lowcodeApiUrl;
 
   const transport = new NodeHttpTransport(new URL(mcpUrl), headers);
   const client = new Client({ name: 'lowcodejs-chat', version: '1.0.0' });
@@ -263,6 +269,7 @@ export function initChatSocket(
     const aiEnabled = Boolean(setting?.AI_ASSISTANT_ENABLED);
     const mcpUrl = setting?.MCP_SERVER_URL ?? null;
     const mcpAuthToken = setting?.MCP_SERVER_TOKEN ?? null;
+    const mcpLowcodeApiUrl = setting?.MCP_LOWCODE_API_URL ?? null;
     let llmConfig = resolveLlmConfig(setting);
 
     if (!aiEnabled || !mcpUrl || !llmConfig.isConfigured) {
@@ -283,6 +290,7 @@ export function initChatSocket(
       const { client, tools: mcpTools } = await connectMcpClient(
         mcpUrl,
         mcpAuthToken,
+        mcpLowcodeApiUrl,
         accessToken,
       );
       mcpClient = client;
