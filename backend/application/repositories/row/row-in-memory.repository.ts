@@ -98,9 +98,14 @@ export default class RowInMemoryRepository implements RowContractRepository {
       return true;
     });
 
-    return result
-      .slice(payload.skip, payload.skip + payload.limit)
-      .map((r) => ({ ...r }));
+    // limit <= 0 significa "sem limite" (busca todos), espelhando o
+    // comportamento do Mongoose .limit(0).
+    const sliced =
+      payload.limit <= 0
+        ? result.slice(payload.skip)
+        : result.slice(payload.skip, payload.skip + payload.limit);
+
+    return sliced.map((r) => ({ ...r }));
   }
 
   async count(

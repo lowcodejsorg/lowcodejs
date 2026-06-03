@@ -65,6 +65,42 @@ describe('Table Row Paginated Use Case', () => {
     }
   });
 
+  it('deve retornar TODOS os registros quando perPage = -1 (sem paginação)', async () => {
+    const table = await tableInMemoryRepository.create({
+      name: 'Cards',
+      slug: 'cards',
+      _schema: {},
+      fields: [],
+      owner: 'owner-id',
+      administrators: [],
+      style: E_TABLE_STYLE.KANBAN,
+      visibility: E_TABLE_VISIBILITY.RESTRICTED,
+      collaboration: E_TABLE_COLLABORATION.RESTRICTED,
+      fieldOrderList: [],
+      fieldOrderForm: [],
+    });
+
+    // Cria mais registros do que o teto antigo (100) para garantir que
+    // nenhuma coluna do kanban seja truncada.
+    for (let i = 0; i < 130; i++) {
+      await rowRepository.create({ table, data: { nome: `Card ${i}` } });
+    }
+
+    const result = await sut.execute({
+      slug: 'cards',
+      page: 1,
+      perPage: -1,
+    });
+
+    expect(result.isRight()).toBe(true);
+    if (result.isRight()) {
+      expect(result.value.data).toHaveLength(130);
+      expect(result.value.meta.total).toBe(130);
+      expect(result.value.meta.lastPage).toBe(1);
+      expect(result.value.meta.perPage).toBe(130);
+    }
+  });
+
   it('deve retornar erro TABLE_NOT_FOUND quando tabela nao existir', async () => {
     const result = await sut.execute({
       slug: 'non-existent',
