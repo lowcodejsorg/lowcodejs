@@ -166,8 +166,9 @@ function RouteComponent(): React.JSX.Element {
   });
   const table = useReadTable({ slug });
   const tableStyle = table.data?.style;
+  const isKanban = tableStyle === E_TABLE_STYLE.KANBAN;
   const shouldDisablePagination =
-    tableStyle === E_TABLE_STYLE.KANBAN ||
+    isKanban ||
     tableStyle === E_TABLE_STYLE.DOCUMENT ||
     tableStyle === E_TABLE_STYLE.FORUM ||
     tableStyle === E_TABLE_STYLE.CALENDAR ||
@@ -177,7 +178,11 @@ function RouteComponent(): React.JSX.Element {
       ? {
           ...search,
           page: 1,
-          perPage: 100,
+          // Kanban agrupa TODOS os registros em colunas, então busca tudo
+          // (perPage: -1 → backend sem limite). Um teto fixo (100) truncava
+          // colunas quando a tabela tinha muitos registros. As demais views
+          // sem paginação mantêm o teto de 100.
+          perPage: isKanban ? -1 : 100,
         }
       : search;
 
@@ -186,7 +191,7 @@ function RouteComponent(): React.JSX.Element {
       // Force refetch when switching view styles (forum requires populated data).
       viewStyle: tableStyle ?? E_TABLE_STYLE.LIST,
     };
-  }, [search, shouldDisablePagination, tableStyle]);
+  }, [search, shouldDisablePagination, isKanban, tableStyle]);
   const rows = useReadTableRowPaginated({ slug, search: rowsSearch });
   const permission = useTablePermission(table.data);
 
