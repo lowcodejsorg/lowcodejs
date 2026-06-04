@@ -1,4 +1,3 @@
-import { Link } from '@tanstack/react-router';
 import { DownloadIcon, FileIcon } from 'lucide-react';
 
 import type { IField, IRow, IStorage } from '@/lib/interfaces';
@@ -36,15 +35,17 @@ export function TableRowFileCell({
         if ((isGallery || isCardOrMosaic) && isImage) {
           return (
             <li key={value._id}>
-              <Link
-                to={value.url}
+              <a
+                href={value.url}
                 target="_blank"
+                rel="noopener noreferrer"
                 className={cn(
                   'flex flex-col items-center gap-1 text-center underline underline-offset-2',
                   isCardOrMosaic &&
                     'h-full w-full overflow-hidden no-underline justify-center',
                 )}
                 onClick={(e) => e.stopPropagation()}
+                title={`Abrir ${value.originalName} em nova aba`}
               >
                 <img
                   src={value.url}
@@ -60,7 +61,7 @@ export function TableRowFileCell({
                     {value.originalName}
                   </span>
                 )}
-              </Link>
+              </a>
             </li>
           );
         }
@@ -68,11 +69,13 @@ export function TableRowFileCell({
         if ((isGallery || isCardOrMosaic) && !isImage) {
           return (
             <li key={value._id}>
-              <Link
-                to={value.url}
+              <a
+                href={value.url}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="flex flex-col items-center gap-1 text-center underline underline-offset-2"
                 onClick={(e) => e.stopPropagation()}
+                title={`Abrir ${value.originalName} em nova aba`}
               >
                 <FileIcon
                   className="size-16 text-muted-foreground"
@@ -81,7 +84,7 @@ export function TableRowFileCell({
                 <span className="text-xs text-center">
                   {value.originalName}
                 </span>
-              </Link>
+              </a>
             </li>
           );
         }
@@ -91,14 +94,16 @@ export function TableRowFileCell({
             key={value._id}
             className="flex items-center gap-2"
           >
-            <Link
-              to={value.url}
+            <a
+              href={value.url}
               target="_blank"
+              rel="noopener noreferrer"
               className="text-sm text-primary underline underline-offset-2"
               onClick={(e) => e.stopPropagation()}
+              title={`Abrir ${value.originalName} em nova aba (botão direito para salvar)`}
             >
               {value.originalName}
-            </Link>
+            </a>
             <a
               href={getStorageDownloadUrl(value)}
               aria-label={`Baixar ${value.originalName}`}
