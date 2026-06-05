@@ -20,8 +20,8 @@ import {
 } from '@application/core/entity.core';
 import { Setting } from '@application/model/setting.model';
 import { resolveLlmConfig } from '@application/services/llm/ai-setting-fields';
-import { getLlmProviderLabel } from '@application/services/llm/llm-defaults';
 import type { LlmChatMessage } from '@application/services/llm/llm-chat.types';
+import { getLlmProviderLabel } from '@application/services/llm/llm-defaults';
 import { runChatCompletion } from '@application/services/llm/run-chat-completion';
 import { Env } from '@start/env';
 
@@ -66,7 +66,11 @@ function getErrorMessage(err: unknown): string {
 function formatChatUserError(err: unknown): string {
   const raw = getErrorMessage(err).toLowerCase();
 
-  if (raw.includes('429') || raw.includes('quota') || raw.includes('rate limit')) {
+  if (
+    raw.includes('429') ||
+    raw.includes('quota') ||
+    raw.includes('rate limit')
+  ) {
     return 'Cota ou limite de requisições da API do provedor LLM esgotado. Aguarde alguns minutos, verifique o billing do provedor ou troque o provedor/modelo em Configurações → Assistente IA.';
   }
 
@@ -80,7 +84,11 @@ function formatChatUserError(err: unknown): string {
     return 'Chave da API inválida ou sem permissão. Verifique a chave em Configurações → Assistente IA.';
   }
 
-  if (raw.includes('timeout') || raw.includes('econnrefused') || raw.includes('fetch failed')) {
+  if (
+    raw.includes('timeout') ||
+    raw.includes('econnrefused') ||
+    raw.includes('fetch failed')
+  ) {
     return 'Não foi possível conectar ao provedor LLM. Verifique URL, rede e se o serviço (ex.: Ollama) está rodando.';
   }
 

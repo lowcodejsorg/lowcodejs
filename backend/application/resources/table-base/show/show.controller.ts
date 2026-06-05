@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
@@ -13,7 +14,6 @@ import { TableShowParamsValidator } from './show.validator';
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: TableShowUseCase = getInstanceByToken(
       TableShowUseCase,
     ),

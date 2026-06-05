@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import { E_ROLE, type IGroup } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
-import { normalize } from '@application/core/util.core';
 import { UserGroup as Model } from '@application/model/user-group.model';
+import { QueryBuilderContractService } from '@application/services/table/query-builder-contract.service';
 
 import type {
   UserGroupContractRepository,
@@ -15,6 +16,8 @@ import type {
 
 @Service()
 export default class UserGroupMongooseRepository implements UserGroupContractRepository {
+  constructor(private readonly query: QueryBuilderContractService) {}
+
   private readonly populateOptions = [{ path: 'permissions' }];
 
   private async buildWhereClause(
@@ -34,8 +37,15 @@ export default class UserGroupMongooseRepository implements UserGroupContractRep
 
     if (payload?.search) {
       where.$or = [
-        { name: { $regex: normalize(payload.search), $options: 'i' } },
-        { description: { $regex: normalize(payload.search), $options: 'i' } },
+        {
+          name: { $regex: this.query.normalize(payload.search), $options: 'i' },
+        },
+        {
+          description: {
+            $regex: this.query.normalize(payload.search),
+            $options: 'i',
+          },
+        },
       ];
     }
 

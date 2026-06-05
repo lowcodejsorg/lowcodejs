@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type { IPermission } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
-import { normalize } from '@application/core/util.core';
 import { Permission as Model } from '@application/model/permission.model';
+import { QueryBuilderContractService } from '@application/services/table/query-builder-contract.service';
 
 import type {
   PermissionContractRepository,
@@ -14,13 +15,18 @@ import type {
 
 @Service()
 export default class PermissionMongooseRepository implements PermissionContractRepository {
+  constructor(private readonly query: QueryBuilderContractService) {}
+
   private buildWhereClause(
     payload?: PermissionQueryPayload,
   ): Record<string, unknown> {
     const where: Record<string, unknown> = {};
 
     if (payload?.search) {
-      where.name = { $regex: normalize(payload.search), $options: 'i' };
+      where.name = {
+        $regex: this.query.normalize(payload.search),
+        $options: 'i',
+      };
     }
 
     return where;

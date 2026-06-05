@@ -19,10 +19,10 @@ import {
   type ValueOf,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { suggestUniqueFieldSlug } from '@application/core/field-slug.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import type {
   SchemaImportField,
@@ -62,7 +62,7 @@ export default class SchemaImportUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -202,7 +202,7 @@ export default class SchemaImportUseCase {
     const usedSlugs = new Set<string>(nativeFields.map((f) => f.slug));
 
     for (const fieldDef of tableDef.fields) {
-      const fieldSlug = suggestUniqueFieldSlug(fieldDef.name, [...usedSlugs]);
+      const fieldSlug = FieldSlug.suggestUnique(fieldDef.name, [...usedSlugs]);
       usedSlugs.add(fieldSlug);
 
       const payload = this.buildFieldPayload(fieldDef, fieldSlug);
@@ -225,7 +225,7 @@ export default class SchemaImportUseCase {
 
     const allFields = [...nativeFields, ...userFields];
     const allFieldIds = allFields.map((f) => f._id);
-    const _schema = this.tableSchemaService.computeSchema(allFields);
+    const _schema = this.schemaBuilder.build(allFields);
 
     const tableRecord = await this.tableRepository.create({
       _schema,

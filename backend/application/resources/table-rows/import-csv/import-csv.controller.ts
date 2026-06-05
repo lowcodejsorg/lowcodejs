@@ -7,9 +7,9 @@ import { AuthenticationMiddleware } from '@application/middlewares/authenticatio
 import { RoleMiddleware } from '@application/middlewares/role.middleware';
 import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
-import BullMQCsvImportQueueService from '@application/services/csv-import/bullmq-csv-import-queue.service';
+import TableMongooseRepository from '@application/repositories/table/table.repository';
 import { CsvImportQueueContractService } from '@application/services/csv-import/csv-import-queue-contract.service';
+import BullMQCsvImportQueueService from '@application/services/csv-import/csv-import-queue.service';
 
 import { TableRowImportCsvSchema } from './import-csv.schema';
 import { ImportCsvParamsValidator } from './import-csv.validator';

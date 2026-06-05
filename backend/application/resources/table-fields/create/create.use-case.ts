@@ -10,10 +10,11 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { resolveFieldSlug } from '@application/core/field-slug.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import {
   hasDuplicateDropdownLabels,
@@ -30,7 +31,8 @@ export default class TableFieldCreateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -49,7 +51,7 @@ export default class TableFieldCreateUseCase {
           HTTPException.NotFound('Tabela não encontrada', 'TABLE_NOT_FOUND'),
         );
 
-      const resolvedSlug = resolveFieldSlug({
+      const resolvedSlug = FieldSlug.resolve({
         name: payload.name,
         slug: payload.tableSlug ? payload.slug : undefined,
       });
@@ -100,8 +102,7 @@ export default class TableFieldCreateUseCase {
           FIELD_GROUP_NATIVE_LIST,
         );
 
-        const groupSchema =
-          this.tableSchemaService.computeSchema(nativeGroupFields);
+        const groupSchema = this.schemaBuilder.build(nativeGroupFields);
 
         // Adiciona grupo em groups da tabela pai
         const newGroup: IGroupConfiguration = {
@@ -121,7 +122,7 @@ export default class TableFieldCreateUseCase {
 
       const fields = [...(table.fields ?? []), field];
 
-      const _schema = this.tableSchemaService.computeSchema(fields, groups);
+      const _schema = this.schemaBuilder.build(fields, groups);
 
       await this.tableRepository.update({
         _id: table._id,
@@ -139,7 +140,7 @@ export default class TableFieldCreateUseCase {
         fieldOrderDetail: [...(table.fieldOrderDetail ?? []), field._id],
       });
 
-      await this.tableSchemaService.syncModel({
+      await this.modelBuilder.build({
         ...table,
         _id: table._id,
         _schema: {

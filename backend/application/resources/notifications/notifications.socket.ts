@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Socket.IO namespace `/notifications`.
  *
@@ -10,7 +11,7 @@
  *   - notification:read     { _id: string }
  *   - notification:read_all { userId: string }
  */
-/* eslint-disable no-unused-vars */
+
 import type { Namespace, Server as SocketIOServer } from 'socket.io';
 
 import { E_JWT_TYPE, type IJWTPayload } from '@application/core/entity.core';

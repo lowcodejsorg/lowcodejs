@@ -7,7 +7,7 @@ Repositorio da entidade Field (campos de tabelas dinamicas).
 | Arquivo | Descricao |
 |---------|-----------|
 | `field-contract.repository.ts` | Classe abstrata com interface e payload types |
-| `field-mongoose.repository.ts` | Implementacao com Mongoose |
+| `field.repository.ts` | Implementacao com Mongoose |
 | `field-in-memory.repository.ts` | Implementacao em memoria para testes |
 
 ## Metodos

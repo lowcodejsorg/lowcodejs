@@ -16,7 +16,7 @@ import {
 import HTTPException from '@application/core/exception.core';
 import {
   FIELD_NAME_MAX_LENGTH,
-  getFieldSlugError,
+  FieldSlug,
 } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { MenuContractRepository } from '@application/repositories/menu/menu-contract.repository';
@@ -25,7 +25,7 @@ import {
   TableContractRepository,
   type TableCreatePayload,
 } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import type {
   ImportedTableSummary,
@@ -120,7 +120,7 @@ export default class ImportTableUseCase {
     private readonly fieldRepository: FieldContractRepository,
     private readonly rowRepository: RowContractRepository,
     private readonly menuRepository: MenuContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
   ) {}
 
   async execute(
@@ -346,7 +346,7 @@ export default class ImportTableUseCase {
         );
       }
 
-      const slugError = getFieldSlugError(field.slug);
+      const slugError = FieldSlug.getError(field.slug);
       if (slugError) {
         return HTTPException.BadRequest(
           `Slug de campo inválido: ${slugError}`,
@@ -720,7 +720,7 @@ export default class ImportTableUseCase {
         groupFields.push(sub);
       }
 
-      const groupSchema = this.tableSchemaService.computeSchema(groupFields);
+      const groupSchema = this.schemaBuilder.build(groupFields);
 
       groups.push({
         slug: group.slug,
@@ -747,7 +747,7 @@ export default class ImportTableUseCase {
         .map((s) => fieldSlugToId.get(s))
         .filter((id): id is string => Boolean(id));
 
-    const _schema = this.tableSchemaService.computeSchema(allFields, groups);
+    const _schema = this.schemaBuilder.build(allFields, groups);
 
     const createPayload: TableCreatePayload = {
       _schema,
@@ -927,15 +927,12 @@ export default class ImportTableUseCase {
       updatedGroups[gi] = {
         ...gconf,
         fields: newGroupFields,
-        _schema: this.tableSchemaService.computeSchema(newGroupFields),
+        _schema: this.schemaBuilder.build(newGroupFields),
       };
     }
 
     if (touched) {
-      const _schema = this.tableSchemaService.computeSchema(
-        updatedAllFields,
-        updatedGroups,
-      );
+      const _schema = this.schemaBuilder.build(updatedAllFields, updatedGroups);
       await this.tableRepository.update({
         _id: info.tableId,
         _schema,

@@ -182,7 +182,9 @@ export function useChatSocket(
       }) => {
         setStatusMessage(data.message);
         setToolsCount(data.tools_count);
-        setLlmProviderLabel(data.llm_provider_label ?? data.llm_provider ?? null);
+        setLlmProviderLabel(
+          data.llm_provider_label ?? data.llm_provider ?? null,
+        );
         setLlmModel(data.llm_model ?? null);
         setStatus('idle');
 
@@ -213,7 +215,9 @@ export function useChatSocket(
         llm_provider_label?: string;
         llm_model?: string;
       }) => {
-        setLlmProviderLabel(data.llm_provider_label ?? data.llm_provider ?? null);
+        setLlmProviderLabel(
+          data.llm_provider_label ?? data.llm_provider ?? null,
+        );
         setLlmModel(data.llm_model ?? null);
       },
     );

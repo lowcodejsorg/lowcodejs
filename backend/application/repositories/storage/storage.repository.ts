@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import {
@@ -7,8 +8,8 @@ import {
   type TStorageLocation,
   type TStorageMigrationStatus,
 } from '@application/core/entity.core';
-import { normalize } from '@application/core/util.core';
 import { Storage as Model } from '@application/model/storage.model';
+import { QueryBuilderContractService } from '@application/services/table/query-builder-contract.service';
 
 import type {
   StorageContractRepository,
@@ -20,6 +21,8 @@ import type {
 
 @Service()
 export default class StorageMongooseRepository implements StorageContractRepository {
+  constructor(private readonly query: QueryBuilderContractService) {}
+
   private buildWhereClause(
     payload?: StorageQueryPayload,
   ): Record<string, unknown> {
@@ -28,7 +31,10 @@ export default class StorageMongooseRepository implements StorageContractReposit
     if (payload?.mimetype) where.mimetype = payload.mimetype;
 
     if (payload?.search) {
-      where.originalName = { $regex: normalize(payload.search), $options: 'i' };
+      where.originalName = {
+        $regex: this.query.normalize(payload.search),
+        $options: 'i',
+      };
     }
 
     return where;

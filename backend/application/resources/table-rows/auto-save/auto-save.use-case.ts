@@ -4,12 +4,12 @@ import { Service } from 'fastify-decorators';
 import { Either, left, right } from '@application/core/either.core';
 import { E_ROW_STATUS, IRow } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
 import { TableRowAutoSavePayload } from './auto-save.validator';
-import { toDraftTable } from './draft-table';
+import { DraftTable } from './draft-table';
 
 type Response = Either<HTTPException, IRow>;
 
@@ -44,7 +44,11 @@ export default class TableRowAutoSaveUseCase {
         );
       });
 
-      const errors = validateRowPayload(payload, fields, table.groups);
+      const errors = RowPayloadValidator.validate(
+        payload,
+        fields,
+        table.groups,
+      );
 
       if (errors) {
         return left(
@@ -65,7 +69,7 @@ export default class TableRowAutoSaveUseCase {
       // rascunhos parciais sem disparar os validators de obrigatoriedade do
       // Mongoose. O core nao e tocado; a tabela original segue exigindo
       // required no create/update normal.
-      const draftTable = toDraftTable(table);
+      const draftTable = DraftTable.from(table);
 
       if (!rowId) {
         const created = await this.rowRepository.create({

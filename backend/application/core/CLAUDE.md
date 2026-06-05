@@ -46,23 +46,22 @@ Pattern funcional para error handling:
 - Usado em todos os use-cases: `Either<HTTPException, T>`
 - Metodos: `isLeft()`, `isRight()`, `.value`
 
-### `util.core.ts` (954 linhas)
+### Builders Mongoose (movidos para `services/table/`)
 
-Funcoes utilitarias para schema/query/model building:
+As funcoes de schema/query/model/populate building viraram classes em
+`application/services/table/` (`MongooseSchemaBuilder`, `MongooseModelBuilder`,
+`MongooseQueryBuilder`, `MongoosePopulateBuilder`, `RowContextBuilder`). Sao
+detalhe de impl Mongoose — ver `services/table/CLAUDE.md`. O antigo
+`util.core.ts` (facade) foi removido.
 
-- `buildSchema(fields)` - converte IField[] em Mongoose schema definition
-- `buildTable(table)` - cria modelo Mongoose dinamico a partir de ITable
-- `buildPopulate(table)` - gera populate paths para relacionamentos
-- `buildQuery(search, fields)` - converte filtros de busca em query MongoDB
-- `buildOrder(sort)` - converte parametros de sort
-- `normalize(text)` - regex com tratamento de acentos
-- `findReverseRelationships(table)` - encontra tabelas que referenciam a atual
-- `PASSWORD_REGEX` - validacao de senha
+### `field-rules.core.ts`
+
+Constantes puras de validacao de campo agnosticas de banco. Ex: `PASSWORD_REGEX`.
 
 ### `row-payload-validator.core.ts`
 
-`validateRowPayload(payload, fields)` - valida dados de row contra definicao de
-campos:
+Classe `RowPayloadValidator` com metodo estatico `validate(payload, fields, groups?)`
+- valida dados de row contra definicao de campos:
 
 - Validadores por tipo: TEXT_SHORT/LONG, DATE, DROPDOWN, FILE, RELATIONSHIP,
   CATEGORY, FIELD_GROUP
@@ -75,10 +74,18 @@ no Fastify.
 
 ### `di-registry.ts`
 
-Registro explicito de dependencias (Contract -> Implementation):
+Registro **dinamico** de dependencias (Contract -> Implementation), no mesmo
+espirito de `controllers.ts`: varre o filesystem e pareia por convencao em vez de
+manter lista manual.
 
-- 11 repositorios (Mongoose)
-- 1 servico (Email -> Nodemailer)
+- Roots varridos: `application/repositories`, `application/services` e
+  `extensions/` (cada um guardado por `existsSync`)
+- Convencao unica: `<base>-contract.<kind>.ts` (export nomeado
+  `<X>Contract(Repository|Service)`) pareia com `<base>.<kind>.ts`
+  (`export default`). O impl e *derivado* do base — `in-memory-*`, `*.worker` e
+  drivers nunca colidem
+- `registerDependencies()` e **async** (faz `await import()` de cada modulo) e e
+  awaited em `start/kernel.ts` antes do bootstrap dos controllers
 - Usa `injectablesHolder.injectService()` do fastify-decorators
 
 ## Subdiretorio: `table/`

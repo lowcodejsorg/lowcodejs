@@ -10,7 +10,7 @@ isolada do Node. APIs expostas: `field`, `context`, `email`, `users`,
 | Arquivo | Descricao |
 |---------|-----------|
 | `script-execution-contract.service.ts` | Abstract class: `execute(input)` |
-| `node-vm-script-execution.service.ts` | Implementacao default. Cria VM via `application/core/table/sandbox.ts`, valida sintaxe, roda com timeout 5s. |
+| `script-execution.service.ts` | Implementacao default. Cria VM via `application/core/table/sandbox.ts`, valida sintaxe, roda com timeout 5s. |
 | `in-memory-script-execution.service.ts` | Mock que retorna sucesso sem executar nada (usado em testes que nao validam scripts). |
 
 ## Contrato

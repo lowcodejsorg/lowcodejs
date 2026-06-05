@@ -1,11 +1,12 @@
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { E_CHAT_EVENT } from '@application/core/entity.core';
 import type { Socket } from 'socket.io';
 
-import { createLlmChatProvider } from './create-llm-provider';
+import { E_CHAT_EVENT } from '@application/core/entity.core';
+
 import type { ResolvedLlmConfig } from './ai-setting-fields';
-import { executeMcpTool } from './mcp-tool-executor';
+import { createLlmChatProvider } from './create-llm-provider';
 import type { LlmChatMessage, LlmChatTool } from './llm-chat.types';
+import { executeMcpTool } from './mcp-tool-executor';
 
 interface FileData {
   type: 'image' | 'pdf';
@@ -16,10 +17,7 @@ interface FileData {
   page_count?: number;
 }
 
-function buildUserMessage(
-  userInput: string,
-  file?: FileData,
-): LlmChatMessage {
+function buildUserMessage(userInput: string, file?: FileData): LlmChatMessage {
   if (!file) {
     return { role: 'user', content: userInput };
   }
@@ -46,8 +44,7 @@ function buildUserMessage(
   if (file.type === 'pdf') {
     const extracted = file.extracted_text || '';
     const pageCount = file.page_count || 0;
-    const prompt =
-      userInput || 'Transcreva e analise o conteúdo deste PDF:';
+    const prompt = userInput || 'Transcreva e analise o conteúdo deste PDF:';
     const fullContent = `${prompt}\n\nPDF: ${filename} (${pageCount} página(s))\n\n${extracted}`;
     return { role: 'user', content: fullContent };
   }

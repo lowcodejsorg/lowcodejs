@@ -1,13 +1,10 @@
 /* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
-import {
-  buildOrder,
-  buildPopulate,
-  buildQuery,
-  buildTable,
-} from '@application/core/builders';
 import type { IRow } from '@application/core/entity.core';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import { PopulateBuilderContractService } from '@application/services/table/populate-builder-contract.service';
+import { QueryBuilderContractService } from '@application/services/table/query-builder-contract.service';
 import { getDataConnection } from '@config/database.config';
 
 interface SubdocArray<T = unknown> extends Array<T> {
@@ -57,16 +54,22 @@ function assertIRow(value: Record<string, unknown>): asserts value is IRow {
 
 @Service()
 export default class RowMongooseRepository implements RowContractRepository {
+  constructor(
+    private readonly model: ModelBuilderContractService,
+    private readonly query: QueryBuilderContractService,
+    private readonly populate: PopulateBuilderContractService,
+  ) {}
+
   private async getModel(
     table: RowTableContext,
-  ): ReturnType<typeof buildTable> {
-    return buildTable(table, getDataConnection());
+  ): ReturnType<ModelBuilderContractService['build']> {
+    return this.model.build(table);
   }
 
   private async getPopulate(
     table: RowTableContext,
-  ): ReturnType<typeof buildPopulate> {
-    return buildPopulate(table.fields, table.groups, getDataConnection());
+  ): ReturnType<PopulateBuilderContractService['build']> {
+    return this.populate.build(table.fields, table.groups, getDataConnection());
   }
 
   private transformRow(doc: unknown): IRow {
@@ -122,7 +125,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     const populate = await this.getPopulate(payload.table);
 
     const conn = getDataConnection();
-    const query = await buildQuery(
+    const query = await this.query.build(
       payload.rawFilters ?? {},
       payload.table.fields ?? [],
       payload.table.groups,
@@ -130,7 +133,7 @@ export default class RowMongooseRepository implements RowContractRepository {
       conn,
     );
 
-    const sort = buildOrder(
+    const sort = this.query.order(
       payload.rawFilters ?? {},
       payload.table.fields ?? [],
       payload.table.order,
@@ -151,7 +154,7 @@ export default class RowMongooseRepository implements RowContractRepository {
     rawFilters?: Record<string, unknown>,
   ): Promise<number> {
     const model = await this.getModel(table);
-    const query = await buildQuery(
+    const query = await this.query.build(
       rawFilters ?? {},
       table.fields ?? [],
       table.groups,

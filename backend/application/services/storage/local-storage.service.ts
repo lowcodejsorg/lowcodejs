@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { MultipartFile } from '@fastify/multipart';
 import { Service } from 'fastify-decorators';
 import { createReadStream, existsSync } from 'node:fs';
@@ -73,7 +74,7 @@ export default class LocalStorageService implements StorageContractService {
   async writeRaw(
     filename: string,
     body: Buffer,
-    // eslint-disable-next-line no-unused-vars
+
     _mimetype: string,
   ): Promise<StorageWriteRawResponse> {
     await this.ensureBucket();

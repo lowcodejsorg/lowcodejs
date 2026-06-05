@@ -44,8 +44,8 @@ import {
   LLM_MODEL_OPTIONS,
   providerRequiresApiKey,
   providerShowsBaseUrl,
-  type AiLlmProvider,
 } from '@/lib/ai-llm-providers';
+import type { AiLlmProvider } from '@/lib/ai-llm-providers';
 import { E_AI_LLM_PROVIDER } from '@/lib/constant';
 import type { ISetting, IStorage, Merge } from '@/lib/interfaces';
 
@@ -1095,9 +1095,7 @@ export const UpdateSettingFormFields = withForm({
 
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>
-                      Provedor de IA
-                    </FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Provedor de IA</FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
                       Serviço de linguagem usado pelo assistente no chat
                     </div>
@@ -1139,9 +1137,7 @@ export const UpdateSettingFormFields = withForm({
               }}
             />
 
-            <form.Subscribe
-              selector={(state) => state.values.AI_LLM_PROVIDER}
-            >
+            <form.Subscribe selector={(state) => state.values.AI_LLM_PROVIDER}>
               {(providerRaw) => {
                 const provider = (providerRaw ||
                   E_AI_LLM_PROVIDER.OPENAI) as AiLlmProvider;
@@ -1316,8 +1312,7 @@ export const UpdateSettingFormFields = withForm({
                     <div className="text-sm text-muted-foreground mb-2">
                       Enviada ao servidor MCP no header{' '}
                       <code>X-Lowcode-Api-Url</code>. Deixe vazio para usar a
-                      URL padrão do servidor (
-                      <code>APP_SERVER_URL</code>).
+                      URL padrão do servidor (<code>APP_SERVER_URL</code>).
                     </div>
                     <Input
                       data-test-id="settings-mcp-lowcode-api-url-input"
@@ -1388,9 +1383,7 @@ export const UpdateSettingFormFields = withForm({
               }}
             />
 
-            <form.Subscribe
-              selector={(state) => state.values.AI_LLM_PROVIDER}
-            >
+            <form.Subscribe selector={(state) => state.values.AI_LLM_PROVIDER}>
               {(providerRaw) => {
                 const provider = (providerRaw ||
                   E_AI_LLM_PROVIDER.OPENAI) as AiLlmProvider;
@@ -1404,8 +1397,7 @@ export const UpdateSettingFormFields = withForm({
                     name="LLM_MODEL"
                     children={(field) => {
                       const isInvalid =
-                        field.state.meta.isTouched &&
-                        !field.state.meta.isValid;
+                        field.state.meta.isTouched && !field.state.meta.isValid;
 
                       return (
                         <Field data-invalid={isInvalid}>

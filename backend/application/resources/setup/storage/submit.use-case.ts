@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Inject, Service } from 'fastify-decorators';
+import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -33,10 +33,10 @@ const CURRENT_STEP: SetupStep = 'storage';
 
 @Service()
 export default class SetupStorageSubmitUseCase {
-  @Inject(StorageContractService)
-  private readonly storageService!: StorageContractService;
-
-  constructor(private readonly settingRepository: SettingContractRepository) {}
+  constructor(
+    private readonly settingRepository: SettingContractRepository,
+    private readonly storageService: StorageContractService,
+  ) {}
 
   async execute(payload: Input): Promise<Response> {
     try {

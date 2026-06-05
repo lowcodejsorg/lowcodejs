@@ -6,7 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
 import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
@@ -42,7 +42,11 @@ export default class TableRowCreateUseCase {
         );
       }
 
-      const errors = validateRowPayload(payload, table.fields, table.groups);
+      const errors = RowPayloadValidator.validate(
+        payload,
+        table.fields,
+        table.groups,
+      );
 
       if (errors) {
         return left(

@@ -27,6 +27,13 @@ import type {
   ITable,
 } from '@/lib/interfaces';
 
+// Largura da coluna a partir de widthInList (px), seguindo a mesma semântica do
+// `size` da lista normal. Sem valor → coluna dimensionada pelo conteúdo.
+function columnWidth(field: IField): string | undefined {
+  if (!field.widthInList) return undefined;
+  return `${field.widthInList}px`;
+}
+
 interface GroupRowsDataTableProps {
   tableSlug: string;
   rowId: string;
@@ -161,6 +168,7 @@ export function GroupRowsDataTable({
                 <th
                   key={gf._id}
                   className="px-4 py-2 text-left text-xs font-medium text-muted-foreground"
+                  style={{ width: columnWidth(gf) }}
                 >
                   {gf.name}
                 </th>

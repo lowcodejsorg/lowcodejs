@@ -1,11 +1,12 @@
 import type { Client } from '@modelcontextprotocol/sdk/client/index.js';
+import type { Socket } from 'socket.io';
+
 import {
   E_CHAT_EVENT,
   E_LOGGER_ACTION_TYPE,
   E_LOGGER_OBJECT_TYPE,
 } from '@application/core/entity.core';
 import { Logger } from '@application/model/logger.model';
-import type { Socket } from 'socket.io';
 
 export async function executeMcpTool(params: {
   mcpClient: Client;
@@ -26,9 +27,7 @@ export async function executeMcpTool(params: {
     object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
     object_id: toolName,
     content: toolArgs,
-  }).catch((err: unknown) =>
-    console.error('[MCP Log] create error:', err),
-  );
+  }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
 
   try {
     const result = await mcpClient.callTool({
@@ -65,9 +64,7 @@ export async function executeMcpTool(params: {
       object: E_LOGGER_OBJECT_TYPE.AI_TOOL,
       object_id: toolName,
       content: { preview, length: contentStr.length },
-    }).catch((err: unknown) =>
-      console.error('[MCP Log] create error:', err),
-    );
+    }).catch((err: unknown) => console.error('[MCP Log] create error:', err));
 
     return contentStr;
   } catch (err) {

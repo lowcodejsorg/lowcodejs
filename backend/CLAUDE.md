@@ -88,13 +88,15 @@ backend/
 ### Use Case (`*.use-case.ts`)
 - Logica de negocio pura
 - Retorna `Either<HTTPException, T>` (Left = erro, Right = sucesso)
-- Recebe repositorios via constructor injection (`@Inject`)
+- Recebe repositorios/services via **constructor injection** (`@Service` resolve
+  pelos tipos dos parametros). NAO usar `@Inject`. Importar os contratos pelo
+  caminho direto do modulo, nunca por barrel `index.ts`
 - NAO conhece HTTP (request/response)
 - Trata excecoes internas e retorna Left com codigo/causa
 
-### Repository (`*-contract.repository.ts` + `*-mongoose.repository.ts`)
-- Contract: classe abstrata definindo interface
-- Mongoose: implementacao concreta
+### Repository (`*-contract.repository.ts` + `*.repository.ts`)
+- Contract: classe abstrata definindo interface (export nomeado)
+- Mongoose: implementacao concreta (`export default` em `<entidade>.repository.ts`)
 - InMemory: para testes unitarios
 - Metodos padrao: `create`, `findById`, `findByX`, `findMany`, `update`, `delete`, `count`
 - Payloads tipados (CreatePayload, UpdatePayload, QueryPayload, FindOptions)
@@ -187,10 +189,10 @@ Visibilidade de tabela (para nao-owners):
 | Unit Test | `{operacao}.use-case.spec.ts` | `create.use-case.spec.ts` |
 | E2E Test | `{operacao}.controller.spec.ts` | `create.controller.spec.ts` |
 | Repository Contract | `{entidade}-contract.repository.ts` | `user-contract.repository.ts` |
-| Repository Impl | `{entidade}-mongoose.repository.ts` | `user-mongoose.repository.ts` |
+| Repository Impl | `{entidade}.repository.ts` (`export default`) | `user.repository.ts` |
 | Repository Test | `{entidade}-in-memory.repository.ts` | `user-in-memory.repository.ts` |
 | Service Contract | `{nome}-contract.service.ts` | `email-contract.service.ts` |
-| Service Impl | `{tech}-{nome}.service.ts` | `nodemailer-email.service.ts` |
+| Service Impl | `{nome}.service.ts` (`export default`) | `email.service.ts` |
 | Model | `{entidade}.model.ts` | `user.model.ts` |
 | Validator Base | `{entidade}-base.validator.ts` | `user-base.validator.ts` |
 
@@ -222,14 +224,39 @@ npm start            # Producao (build/bin/server.js)
 
 ## Dependencia Injection (DI)
 
-Registrado em `application/core/di-registry.ts` usando `fastify-decorators`:
-- 11 repositorios: User, UserGroup, Permission, Table, Field, Storage, ValidationToken, Menu, Reaction, Evaluation, Setting
-- Servicos: Email (contract -> nodemailer), EmailQueue (contract -> BullMQ — use-cases injetam este, nao Email diretamente), StorageMigrationQueue (BullMQ), Password, Permission, RowPassword, ScriptExecution, RowContext, KanbanCommentMention, TableSchema, Storage
+`application/core/di-registry.ts` registra os bindings **dinamicamente** (igual
+`controllers.ts`): varre o filesystem e pareia cada `<base>-contract.<kind>.ts`
+com `<base>.<kind>.ts` por convencao — **nao ha mais lista manual**. Roots
+varridos: `application/repositories` (repository), `application/services`
+(service) e `extensions/` (ambos). `injectablesHolder.injectService(Contract,
+Impl)` e chamado para cada par encontrado.
 
-Para adicionar nova dependencia:
-1. Crie o contract (abstract class)
-2. Crie a implementacao
-3. Registre em `di-registry.ts` com `injectablesHolder.injectService(Contract, Implementation)`
+- Repositorios: User, UserGroup, Permission, Table, Field, Storage,
+  ValidationToken, Menu, Reaction, Evaluation, Setting, Logger, Notification,
+  Extension
+- Servicos: Email, EmailQueue (use-cases injetam este, nao Email diretamente),
+  CsvImportQueue, StorageMigrationQueue, Password, Permission, RowPassword,
+  ScriptExecution, Notification, KanbanCommentMention, RowMemberNotification,
+  Storage
+- Builders de tabela dinamica (`services/table/`): SchemaBuilder, ModelBuilder,
+  QueryBuilder, PopulateBuilder, RowContextBuilder
+
+Convencao (regra unica): contract = export nomeado `<X>Contract(Repository|
+Service)`; impl = `export default` do arquivo irmao `<base>.<kind>.ts`. Arquivos
+`in-memory-*`, `*.worker`, drivers (`local-*`/`s3-*`) sao ignorados (o impl e
+derivado do base do contract, nao adivinhado).
+
+Para adicionar nova dependencia (zero edicao no di-registry):
+1. Crie `<base>-contract.<kind>.ts` com a abstract class `<X>Contract<Kind>`
+   (export nomeado)
+2. Crie `<base>.<kind>.ts` com `@Service() export default class` da impl
+3. Consuma via **constructor injection** (`@Service` + parametro tipado com o
+   Contract). Importe o Contract pelo **caminho direto** do modulo, nunca por
+   barrel `index.ts` — o SWC elide o tipo do parametro em re-export barrel e a
+   injecao vira `undefined` silenciosamente. Nunca use `@Inject`.
+
+Para trocar a implementacao (ex.: trocar de ORM), troque o conteudo do arquivo
+`<base>.<kind>.ts` — o scanner continua registrando o mesmo contract.
 
 ## Fluxo de Inicializacao do Servidor
 

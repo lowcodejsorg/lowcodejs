@@ -2,12 +2,12 @@
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
-import { E_AI_LLM_PROVIDER } from '@application/core/entity.core';
-import { projectAiSettingsFields } from '@application/services/llm/ai-setting-fields';
 import { left, right } from '@application/core/either.core';
+import { E_AI_LLM_PROVIDER } from '@application/core/entity.core';
 import type { ISetting } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { SettingContractRepository } from '@application/repositories/setting/setting-contract.repository';
+import { projectAiSettingsFields } from '@application/services/llm/ai-setting-fields';
 
 type Response = Either<HTTPException, ISetting | Record<string, unknown>>;
 
