@@ -834,7 +834,12 @@ export function KanbanRowDialog({
             case E_FIELD_TYPE.FILE:
               return <formField.TableRowFileField field={field} />;
             case E_FIELD_TYPE.RELATIONSHIP:
-              return <formField.TableRowRelationshipField field={field} />;
+              return (
+                <formField.TableRowRelationshipField
+                  field={field}
+                  tableSlug={tableSlug}
+                />
+              );
             case E_FIELD_TYPE.CATEGORY:
               return <formField.TableRowCategoryField field={field} />;
             case E_FIELD_TYPE.FIELD_GROUP:

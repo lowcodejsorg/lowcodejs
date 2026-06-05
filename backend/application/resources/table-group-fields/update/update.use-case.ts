@@ -13,6 +13,7 @@ import {
   normalizeDefaultValue,
 } from '@application/resources/table-fields/table-field-base.schema';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
 
 import type { GroupFieldUpdatePayload } from './update.validator';
 
@@ -246,6 +247,14 @@ export default class GroupFieldUpdateUseCase {
         _schema: parentSchema,
         groups: updatedGroups,
       });
+
+      if (payload.trashed) {
+        await deleteCascadeDropdownConfigsForField({
+          tableSlug,
+          fieldId: field._id,
+          fieldSlug: field.slug,
+        });
+      }
 
       return right(updatedField);
     } catch (error) {

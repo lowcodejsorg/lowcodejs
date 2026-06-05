@@ -3,6 +3,7 @@ import { FileTextIcon } from 'lucide-react';
 import z from 'zod';
 
 import { TableFieldRelationshipLabelComposer } from '@/components/common/dynamic-table/table-config/table-field-relationship-label-composer';
+import { ExtensionSlot } from '@/components/common/extension-slot';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import {
@@ -14,7 +15,9 @@ import {
 import type {
   ICategory,
   IDropdown,
+  IField,
   IRelationshipLabelPart,
+  ITable,
 } from '@/lib/interfaces';
 
 export const FieldUpdateSchema = z.object({
@@ -107,6 +110,8 @@ export const UpdateFieldFormFields = withForm({
     isPending: false,
     mode: 'show' as 'show' | 'edit',
     tableSlug: '',
+    table: undefined as ITable | undefined,
+    targetField: undefined as IField | undefined,
     isLocked: false,
     isGroupField: false,
   },
@@ -115,6 +120,8 @@ export const UpdateFieldFormFields = withForm({
     isPending,
     mode,
     tableSlug,
+    table,
+    targetField,
     isLocked,
     isGroupField,
   }) {
@@ -560,6 +567,28 @@ export const UpdateFieldFormFields = withForm({
             )}
           </form.AppField>
         )}
+
+        {isRelationship &&
+          table &&
+          targetField &&
+          relationshipTableSlug &&
+          relationshipFieldSlug &&
+          !isGroupField && (
+            <ExtensionSlot
+              id="table.field.relationship.config"
+              context={{
+                table,
+                tableSlug,
+                targetField,
+                targetFieldId: targetField._id,
+                targetFieldSlug: targetField.slug,
+                sourceTableSlug: relationshipTableSlug,
+                relationshipFieldSlug,
+                disabled: isPending || lockAllControls,
+                mode,
+              }}
+            />
+          )}
 
         {/* Campo Categoria (Tree) */}
         {isCategory && (

@@ -26,6 +26,7 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useConditionalFieldsRuntimeConfig } from '@/hooks/tanstack-query/use-conditional-fields-runtime-config';
 import { useAutoSaveTableRow } from '@/hooks/tanstack-query/use-table-row-auto-save';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useDeleteTableRow } from '@/hooks/tanstack-query/use-table-row-delete';
@@ -34,6 +35,10 @@ import { useAutoSave } from '@/hooks/use-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import {
+  omitHiddenConditionalValues,
+  resolveConditionalVisibility,
+} from '@/lib/conditional-form-rules';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { firstCategoryField } from '@/lib/document-helpers';
 import { applyApiFieldErrors } from '@/lib/form-utils';
@@ -171,6 +176,23 @@ function AutoSaveRowFormContent({
   useApiErrorAutoClear(form);
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
+  const formValues = useStore(form.store, (state) => state.values);
+  const conditionalConfig = useConditionalFieldsRuntimeConfig(slug, true);
+
+  const conditionalVisibility = React.useMemo(() => {
+    return resolveConditionalVisibility(
+      fields,
+      conditionalConfig.data?.rules ?? [],
+      formValues,
+    );
+  }, [fields, conditionalConfig.data?.rules, formValues]);
+
+  const visibleFields = conditionalVisibility.visibleFields;
+  const visibleFormGroupFields = React.useMemo((): Array<IField> => {
+    return formGroupFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+  }, [formGroupFields, conditionalVisibility.hiddenFieldIds]);
 
   const _autoSave = useAutoSaveTableRow({
     onSuccess(data: IRow): void {
@@ -232,23 +254,39 @@ function AutoSaveRowFormContent({
     if (_autoSave.isPending) return;
     if (isUploading) return;
 
-    const payload = buildRowPayload(form.state.values, fields);
+    const values = omitHiddenConditionalValues(
+      form.state.values,
+      fields,
+      conditionalVisibility.hiddenFieldIds,
+    );
+    const payload = buildRowPayload(values, visibleFields);
 
     await _autoSave.mutateAsync({
       slug,
       rowId: rowIdRef.current,
       data: payload,
     });
-  }, [_autoSave, form, fields, slug, isUploading]);
+  }, [
+    _autoSave,
+    form,
+    fields,
+    visibleFields,
+    conditionalVisibility.hiddenFieldIds,
+    slug,
+    isUploading,
+  ]);
 
   const canSaveCallback = React.useCallback((): boolean => {
     if (rowIdRef.current) return true;
-    if (requiredFields.length === 0) return false;
-    return requiredFields.some((field): boolean => {
+    const visibleRequiredFields = requiredFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+    if (visibleRequiredFields.length === 0) return false;
+    return visibleRequiredFields.some((field): boolean => {
       const value = form.state.values[field.slug];
       return hasValue(value);
     });
-  }, [form, requiredFields]);
+  }, [form, requiredFields, conditionalVisibility.hiddenFieldIds]);
 
   const isDirtyCallback = React.useCallback((): boolean => {
     return isDirty;
@@ -277,7 +315,10 @@ function AutoSaveRowFormContent({
 
   const validateAndTouch = React.useCallback((): boolean => {
     let allValid = true;
-    for (const field of requiredFields) {
+    const visibleRequiredFields = requiredFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+    for (const field of visibleRequiredFields) {
       const value = form.state.values[field.slug];
       const filled = hasValue(value);
       form.setFieldMeta(
@@ -303,15 +344,18 @@ function AutoSaveRowFormContent({
       }
     }
     return allValid;
-  }, [form, requiredFields]);
+  }, [form, requiredFields, conditionalVisibility.hiddenFieldIds]);
 
   const isIncompleteDraft = React.useCallback((): boolean => {
     if (!isNewRecord) return false;
     if (!rowIdRef.current) return false;
-    return requiredFields.some((field): boolean => {
+    const visibleRequiredFields = requiredFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+    return visibleRequiredFields.some((field): boolean => {
       return !hasValue(form.state.values[field.slug]);
     });
-  }, [isNewRecord, requiredFields, form]);
+  }, [isNewRecord, requiredFields, form, conditionalVisibility.hiddenFieldIds]);
 
   const finishAndBack = React.useCallback((): void => {
     // Sincroniza o cache uma unica vez ao sair (em vez de a cada save).
@@ -439,29 +483,38 @@ function AutoSaveRowFormContent({
           e.preventDefault();
         }}
       >
-        <RowFormFields
-          form={form}
-          fields={fields}
-          tableSlug={slug}
-          disabled={false}
-        />
-
-        {formGroupFields.length > 0 && (
-          <div className="flex flex-col gap-6 px-2 pb-4 pt-2 border-t mt-2">
-            {formGroupFields.map(
-              (groupField): React.JSX.Element => (
-                <GroupRowsInline
-                  key={groupField._id}
-                  tableSlug={slug}
-                  rowId={persistedRowId}
-                  field={groupField}
-                  table={table}
-                  onEnsureParentRow={ensureParentRow}
-                />
-              ),
-            )}
+        {conditionalConfig.status === 'pending' && (
+          <div className="flex min-h-40 flex-1 items-center justify-center">
+            <Spinner className="opacity-50" />
           </div>
         )}
+
+        {conditionalConfig.status !== 'pending' && (
+          <RowFormFields
+            form={form}
+            fields={visibleFields}
+            tableSlug={slug}
+            disabled={false}
+          />
+        )}
+
+        {conditionalConfig.status !== 'pending' &&
+          visibleFormGroupFields.length > 0 && (
+            <div className="flex flex-col gap-6 px-2 pb-4 pt-2 border-t mt-2">
+              {visibleFormGroupFields.map(
+                (groupField): React.JSX.Element => (
+                  <GroupRowsInline
+                    key={groupField._id}
+                    tableSlug={slug}
+                    rowId={persistedRowId}
+                    field={groupField}
+                    table={table}
+                    onEnsureParentRow={ensureParentRow}
+                  />
+                ),
+              )}
+            </div>
+          )}
       </form>
 
       <div className="shrink-0 px-4 py-3 flex justify-end gap-2 border-t">

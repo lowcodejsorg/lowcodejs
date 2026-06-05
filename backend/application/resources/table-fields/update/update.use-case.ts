@@ -15,6 +15,7 @@ import { FieldContractRepository } from '@application/repositories/field/field-c
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
 
 import {
   hasDuplicateDropdownLabels,
@@ -256,6 +257,14 @@ export default class TableFieldUpdateUseCase {
           groups,
         });
         await this.rowRepository.renameField(table, oldSlug, slug);
+      }
+
+      if (payload.trashed) {
+        await deleteCascadeDropdownConfigsForField({
+          tableSlug,
+          fieldId: field._id,
+          fieldSlug: field.slug,
+        });
       }
 
       return right(updatedField);

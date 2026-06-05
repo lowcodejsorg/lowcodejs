@@ -313,6 +313,7 @@ export function RowFormFields({
                       <formField.TableRowRelationshipField
                         field={field}
                         disabled={disabled}
+                        tableSlug={tableSlug}
                       />
                     );
                   case E_FIELD_TYPE.CATEGORY:
