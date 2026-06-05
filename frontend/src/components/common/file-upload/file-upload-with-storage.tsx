@@ -393,29 +393,52 @@ export function FileUploadWithStorage({
         )}
       </FileUploadDropzone>
       <FileUploadList>
-        {value.map((file, index) => (
-          <FileUploadItem
-            key={index}
-            value={file}
-            className="flex-col"
-          >
-            <div className="flex w-full items-center gap-2">
-              <FileUploadItemPreview />
-              <FileUploadItemMetadata />
-              <FileUploadItemDelete asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-7"
-                  onClick={() => handleRemoveFile(file)}
-                >
-                  <X />
-                </Button>
-              </FileUploadItemDelete>
-            </div>
-            {!('isUploaded' in file) && <FileUploadItemProgress />}
-          </FileUploadItem>
-        ))}
+        {value.map((file, index) => {
+          const storage = findStorageForFile(file);
+          const displayName = file.name;
+          const displaySize = Math.round(file.size / 1024);
+
+          return (
+            <FileUploadItem
+              key={index}
+              value={file}
+              className="flex-col"
+            >
+              <div className="flex w-full items-center gap-2">
+                <FileUploadItemPreview />
+                {storage ? (
+                  <div className="flex min-w-0 flex-1 flex-col">
+                    <a
+                      href={storage.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title={`Abrir ${displayName} em nova aba (botão direito para salvar)`}
+                      className="truncate font-medium text-sm text-blue-600 hover:text-blue-800 underline"
+                    >
+                      {displayName}
+                    </a>
+                    <span className="truncate text-muted-foreground text-xs">
+                      {displaySize} KB
+                    </span>
+                  </div>
+                ) : (
+                  <FileUploadItemMetadata />
+                )}
+                <FileUploadItemDelete asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-7"
+                    onClick={() => handleRemoveFile(file)}
+                  >
+                    <X />
+                  </Button>
+                </FileUploadItemDelete>
+              </div>
+              {!('isUploaded' in file) && <FileUploadItemProgress />}
+            </FileUploadItem>
+          );
+        })}
       </FileUploadList>
     </FileUpload>
   );
