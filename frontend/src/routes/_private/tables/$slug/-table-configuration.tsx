@@ -16,6 +16,7 @@ import { ApiEndpointsModal } from './-api-endpoints-modal';
 
 import { TableFieldManagementSheet } from '@/components/common/dynamic-table/field-management/table-field-management-sheet';
 import { GroupFieldManagementSheet } from '@/components/common/dynamic-table/group-rows/group-field-management-sheet';
+import { ExtensionSlot } from '@/components/common/extension-slot/extension-slot';
 import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
@@ -240,8 +241,6 @@ export function TableConfigurationDropdown({
                       <span>Gerenciar</span>
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
-
                     {activeFields.map((field) => (
                       <DropdownMenuItem
                         key={field._id}
@@ -309,6 +308,19 @@ export function TableConfigurationDropdown({
                 </DropdownMenuGroup>
               </React.Fragment>
             )}
+
+          {permission.can('UPDATE_FIELD') && table.data && (
+            <React.Fragment>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuGroup>
+                <ExtensionSlot
+                  id="table.fields.manage"
+                  context={{ table: table.data, slug }}
+                />
+              </DropdownMenuGroup>
+            </React.Fragment>
+          )}
 
           {permission.can('UPDATE_TABLE') && (
             <React.Fragment>
