@@ -1,8 +1,9 @@
 # Script Execution Service
 
 Executa scripts de usuario (`beforeSave`, `afterSave`, `onLoad`) em VM
-isolada do Node. APIs expostas: `field`, `context`, `email`, `utils`,
-`console`. Detalhes do sandbox em `application/core/table/CLAUDE.md`.
+isolada do Node. APIs expostas: `field`, `context`, `email`, `users`,
+`notify`, `utils`, `console`. Detalhes do sandbox em
+`application/core/table/CLAUDE.md`.
 
 ## Arquivos
 

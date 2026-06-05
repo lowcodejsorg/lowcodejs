@@ -100,6 +100,7 @@ export async function buildTable(
           executionMoment: 'antes_salvar',
           userId: this.creator?.toString(),
           isNew: this.isNew,
+          viaSaveHook: true,
           tableInfo: {
             _id: table._id?.toString() ?? '',
             name: table.name,
@@ -128,6 +129,7 @@ export async function buildTable(
           executionMoment: 'depois_salvar',
           userId: doc.creator?.toString(),
           isNew: doc.isNew,
+          viaSaveHook: true,
           tableInfo: {
             _id: table._id?.toString() ?? '',
             name: table.name,

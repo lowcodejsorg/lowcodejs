@@ -464,9 +464,11 @@ Helpers (`test/helpers/auth.helper.ts`):
 
 | API | Metodos | Descricao |
 |-----|---------|-----------|
-| field | get(slug), set(slug, value), getAll() | Leitura/escrita de campos do registro |
-| context | action, moment, userId, isNew, table | Contexto de execucao (read-only, frozen) |
+| field | get(slug), set(slug, value), getAll(), getLabel(slug, value?) | Leitura/escrita de campos do registro |
+| context | action, moment, userId, isNew, appUrl, table, reentrant, previous | Contexto de execucao (read-only, frozen) |
 | email | send(to[], subject, body), sendTemplate(to[], subject, message, data?) | Envio de email |
+| users | resolve(ids), emails(ids) | Resolve ids de campos USER/CREATOR em { _id, name, email } |
+| notify | send({ userIds, title, body?, action?, source? }) | Cria notificacoes in-app + socket |
 | utils | today(), now(), formatDate(date, format?), sha256(text), uuid() | Utilitarios |
 | console | log(), warn(), error() | Logs capturados e retornados |
 

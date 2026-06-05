@@ -117,6 +117,8 @@ export default class TableRowCreateUseCase {
             executionMoment: 'antes_salvar',
             userId: payload.creator ?? undefined,
             isNew: true,
+            viaSaveHook: false,
+            previous: null,
             tableInfo: {
               _id: table._id?.toString() ?? '',
               name: table.name,
