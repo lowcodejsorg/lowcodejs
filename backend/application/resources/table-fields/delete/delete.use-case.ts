@@ -12,6 +12,7 @@ import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
 
 import type { TableFieldDeletePayload } from './delete.validator';
 
@@ -93,6 +94,12 @@ export default class TableFieldDeleteUseCase {
         owner: table.owner._id,
       });
 
+      await deleteCascadeDropdownConfigsForField({
+        tableSlug: table.slug,
+        fieldId: field._id,
+        fieldSlug: field.slug,
+      });
+
       await this.fieldRepository.delete(field._id);
 
       return right(null);
@@ -155,6 +162,12 @@ export default class TableFieldDeleteUseCase {
       groups: updatedGroups,
       owner: parentTable.owner._id,
       administrators: parentTable.administrators.flatMap((a) => a._id),
+    });
+
+    await deleteCascadeDropdownConfigsForField({
+      tableSlug: parentTable.slug,
+      fieldId: field._id,
+      fieldSlug: field.slug,
     });
 
     await this.fieldRepository.delete(field._id);

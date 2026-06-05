@@ -319,6 +319,7 @@ export function KanbanCreateCardDialog({
                           return (
                             <formField.TableRowRelationshipField
                               field={field}
+                              tableSlug={tableSlug}
                             />
                           );
                         case E_FIELD_TYPE.CATEGORY:

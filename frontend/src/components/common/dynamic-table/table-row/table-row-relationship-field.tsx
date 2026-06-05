@@ -34,9 +34,15 @@ import {
 import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import {
+  type CascadeDropdownConfig,
+  useCascadeDropdownChildOptions,
+  useCascadeDropdownConfig,
+} from '@/hooks/tanstack-query/use-cascade-dropdown';
 import { useConditionalFieldsRuntimeConfig } from '@/hooks/tanstack-query/use-conditional-fields-runtime-config';
 import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
+import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
@@ -61,6 +67,7 @@ import { cn } from '@/lib/utils';
 interface TableRowRelationshipFieldProps {
   field: IField;
   disabled?: boolean;
+  tableSlug?: string;
 }
 
 interface RelatedRowCreateDialogProps {
@@ -178,6 +185,7 @@ function RelatedRowFormFields({
                       <formRowField.TableRowRelationshipField
                         field={rowField}
                         disabled={disabled}
+                        tableSlug={tableSlug}
                       />
                     );
                   case E_FIELD_TYPE.CATEGORY:
@@ -325,7 +333,334 @@ function RelatedRowCreateDialog(
   );
 }
 
-export function TableRowRelationshipField({
+function readCascadeValue(value: unknown): string {
+  if (Array.isArray(value)) {
+    const first = value[0];
+    if (typeof first === 'string') return first;
+    if (typeof first === 'number') return String(first);
+    if (first && typeof first === 'object') {
+      const itemValue = (first as { _id?: unknown; value?: unknown }).value;
+      if (typeof itemValue === 'string') return itemValue;
+      if (typeof itemValue === 'number') return String(itemValue);
+
+      const itemId = (first as { _id?: unknown; value?: unknown })._id;
+      if (typeof itemId === 'string') return itemId;
+      if (typeof itemId === 'number') return String(itemId);
+    }
+    return '';
+  }
+
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  if (value && typeof value === 'object') {
+    const itemValue = (value as { _id?: unknown; value?: unknown }).value;
+    if (typeof itemValue === 'string') return itemValue;
+    if (typeof itemValue === 'number') return String(itemValue);
+
+    const itemId = (value as { _id?: unknown; value?: unknown })._id;
+    if (typeof itemId === 'string') return itemId;
+    if (typeof itemId === 'number') return String(itemId);
+  }
+  return '';
+}
+
+function CascadeRelationshipField({
+  field,
+  disabled,
+  tableSlug,
+  config,
+}: TableRowRelationshipFieldProps & {
+  tableSlug: string;
+  config: CascadeDropdownConfig;
+}): React.JSX.Element {
+  const queryClient = useQueryClient();
+  const formField = useFieldContext<Array<SearchableOption>>();
+  const isInvalid =
+    formField.state.meta.isTouched && !formField.state.meta.isValid;
+  const errorId = `${formField.name}-error`;
+
+  const relConfig = field.relationship;
+  const relatedTable = useReadTable({ slug: config.sourceTableSlug });
+  const relatedPermission = useTablePermission(relatedTable.data);
+  const [childSearchQuery, setChildSearchQuery] = React.useState('');
+  const [debouncedChildQuery, setDebouncedChildQuery] = React.useState('');
+  const [selectedCache, setSelectedCache] = React.useState<Map<string, IRow>>(
+    () => new Map(),
+  );
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = React.useState(false);
+  const previousParentValueRef = React.useRef<string | null>(null);
+
+  const selectedChildId = (formField.state.value ?? [])[0]?.value ?? '';
+  const selectedChildRow = useReadTableRow({
+    slug: config.sourceTableSlug,
+    rowId: selectedChildId,
+  });
+
+  const parentValue = useStore(formField.form.store, (state: { values: unknown }) => {
+    const values = state.values as Record<string, unknown>;
+    return readCascadeValue(values[config.parentFieldSlug]);
+  });
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedChildQuery(childSearchQuery);
+    }, 300);
+    return (): void => clearTimeout(timer);
+  }, [childSearchQuery]);
+
+  React.useEffect(() => {
+    if (!selectedChildRow.data) return;
+
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      next.set(selectedChildRow.data._id, selectedChildRow.data);
+      return next;
+    });
+  }, [selectedChildRow.data]);
+
+  React.useEffect(() => {
+    if (previousParentValueRef.current === null) {
+      previousParentValueRef.current = parentValue;
+      return;
+    }
+
+    if (previousParentValueRef.current === parentValue) return;
+
+    previousParentValueRef.current = parentValue;
+    setChildSearchQuery('');
+    formField.handleChange([]);
+  }, [formField, parentValue]);
+
+  const childOptions = useCascadeDropdownChildOptions({
+    sourceTableSlug: config.sourceTableSlug,
+    targetTableSlug: tableSlug,
+    fieldId: field._id,
+    parentValue,
+    search: debouncedChildQuery,
+    perPage: 10,
+    enabled: config.enabled && Boolean(parentValue),
+  });
+
+  const childRows: Array<IRow> = React.useMemo(
+    () => childOptions.data?.pages.flatMap((page) => page.data) ?? [],
+    [childOptions.data?.pages],
+  );
+
+  React.useEffect(() => {
+    if (!childRows.length) return;
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      for (const row of childRows) {
+        next.set(row._id, row);
+      }
+      return next;
+    });
+  }, [childRows]);
+
+  if (!relConfig || !relConfig.field || !relConfig.table) {
+    return (
+      <Field data-slot="table-row-relationship-field">
+        <TableRowFieldLabel field={field} />
+        <p className="text-muted-foreground text-sm">
+          Relacionamento não configurado
+        </p>
+      </Field>
+    );
+  }
+
+  const getRowLabel = (row: IRow): string =>
+    resolveRelationshipLabel(row, relConfig);
+
+  const selectedChild = React.useMemo(() => {
+    if (!selectedChildId) return null;
+    const cached = selectedCache.get(selectedChildId);
+    if (cached) return cached;
+    return childRows.find((row) => row._id === selectedChildId) ?? null;
+  }, [childRows, selectedCache, selectedChildId]);
+
+  const childItems = React.useMemo(() => {
+    if (!selectedChild) return childRows;
+    if (childRows.some((row) => row._id === selectedChild._id)) {
+      return childRows;
+    }
+    return [...childRows, selectedChild];
+  }, [childRows, selectedChild]);
+
+  const selectedSingleLabel =
+    (formField.state.value ?? [])[0]?.label ??
+    (selectedChild ? getRowLabel(selectedChild) : '');
+
+  const selectedParentLabel = parentValue || config.parentFieldSlug;
+
+  const canCreateRelatedRecord =
+    Boolean(field.allowCreateRelationshipRecords) &&
+    !disabled &&
+    Boolean(relatedTable.data) &&
+    relatedPermission.can('CREATE_ROW');
+
+  const handleChildChange = (newValue: IRow | Array<IRow> | null): void => {
+    let row: IRow | null = null;
+    if (newValue !== null && !Array.isArray(newValue)) {
+      row = newValue;
+    }
+
+    if (!row) {
+      formField.handleChange([]);
+      setChildSearchQuery('');
+      return;
+    }
+
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      next.set(row._id, row);
+      return next;
+    });
+    formField.handleChange([{ value: row._id, label: getRowLabel(row) }]);
+    setChildSearchQuery('');
+  };
+
+  const handleCreatedRelatedRow = (row: IRow): void => {
+    setSelectedCache((prev) => {
+      const next = new Map(prev);
+      next.set(row._id, row);
+      return next;
+    });
+    formField.handleChange([{ value: row._id, label: getRowLabel(row) }]);
+    formField.handleBlur();
+    queryClient.invalidateQueries({
+      queryKey: queryKeys.relationships.all,
+    });
+  };
+
+  let createRelatedRecordContent: React.ReactNode = null;
+  if (canCreateRelatedRecord) {
+    createRelatedRecordContent = (
+      <div className="border-t p-1">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2"
+          onPointerDown={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setIsCreateDialogOpen(true);
+          }}
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setIsCreateDialogOpen(true);
+          }}
+        >
+          <PlusIcon className="size-4" />
+          <span>Novo registro</span>
+        </Button>
+      </div>
+    );
+  }
+
+  let createDialog: React.ReactNode = null;
+  if (canCreateRelatedRecord && relatedTable.data) {
+    createDialog = (
+      <RelatedRowCreateDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        table={relatedTable.data}
+        onCreated={handleCreatedRelatedRow}
+      />
+    );
+  }
+
+  return (
+    <React.Fragment>
+      <Field
+        data-slot="table-row-relationship-field"
+        data-test-id="table-row-relationship-cascade"
+        data-invalid={isInvalid}
+      >
+        <TableRowFieldLabel
+          field={field}
+          htmlFor={formField.name}
+        />
+        <div className="relative">
+          <Combobox
+            data-test-id="table-row-relationship"
+            items={childItems}
+            value={selectedChild}
+            onValueChange={handleChildChange}
+            inputValue={childSearchQuery}
+            onInputValueChange={setChildSearchQuery}
+            itemToStringLabel={(row: IRow) => getRowLabel(row)}
+            disabled={disabled || !parentValue}
+          >
+            <ComboboxInput
+              placeholder={
+                selectedSingleLabel ||
+                (parentValue
+                  ? `Selecione ${field.name.toLowerCase()}`
+                  : `Selecione ${selectedParentLabel} primeiro`)
+              }
+              showClear={(formField.state.value ?? []).length > 0}
+              className={cn(
+                selectedSingleLabel &&
+                  !childSearchQuery &&
+                  '[&_input]:text-transparent',
+                isInvalid && 'border-destructive',
+              )}
+            />
+            {selectedSingleLabel && !childSearchQuery && (
+              <span className="pointer-events-none absolute top-1/2 left-3 max-w-[calc(100%-4rem)] -translate-y-1/2 truncate text-sm">
+                {selectedSingleLabel}
+              </span>
+            )}
+            <ComboboxContent>
+              <ComboboxEmpty>Nenhum resultado encontrado</ComboboxEmpty>
+              {childOptions.isLoading && (
+                <div className="flex items-center justify-center p-3">
+                  <Spinner className="opacity-50" />
+                </div>
+              )}
+              {!childOptions.isLoading && (
+                <React.Fragment>
+                  <ComboboxList>
+                    {(row: IRow): React.ReactNode => (
+                      <ComboboxItem
+                        key={row._id}
+                        value={row}
+                      >
+                        {getRowLabel(row)}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                  <ComboboxLoadMore
+                    hasNextPage={childOptions.hasNextPage}
+                    isFetchingNextPage={childOptions.isFetchingNextPage}
+                    onLoadMore={() => childOptions.fetchNextPage()}
+                  />
+                </React.Fragment>
+              )}
+              {createRelatedRecordContent}
+            </ComboboxContent>
+          </Combobox>
+          {childOptions.isLoading && (
+            <div className="absolute right-10 top-1/2 -translate-y-1/2">
+              <Spinner className="opacity-50" />
+            </div>
+          )}
+        </div>
+        {isInvalid && (
+          <FieldError
+            id={errorId}
+            errors={formField.state.meta.errors}
+          />
+        )}
+      </Field>
+      {createDialog}
+    </React.Fragment>
+  );
+}
+
+function DefaultRelationshipField({
   field,
   disabled,
 }: TableRowRelationshipFieldProps): React.JSX.Element {
@@ -734,5 +1069,56 @@ export function TableRowRelationshipField({
       </Field>
       {createDialog}
     </React.Fragment>
+  );
+}
+
+export function TableRowRelationshipField({
+  field,
+  disabled,
+  tableSlug,
+}: TableRowRelationshipFieldProps): React.JSX.Element {
+  const cascadeConfig = useCascadeDropdownConfig({
+    tableSlug: tableSlug ?? '',
+    fieldId: field._id,
+    enabled:
+      Boolean(tableSlug) &&
+      field.type === E_FIELD_TYPE.RELATIONSHIP &&
+      !field.multiple,
+  });
+
+  if (
+    cascadeConfig.isLoading &&
+    tableSlug &&
+    field.type === E_FIELD_TYPE.RELATIONSHIP &&
+    !field.multiple
+  ) {
+    return (
+      <Field data-slot="table-row-relationship-field">
+        <TableRowFieldLabel field={field} />
+        <div className="flex min-h-9 items-center gap-2 rounded-md border px-3 text-sm text-muted-foreground">
+          <Spinner className="opacity-50" />
+          <span>Carregando configuração...</span>
+        </div>
+      </Field>
+    );
+  }
+
+  if (cascadeConfig.data?.enabled && tableSlug && !field.multiple) {
+    return (
+      <CascadeRelationshipField
+        field={field}
+        disabled={disabled}
+        tableSlug={tableSlug}
+        config={cascadeConfig.data}
+      />
+    );
+  }
+
+  return (
+    <DefaultRelationshipField
+      field={field}
+      disabled={disabled}
+      tableSlug={tableSlug}
+    />
   );
 }
