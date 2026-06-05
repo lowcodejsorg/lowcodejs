@@ -10,6 +10,7 @@ import {
   UploadIcon,
 } from 'lucide-react';
 
+import { getLlmProviderLabel } from '@/lib/ai-llm-providers';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -311,15 +312,35 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             )}
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium">Chave da API OpenAI</p>
-            <p className="text-sm text-muted-foreground font-mono">
-              {data.OPENAI_API_KEY ? '••••••••' : '-'}
+            <p className="text-sm font-medium">Provedor de IA</p>
+            <p className="text-sm text-muted-foreground">
+              {getLlmProviderLabel(data.AI_LLM_PROVIDER || 'openai')}
             </p>
           </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">Chave da API</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {(data.LLM_API_KEY || data.OPENAI_API_KEY) ? '••••••••' : '-'}
+            </p>
+          </div>
+          {data.AI_LLM_PROVIDER === 'ollama' && (
+            <div className="space-y-1">
+              <p className="text-sm font-medium">URL base (Ollama)</p>
+              <p className="text-sm text-muted-foreground font-mono">
+                {data.LLM_BASE_URL || '-'}
+              </p>
+            </div>
+          )}
           <div className="space-y-1">
             <p className="text-sm font-medium">URL do Servidor MCP</p>
             <p className="text-sm text-muted-foreground font-mono">
               {data.MCP_SERVER_URL || '-'}
+            </p>
+          </div>
+          <div className="space-y-1">
+            <p className="text-sm font-medium">URL da API (header MCP)</p>
+            <p className="text-sm text-muted-foreground font-mono">
+              {data.MCP_LOWCODE_API_URL || 'Padrão do servidor (APP_SERVER_URL)'}
             </p>
           </div>
           <div className="space-y-1">
@@ -329,9 +350,9 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm font-medium">Modelo OpenAI</p>
+            <p className="text-sm font-medium">Modelo</p>
             <p className="text-sm text-muted-foreground font-mono">
-              {data.OPENAI_MODEL || 'gpt-4o-mini'}
+              {data.LLM_MODEL || data.OPENAI_MODEL || 'gpt-4.1-nano'}
             </p>
           </div>
         </CardContent>

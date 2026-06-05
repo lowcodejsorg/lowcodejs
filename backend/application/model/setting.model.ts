@@ -34,7 +34,16 @@ const Schema = new mongoose.Schema(
     CHAT_HISTORY_ENABLED: { type: Boolean, default: false },
     MCP_SERVER_URL: { type: String, default: null },
     MCP_SERVER_TOKEN: { type: String, default: null },
+    MCP_LOWCODE_API_URL: { type: String, default: null },
     OPENAI_MODEL: { type: String, default: 'gpt-4.1-nano' },
+    AI_LLM_PROVIDER: {
+      type: String,
+      enum: ['openai', 'gemini', 'claude', 'openrouter', 'ollama'],
+      default: 'openai',
+    },
+    LLM_API_KEY: { type: String, default: null },
+    LLM_MODEL: { type: String, default: null },
+    LLM_BASE_URL: { type: String, default: null },
     SETUP_COMPLETED: { type: Boolean, default: false },
     SETUP_CURRENT_STEP: {
       type: String,

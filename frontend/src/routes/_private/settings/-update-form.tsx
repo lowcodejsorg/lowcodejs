@@ -39,6 +39,14 @@ import {
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { withForm } from '@/integrations/tanstack-form/form-hook';
+import {
+  AI_LLM_PROVIDER_OPTIONS,
+  LLM_MODEL_OPTIONS,
+  providerRequiresApiKey,
+  providerShowsBaseUrl,
+  type AiLlmProvider,
+} from '@/lib/ai-llm-providers';
+import { E_AI_LLM_PROVIDER } from '@/lib/constant';
 import type { ISetting, IStorage, Merge } from '@/lib/interfaces';
 
 // Schema com campos de UI (logoSmallFile/logoLargeFile são para upload no frontend)
@@ -80,7 +88,12 @@ export const SettingUpdateSchema = z.object({
   CHAT_HISTORY_ENABLED: z.boolean(),
   MCP_SERVER_URL: z.string(),
   MCP_SERVER_TOKEN: z.string(),
+  MCP_LOWCODE_API_URL: z.string(),
   OPENAI_MODEL: z.string(),
+  AI_LLM_PROVIDER: z.string(),
+  LLM_API_KEY: z.string(),
+  LLM_MODEL: z.string(),
+  LLM_BASE_URL: z.string(),
   logoSmallFile: z.array(z.instanceof(File)),
   logoLargeFile: z.array(z.instanceof(File)),
 });
@@ -114,7 +127,12 @@ export type SettingUpdateFormValues = Merge<
     CHAT_HISTORY_ENABLED: boolean;
     MCP_SERVER_URL: string;
     MCP_SERVER_TOKEN: string;
+    MCP_LOWCODE_API_URL: string;
     OPENAI_MODEL: string;
+    AI_LLM_PROVIDER: string;
+    LLM_API_KEY: string;
+    LLM_MODEL: string;
+    LLM_BASE_URL: string;
   },
   { logoSmallFile: Array<File>; logoLargeFile: Array<File> }
 >;
@@ -146,7 +164,12 @@ export const settingUpdateFormDefaultValues: SettingUpdateFormValues = {
   CHAT_HISTORY_ENABLED: false,
   MCP_SERVER_URL: '',
   MCP_SERVER_TOKEN: '',
+  MCP_LOWCODE_API_URL: '',
   OPENAI_MODEL: 'gpt-4.1-nano',
+  AI_LLM_PROVIDER: 'openai',
+  LLM_API_KEY: '',
+  LLM_MODEL: 'gpt-4.1-nano',
+  LLM_BASE_URL: 'http://127.0.0.1:11434/v1',
   logoSmallFile: [],
   logoLargeFile: [],
 };
@@ -164,7 +187,7 @@ export const UpdateSettingFormFields = withForm({
     const [show, setShow] = React.useState({
       databaseUrl: false,
       emailPassword: false,
-      openaiApiKey: false,
+      llmApiKey: false,
       mcpToken: false,
       storageAccessKey: false,
       storageSecretKey: false,
@@ -1063,9 +1086,9 @@ export const UpdateSettingFormFields = withForm({
               )}
             </form.AppField>
 
-            {/* OpenAI API Key */}
+            {/* Provedor LLM */}
             <form.Field
-              name="OPENAI_API_KEY"
+              name="AI_LLM_PROVIDER"
               children={(field) => {
                 const isInvalid =
                   field.state.meta.isTouched && !field.state.meta.isValid;
@@ -1073,43 +1096,41 @@ export const UpdateSettingFormFields = withForm({
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>
-                      Chave da API OpenAI
+                      Provedor de IA
                     </FieldLabel>
                     <div className="text-sm text-muted-foreground mb-2">
-                      Necessária para o funcionamento do assistente IA
+                      Serviço de linguagem usado pelo assistente no chat
                     </div>
-                    <InputGroup>
-                      <InputGroupInput
-                        data-test-id="settings-openai-api-key-input"
-                        disabled={isDisabled}
+                    <Select
+                      disabled={isDisabled}
+                      value={field.state.value}
+                      onValueChange={(value) => {
+                        field.handleChange(value);
+                        const models =
+                          LLM_MODEL_OPTIONS[value as AiLlmProvider];
+                        if (models?.[0]) {
+                          form.setFieldValue('LLM_MODEL', models[0].value);
+                        }
+                      }}
+                    >
+                      <SelectTrigger
+                        data-test-id="settings-llm-provider-select"
                         id={field.name}
-                        name={field.name}
-                        type={show.openaiApiKey ? 'text' : 'password'}
-                        placeholder="sk-..."
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
                         aria-invalid={isInvalid}
-                      />
-                      <InputGroupAddon align="inline-end">
-                        <InputGroupButton
-                          data-test-id="settings-openai-api-key-toggle-btn"
-                          disabled={isDisabled}
-                          type="button"
-                          aria-label="toggle api key visibility"
-                          title="toggle api key visibility"
-                          onClick={() =>
-                            setShow((state) => ({
-                              ...state,
-                              openaiApiKey: !state.openaiApiKey,
-                            }))
-                          }
-                        >
-                          {show.openaiApiKey && <EyeClosedIcon />}
-                          {!show.openaiApiKey && <EyeIcon />}
-                        </InputGroupButton>
-                      </InputGroupAddon>
-                    </InputGroup>
+                      >
+                        <SelectValue placeholder="Selecione o provedor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AI_LLM_PROVIDER_OPTIONS.map((option) => (
+                          <SelectItem
+                            key={option.value}
+                            value={option.value}
+                          >
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
@@ -1117,6 +1138,133 @@ export const UpdateSettingFormFields = withForm({
                 );
               }}
             />
+
+            <form.Subscribe
+              selector={(state) => state.values.AI_LLM_PROVIDER}
+            >
+              {(providerRaw) => {
+                const provider = (providerRaw ||
+                  E_AI_LLM_PROVIDER.OPENAI) as AiLlmProvider;
+                const needsKey = providerRequiresApiKey(provider);
+                const needsBaseUrl = providerShowsBaseUrl(provider);
+                const modelOptions = LLM_MODEL_OPTIONS[provider] ?? [];
+                const providerMeta = AI_LLM_PROVIDER_OPTIONS.find(
+                  (o) => o.value === provider,
+                );
+
+                return (
+                  <>
+                    {providerMeta && (
+                      <p className="text-sm text-muted-foreground -mt-2">
+                        {providerMeta.description}
+                      </p>
+                    )}
+
+                    {needsKey && (
+                      <form.Field
+                        name="LLM_API_KEY"
+                        children={(field) => {
+                          const isInvalid =
+                            field.state.meta.isTouched &&
+                            !field.state.meta.isValid;
+
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                Chave da API
+                              </FieldLabel>
+                              <div className="text-sm text-muted-foreground mb-2">
+                                Chave do provedor selecionado (
+                                {providerMeta?.label})
+                              </div>
+                              <InputGroup>
+                                <InputGroupInput
+                                  data-test-id="settings-llm-api-key-input"
+                                  disabled={isDisabled}
+                                  id={field.name}
+                                  name={field.name}
+                                  type={show.llmApiKey ? 'text' : 'password'}
+                                  placeholder="Cole a chave da API..."
+                                  value={field.state.value}
+                                  onBlur={field.handleBlur}
+                                  onChange={(e) =>
+                                    field.handleChange(e.target.value)
+                                  }
+                                  aria-invalid={isInvalid}
+                                />
+                                <InputGroupAddon align="inline-end">
+                                  <InputGroupButton
+                                    data-test-id="settings-llm-api-key-toggle-btn"
+                                    disabled={isDisabled}
+                                    type="button"
+                                    aria-label="toggle api key visibility"
+                                    onClick={() =>
+                                      setShow((state) => ({
+                                        ...state,
+                                        llmApiKey: !state.llmApiKey,
+                                      }))
+                                    }
+                                  >
+                                    {show.llmApiKey ? (
+                                      <EyeClosedIcon />
+                                    ) : (
+                                      <EyeIcon />
+                                    )}
+                                  </InputGroupButton>
+                                </InputGroupAddon>
+                              </InputGroup>
+                              {isInvalid && (
+                                <FieldError errors={field.state.meta.errors} />
+                              )}
+                            </Field>
+                          );
+                        }}
+                      />
+                    )}
+
+                    {needsBaseUrl && (
+                      <form.Field
+                        name="LLM_BASE_URL"
+                        children={(field) => {
+                          const isInvalid =
+                            field.state.meta.isTouched &&
+                            !field.state.meta.isValid;
+
+                          return (
+                            <Field data-invalid={isInvalid}>
+                              <FieldLabel htmlFor={field.name}>
+                                URL base do Ollama
+                              </FieldLabel>
+                              <div className="text-sm text-muted-foreground mb-2">
+                                Endpoint OpenAI-compatível do Ollama (ex.:
+                                http://127.0.0.1:11434/v1)
+                              </div>
+                              <Input
+                                data-test-id="settings-llm-base-url-input"
+                                disabled={isDisabled}
+                                id={field.name}
+                                name={field.name}
+                                type="url"
+                                placeholder="http://127.0.0.1:11434/v1"
+                                value={field.state.value}
+                                onBlur={field.handleBlur}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                aria-invalid={isInvalid}
+                              />
+                              {isInvalid && (
+                                <FieldError errors={field.state.meta.errors} />
+                              )}
+                            </Field>
+                          );
+                        }}
+                      />
+                    )}
+                  </>
+                );
+              }}
+            </form.Subscribe>
 
             {/* MCP Server URL */}
             <form.Field
@@ -1140,6 +1288,44 @@ export const UpdateSettingFormFields = withForm({
                       name={field.name}
                       type="url"
                       placeholder="http://localhost:3001/mcp"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={isInvalid}
+                    />
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </Field>
+                );
+              }}
+            />
+
+            {/* URL da API LowCodeJS para o MCP */}
+            <form.Field
+              name="MCP_LOWCODE_API_URL"
+              children={(field) => {
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid;
+
+                return (
+                  <Field data-invalid={isInvalid}>
+                    <FieldLabel htmlFor={field.name}>
+                      URL da API (MCP)
+                    </FieldLabel>
+                    <div className="text-sm text-muted-foreground mb-2">
+                      Enviada ao servidor MCP no header{' '}
+                      <code>X-Lowcode-Api-Url</code>. Deixe vazio para usar a
+                      URL padrão do servidor (
+                      <code>APP_SERVER_URL</code>).
+                    </div>
+                    <Input
+                      data-test-id="settings-mcp-lowcode-api-url-input"
+                      disabled={isDisabled}
+                      id={field.name}
+                      name={field.name}
+                      type="url"
+                      placeholder="https://api.seudominio.com"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -1202,78 +1388,85 @@ export const UpdateSettingFormFields = withForm({
               }}
             />
 
-            {/* OpenAI Model */}
-            <form.Field
-              name="OPENAI_MODEL"
-              children={(field) => {
-                const isInvalid =
-                  field.state.meta.isTouched && !field.state.meta.isValid;
+            <form.Subscribe
+              selector={(state) => state.values.AI_LLM_PROVIDER}
+            >
+              {(providerRaw) => {
+                const provider = (providerRaw ||
+                  E_AI_LLM_PROVIDER.OPENAI) as AiLlmProvider;
+                const modelOptions = LLM_MODEL_OPTIONS[provider] ?? [];
+                const useFreeTextModel =
+                  provider === E_AI_LLM_PROVIDER.OPENROUTER ||
+                  provider === E_AI_LLM_PROVIDER.OLLAMA;
 
                 return (
-                  <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Modelo OpenAI</FieldLabel>
-                    <div className="text-sm text-muted-foreground mb-2">
-                      Modelo usado pelo assistente IA (entrada / saída por 1M
-                      tokens)
-                    </div>
-                    <Select
-                      disabled={isDisabled}
-                      value={field.state.value}
-                      onValueChange={field.handleChange}
-                    >
-                      <SelectTrigger
-                        data-test-id="settings-openai-model-select"
-                        id={field.name}
-                        aria-invalid={isInvalid}
-                      >
-                        <SelectValue placeholder="Selecione um modelo" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="gpt-4.1-nano">
-                          GPT-4.1 Nano — $0,10 / $0,40
-                        </SelectItem>
-                        <SelectItem value="gpt-4.1-mini">
-                          GPT-4.1 Mini — $0,40 / $1,60
-                        </SelectItem>
-                        <SelectItem value="gpt-4.1">
-                          GPT-4.1 — $2,00 / $8,00
-                        </SelectItem>
-                        <SelectItem value="gpt-5-nano">
-                          GPT-5 Nano — $0,20 / $1,25
-                        </SelectItem>
-                        <SelectItem value="gpt-5-mini">
-                          GPT-5 Mini — $0,40 / $3,00
-                        </SelectItem>
-                        <SelectItem value="gpt-5">
-                          GPT-5 — $1,25 / $10,00
-                        </SelectItem>
-                        <SelectItem value="gpt-5.2">
-                          GPT-5.2 — $1,75 / $14,00
-                        </SelectItem>
-                        <SelectItem value="gpt-5.4">
-                          GPT-5.4 — $2,50 / $15,00
-                        </SelectItem>
-                        <SelectItem value="gpt-5.4-nano">
-                          GPT-5.4 Nano — $0,20 / $1,25
-                        </SelectItem>
-                        <SelectItem value="gpt-5.4-mini">
-                          GPT-5.4 Mini — $0,75 / $4,50
-                        </SelectItem>
-                        <SelectItem value="gpt-5.5">
-                          GPT-5.5 — $5,00 / $30,00
-                        </SelectItem>
-                        <SelectItem value="gpt-5.5-pro">
-                          GPT-5.5 Pro — $30,00 / $180,00
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    {isInvalid && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </Field>
+                  <form.Field
+                    name="LLM_MODEL"
+                    children={(field) => {
+                      const isInvalid =
+                        field.state.meta.isTouched &&
+                        !field.state.meta.isValid;
+
+                      return (
+                        <Field data-invalid={isInvalid}>
+                          <FieldLabel htmlFor={field.name}>Modelo</FieldLabel>
+                          <div className="text-sm text-muted-foreground mb-2">
+                            Identificador do modelo no provedor selecionado
+                          </div>
+                          {useFreeTextModel && (
+                            <Input
+                              data-test-id="settings-llm-model-input"
+                              disabled={isDisabled}
+                              id={field.name}
+                              name={field.name}
+                              placeholder={
+                                provider === E_AI_LLM_PROVIDER.OLLAMA
+                                  ? 'llama3.2'
+                                  : 'openai/gpt-4o-mini'
+                              }
+                              value={field.state.value}
+                              onBlur={field.handleBlur}
+                              onChange={(e) =>
+                                field.handleChange(e.target.value)
+                              }
+                              aria-invalid={isInvalid}
+                            />
+                          )}
+                          {!useFreeTextModel && (
+                            <Select
+                              disabled={isDisabled}
+                              value={field.state.value}
+                              onValueChange={field.handleChange}
+                            >
+                              <SelectTrigger
+                                data-test-id="settings-llm-model-select"
+                                id={field.name}
+                                aria-invalid={isInvalid}
+                              >
+                                <SelectValue placeholder="Selecione um modelo" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {modelOptions.map((option) => (
+                                  <SelectItem
+                                    key={option.value}
+                                    value={option.value}
+                                  >
+                                    {option.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                          {isInvalid && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </Field>
+                      );
+                    }}
+                  />
                 );
               }}
-            />
+            </form.Subscribe>
           </CardContent>
         </Card>
 
