@@ -4,7 +4,11 @@ import { PencilIcon } from 'lucide-react';
 import React from 'react';
 
 import { StorageMigrationCard } from './-storage-migration-card';
-import { SettingUpdateSchema, UpdateSettingFormFields } from './-update-form';
+import {
+  SettingUpdateSchema,
+  UpdateSettingFormFields,
+  type SettingUpdateFormValues,
+} from './-update-form';
 import { SettingView } from './-view';
 
 import {
@@ -49,6 +53,52 @@ function numberOrNull(value: string): number | null {
   const parsed = Number(trimmed);
   if (isNaN(parsed)) return null;
   return parsed;
+}
+
+function secretOrUndefined(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function buildSettingFormValues(data: ISetting): SettingUpdateFormValues {
+  return {
+    SYSTEM_NAME: data.SYSTEM_NAME || 'LowCodeJs',
+    SYSTEM_DESCRIPTION: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
+    LOCALE: data.LOCALE,
+    STORAGE_DRIVER: data.STORAGE_DRIVER || 'local',
+    STORAGE_ENDPOINT: data.STORAGE_ENDPOINT || '',
+    STORAGE_REGION: data.STORAGE_REGION || 'us-east-1',
+    STORAGE_BUCKET: data.STORAGE_BUCKET || '',
+    STORAGE_ACCESS_KEY: data.STORAGE_ACCESS_KEY || '',
+    STORAGE_SECRET_KEY: data.STORAGE_SECRET_KEY || '',
+    LOGO_SMALL_URL: data.LOGO_SMALL_URL,
+    LOGO_LARGE_URL: data.LOGO_LARGE_URL,
+    FILE_UPLOAD_MAX_SIZE: String(data.FILE_UPLOAD_MAX_SIZE),
+    FILE_UPLOAD_MAX_FILES_PER_UPLOAD: String(
+      data.FILE_UPLOAD_MAX_FILES_PER_UPLOAD,
+    ),
+    FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
+    PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
+    MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES.flatMap((t) => t._id),
+    EMAIL_PROVIDER_HOST: resolveStringDefault(data.EMAIL_PROVIDER_HOST),
+    EMAIL_PROVIDER_PORT: resolveNumberDefault(data.EMAIL_PROVIDER_PORT),
+    EMAIL_PROVIDER_USER: resolveStringDefault(data.EMAIL_PROVIDER_USER),
+    EMAIL_PROVIDER_PASSWORD: resolveStringDefault(data.EMAIL_PROVIDER_PASSWORD),
+    EMAIL_PROVIDER_FROM: resolveStringDefault(data.EMAIL_PROVIDER_FROM),
+    OPENAI_API_KEY: data.LLM_API_KEY || data.OPENAI_API_KEY || '',
+    AI_ASSISTANT_ENABLED: data.AI_ASSISTANT_ENABLED ?? false,
+    CHAT_HISTORY_ENABLED: data.CHAT_HISTORY_ENABLED ?? false,
+    MCP_SERVER_URL: data.MCP_SERVER_URL || '',
+    MCP_SERVER_TOKEN: data.MCP_SERVER_TOKEN || '',
+    MCP_LOWCODE_API_URL: data.MCP_LOWCODE_API_URL || '',
+    OPENAI_MODEL: data.LLM_MODEL || data.OPENAI_MODEL || 'gpt-4.1-nano',
+    AI_LLM_PROVIDER: data.AI_LLM_PROVIDER || 'openai',
+    LLM_API_KEY: data.LLM_API_KEY || data.OPENAI_API_KEY || '',
+    LLM_MODEL: data.LLM_MODEL || data.OPENAI_MODEL || 'gpt-4.1-nano',
+    LLM_BASE_URL: data.LLM_BASE_URL || 'http://127.0.0.1:11434/v1',
+    logoSmallFile: [],
+    logoLargeFile: [],
+  };
 }
 
 function RouteComponent(): React.JSX.Element {
@@ -106,13 +156,13 @@ function SettingUpdateContent({
   const isUploading = useIsUploading();
 
   const _update = useUpdateSetting({
-    onSuccess() {
+    onSuccess(updated) {
       toastSuccess(
         'Configurações atualizadas',
         'As configurações do sistema foram atualizadas com sucesso',
       );
 
-      form.reset();
+      form.reset(buildSettingFormValues(updated));
       setMode('show');
       router.invalidate();
     },
@@ -125,41 +175,7 @@ function SettingUpdateContent({
   });
 
   const form = useAppForm({
-    defaultValues: {
-      SYSTEM_NAME: data.SYSTEM_NAME || 'LowCodeJs',
-      SYSTEM_DESCRIPTION: data.SYSTEM_DESCRIPTION || 'Plataforma Oficial',
-      LOCALE: data.LOCALE,
-      STORAGE_DRIVER: data.STORAGE_DRIVER || 'local',
-      STORAGE_ENDPOINT: data.STORAGE_ENDPOINT || '',
-      STORAGE_REGION: data.STORAGE_REGION || 'us-east-1',
-      STORAGE_BUCKET: data.STORAGE_BUCKET || '',
-      STORAGE_ACCESS_KEY: data.STORAGE_ACCESS_KEY || '',
-      STORAGE_SECRET_KEY: data.STORAGE_SECRET_KEY || '',
-      LOGO_SMALL_URL: data.LOGO_SMALL_URL,
-      LOGO_LARGE_URL: data.LOGO_LARGE_URL,
-      FILE_UPLOAD_MAX_SIZE: String(data.FILE_UPLOAD_MAX_SIZE),
-      FILE_UPLOAD_MAX_FILES_PER_UPLOAD: String(
-        data.FILE_UPLOAD_MAX_FILES_PER_UPLOAD,
-      ),
-      FILE_UPLOAD_ACCEPTED: data.FILE_UPLOAD_ACCEPTED.join(';'),
-      PAGINATION_PER_PAGE: String(data.PAGINATION_PER_PAGE),
-      MODEL_CLONE_TABLES: data.MODEL_CLONE_TABLES.flatMap((t) => t._id),
-      EMAIL_PROVIDER_HOST: resolveStringDefault(data.EMAIL_PROVIDER_HOST),
-      EMAIL_PROVIDER_PORT: resolveNumberDefault(data.EMAIL_PROVIDER_PORT),
-      EMAIL_PROVIDER_USER: resolveStringDefault(data.EMAIL_PROVIDER_USER),
-      EMAIL_PROVIDER_PASSWORD: resolveStringDefault(
-        data.EMAIL_PROVIDER_PASSWORD,
-      ),
-      EMAIL_PROVIDER_FROM: resolveStringDefault(data.EMAIL_PROVIDER_FROM),
-      OPENAI_API_KEY: data.OPENAI_API_KEY || '',
-      AI_ASSISTANT_ENABLED: data.AI_ASSISTANT_ENABLED ?? false,
-      CHAT_HISTORY_ENABLED: data.CHAT_HISTORY_ENABLED ?? false,
-      MCP_SERVER_URL: data.MCP_SERVER_URL || '',
-      MCP_SERVER_TOKEN: data.MCP_SERVER_TOKEN || '',
-      OPENAI_MODEL: data.OPENAI_MODEL || 'gpt-4.1-nano',
-      logoSmallFile: [] as Array<File>,
-      logoLargeFile: [] as Array<File>,
-    },
+    defaultValues: buildSettingFormValues(data),
     validators: {
       onChange: SettingUpdateSchema,
       onSubmit: SettingUpdateSchema,
@@ -209,12 +225,20 @@ function SettingUpdateContent({
         EMAIL_PROVIDER_USER: stringOrNull(value.EMAIL_PROVIDER_USER),
         EMAIL_PROVIDER_PASSWORD: stringOrNull(value.EMAIL_PROVIDER_PASSWORD),
         EMAIL_PROVIDER_FROM: stringOrNull(value.EMAIL_PROVIDER_FROM),
-        OPENAI_API_KEY: value.OPENAI_API_KEY?.trim() || undefined,
+        OPENAI_API_KEY: secretOrUndefined(value.LLM_API_KEY),
         AI_ASSISTANT_ENABLED: value.AI_ASSISTANT_ENABLED,
         CHAT_HISTORY_ENABLED: value.CHAT_HISTORY_ENABLED,
         MCP_SERVER_URL: value.MCP_SERVER_URL?.trim() || null,
-        MCP_SERVER_TOKEN: value.MCP_SERVER_TOKEN?.trim() || null,
-        OPENAI_MODEL: value.OPENAI_MODEL?.trim() || 'gpt-4.1-nano',
+        MCP_SERVER_TOKEN: secretOrUndefined(value.MCP_SERVER_TOKEN),
+        MCP_LOWCODE_API_URL: value.MCP_LOWCODE_API_URL?.trim() || null,
+        OPENAI_MODEL: value.LLM_MODEL?.trim() || 'gpt-4.1-nano',
+        AI_LLM_PROVIDER: value.AI_LLM_PROVIDER?.trim() || 'openai',
+        LLM_API_KEY: secretOrUndefined(value.LLM_API_KEY),
+        LLM_MODEL: value.LLM_MODEL?.trim() || 'gpt-4.1-nano',
+        LLM_BASE_URL:
+          value.AI_LLM_PROVIDER === 'ollama'
+            ? value.LLM_BASE_URL?.trim() || null
+            : null,
       };
 
       await _update.mutateAsync(payload);
@@ -222,6 +246,14 @@ function SettingUpdateContent({
   });
 
   useApiErrorAutoClear(form);
+
+  React.useEffect(() => {
+    if (mode !== 'edit') return;
+    form.reset(buildSettingFormValues(data));
+    // Recarrega o form só ao entrar em modo edição — não quando `data` muda
+    // durante a edição (evita apagar o provedor selecionado antes de salvar).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   const isPending = _update.status === 'pending';
 

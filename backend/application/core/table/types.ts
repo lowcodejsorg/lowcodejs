@@ -40,6 +40,19 @@ export interface ExecutionContext {
   userId?: string;
   isNew?: boolean;
   tableInfo?: TableInfo;
+  /**
+   * True quando o script é disparado pelo hook `pre('save')`/`post('save')` do
+   * Mongoose (model-builder), e não pelo use-case do controller. Como `create`
+   * roda o beforeSave nas DUAS camadas (use-case + hook), scripts com efeitos
+   * colaterais (email/notificação) devem usar este flag para não duplicar.
+   */
+  viaSaveHook?: boolean;
+  /**
+   * Estado do registro ANTES do save (apenas em update via use-case). `null` em
+   * create. Permite ao script comparar valor anterior × novo (ex.: detectar
+   * novas mensagens adicionadas a um grupo).
+   */
+  previous?: Record<string, any> | null;
 }
 
 export interface FieldDefinition {
@@ -84,6 +97,49 @@ export interface ContextApi {
   readonly isNew: boolean;
   readonly appUrl: string;
   readonly table: TableInfo;
+  /** True quando disparado pelo hook de save do Mongoose (ver ExecutionContext). */
+  readonly reentrant: boolean;
+  /** Registro antes do save (update) ou null (create). */
+  readonly previous: Record<string, any> | null;
+}
+
+export interface SandboxUser {
+  _id: string;
+  name: string;
+  email: string;
+}
+
+export interface UsersApi {
+  /** Resolve ids (string | objeto populado | ObjectId | array deles) em usuários. */
+  resolve(ids: unknown): Promise<SandboxUser[]>;
+  /** Atalho que retorna apenas os emails válidos e únicos dos ids informados. */
+  emails(ids: unknown): Promise<string[]>;
+}
+
+export interface NotifyInput {
+  userIds: unknown;
+  title: string;
+  body?: string | null;
+  action?: {
+    type: 'route' | 'url';
+    href: string;
+    label?: string | null;
+  } | null;
+  source?: {
+    pkg?: string | null;
+    tableSlug?: string | null;
+    rowId?: string | null;
+    anchorId?: string | null;
+  } | null;
+  /** Tipo da notificação (E_NOTIFICATION_TYPE). Default: GENERIC. */
+  type?: string;
+  /** Ator excluído dos destinatários. Default: context.userId. */
+  actorUserId?: string | null;
+}
+
+export interface NotifyApi {
+  /** Cria notificações in-app (uma por usuário) e emite via socket. */
+  send(input: NotifyInput): Promise<{ success: boolean; recipients: number }>;
 }
 
 export interface EmailApi {
@@ -108,6 +164,8 @@ export interface SandboxGlobals {
   field: FieldApi;
   context: ContextApi;
   email: EmailApi;
+  users: UsersApi;
+  notify: NotifyApi;
   utils: UtilsApi;
   console: {
     log: (...args: any[]) => void;

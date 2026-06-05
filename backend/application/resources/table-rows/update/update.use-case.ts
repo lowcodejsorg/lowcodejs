@@ -9,6 +9,7 @@ import HTTPException from '@application/core/exception.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
+import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
 import { KanbanCommentMentionContractService } from '@application/services/kanban-comment-mention/kanban-comment-mention-contract.service';
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
@@ -27,6 +28,7 @@ export default class TableRowUpdateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
+    private readonly userRepository: UserContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
     private readonly scriptExecutionService: ScriptExecutionContractService,
     private readonly kanbanCommentMentionService: KanbanCommentMentionContractService,
@@ -80,19 +82,58 @@ export default class TableRowUpdateUseCase {
           dropdown: f.dropdown,
         }));
 
-        const userFieldSlugs = new Set(
-          table.fields.filter((f) => f.type === 'USER').map((f) => f.slug),
-        );
+        const userFieldList = table.fields
+          .filter((f) => f.type === 'USER')
+          .map((f) => f.slug);
+        const userFieldSlugs = new Set(userFieldList);
 
         const mergedData: Record<string, any> = {
           ...existing,
           ...payload,
         };
 
+        // Resolve os campos USER para os valores NOVOS (objetos com email),
+        // espelhando o create. Assim o script enxerga os responsáveis atuais
+        // (e não os anteriores). Os campos USER não são gravados de volta no
+        // payload (loop abaixo), então isso afeta apenas a visão do script.
         const scriptDoc: Record<string, any> = { ...mergedData };
-        for (const slug of userFieldSlugs) {
-          if (slug in payload) {
-            scriptDoc[slug] = existing[slug];
+        if (userFieldList.length > 0) {
+          const extractId = (value: any): string => {
+            if (!value) return '';
+            if (typeof value === 'string') return value;
+            if (typeof value === 'object') return String(value._id ?? '');
+            return String(value);
+          };
+
+          const allUserIds: string[] = [];
+          for (const slug of userFieldList) {
+            const val = mergedData[slug];
+            const items = Array.isArray(val) ? val : [val];
+            for (const item of items) {
+              const id = extractId(item);
+              if (id) allUserIds.push(id);
+            }
+          }
+
+          if (allUserIds.length > 0) {
+            const usersList = await this.userRepository.findMany({
+              _ids: allUserIds,
+            });
+            const userMap = new Map(
+              usersList.map((u) => [u._id.toString(), u]),
+            );
+
+            for (const slug of userFieldList) {
+              const val = mergedData[slug];
+              if (Array.isArray(val)) {
+                scriptDoc[slug] = val.map(
+                  (item: any) => userMap.get(extractId(item)) ?? item,
+                );
+              } else {
+                const id = extractId(val);
+                if (id && userMap.has(id)) scriptDoc[slug] = userMap.get(id);
+              }
+            }
           }
         }
 
@@ -107,6 +148,8 @@ export default class TableRowUpdateUseCase {
             userId:
               typeof payload.creator === 'string' ? payload.creator : undefined,
             isNew: false,
+            viaSaveHook: false,
+            previous: existing,
             tableInfo: {
               _id: table._id?.toString() ?? '',
               name: table.name,

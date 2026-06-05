@@ -2,6 +2,8 @@
 import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
+import { E_AI_LLM_PROVIDER } from '@application/core/entity.core';
+import { projectAiSettingsFields } from '@application/services/llm/ai-setting-fields';
 import { left, right } from '@application/core/either.core';
 import type { ISetting } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
@@ -118,7 +120,12 @@ export default class SettingShowUseCase {
           CHAT_HISTORY_ENABLED: false,
           MCP_SERVER_URL: null,
           MCP_SERVER_TOKEN: null,
+          MCP_LOWCODE_API_URL: null,
           OPENAI_MODEL: 'gpt-4.1-nano',
+          AI_LLM_PROVIDER: E_AI_LLM_PROVIDER.OPENAI,
+          LLM_API_KEY: null,
+          LLM_MODEL: 'gpt-4.1-nano',
+          LLM_BASE_URL: null,
           SETUP_COMPLETED: false,
           SETUP_CURRENT_STEP: 'admin',
           MODEL_CLONE_TABLES: [
@@ -134,6 +141,7 @@ export default class SettingShowUseCase {
 
       return right({
         ...setting,
+        ...projectAiSettingsFields(setting),
         FILE_UPLOAD_ACCEPTED: setting.FILE_UPLOAD_ACCEPTED?.split(';') ?? [],
         MODEL_CLONE_TABLES: [
           getKanbanTemplateEntry(),

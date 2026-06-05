@@ -276,8 +276,8 @@ export function ConfigTab(): React.JSX.Element {
   function saveConnection(): void {
     update.mutate({
       apiUrl: apiUrl.trim() || null,
-      apiKey: apiKey.trim() || null,
-      model: model.trim() || null,
+      ...(apiKey.trim() ? { apiKey: apiKey.trim() } : {}),
+      ...(model.trim() ? { model: model.trim() } : {}),
     });
   }
 
