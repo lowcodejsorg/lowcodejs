@@ -1,4 +1,5 @@
 import { useQueryClient } from '@tanstack/react-query';
+import { useStore } from '@tanstack/react-form';
 import { PlusIcon } from 'lucide-react';
 import * as React from 'react';
 
@@ -33,12 +34,17 @@ import {
 import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useConditionalFieldsRuntimeConfig } from '@/hooks/tanstack-query/use-conditional-fields-runtime-config';
 import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
+import {
+  omitHiddenConditionalValues,
+  resolveConditionalVisibility,
+} from '@/lib/conditional-form-rules';
 import { E_FIELD_FORMAT, E_FIELD_TYPE } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
@@ -207,6 +213,7 @@ function RelatedRowCreateDialogContent({
 }: Omit<RelatedRowCreateDialogProps, 'open'>): React.JSX.Element {
   const isUploading = useIsUploading();
   const fields = React.useMemo(() => getFormFields(table), [table]);
+  const conditionalConfig = useConditionalFieldsRuntimeConfig(table.slug, true);
 
   const create = useCreateTableRow({
     onSuccess(row: IRow): void {
@@ -227,10 +234,29 @@ function RelatedRowCreateDialogContent({
     defaultValues: buildCreateRowDefaultValues(fields),
     onSubmit: async ({ value }): Promise<void> => {
       if (create.status === 'pending') return;
-      const data = buildRowPayload(value, fields);
+      const currentVisibility = resolveConditionalVisibility(
+        fields,
+        conditionalConfig.data?.rules ?? [],
+        value,
+      );
+      const values = omitHiddenConditionalValues(
+        value,
+        fields,
+        currentVisibility.hiddenFieldIds,
+      );
+      const data = buildRowPayload(values, currentVisibility.visibleFields);
       await create.mutateAsync({ slug: table.slug, data });
     },
   });
+
+  const formValues = useStore(form.store, (state) => state.values);
+  const conditionalVisibility = React.useMemo(() => {
+    return resolveConditionalVisibility(
+      fields,
+      conditionalConfig.data?.rules ?? [],
+      formValues,
+    );
+  }, [fields, conditionalConfig.data?.rules, formValues]);
 
   return (
     <React.Fragment>
@@ -244,12 +270,20 @@ function RelatedRowCreateDialogContent({
           form.handleSubmit();
         }}
       >
-        <RelatedRowFormFields
-          form={form}
-          fields={fields}
-          disabled={create.status === 'pending'}
-          tableSlug={table.slug}
-        />
+        {conditionalConfig.status === 'pending' && (
+          <div className="flex min-h-40 items-center justify-center">
+            <Spinner className="opacity-50" />
+          </div>
+        )}
+
+        {conditionalConfig.status !== 'pending' && (
+          <RelatedRowFormFields
+            form={form}
+            fields={conditionalVisibility.visibleFields}
+            disabled={create.status === 'pending'}
+            tableSlug={table.slug}
+          />
+        )}
       </form>
       <DialogFooter>
         <Button
