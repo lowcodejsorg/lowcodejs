@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * BullMQ Worker for storage migration / cleanup jobs.
  *
@@ -67,7 +68,7 @@ function sleep(ms: number): Promise<void> {
 async function processInBatches<T>(
   items: T[],
   concurrency: number,
-  // eslint-disable-next-line no-unused-vars
+
   handler: (item: T, index: number) => Promise<void>,
 ): Promise<void> {
   let index = 0;

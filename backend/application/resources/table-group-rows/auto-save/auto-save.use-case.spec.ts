@@ -109,7 +109,9 @@ async function createRowWithItems(table: ITable): Promise<string> {
   const row = await rowRepository.create({
     table,
     data: {
-      items: [{ _id: 'item-1', descricao: 'Item existente', trashed: false }],
+      items: [
+        { _id: 'item-1', descricao: 'Item existente', status: 'published' },
+      ],
     },
   });
   return row._id;
@@ -128,7 +130,7 @@ describe('Group Row Auto Save Use Case', () => {
     );
   });
 
-  it('deve criar item incompleto como rascunho (trashed=true)', async () => {
+  it('deve criar item incompleto como rascunho (status=draft)', async () => {
     const table = await createTableWithGroup();
     const rowId = await createRowWithItems(table);
 
@@ -142,10 +144,10 @@ describe('Group Row Auto Save Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toHaveProperty('_id');
-    expect(result.value).toHaveProperty('trashed', true);
+    expect(result.value).toHaveProperty('status', 'draft');
   });
 
-  it('deve criar item completo como salvo (trashed=false)', async () => {
+  it('deve criar item como rascunho mesmo completo (auto-save nunca publica)', async () => {
     const table = await createTableWithGroup();
     const rowId = await createRowWithItems(table);
 
@@ -159,7 +161,7 @@ describe('Group Row Auto Save Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toHaveProperty('descricao', 'Novo item');
-    expect(result.value).toHaveProperty('trashed', false);
+    expect(result.value).toHaveProperty('status', 'draft');
   });
 
   it('deve atualizar item existente quando _id e informado', async () => {
@@ -177,7 +179,7 @@ describe('Group Row Auto Save Use Case', () => {
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
     expect(result.value).toHaveProperty('descricao', 'Atualizado');
-    expect(result.value).toHaveProperty('trashed', false);
+    expect(result.value).toHaveProperty('status', 'draft');
   });
 
   it('deve retornar ITEM_NOT_FOUND ao atualizar item inexistente', async () => {

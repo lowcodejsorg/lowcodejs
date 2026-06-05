@@ -8,16 +8,18 @@ import {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
-import { buildSchema } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
 import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
+import MongooseSchemaBuilder from '@application/services/table/schema-builder.service';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 import { cleanDynamicCollections } from '@test/helpers/database.helper';
+
+const schemaBuilder = new MongooseSchemaBuilder();
 
 describe('E2E Table Row Remove From Trash Controller', () => {
   beforeEach(async () => {
@@ -73,13 +75,12 @@ describe('E2E Table Row Remove From Trash Controller', () => {
         slug: 'products',
         fields: [field._id.toString()],
         _schema: {
-          ...buildSchema([
+          ...schemaBuilder.build([
             {
               ...field.toJSON(),
               _id: field._id.toString(),
             },
           ]),
-          trashed: { type: 'Boolean', required: false, default: false },
           trashedAt: { type: 'Date', required: false, default: null },
         },
         description: 'Products table',
@@ -113,7 +114,6 @@ describe('E2E Table Row Remove From Trash Controller', () => {
         .set('Cookie', cookies);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body.trashed).toBe(false);
       expect(response.body.trashedAt).toBeNull();
     });
   });

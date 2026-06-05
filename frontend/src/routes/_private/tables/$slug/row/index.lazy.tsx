@@ -28,6 +28,7 @@ import { useSidebar } from '@/components/ui/sidebar';
 import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
+import type { IRow } from '@/lib/interfaces';
 import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -52,7 +53,6 @@ function RouteComponent(): React.JSX.Element {
   const search = useSearch({ from: '/_private/tables/$slug/row/' });
 
   const rowId = search._id;
-  const mode = search.mode ?? 'view';
 
   const goBack = (): void => {
     sidebar.setOpen(false);
@@ -77,10 +77,28 @@ function RouteComponent(): React.JSX.Element {
     <ExistingRowView
       slug={slug}
       rowId={rowId}
-      mode={mode}
+      mode={search.mode}
       onBack={goBack}
     />
   );
+}
+
+// Sem `mode` explícito na URL, um rascunho do próprio criador abre direto em
+// edição para continuar o preenchimento; os demais abrem em visualização.
+function resolveExistingMode(
+  explicit: 'view' | 'edit' | undefined,
+  row: IRow,
+  userId: string | undefined,
+): 'view' | 'edit' {
+  if (explicit) return explicit;
+  if (
+    row.status === 'draft' &&
+    Boolean(userId) &&
+    row.creator?._id === userId
+  ) {
+    return 'edit';
+  }
+  return 'view';
 }
 
 interface CreateRowViewProps {
@@ -145,7 +163,7 @@ function CreateRowView({
 interface ExistingRowViewProps {
   slug: string;
   rowId: string;
-  mode: 'view' | 'edit';
+  mode: 'view' | 'edit' | undefined;
   onBack: () => void;
 }
 
@@ -172,7 +190,9 @@ function ExistingRowView({
     void navigate({
       to: '/tables/$slug/row/',
       params: { slug },
-      search: { _id: rowId },
+      // mode explícito: sair da edição vai para visualização mesmo se o
+      // registro ainda for rascunho (sem isso o default reabriria em edição).
+      search: { _id: rowId, mode: 'view' as const },
       replace: true,
     });
   };
@@ -269,9 +289,14 @@ function ExistingRowView({
     backHandler = onBack;
   }
 
+  let effectiveMode: 'view' | 'edit' = mode ?? 'view';
+  if (row.data) {
+    effectiveMode = resolveExistingMode(mode, row.data, user?._id);
+  }
+
   return (
     <PageShell data-test-id="row-detail-page">
-      {mode === 'view' && (
+      {effectiveMode === 'view' && (
         <PageShell.Header borderBottom={false}>
           <PageHeader
             onBack={backHandler}
@@ -290,7 +315,7 @@ function ExistingRowView({
         </PageShell.Header>
       )}
 
-      {mode === 'edit' && (
+      {effectiveMode === 'edit' && (
         <PageShell.Header borderBottom={false}>
           <PageHeader
             onBack={handleEditBack}
@@ -299,7 +324,7 @@ function ExistingRowView({
         </PageShell.Header>
       )}
 
-      {mode === 'view' &&
+      {effectiveMode === 'view' &&
         table.status === 'success' &&
         row.status === 'success' && (
           <RowDetailView
@@ -310,10 +335,13 @@ function ExistingRowView({
           />
         )}
 
-      {mode === 'edit' &&
+      {effectiveMode === 'edit' &&
         table.status === 'success' &&
         row.status === 'success' && (
+          // key por _id: garante que o form remonte com os defaultValues do
+          // registro (TanStack Form só aplica defaultValues no mount).
           <AutoSaveRowForm
+            key={row.data._id}
             table={table.data}
             rowId={rowId}
             existingRow={row.data}

@@ -1,25 +1,27 @@
 /* eslint-disable import/order */
+import 'reflect-metadata';
+
 import { getInstanceByToken } from 'fastify-decorators';
 
 import type { IJWTPayload } from '@application/core/entity.core';
 import { Setting } from '@application/model/setting.model';
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
-import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
+import StorageMongooseRepository from '@application/repositories/storage/storage.repository';
 import { initChatSocket } from '@application/resources/chat/chat.socket';
 import { initNotificationsSocket } from '@application/resources/notifications/notifications.socket';
 import { initStorageMigrationSocket } from '@application/resources/storage-migration/storage-migration.socket';
 import { startEmailWorker } from '@application/services/email-queue/worker';
 import { EmailContractService } from '@application/services/email/email-contract.service';
-import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import NodemailerEmailService from '@application/services/email/email.service';
 import { startStorageMigrationWorker } from '@application/services/storage-migration/worker';
 import { initCsvImportSocket } from '@application/resources/table-rows/import-csv/import-csv.socket';
 import { startCsvImportWorker } from '@application/services/csv-import/worker';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
-import RowMongooseRepository from '@application/repositories/row/row-mongoose.repository';
+import RowMongooseRepository from '@application/repositories/row/row.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
+import TableMongooseRepository from '@application/repositories/table/table.repository';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
-import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
+import BcryptRowPasswordService from '@application/services/row-password/row-password.service';
 import StorageService from '@application/services/storage/storage.service';
 import { MongooseConnect } from '@config/database.config';
 import { syncStorageEnv } from '@config/setting-env-sync';

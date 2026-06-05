@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Helpers para resolver display values de campos RELATIONSHIP de volta para
  * ObjectIds durante a importação de CSV.
@@ -21,7 +22,6 @@ import {
 import type { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import type { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 
-// eslint-disable-next-line no-unused-vars
 export type RelationshipResolver = (raw: string) => string[];
 
 const OBJECT_ID_REGEX = /^[0-9a-f]{24}$/i;

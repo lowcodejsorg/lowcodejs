@@ -43,7 +43,7 @@ export default class TableRowSendToTrashUseCase {
         );
       }
 
-      if (row.trashed) {
+      if (row.trashedAt) {
         return left(
           HTTPException.Conflict(
             'Registro já está na lixeira',
@@ -55,7 +55,7 @@ export default class TableRowSendToTrashUseCase {
       const updated = await this.rowRepository.update({
         table,
         _id: payload._id,
-        data: { trashed: true, trashedAt: new Date() },
+        data: { trashedAt: new Date() },
       });
 
       if (!updated) {

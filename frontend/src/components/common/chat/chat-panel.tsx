@@ -27,6 +27,8 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
     toolActivities,
     status,
     statusMessage,
+    llmProviderLabel,
+    llmModel,
     sendMessage,
     clearMessages,
     reconnect,
@@ -136,7 +138,11 @@ export function ChatPanel({ onClose }: ChatPanelProps): React.JSX.Element {
       <div className="flex items-center justify-between border-b px-4 py-3">
         <div>
           <h3 className="text-sm font-semibold">Assistente IA</h3>
-          <p className="text-xs text-muted-foreground">LowCodeJS</p>
+          <p className="text-xs text-muted-foreground">
+            {llmProviderLabel && llmModel
+              ? `${llmProviderLabel} · ${llmModel}`
+              : 'LowCodeJS'}
+          </p>
         </div>
         <div className="flex items-center gap-1">
           {messages.length > 0 && (

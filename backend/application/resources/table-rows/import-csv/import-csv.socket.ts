@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Socket.IO namespace `/csv-import`.
  *
@@ -18,7 +19,7 @@
  * stored event is replayed immediately so the UI always receives a terminal
  * state.
  */
-/* eslint-disable no-unused-vars */
+
 import type { Namespace, Server } from 'socket.io';
 
 import {

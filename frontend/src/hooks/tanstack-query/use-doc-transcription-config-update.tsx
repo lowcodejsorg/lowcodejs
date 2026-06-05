@@ -8,6 +8,8 @@ import { API } from '@/lib/api';
 
 interface UpdateConfigPayload {
   apiUrl?: string | null;
+  apiKey?: string | null;
+  model?: string | null;
   documentTypes?: IDocTranscriptionConfig['documentTypes'];
 }
 

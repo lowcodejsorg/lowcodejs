@@ -149,25 +149,30 @@ function GroupRowFormDialogContent({
       </SheetHeader>
 
       <form
-        className="space-y-4"
+        className="flex flex-wrap gap-4"
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();
         }}
       >
         {visibleFields.map((field) => (
-          <form.AppField
+          <div
             key={field._id}
-            name={field.slug}
-            validators={{
-              onChange: ({ value }: { value: any }) =>
-                buildFieldValidator(field, value),
-            }}
+            className="min-w-[200px]"
+            style={{ width: `calc(${field.widthInForm ?? 50}% - 1rem)` }}
           >
-            {(formField: any) =>
-              renderGroupFormField(formField, field, tableSlug, groupSlug)
-            }
-          </form.AppField>
+            <form.AppField
+              name={field.slug}
+              validators={{
+                onChange: ({ value }: { value: any }) =>
+                  buildFieldValidator(field, value),
+              }}
+            >
+              {(formField: any) =>
+                renderGroupFormField(formField, field, tableSlug, groupSlug)
+              }
+            </form.AppField>
+          </div>
         ))}
       </form>
 

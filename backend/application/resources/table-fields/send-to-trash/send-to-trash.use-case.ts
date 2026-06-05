@@ -7,7 +7,7 @@ import type { IField as Entity } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import type { TableFieldSendToTrashPayload } from './send-to-trash.validator';
 
@@ -19,7 +19,7 @@ export default class TableFieldSendToTrashUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -76,7 +76,7 @@ export default class TableFieldSendToTrashUseCase {
         f._id === field._id ? updatedField : f,
       );
 
-      const _schema = this.tableSchemaService.computeSchema(fields);
+      const _schema = this.schemaBuilder.build(fields);
 
       await this.tableRepository.update({
         _id: table._id,

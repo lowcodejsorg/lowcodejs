@@ -192,8 +192,9 @@ do MASTER são preservados — uma vez desligada, fica desligada.
 ## Convenções
 
 - **Sem sandbox**: extensões rodam com privilégios totais — o desenvolvedor
-  assume o risco. Use os repos via `getInstanceByToken` ou `@Inject`, igual ao
-  core
+  assume o risco. Acesse repos/services via `getInstanceByToken` (controllers de
+  extensão não são `@Service`) ou, em classes `@Service`, por constructor
+  injection — igual ao core. Não use `@Inject`.
 - **Either pattern**: use-cases retornam `Either<HTTPException, T>`
 - **Mensagens em PT-BR**
 - **Design system obrigatório no frontend**: importe de `@/components/ui/*`

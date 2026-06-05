@@ -10,7 +10,7 @@ import { E_ROLE } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { RoleMiddleware } from '@application/middlewares/role.middleware';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
+import TableMongooseRepository from '@application/repositories/table/table.repository';
 
 import { TableRowImportCsvTemplateSchema } from './import-csv.schema';
 import { ImportCsvParamsValidator } from './import-csv.validator';

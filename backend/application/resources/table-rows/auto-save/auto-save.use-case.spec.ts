@@ -69,7 +69,7 @@ describe('Table Row Auto Save Use Case', () => {
     sut = new TableRowAutoSaveUseCase(tableRepo, rowRepo);
   });
 
-  it('deve salvar na lixeira quando obrigatorio e string vazia', async () => {
+  it('deve salvar como rascunho quando obrigatorio e string vazia', async () => {
     await seedTable([
       buildField({ name: 'Titulo', slug: 'titulo', required: true }),
     ]);
@@ -78,12 +78,16 @@ describe('Table Row Auto Save Use Case', () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.trashed).toBe(true);
-      expect(result.value.trashedAt).not.toBeNull();
+      expect(result.value.status).toBe('draft');
+      expect(result.value.draftAt).not.toBeNull();
+      // Auto-save nunca envia para a lixeira.
+      expect(result.value.trashedAt).toBeNull();
+      // Persiste o dado parcial real, sem placeholders.
+      expect(result.value.titulo).toBe('');
     }
   });
 
-  it('deve salvar na lixeira quando obrigatorio e null', async () => {
+  it('deve salvar como rascunho quando obrigatorio e null', async () => {
     await seedTable([
       buildField({ name: 'Titulo', slug: 'titulo', required: true }),
     ]);
@@ -92,11 +96,12 @@ describe('Table Row Auto Save Use Case', () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.trashed).toBe(true);
+      expect(result.value.status).toBe('draft');
+      expect(result.value.trashedAt).toBeNull();
     }
   });
 
-  it('deve salvar com status normal quando obrigatorios tem valor', async () => {
+  it('deve manter rascunho mesmo com obrigatorios preenchidos (auto-save nunca publica)', async () => {
     await seedTable([
       buildField({ name: 'Titulo', slug: 'titulo', required: true }),
     ]);
@@ -105,12 +110,13 @@ describe('Table Row Auto Save Use Case', () => {
 
     expect(result.isRight()).toBe(true);
     if (result.isRight()) {
-      expect(result.value.trashed).toBe(false);
+      expect(result.value.status).toBe('draft');
       expect(result.value.trashedAt).toBeNull();
+      expect(result.value.titulo).toBe('Matrix');
     }
   });
 
-  it('deve tirar da lixeira ao completar obrigatorios em um update', async () => {
+  it('deve manter rascunho ao atualizar via auto-save', async () => {
     await seedTable([
       buildField({ name: 'Titulo', slug: 'titulo', required: true }),
     ]);
@@ -118,18 +124,19 @@ describe('Table Row Auto Save Use Case', () => {
     const draft = await sut.execute({ slug: 'filmes', titulo: '' });
     expect(draft.isRight()).toBe(true);
     if (!draft.isRight()) return;
-    expect(draft.value.trashed).toBe(true);
+    expect(draft.value.status).toBe('draft');
 
-    const completed = await sut.execute({
+    const updated = await sut.execute({
       slug: 'filmes',
       _id: draft.value._id,
       titulo: 'Matrix',
     });
 
-    expect(completed.isRight()).toBe(true);
-    if (completed.isRight()) {
-      expect(completed.value.trashed).toBe(false);
-      expect(completed.value.trashedAt).toBeNull();
+    expect(updated.isRight()).toBe(true);
+    if (updated.isRight()) {
+      expect(updated.value.status).toBe('draft');
+      expect(updated.value.trashedAt).toBeNull();
+      expect(updated.value.titulo).toBe('Matrix');
     }
   });
 

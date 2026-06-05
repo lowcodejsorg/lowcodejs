@@ -10,11 +10,12 @@ import {
   type IGroupConfiguration,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { resolveFieldSlug } from '@application/core/field-slug.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import {
   hasDuplicateDropdownLabels,
@@ -47,7 +48,8 @@ export default class TableFieldUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
     private readonly rowRepository: RowContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -99,7 +101,7 @@ export default class TableFieldUpdateUseCase {
           f._id === field._id ? updatedField : f,
         );
         const groups = table.groups || [];
-        const _schema = this.tableSchemaService.computeSchema(fields, groups);
+        const _schema = this.schemaBuilder.build(fields, groups);
 
         await this.tableRepository.update({
           _id: table._id,
@@ -141,7 +143,7 @@ export default class TableFieldUpdateUseCase {
         error: null,
       };
       if (nameChanged) {
-        resolvedSlug = resolveFieldSlug({ name: payload.name });
+        resolvedSlug = FieldSlug.resolve({ name: payload.name });
       }
 
       if (resolvedSlug.error) {
@@ -237,7 +239,7 @@ export default class TableFieldUpdateUseCase {
         f._id === field._id ? updatedField : f,
       );
 
-      const _schema = this.tableSchemaService.computeSchema(fields, groups);
+      const _schema = this.schemaBuilder.build(fields, groups);
 
       await this.tableRepository.update({
         _id: table._id,
@@ -249,7 +251,7 @@ export default class TableFieldUpdateUseCase {
       });
 
       if (oldSlug !== slug) {
-        await this.tableSchemaService.syncModel({
+        await this.modelBuilder.build({
           ...table,
           _id: table._id,
           _schema,

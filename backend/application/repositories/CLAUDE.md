@@ -5,9 +5,9 @@ Camada de acesso a dados com pattern Contract + Implementation.
 ## Pattern
 
 Cada entidade possui 3 arquivos:
-1. **`{entidade}-contract.repository.ts`** - Classe abstrata com metodos e payload types
-2. **`{entidade}-mongoose.repository.ts`** - Implementacao com Mongoose (`@Service()` decorator)
-3. **`{entidade}-in-memory.repository.ts`** - Implementacao em memoria para testes unitarios
+1. **`{entidade}-contract.repository.ts`** - Classe abstrata (export nomeado `{Entity}ContractRepository`) com metodos e payload types
+2. **`{entidade}.repository.ts`** - Implementacao Mongoose (`@Service() export default class`)
+3. **`{entidade}-in-memory.repository.ts`** - Implementacao em memoria para testes unitarios (ignorada pelo scanner do DI)
 
 ## Metodos Padrao
 
@@ -49,14 +49,16 @@ Cada contract define seus proprios tipos:
 
 ## Registro DI
 
-Todos registrados em `core/di-registry.ts`:
-```typescript
-injectablesHolder.injectService(UserContractRepository, UserMongooseRepository);
-```
+Registrado **automaticamente** pelo scanner de `core/di-registry.ts`, que pareia
+`{entidade}-contract.repository.ts` ↔ `{entidade}.repository.ts` por convencao
+(equivalente a `injectService(UserContractRepository, UserMongooseRepository)`).
+Nao ha lista manual.
 
 ## Para Criar Novo Repository
 
-1. Crie `{entidade}-contract.repository.ts` com abstract class e payload types
-2. Crie `{entidade}-mongoose.repository.ts` implementando o contract
+1. Crie `{entidade}-contract.repository.ts` com abstract class
+   `{Entity}ContractRepository` (export nomeado) e payload types
+2. Crie `{entidade}.repository.ts` com `@Service() export default class` da impl
 3. Crie `{entidade}-in-memory.repository.ts` para testes
-4. Registre em `core/di-registry.ts`
+
+O DI registra o par sozinho — **nao precisa editar `di-registry.ts`**.

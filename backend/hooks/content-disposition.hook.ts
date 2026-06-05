@@ -5,7 +5,7 @@ import { createReadStream, existsSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { StorageContractRepository } from '@application/repositories/storage/storage-contract.repository';
-import StorageMongooseRepository from '@application/repositories/storage/storage-mongoose.repository';
+import StorageMongooseRepository from '@application/repositories/storage/storage.repository';
 import {
   buildContentDisposition,
   DispositionMode,

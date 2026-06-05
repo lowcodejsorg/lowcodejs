@@ -16,6 +16,7 @@ import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-ce
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
 import { FieldTitle } from '@/components/common/field-title';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
@@ -219,6 +220,14 @@ export function TableGridView({
               )}
             </div>
             <CardContent className="p-3 space-y-1">
+              {row.status === 'draft' && (
+                <Badge
+                  variant="outline"
+                  className="text-amber-600 border-amber-400"
+                >
+                  Rascunho
+                </Badge>
+              )}
               <div className="font-semibold leading-tight line-clamp-2">
                 {titleField ? (
                   <RenderGridCell

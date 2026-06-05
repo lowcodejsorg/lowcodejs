@@ -27,7 +27,7 @@ export function TableRowActionsMenu({
 }: Props): React.JSX.Element {
   const router = useRouter();
   const permission = useTablePermission(table);
-  const canEdit = permission.can('UPDATE_ROW') && !row.trashed;
+  const canEdit = permission.can('UPDATE_ROW') && row.trashedAt == null;
 
   return (
     <div onClick={(e) => e.stopPropagation()}>

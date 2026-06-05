@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, DELETE, getInstanceByToken } from 'fastify-decorators';
 
@@ -14,7 +15,6 @@ import { UserDeleteParamValidator } from './delete.validator';
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: UserDeleteUseCase = getInstanceByToken(
       UserDeleteUseCase,
     ),

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { E_FIELD_FORMAT } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import BcryptRowPasswordService from '@application/services/row-password/bcrypt-row-password.service';
+import BcryptRowPasswordService from '@application/services/row-password/row-password.service';
 import {
   makePasswordField,
   makeTextShortWithFormat,
