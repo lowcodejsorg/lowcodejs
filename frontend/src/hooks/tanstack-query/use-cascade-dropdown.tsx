@@ -1,4 +1,9 @@
 import { useInfiniteQuery, useQuery } from '@tanstack/react-query';
+import type {
+  InfiniteData,
+  UseInfiniteQueryResult,
+  UseQueryResult,
+} from '@tanstack/react-query';
 import axios from 'axios';
 
 import { API } from '@/lib/api';
@@ -94,7 +99,7 @@ export function useCascadeDropdownConfig(params: {
   tableSlug: string;
   fieldId: string;
   enabled?: boolean;
-}) {
+}): UseQueryResult<CascadeDropdownConfig | null, Error> {
   const { enabled = true } = params;
 
   return useQuery({
@@ -121,7 +126,7 @@ export function useCascadeDropdownParentOptions(params: {
   fieldId: string;
   search?: string;
   enabled?: boolean;
-}) {
+}): UseQueryResult<Array<CascadeDropdownOption>, Error> {
   const { enabled = true } = params;
 
   return useQuery({
@@ -159,7 +164,7 @@ export function useCascadeDropdownChildOptions(params: {
   search?: string;
   perPage?: number;
   enabled?: boolean;
-}) {
+}): UseInfiniteQueryResult<InfiniteData<Paginated<IRow>, number>, Error> {
   const { enabled = true } = params;
 
   return useInfiniteQuery({

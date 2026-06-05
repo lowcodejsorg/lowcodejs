@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import {
   AlertCircleIcon,
   ArrowDownIcon,
@@ -200,7 +201,10 @@ function configQueryKey(slug: string): Array<string> {
   return ['conditional-fields-config', slug];
 }
 
-function useConditionalFieldsConfig(slug: string, enabled: boolean) {
+function useConditionalFieldsConfig(
+  slug: string,
+  enabled: boolean,
+): UseQueryResult<ConditionalFieldsConfig, Error> {
   return useQuery({
     queryKey: configQueryKey(slug),
     enabled,
@@ -213,7 +217,13 @@ function useConditionalFieldsConfig(slug: string, enabled: boolean) {
   });
 }
 
-function useSaveConditionalFieldsConfig(slug: string) {
+function useSaveConditionalFieldsConfig(
+  slug: string,
+): UseMutationResult<
+  ConditionalFieldsConfig,
+  Error,
+  Array<ConditionalFieldRule>
+> {
   const queryClient = useQueryClient();
 
   return useMutation({

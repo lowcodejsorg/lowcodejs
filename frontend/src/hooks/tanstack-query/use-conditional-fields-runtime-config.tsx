@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import type { UseQueryResult } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 
 import { API } from '@/lib/api';
@@ -13,7 +14,7 @@ export function conditionalFieldsRuntimeConfigQueryKey(
 export function useConditionalFieldsRuntimeConfig(
   tableSlug: string,
   enabled: boolean,
-) {
+): UseQueryResult<ConditionalFieldsConfig, Error> {
   return useQuery({
     queryKey: conditionalFieldsRuntimeConfigQueryKey(tableSlug),
     enabled: enabled && tableSlug.length > 0,

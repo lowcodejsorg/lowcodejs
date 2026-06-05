@@ -471,26 +471,23 @@ export default function CascadeDropdownPlugin({
 
   const setFilterField = (fieldSlug: string): void => {
     const field = cascadeFilterFields.find((item) => item.slug === fieldSlug);
-    setDraft((current) =>
-      current && field
-        ? (() => {
-            const filterTableSlug = getRelationshipTableSlug(field);
-            const currentParent = parentFields.find(
-              (item) => item._id === current.parentFieldId,
-            );
-            const keepParent =
-              currentParent &&
-              getRelationshipTableSlug(currentParent) === filterTableSlug;
-            return {
-              ...current,
-              childFieldId: field._id,
-              childFieldSlug: field.slug,
-              parentFieldId: keepParent ? current.parentFieldId : '',
-              parentFieldSlug: keepParent ? current.parentFieldSlug : '',
-            };
-          })()
-        : current,
-    );
+    setDraft((current) => {
+      if (!current || !field) return current;
+      const filterTableSlug = getRelationshipTableSlug(field);
+      const currentParent = parentFields.find(
+        (item) => item._id === current.parentFieldId,
+      );
+      const keepParent =
+        currentParent &&
+        getRelationshipTableSlug(currentParent) === filterTableSlug;
+      return {
+        ...current,
+        childFieldId: field._id,
+        childFieldSlug: field.slug,
+        parentFieldId: keepParent ? current.parentFieldId : '',
+        parentFieldSlug: keepParent ? current.parentFieldSlug : '',
+      };
+    });
   };
 
   const updateFilter = (
