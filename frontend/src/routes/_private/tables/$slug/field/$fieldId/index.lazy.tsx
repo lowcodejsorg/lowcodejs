@@ -173,6 +173,7 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' && (
           <FieldUpdateContent
             data={_read.data}
+            table={table.data}
             slug={slug}
             mode={mode}
             setMode={setMode}
@@ -186,6 +187,7 @@ function RouteComponent(): React.JSX.Element {
 
 interface FieldUpdateContentProps {
   data: IField;
+  table?: ITable;
   slug: string;
   mode: 'show' | 'edit';
   setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
@@ -195,6 +197,7 @@ interface FieldUpdateContentProps {
 
 function FieldUpdateContent({
   data,
+  table,
   slug,
   mode,
   setMode,
@@ -468,6 +471,8 @@ function FieldUpdateContent({
             isPending={isPending}
             mode={mode}
             tableSlug={slug}
+            table={table}
+            targetField={data}
             isLocked={data.locked ?? false}
             isGroupField={Boolean(groupSlug)}
           />

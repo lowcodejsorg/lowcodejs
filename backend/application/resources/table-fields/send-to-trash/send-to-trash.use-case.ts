@@ -8,6 +8,7 @@ import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
 
 import type { TableFieldSendToTrashPayload } from './send-to-trash.validator';
 
@@ -83,6 +84,12 @@ export default class TableFieldSendToTrashUseCase {
         fields: fields.flatMap((f) => f._id),
         _schema,
         owner: table.owner._id,
+      });
+
+      await deleteCascadeDropdownConfigsForField({
+        tableSlug: table.slug,
+        fieldId: field._id,
+        fieldSlug: field.slug,
       });
 
       return right(updatedField);
