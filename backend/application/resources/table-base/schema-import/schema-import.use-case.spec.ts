@@ -294,7 +294,7 @@ describe('Schema Import Use Case', () => {
     const yaml = `tables:
   - name: Tarefas
     fields:
-      - name: Status
+      - name: Situacao
         type: DROPDOWN
         options:
           - label: Pendente
@@ -307,7 +307,7 @@ describe('Schema Import Use Case', () => {
 
     expect(result.isRight()).toBe(true);
     const statusField = fieldInMemoryRepository.items.find(
-      (f) => f.slug === 'status',
+      (f) => f.slug === 'situacao',
     );
     expect(statusField?.dropdown).toHaveLength(2);
     expect(statusField?.dropdown[0]!.label).toBe('Pendente');

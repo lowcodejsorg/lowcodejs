@@ -27,7 +27,9 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useAutoSaveTableRow } from '@/hooks/tanstack-query/use-table-row-auto-save';
+import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useDeleteTableRow } from '@/hooks/tanstack-query/use-table-row-delete';
+import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -96,8 +98,8 @@ function AutoSaveRowFormContent({
   const [persistedRowId, setPersistedRowId] = React.useState<
     string | undefined
   >(initialRowId);
-  const [isTrashed, setIsTrashed] = React.useState<boolean>(
-    existingRow?.trashed ?? false,
+  const [isDraft, setIsDraft] = React.useState<boolean>(
+    existingRow?.status === 'draft',
   );
   const [missingRequired, setMissingRequired] = React.useState<boolean>(false);
   const [confirmDiscardOpen, setConfirmDiscardOpen] =
@@ -172,11 +174,43 @@ function AutoSaveRowFormContent({
 
   const _autoSave = useAutoSaveTableRow({
     onSuccess(data: IRow): void {
-      setIsTrashed(data.trashed);
+      setIsDraft(data.status === 'draft');
       if (!rowIdRef.current) {
         rowIdRef.current = data._id;
       }
       setPersistedRowId(data._id);
+    },
+    onError(error: AxiosError | Error): void {
+      handleApiError(error, {
+        context: 'Erro ao salvar o registro',
+        onFieldErrors: (errors: Record<string, string>): void => {
+          applyApiFieldErrors(form, errors);
+        },
+      });
+    },
+  });
+
+  // Salvar (publicar) usa os endpoints reais de create/update, que aplicam o
+  // guard de campos obrigatorios no backend e marcam status='published'.
+  const _create = useCreateTableRow({
+    onSuccess(data: IRow): void {
+      rowIdRef.current = data._id;
+      setPersistedRowId(data._id);
+      setIsDraft(false);
+    },
+    onError(error: AxiosError | Error): void {
+      handleApiError(error, {
+        context: 'Erro ao salvar o registro',
+        onFieldErrors: (errors: Record<string, string>): void => {
+          applyApiFieldErrors(form, errors);
+        },
+      });
+    },
+  });
+
+  const _update = useUpdateTableRow({
+    onSuccess(): void {
+      setIsDraft(false);
     },
     onError(error: AxiosError | Error): void {
       handleApiError(error, {
@@ -222,7 +256,7 @@ function AutoSaveRowFormContent({
 
   const { status, lastSavedAt, triggerSave, cancelPending } = useAutoSave({
     onSave: performSave,
-    isTrashed,
+    isDraft,
     canSave: canSaveCallback,
     isDirty: isDirtyCallback,
   });
@@ -292,11 +326,34 @@ function AutoSaveRowFormContent({
 
   const handleSaveAndBack = async (): Promise<void> => {
     cancelPending();
-    // Marca campos para feedback visual, mas nao bloqueia: registro incompleto
-    // e salvo como rascunho (lixeira) pelo backend.
+    // Salvar valida os obrigatorios e BLOQUEIA se invalido (auto-save e a
+    // excecao que permite rascunho). Quando valido, chama create/update reais
+    // que aplicam o guard do backend e publicam o registro.
     const isValid = validateAndTouch();
-    setMissingRequired(!isValid);
-    await performSave();
+    if (!isValid) {
+      setMissingRequired(true);
+      return;
+    }
+    setMissingRequired(false);
+
+    const payload = buildRowPayload(form.state.values, fields);
+
+    try {
+      if (rowIdRef.current) {
+        await _update.mutateAsync({
+          slug,
+          rowId: rowIdRef.current,
+          data: payload,
+        });
+      } else {
+        await _create.mutateAsync({ slug, data: payload });
+      }
+    } catch {
+      // Erros de campo ja foram aplicados no form via onError dos hooks.
+      // Mantem o usuario no formulario para correcao (nao navega).
+      return;
+    }
+
     finishAndBack();
   };
 
@@ -356,7 +413,7 @@ function AutoSaveRowFormContent({
           lastSavedAt={lastSavedAt}
         />
         <div className="flex items-center gap-2 shrink-0">
-          {isTrashed && (
+          {isDraft && (
             <Badge
               variant="outline"
               className="text-amber-600 border-amber-400"
@@ -420,12 +477,17 @@ function AutoSaveRowFormContent({
         <Button
           type="button"
           size="sm"
-          disabled={_autoSave.isPending || isUploading}
+          disabled={
+            _autoSave.isPending ||
+            _create.isPending ||
+            _update.isPending ||
+            isUploading
+          }
           onClick={(): void => {
             void handleSaveAndBack();
           }}
         >
-          {_autoSave.isPending && <Spinner />}
+          {(_create.isPending || _update.isPending) && <Spinner />}
           <span>Salvar</span>
         </Button>
       </div>
@@ -439,8 +501,8 @@ function AutoSaveRowFormContent({
             <DialogTitle>Descartar rascunho?</DialogTitle>
             <DialogDescription>
               Este registro ainda não tem todos os campos obrigatórios
-              preenchidos e foi salvo como rascunho na lixeira. Deseja
-              descartá-lo ou mantê-lo como rascunho?
+              preenchidos e foi salvo como rascunho. Deseja descartá-lo ou
+              mantê-lo como rascunho?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

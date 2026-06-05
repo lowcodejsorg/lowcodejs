@@ -30,8 +30,8 @@ export const FieldTypeMapper: Record<
   [E_FIELD_TYPE.IDENTIFIER]: E_SCHEMA_TYPE.OBJECT_ID,
   [E_FIELD_TYPE.CREATOR]: E_SCHEMA_TYPE.OBJECT_ID,
   [E_FIELD_TYPE.CREATED_AT]: E_SCHEMA_TYPE.DATE,
-  [E_FIELD_TYPE.TRASHED]: E_SCHEMA_TYPE.BOOLEAN,
   [E_FIELD_TYPE.TRASHED_AT]: E_SCHEMA_TYPE.DATE,
+  [E_FIELD_TYPE.STATUS]: E_SCHEMA_TYPE.STRING,
 };
 
 function mapperSchema(
@@ -165,11 +165,11 @@ function mapperSchema(
       },
     },
 
-    [E_FIELD_TYPE.TRASHED]: {
+    [E_FIELD_TYPE.STATUS]: {
       [field.slug]: {
-        type: FieldTypeMapper[field.type] || 'Boolean',
+        type: FieldTypeMapper[field.type] || 'String',
         required: Boolean(field.required || false),
-        default: false,
+        default: 'published',
       },
     },
 

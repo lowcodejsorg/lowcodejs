@@ -78,7 +78,7 @@ export function GroupRowsDataTable({
           !!f &&
           f.type !== E_FIELD_TYPE.FIELD_GROUP &&
           f.type !== E_FIELD_TYPE.IDENTIFIER &&
-          f.type !== E_FIELD_TYPE.TRASHED &&
+          f.type !== E_FIELD_TYPE.STATUS &&
           f.type !== E_FIELD_TYPE.TRASHED_AT &&
           !f.trashed,
       ),
@@ -91,7 +91,7 @@ export function GroupRowsDataTable({
         (f): f is IField =>
           !!f &&
           f.type !== E_FIELD_TYPE.FIELD_GROUP &&
-          f.type !== E_FIELD_TYPE.TRASHED &&
+          f.type !== E_FIELD_TYPE.STATUS &&
           f.type !== E_FIELD_TYPE.TRASHED_AT &&
           !f.trashed,
       ),

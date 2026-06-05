@@ -74,9 +74,9 @@ describe('Bulk Trash Use Case', () => {
       table,
       query: { _id: row3._id },
     });
-    expect(trashed1?.trashed).toBe(true);
-    expect(trashed2?.trashed).toBe(true);
-    expect(trashed3?.trashed).toBe(true);
+    expect(trashed1?.trashedAt).not.toBeNull();
+    expect(trashed2?.trashedAt).not.toBeNull();
+    expect(trashed3?.trashedAt).not.toBeNull();
   });
 
   it('deve retornar TABLE_NOT_FOUND quando tabela nao existe', async () => {

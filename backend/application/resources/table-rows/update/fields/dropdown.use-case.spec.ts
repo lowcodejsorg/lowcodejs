@@ -42,42 +42,42 @@ describe('Table Row Update - DROPDOWN', () => {
   });
 
   it('deve atualizar row com array de strings valido', async () => {
-    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'status' });
+    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'situacao' });
     const table = await makeTable(tableRepository, [field], {
       slug: 'tarefas',
     });
 
     const row = await rowRepository.create({
       table,
-      data: { status: ['Ativo'] },
+      data: { situacao: ['Ativo'] },
     });
 
     const result = await sut.execute({
       slug: 'tarefas',
       _id: row._id,
-      status: ['Inativo'],
+      situacao: ['Inativo'],
     });
 
     expect(result.isRight()).toBe(true);
     if (!result.isRight()) throw new Error('Expected right');
-    expect(result.value.status).toEqual(['Inativo']);
+    expect(result.value.situacao).toEqual(['Inativo']);
   });
 
   it('deve rejeitar quando valor nao e array', async () => {
-    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'status' });
+    const field = makeDropdownField(DROPDOWN_OPTIONS, { slug: 'situacao' });
     const table = await makeTable(tableRepository, [field], {
       slug: 'tarefas',
     });
 
     const row = await rowRepository.create({
       table,
-      data: { status: ['Ativo'] },
+      data: { situacao: ['Ativo'] },
     });
 
     const result = await sut.execute({
       slug: 'tarefas',
       _id: row._id,
-      status: 'Inativo',
+      situacao: 'Inativo',
     });
 
     expect(result.isLeft()).toBe(true);
@@ -87,7 +87,7 @@ describe('Table Row Update - DROPDOWN', () => {
 
   it('deve pular validacao de campo omitido (skipMissing)', async () => {
     const field = makeDropdownField(DROPDOWN_OPTIONS, {
-      slug: 'status',
+      slug: 'situacao',
       required: true,
     });
     const table = await makeTable(tableRepository, [field], {
@@ -96,7 +96,7 @@ describe('Table Row Update - DROPDOWN', () => {
 
     const row = await rowRepository.create({
       table,
-      data: { status: ['Ativo'] },
+      data: { situacao: ['Ativo'] },
     });
 
     const result = await sut.execute({

@@ -37,8 +37,13 @@ export const E_FIELD_TYPE = {
   CREATOR: 'CREATOR',
   IDENTIFIER: 'IDENTIFIER',
   CREATED_AT: 'CREATED_AT',
-  TRASHED: 'TRASHED',
   TRASHED_AT: 'TRASHED_AT',
+  STATUS: 'STATUS',
+} as const;
+
+export const E_ROW_STATUS = {
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
 } as const;
 
 export const E_ROLE = {

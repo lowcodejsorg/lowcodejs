@@ -4,7 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_TYPE, E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -89,6 +89,10 @@ export default class GroupRowCreateUseCase {
         data: {
           ...itemData,
           creator: itemData.creator || null,
+          // Salvar via create publica o item de grupo.
+          status: E_ROW_STATUS.PUBLISHED,
+          draftAt: null,
+          trashedAt: null,
         },
       });
 

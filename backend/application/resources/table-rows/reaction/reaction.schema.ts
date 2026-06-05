@@ -48,7 +48,16 @@ export const TableRowReactionSchema: FastifySchema = {
       type: 'object',
       properties: {
         _id: { type: 'string', description: 'Row ID' },
-        trashed: { type: 'boolean', description: 'Is row in trash' },
+        status: {
+          type: 'string',
+          enum: ['draft', 'published'],
+          description: 'Draft state',
+        },
+        draftAt: {
+          type: 'string',
+          nullable: true,
+          description: 'When last auto-saved as draft',
+        },
         trashedAt: {
           type: 'string',
           format: 'date-time',

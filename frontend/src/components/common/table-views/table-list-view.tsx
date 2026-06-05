@@ -143,7 +143,7 @@ function RowActionsCell({
           <DropdownMenuItem
             className={cn(
               'inline-flex space-x-1 w-full cursor-pointer',
-              (row.trashed || !canUpdateRow) && 'hidden',
+              (row.trashedAt != null || !canUpdateRow) && 'hidden',
             )}
             onClick={() =>
               router.navigate({
@@ -160,7 +160,7 @@ function RowActionsCell({
           <DropdownMenuItem
             className={cn(
               'inline-flex space-x-1 w-full cursor-pointer',
-              (row.trashed || !canUpdateRow) && 'hidden',
+              (row.trashedAt != null || !canUpdateRow) && 'hidden',
             )}
             onClick={() => setDialogType('trash')}
           >
@@ -171,7 +171,7 @@ function RowActionsCell({
           <DropdownMenuItem
             className={cn(
               'inline-flex space-x-1 w-full cursor-pointer',
-              (!row.trashed || !canUpdateRow) && 'hidden',
+              (row.trashedAt == null || !canUpdateRow) && 'hidden',
             )}
             onClick={() => setDialogType('restore')}
           >
@@ -182,7 +182,7 @@ function RowActionsCell({
           <DropdownMenuItem
             className={cn(
               'inline-flex space-x-1 w-full cursor-pointer',
-              (!row.trashed || !canRemoveRow) && 'hidden',
+              (row.trashedAt == null || !canRemoveRow) && 'hidden',
             )}
             onClick={() => setDialogType('delete')}
           >

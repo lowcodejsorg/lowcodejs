@@ -81,7 +81,7 @@ export default class DashboardStatsUseCase {
         tables.map(async (table) => {
           try {
             return await dataConn.collection(table.slug).countDocuments({
-              trashed: { $ne: true },
+              trashedAt: null,
             });
           } catch {
             // Tabela cadastrada mas sem collection ainda (zero registros)

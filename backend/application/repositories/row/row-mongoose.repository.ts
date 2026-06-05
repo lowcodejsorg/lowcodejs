@@ -187,8 +187,8 @@ export default class RowMongooseRepository implements RowContractRepository {
   async bulkTrash(payload: RowBulkUpdatePayload): Promise<number> {
     const model = await this.getModel(payload.table);
     const result = await model.updateMany(
-      { _id: { $in: payload.ids }, trashed: false },
-      { $set: { trashed: true, trashedAt: new Date() } },
+      { _id: { $in: payload.ids }, trashedAt: null },
+      { $set: { trashedAt: new Date() } },
     );
     return result.modifiedCount;
   }
@@ -196,8 +196,8 @@ export default class RowMongooseRepository implements RowContractRepository {
   async bulkRestore(payload: RowBulkUpdatePayload): Promise<number> {
     const model = await this.getModel(payload.table);
     const result = await model.updateMany(
-      { _id: { $in: payload.ids }, trashed: true },
-      { $set: { trashed: false, trashedAt: null } },
+      { _id: { $in: payload.ids }, trashedAt: { $ne: null } },
+      { $set: { trashedAt: null } },
     );
     return result.modifiedCount;
   }
@@ -206,14 +206,14 @@ export default class RowMongooseRepository implements RowContractRepository {
     const model = await this.getModel(payload.table);
     const result = await model.deleteMany({
       _id: { $in: payload.ids },
-      trashed: true,
+      trashedAt: { $ne: null },
     });
     return result.deletedCount;
   }
 
   async emptyTrash(table: RowTableContext): Promise<number> {
     const model = await this.getModel(table);
-    const result = await model.deleteMany({ trashed: true });
+    const result = await model.deleteMany({ trashedAt: { $ne: null } });
     return result.deletedCount;
   }
 
@@ -333,7 +333,7 @@ export default class RowMongooseRepository implements RowContractRepository {
 
   async findAllRaw(table: RowTableContext): Promise<Record<string, unknown>[]> {
     const model = await this.getModel(table);
-    const docs = await model.find({ trashed: { $ne: true } }).lean();
+    const docs = await model.find({ trashedAt: null }).lean();
     return docs.map((doc): Record<string, unknown> => ({ ...doc }));
   }
 
@@ -369,9 +369,7 @@ export default class RowMongooseRepository implements RowContractRepository {
       [slug]: { $in: values },
     }));
 
-    const docs = await model
-      .find({ $or: orClauses, trashed: { $ne: true } })
-      .lean();
+    const docs = await model.find({ $or: orClauses, trashedAt: null }).lean();
 
     return docs.map((doc) => this.transformRow(doc));
   }

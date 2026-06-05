@@ -14,6 +14,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { Badge } from '@/components/ui/badge';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow } from '@/lib/interfaces';
 
@@ -136,7 +137,7 @@ function RenderCell({
           row={row}
         />
       );
-    case E_FIELD_TYPE.TRASHED:
+    case E_FIELD_TYPE.STATUS:
       return (
         <TableRowTextShortCell
           field={field}
@@ -176,7 +177,7 @@ export function useFieldColumns({
       });
 
     return sorted.map(
-      (field): ColumnDef<IRow, any> => ({
+      (field, index): ColumnDef<IRow, any> => ({
         id: field._id,
         accessorFn: (row) => row[field.slug],
         meta: { label: field.name, field },
@@ -204,11 +205,21 @@ export function useFieldColumns({
           />
         ),
         cell: ({ row }) => (
-          <RenderCell
-            field={field}
-            row={row.original}
-            tableSlug={tableSlug}
-          />
+          <div className="flex items-center gap-2">
+            {index === 0 && row.original.status === 'draft' && (
+              <Badge
+                variant="outline"
+                className="shrink-0 text-amber-600 border-amber-400"
+              >
+                Rascunho
+              </Badge>
+            )}
+            <RenderCell
+              field={field}
+              row={row.original}
+              tableSlug={tableSlug}
+            />
+          </div>
         ),
       }),
     );

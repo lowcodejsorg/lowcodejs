@@ -68,12 +68,12 @@ describe('Table Create Use Case', () => {
     expect(createdAtField.native).toBe(true);
     expect(createdAtField.locked).toBe(true);
 
-    const trashedField = fields.find((f) => f.slug === 'trashed');
-    expect(trashedField).toBeDefined();
-    if (!trashedField) throw new Error('Expected trashedField');
-    expect(trashedField.type).toBe(E_FIELD_TYPE.TRASHED);
-    expect(trashedField.native).toBe(true);
-    expect(trashedField.locked).toBe(true);
+    const statusField = fields.find((f) => f.slug === 'status');
+    expect(statusField).toBeDefined();
+    if (!statusField) throw new Error('Expected statusField');
+    expect(statusField.type).toBe(E_FIELD_TYPE.STATUS);
+    expect(statusField.native).toBe(true);
+    expect(statusField.locked).toBe(true);
 
     const trashedAtField = fields.find((f) => f.slug === 'trashedAt');
     expect(trashedAtField).toBeDefined();

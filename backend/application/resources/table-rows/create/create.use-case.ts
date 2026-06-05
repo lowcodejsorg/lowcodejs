@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
+import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -58,6 +59,10 @@ export default class TableRowCreateUseCase {
       const createData: Record<string, any> = {
         ...payload,
         creator: payload.creator ?? null,
+        // Salvar via create publica o registro (fonte de verdade = status).
+        status: E_ROW_STATUS.PUBLISHED,
+        draftAt: null,
+        trashedAt: null,
       };
 
       const beforeSaveCode = table.methods?.beforeSave?.code;

@@ -460,7 +460,7 @@ function FieldManagementList({
     (f) =>
       !f.trashed &&
       !(excludeNative && f.native) &&
-      f.type !== E_FIELD_TYPE.TRASHED &&
+      f.type !== E_FIELD_TYPE.STATUS &&
       f.type !== E_FIELD_TYPE.TRASHED_AT,
   );
 
@@ -540,7 +540,7 @@ function FieldManagementList({
       (f) =>
         !f.trashed &&
         !(excludeNative && f.native) &&
-        f.type !== E_FIELD_TYPE.TRASHED &&
+        f.type !== E_FIELD_TYPE.STATUS &&
         f.type !== E_FIELD_TYPE.TRASHED_AT,
     );
 

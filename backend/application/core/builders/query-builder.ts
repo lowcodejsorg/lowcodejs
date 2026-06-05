@@ -35,8 +35,14 @@ export async function buildQuery(
   conn?: mongoose.Connection,
 ): Promise<Query> {
   let query: Query = {
-    trashed: trashed === 'true' ? true : { $ne: true },
+    trashedAt: null,
   };
+
+  if (trashed === 'true') {
+    query = {
+      trashedAt: { $ne: null },
+    };
+  }
 
   for (const field of fields.filter(
     (f) => f.type !== E_FIELD_TYPE.FIELD_GROUP,

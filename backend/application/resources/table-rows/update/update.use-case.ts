@@ -4,6 +4,7 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IRow } from '@application/core/entity.core';
+import { E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { validateRowPayload } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
@@ -140,6 +141,11 @@ export default class TableRowUpdateUseCase {
           ? payload.__actorUserId
           : undefined;
       delete payload.__actorUserId;
+
+      // O ato de salvar via update publica o registro (rascunho -> publicado).
+      // Nao mexe em trashedAt: lixeira e controlada pelos endpoints de trash.
+      payload.status = E_ROW_STATUS.PUBLISHED;
+      payload.draftAt = null;
 
       const previousRow = await this.rowRepository.findOne({
         table,

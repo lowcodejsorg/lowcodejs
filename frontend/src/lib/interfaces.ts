@@ -25,6 +25,7 @@ import type {
   E_NOTIFICATION_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
+  E_ROW_STATUS,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
@@ -378,9 +379,11 @@ export type ISetupStatus = {
 // | Array<Record<string, RowResponseValue>>;
 
 export type IRow = Merge<
-  Base,
+  Omit<Base, 'trashed'>,
   {
     creator: IUser;
+    status?: ValueOf<typeof E_ROW_STATUS>;
+    draftAt?: string | null;
     [x: string]: any;
   }
 >;

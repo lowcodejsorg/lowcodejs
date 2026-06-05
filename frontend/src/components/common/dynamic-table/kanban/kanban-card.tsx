@@ -4,6 +4,7 @@ import React from 'react';
 
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
 import type { IRow } from '@/lib/interfaces';
 import {
   getMembersFromRow,
@@ -47,6 +48,14 @@ export function KanbanCard({
       onClick={onClick}
       className="w-full text-left rounded-md border bg-background p-3 shadow-sm hover:shadow-md transition cursor-pointer"
     >
+      {row.status === 'draft' && (
+        <Badge
+          variant="outline"
+          className="mb-1 text-amber-600 border-amber-400"
+        >
+          Rascunho
+        </Badge>
+      )}
       <div className="text-sm font-semibold line-clamp-2">{title}</div>
 
       <div className="mt-2 flex items-center justify-between">

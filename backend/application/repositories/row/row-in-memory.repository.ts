@@ -49,7 +49,8 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
     const row: IRow = {
       _id: randomUUID(),
-      trashed: false,
+      status: 'published',
+      draftAt: null,
       trashedAt: null,
       ...payload.data,
       createdAt: new Date(),
@@ -80,7 +81,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
     const rawFilters = payload.rawFilters ?? {};
     const result = collection.filter((item) => {
       const row = item as Record<string, unknown>;
-      if (row['trashed'] === true) return false;
+      if (row['trashedAt'] != null) return false;
       for (const [key, value] of Object.entries(rawFilters)) {
         if (
           key === 'page' ||
@@ -117,7 +118,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
     return collection.filter((item) => {
       const row = item as Record<string, unknown>;
-      if (row['trashed'] === true) return false;
+      if (row['trashedAt'] != null) return false;
       for (const [key, value] of Object.entries(filters)) {
         if (
           key === 'page' ||
@@ -168,8 +169,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
     let count = 0;
 
     for (const row of collection) {
-      if (payload.ids.includes(row._id) && !row.trashed) {
-        row.trashed = true;
+      if (payload.ids.includes(row._id) && row.trashedAt == null) {
         row.trashedAt = new Date();
         count++;
       }
@@ -183,8 +183,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
     let count = 0;
 
     for (const row of collection) {
-      if (payload.ids.includes(row._id) && row.trashed) {
-        row.trashed = false;
+      if (payload.ids.includes(row._id) && row.trashedAt != null) {
         row.trashedAt = null;
         count++;
       }
@@ -199,7 +198,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
     const remaining: IRow[] = [];
 
     for (const row of collection) {
-      if (payload.ids.includes(row._id) && row.trashed) {
+      if (payload.ids.includes(row._id) && row.trashedAt != null) {
         count++;
       } else {
         remaining.push(row);
@@ -212,7 +211,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
   async emptyTrash(table: RowTableContext): Promise<number> {
     const collection = this.getCollection(table.slug);
-    const remaining = collection.filter((item) => !item.trashed);
+    const remaining = collection.filter((item) => item.trashedAt == null);
     const count = collection.length - remaining.length;
 
     this.collections.set(table.slug, remaining);
@@ -353,7 +352,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
   async findAllRaw(table: RowTableContext): Promise<Record<string, unknown>[]> {
     const collection = this.getCollection(table.slug);
     return collection
-      .filter((row) => !row.trashed)
+      .filter((row) => row.trashedAt == null)
       .map((row) => ({ ...row })) as Record<string, unknown>[];
   }
 
@@ -371,7 +370,7 @@ export default class RowInMemoryRepository implements RowContractRepository {
 
     return collection
       .filter((row) => {
-        if (row.trashed) return false;
+        if (row.trashedAt != null) return false;
         for (const slug of fieldSlugs) {
           const fieldValue = row[slug];
           if (typeof fieldValue === 'string' && valueSet.has(fieldValue)) {
@@ -427,7 +426,8 @@ export default class RowInMemoryRepository implements RowContractRepository {
       _id: randomUUID(),
       ...data,
       creator: creator ?? null,
-      trashed: false,
+      status: 'published',
+      draftAt: null,
       trashedAt: null,
       createdAt: new Date(),
       updatedAt: new Date(),

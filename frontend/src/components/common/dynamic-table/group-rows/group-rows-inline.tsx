@@ -66,7 +66,7 @@ export function GroupRowsInline(
           !!f &&
           f.type !== E_FIELD_TYPE.FIELD_GROUP &&
           f.type !== E_FIELD_TYPE.IDENTIFIER &&
-          f.type !== E_FIELD_TYPE.TRASHED &&
+          f.type !== E_FIELD_TYPE.STATUS &&
           f.type !== E_FIELD_TYPE.TRASHED_AT &&
           !f.trashed &&
           f.showInForm,
@@ -204,8 +204,8 @@ function GroupItemCardContent({
   const isUploading = useIsUploading();
 
   const itemIdRef = React.useRef<string | undefined>(item?._id);
-  const [isTrashed, setIsTrashed] = React.useState<boolean>(
-    item?.trashed === true,
+  const [isDraft, setIsDraft] = React.useState<boolean>(
+    item?.status === 'draft',
   );
 
   const defaultValues = React.useMemo((): Record<string, unknown> => {
@@ -242,7 +242,7 @@ function GroupItemCardContent({
       if (!itemIdRef.current) {
         itemIdRef.current = data._id;
       }
-      setIsTrashed(data.trashed === true);
+      setIsDraft(data.status === 'draft');
     },
     onError(error: AxiosError | Error): void {
       handleApiError(error, { context: 'Erro ao salvar o item' });
@@ -274,7 +274,7 @@ function GroupItemCardContent({
 
   const { status, lastSavedAt, triggerSave, cancelPending } = useAutoSave({
     onSave: performSave,
-    isTrashed,
+    isDraft,
     canSave: isDirtyCallback,
     isDirty: isDirtyCallback,
   });

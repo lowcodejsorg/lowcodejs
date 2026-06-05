@@ -54,12 +54,12 @@ describe('Bulk Restore Use Case', () => {
     await rowInMemoryRepository.update({
       table,
       _id: row1._id,
-      data: { trashed: true, trashedAt: new Date() },
+      data: { trashedAt: new Date() },
     });
     await rowInMemoryRepository.update({
       table,
       _id: row2._id,
-      data: { trashed: true, trashedAt: new Date() },
+      data: { trashedAt: new Date() },
     });
 
     const result = await sut.execute({
@@ -80,9 +80,9 @@ describe('Bulk Restore Use Case', () => {
       table,
       query: { _id: row2._id },
     });
-    expect(restored1?.trashed).toBe(false);
     expect(restored1?.trashedAt).toBeNull();
-    expect(restored2?.trashed).toBe(false);
+    expect(restored1?.trashedAt).toBeNull();
+    expect(restored2?.trashedAt).toBeNull();
     expect(restored2?.trashedAt).toBeNull();
   });
 

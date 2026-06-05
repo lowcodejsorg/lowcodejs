@@ -464,7 +464,10 @@ export function TableRowRelationshipField({
       setSearchQuery('');
     }
 
-    formField.handleBlur();
+    // Nao dispara blur aqui: forcar o auto-save do form pai no momento em que a
+    // modal de "novo registro" fecha causava um refresh que fechava a modal.
+    // O valor ja foi aplicado via handleChange e sera salvo no proximo blur
+    // natural ou no intervalo do auto-save.
     queryClient.invalidateQueries({
       queryKey: queryKeys.relationships.all,
     });
