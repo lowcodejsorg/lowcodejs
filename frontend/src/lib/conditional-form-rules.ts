@@ -6,20 +6,20 @@ export type ConditionalFieldRule = {
   sourceFieldId: string;
   sourceFieldSlug: string;
   sourceValue: string;
-  showFieldIds: string[];
-  hideFieldIds: string[];
+  showFieldIds: Array<string>;
+  hideFieldIds: Array<string>;
 };
 
 export type ConditionalFieldsConfig = {
   tableId: string;
   tableSlug: string;
-  rules: ConditionalFieldRule[];
+  rules: Array<ConditionalFieldRule>;
 };
 
 export type ConditionalFormValues = Record<string, unknown>;
 
 export type ConditionalVisibilityResult = {
-  visibleFields: IField[];
+  visibleFields: Array<IField>;
   hiddenFieldIds: Set<string>;
   activeRuleIds: Set<string>;
   conditionalFieldIds: Set<string>;
@@ -53,7 +53,7 @@ function extractObjectValue(value: SearchableValue): string | null {
   );
 }
 
-export function extractConditionalValueIds(value: unknown): string[] {
+export function extractConditionalValueIds(value: unknown): Array<string> {
   if (Array.isArray(value)) {
     return value
       .map((item) => {
@@ -66,7 +66,7 @@ export function extractConditionalValueIds(value: unknown): string[] {
   }
 
   if (value && typeof value === 'object') {
-    const objectValue = extractObjectValue(value as SearchableValue);
+    const objectValue = extractObjectValue(value);
     return objectValue ? [objectValue] : [];
   }
 
@@ -97,8 +97,8 @@ export function getConditionalFieldIds(
 
 export function findConditionalRuleConflicts(
   rules: Array<ConditionalFieldRule>,
-): ConditionalFieldRuleConflict[] {
-  const conflicts: ConditionalFieldRuleConflict[] = [];
+): Array<ConditionalFieldRuleConflict> {
+  const conflicts: Array<ConditionalFieldRuleConflict> = [];
 
   for (const rule of rules) {
     const sameRuleTargets = rule.showFieldIds.filter((fieldId) =>

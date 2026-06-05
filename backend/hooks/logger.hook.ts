@@ -10,7 +10,7 @@ import {
   LoggerContractRepository,
   LoggerCreatePayload,
 } from '@application/repositories/logger/logger-contract.repository';
-import LoggerMongooseRepository from '@application/repositories/logger/logger-mongoose.repository';
+import LoggerMongooseRepository from '@application/repositories/logger/logger.repository';
 
 const ACTION_MAP: Record<string, keyof typeof E_LOGGER_ACTION_TYPE> = {
   GET: E_LOGGER_ACTION_TYPE.VIEW,

@@ -6,7 +6,7 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE, E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
@@ -64,7 +64,11 @@ export default class GroupRowCreateUseCase {
       // Valida os campos do item contra os campos do grupo
       const groupFields: IField[] = group.fields || [];
 
-      const errors = validateRowPayload(payload, groupFields, table.groups);
+      const errors = RowPayloadValidator.validate(
+        payload,
+        groupFields,
+        table.groups,
+      );
 
       if (errors) {
         return left(

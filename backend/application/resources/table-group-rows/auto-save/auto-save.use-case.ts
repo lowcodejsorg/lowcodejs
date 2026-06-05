@@ -6,10 +6,10 @@ import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
 import { E_FIELD_TYPE, E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { toDraftTable } from '@application/resources/table-rows/auto-save/draft-table';
+import { DraftTable } from '@application/resources/table-rows/auto-save/draft-table';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 
 type Response = Either<HTTPException, Record<string, unknown>>;
@@ -78,7 +78,11 @@ export default class GroupRowAutoSaveUseCase {
         );
       });
 
-      const errors = validateRowPayload(body, fieldsWithValue, table.groups);
+      const errors = RowPayloadValidator.validate(
+        body,
+        fieldsWithValue,
+        table.groups,
+      );
 
       if (errors) {
         return left(
@@ -99,7 +103,7 @@ export default class GroupRowAutoSaveUseCase {
       // updateGroupItem usam row.save(), que roda os validators do subdoc. O
       // core nao e tocado; a tabela original segue exigindo required nas ops
       // normais.
-      const draftTable = toDraftTable(table);
+      const draftTable = DraftTable.from(table);
 
       await this.rowPasswordService.hash(body, groupFields);
 

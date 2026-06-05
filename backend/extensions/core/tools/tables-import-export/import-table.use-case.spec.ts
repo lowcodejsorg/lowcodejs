@@ -9,7 +9,7 @@ import FieldInMemoryRepository from '@application/repositories/field/field-in-me
 import MenuInMemoryRepository from '@application/repositories/menu/menu-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import ImportTableUseCase from './import-table.use-case';
 
@@ -21,7 +21,7 @@ let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
 let rowInMemoryRepository: RowInMemoryRepository;
 let menuInMemoryRepository: MenuInMemoryRepository;
-let tableSchemaService: TableSchemaInMemoryService;
+let schemaBuilder: InMemorySchemaBuilder;
 let sut: ImportTableUseCase;
 
 const baseStructure = {
@@ -101,14 +101,14 @@ describe('Import Table Use Case', () => {
     fieldInMemoryRepository = new FieldInMemoryRepository();
     rowInMemoryRepository = new RowInMemoryRepository();
     menuInMemoryRepository = new MenuInMemoryRepository();
-    tableSchemaService = new TableSchemaInMemoryService();
+    schemaBuilder = new InMemorySchemaBuilder();
 
     sut = new ImportTableUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
       rowInMemoryRepository,
       menuInMemoryRepository,
-      tableSchemaService,
+      schemaBuilder,
     );
   });
 

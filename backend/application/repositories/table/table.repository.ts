@@ -1,9 +1,10 @@
+/* eslint-disable no-unused-vars */
 import { Service } from 'fastify-decorators';
 
 import type { ITable } from '@application/core/entity.core';
 import type { FindOptions } from '@application/core/entity.core';
-import { normalize } from '@application/core/util.core';
 import { Table as Model } from '@application/model/table.model';
+import { QueryBuilderContractService } from '@application/services/table/query-builder-contract.service';
 import { getDataConnection } from '@config/database.config';
 
 function assertITable(value: Record<string, unknown>): asserts value is ITable {
@@ -22,6 +23,8 @@ import type {
 
 @Service()
 export default class TableMongooseRepository implements TableContractRepository {
+  constructor(private readonly query: QueryBuilderContractService) {}
+
   private readonly populateOptions = [
     { path: 'logo' },
     { path: 'fields' },
@@ -55,7 +58,10 @@ export default class TableMongooseRepository implements TableContractRepository 
     }
 
     if (payload?.search) {
-      where.name = { $regex: normalize(payload.search), $options: 'i' };
+      where.name = {
+        $regex: this.query.normalize(payload.search),
+        $options: 'i',
+      };
     }
 
     return where;

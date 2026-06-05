@@ -3,7 +3,6 @@ import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, GET, PUT, getInstanceByToken } from 'fastify-decorators';
 import mongoose from 'mongoose';
 
-import { buildTable } from '@application/core/builders';
 import {
   E_EXTENSION_TYPE,
   E_FIELD_TYPE,
@@ -13,13 +12,13 @@ import {
   type ITable,
 } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { normalize } from '@application/core/builders/query-builder';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { ExtensionActiveMiddleware } from '@application/middlewares/extension-active.middleware';
 import { TableAccessMiddleware } from '@application/middlewares/table-access.middleware';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import TableMongooseRepository from '@application/repositories/table/table-mongoose.repository';
-import { getDataConnection } from '@config/database.config';
+import TableMongooseRepository from '@application/repositories/table/table.repository';
+import MongooseModelBuilder from '@application/services/table/model-builder.service';
+import MongooseQueryBuilder from '@application/services/table/query-builder.service';
 
 import {
   findCascadeDropdownConfig,
@@ -119,8 +118,9 @@ async function getRelationshipOptionLabels(
     return labels;
   }
 
-  const relationshipTable =
-    await tableRepository.findBySlug(relationshipTableSlug);
+  const relationshipTable = await tableRepository.findBySlug(
+    relationshipTableSlug,
+  );
   if (!relationshipTable) return labels;
 
   const model = await getModel(relationshipTable);
@@ -173,7 +173,12 @@ function buildFieldCondition(
       field.type === E_FIELD_TYPE.TEXT_LONG) &&
     filter.operator === 'contains'
   ) {
-    return { $regex: normalize(filter.value ?? ''), $options: 'i' };
+    return {
+      $regex: getInstanceByToken(MongooseQueryBuilder).normalize(
+        filter.value ?? '',
+      ),
+      $options: 'i',
+    };
   }
 
   if (filter.operator === 'date_between') {
@@ -248,7 +253,9 @@ function buildQueryFromConfig(
       options.childField.type === E_FIELD_TYPE.TEXT_LONG)
   ) {
     query[options.childField.slug] = {
-      $regex: normalize(options.search),
+      $regex: getInstanceByToken(MongooseQueryBuilder).normalize(
+        options.search,
+      ),
       $options: 'i',
     };
   }
@@ -257,9 +264,8 @@ function buildQueryFromConfig(
 }
 
 async function getModel(table: ITable): Promise<mongoose.Model<unknown>> {
-  return buildTable(table, getDataConnection()) as Promise<
-    mongoose.Model<unknown>
-  >;
+  const model = await getInstanceByToken(MongooseModelBuilder).build(table);
+  return model as unknown as mongoose.Model<unknown>;
 }
 
 async function transformRows(rows: unknown[]): Promise<IRow[]> {
@@ -652,15 +658,16 @@ export default class CascadeDropdownController {
         : new Map<string, string>();
 
     for (const value of values) {
-        const label =
-          relationshipLabels.get(value) ?? getConfiguredOptionLabel(parentField, value);
-        if (
-          query.search &&
-          !label.toLowerCase().includes(query.search.toLowerCase())
-        ) {
-          continue;
-        }
-        options.push({ value, label });
+      const label =
+        relationshipLabels.get(value) ??
+        getConfiguredOptionLabel(parentField, value);
+      if (
+        query.search &&
+        !label.toLowerCase().includes(query.search.toLowerCase())
+      ) {
+        continue;
+      }
+      options.push({ value, label });
     }
 
     options.sort((a, b) => a.label.localeCompare(b.label, 'pt-BR'));

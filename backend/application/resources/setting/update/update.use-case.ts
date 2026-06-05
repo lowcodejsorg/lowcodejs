@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { Inject, Service } from 'fastify-decorators';
+import { Service } from 'fastify-decorators';
 
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
@@ -9,8 +9,11 @@ import {
   SettingContractRepository,
   SettingUpdatePayload,
 } from '@application/repositories/setting/setting-contract.repository';
+import {
+  prepareAiSettingsForSave,
+  projectAiSettingsFields,
+} from '@application/services/llm/ai-setting-fields';
 import { StorageContractService } from '@application/services/storage/storage-contract.service';
-import { prepareAiSettingsForSave, projectAiSettingsFields } from '@application/services/llm/ai-setting-fields';
 import { syncStorageEnv } from '@config/setting-env-sync';
 
 const BUILTIN_TEMPLATE_IDS = new Set([
@@ -24,10 +27,10 @@ type Response = Either<HTTPException, Record<string, unknown>>;
 
 @Service()
 export default class SettingUpdateUseCase {
-  @Inject(StorageContractService)
-  private readonly storageService!: StorageContractService;
-
-  constructor(private readonly settingRepository: SettingContractRepository) {}
+  constructor(
+    private readonly settingRepository: SettingContractRepository,
+    private readonly storageService: StorageContractService,
+  ) {}
 
   async execute(payload: SettingUpdatePayload): Promise<Response> {
     try {

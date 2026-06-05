@@ -35,10 +35,7 @@ export async function createCardsTemplate(
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = deps.tableSchemaService.computeSchema([
-    ...nativeFields,
-    ...fields,
-  ]);
+  const _schema = deps.schemaBuilder.build([...nativeFields, ...fields]);
 
   const createPayload: TableCreatePayload = {
     _schema,

@@ -61,10 +61,10 @@ type Option = {
 type TargetFieldGroup = {
   id: string;
   label: string;
-  fields: IField[];
+  fields: Array<IField>;
 };
 
-function getConditionFields(table: ITable): IField[] {
+function getConditionFields(table: ITable): Array<IField> {
   return getConfigurableFields(table).filter((field) => {
     if (field.trashed || field.native) return false;
     return (
@@ -74,7 +74,7 @@ function getConditionFields(table: ITable): IField[] {
   });
 }
 
-function getConfigurableFields(table: ITable): IField[] {
+function getConfigurableFields(table: ITable): Array<IField> {
   const groupFields = (table.groups ?? []).flatMap((group) => group.fields);
 
   return [...table.fields, ...groupFields].filter(
@@ -90,7 +90,10 @@ function getFieldDisplayName(table: ITable, field: IField): string {
   return group ? `${group.name} / ${field.name}` : field.name;
 }
 
-function flattenCategories(items: Array<ICategory>, prefix = ''): Option[] {
+function flattenCategories(
+  items: Array<ICategory>,
+  prefix = '',
+): Array<Option> {
   return items.flatMap((item) => {
     const label = prefix ? `${prefix} / ${item.label}` : item.label;
     return [
@@ -100,7 +103,7 @@ function flattenCategories(items: Array<ICategory>, prefix = ''): Option[] {
   });
 }
 
-function getFieldOptions(field: IField | undefined): Option[] {
+function getFieldOptions(field: IField | undefined): Array<Option> {
   if (!field) return [];
 
   if (field.type === E_FIELD_TYPE.DROPDOWN) {
@@ -121,11 +124,11 @@ function getRuleTitle(rule: ConditionalFieldRule, index: number): string {
   return rule.label?.trim() || `Regra ${index + 1}`;
 }
 
-function getTargetFields(table: ITable): IField[] {
+function getTargetFields(table: ITable): Array<IField> {
   return getConfigurableFields(table);
 }
 
-function getTargetFieldGroups(table: ITable): TargetFieldGroup[] {
+function getTargetFieldGroups(table: ITable): Array<TargetFieldGroup> {
   const tableFields = table.fields.filter(
     (field) => !field.trashed && !field.native,
   );
@@ -214,7 +217,7 @@ function useSaveConditionalFieldsConfig(slug: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (rules: ConditionalFieldRule[]) => {
+    mutationFn: async (rules: Array<ConditionalFieldRule>) => {
       const response = await API.put<ConditionalFieldsConfig>(
         `/plugins/conditional-fields/tables/${slug}/config`,
         { rules },
@@ -250,9 +253,9 @@ function updateRuleTarget(
   action: 'show' | 'hide',
   checked: boolean,
 ): ConditionalFieldRule {
-  const add = (items: string[]): string[] =>
+  const add = (items: Array<string>): Array<string> =>
     items.includes(fieldId) ? items : [...items, fieldId];
-  const remove = (items: string[]): string[] =>
+  const remove = (items: Array<string>): Array<string> =>
     items.filter((item) => item !== fieldId);
 
   if (action === 'show') {
@@ -273,17 +276,20 @@ function updateRuleTarget(
 }
 
 function moveRule(
-  rules: ConditionalFieldRule[],
+  rules: Array<ConditionalFieldRule>,
   fromIndex: number,
   toIndex: number,
-): ConditionalFieldRule[] {
+): Array<ConditionalFieldRule> {
   const nextRules = [...rules];
   const [rule] = nextRules.splice(fromIndex, 1);
   nextRules.splice(toIndex, 0, rule);
   return nextRules;
 }
 
-function getRuleLabel(rules: ConditionalFieldRule[], ruleId: string): string {
+function getRuleLabel(
+  rules: Array<ConditionalFieldRule>,
+  ruleId: string,
+): string {
   const index = rules.findIndex((rule) => rule.id === ruleId);
   if (index < 0) return 'Regra ?';
 
@@ -292,8 +298,8 @@ function getRuleLabel(rules: ConditionalFieldRule[], ruleId: string): string {
 
 function getConflictMessage(
   conflict: ConditionalFieldRuleConflict,
-  rules: ConditionalFieldRule[],
-  fields: IField[],
+  rules: Array<ConditionalFieldRule>,
+  fields: Array<IField>,
 ): string {
   const fieldName =
     fields.find((field) => field._id === conflict.fieldId)?.name ??
@@ -560,7 +566,7 @@ export default function ConditionalFieldsPlugin({
 
   const config = useConditionalFieldsConfig(slug, open && Boolean(table));
   const saveConfig = useSaveConditionalFieldsConfig(slug);
-  const [rules, setRules] = React.useState<ConditionalFieldRule[]>([]);
+  const [rules, setRules] = React.useState<Array<ConditionalFieldRule>>([]);
   const [openRuleIds, setOpenRuleIds] = React.useState<Set<string>>(
     () => new Set(),
   );

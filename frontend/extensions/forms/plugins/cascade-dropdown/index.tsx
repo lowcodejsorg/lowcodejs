@@ -291,7 +291,8 @@ export default function CascadeDropdownPlugin({
     return availableCascadeFilterFields.filter((filterField) => {
       const filterTableSlug = getRelationshipTableSlug(filterField);
       return availableParentFields.some(
-        (parentField) => getRelationshipTableSlug(parentField) === filterTableSlug,
+        (parentField) =>
+          getRelationshipTableSlug(parentField) === filterTableSlug,
       );
     });
   }, [availableCascadeFilterFields, availableParentFields]);
@@ -347,7 +348,8 @@ export default function CascadeDropdownPlugin({
     const filterForDefault =
       configQuery.data && normalizeConfig(configQuery.data).childFieldId
         ? cascadeFilterFields.find(
-            (field) => field._id === normalizeConfig(configQuery.data!).childFieldId,
+            (field) =>
+              field._id === normalizeConfig(configQuery.data!).childFieldId,
           )
         : defaultFilterField;
     const parentFieldsForDefault = filterForDefault
@@ -358,7 +360,9 @@ export default function CascadeDropdownPlugin({
         )
       : parentFields;
     const defaultParentField =
-      parentFieldsForDefault.length === 1 ? parentFieldsForDefault[0] : undefined;
+      parentFieldsForDefault.length === 1
+        ? parentFieldsForDefault[0]
+        : undefined;
     const next =
       (configQuery.data ? normalizeConfig(configQuery.data) : null) ??
       getInitialConfig({
@@ -522,7 +526,8 @@ export default function CascadeDropdownPlugin({
     (compatibleFilterFieldsForParent.length === 1
       ? compatibleFilterFieldsForParent[0]
       : undefined);
-  const effectiveSourceTableId = draft.sourceTableId || sourceTable.data?._id || '';
+  const effectiveSourceTableId =
+    draft.sourceTableId || sourceTable.data?._id || '';
   const effectiveSourceTableSlug =
     draft.sourceTableSlug || sourceTable.data?.slug || sourceTableSlug;
   const effectiveParentFieldId = selectedParentField?._id || '';
@@ -565,11 +570,13 @@ export default function CascadeDropdownPlugin({
   };
 
   const parentSummary =
-    selectedParentField?.name ?? `Selecione o campo que atualiza ${targetField.name}`;
+    selectedParentField?.name ??
+    `Selecione o campo que atualiza ${targetField.name}`;
   const showFilterFieldSelect = compatibleFilterFieldsForParent.length !== 1;
-  const savedStatus = draft._id || configQuery.data
-    ? 'Configuração salva'
-    : 'Configuração ainda não salva';
+  const savedStatus =
+    draft._id || configQuery.data
+      ? 'Configuração salva'
+      : 'Configuração ainda não salva';
 
   const filtersContent = (draft.filters ?? []).map((filter) => {
     const selectedField = filterFields.find(
@@ -800,7 +807,9 @@ export default function CascadeDropdownPlugin({
       >
         <DialogContent className="sm:max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Configurar atualização de {targetField.name}</DialogTitle>
+            <DialogTitle>
+              Configurar atualização de {targetField.name}
+            </DialogTitle>
             <DialogDescription>
               Escolha qual campo, ao sofrer alteração, deve atualizar as opções
               deste campo.
@@ -810,7 +819,9 @@ export default function CascadeDropdownPlugin({
           <div className="max-h-[70vh] space-y-4 overflow-y-auto pr-1">
             <div
               className={
-                showFilterFieldSelect ? 'grid gap-3 md:grid-cols-2' : 'grid gap-3'
+                showFilterFieldSelect
+                  ? 'grid gap-3 md:grid-cols-2'
+                  : 'grid gap-3'
               }
             >
               <Field>
@@ -873,9 +884,12 @@ export default function CascadeDropdownPlugin({
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium">Filtros da fonte de dados</p>
+                  <p className="text-sm font-medium">
+                    Filtros da fonte de dados
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    Sem filtros extras, apenas o campo escolhido limita as opções.
+                    Sem filtros extras, apenas o campo escolhido limita as
+                    opções.
                   </p>
                 </div>
                 <Button

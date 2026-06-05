@@ -7,15 +7,15 @@ import {
 } from '@application/core/entity.core';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import InMemoryRowContextService from '@application/services/row-context/in-memory-row-context.service';
 import InMemoryRowPasswordService from '@application/services/row-password/in-memory-row-password.service';
+import InMemoryRowContextBuilder from '@application/services/table/in-memory-row-context-builder.service';
 
 import TableRowPaginatedUseCase from './paginated.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let rowRepository: RowInMemoryRepository;
 let rowPasswordService: InMemoryRowPasswordService;
-let rowContextService: InMemoryRowContextService;
+let rowContextBuilder: InMemoryRowContextBuilder;
 let sut: TableRowPaginatedUseCase;
 
 describe('Table Row Paginated Use Case', () => {
@@ -24,13 +24,13 @@ describe('Table Row Paginated Use Case', () => {
     rowRepository = new RowInMemoryRepository();
     rowPasswordService = new InMemoryRowPasswordService();
 
-    rowContextService = new InMemoryRowContextService();
+    rowContextBuilder = new InMemoryRowContextBuilder();
 
     sut = new TableRowPaginatedUseCase(
       tableInMemoryRepository,
       rowRepository,
       rowPasswordService,
-      rowContextService,
+      rowContextBuilder,
     );
   });
 

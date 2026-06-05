@@ -1,9 +1,6 @@
 import mongoose from 'mongoose';
 
-import type {
-  CascadeDropdownConfig,
-  CascadeDropdownFilter,
-} from './cascade-dropdown.types';
+import type { CascadeDropdownConfig } from './cascade-dropdown.types';
 
 const FilterSchema = new mongoose.Schema(
   {
@@ -95,7 +92,7 @@ export async function deleteCascadeDropdownConfigsForField(params: {
   fieldId: string;
   fieldSlug?: string;
 }): Promise<number> {
-  const fieldRefs = [
+  const fieldRefs: Array<Record<string, unknown>> = [
     { targetTableSlug: params.tableSlug, targetFieldId: params.fieldId },
     { targetTableSlug: params.tableSlug, parentFieldId: params.fieldId },
     { sourceTableSlug: params.tableSlug, childFieldId: params.fieldId },

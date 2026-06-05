@@ -50,6 +50,7 @@ import {
   buildRowPayload,
   buildUpdateRowDefaultValues,
 } from '@/lib/table';
+import { useAuthStore } from '@/stores/authentication';
 
 interface AutoSaveRowFormProps {
   table: ITable;
@@ -58,6 +59,15 @@ interface AutoSaveRowFormProps {
   initialCategory?: string;
   onBack?: () => void;
   backGuardRef?: React.MutableRefObject<(() => void) | null>;
+}
+
+// Itens de um grupo de campos vêm embutidos no documento do registro
+// (existingRow[groupSlug]). Usados para semear os cards do grupo na edição.
+function groupItemsOf(row: IRow | undefined, slug: string): Array<IRow> {
+  if (!row) return [];
+  const value = row[slug];
+  if (Array.isArray(value)) return value;
+  return [];
 }
 
 function hasValue(value: unknown): boolean {
@@ -95,6 +105,7 @@ function AutoSaveRowFormContent({
   const permissions = useTablePermission(table);
   const isUploading = useIsUploading();
   const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((s): boolean => Boolean(s.user));
 
   const isNewRecord = !initialRowId;
   const rowIdRef = React.useRef<string | undefined>(initialRowId);
@@ -109,6 +120,10 @@ function AutoSaveRowFormContent({
   const [missingRequired, setMissingRequired] = React.useState<boolean>(false);
   const [confirmDiscardOpen, setConfirmDiscardOpen] =
     React.useState<boolean>(false);
+  // Marca que o usuário adicionou um item de grupo. Os grupos têm form próprio,
+  // então o isDirty do form principal não os reflete; sem isso, um rascunho com
+  // filhos seria oferecido para descarte ao sair.
+  const childAddedRef = React.useRef<boolean>(false);
 
   const slug = table.slug;
 
@@ -313,14 +328,28 @@ function AutoSaveRowFormContent({
     return rowIdRef.current;
   }, [cancelPending, performSave]);
 
+  // Ao abrir um registro novo, cria o rascunho de imediato (reusa o auto-save)
+  // para que Salvar sempre publique via update e a seção de grupos já tenha o
+  // rowId. Só para autenticado com CREATE_ROW: o endpoint de auto-save exige
+  // auth, então tabela FORM pública/anônima mantém o create direto no Salvar.
+  const eagerCreateRef = React.useRef<boolean>(false);
+  React.useEffect((): void => {
+    if (eagerCreateRef.current) return;
+    if (!isNewRecord) return;
+    if (!isAuthenticated) return;
+    if (!permissions.can('CREATE_ROW')) return;
+    if (rowIdRef.current) return;
+    eagerCreateRef.current = true;
+    void ensureParentRow();
+  }, [isNewRecord, isAuthenticated, permissions, ensureParentRow]);
+
   const validateAndTouch = React.useCallback((): boolean => {
-    let allValid = true;
+    const missing: Record<string, string> = {};
     const visibleRequiredFields = requiredFields.filter(
       (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
     );
     for (const field of visibleRequiredFields) {
       const value = form.state.values[field.slug];
-      const filled = hasValue(value);
       form.setFieldMeta(
         field.slug,
         (prev: AnyFieldMetaBase): AnyFieldMetaBase => ({
@@ -328,34 +357,37 @@ function AutoSaveRowFormContent({
           isTouched: true,
         }),
       );
-      if (!filled) {
-        allValid = false;
-        form.setFieldMeta(
-          field.slug,
-          (prev: AnyFieldMetaBase): AnyFieldMetaBase => ({
-            ...prev,
-            isTouched: true,
-            errorMap: {
-              ...prev.errorMap,
-              onChange: field.name + ' é obrigatório',
-            },
-          }),
-        );
+      if (!hasValue(value)) {
+        missing[field.slug] = field.name + ' é obrigatório';
       }
     }
-    return allValid;
+    // Grava os erros no slot `onServer` do errorMap — o único que a UI lê
+    // (getFieldInvalidState) e que useApiErrorAutoClear limpa ao digitar.
+    applyApiFieldErrors(form, missing);
+    return Object.keys(missing).length === 0;
   }, [form, requiredFields, conditionalVisibility.hiddenFieldIds]);
 
-  const isIncompleteDraft = React.useCallback((): boolean => {
+  // Rascunho novo é descartável ao sair quando o usuário não adicionou conteúdo
+  // real: nenhum item de grupo e — sem obrigatórios, form intocado; com
+  // obrigatórios, algum ainda faltando.
+  const isDiscardableDraft = React.useCallback((): boolean => {
     if (!isNewRecord) return false;
     if (!rowIdRef.current) return false;
+    if (childAddedRef.current) return false;
     const visibleRequiredFields = requiredFields.filter(
       (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
     );
+    if (visibleRequiredFields.length === 0) return !isDirty;
     return visibleRequiredFields.some((field): boolean => {
       return !hasValue(form.state.values[field.slug]);
     });
-  }, [isNewRecord, requiredFields, form, conditionalVisibility.hiddenFieldIds]);
+  }, [
+    isNewRecord,
+    requiredFields,
+    form,
+    isDirty,
+    conditionalVisibility.hiddenFieldIds,
+  ]);
 
   const finishAndBack = React.useCallback((): void => {
     // Sincroniza o cache uma unica vez ao sair (em vez de a cada save).
@@ -383,6 +415,15 @@ function AutoSaveRowFormContent({
     const payload = buildRowPayload(form.state.values, fields);
 
     try {
+      // Autenticado: garante o rascunho (caso o eager-create ainda esteja
+      // pendente/tenha falhado) para que Salvar sempre publique via update.
+      if (
+        !rowIdRef.current &&
+        isAuthenticated &&
+        permissions.can('CREATE_ROW')
+      ) {
+        await ensureParentRow();
+      }
       if (rowIdRef.current) {
         await _update.mutateAsync({
           slug,
@@ -390,6 +431,7 @@ function AutoSaveRowFormContent({
           data: payload,
         });
       } else {
+        // Fluxo anônimo (tabela FORM pública): cria e publica direto.
         await _create.mutateAsync({ slug, data: payload });
       }
     } catch {
@@ -415,12 +457,12 @@ function AutoSaveRowFormContent({
 
   const requestBack = React.useCallback((): void => {
     cancelPending();
-    if (isIncompleteDraft()) {
+    if (isDiscardableDraft()) {
       setConfirmDiscardOpen(true);
       return;
     }
     finishAndBack();
-  }, [cancelPending, isIncompleteDraft, finishAndBack]);
+  }, [cancelPending, isDiscardableDraft, finishAndBack]);
 
   // Permite que o botao Voltar do cabecalho (renderizado pelo componente pai)
   // passe pela mesma guarda de descarte do rascunho.
@@ -509,7 +551,11 @@ function AutoSaveRowFormContent({
                     rowId={persistedRowId}
                     field={groupField}
                     table={table}
+                    initialItems={groupItemsOf(existingRow, groupField.slug)}
                     onEnsureParentRow={ensureParentRow}
+                    onChildAdded={(): void => {
+                      childAddedRef.current = true;
+                    }}
                   />
                 ),
               )}
@@ -522,7 +568,7 @@ function AutoSaveRowFormContent({
           type="button"
           variant="outline"
           size="sm"
-          disabled={_autoSave.isPending}
+          disabled={_create.isPending || _update.isPending}
           onClick={requestBack}
         >
           Cancelar
@@ -530,12 +576,7 @@ function AutoSaveRowFormContent({
         <Button
           type="button"
           size="sm"
-          disabled={
-            _autoSave.isPending ||
-            _create.isPending ||
-            _update.isPending ||
-            isUploading
-          }
+          disabled={_create.isPending || _update.isPending || isUploading}
           onClick={(): void => {
             void handleSaveAndBack();
           }}
@@ -553,9 +594,8 @@ function AutoSaveRowFormContent({
           <DialogHeader>
             <DialogTitle>Descartar rascunho?</DialogTitle>
             <DialogDescription>
-              Este registro ainda não tem todos os campos obrigatórios
-              preenchidos e foi salvo como rascunho. Deseja descartá-lo ou
-              mantê-lo como rascunho?
+              Este registro foi salvo como rascunho e ainda não foi concluído.
+              Deseja descartá-lo ou mantê-lo como rascunho?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

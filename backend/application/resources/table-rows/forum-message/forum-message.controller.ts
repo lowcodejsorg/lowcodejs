@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import {
   Controller,
@@ -29,7 +30,6 @@ import {
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: ForumMessageUseCase = getInstanceByToken(
       ForumMessageUseCase,
     ),

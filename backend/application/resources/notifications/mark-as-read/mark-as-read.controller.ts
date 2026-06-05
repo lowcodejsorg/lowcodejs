@@ -6,7 +6,7 @@ import z from 'zod';
 import { E_NOTIFICATION_EVENT } from '@application/core/entity.core';
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { NotificationContractRepository } from '@application/repositories/notification/notification-contract.repository';
-import NotificationMongooseRepository from '@application/repositories/notification/notification-mongoose.repository';
+import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
 import { getNotificationsNamespace } from '@application/resources/notifications/notifications.socket';
 
 const ParamsValidator = z.object({ _id: z.string().trim().min(1) });

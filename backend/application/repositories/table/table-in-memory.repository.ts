@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type {
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
@@ -264,7 +265,6 @@ export default class TableInMemoryRepository implements TableContractRepository 
     return filtered.length;
   }
 
-  // eslint-disable-next-line no-unused-vars
   async dropCollection(_slug: string): Promise<void> {
     // No-op em memória — os registros não existem separadamente
   }

@@ -5,14 +5,15 @@ import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField as Entity, IField } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { resolveFieldSlug } from '@application/core/field-slug.core';
+import { FieldSlug } from '@application/core/field-slug.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import {
   hasDuplicateDropdownLabels,
   normalizeDefaultValue,
 } from '@application/resources/table-fields/table-field-base.schema';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
 
 import type { GroupFieldUpdatePayload } from './update.validator';
@@ -40,7 +41,8 @@ export default class GroupFieldUpdateUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -104,8 +106,7 @@ export default class GroupFieldUpdateUseCase {
           const updatedFields = g.fields.map((f) =>
             f._id === field._id ? updatedField : f,
           );
-          const groupSchema =
-            this.tableSchemaService.computeSchema(updatedFields);
+          const groupSchema = this.schemaBuilder.build(updatedFields);
 
           return {
             ...g,
@@ -114,7 +115,7 @@ export default class GroupFieldUpdateUseCase {
           };
         });
 
-        const parentSchema = this.tableSchemaService.computeSchema(
+        const parentSchema = this.schemaBuilder.build(
           table.fields,
           updatedGroups,
         );
@@ -145,7 +146,7 @@ export default class GroupFieldUpdateUseCase {
         error: null,
       };
       if (nameChanged) {
-        resolvedSlug = resolveFieldSlug({ name: payload.name });
+        resolvedSlug = FieldSlug.resolve({ name: payload.name });
       }
 
       if (resolvedSlug.error) {
@@ -217,8 +218,7 @@ export default class GroupFieldUpdateUseCase {
         const updatedFields = g.fields.map((f) =>
           f._id === field._id ? updatedField : f,
         );
-        const groupSchema =
-          this.tableSchemaService.computeSchema(updatedFields);
+        const groupSchema = this.schemaBuilder.build(updatedFields);
 
         return {
           ...g,
@@ -228,7 +228,7 @@ export default class GroupFieldUpdateUseCase {
       });
 
       // Reconstrói o schema da tabela pai com os grupos atualizados
-      const parentSchema = this.tableSchemaService.computeSchema(
+      const parentSchema = this.schemaBuilder.build(
         table.fields,
         updatedGroups,
       );
@@ -241,7 +241,7 @@ export default class GroupFieldUpdateUseCase {
         administrators: table.administrators.flatMap((a) => a._id),
       });
 
-      await this.tableSchemaService.syncModel({
+      await this.modelBuilder.build({
         ...table,
         _id: table._id,
         _schema: parentSchema,

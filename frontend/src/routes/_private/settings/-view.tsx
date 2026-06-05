@@ -10,7 +10,6 @@ import {
   UploadIcon,
 } from 'lucide-react';
 
-import { getLlmProviderLabel } from '@/lib/ai-llm-providers';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -19,6 +18,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { getLlmProviderLabel } from '@/lib/ai-llm-providers';
 import type { ISetting } from '@/lib/interfaces';
 
 interface SettingViewProps {
@@ -320,7 +320,7 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
           <div className="space-y-1">
             <p className="text-sm font-medium">Chave da API</p>
             <p className="text-sm text-muted-foreground font-mono">
-              {(data.LLM_API_KEY || data.OPENAI_API_KEY) ? '••••••••' : '-'}
+              {data.LLM_API_KEY || data.OPENAI_API_KEY ? '••••••••' : '-'}
             </p>
           </div>
           {data.AI_LLM_PROVIDER === 'ollama' && (
@@ -340,7 +340,8 @@ export function SettingView({ data }: SettingViewProps): React.JSX.Element {
           <div className="space-y-1">
             <p className="text-sm font-medium">URL da API (header MCP)</p>
             <p className="text-sm text-muted-foreground font-mono">
-              {data.MCP_LOWCODE_API_URL || 'Padrão do servidor (APP_SERVER_URL)'}
+              {data.MCP_LOWCODE_API_URL ||
+                'Padrão do servidor (APP_SERVER_URL)'}
             </p>
           </div>
           <div className="space-y-1">

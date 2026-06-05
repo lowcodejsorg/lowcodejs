@@ -2,15 +2,12 @@
 import type {
   IField,
   IGroupConfiguration,
-  ITable,
   ITableSchema,
 } from '@application/core/entity.core';
 
-export abstract class TableSchemaContractService {
-  abstract computeSchema(
+export abstract class SchemaBuilderContractService {
+  abstract build(
     fields: IField[],
     groups?: IGroupConfiguration[],
   ): ITableSchema;
-
-  abstract syncModel(table: ITable): Promise<void>;
 }

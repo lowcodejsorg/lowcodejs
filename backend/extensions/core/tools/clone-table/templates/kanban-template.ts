@@ -14,7 +14,7 @@ import {
 } from '@application/core/entity.core';
 import type { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import type { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
-import type { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import type { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import type {
   CloneTableDeps,
@@ -35,11 +35,11 @@ export async function createKanbanTemplate(
   });
 
   const { fields, groups, orderList, orderForm, orderFilter, orderDetail } =
-    await buildKanbanFields(deps.fieldRepository, deps.tableSchemaService);
+    await buildKanbanFields(deps.fieldRepository, deps.schemaBuilder);
   const nativeFields = await deps.fieldRepository.createMany(FIELD_NATIVE_LIST);
   const nativeFieldIds = nativeFields.map((field) => field._id);
 
-  const _schema = deps.tableSchemaService.computeSchema(
+  const _schema = deps.schemaBuilder.build(
     [...nativeFields, ...fields],
     groups,
   );
@@ -172,7 +172,7 @@ export async function createKanbanTemplate(
 
 export async function buildKanbanFields(
   fieldRepository: FieldContractRepository,
-  tableSchemaService: TableSchemaContractService,
+  schemaBuilder: SchemaBuilderContractService,
 ): Promise<{
   fields: IField[];
   groups: IGroupConfiguration[];
@@ -695,21 +695,21 @@ export async function buildKanbanFields(
     slug: attachmentsGroupSlug,
     name: 'Anexos',
     fields: attachmentsGroupFields,
-    _schema: tableSchemaService.computeSchema(attachmentsGroupFields),
+    _schema: schemaBuilder.build(attachmentsGroupFields),
   };
 
   const tasksGroup: IGroupConfiguration = {
     slug: tasksGroupSlug,
     name: 'Tarefas',
     fields: tasksGroupFields,
-    _schema: tableSchemaService.computeSchema(tasksGroupFields),
+    _schema: schemaBuilder.build(tasksGroupFields),
   };
 
   const commentsGroup: IGroupConfiguration = {
     slug: commentsGroupSlug,
     name: 'Comentários',
     fields: commentsGroupFields,
-    _schema: tableSchemaService.computeSchema(commentsGroupFields),
+    _schema: schemaBuilder.build(commentsGroupFields),
   };
 
   const attachmentsGroupField = await createField({

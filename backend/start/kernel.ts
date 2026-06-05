@@ -243,7 +243,7 @@ kernel.register(scalar, {
 
 kernel.register(websocket);
 
-registerDependencies();
+await registerDependencies();
 
 kernel.register(bootstrap, {
   controllers: [...(await loadControllers())],

@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Types for the JavaScript code executor
  */
@@ -82,7 +83,6 @@ export interface EmailResult {
   recipients?: number;
 }
 
-/* eslint-disable no-unused-vars */
 export interface FieldApi {
   get(slug: string): any;
   set(slug: string, value: any): void;

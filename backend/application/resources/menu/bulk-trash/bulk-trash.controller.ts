@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { Controller, getInstanceByToken, PATCH } from 'fastify-decorators';
 
@@ -14,7 +15,6 @@ import { MenuBulkTrashBodyValidator } from './bulk-trash.validator';
 })
 export default class {
   constructor(
-    // eslint-disable-next-line no-unused-vars
     private readonly useCase: MenuBulkTrashUseCase = getInstanceByToken(
       MenuBulkTrashUseCase,
     ),

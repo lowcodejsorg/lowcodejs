@@ -13,9 +13,7 @@ type ClaudeConfig = {
   model: string;
 };
 
-function toAnthropicMessages(
-  messages: Array<LlmChatMessage>,
-): {
+function toAnthropicMessages(messages: Array<LlmChatMessage>): {
   system: string | undefined;
   messages: Array<Record<string, unknown>>;
 } {
@@ -199,7 +197,9 @@ export function createClaudeProvider(config: ClaudeConfig): LlmChatProvider {
         try {
           data = JSON.parse(raw) as Record<string, unknown>;
         } catch {
-          throw new Error(`Resposta inválida da Anthropic: ${raw.slice(0, 200)}`);
+          throw new Error(
+            `Resposta inválida da Anthropic: ${raw.slice(0, 200)}`,
+          );
         }
       }
 

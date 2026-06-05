@@ -1,7 +1,4 @@
-import {
-  E_AI_LLM_PROVIDER,
-  type ValueOf,
-} from '@application/core/entity.core';
+import { E_AI_LLM_PROVIDER, type ValueOf } from '@application/core/entity.core';
 
 export type AiLlmProvider = ValueOf<typeof E_AI_LLM_PROVIDER>;
 
@@ -27,9 +24,7 @@ export function getLlmProviderLabel(provider: AiLlmProvider): string {
   return PROVIDER_LABELS[provider] ?? provider;
 }
 
-export function getDefaultLlmModel(
-  provider: AiLlmProvider,
-): string {
+export function getDefaultLlmModel(provider: AiLlmProvider): string {
   return DEFAULT_MODEL_BY_PROVIDER[provider];
 }
 

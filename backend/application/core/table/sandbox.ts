@@ -2,8 +2,8 @@ import crypto from 'node:crypto';
 
 import { E_NOTIFICATION_TYPE } from '@application/core/entity.core';
 import { User } from '@application/model/user.model';
-import NotificationMongooseRepository from '@application/repositories/notification/notification-mongoose.repository';
-import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
+import NodemailerEmailService from '@application/services/email/email.service';
 import NotificationService from '@application/services/notification/notification.service';
 import { Env } from '@start/env';
 

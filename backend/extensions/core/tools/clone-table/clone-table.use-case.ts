@@ -18,7 +18,7 @@ import {
   TableContractRepository,
   TableCreatePayload,
 } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 
 import {
   CALENDAR_TEMPLATE_ID,
@@ -58,7 +58,7 @@ export default class CloneTableUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
     private readonly rowRepository: RowContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
   ) {}
 
   private getTemplateDeps(): CloneTableDeps {
@@ -66,7 +66,7 @@ export default class CloneTableUseCase {
       tableRepository: this.tableRepository,
       fieldRepository: this.fieldRepository,
       rowRepository: this.rowRepository,
-      tableSchemaService: this.tableSchemaService,
+      schemaBuilder: this.schemaBuilder,
     };
   }
 
@@ -222,7 +222,7 @@ export default class CloneTableUseCase {
       combinedFieldIdMap,
     );
 
-    const _schema = this.tableSchemaService.computeSchema(
+    const _schema = this.schemaBuilder.build(
       [...nativeFields, ...clonedFields],
       clonedGroups,
     );
@@ -544,11 +544,11 @@ export default class CloneTableUseCase {
         return {
           ...group,
           fields,
-          _schema: this.tableSchemaService.computeSchema(fields),
+          _schema: this.schemaBuilder.build(fields),
         };
       });
 
-      const updatedSchema = this.tableSchemaService.computeSchema(
+      const updatedSchema = this.schemaBuilder.build(
         refreshedFields,
         refreshedGroups,
       );
@@ -809,7 +809,7 @@ export default class CloneTableUseCase {
         slug: group.slug,
         name: group.name,
         fields: groupFields,
-        _schema: this.tableSchemaService.computeSchema(groupFields),
+        _schema: this.schemaBuilder.build(groupFields),
       });
     }
 

@@ -21,15 +21,12 @@ export function resolveLlmConfig(
 ): ResolvedLlmConfig {
   const provider = parseAiLlmProvider(setting?.AI_LLM_PROVIDER);
   const apiKey =
-    setting?.LLM_API_KEY?.trim() ||
-    setting?.OPENAI_API_KEY?.trim() ||
-    null;
+    setting?.LLM_API_KEY?.trim() || setting?.OPENAI_API_KEY?.trim() || null;
   const model =
     setting?.LLM_MODEL?.trim() ||
     setting?.OPENAI_MODEL?.trim() ||
     getDefaultLlmModel(provider);
-  const baseUrl =
-    setting?.LLM_BASE_URL?.trim() || getDefaultOllamaBaseUrl();
+  const baseUrl = setting?.LLM_BASE_URL?.trim() || getDefaultOllamaBaseUrl();
 
   let isConfigured = Boolean(model?.trim());
   if (provider === 'ollama') {
@@ -42,7 +39,8 @@ export function resolveLlmConfig(
     provider,
     apiKey,
     model,
-    baseUrl: provider === 'ollama' ? baseUrl : setting?.LLM_BASE_URL?.trim() || null,
+    baseUrl:
+      provider === 'ollama' ? baseUrl : setting?.LLM_BASE_URL?.trim() || null,
     isConfigured,
   };
 }

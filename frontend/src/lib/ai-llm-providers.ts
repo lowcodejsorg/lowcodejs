@@ -1,6 +1,7 @@
 import { E_AI_LLM_PROVIDER } from '@/lib/constant';
 
-export type AiLlmProvider = (typeof E_AI_LLM_PROVIDER)[keyof typeof E_AI_LLM_PROVIDER];
+export type AiLlmProvider =
+  (typeof E_AI_LLM_PROVIDER)[keyof typeof E_AI_LLM_PROVIDER];
 
 export const AI_LLM_PROVIDER_OPTIONS: Array<{
   value: AiLlmProvider;
@@ -66,7 +67,10 @@ export const LLM_MODEL_OPTIONS: Record<
   [E_AI_LLM_PROVIDER.OPENROUTER]: [
     { value: 'openai/gpt-4o-mini', label: 'OpenAI GPT-4o Mini' },
     { value: 'openai/gpt-4o', label: 'OpenAI GPT-4o' },
-    { value: 'anthropic/claude-3.5-haiku', label: 'Anthropic Claude 3.5 Haiku' },
+    {
+      value: 'anthropic/claude-3.5-haiku',
+      label: 'Anthropic Claude 3.5 Haiku',
+    },
     { value: 'google/gemini-2.0-flash-001', label: 'Google Gemini 2.0 Flash' },
     { value: 'meta-llama/llama-3.3-70b-instruct', label: 'Meta Llama 3.3 70B' },
   ],

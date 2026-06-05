@@ -4,8 +4,8 @@ import {
   findConditionalRuleConflicts,
   omitHiddenConditionalValues,
   resolveConditionalVisibility,
-  type ConditionalFieldRule,
 } from './conditional-form-rules';
+import type { ConditionalFieldRule } from './conditional-form-rules';
 import type { IField } from './interfaces';
 
 function field(id: string, slug: string): IField {

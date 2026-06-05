@@ -11,7 +11,7 @@ import type {
 import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { SchemaBuilderContractService } from '@application/services/table/schema-builder-contract.service';
 import { deleteCascadeDropdownConfigsForField } from '@extensions/forms/plugins/cascade-dropdown/cascade-dropdown-config.model';
 
 import type { TableFieldDeletePayload } from './delete.validator';
@@ -24,7 +24,7 @@ export default class TableFieldDeleteUseCase {
   constructor(
     private readonly tableRepository: TableContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly schemaBuilder: SchemaBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -83,9 +83,7 @@ export default class TableFieldDeleteUseCase {
 
       // Remove o campo da tabela e reconstrói o schema
       const remainingFields = table.fields.filter((f) => f._id !== field._id);
-      const _schema = this.tableSchemaService.computeSchema(
-        remainingFields as IField[],
-      );
+      const _schema = this.schemaBuilder.build(remainingFields as IField[]);
 
       await this.tableRepository.update({
         _id: table._id,
@@ -139,9 +137,7 @@ export default class TableFieldDeleteUseCase {
       if (g.slug !== targetGroup.slug) return g;
 
       const updatedFields = g.fields.filter((f) => f._id !== field._id);
-      const groupSchema = this.tableSchemaService.computeSchema(
-        updatedFields as IField[],
-      );
+      const groupSchema = this.schemaBuilder.build(updatedFields as IField[]);
 
       return {
         ...g,
@@ -151,7 +147,7 @@ export default class TableFieldDeleteUseCase {
     });
 
     // Reconstrói o schema da tabela pai com os grupos atualizados
-    const parentSchema = this.tableSchemaService.computeSchema(
+    const parentSchema = this.schemaBuilder.build(
       parentTable.fields as IField[],
       updatedGroups,
     );

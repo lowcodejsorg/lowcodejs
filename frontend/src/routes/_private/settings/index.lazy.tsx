@@ -4,11 +4,8 @@ import { PencilIcon } from 'lucide-react';
 import React from 'react';
 
 import { StorageMigrationCard } from './-storage-migration-card';
-import {
-  SettingUpdateSchema,
-  UpdateSettingFormFields,
-  type SettingUpdateFormValues,
-} from './-update-form';
+import type { SettingUpdateFormValues } from './-update-form';
+import { SettingUpdateSchema, UpdateSettingFormFields } from './-update-form';
 import { SettingView } from './-view';
 
 import {
@@ -252,7 +249,6 @@ function SettingUpdateContent({
     form.reset(buildSettingFormValues(data));
     // Recarrega o form só ao entrar em modo edição — não quando `data` muda
     // durante a edição (evita apagar o provedor selecionado antes de salvar).
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
   const isPending = _update.status === 'pending';

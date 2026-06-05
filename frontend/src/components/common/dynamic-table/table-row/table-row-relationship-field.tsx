@@ -1,5 +1,5 @@
-import { useQueryClient } from '@tanstack/react-query';
 import { useStore } from '@tanstack/react-form';
+import { useQueryClient } from '@tanstack/react-query';
 import { PlusIcon } from 'lucide-react';
 import * as React from 'react';
 
@@ -35,15 +35,15 @@ import { Field, FieldError } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import {
-  type CascadeDropdownConfig,
   useCascadeDropdownChildOptions,
   useCascadeDropdownConfig,
 } from '@/hooks/tanstack-query/use-cascade-dropdown';
+import type { CascadeDropdownConfig } from '@/hooks/tanstack-query/use-cascade-dropdown';
 import { useConditionalFieldsRuntimeConfig } from '@/hooks/tanstack-query/use-conditional-fields-runtime-config';
 import { useRelationshipRowsReadPaginatedInfinite } from '@/hooks/tanstack-query/use-relationship-rows-read-paginated-infinite';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
-import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
+import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
@@ -396,10 +396,13 @@ function CascadeRelationshipField({
     rowId: selectedChildId,
   });
 
-  const parentValue = useStore(formField.form.store, (state: { values: unknown }) => {
-    const values = state.values as Record<string, unknown>;
-    return readCascadeValue(values[config.parentFieldSlug]);
-  });
+  const parentValue = useStore(
+    formField.form.store,
+    (state: { values: unknown }) => {
+      const values = state.values as Record<string, unknown>;
+      return readCascadeValue(values[config.parentFieldSlug]);
+    },
+  );
 
   React.useEffect(() => {
     const timer = setTimeout(() => {
