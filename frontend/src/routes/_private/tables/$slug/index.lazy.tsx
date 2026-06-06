@@ -444,19 +444,17 @@ function RouteComponent(): React.JSX.Element {
             onPageChange={(newPage) => {
               void router.navigate({
                 to: '.',
-                search: {
-                  page: String(newPage),
-                  perPage: String(search.perPage),
-                },
+                search: (prev) => ({ ...prev, page: String(newPage) }),
               });
             }}
             onPerPageChange={(newPerPage) => {
               void router.navigate({
                 to: '.',
-                search: {
-                  page: String(1),
+                search: (prev) => ({
+                  ...prev,
                   perPage: String(newPerPage),
-                },
+                  page: String(1),
+                }),
               });
             }}
           />
