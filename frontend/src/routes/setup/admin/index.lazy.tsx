@@ -9,6 +9,7 @@ import {
   UserIcon,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -37,7 +38,6 @@ import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error
 import { PASSWORD_REGEX } from '@/lib/constant';
 import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/setup/admin/')({
   component: SetupAdminPage,
@@ -92,7 +92,7 @@ function SetupAdminPage(): React.JSX.Element {
 
   const mutation = useSetupSubmitAdmin({
     onSuccess: (data) => {
-      toastSuccess('Administrador criado com sucesso');
+      toast.success('Administrador criado com sucesso');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {

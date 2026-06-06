@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Trash2Icon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
 
 export function TableEmptyTrashDialog(): React.JSX.Element {
   const [open, setOpen] = React.useState(false);
@@ -27,14 +27,14 @@ export function TableEmptyTrashDialog(): React.JSX.Element {
         queryKey: queryKeys.tables.lists(),
       });
 
-      toastSuccess(
-        'Lixeira esvaziada!',
-        result.deleted === 1
-          ? '1 tabela excluída permanentemente'
-          : result.deleted
-              .toString()
-              .concat(' tabelas excluídas permanentemente'),
-      );
+      toast.success('Lixeira esvaziada!', {
+        description:
+          result.deleted === 1
+            ? '1 tabela excluída permanentemente'
+            : result.deleted
+                .toString()
+                .concat(' tabelas excluídas permanentemente'),
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao esvaziar lixeira' });

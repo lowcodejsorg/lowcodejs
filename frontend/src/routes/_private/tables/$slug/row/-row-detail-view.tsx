@@ -7,6 +7,7 @@ import {
   TrashIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
@@ -37,7 +38,6 @@ import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
 
 interface RowDetailViewProps {
   table: ITable;
@@ -167,7 +167,7 @@ export function RowDetailView({
       void QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.detail(slug, rowId),
       });
-      toastSuccess('Registro enviado para lixeira!');
+      toast.success('Registro enviado para lixeira!');
     },
   });
 
@@ -183,7 +183,7 @@ export function RowDetailView({
       void QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.detail(slug, rowId),
       });
-      toastSuccess('Registro restaurado!');
+      toast.success('Registro restaurado!');
     },
   });
 
@@ -196,7 +196,7 @@ export function RowDetailView({
       void QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess('Registro excluído permanentemente!');
+      toast.success('Registro excluído permanentemente!');
       onBack();
     },
   });

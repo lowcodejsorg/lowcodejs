@@ -1,6 +1,7 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { EyeClosedIcon, EyeIcon, HardDriveIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +20,6 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
 import { useSetupSubmitStorage } from '@/hooks/tanstack-query/use-setup-submit-storage';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/setup/storage/')({
   component: SetupStoragePage,
@@ -40,7 +40,7 @@ function SetupStoragePage(): React.JSX.Element {
 
   const mutation = useSetupSubmitStorage({
     onSuccess: (data) => {
-      toastSuccess('Etapa concluída');
+      toast.success('Etapa concluída');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {
@@ -48,7 +48,7 @@ function SetupStoragePage(): React.JSX.Element {
       }
     },
     onError: () => {
-      toastError('Erro ao salvar');
+      toast.error('Erro ao salvar');
     },
   });
 
@@ -56,7 +56,7 @@ function SetupStoragePage(): React.JSX.Element {
     e.preventDefault();
 
     if (isS3 && (!endpoint || !bucket || !accessKey || !secretKey)) {
-      toastError('Preencha todos os campos obrigatórios do S3');
+      toast.error('Preencha todos os campos obrigatórios do S3');
       return;
     }
 

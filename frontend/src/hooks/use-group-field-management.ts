@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import type {
   FieldManagementActions,
@@ -12,7 +13,6 @@ import { useGroupFieldUpdate } from '@/hooks/tanstack-query/use-group-field-upda
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 function buildGroupFieldPayload(
   field: IField,
@@ -88,10 +88,10 @@ export function useGroupFieldManagement(
 
   const updateTable = useUpdateTable({
     onSuccess: () => {
-      toastSuccess('Ordem atualizada com sucesso');
+      toast.success('Ordem atualizada com sucesso');
     },
     onError: () => {
-      toastError('Erro ao atualizar ordem dos campos');
+      toast.error('Erro ao atualizar ordem dos campos');
     },
   });
 
@@ -103,18 +103,18 @@ export function useGroupFieldManagement(
         if (pendingWidthKey === 'widthInList') {
           unit = 'px';
         }
-        toastSuccess(`Largura atualizada para ${widthValue}${unit}`);
+        toast.success(`Largura atualizada para ${widthValue}${unit}`);
       } else if (togglingFieldId) {
         // Determine which visibility key was toggled by checking context
         // The toast is generic here since we don't track the key in this callback
-        toastSuccess('Campo atualizado com sucesso');
+        toast.success('Campo atualizado com sucesso');
       }
       setTogglingFieldId(null);
       setChangingWidthFieldId(null);
       setPendingWidthKey(null);
     },
     onError: () => {
-      toastError('Erro ao atualizar campo do grupo');
+      toast.error('Erro ao atualizar campo do grupo');
       setTogglingFieldId(null);
       setChangingWidthFieldId(null);
       setPendingWidthKey(null);
@@ -173,14 +173,14 @@ export function useGroupFieldManagement(
         },
       );
 
-      toastSuccess(`Campo "${field.name}" excluído permanentemente`);
+      toast.success(`Campo "${field.name}" excluído permanentemente`);
     },
     onError: (error) => {
       console.error(error);
-      toastError(
-        'Erro ao excluir campo',
-        'Não foi possível excluir o campo permanentemente. Tente novamente.',
-      );
+      toast.error('Erro ao excluir campo', {
+        description:
+          'Não foi possível excluir o campo permanentemente. Tente novamente.',
+      });
     },
     onSettled: () => {
       setDeletingFieldId(null);
@@ -320,16 +320,15 @@ export function useGroupFieldManagement(
         },
       );
 
-      toastSuccess(
-        'Campo restaurado',
-        'O campo foi restaurado da lixeira com sucesso.',
-      );
+      toast.success('Campo restaurado', {
+        description: 'O campo foi restaurado da lixeira com sucesso.',
+      });
     },
     onError: () => {
-      toastError(
-        'Erro ao restaurar campo',
-        'Não foi possível restaurar o campo da lixeira. Tente novamente.',
-      );
+      toast.error('Erro ao restaurar campo', {
+        description:
+          'Não foi possível restaurar o campo da lixeira. Tente novamente.',
+      });
     },
     onSettled: () => {
       setRestoringFieldId(null);

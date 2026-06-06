@@ -5,6 +5,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ArrowDownIcon, AtSignIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   ForumAddChannelDialog,
@@ -45,7 +46,6 @@ import type {
   Paginated,
 } from '@/lib/interfaces';
 import { getFieldBySlug, getFirstFieldByType } from '@/lib/kanban-helpers';
-import { toastError, toastSuccess, toastWarning } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -679,10 +679,9 @@ export function TableForumView({
       );
     },
     onError() {
-      toastError(
-        'Erro ao atualizar mensagens',
-        'Nao foi possivel atualizar o canal',
-      );
+      toast.error('Erro ao atualizar mensagens', {
+        description: 'Nao foi possivel atualizar o canal',
+      });
     },
   });
 
@@ -691,10 +690,14 @@ export function TableForumView({
       setRowsState((prev) => [...prev, newRow]);
       setActiveRowId(newRow._id);
       setIsAddChannelOpen(false);
-      toastSuccess('Canal criado', 'O canal foi criado com sucesso');
+      toast.success('Canal criado', {
+        description: 'O canal foi criado com sucesso',
+      });
     },
     onError() {
-      toastError('Erro ao criar canal', 'Nao foi possivel criar o canal');
+      toast.error('Erro ao criar canal', {
+        description: 'Nao foi possivel criar o canal',
+      });
     },
   });
 
@@ -783,7 +786,7 @@ export function TableForumView({
       const label = value.label.trim();
       if (!label || updateRow.status === 'pending') return;
       if (!editingChannelRow || !canManageChannel(editingChannelRow)) {
-        toastWarning('Apenas o criador pode editar este canal');
+        toast.warning('Apenas o criador pode editar este canal');
         return;
       }
       const members = Array.from(new Set(value.members.filter(Boolean)));
@@ -811,7 +814,9 @@ export function TableForumView({
       });
       setIsEditChannelOpen(false);
       setEditingChannelId(null);
-      toastSuccess('Canal atualizado', 'O canal foi atualizado com sucesso');
+      toast.success('Canal atualizado', {
+        description: 'O canal foi atualizado com sucesso',
+      });
     },
   });
 
@@ -945,10 +950,9 @@ export function TableForumView({
       const row = rowsState.find((item) => item._id === rowId);
       if (!row) return;
       if (!canAccessChannel(row)) {
-        toastWarning(
-          'Canal privado',
-          'Apenas membros deste canal podem acessar as mensagens',
-        );
+        toast.warning('Canal privado', {
+          description: 'Apenas membros deste canal podem acessar as mensagens',
+        });
         return;
       }
       setActiveRowId(rowId);
@@ -960,7 +964,7 @@ export function TableForumView({
   const handleChannelEdit = React.useCallback(
     (row: IRow) => {
       if (!canManageChannel(row)) {
-        toastWarning('Apenas o criador pode editar este canal');
+        toast.warning('Apenas o criador pode editar este canal');
         return;
       }
       const label = resolveChannelLabel(row);
@@ -996,7 +1000,7 @@ export function TableForumView({
     async (rowId: string) => {
       const row = rowsState.find((item) => item._id === rowId);
       if (!row || !canManageChannel(row)) {
-        toastWarning('Apenas o criador pode editar este canal');
+        toast.warning('Apenas o criador pode editar este canal');
         setDeleteChannelId(null);
         return;
       }
@@ -1079,11 +1083,11 @@ export function TableForumView({
   const handleSend = React.useCallback(async () => {
     if (!activeRow || !messagesField) return;
     if (!canAccessChannel(activeRow)) {
-      toastWarning('Apenas membros deste canal podem enviar mensagens');
+      toast.warning('Apenas membros deste canal podem enviar mensagens');
       return;
     }
     if (!currentUserId) {
-      toastWarning('Usuario nao identificado');
+      toast.warning('Usuario nao identificado');
       return;
     }
 
@@ -1097,7 +1101,7 @@ export function TableForumView({
     const hasAttachments = composerStorages.length > 0;
 
     if (!hasText && !hasAttachments) {
-      toastWarning('Escreva uma mensagem ou adicione um anexo');
+      toast.warning('Escreva uma mensagem ou adicione um anexo');
       return;
     }
 
@@ -1128,10 +1132,9 @@ export function TableForumView({
       resetComposer();
       bumpFocus();
     } catch {
-      toastError(
-        'Erro ao enviar mensagem',
-        'Nao foi possivel salvar a mensagem neste canal',
-      );
+      toast.error('Erro ao enviar mensagem', {
+        description: 'Nao foi possivel salvar a mensagem neste canal',
+      });
     }
   }, [
     activeRow,
@@ -1165,10 +1168,9 @@ export function TableForumView({
         );
         await refreshRowById(activeRow._id);
       } catch {
-        toastError(
-          'Erro ao excluir mensagem',
-          'Voce so pode excluir mensagens enviadas por voce',
-        );
+        toast.error('Erro ao excluir mensagem', {
+          description: 'Voce so pode excluir mensagens enviadas por voce',
+        });
       }
     },
     [activeRow, messages, refreshRowById, tableSlug],

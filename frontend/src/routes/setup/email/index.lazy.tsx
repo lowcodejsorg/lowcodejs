@@ -1,6 +1,7 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { EyeClosedIcon, EyeIcon, MailIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -19,7 +20,6 @@ import {
 } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitEmail } from '@/hooks/tanstack-query/use-setup-submit-email';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/setup/email/')({
   component: SetupEmailPage,
@@ -36,7 +36,7 @@ function SetupEmailPage(): React.JSX.Element {
 
   const mutation = useSetupSubmitEmail({
     onSuccess: (data) => {
-      toastSuccess('Setup concluído');
+      toast.success('Setup concluído');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {
@@ -44,7 +44,7 @@ function SetupEmailPage(): React.JSX.Element {
       }
     },
     onError: () => {
-      toastError('Erro ao salvar');
+      toast.error('Erro ao salvar');
     },
   });
 

@@ -1,6 +1,7 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { UploadIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -14,7 +15,6 @@ import { Field, FieldLabel } from '@/components/ui/field';
 import { InputGroup, InputGroupInput } from '@/components/ui/input-group';
 import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitUpload } from '@/hooks/tanstack-query/use-setup-submit-upload';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/setup/upload/')({
   component: SetupUploadPage,
@@ -38,7 +38,7 @@ function SetupUploadPage(): React.JSX.Element {
 
   const mutation = useSetupSubmitUpload({
     onSuccess: (data) => {
-      toastSuccess('Etapa concluída');
+      toast.success('Etapa concluída');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {
@@ -46,7 +46,7 @@ function SetupUploadPage(): React.JSX.Element {
       }
     },
     onError: () => {
-      toastError('Erro ao salvar');
+      toast.error('Erro ao salvar');
     },
   });
 

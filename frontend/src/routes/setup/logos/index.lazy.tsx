@@ -1,6 +1,7 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { ImageIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { FileUploadWithStorage } from '@/components/common/file-upload';
 import { Button } from '@/components/ui/button';
@@ -15,7 +16,6 @@ import { Field, FieldLabel } from '@/components/ui/field';
 import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitLogos } from '@/hooks/tanstack-query/use-setup-submit-logos';
 import type { IStorage } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/setup/logos/')({
   component: SetupLogosPage,
@@ -30,7 +30,7 @@ function SetupLogosPage(): React.JSX.Element {
 
   const mutation = useSetupSubmitLogos({
     onSuccess: (data) => {
-      toastSuccess('Etapa concluída');
+      toast.success('Etapa concluída');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {
@@ -38,7 +38,7 @@ function SetupLogosPage(): React.JSX.Element {
       }
     },
     onError: () => {
-      toastError('Erro ao salvar');
+      toast.error('Erro ao salvar');
     },
   });
 

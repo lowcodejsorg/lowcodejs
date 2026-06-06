@@ -12,6 +12,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableMultiSelect } from '@/components/common/dynamic-table/table-selectors/table-multi-select';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
@@ -63,7 +64,6 @@ import { useExtensionToggle } from '@/hooks/tanstack-query/use-extension-toggle'
 import { EXTENSION_TYPE_LABEL, E_EXTENSION_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IExtension } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/extensions/')({
   component: RouteComponent,
@@ -121,9 +121,9 @@ function ExtensionCard({
   const navigate = useNavigate();
   const toggle = useExtensionToggle({
     onSuccess(_data) {
-      toastSuccess(
+      toast.success(
         _data.enabled ? 'Extensão ativada' : 'Extensão desativada',
-        extension.name,
+        { description: extension.name },
       );
     },
     onError(error) {
@@ -238,9 +238,9 @@ function ExtensionTableRow({
   const navigate = useNavigate();
   const toggle = useExtensionToggle({
     onSuccess(_data) {
-      toastSuccess(
+      toast.success(
         _data.enabled ? 'Extensão ativada' : 'Extensão desativada',
-        extension.name,
+        { description: extension.name },
       );
     },
     onError(error) {
@@ -359,7 +359,9 @@ function TableScopeSheet({
 
   const configure = useExtensionConfigureTableScope({
     onSuccess() {
-      toastSuccess('Escopo atualizado', 'O plugin foi reconfigurado.');
+      toast.success('Escopo atualizado', {
+        description: 'O plugin foi reconfigurado.',
+      });
       onOpenChange(false);
     },
     onError(error) {

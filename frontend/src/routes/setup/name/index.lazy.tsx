@@ -1,6 +1,7 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { Languages, TypeIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +26,6 @@ import {
 } from '@/components/ui/select';
 import { Spinner } from '@/components/ui/spinner';
 import { useSetupSubmitName } from '@/hooks/tanstack-query/use-setup-submit-name';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/setup/name/')({
   component: SetupNamePage,
@@ -38,7 +38,7 @@ function SetupNamePage(): React.JSX.Element {
 
   const mutation = useSetupSubmitName({
     onSuccess: (data) => {
-      toastSuccess('Etapa concluída');
+      toast.success('Etapa concluída');
       if (data.completed) {
         router.navigate({ to: '/' });
       } else if (data.currentStep) {
@@ -46,7 +46,7 @@ function SetupNamePage(): React.JSX.Element {
       }
     },
     onError: () => {
-      toastError('Erro ao salvar');
+      toast.error('Erro ao salvar');
     },
   });
 

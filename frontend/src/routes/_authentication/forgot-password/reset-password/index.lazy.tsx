@@ -2,6 +2,7 @@ import { useForm } from '@tanstack/react-form';
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon, EyeClosedIcon, EyeIcon, LockIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -23,7 +24,6 @@ import { useAuthenticationResetPassword } from '@/hooks/tanstack-query/use-authe
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_authentication/forgot-password/reset-password/',
@@ -59,7 +59,9 @@ function RouteComponent(): React.JSX.Element {
 
   const resetPasswordMutation = useAuthenticationResetPassword({
     onSuccess() {
-      toastSuccess('Senha redefinida!', 'Faça login com sua nova senha.');
+      toast.success('Senha redefinida!', {
+        description: 'Faça login com sua nova senha.',
+      });
       router.navigate({ to: '/', replace: true });
     },
     onError(error) {

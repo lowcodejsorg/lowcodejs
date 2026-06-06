@@ -18,6 +18,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouterState } from '@tanstack/react-router';
 import { PlusIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   KanbanAddListDialog,
@@ -45,7 +46,6 @@ import {
   parseOrderValue,
 } from '@/lib/kanban-helpers';
 import type { FieldMap } from '@/lib/kanban-types';
-import { toastError, toastSuccess } from '@/lib/toast';
 import {
   buildDefaultValues,
   buildPayload,
@@ -224,11 +224,15 @@ export function TableKanbanView({
           };
         },
       );
-      toastSuccess('Lista adicionada', 'A nova coluna foi criada com sucesso');
+      toast.success('Lista adicionada', {
+        description: 'A nova coluna foi criada com sucesso',
+      });
       setIsAddListOpen(false);
     },
     onError() {
-      toastError('Erro ao adicionar lista', 'Nao foi possivel criar a coluna');
+      toast.error('Erro ao adicionar lista', {
+        description: 'Nao foi possivel criar a coluna',
+      });
     },
   });
 
@@ -294,13 +298,14 @@ export function TableKanbanView({
       setEditingColumnId(null);
       setEditingColumnLabel('');
       setEditingColumnColor(null);
-      toastSuccess('Lista atualizada', 'A lista foi atualizada');
+      toast.success('Lista atualizada', {
+        description: 'A lista foi atualizada',
+      });
     },
     onError() {
-      toastError(
-        'Erro ao atualizar lista',
-        'Nao foi possivel atualizar o nome',
-      );
+      toast.error('Erro ao atualizar lista', {
+        description: 'Nao foi possivel atualizar o nome',
+      });
     },
   });
 
@@ -375,12 +380,16 @@ export function TableKanbanView({
   const createRow = useCreateTableRow({
     onSuccess(createdRow) {
       setRowsState((prev) => [...prev, createdRow]);
-      toastSuccess('Card criado', 'O card foi criado com sucesso');
+      toast.success('Card criado', {
+        description: 'O card foi criado com sucesso',
+      });
       setIsCreateCardOpen(false);
       setCreateColumnId(null);
     },
     onError() {
-      toastError('Erro ao criar card', 'Nao foi possivel criar o card');
+      toast.error('Erro ao criar card', {
+        description: 'Nao foi possivel criar o card',
+      });
     },
   });
 
@@ -419,16 +428,14 @@ export function TableKanbanView({
             };
           },
         );
-        toastSuccess(
-          'Campo Data de início criado',
-          'Kanban atualizado com o novo campo de início',
-        );
+        toast.success('Campo Data de início criado', {
+          description: 'Kanban atualizado com o novo campo de início',
+        });
       })
       .catch(() => {
-        toastError(
-          'Erro ao criar Data de início',
-          'Nao foi possivel adicionar o campo no Kanban',
-        );
+        toast.error('Erro ao criar Data de início', {
+          description: 'Nao foi possivel adicionar o campo no Kanban',
+        });
       });
   }, [fields.startDate, queryClient, tableSlug]);
 
@@ -532,10 +539,9 @@ export function TableKanbanView({
             },
           );
         } catch (error) {
-          toastError(
-            'Erro ao travar o campo de ordem',
-            'Nao foi possivel travar o campo de ordem',
-          );
+          toast.error('Erro ao travar o campo de ordem', {
+            description: 'Nao foi possivel travar o campo de ordem',
+          });
         }
       }
       return orderField.slug;
@@ -582,10 +588,9 @@ export function TableKanbanView({
 
       return createdField.slug;
     } catch (error) {
-      toastError(
-        'Erro ao preparar ordenação',
-        'Nao foi possivel criar o campo de ordem',
-      );
+      toast.error('Erro ao preparar ordenação', {
+        description: 'Nao foi possivel criar o campo de ordem',
+      });
       return null;
     }
   }, [orderField, orderFieldSlug, queryClient, tableSlug]);
@@ -622,10 +627,9 @@ export function TableKanbanView({
           },
         );
       } catch (error) {
-        toastError(
-          'Erro ao ordenar colunas',
-          'Nao foi possivel salvar a nova ordem',
-        );
+        toast.error('Erro ao ordenar colunas', {
+          description: 'Nao foi possivel salvar a nova ordem',
+        });
       }
     },
     [fields.list, queryClient, tableSlug],
@@ -660,10 +664,9 @@ export function TableKanbanView({
           queryKey: queryKeys.rows.lists(tableSlug),
         });
       } catch (error) {
-        toastError(
-          'Erro ao reordenar cards',
-          'Nao foi possivel salvar a nova ordem',
-        );
+        toast.error('Erro ao reordenar cards', {
+          description: 'Nao foi possivel salvar a nova ordem',
+        });
       }
     },
     [queryClient, tableSlug],

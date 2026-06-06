@@ -1,5 +1,6 @@
 import { DownloadIcon, ExternalLinkIcon, LinkIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   ContextMenu,
@@ -9,7 +10,6 @@ import {
 } from '@/components/ui/context-menu';
 import type { IStorage } from '@/lib/interfaces';
 import { getStorageDownloadUrl, getStorageInlineUrl } from '@/lib/storage-url';
-import { toastSuccess } from '@/lib/toast';
 
 interface AttachmentContextMenuProps {
   storage: Pick<IStorage, 'url' | 'originalName'>;
@@ -25,7 +25,7 @@ export function AttachmentContextMenu({
 
   const handleCopyLink = async (): Promise<void> => {
     await navigator.clipboard.writeText(inlineUrl);
-    toastSuccess('Link copiado');
+    toast.success('Link copiado');
   };
 
   return (

@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router';
 import { ArrowLeftIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -25,7 +26,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationRequestCode } from '@/hooks/tanstack-query/use-authentication-request-code';
 import { useAuthenticationValidateCode } from '@/hooks/tanstack-query/use-authentication-validate-code';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_authentication/forgot-password/validate-code/',
@@ -58,7 +58,9 @@ function RouteComponent(): React.JSX.Element {
 
   const validateCodeMutation = useAuthenticationValidateCode({
     onSuccess() {
-      toastSuccess('Código validado!', 'Defina sua nova senha.');
+      toast.success('Código validado!', {
+        description: 'Defina sua nova senha.',
+      });
       router.navigate({
         to: '/forgot-password/reset-password',
       });
@@ -80,7 +82,9 @@ function RouteComponent(): React.JSX.Element {
 
   const resendMutation = useAuthenticationRequestCode({
     onSuccess() {
-      toastSuccess('Código reenviado!', 'Verifique seu e-mail.');
+      toast.success('Código reenviado!', {
+        description: 'Verifique seu e-mail.',
+      });
       setCodeValue('');
       setCodeError(null);
     },

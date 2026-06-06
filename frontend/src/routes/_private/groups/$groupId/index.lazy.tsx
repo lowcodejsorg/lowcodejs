@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import type { GroupUpdateFormValues } from './-update-form';
 import { GroupUpdateSchema, UpdateGroupFormFields } from './-update-form';
@@ -22,7 +23,6 @@ import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IGroup } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/groups/$groupId/')({
   component: RouteComponent,
@@ -105,10 +105,9 @@ function GroupUpdateContent({
 
   const _update = useUpdateGroup({
     onSuccess() {
-      toastSuccess(
-        'Grupo atualizado',
-        'Os dados do grupo foram atualizados com sucesso',
-      );
+      toast.success('Grupo atualizado', {
+        description: 'Os dados do grupo foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');

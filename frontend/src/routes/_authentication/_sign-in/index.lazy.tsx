@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { EyeClosedIcon, EyeIcon, LockIcon, MailIcon } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -34,7 +35,6 @@ import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import { resolveInitialMenuRoute } from '@/lib/menu/initial-menu-route';
 import { ROLE_DEFAULT_ROUTE } from '@/lib/menu/menu-access-permissions';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_authentication/_sign-in/')({
   component: RouteComponent,
@@ -64,7 +64,9 @@ function RouteComponent(): React.JSX.Element {
         return;
       }
 
-      toastSuccess('Login realizado com sucesso!', 'Seja bem-vindo!');
+      toast.success('Login realizado com sucesso!', {
+        description: 'Seja bem-vindo!',
+      });
 
       router.navigate({
         to: initialRoute?.to ?? fallbackRoute,

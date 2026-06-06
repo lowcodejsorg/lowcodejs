@@ -1,6 +1,7 @@
 import { Link, useLocation, useRouter } from '@tanstack/react-router';
 import { ChevronRightIcon, LogOutIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import {
@@ -36,7 +37,6 @@ import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import { resolveInitialMenuRoute } from '@/lib/menu/initial-menu-route';
 import type { MenuItem, MenuRoute } from '@/lib/menu/menu-route';
-import { toastSuccess } from '@/lib/toast';
 
 interface SidebarProps {
   menu: MenuRoute;
@@ -332,7 +332,9 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
 
   const signOut = useAuthenticationSignOut({
     onSuccess() {
-      toastSuccess('Logout realizado com sucesso!', 'Volte sempre!');
+      toast.success('Logout realizado com sucesso!', {
+        description: 'Volte sempre!',
+      });
 
       router.navigate({
         to: '/',

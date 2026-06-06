@@ -13,6 +13,7 @@ import {
   UserIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   ACTION_OPTIONS,
@@ -42,7 +43,6 @@ import {
   MetaDefault,
 } from '@/lib/constant';
 import type { IFilterField, ILogger } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/logs/')({
@@ -168,10 +168,9 @@ function RouteComponent(): React.JSX.Element {
     if (entries.length === 1) {
       plural = '';
     }
-    toastSuccess(
-      'CSV exportado',
-      `${entries.length} registro${plural} no arquivo`,
-    );
+    toast.success('CSV exportado', {
+      description: `${entries.length} registro${plural} no arquivo`,
+    });
   };
 
   return (

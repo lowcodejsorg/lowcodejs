@@ -2,6 +2,7 @@ import { useForm } from '@tanstack/react-form';
 import { Link, createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { ArrowLeftIcon, MailIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 import * as z from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -29,7 +30,6 @@ import { useAuthenticationRequestCode } from '@/hooks/tanstack-query/use-authent
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { applyApiFieldErrors, getFieldInvalidState } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_authentication/forgot-password/')({
   component: RouteComponent,
@@ -44,10 +44,9 @@ function RouteComponent(): React.JSX.Element {
 
   const requestCodeMutation = useAuthenticationRequestCode({
     onSuccess() {
-      toastSuccess(
-        'Código enviado!',
-        'Verifique seu e-mail para obter o código.',
-      );
+      toast.success('Código enviado!', {
+        description: 'Verifique seu e-mail para obter o código.',
+      });
       router.navigate({
         to: '/forgot-password/validate-code',
         search: { email: form.state.values.email },

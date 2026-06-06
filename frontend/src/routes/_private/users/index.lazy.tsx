@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { Trash2Icon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableUsers } from './-table-users';
 
@@ -26,7 +27,6 @@ import { useUsersExportCsv } from '@/hooks/tanstack-query/use-users-export-csv';
 import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/users/')({
@@ -78,7 +78,9 @@ function RouteComponent(): React.JSX.Element {
           : result.deleted
               .toString()
               .concat(' usuários excluídos permanentemente!');
-      toastSuccess(message, 'A lixeira de usuários foi esvaziada');
+      toast.success(message, {
+        description: 'A lixeira de usuários foi esvaziada',
+      });
     },
     onError(error) {
       handleApiError(error, {

@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   buildGroupRowPayload,
@@ -26,7 +27,6 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow } from '@/lib/interfaces';
 import { buildFieldValidator } from '@/lib/table';
-import { toastSuccess } from '@/lib/toast';
 
 interface GroupRowFormDialogProps {
   open: boolean;
@@ -93,7 +93,9 @@ function GroupRowFormDialogContent({
 
   const _create = useCreateGroupRow({
     onSuccess() {
-      toastSuccess('Item criado', 'O item foi criado com sucesso');
+      toast.success('Item criado', {
+        description: 'O item foi criado com sucesso',
+      });
       onOpenChange(false);
     },
     onError(error) {
@@ -103,7 +105,9 @@ function GroupRowFormDialogContent({
 
   const _update = useUpdateGroupRow({
     onSuccess() {
-      toastSuccess('Item atualizado', 'O item foi atualizado com sucesso');
+      toast.success('Item atualizado', {
+        description: 'O item foi atualizado com sucesso',
+      });
       onOpenChange(false);
     },
     onError(error) {
