@@ -1,6 +1,6 @@
-import { Link } from '@tanstack/react-router';
 import { DownloadIcon, FileIcon } from 'lucide-react';
 
+import { AttachmentContextMenu } from '@/components/common/file-upload/attachment-context-menu';
 import type { IField, IRow, IStorage } from '@/lib/interfaces';
 import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { cn } from '@/lib/utils';
@@ -36,31 +36,34 @@ export function TableRowFileCell({
         if ((isGallery || isCardOrMosaic) && isImage) {
           return (
             <li key={value._id}>
-              <Link
-                to={value.url}
-                target="_blank"
-                className={cn(
-                  'flex flex-col items-center gap-1 text-center underline underline-offset-2',
-                  isCardOrMosaic &&
-                    'h-full w-full overflow-hidden no-underline justify-center',
-                )}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <img
-                  src={value.url}
-                  alt={value.originalName}
+              <AttachmentContextMenu storage={value}>
+                <a
+                  href={value.url}
+                  target="_blank"
+                  rel="noreferrer"
                   className={cn(
-                    'object-cover',
-                    isCardOrMosaic && 'size-full h-full block',
-                    !isCardOrMosaic && 'size-16',
+                    'flex flex-col items-center gap-1 text-center underline underline-offset-2',
+                    isCardOrMosaic &&
+                      'h-full w-full overflow-hidden no-underline justify-center',
                   )}
-                />
-                {!isCardOrMosaic && (
-                  <span className="text-xs text-center">
-                    {value.originalName}
-                  </span>
-                )}
-              </Link>
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <img
+                    src={value.url}
+                    alt={value.originalName}
+                    className={cn(
+                      'object-cover',
+                      isCardOrMosaic && 'size-full h-full block',
+                      !isCardOrMosaic && 'size-16',
+                    )}
+                  />
+                  {!isCardOrMosaic && (
+                    <span className="text-xs text-center">
+                      {value.originalName}
+                    </span>
+                  )}
+                </a>
+              </AttachmentContextMenu>
             </li>
           );
         }
@@ -68,20 +71,23 @@ export function TableRowFileCell({
         if ((isGallery || isCardOrMosaic) && !isImage) {
           return (
             <li key={value._id}>
-              <Link
-                to={value.url}
-                target="_blank"
-                className="flex flex-col items-center gap-1 text-center underline underline-offset-2"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <FileIcon
-                  className="size-16 text-muted-foreground"
-                  strokeWidth={1}
-                />
-                <span className="text-xs text-center">
-                  {value.originalName}
-                </span>
-              </Link>
+              <AttachmentContextMenu storage={value}>
+                <a
+                  href={value.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex flex-col items-center gap-1 text-center underline underline-offset-2"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <FileIcon
+                    className="size-16 text-muted-foreground"
+                    strokeWidth={1}
+                  />
+                  <span className="text-xs text-center">
+                    {value.originalName}
+                  </span>
+                </a>
+              </AttachmentContextMenu>
             </li>
           );
         }
@@ -91,14 +97,17 @@ export function TableRowFileCell({
             key={value._id}
             className="flex items-center gap-2"
           >
-            <Link
-              to={value.url}
-              target="_blank"
-              className="text-sm text-primary underline underline-offset-2"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {value.originalName}
-            </Link>
+            <AttachmentContextMenu storage={value}>
+              <a
+                href={value.url}
+                target="_blank"
+                rel="noreferrer"
+                className="text-sm text-primary underline underline-offset-2"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {value.originalName}
+              </a>
+            </AttachmentContextMenu>
             <a
               href={getStorageDownloadUrl(value)}
               aria-label={`Baixar ${value.originalName}`}

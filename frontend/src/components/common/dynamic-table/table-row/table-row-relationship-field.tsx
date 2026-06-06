@@ -2,6 +2,7 @@ import { useStore } from '@tanstack/react-form';
 import { useQueryClient } from '@tanstack/react-query';
 import { PlusIcon } from 'lucide-react';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import { TableRowFieldLabel } from './table-row-field-label';
 
@@ -61,7 +62,6 @@ import {
   buildFieldValidator,
   buildRowPayload,
 } from '@/lib/table';
-import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface TableRowRelationshipFieldProps {
@@ -225,7 +225,9 @@ function RelatedRowCreateDialogContent({
 
   const create = useCreateTableRow({
     onSuccess(row: IRow): void {
-      toastSuccess('Registro criado', 'O registro relacionado foi criado');
+      toast.success('Registro criado', {
+        description: 'O registro relacionado foi criado',
+      });
       onCreated(row);
       form.reset();
       onOpenChange(false);

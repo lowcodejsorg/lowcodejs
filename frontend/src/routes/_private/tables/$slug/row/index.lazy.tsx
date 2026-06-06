@@ -8,6 +8,7 @@ import {
 import { isAxiosError } from 'axios';
 import { Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { AutoSaveRowForm } from './-auto-save-row-form';
 import { RowDetailSkeleton } from './-row-detail-skeleton';
@@ -29,7 +30,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useReadTableRow } from '@/hooks/tanstack-query/use-table-row-read';
 import type { IRow } from '@/lib/interfaces';
-import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/row/')({
@@ -216,10 +216,10 @@ function ExistingRowView({
 
   const handleShare = (): void => {
     navigator.clipboard.writeText(window.location.href);
-    toastInfo(
-      'Link do registro copiado',
-      'O link do registro foi copiado para a área de transferência',
-    );
+    toast.info('Link do registro copiado', {
+      description:
+        'O link do registro foi copiado para a área de transferência',
+    });
   };
 
   if (isLoading) {

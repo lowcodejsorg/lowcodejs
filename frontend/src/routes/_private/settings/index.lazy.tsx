@@ -2,6 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { StorageMigrationCard } from './-storage-migration-card';
 import type { SettingUpdateFormValues } from './-update-form';
@@ -22,7 +23,6 @@ import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ISetting } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/settings/')({
   component: RouteComponent,
@@ -154,10 +154,10 @@ function SettingUpdateContent({
 
   const _update = useUpdateSetting({
     onSuccess(updated) {
-      toastSuccess(
-        'Configurações atualizadas',
-        'As configurações do sistema foram atualizadas com sucesso',
-      );
+      toast.success('Configurações atualizadas', {
+        description:
+          'As configurações do sistema foram atualizadas com sucesso',
+      });
 
       form.reset(buildSettingFormValues(updated));
       setMode('show');

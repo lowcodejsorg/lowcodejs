@@ -9,6 +9,7 @@ import React from 'react';
 
 import type { ForumMessage } from './forum-types';
 
+import { AttachmentContextMenu } from '@/components/common/file-upload/attachment-context-menu';
 import { ContentViewer } from '@/components/common/rich-editor';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -226,17 +227,19 @@ export function ForumMessagesList({
                         key={file._id}
                         className="flex items-center gap-2 rounded-md border p-2 text-xs hover:bg-muted/40"
                       >
-                        <a
-                          href={file.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="flex items-center gap-2 min-w-0"
-                        >
-                          {filePreview}
-                          <span className="max-w-[160px] truncate">
-                            {file.originalName}
-                          </span>
-                        </a>
+                        <AttachmentContextMenu storage={file}>
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-2 min-w-0"
+                          >
+                            {filePreview}
+                            <span className="max-w-[160px] truncate">
+                              {file.originalName}
+                            </span>
+                          </a>
+                        </AttachmentContextMenu>
                         <a
                           href={getStorageDownloadUrl(file)}
                           aria-label={`Baixar ${file.originalName}`}

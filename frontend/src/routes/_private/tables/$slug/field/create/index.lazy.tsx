@@ -4,6 +4,7 @@ import {
   useParams,
   useSearch,
 } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import { CreateFieldSkeleton } from './-create-field-skeleton';
 import {
@@ -28,7 +29,6 @@ import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ICategory, IField, ValueOf } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute(
   '/_private/tables/$slug/field/create/',
@@ -91,7 +91,9 @@ function RouteComponent(): React.JSX.Element {
   const permission = useTablePermission(table.data);
 
   const onCreateSuccess = (): void => {
-    toastSuccess('Campo criado', 'O campo foi criado com sucesso');
+    toast.success('Campo criado', {
+      description: 'O campo foi criado com sucesso',
+    });
     form.reset();
     sidebar.setOpen(false);
     navigate({

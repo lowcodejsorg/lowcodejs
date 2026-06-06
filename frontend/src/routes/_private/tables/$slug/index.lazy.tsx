@@ -8,6 +8,7 @@ import {
 import type { AxiosError } from 'axios';
 import { ArrowLeftIcon, PlusIcon, Share2Icon, ShieldXIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { RowEmptyTrashDialog } from './-empty-trash-dialog';
 import { ImportCsvDialog } from './-import-csv-dialog';
@@ -56,7 +57,6 @@ import { useFilterSidebar } from '@/hooks/use-filter-sidebar';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_ROLE, E_TABLE_STYLE, MetaDefault } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastInfo } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 const rootApi = getRouteApi('__root__');
@@ -258,10 +258,10 @@ function RouteComponent(): React.JSX.Element {
             // size="icon-sm"
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
-              toastInfo(
-                'Link da tabela copiado',
-                'O link da tabela foi copiado para a área de transferência',
-              );
+              toast.info('Link da tabela copiado', {
+                description:
+                  'O link da tabela foi copiado para a área de transferência',
+              });
             }}
           >
             <Share2Icon />
@@ -444,19 +444,17 @@ function RouteComponent(): React.JSX.Element {
             onPageChange={(newPage) => {
               void router.navigate({
                 to: '.',
-                search: {
-                  page: String(newPage),
-                  perPage: String(search.perPage),
-                },
+                search: (prev) => ({ ...prev, page: String(newPage) }),
               });
             }}
             onPerPageChange={(newPerPage) => {
               void router.navigate({
                 to: '.',
-                search: {
-                  page: String(1),
+                search: (prev) => ({
+                  ...prev,
                   perPage: String(newPerPage),
-                },
+                  page: String(1),
+                }),
               });
             }}
           />

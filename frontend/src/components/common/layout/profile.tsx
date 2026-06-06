@@ -1,6 +1,7 @@
 import { Link, useRouter } from '@tanstack/react-router';
 import { LogOut, User } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,6 @@ import { Spinner } from '@/components/ui/spinner';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
 import { useProfileRead } from '@/hooks/tanstack-query/use-profile-read';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export function Profile(): React.JSX.Element {
   const user = useProfileRead();
@@ -34,7 +34,9 @@ export function Profile(): React.JSX.Element {
 
   const signOut = useAuthenticationSignOut({
     onSuccess() {
-      toastSuccess('Logout realizado com sucesso!', 'Volte sempre!');
+      toast.success('Logout realizado com sucesso!', {
+        description: 'Volte sempre!',
+      });
 
       router.navigate({
         to: '/',

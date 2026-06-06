@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { Trash2Icon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableGroups } from './-table-groups';
 
@@ -26,7 +27,6 @@ import { useGroupsExportCsv } from '@/hooks/tanstack-query/use-groups-export-csv
 import { E_FIELD_TYPE, E_ROLE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/groups/')({
@@ -70,7 +70,9 @@ function RouteComponent(): React.JSX.Element {
           : result.deleted
               .toString()
               .concat(' grupos excluídos permanentemente!');
-      toastSuccess(message, 'A lixeira de grupos foi esvaziada');
+      toast.success(message, {
+        description: 'A lixeira de grupos foi esvaziada',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao esvaziar lixeira de grupos' });

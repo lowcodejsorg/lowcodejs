@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
 
 import { BulkActionBar } from '@/components/common/bulk-action-bar';
 import {
@@ -54,7 +55,6 @@ import {
 import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -394,10 +394,9 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
   const sendToTrash = useUserSendToTrash({
     onSuccess() {
       setSingleTrashUser(null);
-      toastSuccess(
-        'Usuário enviado para lixeira!',
-        'O usuário foi movido para a lixeira',
-      );
+      toast.success('Usuário enviado para lixeira!', {
+        description: 'O usuário foi movido para a lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao enviar usuário para lixeira' });
@@ -407,10 +406,9 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
   const removeFromTrash = useUserRemoveFromTrash({
     onSuccess() {
       setSingleRestoreUser(null);
-      toastSuccess(
-        'Usuário restaurado!',
-        'O usuário foi restaurado da lixeira',
-      );
+      toast.success('Usuário restaurado!', {
+        description: 'O usuário foi restaurado da lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao restaurar usuário' });
@@ -420,10 +418,9 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
   const userDelete = useUserDelete({
     onSuccess() {
       setSingleDeleteUser(null);
-      toastSuccess(
-        'Usuário excluído permanentemente!',
-        'O usuário foi excluído permanentemente',
-      );
+      toast.success('Usuário excluído permanentemente!', {
+        description: 'O usuário foi excluído permanentemente',
+      });
     },
     onError(error) {
       handleApiError(error, {
@@ -442,7 +439,9 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
           : result.modified
               .toString()
               .concat(' usuários enviados para lixeira!');
-      toastSuccess(message, 'Os usuários foram movidos para a lixeira');
+      toast.success(message, {
+        description: 'Os usuários foram movidos para a lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, {
@@ -459,7 +458,9 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
         result.modified === 1
           ? '1 usuário restaurado!'
           : result.modified.toString().concat(' usuários restaurados!');
-      toastSuccess(message, 'Os usuários foram restaurados da lixeira');
+      toast.success(message, {
+        description: 'Os usuários foram restaurados da lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao restaurar usuários' });
@@ -476,7 +477,9 @@ export function TableUsers({ data, toolbarPortal }: Props): React.JSX.Element {
           : result.deleted
               .toString()
               .concat(' usuários excluídos permanentemente!');
-      toastSuccess(message, 'Os usuários foram excluídos permanentemente');
+      toast.success(message, {
+        description: 'Os usuários foram excluídos permanentemente',
+      });
     },
     onError(error) {
       handleApiError(error, {

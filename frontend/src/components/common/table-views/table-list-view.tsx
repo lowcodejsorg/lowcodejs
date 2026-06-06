@@ -14,6 +14,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { InteractiveDataTable } from '@/components/common/data-table';
 import { ExtensionSlot } from '@/components/common/extension-slot';
@@ -45,7 +46,6 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { API } from '@/lib/api';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 function RowActionsCell({
@@ -75,7 +75,7 @@ function RowActionsCell({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess('Registro enviado para lixeira!');
+      toast.success('Registro enviado para lixeira!');
     },
   });
 
@@ -88,7 +88,7 @@ function RowActionsCell({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess('Registro restaurado!');
+      toast.success('Registro restaurado!');
     },
   });
 
@@ -101,7 +101,7 @@ function RowActionsCell({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess('Registro excluido permanentemente!');
+      toast.success('Registro excluido permanentemente!');
     },
   });
 
@@ -451,11 +451,11 @@ export function TableListView({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess(
+      toast.success(
         result.modified === 1
           ? '1 registro enviado para lixeira!'
           : `${result.modified} registros enviados para lixeira!`,
-        'Os registros foram movidos para a lixeira',
+        { description: 'Os registros foram movidos para a lixeira' },
       );
     },
   });
@@ -472,11 +472,11 @@ export function TableListView({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess(
+      toast.success(
         result.modified === 1
           ? '1 registro restaurado!'
           : `${result.modified} registros restaurados!`,
-        'Os registros foram restaurados da lixeira',
+        { description: 'Os registros foram restaurados da lixeira' },
       );
     },
   });
@@ -495,7 +495,7 @@ export function TableListView({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess(
+      toast.success(
         result.deleted === 1
           ? '1 registro excluído permanentemente!'
           : `${result.deleted} registros excluídos permanentemente!`,

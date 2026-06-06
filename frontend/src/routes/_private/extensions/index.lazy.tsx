@@ -2,6 +2,8 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import {
   AlertTriangleIcon,
+  LayoutDashboardIcon,
+  LayoutListIcon,
   PackageIcon,
   PuzzleIcon,
   SearchIcon,
@@ -10,6 +12,7 @@ import {
   XIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableMultiSelect } from '@/components/common/dynamic-table/table-selectors/table-multi-select';
 import { PageHeader, PageShell } from '@/components/common/page-shell';
@@ -22,6 +25,13 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Empty, EmptyDescription, EmptyTitle } from '@/components/ui/empty';
 import { Field, FieldLabel } from '@/components/ui/field';
 import {
@@ -40,13 +50,20 @@ import {
 } from '@/components/ui/sheet';
 import { Spinner } from '@/components/ui/spinner';
 import { Switch } from '@/components/ui/switch';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { extensionListOptions } from '@/hooks/tanstack-query/_query-options';
 import { useExtensionConfigureTableScope } from '@/hooks/tanstack-query/use-extension-configure-table-scope';
 import { useExtensionToggle } from '@/hooks/tanstack-query/use-extension-toggle';
 import { EXTENSION_TYPE_LABEL, E_EXTENSION_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IExtension } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/extensions/')({
   component: RouteComponent,
@@ -85,6 +102,13 @@ function groupByPackage(
     .sort((a, b) => a.pkg.localeCompare(b.pkg));
 }
 
+function getTableScopeLabel(extension: IExtension): string | null {
+  if (extension.type !== E_EXTENSION_TYPE.PLUGIN) return null;
+  if (extension.tableScope.mode === 'all') return 'Todas as tabelas';
+  const count = extension.tableScope.tableIds.length;
+  return `${count} tabela${count === 1 ? '' : 's'} selecionada${count === 1 ? '' : 's'}`;
+}
+
 interface ExtensionCardProps {
   extension: IExtension;
   onConfigureTableScope: (extension: IExtension) => void;
@@ -97,9 +121,9 @@ function ExtensionCard({
   const navigate = useNavigate();
   const toggle = useExtensionToggle({
     onSuccess(_data) {
-      toastSuccess(
+      toast.success(
         _data.enabled ? 'Extensão ativada' : 'Extensão desativada',
-        extension.name,
+        { description: extension.name },
       );
     },
     onError(error) {
@@ -110,12 +134,7 @@ function ExtensionCard({
   const isPending = toggle.status === 'pending';
   const canEnable = extension.available;
 
-  const tableScopeLabel = ((): string | null => {
-    if (extension.type !== E_EXTENSION_TYPE.PLUGIN) return null;
-    if (extension.tableScope.mode === 'all') return 'Todas as tabelas';
-    const count = extension.tableScope.tableIds.length;
-    return `${count} tabela${count === 1 ? '' : 's'} selecionada${count === 1 ? '' : 's'}`;
-  })();
+  const tableScopeLabel = getTableScopeLabel(extension);
 
   return (
     <Card
@@ -207,6 +226,117 @@ function ExtensionCard({
   );
 }
 
+interface ExtensionTableRowProps {
+  extension: IExtension;
+  onConfigureTableScope: (extension: IExtension) => void;
+}
+
+function ExtensionTableRow({
+  extension,
+  onConfigureTableScope,
+}: ExtensionTableRowProps): React.JSX.Element {
+  const navigate = useNavigate();
+  const toggle = useExtensionToggle({
+    onSuccess(_data) {
+      toast.success(
+        _data.enabled ? 'Extensão ativada' : 'Extensão desativada',
+        { description: extension.name },
+      );
+    },
+    onError(error) {
+      handleApiError(error, { context: 'Erro ao alternar extensão' });
+    },
+  });
+
+  const isPending = toggle.status === 'pending';
+  const tableScopeLabel = getTableScopeLabel(extension);
+
+  return (
+    <TableRow data-test-id={`extension-table-row-${extension._id}`}>
+      <TableCell className="min-w-72">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 font-medium">
+            <span>{extension.name}</span>
+            {!extension.available && (
+              <AlertTriangleIcon className="size-4 text-destructive" />
+            )}
+          </div>
+          <div className="max-w-xl text-sm text-muted-foreground whitespace-normal">
+            {extension.description ?? 'Sem descrição'}
+          </div>
+        </div>
+      </TableCell>
+      <TableCell>
+        <TypeBadge type={extension.type} />
+      </TableCell>
+      <TableCell>
+        <div className="space-y-1">
+          <div className="font-mono text-xs">{extension.pkg}</div>
+          <div className="font-mono text-xs text-muted-foreground">
+            {extension.extensionId}
+          </div>
+        </div>
+      </TableCell>
+      <TableCell className="text-muted-foreground">
+        v{extension.version}
+      </TableCell>
+      <TableCell className="text-muted-foreground">
+        {extension.author ?? '-'}
+      </TableCell>
+      <TableCell>
+        {tableScopeLabel ? (
+          <span className="text-sm">{tableScopeLabel}</span>
+        ) : (
+          <span className="text-muted-foreground">-</span>
+        )}
+      </TableCell>
+      <TableCell>
+        <div className="flex items-center gap-2">
+          {isPending && <Spinner />}
+          <Switch
+            checked={extension.enabled}
+            disabled={isPending || !extension.available}
+            onCheckedChange={(enabled) =>
+              toggle.mutate({ _id: extension._id, enabled })
+            }
+            data-test-id={`extension-table-toggle-${extension._id}`}
+          />
+        </div>
+      </TableCell>
+      <TableCell className="text-right">
+        {extension.type === E_EXTENSION_TYPE.PLUGIN && (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="cursor-pointer"
+            onClick={() => onConfigureTableScope(extension)}
+            data-test-id={`extension-table-configure-${extension._id}`}
+          >
+            <SettingsIcon className="size-4" />
+            Configurar
+          </Button>
+        )}
+
+        {extension.type !== E_EXTENSION_TYPE.PLUGIN &&
+          extension.configRoute && (
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="cursor-pointer"
+              data-test-id={`extension-table-config-route-${extension._id}`}
+              onClick={() => navigate({ to: extension.configRoute as any })}
+            >
+              <SettingsIcon className="size-4" />
+              Configurar
+            </Button>
+          )}
+      </TableCell>
+    </TableRow>
+  );
+}
+
 interface TableScopeSheetProps {
   extension: IExtension | null;
   open: boolean;
@@ -229,7 +359,9 @@ function TableScopeSheet({
 
   const configure = useExtensionConfigureTableScope({
     onSuccess() {
-      toastSuccess('Escopo atualizado', 'O plugin foi reconfigurado.');
+      toast.success('Escopo atualizado', {
+        description: 'O plugin foi reconfigurado.',
+      });
       onOpenChange(false);
     },
     onError(error) {
@@ -335,6 +467,7 @@ function TableScopeSheet({
 
 type StatusFilter = 'all' | 'enabled' | 'disabled';
 type TypeFilter = IExtension['type'];
+type ViewMode = 'gallery' | 'table';
 
 const TYPE_FILTERS: Array<TypeFilter> = [
   E_EXTENSION_TYPE.PLUGIN,
@@ -359,6 +492,7 @@ function RouteComponent(): React.JSX.Element {
   const [search, setSearch] = React.useState('');
   const [typeFilter, setTypeFilter] = React.useState<Array<TypeFilter>>([]);
   const [statusFilter, setStatusFilter] = React.useState<StatusFilter>('all');
+  const [viewMode, setViewMode] = React.useState<ViewMode>('gallery');
 
   const filtered = React.useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -489,6 +623,51 @@ function RouteComponent(): React.JSX.Element {
               );
             })}
           </div>
+
+          <DropdownMenu
+            data-slot="extensions-view-mode"
+            data-test-id="extensions-view-mode"
+            dir="ltr"
+            modal={false}
+          >
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="h-8 cursor-pointer shadow-none"
+              >
+                {viewMode === 'gallery' ? (
+                  <LayoutDashboardIcon className="size-4" />
+                ) : (
+                  <LayoutListIcon className="size-4" />
+                )}
+                Exibição
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="max-w-xs">
+              <DropdownMenuRadioGroup value={viewMode}>
+                <DropdownMenuRadioItem
+                  value="table"
+                  className="inline-flex w-full space-x-1"
+                  onClick={() => setViewMode('table')}
+                  data-test-id="extensions-view-table"
+                >
+                  <LayoutListIcon className="size-4" />
+                  <span>Lista</span>
+                </DropdownMenuRadioItem>
+                <DropdownMenuRadioItem
+                  value="gallery"
+                  className="inline-flex w-full space-x-1"
+                  onClick={() => setViewMode('gallery')}
+                  data-test-id="extensions-view-gallery"
+                >
+                  <LayoutDashboardIcon className="size-4" />
+                  <span>Galeria</span>
+                </DropdownMenuRadioItem>
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </PageShell.Header>
 
@@ -513,25 +692,54 @@ function RouteComponent(): React.JSX.Element {
           </Empty>
         )}
 
-        {groups.map((group) => (
-          <section
-            key={group.pkg}
-            className="mb-6"
-          >
-            <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
-              {group.pkg}
-            </h2>
-            <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-              {group.items.map((extension) => (
-                <ExtensionCard
-                  key={extension._id}
-                  extension={extension}
-                  onConfigureTableScope={handleConfigureTableScope}
-                />
-              ))}
-            </div>
-          </section>
-        ))}
+        {viewMode === 'gallery' &&
+          groups.map((group) => (
+            <section
+              key={group.pkg}
+              className="mb-6"
+            >
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground mb-2">
+                {group.pkg}
+              </h2>
+              <div className="grid gap-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
+                {group.items.map((extension) => (
+                  <ExtensionCard
+                    key={extension._id}
+                    extension={extension}
+                    onConfigureTableScope={handleConfigureTableScope}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+
+        {viewMode === 'table' && filtered.length > 0 && (
+          <div className="rounded-md border">
+            <Table data-test-id="extensions-table-view">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Extensão</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Pacote</TableHead>
+                  <TableHead>Versão</TableHead>
+                  <TableHead>Autor</TableHead>
+                  <TableHead>Escopo</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filtered.map((extension) => (
+                  <ExtensionTableRow
+                    key={extension._id}
+                    extension={extension}
+                    onConfigureTableScope={handleConfigureTableScope}
+                  />
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </PageShell.Content>
 
       <TableScopeSheet

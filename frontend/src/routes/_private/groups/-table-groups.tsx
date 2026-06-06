@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
 
 import { BulkActionBar } from '@/components/common/bulk-action-bar';
 import {
@@ -47,7 +48,6 @@ import { useDataTable } from '@/hooks/use-data-table';
 import { E_ROLE, USER_GROUP_MAPPER } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IGroup } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 const ROUTE_ID = '/_private/groups/';
@@ -347,10 +347,9 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
   const sendToTrash = useGroupSendToTrash({
     onSuccess() {
       setSingleTrashGroup(null);
-      toastSuccess(
-        'Grupo enviado para lixeira!',
-        'O grupo foi movido para a lixeira',
-      );
+      toast.success('Grupo enviado para lixeira!', {
+        description: 'O grupo foi movido para a lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao enviar grupo para lixeira' });
@@ -360,7 +359,9 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
   const removeFromTrash = useGroupRemoveFromTrash({
     onSuccess() {
       setSingleRestoreGroup(null);
-      toastSuccess('Grupo restaurado!', 'O grupo foi restaurado da lixeira');
+      toast.success('Grupo restaurado!', {
+        description: 'O grupo foi restaurado da lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao restaurar grupo' });
@@ -370,10 +371,9 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
   const groupDelete = useGroupDelete({
     onSuccess() {
       setSingleDeleteGroup(null);
-      toastSuccess(
-        'Grupo excluído permanentemente!',
-        'O grupo foi excluído permanentemente',
-      );
+      toast.success('Grupo excluído permanentemente!', {
+        description: 'O grupo foi excluído permanentemente',
+      });
     },
     onError(error) {
       handleApiError(error, {
@@ -390,7 +390,9 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
         result.modified === 1
           ? '1 grupo enviado para lixeira!'
           : result.modified.toString().concat(' grupos enviados para lixeira!');
-      toastSuccess(message, 'Os grupos foram movidos para a lixeira');
+      toast.success(message, {
+        description: 'Os grupos foram movidos para a lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao enviar grupos para lixeira' });
@@ -405,7 +407,9 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
         result.modified === 1
           ? '1 grupo restaurado!'
           : result.modified.toString().concat(' grupos restaurados!');
-      toastSuccess(message, 'Os grupos foram restaurados da lixeira');
+      toast.success(message, {
+        description: 'Os grupos foram restaurados da lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao restaurar grupos' });
@@ -422,7 +426,9 @@ export function TableGroups({ data, toolbarPortal }: Props): React.JSX.Element {
           : result.deleted
               .toString()
               .concat(' grupos excluídos permanentemente!');
-      toastSuccess(message, 'Os grupos foram excluídos permanentemente');
+      toast.success(message, {
+        description: 'Os grupos foram excluídos permanentemente',
+      });
     },
     onError(error) {
       handleApiError(error, {

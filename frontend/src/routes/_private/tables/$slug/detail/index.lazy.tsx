@@ -5,6 +5,7 @@ import {
 } from '@tanstack/react-router';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableUpdateSchema, UpdateTableFormFields } from './-update-form';
 import { UpdateTableFormSkeleton } from './-update-form-skeleton';
@@ -25,7 +26,6 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/detail/')({
   component: RouteComponent,
@@ -107,10 +107,9 @@ function TableUpdateContent({
   const router = useRouter();
   const _update = useUpdateTable({
     onSuccess(responseData) {
-      toastSuccess(
-        'Tabela atualizada',
-        'Os dados da tabela foram atualizados com sucesso',
-      );
+      toast.success('Tabela atualizada', {
+        description: 'Os dados da tabela foram atualizados com sucesso',
+      });
 
       sidebar.setOpen(false);
       router.navigate({

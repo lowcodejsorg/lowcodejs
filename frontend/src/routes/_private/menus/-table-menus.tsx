@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
 
 import { ActionDialog } from '@/components/common/action-dialog';
 import { BulkActionBar } from '@/components/common/bulk-action-bar';
@@ -52,7 +53,6 @@ import { E_MENU_ITEM_TYPE, E_ROLE } from '@/lib/constant';
 import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 import { useAuthStore } from '@/stores/authentication';
 
@@ -234,10 +234,9 @@ function ActionsCell(props: ActionsCellProps): React.JSX.Element {
 
   const setInitialMutation = useUpdateMenu({
     onSuccess() {
-      toastSuccess(
-        'Página inicial atualizada',
-        'Este menu será carregado ao acessar o sistema',
-      );
+      toast.success('Página inicial atualizada', {
+        description: 'Este menu será carregado ao acessar o sistema',
+      });
       router.invalidate();
     },
     onError(error) {
@@ -645,10 +644,9 @@ export function TableMenus({
   const singleDelete = useMenuBulkDelete({
     onSuccess() {
       setSingleDeleteMenu(null);
-      toastSuccess(
-        'Menu excluído permanentemente!',
-        'O menu foi excluído permanentemente',
-      );
+      toast.success('Menu excluído permanentemente!', {
+        description: 'O menu foi excluído permanentemente',
+      });
     },
     onError(error) {
       handleApiError(error, {
@@ -665,7 +663,9 @@ export function TableMenus({
         result.modified === 1
           ? '1 menu enviado para lixeira!'
           : result.modified.toString().concat(' menus enviados para lixeira!');
-      toastSuccess(message, 'Os menus foram movidos para a lixeira');
+      toast.success(message, {
+        description: 'Os menus foram movidos para a lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao enviar menus para lixeira' });
@@ -680,7 +680,9 @@ export function TableMenus({
         result.modified === 1
           ? '1 menu restaurado!'
           : result.modified.toString().concat(' menus restaurados!');
-      toastSuccess(message, 'Os menus foram restaurados da lixeira');
+      toast.success(message, {
+        description: 'Os menus foram restaurados da lixeira',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao restaurar menus' });
@@ -697,7 +699,9 @@ export function TableMenus({
           : result.deleted
               .toString()
               .concat(' menus excluídos permanentemente!');
-      toastSuccess(message, 'Os menus foram excluídos permanentemente');
+      toast.success(message, {
+        description: 'Os menus foram excluídos permanentemente',
+      });
     },
     onError(error) {
       handleApiError(error, {

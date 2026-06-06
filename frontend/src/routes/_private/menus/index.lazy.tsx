@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { ListTreeIcon, Trash2Icon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { MenuReorderDialog } from './-reorder-dialog';
 import { TableMenus } from './-table-menus';
@@ -27,7 +28,6 @@ import { useMenusExportCsv } from '@/hooks/tanstack-query/use-menus-export-csv';
 import { E_FIELD_TYPE, E_ROLE, MetaDefault } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IFilterField } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export const Route = createLazyFileRoute('/_private/menus/')({
@@ -69,7 +69,9 @@ function RouteComponent(): React.JSX.Element {
           : result.deleted
               .toString()
               .concat(' menus excluídos permanentemente!');
-      toastSuccess(message, 'A lixeira de menus foi esvaziada');
+      toast.success(message, {
+        description: 'A lixeira de menus foi esvaziada',
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao esvaziar lixeira de menus' });

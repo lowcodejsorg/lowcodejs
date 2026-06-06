@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
 
 import { ActionDialog } from '@/components/common/action-dialog';
 import {
@@ -58,7 +59,6 @@ import { formatDate } from '@/lib/format-date';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toastInfo, toastSuccess, toastWarning } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 const ROUTE_ID = '/_private/tables/';
@@ -102,10 +102,9 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
       QueryClient.invalidateQueries({
         queryKey: queryKeys.tables.lists(),
       });
-      toastSuccess(
-        'Tabela excluída permanentemente!',
-        'A tabela foi excluída permanentemente',
-      );
+      toast.success('Tabela excluída permanentemente!', {
+        description: 'A tabela foi excluída permanentemente',
+      });
       router.navigate({
         to: '/tables',
         replace: true,
@@ -167,7 +166,7 @@ function ActionsCell({ table }: { table: ITable }): React.JSX.Element {
             onClick={() => {
               const url = `${window.location.origin}/tables/${table.slug}`;
               navigator.clipboard.writeText(url);
-              toastInfo('Link da tabela copiado');
+              toast.info('Link da tabela copiado');
             }}
           >
             <Share2Icon className="size-4" />
@@ -323,7 +322,7 @@ const columns: Array<ColumnDef<ITable, any>> = [
               e.stopPropagation();
               const url = `${window.location.origin}/tables/${slug}`;
               navigator.clipboard.writeText(url);
-              toastInfo('Link da tabela copiado');
+              toast.info('Link da tabela copiado');
             }}
           >
             <CopyIcon className="size-3" />
@@ -487,11 +486,11 @@ export function TableTables({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.tables.lists(),
       });
-      toastSuccess(
+      toast.success(
         result.modified === 1
           ? '1 tabela enviada para lixeira!'
           : `${result.modified} tabelas enviadas para lixeira!`,
-        'As tabelas foram movidas para a lixeira',
+        { description: 'As tabelas foram movidas para a lixeira' },
       );
     },
   });
@@ -512,20 +511,22 @@ export function TableTables({
       });
 
       if (result.modified > 0) {
-        toastSuccess(
+        toast.success(
           result.modified === 1
             ? '1 tabela restaurada!'
             : `${result.modified} tabelas restauradas!`,
-          'As tabelas foram restauradas da lixeira',
+          { description: 'As tabelas foram restauradas da lixeira' },
         );
       }
 
       if (result.skipped && result.skipped.length > 0) {
-        toastWarning(
+        toast.warning(
           result.skipped.length === 1
             ? '1 tabela não foi restaurada'
             : `${result.skipped.length} tabelas não foram restauradas`,
-          `Já existe uma tabela ativa com o mesmo slug: ${result.skipped.join(', ')}. Renomeie ou exclua a tabela ativa antes de restaurar.`,
+          {
+            description: `Já existe uma tabela ativa com o mesmo slug: ${result.skipped.join(', ')}. Renomeie ou exclua a tabela ativa antes de restaurar.`,
+          },
         );
       }
     },
@@ -546,7 +547,7 @@ export function TableTables({
       QueryClient.invalidateQueries({
         queryKey: queryKeys.tables.lists(),
       });
-      toastSuccess(
+      toast.success(
         result.deleted === 1
           ? '1 tabela excluída permanentemente!'
           : `${result.deleted} tabelas excluídas permanentemente!`,

@@ -9,6 +9,7 @@ import {
   TrashIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { KanbanFieldGroupEditor } from './kanban-field-group-editor';
 import { KanbanRowCommentsSection } from './kanban-row-comments';
@@ -29,6 +30,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { AttachmentContextMenu } from '@/components/common/file-upload/attachment-context-menu';
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { extractMentionIds } from '@/components/common/rich-editor';
 import { Badge } from '@/components/ui/badge';
@@ -64,7 +66,6 @@ import {
 import type { FieldMap } from '@/lib/kanban-types';
 import { getStorageDownloadUrl } from '@/lib/storage-url';
 import { buildRowPayload, buildUpdateRowDefaultValues } from '@/lib/table';
-import { toastError, toastSuccess, toastWarning } from '@/lib/toast';
 import { useAuthStore } from '@/stores/authentication';
 
 export function KanbanRowDialog({
@@ -160,7 +161,9 @@ export function KanbanRowDialog({
 
   const updateRow = useUpdateTableRow({
     onSuccess(data) {
-      toastSuccess('Registro atualizado', 'O card foi atualizado com sucesso');
+      toast.success('Registro atualizado', {
+        description: 'O card foi atualizado com sucesso',
+      });
       onRowUpdated?.(data);
       setTaskTitle('');
       setCommentText('');
@@ -168,28 +171,38 @@ export function KanbanRowDialog({
       setEditingTaskTitle('');
     },
     onError() {
-      toastError('Erro ao atualizar', 'Nao foi possivel atualizar o card');
+      toast.error('Erro ao atualizar', {
+        description: 'Nao foi possivel atualizar o card',
+      });
     },
   });
 
   const createRow = useCreateTableRow({
     onSuccess(data) {
-      toastSuccess('Card duplicado', 'O card foi duplicado com sucesso');
+      toast.success('Card duplicado', {
+        description: 'O card foi duplicado com sucesso',
+      });
       onRowDuplicated?.(data);
     },
     onError() {
-      toastError('Erro ao duplicar', 'Nao foi possivel duplicar o card');
+      toast.error('Erro ao duplicar', {
+        description: 'Nao foi possivel duplicar o card',
+      });
     },
   });
 
   const trashRow = useRowUpdateTrash({
     onSuccess() {
-      toastWarning('Card excluido', 'O card foi enviado para a lixeira');
+      toast.warning('Card excluido', {
+        description: 'O card foi enviado para a lixeira',
+      });
       if (row) onRowDeleted?.(row._id);
       onClose();
     },
     onError() {
-      toastError('Erro ao excluir', 'Nao foi possivel excluir o card');
+      toast.error('Erro ao excluir', {
+        description: 'Nao foi possivel excluir o card',
+      });
     },
   });
 
@@ -1072,34 +1085,42 @@ export function KanbanRowDialog({
                                         attachment.mimetype?.includes('image')
                                       ) {
                                         attachmentThumbnail = (
-                                          <a
-                                            href={attachment.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="shrink-0"
+                                          <AttachmentContextMenu
+                                            storage={attachment}
                                           >
-                                            <img
-                                              src={attachment.url}
-                                              alt={attachment.originalName}
-                                              className="size-9 rounded object-cover border"
-                                            />
-                                          </a>
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="shrink-0"
+                                            >
+                                              <img
+                                                src={attachment.url}
+                                                alt={attachment.originalName}
+                                                className="size-9 rounded object-cover border"
+                                              />
+                                            </a>
+                                          </AttachmentContextMenu>
                                         );
                                       } else if (
                                         attachment.mimetype ===
                                         'application/pdf'
                                       ) {
                                         attachmentThumbnail = (
-                                          <a
-                                            href={attachment.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="shrink-0"
+                                          <AttachmentContextMenu
+                                            storage={attachment}
                                           >
-                                            <div className="size-9 rounded border bg-muted flex items-center justify-center">
-                                              <FileTextIcon className="size-4 text-muted-foreground" />
-                                            </div>
-                                          </a>
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="shrink-0"
+                                            >
+                                              <div className="size-9 rounded border bg-muted flex items-center justify-center">
+                                                <FileTextIcon className="size-4 text-muted-foreground" />
+                                              </div>
+                                            </a>
+                                          </AttachmentContextMenu>
                                         );
                                       }
                                       return (
@@ -1109,14 +1130,18 @@ export function KanbanRowDialog({
                                         >
                                           <div className="flex min-w-0 items-center gap-2">
                                             {attachmentThumbnail}
-                                            <a
-                                              href={attachment.url}
-                                              target="_blank"
-                                              rel="noreferrer"
-                                              className="text-sm text-primary underline underline-offset-2 truncate"
+                                            <AttachmentContextMenu
+                                              storage={attachment}
                                             >
-                                              {attachment.originalName}
-                                            </a>
+                                              <a
+                                                href={attachment.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-sm text-primary underline underline-offset-2 truncate"
+                                              >
+                                                {attachment.originalName}
+                                              </a>
+                                            </AttachmentContextMenu>
                                           </div>
                                           <div className="flex items-center gap-1">
                                             <a

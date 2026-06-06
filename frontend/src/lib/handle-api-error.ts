@@ -1,7 +1,7 @@
 import { AxiosError } from 'axios';
+import { toast } from 'sonner';
 
 import type { IHTTPExeptionError } from '@/lib/interfaces';
-import { toastError } from '@/lib/toast';
 
 interface HandleApiErrorOptions {
   context: string;
@@ -17,7 +17,7 @@ export function handleApiError(
   options: HandleApiErrorOptions,
 ): void {
   if (!(error instanceof AxiosError) || !error.response?.data) {
-    toastError(options.context, 'Erro inesperado');
+    toast.error(options.context, { description: 'Erro inesperado' });
     return;
   }
 
@@ -44,5 +44,5 @@ export function handleApiError(
   };
 
   const title = titleMap[cause] ?? options.context;
-  toastError(title, errorData.message ?? options.context);
+  toast.error(title, { description: errorData.message ?? options.context });
 }

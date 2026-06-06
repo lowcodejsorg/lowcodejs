@@ -1,5 +1,6 @@
 import { TrashIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -13,7 +14,6 @@ import {
 import { Spinner } from '@/components/ui/spinner';
 import { useDeleteGroupRow } from '@/hooks/tanstack-query/use-group-row-delete';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 interface GroupRowDeleteDialogProps {
   open: boolean;
@@ -34,7 +34,9 @@ export function GroupRowDeleteDialog({
 }: GroupRowDeleteDialogProps): React.JSX.Element {
   const _delete = useDeleteGroupRow({
     onSuccess() {
-      toastSuccess('Item removido', 'O item foi removido com sucesso');
+      toast.success('Item removido', {
+        description: 'O item foi removido com sucesso',
+      });
       onOpenChange(false);
     },
     onError(error) {

@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import type { UserUpdateFormValues } from './-update-form';
 import { UpdateUserFormFields, UserUpdateSchema } from './-update-form';
@@ -22,7 +23,6 @@ import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/users/$userId/')({
   component: RouteComponent,
@@ -133,10 +133,9 @@ function UserUpdateContent({
 
   const _update = useUpdateUser({
     onSuccess() {
-      toastSuccess(
-        'Usuário atualizado',
-        'Os dados do usuário foram atualizados com sucesso',
-      );
+      toast.success('Usuário atualizado', {
+        description: 'Os dados do usuário foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');

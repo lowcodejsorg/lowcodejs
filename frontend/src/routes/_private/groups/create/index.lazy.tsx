@@ -3,6 +3,7 @@ import {
   useNavigate,
   useRouter,
 } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import {
   CreateGroupFormFields,
@@ -18,7 +19,6 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/groups/create/')({
   component: RouteComponent,
@@ -31,7 +31,9 @@ function RouteComponent(): React.JSX.Element {
 
   const _create = useCreateGroup({
     onSuccess() {
-      toastSuccess('Grupo criado', 'O grupo foi criado com sucesso');
+      toast.success('Grupo criado', {
+        description: 'O grupo foi criado com sucesso',
+      });
 
       form.reset();
       navigate({ to: '/groups', search: { page: 1, perPage: 50 } });

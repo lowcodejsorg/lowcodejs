@@ -7,6 +7,7 @@ import {
 import { useStore } from '@tanstack/react-store';
 import { ArchiveRestoreIcon, PencilIcon, TrashIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { parseMenuPosition } from '../-position';
 
@@ -29,7 +30,6 @@ import type { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu, ValueOf } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/menus/$menuId/')({
   component: RouteComponent,
@@ -99,10 +99,9 @@ function MenuUpdateContent({
 
   const _update = useUpdateMenu({
     onSuccess() {
-      toastSuccess(
-        'Menu atualizado',
-        'Os dados do menu foram atualizados com sucesso',
-      );
+      toast.success('Menu atualizado', {
+        description: 'Os dados do menu foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');
