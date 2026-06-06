@@ -1,5 +1,6 @@
 import { Outlet, createFileRoute, redirect } from '@tanstack/react-router';
 
+import { AuthShell } from '@/components/common/auth-shell';
 import {
   menuAllOptions,
   profileDetailOptions,
@@ -45,7 +46,9 @@ export const Route = createFileRoute('/_authentication')({
   },
   component: () => (
     <div data-test-id="auth-layout">
-      <Outlet />
+      <AuthShell>
+        <Outlet />
+      </AuthShell>
     </div>
   ),
 });

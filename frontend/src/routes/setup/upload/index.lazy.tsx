@@ -2,8 +2,6 @@ import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { UploadIcon } from 'lucide-react';
 import React, { useState } from 'react';
 
-import { Stepper } from '../-stepper';
-
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -62,91 +60,90 @@ function SetupUploadPage(): React.JSX.Element {
   }
 
   return (
-    <>
-      <Stepper currentStep="upload" />
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UploadIcon className="size-5" />
-            Configurações de Upload
-          </CardTitle>
-          <CardDescription>
-            Defina os limites de upload de arquivos
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={handleSubmit}
-            className="space-y-4"
-          >
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <Field>
-                <FieldLabel htmlFor="FILE_UPLOAD_MAX_SIZE">
-                  Tamanho máximo do arquivo
-                </FieldLabel>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Em bytes: {formatFileSize(maxSize)}
-                </div>
-                <InputGroup>
-                  <InputGroupInput
-                    id="FILE_UPLOAD_MAX_SIZE"
-                    type="number"
-                    value={maxSize}
-                    onChange={(e) => setMaxSize(Number(e.target.value))}
-                    required
-                  />
-                </InputGroup>
-              </Field>
-
-              <Field>
-                <FieldLabel htmlFor="FILE_UPLOAD_MAX_FILES_PER_UPLOAD">
-                  Máximo de arquivos por upload
-                </FieldLabel>
-                <div className="text-sm text-muted-foreground mb-2">
-                  Quantidade máxima simultânea
-                </div>
-                <InputGroup>
-                  <InputGroupInput
-                    id="FILE_UPLOAD_MAX_FILES_PER_UPLOAD"
-                    type="number"
-                    value={maxFiles}
-                    onChange={(e) => setMaxFiles(Number(e.target.value))}
-                    required
-                  />
-                </InputGroup>
-              </Field>
-            </div>
-
+    <Card className="border-0 shadow-none">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <UploadIcon className="size-5" />
+          Configurações de Upload
+        </CardTitle>
+        <CardDescription>
+          Defina os limites de upload de arquivos
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-4 stagger-children"
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <Field>
-              <FieldLabel htmlFor="FILE_UPLOAD_ACCEPTED">
-                Extensões aceitas
+              <FieldLabel htmlFor="FILE_UPLOAD_MAX_SIZE">
+                Tamanho máximo do arquivo
               </FieldLabel>
               <div className="text-sm text-muted-foreground mb-2">
-                Separadas por ponto-e-vírgula (ex: jpg;jpeg;png;pdf)
+                Em bytes: {formatFileSize(maxSize)}
               </div>
               <InputGroup>
                 <InputGroupInput
-                  id="FILE_UPLOAD_ACCEPTED"
-                  type="text"
-                  value={accepted}
-                  onChange={(e) => setAccepted(e.target.value)}
-                  placeholder="jpg;jpeg;png;pdf"
+                  id="FILE_UPLOAD_MAX_SIZE"
+                  type="number"
+                  value={maxSize}
+                  onChange={(e) => setMaxSize(Number(e.target.value))}
                   required
                 />
               </InputGroup>
             </Field>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={mutation.status === 'pending'}
-            >
-              {mutation.status === 'pending' && <Spinner />}
-              Salvar e continuar
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-    </>
+            <Field>
+              <FieldLabel htmlFor="FILE_UPLOAD_MAX_FILES_PER_UPLOAD">
+                Máximo de arquivos por upload
+              </FieldLabel>
+              <div className="text-sm text-muted-foreground mb-2">
+                Quantidade máxima simultânea
+              </div>
+              <InputGroup>
+                <InputGroupInput
+                  id="FILE_UPLOAD_MAX_FILES_PER_UPLOAD"
+                  type="number"
+                  value={maxFiles}
+                  onChange={(e) => setMaxFiles(Number(e.target.value))}
+                  required
+                />
+              </InputGroup>
+            </Field>
+          </div>
+
+          <Field>
+            <FieldLabel htmlFor="FILE_UPLOAD_ACCEPTED">
+              Extensões aceitas
+            </FieldLabel>
+            <div className="text-sm text-muted-foreground mb-2">
+              Separadas por ponto-e-vírgula (ex: jpg;jpeg;png;pdf)
+            </div>
+            <InputGroup>
+              <InputGroupInput
+                id="FILE_UPLOAD_ACCEPTED"
+                type="text"
+                value={accepted}
+                onChange={(e) => setAccepted(e.target.value)}
+                placeholder="jpg;jpeg;png;pdf"
+                required
+              />
+            </InputGroup>
+          </Field>
+
+          <Button
+            type="submit"
+            className="w-full transition-transform hover:-translate-y-px hover:shadow-soft active:translate-y-0"
+            disabled={mutation.status === 'pending'}
+          >
+            {mutation.status === 'pending' && <Spinner />}
+            {!(mutation.status === 'pending') && (
+              <span>Salvar e continuar</span>
+            )}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
