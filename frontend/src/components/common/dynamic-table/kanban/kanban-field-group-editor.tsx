@@ -10,6 +10,7 @@ import {
 import React from 'react';
 
 import { GroupRowsDataTable } from '@/components/common/dynamic-table/group-rows';
+import { AttachmentContextMenu } from '@/components/common/file-upload/attachment-context-menu';
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { Button } from '@/components/ui/button';
 import { E_FIELD_TYPE } from '@/lib/constant';
@@ -121,47 +122,37 @@ function formatAttachmentDate(dateValue: any): string | null {
 }
 
 function renderAttachmentThumbnail(storage: IStorage): React.JSX.Element {
+  let preview = (
+    <div className="size-9 rounded border bg-muted flex items-center justify-center">
+      <FileIcon className="size-4 text-muted-foreground" />
+    </div>
+  );
   if (storage.mimetype?.includes('image')) {
-    return (
-      <a
-        href={storage.url}
-        target="_blank"
-        rel="noreferrer"
-        className="shrink-0"
-      >
-        <img
-          src={storage.url}
-          alt={storage.originalName}
-          className="size-9 rounded object-cover border"
-        />
-      </a>
+    preview = (
+      <img
+        src={storage.url}
+        alt={storage.originalName}
+        className="size-9 rounded object-cover border"
+      />
     );
-  }
-  if (storage.mimetype === 'application/pdf') {
-    return (
-      <a
-        href={storage.url}
-        target="_blank"
-        rel="noreferrer"
-        className="shrink-0"
-      >
-        <div className="size-9 rounded border bg-muted flex items-center justify-center">
-          <FileTextIcon className="size-4 text-muted-foreground" />
-        </div>
-      </a>
+  } else if (storage.mimetype === 'application/pdf') {
+    preview = (
+      <div className="size-9 rounded border bg-muted flex items-center justify-center">
+        <FileTextIcon className="size-4 text-muted-foreground" />
+      </div>
     );
   }
   return (
-    <a
-      href={storage.url}
-      target="_blank"
-      rel="noreferrer"
-      className="shrink-0"
-    >
-      <div className="size-9 rounded border bg-muted flex items-center justify-center">
-        <FileIcon className="size-4 text-muted-foreground" />
-      </div>
-    </a>
+    <AttachmentContextMenu storage={storage}>
+      <a
+        href={storage.url}
+        target="_blank"
+        rel="noreferrer"
+        className="shrink-0"
+      >
+        {preview}
+      </a>
+    </AttachmentContextMenu>
   );
 }
 
@@ -332,14 +323,16 @@ export function KanbanFieldGroupEditor({
                         <div className="flex min-w-0 items-center gap-2 flex-1">
                           {renderAttachmentThumbnail(storage)}
                           <div className="min-w-0 flex-1">
-                            <a
-                              href={storage.url}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="text-sm text-primary underline underline-offset-2 truncate block"
-                            >
-                              {storage.originalName}
-                            </a>
+                            <AttachmentContextMenu storage={storage}>
+                              <a
+                                href={storage.url}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="text-sm text-primary underline underline-offset-2 truncate block"
+                              >
+                                {storage.originalName}
+                              </a>
+                            </AttachmentContextMenu>
                             {(author || dateStr) && (
                               <p className="text-xs text-muted-foreground truncate">
                                 {((): string => {

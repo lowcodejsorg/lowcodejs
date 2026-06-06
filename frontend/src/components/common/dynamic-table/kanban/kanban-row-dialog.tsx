@@ -29,6 +29,7 @@ import { TableRowRelationshipCell } from '@/components/common/dynamic-table/tabl
 import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-cells/table-row-text-long-cell';
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
+import { AttachmentContextMenu } from '@/components/common/file-upload/attachment-context-menu';
 import { FileUploadWithStorage } from '@/components/common/file-upload/file-upload-with-storage';
 import { extractMentionIds } from '@/components/common/rich-editor';
 import { Badge } from '@/components/ui/badge';
@@ -1072,34 +1073,42 @@ export function KanbanRowDialog({
                                         attachment.mimetype?.includes('image')
                                       ) {
                                         attachmentThumbnail = (
-                                          <a
-                                            href={attachment.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="shrink-0"
+                                          <AttachmentContextMenu
+                                            storage={attachment}
                                           >
-                                            <img
-                                              src={attachment.url}
-                                              alt={attachment.originalName}
-                                              className="size-9 rounded object-cover border"
-                                            />
-                                          </a>
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="shrink-0"
+                                            >
+                                              <img
+                                                src={attachment.url}
+                                                alt={attachment.originalName}
+                                                className="size-9 rounded object-cover border"
+                                              />
+                                            </a>
+                                          </AttachmentContextMenu>
                                         );
                                       } else if (
                                         attachment.mimetype ===
                                         'application/pdf'
                                       ) {
                                         attachmentThumbnail = (
-                                          <a
-                                            href={attachment.url}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="shrink-0"
+                                          <AttachmentContextMenu
+                                            storage={attachment}
                                           >
-                                            <div className="size-9 rounded border bg-muted flex items-center justify-center">
-                                              <FileTextIcon className="size-4 text-muted-foreground" />
-                                            </div>
-                                          </a>
+                                            <a
+                                              href={attachment.url}
+                                              target="_blank"
+                                              rel="noreferrer"
+                                              className="shrink-0"
+                                            >
+                                              <div className="size-9 rounded border bg-muted flex items-center justify-center">
+                                                <FileTextIcon className="size-4 text-muted-foreground" />
+                                              </div>
+                                            </a>
+                                          </AttachmentContextMenu>
                                         );
                                       }
                                       return (
@@ -1109,14 +1118,18 @@ export function KanbanRowDialog({
                                         >
                                           <div className="flex min-w-0 items-center gap-2">
                                             {attachmentThumbnail}
-                                            <a
-                                              href={attachment.url}
-                                              target="_blank"
-                                              rel="noreferrer"
-                                              className="text-sm text-primary underline underline-offset-2 truncate"
+                                            <AttachmentContextMenu
+                                              storage={attachment}
                                             >
-                                              {attachment.originalName}
-                                            </a>
+                                              <a
+                                                href={attachment.url}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-sm text-primary underline underline-offset-2 truncate"
+                                              >
+                                                {attachment.originalName}
+                                              </a>
+                                            </AttachmentContextMenu>
                                           </div>
                                           <div className="flex items-center gap-1">
                                             <a
