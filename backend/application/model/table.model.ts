@@ -157,6 +157,17 @@ export const Schema = new mongoose.Schema(
         reminder: null,
       },
     },
+    defaultPerPage: {
+      type: Number,
+      default: 20,
+      min: 1,
+      max: 100,
+    },
+    slugFieldId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Field',
+      default: null,
+    },
 
     trashed: { type: Boolean, default: false },
     trashedAt: { type: Date, default: null },
