@@ -52,12 +52,14 @@ import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
+import { cn } from '@/lib/utils';
 
 // --- Internal components ---
 
 interface SortableManagementItemProps {
   field: IField;
   disabled?: boolean;
+  dimmed?: boolean;
   visibilityKey: VisibilityKey;
   widthKey?: 'widthInForm' | 'widthInList' | 'widthInDetail';
   onEdit: () => void;
@@ -70,6 +72,7 @@ interface SortableManagementItemProps {
 function SortableManagementItem({
   field,
   disabled,
+  dimmed,
   visibilityKey,
   widthKey,
   onEdit,
@@ -125,7 +128,13 @@ function SortableManagementItem({
       data-slot="sortable-management-item"
       ref={setNodeRef}
       style={style}
-      className="flex items-center justify-between gap-2 rounded-lg border bg-card p-3 shadow-sm"
+      className={cn(
+        'flex items-center justify-between gap-2 rounded-lg border p-3 shadow-sm',
+        {
+          'bg-card': !dimmed,
+          'bg-muted/50': dimmed,
+        },
+      )}
     >
       <FieldTitle
         value={field.name}
@@ -490,6 +499,9 @@ function FieldManagementList({
   const [fields, setFields] = useState<Array<IField>>(sortedActiveFields);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const visibleFields = fields.filter((f) => f[visibilityKey]);
+  const hiddenFields = fields.filter((f) => !f[visibilityKey]);
+
   let widthKey: 'widthInForm' | 'widthInList' | 'widthInDetail' | undefined;
   if (visibilityKey === 'showInForm') {
     widthKey = 'widthInForm';
@@ -508,18 +520,25 @@ function FieldManagementList({
 
   function handleDragEnd(event: DragEndEvent): void {
     const { active, over } = event;
-    if (over && active.id !== over.id) {
-      setFields((items) => {
-        const oldIndex = items.findIndex((item) => item._id === active.id);
-        const newIndex = items.findIndex((item) => item._id === over.id);
-        return arrayMove(items, oldIndex, newIndex);
-      });
-      setHasChanges(true);
-    }
+    if (!over || active.id === over.id) return;
+
+    const activeField = fields.find((f) => f._id === active.id);
+    const overField = fields.find((f) => f._id === over.id);
+    if (!activeField || !overField) return;
+
+    // Bloqueia mover entre as secoes (visivel/oculto); olho faz essa troca.
+    if (activeField[visibilityKey] !== overField[visibilityKey]) return;
+
+    setFields((items) => {
+      const oldIndex = items.findIndex((item) => item._id === active.id);
+      const newIndex = items.findIndex((item) => item._id === over.id);
+      return arrayMove(items, oldIndex, newIndex);
+    });
+    setHasChanges(true);
   }
 
   function handleSave(): void {
-    const orderedIds = fields.map((f) => f._id);
+    const orderedIds = [...visibleFields, ...hiddenFields].map((f) => f._id);
     onSaveOrder(visibilityKey, orderedIds);
     setHasChanges(false);
   }
@@ -557,6 +576,28 @@ function FieldManagementList({
     });
   }, [allFields, excludeNative]);
 
+  function renderField(field: IField, dimmed: boolean): React.JSX.Element {
+    let onWidthChange: ((width: number) => void) | undefined;
+    if (widthKey) {
+      onWidthChange = (width: number): void => handleWidthChange(field, width);
+    }
+    return (
+      <SortableManagementItem
+        key={field._id}
+        field={field}
+        dimmed={dimmed}
+        disabled={isSavingOrder}
+        visibilityKey={visibilityKey}
+        widthKey={widthKey}
+        onEdit={(): void => onEditField(field._id)}
+        onToggleVisibility={(): void => handleToggleVisibility(field)}
+        onWidthChange={onWidthChange}
+        isTogglingVisibility={togglingFieldId === field._id}
+        isChangingWidth={changingWidthFieldId === field._id}
+      />
+    );
+  }
+
   return (
     <div className="space-y-4">
       <DndContext
@@ -564,31 +605,39 @@ function FieldManagementList({
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
-        <SortableContext
-          items={fields.map((f) => f._id)}
-          strategy={verticalListSortingStrategy}
-        >
-          <div className="space-y-2">
-            {fields.map((field) => (
-              <SortableManagementItem
-                key={field._id}
-                field={field}
-                disabled={isSavingOrder}
-                visibilityKey={visibilityKey}
-                widthKey={widthKey}
-                onEdit={() => onEditField(field._id)}
-                onToggleVisibility={() => handleToggleVisibility(field)}
-                onWidthChange={
-                  widthKey
-                    ? (width): void => handleWidthChange(field, width)
-                    : undefined
-                }
-                isTogglingVisibility={togglingFieldId === field._id}
-                isChangingWidth={changingWidthFieldId === field._id}
-              />
-            ))}
-          </div>
-        </SortableContext>
+        <div className="space-y-4">
+          {visibleFields.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-xs font-medium uppercase text-muted-foreground">
+                Visíveis
+              </p>
+              <SortableContext
+                items={visibleFields.map((f) => f._id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {visibleFields.map((field) => renderField(field, false))}
+                </div>
+              </SortableContext>
+            </div>
+          )}
+
+          {hiddenFields.length > 0 && (
+            <div className="space-y-2 border-t pt-4">
+              <p className="text-xs font-medium uppercase text-muted-foreground">
+                Ocultos
+              </p>
+              <SortableContext
+                items={hiddenFields.map((f) => f._id)}
+                strategy={verticalListSortingStrategy}
+              >
+                <div className="space-y-2">
+                  {hiddenFields.map((field) => renderField(field, true))}
+                </div>
+              </SortableContext>
+            </div>
+          )}
+        </div>
       </DndContext>
 
       {fields.length === 0 && (
