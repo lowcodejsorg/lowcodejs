@@ -184,13 +184,21 @@ export const tableListInfiniteOptions = (params: TableQueryPayload = {}) =>
 
 // ============== ROWS ==============
 
-export const rowListOptions = (slug: string, params: Record<string, unknown>) =>
+export const rowListOptions = (
+  slug: string,
+  params: Record<string, unknown>,
+  defaultPerPage?: number,
+) =>
   queryOptions({
     queryKey: queryKeys.rows.list(slug, params),
     queryFn: async () => {
+      const finalParams = {
+        ...params,
+        perPage: params.perPage || defaultPerPage || 20,
+      };
       const response = await API.get<Paginated<IRow>>(
         `/tables/${slug}/rows/paginated`,
-        { params },
+        { params: finalParams },
       );
       return response.data;
     },

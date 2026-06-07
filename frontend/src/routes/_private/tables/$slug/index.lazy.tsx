@@ -192,7 +192,11 @@ function RouteComponent(): React.JSX.Element {
       viewStyle: tableStyle ?? E_TABLE_STYLE.LIST,
     };
   }, [search, shouldDisablePagination, isKanban, tableStyle]);
-  const rows = useReadTableRowPaginated({ slug, search: rowsSearch });
+  const rows = useReadTableRowPaginated({
+    slug,
+    search: rowsSearch,
+    defaultPerPage: table.data?.defaultPerPage,
+  });
   const permission = useTablePermission(table.data);
 
   const auth = useAuthStore();

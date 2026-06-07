@@ -7,37 +7,18 @@ import {
   rowListOptions,
   tableDetailOptions,
 } from '@/hooks/tanstack-query/_query-options';
-import type { ISetting } from '@/lib/interfaces';
 import { createRouteHead } from '@/lib/seo';
 import { useAuthStore } from '@/stores/authentication';
 
-const defaultSearch = { page: 1, perPage: 50 };
+const defaultSearch = { page: 1 };
 
 export const Route = createFileRoute('/_private/tables/$slug/')({
-  beforeLoad: async ({ context, location }) => {
-    const hasExplicitPerPage = location.searchStr.includes('perPage');
-    if (!hasExplicitPerPage) {
-      const settings = context.queryClient.getQueryData<ISetting>(
-        queryKeys.settings.all,
-      );
-      if (settings && settings.PAGINATION_PER_PAGE !== 50) {
-        const { redirect } = await import('@tanstack/react-router');
-        throw redirect({
-          search: (prev) => ({
-            ...prev,
-            perPage: settings.PAGINATION_PER_PAGE,
-          }),
-          replace: true,
-        });
-      }
-    }
-  },
   head: createRouteHead({ title: 'Tabela' }),
   pendingComponent: () => <TableSkeleton />,
   validateSearch: z
     .object({
       page: z.coerce.number().default(1),
-      perPage: z.coerce.number().default(50),
+      perPage: z.coerce.number().optional(),
       trashed: z
         .preprocess(
           (v) => {
@@ -55,11 +36,15 @@ export const Route = createFileRoute('/_private/tables/$slug/')({
     middlewares: [stripSearchParams(defaultSearch)],
   },
   loaderDeps: ({ search }) => search,
-  loader: ({ context, params, deps }) => {
+  loader: async ({ context, params, deps }) => {
     const isAuthenticated = Boolean(useAuthStore.getState().user);
     if (!isAuthenticated) return;
 
-    context.queryClient.prefetchQuery(tableDetailOptions(params.slug));
-    context.queryClient.prefetchQuery(rowListOptions(params.slug, deps));
+    const tableData = await context.queryClient.fetchQuery(
+      tableDetailOptions(params.slug),
+    );
+    context.queryClient.prefetchQuery(
+      rowListOptions(params.slug, deps, tableData.defaultPerPage),
+    );
   },
 });

@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "Read(//c/Users/vanes/Documents/UFG/lowcodejs/**)"
+      "Read(//c/Users/vanes/Documents/UFG/lowcodejs/**)",
+      "Bash(dir \"c:\\\\Users\\\\vanes\\\\Documents\\\\UFG\\\\lowcodejs\\\\backend\\\\application\\\\resources\")"
     ]
   }
 }
