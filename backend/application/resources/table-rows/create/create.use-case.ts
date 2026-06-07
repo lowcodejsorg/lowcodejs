@@ -13,6 +13,7 @@ import { UserContractRepository } from '@application/repositories/user/user-cont
 import { RowMemberNotificationContractService } from '@application/services/row-member-notification/row-member-notification-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
 import { ScriptExecutionContractService } from '@application/services/script-execution/script-execution-contract.service';
+import { generateSlug } from '@application/utils/slug.util';
 
 type Response = Either<HTTPException, IRow>;
 
@@ -56,6 +57,14 @@ export default class TableRowCreateUseCase {
             errors,
           ),
         );
+      }
+
+      if (table.slugFieldId) {
+        const slugField = table.fields.find((f) => f._id === table.slugFieldId);
+        if (slugField && payload[slugField.slug]) {
+          const slugValue = String(payload[slugField.slug]);
+          payload._slug = generateSlug(slugValue);
+        }
       }
 
       await this.rowPasswordService.hash(payload, table.fields);
