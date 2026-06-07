@@ -52,6 +52,33 @@ function assertIRow(value: Record<string, unknown>): asserts value is IRow {
   }
 }
 
+function objectIdBufferQuery(value: string): Record<string, number> | null {
+  if (!/^[a-fA-F0-9]{24}$/.test(value)) return null;
+
+  return Object.fromEntries(
+    Array.from(Buffer.from(value, 'hex')).map((byte, index) => [
+      String(index),
+      byte,
+    ]),
+  );
+}
+
+function normalizeRowId(value: unknown): string {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+
+  if (isRecord(value) && typeof value['toHexString'] === 'function') {
+    return (value['toHexString'] as () => string)();
+  }
+
+  if (isRecord(value) && isRecord(value['buffer'])) {
+    const bytes = Object.values(value['buffer'] as Record<string, number>);
+    return Buffer.from(bytes).toString('hex');
+  }
+
+  return String(value);
+}
+
 @Service()
 export default class RowMongooseRepository implements RowContractRepository {
   constructor(
@@ -83,10 +110,9 @@ export default class RowMongooseRepository implements RowContractRepository {
       json = {};
     }
 
-    let id = '';
-    if (isRecord(doc) && doc['_id']) {
-      id = String(doc['_id']);
-    }
+    const id = isRecord(doc)
+      ? normalizeRowId(doc['_id'] ?? json['_id'])
+      : normalizeRowId(json['_id']);
 
     json['_id'] = id;
     assertIRow(json);
@@ -107,7 +133,22 @@ export default class RowMongooseRepository implements RowContractRepository {
 
   async findOne(payload: RowFindOnePayload): Promise<IRow | null> {
     const model = await this.getModel(payload.table);
-    const row = await model.findOne(payload.query);
+    let row = await model.findOne(payload.query);
+
+    if (
+      !row &&
+      typeof payload.query['_id'] === 'string' &&
+      objectIdBufferQuery(payload.query['_id'])
+    ) {
+      const legacyRow = await model.collection.findOne({
+        ...payload.query,
+        _id: { buffer: objectIdBufferQuery(payload.query['_id']) },
+      });
+
+      if (!legacyRow) return null;
+
+      return this.transformRow(legacyRow);
+    }
 
     if (!row) return null;
 

@@ -1,0 +1,16 @@
+{
+  "id": "parcerias-tt-dashboard",
+  "type": "MODULE",
+  "name": "Parcerias e Transferência de Tecnologia",
+  "description": "Dashboard de demandas de parcerias e transferência de tecnologia com agregações por situação, período e transferência de tecnologia.",
+  "version": "1.0.0",
+  "author": "LowcodeJS",
+  "icon": "ChartColumnIcon",
+  "route": "/e/apps/parcerias-tt-dashboard",
+  "permissions": {
+    "view": ["MASTER", "ADMINISTRATOR"]
+  },
+  "requires": {
+    "lowcodejs": ">=1.0.0"
+  }
+}
