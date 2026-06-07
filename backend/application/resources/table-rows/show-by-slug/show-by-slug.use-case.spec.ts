@@ -52,7 +52,7 @@ describe('TableRowShowBySlugUseCase', () => {
       slug: 'test',
       slugFieldId: null,
       fields: [],
-    } as ITable;
+    } as unknown as ITable;
 
     tableRepository.findBySlug.mockResolvedValue(table);
 
@@ -91,7 +91,7 @@ describe('TableRowShowBySlugUseCase', () => {
       fields: [{ _id: 'field-123', slug: 'name' }],
     } as any as ITable;
 
-    const row = { _id: 'row-123', name: 'test-slug' } as IRow;
+    const row = { _id: 'row-123', name: 'test-slug' } as unknown as IRow;
 
     tableRepository.findBySlug.mockResolvedValue(table);
     rowRepository.findOne.mockResolvedValue(row);
