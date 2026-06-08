@@ -54,6 +54,19 @@ import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField } from '@/lib/interfaces';
 import { cn } from '@/lib/utils';
 
+// Campos internos de sistema que nunca devem ser gerenciaveis na UI.
+// Filtra por slug (estavel) alem do type, cobrindo dados legados onde o type difere.
+const SYSTEM_INTERNAL_FIELD_SLUGS = ['status', 'trashedAt'];
+
+function isManageableField(field: IField, excludeNative?: boolean): boolean {
+  if (field.trashed) return false;
+  if (excludeNative && field.native) return false;
+  if (SYSTEM_INTERNAL_FIELD_SLUGS.includes(field.slug)) return false;
+  if (field.type === E_FIELD_TYPE.STATUS) return false;
+  if (field.type === E_FIELD_TYPE.TRASHED_AT) return false;
+  return true;
+}
+
 // --- Internal components ---
 
 interface SortableManagementItemProps {
@@ -465,12 +478,8 @@ function FieldManagementList({
     isSavingOrder,
   } = useFieldManagement();
 
-  const activeFields = allFields.filter(
-    (f) =>
-      !f.trashed &&
-      !(excludeNative && f.native) &&
-      f.type !== E_FIELD_TYPE.STATUS &&
-      f.type !== E_FIELD_TYPE.TRASHED_AT,
+  const activeFields = allFields.filter((f) =>
+    isManageableField(f, excludeNative),
   );
 
   const orderArray = React.useMemo(() => {
@@ -555,24 +564,18 @@ function FieldManagementList({
 
   // Sync fields when context fields change (after mutation responses)
   useEffect(() => {
-    const updated = allFields.filter(
-      (f) =>
-        !f.trashed &&
-        !(excludeNative && f.native) &&
-        f.type !== E_FIELD_TYPE.STATUS &&
-        f.type !== E_FIELD_TYPE.TRASHED_AT,
+    const updated = allFields.filter((f) =>
+      isManageableField(f, excludeNative),
     );
 
     setFields((prev) => {
-      const updatedPrev = prev.map((pf) => {
-        const found = updated.find((uf) => uf._id === pf._id);
-        if (found) return found;
-        return pf;
-      });
-      const newFields = updated.filter(
+      const kept = prev
+        .filter((pf) => updated.some((uf) => uf._id === pf._id))
+        .map((pf) => updated.find((uf) => uf._id === pf._id) ?? pf);
+      const added = updated.filter(
         (uf) => !prev.some((pf) => pf._id === uf._id),
       );
-      return [...updatedPrev, ...newFields];
+      return [...kept, ...added];
     });
   }, [allFields, excludeNative]);
 
