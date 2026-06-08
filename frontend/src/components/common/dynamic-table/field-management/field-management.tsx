@@ -56,7 +56,7 @@ import { cn } from '@/lib/utils';
 
 // Campos internos de sistema que nunca devem ser gerenciaveis na UI.
 // Filtra por slug (estavel) alem do type, cobrindo dados legados onde o type difere.
-const SYSTEM_INTERNAL_FIELD_SLUGS = ['status', 'trashedAt'];
+const SYSTEM_INTERNAL_FIELD_SLUGS = ['status', 'trashed', 'trashedAt'];
 
 function isManageableField(field: IField, excludeNative?: boolean): boolean {
   if (field.trashed) return false;
