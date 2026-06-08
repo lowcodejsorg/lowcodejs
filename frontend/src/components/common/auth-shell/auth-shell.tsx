@@ -1,6 +1,7 @@
 import type * as React from 'react';
 
 import { BrandPanel } from './brand-panel';
+import { PittLogo } from './pitt-logo';
 
 import { Logo } from '@/components/common/layout/logo';
 import { cn } from '@/lib/utils';
@@ -22,7 +23,15 @@ export function AuthShell({
       <BrandPanel className="hidden lg:flex" />
 
       <main className="bg-ambient-cool relative flex min-h-svh flex-col items-center justify-center gap-8 px-4 py-10 sm:px-6 lg:min-h-0 lg:py-16">
-        <Logo className="h-7 w-auto lg:hidden" />
+        <div className="flex flex-col items-center gap-3 lg:hidden">
+          <div className="rounded-xl bg-[#050807] px-4 py-3 shadow-sm">
+            <PittLogo className="h-12 max-w-[220px]" />
+          </div>
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+            <span>powered by</span>
+            <Logo className="h-4 w-auto" />
+          </div>
+        </div>
 
         <div
           className={cn('animate-rise-in w-full max-w-md', contentClassName)}
