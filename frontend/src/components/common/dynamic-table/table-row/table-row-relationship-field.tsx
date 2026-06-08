@@ -385,7 +385,7 @@ export function TableRowRelationshipField({
   }
 
   const getRowLabel = (row: IRow): string =>
-    resolveRelationshipLabel(row, relConfig);
+    resolveRelationshipLabel(row, relConfig, relatedTable.data?.fields);
 
   const handleValueChange = (newValue: IRow | Array<IRow> | null): void => {
     if (isMultiple) {
@@ -509,9 +509,15 @@ export function TableRowRelationshipField({
     );
   }
 
-  let selectedSingleLabel = (formField.state.value ?? [])[0]?.label ?? '';
-  if (!selectedSingleLabel && selectedItems[0]) {
+  // Prefere recalcular o label a partir do registro populado (resolve dropdowns
+  // e títulos de relacionamento corretamente). Só usa o label armazenado quando
+  // o registro não está no cache (ex.: edição com a opção fora da página atual).
+  let selectedSingleLabel = '';
+  if (selectedItems[0]) {
     selectedSingleLabel = getRowLabel(selectedItems[0]);
+  }
+  if (!selectedSingleLabel) {
+    selectedSingleLabel = (formField.state.value ?? [])[0]?.label ?? '';
   }
   const singleInputValue = searchQuery;
 
