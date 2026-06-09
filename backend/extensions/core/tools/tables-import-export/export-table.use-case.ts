@@ -118,7 +118,12 @@ export default class ExportTableUseCase {
 
       const exportedTables: ExportedTable[] = [];
       for (const table of tables) {
-        const exp: ExportedTable = {};
+        // Identidade sempre presente — essencial para o import "somente dados"
+        // casar com a tabela existente no destino.
+        const exp: ExportedTable = {
+          tableSlug: table.slug,
+          tableName: table.name,
+        };
         if (includeStructure) exp.structure = this.exportStructure(table);
         if (includeData) exp.data = await this.exportData(table);
         exportedTables.push(exp);

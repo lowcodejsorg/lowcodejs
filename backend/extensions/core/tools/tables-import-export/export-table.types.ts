@@ -68,6 +68,13 @@ export type ExportedRow = Record<string, unknown> & {
 };
 
 export type ExportedTable = {
+  /**
+   * Identidade da tabela. Sempre presente — é o que permite a importação
+   * "somente dados" casar com a tabela existente no destino (no export de
+   * estrutura/completo o slug também vem em `structure.slug`).
+   */
+  tableSlug?: string;
+  tableName?: string;
   structure?: ExportedStructure;
   data?: {
     totalRows: number;
