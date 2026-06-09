@@ -29,7 +29,7 @@ import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { ICategory, IField, ITable } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
+import { toast } from 'sonner';
 
 type FilterOperator =
   | 'equals'
@@ -415,10 +415,9 @@ export default function CascadeDropdownPlugin({
       queryClient.invalidateQueries({
         queryKey: cascadeDropdownQueryKeys.all,
       });
-      toastSuccess(
-        'Configuração salva',
-        'O dropdown em cascata foi configurado com sucesso',
-      );
+      toast.success('Configuração salva', {
+        description: 'O dropdown em cascata foi configurado com sucesso',
+      });
     },
     onError(error) {
       handleApiError(error, {
@@ -544,10 +543,10 @@ export default function CascadeDropdownPlugin({
 
   const handleSave = (): void => {
     if (!canSave) {
-      toastError(
-        'Configuração incompleta',
-        'Selecione o campo que deve atualizar este campo antes de salvar.',
-      );
+      toast.error('Configuração incompleta', {
+        description:
+          'Selecione o campo que deve atualizar este campo antes de salvar.',
+      });
       return;
     }
 

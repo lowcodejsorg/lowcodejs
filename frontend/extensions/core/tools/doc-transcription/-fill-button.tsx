@@ -21,7 +21,7 @@ import { Spinner } from '@/components/ui/spinner';
 import { useDocTranscriptionConfig } from '@/hooks/tanstack-query/use-doc-transcription-config';
 import { useDocTranscriptionTranscribe } from '@/hooks/tanstack-query/use-doc-transcription-transcribe';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
+import { toast } from 'sonner';
 
 interface Props {
   onFillFields?: (data: Record<string, string | null>) => void;
@@ -46,10 +46,9 @@ export function FillButton({ onFillFields }: Props): React.JSX.Element {
           f.value !== null && f.value !== undefined ? String(f.value) : null;
       });
       onFillFields(data);
-      toastSuccess(
-        'Campos preenchidos',
-        `${result.fields.filter((f) => f.value !== null).length} campo(s) preenchido(s)`,
-      );
+      toast.success('Campos preenchidos', {
+        description: `${result.fields.filter((f) => f.value !== null).length} campo(s) preenchido(s)`,
+      });
       setOpen(false);
       reset();
     },

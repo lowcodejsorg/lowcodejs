@@ -22,7 +22,7 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
+import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
 type ImportFileV1 = {
@@ -247,10 +247,9 @@ export function ImportTableSection(): React.JSX.Element {
       QueryClient.invalidateQueries({ queryKey: queryKeys.tables.lists() });
       QueryClient.invalidateQueries({ queryKey: queryKeys.menus.all });
 
-      toastSuccess(
-        'Importação concluída!',
-        `${data.tables.length} tabela(s), ${data.importedFields} campo(s), ${data.importedRows} registro(s) e ${data.importedMenus} item(ns) de menu`,
-      );
+      toast.success('Importação concluída!', {
+        description: `${data.tables.length} tabela(s), ${data.importedFields} campo(s), ${data.importedRows} registro(s) e ${data.importedMenus} item(ns) de menu`,
+      });
 
       if (data.tables.length === 1) {
         navigate({

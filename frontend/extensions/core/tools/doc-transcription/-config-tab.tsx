@@ -26,7 +26,7 @@ import type { IDocumentType } from '@/hooks/tanstack-query/use-doc-transcription
 import { useDocTranscriptionConfig } from '@/hooks/tanstack-query/use-doc-transcription-config';
 import { useDocTranscriptionConfigUpdate } from '@/hooks/tanstack-query/use-doc-transcription-config-update';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
+import { toast } from 'sonner';
 
 interface OpenAIModel {
   id: string;
@@ -266,7 +266,7 @@ export function ConfigTab(): React.JSX.Element {
 
   const update = useDocTranscriptionConfigUpdate({
     onSuccess() {
-      toastSuccess('Configuração salva');
+      toast.success('Configuração salva');
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao salvar configuração' });
@@ -307,7 +307,7 @@ export function ConfigTab(): React.JSX.Element {
       {
         onSuccess() {
           setFormOpen(false);
-          toastSuccess('Tipo de documento salvo');
+          toast.success('Tipo de documento salvo');
         },
       },
     );
@@ -319,7 +319,7 @@ export function ConfigTab(): React.JSX.Element {
       { documentTypes: updated },
       {
         onSuccess() {
-          toastSuccess('Tipo de documento removido');
+          toast.success('Tipo de documento removido');
         },
       },
     );
