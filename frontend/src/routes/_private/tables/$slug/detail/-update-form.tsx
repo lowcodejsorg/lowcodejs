@@ -434,14 +434,13 @@ export const UpdateTableFormFields = withForm({
             return (
               <field.TableLayoutFieldSelect
                 label="Campo para slug da URL de registro"
+                placeholder="Nenhum"
+                emptyLabel="Nenhum"
                 disabled={isDisabled || textShortFields.length === 0}
-                options={[
-                  { label: 'Nenhum', value: '' },
-                  ...textShortFields.map((f: IField) => ({
-                    label: f.name,
-                    value: f._id,
-                  })),
-                ]}
+                options={textShortFields.map((f: IField) => ({
+                  label: f.name,
+                  value: f._id,
+                }))}
               />
             );
           }}

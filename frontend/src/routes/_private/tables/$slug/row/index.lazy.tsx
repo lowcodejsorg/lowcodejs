@@ -215,7 +215,16 @@ function ExistingRowView({
   };
 
   const handleShare = (): void => {
-    navigator.clipboard.writeText(window.location.href);
+    const origin = window.location.origin;
+
+    // Com slug amigavel (rowSlugFieldId configurado), copia a URL limpa
+    // /tables/<slug>/<sharedRowSlug>; senao cai no fallback por _id.
+    let url = `${origin}/tables/${slug}/row?_id=${rowId}&mode=view`;
+    if (row.data?.sharedRowSlug) {
+      url = `${origin}/tables/${slug}/${row.data.sharedRowSlug}`;
+    }
+
+    navigator.clipboard.writeText(url);
     toast.info('Link do registro copiado', {
       description:
         'O link do registro foi copiado para a área de transferência',

@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils';
 interface TableLayoutFieldSelectProps {
   label: string;
   placeholder?: string;
+  emptyLabel?: string;
   disabled?: boolean;
   options: Array<{ label: string; value: string }>;
 }
@@ -19,6 +20,7 @@ interface TableLayoutFieldSelectProps {
 export function TableLayoutFieldSelect({
   label,
   placeholder = 'Automático (primeiro campo)',
+  emptyLabel = 'Automático (primeiro campo)',
   disabled,
   options,
 }: TableLayoutFieldSelectProps): React.JSX.Element {
@@ -47,7 +49,7 @@ export function TableLayoutFieldSelect({
           <SelectValue placeholder={placeholder} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="__auto__">Automático (primeiro campo)</SelectItem>
+          <SelectItem value="__auto__">{emptyLabel}</SelectItem>
           {options.map((item) => (
             <SelectItem
               key={item.value}

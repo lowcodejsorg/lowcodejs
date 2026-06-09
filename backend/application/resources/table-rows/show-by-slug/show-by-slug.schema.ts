@@ -20,6 +20,12 @@ export const TableRowShowBySlugSchema = {
     200: {
       type: 'object',
       description: 'Registro encontrado',
+      properties: {
+        _id: { type: 'string', description: 'ID do registro' },
+        sharedRowSlug: { type: 'string', nullable: true },
+      },
+      // Row é dinâmico — sem isto o fast-json-stringify descarta todos os campos.
+      additionalProperties: true,
     },
     404: {
       type: 'object',
