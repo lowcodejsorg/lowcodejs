@@ -7,6 +7,7 @@ import {
   UploadIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -25,7 +26,6 @@ import { useTableRowsImportCsv } from '@/hooks/tanstack-query/use-table-rows-imp
 import { useCsvImportSocket } from '@/hooks/use-csv-import-socket';
 import { downloadCsvFromApi } from '@/lib/csv-export';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
 
 type Phase = 'idle' | 'uploading' | 'processing' | 'done' | 'error';
 
@@ -58,10 +58,9 @@ export function ImportCsvDialog({ slug }: Props): React.JSX.Element {
     void QueryClient.invalidateQueries({
       queryKey: queryKeys.rows.lists(slug),
     });
-    toastSuccess(
-      'Importação concluída!',
-      `${socket.completed.imported} importadas, ${socket.completed.skipped} ignoradas`,
-    );
+    toast.success('Importação concluída!', {
+      description: `${socket.completed.imported} importadas, ${socket.completed.skipped} ignoradas`,
+    });
   }, [socket.completed, slug]);
 
   React.useEffect((): void => {

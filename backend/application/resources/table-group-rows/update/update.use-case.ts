@@ -4,9 +4,9 @@ import { Service } from 'fastify-decorators';
 import type { Either } from '@application/core/either.core';
 import { left, right } from '@application/core/either.core';
 import type { IField } from '@application/core/entity.core';
-import { E_FIELD_TYPE } from '@application/core/entity.core';
+import { E_FIELD_TYPE, E_ROW_STATUS } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
-import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
@@ -63,9 +63,14 @@ export default class GroupRowUpdateUseCase {
       // Valida os campos do item contra os campos do grupo (skipMissing)
       const groupFields: IField[] = group.fields || [];
 
-      const errors = validateRowPayload(payload, groupFields, table.groups, {
-        skipMissing: true,
-      });
+      const errors = RowPayloadValidator.validate(
+        payload,
+        groupFields,
+        table.groups,
+        {
+          skipMissing: true,
+        },
+      );
 
       if (errors) {
         return left(
@@ -118,6 +123,10 @@ export default class GroupRowUpdateUseCase {
 
       // Atualiza o subdocumento com os dados do payload
       const { slug, rowId, groupSlug, itemId, ...itemData } = payload;
+
+      // O ato de salvar via update publica o item de grupo (rascunho -> publicado).
+      itemData.status = E_ROW_STATUS.PUBLISHED;
+      itemData.draftAt = null;
 
       const row = await this.rowRepository.updateGroupItem({
         table,

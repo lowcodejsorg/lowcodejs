@@ -13,7 +13,7 @@ import HTTPException from '@application/core/exception.core';
 import { FieldContractRepository } from '@application/repositories/field/field-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import { UserContractRepository } from '@application/repositories/user/user-contract.repository';
-import { TableSchemaContractService } from '@application/services/table-schema/table-schema-contract.service';
+import { ModelBuilderContractService } from '@application/services/table/model-builder-contract.service';
 
 import type { TableUpdatePayload } from './update.validator';
 
@@ -26,7 +26,7 @@ export default class TableUpdateUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly userRepository: UserContractRepository,
     private readonly fieldRepository: FieldContractRepository,
-    private readonly tableSchemaService: TableSchemaContractService,
+    private readonly modelBuilder: ModelBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -128,7 +128,7 @@ export default class TableUpdateUseCase {
         }
       }
 
-      await this.tableSchemaService.syncModel(updated);
+      await this.modelBuilder.build(updated);
 
       // Reconstruir tabelas que têm RELATIONSHIP apontando para esta
       if (slugChanged) {
@@ -141,7 +141,7 @@ export default class TableUpdateUseCase {
             await this.tableRepository.findByFieldIds(pointingFieldIds);
 
           for (const relatedTable of relatedTables) {
-            await this.tableSchemaService.syncModel(relatedTable);
+            await this.modelBuilder.build(relatedTable);
           }
         }
       }

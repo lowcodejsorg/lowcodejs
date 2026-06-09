@@ -3,6 +3,7 @@ import type { QueryKey } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { LoaderCircleIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -17,7 +18,6 @@ import {
 } from '@/components/ui/dialog';
 import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
 
 export interface ActionDialogConfig {
   mutationFn: () => Promise<void>;
@@ -52,7 +52,9 @@ export function ActionDialog({
         QueryClient.invalidateQueries({ queryKey: key });
       }
 
-      toastSuccess(config.toast.title, config.toast.description);
+      toast.success(config.toast.title, {
+        description: config.toast.description,
+      });
 
       if (config.navigation) {
         navigate({

@@ -3,6 +3,7 @@ import {
   useParams,
   useRouter,
 } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import {
   MethodsFormFields,
@@ -23,7 +24,6 @@ import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import type { ITable } from '@/lib/interfaces';
 import { QueryClient as queryClient } from '@/lib/query-client';
-import { toastError, toastInfo } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/$slug/methods')({
   component: RouteComponent,
@@ -110,16 +110,14 @@ function MethodsFormContent({
         response,
       );
 
-      toastInfo(
-        'Métodos atualizados',
-        'Os métodos da tabela foram atualizados com sucesso',
-      );
+      toast.info('Métodos atualizados', {
+        description: 'Os métodos da tabela foram atualizados com sucesso',
+      });
     },
     onError() {
-      toastError(
-        'Erro ao atualizar métodos',
-        'Não foi possível atualizar os métodos da tabela',
-      );
+      toast.error('Erro ao atualizar métodos', {
+        description: 'Não foi possível atualizar os métodos da tabela',
+      });
     },
   });
 

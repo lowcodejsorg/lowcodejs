@@ -26,12 +26,19 @@ import {
 } from '@/components/ui/dialog';
 import { Spinner } from '@/components/ui/spinner';
 import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
+import { useConditionalFieldsRuntimeConfig } from '@/hooks/tanstack-query/use-conditional-fields-runtime-config';
 import { useAutoSaveTableRow } from '@/hooks/tanstack-query/use-table-row-auto-save';
+import { useCreateTableRow } from '@/hooks/tanstack-query/use-table-row-create';
 import { useDeleteTableRow } from '@/hooks/tanstack-query/use-table-row-delete';
+import { useUpdateTableRow } from '@/hooks/tanstack-query/use-table-row-update';
 import { useAutoSave } from '@/hooks/use-auto-save';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error-auto-clear';
+import {
+  omitHiddenConditionalValues,
+  resolveConditionalVisibility,
+} from '@/lib/conditional-form-rules';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import { firstCategoryField } from '@/lib/document-helpers';
 import { applyApiFieldErrors } from '@/lib/form-utils';
@@ -43,6 +50,7 @@ import {
   buildRowPayload,
   buildUpdateRowDefaultValues,
 } from '@/lib/table';
+import { useAuthStore } from '@/stores/authentication';
 
 interface AutoSaveRowFormProps {
   table: ITable;
@@ -51,6 +59,15 @@ interface AutoSaveRowFormProps {
   initialCategory?: string;
   onBack?: () => void;
   backGuardRef?: React.MutableRefObject<(() => void) | null>;
+}
+
+// Itens de um grupo de campos vêm embutidos no documento do registro
+// (existingRow[groupSlug]). Usados para semear os cards do grupo na edição.
+function groupItemsOf(row: IRow | undefined, slug: string): Array<IRow> {
+  if (!row) return [];
+  const value = row[slug];
+  if (Array.isArray(value)) return value;
+  return [];
 }
 
 function hasValue(value: unknown): boolean {
@@ -88,6 +105,7 @@ function AutoSaveRowFormContent({
   const permissions = useTablePermission(table);
   const isUploading = useIsUploading();
   const queryClient = useQueryClient();
+  const isAuthenticated = useAuthStore((s): boolean => Boolean(s.user));
 
   const isNewRecord = !initialRowId;
   const rowIdRef = React.useRef<string | undefined>(initialRowId);
@@ -96,12 +114,16 @@ function AutoSaveRowFormContent({
   const [persistedRowId, setPersistedRowId] = React.useState<
     string | undefined
   >(initialRowId);
-  const [isTrashed, setIsTrashed] = React.useState<boolean>(
-    existingRow?.trashed ?? false,
+  const [isDraft, setIsDraft] = React.useState<boolean>(
+    existingRow?.status === 'draft',
   );
   const [missingRequired, setMissingRequired] = React.useState<boolean>(false);
   const [confirmDiscardOpen, setConfirmDiscardOpen] =
     React.useState<boolean>(false);
+  // Marca que o usuário adicionou um item de grupo. Os grupos têm form próprio,
+  // então o isDirty do form principal não os reflete; sem isso, um rascunho com
+  // filhos seria oferecido para descarte ao sair.
+  const childAddedRef = React.useRef<boolean>(false);
 
   const slug = table.slug;
 
@@ -169,14 +191,63 @@ function AutoSaveRowFormContent({
   useApiErrorAutoClear(form);
 
   const isDirty = useStore(form.store, (state) => state.isDirty);
+  const formValues = useStore(form.store, (state) => state.values);
+  const conditionalConfig = useConditionalFieldsRuntimeConfig(slug, true);
+
+  const conditionalVisibility = React.useMemo(() => {
+    return resolveConditionalVisibility(
+      fields,
+      conditionalConfig.data?.rules ?? [],
+      formValues,
+    );
+  }, [fields, conditionalConfig.data?.rules, formValues]);
+
+  const visibleFields = conditionalVisibility.visibleFields;
+  const visibleFormGroupFields = React.useMemo((): Array<IField> => {
+    return formGroupFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+  }, [formGroupFields, conditionalVisibility.hiddenFieldIds]);
 
   const _autoSave = useAutoSaveTableRow({
     onSuccess(data: IRow): void {
-      setIsTrashed(data.trashed);
+      setIsDraft(data.status === 'draft');
       if (!rowIdRef.current) {
         rowIdRef.current = data._id;
       }
       setPersistedRowId(data._id);
+    },
+    onError(error: AxiosError | Error): void {
+      handleApiError(error, {
+        context: 'Erro ao salvar o registro',
+        onFieldErrors: (errors: Record<string, string>): void => {
+          applyApiFieldErrors(form, errors);
+        },
+      });
+    },
+  });
+
+  // Salvar (publicar) usa os endpoints reais de create/update, que aplicam o
+  // guard de campos obrigatorios no backend e marcam status='published'.
+  const _create = useCreateTableRow({
+    onSuccess(data: IRow): void {
+      rowIdRef.current = data._id;
+      setPersistedRowId(data._id);
+      setIsDraft(false);
+    },
+    onError(error: AxiosError | Error): void {
+      handleApiError(error, {
+        context: 'Erro ao salvar o registro',
+        onFieldErrors: (errors: Record<string, string>): void => {
+          applyApiFieldErrors(form, errors);
+        },
+      });
+    },
+  });
+
+  const _update = useUpdateTableRow({
+    onSuccess(): void {
+      setIsDraft(false);
     },
     onError(error: AxiosError | Error): void {
       handleApiError(error, {
@@ -198,23 +269,39 @@ function AutoSaveRowFormContent({
     if (_autoSave.isPending) return;
     if (isUploading) return;
 
-    const payload = buildRowPayload(form.state.values, fields);
+    const values = omitHiddenConditionalValues(
+      form.state.values,
+      fields,
+      conditionalVisibility.hiddenFieldIds,
+    );
+    const payload = buildRowPayload(values, visibleFields);
 
     await _autoSave.mutateAsync({
       slug,
       rowId: rowIdRef.current,
       data: payload,
     });
-  }, [_autoSave, form, fields, slug, isUploading]);
+  }, [
+    _autoSave,
+    form,
+    fields,
+    visibleFields,
+    conditionalVisibility.hiddenFieldIds,
+    slug,
+    isUploading,
+  ]);
 
   const canSaveCallback = React.useCallback((): boolean => {
     if (rowIdRef.current) return true;
-    if (requiredFields.length === 0) return false;
-    return requiredFields.some((field): boolean => {
+    const visibleRequiredFields = requiredFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+    if (visibleRequiredFields.length === 0) return false;
+    return visibleRequiredFields.some((field): boolean => {
       const value = form.state.values[field.slug];
       return hasValue(value);
     });
-  }, [form, requiredFields]);
+  }, [form, requiredFields, conditionalVisibility.hiddenFieldIds]);
 
   const isDirtyCallback = React.useCallback((): boolean => {
     return isDirty;
@@ -222,7 +309,7 @@ function AutoSaveRowFormContent({
 
   const { status, lastSavedAt, triggerSave, cancelPending } = useAutoSave({
     onSave: performSave,
-    isTrashed,
+    isDraft,
     canSave: canSaveCallback,
     isDirty: isDirtyCallback,
   });
@@ -241,11 +328,28 @@ function AutoSaveRowFormContent({
     return rowIdRef.current;
   }, [cancelPending, performSave]);
 
+  // Ao abrir um registro novo, cria o rascunho de imediato (reusa o auto-save)
+  // para que Salvar sempre publique via update e a seção de grupos já tenha o
+  // rowId. Só para autenticado com CREATE_ROW: o endpoint de auto-save exige
+  // auth, então tabela FORM pública/anônima mantém o create direto no Salvar.
+  const eagerCreateRef = React.useRef<boolean>(false);
+  React.useEffect((): void => {
+    if (eagerCreateRef.current) return;
+    if (!isNewRecord) return;
+    if (!isAuthenticated) return;
+    if (!permissions.can('CREATE_ROW')) return;
+    if (rowIdRef.current) return;
+    eagerCreateRef.current = true;
+    void ensureParentRow();
+  }, [isNewRecord, isAuthenticated, permissions, ensureParentRow]);
+
   const validateAndTouch = React.useCallback((): boolean => {
-    let allValid = true;
-    for (const field of requiredFields) {
+    const missing: Record<string, string> = {};
+    const visibleRequiredFields = requiredFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+    for (const field of visibleRequiredFields) {
       const value = form.state.values[field.slug];
-      const filled = hasValue(value);
       form.setFieldMeta(
         field.slug,
         (prev: AnyFieldMetaBase): AnyFieldMetaBase => ({
@@ -253,31 +357,37 @@ function AutoSaveRowFormContent({
           isTouched: true,
         }),
       );
-      if (!filled) {
-        allValid = false;
-        form.setFieldMeta(
-          field.slug,
-          (prev: AnyFieldMetaBase): AnyFieldMetaBase => ({
-            ...prev,
-            isTouched: true,
-            errorMap: {
-              ...prev.errorMap,
-              onChange: field.name + ' é obrigatório',
-            },
-          }),
-        );
+      if (!hasValue(value)) {
+        missing[field.slug] = field.name + ' é obrigatório';
       }
     }
-    return allValid;
-  }, [form, requiredFields]);
+    // Grava os erros no slot `onServer` do errorMap — o único que a UI lê
+    // (getFieldInvalidState) e que useApiErrorAutoClear limpa ao digitar.
+    applyApiFieldErrors(form, missing);
+    return Object.keys(missing).length === 0;
+  }, [form, requiredFields, conditionalVisibility.hiddenFieldIds]);
 
-  const isIncompleteDraft = React.useCallback((): boolean => {
+  // Rascunho novo é descartável ao sair quando o usuário não adicionou conteúdo
+  // real: nenhum item de grupo e — sem obrigatórios, form intocado; com
+  // obrigatórios, algum ainda faltando.
+  const isDiscardableDraft = React.useCallback((): boolean => {
     if (!isNewRecord) return false;
     if (!rowIdRef.current) return false;
-    return requiredFields.some((field): boolean => {
+    if (childAddedRef.current) return false;
+    const visibleRequiredFields = requiredFields.filter(
+      (field) => !conditionalVisibility.hiddenFieldIds.has(field._id),
+    );
+    if (visibleRequiredFields.length === 0) return !isDirty;
+    return visibleRequiredFields.some((field): boolean => {
       return !hasValue(form.state.values[field.slug]);
     });
-  }, [isNewRecord, requiredFields, form]);
+  }, [
+    isNewRecord,
+    requiredFields,
+    form,
+    isDirty,
+    conditionalVisibility.hiddenFieldIds,
+  ]);
 
   const finishAndBack = React.useCallback((): void => {
     // Sincroniza o cache uma unica vez ao sair (em vez de a cada save).
@@ -292,11 +402,44 @@ function AutoSaveRowFormContent({
 
   const handleSaveAndBack = async (): Promise<void> => {
     cancelPending();
-    // Marca campos para feedback visual, mas nao bloqueia: registro incompleto
-    // e salvo como rascunho (lixeira) pelo backend.
+    // Salvar valida os obrigatorios e BLOQUEIA se invalido (auto-save e a
+    // excecao que permite rascunho). Quando valido, chama create/update reais
+    // que aplicam o guard do backend e publicam o registro.
     const isValid = validateAndTouch();
-    setMissingRequired(!isValid);
-    await performSave();
+    if (!isValid) {
+      setMissingRequired(true);
+      return;
+    }
+    setMissingRequired(false);
+
+    const payload = buildRowPayload(form.state.values, fields);
+
+    try {
+      // Autenticado: garante o rascunho (caso o eager-create ainda esteja
+      // pendente/tenha falhado) para que Salvar sempre publique via update.
+      if (
+        !rowIdRef.current &&
+        isAuthenticated &&
+        permissions.can('CREATE_ROW')
+      ) {
+        await ensureParentRow();
+      }
+      if (rowIdRef.current) {
+        await _update.mutateAsync({
+          slug,
+          rowId: rowIdRef.current,
+          data: payload,
+        });
+      } else {
+        // Fluxo anônimo (tabela FORM pública): cria e publica direto.
+        await _create.mutateAsync({ slug, data: payload });
+      }
+    } catch {
+      // Erros de campo ja foram aplicados no form via onError dos hooks.
+      // Mantem o usuario no formulario para correcao (nao navega).
+      return;
+    }
+
     finishAndBack();
   };
 
@@ -314,12 +457,12 @@ function AutoSaveRowFormContent({
 
   const requestBack = React.useCallback((): void => {
     cancelPending();
-    if (isIncompleteDraft()) {
+    if (isDiscardableDraft()) {
       setConfirmDiscardOpen(true);
       return;
     }
     finishAndBack();
-  }, [cancelPending, isIncompleteDraft, finishAndBack]);
+  }, [cancelPending, isDiscardableDraft, finishAndBack]);
 
   // Permite que o botao Voltar do cabecalho (renderizado pelo componente pai)
   // passe pela mesma guarda de descarte do rascunho.
@@ -356,7 +499,7 @@ function AutoSaveRowFormContent({
           lastSavedAt={lastSavedAt}
         />
         <div className="flex items-center gap-2 shrink-0">
-          {isTrashed && (
+          {isDraft && (
             <Badge
               variant="outline"
               className="text-amber-600 border-amber-400"
@@ -382,29 +525,42 @@ function AutoSaveRowFormContent({
           e.preventDefault();
         }}
       >
-        <RowFormFields
-          form={form}
-          fields={fields}
-          tableSlug={slug}
-          disabled={false}
-        />
-
-        {formGroupFields.length > 0 && (
-          <div className="flex flex-col gap-6 px-2 pb-4 pt-2 border-t mt-2">
-            {formGroupFields.map(
-              (groupField): React.JSX.Element => (
-                <GroupRowsInline
-                  key={groupField._id}
-                  tableSlug={slug}
-                  rowId={persistedRowId}
-                  field={groupField}
-                  table={table}
-                  onEnsureParentRow={ensureParentRow}
-                />
-              ),
-            )}
+        {conditionalConfig.status === 'pending' && (
+          <div className="flex min-h-40 flex-1 items-center justify-center">
+            <Spinner className="opacity-50" />
           </div>
         )}
+
+        {conditionalConfig.status !== 'pending' && (
+          <RowFormFields
+            form={form}
+            fields={visibleFields}
+            tableSlug={slug}
+            disabled={false}
+          />
+        )}
+
+        {conditionalConfig.status !== 'pending' &&
+          visibleFormGroupFields.length > 0 && (
+            <div className="flex flex-col gap-6 px-2 pb-4 pt-2 border-t mt-2">
+              {visibleFormGroupFields.map(
+                (groupField): React.JSX.Element => (
+                  <GroupRowsInline
+                    key={groupField._id}
+                    tableSlug={slug}
+                    rowId={persistedRowId}
+                    field={groupField}
+                    table={table}
+                    initialItems={groupItemsOf(existingRow, groupField.slug)}
+                    onEnsureParentRow={ensureParentRow}
+                    onChildAdded={(): void => {
+                      childAddedRef.current = true;
+                    }}
+                  />
+                ),
+              )}
+            </div>
+          )}
       </form>
 
       <div className="shrink-0 px-4 py-3 flex justify-end gap-2 border-t">
@@ -412,7 +568,7 @@ function AutoSaveRowFormContent({
           type="button"
           variant="outline"
           size="sm"
-          disabled={_autoSave.isPending}
+          disabled={_create.isPending || _update.isPending}
           onClick={requestBack}
         >
           Cancelar
@@ -420,12 +576,12 @@ function AutoSaveRowFormContent({
         <Button
           type="button"
           size="sm"
-          disabled={_autoSave.isPending || isUploading}
+          disabled={_create.isPending || _update.isPending || isUploading}
           onClick={(): void => {
             void handleSaveAndBack();
           }}
         >
-          {_autoSave.isPending && <Spinner />}
+          {(_create.isPending || _update.isPending) && <Spinner />}
           <span>Salvar</span>
         </Button>
       </div>
@@ -438,9 +594,8 @@ function AutoSaveRowFormContent({
           <DialogHeader>
             <DialogTitle>Descartar rascunho?</DialogTitle>
             <DialogDescription>
-              Este registro ainda não tem todos os campos obrigatórios
-              preenchidos e foi salvo como rascunho na lixeira. Deseja
-              descartá-lo ou mantê-lo como rascunho?
+              Este registro foi salvo como rascunho e ainda não foi concluído.
+              Deseja descartá-lo ou mantê-lo como rascunho?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -18,7 +18,7 @@ import {
   type IField,
   type IGroupConfiguration,
 } from '@application/core/entity.core';
-import { validateRowPayload } from '@application/core/row-payload-validator.core';
+import { RowPayloadValidator } from '@application/core/row-payload-validator.core';
 import type { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import type { TableContractRepository } from '@application/repositories/table/table-contract.repository';
 import {
@@ -236,7 +236,7 @@ async function processImportJob(
 
     payload['creator'] = userId;
 
-    const errors = validateRowPayload(payload, table.fields, groups);
+    const errors = RowPayloadValidator.validate(payload, table.fields, groups);
 
     if (errors) {
       skipped++;

@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { FieldDetailSkeleton } from './-field-detail-skeleton';
 import { FieldUpdateSchema, UpdateFieldFormFields } from './-update-form';
@@ -32,7 +33,6 @@ import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, ITable, Paginated, ValueOf } from '@/lib/interfaces';
 import { QueryClient as queryClient } from '@/lib/query-client';
-import { toastSuccess, toastWarning } from '@/lib/toast';
 
 function normalizeDefaultValue(
   type: string,
@@ -173,6 +173,7 @@ function RouteComponent(): React.JSX.Element {
         {_read.status === 'success' && (
           <FieldUpdateContent
             data={_read.data}
+            table={table.data}
             slug={slug}
             mode={mode}
             setMode={setMode}
@@ -186,6 +187,7 @@ function RouteComponent(): React.JSX.Element {
 
 interface FieldUpdateContentProps {
   data: IField;
+  table?: ITable;
   slug: string;
   mode: 'show' | 'edit';
   setMode: React.Dispatch<React.SetStateAction<'show' | 'edit'>>;
@@ -195,6 +197,7 @@ interface FieldUpdateContentProps {
 
 function FieldUpdateContent({
   data,
+  table,
   slug,
   mode,
   setMode,
@@ -219,20 +222,19 @@ function FieldUpdateContent({
     const isTrashed = Boolean(response.trashed);
 
     if (!wasTrashed && isTrashed) {
-      toastWarning(
-        'Campo enviado para lixeira',
-        'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
-      );
+      toast.warning('Campo enviado para lixeira', {
+        description:
+          'O campo foi enviado para a lixeira. Para restaurá-lo, acesse o gerenciamento de campos.',
+      });
     } else if (wasTrashed && !isTrashed) {
-      toastSuccess(
-        'Campo restaurado',
-        'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
-      );
+      toast.success('Campo restaurado', {
+        description:
+          'O campo foi restaurado. Para enviá-lo à lixeira, acesse o gerenciamento de campos.',
+      });
     } else {
-      toastSuccess(
-        'Campo atualizado',
-        'Os dados do campo foram atualizados com sucesso',
-      );
+      toast.success('Campo atualizado', {
+        description: 'Os dados do campo foram atualizados com sucesso',
+      });
     }
 
     form.reset();
@@ -468,6 +470,8 @@ function FieldUpdateContent({
             isPending={isPending}
             mode={mode}
             tableSlug={slug}
+            table={table}
+            targetField={data}
             isLocked={data.locked ?? false}
             isGroupField={Boolean(groupSlug)}
           />

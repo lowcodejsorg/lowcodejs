@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { Trash2Icon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
 import { Button } from '@/components/ui/button';
@@ -8,7 +9,6 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { API } from '@/lib/api';
 import { handleApiError } from '@/lib/handle-api-error';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
 
 interface RowEmptyTrashDialogProps {
   slug: string;
@@ -32,14 +32,14 @@ export function RowEmptyTrashDialog({
         queryKey: queryKeys.rows.lists(slug),
       });
 
-      toastSuccess(
-        'Lixeira esvaziada!',
-        result.deleted === 1
-          ? '1 registro excluído permanentemente'
-          : result.deleted
-              .toString()
-              .concat(' registros excluídos permanentemente'),
-      );
+      toast.success('Lixeira esvaziada!', {
+        description:
+          result.deleted === 1
+            ? '1 registro excluído permanentemente'
+            : result.deleted
+                .toString()
+                .concat(' registros excluídos permanentemente'),
+      });
     },
     onError(error) {
       handleApiError(error, { context: 'Erro ao esvaziar lixeira' });

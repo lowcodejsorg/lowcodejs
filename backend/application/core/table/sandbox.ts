@@ -1,6 +1,10 @@
 import crypto from 'node:crypto';
 
-import NodemailerEmailService from '@application/services/email/nodemailer-email.service';
+import { E_NOTIFICATION_TYPE } from '@application/core/entity.core';
+import { User } from '@application/model/user.model';
+import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
+import NodemailerEmailService from '@application/services/email/email.service';
+import NotificationService from '@application/services/notification/notification.service';
 import { Env } from '@start/env';
 
 import {
@@ -15,9 +19,53 @@ import type {
   ExecutionContext,
   FieldApi,
   FieldDefinition,
+  NotifyApi,
   SandboxGlobals,
+  SandboxUser,
+  UsersApi,
   UtilsApi,
 } from './types';
+
+/**
+ * Normaliza ids de usuário em qualquer formato aceito pelos campos USER:
+ * string, ObjectId, objeto populado ({ _id }), arrays e arrays aninhados.
+ * Retorna ids únicos como string.
+ */
+function normalizeUserIds(input: unknown): string[] {
+  const out: string[] = [];
+
+  const push = (value: unknown): void => {
+    if (!value) return;
+    if (Array.isArray(value)) {
+      for (const item of value) push(item);
+      return;
+    }
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed) out.push(trimmed);
+      return;
+    }
+    if (typeof value === 'object') {
+      const obj = value as Record<string, unknown>;
+      const nested = obj._id ?? obj.id;
+      if (nested) {
+        const asString = String(nested);
+        if (asString && asString !== '[object Object]') out.push(asString);
+        return;
+      }
+      // ObjectId e similares: String() devolve o hex.
+      const asString = String(value);
+      if (asString && asString !== '[object Object]') out.push(asString);
+      return;
+    }
+    const asString = String(value);
+    if (asString) out.push(asString);
+  };
+
+  push(input);
+
+  return Array.from(new Set(out));
+}
 
 export interface BuildSandboxParams {
   doc: Record<string, any>;
@@ -86,6 +134,8 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
     userId: context.userId ?? '',
     isNew: context.isNew ?? false,
     appUrl: Env.APP_CLIENT_URL,
+    reentrant: context.viaSaveHook ?? false,
+    previous: context.previous ?? null,
     table: Object.freeze(
       context.tableInfo ?? {
         _id: '',
@@ -174,6 +224,75 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
     },
   };
 
+  // Build users API — resolve ids de campos USER/CREATOR em { _id, name, email }.
+  // Roda no host (fora da VM), com acesso ao model User (conexão system).
+  const users: UsersApi = {
+    async resolve(ids: unknown): Promise<SandboxUser[]> {
+      const list = normalizeUserIds(ids);
+      if (list.length === 0) return [];
+      try {
+        const docs = await User.find({
+          _id: { $in: list },
+          trashed: { $ne: true },
+        })
+          .select('name email _id')
+          .lean();
+
+        return docs.map((doc: any) => ({
+          _id: String(doc._id),
+          name: String(doc.name ?? ''),
+          email: String(doc.email ?? ''),
+        }));
+      } catch (error: any) {
+        console.error('Erro na função users.resolve:', error);
+        return [];
+      }
+    },
+
+    async emails(ids: unknown): Promise<string[]> {
+      const resolved = await users.resolve(ids);
+      return Array.from(
+        new Set(
+          resolved
+            .map((user) => user.email.trim().toLowerCase())
+            .filter(Boolean),
+        ),
+      );
+    },
+  };
+
+  // Build notify API — cria notificações in-app (uma por usuário) + socket.
+  const notify: NotifyApi = {
+    async send(input): Promise<{ success: boolean; recipients: number }> {
+      try {
+        const userIds = normalizeUserIds(input?.userIds);
+        if (userIds.length === 0) return { success: true, recipients: 0 };
+        if (!input?.title) {
+          return { success: false, recipients: 0 };
+        }
+
+        const service = new NotificationService(
+          new NotificationMongooseRepository(),
+        );
+
+        const records = await service.notify({
+          userIds,
+          type: (input.type as any) ?? E_NOTIFICATION_TYPE.GENERIC,
+          title: String(input.title),
+          body: input.body ?? null,
+          action: input.action ?? null,
+          source: input.source ?? null,
+          actorUserId: input.actorUserId ?? context.userId ?? null,
+        });
+
+        return { success: true, recipients: records.length };
+      } catch (error: any) {
+        console.error('Erro na função notify.send:', error);
+        return { success: false, recipients: 0 };
+      }
+    },
+  };
+
   // Build utils API
   const utils: UtilsApi = {
     today(): Date {
@@ -250,6 +369,8 @@ export function buildSandbox(params: BuildSandboxParams): SandboxGlobals {
     field,
     context: contextApi,
     email,
+    users,
+    notify,
     utils,
 
     // Console (intercepted)

@@ -4,7 +4,7 @@ import { Controller, GET, getInstanceByToken } from 'fastify-decorators';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { NotificationContractRepository } from '@application/repositories/notification/notification-contract.repository';
-import NotificationMongooseRepository from '@application/repositories/notification/notification-mongoose.repository';
+import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
 
 @Controller({
   route: '/notifications',

@@ -1,4 +1,5 @@
 import React from 'react';
+import { toast } from 'sonner';
 
 import {
   buildGroupRowPayload,
@@ -26,7 +27,6 @@ import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField, IRow } from '@/lib/interfaces';
 import { buildFieldValidator } from '@/lib/table';
-import { toastSuccess } from '@/lib/toast';
 
 interface GroupRowFormDialogProps {
   open: boolean;
@@ -93,7 +93,9 @@ function GroupRowFormDialogContent({
 
   const _create = useCreateGroupRow({
     onSuccess() {
-      toastSuccess('Item criado', 'O item foi criado com sucesso');
+      toast.success('Item criado', {
+        description: 'O item foi criado com sucesso',
+      });
       onOpenChange(false);
     },
     onError(error) {
@@ -103,7 +105,9 @@ function GroupRowFormDialogContent({
 
   const _update = useUpdateGroupRow({
     onSuccess() {
-      toastSuccess('Item atualizado', 'O item foi atualizado com sucesso');
+      toast.success('Item atualizado', {
+        description: 'O item foi atualizado com sucesso',
+      });
       onOpenChange(false);
     },
     onError(error) {
@@ -149,25 +153,30 @@ function GroupRowFormDialogContent({
       </SheetHeader>
 
       <form
-        className="space-y-4"
+        className="flex flex-wrap gap-4"
         onSubmit={(e) => {
           e.preventDefault();
           form.handleSubmit();
         }}
       >
         {visibleFields.map((field) => (
-          <form.AppField
+          <div
             key={field._id}
-            name={field.slug}
-            validators={{
-              onChange: ({ value }: { value: any }) =>
-                buildFieldValidator(field, value),
-            }}
+            className="min-w-[200px]"
+            style={{ width: `calc(${field.widthInForm ?? 50}% - 1rem)` }}
           >
-            {(formField: any) =>
-              renderGroupFormField(formField, field, tableSlug, groupSlug)
-            }
-          </form.AppField>
+            <form.AppField
+              name={field.slug}
+              validators={{
+                onChange: ({ value }: { value: any }) =>
+                  buildFieldValidator(field, value),
+              }}
+            >
+              {(formField: any) =>
+                renderGroupFormField(formField, field, tableSlug, groupSlug)
+              }
+            </form.AppField>
+          </div>
         ))}
       </form>
 

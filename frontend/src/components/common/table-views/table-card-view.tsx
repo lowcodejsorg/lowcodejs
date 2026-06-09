@@ -15,6 +15,7 @@ import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-ce
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
 import { FieldTitle } from '@/components/common/field-title';
+import { Badge } from '@/components/ui/badge';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
@@ -155,7 +156,7 @@ function RenderCardCell({
             row={row}
           />
         );
-      case E_FIELD_TYPE.TRASHED:
+      case E_FIELD_TYPE.STATUS:
         return (
           <TableRowTextShortCell
             field={field}
@@ -238,6 +239,14 @@ export function TableCardView({
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
                 <div className="space-y-1 min-w-0 flex-1">
+                  {row.status === 'draft' && (
+                    <Badge
+                      variant="outline"
+                      className="text-amber-600 border-amber-400"
+                    >
+                      Rascunho
+                    </Badge>
+                  )}
                   <div className="text-base font-semibold truncate">
                     {titleField ? (
                       <RenderCardCell

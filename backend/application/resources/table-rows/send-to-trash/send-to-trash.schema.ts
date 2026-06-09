@@ -4,7 +4,7 @@ export const TableRowSendToTrashSchema: FastifySchema = {
   tags: ['Rows'],
   summary: 'Send row to trash',
   description:
-    'Moves a row to trash by setting trashed=true and trashedAt timestamp. The row can be restored later or permanently deleted.',
+    'Moves a row to trash by setting the trashedAt timestamp. The row can be restored later or permanently deleted.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -29,11 +29,6 @@ export const TableRowSendToTrashSchema: FastifySchema = {
       type: 'object',
       properties: {
         _id: { type: 'string', description: 'Row ID' },
-        trashed: {
-          type: 'boolean',
-          enum: [true],
-          description: 'Row is now in trash',
-        },
         trashedAt: {
           type: 'string',
           format: 'date-time',

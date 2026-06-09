@@ -1,6 +1,7 @@
 import { Link, useLocation, useRouter } from '@tanstack/react-router';
 import { ChevronRightIcon, LogOutIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import {
@@ -30,11 +31,12 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip';
 import { useAuthenticationSignOut } from '@/hooks/tanstack-query/use-authentication-sign-out';
+import { useMenuReadList } from '@/hooks/tanstack-query/use-menu-read-list';
 import { useSettingRead } from '@/hooks/tanstack-query/use-setting-read';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
+import { resolveInitialMenuRoute } from '@/lib/menu/initial-menu-route';
 import type { MenuItem, MenuRoute } from '@/lib/menu/menu-route';
-import { toastSuccess } from '@/lib/toast';
 
 interface SidebarProps {
   menu: MenuRoute;
@@ -313,9 +315,26 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
 
   const setting = useSettingRead();
 
+  const menus = useMenuReadList();
+
+  function goToInitialPage(): void {
+    const initialRoute = resolveInitialMenuRoute(menus.data ?? []);
+
+    setOpenMobile(false);
+
+    if (initialRoute?.type === 'external') {
+      window.location.assign(initialRoute.href);
+      return;
+    }
+
+    router.navigate({ to: initialRoute?.to ?? '/tables', replace: false });
+  }
+
   const signOut = useAuthenticationSignOut({
     onSuccess() {
-      toastSuccess('Logout realizado com sucesso!', 'Volte sempre!');
+      toast.success('Logout realizado com sucesso!', {
+        description: 'Volte sempre!',
+      });
 
       router.navigate({
         to: '/',
@@ -337,10 +356,19 @@ export function Sidebar({ menu }: SidebarProps): React.JSX.Element {
       <SidebarHeader className="inline-flex items-center justify-center py-6">
         {setting.status === 'pending' && <Skeleton className="h-8 w-32" />}
         {setting.status === 'success' && (
-          <img
-            src={setting.data.LOGO_LARGE_URL ?? ''}
-            className="w-32"
-          />
+          <button
+            type="button"
+            onClick={goToInitialPage}
+            aria-label="Ir para página inicial"
+            data-test-id="sidebar-logo-link"
+            className="cursor-pointer border-0 bg-transparent p-0"
+          >
+            <img
+              src={setting.data.LOGO_LARGE_URL ?? ''}
+              alt="Logo"
+              className="w-32"
+            />
+          </button>
         )}
       </SidebarHeader>
       <SidebarContent data-test-id="sidebar-nav">

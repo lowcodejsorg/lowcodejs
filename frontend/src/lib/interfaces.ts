@@ -25,6 +25,7 @@ import type {
   E_NOTIFICATION_TYPE,
   E_REACTION_TYPE,
   E_ROLE,
+  E_ROW_STATUS,
   E_TABLE_COLLABORATION,
   E_TABLE_STYLE,
   E_TABLE_TYPE,
@@ -346,7 +347,12 @@ export type ISetting = {
   CHAT_HISTORY_ENABLED: boolean;
   MCP_SERVER_URL: string | null;
   MCP_SERVER_TOKEN: string | null;
+  MCP_LOWCODE_API_URL: string | null;
   OPENAI_MODEL: string;
+  AI_LLM_PROVIDER: string;
+  LLM_API_KEY: string | null;
+  LLM_MODEL: string;
+  LLM_BASE_URL: string | null;
   SETUP_COMPLETED: boolean;
   SETUP_CURRENT_STEP: string | null;
 };
@@ -378,9 +384,11 @@ export type ISetupStatus = {
 // | Array<Record<string, RowResponseValue>>;
 
 export type IRow = Merge<
-  Base,
+  Omit<Base, 'trashed'>,
   {
     creator: IUser;
+    status?: ValueOf<typeof E_ROW_STATUS>;
+    draftAt?: string | null;
     [x: string]: any;
   }
 >;

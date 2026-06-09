@@ -7,6 +7,7 @@ import {
   Trash2Icon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -39,7 +40,6 @@ import { useStorageMigrationStart } from '@/hooks/tanstack-query/use-storage-mig
 import { useStorageMigrationStatus } from '@/hooks/tanstack-query/use-storage-migration-status';
 import { useStorageMigrationSocket } from '@/hooks/use-storage-migration-socket';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 const rootApi = getRouteApi('__root__');
 
@@ -84,10 +84,9 @@ export function StorageMigrationCard(): React.JSX.Element | null {
 
   const start = useStorageMigrationStart({
     onSuccess: (data) => {
-      toastSuccess(
-        'Migração iniciada',
-        `${data.queued_count} arquivo(s) na fila — job ${data.job_id}`,
-      );
+      toast.success('Migração iniciada', {
+        description: `${data.queued_count} arquivo(s) na fila — job ${data.job_id}`,
+      });
       setModalOpen(true);
     },
     onError: (err) =>
@@ -96,10 +95,9 @@ export function StorageMigrationCard(): React.JSX.Element | null {
 
   const cleanup = useStorageMigrationCleanup({
     onSuccess: (data) => {
-      toastSuccess(
-        'Limpeza iniciada',
-        `${data.queued_count} arquivo(s) sendo removidos do driver antigo`,
-      );
+      toast.success('Limpeza iniciada', {
+        description: `${data.queued_count} arquivo(s) sendo removidos do driver antigo`,
+      });
       setCleanupConfirmOpen(false);
       setModalOpen(true);
     },

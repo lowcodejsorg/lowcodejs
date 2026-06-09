@@ -11,11 +11,13 @@ import {
   Settings2Icon,
 } from 'lucide-react';
 import React, { useState } from 'react';
+import { toast } from 'sonner';
 
 import { ApiEndpointsModal } from './-api-endpoints-modal';
 
 import { TableFieldManagementSheet } from '@/components/common/dynamic-table/field-management/table-field-management-sheet';
 import { GroupFieldManagementSheet } from '@/components/common/dynamic-table/group-rows/group-field-management-sheet';
+import { ExtensionSlot } from '@/components/common/extension-slot/extension-slot';
 import { FieldTitle } from '@/components/common/field-title';
 import { Button } from '@/components/ui/button';
 import {
@@ -34,7 +36,6 @@ import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { useTablePermission } from '@/hooks/use-table-permission';
 import { E_FIELD_TYPE, E_TABLE_TYPE } from '@/lib/constant';
 import type { IField, ITable } from '@/lib/interfaces';
-import { toastInfo } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface FieldGroupSubMenuProps {
@@ -240,8 +241,6 @@ export function TableConfigurationDropdown({
                       <span>Gerenciar</span>
                     </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
-
                     {activeFields.map((field) => (
                       <DropdownMenuItem
                         key={field._id}
@@ -310,6 +309,19 @@ export function TableConfigurationDropdown({
               </React.Fragment>
             )}
 
+          {permission.can('UPDATE_FIELD') && table.data && (
+            <React.Fragment>
+              <DropdownMenuSeparator />
+
+              <DropdownMenuGroup>
+                <ExtensionSlot
+                  id="table.fields.manage"
+                  context={{ table: table.data, slug }}
+                />
+              </DropdownMenuGroup>
+            </React.Fragment>
+          )}
+
           {permission.can('UPDATE_TABLE') && (
             <React.Fragment>
               <DropdownMenuSeparator />
@@ -372,10 +384,10 @@ export function TableConfigurationDropdown({
                       const embedUrl = window.location.href;
                       const iframeCode = `<iframe src="${embedUrl}" width="100%" height="600" frameborder="0"></iframe>`;
                       navigator.clipboard.writeText(iframeCode);
-                      toastInfo(
-                        'Código embed copiado',
-                        'O código iframe foi copiado para a área de transferência',
-                      );
+                      toast.info('Código embed copiado', {
+                        description:
+                          'O código iframe foi copiado para a área de transferência',
+                      });
                     }}
                   >
                     <CodeIcon className="size-4" />

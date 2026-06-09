@@ -236,6 +236,7 @@ export function renderGroupFormField(
         <formField.TableRowRelationshipField
           field={field}
           disabled={false}
+          tableSlug={tableSlug}
         />
       );
     case E_FIELD_TYPE.CATEGORY:

@@ -2,6 +2,7 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
 import { PencilIcon } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import type { ProfileUpdateFormValues } from './-update-form';
 import { ProfileUpdateSchema, UpdateProfileFormFields } from './-update-form';
@@ -17,7 +18,6 @@ import { useApiErrorAutoClear } from '@/integrations/tanstack-form/use-api-error
 import { applyApiFieldErrors } from '@/lib/form-utils';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IUser } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/profile/')({
   component: RouteComponent,
@@ -84,10 +84,9 @@ function ProfileUpdateContent({
 
   const _update = useUpdateProfile({
     onSuccess() {
-      toastSuccess(
-        'Perfil atualizado',
-        'Os dados do perfil foram atualizados com sucesso',
-      );
+      toast.success('Perfil atualizado', {
+        description: 'Os dados do perfil foram atualizados com sucesso',
+      });
 
       form.reset();
       setMode('show');
@@ -119,10 +118,9 @@ function ProfileUpdateContent({
       if (_update.status === 'pending') return;
 
       if (allowPasswordChange && value.newPassword !== value.confirmPassword) {
-        toastError(
-          'As senhas não coincidem',
-          'A nova senha e a confirmação devem ser iguais',
-        );
+        toast.error('As senhas não coincidem', {
+          description: 'A nova senha e a confirmação devem ser iguais',
+        });
         return;
       }
 

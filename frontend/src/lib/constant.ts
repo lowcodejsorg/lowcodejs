@@ -37,8 +37,13 @@ export const E_FIELD_TYPE = {
   CREATOR: 'CREATOR',
   IDENTIFIER: 'IDENTIFIER',
   CREATED_AT: 'CREATED_AT',
-  TRASHED: 'TRASHED',
   TRASHED_AT: 'TRASHED_AT',
+  STATUS: 'STATUS',
+} as const;
+
+export const E_ROW_STATUS = {
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
 } as const;
 
 export const E_ROLE = {
@@ -303,8 +308,17 @@ export const E_CHAT_EVENT = {
   TOOL_ERROR: 'tool_error',
   MESSAGE: 'message',
   ERROR: 'error',
+  LLM_INFO: 'llm_info',
   // Client -> Server
   HISTORY: 'history',
+} as const;
+
+export const E_AI_LLM_PROVIDER = {
+  OPENAI: 'openai',
+  GEMINI: 'gemini',
+  CLAUDE: 'claude',
+  OPENROUTER: 'openrouter',
+  OLLAMA: 'ollama',
 } as const;
 
 // Socket.IO Notification Events

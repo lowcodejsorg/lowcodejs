@@ -1,6 +1,7 @@
 import { createLazyFileRoute, useNavigate } from '@tanstack/react-router';
 import { BellOff, Check, CheckCheck, Trash2 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { PageHeader, PageShell } from '@/components/common/page-shell';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,6 @@ import { useNotificationMarkAsRead } from '@/hooks/tanstack-query/use-notificati
 import { useNotificationPaginated } from '@/hooks/tanstack-query/use-notification-paginated';
 import { formatDate } from '@/lib/format-date';
 import type { INotification } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 export const Route = createLazyFileRoute('/_private/notifications/')({
@@ -34,10 +34,9 @@ function NotificationsPage(): React.JSX.Element {
   const markAsRead = useNotificationMarkAsRead();
   const markAllAsRead = useNotificationMarkAllAsRead({
     onSuccess(data) {
-      toastSuccess(
-        'Notificações marcadas',
-        `${data.updated} notificações foram marcadas como lidas.`,
-      );
+      toast.success('Notificações marcadas', {
+        description: `${data.updated} notificações foram marcadas como lidas.`,
+      });
     },
   });
   const deleteNotification = useNotificationDelete();

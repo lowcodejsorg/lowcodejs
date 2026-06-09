@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from '@tanstack/react-router';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 import type {
   FieldManagementActions,
@@ -11,7 +12,6 @@ import { queryKeys } from '@/hooks/tanstack-query/_query-keys';
 import { useUpdateTable } from '@/hooks/tanstack-query/use-table-update';
 import { API } from '@/lib/api';
 import type { IField, ITable, Paginated } from '@/lib/interfaces';
-import { toastError, toastSuccess } from '@/lib/toast';
 
 function buildFieldPayload(
   field: IField,
@@ -130,10 +130,10 @@ export function useTableFieldManagement(
 
   const updateTable = useUpdateTable({
     onSuccess: () => {
-      toastSuccess('Ordem atualizada com sucesso');
+      toast.success('Ordem atualizada com sucesso');
     },
     onError: () => {
-      toastError('Erro ao atualizar ordem dos campos');
+      toast.error('Erro ao atualizar ordem dos campos');
     },
   });
 
@@ -161,13 +161,13 @@ export function useTableFieldManagement(
       updateFieldInTableCache(queryClient, tableSlug, response);
       const label = VISIBILITY_LABELS[visibilityKey];
       if (response[visibilityKey]) {
-        toastSuccess(`Campo visível em ${label}`);
+        toast.success(`Campo visível em ${label}`);
       } else {
-        toastSuccess(`Campo oculto em ${label}`);
+        toast.success(`Campo oculto em ${label}`);
       }
     },
     onError: () => {
-      toastError('Erro ao atualizar visibilidade do campo');
+      toast.error('Erro ao atualizar visibilidade do campo');
     },
     onSettled: () => {
       setTogglingFieldId(null);
@@ -200,10 +200,10 @@ export function useTableFieldManagement(
       if (widthKey === 'widthInList') {
         unit = 'px';
       }
-      toastSuccess(`Largura atualizada para ${response[widthKey]}${unit}`);
+      toast.success(`Largura atualizada para ${response[widthKey]}${unit}`);
     },
     onError: () => {
-      toastError('Erro ao atualizar largura do campo');
+      toast.error('Erro ao atualizar largura do campo');
     },
     onSettled: () => {
       setChangingWidthFieldId(null);
@@ -248,14 +248,14 @@ export function useTableFieldManagement(
         },
       );
 
-      toastSuccess(`Campo "${field.name}" excluído permanentemente`);
+      toast.success(`Campo "${field.name}" excluído permanentemente`);
     },
     onError: (error) => {
       console.error(error);
-      toastError(
-        'Erro ao excluir campo',
-        'Não foi possível excluir o campo permanentemente. Tente novamente.',
-      );
+      toast.error('Erro ao excluir campo', {
+        description:
+          'Não foi possível excluir o campo permanentemente. Tente novamente.',
+      });
     },
     onSettled: () => {
       setDeletingFieldId(null);
@@ -332,16 +332,15 @@ export function useTableFieldManagement(
     },
     onSuccess: (response) => {
       updateFieldInTableCache(queryClient, tableSlug, response);
-      toastSuccess(
-        'Campo restaurado',
-        'O campo foi restaurado da lixeira com sucesso.',
-      );
+      toast.success('Campo restaurado', {
+        description: 'O campo foi restaurado da lixeira com sucesso.',
+      });
     },
     onError: () => {
-      toastError(
-        'Erro ao restaurar campo',
-        'Não foi possível restaurar o campo da lixeira. Tente novamente.',
-      );
+      toast.error('Erro ao restaurar campo', {
+        description:
+          'Não foi possível restaurar o campo da lixeira. Tente novamente.',
+      });
     },
     onSettled: () => {
       setRestoringFieldId(null);

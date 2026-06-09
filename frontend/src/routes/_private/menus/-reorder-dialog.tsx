@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import React from 'react';
 import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
 
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,7 +46,6 @@ import { useMenuReorder } from '@/hooks/tanstack-query/use-menu-reorder';
 import { E_MENU_ITEM_TYPE } from '@/lib/constant';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IMenu } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 type DropMode = 'before' | 'after' | 'nest';
@@ -407,7 +407,9 @@ export function MenuReorderDialog({
 
   const reorder = useMenuReorder({
     onSuccess() {
-      toastSuccess('Ordem salva', 'A ordem dos menus foi atualizada');
+      toast.success('Ordem salva', {
+        description: 'A ordem dos menus foi atualizada',
+      });
       onOpenChange(false);
     },
     onError(error) {

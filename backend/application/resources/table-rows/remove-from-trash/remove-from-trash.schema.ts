@@ -4,7 +4,7 @@ export const TableRowRemoveFromTrashSchema: FastifySchema = {
   tags: ['Rows'],
   summary: 'Remove row from trash',
   description:
-    'Restores a row from trash by setting trashed=false and clearing trashedAt timestamp. Makes the row active again.',
+    'Restores a row from trash by clearing the trashedAt timestamp. Makes the row active again.',
   security: [{ cookieAuth: [] }],
   params: {
     type: 'object',
@@ -29,11 +29,6 @@ export const TableRowRemoveFromTrashSchema: FastifySchema = {
       type: 'object',
       properties: {
         _id: { type: 'string', description: 'Row ID' },
-        trashed: {
-          type: 'boolean',
-          enum: [false],
-          description: 'Row is no longer in trash',
-        },
         trashedAt: {
           type: 'string',
           nullable: true,

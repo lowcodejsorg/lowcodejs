@@ -1,4 +1,5 @@
 import { createLazyFileRoute, useRouter } from '@tanstack/react-router';
+import { toast } from 'sonner';
 
 import {
   CloneTableBodySchema,
@@ -15,7 +16,6 @@ import { useCloneTable } from '@/hooks/tanstack-query/use-clone-table';
 import { usePermission } from '@/hooks/use-table-permission';
 import { useAppForm } from '@/integrations/tanstack-form/form-hook';
 import { handleApiError } from '@/lib/handle-api-error';
-import { toastSuccess } from '@/lib/toast';
 
 export const Route = createLazyFileRoute('/_private/tables/clone/')({
   component: RouteComponent,
@@ -28,7 +28,9 @@ function RouteComponent(): React.JSX.Element {
 
   const _clone = useCloneTable({
     onSuccess(data) {
-      toastSuccess('Tabela clonada', 'A tabela foi clonada com sucesso');
+      toast.success('Tabela clonada', {
+        description: 'A tabela foi clonada com sucesso',
+      });
 
       form.reset();
       sidebar.setOpen(true);

@@ -9,14 +9,14 @@ import {
 import ReactionInMemoryRepository from '@application/repositories/reaction/reaction-in-memory.repository';
 import RowInMemoryRepository from '@application/repositories/row/row-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import InMemoryRowContextService from '@application/services/row-context/in-memory-row-context.service';
+import InMemoryRowContextBuilder from '@application/services/table/in-memory-row-context-builder.service';
 
 import TableRowReactionUseCase from './reaction.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let reactionInMemoryRepository: ReactionInMemoryRepository;
 let rowInMemoryRepository: RowInMemoryRepository;
-let rowContextService: InMemoryRowContextService;
+let rowContextBuilder: InMemoryRowContextBuilder;
 let sut: TableRowReactionUseCase;
 
 describe('Table Row Reaction Use Case', () => {
@@ -24,13 +24,13 @@ describe('Table Row Reaction Use Case', () => {
     tableInMemoryRepository = new TableInMemoryRepository();
     reactionInMemoryRepository = new ReactionInMemoryRepository();
     rowInMemoryRepository = new RowInMemoryRepository();
-    rowContextService = new InMemoryRowContextService();
+    rowContextBuilder = new InMemoryRowContextBuilder();
 
     sut = new TableRowReactionUseCase(
       tableInMemoryRepository,
       reactionInMemoryRepository,
       rowInMemoryRepository,
-      rowContextService,
+      rowContextBuilder,
     );
     vi.clearAllMocks();
   });

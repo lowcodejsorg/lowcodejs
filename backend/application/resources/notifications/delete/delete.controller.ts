@@ -5,7 +5,7 @@ import z from 'zod';
 
 import { AuthenticationMiddleware } from '@application/middlewares/authentication.middleware';
 import { NotificationContractRepository } from '@application/repositories/notification/notification-contract.repository';
-import NotificationMongooseRepository from '@application/repositories/notification/notification-mongoose.repository';
+import NotificationMongooseRepository from '@application/repositories/notification/notification.repository';
 
 const ParamsValidator = z.object({ _id: z.string().trim().min(1) });
 

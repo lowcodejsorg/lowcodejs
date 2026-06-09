@@ -7,6 +7,7 @@ import {
   TrashIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { TableRowCategoryCell } from '@/components/common/dynamic-table/table-cells/table-row-category-cell';
 import { TableRowDateCell } from '@/components/common/dynamic-table/table-cells/table-row-date-cell';
@@ -20,6 +21,7 @@ import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-ce
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
 import { PermanentDeleteConfirmDialog } from '@/components/common/permanent-delete-confirm-dialog';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -36,7 +38,6 @@ import { API } from '@/lib/api';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, IRow, ITable } from '@/lib/interfaces';
 import { QueryClient } from '@/lib/query-client';
-import { toastSuccess } from '@/lib/toast';
 
 interface RowDetailViewProps {
   table: ITable;
@@ -53,7 +54,7 @@ function renderCell(
   switch (field.type) {
     case E_FIELD_TYPE.TEXT_SHORT:
     case E_FIELD_TYPE.IDENTIFIER:
-    case E_FIELD_TYPE.TRASHED:
+    case E_FIELD_TYPE.STATUS:
       return (
         <TableRowTextShortCell
           row={row}
@@ -166,7 +167,7 @@ export function RowDetailView({
       void QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.detail(slug, rowId),
       });
-      toastSuccess('Registro enviado para lixeira!');
+      toast.success('Registro enviado para lixeira!');
     },
   });
 
@@ -182,7 +183,7 @@ export function RowDetailView({
       void QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.detail(slug, rowId),
       });
-      toastSuccess('Registro restaurado!');
+      toast.success('Registro restaurado!');
     },
   });
 
@@ -195,7 +196,7 @@ export function RowDetailView({
       void QueryClient.invalidateQueries({
         queryKey: queryKeys.rows.lists(slug),
       });
-      toastSuccess('Registro excluído permanentemente!');
+      toast.success('Registro excluído permanentemente!');
       onBack();
     },
   });
@@ -244,8 +245,16 @@ export function RowDetailView({
 
   return (
     <React.Fragment>
-      <div className="shrink-0 px-2 pb-2 flex flex-row justify-end gap-1">
-        {!data.trashed && canRemoveRow && (
+      <div className="shrink-0 px-2 pb-2 flex flex-row items-center justify-end gap-1">
+        {data.status === 'draft' && (
+          <Badge
+            variant="outline"
+            className="mr-auto text-amber-600 border-amber-400"
+          >
+            Rascunho
+          </Badge>
+        )}
+        {data.trashedAt == null && canRemoveRow && (
           <Button
             type="button"
             variant="outline"
@@ -257,7 +266,7 @@ export function RowDetailView({
           </Button>
         )}
 
-        {data.trashed && canRemoveRow && (
+        {data.trashedAt != null && canRemoveRow && (
           <Button
             type="button"
             variant="outline"
@@ -269,7 +278,7 @@ export function RowDetailView({
           </Button>
         )}
 
-        {data.trashed && canRemoveRow && (
+        {data.trashedAt != null && canRemoveRow && (
           <Button
             type="button"
             variant="destructive"
@@ -281,7 +290,7 @@ export function RowDetailView({
           </Button>
         )}
 
-        {!data.trashed && canUpdateRow && (
+        {data.trashedAt == null && canUpdateRow && (
           <Button
             type="button"
             size="sm"
@@ -312,7 +321,7 @@ export function RowDetailView({
           )}
         </div>
 
-        {data.trashed && (
+        {data.trashedAt != null && (
           <div className="rounded-md border border-amber-500 p-3 bg-amber-50 m-4">
             <p className="text-sm text-amber-700">
               Este registro está na lixeira

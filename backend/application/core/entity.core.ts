@@ -44,8 +44,13 @@ export const E_FIELD_TYPE = {
   CREATOR: 'CREATOR',
   IDENTIFIER: 'IDENTIFIER',
   CREATED_AT: 'CREATED_AT',
-  TRASHED: 'TRASHED',
   TRASHED_AT: 'TRASHED_AT',
+  STATUS: 'STATUS',
+} as const;
+
+export const E_ROW_STATUS = {
+  DRAFT: 'draft',
+  PUBLISHED: 'published',
 } as const;
 
 export const E_FIELD_FORMAT = {
@@ -140,6 +145,16 @@ export const E_CHAT_EVENT = {
   MESSAGE: 'message',
   ERROR: 'error',
   HISTORY: 'history',
+  LLM_INFO: 'llm_info',
+} as const;
+
+/** Provedor de LLM do assistente IA (configurável em /settings). */
+export const E_AI_LLM_PROVIDER = {
+  OPENAI: 'openai',
+  GEMINI: 'gemini',
+  CLAUDE: 'claude',
+  OPENROUTER: 'openrouter',
+  OLLAMA: 'ollama',
 } as const;
 
 export const E_NOTIFICATION_TYPE = {
@@ -450,7 +465,13 @@ export type FieldCreatePayload = Pick<
   | 'group'
 >;
 
-export type IRow = Merge<Base, Record<string, unknown>>;
+export type IRow = Merge<
+  Omit<Base, 'trashed'>,
+  Record<string, unknown> & {
+    status?: ValueOf<typeof E_ROW_STATUS>;
+    draftAt?: Date | null;
+  }
+>;
 
 export type IAttachment = {
   filename: string;
@@ -571,7 +592,17 @@ export type ISetting = {
   CHAT_HISTORY_ENABLED: boolean;
   MCP_SERVER_URL: string | null;
   MCP_SERVER_TOKEN: string | null;
+  /** URL da API LowCodeJS enviada ao MCP no header X-Lowcode-Api-Url. */
+  MCP_LOWCODE_API_URL: string | null;
   OPENAI_MODEL: string;
+  /** Provedor ativo do assistente IA. */
+  AI_LLM_PROVIDER: ValueOf<typeof E_AI_LLM_PROVIDER>;
+  /** Chave de API do provedor (exceto Ollama). */
+  LLM_API_KEY: string | null;
+  /** ID do modelo no provedor selecionado. */
+  LLM_MODEL: string;
+  /** URL base para Ollama ou endpoint customizado. */
+  LLM_BASE_URL: string | null;
   SETUP_COMPLETED: boolean;
   SETUP_CURRENT_STEP:
     | 'admin'
@@ -586,6 +617,7 @@ export type ISetting = {
   MIGRATION_DUAL_CONNECTION_DROPPED_AT: Date | null;
   MIGRATION_STORAGE_LOCATION_AT: Date | null;
   STORAGE_MIGRATION_LAST_RUN_AT: Date | null;
+  MIGRATION_ROW_STATUS_TRASHED_AT: Date | null;
 };
 
 export const E_LOGGER_ACTION_TYPE = {
@@ -776,9 +808,9 @@ export const FIELD_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Lixeira',
-    slug: 'trashed',
-    type: E_FIELD_TYPE.TRASHED,
+    name: 'Status',
+    slug: 'status',
+    type: E_FIELD_TYPE.STATUS,
     native: true,
     locked: true,
     required: false,
@@ -889,9 +921,9 @@ export const FIELD_GROUP_NATIVE_LIST: FieldCreatePayload[] = [
     group: null,
   },
   {
-    name: 'Lixeira',
-    slug: 'trashed',
-    type: E_FIELD_TYPE.TRASHED,
+    name: 'Status',
+    slug: 'status',
+    type: E_FIELD_TYPE.STATUS,
     native: true,
     locked: true,
     required: false,

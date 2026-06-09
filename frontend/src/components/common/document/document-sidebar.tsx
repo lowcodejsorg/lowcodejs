@@ -25,6 +25,7 @@ import {
   SettingsIcon,
 } from 'lucide-react';
 import React, { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 
 import { DocumentSidebarAddDialog } from './document-sidebar-add-dialog';
 import type { DropMode } from './document-sidebar-helpers';
@@ -61,7 +62,6 @@ import type { CatNode } from '@/lib/document-helpers';
 import { buildLabelMap } from '@/lib/document-helpers';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { IField } from '@/lib/interfaces';
-import { toastSuccess } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 export function DocumentSidebar({
@@ -172,7 +172,9 @@ export function DocumentSidebar({
         queryKey: queryKeys.tables.detail(slug),
       });
 
-      toastSuccess('Seção criada', 'A seção foi criada com sucesso');
+      toast.success('Seção criada', {
+        description: 'A seção foi criada com sucesso',
+      });
 
       setAddModalOpen(false);
     },
@@ -259,7 +261,9 @@ export function DocumentSidebar({
       queryClient.invalidateQueries({
         queryKey: queryKeys.tables.detail(slug),
       });
-      toastSuccess('Seção excluída', 'A seção foi excluída com sucesso');
+      toast.success('Seção excluída', {
+        description: 'A seção foi excluída com sucesso',
+      });
     },
     onError(error) {
       handleApiError(error, {
@@ -305,7 +309,6 @@ export function DocumentSidebar({
     if (!canManageCategory) return;
     setEditingNodeId(nodeId);
     setEditingLabel(label);
-    setDragEnabledId(nodeId);
   };
 
   const cancelEdit = (): void => {
@@ -341,12 +344,12 @@ export function DocumentSidebar({
   };
 
   const handleDragStart = (event: DragStartEvent): void => {
-    if (!dragEnabledId || !canManageCategory) return;
-    if (String(event.active.id) !== dragEnabledId) return;
+    if (!canManageCategory) return;
+    setDragEnabledId(String(event.active.id));
   };
 
   const handleDragOver = (event: DragOverEvent): void => {
-    if (!dragEnabledId || !canManageCategory) return;
+    if (!canManageCategory) return;
     const { active, over } = event;
     if (!over) {
       setDragOverId(null);
@@ -378,13 +381,15 @@ export function DocumentSidebar({
   };
 
   const handleDragCancel = (_event: DragCancelEvent): void => {
+    setDragEnabledId(null);
     setDragOverId(null);
     setDragOverMode(null);
   };
 
   const handleDragEnd = async (event: DragEndEvent): Promise<void> => {
-    if (!dragEnabledId || !canManageCategory) return;
+    if (!canManageCategory) return;
     const { active, over } = event;
+    setDragEnabledId(null);
     setDragOverId(null);
     setDragOverMode(null);
     if (!over || active.id === over.id) return;
@@ -590,8 +595,6 @@ export function DocumentSidebar({
                   onStartEdit={startEdit}
                   onSaveEdit={saveEdit}
                   onCancelEdit={cancelEdit}
-                  dragEnabledId={dragEnabledId}
-                  dragMode={!!dragEnabledId}
                   dragOverId={dragOverId}
                   dragOverMode={dragOverMode}
                   parentId={null}

@@ -11,6 +11,7 @@ import {
   UploadIcon,
 } from 'lucide-react';
 import React from 'react';
+import { toast } from 'sonner';
 
 import { SchemaReference } from './-schema-reference';
 
@@ -25,7 +26,6 @@ import {
 import { useSchemaImport } from '@/hooks/tanstack-query/use-schema-import';
 import { handleApiError } from '@/lib/handle-api-error';
 import type { SchemaImportResponse } from '@/lib/payloads';
-import { toastSuccess } from '@/lib/toast';
 
 const EXAMPLE_YAML = `# Schema de exemplo — cobre os tipos mais comuns
 # Consulte o painel "Referência" ao lado para todos os tipos suportados.
@@ -108,12 +108,11 @@ function RouteComponent(): React.JSX.Element {
       setResult(data);
       setValidationErrors(null);
       if (data.created.length > 0) {
-        toastSuccess(
-          'Schema importado',
-          `${data.created.length} ${
+        toast.success('Schema importado', {
+          description: `${data.created.length} ${
             data.created.length === 1 ? 'tabela criada' : 'tabelas criadas'
           }${data.errors.length > 0 ? ` (${data.errors.length} com erro)` : ''}`,
-        );
+        });
       }
     },
     onError(error) {

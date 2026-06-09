@@ -15,6 +15,7 @@ import { TableRowTextLongCell } from '@/components/common/dynamic-table/table-ce
 import { TableRowTextShortCell } from '@/components/common/dynamic-table/table-cells/table-row-text-short-cell';
 import { TableRowUserCell } from '@/components/common/dynamic-table/table-cells/table-row-user-cell';
 import { FieldTitle } from '@/components/common/field-title';
+import { Badge } from '@/components/ui/badge';
 import { useReadTable } from '@/hooks/tanstack-query/use-table-read';
 import { E_FIELD_TYPE } from '@/lib/constant';
 import type { IField, ILayoutFields, IRow } from '@/lib/interfaces';
@@ -155,7 +156,7 @@ function RenderMosaicCell({
             row={row}
           />
         );
-      case E_FIELD_TYPE.TRASHED:
+      case E_FIELD_TYPE.STATUS:
         return (
           <TableRowTextShortCell
             field={field}
@@ -234,16 +235,26 @@ export function TableMosaicView({
 
           <div className="p-3">
             <div className="flex items-start justify-between gap-2">
-              <div className="font-semibold leading-tight line-clamp-2 min-w-0 flex-1">
-                {titleField ? (
-                  <RenderMosaicCell
-                    field={titleField}
-                    row={row}
-                    tableSlug={slug}
-                  />
-                ) : (
-                  <span className="text-muted-foreground">Sem título</span>
+              <div className="min-w-0 flex-1 space-y-1">
+                {row.status === 'draft' && (
+                  <Badge
+                    variant="outline"
+                    className="text-amber-600 border-amber-400"
+                  >
+                    Rascunho
+                  </Badge>
                 )}
+                <div className="font-semibold leading-tight line-clamp-2">
+                  {titleField ? (
+                    <RenderMosaicCell
+                      field={titleField}
+                      row={row}
+                      tableSlug={slug}
+                    />
+                  ) : (
+                    <span className="text-muted-foreground">Sem título</span>
+                  )}
+                </div>
               </div>
               <TableRowActionsMenu
                 slug={slug}

@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { Loader2Icon, PlusIcon } from 'lucide-react';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import { getDropdownContrastStyle } from '../table-cells/utils';
 
@@ -27,7 +28,6 @@ import { useFieldContext } from '@/integrations/tanstack-form/form-context';
 import { API } from '@/lib/api';
 import { getNextDropdownOptionColor } from '@/lib/dropdown-colors';
 import type { IDropdown, IField, ITable, Paginated } from '@/lib/interfaces';
-import { toastError } from '@/lib/toast';
 
 interface TableRowDropdownFieldProps {
   field: IField;
@@ -283,7 +283,7 @@ export function TableRowDropdownField({
       });
     },
     onError(error) {
-      toastError(getCustomOptionErrorMessage(error));
+      toast.error(getCustomOptionErrorMessage(error));
     },
   });
 

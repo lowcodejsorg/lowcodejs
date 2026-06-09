@@ -8,17 +8,20 @@ import {
   E_TABLE_TYPE,
   E_TABLE_VISIBILITY,
 } from '@application/core/entity.core';
-import { buildSchema, buildTable } from '@application/core/util.core';
 import { Field } from '@application/model/field.model';
 import { Table } from '@application/model/table.model';
 import { UserGroup } from '@application/model/user-group.model';
 import { User } from '@application/model/user.model';
 import { FieldCreatePayload } from '@application/repositories/field/field-contract.repository';
 import { TableCreatePayload } from '@application/repositories/table/table-contract.repository';
-import { getDataConnection } from '@config/database.config';
+import MongooseModelBuilder from '@application/services/table/model-builder.service';
+import MongooseSchemaBuilder from '@application/services/table/schema-builder.service';
 import { kernel } from '@start/kernel';
 import { createAuthenticatedUser } from '@test/helpers/auth.helper';
 import { dropDynamicCollections } from '@test/helpers/database.helper';
+
+const schemaBuilder = new MongooseSchemaBuilder();
+const modelBuilder = new MongooseModelBuilder(schemaBuilder);
 
 describe('E2E Table Update Controller', () => {
   beforeEach(async () => {
@@ -73,7 +76,7 @@ describe('E2E Table Update Controller', () => {
         name: 'My Table',
         slug: 'my-table',
         fields: [field._id.toString()],
-        _schema: buildSchema([
+        _schema: schemaBuilder.build([
           {
             ...field.toJSON(),
             _id: field._id.toString(),
@@ -92,14 +95,11 @@ describe('E2E Table Update Controller', () => {
       const table = await Table.create(tablePayload);
 
       // Criar a coleção dinâmica para que o rename funcione
-      await buildTable(
-        {
-          ...table.toJSON(),
-          _id: table._id.toString(),
-          fields: [{ ...field.toJSON(), _id: field._id.toString() }],
-        },
-        getDataConnection(),
-      );
+      await modelBuilder.build({
+        ...table.toJSON(),
+        _id: table._id.toString(),
+        fields: [{ ...field.toJSON(), _id: field._id.toString() }],
+      });
 
       const response = await supertest(kernel.server)
         .put(`/tables/${table.slug}`)

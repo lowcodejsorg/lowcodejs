@@ -9,25 +9,25 @@ import {
 } from '@application/core/entity.core';
 import FieldInMemoryRepository from '@application/repositories/field/field-in-memory.repository';
 import TableInMemoryRepository from '@application/repositories/table/table-in-memory.repository';
-import TableSchemaInMemoryService from '@application/services/table-schema/table-schema-in-memory.service';
+import InMemorySchemaBuilder from '@application/services/table/in-memory-schema-builder.service';
 
 import TableFieldDeleteUseCase from './delete.use-case';
 
 let tableInMemoryRepository: TableInMemoryRepository;
 let fieldInMemoryRepository: FieldInMemoryRepository;
-let tableSchemaService: TableSchemaInMemoryService;
+let schemaBuilder: InMemorySchemaBuilder;
 let sut: TableFieldDeleteUseCase;
 
 describe('Table Field Delete Use Case', () => {
   beforeEach(() => {
     tableInMemoryRepository = new TableInMemoryRepository();
     fieldInMemoryRepository = new FieldInMemoryRepository();
-    tableSchemaService = new TableSchemaInMemoryService();
+    schemaBuilder = new InMemorySchemaBuilder();
 
     sut = new TableFieldDeleteUseCase(
       tableInMemoryRepository,
       fieldInMemoryRepository,
-      tableSchemaService,
+      schemaBuilder,
     );
   });
 

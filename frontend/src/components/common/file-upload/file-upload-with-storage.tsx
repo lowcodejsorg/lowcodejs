@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { Paperclip, Upload, X } from 'lucide-react';
 import * as React from 'react';
+import { toast } from 'sonner';
 
 import type { FileUploadProps } from '@/components/common/file-upload/file-upload';
 import {
@@ -19,7 +20,6 @@ import { useUploadingContext } from '@/components/common/file-upload/uploading-c
 import { Button } from '@/components/ui/button';
 import { API } from '@/lib/api';
 import type { IStorage } from '@/lib/interfaces';
-import { toastError } from '@/lib/toast';
 import { cn } from '@/lib/utils';
 
 interface FileUploadWithStorageProps {
@@ -97,10 +97,10 @@ export function FileUploadWithStorage({
         const data = error.response?.data;
 
         if (data?.code === 500 && data?.cause === 'STORAGE_UPLOAD_ERROR') {
-          toastError(
-            'Erro ao fazer upload',
-            'Houve um problema ao tentar fazer upload, tente novamente mais tarde.',
-          );
+          toast.error('Erro ao fazer upload', {
+            description:
+              'Houve um problema ao tentar fazer upload, tente novamente mais tarde.',
+          });
         }
       }
     },
@@ -135,11 +135,11 @@ export function FileUploadWithStorage({
         const data = error.response?.data;
 
         if (data?.code === 404 && data?.cause === 'STORAGE_NOT_FOUND') {
-          toastError(data?.message ?? 'Arquivo não encontrado');
+          toast.error(data?.message ?? 'Arquivo não encontrado');
         }
 
         if (data?.code === 500 && data?.cause === 'STORAGE_DELETE_ERROR') {
-          toastError(data?.message ?? 'Erro interno do servidor');
+          toast.error(data?.message ?? 'Erro interno do servidor');
         }
       }
     },
@@ -285,16 +285,15 @@ export function FileUploadWithStorage({
       errorMessage = 'Número máximo de arquivos excedido';
     }
 
-    toastError(
-      errorMessage,
-      ((): string => {
+    toast.error(errorMessage, {
+      description: ((): string => {
         let displayName = file.name;
         if (file.name.length > 20) {
           displayName = `${file.name.slice(0, 20)}...`;
         }
         return `"${displayName}" foi rejeitado`;
       })(),
-    );
+    });
   }, []);
 
   const onFileValidate = React.useCallback(

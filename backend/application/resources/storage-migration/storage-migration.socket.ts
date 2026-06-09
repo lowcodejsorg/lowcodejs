@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 /**
  * Socket.IO namespace `/storage-migration`.
  *
@@ -12,7 +13,7 @@
  *   - completed      { job_id, total, succeeded, failed, duration_ms }
  *   - error          { job_id, message }
  */
-/* eslint-disable no-unused-vars */
+
 import type { Namespace, Server as SocketIOServer } from 'socket.io';
 
 import {

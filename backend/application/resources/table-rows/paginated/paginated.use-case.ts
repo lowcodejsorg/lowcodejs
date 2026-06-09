@@ -7,8 +7,8 @@ import type { IMeta, IRow, Paginated } from '@application/core/entity.core';
 import HTTPException from '@application/core/exception.core';
 import { RowContractRepository } from '@application/repositories/row/row-contract.repository';
 import { TableContractRepository } from '@application/repositories/table/table-contract.repository';
-import { RowContextContractService } from '@application/services/row-context/row-context-contract.service';
 import { RowPasswordContractService } from '@application/services/row-password/row-password-contract.service';
+import { RowContextBuilderContractService } from '@application/services/table/row-context-builder-contract.service';
 
 import type { TableRowPaginatedPayload } from './paginated.validator';
 
@@ -22,7 +22,7 @@ export default class TableRowPaginatedUseCase {
     private readonly tableRepository: TableContractRepository,
     private readonly rowRepository: RowContractRepository,
     private readonly rowPasswordService: RowPasswordContractService,
-    private readonly rowContextService: RowContextContractService,
+    private readonly rowContextBuilder: RowContextBuilderContractService,
   ) {}
 
   async execute(payload: Payload): Promise<Response> {
@@ -67,7 +67,7 @@ export default class TableRowPaginatedUseCase {
 
       const data = rows.map((row) => {
         this.rowPasswordService.mask(row, table.fields);
-        return this.rowContextService.transform(
+        return this.rowContextBuilder.transform(
           row,
           table.fields,
           payload.user,
