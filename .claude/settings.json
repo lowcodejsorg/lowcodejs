@@ -1,11 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc *)",
-      "Bash(echo \"=== EXIT: $? ===\")",
-      "Bash(grep -E 'interfaces.ts|payloads.ts|-update-form.tsx|detail/index.lazy.tsx|_query-options.ts|use-table-row-read-paginated.tsx|tables/\\\\$slug/index')",
-      "Bash(git commit -m '@ *)",
-      "Bash(npx eslint *)"
     ]
   }
 }
